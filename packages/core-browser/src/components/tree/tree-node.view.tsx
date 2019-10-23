@@ -278,7 +278,7 @@ export const TreeContainerNode = (
     width: '100%',
     height: itemLineHeight,
     left: '0',
-    opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
+    opacity: isEdited && !node.isTemporary ? .3 : 1,
     top: `${(node.order || 0) * itemLineHeight}px`,
   } as React.CSSProperties;
 
@@ -352,8 +352,8 @@ export const TreeContainerNode = (
     </div>;
   };
 
-  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { } ) => {
-    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
+  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
+    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name === TEMP_FILE_NAME ? '' : node.name);
     const [validateMessage, setValidateMessage] = React.useState<string>('');
 
     const changeHandler = (event) => {
@@ -397,7 +397,7 @@ export const TreeContainerNode = (
       </div>;
     };
 
-    if (node.filestat && node.filestat.isTemporaryFile) {
+    if (node.isTemporary) {
       return <div
         className={cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible)}
       >
@@ -464,11 +464,18 @@ export const TreeContainerNode = (
 
   const itemStyle = {
     height: itemLineHeight,
+    lineHeight: `${itemLineHeight}px`,
+  } as React.CSSProperties;
+
+  const titleStyle = {
+    height: itemLineHeight,
+    lineHeight: `${itemLineHeight}px`,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${10 + (leftPadding || 0)}px` : 0,
   } as React.CSSProperties;
 
   const renderTitle = (node: TreeNode) => {
     if (node.title) {
-      return <div className={styles.kt_treenode_title} style={itemStyle}>{node.title}</div>;
+      return <div className={styles.kt_treenode_title} style={titleStyle}>{node.title}</div>;
     }
   };
 

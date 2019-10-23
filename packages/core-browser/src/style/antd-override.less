@@ -1,31 +1,41 @@
 // 覆盖 antd/react-component 组件的样式
 
-.ant-menu {
-  padding: 3px 0px !important;
-  color: var(--menu-foreground) !important;
-  font-size: 13px !important;
-  background-color: var(--menu-background) !important;
-  border: none !important;
-  box-shadow: 0px 2px 4px var(--widget-shadow) !important;
-  display: block !important;
-  border-radius: 0 !important;
+.overrideAntdMenu(@n, @i: 1) when (@i =< @n) {
+  @clsx: extract(@antdMenuClx, @i);
 
-  .ant-menu-item {
-    margin: 0 !important;
-    padding: 4px !important;
-    cursor: default !important;
-    height: 26px !important;
-    display: flex !important;
-    align-items: center !important;
+  .@{clsx} {
+    padding: 3px 0px;
+    color: var(--menu-foreground);
+    font-size: 13px;
+    background-color: var(--menu-background);
+    border: none;
+    box-shadow: 0px 2px 4px #000000;
+    display: block;
+    border-radius: 0;
+
+    .@{clsx}-item {
+      margin: 0 !important;
+      padding: 4px !important;
+      cursor: default;
+      height: 26px;
+      display: flex;
+      align-items: center;
+    }
+
+    .@{clsx}-item-divider {
+      margin: 4px 10px;
+      pointer-events: none;
+    }
+
+    .@{clsx}-item-active {
+      background: var(--menu-selectionBackground);
+      color: var(--menu-selectionForeground);
+    }
   }
 
-  .ant-menu-item-divider {
-    margin: 4px 10px !important;
-    pointer-events: none !important;
-  }
-
-  .ant-menu-item-active {
-    background: var(--menu-selectionBackground) !important;
-    color: var(--menu-selectionForeground) !important;
-  }
+  .overrideAntdMenu(@n, (@i + 1));
 }
+
+@antdMenuClx: ant-menu, ant-dropdown-menu;
+
+.overrideAntdMenu(length(@antdMenuClx));

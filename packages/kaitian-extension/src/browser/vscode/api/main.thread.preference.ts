@@ -66,7 +66,8 @@ export class MainThreadPreference implements IMainThreadPreference {
     value: any,
     resource?: string,
   ) {
-
+    const scope = this.parseConfigurationTarget(target);
+    await this.preferenceService.set(key, value, scope, resource);
   }
 
   async $removeConfigurationOption(
@@ -74,6 +75,28 @@ export class MainThreadPreference implements IMainThreadPreference {
     key: string,
     resource?: string,
   ) {
+    const scope = this.parseConfigurationTarget(target);
+    await this.preferenceService.set(key, undefined, scope, resource);
+  }
+
+  /**
+   * 装欢VSCode ConfigurationTaregt到PreferenceService中的Scope
+   * @param target
+   */
+  private parseConfigurationTarget(target?: boolean | ConfigurationTarget): PreferenceScope | undefined {
+    if (typeof target === 'boolean') {
+      return target ? PreferenceScope.User : PreferenceScope.Workspace;
+    }
+    switch (target) {
+      case ConfigurationTarget.Global:
+        return PreferenceScope.User;
+      case ConfigurationTarget.Workspace:
+        return PreferenceScope.Workspace;
+      case ConfigurationTarget.WorkspaceFolder:
+        return PreferenceScope.Folder;
+      default:
+        return undefined;
+    }
   }
 
 }

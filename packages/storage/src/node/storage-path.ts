@@ -1,30 +1,35 @@
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
 import { isWindows, Deferred, URI } from '@ali/ide-core-node';
-import { IDatabaseStoragePathServer, DatabaseStoragePaths } from '../common';
+import { IStoragePathServer, StoragePaths } from '../common';
 import { IFileService } from '@ali/ide-file-service';
 
 @Injectable()
-export class DatabaseStoragePathServer implements IDatabaseStoragePathServer {
-  private windowsDataFolders = [DatabaseStoragePaths.WINDOWS_APP_DATA_DIR, DatabaseStoragePaths.WINDOWS_ROAMING_DIR];
+export class StoragePathServer implements IStoragePathServer {
+  private windowsDataFolders = [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR];
   // 当没有工作区被打开时，存储路径为undefined
-  private cachedStoragePath: string | undefined;
-  // 初始化前返回对应的Promise
-  private deferredStoragePath: Deferred<string>;
+  private cachedWorkspaceStoragePath: string | undefined;
+  private cachedGlobalStoragePath: string | undefined;
+  // 缓存存储路径
+  private deferredWorkspaceStoragePath: Deferred<string>;
+  private deferredGlobalStoragePath: Deferred<string>;
   // 当初始化完成时为true
-  private storagePathInitialized: boolean;
+  private workspaceStoragePathInitialized: boolean;
+  private globalStoragePathInitialized: boolean;
 
   @Autowired(IFileService)
   private readonly fileSystem: IFileService;
 
   constructor() {
-    this.deferredStoragePath = new Deferred<string>();
-    this.storagePathInitialized = false;
+    this.deferredWorkspaceStoragePath = new Deferred<string>();
+    this.deferredGlobalStoragePath = new Deferred<string>();
+    this.workspaceStoragePathInitialized = false;
+    this.globalStoragePathInitialized = false;
   }
 
-  async provideStorageDirPath(): Promise<string | undefined> {
-    const storagePathString = await this.getGlobalStorageDirPath();
-    const uriString = URI.file(storagePathString).toString();
+  async provideWorkspaceStorageDirPath(): Promise<string | undefined> {
+    const storagePathString = await this.getBaseStorageDirPath();
+    const uriString = URI.file(storagePathString).resolve(StoragePaths.GLOBAL_STORAGE_DIR).toString();
 
     if (!storagePathString) {
       throw new Error('Unable to get parent storage directory');
@@ -34,34 +39,50 @@ export class DatabaseStoragePathServer implements IDatabaseStoragePathServer {
       await this.fileSystem.createFolder(uriString);
     }
 
-    if (!this.storagePathInitialized) {
-      this.deferredStoragePath.resolve(storagePathString);
-      this.storagePathInitialized = true;
+    if (!this.workspaceStoragePathInitialized) {
+      this.deferredWorkspaceStoragePath.resolve(uriString);
+      this.workspaceStoragePathInitialized = true;
     }
 
-    return this.cachedStoragePath = storagePathString;
+    return this.cachedWorkspaceStoragePath = uriString;
+  }
+
+  async provideGlobalStorageDirPath(): Promise<string | undefined> {
+    const storagePathString = await this.getBaseStorageDirPath();
+    const uriString = URI.file(storagePathString).toString();
+    if (!storagePathString) {
+      throw new Error('Unable to get parent storage directory');
+    }
+
+    if (!await this.fileSystem.exists(uriString)) {
+      await this.fileSystem.createFolder(uriString);
+    }
+
+    if (!this.globalStoragePathInitialized) {
+      this.deferredGlobalStoragePath.resolve(uriString);
+      this.globalStoragePathInitialized = true;
+    }
+
+    return this.cachedGlobalStoragePath = uriString;
   }
 
   /**
    * 返回数据存储文件夹
    */
-  async getGlobalStorageDirPath(): Promise<string> {
-    const workspaceDir = await this.getWorkspaceDataDirPath();
-    return path.join(
-      workspaceDir,
-      DatabaseStoragePaths.GLOBAL_STORAGE_DIR,
-    );
+  async getBaseStorageDirPath(): Promise<string> {
+    const workspaceDir = await this.getDataDirPath();
+    return workspaceDir;
   }
 
   /**
-   * 获取应用存储路径
+   * 获取工作区存储路径
    */
-  async getWorkspaceDataDirPath(): Promise<string> {
+  async getDataDirPath(): Promise<string> {
     const homeDir = await this.getUserHomeDir();
     return path.join(
       homeDir,
       ...(isWindows ? this.windowsDataFolders : ['']),
-      DatabaseStoragePaths.KAITIAN_DIR,
+      StoragePaths.KAITIAN_DIR,
     );
   }
 
@@ -78,13 +99,24 @@ export class DatabaseStoragePathServer implements IDatabaseStoragePathServer {
   }
 
   /**
-   * 获取最后的数据存储路径
+   * 获取最后的工作区数据存储路径
    */
-  async getLastStoragePath(): Promise<string | undefined> {
-    if (this.storagePathInitialized) {
-      return this.cachedStoragePath;
+  async getLastWorkspaceStoragePath(): Promise<string | undefined> {
+    if (this.workspaceStoragePathInitialized) {
+      return this.cachedWorkspaceStoragePath;
     } else {
-      return this.deferredStoragePath.promise;
+      return this.deferredWorkspaceStoragePath.promise;
+    }
+  }
+
+  /**
+   * 获取最后的全局数据存储路径
+   */
+  async getLastGlobalStoragePath(): Promise<string | undefined> {
+    if (this.globalStoragePathInitialized) {
+      return this.cachedGlobalStoragePath;
+    } else {
+      return this.deferredGlobalStoragePath.promise;
     }
   }
 

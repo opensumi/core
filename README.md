@@ -19,9 +19,12 @@
 ### 基本准备
 安装项目依赖，并且使用 lerna 把子项目的依赖全部展开并且自动 link 内部依赖。
 
-```
+```bash
 tnpm install
 npm run init
+
+# 下载插件, 可选
+npm run download-extension
 ```
 
 ### 创建模块
@@ -112,3 +115,4 @@ tnpm owner ls @ali/ide-file-tree
 - 研发规范: https://yuque.antfin-inc.com/zymuwz/tk8q9r/ltgiyp
 - git 分支和提交管理: https://yuque.antfin-inc.com/zymuwz/stxo68/asp0ag
 - merge request 模块: [链接](/merge_request_template.md)
+- [changelog 文档](https://yuque.antfin-inc.com/zymuwz/ezg0nz)

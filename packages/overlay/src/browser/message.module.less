@@ -1,12 +1,24 @@
 .wrapper {
-  background: var(--activityBar-background);
-  border-color: var(--activityBar-border);
+  background: var(--notifications-background);
+  border-color: var(--notifications-border);
   word-break: break-word;
 }
 
 .wrapper :global(.ant-notification-notice-close),
 .wrapper :global(.ant-notification-notice-message) {
-  color: var(--foreground);
+  color: var(--notifications-foreground);
+}
+
+.wrapper.error :global(.anticon.ant-notification-notice-icon-info) {
+  color: var(--notificationsErrorIcon-foreground);
+}
+
+.wrapper.info :global(.anticon.ant-notification-notice-icon-info) {
+  color: var(--notificationsInfoIcon-foreground);
+}
+
+.wrapper.warning :global(.anticon.ant-notification-notice-icon-info) {
+  color: var(--notificationsWarningIcon-foreground);
 }
 
 .button {

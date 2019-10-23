@@ -10,19 +10,25 @@ export class AbstractFileTreeItem implements IFileTreeItem {
   public focused: boolean = false;
 
   constructor(
+    protected readonly fileApi: FileTreeAPI,
     public readonly uri: URI,
     public readonly name: string,
-    public filestat: FileStat = {children: [], isDirectory: false, uri: '', lastModification: 0},
+    public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public readonly tooltip: string,
     public readonly icon: string,
     public readonly parent: Directory | undefined,
     public readonly priority = 1,
-    protected readonly fileApi: FileTreeAPI,
+    public isTemporary = false,
   ) {
   }
 
   updateFileStat(key: any, value: any) {
     this.filestat[key] = value;
+    return this;
+  }
+
+  updateTemporary(value: boolean) {
+    this.isTemporary = value;
     return this;
   }
 }
@@ -32,16 +38,17 @@ export class Directory extends AbstractFileTreeItem {
   public expanded: boolean = false;
 
   constructor(
+    fileApi: FileTreeAPI,
     uri = new URI(''),
     name = '',
-    filestat: FileStat = {children: [], isDirectory: true, uri: '', lastModification: 0},
+    filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },
     tooltip = '',
     icon = '',
     parent: Directory | undefined,
     priority,
-    fileApi: FileTreeAPI,
+    isTemporary?: boolean,
   ) {
-    super(uri, name, filestat, tooltip, icon, parent, priority, fileApi);
+    super(fileApi, uri, name, filestat, tooltip, icon, parent, priority, isTemporary);
     this.init();
   }
 
@@ -82,7 +89,7 @@ export class Directory extends AbstractFileTreeItem {
   }
 
   hasChildren(uri: string | URI) {
-    for (let i = this.children.length - 1; i >= 0; i --) {
+    for (let i = this.children.length - 1; i >= 0; i--) {
       if (typeof uri === 'string') {
         if (this.children[i].uri.toString() === uri) {
           return true;
@@ -106,7 +113,7 @@ export class Directory extends AbstractFileTreeItem {
   }
 
   removeChildren(uri: string | URI) {
-    for (let i = this.children.length - 1; i >= 0; i --) {
+    for (let i = this.children.length - 1; i >= 0; i--) {
       if (typeof uri === 'string') {
         if (this.children[i].uri.toString() === uri) {
           return this.children.splice(i, 1);
@@ -121,7 +128,7 @@ export class Directory extends AbstractFileTreeItem {
   }
 
   replaceChildren(item: Directory | File) {
-    for (let i = this.children.length - 1; i >= 0; i --) {
+    for (let i = this.children.length - 1; i >= 0; i--) {
       if (this.children[i].uri.isEqual(item.uri)) {
         this.children.splice(i, 1, item);
         break;
@@ -133,16 +140,17 @@ export class Directory extends AbstractFileTreeItem {
 export class File extends AbstractFileTreeItem {
 
   constructor(
+    fileApi: FileTreeAPI,
     uri = new URI(''),
     name = '',
-    filestat: FileStat = {children: [], isDirectory: true, uri: '', lastModification: 0},
+    filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },
     tooltip = '',
     icon = '',
     parent,
     priority,
-    fileApi: FileTreeAPI,
+    isTemporary?: boolean,
   ) {
-    super(uri, name, filestat, tooltip, icon, parent, priority, fileApi);
+    super(fileApi, uri, name, filestat, tooltip, icon, parent, priority, isTemporary);
   }
 }
 

@@ -310,7 +310,7 @@ export class FileTreeService extends WithEventBus {
     const parentFolder = this.searchFileParent(uri, (path: URI) => {
       const statusKey = this.getStatutsKey(path);
       const status = this.status.get(statusKey);
-      if (status && status.file && status.file!.filestat.isDirectory && !status.file!.filestat.isTemporaryFile) {
+      if (status && status.file && status.file!.filestat.isDirectory && !status.file!.isTemporary) {
         return true;
       } else {
         return false;
@@ -360,7 +360,7 @@ export class FileTreeService extends WithEventBus {
     if (!status) {
       return;
     }
-    const file = status.file.updateFileStat('isTemporaryFile', true);
+    const file = status.file.updateTemporary(true);
     this.status.set(statusKey, {
       ...status,
       file,
@@ -376,7 +376,7 @@ export class FileTreeService extends WithEventBus {
     if (!status) {
       return;
     }
-    const file = status.file.updateFileStat('isTemporaryFile', false);
+    const file = status.file.updateTemporary(false);
     this.status.set(statusKey, {
       ...status,
       file,

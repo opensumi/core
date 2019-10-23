@@ -1,5 +1,7 @@
 import { useState, useEffect, DependencyList, useCallback } from 'react';
 import { DisposableStore, IDisposable } from '@ali/ide-core-common';
+import { equals } from '@ali/ide-core-common/lib/utils/arrays';
+
 import { MenuNode } from '../menu/next/base';
 import { IMenu } from '../menu/next/menu-service';
 import { splitMenuItems } from '../menu/next/menu-util';
@@ -37,6 +39,10 @@ export function useDisposable(callback: () => IDisposable[], deps: DependencyLis
   }, deps);
 }
 
+function menuNodeEquals(a: MenuNode, b: MenuNode): boolean {
+  return a.id === b.id;
+}
+
 export function useMenus(menuInitalizer: IMenu | (() => IMenu), splitMarker?: 'navigation' | 'inline') {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
 
@@ -54,6 +60,15 @@ export function useMenus(menuInitalizer: IMenu | (() => IMenu), splitMarker?: 'n
     function updateMenuConfig(menus: IMenu) {
       const menuNodes = menus.getMenuNodes();
       const result = splitMenuItems(menuNodes, splitMarker);
+
+      // menu nodes 对比
+      if (
+        equals(result[0], menus[0], menuNodeEquals)
+        && equals(result[1], menus[1], menuNodeEquals)
+      ) {
+        return;
+      }
+
       setMenuConfig(result);
     }
 

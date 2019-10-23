@@ -15,12 +15,12 @@ import {
   MenuModelRegistry,
   EDITOR_COMMANDS,
   CommandService,
+  SETTINGS_MENU_PATH,
 } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
-import { SETTINGS_MENU_PATH } from '@ali/ide-activity-bar';
 import { KeymapsView } from './keymaps.view';
 import { KeymapService } from './keymaps.service';
 

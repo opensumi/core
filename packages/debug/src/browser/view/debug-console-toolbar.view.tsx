@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { observer, useObservable } from 'mobx-react-lite';
-import { useInjectable, localize } from '@ali/ide-core-browser';
+import { observer } from 'mobx-react-lite';
+import { localize } from '@ali/ide-core-browser';
 import * as styles from './debug-console.module.less';
 
 export const DebugConsoleToolbarView = observer(() => {

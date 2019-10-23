@@ -54,7 +54,7 @@ export class BrowserMainMenuFactory {
         MenuWidget.Renderer.prototype.createIconClass = (data) => {
           const className = superCreateClass(data);
           if (data.item.isToggled) {
-            return className + ' ' + getIcon('check');
+            return 'menu-icon' + ' ' + getIcon('check');
           }
           return className;
         };

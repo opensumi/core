@@ -1,4 +1,4 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix, getThemeId, IThemeData } from '../common/theme.service';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix, getThemeId, IThemeData, getThemeTypeSelector } from '../common/theme.service';
 import { WithEventBus, localize, Emitter, Event } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
@@ -23,7 +23,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private currentTheme: Theme;
 
   private themes: Map<string, ThemeData> = new Map();
-  private themeRegistry: Map<string, {contribution: ThemeContribution, basePath: string}> = new Map();
+  private themeContributionRegistry: Map<string, {contribution: ThemeContribution, basePath: string}> = new Map();
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
 
@@ -49,40 +49,17 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.listen();
   }
 
-  listen() {
-    this.eventBus.on(ThemeChangedEvent, (e) => {
-      this.themeChangeEmitter.fire( e.payload.theme);
-    });
-    this.preferenceService.onPreferenceChanged( (e) => {
-      if (e.preferenceName === 'general.theme') {
-        this.applyTheme(this.preferenceService.get<string>('general.theme')!);
-      }
-    });
-  }
-
-  private parseColorValue = (s: string, name: string) => {
-    if (s.length > 0) {
-      if (s[0] === '#') {
-        return Color.Format.CSS.parseHex(s);
-      } else {
-        return s;
-      }
-    }
-    this.logger.error(localize('invalid.default.colorType', '{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.', name));
-    return Color.red;
-  }
-
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
     themeContributions.forEach((contribution) => {
       const themeExtContribution = { basePath: extPath, contribution };
-      this.themeRegistry.set(getThemeId(contribution), themeExtContribution);
+      this.themeContributionRegistry.set(getThemeId(contribution), themeExtContribution);
       this.preferenceSchemaProvider.setSchema({
         properties: {
           'general.theme': {
             type: 'string',
             default: 'vs-dark',
             enum: this.getAvailableThemeInfos().map((info) => info.themeId),
-            description: '%preference.description.general.language%',
+            description: '%preference.description.general.theme%',
           },
         },
       }, true);
@@ -95,48 +72,24 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   public async applyTheme(themeId: string) {
-    let id = DEFAULT_THEME_ID;
     if (!themeId) {
       themeId = getPreferenceThemeId();
     }
     const existedTheme = this.getAvailableThemeInfos().find((info) => info.themeId === themeId);
-    if (existedTheme) {
-      id = existedTheme.id;
-    } else {
+    if (!existedTheme) {
       themeId = DEFAULT_THEME_ID;
     }
     if (this.currentThemeId === themeId) {
       return;
     }
     this.currentThemeId = themeId;
-    const theme = await this.getTheme(id);
+    const theme = await this.getTheme(themeId);
     const themeType = getThemeType(theme.base);
     this.currentTheme = new Theme(themeType, theme);
     this.useUITheme(this.currentTheme);
     this.eventBus.fire(new ThemeChangedEvent({
       theme: this.currentTheme,
     }));
-  }
-
-  private checkColorContribution(contribution: ExtColorContribution) {
-    if (typeof contribution.id !== 'string' || contribution.id.length === 0) {
-      this.logger.error(localize('invalid.id', "'configuration.colors.id' must be defined and can not be empty"));
-      return false;
-    }
-    if (!contribution.id.match(colorIdPattern)) {
-      this.logger.error(localize('invalid.id.format', "'configuration.colors.id' must follow the word[.word]*"));
-      return false;
-    }
-    if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
-      this.logger.error(localize('invalid.description', "'configuration.colors.description' must be defined and can not be empty"));
-      return false;
-    }
-    const defaults = contribution.defaults;
-    if (!defaults || typeof defaults !== 'object' || typeof defaults.light !== 'string' || typeof defaults.dark !== 'string' || typeof defaults.highContrast !== 'string') {
-      this.logger.error(localize('invalid.defaults', "'configuration.colors.defaults' must be defined and must contain 'light', 'dark' and 'highContrast'"));
-      return false;
-    }
-    return true;
   }
 
   // TODO 插件机制需要支持 contribution 增/减量，来做deregister
@@ -152,6 +105,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }, contribution.description);
   }
 
+  // @deprecated 请直接使用sync方法，主题加载由时序保障
   public async getCurrentTheme() {
     if (this.currentTheme) {
       return this.currentTheme;
@@ -194,15 +148,13 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   // TODO 前台缓存
   public getAvailableThemeInfos(): ThemeInfo[] {
     const themeInfos: ThemeInfo[] = [];
-    for (const {contribution} of this.themeRegistry.values()) {
+    for (const {contribution} of this.themeContributionRegistry.values()) {
       const {
         label,
         uiTheme,
-        id,
       } = contribution;
       themeInfos.push({
-        id: getThemeId(contribution),
-        themeId: id || getThemeId(contribution),
+        themeId: getThemeId(contribution),
         name: label,
         base: uiTheme,
       });
@@ -210,12 +162,56 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return themeInfos;
   }
 
+  private listen() {
+    this.eventBus.on(ThemeChangedEvent, (e) => {
+      this.themeChangeEmitter.fire( e.payload.theme);
+    });
+    this.preferenceService.onPreferenceChanged( (e) => {
+      if (e.preferenceName === 'general.theme') {
+        this.applyTheme(this.preferenceService.get<string>('general.theme')!);
+      }
+    });
+  }
+
+  private checkColorContribution(contribution: ExtColorContribution) {
+    if (typeof contribution.id !== 'string' || contribution.id.length === 0) {
+      this.logger.error(localize('invalid.id', "'configuration.colors.id' must be defined and can not be empty"));
+      return false;
+    }
+    if (!contribution.id.match(colorIdPattern)) {
+      this.logger.error(localize('invalid.id.format', "'configuration.colors.id' must follow the word[.word]*"));
+      return false;
+    }
+    if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
+      this.logger.error(localize('invalid.description', "'configuration.colors.description' must be defined and can not be empty"));
+      return false;
+    }
+    const defaults = contribution.defaults;
+    if (!defaults || typeof defaults !== 'object' || typeof defaults.light !== 'string' || typeof defaults.dark !== 'string' || typeof defaults.highContrast !== 'string') {
+      this.logger.error(localize('invalid.defaults', "'configuration.colors.defaults' must be defined and must contain 'light', 'dark' and 'highContrast'"));
+      return false;
+    }
+    return true;
+  }
+
+  private parseColorValue = (s: string, name: string) => {
+    if (s.length > 0) {
+      if (s[0] === '#') {
+        return Color.Format.CSS.parseHex(s);
+      } else {
+        return s;
+      }
+    }
+    this.logger.error(localize('invalid.default.colorType', '{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.', name));
+    return Color.red;
+  }
+
   private async getTheme(id: string): Promise<IThemeData> {
     const theme = this.themes.get(id);
     if (theme) {
       return theme;
     }
-    const themeInfo = this.themeRegistry.get(id);
+    const themeInfo = this.themeContributionRegistry.get(id);
     if (themeInfo) {
       const {contribution, basePath} = themeInfo;
       return await this.themeStore.getThemeData(contribution, basePath);
@@ -257,6 +253,12 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       styleNode.innerHTML = cssVariables + '}';
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
+    this.toggleBaseThemeClass(getThemeTypeSelector(theme.type));
+  }
+
+  protected toggleBaseThemeClass(themeSelector: string) {
+    const bodyNode = document.getElementsByTagName('body')[0];
+    bodyNode.classList.value = themeSelector;
   }
 }
 

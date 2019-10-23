@@ -1,5 +1,5 @@
 
-import { PreferenceSchema, PreferenceProxy, PreferenceService, createPreferenceProxy, PreferenceContribution } from '@ali/ide-core-browser';
+import { PreferenceSchema, PreferenceProxy, PreferenceService, createPreferenceProxy, PreferenceContribution, localize } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
 
 export const debugPreferencesSchema: PreferenceSchema = {
@@ -8,22 +8,22 @@ export const debugPreferencesSchema: PreferenceSchema = {
     'debug.trace': {
       type: 'boolean',
       default: false,
-      description: 'Enable/disable tracing communications with debug adapters',
+      description: localize('preference.debug.trace'),
     },
     'debug.debugViewLocation': {
       enum: ['default', 'left', 'right', 'bottom'],
       default: 'default',
-      description: 'Controls the location of the debug view.',
+      description: localize('preference.debug.debugViewLocation'),
     },
     'debug.openDebug': {
       enum: ['neverOpen', 'openOnSessionStart', 'openOnFirstSessionStart', 'openOnDebugBreak'],
       default: 'openOnSessionStart',
-      description: 'Controls when the debug view should open.',
+      description: localize('preference.debug.openDebug'),
     },
     'debug.internalConsoleOptions': {
       enum: ['neverOpen', 'openOnSessionStart', 'openOnFirstSessionStart'],
       default: 'openOnFirstSessionStart',
-      description: 'Controls when the internal debug console should open.',
+      description: localize('preference.debug.internalConsoleOptions'),
     },
   },
 };

@@ -6,7 +6,7 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { Output, ChannelSelector } from './output.view';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
-import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { OutputService } from './output.service';
 

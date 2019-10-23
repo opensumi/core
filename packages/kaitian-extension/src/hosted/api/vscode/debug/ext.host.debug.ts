@@ -87,8 +87,10 @@ export class ExtHostDebug implements IExtHostDebugService {
 
   constructor(rpc: IRPCProtocol, private extHostConnectionService: IExtHostConnectionService, private extHostCommand: IExtHostCommands) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadDebug);
-    // TODO:
-    // 实现debugConsole界面
+    this.activeDebugConsole = {
+      append: (value: string) => this.proxy.$appendToDebugConsole(value),
+      appendLine: (value: string) => this.proxy.$appendLineToDebugConsole(value),
+    };
   }
 
   // debug API

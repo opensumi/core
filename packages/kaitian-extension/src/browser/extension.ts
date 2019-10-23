@@ -13,12 +13,13 @@ export class Extension extends Disposable implements IExtension {
   public readonly name: string;
   public readonly extraMetadata: JSONType = {};
   public readonly packageJSON: JSONType;
+  public readonly packageNlsJSON: JSONType | undefined;
   public readonly path: string;
   public readonly realPath: string;
   public readonly extendConfig: JSONType;
   public readonly enableProposedApi: boolean;
 
-  private _activated: boolean;
+  private _activated: boolean = false;
   private _activating: Promise<void> | null = null;
 
   private _enabled: boolean;
@@ -36,7 +37,9 @@ export class Extension extends Disposable implements IExtension {
     @Optional(Symbol()) public isBuiltin: boolean) {
     super();
 
+    this._enabled = isUseEnable;
     this.packageJSON = this.extensionData.packageJSON;
+    this.packageNlsJSON = this.extensionData.packageNlsJSON;
     this.id = this.extensionData.id;
     this.extensionId = this.extensionData.extensionId;
     this.name = this.packageJSON.name;
@@ -59,29 +62,28 @@ export class Extension extends Disposable implements IExtension {
     this._enabled = enable;
   }
 
-  async enable() {
-
-    // 插件市场是否启用
-    if (!this.isUseEnable) {
+  disable() {
+    if (!this._enabled) {
       return;
     }
+    this.vscodeMetaService.dispose();
+    this._enabled = false;
+  }
 
+  enable() {
     if (this._enabled) {
       return ;
     }
 
-    if (this._enabling) {
-      return this._enabling;
-    }
-
-    this.addDispose(this.vscodeMetaService);
-    this.logger.log(`${this.name} vscodeMetaService.run`);
-    this._enabling = this.vscodeMetaService.run(this);
-
-    await this._enabling;
-
     this._enabled = true;
-    this._enabling = null;
+  }
+
+  async contributeIfEnabled() {
+    if (this._enabled) {
+      this.addDispose(this.vscodeMetaService);
+      this.logger.log(`${this.name} vscodeMetaService.run`);
+      await this.vscodeMetaService.run(this);
+    }
   }
 
   async activate() {
@@ -110,6 +112,7 @@ export class Extension extends Disposable implements IExtension {
       activated: this.activated,
       enabled: this.enabled,
       packageJSON: this.packageJSON,
+      packageNlsJSON: this.packageNlsJSON,
       path: this.path,
       realPath: this.realPath,
       isUseEnable: this.isUseEnable,

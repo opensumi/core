@@ -10,6 +10,9 @@ import { IDebugSessionManager } from '../../common/debug-session';
 @Injectable()
 export class DebugViewModel implements IDisposable {
 
+  @Autowired(IDebugSessionManager)
+  protected readonly manager: DebugSessionManager;
+
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
   protected fireDidChange(): void {
@@ -27,16 +30,16 @@ export class DebugViewModel implements IDisposable {
     this.onDidChangeBreakpointsEmitter,
   );
 
-  @Autowired(IDebugSessionManager)
-  protected readonly manager: DebugSessionManager;
-
   protected readonly _sessions = new Set<DebugSession>();
-  get sessions(): IterableIterator<DebugSession> {
-    return this._sessions.values();
+
+  get sessions(): DebugSession[] {
+    return Array.from(this._sessions);
   }
+
   get sessionCount(): number {
     return this._sessions.size;
   }
+
   push(session: DebugSession): void {
     if (this._sessions.has(session)) {
       return;
@@ -44,6 +47,7 @@ export class DebugViewModel implements IDisposable {
     this._sessions.add(session);
     this.fireDidChange();
   }
+
   delete(session: DebugSession): boolean {
     if (this._sessions.delete(session)) {
       this.fireDidChange();
@@ -53,8 +57,9 @@ export class DebugViewModel implements IDisposable {
   }
 
   get session(): DebugSession | undefined {
-    return this.sessions.next().value;
+    return this.sessions[0];
   }
+
   get id(): string {
     return this.session && this.session.id || '-1';
   }

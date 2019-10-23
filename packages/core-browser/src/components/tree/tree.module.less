@@ -47,6 +47,7 @@
 }
 
 .kt_treenode_content {
+  position: relative;
   display: flex;
   align-items: center;
   width: 100%;
@@ -107,10 +108,14 @@
 }
 
 .kt_expansion_toggle {
+  position: absolute;
+  left: -14px;
+  top: 0;
   padding-right: @kt-ui-padding;
   min-width: 10px;
   display: flex;
   justify-content: center;
+  flex-shrink: 0;
   color: var(--foreground);
   &.kt_mod_collapsed{
     &:before {

@@ -1,7 +1,7 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, Domain, CommandService, localize } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, CommandService, localize, KeybindingContribution, KeybindingRegistry, ClientAppContribution, IContextKeyService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { HIDE_BOTTOM_PANEL_COMMAND } from '@ali/ide-main-layout/lib/browser/main-layout.contribution';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
@@ -36,6 +36,13 @@ export const terminalExpand: Command = {
   category: 'terminal',
 };
 
+export const terminalClear: Command = {
+  id: 'terminal.clear',
+  label: 'clear terminal',
+  iconClass: getIcon('clear'),
+  category: 'terminal',
+};
+
 @Injectable()
 export class Terminal2Module extends BrowserModule {
   providers: Provider[] = [
@@ -59,8 +66,8 @@ export class Terminal2Module extends BrowserModule {
 
 }
 
-@Domain(ComponentContribution, TabBarToolbarContribution, MainLayoutContribution, CommandContribution)
-export class TerminalContribution implements ComponentContribution, TabBarToolbarContribution, MainLayoutContribution {
+@Domain(ComponentContribution, KeybindingContribution, TabBarToolbarContribution, MainLayoutContribution, CommandContribution, ClientAppContribution)
+export class TerminalContribution implements ComponentContribution, KeybindingContribution, TabBarToolbarContribution, MainLayoutContribution, ClientAppContribution {
 
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
@@ -70,6 +77,9 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
 
   @Autowired(CommandService)
   private commandService: CommandService;
+
+  @Autowired(IContextKeyService)
+  contextKeyService: IContextKeyService;
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(terminalAdd, {
@@ -97,6 +107,20 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
     commands.registerCommand(terminalExpand, {
       execute: (...args: any[]) => {
         this.layoutService.expandBottom(!this.layoutService.bottomExpanded);
+      },
+      isEnabled: () => {
+        return true;
+      },
+      isVisible: () => {
+        return true;
+      },
+    });
+    commands.registerCommand(terminalClear, {
+      execute: (...args: any[]) => {
+        const currentTerminal = this.terminalClient.getTerminal(this.terminalClient.activeId);
+        if (currentTerminal) {
+          currentTerminal.clear();
+        }
       },
       isEnabled: () => {
         return true;
@@ -137,6 +161,13 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
     });
   }
 
+  registerKeybindings(registry: KeybindingRegistry) {
+    registry.registerKeybinding({
+      command: terminalClear.id,
+      keybinding: 'cmd+k',
+    });
+  }
+
   onDidUseConfig() {
     const handler = this.layoutService.getTabbarHandler('terminal');
 
@@ -154,5 +185,11 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
         }
       });
     }
+  }
+  async onStart() {
+
+    // todo terminal-focus contextkey
+    // const terminalFocus = this.contextKeyService.createKey<boolean>('terminalFocus', false);
+
   }
 }

@@ -81,7 +81,6 @@ export class DebugModel implements IDisposable {
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
     ]);
-    this.renderFrames();
     this.render();
   }
 
@@ -100,6 +99,7 @@ export class DebugModel implements IDisposable {
   }
 
   protected getBreakpoint(position: monaco.Position = this.position) {
+    console.log('getBreakpoint ===>');
     return this.debugSessionManager.getBreakpoint(this.uri, position.lineNumber);
   }
 
@@ -202,12 +202,17 @@ export class DebugModel implements IDisposable {
     this.frameDecorations = this.deltaDecorations(this.frameDecorations, decorations);
   }
 
+  render(): void {
+    this.renderBreakpoints();
+    this.renderFrames();
+  }
+
   /**
    * 渲染断点信息装饰器
    * @memberof DebugModel
    */
-  render(): void {
-    this.renderBreakpoints();
+  renderBreakpoints(): void {
+    this.renderNormalBreakpoints();
     this.renderCurrentBreakpoints();
   }
 
@@ -216,7 +221,7 @@ export class DebugModel implements IDisposable {
    * @protected
    * @memberof DebugModel
    */
-  protected renderBreakpoints() {
+  protected renderNormalBreakpoints() {
     const decorations = this.createBreakpointDecorations();
     this.breakpointDecorations = this.deltaDecorations(this.breakpointDecorations, decorations);
     this.updateBreakpointRanges();
@@ -229,6 +234,7 @@ export class DebugModel implements IDisposable {
    * @memberof DebugModel
    */
   protected createBreakpoints(): SourceBreakpoint[] {
+    console.log('createBreakpoints +==>');
     const { uri } = this;
     const lines = new Set<number>();
     const breakpoints: SourceBreakpoint[] = [];
@@ -253,6 +259,7 @@ export class DebugModel implements IDisposable {
    * @memberof DebugModel
    */
   protected createBreakpointDecorations(): monaco.editor.IModelDeltaDecoration[] {
+    console.log('createBreakpointDecorations +==>');
     const breakpoints = this.breakpointManager.getBreakpoints(this.uri);
     return breakpoints.map((breakpoint) => this.createBreakpointDecoration(breakpoint));
   }
@@ -292,6 +299,7 @@ export class DebugModel implements IDisposable {
    * @memberof DebugModel
    */
   protected createCurrentBreakpointDecorations(): monaco.editor.IModelDeltaDecoration[] {
+    console.log('createCurrentBreakpointDecorations ===>');
     const breakpoints = this.debugSessionManager.getBreakpoints(this.uri);
     return breakpoints.map((breakpoint) => this.createCurrentBreakpointDecoration(breakpoint));
   }
@@ -417,6 +425,7 @@ export class DebugModel implements IDisposable {
   protected createHintDecorations(event: monaco.editor.IEditorMouseEvent): monaco.editor.IModelDeltaDecoration[] {
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       const lineNumber = event.target.position!.lineNumber;
+      console.log('createHintDecorations ==>');
       if (!!this.debugSessionManager.getBreakpoint(this.uri, lineNumber)) {
         return [];
       }

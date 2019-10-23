@@ -20,7 +20,7 @@ import {
   WSChannel,
 } from '../../src/common/ws-channel';
 
-import {Emitter} from '@ali/ide-core-common';
+import {Emitter, Uri} from '@ali/ide-core-common';
 
 import * as ws from 'ws';
 import * as http from 'http';
@@ -190,10 +190,19 @@ describe('connection', () => {
 
     const testMainIdentifier = createMainContextProxyIdentifier('testIendifier');
     const mockMainIndetifierMethod = jest.fn();
-    aProtocol.set(testMainIdentifier, { '$test': mockMainIndetifierMethod});
+    const mockUriTestFn = jest.fn((uri) => uri);
 
+    aProtocol.set(testMainIdentifier, {
+        '$test': mockMainIndetifierMethod,
+        '$getUri': mockUriTestFn,
+    });
+
+    const testUri = Uri.file('/Users/franklife/work/ide/ac4/ide-framework/README.md');
     await bProtocol.getProxy(testMainIdentifier).$test();
+    await bProtocol.getProxy(testMainIdentifier).$getUri(testUri);
     expect(mockMainIndetifierMethod.mock.calls.length).toBe(1);
+    expect(mockUriTestFn.mock.results[0].value).toBeInstanceOf(Uri);
+    expect(mockUriTestFn.mock.results[0].value.toString()).toBe(testUri.toString());
 
     done();
   });
