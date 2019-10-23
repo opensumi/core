@@ -8,6 +8,7 @@ import { getIcon } from '../../icon';
 import Icon from '../icon';
 import Badge from '../badge';
 import { Input } from '../input';
+import { KeyCode, Key } from '../../keyboard';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -352,7 +353,7 @@ export const TreeContainerNode = (
     </div>;
   };
 
-  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { } ) => {
+  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
     const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name === TEMP_FILE_NAME ? '' : node.name);
     const [validateMessage, setValidateMessage] = React.useState<string>('');
 
@@ -380,7 +381,8 @@ export const TreeContainerNode = (
     };
 
     const keydownHandler = (event: React.KeyboardEvent) => {
-      if (event.keyCode === 13) {
+      const { key } = KeyCode.createKeyCode(event.nativeEvent);
+      if (key && Key.ENTER.keyCode === key.keyCode) {
         event.stopPropagation();
         event.preventDefault();
         if (validateMessage) {

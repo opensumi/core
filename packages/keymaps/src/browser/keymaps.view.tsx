@@ -66,8 +66,8 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     };
 
     const keydownHandler = (event: React.KeyboardEvent) => {
-      event.nativeEvent.stopPropagation();
-      event.nativeEvent.preventDefault();
+      event.stopPropagation();
+      event.preventDefault();
       const { key } = KeyCode.createKeyCode(event.nativeEvent);
       if (key && Key.ENTER.keyCode === key.keyCode) {
         updateKeybinding(covert(event.nativeEvent));

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useInjectable, localize } from '@ali/ide-core-browser';
+import { useInjectable, localize, KeyCode, Key } from '@ali/ide-core-browser';
 import * as styles from './index.module.less';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsTarbarHandlerId, enableExtensionsContainerId, IExtensionManagerService } from '../../../common';
@@ -7,7 +7,7 @@ import { Input } from '@ali/ide-core-browser/lib/components';
 
 export const ExtensionSearchHeader: React.FC<any> = () => {
 
-  const [ query, setQuery ] = React.useState('');
+  const [query, setQuery] = React.useState('');
   const mainLayoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const handler = mainLayoutService.getTabbarHandler(enableExtensionsContainerId);
@@ -26,11 +26,13 @@ export const ExtensionSearchHeader: React.FC<any> = () => {
     setQuery(value);
   }
 
-  const handleKeyPress = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.keyCode === 13) {
+  const handleKeyPress = React.useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    const { key } = KeyCode.createKeyCode(event.nativeEvent);
+    if (key && Key.ENTER.keyCode === key.keyCode) {
       extensionManagerService.search(query);
     }
-  }, [ query ]);
+
+  }, [query]);
 
   React.useEffect(() => {
     // 默认要调用一次，不使用layout状态
