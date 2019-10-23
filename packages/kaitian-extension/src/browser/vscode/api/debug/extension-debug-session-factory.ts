@@ -7,6 +7,8 @@ import { IWebSocket } from '@ali/ide-connection';
 import { DebugSessionOptions } from '@ali/ide-debug';
 import { ITerminalClient, TerminalOptions } from '@ali/ide-terminal2';
 import { DebugProtocol } from 'vscode-debugprotocol';
+import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
+import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 
 export class ExtensionDebugSession extends DebugSession {
   constructor(
@@ -43,11 +45,13 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
     protected readonly connectionFactory: (sessionId: string) => Promise<IWebSocket>,
     protected readonly fileSystem: IFileServiceClient,
     protected readonly terminalOptionsExt: any,
+    protected readonly debugPreference: DebugPreferences,
+    protected readonly outputService: OutputService,
   ) {
   }
 
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
-    const connection = new DebugSessionConnection(sessionId, this.connectionFactory);
+    const connection = new DebugSessionConnection(sessionId, this.connectionFactory, this.getTraceOutputChannel());
 
     return new ExtensionDebugSession(
       sessionId,
@@ -61,5 +65,11 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
       this.messageService,
       this.fileSystem,
       this.terminalOptionsExt);
+  }
+
+  protected getTraceOutputChannel(): OutputChannel | undefined {
+    if (this.debugPreferences['debug.trace']) {
+      return this.outputService.getChannel('Debug adapters');
+    }
   }
 }

@@ -51,13 +51,15 @@ export class DebugBreakpointsService {
   extractNodes(items: DebugBreakpoint[]) {
     const nodes: BreakpointItem[] = [];
     items.forEach((item) => {
-      const parent = this.roots.filter((root) => root.isEqualOrParent(item.uri))[0];
-      nodes.push({
-        id: item.id,
-        name: item.uri.displayName,
-        description:  parent && parent.relative(item.uri)!.toString(),
-        breakpoint: item,
-      });
+      if (item) {
+        const parent = this.roots.filter((root) => root.isEqualOrParent(item.uri))[0];
+        nodes.push({
+          id: item.id,
+          name: item.uri.displayName,
+          description: parent && parent.relative(item.uri)!.toString(),
+          breakpoint: item,
+        });
+      }
     });
     return nodes;
   }

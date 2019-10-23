@@ -60,8 +60,10 @@ export class ExtensionScanner {
 
     // 插件校验逻辑
     const pkgPath = path.join(extensionPath, 'package.json');
+    const pkgNlsPath = path.join(extensionPath, 'package.nls.json');
     const extendPath = path.join(extensionPath, 'kaitian.js');
     const pkgExist = await fs.pathExists(pkgPath);
+    const pkgNlsExist = await fs.pathExists(pkgNlsPath);
     const extendExist = await fs.pathExists(extendPath);
 
     let pkgCheckResult = pkgExist;
@@ -77,6 +79,11 @@ export class ExtensionScanner {
         getLogger().error(e);
         pkgCheckResult = false;
       }
+    }
+
+    let pkgNlsJSON: { [key: string]: string} | undefined;
+    if (pkgNlsExist) {
+      pkgNlsJSON = await fs.readJSON(pkgNlsPath);
     }
 
     if ( !(pkgCheckResult || extendCheckResult) ) {
@@ -119,6 +126,7 @@ export class ExtensionScanner {
       extendConfig,
       path: extensionPath,
       packageJSON,
+      packageNlsJSON: pkgNlsJSON,
       extraMetadata: extensionExtraMetaData,
       realPath: await fs.realpath(extensionPath),
     };

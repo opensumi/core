@@ -105,7 +105,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
       return extHostLanguages.registerHoverProvider(selector, provider);
     },
-    registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable {
+    registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, ...triggerCharacters: string[]): Disposable {
       return extHostLanguages.registerCompletionItemProvider(selector, provider, triggerCharacters);
     },
     registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {

@@ -25,7 +25,6 @@ export class DebugBreakpoint extends DebugBreakpointData {
     origin: SourceBreakpoint,
     protected readonly labelProvider: LabelService,
     protected readonly breakpoints: BreakpointManager,
-    protected readonly model: DebugModel | undefined,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly session?: DebugSession,
   ) {
@@ -172,9 +171,11 @@ export class DebugBreakpoint extends DebugBreakpointData {
         range,
       });
     } else {
-      if (this.model) {
-        this.model.render();
-      }
+      // if (this.models) {
+      //   for (const model of this.models) {
+      //     model.render();
+      //   }
+      // }
       await this.workbenchEditorService.open(this.uri, {
         ...options,
         range,
@@ -224,7 +225,7 @@ export class DebugBreakpoint extends DebugBreakpointData {
     const decoration = this.getBreakpointDecoration();
     return {
       className: decoration.className + '-unverified',
-      message: [this.message ||  localize('debug.breakpoint.unverified') + decoration.message[0]],
+      message: [this.message || localize('debug.breakpoint.unverified') + decoration.message[0]],
     };
   }
 }
