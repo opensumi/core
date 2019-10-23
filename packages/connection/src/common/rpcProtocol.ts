@@ -75,7 +75,7 @@ export namespace ObjectTransfer {
   export function reviver(key: string | undefined, value: any) {
     if (value && value.$type !== undefined && value.data !== undefined) {
       if (value.$type === 'VSCODE_URI') {
-        return Uri.file(value.data);
+        return Uri.parse(value.data);
       }
     }
     return value;

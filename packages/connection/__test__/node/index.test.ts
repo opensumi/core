@@ -197,10 +197,12 @@ describe('connection', () => {
         '$getUri': mockUriTestFn,
     });
 
+    const testUri = Uri.file('/Users/franklife/work/ide/ac4/ide-framework/README.md');
     await bProtocol.getProxy(testMainIdentifier).$test();
-    await bProtocol.getProxy(testMainIdentifier).$getUri(Uri.file('/Users/franklife/work/ide/ac4/ide-framework/README.md'));
+    await bProtocol.getProxy(testMainIdentifier).$getUri(testUri);
     expect(mockMainIndetifierMethod.mock.calls.length).toBe(1);
     expect(mockUriTestFn.mock.results[0].value).toBeInstanceOf(Uri);
+    expect(mockUriTestFn.mock.results[0].value.toString()).toBe(testUri.toString());
 
     done();
   });
