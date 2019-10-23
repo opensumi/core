@@ -176,10 +176,10 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
           this.expanded = true;
         }
         await this.doOpen(previousWidget, currentWidget, expandSize);
-        const container = (currentWidget as BoxPanel).widgets[1] as AccordionWidget;
+        const container = currentWidget instanceof BoxPanel && (currentWidget as BoxPanel).widgets[1];
         // 不使用view container的情况（业务组件）
         if (container) {
-          for (const section of container.sections.values()) {
+          for (const section of (container as AccordionWidget).sections.values()) {
             this.activationEventService.fireEvent('onView', section.view.id);
           }
         }

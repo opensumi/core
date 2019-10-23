@@ -165,7 +165,9 @@ export class ActivityBarService extends WithEventBus {
       const insertIndex = measurePriority(tabbarWidget.priorities, priority);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
-      this.handlerMap.set(containerId!, this.injector.get(ActivityBarHandler, [containerId, panelContainer.title, tabbar, side]));
+      if (!Fc) {
+        this.handlerMap.set(containerId!, this.injector.get(ActivityBarHandler, [containerId, panelContainer.title, tabbar, side]));
+      }
       this.registerActivateKeyBinding(containerId, options);
       return containerId!;
     } else {
@@ -296,7 +298,10 @@ export class ActivityBarService extends WithEventBus {
         this.tabbarState[side]!.currentIndex = currentIndex;
         this.storeState(this.tabbarState);
         if (currentWidget) {
-          (currentWidget as BoxPanel).widgets[0].update();
+          // 自定义React视图需要自行管理titleBar更新
+          if (currentWidget instanceof BoxPanel) {
+            currentWidget.widgets[0].update();
+          }
           // @ts-ignore
           const containerId = currentWidget.containerId;
           this.updateViewContainerContext(containerId!);

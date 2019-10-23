@@ -57,24 +57,25 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       title: localize('marketplace.extension.container', '扩展'),
       priority: 5,
       containerId: enableExtensionsContainerId,
+      component: ExtensionPanelView,
     });
   }
 
   onDidUseConfig() {
-    const handler = this.mainLayoutService.getTabbarHandler(enableExtensionsContainerId);
-    if (handler) {
-      // 在激活的时候获取数据
-      handler.onActivate(() => {
-        this.etensionManagerService.init();
-      });
-      handler.setTitleComponent(ExtensionSearchHeader, 32);
-    }
-    this.mainLayoutService.collectTabbarComponent([], {
-      iconClass: getIcon('extension'),
-      title: localize('marketplace.extension.container', '扩展'),
-      priority: 5,
-      containerId: enableExtensionsContainerId,
-    }, 'left', ExtensionPanelView);
+    // const handler = this.mainLayoutService.getTabbarHandler(enableExtensionsContainerId);
+    // if (handler) {
+    //   // 在激活的时候获取数据
+    //   handler.onActivate(() => {
+    //     this.etensionManagerService.init();
+    //   });
+    //   handler.setTitleComponent(ExtensionSearchHeader, 32);
+    // }
+    // this.mainLayoutService.collectTabbarComponent([], {
+    //   iconClass: getIcon('extension'),
+    //   title: localize('marketplace.extension.container', '扩展'),
+    //   priority: 5,
+    //   containerId: enableExtensionsContainerId,
+    // }, 'left', ExtensionPanelView);
   }
 
 }

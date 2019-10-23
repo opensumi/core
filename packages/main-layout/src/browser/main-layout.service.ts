@@ -42,6 +42,7 @@ const getSideBarSize = (layoutSize?: number) => {
 
 export interface TabbarCollection extends ComponentCollection {
   side: Side;
+  component?: React.FunctionComponent;
 }
 
 @Injectable()
@@ -167,7 +168,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           if (!options || !options.containerId) {
             console.warn('请在options内传入containerId!', token);
           }
-          this.collectTabbarComponent(views || [], options || {containerId: token}, location as Side);
+          this.collectTabbarComponent(views || [], options || {containerId: token}, location as Side, options.component);
         });
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -180,7 +181,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     }
     // 声明式注册的Tabbar组件注册完毕，渲染数据
     for (const tabbarItem of this.tabbarComponents) {
-      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
+      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '', tabbarItem.component);
     }
     for (const [containerId, viewWithProps] of this.viewsMap.entries()) {
       viewWithProps.forEach(({view, props}) => {
@@ -334,6 +335,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         views,
         options,
         side,
+        component: options.component,
       });
       return options.containerId!;
     } else {

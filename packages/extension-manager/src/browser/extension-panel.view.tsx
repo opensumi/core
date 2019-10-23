@@ -14,8 +14,8 @@ const { TabPane } = Tabs;
 
 export default function() {
 
-  const marketplaceRef = React.useRef<HTMLElement | null>();
-  const installedRef = React.useRef<HTMLElement | null>();
+  const [marketElement, setMarketElement] = React.useState<HTMLElement | null>(null);
+  const [installedElement, setInstalledElement] = React.useState<HTMLElement | null>(null);
   const injector = useInjectable(INJECTOR_TOKEN);
   const accordion1 = injector.get(AccordionWidget, [enableExtensionsContainerId, [{
     component: ExtensionEnablePanel,
@@ -47,19 +47,24 @@ export default function() {
   }], 'left']);
 
   React.useEffect(() => {
-    if (marketplaceRef.current && installedRef.current) {
-      Widget.attach(accordion1, marketplaceRef.current);
-      Widget.attach(accordion2, installedRef.current);
+    if (marketElement) {
+      Widget.attach(accordion1, marketElement);
     }
-  }, [marketplaceRef, installedRef]);
+  }, [marketElement]);
+
+  React.useEffect(() => {
+    if (installedElement) {
+      Widget.attach(accordion2, installedElement);
+    }
+  }, [installedElement]);
 
   return (
     <Tabs tabBarStyle={{margin: 0}} tabBarGutter={0}>
       <TabPane tab='marketplace' key='marketplace'>
-        <div ref={(ele) => marketplaceRef.current = ele}></div>
+        <div ref={setMarketElement}></div>
       </TabPane>
       <TabPane tab='installed' key='installed'>
-        <div ref={(ele) => installedRef.current = ele}></div>
+        <div ref={setInstalledElement}></div>
       </TabPane>
     </Tabs>
   );
