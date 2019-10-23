@@ -1,4 +1,4 @@
-import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
 import { DebugThreadView } from './view/debug-threads.view';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
@@ -21,7 +21,7 @@ import { DebugConfigurationService } from './view/debug-configuration.service';
 import { DebugViewModel } from './view/debug-view-model';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
-import { DebugPreferences } from './debug-preferences';
+import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager } from '../common';
 import { DebugConsoleService } from './view/debug-console.service';
 
@@ -51,8 +51,8 @@ export namespace DEBUG_COMMANDS {
   };
 }
 
-@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution)
-export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution {
+@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution)
+export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution {
 
   static DEBUG_THREAD_ID: string = 'debug-thread';
   static DEBUG_WATCH_ID: string = 'debug-watch';
@@ -61,6 +61,8 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   static DEBUG_STACK_ID: string = 'debug-stack';
   static DEBUG_CONTAINER_ID: string = 'debug';
   static DEBUG_CONSOLE_CONTAINER_ID: string = 'debug-console-constainer';
+
+  schema: PreferenceSchema = debugPreferencesSchema;
 
   @Autowired(IMainLayoutService)
   protected readonly mainlayoutService: IMainLayoutService;
@@ -133,11 +135,11 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         collapsed: false,
       },
     ], {
-      iconClass: getIcon('debug'),
-      priority: 7,
-      title: localize('debug.container.title'),
-      containerId: DebugContribution.DEBUG_CONTAINER_ID,
-    });
+        iconClass: getIcon('debug'),
+        priority: 7,
+        title: localize('debug.container.title'),
+        containerId: DebugContribution.DEBUG_CONTAINER_ID,
+      });
   }
 
   async onStart() {

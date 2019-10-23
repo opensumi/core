@@ -95,6 +95,7 @@ export const defaultIconMap = {
   'start': 'start',
   'reload': 'reload',
   'toggle-breakpoints': 'deactivate-breakpoints',
+  'disconnect': 'disconnect',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {

@@ -352,7 +352,7 @@ export const TreeContainerNode = (
     </div>;
   };
 
-  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { } ) => {
+  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
     const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name === TEMP_FILE_NAME ? '' : node.name);
     const [validateMessage, setValidateMessage] = React.useState<string>('');
 
@@ -464,11 +464,18 @@ export const TreeContainerNode = (
 
   const itemStyle = {
     height: itemLineHeight,
+    lineHeight: `${itemLineHeight}px`,
+  } as React.CSSProperties;
+
+  const titleStyle = {
+    height: itemLineHeight,
+    lineHeight: `${itemLineHeight}px`,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${10 + (leftPadding || 0)}px` : 0,
   } as React.CSSProperties;
 
   const renderTitle = (node: TreeNode) => {
     if (node.title) {
-      return <div className={styles.kt_treenode_title} style={itemStyle}>{node.title}</div>;
+      return <div className={styles.kt_treenode_title} style={titleStyle}>{node.title}</div>;
     }
   };
 
