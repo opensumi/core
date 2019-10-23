@@ -8,6 +8,7 @@ import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 
 import { ContentSearchClientService } from '../../src/browser/search.service';
 import {
@@ -85,6 +86,7 @@ describe('search.service.ts', () => {
 
   beforeAll(() => {
     injector = createBrowserInjector([
+      OverlayModule,
       SearchModule,
     ]);
 
