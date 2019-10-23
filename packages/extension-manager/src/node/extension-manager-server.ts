@@ -158,6 +158,20 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
         dataType: 'json',
         timeout: 5000,
         headers: this.getHeaders(),
+        beforeRequest: (options) => {
+          if (this.appConfig.marketplace.transformRequest) {
+            const { headers, path} = this.appConfig.marketplace.transformRequest({
+              path: options.path,
+              headers: options.headers,
+            });
+            if (path) {
+              options.path = path;
+            }
+            if (headers) {
+              options.headers = headers;
+            }
+          }
+        },
       });
       if (res.status === 200) {
         return res.data;
