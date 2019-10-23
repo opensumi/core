@@ -214,7 +214,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.eventBusDisposer = this.eventBus.on(EditorDocumentModelContentChangedEvent, (data) => {
       const event: IEditorDocumentModelContentChangedEventPayload = data.payload;
 
-      if (!this.searchResults) {
+      if (!this.searchResults || this.isReplaceDoing) {
         return;
       }
 
@@ -357,22 +357,22 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   onSearchInputChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.searchValue = (e.currentTarget.value || '').trim();
+    this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
   }
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.replaceValue = (e.currentTarget.value || '').trim();
+    this.replaceValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
   }
 
   onSearchExcludeChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.excludeValue = (e.currentTarget.value || '').trim();
+    this.excludeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
   }
 
   onSearchIncludeChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.includeValue = (e.currentTarget.value || '').trim();
+    this.includeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
   }
 
