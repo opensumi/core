@@ -1,5 +1,5 @@
 import * as React from 'react';
-import clsx from 'clsx';
+import * as clsx from 'classnames';
 
 import Icon from '../icon';
 import { getIcon } from '../../icon';
@@ -10,9 +10,11 @@ export const Button: React.FC<
   {
     block?: boolean;
     loading?: boolean;
+    ghost?: boolean;
     type?: 'primary' | 'secondary' | 'danger';
   } & React.HTMLAttributes<HTMLDivElement>
-> = ({ type = 'primary', loading, block, className, children, ...restProps }) => (
+> = function Button({ type = 'primary', loading, block, ghost, className, children, ...restProps }) {
+  return (
     <div
       className={clsx(
         'kt-btn',
@@ -21,6 +23,7 @@ export const Button: React.FC<
           'kt-btn-block': block,
           [`kt-btn-${type}`]: type,
           'kt-btn-loading': loading,
+          'kt-btn-ghost': ghost,
         },
       )}
       {...restProps}>
@@ -28,3 +31,4 @@ export const Button: React.FC<
       <span>{children}</span>
     </div>
   );
+};

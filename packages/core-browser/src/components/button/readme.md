@@ -3,7 +3,7 @@
 ```tsx
 import * as React from 'react';
 import { Menu, Dropdown } from 'antd';
-import Button from './';
+import { Button } from '@ali/ide-core-browser/lib/components/button';
 
 const SCMEmpty = () => {
   const menu = (
@@ -23,7 +23,10 @@ const SCMEmpty = () => {
         <Button type='danger'>123</Button>
       </Dropdown>
 
-      {localize('scm.provider.empty')}
+      <Button type='primary' ghost block>123</Button>
+      <Button type='danger' ghost>123</Button>
+      <Button type='primary'>123</Button>
+      <Button type='danger'>123</Button>
     </div>
   );
 };
