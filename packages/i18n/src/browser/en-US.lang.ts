@@ -250,5 +250,6 @@ export const localizationBundle = {
     'keymaps.keybinding.collide': 'keybinding currently collides',
     'keymaps.keybinding.require': 'keybinding value is required',
 
+    'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
   },
 };

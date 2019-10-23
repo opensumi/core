@@ -2,7 +2,7 @@ import { Injector, ConstructorOf, Domain } from '@ali/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
-import { KeybindingRegistry, KeybindingService } from '../keybinding';
+import { KeybindingRegistry, KeybindingService, noKeybidingInputName } from '../keybinding';
 import {
   CommandRegistry,
   MenuModelRegistry,
@@ -447,8 +447,10 @@ export class ClientApp implements IClientApp {
     window.addEventListener('resize', () => {
       // 浏览器resize事件
     });
-    document.addEventListener('keydown', (event) => {
-      this.keybindingService.run(event);
+    document.addEventListener('keydown', (event: any) => {
+      if (event && event.target!.name !== noKeybidingInputName) {
+        this.keybindingService.run(event);
+      }
     }, true);
 
     if (isOSX) {

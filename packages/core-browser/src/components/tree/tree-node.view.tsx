@@ -8,6 +8,7 @@ import { getIcon } from '../../icon';
 import Icon from '../icon';
 import Badge from '../badge';
 import { Input } from '../input';
+import { KeyCode, Key } from '../../keyboard';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -380,7 +381,8 @@ export const TreeContainerNode = (
     };
 
     const keydownHandler = (event: React.KeyboardEvent) => {
-      if (event.keyCode === 13) {
+      const { key } = KeyCode.createKeyCode(event.nativeEvent);
+      if (key && Key.ENTER.keyCode === key.keyCode) {
         event.stopPropagation();
         event.preventDefault();
         if (validateMessage) {

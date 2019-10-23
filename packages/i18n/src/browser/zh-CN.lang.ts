@@ -270,5 +270,7 @@ export const localizationBundle = {
     'keymaps.keybinding.collide': '当前快捷键存在冲突',
     'keymaps.keybinding.require': '请输入快捷键',
 
+    'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
+
   },
 };

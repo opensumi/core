@@ -4,7 +4,7 @@ import * as cls from 'classnames';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import * as styles from './keymaps.module.less';
 import { Input, RecycleList } from '@ali/ide-core-browser/lib/components';
-import { localize, useInjectable, MessageType, KeyCode, KeysOrKeyCodes, KeybindingScope } from '@ali/ide-core-browser';
+import { localize, useInjectable, MessageType, KeybindingScope, noKeybidingInputName, KeyCode, Key } from '@ali/ide-core-browser';
 import { KeymapService } from './keymaps.service';
 import { IKeymapService, KeybindingItem } from '../common';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
@@ -20,6 +20,8 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     removeKeybinding,
     getRaw,
     getScope,
+    covert,
+    clearCovert,
   }: KeymapService = useInjectable(IKeymapService);
   const message: IMessageService = useInjectable(IMessageService);
 
@@ -53,6 +55,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
           context: context || '',
           keybinding: value,
         });
+        clearCovert();
       }
     };
     const blurHandler = () => {
@@ -61,21 +64,22 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       }
       setIsEditing(false);
     };
-    const changeHandler = (event) => {
-      let value = event.target.value;
-      if (typeof value === 'string') {
-        value = value.toLocaleUpperCase();
-      }
-      setValue(value);
-    };
 
-    const keydownHandler = (event) => {
-      if (event.keyCode === 13) {
+    const keydownHandler = (event: React.KeyboardEvent) => {
+      event.stopPropagation();
+      event.preventDefault();
+      const { key } = KeyCode.createKeyCode(event.nativeEvent);
+      if (key && Key.ENTER.keyCode === key.keyCode) {
         if (value) {
           updateKeybinding(value);
         }
         setIsEditing(false);
+      } else {
+        setValue(covert(event.nativeEvent));
       }
+    };
+
+    const changeHandler = (event) => {
     };
 
     const renderReset = (source?: string) => {
@@ -86,13 +90,15 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         return <span className={cls(getIcon('rollback'), styles.keybinding_inline_action)} onClick={reset}></span>;
       }
     };
+
     const renderKeybinding = () => {
       if (isEditing) {
-        return <Input autoFocus={true} value={value} onChange={changeHandler} onKeyDown={keydownHandler} onBlur={blurHandler} />;
+        return <Input autoFocus={true} name={noKeybidingInputName} value={value} onChange={changeHandler} onKeyDown={keydownHandler} onBlur={blurHandler} />;
       } else {
         return <span className={styles.keybinding_key} dangerouslySetInnerHTML={{ __html: keybinding || '' }}></span>;
       }
     };
+
     return <div className={cls(styles.keybinding_list_item, index % 2 === 1 && styles.odd)}>
       <div className={styles.keybinding_action} onClick={clickHandler}>
         <i className={cls(keybinding ? getIcon('edit') : getIcon('plus'))}></i>
