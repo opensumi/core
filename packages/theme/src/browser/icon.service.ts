@@ -149,8 +149,10 @@ export class IconService implements IIconService {
     const iconThemeData = await this.getIconTheme(themeId);
     if (!iconThemeData) {
       console.warn('没有检测到目标图标主题插件，使用内置图标！');
+      document.getElementsByTagName('body')[0].classList.add('default-file-icons');
       return;
     }
+    document.getElementsByTagName('body')[0].classList.remove('default-file-icons');
     this.currentTheme = iconThemeData;
     const { styleSheetContent } = iconThemeData;
     let styleNode = document.getElementById('icon-style');
