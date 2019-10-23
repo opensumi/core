@@ -7,7 +7,7 @@ import { HIDE_BOTTOM_PANEL_COMMAND } from '@ali/ide-main-layout/lib/browser/main
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
 import { TerminalView, TerminalToolbarView } from './terminal.view';
 import { TerminalClient } from './terminal.client';
-import { ITerminalServicePath, ITerminalClient, IExternlTerminalService, TerminalBindingContextIds } from '../common';
+import { ITerminalServicePath, ITerminalClient, IExternlTerminalService } from '../common';
 import { MockTerminalService } from './terminal.override';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
