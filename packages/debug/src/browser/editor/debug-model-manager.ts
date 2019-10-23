@@ -83,7 +83,7 @@ export class DebugModelManager extends Disposable {
       let isRendered = false;
       if (debugModel.length > 0) {
         for (const model of debugModel) {
-          if (model.editor._id === monacoEditor._id) {
+          if ((model.editor as any)._id === (monacoEditor as any)._id) {
             model.render();
             isRendered = true;
             break;
@@ -152,7 +152,7 @@ export class DebugModelManager extends Disposable {
     }
 
     for (const model of debugModel) {
-      if (model.editor._id === monacoEditor._id) {
+      if ((model.editor as any)._id === (monacoEditor as any)._id) {
         model[`onMouse${type}`](event);
         break;
       }
