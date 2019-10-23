@@ -8,6 +8,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import { SIDE_MENU_PATH } from '../common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
+import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -76,6 +77,9 @@ export class ActivityBarService extends WithEventBus {
 
   @Autowired(ContextMenuRenderer)
   contextMenuRenderer: ContextMenuRenderer;
+
+  @Autowired()
+  private viewContainerRegistry: ViewContainerRegistry;
 
   @OnEvent(RenderedEvent)
   protected onRender() {
@@ -298,12 +302,13 @@ export class ActivityBarService extends WithEventBus {
         this.tabbarState[side]!.currentIndex = currentIndex;
         this.storeState(this.tabbarState);
         if (currentWidget) {
-          // 自定义React视图需要自行管理titleBar更新
-          if (currentWidget instanceof BoxPanel) {
-            currentWidget.widgets[0].update();
-          }
           // @ts-ignore
           const containerId = currentWidget.containerId;
+          const titleWidget = this.viewContainerRegistry.getTitleBar(containerId);
+          // 自定义React视图需要自行管理titleBar更新
+          if (titleWidget) {
+            titleWidget.update();
+          }
           this.updateViewContainerContext(containerId!);
         }
       });

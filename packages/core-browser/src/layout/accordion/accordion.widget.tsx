@@ -14,6 +14,7 @@ import { View, measurePriority } from '..';
 import { ViewContainerLayout } from './accordion.layout';
 import { find } from '@phosphor/algorithm';
 import { Message } from '@phosphor/messaging';
+import { ViewContainerRegistry } from '../view-container.registry';
 
 @Injectable({ multiple: true })
 export class AccordionWidget extends Widget {
@@ -56,13 +57,14 @@ export class AccordionWidget extends Widget {
   @Autowired()
   private viewContextKeyRegistry: ViewContextKeyRegistry;
 
+  @Autowired()
+  private viewContainerRegistry: ViewContainerRegistry;
+
   constructor(public containerId: string, protected views: View[], private side: 'left' | 'right' | 'bottom') {
     super();
-
+    this.viewContainerRegistry.registerAccordion(containerId, this);
     this.addClass('views-container');
-
     this.init();
-
     views.forEach((view: View) => {
       if (this.hasView(view.id)) {
         return;

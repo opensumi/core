@@ -22,6 +22,7 @@ import { CustomSplitLayout } from './split-layout';
 import { TrackerSplitPanel } from './split-panel';
 import { IIconService } from '@ali/ide-theme';
 import { ViewContainerWidget } from '@ali/ide-activity-panel/lib/browser';
+import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -68,8 +69,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   @Autowired(MainLayoutContribution)
   private readonly contributions: ContributionProvider<MainLayoutContribution>;
 
-  @Autowired(IIconService)
-  private iconService: IIconService;
+  @Autowired()
+  private viewContainerRegistry: ViewContainerRegistry;
 
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
@@ -344,9 +345,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   protected registerViewComponent(view: View, containerId: string, props?: any) {
-    const viewContainer = this.activityBarService.getContainer(containerId);
-    if (viewContainer) {
-      (viewContainer as ViewContainerWidget).appendView(view, props);
+    const accordion = this.viewContainerRegistry.getAccordion(containerId);
+    if (accordion) {
+      accordion.addWidget(view, props);
     } else {
       console.warn(`找不到${containerId}对应的容器，无法注册视图！`);
     }

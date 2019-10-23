@@ -1,7 +1,7 @@
 import { BoxPanel, Widget, BoxLayout } from '@phosphor/widgets';
 import { View, AppConfig, ViewContextKeyRegistry, IContextKeyService } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ActivityPanelToolbar } from './activity-panel-toolbar';
+import { ActivityPanelToolbar } from '@ali/ide-core-browser/lib/layout/view-container-toolbar';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 
 @Injectable({multiple: true})
