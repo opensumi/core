@@ -18,6 +18,13 @@ export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
 
 export const AppConfig = Symbol('AppConfig');
 
+export interface MarketplaceRequest {
+  path?: string;
+  headers?: {
+    [header: string]: string | string[] | undefined;
+  };
+}
+
 export interface MarketplaceConfig {
   // 插件市场地址, 默认 https://marketplace.antfin-inc.com
   endpoint: string;
@@ -29,6 +36,8 @@ export interface MarketplaceConfig {
   accountId: string;
   // 插件市场中申请到的客户端的 masterKey
   masterKey: string;
+  // 插件市场参数转换函数
+  transformRequest?: (request: MarketplaceRequest) => MarketplaceRequest;
 }
 
 interface Config {
