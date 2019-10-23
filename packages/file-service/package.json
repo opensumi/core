@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-file-service",
-  "version": "1.3.7",
+  "version": "1.3.8",
   "files": [
     "lib"
   ],
@@ -19,10 +19,10 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "1.3.7",
-    "@ali/ide-core-common": "1.3.7",
-    "@ali/ide-core-node": "1.3.7",
-    "@ali/ide-logs": "1.3.7",
+    "@ali/ide-connection": "1.3.8",
+    "@ali/ide-core-common": "1.3.8",
+    "@ali/ide-core-node": "1.3.8",
+    "@ali/ide-logs": "1.3.8",
     "@types/mv": "^2.1.0",
     "@types/touch": "^3.1.1",
     "@types/uuid": "^3.4.4",
@@ -40,7 +40,7 @@
     "write-file-atomic": "^3.0.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.3.7",
+    "@ali/ide-core-browser": "1.3.8",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",

@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-debug",
-  "version": "1.3.7",
+  "version": "1.3.8",
   "files": [
     "lib"
   ],
@@ -20,25 +20,25 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "1.3.7",
-    "@ali/ide-core-common": "1.3.7",
-    "@ali/ide-core-node": "1.3.7",
-    "@ali/ide-process": "1.3.7"
+    "@ali/ide-connection": "1.3.8",
+    "@ali/ide-core-common": "1.3.8",
+    "@ali/ide-core-node": "1.3.8",
+    "@ali/ide-process": "1.3.8"
   },
   "devDependencies": {
-    "@ali/ide-activity-panel": "1.3.7",
-    "@ali/ide-core-browser": "1.3.7",
+    "@ali/ide-activity-panel": "1.3.8",
+    "@ali/ide-core-browser": "1.3.8",
     "@ali/ide-dev-tool": "^1.1.0",
-    "@ali/ide-editor": "1.3.7",
-    "@ali/ide-file-service": "1.3.7",
-    "@ali/ide-main-layout": "1.3.7",
-    "@ali/ide-output": "1.3.7",
-    "@ali/ide-overlay": "1.3.7",
-    "@ali/ide-preferences": "1.3.7",
-    "@ali/ide-quick-open": "1.3.7",
-    "@ali/ide-terminal2": "1.3.7",
-    "@ali/ide-variable": "1.3.7",
-    "@ali/ide-workspace": "1.3.7",
+    "@ali/ide-editor": "1.3.8",
+    "@ali/ide-file-service": "1.3.8",
+    "@ali/ide-main-layout": "1.3.8",
+    "@ali/ide-output": "1.3.8",
+    "@ali/ide-overlay": "1.3.8",
+    "@ali/ide-preferences": "1.3.8",
+    "@ali/ide-quick-open": "1.3.8",
+    "@ali/ide-terminal2": "1.3.8",
+    "@ali/ide-variable": "1.3.8",
+    "@ali/ide-workspace": "1.3.8",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
