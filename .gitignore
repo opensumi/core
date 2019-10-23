@@ -100,3 +100,6 @@ packages/vscode-extension/test/fixture/init/out
 
 # vscode extension dir
 tools/extensions
+
+# temp release log
+releaselog.md
