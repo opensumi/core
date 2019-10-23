@@ -20,7 +20,7 @@ export interface IMainLayoutService {
   restoreState(): void;
   getTabbarHandler(handlerId: string): ActivityBarHandler;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
-  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string;
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent): string;
   collectViewComponent(view: View, containerId: string, props?: any): string;
   expandBottom(expand?: boolean): void;
   bottomExpanded: boolean;

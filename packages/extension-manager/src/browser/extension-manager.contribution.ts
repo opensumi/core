@@ -13,6 +13,8 @@ import { ExtensionResourceProvider } from './extension-resource-provider';
 import { ExtensionSearchHeader } from './components/extension-search-header';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
+import ExtensionPanelView from './extension-panel.view';
+
 @Domain(ComponentContribution, MainLayoutContribution, BrowserEditorContribution)
 export class ExtensionManagerContribution implements MainLayoutContribution, ComponentContribution, BrowserEditorContribution {
 
@@ -50,22 +52,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
   }
 
   registerComponent(registry: ComponentRegistry): void {
-    registry.register('@ali/ide-extension-manager', [{
-      component: ExtensionEnablePanel,
-      id: enableExtensionsTarbarHandlerId,
-      name: localize('marketplace.extension.enabled', '已启用'),
-      forceHidden: false,
-    }, {
-      component: ExtensionDisablePanel,
-      id: disableExtensionsTarbarHandlerId,
-      name: localize('marketplace.extension.disabled', '已禁用'),
-      forceHidden: false,
-    }, {
-      component: ExtensionSearchPanel,
-      id: searchExtensionsTarbarHandlerId,
-      name: localize('marketplace.extension.search', '搜索'),
-      forceHidden: true,
-    }], {
+    registry.register('@ali/ide-extension-manager', [], {
       iconClass: getIcon('extension'),
       title: localize('marketplace.extension.container', '扩展'),
       priority: 5,
@@ -82,6 +69,12 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       });
       handler.setTitleComponent(ExtensionSearchHeader, 32);
     }
+    this.mainLayoutService.collectTabbarComponent([], {
+      iconClass: getIcon('extension'),
+      title: localize('marketplace.extension.container', '扩展'),
+      priority: 5,
+      containerId: enableExtensionsContainerId,
+    }, 'left', ExtensionPanelView);
   }
 
 }
