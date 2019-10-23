@@ -4,6 +4,7 @@ import { FileTreeAPI, IFileTreeItem } from '../file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
 import { URI } from '@ali/ide-core-browser';
 import { Directory, File, AbstractFileTreeItem } from '../../browser/file-tree-item';
+import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 
 @Injectable()
 export class MockFileTreeAPIImpl implements FileTreeAPI {
@@ -42,11 +43,9 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
   }
 
   async createFile(uri: URI) {
-    console.log('createFile', uri);
   }
 
   async createFolder(uri: URI) {
-    console.log('createFolder', uri);
   }
 
   async exists(uri: URI) {
@@ -54,15 +53,12 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
   }
 
   async deleteFile(uri: URI) {
-    console.log('deleteFile', uri);
   }
 
   async moveFile(from: URI, to: URI, isDirectory: boolean = false) {
-    console.log('moveFile', from, to, isDirectory);
   }
 
   async copyFile(from: URI, to: URI) {
-    console.log('copyFile', from, to);
   }
 
   fileStat2FileTreeItem(filestat: FileStat, parent: Directory | undefined, isInSymbolicDirectory: boolean): Directory | File {
@@ -128,7 +124,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       return new Directory(
         this,
         uri,
-        '',
+        uri.displayName,
         filestat,
         this.getReadableTooltip(uri),
         '',
@@ -139,7 +135,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     return new File(
       this,
       uri,
-      '',
+      uri.displayName,
       filestat,
       this.getReadableTooltip(uri),
       '',
@@ -159,7 +155,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       return new Directory(
         this,
         uri,
-        '',
+        TEMP_FILE_NAME,
         filestat,
         '',
         '',
@@ -171,7 +167,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     return new File(
       this,
       uri,
-      '',
+      TEMP_FILE_NAME,
       filestat,
       '',
       '',
