@@ -158,6 +158,7 @@ export const Search = observer(({
                   </span>
                 </div>
                 <Input
+                  value={searchBrowserService.includeValue}
                   type='text'
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
@@ -185,6 +186,7 @@ export const Search = observer(({
                 </div>
                 <Input
                   type='text'
+                  value={searchBrowserService.excludeValue}
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchExcludeChange}
@@ -207,6 +209,7 @@ export const Search = observer(({
             </p>
             <div className={styles.replace_field}>
               <Input
+                value={searchBrowserService.replaceValue}
                 id='replace-input-field'
                 title={localize('search.replace.label')}
                 type='text'
