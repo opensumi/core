@@ -70,7 +70,9 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       event.preventDefault();
       const { key } = KeyCode.createKeyCode(event.nativeEvent);
       if (key && Key.ENTER.keyCode === key.keyCode) {
-        updateKeybinding(covert(event.nativeEvent));
+        if (value) {
+          updateKeybinding(value);
+        }
         setIsEditing(false);
       } else {
         setValue(covert(event.nativeEvent));
