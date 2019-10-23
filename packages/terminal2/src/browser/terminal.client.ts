@@ -200,6 +200,16 @@ export class TerminalClient extends Themable implements ITerminalClient {
     }
   }
 
+  isFocused() {
+    let findFocused = false;
+    this.termMap.forEach((term) => {
+      if (term.isFocused()) {
+        findFocused = true;
+      }
+    });
+    return findFocused;
+  }
+
   showTerm(id: string, preserveFocus?: boolean) {
     const terminal = this.termMap.get(id);
     if (!terminal) {

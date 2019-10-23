@@ -95,4 +95,8 @@ export class TerminalImpl implements Terminal {
   clear() {
     this.xterm.clear();
   }
+
+  isFocused() {
+    return (this.xterm as any)._core.isFocused;
+  }
 }

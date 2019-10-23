@@ -12,6 +12,7 @@ import { MockTerminalService } from './terminal.override';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 import { registerTerminalColors } from './terminal-color';
+import { TerminalKeybindingContext } from './terminal-keybinding-contexts';
 
 registerTerminalColors();
 
@@ -47,6 +48,7 @@ export const terminalClear: Command = {
 export class Terminal2Module extends BrowserModule {
   providers: Provider[] = [
     TerminalContribution,
+    TerminalKeybindingContext,
     {
       token: ITerminalClient,
       useClass: TerminalClient,
@@ -165,6 +167,7 @@ export class TerminalContribution implements ComponentContribution, KeybindingCo
     registry.registerKeybinding({
       command: terminalClear.id,
       keybinding: 'cmd+k',
+      context: 'terminalFocus',
     });
   }
 
