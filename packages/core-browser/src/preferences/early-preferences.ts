@@ -1,4 +1,5 @@
 import { PreferenceScope } from './preference-scope';
+import { PreferenceItem } from '@ali/ide-core-common';
 
 // 这些设置选项生效时间太早, 并且可能在app生命周期外生效，不能只由preference服务进行管理
 export interface IExternalPreferenceProvider<T = any> {
@@ -49,7 +50,7 @@ registerLocalStorageProvider('general.theme');
 registerLocalStorageProvider('general.icon');
 registerLocalStorageProvider('general.language');
 
-export function getExternalPreference<T>(preferenceName: string): {value: T, scope: PreferenceScope } {
+export function getExternalPreference<T>(preferenceName: string, schema?: PreferenceItem): {value: T, scope: PreferenceScope } {
   for (const scope of PreferenceScope.getReversedScopes()) {
     const value = providers.get(preferenceName)!.get(scope);
     if (value !== undefined) {
@@ -60,7 +61,7 @@ export function getExternalPreference<T>(preferenceName: string): {value: T, sco
     }
   }
   return {
-    value: undefined as any,
+    value: schema && schema.default,
     scope: PreferenceScope.Default,
   };
 }

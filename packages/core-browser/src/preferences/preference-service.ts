@@ -465,7 +465,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     const result: PreferenceResolveResult<T> = {scope: PreferenceScope.Default};
     const externalProvider = getExternalPreferenceProvider(preferenceName);
     if (externalProvider) {
-      return getExternalPreference(preferenceName);
+      return getExternalPreference(preferenceName, this.schema.getPreferenceProperty(preferenceName));
     }
     const scopes = untilScope ? PreferenceScope.getScopes().filter((s) => s <= untilScope) : PreferenceScope.getScopes();
     for (const scope of scopes) {
