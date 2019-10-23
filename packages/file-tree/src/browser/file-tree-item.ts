@@ -1,6 +1,7 @@
 import { IFileTreeItem, FileTreeAPI } from '../common';
 import { URI, uuid } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
+import { observable } from 'mobx';
 
 export class AbstractFileTreeItem implements IFileTreeItem {
   public readonly id = uuid();
@@ -33,7 +34,7 @@ export class AbstractFileTreeItem implements IFileTreeItem {
 }
 
 export class Directory extends AbstractFileTreeItem {
-  public children: (Directory | File)[] = [];
+  @observable.shallow public children: (Directory | File)[] = [];
   public expanded: boolean = false;
 
   constructor(

@@ -42,6 +42,8 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
 
   private expanded = false;
 
+  private _toDispose: DisposableCollection | undefined;
+
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
@@ -67,18 +69,20 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   private handleContextMenu(event: MouseEvent) {
     event.preventDefault();
 
-    const toDisposeOnHide = new DisposableCollection();
+    if (this._toDispose) {
+      this._toDispose.dispose();
+    }
+    this._toDispose = new DisposableCollection();
     for (const title of this.tabBar.titles) {
       const sideWrap = title.owner as any;
-      toDisposeOnHide.push(this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${this.side}`, '1_widgets'], {
-        label: title.label.toUpperCase(),
+      this._toDispose.push(this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${this.side}`, '1_widgets'], {
+        label: (title.label || '').toUpperCase(),
         commandId: sideWrap.command,
       }));
     }
     this.contextMenuRenderer.render(
       [`${SIDE_MENU_PATH}/${this.side}`],
       {x: event.clientX, y: event.clientY},
-      () => toDisposeOnHide.dispose(),
     );
   }
 
