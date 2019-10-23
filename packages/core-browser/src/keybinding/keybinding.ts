@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable } from '@ali/ide-core-common';
+import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
@@ -170,6 +170,16 @@ export interface KeybindingService {
    * 根据传入的键盘事件执行对应的Command
    */
   run(event: KeyboardEvent): void;
+
+  /**
+   * 根据传入的键盘事件返回对应的快捷键文本
+   */
+  convert(event: KeyboardEvent, separator: string): string;
+
+  /**
+   * 清空键盘事件队列
+   */
+  clearCovert(): void;
 }
 
 @Injectable()
@@ -191,6 +201,7 @@ export class KeybindingServiceImpl implements KeybindingService {
   statusBar: IStatusBarService;
 
   protected keySequence: KeySequence = [];
+  protected convertKeySequence: KeySequence = [];
 
   /**
    * 执行匹配键盘事件的命令
@@ -220,7 +231,7 @@ export class KeybindingServiceImpl implements KeybindingService {
       event.stopPropagation();
 
       this.statusBar.addElement('keybinding-status', {
-        text: `(${this.acceleratorForSequence(this.keySequence, '+')}) was pressed, waiting for more keys`,
+        text: formatLocalize('keybinding.combination.tip', this.acceleratorForSequence(this.keySequence, '+')),
         alignment: StatusBarAlignment.LEFT,
         priority: 2,
       });
@@ -229,6 +240,35 @@ export class KeybindingServiceImpl implements KeybindingService {
       this.keySequence = [];
       this.statusBar.removeElement('keybinding-status');
     }
+  }
+
+  /**
+  * 返回快捷键文本
+  *
+  * @param event 键盘事件
+  */
+  convert(event: KeyboardEvent, separator: string = ' '): string {
+
+    const keyCode = KeyCode.createKeyCode(event);
+
+    // 当传入的Keycode仅为修饰符，返回上次输出结果
+    if (keyCode.isModifierOnly()) {
+      return this.acceleratorForSequence(this.convertKeySequence, '+').join(separator);
+    }
+    this.keyboardLayoutService.validateKeyCode(keyCode);
+    if (this.convertKeySequence.length <= 1) {
+      this.convertKeySequence.push(keyCode);
+    } else {
+      this.convertKeySequence = [keyCode];
+    }
+    return this.acceleratorForSequence(this.convertKeySequence, '+').join(separator);
+  }
+
+  /**
+   * 清空键盘事件队列
+   */
+  clearCovert() {
+    this.convertKeySequence = [];
   }
 
   /**
@@ -285,7 +325,7 @@ export class KeybindingServiceImpl implements KeybindingService {
   acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
     const keyCodeResult: any[] = [];
     if (keyCode.meta && isOSX) {
-      keyCodeResult.push('Cmd');
+      keyCodeResult.push('⌘');
     }
     if (keyCode.ctrl) {
       keyCodeResult.push('Ctrl');
@@ -824,3 +864,5 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     }
   }
 }
+
+export const noKeybidingInputName = 'no_keybinding';

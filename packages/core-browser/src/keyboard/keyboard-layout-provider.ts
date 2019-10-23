@@ -87,10 +87,9 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
   }
 
   /**
-   * Test all known keyboard layouts with the given combination of pressed key and
-   * produced character. Matching layouts have their score increased (see class
-   * KeyboardTester). If this leads to a change of the top-scoring layout, a layout
-   * change event is fired.
+   * 使用给定的按键组合和键来测试所有已知的键盘布局所产生的字符。
+   * 匹配度越高得分越高可参考（KeyboardTester实现）。
+   * 如果得分最高的键盘布局发生改吧，触发键盘布局变化事件。
    */
   validateKey(keyCode: KeyValidationInput): void {
     if (this.source !== 'pressed-keys') {
