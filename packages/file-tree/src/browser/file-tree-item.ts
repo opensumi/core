@@ -12,7 +12,7 @@ export class AbstractFileTreeItem implements IFileTreeItem {
   constructor(
     public readonly uri: URI,
     public readonly name: string,
-    public filestat: FileStat = {children: [], isDirectory: false, uri: '', lastModification: 0},
+    public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public readonly tooltip: string,
     public readonly icon: string,
     public readonly parent: Directory | undefined,
@@ -34,7 +34,7 @@ export class Directory extends AbstractFileTreeItem {
   constructor(
     uri = new URI(''),
     name = '',
-    filestat: FileStat = {children: [], isDirectory: true, uri: '', lastModification: 0},
+    filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },
     tooltip = '',
     icon = '',
     parent: Directory | undefined,
@@ -82,7 +82,7 @@ export class Directory extends AbstractFileTreeItem {
   }
 
   hasChildren(uri: string | URI) {
-    for (let i = this.children.length - 1; i >= 0; i --) {
+    for (let i = this.children.length - 1; i >= 0; i--) {
       if (typeof uri === 'string') {
         if (this.children[i].uri.toString() === uri) {
           return true;
@@ -106,7 +106,7 @@ export class Directory extends AbstractFileTreeItem {
   }
 
   removeChildren(uri: string | URI) {
-    for (let i = this.children.length - 1; i >= 0; i --) {
+    for (let i = this.children.length - 1; i >= 0; i--) {
       if (typeof uri === 'string') {
         if (this.children[i].uri.toString() === uri) {
           return this.children.splice(i, 1);
@@ -121,12 +121,16 @@ export class Directory extends AbstractFileTreeItem {
   }
 
   replaceChildren(item: Directory | File) {
-    for (let i = this.children.length - 1; i >= 0; i --) {
+    for (let i = this.children.length - 1; i >= 0; i--) {
       if (this.children[i].uri.isEqual(item.uri)) {
         this.children.splice(i, 1, item);
         break;
       }
     }
+  }
+
+  updateChildren(items: (Directory | File)[]) {
+    this.children = items;
   }
 }
 
@@ -135,7 +139,7 @@ export class File extends AbstractFileTreeItem {
   constructor(
     uri = new URI(''),
     name = '',
-    filestat: FileStat = {children: [], isDirectory: true, uri: '', lastModification: 0},
+    filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },
     tooltip = '',
     icon = '',
     parent,
