@@ -11,7 +11,20 @@ import { join } from '@ali/ide-core-common/lib/path';
 
 export function loadMonaco(vsRequire: any): Promise<void> {
   if (isElectronEnv()) {
-    vsRequire.config({ paths: { vs: URI.file(join((window as any).monacoPath, 'vs')).codeUri.fsPath } });
+    let lang = getLanguageId().toLowerCase();
+    if (lang === 'en-us') {
+      lang = '';
+    }
+    vsRequire.config({ 
+      paths: { vs: URI.file(join((window as any).monacoPath, 'vs')).codeUri.fsPath,
+      'vs/nls': {
+        // 设置 monaco 内部的 i18n
+        availableLanguages: {
+          // en-US -> en-us
+          '*': lang,
+        },
+      },
+    } });
   } else {
     let lang = getLanguageId().toLowerCase();
     if (lang === 'en-us') {
@@ -110,7 +123,18 @@ export function loadMonaco(vsRequire: any): Promise<void> {
           global.monaco.contextKeyService = contextKeyService;
           global.monaco.modes = modes;
           global.monaco.textModel = textModel;
-
+          // codeActionsProvider需要支持额外属性
+          global.monaco.languages.registerCodeActionProvider = (languageId, provider) => {
+            return modes.CodeActionProviderRegistry.register(languageId, {
+                provideCodeActions: (model, range, context, token) => {
+                    const markers = standaloneServices.StaticServices.markerService.get().read({ resource: model.uri }).filter( (m) => {
+                        return monaco.Range.areIntersectingOrTouching(m, range);
+                    });
+                    return provider.provideCodeActions(model, range, { markers, only: context.only }, token);
+                },
+                providedCodeActionKinds: provider.providedCodeActionKinds,
+            });
+          };
           resolve();
         });
     });
