@@ -15,7 +15,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
     if (lang === 'en-us') {
       lang = '';
     }
-    vsRequire.config({ 
+    vsRequire.config({
       paths: { vs: URI.file(join((window as any).monacoPath, 'vs')).codeUri.fsPath,
       'vs/nls': {
         // 设置 monaco 内部的 i18n
