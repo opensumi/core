@@ -96,6 +96,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       token: IContextKeyService,
       useValue: new MonacoContextKeyService(contextKeyService, this.injector.get(IEventBus)),
     });
+
     monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService);
   }
 
