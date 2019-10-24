@@ -76,7 +76,7 @@ export class ActivityPanelToolbar extends Widget {
 
   // 由外部调用决定
   public updateToolbar(viewId?: string): void {
-    if (!this.toolbar) {
+    if (!this.toolbar || this.containerId.startsWith('scm')) {
       return;
     }
     const current = this._toolbarTitle;
@@ -115,7 +115,7 @@ export class ActivityPanelToolbar extends Widget {
       this._toolbarTitle = title;
       if (this._toolbarTitle.label) {
         this.titleContainer.innerHTML = this._toolbarTitle.label;
-        this.update();
+        // this.update();
       } else {
         // title不传时隐藏标题栏
         this.titleContainer!.style.display = 'none';
