@@ -8,7 +8,7 @@ import {
   FileStat,
   FileType,
 } from '@ali/ide-file-service';
-import { DiskFileSystemProviderWithoutWatcher } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
+import { DiskFileSystemProviderWithoutWatcherForExtHost } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 import {
   URI,
   Emitter,
@@ -61,10 +61,10 @@ export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
 }
 
 export class VSCFileSystem implements vscode.FileSystem {
-  innerFs: DiskFileSystemProviderWithoutWatcher;
+  innerFs: DiskFileSystemProviderWithoutWatcherForExtHost;
 
   constructor() {
-    this.innerFs = new DiskFileSystemProviderWithoutWatcher();
+    this.innerFs = new DiskFileSystemProviderWithoutWatcherForExtHost();
   }
 
   async stat(uri: Uri): Promise<vscode.FileStat> {
