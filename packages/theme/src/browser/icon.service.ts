@@ -41,7 +41,7 @@ export class IconService implements IIconService {
     this.listen();
   }
 
-  listen() {
+  private listen() {
     this.preferenceService.onPreferenceChanged( (e) => {
       if (e.preferenceName === 'general.icon') {
         this.applyTheme(this.preferenceService.get<string>('general.icon')!);
@@ -145,13 +145,13 @@ export class IconService implements IIconService {
     if (this.currentTheme && this.currentThemeId === themeId) {
       return;
     }
-    this.currentThemeId = themeId;
     const iconThemeData = await this.getIconTheme(themeId);
     if (!iconThemeData) {
       console.warn('没有检测到目标图标主题插件，使用内置图标！');
       document.getElementsByTagName('body')[0].classList.add('default-file-icons');
       return;
     }
+    this.currentThemeId = themeId;
     document.getElementsByTagName('body')[0].classList.remove('default-file-icons');
     this.currentTheme = iconThemeData;
     const { styleSheetContent } = iconThemeData;
