@@ -136,7 +136,18 @@ function doLoadMonaco(): Promise<void> {
           global.monaco.contextKeyService = contextKeyService;
           global.monaco.modes = modes;
           global.monaco.textModel = textModel;
-
+          // codeActionsProvider需要支持额外属性
+          global.monaco.languages.registerCodeActionProvider = (languageId, provider) => {
+            return modes.CodeActionProviderRegistry.register(languageId, {
+                provideCodeActions: (model, range, context, token) => {
+                    const markers = standaloneServices.StaticServices.markerService.get().read({ resource: model.uri }).filter( (m) => {
+                        return monaco.Range.areIntersectingOrTouching(m, range);
+                    });
+                    return provider.provideCodeActions(model, range, { markers, only: context.only }, token);
+                },
+                providedCodeActionKinds: provider.providedCodeActionKinds,
+            });
+          };
           resolve();
         });
     });

@@ -547,7 +547,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         }
         return this.proxy.$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext);
       },
-    };
+      providedCodeActionKinds, // 不在monaco.d.ts中
+    } as monaco.languages.CodeActionProvider;
   }
 
   protected createLinkProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.LinkProvider {
