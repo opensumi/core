@@ -132,3 +132,49 @@ class ScopedContextKeyService extends BaseContextKeyService implements IContextK
     this.contextKeyService.dispose();
   }
 }
+
+/**
+ * 由于 monaco 是后置加载的，因此 RawContextKey 并不完全兼容 monaco 的 RawContextKey
+ */
+export class RawContextKey<T> {
+  private rawContextKey: monaco.contextkey.RawContextKey<T>;
+
+  private key: string;
+  private defaultValue: T | undefined;
+
+  constructor(key: string, defaultValue: T | undefined) {
+    this.key = key;
+    this.defaultValue = defaultValue;
+  }
+
+  private initRawContextKey() {
+    if (this.rawContextKey) {
+      return this.rawContextKey;
+    }
+    // lazy initialize 因为 monaco 是后置加载的
+    // 因此在 bindTo 时再去初始化
+    this.rawContextKey = new monaco.contextkey.RawContextKey<T>(this.key, this.defaultValue);
+    return this.rawContextKey;
+  }
+
+  public bindTo(target: IContextKeyService): IContextKey<T> {
+    this.initRawContextKey();
+    return target.createKey(this.key, this.defaultValue);
+  }
+
+  public getValue(target: IContextKeyService): T | undefined {
+    return target.getContextValue<T>(this.key);
+  }
+
+  public toNegated(): monaco.contextkey.ContextKeyExpr {
+    return monaco.contextkey.ContextKeyExpr.not(this.key);
+  }
+
+  public isEqualTo(value: string): monaco.contextkey.ContextKeyExpr {
+    return monaco.contextkey.ContextKeyExpr.equals(this.key, value);
+  }
+
+  public notEqualsTo(value: string): monaco.contextkey.ContextKeyExpr {
+    return monaco.contextkey.ContextKeyExpr.notEquals(this.key, value);
+  }
+}
