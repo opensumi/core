@@ -57,8 +57,6 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
 
   protected readonly domNode = document.createElement('div');
 
-  private isVisible: boolean = false;
-
   constructor() {
     this.init();
   }
@@ -85,9 +83,6 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
   }
 
   getPosition(): monaco.editor.IContentWidgetPosition {
-    if (!this.isVisible) {
-      return undefined!;
-    }
     const position = this.options && this.options.selection.getStartPosition();
     const word = position && this.editor.getModel()!.getWordAtPosition(position);
     return position && word ? {
@@ -128,17 +123,13 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
   }
 
   protected doHide(): void {
-    if (!this.isVisible) {
-      return ;
-    }
     if (this.domNode.contains(document.activeElement)) {
       this.editor.focus();
     }
     ReactDOM.unmountComponentAtNode(this.domNode);
     this.hoverSource.reset();
     this.options = undefined;
-    this.editor.removeContentWidget(this);
-    this.isVisible = false;
+    this.editor.layoutContentWidget(this);
   }
 
   protected async doShow(options: ShowDebugHoverOptions | undefined = this.options): Promise<void> {
@@ -165,13 +156,11 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
       this.hide();
       return;
     }
+    ReactDOM.render((<ConfigProvider value={this.configContext} >
+      <DebugHoverView />
+    </ConfigProvider>), this.domNode);
 
-    if (!this.isVisible) {
-      ReactDOM.render((<ConfigProvider value={this.configContext} >
-        <DebugHoverView / >
-      </ConfigProvider>), this.domNode);
-    }
-    this.editor.addContentWidget(this);
-    this.isVisible = true;
+    this.editor.layoutContentWidget(this);
+
   }
 }
