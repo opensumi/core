@@ -23,19 +23,19 @@ export interface FileStatNode extends SelectableTreeNode {
 }
 
 export namespace FileStatNode {
-    export function is(node: object | undefined): node is FileStatNode {
-        return !!node && 'filestat' in node;
-    }
-    export function isContentFile(node: any | undefined): node is FileStatNode {
-      return !!node && 'filestat' in node && !node.fileStat.isDirectory;
-    }
+  export function is(node: object | undefined): node is FileStatNode {
+    return !!node && 'filestat' in node;
+  }
+  export function isContentFile(node: any | undefined): node is FileStatNode {
+    return !!node && 'filestat' in node && !node.fileStat.isDirectory;
+  }
 
-    export function getUri(node: TreeNode | undefined): string | undefined {
-        if (is(node)) {
-            return node.filestat.uri;
-        }
-        return undefined;
+  export function getUri(node: TreeNode | undefined): string | undefined {
+    if (is(node)) {
+      return node.filestat.uri;
     }
+    return undefined;
+  }
 }
 
 export enum PasteTypes {
@@ -49,26 +49,21 @@ export interface IParseStore {
   type: PasteTypes;
 }
 
-@Injectable()
-export abstract class FileTreeAPI {
-  abstract getFiles(path: string | FileStat, parent?: Directory | File  | null): Promise<(Directory | File)[]>;
-  abstract getFileStat(path: string): Promise<any>;
-  abstract createFile(uri: URI): Promise<void>;
-  abstract createFolder(uri: URI): Promise<void>;
-  abstract deleteFile(uri: URI): Promise<void>;
-  abstract moveFile(from: URI, to: URI, isDirectory?: boolean): Promise<void>;
-  abstract copyFile(from: URI, to: URI): Promise<void>;
-  abstract generatorFileFromFilestat(filestat: FileStat, parent: Directory): Directory | File ;
-  abstract generatorTempFile(uri: URI, parent: Directory): Directory | File ;
-  abstract generatorTempFolder(uri: URI, parent: Directory): Directory | File ;
-  abstract sortByNumberic(files: Directory | File []): (Directory | File)[];
-  abstract exists(uri: URI): Promise<boolean>;
-  abstract fileStat2FileTreeItem(filestat: FileStat, parent: Directory | undefined, isSymbolicLink?: boolean): Directory | File ;
-}
+export const IFileTreeAPI = Symbol('IFileTreeAPI');
 
-export function createFileTreeAPIProvider<T extends FileTreeAPI>(cls: ConstructorOf<T>): Provider {
-  return {
-    token: FileTreeAPI,
-    useClass: cls,
-  };
+export interface IFileTreeAPI {
+  getFiles(path: string | FileStat, parent?: Directory | File | null): Promise<(Directory | File)[]>;
+  getFileStat(path: string): Promise<any>;
+  createFile(uri: URI): Promise<void>;
+  createFolder(uri: URI): Promise<void>;
+  deleteFile(uri: URI): Promise<void>;
+  moveFile(from: URI, to: URI, isDirectory?: boolean): Promise<void>;
+  copyFile(from: URI, to: URI): Promise<void>;
+  getReadableTooltip(path: URI): string;
+  generatorFileFromFilestat(filestat: FileStat, parent: Directory): Directory | File;
+  generatorTempFile(uri: URI, parent: Directory): Directory | File;
+  generatorTempFolder(uri: URI, parent: Directory): Directory | File;
+  sortByNumberic(files: Directory | File[]): (Directory | File)[];
+  exists(uri: URI): Promise<boolean>;
+  fileStat2FileTreeItem(filestat: FileStat, parent: Directory | undefined, isSymbolicLink?: boolean): Directory | File;
 }
