@@ -281,21 +281,11 @@ export class TextmateService extends WithEventBus {
         injections.push(grammar.scopeName);
       }
     }
-    if (grammar.path) {
-      const { content } = await this.fileServiceClient.resolveContent(URI.file(grammar.path).toString());
-      if (/\.json$/.test(grammar.path)) {
-        grammar.grammar = this.safeParseJSON(content);
-        grammar.format = 'json';
-      } else {
-        grammar.grammar = content;
-        grammar.format = 'plist';
-      }
-    }
     this.textmateRegistry.registerTextmateGrammarScope(grammar.scopeName, {
       async getGrammarDefinition() {
         return {
-          format: grammar.format,
-          content: grammar.grammar || '',
+          format: /\.json$/.test(grammar.path) ? 'json' : 'plist',
+          location: URI.file(grammar.path),
         };
       },
       getInjections: (scopeName: string) => this.injections.get(scopeName)!,
@@ -345,6 +335,8 @@ export class TextmateService extends WithEventBus {
         const provider = this.textmateRegistry.getProvider(scopeName);
         if (provider) {
           const definition = await provider.getGrammarDefinition();
+          const { content } = await this.fileServiceClient.resolveContent(definition.location.toString());
+          definition.content = definition.format === 'json' ? this.safeParseJSON(content) : content;
           let rawGrammar: IRawGrammar;
           if (typeof definition.content === 'string') {
             rawGrammar = parseRawGrammar(
