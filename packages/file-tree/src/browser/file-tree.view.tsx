@@ -84,11 +84,11 @@ export const FileTree = ({
   const containerWidth = width && width > 0 ? width : (fileTreeRef.current && fileTreeRef.current.clientWidth) || 0;
   const [scrollTop, setScrollTop] = React.useState(0);
   const [cacheScrollTop, setCacheScrollTop] = React.useState(0);
-  const [nodes, setNodes] = React.useState<IFileTreeItem[]>([]);
   const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / FILETREE_LINE_HEIGHT) || 0;
   const debouncedPostion = useDebounce(position, 200);
-  const debouncedFiles = useDebounce(files, 100);
-
+  const nodes = React.useMemo(() => {
+    return files;
+  }, [files]);
   const FileTreeStyle = {
     position: 'absolute',
     overflow: 'hidden',
@@ -132,13 +132,10 @@ export const FileTree = ({
     }
   }, [debouncedPostion]);
 
-  React.useEffect(() => {
-    setNodes(files);
-  }, [debouncedFiles]);
-
   const fileTreeAttrs = {
     ref: fileTreeRef,
   };
+
   return (
     <div className={cls(styles.kt_filetree)} style={FileTreeStyle}>
       <div className={styles.kt_filetree_container} {...fileTreeAttrs} >

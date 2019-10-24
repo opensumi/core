@@ -424,7 +424,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       return;
     }
 
-    const status = this.status.get(uri.toString());
+    const statusKey = this.filetreeService.getStatutsKey(uri);
+    const status = this.status.get(statusKey);
 
     // 当不存在status及父节点时
     // 定位到根目录顶部
