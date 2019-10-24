@@ -505,7 +505,7 @@ export class FileTreeService extends WithEventBus {
    * 刷新所有节点
    */
   @action
-  refresh(uri: URI = this.root) {
+  refresh(uri: URI = this.root, lowcost?: boolean) {
     const statusKey = this.getStatutsKey(uri);
     const status = this.status.get(statusKey);
     if (!status) {
@@ -518,7 +518,7 @@ export class FileTreeService extends WithEventBus {
         needUpdated: true,
       });
       if (status.expanded) {
-        this.refreshAffectedNode(status.file);
+        this.refreshAffectedNode(status.file, lowcost);
       }
     }
   }
@@ -619,7 +619,7 @@ export class FileTreeService extends WithEventBus {
   async refreshAffectedNodes(uris: URI[]) {
     const nodes = this.getAffectedNodes(uris);
     for (const node of nodes.values()) {
-      await this.refreshAffectedNode(node);
+      await this.refreshAffectedNode(node, true);
     }
     return nodes.size !== 0;
   }
@@ -637,7 +637,7 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
-  async refreshAffectedNode(file: Directory | File) {
+  async refreshAffectedNode(file: Directory | File, lowcost?: boolean) {
     const statusKey = this.getStatutsKey(file);
     const status = this.status.get(statusKey);
     let item: any = file;
@@ -647,11 +647,21 @@ export class FileTreeService extends WithEventBus {
     if (Directory.isDirectory(item)) {
       await item.getChildren();
       const children = item.children;
-      for (const child of children) {
-        const childStatusKey = this.getStatutsKey(child);
-        const childStatus = this.status.get(childStatusKey);
-        if (childStatus && childStatus.expanded) {
-          await this.refreshAffectedNode(child);
+      if (lowcost) {
+        for (const child of children) {
+          const childStatusKey = this.getStatutsKey(child);
+          const childStatus = this.status.get(childStatusKey);
+          if (childStatus && childStatus.expanded && Directory.isDirectory(child)) {
+            (child as Directory).updateChildren((childStatus.file as Directory).children);
+          }
+        }
+      } else {
+        for (const child of children) {
+          const childStatusKey = this.getStatutsKey(child);
+          const childStatus = this.status.get(childStatusKey);
+          if (childStatus && childStatus.expanded) {
+            await this.refreshAffectedNode(child);
+          }
         }
       }
       if (!file.parent && status) {
