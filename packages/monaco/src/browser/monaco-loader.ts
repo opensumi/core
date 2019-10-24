@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import { isNodeIntegrated, isElectronEnv, URI } from '@ali/ide-core-common';
+import { isNodeIntegrated, isElectronEnv, URI, isDevelopment } from '@ali/ide-core-common';
 
 declare const __non_webpack_require__;
 
@@ -8,6 +8,8 @@ export function getNodeRequire() {
 }
 import { getLanguageId } from '@ali/ide-core-common';
 import { join } from '@ali/ide-core-common/lib/path';
+
+const cdnMonacoBase = isDevelopment() ? 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/' : 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/';
 
 export function loadMonaco(vsRequire: any): Promise<void> {
   if (isElectronEnv()) {
@@ -31,7 +33,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
       lang = '';
     }
     vsRequire.config({
-      paths: { vs: 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/vs' },
+      paths: { vs: `${cdnMonacoBase}vs` },
       'vs/nls': {
         // 设置 monaco 内部的 i18n
         availableLanguages: {
@@ -47,9 +49,9 @@ export function loadMonaco(vsRequire: any): Promise<void> {
     getWorkerUrl() {
       return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
             self.MonacoEnvironment = {
-              baseUrl: 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/'
+              baseUrl: '${cdnMonacoBase}'
             };
-            importScripts('https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/vs/base/worker/workerMain.js');`,
+            importScripts('${cdnMonacoBase}vs/base/worker/workerMain.js');`,
       )}`;
     },
   };

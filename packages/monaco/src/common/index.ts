@@ -21,11 +21,9 @@ export interface ScopeMap {
 }
 
 export interface GrammarsContribution {
-  format: 'json' | 'plist';
   language?: string;
   scopeName: string;
-  path?: string;
-  grammar?: string | object;
+  path: string;
   embeddedLanguages?: ScopeMap;
   tokenTypes?: ScopeMap;
   injectTo?: string[];
