@@ -83,7 +83,7 @@ export class TextmateService extends WithEventBus {
 
   private injections = new Map<string, string[]>();
 
-  private registedLanguage = new Set<string>();
+  private activatedLanguage = new Set<string>();
 
   init() {
     this.initGrammarRegistry();
@@ -267,7 +267,6 @@ export class TextmateService extends WithEventBus {
     if (grammar.path) {
       grammar.path = new Path(extPath).join(grammar.path.replace(/^\.\//, '')).toString();
     }
-    // TODO 懒加载
     this.doRegisterGrammar(grammar);
   }
 
@@ -307,14 +306,14 @@ export class TextmateService extends WithEventBus {
         embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
         tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
       });
-      if (this.registedLanguage.has(grammar.language)) {
-        console.warn(`${grammar.language}语言已被注册过`);
-      }
-      this.activateLanguage(grammar.language!);
     }
   }
 
   async activateLanguage(languageId: string) {
+    if (this.activatedLanguage.has(languageId)) {
+      return;
+    }
+    this.activatedLanguage.add(languageId);
     const scopeName = this.textmateRegistry.getScope(languageId);
     if (!scopeName) {
       return;
@@ -331,6 +330,7 @@ export class TextmateService extends WithEventBus {
       const grammar = await this.grammarRegistry.loadGrammarWithConfiguration(
         scopeName, initialLanguage, configuration);
       const options = configuration.tokenizerOption ? configuration.tokenizerOption : TokenizerOptionDEFAULT;
+      // 要保证grammar把所有的languageID关联的语法都注册好了
       monaco.languages.setTokensProvider(languageId, createTextmateTokenizer(grammar, options));
     } catch (error) {
       // console.warn('No grammar for this language id', languageId, error);
@@ -364,6 +364,9 @@ export class TextmateService extends WithEventBus {
         return [];
       },
     });
+    for (const { id: languageId } of monaco.languages.getLanguages()) {
+      monaco.languages.onLanguage(languageId, () => this.activateLanguage(languageId));
+    }
   }
 
   public setTheme(themeData: ThemeMix) {
