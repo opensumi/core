@@ -28,6 +28,11 @@ export interface Command {
    * 代理执行的命令
    */
   delegate?: string;
+
+  /**
+   * 在任意语言下都相同的别名
+   */
+  alias?: string;
 }
 
 /**
