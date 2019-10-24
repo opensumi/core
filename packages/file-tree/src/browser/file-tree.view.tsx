@@ -30,9 +30,9 @@ export interface FileTreeProps extends IFileTreeServiceProps {
   searchable?: boolean;
   // 搜索文本
   search?: string;
-    /**
-   * 文件装饰器函数
-   */
+  /**
+ * 文件装饰器函数
+ */
   fileDecorationProvider?: FileDecorationsProvider;
   /**
    * 主题颜色函数
@@ -80,12 +80,15 @@ export const FileTree = ({
   const FILETREE_LINE_HEIGHT = treeNodeHeight || 22;
   const FILETREE_PRERENDER_NUMBERS = preloadLimit || 10;
   const fileTreeRef = React.createRef<HTMLDivElement>();
-  const containerHeight = height && height > 0 ?  height : (fileTreeRef.current && fileTreeRef.current.clientHeight) || 0;
+  const containerHeight = height && height > 0 ? height : (fileTreeRef.current && fileTreeRef.current.clientHeight) || 0;
   const containerWidth = width && width > 0 ? width : (fileTreeRef.current && fileTreeRef.current.clientWidth) || 0;
   const [scrollTop, setScrollTop] = React.useState(0);
   const [cacheScrollTop, setCacheScrollTop] = React.useState(0);
+  const [nodes, setNodes] = React.useState<IFileTreeItem[]>([]);
   const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / FILETREE_LINE_HEIGHT) || 0;
   const debouncedPostion = useDebounce(position, 200);
+  const debouncedFiles = useDebounce(files, 100);
+
   const FileTreeStyle = {
     position: 'absolute',
     overflow: 'hidden',
@@ -129,38 +132,42 @@ export const FileTree = ({
     }
   }, [debouncedPostion]);
 
+  React.useEffect(() => {
+    setNodes(files);
+  }, [debouncedFiles]);
+
   const fileTreeAttrs = {
     ref: fileTreeRef,
   };
   return (
-    <div className={ cls(styles.kt_filetree) } style={ FileTreeStyle }>
-      <div className={ styles.kt_filetree_container } {...fileTreeAttrs} >
+    <div className={cls(styles.kt_filetree)} style={FileTreeStyle}>
+      <div className={styles.kt_filetree_container} {...fileTreeAttrs} >
         <RecycleTree
-          nodes = { files }
-          scrollTop = { scrollTop }
-          scrollContainerStyle = { scrollContainerStyle }
-          containerHeight = { containerHeight }
-          onSelect = { onSelect }
-          onTwistieClick = { onTwistieClick }
-          onDragStart = { onDragStart }
-          onDragOver = { onDragOver }
-          onDragEnter = { onDragEnter }
-          onDragLeave = { onDragLeave }
-          onChange = { onChange }
-          onDrop = { onDrop }
-          onContextMenu = { onContextMenu }
-          contentNumber = { shouldShowNumbers }
-          prerenderNumber = { FILETREE_PRERENDER_NUMBERS }
-          itemLineHeight = { FILETREE_LINE_HEIGHT }
-          multiSelectable = { multiSelectable }
-          draggable = { draggable }
-          editable = { editable }
-          searchable = { searchable }
-          search = { search }
-          fileDecorationProvider = { fileDecorationProvider }
-          themeProvider = { themeProvider }
-          notifyFileDecorationsChange = { notifyFileDecorationsChange }
-          notifyThemeChange = { notifyThemeChange }
+          nodes={nodes}
+          scrollTop={scrollTop}
+          scrollContainerStyle={scrollContainerStyle}
+          containerHeight={containerHeight}
+          onSelect={onSelect}
+          onTwistieClick={onTwistieClick}
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+          onDragEnter={onDragEnter}
+          onDragLeave={onDragLeave}
+          onChange={onChange}
+          onDrop={onDrop}
+          onContextMenu={onContextMenu}
+          contentNumber={shouldShowNumbers}
+          prerenderNumber={FILETREE_PRERENDER_NUMBERS}
+          itemLineHeight={FILETREE_LINE_HEIGHT}
+          multiSelectable={multiSelectable}
+          draggable={draggable}
+          editable={editable}
+          searchable={searchable}
+          search={search}
+          fileDecorationProvider={fileDecorationProvider}
+          themeProvider={themeProvider}
+          notifyFileDecorationsChange={notifyFileDecorationsChange}
+          notifyThemeChange={notifyThemeChange}
         ></RecycleTree>
       </div>
     </div>
