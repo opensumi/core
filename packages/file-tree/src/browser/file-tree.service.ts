@@ -505,7 +505,7 @@ export class FileTreeService extends WithEventBus {
    * 刷新所有节点
    */
   @action
-  refresh(uri: URI = this.root) {
+  async refresh(uri: URI = this.root) {
     const statusKey = this.getStatutsKey(uri);
     const status = this.status.get(statusKey);
     if (!status) {

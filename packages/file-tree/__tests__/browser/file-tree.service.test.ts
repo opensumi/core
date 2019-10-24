@@ -51,7 +51,7 @@ describe('FileTreeService should be work', () => {
       rootUri,
       rootUri.displayName,
       {
-        isDirectory: false,
+        isDirectory: true,
         lastModification: 0,
         isSymbolicLink: false,
         uri: rootUri.toString(),
@@ -104,7 +104,6 @@ describe('FileTreeService should be work', () => {
       expect(typeof treeService.resetFilesSelectedStatus).toBe('function');
       expect(typeof treeService.updateFilesFocusedStatus).toBe('function');
       expect(typeof treeService.resetFilesFocusedStatus).toBe('function');
-      expect(typeof treeService.refresh).toBe('function');
       expect(typeof treeService.updateFilesExpandedStatus).toBe('function');
       expect(typeof treeService.updateFilesExpandedStatusByQueue).toBe('function');
       expect(typeof treeService.updateFileStatus).toBe('function');
@@ -507,7 +506,7 @@ describe('FileTreeService should be work', () => {
       expect(treeService.status.get(treeService.getStatutsKey(childUri))!.selected).toBeFalsy();
     });
 
-    it('can collapse all item', async (done) => {
+    it('can collapse all item without params', async (done) => {
       const childUri = new URI(`${root}/parent/child.js`);
       const childFile: File = new File(
         fileApi,
@@ -550,8 +549,84 @@ describe('FileTreeService should be work', () => {
       await treeService.updateFilesExpandedStatus(parentFile);
       expect(treeService.status.get(statusKey)!.expanded).toBeTruthy();
       expect(getFiles).toBeCalledTimes(1);
-      await treeService.updateFilesExpandedStatus(parentFile);
+      await treeService.collapseAll();
       expect(treeService.status.get(statusKey)!.expanded).toBeFalsy();
+      done();
+    });
+
+    it('can collapse all item with params', async (done) => {
+      const childUri = new URI(`${root}/parent/child.js`);
+      const childFile: File = new File(
+        fileApi,
+        childUri,
+        childUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: childUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      const parentUri = new URI(`${root}/parent`);
+      const parentFile: Directory = new Directory(
+        fileApi,
+        parentUri,
+        parentUri.displayName,
+        {
+          isDirectory: true,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: parentUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      treeService.updateFileStatus([parentFile]);
+      rootFile.addChildren(parentFile);
+      const getFiles = jest.fn(() => {
+        return [{ children: [childFile] }];
+      });
+      injector.mock(IFileTreeAPI, 'getFiles', getFiles);
+      const statusKey = treeService.getStatutsKey(parentUri);
+      await treeService.updateFilesExpandedStatus(parentFile);
+      expect(treeService.status.get(statusKey)!.expanded).toBeTruthy();
+      expect(getFiles).toBeCalledTimes(1);
+      treeService.collapseAll(rootUri);
+      expect(treeService.status.get(statusKey)!.expanded).toBeFalsy();
+      done();
+    });
+
+    it('refresh should be work', async (done) => {
+      const childUri = new URI(`${root}/parent/child.js`);
+      const childFile: File = new File(
+        fileApi,
+        childUri,
+        childUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: childUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      const getFiles = jest.fn(() => {
+        return [{ children: [childFile] }];
+      });
+      injector.mock(IFileTreeAPI, 'getFiles', getFiles);
+      await treeService.refresh(rootUri);
+      const status: any = treeService.status.get(treeService.getStatutsKey(rootUri));
+      expect(status.file.children.length > 0).toBeTruthy();
+      expect(status.file.children[0].uri.isEqual(childUri)).toBeTruthy();
       done();
     });
 
