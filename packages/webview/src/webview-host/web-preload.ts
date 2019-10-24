@@ -1,7 +1,8 @@
+/* istanbul ignore file */
 import { IWebviewChannel } from './common';
 import { WebviewPanelManager } from './webview-manager';
 
-class WebIframeChannel implements IWebviewChannel {
+export class WebIframeChannel implements IWebviewChannel {
 
   private handlers = new Map();
   focusIframeOnCreate?: boolean | undefined;

@@ -1,0 +1,36 @@
+import { mockElectronRenderer } from '@ali/ide-core-common/lib/mocks/electron/browserMock';
+mockElectronRenderer();
+import { WebviewPanelManager } from '../../src/webview-host/webview-manager';
+import { ElectronWebviewChannel } from '../../src/electron-webview/host-channel';
+import { MockedElectronIpcRenderer } from '@ali/ide-core-common/lib/mocks/electron/ipcRenderer';
+import { WebIframeChannel } from '../../src/webview-host/web-preload';
+const { JSDOM } = require('jsdom');
+
+describe('electron webview test', () => {
+  const ipcRenderer = require('electron').ipcRenderer as MockedElectronIpcRenderer;
+  const manager = new WebviewPanelManager(new ElectronWebviewChannel());
+  (global as any).DOMParser = class DOMParser {
+    parseFromString(text, type) {
+      const jsdom = new JSDOM(text);
+      return jsdom.window.document;
+    }
+  };
+
+  it('electron webview test',  async (done) => {
+    (manager as any).init();
+    const styles = {'test': 'red'};
+    await ipcRenderer.emit('styles', {}, {styles});
+    expect((manager as any).styles).toBe(styles);
+    await ipcRenderer.emit('focus', {}, {});
+    await ipcRenderer.emit('content', {}, {options: {allowScripts: true}, content: 'htmldata'} );
+    done();
+  });
+});
+
+describe('web iframe webview test', () => {
+  const manager = new WebviewPanelManager(new WebIframeChannel());
+
+  it('iframe webview test',  () => {
+    (manager as any).init();
+  });
+});
