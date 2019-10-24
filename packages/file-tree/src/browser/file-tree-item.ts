@@ -1,4 +1,4 @@
-import { IFileTreeItem, FileTreeAPI } from '../common';
+import { IFileTreeItem, IFileTreeAPI } from '../common';
 import { URI, uuid } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 import { observable } from 'mobx';
@@ -10,7 +10,7 @@ export class AbstractFileTreeItem implements IFileTreeItem {
   public focused: boolean = false;
 
   constructor(
-    protected readonly fileApi: FileTreeAPI,
+    protected readonly fileApi: IFileTreeAPI,
     public readonly uri: URI,
     public readonly name: string,
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
@@ -38,7 +38,7 @@ export class Directory extends AbstractFileTreeItem {
   public expanded: boolean = false;
 
   constructor(
-    fileApi: FileTreeAPI,
+    fileApi: IFileTreeAPI,
     uri = new URI(''),
     name = '',
     filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },
@@ -140,7 +140,7 @@ export class Directory extends AbstractFileTreeItem {
 export class File extends AbstractFileTreeItem {
 
   constructor(
-    fileApi: FileTreeAPI,
+    fileApi: IFileTreeAPI,
     uri = new URI(''),
     name = '',
     filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },

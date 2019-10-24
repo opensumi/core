@@ -3,8 +3,8 @@ import { URI, localize } from '@ali/ide-core-common';
 import { FileTreeService } from '../../src/browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
-import { FileTreeAPI, MockFileTreeAPIImpl } from '../../src/common';
-import { IFileServiceClient, MockFileServiceClient, FileStat, FileChange, FileChangeType } from '@ali/ide-file-service';
+import { IFileTreeAPI, MockFileTreeAPIImpl } from '../../src/common';
+import { IFileServiceClient, MockFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { File, Directory } from '../../src/browser/file-tree-item';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
@@ -13,7 +13,7 @@ import { IDialogService } from '@ali/ide-overlay';
 
 describe('FileTreeService should be work', () => {
   let treeService: FileTreeService;
-  let fileApi: FileTreeAPI;
+  let fileApi: IFileTreeAPI;
   let injector: MockInjector;
   const root = 'file://userhome';
   let rootUri: URI = new URI(root);
@@ -28,7 +28,7 @@ describe('FileTreeService should be work', () => {
         useClass: MockWorkspaceService,
       },
       {
-        token: FileTreeAPI,
+        token: IFileTreeAPI,
         useClass: MockFileTreeAPIImpl,
       },
       {
@@ -43,7 +43,7 @@ describe('FileTreeService should be work', () => {
     });
 
     treeService = injector.get(FileTreeService);
-    fileApi = injector.get(FileTreeAPI);
+    fileApi = injector.get(IFileTreeAPI);
 
     rootUri = new URI(root);
     rootFile = new Directory(
@@ -70,7 +70,7 @@ describe('FileTreeService should be work', () => {
 
   describe('01 #Init', () => {
 
-    it('Should have enough API.', async () => {
+    it('should have enough API', async () => {
       expect(typeof treeService.hasPasteFile).toBe('boolean');
       expect(typeof treeService.isFocused).toBe('boolean');
       expect(typeof treeService.isSelected).toBe('boolean');
@@ -216,13 +216,13 @@ describe('FileTreeService should be work', () => {
       const exists = jest.fn(() => {
         return false;
       });
-      injector.mock(FileTreeAPI, 'exists', exists);
+      injector.mock(IFileTreeAPI, 'exists', exists);
       const createFile = jest.fn();
-      injector.mock(FileTreeAPI, 'createFile', createFile);
+      injector.mock(IFileTreeAPI, 'createFile', createFile);
       await treeService.createFile(rootFile, fileName);
       expect(createFile).toBeCalledWith(rootUri.resolve(fileName));
       const createFolder = jest.fn();
-      injector.mock(FileTreeAPI, 'createFolder', createFolder);
+      injector.mock(IFileTreeAPI, 'createFolder', createFolder);
       await treeService.createFolder(rootFile, folderName);
       expect(createFolder).toBeCalledWith(rootUri.resolve(folderName));
       done();
@@ -314,7 +314,7 @@ describe('FileTreeService should be work', () => {
       treeService.updateFileStatus([childFile]);
       rootFile.addChildren(childFile);
       const moveFile = jest.fn();
-      injector.mock(FileTreeAPI, 'moveFile', moveFile);
+      injector.mock(IFileTreeAPI, 'moveFile', moveFile);
       treeService.renameFile(childFile, newName);
       expect(moveFile).toBeCalledWith(childUri, childUri.parent.resolve(newName), false);
       expect(treeService.status.get(treeService.getStatutsKey(childFile))!.file.isTemporary).toBeFalsy();
@@ -344,7 +344,7 @@ describe('FileTreeService should be work', () => {
         expect(uri.isEqual(childUri)).toBeTruthy();
         done();
       };
-      injector.mock(FileTreeAPI, 'deleteFile', deleteFile);
+      injector.mock(IFileTreeAPI, 'deleteFile', deleteFile);
       await treeService.deleteFile(childUri);
     });
 
@@ -401,7 +401,7 @@ describe('FileTreeService should be work', () => {
       });
       injector.mock(IDialogService, 'warning', warning);
       const moveFile = jest.fn();
-      injector.mock(FileTreeAPI, 'moveFile', moveFile);
+      injector.mock(IFileTreeAPI, 'moveFile', moveFile);
       await treeService.moveFiles([childUri], rootUri);
       expect(warning).toBeCalledTimes(2);
       expect(moveFile).toBeCalledTimes(1);
@@ -442,7 +442,7 @@ describe('FileTreeService should be work', () => {
       });
       injector.mock(IDialogService, 'warning', warning);
       const deleteFile = jest.fn();
-      injector.mock(FileTreeAPI, 'deleteFile', deleteFile);
+      injector.mock(IFileTreeAPI, 'deleteFile', deleteFile);
       await treeService.deleteFiles([childUri]);
       expect(warning).toBeCalledTimes(1);
       expect(deleteFile).toBeCalledTimes(1);
@@ -545,7 +545,7 @@ describe('FileTreeService should be work', () => {
       const getFiles = jest.fn(() => {
         return [{ children: [childFile] }];
       });
-      injector.mock(FileTreeAPI, 'getFiles', getFiles);
+      injector.mock(IFileTreeAPI, 'getFiles', getFiles);
       const statusKey = treeService.getStatutsKey(parentUri);
       await treeService.updateFilesExpandedStatus(parentFile);
       expect(treeService.status.get(statusKey)!.expanded).toBeTruthy();
@@ -580,7 +580,7 @@ describe('FileTreeService should be work', () => {
       const getFiles = jest.fn(() => {
         return [{ children: [] }];
       });
-      injector.mock(FileTreeAPI, 'getFiles', getFiles);
+      injector.mock(IFileTreeAPI, 'getFiles', getFiles);
       expect(treeService.status.get(parentStatusKey)!.expanded).toBeFalsy();
       expect(treeService.status.get(rootStatusKey)!.expanded).toBeFalsy();
       await treeService.updateFilesExpandedStatusByQueue([rootUri, parentUri]);
@@ -649,9 +649,9 @@ describe('FileTreeService should be work', () => {
     const child = new URI(`${root}/child.js`);
     const parent = new URI(`${root}/parent`);
     const moveFile = jest.fn();
-    injector.mock(FileTreeAPI, 'moveFile', moveFile);
+    injector.mock(IFileTreeAPI, 'moveFile', moveFile);
     const copyFile = jest.fn();
-    injector.mock(FileTreeAPI, 'copyFile', copyFile);
+    injector.mock(IFileTreeAPI, 'copyFile', copyFile);
     treeService.copyFile([child, parent]);
     treeService.pasteFile(rootUri);
     expect(copyFile).toBeCalledTimes(2);

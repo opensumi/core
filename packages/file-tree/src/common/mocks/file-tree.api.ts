@@ -1,13 +1,13 @@
 
-import { Injectable, Autowired } from '@ali/common-di';
-import { FileTreeAPI, IFileTreeItem } from '../file-tree.defination';
+import { Injectable } from '@ali/common-di';
+import { IFileTreeAPI, IFileTreeItem } from '../file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
 import { URI } from '@ali/ide-core-browser';
 import { Directory, File, AbstractFileTreeItem } from '../../browser/file-tree-item';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 
 @Injectable()
-export class MockFileTreeAPIImpl implements FileTreeAPI {
+export class MockFileTreeAPIImpl implements IFileTreeAPI {
 
   private userhomePath: URI = new URI('file://userhome');
 

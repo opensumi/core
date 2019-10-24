@@ -13,7 +13,7 @@ import {
   localize,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { FileTreeAPI, PasteTypes, IParseStore, FileStatNode } from '../common';
+import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode } from '../common';
 import { IFileServiceClient, FileChange, FileChangeType, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
@@ -71,8 +71,8 @@ export class FileTreeService extends WithEventBus {
   @Autowired(AppConfig)
   private config: AppConfig;
 
-  @Autowired()
-  private fileAPI: FileTreeAPI;
+  @Autowired(IFileTreeAPI)
+  private fileAPI: IFileTreeAPI;
 
   @Autowired(CommandService)
   private commandService: CommandService;
