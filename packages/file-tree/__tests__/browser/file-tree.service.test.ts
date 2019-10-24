@@ -1,14 +1,14 @@
 import { Injector } from '@ali/common-di';
-import { URI } from '@ali/ide-core-common';
+import { URI, localize } from '@ali/ide-core-common';
 import { FileTreeService } from '../../src/browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
 import { FileTreeAPI, MockFileTreeAPIImpl } from '../../src/common';
-import { IFileServiceClient, MockFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { IFileServiceClient, MockFileServiceClient, FileStat, FileChange, FileChangeType } from '@ali/ide-file-service';
 import { File, Directory } from '../../src/browser/file-tree-item';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
-import { CorePreferences } from '@ali/ide-core-browser';
+import { CorePreferences, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IDialogService } from '@ali/ide-overlay';
 
 describe('FileTreeService should be work', () => {
@@ -349,6 +349,66 @@ describe('FileTreeService should be work', () => {
     });
 
     it('comfirm view should be work while explorer.confirmMove === true', async (done) => {
+      const childUri = new URI(`${root}/parent/child.js`);
+      const existsChildUri = new URI(`${root}/child.js`);
+      const childFile: File = new File(
+        fileApi,
+        childUri,
+        childUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: childUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      const existsFile: File = new File(
+        fileApi,
+        existsChildUri,
+        existsChildUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: existsChildUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      treeService.updateFileStatus([childFile, existsFile]);
+      rootFile.addChildren(childFile);
+      rootFile.addChildren(existsFile);
+      expect(treeService.getChildren(rootUri)!.length > 0).toBeTruthy();
+      injector.overrideProviders({
+        token: CorePreferences,
+        useValue: {
+          'explorer.confirmMove': true,
+        },
+      });
+      injector.overrideProviders({
+        token: IDialogService,
+        useValue: {},
+      });
+
+      const warning = jest.fn(() => {
+        return localize('explorer.comfirm.replace.ok');
+      });
+      injector.mock(IDialogService, 'warning', warning);
+      const moveFile = jest.fn();
+      injector.mock(FileTreeAPI, 'moveFile', moveFile);
+      await treeService.moveFiles([childUri], rootUri);
+      expect(warning).toBeCalledTimes(2);
+      expect(moveFile).toBeCalledTimes(1);
+      done();
+    });
+
+    it('comfirm view should be work while explorer.confirmDelete === true', async (done) => {
       const childUri = new URI(`${root}/child.js`);
       const childFile: File = new File(
         fileApi,
@@ -367,26 +427,237 @@ describe('FileTreeService should be work', () => {
       );
       treeService.updateFileStatus([childFile]);
       rootFile.addChildren(childFile);
-      expect(treeService.getChildren(rootUri)!.length > 0).toBeTruthy();
       injector.overrideProviders({
         token: CorePreferences,
         useValue: {
-          'explorer.confirmMove': true,
+          'explorer.confirmDelete': true,
         },
       });
       injector.overrideProviders({
         token: IDialogService,
         useValue: {},
       });
-
-      const warning = jest.fn();
+      const warning = jest.fn(() => {
+        return localize('explorer.comfirm.delete.ok');
+      });
       injector.mock(IDialogService, 'warning', warning);
-
-      await treeService.moveFiles([childUri], rootUri);
-      expect(warning).toBeCalled();
+      const deleteFile = jest.fn();
+      injector.mock(FileTreeAPI, 'deleteFile', deleteFile);
+      await treeService.deleteFiles([childUri]);
+      expect(warning).toBeCalledTimes(1);
+      expect(deleteFile).toBeCalledTimes(1);
       done();
     });
 
+    it('update/reset file selected status should be work', () => {
+      const childUri = new URI(`${root}/child.js`);
+      const childFile: File = new File(
+        fileApi,
+        childUri,
+        childUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: childUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      treeService.updateFileStatus([childFile]);
+      rootFile.addChildren(childFile);
+      treeService.updateFilesSelectedStatus([childFile], false);
+      expect(treeService.status.get(treeService.getStatutsKey(childUri))!.selected).toBeFalsy();
+      treeService.updateFilesSelectedStatus([childFile], true);
+      expect(treeService.status.get(treeService.getStatutsKey(childUri))!.selected).toBeTruthy();
+      treeService.resetFilesSelectedStatus();
+      expect(treeService.status.get(treeService.getStatutsKey(childUri))!.selected).toBeFalsy();
+    });
+
+    it('update/reset file focused status should be work', () => {
+      const childUri = new URI(`${root}/child.js`);
+      const childFile: File = new File(
+        fileApi,
+        childUri,
+        childUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: childUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      treeService.updateFileStatus([childFile]);
+      rootFile.addChildren(childFile);
+      // reset focused just reset focused status
+      treeService.updateFilesFocusedStatus([childFile], false);
+      expect(treeService.status.get(treeService.getStatutsKey(childUri))!.selected).toBeFalsy();
+      expect(treeService.status.get(treeService.getStatutsKey(childUri))!.focused).toBeFalsy();
+      treeService.updateFilesFocusedStatus([childFile], true);
+      expect(treeService.status.get(treeService.getStatutsKey(childUri))!.selected).toBeFalsy();
+      expect(treeService.status.get(treeService.getStatutsKey(childUri))!.focused).toBeTruthy();
+      treeService.resetFilesFocusedStatus();
+      expect(treeService.status.get(treeService.getStatutsKey(childUri))!.focused).toBeFalsy();
+      expect(treeService.status.get(treeService.getStatutsKey(childUri))!.selected).toBeFalsy();
+    });
+
+    it('can collapse all item', async (done) => {
+      const childUri = new URI(`${root}/parent/child.js`);
+      const childFile: File = new File(
+        fileApi,
+        childUri,
+        childUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: childUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      const parentUri = new URI(`${root}/parent`);
+      const parentFile: Directory = new Directory(
+        fileApi,
+        parentUri,
+        parentUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: parentUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      treeService.updateFileStatus([parentFile]);
+      rootFile.addChildren(parentFile);
+      const getFiles = jest.fn(() => {
+        return [{ children: [childFile] }];
+      });
+      injector.mock(FileTreeAPI, 'getFiles', getFiles);
+      const statusKey = treeService.getStatutsKey(parentUri);
+      await treeService.updateFilesExpandedStatus(parentFile);
+      expect(treeService.status.get(statusKey)!.expanded).toBeTruthy();
+      expect(getFiles).toBeCalledTimes(1);
+      await treeService.updateFilesExpandedStatus(parentFile);
+      expect(treeService.status.get(statusKey)!.expanded).toBeFalsy();
+      done();
+    });
+
+    it('update files expended status by queue should be work', async (done) => {
+      const parentUri = new URI(`${root}/parent`);
+      const parentFile: Directory = new Directory(
+        fileApi,
+        parentUri,
+        parentUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: parentUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      treeService.updateFileStatus([parentFile]);
+      rootFile.addChildren(parentFile);
+      await treeService.updateFilesExpandedStatus(rootFile);
+      const rootStatusKey = treeService.getStatutsKey(rootUri);
+      const parentStatusKey = treeService.getStatutsKey(parentUri);
+      const getFiles = jest.fn(() => {
+        return [{ children: [] }];
+      });
+      injector.mock(FileTreeAPI, 'getFiles', getFiles);
+      expect(treeService.status.get(parentStatusKey)!.expanded).toBeFalsy();
+      expect(treeService.status.get(rootStatusKey)!.expanded).toBeFalsy();
+      await treeService.updateFilesExpandedStatusByQueue([rootUri, parentUri]);
+      expect(getFiles).toBeCalledTimes(1);
+      expect(treeService.status.get(parentStatusKey)!.expanded).toBeTruthy();
+      expect(treeService.status.get(rootStatusKey)!.expanded).toBeTruthy();
+      done();
+    });
+
+    it('should open file with preview mode while workbench.list.openMode === "doubleClick" && editor.previewMode', () => {
+      const firstCall = jest.fn();
+      const openUri = new URI(`${root}/child.js`);
+      injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, firstCall);
+      injector.overrideProviders({
+        token: CorePreferences,
+        useValue: {
+          'workbench.list.openMode': 'doubleClick',
+          'editor.previewMode': true,
+        },
+      });
+      treeService.openFile(openUri);
+      expect(firstCall).toBeCalledWith(openUri, { disableNavigate: true });
+      injector.mock(CorePreferences, 'workbench.list.openMode', 'singleClick');
+      const secondCall = jest.fn();
+      injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, secondCall);
+      treeService.openFile(openUri);
+      expect(secondCall).toBeCalledWith(openUri, { disableNavigate: true, preview: false });
+      injector.mock(CorePreferences, 'workbench.list.openMode', 'doubleClick');
+      injector.mock(CorePreferences, 'editor.previewMode', false);
+      const thirdCall = jest.fn();
+      injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, thirdCall);
+      treeService.openFile(openUri);
+      expect(thirdCall).toBeCalledWith(openUri, { disableNavigate: true, preview: false });
+    });
+  });
+
+  it('open file with fixed should be work', () => {
+    const openResouceMock = jest.fn();
+    const openUri = new URI(`${root}/child.js`);
+    injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openResouceMock);
+    treeService.openAndFixedFile(openUri);
+    expect(openResouceMock).toBeCalledWith(openUri, { disableNavigate: false, preview: false });
+  });
+
+  it('open file to the side should be work', () => {
+    const openResouceMock = jest.fn();
+    const openUri = new URI(`${root}/child.js`);
+    injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openResouceMock);
+    treeService.openToTheSide(openUri);
+    expect(openResouceMock).toBeCalledWith(openUri, { disableNavigate: false, split: 4 /** right */ });
+  });
+
+  it('comare file should be work', () => {
+    const compareMock = jest.fn();
+    const original = new URI(`${root}/child.js`);
+    const modified = new URI(`${root}/parent`);
+    injector.mockCommand(EDITOR_COMMANDS.COMPARE.id, compareMock);
+    treeService.compare(original, modified);
+    expect(compareMock).toBeCalledWith({
+      original,
+      modified,
+    });
+  });
+
+  it('copy/cut/paste file should be work', () => {
+    const child = new URI(`${root}/child.js`);
+    const parent = new URI(`${root}/parent`);
+    const moveFile = jest.fn();
+    injector.mock(FileTreeAPI, 'moveFile', moveFile);
+    const copyFile = jest.fn();
+    injector.mock(FileTreeAPI, 'copyFile', copyFile);
+    treeService.copyFile([child, parent]);
+    treeService.pasteFile(rootUri);
+    expect(copyFile).toBeCalledTimes(2);
+    treeService.cutFile([child, parent]);
+    treeService.pasteFile(rootUri);
+    expect(moveFile).toBeCalledTimes(2);
   });
 
 });
