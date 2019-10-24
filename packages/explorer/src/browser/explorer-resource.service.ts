@@ -9,7 +9,7 @@ import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService,
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
-import { ExplorerFolderContext } from '@ali/ide-core-browser/lib/files-contextkey';
+import { ExplorerFolderContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -172,7 +172,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     super();
     this.listen();
 
-    this.folderContext = ExplorerFolderContext.bindTo(this.contextKeyService);
+    this.folderContext = ExplorerFolderContext.bind(this.contextKeyService);
   }
 
   listen() {
