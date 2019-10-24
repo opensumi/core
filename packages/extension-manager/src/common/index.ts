@@ -9,7 +9,9 @@ export const PREFIX = '/openapi/ide/';
 export const enableExtensionsContainerId = 'extensions';
 export const enableExtensionsTarbarHandlerId = 'extensions.enable';
 export const disableExtensionsTarbarHandlerId = 'extensions.disable';
-export const searchExtensionsTarbarHandlerId = 'extensions.search';
+export const searchExtensionsFromInstalledTarbarHandlerId = 'extensions.installed.search';
+export const searchExtensionsFromMarketplaceTarbarHandlerId = 'extensions.marketplace.search';
+export const hotExtensionsFromMarketplaceTarbarHandlerId = 'extensions.marketplace.hot';
 
 export const EXTENSION_SCHEME = 'extension';
 
@@ -60,17 +62,21 @@ export const ExtensionManagerServerPath = 'ExtensionManagerServerPath';
 // 插件市场前端服务
 export const IExtensionManagerService = Symbol('IExtensionManagerService');
 export interface IExtensionManagerService {
-  loading: boolean;
+  loading: SearchState;
+  hotExtensions: RawExtension[];
   enableResults: RawExtension[];
   disableResults: RawExtension[];
-  searchResults: RawExtension[];
-  searchState: SearchState;
+  searchInstalledState: SearchState;
+  searchInstalledResults: RawExtension[];
+  searchMarketplaceState: SearchState;
+  searchMarketplaceResults: RawExtension[];
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string): Promise<ExtensionDetail | undefined>;
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
   toggleActiveExtension(extensionId: string, active: boolean, scope: EnableScope): Promise<void>;
-  search(query: string): void;
+  searchFromMarketplace(query: string): void;
+  searchFromInstalled(query: string): void;
   downloadExtension(extensionId: string, version?: string): Promise<string>;
   updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string>;
   uninstallExtension(extensionId: string, extensionPath: string): Promise<boolean>;
@@ -84,9 +90,10 @@ export interface IExtensionManagerService {
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
 export interface IExtensionManagerServer {
-  search(query: string): Promise<any>;
+  search(query: string, ignoreId?: string[]): Promise<any>;
   getExtensionFromMarketPlace(extensionId: string): Promise<any>;
   downloadExtension(extensionId: string, version?: string): Promise<string>;
+  getHotExtensions(ignoreId?: string[]): Promise<any>;
   updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string>;
   request(path: string): Promise<any>;
   requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>>;

@@ -18,11 +18,15 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   @Autowired(INodeLogger)
   private logger: INodeLogger;
 
-  async search(query: string) {
-    return await this.request(`search?query=${query}`);
+  async search(query: string, ignoreId?: string[]) {
+    return await this.request(`search?query=${query}${ignoreId ? ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`);
   }
   async getExtensionFromMarketPlace(extensionId: string) {
     return await this.request(`extension/${extensionId}`);
+  }
+
+  async getHotExtensions(ignoreId?: string[]) {
+    return await this.request(`hot${ignoreId ? '?' + ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`);
   }
 
   /**

@@ -4,11 +4,10 @@ import Tabs from 'antd/lib/tabs';
 import 'antd/lib/tabs/style/index.less';
 import { useInjectable, localize } from '@ali/ide-core-browser';
 import { Widget } from '@phosphor/widgets';
-import { enableExtensionsContainerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsTarbarHandlerId } from '../common';
-import { INJECTOR_TOKEN } from '@ali/common-di';
-import { ExtensionEnablePanel } from './extension-panel-enable.view';
-import { ExtensionDisablePanel } from './extension-panel-disable.view';
-import { ExtensionSearchPanel } from './extension-panel-search.view';
+import { enableExtensionsContainerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromMarketplaceTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, IExtensionManagerService, hotExtensionsFromMarketplaceTarbarHandlerId } from '../common';
+import { ExtensionHotAccordion, ExtensionEnableAccordion, ExtensionDisableAccordion, ExtensionSearchInstalledAccordion, ExtensionSearchMarketplaceAccordion } from './extension-panel-accordion.view';
+import { ExtensionSearch } from './components/extension-search';
+import * as styles from './extension-panel.module.less';
 
 const { TabPane } = Tabs;
 
@@ -16,56 +15,152 @@ export default function() {
 
   const [marketElement, setMarketElement] = React.useState<HTMLElement | null>(null);
   const [installedElement, setInstalledElement] = React.useState<HTMLElement | null>(null);
-  const injector = useInjectable(INJECTOR_TOKEN);
-  const accordion1 = injector.get(AccordionWidget, [enableExtensionsContainerId, [{
-    component: ExtensionEnablePanel,
+  const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
+  const [ marketAccordion, setMarketAccordion ] = React.useState<AccordionWidget>();
+  const [ installedAccordion, setInstalledAccordion ] = React.useState<AccordionWidget>();
+  const marketAccordionInstance = useInjectable<AccordionWidget>(AccordionWidget, [enableExtensionsContainerId, [{
+    component: ExtensionHotAccordion,
+    id: hotExtensionsFromMarketplaceTarbarHandlerId,
+    name: localize('marketplace.panel.hot', '热门插件'),
+    forceHidden: false,
+  }, {
+    component: ExtensionSearchMarketplaceAccordion,
+    id: searchExtensionsFromMarketplaceTarbarHandlerId,
+    name: localize('marketplace.panel.search', '搜索'),
+    forceHidden: true,
+  }], 'left']);
+  const installedAccordionInstance = useInjectable<AccordionWidget>(AccordionWidget, ['enableExtensionsContainerId', [{
+    component: ExtensionEnableAccordion,
     id: enableExtensionsTarbarHandlerId,
-    name: localize('marketplace.extension.enabled', '已启用'),
+    name: localize('marketplace.panel.enable', '已启用'),
     forceHidden: false,
   }, {
-    component: ExtensionDisablePanel,
+    component: ExtensionDisableAccordion,
     id: disableExtensionsTarbarHandlerId,
-    name: localize('marketplace.extension.disabled', '已禁用'),
+    name: localize('marketplace.panel.disabled', '已禁用'),
     forceHidden: false,
   }, {
-    component: ExtensionSearchPanel,
-    id: searchExtensionsTarbarHandlerId,
-    name: localize('marketplace.extension.search', '搜索'),
+    component: ExtensionSearchInstalledAccordion,
+    id: searchExtensionsFromInstalledTarbarHandlerId,
+    name: localize('marketplace.panel.search', '搜索'),
     forceHidden: true,
   }], 'left']);
 
-  const accordion2 = injector.get(AccordionWidget, ['enableExtensionsContainerId', [{
-    component: ExtensionEnablePanel,
-    id: enableExtensionsTarbarHandlerId,
-    name: localize('marketplace.extension.enabled', '已启用'),
-    forceHidden: false,
-  }, {
-    component: ExtensionDisablePanel,
-    id: disableExtensionsTarbarHandlerId,
-    name: localize('marketplace.extension.disabled', '已禁用'),
-    forceHidden: false,
-  }], 'left']);
+  // 设置 accordion 只设置一次
+  React.useEffect(() => {
+    setMarketAccordion(marketAccordionInstance);
+    setInstalledAccordion(installedAccordionInstance);
+  }, []);
+
+  const hotExtensionSection = React.useMemo(() => {
+    return marketAccordion && marketAccordion.sections.get(hotExtensionsFromMarketplaceTarbarHandlerId);
+  }, [marketAccordion]);
+
+  const searchFromMarketplaceSection = React.useMemo(() => {
+    return marketAccordion && marketAccordion.sections.get(searchExtensionsFromMarketplaceTarbarHandlerId);
+  }, [marketAccordion]);
+
+  const enableExtensionSection = React.useMemo(() => {
+    return installedAccordion && installedAccordion.sections.get(enableExtensionsTarbarHandlerId);
+  }, [installedAccordion]);
+
+  const disableExtensionSection = React.useMemo(() => {
+    return installedAccordion && installedAccordion.sections.get(disableExtensionsTarbarHandlerId);
+  }, [installedAccordion]);
+
+  const searchFromInstalledSection = React.useMemo(() => {
+    return installedAccordion && installedAccordion.sections.get(searchExtensionsFromInstalledTarbarHandlerId);
+  }, [installedAccordion]);
+
+  const showEnableAndDisable = React.useCallback(() => {
+    if (enableExtensionSection) {
+      enableExtensionSection!.setHidden(false);
+    }
+    if (disableExtensionSection) {
+      disableExtensionSection.setHidden(false);
+    }
+    if (searchFromInstalledSection) {
+      searchFromInstalledSection.setHidden(true);
+    }
+  }, [enableExtensionSection, disableExtensionSection, searchFromInstalledSection]);
+
+  const showHotSection = React.useCallback(() => {
+    if (hotExtensionSection) {
+      hotExtensionSection.setHidden(false);
+    }
+    if (searchFromMarketplaceSection) {
+      searchFromMarketplaceSection.setHidden(true);
+    }
+    if (marketAccordion) {
+      marketAccordion.updateTitleVisibility();
+    }
+  }, [marketAccordion, hotExtensionSection, searchFromMarketplaceSection]);
 
   React.useEffect(() => {
-    if (marketElement) {
-      Widget.attach(accordion1, marketElement);
+    if (marketAccordion && marketElement) {
+      Widget.attach(marketAccordion, marketElement);
     }
-  }, [marketElement]);
+  }, [marketAccordion, marketElement]);
 
   React.useEffect(() => {
-    if (installedElement) {
-      Widget.attach(accordion2, installedElement);
+    if (installedAccordion && installedElement) {
+      Widget.attach(installedAccordion, installedElement);
     }
-  }, [installedElement]);
+  }, [installedAccordion, installedElement]);
+
+  React.useEffect(() => {
+    // 默认要调用一次，不使用layout状态
+    showEnableAndDisable();
+    showHotSection();
+  }, [showEnableAndDisable, showHotSection]);
+
+  function handleChangeFromMarket(value: string) {
+    if (value) {
+      hotExtensionSection!.setHidden(true);
+      searchFromMarketplaceSection!.setHidden(false);
+      extensionManagerService.searchFromMarketplace(value);
+    } else {
+      showHotSection();
+    }
+    // 如果只有一个则隐藏 titlebar
+    if (marketAccordion) {
+      marketAccordion.updateTitleVisibility();
+    }
+  }
+
+  function handleChangeFromInstalled(value: string) {
+    if (value) {
+      enableExtensionSection!.setHidden(true);
+      disableExtensionSection!.setHidden(true);
+      searchFromInstalledSection!.setHidden(false);
+      extensionManagerService.searchFromInstalled(value);
+    } else {
+      showEnableAndDisable();
+    }
+    // 如果只有一个则隐藏 titlebar
+    if (installedAccordion) {
+      installedAccordion.updateTitleVisibility();
+    }
+  }
 
   return (
-    <Tabs tabBarStyle={{margin: 0}} tabBarGutter={0}>
-      <TabPane tab='marketplace' key='marketplace'>
-        <div ref={setMarketElement}></div>
-      </TabPane>
-      <TabPane tab='installed' key='installed'>
-        <div ref={setInstalledElement}></div>
-      </TabPane>
-    </Tabs>
+    <div className={styles.panel}>
+      <Tabs tabBarStyle={{margin: 0}} tabBarGutter={0}>
+        <TabPane tab={localize('marketplace.panel.tab.marketplace', '扩展市场')} key='marketplace'>
+          <ExtensionSearch
+            onChange={handleChangeFromMarket}
+            placeholder={localize('marketplace.panel.tab.placeholder', '搜索已安装的插件')}
+            />
+          <div className={styles.content} ref={setMarketElement}></div>
+        </TabPane>
+        <TabPane tab={localize('marketplace.tab.installed', '已安装的扩展')} key='installed'>
+          <ExtensionSearch
+            onChange={handleChangeFromInstalled}
+            placeholder={localize('marketplace.panel.tab.placeholder', '搜索已安装的插件')}
+            />
+          <div className={styles.content} ref={setInstalledElement}></div>
+        </TabPane>
+      </Tabs>
+    </div>
   );
 }

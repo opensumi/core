@@ -33,13 +33,22 @@ export class ExtensionManagerService implements IExtensionManagerService {
   extensions: IExtension[] = [];
 
   @observable
-  loading: boolean = false;
+  loading: SearchState =  SearchState.LOADED;
 
   @observable
-  searchState: SearchState = SearchState.LOADED;
+  searchMarketplaceState: SearchState = SearchState.LOADED;
 
   @observable
-  searchResults: RawExtension[] = [];
+  searchInstalledState: SearchState = SearchState.LOADED;
+
+  @observable
+  searchMarketplaceResults: RawExtension[] = [];
+
+  @observable
+  searchInstalledResults: RawExtension[] = [];
+
+  @observable
+  hotExtensions: RawExtension[] = [];
 
   private isInit: boolean = false;
 
@@ -47,50 +56,58 @@ export class ExtensionManagerService implements IExtensionManagerService {
   private isShowBuiltinExtensions: boolean = false;
 
   @action
-  search(query: string) {
-    this.searchState = SearchState.LOADING;
-    this.searchResults = [];
+  searchFromMarketplace(query: string) {
+    this.searchMarketplaceState = SearchState.LOADING;
+    this.searchMarketplaceResults = [];
     this.searchExtensionFromMarketplace(query);
+  }
+
+  @action
+  searchFromInstalled(query: string) {
+    this.searchInstalledState = SearchState.LOADING;
+    this.searchInstalledResults = [];
+    this.searchExtensionFromInstalled(query);
   }
 
   @action
   @debounce(300)
   private async searchExtensionFromMarketplace(query: string) {
     try {
-      const res = await this.extensionManagerServer.search(query);
+      // 排除掉已安装的插件
+      const res = await this.extensionManagerServer.search(query, this.installedIds);
 
       if (res.count > 0) {
-
         const data = res.data
-        // 排除掉内置插件
-        .filter((extension) => !this.isBuiltin(extension.extensionId))
-        .map((extension) => ({
-          id: `${extension.publisher}.${extension.name}`,
-          extensionId: extension.extensionId,
-          name: extension.name,
-          displayName: extension.displayName,
-          version: extension.version,
-          description: extension.description,
-          publisher: extension.publisher,
-          installed: this.isInstalled(extension.extensionId),
-          icon: extension.icon || DEFAULT_ICON_URL,
-          path: '',
-        }));
+        .map(this.transformMarketplaceExtension);
         runInAction(() => {
-          this.searchResults = data;
-          this.searchState = SearchState.LOADED;
+          this.searchMarketplaceResults = data;
+          this.searchMarketplaceState = SearchState.LOADED;
         });
       } else {
         runInAction(() => {
-          this.searchState = SearchState.NO_CONTENT;
+          this.searchMarketplaceState = SearchState.NO_CONTENT;
         });
       }
 
     } catch (err) {
       this.logger.error(err);
       runInAction(() => {
-        this.searchState = SearchState.NO_CONTENT;
+        this.searchMarketplaceState = SearchState.NO_CONTENT;
       });
+    }
+  }
+
+  @action
+  @debounce(300)
+  private searchExtensionFromInstalled(query: string) {
+    const data = this.showExtensions.filter((extension) => {
+      return extension.name.includes(query) || extension.displayName.includes(query);
+    });
+    if (data.length > 0) {
+      this.searchInstalledResults = data;
+      this.searchInstalledState = SearchState.LOADED;
+    } else {
+      this.searchInstalledState = SearchState.NO_CONTENT;
     }
   }
 
@@ -145,8 +162,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @action
   async makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string) {
-    this.searchResults = this.searchResults.map((r) => r.extensionId === extensionId ? { ...r, installed, path: extensionPath } : r);
-    const rawExt = this.searchResults.find((r) => r.extensionId === extensionId);
+    this.searchMarketplaceResults = this.searchMarketplaceResults.map((r) => r.extensionId === extensionId ? { ...r, installed, path: extensionPath } : r);
+    this.hotExtensions = this.hotExtensions.map((r) => r.extensionId === extensionId ? { ...r, installed, path: extensionPath } : r);
+    const rawExt = this.searchMarketplaceResults.find((r) => r.extensionId === extensionId)
+      || this.hotExtensions.find((r) => r.extensionId === extensionId);
 
     if (rawExt && installed) {
       const extension = await this.extensionService.getExtensionProps(extensionPath);
@@ -161,13 +180,16 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @action
   async init() {
+    this.loading = SearchState.LOADING;
     // 获取所有已安装的插件
     const extensions = await this.extensionService.getAllExtensionJson();
+    const hotExtensions = await this.getHotExtensions(extensions.map((extensions) => extensions.extensionId));
     // 是否要展示内置插件
     this.isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
     runInAction(() => {
+      this.hotExtensions = hotExtensions;
       this.extensions = extensions;
-      this.loading = false;
+      this.loading = SearchState.LOADED;
       this.isInit = true;
     });
   }
@@ -283,7 +305,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   async getDetailFromMarketplace( extensionId: string ): Promise<ExtensionDetail | undefined> {
     const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId);
-
     if (res && res.data) {
       return {
         id: `${res.data.publisher}.${res.data.name}`,
@@ -346,6 +367,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return icon;
   }
 
+  @action
   async uninstallExtension(extensionId: string, extensionPath: string): Promise<boolean> {
     const res =  await this.extensionManagerServer.uninstallExtension(extensionPath);
     if (res) {
@@ -375,23 +397,13 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @memberof ExtensionManagerService
    */
   private get builtinIds() {
-    return this.extensions.filter((extension) => extension.isBuiltin).map((extension) => extension.extensionId);
-  }
-
-  /**
-   * 判断是否是内置插件
-   * @param extensionId 插件 id
-   */
-  private isBuiltin(extensionId: string): boolean {
-    return this.builtinIds.includes(extensionId);
-  }
-
-  /**
-   * 判断插件是否已安装
-   * @param extensionId 插件 id
-   */
-  private isInstalled(extensionId: string): boolean {
-    return this.installedIds.includes(extensionId);
+    return this.extensions.filter((extension) => {
+      if (this.isShowBuiltinExtensions) {
+        return true;
+      } else {
+        return extension.isBuiltin;
+      }
+    }).map((extension) => extension.extensionId);
   }
 
   /**
@@ -438,6 +450,41 @@ export class ExtensionManagerService implements IExtensionManagerService {
       return EnableScope.GLOBAL;
     } else {
       return EnableScope.WORKSPACE;
+    }
+  }
+
+  /**
+   * 转换插件市场的数据到 RawExtension
+   * @param extension
+   */
+  private transformMarketplaceExtension(extension): RawExtension {
+    return {
+      id: `${extension.publisher}.${extension.name}`,
+      extensionId: extension.extensionId,
+      name: extension.name,
+      displayName: extension.displayName,
+      version: extension.version,
+      description: extension.description,
+      publisher: extension.publisher,
+      installed: false,
+      icon: extension.icon || DEFAULT_ICON_URL,
+      path: '',
+      isBuiltin: false,
+      enable: false,
+      engines: {
+        vscode: '',
+        kaitian: '',
+      },
+    };
+  }
+
+  private async getHotExtensions(ignoreId: string[]): Promise<RawExtension[]> {
+    const res = await this.extensionManagerServer.getHotExtensions(ignoreId);
+    if (res.count) {
+      return res.data
+        .map(this.transformMarketplaceExtension);
+    } else {
+      return [];
     }
   }
 }

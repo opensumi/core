@@ -208,20 +208,15 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           <div className={styles.details}>
             <div className={styles.title}>
               <span className={styles.name}>{currentExtension.displayName}</span>
-              {currentExtension.isBuiltin ? (<span className={styles.tag}>{localize('marketplace.extension.builtin', '内置插件')}</span>) : null}
+              {currentExtension.isBuiltin ? (<span className={styles.tag}>{localize('marketplace.extension.builtin', '内置')}</span>) : null}
               {canUpdate ? (<span className={clx(styles.tag, styles.green)}>{localize('marketplace.extension.canupdate', '有新版本')}</span>) : null}
             </div>
             <div className={styles.subtitle}>
-              <span className={styles.subtitle_item}><i className={clx(styles.icon, getIcon('smile'))}></i> {currentExtension.publisher}</span>
               {downloadCount > 0 ? (
-              <span className={styles.subtitle_item}><i className={clx(styles.icon, getIcon('cloud-download'))}></i> {downloadCount}</span>
+              <span className={styles.subtitle_item}><i className={clx(styles.icon, getIcon('download'))}></i> {downloadCount}</span>
               ) : null}
+              <span className={styles.subtitle_item}>{currentExtension.publisher}</span>
               <span className={styles.subtitle_item}>V{currentExtension.version}</span>
-              {currentExtension.license && (
-              <span className={styles.subtitle_item}>
-                <a target='_blank' href={currentExtension.license}>{localize('marketplace.extension.license', '许可证')}</a>
-              </span>
-              )}
             </div>
             <div className={styles.description}>{currentExtension.description}</div>
             <div className={styles.actions}>
