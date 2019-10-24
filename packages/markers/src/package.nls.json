@@ -1,3 +1,5 @@
 {
-  "markers.content.empty": "没有内容哦~"
+  "markers.title": "问题面板",
+  "markers.content.empty": "没有内容哦~",
+  "markers.filter.placefolder": ""
 }

@@ -17,7 +17,7 @@
 }
 
 @kt-markers-item-icon: {
-  margin-right: 5px;
+  margin-right: 5px;aasd
   font-size: 14px;
 }
 
@@ -29,6 +29,10 @@
   padding-left: 5px;
 }
 
+
+.highlight {
+  background-color: rgba(255, 0, 0, 0.616);
+}
 
 .markersContent {
   font-size: @kt-content-font-size;
@@ -142,9 +146,15 @@
             text-overflow: ellipsis;
           }
 
-          .type {
+          .typeContainer {
             color: @kt-markers-inline-color;
             margin: @kt-markers-item-margin;
+            display: flex;
+            flex-direction: row;
+          }
+
+          .type {
+            color: @kt-markers-inline-color;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;

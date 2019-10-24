@@ -1,7 +1,9 @@
-import { URI, MarkerSeverity, MarkerModel, IMarkerService, IMarker } from '@ali/ide-core-common';
-import { isFalsyOrEmpty, mergeSort } from '../common/index';
-import { observable } from 'mobx';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { IMarker, MarkerSeverity, URI } from '@ali/ide-core-common';
+import { observable } from 'mobx';
+import { isFalsyOrEmpty, mergeSort } from '../common/index';
+import { IMarkerService, IMarkerModel } from '../common/types';
+import { Filter, FilterOptions, IFilterMarkerItem } from './markers-filter.model';
 
 function compareMarkers(a: IMarker, b: IMarker): number {
   return MarkerSeverity.compare(a.severity, b.severity) || compareRangesUsingStarts(a, b);
@@ -36,21 +38,51 @@ function compareRangesUsingStarts(a: IMarker, b: IMarker): number {
   return aExists - bExists;
 }
 
+/**
+ * marker model of given url
+ */
+export class MarkerModel implements IMarkerModel {
+  constructor(
+    public readonly uri: string,
+    public readonly icon: string,
+    public readonly filename: string,
+    public readonly longname: string,
+    public markers: IFilterMarkerItem[],
+  ) { }
+
+  public size() {
+    return this.markers && this.markers.length;
+  }
+}
+
 export class MarkerViewModel {
 
   @observable
-  public markers: Map<string, MarkerModel> = new Map<string, MarkerModel>();
+  public markers: Map<string, IMarkerModel> = new Map<string, IMarkerModel>();
+
+  // 过滤选项
+  @observable.ref
+  private filter: Filter | undefined;
 
   constructor(private _service: IMarkerService, private labelService: LabelService) {
     this._service.onMarkerChanged(this._onMarkerChanged, this);
+    this._service.onMarkerFilterChanged(this._onMarkerFilterChanged, this);
   }
 
   private _onMarkerChanged(resources: string[]) {
     if (resources) {
       resources.forEach((resource) => {
         // tslint:disable-next-line: no-bitwise
-        this.updateMarker(resource, this._service.getMarkers({ resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info }));
+        this.updateMarker(resource, this._service.getMarkers({resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info}));
       });
+    }
+  }
+
+  private _onMarkerFilterChanged(opt: FilterOptions | undefined) {
+    this.filter = opt ? new Filter(opt) : undefined;
+    const resources = this._service.getResources();
+    if (resources) {
+      this._onMarkerChanged(resources);
     }
   }
 
@@ -61,7 +93,15 @@ export class MarkerViewModel {
       const mergedMarkers = mergeSort(rawMarkers, compareMarkers);
       const {icon, filename, longname} = this.getUriInfos(resource);
 
-      this.markers.set(resource.toString(), new MarkerModel(resource, icon, filename, longname, mergedMarkers));
+      const markerModel = new MarkerModel(resource, icon, filename, longname, mergedMarkers);
+      if (this.filter) {
+        const filterResult = this.filter.filterModel(markerModel);
+        if (filterResult.match) {
+          this.markers.set(resource.toString(), filterResult);
+        }
+      } else {
+        this.markers.set(resource.toString(), markerModel);
+      }
     }
   }
 

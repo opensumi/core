@@ -1,0 +1,32 @@
+
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.markerFilterContent {
+  display: flex;
+  justify-content: center;
+  z-index: -1;
+
+  // 输入框
+  .filterInput {
+    width: 350px;
+    max-width: 400px;
+    margin: 10px 5px 5px 0;
+    height: 23px;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 5px;
+    font-size: 10px;
+    border: 1px solid transparent;
+    color: whitesmoke;
+    border-radius: 1px;
+
+    &::placeholder {
+      color: gray;
+    }
+
+    &:focus {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      outline: none;
+    }
+
+  }
+}

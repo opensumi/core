@@ -28,7 +28,17 @@ export namespace MapMap {
 			return true;
 		}
 		return false;
-	}
+  }
+
+  export function keys(map: MapMap<any>): string[] {
+    const result: string[] = [];
+    if (map) {
+      for (let key in map) {
+        result.push(key);
+      }
+    }
+    return result;
+  }
 }
 
 /**
@@ -97,77 +107,3 @@ export interface MarkerStatistics {
 	unknowns: number;
 }
 
-/**
- * marker collection of given type (typescript/eslint/tslint/etc..)
- */
-export class MarkerCollection {
-  constructor(
-    public type: string,
-    public models: Map<string, MarkerModel> = new Map<string, MarkerModel>()
-  ) { }
-
-  public add(model: MarkerModel) {
-    this.models.set(model.uri, model);
-  }
-
-  public delete(uri: string) {
-    this.models.delete(uri);
-  }
-
-  public size() {
-    return this.models.size;
-  }
-}
-
-/**
- * marker modle of given url
- */
-export class MarkerModel {
-  public filetype: string;
-  public fold: boolean = false;
-
-  constructor(
-    public readonly uri: string,
-    public readonly icon: string,
-    public readonly filename: string,
-    public readonly longname: string,
-    public markers: IMarkerData[],
-  ) {
-    this.filetype = this.uri && this.uri.substr(this.uri.lastIndexOf('.') + 1);
-  }
-
-  public addAll(markers: IMarkerData[]) {
-    this.markers = this.markers.concat(markers);
-  }
-
-  /**
-   * 根据severity等信息过滤marker
-   * @param filter 过滤条件
-   */
-  public static filterMarkers(markers: IMarkerData[], filter: {severities?: number } = Object.create(null)) {
-    const { severities } = filter;
-    if (markers && markers.length > 0) {
-      return markers.filter(marker => {
-        return severities === undefined || (severities & marker.severity) === marker.severity;
-      });
-    }
-    return [];
-  }
-
-  /**
-   * 根据severity等信息过滤marker
-   * @param filter 过滤条件
-   */
-  public filterMarkers(filter: {severities?: number } = Object.create(null)): IMarkerData[] {
-    return MarkerModel.filterMarkers(this.markers, filter);
-  }
-
-  public size() {
-    return this.markers && this.markers.length;
-  }
-
-  public toogle() {
-    this.fold = !this.fold;
-    return this.fold;
-  }
-}

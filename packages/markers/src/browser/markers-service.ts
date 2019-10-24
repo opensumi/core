@@ -1,11 +1,14 @@
 'use strict';
-import { Injectable, Autowired } from '@ali/common-di';
-import { Event, Emitter, URI, IMarker, IMarkerData, IMarkerService, MapMap, MarkerStats } from '@ali/ide-core-common';
-import { IThemeService, ThemeType } from '@ali/ide-theme';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { MarkerViewModel } from './markers-view-model';
-import { isFalsyOrEmpty } from '../common/index';
+import { Autowired, Injectable } from '@ali/common-di';
+import { useInjectable } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { Emitter, Event, IMarker, IMarkerData, MapMap, MarkerStats, URI } from '@ali/ide-core-common';
+import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IThemeService, ThemeType } from '@ali/ide-theme';
+import { isFalsyOrEmpty } from '../common/index';
+import { IMarkerService } from '../common/types';
+import { FilterOptions } from './markers-filter.model';
+import { MarkerViewModel } from './markers.model';
 
 @Injectable()
 export class MarkerService implements IMarkerService {
@@ -26,6 +29,9 @@ export class MarkerService implements IMarkerService {
   // marker 变更事件
   private readonly onMarkerChangedEmitter = new Emitter<string[]>();
   public readonly onMarkerChanged: Event<string[]> = this.onMarkerChangedEmitter.event;
+
+  private readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
+  public readonly onMarkerFilterChanged: Event<FilterOptions | undefined> = this.onMarkerFilterChangedEmitter.event;
 
   private markerViewModel: MarkerViewModel;
 
@@ -174,6 +180,14 @@ export class MarkerService implements IMarkerService {
     }
   }
 
+  public fireFilterChanged(opt: FilterOptions | undefined) {
+    this.onMarkerFilterChangedEmitter.fire(opt);
+  }
+
+  public getResources(): string[] {
+    return MapMap.keys(this._byResource);
+  }
+
   public getViewModel(): MarkerViewModel {
     return this.markerViewModel;
   }
@@ -232,5 +246,9 @@ export class MarkerService implements IMarkerService {
   private isTargetServerity(marker: IMarker, severities?: number): boolean {
     // tslint:disable-next-line: no-bitwise
     return severities === undefined || (severities & marker.severity) === marker.severity;
+  }
+
+  public static useInjectable(): MarkerService {
+    return useInjectable<IMarkerService>(MarkerService) as MarkerService;
   }
 }

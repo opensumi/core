@@ -2,9 +2,8 @@ import { IMarker, IMarkerData, MarkerStatistics, MarkerSeverity } from './marker
 import { IDisposable } from '../../disposable';
 import { Event } from '../../event';
 
-export interface IMarkerService {
-
-  /**
+export interface IBaseMarkerService {
+   /**
    * 更新markers
    * @param type 类型标识
    * @param uri markers对应的资源
@@ -18,12 +17,12 @@ export interface IMarkerService {
    */
   clearMarkers(type: string);
 
-  /**
+   /**
    * 获取所有markers的统计信息
    */
   getStats(): MarkerStats;
 
-  /**
+   /**
    * 获取markers
    */
   getMarkers(filter: { type?: string; resource?: string; severities?: number, take?: number; }): IMarker[];
@@ -43,10 +42,10 @@ export class MarkerStats implements MarkerStatistics {
 	unknowns: number = 0;
 
   private _data?: { [resource: string]: MarkerStatistics } = Object.create(null);
-  private _service: IMarkerService;
+  private _service: IBaseMarkerService;
 	private _subscription: IDisposable;
 
-	constructor(service: IMarkerService) {
+	constructor(service: IBaseMarkerService) {
 		this._service = service;
 		this._subscription = service.onMarkerChanged(this._update, this);
 	}

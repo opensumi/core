@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { DisposableCollection, Emitter, URI as CoreURI, URI, IMarkerService, IMarkerData, IRelatedInformation, MarkerSeverity } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, URI as CoreURI, URI, IBaseMarkerService, IMarkerData, IRelatedInformation, MarkerSeverity } from '@ali/ide-core-common';
 import { SerializedDocumentFilter, LanguageSelector, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../../common/vscode/model.api';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
@@ -70,7 +70,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   readonly markerManager: MarkerManager<Diagnostic>;
 
   @Autowired(MarkerService)
-  readonly problemMarkerService: IMarkerService;
+  readonly problemMarkerService: IBaseMarkerService;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
