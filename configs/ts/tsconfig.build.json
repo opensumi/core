@@ -118,9 +118,6 @@
       "path": "./references/tsconfig.extension-storage.json"
     },
     {
-      "path": "./references/tsconfig.feature-extension.json"
-    },
-    {
       "path": "./references/tsconfig.webview.json"
     },
     {
