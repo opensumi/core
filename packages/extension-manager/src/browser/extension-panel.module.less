@@ -4,10 +4,30 @@
   height: 100%;
 }
 
+.panel :global(.ant-tabs-nav .ant-tabs-tab-active) {
+  color: var(--button-background);
+
+  &:hover {
+    color: var(--button-hoverBackground);
+  }
+}
+
 .content {
   height: 100%;
 }
 
 .panel :global(.ant-tabs-content) {
   height: calc(100% - 90px);
+}
+
+.search_nofound {
+  padding-top: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content: center;
+}
+
+.search_nofound_link {
+  margin-top: 10px;
 }

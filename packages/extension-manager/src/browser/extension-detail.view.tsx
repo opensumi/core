@@ -6,6 +6,7 @@ import * as React from 'react';
 import { ExtensionDetail, IExtensionManagerService, EnableScope } from '../common';
 import * as clx from 'classnames';
 import * as styles from './extension-detail.module.less';
+import * as commonStyles from './extension-manager.common.module.less';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
@@ -34,13 +35,6 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const clientApp = useInjectable<IClientApp>(IClientApp);
   const delayUpdate = localize('marketplace.extension.update.delay', '稍后我自己更新');
   const nowUpdate = localize('marketplace.extension.update.now', '是，现在更新');
-
-  // 判断插件操作是否需要重启
-  React.useEffect(() => {
-    if (currentExtension && (!currentExtension.enable || !currentExtension.installed)) {
-      updateReloadStateIfNeed(currentExtension);
-    }
-  }, [currentExtension]);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -94,12 +88,13 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       } else {
         await extensionManagerService.onEnableExtension(currentExtension.path);
       }
+      await updateReloadStateIfNeed(currentExtension);
       setCurrentExtension({
         ...currentExtension,
         enable,
         enableScope: scope,
       });
-      // await updateReloadStateIfNeed(currentExtension);
+
     }
   }
 
@@ -130,15 +125,14 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, true, EnableScope.GLOBAL);
 
       if (res) {
+        await extensionManagerService.makeExtensionStatus(false, currentExtension.extensionId, '');
+        await updateReloadStateIfNeed(currentExtension);
         setUnIsInstalling(false);
         setCurrentExtension({
           ...currentExtension,
           enable: false,
           installed: false,
         });
-        // await updateReloadStateIfNeed(currentExtension);
-        // 标记为未安装
-        await extensionManagerService.makeExtensionStatus(false, currentExtension.extensionId, '');
       } else {
         dialogService.info(localize('marketplace.extension.uninstall.failed', '卸载失败'));
       }
@@ -158,7 +152,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         version: latestExtension!.version,
       });
       await extensionManagerService.onUpdateExtension(newExtensionPath, oldExtensionPath);
-      // await updateReloadStateIfNeed(currentExtension);
+      await updateReloadStateIfNeed(currentExtension);
       setUpdated(true);
     }
   }
@@ -208,12 +202,12 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           <div className={styles.details}>
             <div className={styles.title}>
               <span className={styles.name}>{currentExtension.displayName}</span>
-              {currentExtension.isBuiltin ? (<span className={styles.tag}>{localize('marketplace.extension.builtin', '内置')}</span>) : null}
-              {canUpdate ? (<span className={clx(styles.tag, styles.green)}>{localize('marketplace.extension.canupdate', '有新版本')}</span>) : null}
+              {currentExtension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin', '内置')}</span>) : null}
+              {canUpdate ? (<span className={clx(commonStyles.tag, styles.green)}>{localize('marketplace.extension.canupdate', '有新版本')}</span>) : null}
             </div>
             <div className={styles.subtitle}>
               {downloadCount > 0 ? (
-              <span className={styles.subtitle_item}><i className={clx(styles.icon, getIcon('download'))}></i> {downloadCount}</span>
+              <span className={styles.subtitle_item}><i className={clx(commonStyles.icon, getIcon('download'))}></i>{downloadCount}</span>
               ) : null}
               <span className={styles.subtitle_item}>{currentExtension.publisher}</span>
               <span className={styles.subtitle_item}>V{currentExtension.version}</span>
@@ -229,10 +223,10 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               {reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure', '需要重启')}</Button>}
               {currentExtension.installed ? (
                 <Dropdown overlay={menu} trigger={['click']}>
-                  <Button className={styles.action}>{currentExtension.enable ? localize('marketplace.extension.disable', '禁用') : localize('marketplace.extension.enable', '启用')}</Button>
+                  <Button ghost={true} className={styles.action}>{currentExtension.enable ? localize('marketplace.extension.disable', '禁用') : localize('marketplace.extension.enable', '启用')}</Button>
                 </Dropdown>) : null}
               {currentExtension.installed && !currentExtension.isBuiltin  && (
-                <Button type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling', '卸载中') : localize('marketplace.extension.uninstall', '卸载')}</Button>
+                <Button ghost={true} type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling', '卸载中') : localize('marketplace.extension.uninstall', '卸载')}</Button>
               )}
             </div>
           </div>

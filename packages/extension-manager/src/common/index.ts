@@ -1,9 +1,17 @@
+
 export enum EnableScope {
   GLOBAL = 'GLOBAL',
   WORKSPACE = 'WORKSPACE',
 }
 
-export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_883dd2/afts/img/A*TKtCQIToMwgAAAAAAAAAAABkARQnAQ';
+export enum TabActiveKey {
+  MARKETPLACE = 'marketplace',
+  INSTALLED = 'installed',
+}
+
+export const SearchFromMarketplaceCommandId = 'SearchFromMarketplaceCommand';
+
+export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_d8fa74/afts/img/A*LcaZT6AAG84AAAAAAAAAAABkARQnAQ';
 
 export const PREFIX = '/openapi/ide/';
 export const enableExtensionsContainerId = 'extensions';
@@ -19,6 +27,20 @@ export enum SearchState {
   LOADING,
   LOADED,
   NO_CONTENT,
+}
+
+/**
+ * 从插件市场过来的搜索结果
+ */
+export interface SearchExtension {
+  extensionId: string;
+  name: string;
+  displayName: string;
+  description: string;
+  icon: string;
+  version: string;
+  downloadCount: number;
+  publisher: string;
 }
 
 // 插件面板左侧显示
@@ -65,6 +87,9 @@ export interface IExtensionManagerService {
   loading: SearchState;
   hotExtensions: RawExtension[];
   enableResults: RawExtension[];
+  marketplaceQuery: string;
+  installedQuery: string;
+  tabActiveKey: TabActiveKey;
   disableResults: RawExtension[];
   searchInstalledState: SearchState;
   searchInstalledResults: RawExtension[];

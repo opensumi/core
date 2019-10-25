@@ -1,10 +1,10 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope } from '../common';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, hotExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsContainerId, searchExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, SearchExtension } from '../common';
 import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@ali/ide-core-browser';
+import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -50,6 +50,18 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @observable
   hotExtensions: RawExtension[] = [];
 
+  @observable
+  marketplaceQuery: string = '';
+
+  @observable
+  installedQuery: string = '';
+
+  @observable
+  tabActiveKey = TabActiveKey.MARKETPLACE;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
   private isInit: boolean = false;
 
   // 是否显示内置插件
@@ -75,7 +87,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
     try {
       // 排除掉已安装的插件
       const res = await this.extensionManagerServer.search(query, this.installedIds);
-
       if (res.count > 0) {
         const data = res.data
         .map(this.transformMarketplaceExtension);
@@ -85,6 +96,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         });
       } else {
         runInAction(() => {
+          this.searchMarketplaceResults = [];
           this.searchMarketplaceState = SearchState.NO_CONTENT;
         });
       }
@@ -92,6 +104,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     } catch (err) {
       this.logger.error(err);
       runInAction(() => {
+        this.searchMarketplaceResults = [];
         this.searchMarketplaceState = SearchState.NO_CONTENT;
       });
     }
@@ -101,7 +114,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @debounce(300)
   private searchExtensionFromInstalled(query: string) {
     const data = this.showExtensions.filter((extension) => {
-      return extension.name.includes(query) || extension.displayName.includes(query);
+      return extension.name.includes(query) || (extension.displayName && extension.displayName.includes(query));
     });
     if (data.length > 0) {
       this.searchInstalledResults = data;
@@ -146,7 +159,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   @action
-  async updateExtension( extensionId: string, version: string, oldExtensionPath: string ): Promise<string> {
+  async updateExtension(extensionId: string, version: string, oldExtensionPath: string ): Promise<string> {
     const extensionPath =  await this.extensionManagerServer.updateExtension(extensionId, version, oldExtensionPath);
     runInAction(() => {
       const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
@@ -162,8 +175,18 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @action
   async makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string) {
-    this.searchMarketplaceResults = this.searchMarketplaceResults.map((r) => r.extensionId === extensionId ? { ...r, installed, path: extensionPath } : r);
-    this.hotExtensions = this.hotExtensions.map((r) => r.extensionId === extensionId ? { ...r, installed, path: extensionPath } : r);
+    this.searchMarketplaceResults = this.searchMarketplaceResults.map((r) => r.extensionId === extensionId ? {
+      ...r,
+      installed,
+      enable: installed,
+      path: extensionPath,
+      } : r);
+    this.hotExtensions = this.hotExtensions.map((r) => r.extensionId === extensionId ? {
+      ...r,
+      installed,
+      enable: installed,
+      path: extensionPath,
+      } : r);
     const rawExt = this.searchMarketplaceResults.find((r) => r.extensionId === extensionId)
       || this.hotExtensions.find((r) => r.extensionId === extensionId);
 
@@ -218,7 +241,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @computed
   get rawExtension() {
     return this.extensions.map((extension) => {
-
       const { displayName, description } = this.getI18nInfo(extension);
 
       return {
@@ -391,22 +413,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   /**
-   * 获取内置插件的 id
-   * @readonly
-   * @private
-   * @memberof ExtensionManagerService
-   */
-  private get builtinIds() {
-    return this.extensions.filter((extension) => {
-      if (this.isShowBuiltinExtensions) {
-        return true;
-      } else {
-        return extension.isBuiltin;
-      }
-    }).map((extension) => extension.extensionId);
-  }
-
-  /**
    * 设置插件是否启用
    * 全局设置会影响到工作空间的设置
    * @param extensionId 插件  id
@@ -457,7 +463,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * 转换插件市场的数据到 RawExtension
    * @param extension
    */
-  private transformMarketplaceExtension(extension): RawExtension {
+  private transformMarketplaceExtension(extension: SearchExtension): RawExtension {
     return {
       id: `${extension.publisher}.${extension.name}`,
       extensionId: extension.extensionId,
@@ -466,6 +472,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
       version: extension.version,
       description: extension.description,
       publisher: extension.publisher,
+      downloadCount: extension.downloadCount || 0,
       installed: false,
       icon: extension.icon || DEFAULT_ICON_URL,
       path: '',

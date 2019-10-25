@@ -8,6 +8,14 @@
   height: 100%;
 }
 
+.body :global(.ant-tabs-nav .ant-tabs-tab-active) {
+  color: var(--button-background);
+
+  &:hover {
+    color: var(--button-hoverBackground);
+  }
+}
+
 .content {
   // 43 为 tab 的高度
   height: calc(100% - 43px);
@@ -46,22 +54,6 @@
   margin-right: 8px;
 }
 
-.icon {
-  vertical-align: middle;
-}
-
-.tag {
-  margin-right: 4px;
-  font-size: 14px;
-  background-color: rgba(255,255,255,.049);
-  padding: 0 4px;
-  border-radius: 4px;
-  user-select: text;
-  white-space: nowrap;
-  &.green {
-    background-color: rgba(#52C41A,.40);
-  }
-}
 
 .subtitle {
   white-space: nowrap;

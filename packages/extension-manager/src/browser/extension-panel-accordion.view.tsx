@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, localize } from '@ali/ide-core-browser';
-import { IExtensionManagerService, SearchState } from '../common';
+import { useInjectable, localize, CommandService } from '@ali/ide-core-browser';
+import { IExtensionManagerService, SearchState, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionList } from './components/extension-list';
+import * as styles from './extension-panel.module.less';
 
 export const ExtensionDisableAccordion = observer(() => {
 
@@ -10,7 +11,6 @@ export const ExtensionDisableAccordion = observer(() => {
 
   return (
     <ExtensionList
-      isGray={true}
       list={extensionManagerService.disableResults}
       empty={extensionManagerService.disableResults.length === 0 ? localize('marketplace.extension.empty.disabled', '暂无已禁用的扩展') : ''}
     />
@@ -44,12 +44,18 @@ export const ExtensionHotAccordion = observer(() => {
 export const ExtensionSearchInstalledAccordion = observer(() => {
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   return (
     <ExtensionList
       loading={extensionManagerService.searchInstalledState === SearchState.LOADING}
       list={extensionManagerService.searchInstalledResults}
-      empty={extensionManagerService.searchInstalledState === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound', '找不到扩展') : ''}
+      empty={extensionManagerService.searchInstalledState === SearchState.NO_CONTENT ? (
+        <div className={styles.search_nofound}>
+          <div>{localize('marketplace.extension.notfound', '找不到扩展')}</div>
+          <a className={styles.search_nofound_link} onClick={() => commandService.executeCommand(SearchFromMarketplaceCommandId)}>{localize('marketplace.extension.search.marketplace', '搜索扩展市场')}</a>
+        </div>
+      ) : ''}
     />
   );
 });
