@@ -247,15 +247,16 @@ export class ResourceFileEdit implements IResourceFileEdit {
       eventBus.fire(new WorkspaceEditDidRenameFileEvent({ oldUri: this.oldUri, newUri: this.newUri }));
 
     } else if (!this.newUri && this.oldUri) {
-      // delete file
+      // 删除文件
       if (await fileSystemService.exists(this.oldUri.toString())) {
-        // 开天中默认recursive
+        // 默认recursive
+        await editorService.close(this.oldUri, true);
         await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: true });
       } else if (!options.ignoreIfNotExists) {
-        throw new Error(`${this.oldUri} does not exist and can not be deleted`);
+        throw new Error(`${this.oldUri} 不存在`);
       }
     } else if (this.newUri && !this.oldUri) {
-      // create file
+      // 创建文件
       if (options.overwrite === undefined && options.ignoreIfExists && await fileSystemService.exists(this.newUri.toString())) {
         return; // not overwriting, but ignoring, and the target file exists
       }

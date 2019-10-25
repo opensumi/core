@@ -3,8 +3,6 @@ const browserWindow = require('electron').remote.getCurrentWindow();
 const net = require('net')
 const { dirname, join } = require('path');
 
-const isDev = true; //TODO 
-
 console.log('preload')
 
 const listenPathDeffered = new Promise((resolve)=>{
@@ -41,7 +39,7 @@ electronEnv.isElectronRenderer = true;
 electronEnv.BufferBridge = Buffer
 electronEnv.currentWebContentsId = require('electron').remote.getCurrentWebContents().id;
 electronEnv.currentWindowId = require('electron').remote.getCurrentWindow().id;
-electronEnv.monacoPath = join (dirname(require.resolve('monaco-editor-core/package.json')), isDev? 'dev': 'min');
+electronEnv.monacoPath = join (dirname(require.resolve('monaco-editor-core/package.json')));
 electronEnv.appPath = require('electron').remote.app.getAppPath();
 
 

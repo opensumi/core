@@ -25,9 +25,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   isReloading: boolean;
 
+  public metadata: any;
+
   constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions = {}) {
     super();
     this._workspace = new URI(workspace);
+    this.metadata = metadata;
     this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
     this.browser = new BrowserWindow({
       show: false,
@@ -54,7 +57,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
             plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
           },
           extensionDir: this.appConfig.extensionDir,
-          ...metadata,
+          ...this.metadata,
           windowClientId: this.windowClientId,
         });
       }
@@ -72,6 +75,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     return this._workspace;
   }
 
+  setWorkspace(workspace: string, fsPath?: boolean) {
+    if (fsPath) {
+      this._workspace = URI.file(workspace);
+    } else {
+      this._workspace = new URI(workspace);
+    }
+  }
+
   async start() {
     this.clear();
     try {
@@ -81,7 +92,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       await this.node.start(rpcListenPath, (this.workspace || '').toString());
       getLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
       this.browser.loadURL(this.appConfig.browserUrl);
-      this.browser.show();
       this.browser.webContents.on('did-finish-load', () => {
         this.browser.webContents.send('preload:listenPath', rpcListenPath);
       });

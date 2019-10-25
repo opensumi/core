@@ -11,9 +11,33 @@ import { join } from '@ali/ide-core-common/lib/path';
 
 const cdnMonacoBase = isDevelopment() ? 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/' : 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/';
 
-export function loadMonaco(vsRequire: any): Promise<void> {
+let loadingMonaco: Promise<void> | undefined;
+
+export function loadMonaco(): Promise<void> {
+  if (!loadingMonaco) {
+    loadingMonaco = doLoadMonaco();
+  }
+  return loadingMonaco!;
+}
+
+function doLoadMonaco(): Promise<void> {
+  const vsRequire: any = (window as any).amdLoader.require;
   if (isElectronEnv()) {
-    vsRequire.config({ paths: { vs: URI.file(join((window as any).monacoPath, 'vs')).codeUri.fsPath } });
+    let lang = getLanguageId().toLowerCase();
+    if (lang === 'en-us') {
+      lang = '';
+    }
+    vsRequire.config({
+      paths: {
+        vs: URI.file(join((window as any).monacoPath, isDevelopment() ? 'dev' : 'min', 'vs')).codeUri.fsPath,
+        'vs/nls': {
+          // 设置 monaco 内部的 i18n
+          availableLanguages: {
+            // en-US -> en-us
+            '*': lang,
+          },
+        },
+    }});
   } else {
     let lang = getLanguageId().toLowerCase();
     if (lang === 'en-us') {

@@ -146,13 +146,14 @@ export abstract class WorkbenchEditorService {
 
   currentEditorGroup: IEditorGroup;
 
-  abstract  async closeAll(uri?: URI): Promise<void>;
+  abstract async closeAll(uri?: URI, force?: boolean): Promise<void>;
 
   abstract async open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
   abstract async openUris(uri: URI[]): Promise<void>;
 
   abstract saveAll(includeUntitled?: boolean): Promise<void>;
 
+  abstract async close(uri: any, force?: boolean): Promise<void>;
 }
 
 export interface IResourceOpenOptions {
