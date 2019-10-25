@@ -1,6 +1,7 @@
 import { nls } from '../common';
 
 export default class Messages {
+
   public static MARKERS_PANEL_CONTENT_EMPTY: string = nls.localize('markers.panel.content.empty', '目前尚未在工作区检测到问题。');
 
   public static MARKERS_PANEL_FILTER_INPUT_PLACEHOLDER: string = nls.localize('markers.filter.placefolder', '筛选器，例如：text、**/*.ts、!**/node_modules/**');

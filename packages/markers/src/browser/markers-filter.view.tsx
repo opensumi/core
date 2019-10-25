@@ -11,9 +11,9 @@ import Messages from './messages';
 export const MarkerFilterPanel = observer(() => {
   const markerService = MarkerService.useInjectable();
   return (
-    <div className={ styles.markerFilterContent }>
-      <input className={ styles.filterInput }
-        placeholder={ Messages.MARKERS_PANEL_FILTER_INPUT_PLACEHOLDER }
+    <div className={styles.markerFilterContent}>
+      <input className={styles.filterInput}
+        placeholder={Messages.MARKERS_PANEL_FILTER_INPUT_PLACEHOLDER}
         onChange={(event) => {
           const value = event.target.value;
           if (value) {
@@ -21,7 +21,7 @@ export const MarkerFilterPanel = observer(() => {
           } else {
             markerService.fireFilterChanged(undefined);
           }
-        }}/>
+        }} />
     </div>
   );
 });

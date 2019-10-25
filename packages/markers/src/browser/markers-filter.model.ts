@@ -3,9 +3,14 @@ import { IMarker, MarkerSeverity, ResourceGlobMatcher, URI } from '@ali/ide-core
 import { IFilter, matchesFuzzy, matchesFuzzy2, matchesPrefix } from '@ali/ide-core-common/lib/filters';
 import { getEmptyExpression, IExpression, splitGlobAware } from '@ali/ide-core-common/lib/glob';
 import * as strings from '@ali/ide-core-common/lib/strings';
-import { IFilterOptions, IMarkerModel, IFilterMatches, IFilterMarkerItem } from '../common';
+import { IFilterMarker, IFilterMarkerModel, IFilterOptions, IMarkerModel, MarkerItemBuilder, MarkerModelBuilder } from '../common';
 import Messages from './messages';
 
+/**
+ * marker 过滤选项
+ * - 过滤严重程度
+ * - 过滤文案
+ */
 export class FilterOptions implements IFilterOptions {
   static readonly _filter: IFilter = matchesFuzzy2;
   static readonly _messageFilter: IFilter = matchesFuzzy;
@@ -58,141 +63,42 @@ export class FilterOptions implements IFilterOptions {
   }
 }
 
-interface IFilterMarkerModel {
-  match: boolean;
-  data: IMarkerModel;
-  matches?: IFilterMatches;
-  children?: IFilterMarkerItem [];
-}
-
-export class FilterMarkerModel implements IFilterMarkerModel, IMarkerModel {
-  constructor(
-    public match: boolean = true,
-    public data: IMarkerModel,
-    public children: IFilterMarkerItem[],
-    public matches?: IFilterMatches,
-  ) { }
-
-  get uri() {
-    return this.data.uri;
-  }
-
-  get icon() {
-    return this.data.icon;
-  }
-
-  get filename() {
-    return this.data.filename;
-  }
-
-  get longname() {
-    return this.data.longname;
-  }
-
-  get markers(): IFilterMarkerItem[] {
-    return this.children;
-  }
-
-  public size() {
-    let count = 0;
-    if (this.children.length > 0) {
-      this.children.forEach((child) => {
-        if (child.match) {
-          count = count + 1;
-        }
-      });
-    }
-    return count;
-  }
-
-  public hasChildren() {
-    return this.children && this.children.length > 0;
-  }
-}
-
-export class FilterMarkerItem implements IFilterMarkerItem {
-  constructor(
-    public match: boolean = true,
-    public data: IMarker,
-    public matches?: IFilterMatches,
-  ) { }
-
-  get type() {
-    return this.data.type;
-  }
-
-  get resource() {
-    return this.data.resource;
-  }
-
-  get code() {
-    return this.data.code;
-  }
-
-  get severity() {
-    return this.data.severity;
-  }
-
-  get message() {
-    return this.data.message;
-  }
-
-  get source() {
-    return this.data.source;
-  }
-
-  get startLineNumber() {
-    return this.data.startLineNumber;
-  }
-
-  get endLineNumber() {
-    return this.data.endLineNumber;
-  }
-
-  get startColumn() {
-    return this.data.startColumn;
-  }
-
-  get endColumn() {
-    return this.data.endColumn;
-  }
-
-  get relatedInformation() {
-    return this.data.relatedInformation;
-  }
-
-  get tags() {
-    return this.data.tags;
-  }
-}
-
+/**
+ * Marker Filter
+ * - 模糊匹配 marker model
+ *  - 匹配 filename
+ * - 模糊匹配 marker item
+ *  - 匹配 message
+ *  - 匹配 srouce
+ *  - 匹配 code
+ */
 export class Filter {
 
   constructor(public options: FilterOptions) { }
 
-  public filterModel(model: IMarkerModel): FilterMarkerModel {
-    const children = this.filterMarkerItems(model.markers);
+  public filterModel(model: IMarkerModel): IFilterMarkerModel {
+    const markers = this.filterMarkerItems(model.markers);
     const filenameMatches = model.filename ? FilterOptions._filter(this.options.textFilter, model.filename) : undefined;
-    const match = (filenameMatches && filenameMatches.length > 0) || children.length > 0;
-    return new FilterMarkerModel(match, model, children, match ? { filenameMatches } : undefined);
+    const match = (filenameMatches && filenameMatches.length > 0) || markers.length > 0;
+    return MarkerModelBuilder.buildFilterModel(model, markers, match, match ? { filenameMatches } : undefined);
   }
 
-  private filterMarkerItems(markers: IMarker[]): IFilterMarkerItem[] {
+  private filterMarkerItems(markers: IMarker[]): IFilterMarker[] {
     if (!markers || markers.length <= 0) { return []; }
-    const result: IFilterMarkerItem[] = markers.map((marker) => {
+    const result: IFilterMarker[] = markers.map((marker) => {
       return this.filterMarkerItem(marker);
     });
-    return result.filter((model: IFilterMarkerItem) => {
+    return result.filter((model: IFilterMarker) => {
       return model.match === true;
     });
   }
 
-  private filterMarkerItem(marker: IMarker): IFilterMarkerItem {
+  private filterMarkerItem(marker: IMarker): IFilterMarker {
     if (this.options.filterErrors && MarkerSeverity.Error === marker.severity
       || this.options.filterWarnings && MarkerSeverity.Warning === marker.severity
       || this.options.filterInfos && MarkerSeverity.Info === marker.severity
       || !this.options.textFilter) {
-      return new FilterMarkerItem(true, marker);
+      return MarkerItemBuilder.buildFilterItem(marker, true);
     }
 
     const messageMatches = marker.message ? FilterOptions._filter(this.options.textFilter, marker.message) : undefined;
@@ -200,13 +106,13 @@ export class Filter {
     const codeMatches = marker.code ? FilterOptions._filter(this.options.textFilter, marker.code) : undefined;
 
     if (messageMatches || sourceMatches || codeMatches) {
-      return new FilterMarkerItem(true, marker, {
+      return MarkerItemBuilder.buildFilterItem(marker, true, {
         messageMatches,
         sourceMatches,
         codeMatches,
       });
     } else {
-      return new FilterMarkerItem(false, marker);
+      return MarkerItemBuilder.buildFilterItem(marker, false);
     }
   }
 }

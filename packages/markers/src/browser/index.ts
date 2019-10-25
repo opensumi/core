@@ -1,4 +1,4 @@
-import { Provider, Injectable } from '@ali/common-di';
+import { Injectable, Provider } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { MarkersContribution } from './markers-contribution';
 

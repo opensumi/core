@@ -1,9 +1,9 @@
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IMarker, MarkerSeverity, URI } from '@ali/ide-core-common';
+import { isFalsyOrEmpty, mergeSort } from '@ali/ide-core-common/lib/arrays';
 import { observable } from 'mobx';
-import { isFalsyOrEmpty, mergeSort } from '../common/index';
-import { IMarkerService, IMarkerModel } from '../common/types';
-import { Filter, FilterOptions, IFilterMarkerItem } from './markers-filter.model';
+import { IMarkerService, MarkerModelBuilder, RenderableMarkerModel } from '../common';
+import { Filter, FilterOptions } from './markers-filter.model';
 
 function compareMarkers(a: IMarker, b: IMarker): number {
   return MarkerSeverity.compare(a.severity, b.severity) || compareRangesUsingStarts(a, b);
@@ -39,29 +39,15 @@ function compareRangesUsingStarts(a: IMarker, b: IMarker): number {
 }
 
 /**
- * marker model of given url
+ * marker view model for display
  */
-export class MarkerModel implements IMarkerModel {
-  constructor(
-    public readonly uri: string,
-    public readonly icon: string,
-    public readonly filename: string,
-    public readonly longname: string,
-    public markers: IFilterMarkerItem[],
-  ) { }
-
-  public size() {
-    return this.markers && this.markers.length;
-  }
-}
-
 export class MarkerViewModel {
 
+  // view data
   @observable
-  public markers: Map<string, IMarkerModel> = new Map<string, IMarkerModel>();
+  public markers: Map<string, RenderableMarkerModel> = new Map<string, RenderableMarkerModel>();
 
-  // 过滤选项
-  @observable.ref
+  // marker filter
   private filter: Filter | undefined;
 
   constructor(private _service: IMarkerService, private labelService: LabelService) {
@@ -90,17 +76,17 @@ export class MarkerViewModel {
     if (isFalsyOrEmpty(rawMarkers)) {
       this.markers.delete(resource.toString());
     } else {
-      const mergedMarkers = mergeSort(rawMarkers, compareMarkers);
-      const {icon, filename, longname} = this.getUriInfos(resource);
+      const markers = mergeSort(rawMarkers, compareMarkers);
+      const { icon, filename, longname } = this.getUriInfos(resource);
 
-      const markerModel = new MarkerModel(resource, icon, filename, longname, mergedMarkers);
+      const markerModel = MarkerModelBuilder.buildModel(resource, icon, filename, longname, markers);
       if (this.filter) {
         const filterResult = this.filter.filterModel(markerModel);
         if (filterResult.match) {
-          this.markers.set(resource.toString(), filterResult);
+          this.markers.set(resource, filterResult);
         }
       } else {
-        this.markers.set(resource.toString(), markerModel);
+        this.markers.set(resource, markerModel);
       }
     }
   }
