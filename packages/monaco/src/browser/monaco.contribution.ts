@@ -45,17 +45,16 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     for (const contribution of this.contributionProvider.getContributions()) {
       contribution.onMonacoLoaded(this.monacoService);
     }
-    this.textmateService.init();
     // monaco 的 keycode 和 ide 之间的映射
     // 依赖 Monaco 加载完毕
     this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
   }
 
   async onStart() {
-    this.themeService.getCurrentTheme().then((currentTheme) => {
-      const themeData = currentTheme.themeData;
-      this.textmateService.setTheme(themeData);
-    });
+    this.textmateService.init();
+    const currentTheme = this.themeService.getCurrentThemeSync();
+    const themeData = currentTheme.themeData;
+    this.textmateService.setTheme(themeData);
   }
 
   onMonacoLoaded(monacoService: MonacoService) {
