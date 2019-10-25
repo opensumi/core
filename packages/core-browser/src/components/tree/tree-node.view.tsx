@@ -390,6 +390,10 @@ export const TreeContainerNode = (
         } else {
           onChange(node, value);
         }
+      } else if (key && Key.ESCAPE.keyCode === key.keyCode) {
+        event.stopPropagation();
+        event.preventDefault();
+        onChange(node, '');
       }
     };
 
