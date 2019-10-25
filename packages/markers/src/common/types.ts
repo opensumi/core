@@ -62,14 +62,14 @@ export interface IMarkerModelLike <T extends IMarker> {
   readonly longname: string;
   readonly markers: T[];
   size: () => number;
+
+  readonly match?: boolean;
+  readonly matches?: IFilterMatches;
 }
 
 export interface IMarkerModel extends IMarkerModelLike<IMarker> {}
 
-export interface IFilterMarkerModel extends IMarkerModelLike<IFilterMarker> {
-  readonly match: boolean;
-  readonly matches?: IFilterMatches;
-}
+export interface IFilterMarkerModel extends IMarkerModelLike<IFilterMarker> {}
 
 export class MarkerModelBuilder {
   public static buildModel(resource: string, icon: string, filename: string, longname: string, markers: RenderableMarker[]): IMarkerModel {
@@ -83,7 +83,7 @@ export class MarkerModelBuilder {
     };
   }
 
-  public static buildFilterModel(model: IMarkerModel, markers: IFilterMarker[], match: boolean, matches): IFilterMarkerModel {
+  public static buildFilterModel(model: IMarkerModel, markers: IFilterMarker[], match: boolean, matches: IFilterMatches | undefined): IFilterMarkerModel {
     return {
       ...model,
       match,

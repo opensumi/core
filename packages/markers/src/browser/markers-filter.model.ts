@@ -77,20 +77,27 @@ export class Filter {
   constructor(public options: FilterOptions) { }
 
   public filterModel(model: IMarkerModel): IFilterMarkerModel {
-    const markers = this.filterMarkerItems(model.markers);
     const filenameMatches = model.filename ? FilterOptions._filter(this.options.textFilter, model.filename) : undefined;
-    const match = (filenameMatches && filenameMatches.length > 0) || markers.length > 0;
-    return MarkerModelBuilder.buildFilterModel(model, markers, match, match ? { filenameMatches } : undefined);
+    const isFilenameMatch = filenameMatches && filenameMatches.length > 0;
+    if (isFilenameMatch) {
+      return MarkerModelBuilder.buildFilterModel(model, this.filterMarkerItems(model.markers, false), true, { filenameMatches });
+    } else {
+      return MarkerModelBuilder.buildFilterModel(model, this.filterMarkerItems(model.markers, true), true, { filenameMatches });
+    }
   }
 
-  private filterMarkerItems(markers: IMarker[]): IFilterMarker[] {
+  private filterMarkerItems(markers: IMarker[], filterCount: boolean): IFilterMarker[] {
     if (!markers || markers.length <= 0) { return []; }
     const result: IFilterMarker[] = markers.map((marker) => {
       return this.filterMarkerItem(marker);
     });
-    return result.filter((model: IFilterMarker) => {
-      return model.match === true;
-    });
+    if (filterCount) {
+      return result.filter((model: IFilterMarker) => {
+        return model.match === true;
+      });
+    } else {
+      return result;
+    }
   }
 
   private filterMarkerItem(marker: IMarker): IFilterMarker {

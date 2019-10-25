@@ -30,11 +30,20 @@ const MarkerItemTitle: React.FC<{ model: RenderableMarkerModel, open: boolean, o
     <div className={styles.itemTitle} onClick={onClick}>
       <div className={cls(open ? styles.fold : styles.unfold, ICONS.FOLD)} />
       <div className={cls(model.icon)} />
-      <div className={styles.filename}>{model.filename}</div>
+      <MarkerItemFilename model={model} />
       <div className={styles.filepath}>{model.longname}</div>
       <div className={styles.totalCount}>{model.size()}</div>
     </div>
   );
+});
+
+const MarkerItemFilename: React.FC<{ model: RenderableMarkerModel }> = observer(({ model }) => {
+  const filenameMatches = model.matches && model.matches.filenameMatches;
+  if (filenameMatches) {
+    return <HightlightData data={model.filename} matches={filenameMatches} className={styles.filename} />;
+  } else {
+    return <div className={styles.filename}>{model.filename}</div>;
+  }
 });
 
 /**
@@ -146,7 +155,7 @@ const MarkerItemPosition: React.FC<{ data: RenderableMarker }> = observer(({ dat
 const MarkerItem: React.FC<{ model: RenderableMarkerModel }> = observer(({ model }) => {
   const [open, setOpen] = React.useState(true);
 
-  if (model.size() > 0) {
+  if (model.match || model.size() > 0) {
     return (
       <div className={styles.markerItem}>
         <MarkerItemTitle model={model} open={open} onClick={() => {
