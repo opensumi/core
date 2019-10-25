@@ -436,8 +436,10 @@ export class ClientApp implements IClientApp {
           });
         }
       } else {
+        // 为了避免不必要的弹窗，如果页面并没有发生交互浏览器可能不会展示在 beforeunload 事件中引发的弹框，甚至可能即使发生交互了也直接不显示。
         if (this.preventStop()) {
-          return ''; // web
+          (event || window.event).returnValue = true;
+          return true;
         }
       }
     });
