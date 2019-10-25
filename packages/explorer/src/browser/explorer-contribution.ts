@@ -50,7 +50,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       execute: (uri?: URI) => {
         const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
         if (!handler || !handler.isVisible) {
-          return ;
+          return;
         }
         let locationUri = uri;
 
@@ -66,7 +66,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       execute: (uri?: URI) => {
         const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
         if (!handler || !handler.isVisible) {
-          return ;
+          return;
         }
         if (!uri) {
           uri = this.filetreeService.root;
@@ -78,7 +78,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       execute: async () => {
         const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
         if (!handler || !handler.isVisible) {
-          return ;
+          return;
         }
         await this.filetreeService.refresh(this.filetreeService.root);
       },
@@ -198,7 +198,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
           const { uris } = data;
           if (uris && uris.length) {
             const copyUri: URI = uris[0];
-            copy(copyUri.withScheme('').toString());
+            copy(decodeURIComponent(copyUri.withScheme('').toString()));
           }
         }
       },
@@ -213,7 +213,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
           if (uris && uris.length) {
             const copyUri: URI = uris[0];
             if (this.filetreeService.root) {
-              copy(this.filetreeService.root.relative(copyUri)!.toString());
+              copy(decodeURIComponent(this.filetreeService.root.relative(copyUri)!.toString()));
             }
           }
         }
