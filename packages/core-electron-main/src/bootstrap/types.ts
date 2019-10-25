@@ -98,4 +98,7 @@ export interface ICodeWindow {
 
   getBrowserWindow(): Electron.BrowserWindow;
 
+  metadata: any;
+
+  setWorkspace(workspace: string, fsPath?: boolean);
 }
