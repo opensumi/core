@@ -153,7 +153,7 @@ export class KTNodeProcess {
       this.ready = new Promise((resolve, reject) => {
         try {
           const forkOptions: ForkOptions = {
-            env: { ... process.env, KTELECTRON: '1', EXTENSION_HOST_ENTRY: this.extensionEntry, CODE_WINDOW_CLIENT_ID: this.windowClientId},
+            env: { ... process.env, KTELECTRON: '1', ELECTRON_RUN_AS_NODE: '1', EXTENSION_HOST_ENTRY: this.extensionEntry, CODE_WINDOW_CLIENT_ID: this.windowClientId},
             stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
           };
           const forkArgs: string[] = [];
