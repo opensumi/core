@@ -28,6 +28,7 @@ export const terminalExpand: Command = {
   id: 'terminal.expand',
   label: 'expand terminal',
   iconClass: getIcon('up'),
+  toogleIconClass: getIcon('down'),
   category: 'terminal',
 };
 
