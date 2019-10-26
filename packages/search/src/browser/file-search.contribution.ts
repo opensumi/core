@@ -31,7 +31,7 @@ import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, Pr
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorGroupSplitAction } from '@ali/ide-editor';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
-import { getIcon } from '../../../core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { SearchPreferences } from './search-preferences';
 
 export const quickFileOpen: Command = {

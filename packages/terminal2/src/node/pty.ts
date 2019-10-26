@@ -13,10 +13,10 @@ export class PtyService {
     const bin = options.shellPath || process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL'] || '/bin/sh';
     const ptyProcess = pty.spawn(bin, [], {
       encoding: 'utf-8',
-      name: 'xterm-color',
+      name: options.name || 'xterm-color',
       cols: cols || 100,
       rows: rows || 30,
-      cwd: options.cwd!.toString(),
+      cwd: options.cwd ? options.cwd!.toString() : '',
       env: (() => {
         if (options.strictEnv) {
           return options.env as { [key: string]: string };

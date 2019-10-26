@@ -304,7 +304,7 @@ export const TreeContainerNode = (
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
       return <Icon
         key={action.title || index}
-        iconClass={icon}
+        iconClass={cls(styles.action_icon, icon)}
         title={action.title}
         onClick={clickHandler} />;
     });
