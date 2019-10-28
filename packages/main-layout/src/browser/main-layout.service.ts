@@ -311,7 +311,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return this.middleWidget.relativeSizes().join(',') === '0,1';
   }
 
-  private prevRelativeSize: number[];
+  private prevRelativeSize: number[] = [3, 1];
   async expandBottom(expand?: boolean) {
     if (expand) {
       this.prevRelativeSize = this.middleWidget.relativeSizes();

@@ -7,7 +7,7 @@ const jsdom = new JSDOM(`<div id="main"></div>`, {
   // 避免测试用例加载 external subresource, 如 iconfont 的 css 挂掉
   // resources: 'usable',
   runScripts: 'dangerously',
-  url: 'http://localhost/',
+  url: 'http://localhost/?id=1',
 });
 global.document = jsdom.window.document;
 global.navigator = jsdom.window.navigator;

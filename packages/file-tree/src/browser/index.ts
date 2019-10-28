@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Provider, Injector, ConstructorOf } from '@ali/common-di';
-import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '../common';
-import { FileTreeAPIImpl } from './file-tree.api';
+import { servicePath as FileTreeServicePath, IFileTreeAPI } from '../common';
+import { FileTreeAPI } from './file-tree.api';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
 import { FileTree } from './file-tree.view';
@@ -21,7 +21,10 @@ const bindFileTreePreference = (injector: Injector) => {
 export class FileTreeModule extends BrowserModule {
 
   providers: Provider[] = [
-    createFileTreeAPIProvider(FileTreeAPIImpl),
+    {
+      token: IFileTreeAPI,
+      useClass: FileTreeAPI,
+    },
     FileTreeItemKeybindingContext,
     FileTreeContribution,
   ];

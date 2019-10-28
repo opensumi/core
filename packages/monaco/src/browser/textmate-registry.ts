@@ -17,6 +17,7 @@
 import { Injectable } from '@ali/common-di';
 import { IGrammarConfiguration } from 'vscode-textmate';
 import { TokenizerOption } from './textmate-tokenizer';
+import URI from 'vscode-uri';
 
 export interface TextmateGrammarConfiguration extends IGrammarConfiguration {
 
@@ -34,7 +35,8 @@ export interface GrammarDefinitionProvider {
 
 export interface GrammarDefinition {
     format: 'json' | 'plist';
-    content: object | string;
+    content?: object | string;
+    location: URI;
 }
 
 @Injectable()

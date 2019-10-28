@@ -168,7 +168,16 @@ export class TabBarToolbar extends Widget {
     e.stopPropagation();
     const item = this.inline.get(e.currentTarget.id);
     if (TabBarToolbarItem.is(item)) {
+      const command = this.commandRegistry.getCommand(item.command);
       this.commands.executeCommand(item.command);
+      if (command && command.toogleIconClass && command.iconClass) {
+        const el = e.target as HTMLElement;
+        if (el.className.indexOf(command.iconClass) !== -1) {
+          el.className = el.className.replace(command.iconClass, command.toogleIconClass);
+        } else {
+          el.className = el.className.replace(command.toogleIconClass, command.iconClass);
+        }
+      }
     }
   }
 

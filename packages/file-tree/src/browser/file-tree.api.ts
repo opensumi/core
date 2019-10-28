@@ -1,6 +1,6 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { FileTreeAPI } from '../common/file-tree.defination';
+import { IFileTreeAPI } from '../common/file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -9,7 +9,7 @@ import { EDITOR_COMMANDS, URI, CommandService } from '@ali/ide-core-browser';
 import { AbstractFileTreeItem, Directory, File } from './file-tree-item';
 
 @Injectable()
-export class FileTreeAPIImpl implements FileTreeAPI {
+export class FileTreeAPI implements IFileTreeAPI {
 
   @Autowired(IFileServiceClient)
   private fileServiceClient: IFileServiceClient;
@@ -111,7 +111,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
    * @param {(AbstractFileTreeItem | undefined)} parent
    * @param {boolean} isSymbolicLink
    * @returns {AbstractFileTreeItem}
-   * @memberof FileTreeAPIImpl
+   * @memberof FileTreeAPI
    */
   fileStat2FileTreeItem(filestat: FileStat, parent: Directory | undefined, isInSymbolicDirectory?: boolean): AbstractFileTreeItem {
     const uri = new URI(filestat.uri);
@@ -156,7 +156,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
    *
    * @param {URI} path
    * @returns
-   * @memberof FileTreeAPIImpl
+   * @memberof FileTreeAPI
    */
   getReadableTooltip(path: URI) {
     const pathStr = path.toString();
@@ -165,7 +165,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       return path.withScheme('').toString();
     }
     if (this.userhomePath.isEqualOrParent(path)) {
-      return pathStr.replace(userhomePathStr, '~');
+      return pathStr.replace(userhomePathStr, '~/');
     }
     return path.withScheme('').toString();
   }

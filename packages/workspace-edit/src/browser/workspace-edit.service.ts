@@ -31,7 +31,7 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
     edit.edits.forEach((edit) => {
       bulkEdit.add(edit);
     });
-    bulkEdit.apply(this.documentModelService, this.fileSystemService, this.editorService, this.eventBus);
+    await bulkEdit.apply(this.documentModelService, this.fileSystemService, this.editorService, this.eventBus);
     this.editStack.push(bulkEdit);
   }
 
@@ -67,7 +67,7 @@ export class BulkEdit {
         if (last.resource.toString() === textEdit.resource.toString()) {
           let shouldMerge = false;
           if (last.modelVersionId) {
-            if (textEdit.modelVersionId ) {
+            if (textEdit.modelVersionId) {
               shouldMerge = textEdit.modelVersionId === last.modelVersionId;
             } else {
               shouldMerge = true;
@@ -106,7 +106,7 @@ export class ResourceTextEdit implements IResourceTextEdit {
   constructor(edit: IResourceTextEdit) {
     this.resource = edit.resource;
     this.modelVersionId = edit.modelVersionId,
-    this.edits = edit.edits;
+      this.edits = edit.edits;
     this.options = edit.options || {};
   }
 
@@ -161,7 +161,7 @@ export class ResourceTextEdit implements IResourceTextEdit {
           return false;
         }
       }
-      editorService.open(this.resource, { backend: true});
+      editorService.open(this.resource, { backend: true });
       this.focusEditor(editorService);
       return false;
     } else if (this.options.dirtyIfInEditor) {
@@ -201,7 +201,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     this.options = edit.options;
   }
 
-  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IEditorDocumentModelService, eventBus: IEventBus ) {
+  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IEditorDocumentModelService, eventBus: IEventBus) {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
@@ -244,18 +244,19 @@ export class ResourceFileEdit implements IResourceFileEdit {
         newDocRef.dispose();
       }
 
-      eventBus.fire(new WorkspaceEditDidRenameFileEvent({oldUri: this.oldUri, newUri: this.newUri}));
+      eventBus.fire(new WorkspaceEditDidRenameFileEvent({ oldUri: this.oldUri, newUri: this.newUri }));
 
     } else if (!this.newUri && this.oldUri) {
-      // delete file
+      // 删除文件
       if (await fileSystemService.exists(this.oldUri.toString())) {
-        // 开天中默认recursive
+        // 默认recursive
+        await editorService.close(this.oldUri, true);
         await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: true });
       } else if (!options.ignoreIfNotExists) {
-        throw new Error(`${this.oldUri} does not exist and can not be deleted`);
+        throw new Error(`${this.oldUri} 不存在`);
       }
     } else if (this.newUri && !this.oldUri) {
-      // create file
+      // 创建文件
       if (options.overwrite === undefined && options.ignoreIfExists && await fileSystemService.exists(this.newUri.toString())) {
         return; // not overwriting, but ignoring, and the target file exists
       }
