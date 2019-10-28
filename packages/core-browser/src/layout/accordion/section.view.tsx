@@ -108,7 +108,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 
   protected updateToolbar(forceHide?: boolean): void {
-    if (!this.toolBar) {
+    if (!this.toolBar || this.view.id.startsWith('scm')) {
       return;
     }
     const tabBarToolbarRegistry = this.injector.get(TabBarToolbarRegistry);

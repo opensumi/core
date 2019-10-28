@@ -38,7 +38,7 @@ import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 
-const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_znyqu24ou9c.css';
+const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_e2ikewyk1kq.css';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;

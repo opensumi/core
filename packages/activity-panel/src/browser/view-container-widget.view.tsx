@@ -1,5 +1,5 @@
 import { Injectable, INJECTOR_TOKEN, Injector, Autowired, Inject } from '@ali/common-di';
-import { ActivityPanelToolbar } from './activity-panel-toolbar';
+import { ActivityPanelToolbar } from '@ali/ide-core-browser/lib/layout/view-container-toolbar';
 import { View, Side, AccordionWidget, CommandRegistry, SectionState, ContainerState, Deferred, IContextKeyService } from '@ali/ide-core-browser';
 import { Widget, BoxPanel, BoxLayout, Title } from '@phosphor/widgets';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';

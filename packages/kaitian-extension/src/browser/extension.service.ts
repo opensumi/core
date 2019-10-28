@@ -236,8 +236,11 @@ export class ExtensionServiceImpl implements ExtensionService {
       extension.enable();
       await extension.contributeIfEnabled();
 
-      const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
-      await proxy.$initExtensions();
+      // @柳千这个判断是否必要，否则在安装插件后可能是 undefined
+      if (this.protocol) {
+        const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+        await proxy.$initExtensions();
+      }
 
       const { packageJSON: { activationEvents = [] } } = extension;
       this.fireActivationEventsIfNeed(activationEvents);
@@ -374,12 +377,8 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
     const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
-    return storage.get(extension.extensionId) !== '0';
-  }
-
-  public async setExtensionEnable(extensionId: string, enable: boolean) {
-    const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
-    storage.set(extensionId, enable ? '1' : '0');
+    // 全局设置会同步到 workspace 中，所以只检查 workspace 就可以了
+    return storage.get(extension.extensionId, '1') === '1';
   }
 
   private async initBrowserDependency() {

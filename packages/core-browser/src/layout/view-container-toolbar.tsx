@@ -2,9 +2,10 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Widget, Title } from '@phosphor/widgets';
 import { Message } from '@phosphor/messaging';
-import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath, TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-core-browser';
+import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath, TabBarToolbarRegistry, TabBarToolbar } from '../';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ViewContainerRegistry } from './view-container.registry';
 
 @Injectable({multiple: true})
 export class ActivityPanelToolbar extends Widget {
@@ -27,6 +28,9 @@ export class ActivityPanelToolbar extends Widget {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
+  @Autowired()
+  private viewContainerRegistry: ViewContainerRegistry;
+
   private toolbar: TabBarToolbar;
 
   constructor(
@@ -34,6 +38,7 @@ export class ActivityPanelToolbar extends Widget {
     protected readonly containerId: string,
     private view?: View) {
     super();
+    this.viewContainerRegistry.registerTitleBar(this.containerId, this);
     this.init();
     this.tabBarToolbarRegistry.onDidChange(() => this.update());
     this.node.addEventListener('contextmenu', (event) => {
@@ -71,7 +76,7 @@ export class ActivityPanelToolbar extends Widget {
 
   // 由外部调用决定
   public updateToolbar(viewId?: string): void {
-    if (!this.toolbar) {
+    if (!this.toolbar || this.containerId.startsWith('scm')) {
       return;
     }
     const current = this._toolbarTitle;
@@ -110,7 +115,7 @@ export class ActivityPanelToolbar extends Widget {
       this._toolbarTitle = title;
       if (this._toolbarTitle.label) {
         this.titleContainer.innerHTML = this._toolbarTitle.label;
-        this.update();
+        // this.update();
       } else {
         // title不传时隐藏标题栏
         this.titleContainer!.style.display = 'none';
