@@ -6,6 +6,8 @@ import { Disposable } from '@ali/ide-core-browser';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { ITerminalClient, TerminalInfo } from '@ali/ide-terminal2/lib/common';
 
+import { ILogger } from '@ali/ide-core-browser';
+
 @Injectable({multiple: true})
 export class MainThreadTerminal implements IMainThreadTerminal {
   private readonly proxy: IExtHostTerminal;
@@ -13,6 +15,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   @Autowired(ITerminalClient)
   private terminalClient: ITerminalClient;
   private disposable = new Disposable();
+
+  @Autowired(ILogger)
+  logger: ILogger;
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTerminal);
@@ -71,7 +76,11 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     return this.terminalClient.getProcessId(id);
   }
 
-  $createTerminal(options: vscode.TerminalOptions, id: string) {
-    this.terminalClient.createTerminal(options, id);
+  async $createTerminal(options: vscode.TerminalOptions) {
+    const terminal = await this.terminalClient.createTerminal(options);
+    if (!terminal) {
+      return this.logger.error('创建终端失败');
+    }
+    return terminal.id;
   }
 }

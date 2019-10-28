@@ -65,11 +65,13 @@ export class ExtHostTerminal implements IExtHostTerminal {
     shellArgs?: string[] | string,
   ): vscode.Terminal  => {
     let options: vscode.TerminalOptions = {};
-    const id = uuid();
 
     if (isObject(optionsOrName)) {
       options = optionsOrName as vscode.TerminalOptions;
     } else {
+      if (optionsOrName) {
+        options.name = optionsOrName;
+      }
       if (shellPath) {
         options.shellPath = shellPath;
       }
@@ -77,8 +79,12 @@ export class ExtHostTerminal implements IExtHostTerminal {
         options.shellArgs = shellArgs;
       }
     }
-    this.proxy.$createTerminal(options, id);
-    return new Terminal(id, options.name || '', this.proxy);
+    const terminal = new Terminal('', options.name || '', this.proxy, true);
+    this.proxy.$createTerminal(options).then((id) => {
+      terminal.created(id);
+    });
+    // 插件API 同步提供 terminal 实例
+    return terminal;
   }
 
   $setTerminals(idList: TerminalInfo[]) {
@@ -110,26 +116,55 @@ export class Terminal implements vscode.Terminal {
   private id: string;
   private proxy: IMainThreadTerminal;
 
-  constructor(id: string, name: string, proxy: IMainThreadTerminal) {
+  private createdPromiseResolve;
+
+  private when: Promise<any> = new Promise((resolve) => {
+    this.createdPromiseResolve = resolve;
+  });
+
+  /**
+   *
+   * @param id
+   * @param name
+   * @param proxy
+   * @param isWaitCreate // 是否需要等待Terminal初始化
+   */
+  constructor(id: string, name: string, proxy: IMainThreadTerminal, isWaitCreate?: boolean) {
     this.proxy = proxy;
     this.id = id;
     this.name = name;
+    if (!isWaitCreate) {
+      this.created(id);
+    }
   }
 
   get processId(): Thenable<number> {
-    return this.proxy.$getProcessId(this.id);
+    return this.when.then(() => {
+      return this.proxy.$getProcessId(this.id);
+    });
   }
 
   sendText(text: string, addNewLine?: boolean): void {
-    this.proxy.$sendText(this.id, text, addNewLine);
+    this.when.then(() => {
+      this.proxy.$sendText(this.id, text, addNewLine);
+    });
   }
 
   show(preserveFocus?: boolean): void {
-    this.proxy.$show(this.id, preserveFocus);
+    this.when.then(() => {
+      this.proxy.$show(this.id, preserveFocus);
+    });
   }
 
   hide(): void {
-    this.proxy.$hide(this.id);
+    this.when.then(() => {
+      this.proxy.$hide(this.id);
+    });
+  }
+
+  created(id) {
+    this.id = id;
+    this.createdPromiseResolve();
   }
 
   dispose(): void {
