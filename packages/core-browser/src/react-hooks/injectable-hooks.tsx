@@ -7,11 +7,11 @@ function isDisposable(target: any): target is Disposable {
   return target && (target as any).dispose;
 }
 
-export function useInjectable<T = any>(Constructor: Token): T  {
+export function useInjectable<T = any>(Constructor: Token, args?: any): T  {
   const { injector } = React.useContext(ConfigContext);
 
   const instance = React.useMemo(() => {
-    return injector.get(Constructor);
+    return injector.get(Constructor, args);
   }, [injector, Constructor]);
 
   React.useEffect(() => {

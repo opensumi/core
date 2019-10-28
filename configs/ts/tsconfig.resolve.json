@@ -171,12 +171,6 @@
       "@ali/ide-quick-open/lib/*": [
         "../packages/quick-open/src/*"
       ],
-      "@ali/ide-feature-extension": [
-        "../packages/feature-extension/src/index.ts"
-      ],
-      "@ali/ide-feature-extension/lib/*": [
-        "../packages/feature-extension/src/*"
-      ],
       "@ali/ide-vscode-extension": [
         "../packages/vscode-extension/src/index.ts"
       ],
@@ -212,12 +206,6 @@
       ],
       "@ali/ide-workspace/lib/*": [
         "../packages/workspace/src/*"
-      ],
-      "@ali/ide-core-extension": [
-        "../packages/core-extension/src/index.ts"
-      ],
-      "@ali/ide-core-extension/lib/*": [
-        "../packages/core-extension/src/*"
       ],
       "@ali/ide-opened-editor": [
         "../packages/opened-editor/src/index.ts"

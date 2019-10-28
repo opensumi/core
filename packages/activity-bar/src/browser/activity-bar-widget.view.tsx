@@ -9,6 +9,7 @@ import { MenuModelRegistry, ITabbarWidget, TabBarWidget, Side, AccordionWidget }
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { SIDE_MENU_PATH } from '../common';
+import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 
 const WIDGET_OPTION = Symbol();
 
@@ -31,6 +32,9 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
 
   @Autowired()
   activationEventService: ActivationEventService;
+
+  @Autowired()
+  private viewContainerRegistry: ViewContainerRegistry;
 
   private previousWidget: Widget;
 
@@ -176,10 +180,11 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
           this.expanded = true;
         }
         await this.doOpen(previousWidget, currentWidget, expandSize);
-        const container = (currentWidget as BoxPanel).widgets[1] as AccordionWidget;
+        const currentId = (currentWidget as any).containerId;
+        const accordion = this.viewContainerRegistry.getAccordion(currentId);
         // 不使用view container的情况（业务组件）
-        if (container) {
-          for (const section of container.sections.values()) {
+        if (accordion) {
+          for (const section of accordion.sections.values()) {
             this.activationEventService.fireEvent('onView', section.view.id);
           }
         }

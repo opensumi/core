@@ -17,12 +17,11 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   @Autowired(INodeLogger)
   private logger: INodeLogger;
-
   private headers: RequestHeaders;
 
-  async search(query: string) {
+  async search(query: string, ignoreId?: string[]) {
     try {
-      const res = await this.request(`search?query=${query}`, {
+      const res = await this.request(`search?query=${query}${ignoreId ? ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
         dataType: 'json',
         timeout: 5000,
       });
@@ -39,6 +38,23 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   async getExtensionFromMarketPlace(extensionId: string) {
     try {
       const res = await this.request(`extension/${extensionId}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
+    }
+  }
+
+  async getHotExtensions(ignoreId?: string[]) {
+    try {
+      const res = await this.request(`hot${ignoreId ? '?' + ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
         dataType: 'json',
         timeout: 5000,
       });

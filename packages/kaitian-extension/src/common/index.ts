@@ -58,7 +58,6 @@ export abstract class ExtensionService {
   abstract async activeExtension(extension: IExtension): Promise<void>;
   abstract async getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T>;
   abstract async getAllExtensions(): Promise<IExtensionMetaData[]>;
-  abstract setExtensionEnable(extensionId: string, enable: boolean): Promise<void>;
   abstract getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined>;
   abstract getAllExtensionJson(): Promise<IExtensionProps[]>;
   abstract async postChangedExtension(upgrade: boolean, extensionPath: string, oldExtensionPath?: string): Promise<void>;
