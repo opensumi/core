@@ -229,14 +229,18 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   }
 
-  async closeAll(uri?: URI) {
+  async closeAll(uri?: URI, force?: boolean) {
     for (const group of this.editorGroups.slice(0)) {
       if (uri) {
-        await group.close(uri);
+        await group.close(uri, {force});
       } else {
         await group.closeAll();
       }
     }
+  }
+
+  async close(uri: URI, force?: boolean) {
+    return this.closeAll(uri, force);
   }
 
 }
@@ -543,7 +547,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           }
           if (previewMode) {
             if (this.previewURI) {
-              await this.close(this.previewURI, true);
+              await this.close(this.previewURI, { treatAsNotCurrent: true});
             }
             this.previewURI = resource.uri;
           }
@@ -660,12 +664,17 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return { activeOpenType, openTypes };
   }
 
-  public async close(uri: URI, treatAsNotCurrent?: boolean) {
+  public async close(uri: URI, {treatAsNotCurrent, force}: {
+    treatAsNotCurrent?: boolean,
+    force?: boolean,
+  } = {}) {
     const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
     if (index !== -1) {
       const resource = this.resources[index];
-      if (!await this.shouldClose(resource)) {
-        return;
+      if (!force) {
+        if (!await this.shouldClose(resource)) {
+          return;
+        }
       }
       this.resources.splice(index, 1);
       this.eventBus.fire(new EditorGroupCloseEvent({

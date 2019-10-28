@@ -43,7 +43,7 @@ const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeN
     return '';
   }
   if (range) {
-    return <div>
+    return <span>
       {description.slice(0, range.start)}
       <span className={cls(styles.kt_search_match, replace && styles.replace)}>
         {description.slice(range.start, range.end)}
@@ -53,7 +53,7 @@ const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeN
       </span>
       {description.slice(range.end)}
 
-    </div>;
+    </span>;
   } else {
     return description;
   }
@@ -304,7 +304,7 @@ export const TreeContainerNode = (
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
       return <Icon
         key={action.title || index}
-        iconClass={icon}
+        iconClass={cls(styles.action_icon, icon)}
         title={action.title}
         onClick={clickHandler} />;
     });

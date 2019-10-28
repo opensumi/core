@@ -135,6 +135,10 @@ export class Directory extends AbstractFileTreeItem {
       }
     }
   }
+
+  updateChildren(items: (Directory | File)[]) {
+    this.children = items;
+  }
 }
 
 export class File extends AbstractFileTreeItem {
