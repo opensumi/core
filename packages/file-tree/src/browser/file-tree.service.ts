@@ -11,6 +11,8 @@ import {
   AppConfig,
   formatLocalize,
   localize,
+  IDisposable,
+  memoize,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode } from '../common';
@@ -21,6 +23,9 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { IDialogService } from '@ali/ide-overlay';
 import { Directory, File } from './file-tree-item';
+import { IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
+import { MenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
+import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export type IFileTreeItemStatus = Map<string, {
   selected?: boolean;
@@ -92,6 +97,9 @@ export class FileTreeService extends WithEventBus {
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
 
+  @Autowired(MenuService)
+  private readonly menuService: MenuService;
+
   private statusChangeEmitter = new Emitter<Uri[]>();
 
   private pasteStore: IParseStore = {
@@ -126,6 +134,12 @@ export class FileTreeService extends WithEventBus {
     for (const watcher of Object.keys(this.fileServiceWatchers)) {
       this.fileServiceWatchers[watcher].dispose();
     }
+  }
+
+  @memoize get contributedContextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(MenuId.ExplorerContext, this.contextKeyService);
+    this.addDispose(contributedContextMenu);
+    return contributedContextMenu;
   }
 
   get hasPasteFile(): boolean {

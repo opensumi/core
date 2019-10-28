@@ -10,10 +10,12 @@ export interface IMainThreadCommands {
   $executeReferenceProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
   $executeImplementationProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
   $executeCodeLensProvider(arg: {resource: URI, itemResolveCount: number}): Promise<any | undefined>;
+  registerArgumentProcessor(processor: ArgumentProcessor): void;
 }
 
 export type Handler = <T>(...args: any[]) => T | Promise<T>;
 
+// 处理单个参数的 processor
 export interface ArgumentProcessor {
   processArgument(arg: any): any;
 }

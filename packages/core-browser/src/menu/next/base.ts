@@ -1,53 +1,6 @@
 import { IDisposable, Event, Emitter, Command } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
-
-// 可枚举的 menu id 列表
-export const enum MenuId {
-  CommandPalette,
-  DebugBreakpointsContext,
-  DebugCallStackContext,
-  DebugConsoleContext,
-  DebugVariablesContext,
-  DebugWatchContext,
-  DebugToolBar,
-  EditorContext,
-  EditorTitle,
-  EditorTitleContext,
-  EmptyEditorGroupContext,
-  ExplorerContext,
-  MenubarAppearanceMenu,
-  MenubarDebugMenu,
-  MenubarEditMenu,
-  MenubarFileMenu,
-  MenubarGoMenu,
-  MenubarHelpMenu,
-  MenubarLayoutMenu,
-  MenubarNewBreakpointMenu,
-  MenubarPreferencesMenu,
-  MenubarRecentMenu,
-  MenubarSelectionMenu,
-  MenubarSwitchEditorMenu,
-  MenubarSwitchGroupMenu,
-  MenubarTerminalMenu,
-  MenubarViewMenu,
-  OpenEditorsContext,
-  ProblemsPanelContext,
-  SCMChangeContext,
-  SCMResourceContext,
-  SCMResourceGroupContext,
-  SCMSourceControl,
-  SCMTitle,
-  SearchContext,
-  StatusBarWindowIndicatorMenu,
-  TouchBarContext,
-  ViewItemContext,
-  ViewTitle,
-  CommentThreadTitle,
-  CommentThreadActions,
-  CommentTitle,
-  CommentActions,
-  GlobalActivity,
-}
+import { MenuId } from './menu-id';
 
 export interface ILocalizedString {
   value: string;
@@ -56,6 +9,7 @@ export interface ILocalizedString {
 
 export interface IMenuItem {
   command: Command;
+  customWhen?: () => boolean; // ide-framework 内部使用
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -64,6 +18,7 @@ export interface IMenuItem {
 export interface ISubmenuItem {
   title: string | ILocalizedString;
   submenu: MenuId; // 暂时尚未遇到
+  customWhen?: () => boolean; // ide-framework 内部使用
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;

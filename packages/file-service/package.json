@@ -9,6 +9,7 @@
   "scripts": {
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.file-service.json",
     "start:server": "node --inspect -r ts-node/register ./example/server.ts"
   },
   "repository": {

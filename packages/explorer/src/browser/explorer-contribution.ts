@@ -1,5 +1,5 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS, localize } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS, localize, Uri } from '@ali/ide-core-browser';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService, FileUri } from '@ali/ide-file-tree';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
@@ -12,6 +12,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import * as copy from 'copy-to-clipboard';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 
 export const ExplorerResourceViewId = 'file-explorer';
 export const ExplorerContainerId = 'explorer';
@@ -40,6 +41,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(IMenuRegistry)
+  menuRegistry: IMenuRegistry;
+
   onDidStart() {
     const symlinkDecorationsProvider = this.injector.get(SymlinkDecorationsProvider, [this.explorerResourceService]);
     this.decorationsService.registerDecorationsProvider(symlinkDecorationsProvider);
@@ -62,6 +66,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
       },
     });
+
     commands.registerCommand(FILE_COMMANDS.COLLAPSE_ALL, {
       execute: (uri?: URI) => {
         const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
@@ -170,28 +175,50 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
+
     commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          this.filetreeService.openAndFixedFile(uris[0]);
+      execute: (uri: Uri) => {
+        if (uri) {
+          this.filetreeService.openAndFixedFile(uri);
         }
       },
+      // command palette 未更新前依然保留 isVisible
       isVisible: () => {
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
+
+    this.menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.OPEN_RESOURCES,
+      customWhen: () => {
+        return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
+      },
+      when: 'true',
+      order: 3,
+      group: '1_open',
+    });
+
     commands.registerCommand(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          this.filetreeService.openToTheSide(uris[0]);
+      execute: (uri: Uri, uris) => {
+        if (uri) {
+          this.filetreeService.openToTheSide(uri);
         }
       },
       isVisible: () => {
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
+
+    this.menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.OPEN_TO_THE_SIDE,
+      customWhen: () => {
+        return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
+      },
+      when: 'true',
+      order: 4,
+      group: '1_open',
+    });
+
     commands.registerCommand(FILE_COMMANDS.COPY_PATH, {
       execute: (data: FileUri) => {
         if (data) {

@@ -18,14 +18,16 @@ export interface FileUri {
 @Domain(ClientAppContribution, MenuContribution)
 export class FileTreeContribution implements MenuContribution {
   registerMenus(menus: MenuModelRegistry): void {
-    menus.registerMenuAction(FileTreeContextMenu.OPEN, {
-      commandId: FILE_COMMANDS.OPEN_TO_THE_SIDE.id,
-      order: '4',
-    });
-    menus.registerMenuAction(FileTreeContextMenu.OPEN, {
-      commandId: FILE_COMMANDS.OPEN_RESOURCES.id,
-      order: '3',
-    });
+    // tobe deprecated
+    // 在 explorer-contribution.ts 中去注册
+    // menus.registerMenuAction(FileTreeContextMenu.OPEN, {
+    //   commandId: FILE_COMMANDS.OPEN_TO_THE_SIDE.id,
+    //   order: '4',
+    // });
+    // menus.registerMenuAction(FileTreeContextMenu.OPEN, {
+    //   commandId: FILE_COMMANDS.OPEN_RESOURCES.id,
+    //   order: '3',
+    // });
     menus.registerMenuAction(FileTreeContextMenu.OPEN, {
       commandId: FILE_COMMANDS.NEW_FILE.id,
       order: '2',

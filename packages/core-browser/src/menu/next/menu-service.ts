@@ -1,11 +1,12 @@
-import { CommandService, Command, replaceLocalizePlaceholder } from '@ali/ide-core-common';
+import { CommandService, Command } from '@ali/ide-core-common';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
-import { Autowired, Injectable, Optional, Inject, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
-import { MenuId, IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
+import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { i18nify } from './menu-util';
+import { MenuId } from './menu-id';
 import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
 
 export interface IMenuNodeOptions {
@@ -53,11 +54,9 @@ export class MenuItemNode extends MenuNode {
   keybindings: KeybindingRegistry;
 
   constructor(
-    @Optional() item: Command,
+    @Optional() command: Command,
     @Optional() options: IMenuNodeOptions,
   ) {
-    // 后置获取 i18n 数据
-    const command = i18nify(item);
     super(command.id, command.iconClass!, command.label!);
     this.className = undefined;
     this.shortcut = this.getShortcut(command.id);
@@ -193,7 +192,10 @@ class Menu extends Disposable implements IMenu {
       const [id, items] = group;
       const activeActions: Array<MenuItemNode | SubmenuItemNode> = [];
       for (const item of items) {
-        if (this.contextKeyService.match(item.when)) {
+        if (
+          this.contextKeyService.match(item.when)
+          || (typeof item.customWhen === 'function' && !!item.customWhen())
+        ) {
           const action = isIMenuItem(item)
             ? this.injector.get(MenuItemNode, [item.command, options])
             : new SubmenuItemNode(item);

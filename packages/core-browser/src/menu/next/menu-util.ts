@@ -1,6 +1,5 @@
 import { MenuItemNode, SubmenuItemNode, SeparatorMenuItemNode } from './menu-service';
 import { MenuNode } from './base';
-import { Command, replaceLocalizePlaceholder } from '@ali/ide-core-common';
 
 export const isPrimaryGroup = (group: string) => group === 'navigation';
 export const isInlineGroup = (group: string) => /^inline/.test(group);
@@ -32,12 +31,4 @@ export function splitMenuItems(
     }
   }
   return result;
-}
-
-export function i18nify(command: Command): Command {
-  return {
-    ...command,
-    category: replaceLocalizePlaceholder(command.category), // 这个字段需要 i18n 嘛
-    label: replaceLocalizePlaceholder(command.label),
-  };
 }
