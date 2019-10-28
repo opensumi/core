@@ -12,7 +12,7 @@ import { MonacoService } from '@ali/ide-monaco';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
 import { URI, Disposable } from '@ali/ide-core-common';
 import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent } from './test-providers';
-import { useMockStorage } from '@ali/ide-core-browser/lib/__mocks__/storage';
+import { useMockStorage } from '../packages/core-browser/lib/mocks/storage';
 import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
 import { reaction } from 'mobx';
 import { CorePreferences } from '@ali/ide-core-browser';
@@ -38,15 +38,15 @@ injector.addProviders(...[
   },
   {
     token: IEditorDecorationCollectionService,
-    useClass : EditorDecorationCollectionService,
+    useClass: EditorDecorationCollectionService,
   },
   {
     token: IEditorDocumentModelContentRegistry,
-    useClass : EditorDocumentModelContentRegistryImpl,
+    useClass: EditorDocumentModelContentRegistryImpl,
   },
   {
     token: IEditorDocumentModelService,
-    useClass : EditorDocumentModelServiceImpl,
+    useClass: EditorDocumentModelServiceImpl,
   },
   {
     token: ILanguageService,
@@ -146,7 +146,7 @@ describe('workbench editor service tests', () => {
 
     await editorService.closeAll();
 
-    await editorService.open(testComponentUri, {forceOpenType: {type: 'code'}});
+    await editorService.open(testComponentUri, { forceOpenType: { type: 'code' } });
     expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
     expect(editorService.editorGroups[0].currentOpenType!.type).toBe('code');
 
@@ -156,8 +156,8 @@ describe('workbench editor service tests', () => {
   it('should be able to split', async (done) => {
     const testCodeUri = new URI('test://testUri1');
     await editorService.open(testCodeUri);
-    await editorService.open(testCodeUri, {split: EditorGroupSplitAction.Right});
-    await editorService.open(testCodeUri, {split: EditorGroupSplitAction.Bottom});
+    await editorService.open(testCodeUri, { split: EditorGroupSplitAction.Right });
+    await editorService.open(testCodeUri, { split: EditorGroupSplitAction.Bottom });
     expect(editorService.editorGroups.length).toBe(3);
 
     await editorService.closeAll();
@@ -166,9 +166,9 @@ describe('workbench editor service tests', () => {
 
   it('preview mode should work', async (done) => {
     const testCodeUri = new URI('test://testUri1');
-    await editorService.open(testCodeUri, {preview: true});
+    await editorService.open(testCodeUri, { preview: true });
     const testCodeUri2 = new URI('test://testUri2');
-    await editorService.open(testCodeUri2, {preview: true});
+    await editorService.open(testCodeUri2, { preview: true });
     expect(editorService.editorGroups[0].resources.length).toBe(1);
 
     await editorService.closeAll();
@@ -177,9 +177,9 @@ describe('workbench editor service tests', () => {
 
   it('pined mode should work', async (done) => {
     const testCodeUri = new URI('test://testUri1');
-    await editorService.open(testCodeUri, {preview: false});
+    await editorService.open(testCodeUri, { preview: false });
     const testCodeUri2 = new URI('test://testUri2');
-    await editorService.open(testCodeUri2, {preview: false});
+    await editorService.open(testCodeUri2, { preview: false });
     expect(editorService.editorGroups[0].resources.length).toBe(2);
 
     await editorService.closeAll();
