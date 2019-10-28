@@ -29,7 +29,7 @@ export const SCMResouceList: React.FC<{
   const ctxMenuRenderer = useInjectable<CtxMenuRenderer>(CtxMenuRenderer);
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
 
-  const viewModel = React.useContext(ViewModelContext);
+  const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
   const [ selectedNodeId, setSelectedNodeId ] = React.useState<string | number>();
 
   const $that = React.useRef<{
