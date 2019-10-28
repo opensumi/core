@@ -365,14 +365,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
     let displayName = extension.packageJSON.displayName;
     let description = extension.packageJSON.description;
 
-    if (extension.extraMetadata.languageBundle) {
-      try {
-        const language = JSON.parse(extension.extraMetadata.languageBundle);
-        displayName = replaceLocalizePlaceholder(language.displayName);
-        description = replaceLocalizePlaceholder(language.description);
-      } catch (e) {
-        this.logger.error('parse languageBundle throw a Error', e.message);
-      }
+    if (extension.packageNlsJSON) {
+      displayName = replaceLocalizePlaceholder(extension.packageNlsJSON.displayName);
+      description = replaceLocalizePlaceholder(extension.packageNlsJSON.description);
     }
 
     return {
