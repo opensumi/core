@@ -66,7 +66,6 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
       },
     });
-
     commands.registerCommand(FILE_COMMANDS.COLLAPSE_ALL, {
       execute: (uri?: URI) => {
         const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
@@ -175,14 +174,13 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
-
     commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {
-      execute: (uri: Uri) => {
-        if (uri) {
-          this.filetreeService.openAndFixedFile(uri);
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          this.filetreeService.openAndFixedFile(uris[0]);
         }
       },
-      // command palette 未更新前依然保留 isVisible
       isVisible: () => {
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
@@ -199,9 +197,10 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
 
     commands.registerCommand(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
-      execute: (uri: Uri, uris) => {
-        if (uri) {
-          this.filetreeService.openToTheSide(uri);
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          this.filetreeService.openToTheSide(uris[0]);
         }
       },
       isVisible: () => {
