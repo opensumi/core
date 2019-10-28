@@ -106,7 +106,7 @@ class WebviewMounter extends Disposable {
           this.webview.setListenMessages(false);
         }
       } else {
-        this.webview.getDomNode()!.style.display = 'block';
+        this.webview.getDomNode()!.style.display = '';
         if (isWebview(this.webview)) {
           this.webview.setListenMessages(true);
         }
