@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Event, isObject, uuid, Emitter, getLogger } from '@ali/ide-core-common';
+import { Event, isObject, uuid, Emitter, getLogger, isUndefined } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TerminalInfo } from '@ali/ide-terminal2/lib/common';
 import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
@@ -49,7 +49,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     let terminal = this.terminalsMap.get(info.id);
 
     if (!terminal) {
-      terminal = new Terminal(info.id, info.name, this.proxy);
+      terminal = new Terminal(info.name, this.proxy, info.id);
       this.terminalsMap.set(info.id, terminal);
     }
     this.openTerminalEvent.fire(terminal);
@@ -79,7 +79,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
         options.shellArgs = shellArgs;
       }
     }
-    const terminal = new Terminal('', options.name || '', this.proxy, true);
+    const terminal = new Terminal(options.name || '', this.proxy);
     this.proxy.$createTerminal(options).then((id) => {
       terminal.created(id);
     });
@@ -92,7 +92,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
       if (this.terminalsMap.get(info.id)) {
         return;
       }
-      const terminal =  new Terminal(info.id, info.name, this.proxy);
+      const terminal =  new Terminal(info.name, this.proxy, info.id);
       if (info.isActive) {
         this.activeTerminal = terminal;
       }
@@ -122,18 +122,10 @@ export class Terminal implements vscode.Terminal {
     this.createdPromiseResolve = resolve;
   });
 
-  /**
-   *
-   * @param id
-   * @param name
-   * @param proxy
-   * @param isWaitCreate // 是否需要等待Terminal初始化
-   */
-  constructor(id: string, name: string, proxy: IMainThreadTerminal, isWaitCreate?: boolean) {
+  constructor(name: string, proxy: IMainThreadTerminal, id?: string) {
     this.proxy = proxy;
-    this.id = id;
     this.name = name;
-    if (!isWaitCreate) {
+    if (!isUndefined(id)) {
       this.created(id);
     }
   }
