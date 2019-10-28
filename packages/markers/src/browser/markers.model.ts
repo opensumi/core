@@ -2,7 +2,7 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IMarker, MarkerSeverity, URI } from '@ali/ide-core-common';
 import { isFalsyOrEmpty, mergeSort } from '@ali/ide-core-common/lib/arrays';
 import { observable } from 'mobx';
-import { IMarkerService, MarkerModelBuilder, RenderableMarkerModel } from '../common';
+import { IMarkerService, MarkerModelBuilder, IRenderableMarkerModel } from '../common';
 import { Filter, FilterOptions } from './markers-filter.model';
 
 function compareMarkers(a: IMarker, b: IMarker): number {
@@ -45,7 +45,7 @@ export class MarkerViewModel {
 
   // view data
   @observable
-  public markers: Map<string, RenderableMarkerModel> = new Map<string, RenderableMarkerModel>();
+  public markers: Map<string, IRenderableMarkerModel> = new Map<string, IRenderableMarkerModel>();
 
   // marker filter
   private filter: Filter | undefined;
@@ -80,10 +80,13 @@ export class MarkerViewModel {
       const { icon, filename, longname } = this.getUriInfos(resource);
 
       const markerModel = MarkerModelBuilder.buildModel(resource, icon, filename, longname, markers);
+
       if (this.filter) {
         const filterResult = this.filter.filterModel(markerModel);
         if (filterResult.match) {
           this.markers.set(resource, filterResult);
+        } else {
+          this.markers.delete(resource);
         }
       } else {
         this.markers.set(resource, markerModel);

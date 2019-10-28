@@ -3,7 +3,7 @@ import { IMatch } from '@ali/ide-core-common/lib/filters';
 import * as cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { IFilterMatches, RenderableMarker, RenderableMarkerModel } from '../common';
+import { IFilterMatches, IRenderableMarker, IRenderableMarkerModel } from '../common';
 import { SeverityIconStyle } from './markers-seriverty-icon';
 import { MarkerService } from './markers-service';
 import { MarkerViewModel } from './markers.model';
@@ -25,7 +25,7 @@ const MarkerListContext = React.createContext({
  * render marker title
  * @param uri marker source
  */
-const MarkerItemTitle: React.FC<{ model: RenderableMarkerModel, open: boolean, onClick: () => void }> = observer(({ model, open, onClick }) => {
+const MarkerItemTitle: React.FC<{ model: IRenderableMarkerModel, open: boolean, onClick: () => void }> = observer(({ model, open, onClick }) => {
   return (
     <div className={styles.itemTitle} onClick={onClick}>
       <div className={cls(open ? styles.fold : styles.unfold, ICONS.FOLD)} />
@@ -37,7 +37,7 @@ const MarkerItemTitle: React.FC<{ model: RenderableMarkerModel, open: boolean, o
   );
 });
 
-const MarkerItemFilename: React.FC<{ model: RenderableMarkerModel }> = observer(({ model }) => {
+const MarkerItemFilename: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
   const filenameMatches = model.matches && model.matches.filenameMatches;
   if (filenameMatches) {
     return <HightlightData data={model.filename} matches={filenameMatches} className={styles.filename} />;
@@ -50,7 +50,7 @@ const MarkerItemFilename: React.FC<{ model: RenderableMarkerModel }> = observer(
  * render marker message
  * @param data marker model
  */
-const MarkerItemContents: React.FC<{ model: RenderableMarkerModel }> = observer(({ model }) => {
+const MarkerItemContents: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
   const markerItemList: React.ReactNode[] = [];
   if (model) {
     let index = 0;
@@ -113,7 +113,7 @@ const HightlightData: React.FC<{ data: string, matches: IMatch[], className: str
 /**
  * render marker message
  */
-const MarkerItemMessage: React.FC<{ data: RenderableMarker, matches?: IFilterMatches }> = observer(({ data, matches }) => {
+const MarkerItemMessage: React.FC<{ data: IRenderableMarker, matches?: IFilterMatches }> = observer(({ data, matches }) => {
   const messageMatchs = matches && matches.messageMatches;
   if (messageMatchs) {
     return <HightlightData data={data.message} matches={messageMatchs} className={styles.detail} />;
@@ -127,7 +127,7 @@ const MarkerItemMessage: React.FC<{ data: RenderableMarker, matches?: IFilterMat
 /**
  * render marker source and code
  */
-const MarkerItemSourceAndCode: React.FC<{ data: RenderableMarker, matches?: IFilterMatches }> = observer(({ data, matches }) => {
+const MarkerItemSourceAndCode: React.FC<{ data: IRenderableMarker, matches?: IFilterMatches }> = observer(({ data, matches }) => {
   const sourceMatches = matches && matches.sourceMatches;
   const codeMatches = matches && matches.codeMatches;
   return (
@@ -143,7 +143,7 @@ const MarkerItemSourceAndCode: React.FC<{ data: RenderableMarker, matches?: IFil
 /**
  * render marker position
  */
-const MarkerItemPosition: React.FC<{ data: RenderableMarker }> = observer(({ data }) => {
+const MarkerItemPosition: React.FC<{ data: IRenderableMarker }> = observer(({ data }) => {
   return (
     <div className={styles.position}>{`[${data.startLineNumber},${data.startColumn}]`}</div>
   );
@@ -152,7 +152,7 @@ const MarkerItemPosition: React.FC<{ data: RenderableMarker }> = observer(({ dat
 /**
  * render single marker model
  */
-const MarkerItem: React.FC<{ model: RenderableMarkerModel }> = observer(({ model }) => {
+const MarkerItem: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
   const [open, setOpen] = React.useState(true);
   return (
     <div className={styles.markerItem}>

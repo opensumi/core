@@ -3,7 +3,7 @@ import { IMarker, MarkerSeverity, ResourceGlobMatcher, URI } from '@ali/ide-core
 import { IFilter, matchesFuzzy, matchesFuzzy2, matchesPrefix } from '@ali/ide-core-common/lib/filters';
 import { getEmptyExpression, IExpression, splitGlobAware } from '@ali/ide-core-common/lib/glob';
 import * as strings from '@ali/ide-core-common/lib/strings';
-import { IFilterMarker, IFilterMarkerModel, IFilterOptions, IMarkerModel, MarkerItemBuilder, MarkerModelBuilder } from '../common';
+import { IRenderableMarkerModel, IRenderableMarker, IFilterOptions, MarkerItemBuilder, MarkerModelBuilder } from '../common';
 import Messages from './messages';
 
 /**
@@ -76,24 +76,24 @@ export class Filter {
 
   constructor(public options: FilterOptions) { }
 
-  public filterModel(model: IMarkerModel): IFilterMarkerModel {
+  public filterModel(model: IRenderableMarkerModel): IRenderableMarkerModel {
     const filenameMatches = model.filename ? FilterOptions._filter(this.options.textFilter, model.filename) : undefined;
-    const isFilenameMatch = filenameMatches && filenameMatches.length > 0;
-    if (isFilenameMatch) {
-      return MarkerModelBuilder.buildFilterModel(model, this.filterMarkerItems(model.markers, false), true, { filenameMatches });
+    const parentMatch = filenameMatches && filenameMatches.length > 0;
+    if (parentMatch) {
+      return MarkerModelBuilder.buildFilterModel(model, this.filterMarkerItems(model.markers, false), parentMatch, true, { filenameMatches });
     } else {
       const markers = this.filterMarkerItems(model.markers, true);
-      return MarkerModelBuilder.buildFilterModel(model, markers, markers.length > 0);
+      return MarkerModelBuilder.buildFilterModel(model, markers, false, markers.length > 0);
     }
   }
 
-  private filterMarkerItems(markers: IMarker[], filterCount: boolean): IFilterMarker[] {
+  private filterMarkerItems(markers: IMarker[], filterCount: boolean): IRenderableMarker[] {
     if (!markers || markers.length <= 0) { return []; }
-    const result: IFilterMarker[] = markers.map((marker) => {
+    const result: IRenderableMarker[] = markers.map((marker) => {
       return this.filterMarkerItem(marker);
     });
     if (filterCount) {
-      return result.filter((model: IFilterMarker) => {
+      return result.filter((model: IRenderableMarker) => {
         return model.match === true;
       });
     } else {
@@ -101,7 +101,7 @@ export class Filter {
     }
   }
 
-  private filterMarkerItem(marker: IMarker): IFilterMarker {
+  private filterMarkerItem(marker: IMarker): IRenderableMarker {
     if (this.options.filterErrors && MarkerSeverity.Error === marker.severity
       || this.options.filterWarnings && MarkerSeverity.Warning === marker.severity
       || this.options.filterInfos && MarkerSeverity.Info === marker.severity

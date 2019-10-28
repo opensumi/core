@@ -19,13 +19,11 @@ export interface IMarkerService extends IBaseMarkerService {
 // tslint:disable-next-line: no-empty-interface
 export interface IFilterOptions { }
 
-export type RenderableMarker = IFilterMarker | IMarker;
-
 /**
  * 过滤后的marker
  */
-export interface IFilterMarker extends IMarker {
-  match: boolean;
+export interface IRenderableMarker extends IMarker {
+  match?: boolean;
   matches?: IFilterMatches;
 }
 
@@ -33,7 +31,7 @@ export interface IFilterMarker extends IMarker {
  * marker item构建器，防止在其他地方散乱的构建代码
  */
 export class MarkerItemBuilder {
-  public static buildFilterItem(marker: IMarker, match: boolean, matches?: IFilterMatches): IFilterMarker {
+  public static buildFilterItem(marker: IMarker, match: boolean, matches?: IFilterMatches): IRenderableMarker {
     return {
       ...marker,
       match,
@@ -53,27 +51,22 @@ export interface IFilterMatches {
 }
 
 // 可渲染marker model
-export type RenderableMarkerModel = IFilterMarkerModel | IMarkerModel;
-
-export interface IMarkerModelLike <T extends IMarker> {
+export interface IRenderableMarkerModel {
   readonly resource: string;
   readonly icon: string;
   readonly filename: string;
   readonly longname: string;
-  readonly markers: T[];
+  readonly markers: IRenderableMarker[];
   size: () => number;
 
-  readonly match?: boolean;
+  readonly match: boolean;
   readonly matches?: IFilterMatches;
 }
 
-export interface IMarkerModel extends IMarkerModelLike<IMarker> {}
-
-export interface IFilterMarkerModel extends IMarkerModelLike<IFilterMarker> {}
-
 export class MarkerModelBuilder {
-  public static buildModel(resource: string, icon: string, filename: string, longname: string, markers: RenderableMarker[]): IMarkerModel {
+  public static buildModel(resource: string, icon: string, filename: string, longname: string, markers: IRenderableMarker[]): IRenderableMarkerModel {
     return {
+      match: true,
       resource,
       icon,
       filename,
@@ -83,13 +76,17 @@ export class MarkerModelBuilder {
     };
   }
 
-  public static buildFilterModel(model: IMarkerModel, markers: IFilterMarker[], match: boolean, matches?: IFilterMatches): IFilterMarkerModel {
+  public static buildFilterModel(model: IRenderableMarkerModel, markers: IRenderableMarker[], parentMatch: boolean, childrenMatch: boolean, matches?: IFilterMatches): IRenderableMarkerModel {
+    const match = parentMatch || childrenMatch;
     return {
       ...model,
       match,
       markers,
       matches,
       size: () => {
+        if (match) {
+          return markers.length;
+        }
         let count = 0;
         markers.forEach((m) => {
           if (m.match) { count++; }
