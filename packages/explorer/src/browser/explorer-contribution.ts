@@ -1,5 +1,5 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS, localize, Uri } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS, localize } from '@ali/ide-core-browser';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService, FileUri } from '@ali/ide-file-tree';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
@@ -12,7 +12,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import * as copy from 'copy-to-clipboard';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
+import { ExplorerContextParams } from '@ali/ide-core-browser/lib/menu/next';
 
 export const ExplorerResourceViewId = 'file-explorer';
 export const ExplorerContainerId = 'explorer';
@@ -40,9 +40,6 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
-
-  @Autowired(IMenuRegistry)
-  menuRegistry: IMenuRegistry;
 
   onDidStart() {
     const symlinkDecorationsProvider = this.injector.get(SymlinkDecorationsProvider, [this.explorerResourceService]);
@@ -87,13 +84,12 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         await this.filetreeService.refresh(this.filetreeService.root);
       },
     });
+
+    // 注册给ExplorerMenu的Command执行参数为 ExplorerContextParams
     commands.registerCommand(FILE_COMMANDS.DELETE_FILE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            this.filetreeService.deleteFiles(uris);
-          }
+      execute: ([, uris]: ExplorerContextParams) => {
+        if (uris && uris.length) {
+          this.filetreeService.deleteFiles(uris);
         }
       },
       isVisible: () => {
@@ -101,13 +97,10 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.RENAME_FILE, {
-      execute: (data: FileUri) => {
+      execute: ([, uris]: ExplorerContextParams) => {
         // 默认使用uris中下标为0的uri作为创建基础
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            this.filetreeService.renameTempFile(uris[0]);
-          }
+        if (uris && uris.length) {
+          this.filetreeService.renameTempFile(uris[0]);
         }
       },
       isVisible: () => {
@@ -115,7 +108,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.NEW_FILE, {
-      execute: async (data?: FileUri) => {
+      execute: async (params: ExplorerContextParams) => {
         // 默认获取焦点元素
         const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
@@ -123,8 +116,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         if (selectedFile.length === 1) {
           fromUri = selectedFile[0];
         } else {
-          if (data) {
-            const { uris } = data;
+          if (params) {
+            const [, uris] = params;
             fromUri = uris[0];
           } else {
             fromUri = this.filetreeService.root;
@@ -138,15 +131,15 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.NEW_FOLDER, {
-      execute: async (data?: FileUri) => {
+      execute: async (params: ExplorerContextParams) => {
         const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
           fromUri = selectedFile[0];
         } else {
-          if (data) {
-            const { uris } = data;
+          if (params) {
+            const [, uris] = params;
             fromUri = uris[0];
           } else {
             fromUri = this.filetreeService.root;
@@ -159,14 +152,11 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.COMPARE_SELECTED, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            const currentEditor = this.editorService.currentEditor;
-            if (currentEditor && currentEditor.currentUri) {
-              this.filetreeService.compare(uris[0], currentEditor.currentUri);
-            }
+      execute: ([, uris]: ExplorerContextParams) => {
+        if (uris && uris.length) {
+          const currentEditor = this.editorService.currentEditor;
+          if (currentEditor && currentEditor.currentUri) {
+            this.filetreeService.compare(uris[0], currentEditor.currentUri);
           }
         }
       },
@@ -175,9 +165,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
+      execute: ([, uris]: ExplorerContextParams) => {
+        if (uris && uris.length) {
           this.filetreeService.openAndFixedFile(uris[0]);
         }
       },
@@ -185,21 +174,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
-
-    this.menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.OPEN_RESOURCES,
-      customWhen: () => {
-        return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
-      },
-      when: 'true',
-      order: 3,
-      group: '1_open',
-    });
-
     commands.registerCommand(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
+      execute: ([, uris]: ExplorerContextParams) => {
+        if (uris && uris.length) {
           this.filetreeService.openToTheSide(uris[0]);
         }
       },
@@ -207,25 +184,11 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
-
-    this.menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.OPEN_TO_THE_SIDE,
-      customWhen: () => {
-        return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
-      },
-      when: 'true',
-      order: 4,
-      group: '1_open',
-    });
-
     commands.registerCommand(FILE_COMMANDS.COPY_PATH, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            const copyUri: URI = uris[0];
-            copy(decodeURIComponent(copyUri.withScheme('').toString()));
-          }
+      execute: ([, uris]: ExplorerContextParams) => {
+        if (uris && uris.length) {
+          const copyUri: URI = uris[0];
+          copy(copyUri.withScheme('').toString());
         }
       },
       isVisible: () => {
@@ -233,14 +196,11 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.COPY_RELATIVE_PATH, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            const copyUri: URI = uris[0];
-            if (this.filetreeService.root) {
-              copy(decodeURIComponent(this.filetreeService.root.relative(copyUri)!.toString()));
-            }
+      execute: ([, uris]: ExplorerContextParams) => {
+        if (uris && uris.length) {
+          const copyUri: URI = uris[0];
+          if (this.filetreeService.root) {
+            copy(this.filetreeService.root.relative(copyUri)!.toString());
           }
         }
       },
@@ -249,12 +209,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.COPY_FILE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            this.filetreeService.copyFile(uris);
-          }
+      execute: ([, uris]: ExplorerContextParams) => {
+        if (uris && uris.length) {
+          this.filetreeService.copyFile(uris);
         }
       },
       isVisible: () => {
@@ -262,12 +219,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.CUT_FILE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            this.filetreeService.cutFile(uris);
-          }
+      execute: ([, uris]: ExplorerContextParams) => {
+        if (uris && uris.length) {
+          this.filetreeService.cutFile(uris);
         }
       },
       isVisible: () => {
@@ -275,15 +229,12 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.PASTE_FILE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length > 0) {
-            const pasteUri: URI = uris[0];
-            this.filetreeService.pasteFile(pasteUri);
-          } else {
-            this.filetreeService.pasteFile(this.filetreeService.root);
-          }
+      execute: ([, uris]: ExplorerContextParams) => {
+        if (uris && uris.length) {
+          const pasteUri: URI = uris[0];
+          this.filetreeService.pasteFile(pasteUri);
+        } else {
+          this.filetreeService.pasteFile(this.filetreeService.root);
         }
       },
       isVisible: () => {
