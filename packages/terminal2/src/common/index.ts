@@ -172,7 +172,7 @@ export interface ITerminalClient {
 
   sendText(id, text: string, addNewLine?: boolean);
 
-  createTerminal(options?: TerminalOptions, id?: string): Terminal;
+  createTerminal(options?: TerminalOptions, id?: string): Promise<Terminal | null>;
 
   showTerm(id: string, preserveFocus?: boolean);
 
@@ -205,7 +205,7 @@ export interface IExternlTerminalService {
    * @param cols
    * @param options
    */
-  create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions): void;
+  create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions): Promise<boolean>;
   /**
    * 发送一段文字到后端，用于外部调用
    *

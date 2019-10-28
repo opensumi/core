@@ -233,9 +233,10 @@ describe('FileTreeService should be work', () => {
     });
 
     it('getReadableTooltip should be work', async (done) => {
+      const parent = new URI(userHome).resolve('parent');
       // 初始化userhome路径
-      injector.mock(IFileTreeAPI, 'userhomePath', new URI(userHome));
-      const testUri = new URI(userHome).resolve('test.js');
+      injector.mock(IFileTreeAPI, 'userhomePath', parent);
+      const testUri = parent.resolve('test.js');
       const tooltip = await fileApi.getReadableTooltip(testUri);
       expect(tooltip).toBe('~/test.js');
       done();
