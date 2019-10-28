@@ -22,6 +22,7 @@ import { CustomSplitLayout } from './split-layout';
 import { TrackerSplitPanel } from './split-panel';
 import { IIconService } from '@ali/ide-theme';
 import { ViewContainerWidget } from '@ali/ide-activity-panel/lib/browser';
+import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -42,6 +43,7 @@ const getSideBarSize = (layoutSize?: number) => {
 
 export interface TabbarCollection extends ComponentCollection {
   side: Side;
+  component?: React.FunctionComponent;
 }
 
 @Injectable()
@@ -67,8 +69,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   @Autowired(MainLayoutContribution)
   private readonly contributions: ContributionProvider<MainLayoutContribution>;
 
-  @Autowired(IIconService)
-  private iconService: IIconService;
+  @Autowired()
+  private viewContainerRegistry: ViewContainerRegistry;
 
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
@@ -167,7 +169,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           if (!options || !options.containerId) {
             console.warn('请在options内传入containerId!', token);
           }
-          this.collectTabbarComponent(views || [], options || {containerId: token}, location as Side);
+          this.collectTabbarComponent(views || [], options || {containerId: token}, location as Side, options.component);
         });
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -180,7 +182,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     }
     // 声明式注册的Tabbar组件注册完毕，渲染数据
     for (const tabbarItem of this.tabbarComponents) {
-      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
+      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '', tabbarItem.component);
     }
     for (const [containerId, viewWithProps] of this.viewsMap.entries()) {
       viewWithProps.forEach(({view, props}) => {
@@ -224,7 +226,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   // TODO expand状态支持
   public async restoreState() {
-    const defaultState = {
+    let defaultState: SideStateManager = {
       left: {
         size: 400,
         currentIndex: 0,
@@ -241,6 +243,15 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         tabbars: [],
       },
     };
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.provideDefaultState) {
+        try {
+          defaultState = contribution.provideDefaultState();
+        } catch (e) {
+          // noop
+        }
+      }
+    }
     this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
     // this.sideState = defaultState;
   }
@@ -334,6 +345,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         views,
         options,
         side,
+        component: options.component,
       });
       return options.containerId!;
     } else {
@@ -342,9 +354,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   protected registerViewComponent(view: View, containerId: string, props?: any) {
-    const viewContainer = this.activityBarService.getContainer(containerId);
-    if (viewContainer) {
-      (viewContainer as ViewContainerWidget).appendView(view, props);
+    const accordion = this.viewContainerRegistry.getAccordion(containerId);
+    if (accordion) {
+      accordion.addWidget(view, props);
     } else {
       console.warn(`找不到${containerId}对应的容器，无法注册视图！`);
     }

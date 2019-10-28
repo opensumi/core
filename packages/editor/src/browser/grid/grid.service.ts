@@ -137,18 +137,20 @@ export class EditorGrid implements IDisposable {
     }
   }
 
-  deserialize(state: IEditorGridState, editorGroupFactory: () => IGridEditorGroup) {
+  async deserialize(state: IEditorGridState, editorGroupFactory: () => IGridEditorGroup): Promise<any> {
+    const promises: Promise<any>[] = [];
     if (state.editorGroup) {
       this.setEditorGroup(editorGroupFactory());
-      this.editorGroup!.restoreState(state.editorGroup);
+      promises.push(this.editorGroup!.restoreState(state.editorGroup));
     } else {
       this.splitDirection = state.splitDirection;
       this.children = (state.children || []).map((c) => {
         const grid = new EditorGrid(this);
-        grid.deserialize(c, editorGroupFactory);
+        promises.push(grid.deserialize(c, editorGroupFactory));
         return grid;
       });
     }
+    return Promise.all(promises);
   }
 
   findGird(direction: Direction, currentIndex = 0): MaybeNull<EditorGrid> {

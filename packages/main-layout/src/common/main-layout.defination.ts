@@ -1,6 +1,6 @@
 import { BasicEvent, SlotLocation } from '@ali/ide-core-browser';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
-import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
+import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-browser/lib/layout';
 
 export class InitedEvent extends BasicEvent<void> {}
 
@@ -20,7 +20,7 @@ export interface IMainLayoutService {
   restoreState(): void;
   getTabbarHandler(handlerId: string): ActivityBarHandler;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
-  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string;
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent): string;
   collectViewComponent(view: View, containerId: string, props?: any): string;
   expandBottom(expand?: boolean): void;
   bottomExpanded: boolean;
@@ -32,5 +32,7 @@ export interface MainLayoutContribution {
 
   // 将LayoutConfig渲染到各Slot后调用
   onDidUseConfig?(): void;
+
+  provideDefaultState?(): SideStateManager;
 
 }

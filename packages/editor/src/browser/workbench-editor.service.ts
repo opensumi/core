@@ -1,8 +1,8 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
-import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent } from './types';
+import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider } from '@ali/ide-core-common';
+import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
@@ -47,6 +47,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   public contributionsReady = new Deferred();
 
   private initializing: Promise<any>;
+
+  @Autowired(BrowserEditorContribution)
+  private readonly contributions: ContributionProvider<BrowserEditorContribution>;
 
   constructor() {
     super();
@@ -221,12 +224,17 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     this.topGrid = new EditorGrid();
     this.topGrid.deserialize(state, () => {
       return this.createEditorGroup();
+    }).then(() => {
+      if (this.topGrid.children.length === 0 && !this.topGrid.editorGroup) {
+        this.topGrid.setEditorGroup(this.createEditorGroup());
+      }
+      this._restoring = false;
+      for (const contribution of this.contributions.getContributions()) {
+        if (contribution.onDidRestoreState) {
+          contribution.onDidRestoreState();
+        }
+      }
     });
-    if (this.topGrid.children.length === 0 && !this.topGrid.editorGroup) {
-      this.topGrid.setEditorGroup(this.createEditorGroup());
-    }
-    this._restoring = false;
-
   }
 
   async closeAll(uri?: URI, force?: boolean) {

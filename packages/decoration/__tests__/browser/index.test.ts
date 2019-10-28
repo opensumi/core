@@ -4,7 +4,7 @@ import { Event, Emitter, CancellationToken } from '@ali/ide-core-common';
 import { FileDecorationsService } from '../../src/browser/decorationsService';
 import { IDecorationsProvider, IDecorationData } from '../../src';
 
-describe.only('DecorationsService', () => {
+describe('DecorationsService', () => {
   let service: FileDecorationsService;
 
   beforeEach(() => {

@@ -38,7 +38,7 @@ import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 
-const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_znyqu24ou9c.css';
+const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_e2ikewyk1kq.css';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -431,8 +431,10 @@ export class ClientApp implements IClientApp {
           });
         }
       } else {
+        // 为了避免不必要的弹窗，如果页面并没有发生交互浏览器可能不会展示在 beforeunload 事件中引发的弹框，甚至可能即使发生交互了也直接不显示。
         if (this.preventStop()) {
-          return ''; // web
+          (event || window.event).returnValue = true;
+          return true;
         }
       }
     });

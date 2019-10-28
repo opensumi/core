@@ -55,13 +55,16 @@ export class ElectronMainApp {
     }
   }
 
-  loadWorkspace(workspace?: string, metadata?: any, options?: BrowserWindowConstructorOptions): CodeWindow {
+  loadWorkspace(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions = {}): CodeWindow {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
     const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
     this.codeWindows.add(window);
     window.start();
+    if (options.show !== false) {
+      window.getBrowserWindow().show();
+    }
     window.onDispose(() => {
       this.codeWindows.delete(window);
     });

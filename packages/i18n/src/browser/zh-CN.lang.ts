@@ -244,6 +244,10 @@ export const localizationBundle = {
     'marketplace.extension.uninstall.failed': '删除失败',
     'marketplace.extension.reload.delay': '稍后我自己重启',
     'marketplace.extension.reload.now': '是，现在重启',
+    'marketplace.extension.enable': '启用',
+    'marketplace.extension.disable': '禁用',
+    'marketplace.extension.enable.workspace': '启用(工作空间)',
+    'marketplace.extension.disable.workspace': '禁用(工作空间)',
 
     'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
     'validate.tree.fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',

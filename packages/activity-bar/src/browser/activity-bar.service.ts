@@ -8,6 +8,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import { SIDE_MENU_PATH } from '../common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
+import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -77,6 +78,9 @@ export class ActivityBarService extends WithEventBus {
   @Autowired(ContextMenuRenderer)
   contextMenuRenderer: ContextMenuRenderer;
 
+  @Autowired()
+  private viewContainerRegistry: ViewContainerRegistry;
+
   @OnEvent(RenderedEvent)
   protected onRender() {
     for (const containerWrap of this.containersMap.values()) {
@@ -111,7 +115,7 @@ export class ActivityBarService extends WithEventBus {
     if (tabbarWidget) {
       let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
       const command = this.registerVisibleToggleCommand(containerId);
-      if (!views) {
+      if (!views || !views.length) {
         if (!Fc) {
           console.error('视图数据或自定义视图请至少传入一种！');
         }
@@ -296,9 +300,13 @@ export class ActivityBarService extends WithEventBus {
         this.tabbarState[side]!.currentIndex = currentIndex;
         this.storeState(this.tabbarState);
         if (currentWidget) {
-          (currentWidget as BoxPanel).widgets[0].update();
           // @ts-ignore
           const containerId = currentWidget.containerId;
+          const titleWidget = this.viewContainerRegistry.getTitleBar(containerId);
+          // 自定义React视图需要自行管理titleBar更新
+          if (titleWidget) {
+            titleWidget.update();
+          }
           this.updateViewContainerContext(containerId!);
         }
       });
