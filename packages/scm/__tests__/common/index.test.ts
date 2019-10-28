@@ -166,5 +166,17 @@ describe('scm service', () => {
       expect(removeRepoListener).toHaveBeenCalledTimes(2);
       expect(removeRepoListener.mock.calls[1][0]).toEqual(repo1);
     });
+
+    it('duplicate provider id', () => {
+      const scmProvider1 = new MockSCMProvider(1);
+
+      service.registerSCMProvider(scmProvider1);
+
+      try {
+        service.registerSCMProvider(scmProvider1);
+      } catch (err) {
+        expect(err.message).toBe('SCM Provider scm_id_1 already exists.');
+      }
+    });
   });
 });

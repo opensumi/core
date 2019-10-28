@@ -1,31 +1,15 @@
-import { Uri, Event } from '@ali/ide-core-common';
-import { ISplice } from '@ali/ide-core-common/src/sequence';
+import { Uri } from '@ali/ide-core-common';
+
+import { SCMService } from '../../src/common';
+import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
 import { isSCMResource, getSCMResourceContextKey, getSCMRepositoryDesc } from '../../src/browser/scm-util';
-import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource } from '../../src/common';
-
-import { MockSCMProvider } from '../scm-test-util';
 
 // tslint:disable-next-line: new-parens
-const mockSCMResourceGroup = new class implements ISCMResourceGroup {
-  readonly provider: ISCMProvider;
-  readonly label = 'test_scm_resource_group';
-  readonly id = 'scm_resource_group_1';
-  readonly hideWhenEmpty = false;
-  readonly onDidChange: Event<void> = Event.None;
-  readonly elements: ISCMResource[] = [];
-  readonly onDidSplice: Event<ISplice<ISCMResource>> = Event.None;
-  toJSON: () => { $mid: 4 };
-};
+const mockSCMResourceGroup = new MockSCMResourceGroup(1);
 
 // tslint:disable-next-line: new-parens
-const mockSCMResource = new class implements ISCMResource {
-  readonly resourceGroup = mockSCMResourceGroup;
-  readonly sourceUri = Uri.file('/test/workspace');
-  readonly decorations: {};
-  async open() {}
-  toJSON: () => { $mid: 3 };
-};
+const mockSCMResource = new MockSCMResource(mockSCMResourceGroup);
 
 describe('test for scm-util', () => {
   it('isSCMResource', () => {
