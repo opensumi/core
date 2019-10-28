@@ -224,7 +224,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   // TODO expand状态支持
   public async restoreState() {
-    const defaultState = {
+    let defaultState: SideStateManager = {
       left: {
         size: 400,
         currentIndex: 0,
@@ -241,6 +241,15 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         tabbars: [],
       },
     };
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.provideDefaultState) {
+        try {
+          defaultState = contribution.provideDefaultState();
+        } catch (e) {
+          // noop
+        }
+      }
+    }
     this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
     // this.sideState = defaultState;
   }

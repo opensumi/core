@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState } from '../common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, RequestHeaders } from '../common';
 import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -334,5 +334,13 @@ export class ExtensionManagerService implements IExtensionManagerService {
    */
   private isInstalled(extensionId: string): boolean {
     return this.installedIds.includes(extensionId);
+  }
+
+  /**
+   * 设置插件市场请求的 headers
+   * @param requestHeaders
+   */
+  async setRequestHeaders(requestHeaders: RequestHeaders) {
+    await this.extensionManagerServer.setHeaders(requestHeaders);
   }
 }

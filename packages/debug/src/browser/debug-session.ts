@@ -23,7 +23,7 @@ import { SourceBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { ITerminalClient, TerminalOptions } from '@ali/ide-terminal2';
+import { ITerminalClient, TerminalOptions, Terminal} from '@ali/ide-terminal2';
 
 export enum DebugState {
   Inactive,
@@ -129,7 +129,7 @@ export class DebugSession implements IDisposable {
   }
 
   protected async doRunInTerminal(options: TerminalOptions): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    const terminal = await this.terminalService.createTerminal(options);
+    const terminal = await this.terminalService.createTerminal(options) as Terminal;
     const processId = await terminal.processId;
     terminal.show();
     return { processId };

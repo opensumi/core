@@ -162,12 +162,12 @@ export class FileTreeAPI implements IFileTreeAPI {
     const pathStr = path.toString();
     const userhomePathStr = this.userhomePath && this.userhomePath.toString();
     if (!this.userhomePath) {
-      return path.withScheme('').toString();
+      return decodeURIComponent(path.withScheme('').toString());
     }
     if (this.userhomePath.isEqualOrParent(path)) {
-      return pathStr.replace(userhomePathStr, '~/');
+      return decodeURIComponent(pathStr.replace(userhomePathStr, '~'));
     }
-    return path.withScheme('').toString();
+    return decodeURIComponent(path.withScheme('').toString());
   }
 
   generatorFileFromFilestat(filestat: FileStat, parent: Directory): AbstractFileTreeItem {
