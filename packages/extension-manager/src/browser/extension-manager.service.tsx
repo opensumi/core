@@ -1,5 +1,5 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, hotExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsContainerId, searchExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, SearchExtension } from '../common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, hotExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsContainerId, searchExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, SearchExtension, RequestHeaders } from '../common';
 import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -493,5 +493,13 @@ export class ExtensionManagerService implements IExtensionManagerService {
     } else {
       return [];
     }
+  }
+
+  /**
+   * 设置插件市场请求的 headers
+   * @param requestHeaders
+   */
+  async setRequestHeaders(requestHeaders: RequestHeaders) {
+    await this.extensionManagerServer.setHeaders(requestHeaders);
   }
 }
