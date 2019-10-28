@@ -6,7 +6,7 @@ import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, Comp
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
-import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { Search } from './search.view';
 import { ContentSearchClientService } from './search.service';

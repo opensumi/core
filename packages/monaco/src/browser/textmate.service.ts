@@ -327,7 +327,6 @@ export class TextmateService extends WithEventBus {
     }
   }
 
-  // TODO embed 语言（比如vue、php？）
   private async initGrammarRegistry() {
     this.grammarRegistry = new Registry({
       getOnigLib: this.getOnigLib,

@@ -37,6 +37,6 @@ export function StatusBarItem(props: StatusBarEntry) {
           }
         })}
       </div>
-    </div >
+    </div>
   );
 }

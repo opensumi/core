@@ -23,6 +23,7 @@ import { SourceBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
+import { ITerminalClient, TerminalOptions, Terminal} from '@ali/ide-terminal2';
 
 export enum DebugState {
   Inactive,
@@ -59,7 +60,7 @@ export class DebugSession implements IDisposable {
     readonly id: string,
     readonly options: DebugSessionOptions,
     protected readonly connection: DebugSessionConnection,
-    // protected readonly terminalServer: ITerminalService,
+    protected readonly terminalService: ITerminalClient,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
     protected readonly modelManager: DebugModelManager,
@@ -67,7 +68,7 @@ export class DebugSession implements IDisposable {
     protected readonly messages: IMessageService,
     protected readonly fileSystem: IFileServiceClient) {
 
-    // this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => this.runInTerminal(request));
+    this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => this.runInTerminal(request));
 
     this.toDispose.pushAll([
       this.onDidChangeEmitter,
@@ -121,6 +122,17 @@ export class DebugSession implements IDisposable {
   async start(): Promise<void> {
     await this.initialize();
     await this.launchOrAttach();
+  }
+
+  protected async runInTerminal({ arguments: { title, cwd, args, env } }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+    return this.doRunInTerminal({ name: title, cwd, shellPath: args[0], shellArgs: args.slice(1), env });
+  }
+
+  protected async doRunInTerminal(options: TerminalOptions): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+    const terminal = await this.terminalService.createTerminal(options) as Terminal;
+    const processId = await terminal.processId;
+    terminal.show();
+    return { processId };
   }
 
   protected async initialize(): Promise<void> {
@@ -194,9 +206,8 @@ export class DebugSession implements IDisposable {
     const { uri, sourceModified } = options;
     for (const affectedUri of this.getAffectedUris(uri)) {
       const source = await this.toSource(affectedUri);
-      const model = this.modelManager.resolve(affectedUri);
       const all = this.breakpoints.findMarkers({ uri: affectedUri }).map(({ data }) =>
-        new DebugBreakpoint(data, this.labelProvider, this.breakpoints, model, this.workbenchEditorService, this),
+        new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService, this),
       );
       const enabled = all.filter((b) => b.enabled);
 
@@ -292,8 +303,7 @@ export class DebugSession implements IDisposable {
           const origin = SourceBreakpoint.create(uri, { line: raw.line, column: 1 });
           if (this.breakpoints.addBreakpoint(origin)) {
             const breakpoints = this.getBreakpoints(uri);
-            const model = this.modelManager.resolve(uri);
-            const breakpoint = new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, model, this.workbenchEditorService, this);
+            const breakpoint = new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService, this);
             breakpoint.update({ raw });
             breakpoints.push(breakpoint);
             this.setBreakpoints(uri, breakpoints);
@@ -512,7 +522,7 @@ export class DebugSession implements IDisposable {
   async terminate(restart?: boolean): Promise<void> {
     if (!this.terminated && this.capabilities.supportsTerminateRequest && this.configuration.request === 'launch') {
       this.terminated = true;
-      await this.connection.sendRequest('terminate', { restart });
+      this.sendRequest('terminate', { restart });
       if (!await this.exited(1000)) {
         await this.disconnect(restart);
       }
@@ -523,7 +533,7 @@ export class DebugSession implements IDisposable {
 
   protected async disconnect(restart?: boolean): Promise<void> {
     try {
-      await this.sendRequest('disconnect', { restart });
+      this.sendRequest('disconnect', { restart });
     } catch (reason) {
       this.fireExited(reason);
       return;
@@ -576,7 +586,7 @@ export class DebugSession implements IDisposable {
 
   async goto(args: DebugProtocol.GotoArguments): Promise<DebugProtocol.GotoResponse | void> {
     if (this.capabilities.supportsGotoTargetsRequest) {
-      const res =  await this.sendRequest('goto', args);
+      const res = await this.sendRequest('goto', args);
       return res;
     }
   }

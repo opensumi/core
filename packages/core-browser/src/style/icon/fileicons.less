@@ -1,0 +1,58 @@
+.default-file-icons.show-file-icons {
+  .folder-icon::before, .rootfolder-icon::before { content: ' '; background-image: data-uri("./fileicons/folder_closed.svg"); }
+  .monaco-tree-row.expanded .folder-icon::before, .monaco-tl-twistie.collapsible:not(.collapsed) + .monaco-tl-contents .folder-icon::before, .monaco-tree-row.expanded .rootfolder-icon::before, .monaco-tl-twistie.collapsible:not(.collapsed) + .monaco-tl-contents .rootfolder-icon::before { content: ' '; background-image: data-uri("./fileicons/folder_open.svg"); }
+  .file-icon::before { content: ' '; background-image: data-uri("./fileicons/generic.svg"); }
+  .bash-ext-file-icon.ext-file-icon.file-icon::before, .cmd-ext-file-icon.ext-file-icon.file-icon::before, .sh-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/shellscript.svg"); }
+  .bat-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/batch.svg"); }
+  .c-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/c.svg"); }
+  .cc-ext-file-icon.ext-file-icon.file-icon::before, .cpp-ext-file-icon.ext-file-icon.file-icon::before, .cxx-ext-file-icon.ext-file-icon.file-icon::before, .hpp-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/cpp.svg"); }
+  .clj-ext-file-icon.ext-file-icon.file-icon::before, .cljc-ext-file-icon.ext-file-icon.file-icon::before, .cljs-ext-file-icon.ext-file-icon.file-icon::before, .edn-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/clojure.svg"); }
+  .coffee-ext-file-icon.ext-file-icon.file-icon::before, .js\.coffee-ext-file-icon.coffee-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/coffee.svg"); }
+  .css-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/css.svg"); }
+  .docker-ext-file-icon.ext-file-icon.file-icon::before, .dockerfile-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/docker.svg"); }
+  .es6-ext-file-icon.ext-file-icon.file-icon::before, .js-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/javascript.svg"); }
+  .fs-ext-file-icon.ext-file-icon.file-icon::before, .fsi-ext-file-icon.ext-file-icon.file-icon::before, .fsx-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/fsharp.svg"); }
+  .go-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/go.svg"); }
+  .handlebars-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/handlebars.svg"); }
+  .htm-ext-file-icon.ext-file-icon.file-icon::before, .html-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/html.svg"); }
+  .jade-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/jade.svg"); }
+  .jar-ext-file-icon.ext-file-icon.file-icon::before, .java-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/java.svg"); }
+  .json-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/json.svg"); }
+  .jsx-ext-file-icon.ext-file-icon.file-icon::before, .tsx-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/react.svg"); }
+  .less-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/less.svg"); }
+  .lua-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/lua.svg"); }
+  .m-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/matlab.svg"); }
+  .markdown-ext-file-icon.ext-file-icon.file-icon::before, .md-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/markdown.svg"); }
+  .perl-ext-file-icon.ext-file-icon.file-icon::before, .pl-ext-file-icon.ext-file-icon.file-icon::before, .pm-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/perl.svg"); }
+  .php-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/php.svg"); }
+  .ps1-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/powershell.svg"); }
+  .py-ext-file-icon.ext-file-icon.file-icon::before, .pyw-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/python.svg"); }
+  .r-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/r.svg"); }
+  .rb-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/ruby.svg"); }
+  .rs-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/rust.svg"); }
+  .sass-ext-file-icon.ext-file-icon.file-icon::before, .scss-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/scss.svg"); }
+  .sql-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/sql.svg"); }
+  .swift-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/swift.svg"); }
+  .tcl-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/opensees.svg"); }
+  .ts-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/typescript.svg"); }
+  .vb-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/vb.svg"); }
+  .xml-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/xml.svg"); }
+  .xsl-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/xsl.svg"); }
+  .yaml-ext-file-icon.ext-file-icon.file-icon::before, .yml-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/yml.svg"); }
+  .\37 z-ext-file-icon.ext-file-icon.file-icon::before, .gz-ext-file-icon.ext-file-icon.file-icon::before, .rar-ext-file-icon.ext-file-icon.file-icon::before, .tar-ext-file-icon.ext-file-icon.file-icon::before, .zip-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/zip.svg"); }
+  .doc-ext-file-icon.ext-file-icon.file-icon::before, .docx-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/word.svg"); }
+  .ini-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/ini.svg"); }
+  .out-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/data.svg"); }
+  .pdf-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/pdf.svg"); }
+  .ttf-ext-file-icon.ext-file-icon.file-icon::before, .woff-ext-file-icon.ext-file-icon.file-icon::before, .woff2-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/font.svg"); }
+  .txt-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/txt.svg"); }
+  .xls-ext-file-icon.ext-file-icon.file-icon::before, .xlsx-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/excel.svg"); }
+  .bmp-ext-file-icon.ext-file-icon.file-icon::before, .jpeg-ext-file-icon.ext-file-icon.file-icon::before, .jpg-ext-file-icon.ext-file-icon.file-icon::before, .png-ext-file-icon.ext-file-icon.file-icon::before, .tif-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/image.svg"); }
+  .exe-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/exe.svg"); }
+  .git-commit-ext-file-icon.ext-file-icon.file-icon::before, .git-rebase-ext-file-icon.ext-file-icon.file-icon::before, .patch-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/git.svg"); }
+  .gitattributes-ext-file-icon.ext-file-icon.file-icon::before, .gitignore-ext-file-icon.ext-file-icon.file-icon::before, .gitkeep-ext-file-icon.ext-file-icon.file-icon::before, .gitmodules-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/gitcat.svg"); }
+  .ipynb-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/jupyter.svg"); }
+  .skp-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/sketchup.svg"); }
+  .svg-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/svg.svg"); }
+  .tex-ext-file-icon.ext-file-icon.file-icon::before { content: ' '; background-image: data-uri("./fileicons/tex.svg"); }
+}

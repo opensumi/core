@@ -13,7 +13,7 @@ import {
   localize,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { FileTreeAPI, PasteTypes, IParseStore, FileStatNode } from '../common';
+import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode } from '../common';
 import { IFileServiceClient, FileChange, FileChangeType, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
@@ -71,8 +71,8 @@ export class FileTreeService extends WithEventBus {
   @Autowired(AppConfig)
   private config: AppConfig;
 
-  @Autowired()
-  private fileAPI: FileTreeAPI;
+  @Autowired(IFileTreeAPI)
+  private fileAPI: IFileTreeAPI;
 
   @Autowired(CommandService)
   private commandService: CommandService;
@@ -310,7 +310,7 @@ export class FileTreeService extends WithEventBus {
     const parentFolder = this.searchFileParent(uri, (path: URI) => {
       const statusKey = this.getStatutsKey(path);
       const status = this.status.get(statusKey);
-      if (status && status.file && status.file!.filestat.isDirectory && !status.file!.filestat.isTemporaryFile) {
+      if (status && status.file && status.file!.filestat.isDirectory && !status.file!.isTemporary) {
         return true;
       } else {
         return false;
@@ -360,7 +360,7 @@ export class FileTreeService extends WithEventBus {
     if (!status) {
       return;
     }
-    const file = status.file.updateFileStat('isTemporaryFile', true);
+    const file = status.file.updateTemporary(true);
     this.status.set(statusKey, {
       ...status,
       file,
@@ -376,7 +376,7 @@ export class FileTreeService extends WithEventBus {
     if (!status) {
       return;
     }
-    const file = status.file.updateFileStat('isTemporaryFile', false);
+    const file = status.file.updateTemporary(false);
     this.status.set(statusKey, {
       ...status,
       file,
@@ -505,7 +505,7 @@ export class FileTreeService extends WithEventBus {
    * 刷新所有节点
    */
   @action
-  refresh(uri: URI = this.root, lowcost?: boolean) {
+  async refresh(uri: URI = this.root, lowcost?: boolean) {
     const statusKey = this.getStatutsKey(uri);
     const status = this.status.get(statusKey);
     if (!status) {

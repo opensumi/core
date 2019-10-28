@@ -2,7 +2,7 @@ import { IWebviewChannel } from '../webview-host/common';
 import { WebviewPanelManager } from '../webview-host/webview-manager';
 import { ipcRenderer } from 'electron';
 
-class ElectronWebviewChannel implements IWebviewChannel {
+export class ElectronWebviewChannel implements IWebviewChannel {
 
   private handlers = new Map();
   focusIframeOnCreate?: boolean | undefined;

@@ -1,12 +1,13 @@
 
-import { Injectable, Autowired } from '@ali/common-di';
-import { FileTreeAPI, IFileTreeItem } from '../file-tree.defination';
+import { Injectable } from '@ali/common-di';
+import { IFileTreeAPI, IFileTreeItem } from '../file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
 import { URI } from '@ali/ide-core-browser';
 import { Directory, File, AbstractFileTreeItem } from '../../browser/file-tree-item';
+import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 
 @Injectable()
-export class MockFileTreeAPIImpl implements FileTreeAPI {
+export class MockFileTreeAPIImpl implements IFileTreeAPI {
 
   private userhomePath: URI = new URI('file://userhome');
 
@@ -28,7 +29,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       } as FileStat;
     }
     const result = await this.fileStat2FileTreeItem(file, parent, file.isSymbolicLink || false);
-    return [ result ];
+    return [result];
   }
 
   async getFileStat(path: string) {
@@ -42,11 +43,9 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
   }
 
   async createFile(uri: URI) {
-    console.log('createFile', uri);
   }
 
   async createFolder(uri: URI) {
-    console.log('createFolder', uri);
   }
 
   async exists(uri: URI) {
@@ -54,15 +53,12 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
   }
 
   async deleteFile(uri: URI) {
-    console.log('deleteFile', uri);
   }
 
   async moveFile(from: URI, to: URI, isDirectory: boolean = false) {
-    console.log('moveFile', from, to, isDirectory);
   }
 
   async copyFile(from: URI, to: URI) {
-    console.log('copyFile', from, to);
   }
 
   fileStat2FileTreeItem(filestat: FileStat, parent: Directory | undefined, isInSymbolicDirectory: boolean): Directory | File {
@@ -71,6 +67,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     const name = '';
     if (filestat.isDirectory && filestat.children) {
       return new Directory(
+        this,
         uri,
         name,
         {
@@ -82,10 +79,10 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
         icon,
         parent,
         1,
-        this,
       );
     } else {
       return new File(
+        this,
         uri,
         name,
         {
@@ -97,7 +94,6 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
         icon,
         parent,
         1,
-        this,
       );
     }
   }
@@ -126,25 +122,25 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     const uri = new URI(filestat.uri);
     if (filestat.isDirectory) {
       return new Directory(
+        this,
         uri,
-        '',
+        uri.displayName,
         filestat,
         this.getReadableTooltip(uri),
         '',
         parent,
         1,
-        this,
       );
     }
     return new File(
+      this,
       uri,
-      '',
+      uri.displayName,
       filestat,
       this.getReadableTooltip(uri),
       '',
       parent,
       1,
-      this,
     );
   }
 
@@ -153,30 +149,30 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       uri: uri.toString(),
       isDirectory,
       isSymbolicLink: false,
-      isTemporaryFile: true,
       lastModification: new Date().getTime(),
     };
     if (isDirectory) {
       return new Directory(
+        this,
         uri,
-        '',
+        TEMP_FILE_NAME,
         filestat,
         '',
         '',
         parent,
         10,
-        this,
+        true,
       );
     }
     return new File(
+      this,
       uri,
-      '',
+      TEMP_FILE_NAME,
       filestat,
       '',
       '',
       parent,
       10,
-      this,
     );
   }
 

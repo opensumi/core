@@ -40,6 +40,9 @@ export class ExpressFileServerContribution implements ServerAppContribution {
         && contentType
       ) {
         ctx.set('Content-Type', contentType);
+        if (this.appConfig.staticAllowOrigin) {
+          ctx.set('Access-Control-Allow-Origin', this.appConfig.staticAllowOrigin);
+        }
         ctx.body = fs.createReadStream(filePath);
       } else {
         ctx.status = 403;

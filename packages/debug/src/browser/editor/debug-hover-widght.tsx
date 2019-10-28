@@ -57,8 +57,6 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
 
   protected readonly domNode = document.createElement('div');
 
-  private isAttached: boolean = false;
-
   constructor() {
     this.init();
   }
@@ -121,18 +119,14 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
 
   protected isEditorFrame(): boolean {
     const { currentFrame } = this.sessions;
-    return !!currentFrame && !!currentFrame.source &&
-      this.editor.getModel()!.uri.toString() === currentFrame.source.uri.toString();
+    return !!currentFrame && !!currentFrame.source && !!this.editor.getModel() && this.editor.getModel()!.uri.toString() === currentFrame.source.uri.toString();
   }
 
   protected doHide(): void {
     if (this.domNode.contains(document.activeElement)) {
       this.editor.focus();
     }
-    if (this.isAttached) {
-      ReactDOM.unmountComponentAtNode(this.domNode);
-      this.isAttached = false;
-    }
+    ReactDOM.unmountComponentAtNode(this.domNode);
     this.hoverSource.reset();
     this.options = undefined;
     this.editor.layoutContentWidget(this);
@@ -162,15 +156,11 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
       this.hide();
       return;
     }
-
-    if (!this.isAttached) {
-      ReactDOM.render(<ConfigProvider value={this.configContext} >
-        <DebugHoverView / >
-      </ConfigProvider>, this.domNode);
-    }
-
-    this.isAttached = true;
+    ReactDOM.render((<ConfigProvider value={this.configContext} >
+      <DebugHoverView />
+    </ConfigProvider>), this.domNode);
 
     this.editor.layoutContentWidget(this);
+
   }
 }

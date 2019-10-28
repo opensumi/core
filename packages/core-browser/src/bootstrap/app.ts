@@ -2,7 +2,7 @@ import { Injector, ConstructorOf, Domain } from '@ali/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
-import { KeybindingRegistry, KeybindingService } from '../keybinding';
+import { KeybindingRegistry, KeybindingService, noKeybidingInputName } from '../keybinding';
 import {
   CommandRegistry,
   MenuModelRegistry,
@@ -20,8 +20,6 @@ import {
   SupportLogNamespace,
   ILogServiceClient,
   getLogger,
-  Emitter,
-  Event,
   isElectronRenderer,
   setLanguageId,
 } from '@ali/ide-core-common';
@@ -107,9 +105,6 @@ export class ClientApp implements IClientApp {
 
   container: HTMLElement;
 
-  protected readonly onReloadEmitter = new Emitter<boolean>();
-  public readonly onReload: Event<boolean> = this.onReloadEmitter.event;
-
   constructor(opts: IClientAppOpts) {
     setLanguageId(getPreferenceLanguageId());
     this.injector = opts.injector || new Injector();
@@ -120,7 +115,7 @@ export class ClientApp implements IClientApp {
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       coreExtensionDir: opts.coreExtensionDir,
-      extensionDir: opts.extensionDir,
+      extensionDir: opts.extensionDir || (isElectronRenderer() ? electronEnv.metadata.extensionDir : ''),
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
@@ -454,8 +449,10 @@ export class ClientApp implements IClientApp {
     window.addEventListener('resize', () => {
       // 浏览器resize事件
     });
-    document.addEventListener('keydown', (event) => {
-      this.keybindingService.run(event);
+    document.addEventListener('keydown', (event: any) => {
+      if (event && event.target!.name !== noKeybidingInputName) {
+        this.keybindingService.run(event);
+      }
     }, true);
 
     if (isOSX) {
@@ -526,7 +523,8 @@ export class ClientApp implements IClientApp {
    * @param forcedReload 当取值为 true 时，将强制浏览器从服务器重新获取当前页面资源，而不是从浏览器的缓存中读取，如果取值为 false 或不传该参数时，浏览器则可能会从缓存中读取当前页面。
    */
   fireOnReload(forcedReload: boolean = false) {
-    this.onReloadEmitter.fire(forcedReload);
+    // 默认调用 location reload
+    window.location.reload(forcedReload);
   }
 
   protected appendIconStyleSheets(iconInfos?: IconInfo[], useCdnIcon?: boolean) {

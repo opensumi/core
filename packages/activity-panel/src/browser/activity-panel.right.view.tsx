@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Widget, SingletonLayout } from '@phosphor/widgets';
-import './activity-panel.less';
 import { ConfigContext } from '@ali/ide-core-browser';
 import { ActivityPanelService } from './activity-panel.service';
 

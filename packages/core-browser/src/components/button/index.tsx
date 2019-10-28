@@ -1,19 +1,34 @@
 import * as React from 'react';
-import clsx from 'clsx';
+import * as clsx from 'classnames';
+
+import Icon from '../icon';
+import { getIcon } from '../../icon';
 
 import './styles.less';
 
-const Button: React.FC<
+export const Button: React.FC<
   {
     block?: boolean;
+    loading?: boolean;
+    ghost?: boolean;
     type?: 'primary' | 'secondary' | 'danger';
   } & React.HTMLAttributes<HTMLDivElement>
-> = ({ type = 'primary', block, className, children, ...restProps }) => (
+> = function Button({ type = 'primary', loading, block, ghost, className, children, ...restProps }) {
+  return (
     <div
-      className={clsx('kt-btn', className, { 'kt-btn-block': block, [`kt-btn-${type}`]: type })}
+      className={clsx(
+        'kt-btn',
+        className,
+        {
+          'kt-btn-block': block,
+          [`kt-btn-${type}`]: type,
+          'kt-btn-loading': loading,
+          'kt-btn-ghost': ghost,
+        },
+      )}
       {...restProps}>
-      {children}
+      {loading && <Icon loading iconClass={getIcon('reload')} />}
+      <span>{children}</span>
     </div>
   );
-
-export default Button;
+};

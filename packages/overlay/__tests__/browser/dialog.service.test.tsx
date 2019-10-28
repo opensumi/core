@@ -3,7 +3,7 @@ import { IDialogService } from '@ali/ide-overlay';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { act } from 'react-dom/test-utils';
 
-describe('packages/overlay/src/browser/dialog.service.ts', () => {
+describe.skip('packages/overlay/src/browser/dialog.service.ts', () => {
   let app: MockClientApp;
   let dialogService: IDialogService;
 

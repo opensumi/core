@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction } from '@ali/ide-core-browser';
-import { TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { SCMMenuId } from '@ali/ide-scm/lib/common';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next/base';
 
@@ -178,14 +178,14 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             // when: menu.when,
           });
         }
-      } else if (menuPosition === 'view/title' || menuPosition === 'scm/title') {
+      } else if (menuPosition === 'view/title') {
         for (const item of this.json[menuPosition]) {
           const command = this.commandRegistry.getCommand(item.command);
           this.addDispose(this.toolBarRegistry.registerItem({
             id: this.createSyntheticCommandId(item, 'title.'),
             command: item.command,
             iconClass: command!.iconClass,
-            when: [menuPosition === 'scm/title' ? 'view == scm' : '', item.when].join(' && '),
+            when: item.when,
             group: item.group,
           }));
         }

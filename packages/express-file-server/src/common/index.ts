@@ -6,5 +6,10 @@ export const ALLOW_MIME = {
   jpg: 'image/jpeg',
   png: 'image/png',
   svg: 'image/svg+xml',
+  ttf: 'font/ttf',
+  eot: 'font/eot',
+  otf: 'font/otf',
+  woff: 'font/woff',
+  woff2 : 'font/woff2',
   js: 'application/javascript',
 };

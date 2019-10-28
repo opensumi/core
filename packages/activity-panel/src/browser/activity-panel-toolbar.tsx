@@ -1,10 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Widget, Title } from '@phosphor/widgets';
-import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { Message } from '@phosphor/messaging';
-import { ViewsContainerWidget } from './views-container-widget';
-import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath } from '@ali/ide-core-browser';
+import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath, TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
@@ -33,7 +31,7 @@ export class ActivityPanelToolbar extends Widget {
 
   constructor(
     protected readonly side: 'left' | 'right' | 'bottom',
-    protected readonly container: ViewsContainerWidget,
+    protected readonly containerId: string,
     private view?: View) {
     super();
     this.init();
@@ -43,11 +41,11 @@ export class ActivityPanelToolbar extends Widget {
       event.stopPropagation();
       this.contextMenuRenderer.render(this.contextMenuPath, { x: event.clientX, y: event.clientY });
     });
-    this.toolbar = this.injector.get(TabBarToolbar, [this.container.containerId]);
+    this.toolbar = this.injector.get(TabBarToolbar, [this.containerId, view && view.noToolbar]);
   }
 
   protected get contextMenuPath(): MenuPath {
-    return [`${this.container.containerId}-context-menu`, '1_widgets'];
+    return [`${this.containerId}-context-menu`, '1_widgets'];
   }
 
   protected onAfterAttach(msg: Message): void {
@@ -71,20 +69,15 @@ export class ActivityPanelToolbar extends Widget {
     super.onBeforeDetach(msg);
   }
 
-  protected onUpdateRequest(msg: Message): void {
-    super.onUpdateRequest(msg);
-    this.updateToolbar();
-  }
-
-  protected updateToolbar(): void {
+  // 由外部调用决定
+  public updateToolbar(viewId?: string): void {
     if (!this.toolbar) {
       return;
     }
     const current = this._toolbarTitle;
     const widget = current && current.owner || undefined;
-    const containerItems = this.tabBarToolbarRegistry.visibleItems(this.container.containerId);
-    const currentVisibleView = this.side === 'bottom' ? this.view! : this.container.getVisibleSections()[0];
-    const items = widget && this.container.showContainerIcons ? this.tabBarToolbarRegistry.visibleItems(currentVisibleView.id).concat(containerItems) : containerItems;
+    const containerItems = this.tabBarToolbarRegistry.visibleItems(this.containerId);
+    const items = widget && viewId ? this.tabBarToolbarRegistry.visibleItems(viewId).concat(containerItems) : containerItems;
     this.toolbar.updateItems(items, widget);
   }
 
@@ -136,6 +129,5 @@ export class ActivityPanelToolbar extends Widget {
         <SlotRenderer Component={Fc} />
       </ConfigProvider>
     , this.titleComponentContainer);
-    this.container.update();
   }
 }

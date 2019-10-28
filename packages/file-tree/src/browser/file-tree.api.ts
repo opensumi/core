@@ -1,6 +1,6 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { FileTreeAPI } from '../common/file-tree.defination';
+import { IFileTreeAPI } from '../common/file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -9,7 +9,7 @@ import { EDITOR_COMMANDS, URI, CommandService } from '@ali/ide-core-browser';
 import { AbstractFileTreeItem, Directory, File } from './file-tree-item';
 
 @Injectable()
-export class FileTreeAPIImpl implements FileTreeAPI {
+export class FileTreeAPI implements IFileTreeAPI {
 
   @Autowired(IFileServiceClient)
   private fileServiceClient: IFileServiceClient;
@@ -111,7 +111,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
    * @param {(AbstractFileTreeItem | undefined)} parent
    * @param {boolean} isSymbolicLink
    * @returns {AbstractFileTreeItem}
-   * @memberof FileTreeAPIImpl
+   * @memberof FileTreeAPI
    */
   fileStat2FileTreeItem(filestat: FileStat, parent: Directory | undefined, isInSymbolicDirectory?: boolean): AbstractFileTreeItem {
     const uri = new URI(filestat.uri);
@@ -119,6 +119,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const name = this.labelService.getName(uri);
     if (filestat.isDirectory && filestat.children) {
       return new Directory(
+        this,
         uri,
         name,
         {
@@ -130,10 +131,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         icon,
         parent,
         1,
-        this,
       );
     } else {
       return new File(
+        this,
         uri,
         name,
         {
@@ -145,7 +146,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         icon,
         parent,
         1,
-        this,
       );
     }
   }
@@ -156,7 +156,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
    *
    * @param {URI} path
    * @returns
-   * @memberof FileTreeAPIImpl
+   * @memberof FileTreeAPI
    */
   getReadableTooltip(path: URI) {
     const pathStr = path.toString();
@@ -174,6 +174,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const uri = new URI(filestat.uri);
     if (filestat.isDirectory) {
       return new Directory(
+        this,
         uri,
         this.labelService.getName(uri),
         filestat,
@@ -181,10 +182,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         this.labelService.getIcon(uri, filestat),
         parent,
         1,
-        this,
       );
     }
     return new File(
+      this,
       uri,
       this.labelService.getName(uri),
       filestat,
@@ -192,7 +193,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       this.labelService.getIcon(uri, filestat),
       parent,
       1,
-      this,
     );
   }
 
@@ -201,11 +201,11 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       uri: uri.toString(),
       isDirectory,
       isSymbolicLink: false,
-      isTemporaryFile: true,
       lastModification: new Date().getTime(),
     };
     if (isDirectory) {
       return new Directory(
+        this,
         uri,
         this.labelService.getName(uri),
         filestat,
@@ -213,10 +213,11 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         this.labelService.getIcon(uri, filestat),
         parent,
         10,
-        this,
+        true,
       );
     }
     return new File(
+      this,
       uri,
       this.labelService.getName(uri),
       filestat,
@@ -224,7 +225,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       this.labelService.getIcon(uri, filestat),
       parent,
       10,
-      this,
+      true,
     );
   }
 

@@ -253,7 +253,7 @@ export class MonacoActionRegistry {
     const allActions: MonacoCommand[] = [...MonacoActionRegistry.ACTIONS, ...monaco.editorExtensions.EditorExtensionsRegistry.getEditorActions().map((action) => ({...action, type: MonacoCommandType.ACTION}))];
     return allActions
       .filter((action) => MonacoActionRegistry.EXCLUDE_ACTIONS.indexOf(action.id) === -1)
-      .map(({ id, label, type }) => ({ id, label, type }));
+      .map(({ id, label, type, alias }) => ({ id, label, type, alias }));
   }
 
   /**

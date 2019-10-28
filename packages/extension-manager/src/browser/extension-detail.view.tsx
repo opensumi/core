@@ -13,12 +13,15 @@ import { getIcon } from '@ali/ide-core-browser/lib/icon';
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
   const { extensionId, version } = props.resource.uri.getParsedQuery();
-  const [extension, setExtension] = React.useState<ExtensionDetail | null>(null);
+  const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
+  const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isInstalling, setIsInstalling] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [isUnInstalling, setUnIsInstalling] = React.useState(false);
   const [tabIndex, setTabIndex] = React.useState(0);
+  const [reloadRequire, setReloadRequire] = React.useState(false);
+  const [updated, setUpdated] = React.useState(false);
   const tabs = [{
     name: 'readme',
     displayName: localize('marketplace.extension.readme', '细节'),
@@ -37,15 +40,26 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const delayUpdate = localize('marketplace.extension.update.delay', '稍后我自己更新');
   const nowUpdate = localize('marketplace.extension.update.now', '是，现在更新');
 
+  if (currentExtension && (!currentExtension.enable || !currentExtension.installed)) {
+    updateReloadStateIfNeed(currentExtension);
+  }
+
   React.useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const extension = isLocal
-                    ? await extensionManagerService.getDetailById(extensionId)
-                    : await extensionManagerService.getDetailFromMarketplace(extensionId);
-        if (extension) {
-          setExtension(extension);
+        const remote = await extensionManagerService.getDetailFromMarketplace(extensionId);
+        if (remote) {
+          setLatestExtension(remote);
+        }
+
+        if (isLocal) {
+          const local = await extensionManagerService.getDetailById(extensionId);
+          if (local) {
+            setCurrentExtension(local);
+          }
+        } else {
+          setCurrentExtension(remote!);
         }
       } catch (err) {
         logger.error(err);
@@ -67,53 +81,62 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     }
   }
 
+  async function updateReloadStateIfNeed(extension) {
+    const reloadRequire = await extensionManagerService.computeReloadState(extension.path);
+    if (reloadRequire) {
+      setReloadRequire(true);
+    }
+  }
+
   async function toggleActive() {
-    if (extension) {
-      const enable = !extension.enable;
-      await extensionManagerService.toggleActiveExtension(extension.extensionId, enable);
-      setExtension({
-        ...extension,
+    if (currentExtension) {
+      const enable = !currentExtension.enable;
+      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, enable);
+      if (!enable) {
+        await extensionManagerService.onDisableExtension(currentExtension.path);
+      } else {
+        await extensionManagerService.onEnableExtension(currentExtension.path);
+      }
+      setCurrentExtension({
+        ...currentExtension,
         enable,
       });
-      const message = await dialogService.info(localize('marketplace.extension.enable.message', '启用/禁用插件需要重启 IDE，你要现在重启吗？'), [delayReload, nowReload]);
-      if (message === nowReload) {
-        clientApp.fireOnReload();
-      }
+      await updateReloadStateIfNeed(currentExtension);
     }
   }
 
   async function install() {
-    if (extension && !isInstalling) {
+    if (currentExtension && !isInstalling) {
       setIsInstalling(true);
-      const path = await extensionManagerService.downloadExtension(extension.extensionId);
+      const path = await extensionManagerService.downloadExtension(currentExtension.extensionId);
       setIsInstalling(false);
-      setExtension({
-        ...extension,
+      setCurrentExtension({
+        ...currentExtension,
         path,
         installed: true,
       });
-      const message = await dialogService.info(localize('marketplace.extension.install.message', '下载插件后需要重启 IDE 才能生效，你要现在重启吗？'), [delayReload, nowReload]);
-      if (message === nowReload) {
-        clientApp.fireOnReload();
-      }
+      // 更新插件进程信息
+      await extensionManagerService.onInstallExtension(currentExtension.extensionId, path);
+      // 标记为已安装
+      await extensionManagerService.makeExtensionStatus(true, currentExtension.extensionId, path);
     }
   }
 
   async function uninstall() {
-    if (extension && !isUnInstalling) {
+    if (currentExtension && !isUnInstalling) {
       setUnIsInstalling(true);
-      const res = await extensionManagerService.uninstallExtension(extension.path);
+      const res = await extensionManagerService.uninstallExtension(currentExtension.path);
+      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, true);
 
       if (res) {
         setUnIsInstalling(false);
-        setExtension({
-          ...extension,
+        setCurrentExtension({
+          ...currentExtension,
           installed: false,
         });
-        const message = await dialogService.info(localize('marketplace.extension.uninstall.message', '卸载插件后需要重启 IDE 才能生效，你要现在重启吗？'), [delayReload, nowReload]);
-        if (message === nowReload) {
-          clientApp.fireOnReload();
-        }
+        await updateReloadStateIfNeed(currentExtension);
+        // 标记为未安装
+        await extensionManagerService.makeExtensionStatus(false, currentExtension.extensionId, '');
       } else {
         dialogService.info(localize('marketplace.extension.uninstall.failed', '卸载失败'));
       }
@@ -121,31 +144,31 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }
 
   async function update() {
-    if (extension && !isUpdating) {
+    if (currentExtension && !isUpdating) {
       setIsUpdating(true);
-      await extensionManagerService.updateExtension(extension.extensionId, version, extension.path);
-
+      const oldExtensionPath = currentExtension.path;
+      const newExtensionPath = await extensionManagerService.updateExtension(currentExtension.extensionId, latestExtension!.version, currentExtension.path);
       setIsUpdating(false);
-      setExtension({
-        ...extension,
+      setCurrentExtension({
+        ...currentExtension,
+        path: newExtensionPath,
         installed: true,
+        version: latestExtension!.version,
       });
-      const message = await dialogService.info(localize('marketplace.extension.update.message', '更新插件后需要重启 IDE 才能生效，你要现在重启吗？'), [delayReload, nowReload]);
-      if (message === nowReload) {
-        clientApp.fireOnReload();
-      }
-
+      await extensionManagerService.onUpdateExtension(newExtensionPath, oldExtensionPath);
+      await updateReloadStateIfNeed(currentExtension);
+      setUpdated(true);
     }
   }
 
   const canUpdate = React.useMemo(() => {
-    return version && extension && compareVersions(version, extension.version);
-  }, [version, extension]);
+    return currentExtension && latestExtension && compareVersions(currentExtension.version, latestExtension!.version);
+  }, [currentExtension, latestExtension]);
 
   React.useEffect(() => {
     if (canUpdate) {
       messageService
-      .info(localize('marketplace.extension.findUpdate', `发现插件有最新版本 ${version}，是否要更新到最新版本？`), [delayUpdate, nowUpdate])
+      .info(localize('marketplace.extension.findUpdate', `发现插件有最新版本 ${latestExtension!.version}，是否要更新到最新版本？`), [delayUpdate, nowUpdate])
       .then((message) => {
         if (message === nowUpdate) {
           update();
@@ -155,42 +178,43 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }, [canUpdate]);
   return (
     <div className={styles.wrap}>
-      {extension && (
+      {currentExtension && (
       <>
         <div className={styles.header}>
           <div>
-            <img className={styles.icon} src={extension.icon}></img>
+            <img className={styles.icon} src={currentExtension.icon}></img>
           </div>
           <div className={styles.details}>
             <div className={styles.title}>
-              <span className={styles.name}>{extension.displayName}</span>
-              <span className={styles.identifier}>{extension.id}</span>
+              <span className={styles.name}>{currentExtension.displayName}</span>
+              <span className={styles.identifier}>{currentExtension.id}</span>
             </div>
             <div className={styles.subtitle}>
-              <span className={styles.subtitle_item}>{extension.publisher}</span>
-              {extension && extension.downloadCount && extension.downloadCount > 0 ? (
-              <span className={styles.subtitle_item}><i className={getIcon('cloud-download')}></i> {extension.downloadCount}</span>
+              <span className={styles.subtitle_item}>{currentExtension.publisher}</span>
+              {currentExtension && currentExtension.downloadCount && currentExtension.downloadCount > 0 ? (
+              <span className={styles.subtitle_item}><i className={getIcon('cloud-download')}></i> {currentExtension.downloadCount}</span>
               ) : null}
-              {extension.license && (
+              {currentExtension.license && (
               <span className={styles.subtitle_item}>
-                <a target='_blank' href={extension.license}>{localize('marketplace.extension.license', '许可证')}</a>
+                <a target='_blank' href={currentExtension.license}>{localize('marketplace.extension.license', '许可证')}</a>
               </span>
               )}
             </div>
-            <div className={styles.description}>{extension.description}</div>
+            <div className={styles.description}>{currentExtension.description}{currentExtension.version}</div>
             <div className={styles.actions}>
-              {canUpdate ? (
+              {canUpdate && !updated ? (
                 <a className={styles.action} onClick={update}>{isUpdating ? localize('marketplace.extension.reloading', '更新中') : localize('marketplace.extension.reload', '更新')}</a>
               ) : null}
-              {!extension.installed ? (
+              {!currentExtension.installed ? (
                 <a className={styles.action} onClick={install}>{isInstalling ? localize('marketplace.extension.installing', '安装中') : localize('marketplace.extension.install', '安装')}</a>
               ) : null}
-              {isLocal && extension.installed ? (
+              {reloadRequire && <a className={clx(styles.action)} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure', '需要重启')}</a>}
+              {isLocal && currentExtension.installed ? (
                 <a className={clx(styles.action, {
-                  [styles.gray]: extension.enable,
-                })} onClick={toggleActive}>{extension.enable ? localize('marketplace.extension.disable', '禁用') : localize('marketplace.extension.enable', '启用')}</a>
+                  [styles.gray]: currentExtension.enable,
+                })} onClick={toggleActive}>{currentExtension.enable ? localize('marketplace.extension.disable', '禁用') : localize('marketplace.extension.enable', '启用')}</a>
               ) : null}
-              {extension.installed && !extension.isBuiltin  && (
+              {currentExtension.installed && !currentExtension.isBuiltin  && (
                 <a className={clx(styles.action, styles.gray)} onClick={uninstall}>{isUnInstalling ? localize('marketplace.extension.uninstalling', '卸载中') : localize('marketplace.extension.uninstall', '卸载')}</a>
               )}
             </div>
@@ -212,7 +236,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             {tabs.map((tab, index) => (
               <div key={tab.name} className={clx(styles.content_item, {
                 [styles.content_item_show]: index === tabIndex,
-              })}>{getContent(tab.name, extension)}</div>
+              })}>{getContent(tab.name, currentExtension)}</div>
             ))}
           </div>
         </div>

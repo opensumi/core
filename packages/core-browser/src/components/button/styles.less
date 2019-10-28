@@ -1,7 +1,9 @@
 // https://code.visualstudio.com/api/references/theme-color#button-control
 
 .kt-btn {
-  display: inline-block;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   height: 24px;
   line-height: 24px;
   padding: 0 16px;
@@ -16,6 +18,11 @@
     display: block;
   }
 
+  &.kt-btn-loading {
+    pointer-events: none;
+    opacity: .35;
+  }
+
   &-primary {
     color: var(--button-foreground);
     background-color: var(--button-background);
@@ -25,8 +32,18 @@
       background-color: var(--button-hoverBackground);
       border-color: var(--button-hoverBackground);
     }
+
+    &.kt-btn-ghost {
+      color: var(--button-background);
+
+      &:hover {
+        color: var(--button-hoverBackground);
+        border-color: var(--button-hoverBackground);
+      }
+    }
   }
 
+  // 暂不支持 ghost 模式
   &-secondary {
     color: var(--kt-secondary-button-foreground);
     border-color: var(--kt-secondary-button-border);
@@ -47,5 +64,19 @@
       background-color: var(--kt-danger-button-hoverBackground);
       border-color: var(--kt-danger-button-hoverBackground);
     }
+
+    &.kt-btn-ghost {
+      color: var(--kt-danger-button-background);
+
+      &:hover {
+        color: var(--kt-danger-button-hoverBackground);
+        border-color: var(--kt-danger-button-hoverBackground);
+      }
+    }
+  }
+
+  // ghost button has a transparent background
+  &.kt-btn-ghost {
+    background-color: transparent !important;
   }
 }

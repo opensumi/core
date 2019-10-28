@@ -61,6 +61,8 @@ export interface Terminal {
    * Dispose and free associated resources.
    */
   dispose(): void;
+
+  clear(): void;
 }
 
 export interface TerminalOptions {
@@ -140,6 +142,7 @@ export interface ITerminalServiceClient {
   disposeById(id: string);
   getProcessId(id: string): number;
   clientMessage(id, data);
+  setConnectionClientId(clientId: string);
   dispose();
 }
 

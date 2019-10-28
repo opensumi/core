@@ -19,6 +19,10 @@ export interface Command {
    */
   iconClass?: string;
   /**
+   * 要在命令面板显示的图标
+   */
+  toogleIconClass?: string;
+  /**
    * 要在命令面板显示的分组
    * 支持国际化占位符，例如 %evenEditorGroups%
    */
@@ -28,6 +32,11 @@ export interface Command {
    * 代理执行的命令
    */
   delegate?: string;
+
+  /**
+   * 在任意语言下都相同的别名
+   */
+  alias?: string;
 }
 
 /**

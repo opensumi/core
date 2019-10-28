@@ -1,4 +1,4 @@
-import { IFileTreeItem, FileTreeAPI } from '../common';
+import { IFileTreeItem, IFileTreeAPI } from '../common';
 import { URI, uuid } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 import { observable } from 'mobx';
@@ -10,6 +10,7 @@ export class AbstractFileTreeItem implements IFileTreeItem {
   public focused: boolean = false;
 
   constructor(
+    protected readonly fileApi: IFileTreeAPI,
     public readonly uri: URI,
     public readonly name: string,
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
@@ -17,12 +18,17 @@ export class AbstractFileTreeItem implements IFileTreeItem {
     public readonly icon: string,
     public readonly parent: Directory | undefined,
     public readonly priority = 1,
-    protected readonly fileApi: FileTreeAPI,
+    public isTemporary = false,
   ) {
   }
 
   updateFileStat(key: any, value: any) {
     this.filestat[key] = value;
+    return this;
+  }
+
+  updateTemporary(value: boolean) {
+    this.isTemporary = value;
     return this;
   }
 }
@@ -32,6 +38,7 @@ export class Directory extends AbstractFileTreeItem {
   public expanded: boolean = false;
 
   constructor(
+    fileApi: IFileTreeAPI,
     uri = new URI(''),
     name = '',
     filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },
@@ -39,9 +46,9 @@ export class Directory extends AbstractFileTreeItem {
     icon = '',
     parent: Directory | undefined,
     priority,
-    fileApi: FileTreeAPI,
+    isTemporary?: boolean,
   ) {
-    super(uri, name, filestat, tooltip, icon, parent, priority, fileApi);
+    super(fileApi, uri, name, filestat, tooltip, icon, parent, priority, isTemporary);
     this.init();
   }
 
@@ -137,6 +144,7 @@ export class Directory extends AbstractFileTreeItem {
 export class File extends AbstractFileTreeItem {
 
   constructor(
+    fileApi: IFileTreeAPI,
     uri = new URI(''),
     name = '',
     filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },
@@ -144,9 +152,9 @@ export class File extends AbstractFileTreeItem {
     icon = '',
     parent,
     priority,
-    fileApi: FileTreeAPI,
+    isTemporary?: boolean,
   ) {
-    super(uri, name, filestat, tooltip, icon, parent, priority, fileApi);
+    super(fileApi, uri, name, filestat, tooltip, icon, parent, priority, isTemporary);
   }
 }
 

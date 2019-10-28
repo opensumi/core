@@ -14,7 +14,7 @@ export enum DebugModelSupportedEventType {
 
 @Injectable()
 export class DebugModelManager extends Disposable {
-  private models: Map<string, DebugModel>;
+  private models: Map<string, DebugModel[]>;
   protected readonly toDispose = new DisposableCollection();
 
   @Autowired(EditorCollectionService)
@@ -46,8 +46,9 @@ export class DebugModelManager extends Disposable {
 
   dispose() {
     for (const model of this.models.values()) {
-      model.dispose();
+      this.toDispose.pushAll(model);
     }
+    this.toDispose.dispose();
     this.models.clear();
   }
 
@@ -65,9 +66,12 @@ export class DebugModelManager extends Disposable {
   }
 
   protected render(uri: URI): void {
-    const model = this.models.get(uri.toString());
-    if (model) {
-        model.render();
+    const models = this.models.get(uri.toString());
+    if (!models) {
+      return;
+    }
+    for (const model of models) {
+      model.render();
     }
   }
 
@@ -75,18 +79,26 @@ export class DebugModelManager extends Disposable {
     const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
     codeEditor.onRefOpen((ref) => {
       const uriString = ref.instance.uri.toString();
-      let debugModel = this.models.get(uriString);
-      if (!debugModel) {
-        const model = ref.instance.getMonacoModel();
-        debugModel = this.debugModelFactory(monacoEditor) as DebugModel;
+      const debugModel = this.models.get(uriString) || [];
+      let isRendered = false;
+      if (debugModel.length > 0) {
+        for (const model of debugModel) {
+          if ((model.editor as any)._id === (monacoEditor as any)._id) {
+            model.render();
+            isRendered = true;
+            break;
+          }
+        }
+      }
+      if (!isRendered) {
+        const monacoModel = ref.instance.getMonacoModel();
+        const model = this.debugModelFactory(monacoEditor);
+        debugModel.push(model);
         this.models.set(uriString, debugModel);
-        model.onWillDispose(() => {
-          debugModel!.dispose();
+        monacoModel.onWillDispose(() => {
+          model!.dispose();
           this.models.delete(uriString);
         });
-      } else {
-        console.log('debugModel render', debugModel);
-        debugModel.render();
       }
     });
 
@@ -97,7 +109,7 @@ export class DebugModelManager extends Disposable {
       }
 
       this.handleMouseEvent(new URI(model.uri.toString()),
-        type, event as monaco.editor.IEditorMouseEvent);
+        type, event as monaco.editor.IEditorMouseEvent, monacoEditor);
     };
 
     this.toDispose.push(
@@ -132,14 +144,19 @@ export class DebugModelManager extends Disposable {
     return debugModel;
   }
 
-  handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) {
+  handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: monaco.editor.ICodeEditor) {
     const debugModel = this.models.get(uri.toString());
 
     if (!debugModel) {
       throw new Error('Not find debug model');
     }
 
-    debugModel[`onMouse${type}`](event);
+    for (const model of debugModel) {
+      if ((model.editor as any)._id === (monacoEditor as any)._id) {
+        model[`onMouse${type}`](event);
+        break;
+      }
+    }
   }
 
 }

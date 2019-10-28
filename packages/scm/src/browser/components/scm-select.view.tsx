@@ -2,8 +2,6 @@ import * as React from 'react';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ViewState } from '@ali/ide-activity-panel';
 import { IStatusBarService } from '@ali/ide-status-bar';
-import { FixedSizeList as List } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
 import clx from 'classnames';
 import Badge from '@ali/ide-core-browser/lib/components/badge';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
@@ -19,7 +17,7 @@ const SCMProvider: React.FC<{
   selected?: boolean;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
   onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
-  style: React.CSSProperties;
+  style?: React.CSSProperties;
 }> = ({ repository, selected, ...restProps }) => {
   const { provider } = repository;
   const { title, type } = getSCMRepositoryDesc(repository);
@@ -86,35 +84,18 @@ export const SCMRepoSelect: React.FC<{
 
   return (
     <div className={styles.scmSelect}>
-      <AutoSizer>
-        {
-          ({ width, height }) => (
-            <List
-              className={styles.list}
-              height={height}
-              width={width}
-              itemCount={repositoryList.length}
-              itemData={repositoryList}
-              itemSize={scmItemLineHeight}
-            >
-              {
-                ({ data, index, style }) => {
-                  const currentRepo = data[index];
-                  return (
-                    <SCMProvider
-                      key={currentRepo.provider.id}
-                      style={style}
-                      selected={currentRepo.provider.id === selectedRepository.provider.id}
-                      onClick={handleRepositorySelect.bind(null, currentRepo)}
-                      onContextMenu={handleProviderCtxMenu.bind(null, currentRepo)}
-                      repository={currentRepo} />
-                  );
-                }
-              }
-            </List>
-          )
-        }
-      </AutoSizer>
+      {
+        repositoryList.map((currentRepo) => {
+          return (
+            <SCMProvider
+              key={currentRepo.provider.id}
+              selected={currentRepo.provider.id === selectedRepository.provider.id}
+              onClick={handleRepositorySelect.bind(null, currentRepo)}
+              onContextMenu={handleProviderCtxMenu.bind(null, currentRepo)}
+              repository={currentRepo} />
+          );
+        })
+      }
     </div>
   );
 };

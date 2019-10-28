@@ -53,7 +53,12 @@ export const corePreferenceSchema: PreferenceSchema = {
     'general.theme': {
       type: 'string',
       default: 'vs-dark',
-      description: '%preference.description.general.language%',
+      description: '%preference.description.general.theme%',
+    },
+    'general.icon': {
+      type: 'string',
+      default: 'vs-minimal',
+      description: '%preference.description.general.icon%',
     },
     'application.confirmExit': {
       type: 'string',

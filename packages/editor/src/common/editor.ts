@@ -29,7 +29,7 @@ export interface IEditor {
 
   applyDecoration(key: string, options: IDecorationApplyOptions[]);
 
-  onSelectionsChanged: Event<{ selections: ISelection[], source: string}>;
+  onSelectionsChanged: Event<{ selections: ISelection[], source: string }>;
 
   onVisibleRangesChanged: Event<IRange[]>;
 
@@ -42,6 +42,8 @@ export interface IEditor {
   updateOptions(editorOptions: any, modelOptions: any);
 
   save(): Promise<void>;
+
+  monacoEditor: monaco.editor.ICodeEditor;
 }
 
 export interface IUndoStopOptions {
@@ -95,16 +97,16 @@ export abstract class EditorCollectionService {
   public abstract onDiffEditorCreate: Event<IDiffEditor>;
 }
 
-export type IOpenResourceResult = {group: IEditorGroup, resource: IResource} | false;
+export type IOpenResourceResult = { group: IEditorGroup, resource: IResource } | false;
 /**
  * 当前显示的Editor列表发生变化时
  */
-export class CollectionEditorsUpdateEvent extends BasicEvent<IEditor[]> {}
+export class CollectionEditorsUpdateEvent extends BasicEvent<IEditor[]> { }
 
 /**
  * 当EditorGroup中打开的uri发生改变时
  */
-export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> {}
+export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> { }
 
 export interface IEditorGroup {
 
@@ -122,7 +124,7 @@ export interface IEditorGroup {
 
   currentOpenType: MaybeNull<IEditorOpenType>;
 
-  open(uri: URI, options: IResourceOpenOptions): Promise<IOpenResourceResult >;
+  open(uri: URI, options: IResourceOpenOptions): Promise<IOpenResourceResult>;
 
   close(uri: URI): Promise<void>;
 

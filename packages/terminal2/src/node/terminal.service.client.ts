@@ -3,6 +3,10 @@ import { RPCService } from '@ali/ide-connection';
 import { ITerminalService, ITerminalServiceClient, TerminalOptions } from '../common';
 import { IPty } from './pty';
 
+/**
+ * 标准的后端服务，供前端调用
+ * 目前每个窗口会对应一个 TerminalServiceClientImpl 实例
+ */
 @Injectable()
 export class TerminalServiceClientImpl extends RPCService implements ITerminalServiceClient {
   private terminalMap: Map<string, IPty> = new Map();

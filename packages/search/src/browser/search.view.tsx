@@ -16,8 +16,6 @@ import {
 import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
 
-const MIN_WIDTH = 220;
-
 function getIncludeRuleContent() {
   return (
     <div className={cls(styles.include_rule_content)}>
@@ -57,14 +55,14 @@ function getExcludeRuleContent(excludeList: string[], openPreference) {
 
 export const Search = observer(({
   viewState,
-}: React.PropsWithChildren<{viewState: ViewState}>,
+}: React.PropsWithChildren<{ viewState: ViewState }>,
 ) => {
   const searchOptionRef = React.createRef<HTMLDivElement>();
   const configContext = React.useContext(ConfigContext);
   const { injector } = configContext;
   const searchBrowserService = injector.get(ContentSearchClientService);
 
-  const [searchPanelLayout, setSearchPanelLayout] = React.useState({height: 0, width: 0});
+  const [searchPanelLayout, setSearchPanelLayout] = React.useState({ height: 0, width: 0 });
   const searchTreeRef = React.useRef();
 
   const searchResults = searchBrowserService.searchResults;
@@ -82,7 +80,7 @@ export const Search = observer(({
   }, [UIState]);
 
   const collapsePanelContainerStyle = {
-    width: viewState.width < MIN_WIDTH ? MIN_WIDTH : viewState.width,
+    width: viewState.width,
     height: viewState.height,
   };
 
@@ -158,6 +156,7 @@ export const Search = observer(({
                   </span>
                 </div>
                 <Input
+                  value={searchBrowserService.includeValue}
                   type='text'
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
@@ -168,11 +167,11 @@ export const Search = observer(({
                 <div className={cls(styles.label)}>
                   {localize('search.excludes')}
                   <Popover
-                      insertClass={cls(styles.search_excludes_description)}
-                      id={'search_excludes'}
-                      content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes(), searchBrowserService.openPreference)}
-                      trigger={PopoverTriggerType.hover}
-                    >
+                    insertClass={cls(styles.search_excludes_description)}
+                    id={'search_excludes'}
+                    content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes(), searchBrowserService.openPreference)}
+                    trigger={PopoverTriggerType.hover}
+                  >
                     <span className={cls(getIcon('question-circle'))}></span>
                   </Popover>
                   <CheckBox
@@ -185,6 +184,7 @@ export const Search = observer(({
                 </div>
                 <Input
                   type='text'
+                  value={searchBrowserService.excludeValue}
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchExcludeChange}
@@ -207,6 +207,7 @@ export const Search = observer(({
             </p>
             <div className={styles.replace_field}>
               <Input
+                value={searchBrowserService.replaceValue}
                 id='replace-input-field'
                 title={localize('search.replace.label')}
                 type='text'
@@ -225,16 +226,16 @@ export const Search = observer(({
       </div>
       {
         (searchResults && searchResults.size > 0) ? <SearchTree
-          searchPanelLayout = {searchPanelLayout}
+          searchPanelLayout={searchPanelLayout}
           viewState={viewState}
           ref={searchTreeRef}
         /> : <div className={cls(searchState === SEARCH_STATE.done ? styles.result_describe : '')}>
-          {
-            searchState === SEARCH_STATE.done ?
-            localize('noResultsFound').replace('-', '')
-            : ''
-          }
-        </div>
+            {
+              searchState === SEARCH_STATE.done ?
+                localize('noResultsFound').replace('-', '')
+                : ''
+            }
+          </div>
       }
     </div >
   );
