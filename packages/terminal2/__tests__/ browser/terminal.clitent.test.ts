@@ -175,13 +175,13 @@ describe('terminal.service.ts', () => {
   test('createTerminal', async () => {
     const terminal = await terminalClient.createTerminal({}, '1');
 
-    expect(terminal.id).toEqual('1|1');
+    expect(terminal!.id).toEqual('1|1');
   });
 
   test('sendText', async () => {
     const terminal = await terminalClient.createTerminal({}, '2');
 
-    terminal.serviceInitPromise = null;
+    terminal!.serviceInitPromise = null;
     terminalClient.sendText('1|2', '22');
 
     expect(mockTerminalNodeService.onMessageArgs[0]).toEqual('1|2');
@@ -193,7 +193,7 @@ describe('terminal.service.ts', () => {
 
     terminalClient.showTerm('1|3');
 
-    expect(terminal.isActive).toEqual(true);
+    expect(terminal!.isActive).toEqual(true);
   });
 
   test('hideTerm', async () => {
@@ -201,7 +201,7 @@ describe('terminal.service.ts', () => {
 
     terminalClient.hideTerm('1|4');
 
-    expect(terminal.isActive).toEqual(false);
+    expect(terminal!.isActive).toEqual(false);
   });
 
   test('removeTerm', async () => {
