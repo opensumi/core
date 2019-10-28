@@ -154,19 +154,14 @@ const MarkerItemPosition: React.FC<{ data: RenderableMarker }> = observer(({ dat
  */
 const MarkerItem: React.FC<{ model: RenderableMarkerModel }> = observer(({ model }) => {
   const [open, setOpen] = React.useState(true);
-
-  if (model.match || model.size() > 0) {
-    return (
-      <div className={styles.markerItem}>
-        <MarkerItemTitle model={model} open={open} onClick={() => {
-          setOpen(!open);
-        }} />
-        {open && <MarkerItemContents model={model} />}
-      </div>
-    );
-  } else {
-    return <FilterEmpty />;
-  }
+  return (
+    <div className={styles.markerItem}>
+      <MarkerItemTitle model={model} open={open} onClick={() => {
+        setOpen(!open);
+      }} />
+      {open && <MarkerItemContents model={model} />}
+    </div>
+  );
 });
 
 /**
@@ -178,14 +173,20 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
   if (viewModel) {
     let index = 0;
     viewModel.markers.forEach((model, _) => {
-      result.push(<MarkerItem key={`marker-group-${index++}`} model={model} />);
+      if (model.match) {
+        result.push(<MarkerItem key={`marker-group-${index++}`} model={model} />);
+      }
     });
   }
-  return (
-    <div className={styles.markerList}>
-      {result}
-    </div>
-  );
+  if (result.length > 0) {
+    return (
+      <div className={styles.markerList}>
+        {result}
+      </div>
+    );
+  } else {
+    return <FilterEmpty />;
+  }
 });
 
 /**

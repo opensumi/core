@@ -82,7 +82,8 @@ export class Filter {
     if (isFilenameMatch) {
       return MarkerModelBuilder.buildFilterModel(model, this.filterMarkerItems(model.markers, false), true, { filenameMatches });
     } else {
-      return MarkerModelBuilder.buildFilterModel(model, this.filterMarkerItems(model.markers, true), true, { filenameMatches });
+      const markers = this.filterMarkerItems(model.markers, true);
+      return MarkerModelBuilder.buildFilterModel(model, markers, markers.length > 0);
     }
   }
 

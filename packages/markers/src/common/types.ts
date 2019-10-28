@@ -83,7 +83,7 @@ export class MarkerModelBuilder {
     };
   }
 
-  public static buildFilterModel(model: IMarkerModel, markers: IFilterMarker[], match: boolean, matches: IFilterMatches | undefined): IFilterMarkerModel {
+  public static buildFilterModel(model: IMarkerModel, markers: IFilterMarker[], match: boolean, matches?: IFilterMatches): IFilterMarkerModel {
     return {
       ...model,
       match,
