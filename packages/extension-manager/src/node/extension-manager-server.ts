@@ -2,9 +2,9 @@ import { Injectable, Autowired } from '@ali/common-di';
 import * as compressing from 'compressing';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { IExtensionManagerServer, PREFIX } from '../common';
+import { IExtensionManagerServer, PREFIX, RequestHeaders } from '../common';
 import * as urllib from 'urllib';
-import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
+import { AppConfig, URI, INodeLogger, isElectronEnv, MarketplaceRequest} from '@ali/ide-core-node';
 import * as contentDisposition from 'content-disposition';
 import * as awaitEvent from 'await-event';
 import { renameSync } from 'fs-extra';
@@ -18,11 +18,39 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   @Autowired(INodeLogger)
   private logger: INodeLogger;
 
+  private headers: RequestHeaders;
+
   async search(query: string) {
-    return await this.request(`search?query=${query}`);
+    try {
+      const res = await this.request(`search?query=${query}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
+    }
   }
   async getExtensionFromMarketPlace(extensionId: string) {
-    return await this.request(`extension/${extensionId}`);
+    try {
+      const res = await this.request(`extension/${extensionId}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
+    }
   }
 
   /**
@@ -30,9 +58,8 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param extensionId 插件 id
    */
   async requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
-    const request = await urllib.request<NodeJS.ReadWriteStream>(this.getApi(`download/${extensionId}${version ? `?version=${version}` : ''}`), {
+    const request = await this.request<NodeJS.ReadWriteStream>(`download/${extensionId}${version ? `?version=${version}` : ''}`, {
       streaming: true,
-      headers: this.getHeaders(),
     });
     return request;
   }
@@ -150,38 +177,30 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * 请求插件市场
    * @param path 请求路径
    */
-  async request(path: string) {
-    try {
-      const url = this.getApi(path);
-      this.logger.log(`request: ${url}`);
-      const res = await urllib.request(url, {
-        dataType: 'json',
-        timeout: 5000,
-        headers: this.getHeaders(),
-        beforeRequest: (options) => {
-          if (this.appConfig.marketplace.transformRequest) {
-            const { headers, path} = this.appConfig.marketplace.transformRequest({
-              path: options.path,
-              headers: options.headers,
-            });
-            if (path) {
-              options.path = path;
-            }
-            if (headers) {
-              options.headers = headers;
-            }
+  async request<T = any>(path: string, options?: urllib.RequestOptions): Promise<urllib.HttpClientResponse<T>> {
+    const url = this.getApi(path);
+    return await urllib.request<T>(url, {
+      ...options,
+      headers: {
+        'x-account-id': this.appConfig.marketplace.accountId,
+        'x-master-key': this.appConfig.marketplace.masterKey,
+        ...this.headers,
+      },
+      beforeRequest: (options) => {
+        if (this.appConfig.marketplace.transformRequest) {
+          const { headers, path} = this.appConfig.marketplace.transformRequest({
+            path: options.path,
+            headers: options.headers,
+          });
+          if (path) {
+            options.path = path;
           }
-        },
-      });
-      if (res.status === 200) {
-        return res.data;
-      } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
-      }
-    } catch (err) {
-      this.logger.error(err);
-      throw new Error(err.message);
-    }
+          if (headers) {
+            options.headers = headers;
+          }
+        }
+      },
+    });
 
   }
 
@@ -191,19 +210,13 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   }
 
   /**
-   * 获取 headers
-   */
-  private getHeaders() {
-    return {
-      'x-account-id': this.appConfig.marketplace.accountId,
-      'x-master-key': this.appConfig.marketplace.masterKey,
-    };
-  }
-
-  /**
    * 是否显示插件市场
    */
   isShowBuiltinExtensions(): boolean {
     return this.appConfig.marketplace.showBuiltinExtensions;
+  }
+
+  setHeaders(headers: RequestHeaders) {
+    this.headers = headers;
   }
 }

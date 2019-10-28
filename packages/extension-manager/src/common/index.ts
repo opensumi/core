@@ -71,6 +71,7 @@ export interface IExtensionManagerService {
   onDisableExtension(extensionPath: string): Promise<void>;
   onEnableExtension(extensionPath: string): Promise<void>;
   makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string): void;
+  setRequestHeaders(requestHeaders: RequestHeaders): Promise<void>;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
@@ -83,4 +84,9 @@ export interface IExtensionManagerServer {
   requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>>;
   uninstallExtension(extensionPath: string): Promise<boolean>;
   isShowBuiltinExtensions(): boolean;
+  setHeaders(headers: RequestHeaders): void;
+}
+
+export interface RequestHeaders {
+  [header: string]: string;
 }
