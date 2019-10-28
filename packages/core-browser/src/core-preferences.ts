@@ -70,6 +70,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 'ifRequired',
       description: 'When to confirm before closing the application window.',
     },
+    'application.preferMarkdownPreview': {
+      type: 'boolean',
+      default: false,
+      description: 'Use markdown preview first',
+    },
     'workbench.list.openMode': {
       type: 'string',
       enum: ['singleClick', 'doubleClick'],
