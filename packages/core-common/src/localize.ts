@@ -113,6 +113,9 @@ export function getAvailableLanguages(env: string = 'host'): ILocalizationInfo[]
 function getLocalizationRegistry(env: string): LocalizationRegistry {
   if(!localizationRegistryMap[env]){
     localizationRegistryMap[env] = new LocalizationRegistry();
+    if (env !== 'host') {
+      localizationRegistryMap[env]!.currentLanguageId = localizationRegistryMap['host'].currentLanguageId;
+    }
   }
   return localizationRegistryMap[env];
 }
