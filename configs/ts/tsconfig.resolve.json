@@ -105,18 +105,6 @@
       "@ali/ide-status-bar/lib/*": [
         "../packages/status-bar/src/*"
       ],
-      "@ali/ide-terminal": [
-        "../packages/terminal/src/index.ts"
-      ],
-      "@ali/ide-terminal/lib/*": [
-        "../packages/terminal/src/*"
-      ],
-      "@ali/ide-terminal-server": [
-        "../packages/terminal-server/src/index.ts"
-      ],
-      "@ali/ide-terminal-server/lib/*": [
-        "../packages/terminal-server/src/*"
-      ],
       "@ali/ide-static-resource": [
         "../packages/static-resource/src/index.ts"
       ],
