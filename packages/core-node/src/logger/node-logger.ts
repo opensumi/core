@@ -56,6 +56,10 @@ export class NodeLogger implements INodeLogger {
     return this.logger.drop();
   }
 
+  flush() {
+    return this.logger.flush();
+  }
+
   getLevel() {
     return this.logger.getLevel();
   }
