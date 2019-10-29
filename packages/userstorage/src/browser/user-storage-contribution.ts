@@ -8,7 +8,7 @@ import {
   DisposableCollection,
 } from '@ali/ide-core-browser';
 import { UserStorageService } from './user-storage-service';
-import { UserStorageUri } from './user-storage-uri';
+import { UserStorageUri } from '../common';
 
 export class UserStorageResource implements Resource {
 
@@ -49,7 +49,7 @@ export class UserStorageResource implements Resource {
 @Domain(ResourceResolverContribution)
 export class UserStorageResolver implements ResourceResolverContribution {
   @Autowired(UserStorageService)
-  service: UserStorageService;
+  private readonly service: UserStorageService;
 
   resolve(uri: URI): MaybePromise<UserStorageResource | void> {
     if (uri.scheme !== UserStorageUri.SCHEME) {

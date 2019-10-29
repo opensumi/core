@@ -2,14 +2,16 @@ import { Injector } from '@ali/common-di';
 import { URI, localize } from '@ali/ide-core-common';
 import { FileTreeService } from '../../src/browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { IFileTreeAPI, MockFileTreeAPIImpl } from '../../src/common';
-import { IFileServiceClient, MockFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { File, Directory } from '../../src/browser/file-tree-item';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { CorePreferences, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IDialogService } from '@ali/ide-overlay';
+import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
+import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 
 describe('FileTreeService should be work', () => {
   let treeService: FileTreeService;

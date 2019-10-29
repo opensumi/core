@@ -329,7 +329,6 @@ export class DefaultPreferenceProvider extends PreferenceProvider {
   }
 
   protected async init() {
-    await this.preferenceSchemaProvider.ready;
     this._ready.resolve();
   }
 

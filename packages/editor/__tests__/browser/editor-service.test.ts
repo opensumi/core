@@ -13,11 +13,12 @@ import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.servic
 import { URI, Disposable } from '@ali/ide-core-common';
 import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent } from './test-providers';
 import { useMockStorage } from '../packages/core-browser/lib/mocks/storage';
-import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { reaction } from 'mobx';
 import { CorePreferences } from '@ali/ide-core-browser';
+import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 
-const injector = createBrowserInjector([]);
+const MockWorkspaceServiceinjector = createBrowserInjector([]);
 
 injector.addProviders(...[
   {

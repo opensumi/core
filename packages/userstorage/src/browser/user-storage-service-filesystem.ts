@@ -2,7 +2,7 @@
 import { DisposableCollection, ILogger, Emitter, Event, URI } from '@ali/ide-core-browser';
 import { UserStorageChangeEvent, UserStorageService } from './user-storage-service';
 import { Injectable, Autowired } from '@ali/common-di';
-import { UserStorageUri } from './user-storage-uri';
+import { UserStorageUri } from '../common/user-storage-uri';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 

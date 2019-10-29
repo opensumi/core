@@ -1,5 +1,6 @@
 import { IPreferenceSettingsService, PreferenceScope, ISettingGroup, IDisposable, ISettingSection } from '..';
-import { Injectable } from '@ali/common-di';
+import { Injectable, Injector } from '@ali/common-di';
+import { PreferenceProvider } from '../preferences';
 
 @Injectable()
 export class MockPreferenceSchemaProvider {
@@ -33,3 +34,47 @@ export class MockPreferenceSettingsService {
   }
 
 }
+
+@Injectable()
+export class MockPreferenceProvider extends PreferenceProvider {
+  protected readonly preferences: { [name: string]: any } = {};
+
+  constructor() {
+    super();
+    this.init();
+  }
+
+  protected init() {
+    this._ready.resolve();
+  }
+
+  getPreferences(resourceUri?: string): { [p: string]: any } {
+    return this.preferences;
+  }
+
+  async setPreference(key: string, value: any, resourceUri?: string): Promise<boolean> {
+    this.preferences[key] = value;
+    return true;
+  }
+
+}
+
+export const injectMockPreferences = (injector: Injector) => {
+  injector.addProviders(
+    {
+      token: PreferenceProvider,
+      tag: PreferenceScope.User,
+      useClass: MockPreferenceProvider,
+    },
+    {
+      token: PreferenceProvider,
+      tag: PreferenceScope.Workspace,
+      useClass: MockPreferenceProvider,
+    },
+    {
+      token: PreferenceProvider,
+      tag: PreferenceScope.Folder,
+      useClass: MockPreferenceProvider,
+    },
+  );
+};
