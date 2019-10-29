@@ -122,7 +122,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
     }
   }
 
-  createTerminal = async (options?: TerminalOptions): Promise<TerminalImpl | null> => {
+  createTerminal = async (options?: TerminalOptions, createdId?: string): Promise<TerminalImpl | null> => {
     if (!this.wrapEl) {
       this.logger.error('没有设置 wrapEl');
     }
@@ -132,10 +132,10 @@ export class TerminalClient extends Themable implements ITerminalClient {
     let id: string;
 
     if (isElectronEnv()) {
-      id = electronEnv.metadata.windowClientId + '|' + uuid();
+      id = electronEnv.metadata.windowClientId + '|' + (createdId || uuid());
     } else {
       const WSChanneHandler = this.injector.get(IWSChanneHandler);
-      id = WSChanneHandler.clientId + '|' + uuid();
+      id = WSChanneHandler.clientId + '|' + (createdId || uuid());
     }
 
     const term: XTerm = new XTerm({
