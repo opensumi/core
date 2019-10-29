@@ -240,10 +240,10 @@ describe('main layout test', () => {
   });
 
   // TODO jsdom获取到的节点宽高为0，展开折叠动画暂时无法测试
-  // it('toggle slot should work', async (done) => {
-  //   const initVisibility = service.isVisible('left');
-  //   await service.toggleSlot('left');
-  //   expect(service.isVisible('left') !== initVisibility).toBeTruthy();
-  //   done();
-  // });
+  it('toggle slot should work', async (done) => {
+    const initVisibility = service.isVisible('left');
+    await service.toggleSlot('left');
+    expect(service.isVisible('left') !== initVisibility).toBeTruthy();
+    done();
+  });
 });
