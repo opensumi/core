@@ -84,11 +84,11 @@ export class TerminalContribution implements ComponentContribution, KeybindingCo
       isEnabled: () => {
         return true;
       },
-      isVisible: () => {
+      isToggled: () => {
         if (this.layoutService.bottomExpanded) {
-          return false;
-        } else {
           return true;
+        } else {
+          return false;
         }
       },
     });
