@@ -232,12 +232,12 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           </div>
         </div>
         <div className={styles.body}>
-          <Tabs tabBarStyle={{margin: 0}} tabBarGutter={0}>
+          <Tabs tabBarStyle={{marginBottom: 0}}>
             <TabPane className={styles.content} tab={localize('marketplace.extension.readme', '简介')} key='readme'>
-              <Markdown content={currentExtension.readme}/>
+              <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`}/>
             </TabPane>
             <TabPane tab={localize('marketplace.extension.changelog', '更改日志')} key='changelog'>
-              <Markdown content={currentExtension.changelog}/>
+              <Markdown content={currentExtension.changelog ? currentExtension.changelog : 'no changelog'}/>
             </TabPane>
           </Tabs>
         </div>
