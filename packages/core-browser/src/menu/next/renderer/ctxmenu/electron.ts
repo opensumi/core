@@ -27,8 +27,8 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
     this.contextMenuActions.clear();
     this.bindActions(menuNodes, context, this.contextMenuActions);
 
-    const template = this.getTemplate(menuNodes) as INativeMenuTemplate;
-    this.createNativeContextMenu(template, onHide);
+    const template = this.getTemplate(menuNodes);
+    this.createNativeContextMenu({submenu: template}, onHide);
   }
 
   private bindActions(menuNodes: MenuNode[], context: any, map: Map<string, () => void>) {
@@ -41,7 +41,7 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
     });
   }
 
-  private getTemplate(menuNodes: MenuNode[]): INativeMenuTemplate | INativeMenuTemplate[] | undefined {
+  private getTemplate(menuNodes: MenuNode[]): INativeMenuTemplate[] | undefined {
     return menuNodes.map((menuNode) => {
       if (menuNode.id === SeparatorMenuItemNode.ID) {
         return { type: 'separator' };
