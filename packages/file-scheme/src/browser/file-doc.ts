@@ -53,10 +53,10 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   }
 
   isReadonly(uri: URI): boolean {
-    const readonlyFiles = this.corePreferences['editor.readonlyFiles'];
+    const readonlyFiles: string[] = this.corePreferences['editor.readonlyFiles'];
     if (readonlyFiles && readonlyFiles.length) {
       for (const file of readonlyFiles) {
-        if (uri.isEqual(URI.file(file)) || uri.matchGlobPattern(file)) {
+        if (uri.isEqual(URI.file(file)) || uri.matchGlobPattern(file) || uri.toString().endsWith(file.replace('./', ''))) {
           return true;
         }
       }
