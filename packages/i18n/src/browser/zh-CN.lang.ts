@@ -228,6 +228,7 @@ export const localizationBundle = {
     'preference.editor.wordWrap': '自动换行',
     'preference.editor.wordWrapColumn': '自动换行长度',
     'preference.editor.askIfDiff': '保存文件冲突时提示',
+    'preference.editor.readonlyFiles': '只读文件列表',
 
     'preference.array.additem': '添加',
 
