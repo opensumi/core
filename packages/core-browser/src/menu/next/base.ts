@@ -139,6 +139,7 @@ export interface IMenuAction {
   className?: string;
   icon: string; // 标准的 vscode icon 是分两种主题的
   shortcut?: string; // 快捷键
+  disabled?: boolean; // disable 状态的 menu
   execute(event?: any): Promise<any>;
 }
 
@@ -149,12 +150,14 @@ export class MenuNode implements IMenuAction {
   className: string | undefined;
   icon: string;
   shortcut: string;
+  disabled: boolean;
   readonly _actionCallback?: (event?: any) => Promise<any>;
 
   constructor(
     id: string,
     icon: string = '',
     label: string = '',
+    disabled = false,
     shortcut: string = '',
     className: string = '',
     actionCallback?: (event?: any) => Promise<any>,
@@ -164,6 +167,7 @@ export class MenuNode implements IMenuAction {
     this.className = className;
     this.icon = icon;
     this.shortcut = shortcut;
+    this.disabled = disabled;
     this._actionCallback = actionCallback;
   }
 

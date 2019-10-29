@@ -16,11 +16,14 @@
     .@{clsx}-item {
       margin: 0 !important;
       padding: 4px !important;
-      cursor: default !important;
       height: 26px !important;
       display: flex !important;
       align-items: center !important;
       color: inherit !important;
+    }
+
+    .@{clsx}-item:not(.@{clsx}-item-disabled) {
+      cursor: default !important;
     }
 
     .@{clsx}-item-divider {

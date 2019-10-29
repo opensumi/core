@@ -55,15 +55,16 @@ export class MenuItemNode extends MenuNode {
 
   constructor(
     @Optional() item: Command,
-    @Optional() options: IMenuNodeOptions,
+    @Optional() options: IMenuNodeOptions = {},
+    @Optional() disabled: boolean,
   ) {
     // 后置获取 i18n 数据
     const command = i18nify(item);
 
-    super(command.id, command.iconClass!, command.label!);
+    super(command.id, command.iconClass!, command.label!, disabled);
     this.className = undefined;
     this.shortcut = this.getShortcut(command.id);
-    this._options = options || {};
+    this._options = options;
 
     this.item = command;
   }
@@ -198,7 +199,8 @@ class Menu extends Disposable implements IMenu {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
             if (this.commandRegistry.isVisible(item.command.id)) {
-              const action = this.injector.get(MenuItemNode, [item.command, options]);
+              const disabled = !this.commandRegistry.isEnabled(item.command.id);
+              const action = this.injector.get(MenuItemNode, [item.command, options, disabled]);
               activeActions.push(action);
             }
           } else {

@@ -63,7 +63,7 @@ export const MenuActionList: React.FC<{
             return <Menu.Divider key={`divider-${index}`} />;
           }
           return (
-            <Menu.Item key={menuNode.id}>
+            <Menu.Item key={menuNode.id} disabled={menuNode.disabled}>
               <MenuAction key={menuNode.id} data={menuNode} />
             </Menu.Item>
           );
