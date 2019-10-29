@@ -13,11 +13,9 @@ import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folde
 import { LaunchFolderPreferenceProvider } from '../../../lib/browser/preferences/launch-folder-preference-provider';
 import { injectPreferenceProviders, createPreferenceProviders } from '@ali/ide-preferences/lib/browser';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
-import { UserStorageService, UserStorageServiceFilesystemImpl } from '@ali/ide-userstorage/lib/browser';
 import { IFileServiceClient, FileServicePath, FileStat } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { MockFileService } from '@ali/ide-file-service/lib/common/mocks/file-service';
-import { FileSystemNodeOptions } from '@ali/ide-file-service/lib/node';
+import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
 import { MockUserStorageResolver } from '@ali/ide-userstorage/lib/common/mocks';
 import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 disableJSDOM();
@@ -435,7 +433,7 @@ describe('Launch Preferences', () => {
           },
           {
             token: FileServicePath,
-            useClass: MockFileService,
+            useClass: FileService,
           },
           {
             token: IFileServiceClient,
@@ -452,6 +450,10 @@ describe('Launch Preferences', () => {
           MockUserStorageResolver,
           FileResourceResolver,
         );
+        // TODO: 为了mock实例提前获取
+        injector.get(FileServicePath);
+        // 替换文件监听函数实现
+        injector.mock(FileServicePath, 'watchFileChanges', () => { });
 
         injectPreferenceSchemaProvider(injector);
 
