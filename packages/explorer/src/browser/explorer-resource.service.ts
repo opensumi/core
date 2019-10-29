@@ -397,7 +397,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     if (!node) {
       this.filetreeService.removeTempStatus();
     } else if (!value) {
-      this.filetreeService.removeTempStatus();
+      this.filetreeService.removeTempStatus(node as (Directory | File));
     } else if (node && value) {
       if (node.name === TEMP_FILE_NAME) {
         if (node.filestat.isDirectory) {

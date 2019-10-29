@@ -1,9 +1,9 @@
-import { Injector } from '@ali/common-di';
 import { URI, localize } from '@ali/ide-core-common';
 import { FileTreeService } from '../../src/browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
-import { IFileTreeAPI, MockFileTreeAPIImpl } from '../../src/common';
+import { IFileTreeAPI } from '../../src/common';
+import { MockFileTreeAPIImpl } from '../../src/common/mocks';
 import { IFileServiceClient, MockFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { File, Directory } from '../../src/browser/file-tree-item';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -228,7 +228,7 @@ describe('FileTreeService should be work', () => {
     });
 
     it('removeStatusAndFileFromParent should be work', () => {
-      const childUri = new URI(`${root}/parent/child.js`);
+      const childUri = new URI(`${root}/child.js`);
       const childFile: File = new File(
         fileApi,
         childUri,

@@ -266,12 +266,10 @@ export class FileTreeService extends WithEventBus {
    */
   @action
   removeStatusAndFileFromParent(uri: URI) {
-    const statusKey = this.getStatutsKey(uri);
-    const status = this.status.get(statusKey);
-    const parent = status && status.file!.parent as Directory;
+    const parentStatusKey = this.getStatutsKey(uri.parent);
+    const parentStatus = this.status.get(parentStatusKey);
+    const parent = parentStatus && parentStatus!.file as Directory;
     if (parent) {
-      const parentStatusKey = this.getStatutsKey(parent);
-      const parentStatus = this.status.get(parentStatusKey);
       // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
       if (parentStatus && !parentStatus!.expanded) {
         this.status.set(parentStatusKey, {
@@ -292,11 +290,28 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
-  removeTempStatus() {
-    for (const [, status] of this.status) {
-      if (status && status.file && status.file.name === TEMP_FILE_NAME) {
+  removeTempStatus(node?: Directory | File) {
+    if (node) {
+      const statusKey = this.getStatutsKey(node.uri);
+      const status = this.status.get(statusKey);
+      if (!status) {
+        return;
+      }
+      if (status.file.name === TEMP_FILE_NAME) {
         this.removeStatusAndFileFromParent(status.file.uri);
-        break;
+      } else {
+        status.file.updateTemporary(false);
+        this.status.set(statusKey, {
+          ...status!,
+          file: status.file,
+        });
+      }
+    } else {
+      for (const [, status] of this.status) {
+        if (status && status.file && status.file.name === TEMP_FILE_NAME) {
+          this.removeStatusAndFileFromParent(status.file.uri);
+          break;
+        }
       }
     }
   }
