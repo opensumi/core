@@ -72,12 +72,12 @@ export namespace Command {
 /**
  * 命令处理函数接口
  */
-export interface CommandHandler {
+export interface CommandHandler<T = any> {
   /**
    * 命令执行函数
    * @param args 传递的参数
    */
-  execute(...args: any[]): any;
+  execute: T;
   /**
    * 命令是否启用
    * 若为否，则不会被执行到
@@ -136,7 +136,7 @@ export interface CommandRegistry {
    * @param handler 要绑定的执行函数，可延后添加
    * @returns 销毁命令的方法
    */
-  registerCommand(command: Command, handler?: CommandHandler): IDisposable;
+  registerCommand<T = any>(command: Command, handler?: CommandHandler<T>): IDisposable;
   /**
    * 从 ContributionProvide 中拿到执行命令 Contributuon
    * 执行注册操作
@@ -163,7 +163,7 @@ export interface CommandRegistry {
    * @param commandId 要添加的命令 id
    * @param handler 要添加的处理函数
    */
-  registerHandler(commandId: string, handler: CommandHandler): IDisposable;
+  registerHandler<T = any>(commandId: string, handler: CommandHandler<T>): IDisposable;
   /**
    * 通过命令 id 获取命令
    * @param commandId 命令 id
@@ -285,7 +285,7 @@ export class CommandRegistryImpl implements CommandRegistry {
    * @param handler
    * @returns 命令销毁函数
    */
-  registerCommand(command: Command, handler?: CommandHandler): IDisposable {
+  registerCommand<T>(command: Command, handler?: CommandHandler<T>): IDisposable {
     if (this._commands[command.id]) {
       console.warn(`A command ${command.id} is already registered.`);
       return Disposable.NULL;
@@ -328,7 +328,7 @@ export class CommandRegistryImpl implements CommandRegistry {
    * @param handler 要添加的处理函数
    * @returns 销毁函数
    */
-  registerHandler(commandId: string, handler: CommandHandler): IDisposable {
+  registerHandler<T>(commandId: string, handler: CommandHandler<T>): IDisposable {
     let handlers = this._handlers[commandId];
     if (!handlers) {
       this._handlers[commandId] = handlers = [];

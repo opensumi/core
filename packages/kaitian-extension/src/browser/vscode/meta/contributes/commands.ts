@@ -52,7 +52,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
   async contribute() {
     this.json.forEach((command) => {
       this.addDispose(this.commandRegistry.registerCommand({
-        category: command.category,
+        category: this.getLocalieFromNlsJSON(command.category),
         label: this.getLocalieFromNlsJSON(command.title),
         id: command.command,
         iconClass: this.iconService.fromIcon(this.extension.path, command.icon),
@@ -63,7 +63,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
           const proxy = await this.extensionService.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
           // 实际执行的为在扩展进展中注册的处理函数
           args = args.map((arg) => processArgument(arg));
-          return proxy.$executeContributedCommand(command.command, ...args);
+          return await proxy.$executeContributedCommand(command.command, ...args);
         },
       }));
     });

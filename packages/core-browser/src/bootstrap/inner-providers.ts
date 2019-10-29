@@ -35,7 +35,7 @@ import { PreferenceContribution } from '../preferences';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../variable';
 
 import { MenuService, MenuServiceImpl } from '../menu/next/menu-service';
-import { IMenuRegistry, MenuRegistry } from '../menu/next/base';
+import { IMenuRegistry, MenuRegistry, NextMenuContribution } from '../menu/next/base';
 import { CtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
 
@@ -44,6 +44,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, ClientAppContribution);
   createContributionProvider(injector, CommandContribution);
   createContributionProvider(injector, KeybindingContribution);
+  createContributionProvider(injector, NextMenuContribution);
   createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, KeybindingContext);
   createContributionProvider(injector, ComponentContribution);

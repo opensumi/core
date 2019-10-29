@@ -3,8 +3,9 @@ import * as vscode from 'vscode';
 
 // explorer/context
 // 资源管理器 ctxmenu
-// 第一个参数是当前 ctx-menu 出现在的那个 ExplorerItem 的 Uri
-// 第二个参数是多选时 ExplorerItem 列表的 Uri
+// 第一个参数是当前 ctx-menu 出现在的那个 ExplorerItem 的 URI
+// 第二个参数是多选时 ExplorerItem 列表的 URI
+// 经过进程通信后 URI -- transform --> Uri
 export type ExplorerContextParams = [URI, URI[]];
 
 export type ExplorerContextCallback = (...args: ExplorerContextParams) => void;

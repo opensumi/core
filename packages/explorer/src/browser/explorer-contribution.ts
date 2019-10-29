@@ -12,7 +12,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import * as copy from 'copy-to-clipboard';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ExplorerContextParams } from '@ali/ide-core-browser/lib/menu/next';
+import { ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 
 export const ExplorerResourceViewId = 'file-explorer';
 export const ExplorerContainerId = 'explorer';
@@ -86,8 +86,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
 
     // 注册给ExplorerMenu的Command执行参数为 ExplorerContextParams
-    commands.registerCommand(FILE_COMMANDS.DELETE_FILE, {
-      execute: ([, uris]: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
+      execute: async (_, uris) => {
         if (uris && uris.length) {
           this.filetreeService.deleteFiles(uris);
         }
@@ -96,8 +96,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedUris.length > 0;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.RENAME_FILE, {
-      execute: ([, uris]: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.RENAME_FILE, {
+      execute: async (_, uris) => {
         // 默认使用uris中下标为0的uri作为创建基础
         if (uris && uris.length) {
           this.filetreeService.renameTempFile(uris[0]);
@@ -107,8 +107,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedUris.length > 0;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.NEW_FILE, {
-      execute: async (params: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
+      execute: async (uri) => {
         // 默认获取焦点元素
         const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
@@ -116,9 +116,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         if (selectedFile.length === 1) {
           fromUri = selectedFile[0];
         } else {
-          if (params) {
-            const [, uris] = params;
-            fromUri = uris[0];
+          if (uri) {
+            fromUri = uri;
           } else {
             fromUri = this.filetreeService.root;
           }
@@ -130,17 +129,16 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
 
       },
     });
-    commands.registerCommand(FILE_COMMANDS.NEW_FOLDER, {
-      execute: async (params: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
+      execute: async (uri) => {
         const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
           fromUri = selectedFile[0];
         } else {
-          if (params) {
-            const [, uris] = params;
-            fromUri = uris[0];
+          if (uri) {
+            fromUri = uri;
           } else {
             fromUri = this.filetreeService.root;
           }
@@ -151,8 +149,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
       },
     });
-    commands.registerCommand(FILE_COMMANDS.COMPARE_SELECTED, {
-      execute: ([, uris]: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COMPARE_SELECTED, {
+      execute: (_, uris) => {
         if (uris && uris.length) {
           const currentEditor = this.editorService.currentEditor;
           if (currentEditor && currentEditor.currentUri) {
@@ -164,8 +162,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {
-      execute: ([, uris]: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_RESOURCES, {
+      execute: (_, uris) => {
         if (uris && uris.length) {
           this.filetreeService.openAndFixedFile(uris[0]);
         }
@@ -174,8 +172,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
-      execute: ([, uris]: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
+      execute: (_, uris) => {
         if (uris && uris.length) {
           this.filetreeService.openToTheSide(uris[0]);
         }
@@ -184,8 +182,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.COPY_PATH, {
-      execute: ([, uris]: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
+      execute: (_, uris) => {
         if (uris && uris.length) {
           const copyUri: URI = uris[0];
           copy(copyUri.withScheme('').toString());
@@ -195,8 +193,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedUris.length === 1;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.COPY_RELATIVE_PATH, {
-      execute: ([, uris]: ExplorerContextParams) => {
+
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
+      execute: (_, uris) => {
         if (uris && uris.length) {
           const copyUri: URI = uris[0];
           if (this.filetreeService.root) {
@@ -208,8 +207,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedUris.length === 1;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.COPY_FILE, {
-      execute: ([, uris]: ExplorerContextParams) => {
+
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_FILE, {
+      execute: (_, uris) => {
         if (uris && uris.length) {
           this.filetreeService.copyFile(uris);
         }
@@ -218,8 +218,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length >= 1;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.CUT_FILE, {
-      execute: ([, uris]: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
+      execute: (_, uris) => {
         if (uris && uris.length) {
           this.filetreeService.cutFile(uris);
         }
@@ -228,8 +228,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length >= 1;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.PASTE_FILE, {
-      execute: ([, uris]: ExplorerContextParams) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
+      execute: (_, uris) => {
         if (uris && uris.length) {
           const pasteUri: URI = uris[0];
           this.filetreeService.pasteFile(pasteUri);

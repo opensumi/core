@@ -1,4 +1,4 @@
-import { CommandService, Command } from '@ali/ide-core-common';
+import { CommandRegistry, CommandService, Command } from '@ali/ide-core-common';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -109,6 +109,9 @@ class Menu extends Disposable implements IMenu {
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;
 
+  @Autowired(CommandRegistry)
+  private readonly commandRegistry: CommandRegistry;
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -181,28 +184,28 @@ class Menu extends Disposable implements IMenu {
     return this._onDidChange.event;
   }
 
-  /**
-   * 由于 i18n 语言包加载时序问题, 在插件注册时 command 的 label/category 不一定能获取到 i18n 文案
-   * 因此在 getMenuNodes 里后置进行语言获取替换及 menu 的排序
-   */
   getMenuNodes(options: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
     const result: [string, Array<MenuItemNode | SubmenuItemNode>][] = [];
     for (const group of this._menuGroups) {
       const [id, items] = group;
       const activeActions: Array<MenuItemNode | SubmenuItemNode> = [];
       for (const item of items) {
-        if (
-          this.contextKeyService.match(item.when)
-          || (typeof item.customWhen === 'function' && !!item.customWhen())
-        ) {
-          const action = isIMenuItem(item)
-            ? this.injector.get(MenuItemNode, [item.command, options])
-            : new SubmenuItemNode(item);
-          activeActions.push(action);
+        if (this.contextKeyService.match(item.when)) {
+          if (isIMenuItem(item)) {
+            // 兼容现有的 Command#isVisible
+            if (this.commandRegistry.isVisible(item.command.id)) {
+              const action = this.injector.get(MenuItemNode, [item.command, options]);
+              activeActions.push(action);
+            }
+          } else {
+            const action = new SubmenuItemNode(item);
+            activeActions.push(action);
+          }
         }
       }
+
       if (activeActions.length > 0) {
-        result.push([id, activeActions.sort(menuItemsSorterByCmd)]);
+        result.push([id, activeActions]);
       }
     }
     return result;
@@ -252,11 +255,5 @@ function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
     return 1;
   }
 
-  // sort on label/category 目前 sort 不了，是因为注册的 command 的多语言依赖于插件语言包
-  // 但是目前 contribute 时 插件语言包加载不到，需要后续解决
-  return 0;
-}
-
-function menuItemsSorterByCmd(a: MenuItemNode, b: MenuItemNode): number {
-  return Command.compareCommands(a.item, b.item);
+  return Command.compareCommands(a.command, b.command);
 }

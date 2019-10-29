@@ -1,6 +1,11 @@
-import { IDisposable, Event, Emitter, Command } from '@ali/ide-core-common';
-import { Injectable } from '@ali/common-di';
+import { IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ali/common-di';
 import { MenuId } from './menu-id';
+
+export const NextMenuContribution = Symbol('NextMenuContribution');
+export interface NextMenuContribution {
+  registerNextMenus(menus: IMenuRegistry): void;
+}
 
 export interface ILocalizedString {
   value: string;
@@ -9,7 +14,6 @@ export interface ILocalizedString {
 
 export interface IMenuItem {
   command: Command;
-  customWhen?: () => boolean; // ide-framework 内部使用
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -18,7 +22,6 @@ export interface IMenuItem {
 export interface ISubmenuItem {
   title: string | ILocalizedString;
   submenu: MenuId; // 暂时尚未遇到
-  customWhen?: () => boolean; // ide-framework 内部使用
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -42,6 +45,15 @@ export class MenuRegistry implements IMenuRegistry {
   private readonly _onDidChangeMenu = new Emitter<MenuId>();
 
   readonly onDidChangeMenu: Event<MenuId> = this._onDidChangeMenu.event;
+
+  @Autowired(NextMenuContribution)
+  protected readonly contributions: ContributionProvider<NextMenuContribution>;
+
+  onStart() {
+    for (const contrib of this.contributions.getContributions()) {
+      contrib.registerNextMenus(this);
+    }
+  }
 
   addCommand(command: Command): IDisposable {
     this._commands.set(command.id, command);

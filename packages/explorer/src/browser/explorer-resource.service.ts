@@ -410,8 +410,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     } else {
       uris = [this.root];
     }
-    // const data = { x, y, uris };
-    const data = Object.assign(uris[0], { x, y });
     this.setContextKeys(nodes[0] as (Directory | File));
     this.currentContextUriContextKey.set(uris[0].toString());
     this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
