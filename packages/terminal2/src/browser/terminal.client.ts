@@ -214,9 +214,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
       return;
     }
     const handler = this.layoutService.getTabbarHandler('terminal');
-    if (!handler.isVisible) {
-      handler.activate();
-    }
+    handler.activate();
     this.termMap.forEach((term) => {
       if (term.id === id) {
         term.el.style.display = 'block';
@@ -232,8 +230,11 @@ export class TerminalClient extends Themable implements ITerminalClient {
         term.isActive = false;
       }
     });
-    terminal.appendEl();
-    (terminal.xterm as any).fit();
+    setTimeout(() => {
+      // 当底部bar 隐藏时，handler.activate() 后立即 fit() 会报错
+      terminal.appendEl();
+      (terminal.xterm as any).fit();
+    });
   }
 
   hideTerm(id: string) {

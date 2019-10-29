@@ -172,7 +172,7 @@ export class TabBarToolbar extends Widget {
       this.commands.executeCommand(item.command);
       if (command && command.toogleIconClass && command.iconClass) {
         const el = e.target as HTMLElement;
-        if (el.className.indexOf(command.iconClass) !== -1) {
+        if (!this.commandRegistry.isToggled(command.id)) {
           el.className = el.className.replace(command.iconClass, command.toogleIconClass);
         } else {
           el.className = el.className.replace(command.toogleIconClass, command.iconClass);

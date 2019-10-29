@@ -63,7 +63,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
 export interface LayoutConfig {
   [area: string]: {
     modules: Array<string>;
-    direction?: Direction;
     // TabPanel支持配置尺寸
     size?: number;
   };
