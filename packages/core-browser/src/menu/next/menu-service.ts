@@ -7,6 +7,7 @@ import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { MenuId } from './menu-id';
 import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
+import { i18nify } from './menu-util';
 
 export interface IMenuNodeOptions {
   arg?: any; // 固定参数从这里传入
@@ -53,9 +54,12 @@ export class MenuItemNode extends MenuNode {
   keybindings: KeybindingRegistry;
 
   constructor(
-    @Optional() command: Command,
+    @Optional() item: Command,
     @Optional() options: IMenuNodeOptions,
   ) {
+    // 后置获取 i18n 数据
+    const command = i18nify(item);
+
     super(command.id, command.iconClass!, command.label!);
     this.className = undefined;
     this.shortcut = this.getShortcut(command.id);

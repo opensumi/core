@@ -2,10 +2,10 @@ import { observable, action } from 'mobx';
 import { Injectable } from '@ali/common-di';
 import { MenuNode } from '@ali/ide-core-browser/lib/menu/next/base';
 import { CtxMenuRenderParams } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
-import { IBrowserCtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { IBrowserCtxMenu } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 
 @Injectable()
-export class BrowserCtxMenuService implements IBrowserCtxMenuRenderer {
+export class BrowserCtxMenuService implements IBrowserCtxMenu {
   @observable
   visible: boolean = false;
 

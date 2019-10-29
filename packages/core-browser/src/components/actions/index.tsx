@@ -117,6 +117,7 @@ export const TitleActionList: React.FC<{
       {
         secondary.length > 0
           ? <Dropdown
+            transitionName=''
             trigger={['click']}
             overlay={<MenuActionList data={secondary} context={context} />}>
             <span className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`} />
