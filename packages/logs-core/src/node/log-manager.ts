@@ -104,7 +104,7 @@ export class LogServiceManager implements ILogServiceManager {
   async getLogZipArchiveByFolder(foldPath: string): Promise<Archive> {
     const promiseList: any[] = [];
     this.logMap.forEach((logger) => {
-      promiseList.push(logger.drop());
+      promiseList.push(logger.flush());
     });
     return getLogZipArchiveByFolder(foldPath, Promise.all(promiseList));
   }

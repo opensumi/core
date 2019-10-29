@@ -40,11 +40,11 @@ describe('LogService', () => {
     const logger = loggerManager.getLogger(SupportLogNamespace.Browser);
 
     doAllLog(logger);
-    await logger.drop();
+    await logger.flush();
+    logger.error(new Error('error!'));
+    await logger.flush();
 
     const text = fs.readFileSync(path.join(logDir, String(today), `${SupportLogNamespace.Browser}.log`), {encoding: 'utf8'});
-
-    console.log(text);
 
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Verbose]) < 0).toBe(true);
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Debug]) < 0).toBe(true);
@@ -52,5 +52,6 @@ describe('LogService', () => {
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Warning]) > 0).toBe(true);
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Error]) > 0).toBe(true);
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Critical]) > 0).toBe(true);
+    expect(text.indexOf('at Object.test') > -1).toBe(true);
   });
 });
