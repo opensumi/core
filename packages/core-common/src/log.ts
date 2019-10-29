@@ -156,6 +156,8 @@ export interface ILoggerManagerClient {
 
   setGlobalLogLevel(level: LogLevel): Promise<void>;
   getGlobalLogLevel(): Promise<LogLevel>;
+
+  onDidLogLevelChanged(level: LogLevel);
   dispose(): Promise<void>;
 }
 
