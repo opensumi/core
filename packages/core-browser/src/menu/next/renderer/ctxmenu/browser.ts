@@ -3,9 +3,9 @@ import { Menu as MenuWidget } from '@phosphor/widgets';
 
 import { KeybindingRegistry, ResolvedKeybinding } from '../../../../keybinding';
 import { MenuNode } from '../../base';
-import { CtxMenuRenderer, CtxMenuRenderParams } from './base';
+import { ICtxMenuRenderer, CtxMenuRenderParams } from './base';
 
-export abstract class IBrowserCtxMenuRenderer extends CtxMenuRenderer {
+export abstract class IBrowserCtxMenuRenderer extends ICtxMenuRenderer {
   visible: boolean;
   onHide: (() => void) | undefined;
   point?: {
@@ -18,7 +18,7 @@ export abstract class IBrowserCtxMenuRenderer extends CtxMenuRenderer {
 }
 
 @Injectable()
-export class BrowserCtxMenuRenderer implements CtxMenuRenderer {
+export class CtxMenuRenderer implements ICtxMenuRenderer {
   @Autowired(KeybindingRegistry)
   protected readonly keybindings: KeybindingRegistry;
 

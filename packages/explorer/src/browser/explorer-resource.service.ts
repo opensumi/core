@@ -29,7 +29,7 @@ import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
 import { ExplorerFolderContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
-import { CtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
+import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
@@ -152,8 +152,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
 
-  @Autowired(CtxMenuRenderer)
-  ctxMenuRenderer: CtxMenuRenderer;
+  @Autowired(ICtxMenuRenderer)
+  ctxMenuRenderer: ICtxMenuRenderer;
 
   private _currentRelativeUriContextKey: IContextKey<string>;
 
