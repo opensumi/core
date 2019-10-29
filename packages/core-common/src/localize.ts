@@ -49,7 +49,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
 
   private localizationMap: Map<string, ILocalizationContents> = new Map() ;
 
-  private localizationInfo: Map<string, ILocalizationInfo> = new Map();
+  public readonly localizationInfo: Map<string, ILocalizationInfo> = new Map();
 
   get currentLanguageId() {
     return this._currentLanguageId;
@@ -98,6 +98,10 @@ export function getLanguageId(env: string = 'host'): string {
   return getLocalizationRegistry(env).currentLanguageId;
 }
 
+export function getCurrentLanguageInfo(env: string = 'host'): ILocalizationInfo {
+  return getLocalizationRegistry(env).localizationInfo.get(getLocalizationRegistry(env).currentLanguageId)!;
+}
+
 export function setLanguageId(language,env: string = 'host'): void {
   getLocalizationRegistry(env).currentLanguageId = language;
 }
@@ -106,7 +110,7 @@ export function getAvailableLanguages(env: string = 'host'): ILocalizationInfo[]
   return getLocalizationRegistry(env).getAllLanguages();
 }
 
-function getLocalizationRegistry(env: string) {
+function getLocalizationRegistry(env: string): LocalizationRegistry {
   if(!localizationRegistryMap[env]){
     localizationRegistryMap[env] = new LocalizationRegistry();
   }
