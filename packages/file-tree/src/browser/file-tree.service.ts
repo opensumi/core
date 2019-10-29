@@ -860,11 +860,8 @@ export class FileTreeService extends WithEventBus {
    */
   openFile(uri: URI) {
     // 当打开模式为双击同时预览模式生效时，默认单击为预览文件
-    if (this.corePreferences['workbench.list.openMode'] === 'doubleClick' && this.corePreferences['editor.previewMode']) {
-      this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true });
-    } else {
-      this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false });
-    }
+    const preview = this.corePreferences['editor.previewMode'];
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview });
   }
 
   /**
