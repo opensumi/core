@@ -41,9 +41,7 @@ export const Output = observer(() => {
   const renderChannelContents = () => {
     return <div ref={(el) => {
         if (el) {
-          setTimeout(() => {
-            el.scrollTop = el.scrollHeight;
-          });
+          el.scrollTop = el.scrollHeight;
         }
       }}
       className={styles.content}
