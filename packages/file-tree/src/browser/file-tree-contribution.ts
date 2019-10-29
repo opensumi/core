@@ -20,24 +20,24 @@ export class FileTreeContribution implements NextMenuContribution {
   registerNextMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.OPEN_RESOURCES,
-      order: 1,
+      order: 4,
       group: '1_open',
     });
 
     menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.OPEN_TO_THE_SIDE,
-      order: 2,
+      order: 3,
       group: '1_open',
     });
 
     menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FILE,
-      order: 4,
+      order: 2,
       group: '1_open',
     });
     menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FOLDER,
-      order: 3,
+      order: 1,
       group: '1_open',
     });
     menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
