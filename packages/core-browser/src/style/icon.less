@@ -1,2 +1,23 @@
 // 本地IDE集成时引入该文件: @ali/ide-core-browser/lib/style/icon.less
 @import './icon/iconfont/iconfont.css';
+
+// Animated Icons
+// --------------------------
+
+.iconfont-anim-spin {
+  animation: fa-spin 2s infinite linear;
+}
+
+.iconfont-anim-pulse {
+  animation: fa-spin 1s infinite steps(8);
+}
+
+@keyframes fa-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
