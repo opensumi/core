@@ -37,6 +37,7 @@ import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../
 import { MenuService, MenuServiceImpl } from '../menu/next/menu-service';
 import { IMenuRegistry, MenuRegistry, NextMenuContribution } from '../menu/next/base';
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
+import { ElectronCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/electron';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
 
 export function injectInnerProviders(injector: Injector) {
@@ -110,7 +111,7 @@ export function injectInnerProviders(injector: Injector) {
     },
     {
       token: ICtxMenuRenderer,
-      useClass: BrowserCtxMenuRenderer,
+      useClass: useNativeContextMenu() ? ElectronCtxMenuRenderer : BrowserCtxMenuRenderer,
     },
   ];
   injector.addProviders(...providers);
