@@ -7,6 +7,7 @@ import * as jsoncparser from 'jsonc-parser';
 import { Injectable } from '@ali/common-di';
 import { IWorkspaceServer, WORKSPACE_USER_STORAGE_FOLDER_NAME, WORKSPACE_RECENT_DATA_FILE } from '../common';
 import { Command, Deferred, FileUri, isArray } from '@ali/ide-core-common';
+import { existsSync } from 'fs-extra';
 
 @Injectable()
 export class WorkspaceBackendServer implements IWorkspaceServer {
@@ -120,6 +121,17 @@ export class WorkspaceBackendServer implements IWorkspaceServer {
     });
   }
 
+  async getMostRecentlyOpenedFiles(): Promise<string[] | undefined> {
+    const data = await this.readRecentDataFromUserHome();
+    const newRecentFiles = (data && data.recentFiles || []).filter((uri) => {
+      return fs.existsSync(FileUri.fsPath(uri));
+    });
+    this.writeToUserHome({
+      recentFiles: newRecentFiles,
+    });
+    return newRecentFiles;
+  }
+
   async getMostRecentlySearchWord(): Promise<string[] | undefined> {
     const data = await this.readRecentDataFromUserHome();
     return data && data.recentSearchWord || [];
@@ -141,11 +153,6 @@ export class WorkspaceBackendServer implements IWorkspaceServer {
     this.writeToUserHome({
       recentSearchWord: list,
     });
-  }
-
-  async getMostRecentlyOpenedFiles(): Promise<string[] | undefined> {
-    const data = await this.readRecentDataFromUserHome();
-    return data && data.recentFiles || [];
   }
 
   protected workspaceStillExist(wspath: string): boolean {

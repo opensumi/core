@@ -1,4 +1,6 @@
 
+export const EXTENSION_DIR = 'extension/';
+
 export enum EnableScope {
   GLOBAL = 'GLOBAL',
   WORKSPACE = 'WORKSPACE',

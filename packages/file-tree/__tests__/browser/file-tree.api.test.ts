@@ -1,4 +1,4 @@
-import { URI, localize } from '@ali/ide-core-common';
+import { URI } from '@ali/ide-core-common';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IFileTreeAPI } from '../../src/common';
@@ -15,7 +15,6 @@ import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 describe('FileTreeService should be work', () => {
   let fileApi: IFileTreeAPI;
   let injector: MockInjector;
-  let fileService: IFileServiceClient;
   const userHome: string = 'file://userhome';
   beforeEach(() => {
     injector = createBrowserInjector([]);
@@ -46,7 +45,7 @@ describe('FileTreeService should be work', () => {
 
     fileApi = injector.get(IFileTreeAPI);
     // injector.mock的前提条件需要实例已创建
-    fileService = injector.get(IFileServiceClient);
+    injector.get(IFileServiceClient);
   });
 
   describe('01 #Init', () => {

@@ -215,7 +215,7 @@ export class URI {
   }
 
   isEqual(uri: URI): boolean {
-    return this.authority === uri.authority && this.scheme === uri.scheme && this.path.isEqual(uri.path);
+    return this.authority === uri.authority && this.scheme === uri.scheme && this.path.isEqual(uri.path) && this.query === uri.query;
   }
 
   static getDistinctParents(uris: URI[]): URI[] {

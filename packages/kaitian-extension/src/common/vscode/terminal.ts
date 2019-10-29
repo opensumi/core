@@ -13,7 +13,7 @@ export interface IMainThreadTerminal {
 
   $getProcessId(id: string);
 
-  $createTerminal(options: vscode.TerminalOptions, id: string);
+  $createTerminal(options: vscode.TerminalOptions);
 }
 
 export interface IExtHostTerminal {

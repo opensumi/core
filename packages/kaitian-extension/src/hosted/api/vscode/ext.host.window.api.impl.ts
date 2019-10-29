@@ -121,9 +121,13 @@ export function createWindowApiFactory(
     /**
      * Terminal
      */
-    activeTerminal: extHostTerminal.activeTerminal,
+    get activeTerminal() {
+      return extHostTerminal.activeTerminal;
+    },
 
-    terminals: extHostTerminal.terminals,
+    get terminals() {
+      return extHostTerminal.terminals;
+    },
 
     onDidChangeActiveTerminal: extHostTerminal.onDidChangeActiveTerminal,
 

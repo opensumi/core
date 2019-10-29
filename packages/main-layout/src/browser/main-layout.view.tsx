@@ -6,15 +6,13 @@ import { MainLayoutService } from './main-layout.service';
 import { IMainLayoutService } from '../common';
 
 export const MainLayout = observer(() => {
-  const configContext = React.useContext(ConfigContext);
-
   const ref = React.useRef<HTMLElement | null>();
   const layoutService = useInjectable(IMainLayoutService) as MainLayoutService;
 
   React.useEffect(() => {
 
     if (ref.current) {
-      layoutService.useConfig(configContext, ref.current);
+      layoutService.useConfig(ref.current);
 
       let windowResizeListener;
       let windowResizeTimer;
@@ -24,8 +22,6 @@ export const MainLayout = observer(() => {
           layoutService.updateResizeWidget();
         }, 50);
       });
-
-      layoutService.initedLayout();
 
       return function destory() {
         window.removeEventListener('resize', windowResizeListener);

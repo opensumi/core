@@ -8,6 +8,22 @@
   height: 100%;
 }
 
+.body :global(.ant-tabs) {
+  color: var(--foreground);
+}
+
+.body :global(.ant-tabs-bar) {
+  border-color: var(--editorGroupHeader-tabsBorder);
+}
+
+.body :global(.ant-tabs-nav .ant-tabs-tab) {
+  padding: 12px 0;
+  margin-right: 24px;
+  &:first-child {
+    margin-left: 24px;
+  }
+}
+
 .body :global(.ant-tabs-nav .ant-tabs-tab-active) {
   color: var(--button-background);
 
@@ -80,6 +96,7 @@
   font-size: 12px;
   line-height: 12px;
   margin-right: 12px;
+  color: var(--description-foreground);
 }
 
 .subtitle_item a {

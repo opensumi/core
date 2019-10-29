@@ -302,18 +302,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
       changelog: './CHANGELOG.md',
     });
     if (extensionDetail) {
-      const readme = extensionDetail.extraMetadata.readme
-                  ? extensionDetail.extraMetadata.readme
-                  : `# ${extension.displayName}\n${extension.description}`;
-
-      const changelog = extensionDetail.extraMetadata.changelog
-                  ? extensionDetail.extraMetadata.changelog
-                  : `no changelog`;
-
       return {
         ...extension,
-        readme,
-        changelog,
+        readme: extensionDetail.extraMetadata.readme,
+        changelog: extensionDetail.extraMetadata.changelog,
         license: '',
         categories: '',
         repository: extensionDetail.packageJSON.repository ? extensionDetail.packageJSON.repository.url : '',

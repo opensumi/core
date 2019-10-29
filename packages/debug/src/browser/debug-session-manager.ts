@@ -352,7 +352,6 @@ export class DebugSessionManager {
       return session.getBreakpoints(uri).filter((breakpoint) => breakpoint.line === line)[0];
     }
     const origin = this.breakpoints.getBreakpoint(uri, line);
-    const model = this.modelManager.resolve(uri);
-    return origin && model && model[0] && model[0].breakpoint;
+    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService);
   }
 }
