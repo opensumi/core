@@ -10,7 +10,7 @@ import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent, MaybeNull } from '@ali/ide-core-common';
-import { InitedEvent, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData } from '../common';
+import { IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData } from '../common';
 import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload, RenderedEvent, Side } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -20,7 +20,6 @@ import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-pan
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { CustomSplitLayout } from './split-layout';
 import { TrackerSplitPanel } from './split-panel';
-import { IIconService } from '@ali/ide-theme';
 import { ViewContainerWidget } from '@ali/ide-activity-panel/lib/browser';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 
@@ -78,6 +77,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   @Autowired()
   layoutState: LayoutState;
 
+  @Autowired(AppConfig)
   private configContext: AppConfig;
 
   private topBarWidget: IdeWidget;
@@ -106,7 +106,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private viewsMap: Map<string, {view: View, props?: any}[]> = new Map();
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
-  createLayout(node: HTMLElement) {
+  private createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
     this.horizontalPanel = this.createSplitHorizontalPanel();
     this.statusBarWidget = this.initIdeWidget(SlotLocation.bottomBar);
@@ -130,10 +130,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   // TODO 后续可以把配置和contribution整合起来
-  useConfig(configContext: AppConfig, node: HTMLElement) {
-    this.configContext = configContext;
+  useConfig(node: HTMLElement) {
     this.createLayout(node);
-    const { layoutConfig } = configContext;
+    const { layoutConfig } = this.configContext;
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
         const tokens = layoutConfig[location].modules;
@@ -147,7 +146,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           const components = views ? views.map((view) => {
             return view.component!;
           }) : [];
-          widgets.push(new ReactWidget(configContext, components));
+          widgets.push(new ReactWidget(this.configContext, components));
           widgets[i].node.style[targetSize] = `${size}px`;
           slotHeight += size;
         }
@@ -486,6 +485,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       activityPanelWidget.addClass('lock-width');
       this.leftPanelWidget = activityPanelWidget;
     } else if (side === SlotLocation.right) {
+      activityPanelWidget.addClass('lock-width');
       this.rightPanelWidget = activityPanelWidget;
       direction = 'right-to-left';
     } else {
@@ -549,10 +549,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   updateResizeWidget() {
     this.layoutPanel.update();
     this.topBoxPanel.update();
-  }
-
-  initedLayout() {
-    this.eventBus.fire(new InitedEvent());
   }
 
   destroy() {

@@ -2,8 +2,6 @@ import { BasicEvent, SlotLocation } from '@ali/ide-core-browser';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
 import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-browser/lib/layout';
 
-export class InitedEvent extends BasicEvent<void> {}
-
 export interface ComponentCollection {
   views?: View[];
   options: ViewContainerOptions;
