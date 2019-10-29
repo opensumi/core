@@ -122,7 +122,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
     }
   }
 
-  createTerminal = async (options?: TerminalOptions, createdId?: string): Promise<TerminalImpl | null> => {
+  createTerminal = async (options?: TerminalOptions): Promise<TerminalImpl | null> => {
     if (!this.wrapEl) {
       this.logger.error('没有设置 wrapEl');
     }
@@ -132,10 +132,10 @@ export class TerminalClient extends Themable implements ITerminalClient {
     let id: string;
 
     if (isElectronEnv()) {
-      id = electronEnv.metadata.windowClientId + '|' + (createdId || uuid());
+      id = electronEnv.metadata.windowClientId + '|' + uuid();
     } else {
       const WSChanneHandler = this.injector.get(IWSChanneHandler);
-      id = WSChanneHandler.clientId + '|' + (createdId || uuid());
+      id = WSChanneHandler.clientId + '|' + uuid();
     }
 
     const term: XTerm = new XTerm({
@@ -214,9 +214,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
       return;
     }
     const handler = this.layoutService.getTabbarHandler('terminal');
-    if (!handler.isVisible) {
-      handler.activate();
-    }
+    handler.activate();
     this.termMap.forEach((term) => {
       if (term.id === id) {
         term.el.style.display = 'block';
@@ -232,8 +230,11 @@ export class TerminalClient extends Themable implements ITerminalClient {
         term.isActive = false;
       }
     });
-    terminal.appendEl();
-    (terminal.xterm as any).fit();
+    setTimeout(() => {
+      // 当底部bar 隐藏时，handler.activate() 后立即 fit() 会报错
+      terminal.appendEl();
+      (terminal.xterm as any).fit();
+    });
   }
 
   hideTerm(id: string) {

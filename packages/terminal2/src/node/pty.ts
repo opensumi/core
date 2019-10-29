@@ -13,7 +13,7 @@ export class PtyService {
     const bin = options.shellPath || process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL'] || '/bin/sh';
     const ptyProcess = pty.spawn(bin, [], {
       encoding: 'utf-8',
-      name: options.name || 'xterm-color',
+      name: 'xterm-color',
       cols: cols || 100,
       rows: rows || 30,
       cwd: options.cwd ? options.cwd!.toString() : '',
@@ -32,7 +32,6 @@ export class PtyService {
     try {
       termninal.resize(cols, rows);
     } catch (e) {
-      console.log(e);
       return false;
     }
 
