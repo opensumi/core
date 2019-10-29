@@ -76,7 +76,7 @@ export function cleanExpiredLogs(day: number, logsRoot: string) {
  *
  * 将某个目录打包，提供可写入流的方法 Archive.pipe
  * @param foldPath -- 打包的目录
- * @param waitPromise --打包执行需要完成的Promise 比如 logger.drop 将缓存落盘
+ * @param waitPromise --打包执行需要完成的Promise 比如 logger.flush 将缓存落盘
  */
 export async function getLogZipArchiveByFolder(foldPath: string, waitPromise?: Promise<any>): Promise<Archive> {
   if (waitPromise) {
