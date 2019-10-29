@@ -56,7 +56,7 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
     const readonlyFiles = this.corePreferences['editor.readonlyFiles'];
     if (readonlyFiles && readonlyFiles.length) {
       for (const file of readonlyFiles) {
-        if (uri.isEqual(URI.file(file))) {
+        if (uri.isEqual(URI.file(file)) || uri.matchGlobPattern(file)) {
           return true;
         }
       }
