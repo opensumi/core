@@ -8,6 +8,10 @@
   color: var(--foreground);
 }
 
+.panel :global(.ant-tabs-bar) {
+  border-color: transparent;
+}
+
 .panel :global(.ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active) {
   color: var(--button-background);
 
@@ -17,7 +21,11 @@
 }
 
 .panel :global(.ant-tabs-nav .ant-tabs-tab) {
-  padding: 12px 8px;
+  padding: 12px 0;
+  margin-right: 16px;
+  &:first-child {
+    margin-left: 8px;
+  }
 }
 
 .content {

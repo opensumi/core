@@ -232,7 +232,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           </div>
         </div>
         <div className={styles.body}>
-          <Tabs tabBarStyle={{marginBottom: 0}} tabBarGutter={0}>
+          <Tabs tabBarStyle={{marginBottom: 0}}>
             <TabPane className={styles.content} tab={localize('marketplace.extension.readme', '简介')} key='readme'>
               <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`}/>
             </TabPane>
