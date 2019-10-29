@@ -3,7 +3,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MainLayoutService } from '../../src/browser/main-layout.service';
 import { IMainLayoutService, MainLayoutContribution } from '../../src';
-import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry } from '@ali/ide-core-browser';
+import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient } from '@ali/ide-core-browser';
 import { Injectable } from '@ali/common-di';
 import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
 import { useMockStorage } from '@ali/ide-core-browser/lib/__mocks__/storage';
@@ -13,6 +13,7 @@ import { ActivationEventServiceImpl } from '@ali/ide-activation-event/lib/browse
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { ActivityBarService } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
+import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/__mocks__/logger';
 
 const MockView = () => <div>Test view</div>;
 
@@ -141,6 +142,10 @@ describe('main layout test', () => {
       {
         token: ActivationEventService,
         useClass: ActivationEventServiceImpl,
+      },
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManageClient,
       },
     );
     useMockStorage(injector);
