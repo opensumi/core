@@ -285,5 +285,6 @@ export const localizationBundle = {
     'marketplace.extension.uninstall': 'Uninstall',
     'marketplace.extension.readme': 'Readme',
     'marketplace.extension.changelog': 'Changelog',
+    'marketplace.extension.installed': 'Installed',
   },
 };
