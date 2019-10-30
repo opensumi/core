@@ -131,7 +131,7 @@ export class KeymapService implements IKeymapService {
   }
 
   clearCovert = () => {
-    return this.keybindingService.clearCovert();
+    return this.keybindingService.clearConvert();
   }
 
   /**

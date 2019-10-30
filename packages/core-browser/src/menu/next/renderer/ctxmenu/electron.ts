@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
+import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { INativeMenuTemplate, CommandService, IElectronMainMenuService, CommandRegistry} from '@ali/ide-core-common';
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
 import { MenuNode } from '../../base';
@@ -49,12 +50,12 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
       // 暂时不支持 SubmenuItem
 
       return {
-        label: menuNode.label + menuNode.shortcut,
+        label: mnemonicButtonLabel(menuNode.label) + menuNode.isKeyCombination ? menuNode.keybinding : '',
         id: menuNode.id,
         action: true,
-        // role: menuModel.nativeRole, // 暂不支持
+        role: menuNode.nativeRole,
         disabled: menuNode.disabled,
-        accelerator: menuNode.shortcut ? toElectronAccelerator(menuNode.shortcut) : undefined,
+        accelerator: !menuNode.isKeyCombination ? menuNode.keybinding : '',
       };
     });
     // SubmenuItem
@@ -88,6 +89,7 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
   }
 }
 
+// 应该不会有这种场景?
 function toElectronAccelerator(keybinding: string) {
   return keybinding.replace('ctrlcmd', 'CmdOrCtrl');
 }

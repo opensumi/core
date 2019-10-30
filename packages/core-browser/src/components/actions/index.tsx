@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Dropdown, Menu } from 'antd';
+import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
 import { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
@@ -20,11 +21,15 @@ const MenuAction: React.FC<{
       <div className={styles.icon}>
         { data.icon && <Icon iconClass={data.icon} /> }
       </div>
-      {data.label}
-      <div className={styles.shortcut}>{data.shortcut}</div>
-      <div className={styles.submenuIcon}>
-        {/* need a arrow right here */}
-      </div>
+      <div className={styles.label}>{mnemonicButtonLabel(data.label)}</div>
+      {
+        data.keybinding
+          ? <div className={styles.shortcut}>{data.keybinding}</div>
+          : null
+      }
+      {/* <div className={styles.submenuIcon}>
+        <Icon iconClass={getIcon('right')} />
+      </div> */}
     </>
   );
 };

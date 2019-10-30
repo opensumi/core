@@ -7,7 +7,6 @@ import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { MenuId } from './menu-id';
 import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
-import { i18nify } from './menu-util';
 
 export interface IMenuNodeOptions {
   arg?: any; // 固定参数从这里传入
@@ -38,7 +37,7 @@ export class SeparatorMenuItemNode extends MenuNode {
   static readonly ID = 'menu.item.node.separator';
 
   constructor(label?: string) {
-    super(SeparatorMenuItemNode.ID, label, label ? 'separator text' : 'separator');
+    super(SeparatorMenuItemNode.ID, label, label || 'separator');
   }
 }
 
@@ -53,17 +52,26 @@ export class MenuItemNode extends MenuNode {
   @Autowired(KeybindingRegistry)
   keybindings: KeybindingRegistry;
 
+  @Autowired(CommandRegistry)
+  commandRegistry: CommandRegistry;
+
   constructor(
     @Optional() item: Command,
     @Optional() options: IMenuNodeOptions = {},
     @Optional() disabled: boolean,
+    @Optional() nativeRole?: string,
   ) {
-    // 后置获取 i18n 数据
-    const command = i18nify(item);
+    super(item.id, item.iconClass!, item.label!, disabled, nativeRole);
+    // 后置获取 i18n 数据 主要处理 ide-framework 内部的 command 的 i18n
+    const command = this.commandRegistry.getCommand(item.id)!;
+    this.label = command.label!;
 
-    super(command.id, command.iconClass!, command.label!, disabled);
     this.className = undefined;
-    this.shortcut = this.getShortcut(command.id);
+
+    const shortcutDesc = this.getShortcut(command.id);
+
+    this.keybinding = shortcutDesc && shortcutDesc.keybinding || '';
+    this.isKeyCombination = !!(shortcutDesc && shortcutDesc.isKeyCombination);
     this._options = options;
 
     this.item = command;
@@ -83,12 +91,17 @@ export class MenuItemNode extends MenuNode {
 
   private getShortcut(commandId: string) {
     if (commandId) {
-      const keybinding = this.keybindings.getKeybindingsForCommand(commandId) as ResolvedKeybinding[];
-      if (keybinding.length > 0) {
-        return keybinding[0]!.resolved![0].toString();
+      const keybindings = this.keybindings.getKeybindingsForCommand(commandId);
+      if (keybindings.length > 0) {
+        const isKeyCombination = Array.isArray(keybindings[0].resolved) && keybindings[0].resolved.length > 1;
+        const keybinding = isKeyCombination ? `[${keybindings[0].keybinding}]` : keybindings[0].keybinding;
+        return {
+          keybinding,
+          isKeyCombination,
+        };
       }
     }
-    return '';
+    return null;
   }
 }
 
@@ -200,7 +213,7 @@ class Menu extends Disposable implements IMenu {
             // 兼容现有的 Command#isVisible
             if (this.commandRegistry.isVisible(item.command.id)) {
               const disabled = !this.commandRegistry.isEnabled(item.command.id);
-              const action = this.injector.get(MenuItemNode, [item.command, options, disabled]);
+              const action = this.injector.get(MenuItemNode, [item.command, options, disabled, item.nativeRole]);
               activeActions.push(action);
             }
           } else {
@@ -225,6 +238,7 @@ class Menu extends Disposable implements IMenu {
   }
 }
 
+// 这里的 sort 还是有点问题的，因为 i18n 的获取是 getMenuNodes 里取的
 function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
   const aGroup = a.group;
   const bGroup = b.group;

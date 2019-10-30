@@ -17,6 +17,7 @@ export interface IMenuItem {
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
+  nativeRole?: string; // electron native 菜单使用
 }
 
 export interface ISubmenuItem {
@@ -25,6 +26,7 @@ export interface ISubmenuItem {
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
+  nativeRole?: string; // electron native 菜单使用
 }
 
 export type ICommandsMap = Map<string, Command>;
@@ -49,6 +51,7 @@ export class MenuRegistry implements IMenuRegistry {
   @Autowired(NextMenuContribution)
   protected readonly contributions: ContributionProvider<NextMenuContribution>;
 
+  // MenuContribution
   onStart() {
     for (const contrib of this.contributions.getContributions()) {
       contrib.registerNextMenus(this);
@@ -138,8 +141,10 @@ export interface IMenuAction {
   tooltip: string;
   className?: string;
   icon: string; // 标准的 vscode icon 是分两种主题的
-  shortcut?: string; // 快捷键
+  keybinding: string; // 快捷键描述
+  isKeyCombination: boolean; // 是否为组合键
   disabled?: boolean; // disable 状态的 menu
+  nativeRole?: string; // eletron menu 使用
   execute(event?: any): Promise<any>;
 }
 
@@ -149,25 +154,31 @@ export class MenuNode implements IMenuAction {
   tooltip: string;
   className: string | undefined;
   icon: string;
-  shortcut: string;
+  keybinding: string;
+  isKeyCombination: boolean;
   disabled: boolean;
+  nativeRole: string;
   readonly _actionCallback?: (event?: any) => Promise<any>;
 
   constructor(
-    id: string,
+    commandId: string,
     icon: string = '',
     label: string = '',
     disabled = false,
-    shortcut: string = '',
+    nativeRole: string = '',
+    keybinding: string = '',
+    isKeyCombination: boolean = false,
     className: string = '',
     actionCallback?: (event?: any) => Promise<any>,
   ) {
-    this.id = id;
+    this.id = commandId;
     this.label = label;
     this.className = className;
     this.icon = icon;
-    this.shortcut = shortcut;
+    this.keybinding = keybinding;
+    this.isKeyCombination = isKeyCombination;
     this.disabled = disabled;
+    this.nativeRole = nativeRole;
     this._actionCallback = actionCallback;
   }
 
