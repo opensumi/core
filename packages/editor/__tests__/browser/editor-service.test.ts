@@ -3,7 +3,8 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser';
+import { IDocPersistentCacheProvider } from '@ali/ide-editor/lib/common';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
@@ -59,6 +60,10 @@ injector.addProviders(...[
   {
     token: IWorkspaceService,
     useClass: MockWorkspaceService,
+  },
+  {
+    token: IDocPersistentCacheProvider,
+    useClass: EmptyDocCacheImpl,
   },
 ]);
 useMockStorage(injector);
