@@ -5,7 +5,7 @@ import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.serv
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { EditorView, TestComponent } from './editor.view';
+import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry } from './types';
