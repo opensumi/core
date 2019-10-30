@@ -31,6 +31,34 @@
     width: 100%;
     height: 100%;
   }
+  .kt_editor_tabs {
+    display:flex;
+    .editor_actions{
+      flex-shrink: 0;
+      height:@TAB_HEIGHT;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding:0 5px 0 10px;
+      background: var(--editorGroupHeader-tabsBackground);
+      .editor_action {
+        margin-left: 5px;
+        &:first-child {
+          margin:0;
+        }
+        font-size:16px;
+        cursor: pointer;
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+
+  .kt_editor_tabs_scroll_wrapper {
+    flex-grow:1;
+    width:10px;
+  }
 
   .kt_editor_tabs_scroll {
     border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);

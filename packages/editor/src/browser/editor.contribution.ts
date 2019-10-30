@@ -8,7 +8,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { EditorGroupsResetSizeEvent } from './types';
+import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
@@ -17,8 +17,8 @@ interface Resource {
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -493,26 +493,14 @@ export class EditorContribution implements CommandContribution, MenuContribution
   }
 
   registerToolBarElement(registry: IToolBarViewService): void {
-    registry.registerToolBarElement({
-      type: 'action',
-      position: ToolBarPosition.RIGHT,
+  }
+
+  registerEditorActions(registry: IEditorActionRegistry) {
+    registry.registerEditorAction({
       iconClass: getIcon('embed'),
       title: localize('editor.splitToRight'),
-      click: () => {
+      onClick: () => {
         this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
-      },
-    });
-
-    registry.registerToolBarElement({
-      type: 'action',
-      position: ToolBarPosition.RIGHT,
-      iconClass: getIcon('arrow-down'),
-      title: localize('editor.moreActions'),
-      click: (event) => {
-        const { x, y } = event.nativeEvent;
-        this.contextMenuRenderer.render(['editor', 'title'], { x, y });
-        event.stopPropagation();
-        event.preventDefault();
       },
     });
   }

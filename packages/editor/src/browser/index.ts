@@ -7,13 +7,14 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired } from '@ali/common-di';
 import { EditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
-import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService } from './types';
+import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry } from './types';
 import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
 import { LanguageService } from './language/language.service';
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from './doc-model/types';
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from './doc-model/main';
+import { EditorActionRegistryImpl } from './menu/editor.menu';
 export * from './types';
 export * from './doc-model/types';
 
@@ -52,6 +53,10 @@ export class EditorModule extends BrowserModule {
       token: ILanguageService,
       useClass: LanguageService,
     },
+    {
+      token: IEditorActionRegistry,
+      useClass: EditorActionRegistryImpl,
+    },
     DefaultDiffEditorContribution,
     EditorClientAppContribution,
     EditorContribution,
@@ -77,6 +82,9 @@ export class EditorClientAppContribution implements ClientAppContribution {
   @Autowired(IEditorDocumentModelContentRegistry)
   modelContentRegistry: IEditorDocumentModelContentRegistry;
 
+  @Autowired(IEditorActionRegistry)
+  editorActionRegistry: IEditorActionRegistry;
+
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
 
@@ -90,6 +98,9 @@ export class EditorClientAppContribution implements ClientAppContribution {
       }
       if (contribution.registerEditorDocumentModelContentProvider) {
         contribution.registerEditorDocumentModelContentProvider(this.modelContentRegistry);
+      }
+      if (contribution.registerEditorActions) {
+        contribution.registerEditorActions(this.editorActionRegistry);
       }
     }
     this.workbenchEditorService.contributionsReady.resolve();

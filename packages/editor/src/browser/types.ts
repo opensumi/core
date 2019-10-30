@@ -59,6 +59,8 @@ export interface BrowserEditorContribution {
 
   registerEditorDocumentModelContentProvider?(registry: IEditorDocumentModelContentRegistry): void;
 
+  registerEditorActions?(editorActionRegistry: IEditorActionRegistry): void;
+
   onDidRestoreState?(): void;
 }
 
@@ -195,3 +197,17 @@ export interface IEditorDecorationProvider {
 export class EditorDecorationProviderRegistrationEvent extends BasicEvent<IEditorDecorationProvider> {}
 
 export class EditorDecorationChangeEvent extends BasicEvent<{uri: URI, key: string}> {}
+
+export interface IEditorActionRegistry {
+  registerEditorAction(action: IEditorActionItem): IDisposable;
+  getActions(resource: IResource): IEditorActionItem[];
+}
+
+export interface IEditorActionItem {
+  title: string;
+  iconClass: string;
+  isVisible?: (resource: IResource) => boolean;
+  onClick: (resource: IResource) => void;
+}
+
+export const IEditorActionRegistry = Symbol('IEditorActionRegistry');

@@ -7,7 +7,7 @@ import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
 import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode } from './types';
 import { Tabs } from './tab.view';
-import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig } from '@ali/ide-core-browser';
+import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
@@ -168,6 +168,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               gridId={() => group.grid.uid}
               previewUri= {group.previewURI}
               onClose={(resource: IResource) => group.close(resource.uri)}
+              hasFocus={editorService.currentEditorGroup === group}
               onDragStart={(e, resource) => {
                 e.dataTransfer.setData('uri', resource.uri.toString());
                 e.dataTransfer.setData('uri-source-group', group.name);
@@ -280,7 +281,7 @@ export const ComponentWrapper = ({component, resource, hidden}) => {
     [styles.kt_hidden]: hidden,
    })}>
      <Scroll>
-       <div ref={(el) => { containerRef = el; }} style={{height: '100%'}}>{componentNode}</div>
+       <ErrorBoundary><div ref={(el) => { containerRef = el; }} style={{height: '100%'}}>{componentNode}</div></ErrorBoundary>;
      </Scroll>
    </div>;
 };
