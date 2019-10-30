@@ -301,6 +301,9 @@ export class VSCodeContributeRunner extends Disposable {
 
   public async run() {
     const contributes: ContributesSchema = this.extension.packageJSON.contributes;
+    if (!contributes) {
+      return;
+    }
     const extensionSchemas = {};
     for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);

@@ -35,9 +35,9 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       throw new Error(err.message);
     }
   }
-  async getExtensionFromMarketPlace(extensionId: string) {
+  async getExtensionFromMarketPlace(extensionId: string, version: string) {
     try {
-      const res = await this.request(`extension/${extensionId}`, {
+      const res = await this.request(`extension/${extensionId}?version=${version}`, {
         dataType: 'json',
         timeout: 5000,
       });
@@ -182,6 +182,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    */
   async request<T = any>(path: string, options?: urllib.RequestOptions): Promise<urllib.HttpClientResponse<T>> {
     const url = this.getApi(path);
+    this.logger.log(`marketplace request url: ${url}`);
     return await urllib.request<T>(url, {
       ...options,
       headers: {

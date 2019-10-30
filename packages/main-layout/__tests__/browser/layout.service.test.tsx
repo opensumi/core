@@ -91,15 +91,18 @@ describe('main layout test', () => {
       },
     },
   };
+  const timeoutIds: Set<NodeJS.Timer> = new Set();
 
   beforeAll(() => {
     let timeCount = 0;
     window.requestAnimationFrame = (cb) => {
       const cancelToken = 111;
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         timeCount += 30;
         cb(timeCount);
+        timeoutIds.delete(timeoutId);
       }, 30);
+      timeoutIds.add(timeoutId);
       return cancelToken;
     };
 
@@ -150,6 +153,12 @@ describe('main layout test', () => {
     );
     useMockStorage(injector);
     service = injector.get(IMainLayoutService);
+  });
+  afterAll(() => {
+    if (timeoutIds.size > 0) {
+      timeoutIds.forEach((t) => clearTimeout(t));
+      timeoutIds.clear();
+    }
   });
 
   it('should be able to collect tabbar component before render', () => {
@@ -240,10 +249,10 @@ describe('main layout test', () => {
   });
 
   // TODO jsdom获取到的节点宽高为0，展开折叠动画暂时无法测试
-  // it('toggle slot should work', async (done) => {
-  //   const initVisibility = service.isVisible('left');
-  //   await service.toggleSlot('left');
-  //   expect(service.isVisible('left') !== initVisibility).toBeTruthy();
-  //   done();
-  // });
+  it('toggle slot should work', async (done) => {
+    const initVisibility = service.isVisible('left');
+    await service.toggleSlot('left');
+    expect(service.isVisible('left') !== initVisibility).toBeTruthy();
+    done();
+  });
 });

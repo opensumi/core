@@ -1,6 +1,6 @@
 import {Injectable, Optional, Autowired, Inject} from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getLogger, Disposable } from '@ali/ide-core-common';
+import { getLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo } from '@ali/ide-core-common';
 import { VSCodeMetaService } from './vscode/meta';
 
 const metaDataSymbol = Symbol.for('metaDataSymbol');
@@ -82,6 +82,12 @@ export class Extension extends Disposable implements IExtension {
     if (this._enabled) {
       this.addDispose(this.vscodeMetaService);
       this.logger.log(`${this.name} vscodeMetaService.run`);
+      if (this.packageNlsJSON) {
+        registerLocalizationBundle( {
+          ...getCurrentLanguageInfo(),
+          contents: this.packageNlsJSON as any,
+        }, this.packageJSON.name);
+      }
       await this.vscodeMetaService.run(this);
     }
   }
