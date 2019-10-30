@@ -15,14 +15,14 @@ export namespace OPEN_EDITORS_COMMANDS {
   export const SAVE_ALL: Command = {
     id: 'open.editors.save.all',
     category: CATEGORY,
-    label: localize('open.editors.save.all'),
+    label: '%open.editors.save.all%',
     iconClass: getIcon('save-all'),
   };
 
   export const CLOSE_ALL: Command = {
     id: 'open.editors.close.all',
     category: CATEGORY,
-    label: localize('open.editors.close.all'),
+    label: '%open.editors.close.all%',
     iconClass: getIcon('close-all'),
   };
 }
