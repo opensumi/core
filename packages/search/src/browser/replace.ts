@@ -21,7 +21,7 @@ export async function replaceAll(
   const resultTotal = Object.assign({}, insertResultTotal);
   if (dialogService && resultTotal) {
     const buttons = {
-      [localize('ButtonCancel')]: false,
+      [localize('search.replace.buttonCancel')]: false,
       [localize('search.replace.buttonOK')]: true,
     };
     const selection = await dialogService!.open(

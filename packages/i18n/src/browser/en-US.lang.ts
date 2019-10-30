@@ -3,17 +3,8 @@ export const localizationBundle = {
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
-    'ButtonOK': 'Ok',
-    'ButtonCancel': 'Cancel',
-
-    'mFile': 'File',
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
-    'mEdit': 'Edit',
-    'mView': 'View',
-    'mHelp': 'Help',
-    'menu-bar.file.open': 'Open File',
-
     'file.save': 'Save File',
     'file.open': 'Open',
     'file.open.side': 'Open to the Side',
@@ -27,10 +18,13 @@ export const localizationBundle = {
     'file.copy.file': 'Copy',
     'file.cut.file': 'Cut',
 
+    'menu-bar.file': 'File',
+    'menu-bar.edit': 'Edit',
+    'menu-bar.view': 'View',
+    'menu-bar.help': 'Help',
     'menu-bar.file.save-as': 'Save As',
     'menu-bar.file.save-all': 'Save All',
-
-    'menu-bar.view': 'View',
+    'menu-bar.file.open': 'Open File',
     'menu-bar.view.quick.command': 'Command',
     'menu-bar.view.outward': 'Outward',
     'menu-bar.view.outward.right-panel.toggle': 'Toggle Right Panel',
@@ -110,6 +104,7 @@ export const localizationBundle = {
     'search.help.matchRange': 'To declare a range of characters to match',
     'search.help.modify': 'Modify',
     'search.replace.buttonOK': 'Replace',
+    'search.replace.buttonCancel': 'Cancel',
     'search.quickOpen.leftRight': 'Open on the side',
     'search.quickOpen.upDown': 'Open at the bottom',
     'fileResults': 'File results',
@@ -205,6 +200,8 @@ export const localizationBundle = {
     'settings.group.editor': 'Editor',
     'settings.group.extension': 'Extensions',
     'settings.group.feature': 'Feature',
+
+    'settings.menu.keymaps': 'Settings',
 
     'preference.general.theme': 'Theme',
     'preference.general.icon': 'Icon Theme',
