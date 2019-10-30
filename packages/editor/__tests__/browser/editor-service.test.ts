@@ -3,7 +3,8 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser';
+import { IDocPersistentCacheProvider } from '@ali/ide-editor/lib/common';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
@@ -12,10 +13,11 @@ import { MonacoService } from '@ali/ide-monaco';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
 import { URI, Disposable } from '@ali/ide-core-common';
 import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent } from './test-providers';
-import { useMockStorage } from '../packages/core-browser/lib/mocks/storage';
-import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
+import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { reaction } from 'mobx';
 import { CorePreferences } from '@ali/ide-core-browser';
+import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 
 const injector = createBrowserInjector([]);
 
@@ -59,6 +61,10 @@ injector.addProviders(...[
   {
     token: IWorkspaceService,
     useClass: MockWorkspaceService,
+  },
+  {
+    token: IDocPersistentCacheProvider,
+    useClass: EmptyDocCacheImpl,
   },
 ]);
 useMockStorage(injector);

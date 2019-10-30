@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema, localize } from '@ali/ide-core-common';
 import {
   KeybindingContribution, KeybindingRegistry, Logger,
@@ -8,10 +8,9 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-common/lib/menu';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
-import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
 
 import { SCMResourceView, SCMProviderList } from './scm.view';
-import { ISCMService, SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, scmPanelTitle } from '../common';
+import { SCMService, scmResourceViewId, scmProviderViewId, scmContainerId } from '../common';
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
@@ -97,7 +96,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       name: '',
     }], {
       iconClass: getIcon('scm'),
-      title: scmPanelTitle,
+      title: localize('scm.title'),
       priority: 8,
       containerId: scmContainerId,
       activateKeyBinding: 'ctrl+shift+g',

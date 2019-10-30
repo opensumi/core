@@ -4,20 +4,25 @@ const disableJSDOM = enableJSDOM();
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, ResourceProvider, PreferenceScope, injectPreferenceSchemaProvider } from '@ali/ide-core-browser';
+import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, ResourceProvider, PreferenceScope, injectPreferenceSchemaProvider, CorePreferences, DefaultResourceProvider } from '@ali/ide-core-browser';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { IMessageService } from '@ali/ide-overlay';
-import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { LaunchPreferencesContribution } from '../../../src/browser/preferences/launch-preferences-contribution';
 import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
 import { LaunchFolderPreferenceProvider } from '../../../lib/browser/preferences/launch-folder-preference-provider';
-import { PreferenceContribution } from '@ali/ide-preferences/lib/browser/preference-contribution';
+import { injectPreferenceProviders, createPreferenceProviders } from '@ali/ide-preferences/lib/browser';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IFileServiceClient, FileServicePath, FileStat } from '@ali/ide-file-service';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
+import { MockUserStorageResolver } from '@ali/ide-userstorage/lib/common/mocks';
+import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 disableJSDOM();
 
-// process.on('unhandledRejection', (reason, promise) => {
-//   console.error(reason);
-//   throw reason;
-// });
+process.on('unhandledRejection', (reason, promise) => {
+  console.error(reason);
+});
 
 /**
  * launch配置项需要与VSCode中的配置项对齐
@@ -76,222 +81,222 @@ describe('Launch Preferences', () => {
     expectation: defaultLaunch,
   });
 
-  // testLaunchAndSettingsSuite({
-  //   name: 'Empty With Version',
-  //   launch: {
-  //     'version': '0.2.0',
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': [],
-  //     'compounds': [],
-  //   },
-  // });
+  testLaunchAndSettingsSuite({
+    name: 'Empty With Version',
+    launch: {
+      'version': '0.2.0',
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': [],
+      'compounds': [],
+    },
+  });
 
-  // testLaunchAndSettingsSuite({
-  //   name: 'Empty With Version And Configurations',
-  //   launch: {
-  //     'version': '0.2.0',
-  //     'configurations': [],
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': [],
-  //     'compounds': [],
-  //   },
-  // });
+  testLaunchAndSettingsSuite({
+    name: 'Empty With Version And Configurations',
+    launch: {
+      'version': '0.2.0',
+      'configurations': [],
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': [],
+      'compounds': [],
+    },
+  });
 
-  // testLaunchAndSettingsSuite({
-  //   name: 'Empty With Version And Compounds',
-  //   launch: {
-  //     'version': '0.2.0',
-  //     'compounds': [],
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': [],
-  //     'compounds': [],
-  //   },
-  // });
+  testLaunchAndSettingsSuite({
+    name: 'Empty With Version And Compounds',
+    launch: {
+      'version': '0.2.0',
+      'compounds': [],
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': [],
+      'compounds': [],
+    },
+  });
 
-  // testLaunchAndSettingsSuite({
-  //   name: 'Valid Conf',
-  //   launch: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration],
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration],
-  //     'compounds': [],
-  //   },
-  // });
+  testLaunchAndSettingsSuite({
+    name: 'Valid Conf',
+    launch: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration],
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration],
+      'compounds': [],
+    },
+  });
 
-  // testLaunchAndSettingsSuite({
-  //   name: 'Bogus Conf',
-  //   launch: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration, bogusConfiguration],
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration, bogusConfiguration],
-  //     'compounds': [],
-  //   },
-  // });
+  testLaunchAndSettingsSuite({
+    name: 'Bogus Conf',
+    launch: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration, bogusConfiguration],
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration, bogusConfiguration],
+      'compounds': [],
+    },
+  });
 
-  // testLaunchAndSettingsSuite({
-  //   name: 'Completely Bogus Conf',
-  //   launch: {
-  //     'version': '0.2.0',
-  //     'configurations': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
-  //     'compounds': [],
-  //   },
-  // });
+  testLaunchAndSettingsSuite({
+    name: 'Completely Bogus Conf',
+    launch: {
+      'version': '0.2.0',
+      'configurations': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
+      'compounds': [],
+    },
+  });
 
-  // const arrayBogusLaunch = [
-  //   'version', '0.2.0',
-  //   'configurations', { 'valid': validConfiguration, 'bogus': bogusConfiguration },
-  // ];
-  // testSuite({
-  //   name: 'Array Bogus Launch Configuration',
-  //   launch: arrayBogusLaunch,
-  //   expectation: {
-  //     '0': 'version',
-  //     '1': '0.2.0',
-  //     '2': 'configurations',
-  //     '3': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
-  //     'compounds': [],
-  //     'configurations': [],
-  //   },
-  //   inspectExpectation: {
-  //     preferenceName: 'launch',
-  //     defaultValue: defaultLaunch,
-  //     workspaceValue: {
-  //       '0': 'version',
-  //       '1': '0.2.0',
-  //       '2': 'configurations',
-  //       '3': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
-  //     },
-  //   },
-  // });
-  // testSuite({
-  //   name: 'Array Bogus Settings Configuration',
-  //   settings: {
-  //     launch: arrayBogusLaunch,
-  //   },
-  //   expectation: {
-  //     '0': 'version',
-  //     '1': '0.2.0',
-  //     '2': 'configurations',
-  //     '3': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
-  //     'compounds': [],
-  //     'configurations': [],
-  //   },
-  //   inspectExpectation: {
-  //     preferenceName: 'launch',
-  //     defaultValue: defaultLaunch,
-  //     workspaceValue: arrayBogusLaunch,
-  //   },
-  // });
+  const arrayBogusLaunch = [
+    'version', '0.2.0',
+    'configurations', { 'valid': validConfiguration, 'bogus': bogusConfiguration },
+  ];
+  testSuite({
+    name: 'Array Bogus Launch Configuration',
+    launch: arrayBogusLaunch,
+    expectation: {
+      '0': 'version',
+      '1': '0.2.0',
+      '2': 'configurations',
+      '3': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
+      'compounds': [],
+      'configurations': [],
+    },
+    inspectExpectation: {
+      preferenceName: 'launch',
+      defaultValue: defaultLaunch,
+      workspaceValue: {
+        '0': 'version',
+        '1': '0.2.0',
+        '2': 'configurations',
+        '3': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
+      },
+    },
+  });
+  testSuite({
+    name: 'Array Bogus Settings Configuration',
+    settings: {
+      launch: arrayBogusLaunch,
+    },
+    expectation: {
+      '0': 'version',
+      '1': '0.2.0',
+      '2': 'configurations',
+      '3': { 'valid': validConfiguration, 'bogus': bogusConfiguration },
+      'compounds': [],
+      'configurations': [],
+    },
+    inspectExpectation: {
+      preferenceName: 'launch',
+      defaultValue: defaultLaunch,
+      workspaceValue: arrayBogusLaunch,
+    },
+  });
 
-  // testSuite({
-  //   name: 'Null Bogus Launch Configuration',
-  //   launch: null,
-  //   expectation: {
-  //     'compounds': [],
-  //     'configurations': [],
-  //   },
-  // });
-  // testSuite({
-  //   name: 'Null Bogus Settings Configuration',
-  //   settings: {
-  //     'launch': null,
-  //   },
-  //   expectation: {},
-  // });
+  testSuite({
+    name: 'Null Bogus Launch Configuration',
+    launch: null,
+    expectation: {
+      'compounds': [],
+      'configurations': [],
+    },
+  });
+  testSuite({
+    name: 'Null Bogus Settings Configuration',
+    settings: {
+      'launch': null,
+    },
+    expectation: {},
+  });
 
-  // testLaunchAndSettingsSuite({
-  //   name: 'Valid Compound',
-  //   launch: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration, validConfiguration2],
-  //     'compounds': [validCompound],
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration, validConfiguration2],
-  //     'compounds': [validCompound],
-  //   },
-  // });
+  testLaunchAndSettingsSuite({
+    name: 'Valid Compound',
+    launch: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration, validConfiguration2],
+      'compounds': [validCompound],
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration, validConfiguration2],
+      'compounds': [validCompound],
+    },
+  });
 
-  // testLaunchAndSettingsSuite({
-  //   name: 'Valid And Bogus',
-  //   launch: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration, validConfiguration2, bogusConfiguration],
-  //     'compounds': [validCompound, bogusCompound, bogusCompound2],
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration, validConfiguration2, bogusConfiguration],
-  //     'compounds': [validCompound, bogusCompound, bogusCompound2],
-  //   },
-  // });
+  testLaunchAndSettingsSuite({
+    name: 'Valid And Bogus',
+    launch: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration, validConfiguration2, bogusConfiguration],
+      'compounds': [validCompound, bogusCompound, bogusCompound2],
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration, validConfiguration2, bogusConfiguration],
+      'compounds': [validCompound, bogusCompound, bogusCompound2],
+    },
+  });
 
-  // testSuite({
-  //   name: 'Mixed',
-  //   launch: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration, bogusConfiguration],
-  //     'compounds': [bogusCompound, bogusCompound2],
-  //   },
-  //   settings: {
-  //     launch: {
-  //       'version': '0.2.0',
-  //       'configurations': [validConfiguration2],
-  //       'compounds': [validCompound],
-  //     },
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration, bogusConfiguration],
-  //     'compounds': [bogusCompound, bogusCompound2],
-  //   },
-  // });
+  testSuite({
+    name: 'Mixed',
+    launch: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration, bogusConfiguration],
+      'compounds': [bogusCompound, bogusCompound2],
+    },
+    settings: {
+      launch: {
+        'version': '0.2.0',
+        'configurations': [validConfiguration2],
+        'compounds': [validCompound],
+      },
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration, bogusConfiguration],
+      'compounds': [bogusCompound, bogusCompound2],
+    },
+  });
 
-  // testSuite({
-  //   name: 'Mixed Launch Without Configurations',
-  //   launch: {
-  //     'version': '0.2.0',
-  //     'compounds': [bogusCompound, bogusCompound2],
-  //   },
-  //   settings: {
-  //     launch: {
-  //       'version': '0.2.0',
-  //       'configurations': [validConfiguration2],
-  //       'compounds': [validCompound],
-  //     },
-  //   },
-  //   expectation: {
-  //     'version': '0.2.0',
-  //     'configurations': [validConfiguration2],
-  //     'compounds': [bogusCompound, bogusCompound2],
-  //   },
-  //   inspectExpectation: {
-  //     preferenceName: 'launch',
-  //     defaultValue: defaultLaunch,
-  //     workspaceValue: {
-  //       'version': '0.2.0',
-  //       'configurations': [validConfiguration2],
-  //       'compounds': [bogusCompound, bogusCompound2],
-  //     },
-  //   },
-  // });
+  testSuite({
+    name: 'Mixed Launch Without Configurations',
+    launch: {
+      'version': '0.2.0',
+      'compounds': [bogusCompound, bogusCompound2],
+    },
+    settings: {
+      launch: {
+        'version': '0.2.0',
+        'configurations': [validConfiguration2],
+        'compounds': [validCompound],
+      },
+    },
+    expectation: {
+      'version': '0.2.0',
+      'configurations': [validConfiguration2],
+      'compounds': [bogusCompound, bogusCompound2],
+    },
+    inspectExpectation: {
+      preferenceName: 'launch',
+      defaultValue: defaultLaunch,
+      workspaceValue: {
+        'version': '0.2.0',
+        'configurations': [validConfiguration2],
+        'compounds': [bogusCompound, bogusCompound2],
+      },
+    },
+  });
 
   function testLaunchAndSettingsSuite({
     name, expectation, launch, only, configMode,
@@ -341,17 +346,18 @@ describe('Launch Preferences', () => {
           configMode: '.kaitian',
         });
 
-        if (options.settings || options.launch) {
-          testConfigSuite({
-            ...options,
-            configMode: '.vscode',
-          });
+        // TODO: 支持VSCODE配置
+        // if (options.settings || options.launch) {
+        //   testConfigSuite({
+        //     ...options,
+        //     configMode: '.vscode',
+        //   });
 
-          testConfigSuite({
-            ...options,
-            configMode: ['.kaitian', '.vscode'],
-          });
-        }
+        //   testConfigSuite({
+        //     ...options,
+        //     configMode: ['.kaitian', '.vscode'],
+        //   });
+        // }
       }
 
     });
@@ -408,6 +414,10 @@ describe('Launch Preferences', () => {
         }
 
         injector = createBrowserInjector([]);
+
+        // 注册额外的Folder SectionName，如‘launch’
+        injector.addProviders(LaunchPreferencesContribution);
+
         injector.addProviders(
           {
             token: ILogger,
@@ -418,21 +428,67 @@ describe('Launch Preferences', () => {
             useValue: {},
           },
           {
-            token: ResourceProvider,
-            useValue: {},
+            token: 'FileServiceOptions',
+            useValue: FileSystemNodeOptions.DEFAULT,
           },
+          {
+            token: FileServicePath,
+            useClass: FileService,
+          },
+          {
+            token: IFileServiceClient,
+            useClass: FileServiceClient,
+          },
+          {
+            token: ResourceProvider,
+            useFactory: () => {
+              return (uri) => {
+                return injector.get(DefaultResourceProvider).get(uri);
+              };
+            },
+          },
+          MockUserStorageResolver,
+          FileResourceResolver,
         );
+        // TODO: 为了mock实例提前获取
+        injector.get(FileServicePath);
+        // 替换文件监听函数实现
+        injector.mock(FileServicePath, 'watchFileChanges', () => { });
 
         injectPreferenceSchemaProvider(injector);
+
         injector.addProviders({
           token: IWorkspaceService,
-          useClass: MockWorkspaceService,
+          useClass: WorkspaceService,
         });
 
-        injector.mock(IWorkspaceService, 'getMostRecentlyUsedWorkspace', async () => rootUri);
+        // TODO: 为了mock实例提前获取
+        injector.get(IWorkspaceService);
+
+        injector.mock(IWorkspaceService, 'getDefaultWorkspacePath', () => rootUri);
+        injector.mock(IWorkspaceService, 'roots', [{
+          uri: rootUri,
+          lastModification: 0,
+          isDirectory: true,
+        }] as FileStat[]);
+        injector.mock(IWorkspaceService, 'tryGetRoots', () => [{
+          uri: rootUri,
+          lastModification: 0,
+          isDirectory: true,
+        }] as FileStat[]);
+        injector.mock(IWorkspaceService, 'workspace', {
+          uri: rootUri,
+          lastModification: 0,
+          isDirectory: true,
+        } as FileStat);
+
+        // 引入USER/WORKSPACE?FOLDER配置
+        injector.addProviders(
+          ...createPreferenceProviders(),
+        );
+        injectPreferenceProviders(injector);
 
         // 注册lauch.json配置文件定义
-        injector.addProviders(LaunchPreferencesContribution);
         injector.addProviders({
           token: FolderPreferenceProvider,
           useClass: LaunchFolderPreferenceProvider,
@@ -451,7 +507,7 @@ describe('Launch Preferences', () => {
       };
 
       beforeEach(() => {
-        initializeInjector();
+        return initializeInjector();
       });
 
       afterEach(() => toTearDown.dispose());
@@ -460,7 +516,7 @@ describe('Launch Preferences', () => {
 
       it('get from default', () => {
         const config = preferences.get('launch');
-        expect(JSON.stringify(config)).toBe(JSON.stringify(expectation));
+        expect(JSON.parse(JSON.stringify(config))).toEqual(expectation);
       });
 
       it('get from undefind', () => {
@@ -512,13 +568,14 @@ describe('Launch Preferences', () => {
         expect(JSON.parse(JSON.stringify(inspect))).toEqual(expected);
       });
 
-      it('update launch', async () => {
+      it('update launch', async (done) => {
         await preferences.set('launch', validLaunch);
 
         const inspect = preferences.inspect('launch');
         const actual = inspect && inspect.workspaceValue;
         const expected = settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
-        expect(actual).toBe(expected);
+        expect(JSON.stringify(actual)).toBe(JSON.stringify(expected));
+        done();
       });
 
       it('update launch Global', async () => {
@@ -535,7 +592,7 @@ describe('Launch Preferences', () => {
         const inspect = preferences.inspect('launch');
         const actual = inspect && inspect.workspaceValue;
         const expected = settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
-        expect(actual).toBe(expected);
+        expect(actual).toEqual(expected);
       });
 
       it('update launch WorkspaceFolder', async () => {
@@ -552,7 +609,7 @@ describe('Launch Preferences', () => {
         const inspect = preferences.inspect('launch');
         const actual = inspect && inspect.workspaceValue;
         const expected = settingsLaunch && !Array.isArray(settingsLaunch) ? { ...settingsLaunch, ...validLaunch } : validLaunch;
-        expect(actual).toBe(expected);
+        expect(actual).toEqual(expected);
       });
 
       if ((launch && !Array.isArray(launch)) || (settingsLaunch && !Array.isArray(settingsLaunch))) {
@@ -561,7 +618,7 @@ describe('Launch Preferences', () => {
 
           const inspect = preferences.inspect('launch');
           const actual = inspect && inspect.workspaceValue && (inspect.workspaceValue as any).configurations;
-          expect(actual).toBe([validConfiguration, validConfiguration2]);
+          expect(actual).toEqual([validConfiguration, validConfiguration2]);
         });
       }
 
@@ -580,7 +637,7 @@ describe('Launch Preferences', () => {
           }
         }
         expected = expected || settingsLaunch;
-        expect(actual && actual.workspaceValue).toBe(expected);
+        expect(actual && actual.workspaceValue).toEqual(expected);
       });
 
       if ((launch && !Array.isArray(launch)) || (settingsLaunch && !Array.isArray(settingsLaunch))) {
@@ -610,7 +667,7 @@ describe('Launch Preferences', () => {
               expected = _settingsLaunch;
             }
           }
-          expect(actualWorkspaceValue).toBe(expected);
+          expect(actualWorkspaceValue).toEqual(expected);
         });
       }
 

@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 
-import { JSONUtils, Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI } from '@ali/ide-core-common';
+import { JSONUtils, Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI, isUndefined } from '@ali/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';
 import { PreferenceSchemaProvider, OverridePreferenceName } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
@@ -306,7 +306,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
-    const resolvedScope = scope !== undefined ? scope : (!resourceUri ? PreferenceScope.Workspace : PreferenceScope.Folder);
+    const resolvedScope = !isUndefined(scope) ? scope : (!resourceUri ? PreferenceScope.Workspace : PreferenceScope.Folder);
     // TODO: 错误日志错误码机制
     if (resolvedScope === PreferenceScope.User && this.configurations.isSectionName(preferenceName.split('.', 1)[0])) {
       throw new Error(`Unable to write to User Settings because ${preferenceName} does not support for global scope.`);
