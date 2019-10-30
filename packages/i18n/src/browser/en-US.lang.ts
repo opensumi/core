@@ -215,12 +215,11 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
     'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
 
-    'preference.title': 'Settings',
-    'keymaps.titile': 'Keyboard Shortcuts',
+    'preference.tab.name': 'Settings',
+    'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
-    'preference.tab.name': 'Settings',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',

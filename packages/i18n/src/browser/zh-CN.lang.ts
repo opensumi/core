@@ -237,7 +237,7 @@ export const localizationBundle = {
     'common.replace': '替换',
 
     'preference.tab.name': '设置',
-    'keymaps.title': '快捷键设置',
+    'keymaps.tab.name': '快捷键设置',
 
     'marketplace.extension.update.now': '是，现在更新',
     'marketplace.extension.update.delay': '稍后我自己更新',
