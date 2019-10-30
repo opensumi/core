@@ -27,6 +27,7 @@ export const ExplorerResourcePanel = observer(({
     themeService,
     decorationChangeEvent,
     themeChangeEvent,
+    validateFileName,
   }: ExplorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
 
   return <FileTree
@@ -50,5 +51,6 @@ export const ExplorerResourcePanel = observer(({
     themeProvider = { themeService as ThemeProvider }
     notifyFileDecorationsChange = { decorationChangeEvent }
     notifyThemeChange = { themeChangeEvent }
+    validate={ validateFileName }
   ></FileTree>;
 });

@@ -3,9 +3,27 @@ import { IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/i
 import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
 import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
+import { TEMP_FILE_NAME, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
-import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey, Emitter, Event, FileDecorationsProvider, IFileDecoration, CorePreferences } from '@ali/ide-core-browser';
+import {
+  DisposableCollection,
+  Disposable,
+  Logger,
+  URI, Uri,
+  IContextKeyService,
+  IContextKey,
+  Emitter,
+  Event,
+  FileDecorationsProvider,
+  IFileDecoration,
+  CorePreferences,
+  formatLocalize,
+  localize,
+  rtrim,
+  coalesce,
+  isValidBasename,
+  trim,
+} from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
@@ -489,5 +507,74 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @action
   updatePosition(position) {
     this.position = position;
+  }
+
+  getWellFormedFileName(filename: string): string {
+    if (!filename) {
+      return filename;
+    }
+
+    // 去除空格
+    filename = trim(filename, '\t');
+
+    // 移除尾部的 . / \\
+    filename = rtrim(filename, '.');
+    filename = rtrim(filename, '/');
+    filename = rtrim(filename, '\\');
+
+    return filename;
+  }
+
+  trimLongName(name: string): string  {
+    if (name && name.length > 255) {
+      return `${name.substr(0, 255)}...`;
+    }
+    return name;
+  }
+
+  validateFileName = (item: Directory | File, name: string): ValidateMessage | null => {
+    // 转换为合适的名称
+    name = this.getWellFormedFileName(name);
+
+    // 不存在文件名称
+    if (!name || name.length === 0 || /^\s+$/.test(name)) {
+      return {
+        message: localize('validate.tree.emptyFileNameError'),
+        type: VALIDATE_TYPE.ERROR,
+      };
+    }
+
+    // 不允许开头为分隔符的名称
+    if (name[0] === '/' || name[0] === '\\') {
+      return {
+        message: localize('validate.tree.fileNameStartsWithSlashError'),
+        type: VALIDATE_TYPE.ERROR,
+      };
+    }
+
+    const names = coalesce(name.split(/[\\/]/));
+    const parent = item.parent;
+    if (name !== item.name) {
+      if (parent) {
+        // 不允许覆盖已存在的文件
+        const child = parent.children.find((child) => child.name === name);
+        if (child) {
+          return {
+            message: formatLocalize('validate.tree.fileNameExistsError', name),
+            type: VALIDATE_TYPE.ERROR,
+          };
+        }
+      }
+
+    }
+    // 判断子路径是否合法
+    if (names.some((folderName) => !isValidBasename(folderName))) {
+      return {
+        message: formatLocalize('validate.tree.invalidFileNameError', this.trimLongName(name)),
+        type: VALIDATE_TYPE.ERROR,
+      };
+    }
+
+    return null;
   }
 }

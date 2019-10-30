@@ -4,6 +4,7 @@ import { TreeContainerNode, CommandActuator } from './tree-node.view';
 import { isOSX, Event, FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode, TreeViewAction } from '@ali/ide-core-common';
 import * as cls from 'classnames';
 import * as styles from './tree.module.less';
+import { ValidateMessage } from '../input';
 
 export const TEMP_FILE_NAME = 'kt_template_file';
 export interface TreeProps extends React.PropsWithChildren<any> {
@@ -115,6 +116,10 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 是否带焦点样式
    */
   outline?: boolean;
+  /**
+   * 编辑态校验函数
+   */
+  validate?: (node: TreeNode, value: string) => ValidateMessage | null;
 }
 
 export const defaultTreeProps: TreeProps = {
@@ -152,6 +157,7 @@ export const TreeContainer = (
     itemLineHeight = 22,
     style,
     outline,
+    validate,
   }: TreeProps,
 ) => {
   const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
@@ -413,6 +419,7 @@ export const TreeContainer = (
           alwaysShowActions={alwaysShowActions}
           commandActuator={commandActuator}
           itemLineHeight={itemLineHeight}
+          validate={validate}
         />;
       })
     }
