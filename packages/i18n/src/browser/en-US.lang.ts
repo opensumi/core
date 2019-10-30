@@ -254,5 +254,8 @@ export const localizationBundle = {
     'keymaps.keybinding.require': 'keybinding value is required',
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
+
+    'tabbar.hide': 'HIDE',
+    'view.hide': 'HIDE',
   },
 };
