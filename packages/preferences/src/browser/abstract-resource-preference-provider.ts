@@ -1,6 +1,6 @@
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
-import { JSONUtils, URI, Resource, ResourceProvider, Disposable } from '@ali/ide-core-browser';
+import { JSONUtils, URI, Resource, ResourceProvider, Disposable, isUndefined } from '@ali/ide-core-browser';
 import {
   PreferenceProvider,
   PreferenceSchemaProvider,
@@ -39,7 +39,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     if (resource.onDidChangeContents) {
       // 配置文件改变时，重新读取配置
       this.toDispose.push(resource.onDidChangeContents(() => {
-        return  this.readPreferences();
+        return this.readPreferences();
       }));
     }
     this.toDispose.push(Disposable.create(() => this.reset()));
@@ -113,7 +113,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   protected loaded = false;
   protected async readPreferences(): Promise<void> {
     const newContent = await this.readContents();
-    this.loaded = newContent !== undefined;
+    this.loaded = !isUndefined(newContent);
     const newPrefs = newContent ? this.getParsedContent(newContent) : {};
     this.handlePreferenceChanges(newPrefs);
   }

@@ -78,7 +78,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   @Autowired(InMemoryResourceResolver)
   private readonly inmemoryResources: InMemoryResourceResolver;
 
-  @Autowired(PreferenceProvider, {tag: PreferenceScope.Workspace})
+  @Autowired(PreferenceProvider, { tag: PreferenceScope.Workspace })
   protected readonly workspacePreferenceProvider: WorkspacePreferenceProvider;
 
   @Autowired(IFileServiceClient)
@@ -130,11 +130,6 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   registerSchema(registry: ISchemaRegistry) {
     registry.registerSchema('vscode://schemas/settings/user', this.schemaProvider.getCombinedSchema(), ['settings.json', USER_PREFERENCE_URI.toString()]);
-  }
-
-  // 初始化PreferenceService下的PreferenceProvider，如Folder，Workspace
-  initialize(): void {
-    this.preferenceService.initializeProviders();
   }
 
   registerResource(resourceService: ResourceService) {

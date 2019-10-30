@@ -34,6 +34,12 @@ export interface OverridePreferenceName {
   overrideIdentifier: string;
 }
 
+export namespace OverridePreferenceName {
+  export function is(arg: any): arg is OverridePreferenceName {
+    return !!arg && typeof arg === 'object' && 'preferenceName' in arg && 'overrideIdentifier' in arg;
+  }
+}
+
 const OVERRIDE_PROPERTY = '\\[(.*)\\]$';
 export const OVERRIDE_PROPERTY_PATTERN = new RegExp(OVERRIDE_PROPERTY);
 
@@ -257,7 +263,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   isValidInScope(preferenceName: string, scope: PreferenceScope): boolean {
-    const preference = this.getPreferenceProperty (preferenceName);
+    const preference = this.getPreferenceProperty(preferenceName);
     if (preference) {
       return preference.scope! >= scope;
     }
@@ -315,7 +321,16 @@ export class DefaultPreferenceProvider extends PreferenceProvider {
   @Autowired(PreferenceSchemaProvider)
   preferenceSchemaProvider: PreferenceSchemaProvider;
 
-  private preferences: {[name: string]: any} = {};
+  private preferences: { [name: string]: any } = {};
+
+  constructor() {
+    super();
+    this.init();
+  }
+
+  protected async init() {
+    this._ready.resolve();
+  }
 
   getPreferences() {
     return {
