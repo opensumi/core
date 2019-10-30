@@ -12,7 +12,7 @@ export const ExtensionDisableAccordion = observer(() => {
   return (
     <ExtensionList
       list={extensionManagerService.disableResults}
-      empty={extensionManagerService.disableResults.length === 0 ? localize('marketplace.extension.empty.disabled', '暂无已禁用的扩展') : ''}
+      empty={extensionManagerService.disableResults.length === 0 ? localize('marketplace.extension.empty.disabled') : ''}
     />
   );
 });
@@ -36,7 +36,7 @@ export const ExtensionHotAccordion = observer(() => {
     <ExtensionList
       loading={extensionManagerService.loading === SearchState.LOADING}
       list={extensionManagerService.hotExtensions}
-      empty={extensionManagerService.loading === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound', '找不到扩展') : ''}
+      empty={extensionManagerService.loading === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound') : ''}
     />
   );
 });
@@ -52,7 +52,7 @@ export const ExtensionSearchInstalledAccordion = observer(() => {
       list={extensionManagerService.searchInstalledResults}
       empty={extensionManagerService.searchInstalledState === SearchState.NO_CONTENT ? (
         <div className={styles.search_nofound}>
-          <div>{localize('marketplace.extension.notfound', '找不到扩展')}</div>
+          <div>{localize('marketplace.extension.notfound')}</div>
           <a className={styles.search_nofound_link} onClick={() => commandService.executeCommand(SearchFromMarketplaceCommandId)}>{localize('marketplace.extension.search.marketplace', '搜索扩展市场')}</a>
         </div>
       ) : ''}
@@ -68,7 +68,7 @@ export const ExtensionSearchMarketplaceAccordion = observer(() => {
     <ExtensionList
       loading={extensionManagerService.searchMarketplaceState === SearchState.LOADING}
       list={extensionManagerService.searchMarketplaceResults}
-      empty={extensionManagerService.searchMarketplaceState === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound', '找不到扩展') : ''}
+      empty={extensionManagerService.searchMarketplaceState === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound') : ''}
     />
   );
 });
