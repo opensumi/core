@@ -46,3 +46,55 @@ export interface IndentationRules {
   unIndentedLinePattern?: string;
   indentNextLinePattern?: string;
 }
+
+export interface ILanguageConfiguration {
+  comments?: CommentRule;
+  brackets?: CharacterPair[];
+  autoClosingPairs?: Array<CharacterPair | IAutoClosingPairConditional>;
+  surroundingPairs?: Array<CharacterPair | IAutoClosingPair>;
+  wordPattern?: string | IRegExp;
+  indentationRules?: IIndentationRules;
+  folding?: FoldingRules;
+  autoCloseBefore?: string;
+}
+
+/**
+ * Describes how comments for a language work.
+ */
+export interface CommentRule {
+  /**
+	 * The line comment token, like `// this is a comment`
+	 */
+  lineComment?: string | null;
+  /**
+	 * The block comment character pair, like `/* block comment *&#47;`
+	 */
+  blockComment?: CharacterPair | null;
+}
+
+/**
+ * A tuple of two characters, like a pair of
+ * opening and closing brackets.
+ */
+export type CharacterPair = [string, string];
+
+export interface IAutoClosingPair {
+  open: string;
+  close: string;
+}
+
+export interface IAutoClosingPairConditional extends IAutoClosingPair {
+  notIn?: string[];
+}
+
+interface IRegExp {
+  pattern: string;
+  flags?: string;
+}
+
+interface IIndentationRules {
+  decreaseIndentPattern: string | IRegExp;
+  increaseIndentPattern: string | IRegExp;
+  indentNextLinePattern?: string | IRegExp;
+  unIndentedLinePattern?: string | IRegExp;
+}
