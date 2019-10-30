@@ -23,7 +23,7 @@ export const EditorView = () => {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const rightWidgetInfo = componentRegistry.getComponentRegistryInfo('editor-widget-right');
   const RightWidget: React.Component | React.FunctionComponent<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
-  
+
   return (
     <div className={ styles.kt_workbench_editor } id='workbench-editor' ref={(ele) => ref.current = ele}>
       <div className={styles.kt_editor_main_wrapper}>
@@ -179,7 +179,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
         }}>
           {EmptyComponent ? <ErrorBoundary><EmptyComponent></EmptyComponent></ErrorBoundary> : undefined}
         </div>}
-      {group.resources.length > 0 && 
+      {group.resources.length > 0 &&
       <div className={styles.editorGroupHeader}>
         <Tabs resources={group.resources}
               onActivate={(resource: IResource) => group.open(resource.uri)}
