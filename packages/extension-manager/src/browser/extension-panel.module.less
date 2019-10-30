@@ -4,11 +4,27 @@
   height: 100%;
 }
 
-.panel :global(.ant-tabs-nav .ant-tabs-tab-active) {
+.panel :global(.ant-tabs) {
+  color: var(--foreground);
+}
+
+.panel :global(.ant-tabs-bar) {
+  border-color: transparent;
+}
+
+.panel :global(.ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active) {
   color: var(--button-background);
 
   &:hover {
     color: var(--button-hoverBackground);
+  }
+}
+
+.panel :global(.ant-tabs-nav .ant-tabs-tab) {
+  padding: 12px 0;
+  margin-right: 16px;
+  &:first-child {
+    margin-left: 8px;
   }
 }
 

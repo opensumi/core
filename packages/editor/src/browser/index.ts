@@ -14,8 +14,11 @@ import { EditorDecorationCollectionService } from './editor.decoration.service';
 import { LanguageService } from './language/language.service';
 import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from './doc-model/types';
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from './doc-model/main';
+import { IDocPersistentCacheProvider } from '../common/doc-cache';
+import { EmptyDocCacheImpl, LocalStorageDocCacheImpl } from './doc-cache';
 export * from './types';
 export * from './doc-model/types';
+export * from './doc-cache';
 
 @Injectable()
 export class EditorModule extends BrowserModule {
@@ -51,6 +54,11 @@ export class EditorModule extends BrowserModule {
     {
       token: ILanguageService,
       useClass: LanguageService,
+    },
+    {
+      token: IDocPersistentCacheProvider,
+      useClass: EmptyDocCacheImpl,
+      // useClass: LocalStorageDocCacheImpl,
     },
     DefaultDiffEditorContribution,
     EditorClientAppContribution,

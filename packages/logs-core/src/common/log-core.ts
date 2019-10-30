@@ -34,7 +34,11 @@ export function format(args: any): string {
   for (let i = 0; i < args.length; i++) {
     let a = args[i];
 
-    if (typeof a === 'object') {
+    if (a instanceof Error) {
+      const array = Array.prototype.slice.call(arguments) as any[];
+      array[0] = a.stack;
+      a = format(array);
+    } else if (typeof a === 'object') {
       try {
         a = JSON.stringify(a);
       } catch (e) { }
