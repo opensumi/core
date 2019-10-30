@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { action } from 'mobx';
-import { URI } from '@ali/ide-core-common';
+import { URI, Schemas, MaybePromise } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
+
 import { replaceAll } from './replace';
 import { ContentSearchClientService } from './search.service';
 import {
@@ -13,6 +15,29 @@ import {
   ContentSearchResult,
   ISearchTreeItem,
 } from '../common';
+
+const REPLACE_PREVIEW = 'replacePreview';
+
+const toReplaceResource = (fileResource: URI): URI => {
+  return fileResource.withScheme(Schemas.internal).withFragment(REPLACE_PREVIEW).withQuery(JSON.stringify({ scheme: fileResource.scheme }));
+};
+
+@Injectable()
+class ReplaceDocumentModelContentProvider implements IEditorDocumentModelContentProvider {
+  handlesScheme(scheme: string) {
+    return scheme === Schemas.internal;
+  }
+
+  provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string> {
+    return '';
+  }
+
+  isReadonly() {
+    return true;
+  }
+
+  onDidChangeContent;
+}
 
 @Injectable()
 export class SearchTreeService {
@@ -34,6 +59,18 @@ export class SearchTreeService {
 
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(IWorkspaceEditService)
+  private workspaceEditService: IWorkspaceEditService;
+
+  @Autowired(IEditorDocumentModelContentRegistry)
+  private contentRegistry: IEditorDocumentModelContentRegistry;
+
+  constructor() {
+    this.contentRegistry.registerEditorDocumentModelContentProvider(
+      new ReplaceDocumentModelContentProvider(),
+    );
+  }
 
   set nodes(data: ISearchTreeItem[]) {
     this._setNodes(data);
@@ -99,18 +136,36 @@ export class SearchTreeService {
 
     // Click file result line
     const result: ContentSearchResult = file.searchResult!;
-    return this.workbenchEditorService.open(
-      new URI(result.fileUri),
-      {
-        disableNavigate: true,
-        range: {
-          startLineNumber: result.line,
-          startColumn: result.matchStart,
-          endLineNumber: result.line,
-          endColumn: result.matchStart + result.matchLength,
+    const replaceValue = this.searchBrowserService.replaceValue;
+
+    if (replaceValue.length > 0) {
+      // Open diff editor
+      const originalURI = new URI(result.fileUri);
+      return this.workbenchEditorService.open(
+        URI.from({
+          scheme: 'diff',
+          query: URI.stringifyQuery({
+            name: 'Replace', // TODO
+            original: originalURI,
+            modified: toReplaceResource(originalURI),
+          }),
+        }),
+      );
+    } else {
+      return this.workbenchEditorService.open(
+        new URI(result.fileUri),
+        {
+          disableNavigate: true,
+          range: {
+            startLineNumber: result.line,
+            startColumn: result.matchStart,
+            endLineNumber: result.line,
+            endColumn: result.matchStart + result.matchLength,
+          },
         },
-      },
-    );
+      );
+    }
+
   }
 
   @action.bound
@@ -127,7 +182,7 @@ export class SearchTreeService {
     commandId: string,
     id: string,
   ) {
-    const documentModelManager = this.documentModelManager;
+    const workspaceEditService = this.workspaceEditService;
     const { resultTotal, searchResults, replaceValue } = this.searchBrowserService;
     const items = this._nodes;
 
@@ -163,7 +218,7 @@ export class SearchTreeService {
         const resultMap: Map<string, ContentSearchResult[]> = new Map();
         resultMap.set(select!.parent!.uri!.toString(), [select!.searchResult!]);
         replaceAll(
-          documentModelManager,
+          workspaceEditService,
           resultMap,
           replaceValue,
         ).then(() => {
@@ -197,7 +252,7 @@ export class SearchTreeService {
         });
         resultMap.set(select!.fileUri, contentSearchResult);
         replaceAll(
-          documentModelManager,
+          workspaceEditService,
           resultMap,
           replaceValue,
         ).then(() => {
