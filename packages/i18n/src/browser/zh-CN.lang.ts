@@ -54,6 +54,7 @@ export const localizationBundle = {
     'editor.splitToTop': '向上拆分',
     'editor.splitToBottom': '向下拆分',
     'editor.closeAllInGroup': '关闭全部',
+    'editor.closeOtherEditors': '关闭组中其他编辑器',
 
     'edit.cut': '剪切',
     'edit.copy': '复制',
