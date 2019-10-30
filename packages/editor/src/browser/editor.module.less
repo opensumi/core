@@ -51,6 +51,13 @@
         &:hover {
           transform: scale(1.1);
         }
+        &:global {
+          &.mask-mode {
+            background: var(--foreground);
+            height: 16px;
+            width: 16px;
+          }
+        }
       }
     }
   }

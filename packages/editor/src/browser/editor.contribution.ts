@@ -498,6 +498,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
       commandId: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
       label: localize('editor.closeToRight', '关闭到右侧'),
     });
+
+    menus.registerMenuAction(['editor', 'title', '9_close'], {
+      commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
+      label: localize('editor.closeAllInGroup', '关闭全部'),
+    });
   }
 
   registerToolBarElement(registry: IToolBarViewService): void {

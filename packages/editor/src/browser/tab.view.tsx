@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { IResource, ResourceService } from '../common';
+import { IResource, ResourceService, IEditorGroup } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
 import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, localize } from '@ali/ide-core-browser';
@@ -26,15 +26,14 @@ export interface ITabsProps {
   gridId: () => string;
   hasFocus: boolean;
   previewUri: URI | null;
+  group: IEditorGroup;
 }
 
-export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId, previewUri, onDbClick, hasFocus}: ITabsProps) => {
+export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId, previewUri, onDbClick, hasFocus, group}: ITabsProps) => {
   const tabContainer = React.useRef<HTMLDivElement | null>();
   const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
   const configContext = React.useContext(ConfigContext);
-  const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
-  const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
 
   function scrollToCurrent() {
     if (tabContainer.current) {
@@ -143,11 +142,20 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
   </div>
   </Scroll>
   </div>
-  <div className={styles.editor_actions}>
+    <EditorActions hasFocus={hasFocus} group={group}/>
+  <div></div>
+  </div>;
+});
+
+export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, group: IEditorGroup}) => {
+  const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
+  const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
+
+  return <div className={styles.editor_actions}>
     {
-      hasFocus && currentResource ? editorActionRegistry.getActions(currentResource).map((item) => {
+      hasFocus ? editorActionRegistry.getActions(group).map((item) => {
         return <div className={classnames(styles.editor_action, item.iconClass)} title={item.title}
-                    onClick={() => item.onClick(currentResource)} />;
+                    onClick={() => item.onClick(group.currentResource)} />;
       }) : null
     }
     <div className={classnames(styles.editor_action, getIcon('ellipsis'))} title={localize('editor.moreActions')}
@@ -158,8 +166,6 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
         event.preventDefault();
       }}
     />
-  </div>
-  <div></div>
   </div>;
 });
 

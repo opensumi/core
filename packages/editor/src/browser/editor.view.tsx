@@ -173,6 +173,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
                 e.dataTransfer.setData('uri', resource.uri.toString());
                 e.dataTransfer.setData('uri-source-group', group.name);
               }}
+              group={group}
               onDrop={(e, target) => {
                 if (e.dataTransfer.getData('uri')) {
                   const uri = new URI(e.dataTransfer.getData('uri'));

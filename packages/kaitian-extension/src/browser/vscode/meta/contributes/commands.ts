@@ -1,6 +1,6 @@
 import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, PreferenceService } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, PreferenceService, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { ExtHostAPIIdentifier } from '../../../../common/vscode';
 import { ThemeType, IIconService } from '@ali/ide-theme';
 
@@ -53,7 +53,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
     this.json.forEach((command) => {
       this.addDispose(this.commandRegistry.registerCommand({
         category: command.category,
-        label: this.getLocalieFromNlsJSON(command.title),
+        label: replaceLocalizePlaceholder(command.title, this.extension.packageJSON.name),
         id: command.command,
         iconClass: this.iconService.fromIcon(this.extension.path, command.icon),
       }, {
