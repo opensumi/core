@@ -54,6 +54,9 @@ export const localizationBundle = {
     'editor.splitToTop': 'Split To Top',
     'editor.splitToBottom': 'Split To Bottom',
     'editor.closeAllInGroup': 'Close All',
+    'status-bar.label.line': 'Ln',
+    'status-bar.label.column': 'Col',
+    'status-bar.label.selected': 'Selected',
 
     'edit.cut': 'Cut',
     'edit.copy': 'Copy',
