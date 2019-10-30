@@ -54,6 +54,7 @@ export const localizationBundle = {
     'editor.splitToTop': 'Split To Top',
     'editor.splitToBottom': 'Split To Bottom',
     'editor.closeAllInGroup': 'Close All',
+    'editor.closeOtherEditors': 'Close Editors in Other Groups',
 
     'edit.cut': 'Cut',
     'edit.copy': 'Copy',
