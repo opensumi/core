@@ -3,7 +3,8 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser';
+import { IDocPersistentCacheProvider } from '@ali/ide-editor/lib/common';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
@@ -12,10 +13,11 @@ import { MonacoService } from '@ali/ide-monaco';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
 import { URI, Disposable } from '@ali/ide-core-common';
 import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent } from './test-providers';
-import { useMockStorage } from '@ali/ide-core-browser/lib/__mocks__/storage';
-import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
+import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { reaction } from 'mobx';
 import { CorePreferences } from '@ali/ide-core-browser';
+import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 
 const injector = createBrowserInjector([]);
 
@@ -38,15 +40,15 @@ injector.addProviders(...[
   },
   {
     token: IEditorDecorationCollectionService,
-    useClass : EditorDecorationCollectionService,
+    useClass: EditorDecorationCollectionService,
   },
   {
     token: IEditorDocumentModelContentRegistry,
-    useClass : EditorDocumentModelContentRegistryImpl,
+    useClass: EditorDocumentModelContentRegistryImpl,
   },
   {
     token: IEditorDocumentModelService,
-    useClass : EditorDocumentModelServiceImpl,
+    useClass: EditorDocumentModelServiceImpl,
   },
   {
     token: ILanguageService,
@@ -59,6 +61,10 @@ injector.addProviders(...[
   {
     token: IWorkspaceService,
     useClass: MockWorkspaceService,
+  },
+  {
+    token: IDocPersistentCacheProvider,
+    useClass: EmptyDocCacheImpl,
   },
 ]);
 useMockStorage(injector);
@@ -146,7 +152,7 @@ describe('workbench editor service tests', () => {
 
     await editorService.closeAll();
 
-    await editorService.open(testComponentUri, {forceOpenType: {type: 'code'}});
+    await editorService.open(testComponentUri, { forceOpenType: { type: 'code' } });
     expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
     expect(editorService.editorGroups[0].currentOpenType!.type).toBe('code');
 
@@ -156,8 +162,8 @@ describe('workbench editor service tests', () => {
   it('should be able to split', async (done) => {
     const testCodeUri = new URI('test://testUri1');
     await editorService.open(testCodeUri);
-    await editorService.open(testCodeUri, {split: EditorGroupSplitAction.Right});
-    await editorService.open(testCodeUri, {split: EditorGroupSplitAction.Bottom});
+    await editorService.open(testCodeUri, { split: EditorGroupSplitAction.Right });
+    await editorService.open(testCodeUri, { split: EditorGroupSplitAction.Bottom });
     expect(editorService.editorGroups.length).toBe(3);
 
     await editorService.closeAll();
@@ -166,9 +172,9 @@ describe('workbench editor service tests', () => {
 
   it('preview mode should work', async (done) => {
     const testCodeUri = new URI('test://testUri1');
-    await editorService.open(testCodeUri, {preview: true});
+    await editorService.open(testCodeUri, { preview: true });
     const testCodeUri2 = new URI('test://testUri2');
-    await editorService.open(testCodeUri2, {preview: true});
+    await editorService.open(testCodeUri2, { preview: true });
     expect(editorService.editorGroups[0].resources.length).toBe(1);
 
     await editorService.closeAll();
@@ -177,9 +183,9 @@ describe('workbench editor service tests', () => {
 
   it('pined mode should work', async (done) => {
     const testCodeUri = new URI('test://testUri1');
-    await editorService.open(testCodeUri, {preview: false});
+    await editorService.open(testCodeUri, { preview: false });
     const testCodeUri2 = new URI('test://testUri2');
-    await editorService.open(testCodeUri2, {preview: false});
+    await editorService.open(testCodeUri2, { preview: false });
     expect(editorService.editorGroups[0].resources.length).toBe(2);
 
     await editorService.closeAll();

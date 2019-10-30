@@ -71,7 +71,7 @@ describe('template test', () => {
       injector.mock(IExtensionManagerServer, 'request', () => {
         throw new Error('请求错误');
       });
-      expect(service.getExtensionFromMarketPlace(uuid()))
+      expect(service.getExtensionFromMarketPlace(uuid(), '0.0.1'))
         .rejects.toEqual(new Error('请求错误'));
     }, 10000);
   });

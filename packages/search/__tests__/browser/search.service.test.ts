@@ -2,10 +2,8 @@ import * as path from 'path';
 import { Injector, Injectable } from '@ali/common-di';
 import { ILoggerManagerClient, Uri } from '@ali/ide-core-common';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { LoggerManagerClient  } from '@ali/ide-logs/src/browser/log-manage';
+import { LoggerManagerClient } from '@ali/ide-logs/src/browser/log-manage';
 import { IWorkspaceService } from '@ali/ide-workspace';
-// import { WorkbenchEditorService } from '@ali/ide-editor';
-// import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/src/browser/workbench-editor.service';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
@@ -21,6 +19,8 @@ import {
   IUIState,
 } from '../../src/common';
 import { SearchModule } from '../../src/browser/';
+import { SearchPreferences } from '../../src/browser/search-preferences';
+import { CorePreferences } from '@ali/ide-core-browser';
 
 const rootUri = Uri.file(path.resolve(__dirname, '../test-resources/')).toString();
 
@@ -39,7 +39,7 @@ class MockWorkspaceService {
 
 @Injectable()
 class MockMainLayoutService {
-  getTabbarHandler() {}
+  getTabbarHandler() { }
 }
 
 @Injectable()
@@ -48,7 +48,7 @@ class MockSearchContentService {
   catchSearchRootDirs: string[];
   catchSearchOptions: ContentSearchOptions;
 
-  async search(value, rootDirs , searchOptions) {
+  async search(value, rootDirs, searchOptions) {
     this.catchSearchValue = value;
     this.catchSearchRootDirs = rootDirs;
     this.catchSearchOptions = searchOptions;
@@ -56,7 +56,7 @@ class MockSearchContentService {
     return 1;
   }
 
-  cancel() {}
+  cancel() { }
 }
 
 describe('search.service.ts', () => {
@@ -82,10 +82,26 @@ describe('search.service.ts', () => {
       useClass: MockSearchContentService,
     }, {
       token: IEditorDocumentModelService,
-      useClass : EditorDocumentModelServiceImpl,
+      useClass: EditorDocumentModelServiceImpl,
     }, {
       token: IMainLayoutService,
-      useClass : MockMainLayoutService,
+      useClass: MockMainLayoutService,
+    });
+
+    injector.overrideProviders({
+      token: SearchPreferences,
+      useValue: {
+        'search.exclude': {
+          '**/bower_components': true,
+        },
+      },
+    }, {
+      token: CorePreferences,
+      useValue: {
+        'files.exclude': {
+          '**/node_modules': true,
+        },
+      },
     });
 
     searchService = injector.get(ContentSearchClientService);

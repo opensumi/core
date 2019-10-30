@@ -69,6 +69,11 @@ export class IconService implements IIconService {
     return cssRule;
   }
 
+  protected getBackgroundStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
+    const cssRule = `${baseTheme || ''} .${className} {background: url(${iconUrl}) no-repeat 50% 50%;background-size:contain;}`;
+    return cssRule;
+  }
+
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined {
     if (!icon) {
       return;
@@ -86,6 +91,12 @@ export class IconService implements IIconService {
       }
     }
     return randomClass + ' ' + 'mask-mode';
+  }
+
+  fromIconUrl(iconUrl: string): string {
+    const randomClass = this.getRandomIconClass();
+    this.appendStyleSheet(this.getBackgroundStyleSheet(iconUrl, randomClass));
+    return randomClass;
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {

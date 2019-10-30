@@ -302,18 +302,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
       changelog: './CHANGELOG.md',
     });
     if (extensionDetail) {
-      const readme = extensionDetail.extraMetadata.readme
-                  ? extensionDetail.extraMetadata.readme
-                  : `# ${extension.displayName}\n${extension.description}`;
-
-      const changelog = extensionDetail.extraMetadata.changelog
-                  ? extensionDetail.extraMetadata.changelog
-                  : `no changelog`;
-
       return {
         ...extension,
-        readme,
-        changelog,
+        readme: extensionDetail.extraMetadata.readme,
+        changelog: extensionDetail.extraMetadata.changelog,
         license: '',
         categories: '',
         repository: extensionDetail.packageJSON.repository ? extensionDetail.packageJSON.repository.url : '',
@@ -325,8 +317,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
-  async getDetailFromMarketplace( extensionId: string ): Promise<ExtensionDetail | undefined> {
-    const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId);
+  async getDetailFromMarketplace(extensionId: string, version: string): Promise<ExtensionDetail | undefined> {
+    const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId, version);
     if (res && res.data) {
       return {
         id: `${res.data.publisher}.${res.data.name}`,

@@ -138,9 +138,11 @@ export class WorkspaceService implements IWorkspaceService {
   protected getPreferenceFileExcludes(name: string): string[] {
     const excludes: string[] = [];
     const fileExcludes = this.corePreferences[name];
-    for (const key of Object.keys(fileExcludes)) {
-      if (fileExcludes[key]) {
-        excludes.push(key);
+    if (fileExcludes) {
+      for (const key of Object.keys(fileExcludes)) {
+        if (fileExcludes[key]) {
+          excludes.push(key);
+        }
       }
     }
     return excludes;
@@ -282,7 +284,7 @@ export class WorkspaceService implements IWorkspaceService {
       const uri = new URI(this._workspace.uri);
       const displayName = uri.displayName;
       if (!this._workspace.isDirectory &&
-        (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`) )) {
+        (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`))) {
         title = displayName.slice(0, displayName.lastIndexOf('.'));
       } else {
         title = displayName;

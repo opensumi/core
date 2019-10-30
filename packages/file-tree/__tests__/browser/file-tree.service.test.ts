@@ -1,15 +1,17 @@
 import { URI, localize } from '@ali/ide-core-common';
 import { FileTreeService } from '../../src/browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { IFileTreeAPI } from '../../src/common';
 import { MockFileTreeAPIImpl } from '../../src/common/mocks';
-import { IFileServiceClient, MockFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { File, Directory } from '../../src/browser/file-tree-item';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { CorePreferences, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IDialogService } from '@ali/ide-overlay';
+import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
+import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 
 describe('FileTreeService should be work', () => {
   let treeService: FileTreeService;
@@ -665,25 +667,18 @@ describe('FileTreeService should be work', () => {
       done();
     });
 
-    it('should open file with preview mode while workbench.list.openMode === "doubleClick" && editor.previewMode', () => {
+    it('should open file with preview mode while editor.previewMode === true', () => {
       const firstCall = jest.fn();
       const openUri = new URI(`${root}/child.js`);
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, firstCall);
       injector.overrideProviders({
         token: CorePreferences,
         useValue: {
-          'workbench.list.openMode': 'doubleClick',
           'editor.previewMode': true,
         },
       });
       treeService.openFile(openUri);
-      expect(firstCall).toBeCalledWith(openUri, { disableNavigate: true });
-      injector.mock(CorePreferences, 'workbench.list.openMode', 'singleClick');
-      const secondCall = jest.fn();
-      injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, secondCall);
-      treeService.openFile(openUri);
-      expect(secondCall).toBeCalledWith(openUri, { disableNavigate: true, preview: false });
-      injector.mock(CorePreferences, 'workbench.list.openMode', 'doubleClick');
+      expect(firstCall).toBeCalledWith(openUri, { disableNavigate: true, preview: true });
       injector.mock(CorePreferences, 'editor.previewMode', false);
       const thirdCall = jest.fn();
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, thirdCall);
