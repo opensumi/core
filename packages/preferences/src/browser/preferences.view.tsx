@@ -47,7 +47,7 @@ export const PreferencesIndexes = ({groups, currentGroupId: currentGroup, setCur
     <Scroll>
       {
         groups.map(({id, title, iconClass}) => {
-          return <div key={id} className={classnames({
+          return <div key={`${id} - ${title}`} className={classnames({
             [styles.index_item]: true,
             [styles.activated]: currentGroup === id,
           })} onClick={() => {setCurrentGroup(id); }}>
@@ -64,8 +64,8 @@ export const PreferenceBody = ({groupId, scope}: {groupId: string, scope: Prefer
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
 
   return <Scroll>
-    {preferenceService.getSections(groupId, scope).map((section, i) => {
-      return <PreferenceSection key={i} section={section} scope={scope} />;
+    {preferenceService.getSections(groupId, scope).map((section, idx) => {
+      return <PreferenceSection key={`${section} - ${idx}`} section={section} scope={scope} />;
     })}
   </Scroll>;
 };
@@ -77,11 +77,11 @@ export const PreferenceSection = ({section, scope}: {section: ISettingSection, s
     }
     {
       section.component ? <section.component scope={scope}/> :
-      section.preferences.map((preference) => {
+      section.preferences.map((preference, idx) => {
         if (typeof preference === 'string') {
-          return <PreferenceItemView key={preference} preferenceName={preference} scope={scope} />;
+          return <PreferenceItemView key={`${idx} - ${preference}`} preferenceName={preference} scope={scope} />;
         } else {
-          return <PreferenceItemView key={preference.id} preferenceName={preference.id} localizedName={localize(preference.localized)} scope={scope} />;
+          return <PreferenceItemView key={`${idx} - ${preference.id}`} preferenceName={preference.id} localizedName={localize(preference.localized)} scope={scope} />;
         }
       })
     }
@@ -202,7 +202,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
             onChange={(event) => {
               changeValue(key, event.target.value);
             }}
-            value={value}
+            value={value || ''}
           />
         </div>
       </div>
@@ -223,8 +223,8 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
 
     // enum 本身为 string[] | number[]
     const labels = preferenceService.getEnumLabels(preferenceName);
-    const options = optionEnum.map((item) =>
-      <option value={item}>{
+    const options = optionEnum.map((item, idx) =>
+      <option value={item} key={`${idx} - ${item}`}>{
         replaceLocalizePlaceholder((labels[item] || item).toString())
       }</option>);
 
@@ -278,7 +278,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
         <div className={styles.control_wrap}>
           <ul>
           {value.map((item, idx) => {
-            return (<li key={'item-' + idx} onClick={() => { removeItem(idx); }}>{item}</li>);
+            return (<li key={`${idx} - ${item}`} onClick={() => { removeItem(idx); }}>{item}</li>);
           })}
           </ul>
           <input
