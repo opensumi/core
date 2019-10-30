@@ -7,7 +7,7 @@ import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
 import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode } from './types';
 import { Tabs } from './tab.view';
-import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary } from '@ali/ide-core-browser';
+import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
@@ -20,10 +20,22 @@ export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
 
   const instance = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
-
+  const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
+  const rightWidgetInfo = componentRegistry.getComponentRegistryInfo('editor-widget-right');
+  const RightWidget: React.Component | React.FunctionComponent<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
+  
   return (
     <div className={ styles.kt_workbench_editor } id='workbench-editor' ref={(ele) => ref.current = ele}>
-      <EditorGridView grid={instance.topGrid} ></EditorGridView>
+      <div className={styles.kt_editor_main_wrapper}>
+        <EditorGridView grid={instance.topGrid} ></EditorGridView>
+      </div>
+        { RightWidget ?
+          <div className={styles.kt_editor_right_widget}>
+            <ErrorBoundary>
+              <RightWidget></RightWidget>
+            </ErrorBoundary>
+          </div> : null
+       }
     </div>
   );
 };
@@ -153,6 +165,10 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
      </div>);
   });
 
+  const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
+  const emptyComponentInfo = componentRegistry.getComponentRegistryInfo('editor-empty');
+  const EmptyComponent: React.Component | React.FunctionComponent<any> | undefined = emptyComponentInfo && emptyComponentInfo.views[0].component;
+
   return (
     <div className={styles.kt_editor_group} tabIndex={1} onFocus={(e) => {
       group.gainFocus();
@@ -160,7 +176,10 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
     >
       {group.resources.length === 0 && <div className={styles.kt_editor_background} style={{
           backgroundImage: editorBackgroudImage ? `url(${editorBackgroudImage})` : 'none',
-        }} />}
+        }}>
+          {EmptyComponent ? <ErrorBoundary><EmptyComponent></EmptyComponent></ErrorBoundary> : undefined}
+        </div>}
+      {group.resources.length > 0 && 
       <div className={styles.editorGroupHeader}>
         <Tabs resources={group.resources}
               onActivate={(resource: IResource) => group.open(resource.uri)}
@@ -195,7 +214,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
                 }}
               />
         <NavigationBar editorGroup={group} />
-      </div>
+      </div>}
       <div className={styles.kt_editor_body}
                   onDragOver={(e) => {
                     e.preventDefault();
