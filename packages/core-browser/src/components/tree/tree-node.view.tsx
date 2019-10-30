@@ -283,13 +283,15 @@ export const TreeContainerNode = (
 
   const renderIcon = (node: TreeNode) => {
     const treeNodeLeftActions: TreeViewAction[] = [];
-    for (const action of actions) {
-      switch (action.location) {
-        case TreeViewActionTypes.TreeNode_Left:
-          treeNodeLeftActions.push(action);
-          break;
-        default:
-          break;
+    if (!ExpandableTreeNode.is(node)) {
+      for (const action of actions) {
+        switch (action.location) {
+          case TreeViewActionTypes.TreeNode_Left:
+            treeNodeLeftActions.push(action);
+            break;
+          default:
+            break;
+        }
       }
     }
     return <div className={cls(node.icon, styles.kt_file_icon)}>
