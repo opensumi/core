@@ -60,6 +60,7 @@ export interface AppConfig extends Partial<Config> {
   marketplace: MarketplaceConfig;
   processCloseExitThreshold?: number;
   staticAllowOrigin?: string;
+  staticAllowPath?: string[];
 }
 
 export interface IServerAppOpts extends Partial<Config> {
@@ -71,6 +72,7 @@ export interface IServerAppOpts extends Partial<Config> {
   use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
   processCloseExitThreshold?: number;
   staticAllowOrigin?: string;
+  staticAllowPath?: string[];
 }
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
@@ -137,6 +139,7 @@ export class ServerApp implements IServerApp {
       }, opts.marketplace),
       processCloseExitThreshold: opts.processCloseExitThreshold,
       staticAllowOrigin: opts.staticAllowOrigin,
+      staticAllowPath: opts.staticAllowPath,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
