@@ -2,94 +2,94 @@ import { Command, localize } from '..';
 import { getIcon } from '../icon';
 
 export namespace FILE_COMMANDS {
-  const CATEGORY = localize('file');
+  const CATEGORY = '%file%';
 
   export const NEW_FILE: Command = {
     id: 'file.new',
     category: CATEGORY,
-    label: localize('file.new'),
+    label: '%file.new%',
     iconClass: getIcon('new-file'),
   };
 
   export const RENAME_FILE: Command = {
     id: 'file.rename',
     category: CATEGORY,
-    label: localize('file.rename'),
+    label: '%file.rename%',
   };
 
   export const DELETE_FILE: Command = {
     id: 'file.delete',
     category: CATEGORY,
-    label: localize('file.delete'),
+    label: '%file.delete%',
   };
 
   export const NEW_FOLDER: Command = {
     id: 'file.folder.new',
     category: CATEGORY,
-    label: localize('file.folder.new'),
+    label: '%file.folder.new%',
     iconClass: getIcon('new-folder'),
   };
 
   export const COMPARE_SELECTED: Command = {
     id: 'file.compare',
     category: CATEGORY,
-    label: localize('file.compare'),
+    label: '%file.compare%',
   };
 
   export const COLLAPSE_ALL: Command = {
     id: 'filetree.collapse.all',
     category: CATEGORY,
-    label: localize('file.collapse'),
+    label: '%file.collapse%',
     iconClass: getIcon('collapse-all'),
   };
 
   export const REFRESH_ALL: Command = {
     id: 'filetree.refresh.all',
     category: CATEGORY,
-    label: localize('file.refresh'),
+    label: '%file.refresh%',
     iconClass: getIcon('refresh'),
   };
 
   export const OPEN_RESOURCES: Command = {
     id: 'filetree.open.file',
     category: CATEGORY,
-    label: localize('file.open'),
+    label: '%file.open%',
   };
 
   export const OPEN_TO_THE_SIDE: Command = {
     id: 'filetree.open.side',
     category: CATEGORY,
-    label: localize('file.open.side'),
+    label: '%file.open.side%',
   };
 
   export const COPY_PATH: Command = {
     id: 'filetree.copy.path',
     category: CATEGORY,
-    label: localize('file.copy.path'),
+    label: '%file.copy.path%',
   };
 
   export const COPY_RELATIVE_PATH: Command = {
     id: 'filetree.copy.relativepath',
     category: CATEGORY,
-    label: localize('file.copy.relativepath'),
+    label: '%file.copy.relativepath%',
   };
 
   export const COPY_FILE: Command = {
     id: 'filetree.copy.file',
     category: CATEGORY,
-    label: localize('file.copy.file'),
+    label: '%file.copy.file%',
   };
 
   export const CUT_FILE: Command = {
     id: 'filetree.cut.file',
     category: CATEGORY,
-    label: localize('file.cut.file'),
+    label: '%file.cut.file%',
   };
 
   export const PASTE_FILE: Command = {
     id: 'filetree.paste.file',
     category: CATEGORY,
-    label: localize('file.paste.file'),
+    label: '%file.paste.file%',
   };
 }
 
@@ -122,27 +122,27 @@ export namespace COMMON_COMMANDS {
 }
 
 export namespace EXPLORER_COMMANDS {
-  const CATEGORY = localize('explorer');
+  const CATEGORY = '%explorer%';
 
   export const LOCATION: Command = {
     id: 'explorer.location',
     category: CATEGORY,
-    label: localize('explorer.location'),
+    label: '%explorer.location%',
   };
 }
 
 export namespace EDITOR_COMMANDS {
-  const CATEGORY = localize('editor');
+  const CATEGORY = '%editor%';
 
   export const UNDO: Command = {
     id: 'editor.undo',
     category: CATEGORY,
-    label: localize('editor.undo'),
+    label: '%editor.undo%',
   };
   export const REDO: Command = {
     id: 'editor.redo',
     category: CATEGORY,
-    label: localize('editor.redo'),
+    label: '%editor.redo%',
   };
 
   export const OPEN_RESOURCE: Command = {
@@ -158,7 +158,7 @@ export namespace EDITOR_COMMANDS {
   export const SAVE_CURRENT: Command = {
     id: 'editor.saveCurrent',
     category: CATEGORY,
-    label: localize('editor.saveCurrent'),
+    label: '%editor.saveCurrent%',
   };
 
   export const COMPARE: Command = {
@@ -169,31 +169,31 @@ export namespace EDITOR_COMMANDS {
   export const CLOSE: Command = {
     id: 'editor.close',
     category: CATEGORY,
-    label: localize('editor.closeCurrent'),
+    label: '%editor.closeCurrent%',
   };
 
   export const CLOSE_ALL_IN_GROUP: Command = {
     id: 'editor.closeAllInGroup',
     category: CATEGORY,
-    label: localize('editor.closeAllInGroup'),
+    label: '%editor.closeAllInGroup%',
   };
 
   export const CLOSE_OTHER_IN_GROUP: Command = {
     id: 'editor.closeOtherEditorsInGroup',
     category: CATEGORY,
-    label: localize('editor.closeOtherEditors', '关闭组中其他编辑器'),
+    label: '%editor.closeOtherEditors%',
   };
 
   export const CLOSE_ALL: Command = {
     id: 'editor.closeAll',
     category: CATEGORY,
-    label: localize('editor.close.all'),
+    label: '%editor.close.all%',
   };
 
   export const SAVE_ALL: Command = {
     id: 'editor.saveAll',
     category: CATEGORY,
-    label: localize('editor.save.all'),
+    label: '%editor.save.all%',
   };
 
   export const CLOSE_TO_RIGHT: Command = {
@@ -294,7 +294,7 @@ export namespace EDITOR_COMMANDS {
   export const CLOSE_OTHER_GROUPS: Command = {
     id: 'editor.closeOtherGroup',
     category: CATEGORY,
-    label: localize('closeEditorsInOtherGroups', '关闭其他组中的编辑器'),
+    label: '%closeEditorsInOtherGroups%',
   };
 
   export const OPEN_EDITOR_AT_INDEX: Command = {
