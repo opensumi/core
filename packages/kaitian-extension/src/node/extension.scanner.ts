@@ -60,6 +60,12 @@ export class ExtensionScanner {
   static async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
     // 插件校验逻辑
+    console.log('localization !!', localization);
+
+    if (!await fs.pathExists(extensionPath)) {
+      getLogger().error('extension path does not exist');
+    }
+
     const pkgPath = path.join(extensionPath, 'package.json');
     const pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
     const extendPath = path.join(extensionPath, 'kaitian.js');

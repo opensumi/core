@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Injector } from '@ali/common-di';
 import { LayoutConfig } from '../bootstrap';
+import { ExtensionCandiDate } from '../extension';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
@@ -20,6 +21,7 @@ export interface AppConfig {
   webviewEndpoint?: string;
   extWorkerHost?: string;
   extenionCandidate?: string;
+  extensionCandidate?: ExtensionCandiDate[];
   staticServicePath?: string;
 
   editorBackgroudImage?: string;
