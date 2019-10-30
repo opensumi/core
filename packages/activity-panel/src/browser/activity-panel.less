@@ -99,14 +99,15 @@
       background-color: var(--foreground);
     }
   }
-  .big {
-    transform: scale(1.2);
-    transition: transform .2s;
-  }
   &.enabled {
     opacity: 1;
     cursor: pointer;
   }
+}
+
+.p-TabBar-toolbar .item .big {
+  transform: scale(1.2);
+  transition: transform .2s;
 }
 
 .sidepanel-component {

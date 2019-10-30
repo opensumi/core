@@ -2,10 +2,11 @@ import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { TerminalServiceClientImpl } from '../../src/node/terminal.service.client';
 import { ITerminalServiceClient, ITerminalService } from '../../src/common';
 import { TerminalServiceImpl } from '../../src/node/terminal.service';
+import { Terminal2Module } from '../../src/node/index';
 
 describe('PtyService', () => {
 
-  const injector = createNodeInjector([]);
+  const injector = createNodeInjector([Terminal2Module]);
   injector.addProviders({
     token: ITerminalServiceClient,
     useClass: TerminalServiceClientImpl,

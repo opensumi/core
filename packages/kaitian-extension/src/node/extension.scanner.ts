@@ -20,6 +20,7 @@ export class ExtensionScanner {
 
   constructor(
     private scan: string[],
+    private localization: string,
     private extenionCandidate: string[],
     private extraMetaData: ExtraMetaData,
   ) { }
@@ -36,7 +37,7 @@ export class ExtensionScanner {
         return this.scanDir(dir);
       }).concat(
         this.extenionCandidate.map(async (extension) => {
-          await this.getExtension(extension);
+          await this.getExtension(extension, this.localization);
         }),
       ),
     );
@@ -49,18 +50,19 @@ export class ExtensionScanner {
       const extensionDirArr = await fs.readdir(dir);
       await Promise.all(extensionDirArr.map((extensionDir) => {
         const extensionPath = path.join(dir, extensionDir);
-        return this.getExtension(extensionPath);
+        return this.getExtension(extensionPath, this.localization);
       }));
     } catch (e) {
       getLogger().error(e);
     }
   }
 
-  static async getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+  static async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
     // 插件校验逻辑
+    console.log('localization !!', localization);
     const pkgPath = path.join(extensionPath, 'package.json');
-    const pkgNlsPath = path.join(extensionPath, 'package.nls.json');
+    const pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
     const extendPath = path.join(extensionPath, 'kaitian.js');
     const pkgExist = await fs.pathExists(pkgPath);
     const pkgNlsExist = await fs.pathExists(pkgNlsPath);
@@ -158,13 +160,13 @@ export class ExtensionScanner {
     return true;
   }
 
-  public async getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+  public async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
     if (this.results.has(extensionPath)) {
       return;
     }
 
-    const extension = await ExtensionScanner.getExtension(extensionPath, {
+    const extension = await ExtensionScanner.getExtension(extensionPath, localization, {
       ...this.extraMetaData,
       ...extraMetaData,
     });

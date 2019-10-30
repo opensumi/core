@@ -112,6 +112,7 @@ export class ComponentRegistryImpl implements ComponentRegistry {
         options,
       });
     }
+    // deprecated, use layout config instead
     if (location) {
       let targetLocation = this.config.layoutConfig[location];
       if (!targetLocation) {
