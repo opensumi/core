@@ -57,7 +57,6 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
           delegate.onDidPreferencesChanged((changes) => this.onDidPreferencesChangedEmitter.fire(changes)),
         ]);
       }
-      this.onDidPreferencesChangedEmitter.fire(undefined);
     }
   }
 

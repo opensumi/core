@@ -45,6 +45,8 @@ import {
   ContributionProvider,
   SlotLocation,
   ILogger,
+  getLanguageId,
+  getPreferenceLanguageId,
 } from '@ali/ide-core-browser';
 import {
   getIcon,
@@ -77,6 +79,7 @@ import { IThemeService, IIconService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
+import * as BrowserApi from './kaitian-browser';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -214,7 +217,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
-    const extensionMetadata = await this.extensionNodeService.getExtension(path);
+    const extensionMetadata = await this.extensionNodeService.getExtension(path, getPreferenceLanguageId());
     if (extensionMetadata) {
       const extension = this.injector.get(Extension, [
         extensionMetadata,
@@ -349,7 +352,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
     if (!this.extensionMetaDataArr) {
-      const extensions = await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extenionCandidate, this.extraMetadata);
+      const extensions = await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extenionCandidate, getPreferenceLanguageId(), this.extraMetadata);
       console.log(extensions);
       this.extensionMetaDataArr = extensions;
     }
@@ -363,7 +366,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined> {
-    const extensionMetaData = await this.extensionNodeService.getExtension(extensionPath, extraMetaData);
+    const extensionMetaData = await this.extensionNodeService.getExtension(extensionPath, getPreferenceLanguageId(), extraMetaData);
     if (extensionMetaData) {
       const extension = this.extensionMap.get(extensionPath);
       if (extension) {
@@ -387,6 +390,9 @@ export class ExtensionServiceImpl implements ExtensionService {
     });
     getAMDDefine()('ReactDOM', [] , () => {
       return ReactDOM;
+    });
+    getAMDDefine()('kaitian-browser', [] , () => {
+      return BrowserApi;
     });
   }
   private async initBaseData() {

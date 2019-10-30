@@ -1,14 +1,16 @@
 import { URI } from '@ali/ide-core-common';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { IFileTreeAPI } from '../../src/common';
-import { IFileServiceClient, MockFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { File, Directory } from '../../src/browser/file-tree-item';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { FileTreeAPI } from '../../src/browser/file-tree.api';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
+import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 
 describe('FileTreeService should be work', () => {
   let fileApi: IFileTreeAPI;

@@ -1,4 +1,6 @@
 
+export const EXTENSION_DIR = 'extension/';
+
 export enum EnableScope {
   GLOBAL = 'GLOBAL',
   WORKSPACE = 'WORKSPACE',
@@ -97,7 +99,7 @@ export interface IExtensionManagerService {
   searchMarketplaceResults: RawExtension[];
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
-  getDetailFromMarketplace(extensionId: string): Promise<ExtensionDetail | undefined>;
+  getDetailFromMarketplace(extensionId: string, version: string): Promise<ExtensionDetail | undefined>;
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
   toggleActiveExtension(extensionId: string, active: boolean, scope: EnableScope): Promise<void>;
   searchFromMarketplace(query: string): void;
@@ -117,7 +119,7 @@ export interface IExtensionManagerService {
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
 export interface IExtensionManagerServer {
   search(query: string, ignoreId?: string[]): Promise<any>;
-  getExtensionFromMarketPlace(extensionId: string): Promise<any>;
+  getExtensionFromMarketPlace(extensionId: string, version: string): Promise<any>;
   downloadExtension(extensionId: string, version?: string): Promise<string>;
   getHotExtensions(ignoreId?: string[]): Promise<any>;
   updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string>;

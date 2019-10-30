@@ -122,10 +122,15 @@ export interface IBaseLogService {
   sendLog(level: LogLevel, message: string): void;
 
   /**
-   * 将缓存日志罗盘
-   */
-  drop():Promise<void>;
+   * 释放spdlog对象
+  */
+  drop(): Promise<void>;
 
+  /**
+   * 立即写入数据
+   */
+  flush(): Promise<void>;
+  
   dispose(): void;
 }
 
@@ -156,6 +161,8 @@ export interface ILoggerManagerClient {
 
   setGlobalLogLevel(level: LogLevel): Promise<void>;
   getGlobalLogLevel(): Promise<LogLevel>;
+
+  onDidLogLevelChanged(level: LogLevel);
   dispose(): Promise<void>;
 }
 
