@@ -25,8 +25,8 @@ export abstract class PreferenceProvider implements IDisposable {
 
   public readonly name: string;
 
-  protected readonly onDidPreferencesChangedEmitter = new Emitter<PreferenceProviderDataChanges | undefined>();
-  readonly onDidPreferencesChanged: Event<PreferenceProviderDataChanges | undefined> = this.onDidPreferencesChangedEmitter.event;
+  protected readonly onDidPreferencesChangedEmitter = new Emitter<PreferenceProviderDataChanges>();
+  readonly onDidPreferencesChanged: Event<PreferenceProviderDataChanges> = this.onDidPreferencesChangedEmitter.event;
 
   protected readonly toDispose = new DisposableCollection();
 

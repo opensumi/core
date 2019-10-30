@@ -12,21 +12,7 @@ import { PreferenceSettingsService } from './preference.service';
 @Injectable()
 export class PreferencesModule extends BrowserModule {
   providers: Provider[] = [
-    {
-      token: PreferenceProvider,
-      tag: PreferenceScope.Folder,
-      useClass: FoldersPreferencesProvider,
-    },
-    {
-      token: PreferenceProvider,
-      tag: PreferenceScope.Workspace,
-      useClass: WorkspacePreferenceProvider,
-    },
-    {
-      token: PreferenceProvider,
-      tag: PreferenceScope.User,
-      useClass: UserPreferenceProvider,
-    },
+    ...createPreferenceProviders(),
     {
       token: IPreferenceSettingsService,
       useClass: PreferenceSettingsService,
@@ -92,4 +78,24 @@ export function injectWorkspaceFilePreferenceProvider(inject: Injector): void {
 export function injectPreferenceProviders(inject: Injector): void {
   injectFolderPreferenceProvider(inject);
   injectWorkspaceFilePreferenceProvider(inject);
+}
+
+export function createPreferenceProviders(): Provider[] {
+  return [
+    {
+      token: PreferenceProvider,
+      tag: PreferenceScope.Folder,
+      useClass: FoldersPreferencesProvider,
+    },
+    {
+      token: PreferenceProvider,
+      tag: PreferenceScope.Workspace,
+      useClass: WorkspacePreferenceProvider,
+    },
+    {
+      token: PreferenceProvider,
+      tag: PreferenceScope.User,
+      useClass: UserPreferenceProvider,
+    },
+  ];
 }

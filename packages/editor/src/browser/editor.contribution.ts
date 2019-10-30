@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer } from '@ali/ide-core-browser';
@@ -44,6 +44,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
   @Autowired(ContextMenuRenderer)
   private contextMenuRenderer: ContextMenuRenderer;
 
+  @Autowired(IDocPersistentCacheProvider)
+  cacheProvider: IDocPersistentCacheProvider;
+
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
       id: 'ide-editor',
@@ -65,7 +68,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     if (isElectronRenderer()) {
       return this.onWillStopElectron();
     } else {
-      return this.workbenchEditorService.hasDirty();
+      return this.workbenchEditorService.hasDirty() || !this.cacheProvider.isFlushed();
     }
   }
 
@@ -77,6 +80,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
         }
       }
     }
+
+    if (!this.cacheProvider.isFlushed()) {
+      return true;
+    }
+
     return false;
   }
 

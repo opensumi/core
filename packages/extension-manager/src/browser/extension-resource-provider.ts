@@ -22,7 +22,7 @@ export class ExtensionResourceProvider extends WithEventBus implements IResource
     const { name, icon } = uri.getParsedQuery();
     const iconClass = this.iconService.fromIconUrl(icon);
     return {
-      name: `${localize('extension', 'Extension')}: ${name}`,
+      name: `${localize('marketplace.extension.container')}: ${name}`,
       icon: `${iconClass} ${styles.tab_icon}`,
       uri,
     };

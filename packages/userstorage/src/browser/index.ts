@@ -18,5 +18,5 @@ export class UserstorageModule extends BrowserModule {
 }
 
 export * from './user-storage-service';
-export * from './user-storage-uri';
+export * from '../common/user-storage-uri';
 export * from './user-storage-service-filesystem';

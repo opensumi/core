@@ -22,7 +22,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
-import { KeymapService } from './keymaps.service';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 
@@ -37,8 +37,8 @@ export class KeymapsResourceProvider extends WithEventBus implements IResourcePr
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     return {
-      name: localize('keymaps.title'),
-      icon: '',
+      name: localize('keymaps.tab.name'),
+      icon: getIcon('setting'),
       uri,
     };
   }

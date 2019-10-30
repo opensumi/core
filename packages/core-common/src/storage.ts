@@ -22,7 +22,7 @@ export interface IStorage extends IDisposable {
   readonly onDidChangeStorage: Event<string>;
   readonly whenReady: Promise<any>;
 
-  init(storageId: string): Promise< IStorage | void >;
+  init(storageId: string): Promise<IStorage | void>;
 
   get(key: string, fallbackValue: string): string;
   get(key: string, fallbackValue?: string): string | undefined;

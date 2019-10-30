@@ -93,7 +93,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
 
     const renderKeybinding = () => {
       if (isEditing) {
-        return <Input autoFocus={true} name={noKeybidingInputName} value={value} onChange={changeHandler} onKeyDown={keydownHandler} onBlur={blurHandler} />;
+        return <Input className={styles.keybinding_key_input} autoFocus={true} name={noKeybidingInputName} value={value} onChange={changeHandler} onKeyDown={keydownHandler} onBlur={blurHandler} />;
       } else {
         return <span className={styles.keybinding_key} dangerouslySetInnerHTML={{ __html: keybinding || '' }}></span>;
       }
