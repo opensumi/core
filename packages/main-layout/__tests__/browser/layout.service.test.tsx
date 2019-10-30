@@ -5,15 +5,16 @@ import { MainLayoutService } from '../../src/browser/main-layout.service';
 import { IMainLayoutService, MainLayoutContribution } from '../../src';
 import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient } from '@ali/ide-core-browser';
 import { Injectable } from '@ali/common-di';
-import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
-import { useMockStorage } from '@ali/ide-core-browser/lib/__mocks__/storage';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { MainLayoutModuleContribution } from '../../src/browser/main-layout.contribution';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { ActivationEventServiceImpl } from '@ali/ide-activation-event/lib/browser/activation.service';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { ActivityBarService } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
-import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/__mocks__/logger';
+import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 
 const MockView = () => <div>Test view</div>;
 
@@ -232,11 +233,11 @@ describe('main layout test', () => {
   });
 
   it('should be able to lock webview during resize', () => {
-  // TODO UI测试
+    // TODO UI测试
   });
 
   it('resize listeners should work for all slot', () => {
-  // TODO UI测试
+    // TODO UI测试
   });
 
   // TODO jsdom获取到的节点宽高为0，展开折叠动画暂时无法测试
