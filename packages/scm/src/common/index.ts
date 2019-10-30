@@ -1,11 +1,5 @@
 import { localize } from '@ali/ide-core-common';
 
-export class CommonCls {
-  add(a: number, b: number) {
-    return a + b;
-  }
-}
-
 export const scmContainerId = 'scm_container';
 export const scmProviderViewId = 'scm_provider';
 export const scmResourceViewId = 'scm';

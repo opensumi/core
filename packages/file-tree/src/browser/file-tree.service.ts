@@ -13,7 +13,7 @@ import {
   localize,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { FileTreeAPI, PasteTypes, IParseStore, FileStatNode } from '../common';
+import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode } from '../common';
 import { IFileServiceClient, FileChange, FileChangeType, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
@@ -71,8 +71,8 @@ export class FileTreeService extends WithEventBus {
   @Autowired(AppConfig)
   private config: AppConfig;
 
-  @Autowired()
-  private fileAPI: FileTreeAPI;
+  @Autowired(IFileTreeAPI)
+  private fileAPI: IFileTreeAPI;
 
   @Autowired(CommandService)
   private commandService: CommandService;
@@ -266,12 +266,10 @@ export class FileTreeService extends WithEventBus {
    */
   @action
   removeStatusAndFileFromParent(uri: URI) {
-    const statusKey = this.getStatutsKey(uri);
-    const status = this.status.get(statusKey);
-    const parent = status && status.file!.parent as Directory;
+    const parentStatusKey = this.getStatutsKey(uri.parent);
+    const parentStatus = this.status.get(parentStatusKey);
+    const parent = parentStatus && parentStatus!.file as Directory;
     if (parent) {
-      const parentStatusKey = this.getStatutsKey(parent);
-      const parentStatus = this.status.get(parentStatusKey);
       // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
       if (parentStatus && !parentStatus!.expanded) {
         this.status.set(parentStatusKey, {
@@ -292,11 +290,28 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
-  removeTempStatus() {
-    for (const [, status] of this.status) {
-      if (status && status.file && status.file.name === TEMP_FILE_NAME) {
+  removeTempStatus(node?: Directory | File) {
+    if (node) {
+      const statusKey = this.getStatutsKey(node.uri);
+      const status = this.status.get(statusKey);
+      if (!status) {
+        return;
+      }
+      if (status.file.name === TEMP_FILE_NAME) {
         this.removeStatusAndFileFromParent(status.file.uri);
-        break;
+      } else {
+        status.file.updateTemporary(false);
+        this.status.set(statusKey, {
+          ...status!,
+          file: status.file,
+        });
+      }
+    } else {
+      for (const [, status] of this.status) {
+        if (status && status.file && status.file.name === TEMP_FILE_NAME) {
+          this.removeStatusAndFileFromParent(status.file.uri);
+          break;
+        }
       }
     }
   }
@@ -505,7 +520,7 @@ export class FileTreeService extends WithEventBus {
    * 刷新所有节点
    */
   @action
-  refresh(uri: URI = this.root) {
+  async refresh(uri: URI = this.root, lowcost?: boolean) {
     const statusKey = this.getStatutsKey(uri);
     const status = this.status.get(statusKey);
     if (!status) {
@@ -518,7 +533,7 @@ export class FileTreeService extends WithEventBus {
         needUpdated: true,
       });
       if (status.expanded) {
-        this.refreshAffectedNode(status.file);
+        this.refreshAffectedNode(status.file, lowcost);
       }
     }
   }
@@ -619,7 +634,7 @@ export class FileTreeService extends WithEventBus {
   async refreshAffectedNodes(uris: URI[]) {
     const nodes = this.getAffectedNodes(uris);
     for (const node of nodes.values()) {
-      await this.refreshAffectedNode(node);
+      await this.refreshAffectedNode(node, true);
     }
     return nodes.size !== 0;
   }
@@ -637,7 +652,7 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
-  async refreshAffectedNode(file: Directory | File) {
+  async refreshAffectedNode(file: Directory | File, lowcost?: boolean) {
     const statusKey = this.getStatutsKey(file);
     const status = this.status.get(statusKey);
     let item: any = file;
@@ -647,11 +662,21 @@ export class FileTreeService extends WithEventBus {
     if (Directory.isDirectory(item)) {
       await item.getChildren();
       const children = item.children;
-      for (const child of children) {
-        const childStatusKey = this.getStatutsKey(child);
-        const childStatus = this.status.get(childStatusKey);
-        if (childStatus && childStatus.expanded) {
-          await this.refreshAffectedNode(child);
+      if (lowcost) {
+        for (const child of children) {
+          const childStatusKey = this.getStatutsKey(child);
+          const childStatus = this.status.get(childStatusKey);
+          if (childStatus && childStatus.expanded && Directory.isDirectory(child)) {
+            (child as Directory).updateChildren((childStatus.file as Directory).children);
+          }
+        }
+      } else {
+        for (const child of children) {
+          const childStatusKey = this.getStatutsKey(child);
+          const childStatus = this.status.get(childStatusKey);
+          if (childStatus && childStatus.expanded) {
+            await this.refreshAffectedNode(child);
+          }
         }
       }
       if (!file.parent && status) {
@@ -850,11 +875,8 @@ export class FileTreeService extends WithEventBus {
    */
   openFile(uri: URI) {
     // 当打开模式为双击同时预览模式生效时，默认单击为预览文件
-    if (this.corePreferences['workbench.list.openMode'] === 'doubleClick' && this.corePreferences['editor.previewMode']) {
-      this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true });
-    } else {
-      this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false });
-    }
+    const preview = this.corePreferences['editor.previewMode'];
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview });
   }
 
   /**

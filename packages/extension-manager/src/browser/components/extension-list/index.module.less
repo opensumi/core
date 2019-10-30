@@ -3,12 +3,27 @@
   position: relative;
 }
 
+.wrap :global(.ps__rail-y) {
+  left: auto !important;
+  right: 0 !important;
+}
+
+.gray {
+  opacity: 0.3;
+}
+
 .selected {
   background: var(--list-inactiveSelectionBackground);
 }
 
 .empty {
-  padding: 5px;
+  padding-top: 35px;
+  text-align: center;
+  color: var(--descriptionForeground);
+}
+
+.last_item {
+  padding-bottom: 32px;
 }
 
 @keyframes loading {

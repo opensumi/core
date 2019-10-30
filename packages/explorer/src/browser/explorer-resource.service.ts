@@ -9,6 +9,7 @@ import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService,
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
+import { ExplorerFolderContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -155,6 +156,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _selectTimer;
   private _selectTimes: number = 0;
 
+  private folderContext: IContextKey<boolean>;
+
   public overrideFileDecorationService: FileDecorationsProvider = {
     getDecoration: (uri, hasChildren = false) => {
       // 转换URI为vscode.uri
@@ -168,6 +171,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   constructor() {
     super();
     this.listen();
+
+    this.folderContext = ExplorerFolderContext.bind(this.contextKeyService);
   }
 
   listen() {
@@ -225,6 +230,11 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       this._currentContextUriContextKey = this.contextKeyService.createKey('filetreeContextUri', '');
     }
     return this._currentContextUriContextKey;
+  }
+
+  private setContextKeys(file: Directory | File) {
+    const isSingleFolder = !this.filetreeService.isMutiWorkspace;
+    this.folderContext.set((isSingleFolder && !file) || !!file && Directory.isDirectory(file));
   }
 
   @action.bound
@@ -368,7 +378,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @action.bound
   onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {
     const { x, y } = event.nativeEvent;
-    let uris;
+    let uris: URI[];
     this.filetreeService.updateFilesFocusedStatus(nodes as (Directory | File)[], true);
     if (nodes && nodes.length > 0) {
       uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
@@ -376,6 +386,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       uris = [this.root];
     }
     const data = { x, y, uris };
+    this.setContextKeys(nodes[0] as (Directory | File));
     this.currentContextUriContextKey.set(uris[0].toString());
     this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
     this.contextMenuRenderer.render(CONTEXT_MENU, data);
@@ -386,7 +397,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     if (!node) {
       this.filetreeService.removeTempStatus();
     } else if (!value) {
-      this.filetreeService.removeTempStatus();
+      this.filetreeService.removeTempStatus(node as (Directory | File));
     } else if (node && value) {
       if (node.name === TEMP_FILE_NAME) {
         if (node.filestat.isDirectory) {
@@ -424,7 +435,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       return;
     }
 
-    const status = this.status.get(uri.toString());
+    const statusKey = this.filetreeService.getStatutsKey(uri);
+    const status = this.status.get(statusKey);
 
     // 当不存在status及父节点时
     // 定位到根目录顶部

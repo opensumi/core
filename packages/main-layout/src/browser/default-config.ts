@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { LayoutConfig, SlotLocation } from '@ali/ide-core-browser';
 
 // FIXME bar和panel不要对外暴露，直接模块间依赖

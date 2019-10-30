@@ -12,6 +12,8 @@ import { BreakpointManager } from './breakpoint';
 import { IMessageService } from '@ali/ide-overlay';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ITerminalClient } from '@ali/ide-terminal2';
+import { OutputService } from '@ali/ide-output/lib/browser/output.service';
+import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 
 export const DebugSessionContribution = Symbol('DebugSessionContribution');
 
@@ -85,6 +87,8 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
   protected readonly fileSystem: IFileServiceClient;
   @Autowired(ITerminalClient)
   protected readonly terminalService: ITerminalClient;
+  @Autowired(OutputService)
+  protected readonly outputService: OutputService;
 
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
     const connection = new DebugSessionConnection(
@@ -92,6 +96,7 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
       (sessionId: string) => {
         return this.connectionProvider.openChannel(`${DebugAdapterPath}/${sessionId}`);
       },
+      this.getTraceOutputChannel(),
     );
     return new DebugSession(
       sessionId,
@@ -104,5 +109,11 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
       this.labelService,
       this.messages,
       this.fileSystem);
+  }
+
+  protected getTraceOutputChannel(): OutputChannel | undefined {
+    if (this.debugPreferences['debug.trace']) {
+      return this.outputService.getChannel('Debug adapters');
+    }
   }
 }

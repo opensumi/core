@@ -110,6 +110,8 @@ export const localizationBundle = {
     'search.help.matchRange': '匹配的字符范围',
     'search.help.modify': '修改',
     'search.replace.buttonOK': '替换',
+    'search.quickOpen.leftRight': '在侧边打开',
+    'search.quickOpen.upDown': '在底部打开',
     'fileResults': '文件结果',
     'historyMatches': '最近打开',
     'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',
@@ -149,6 +151,7 @@ export const localizationBundle = {
     'debug.action.step-out': '单步跳出',
     'debug.action.restart': '重启',
     'debug.action.pause': '暂停',
+    'debug.action.disattach': '断开',
     'debug.action.continue': '下一步',
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
@@ -175,6 +178,10 @@ export const localizationBundle = {
     'debug.breakpoint.conditionalMessage': '条件断点',
     'debug.breakpoint.unverified': '无效的',
     'debug.breakpoint.disabled': '禁用的',
+    'debug.configuration.comment1': '使用 IntelliSense 了解相关属性。 ',
+    'debug.configuration.comment2': '悬停以查看现有属性的描述。',
+    'debug.configuration.comment3': '欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387',
+
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
     'window.toggleDevTools': '切换开发人员工具',
@@ -188,6 +195,10 @@ export const localizationBundle = {
     'preference.files.watcherExclude.title': '排除文件监听 `files.watcherExclude`',
     'preference.search.exclude.title': '搜索排除文件 `search.exclude`',
     'preference.files.exclude.title': '排除文件显示 `files.exclude`',
+    'preference.debug.internalConsoleOptions': '控制何时打开内部调试控制台。',
+    'preference.debug.openDebug': '控制何时打开调试视图。',
+    'preference.debug.debugViewLocation': '控制调试视图的位置。',
+    'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
@@ -233,6 +244,10 @@ export const localizationBundle = {
     'marketplace.extension.uninstall.failed': '删除失败',
     'marketplace.extension.reload.delay': '稍后我自己重启',
     'marketplace.extension.reload.now': '是，现在重启',
+    'marketplace.extension.enable': '启用',
+    'marketplace.extension.disable': '禁用',
+    'marketplace.extension.enable.workspace': '启用(工作空间)',
+    'marketplace.extension.disable.workspace': '禁用(工作空间)',
 
     'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
     'validate.tree.fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
@@ -258,6 +273,8 @@ export const localizationBundle = {
     'keymaps.source.workspace': '工作区',
     'keymaps.keybinding.collide': '当前快捷键存在冲突',
     'keymaps.keybinding.require': '请输入快捷键',
+
+    'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
 
   },
 };

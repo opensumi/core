@@ -104,6 +104,11 @@
         "name": "configuration-editing",
         "id": "5da45c36392bdd7063eb0e11",
         "version": "1.0.0"
+      },
+      {
+        "name": "ide-dark-theme",
+        "id": "5d9094c5845342e87e0f2ebf",
+        "version": "1.4.1"
       }
     ],
     "sample": [

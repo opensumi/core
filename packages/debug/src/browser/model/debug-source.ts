@@ -54,9 +54,11 @@ export class DebugSource extends DebugSourceData {
       // 更新当前进程的currentFrame为选中frame
       frame.thread.currentFrame = frame;
       // currentFrame变化会通知打开对应文件
-      const model = this.modelManager.resolve(this.uri);
-      if (model) {
-        model.focusStackFrame(frame);
+      const models = this.modelManager.resolve(this.uri);
+      if (models) {
+        for (const model of models) {
+          model.focusStackFrame(frame);
+        }
       }
     } else {
       await this.workbenchEditorService.open(this.uri, options);

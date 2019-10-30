@@ -1,6 +1,8 @@
 import { localize } from '@ali/ide-core-common';
 import { registerColor, Color, RGBA } from '@ali/ide-theme';
 
+// 这里都是 scm 相关颜色变量注册
+/* istanbul ignore next */
 export const editorGutterModifiedBackground = registerColor('editorGutter.modifiedBackground', {
   dark: new Color(new RGBA(12, 125, 157)),
   light: new Color(new RGBA(102, 175, 224)),

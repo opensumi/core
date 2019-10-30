@@ -2,9 +2,48 @@
   height: 100%;
 }
 
+
+.body :global(.ant-tabs),
+.body :global(.ant-tabs-content) {
+  height: 100%;
+}
+
+.body :global(.ant-tabs) {
+  color: var(--foreground);
+}
+
+.body :global(.ant-tabs-bar) {
+  border-color: var(--editorGroupHeader-tabsBorder);
+}
+
+.body :global(.ant-tabs-nav .ant-tabs-tab) {
+  padding: 12px 0;
+  margin-right: 24px;
+  &:first-child {
+    margin-left: 24px;
+  }
+}
+
+.body :global(.ant-tabs-nav .ant-tabs-tab-active) {
+  color: var(--button-background);
+
+  &:hover {
+    color: var(--button-hoverBackground);
+  }
+}
+
+.content {
+  // 43 为 tab 的高度
+  height: calc(100% - 43px);
+}
+
+.body :global(.ant-tabs-tabpane):nth-child(2) {
+  height: calc(100% - 36px);
+}
+
 .header {
   display: flex;
-  padding: 20px 20px 14px;
+  padding: 32px 32px 14px;
   font-size: 14px;
 }
 
@@ -12,6 +51,7 @@
   display: flex;
   align-items: center;
   overflow: hidden;
+  margin-bottom: 4px;
 }
 
 .details {
@@ -19,42 +59,29 @@
 }
 
 .name {
-  font-size: 26px;
-  line-height: 30px;
-  font-weight: 500px;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: bold;
   white-space: nowrap;
+  margin-right: 11px;
 }
 
 .action {
-  margin-right: 10px;
-  &:hover {
-    text-decoration: underline;
-  }
-  &.gray {
-    color: inherit;
-  }
+  margin-right: 8px;
 }
 
-.identifier {
-  margin-left: 10px;
-  font-size: 14px;
-  opacity: .6;
-  background: hsla(0,0%,68%,.31);
-  padding: 0 4px;
-  border-radius: 4px;
-  user-select: text;
-  white-space: nowrap;
-}
 
 .subtitle {
-  padding-top: 6px;
   white-space: nowrap;
   height: 20px;
   line-height: 20px;
+  margin-bottom: 4px;
 }
 
 .description {
-  margin-top: 10px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--description-foreground);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -66,24 +93,29 @@
 }
 
 .subtitle_item {
-  font-size: 18px;
-  padding: 0 8px;
-  border-left: 1px solid hsla(0,0%,68%,.31);
+  font-size: 12px;
+  line-height: 12px;
+  margin-right: 12px;
+  color: var(--description-foreground);
 }
 
 .subtitle_item a {
-  font-size: 16px;
-  color: inherit;
+  font-size: 12px;
 }
 
 .icon {
-  width: 128px;
-  height: 128px;
+  width: 72px;
+  height: 72px;
   object-fit: contain;
 }
 
+.actions {
+  margin-top: 12px;
+}
+
 .body {
-  height: calc(100% - 168px);
+  // 160 为 header 的高度
+  height: calc(100% - 160px);
   overflow: hidden;
 }
 
@@ -122,20 +154,3 @@
 .action_label_show {
   text-decoration: underline;
 }
-
-.content {
-  height: calc(100% - 36px);
-}
-
-.content_item {
-  height: 100%;
-}
-
-.content_item {
-  display: none;
-}
-
-.content_item_show {
-  display: block;
-}
-

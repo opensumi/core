@@ -18,6 +18,13 @@ export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
 
 export const AppConfig = Symbol('AppConfig');
 
+export interface MarketplaceRequest {
+  path?: string;
+  headers?: {
+    [header: string]: string | string[] | undefined;
+  };
+}
+
 export interface MarketplaceConfig {
   // 插件市场地址, 默认 https://marketplace.antfin-inc.com
   endpoint: string;
@@ -29,6 +36,8 @@ export interface MarketplaceConfig {
   accountId: string;
   // 插件市场中申请到的客户端的 masterKey
   masterKey: string;
+  // 插件市场参数转换函数
+  transformRequest?: (request: MarketplaceRequest) => MarketplaceRequest;
 }
 
 interface Config {
@@ -50,6 +59,7 @@ interface Config {
 export interface AppConfig extends Partial<Config> {
   marketplace: MarketplaceConfig;
   processCloseExitThreshold?: number;
+  staticAllowOrigin?: string;
 }
 
 export interface IServerAppOpts extends Partial<Config> {
@@ -60,6 +70,7 @@ export interface IServerAppOpts extends Partial<Config> {
   marketplace?: Partial<MarketplaceConfig>;
   use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
   processCloseExitThreshold?: number;
+  staticAllowOrigin?: string;
 }
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
@@ -125,6 +136,7 @@ export class ServerApp implements IServerApp {
         masterKey: '',
       }, opts.marketplace),
       processCloseExitThreshold: opts.processCloseExitThreshold,
+      staticAllowOrigin: opts.staticAllowOrigin,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);

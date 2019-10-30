@@ -31,7 +31,7 @@ export function StatusBarItem(props: StatusBarEntry) {
           if (!(typeof item === 'string') && LabelIcon.is(item)) {
             hasIcon = true;
             // TODO 支持内置的iconfont
-            return <span key={key} className={cls(styles.icon, getOctIcon(item.name), `${item.animation ? 'fa-' + item.animation : ''}`)}></span>;
+            return <span key={key} className={cls(styles.icon, getOctIcon(item.name), `${item.animation ? 'iconfont-anim-' + item.animation : ''}`)}></span>;
           } else {
             return <span style={{marginLeft: iconClass || hasIcon ? '2px' : 0}} key={key}>{item}</span>;
           }

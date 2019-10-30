@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import { isNodeIntegrated, isElectronEnv, URI } from '@ali/ide-core-common';
+import { isNodeIntegrated, isElectronEnv, URI, isDevelopment } from '@ali/ide-core-common';
 
 declare const __non_webpack_require__;
 
@@ -9,16 +9,42 @@ export function getNodeRequire() {
 import { getLanguageId } from '@ali/ide-core-common';
 import { join } from '@ali/ide-core-common/lib/path';
 
-export function loadMonaco(vsRequire: any): Promise<void> {
+const cdnMonacoBase = isDevelopment() ? 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/' : 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/';
+
+let loadingMonaco: Promise<void> | undefined;
+
+export function loadMonaco(): Promise<void> {
+  if (!loadingMonaco) {
+    loadingMonaco = doLoadMonaco();
+  }
+  return loadingMonaco!;
+}
+
+function doLoadMonaco(): Promise<void> {
+  const vsRequire: any = (window as any).amdLoader.require;
   if (isElectronEnv()) {
-    vsRequire.config({ paths: { vs: URI.file(join((window as any).monacoPath, 'vs')).codeUri.fsPath } });
+    let lang = getLanguageId().toLowerCase();
+    if (lang === 'en-us') {
+      lang = '';
+    }
+    vsRequire.config({
+      paths: {
+        vs: URI.file(join((window as any).monacoPath, isDevelopment() ? 'dev' : 'min', 'vs')).codeUri.fsPath,
+        'vs/nls': {
+          // 设置 monaco 内部的 i18n
+          availableLanguages: {
+            // en-US -> en-us
+            '*': lang,
+          },
+        },
+    }});
   } else {
     let lang = getLanguageId().toLowerCase();
     if (lang === 'en-us') {
       lang = '';
     }
     vsRequire.config({
-      paths: { vs: 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/vs' },
+      paths: { vs: `${cdnMonacoBase}vs` },
       'vs/nls': {
         // 设置 monaco 内部的 i18n
         availableLanguages: {
@@ -34,9 +60,9 @@ export function loadMonaco(vsRequire: any): Promise<void> {
     getWorkerUrl() {
       return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
             self.MonacoEnvironment = {
-              baseUrl: 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/'
+              baseUrl: '${cdnMonacoBase}'
             };
-            importScripts('https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/vs/base/worker/workerMain.js');`,
+            importScripts('${cdnMonacoBase}vs/base/worker/workerMain.js');`,
       )}`;
     },
   };
@@ -110,7 +136,18 @@ export function loadMonaco(vsRequire: any): Promise<void> {
           global.monaco.contextKeyService = contextKeyService;
           global.monaco.modes = modes;
           global.monaco.textModel = textModel;
-
+          // codeActionsProvider需要支持额外属性
+          global.monaco.languages.registerCodeActionProvider = (languageId, provider) => {
+            return modes.CodeActionProviderRegistry.register(languageId, {
+                provideCodeActions: (model, range, context, token) => {
+                    const markers = standaloneServices.StaticServices.markerService.get().read({ resource: model.uri }).filter( (m) => {
+                        return monaco.Range.areIntersectingOrTouching(m, range);
+                    });
+                    return provider.provideCodeActions(model, range, { markers, only: context.only }, token);
+                },
+                providedCodeActionKinds: provider.providedCodeActionKinds,
+            });
+          };
           resolve();
         });
     });

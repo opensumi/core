@@ -67,7 +67,7 @@ SCMRepoPanel.displayName = 'SCMRepoPanel';
 
 export const SCMResourceView: React.FC<{ viewState: ViewState }> = observer((props) => {
   const scmService = useInjectable<SCMService>(SCMService);
-  const viewModel = React.useContext(ViewModelContext);
+  const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
 
   React.useEffect(() => {
     scmService.onDidAddRepository((repo: ISCMRepository) => {
@@ -102,7 +102,7 @@ SCMResourceView.displayName = 'SCMResourceView';
  * 多 repo 列表
  */
 export const SCMProviderList: React.FC<{ viewState: ViewState }>  = observer((props) => {
-  const viewModel = React.useContext(ViewModelContext);
+  const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
   const selectedRepo = viewModel.selectedRepos[0];
 
   return (

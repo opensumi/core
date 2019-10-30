@@ -8,6 +8,7 @@ import { getIcon } from '../../icon';
 import Icon from '../icon';
 import Badge from '../badge';
 import { Input } from '../input';
+import { KeyCode, Key } from '../../keyboard';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -42,7 +43,7 @@ const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeN
     return '';
   }
   if (range) {
-    return <div>
+    return <span>
       {description.slice(0, range.start)}
       <span className={cls(styles.kt_search_match, replace && styles.replace)}>
         {description.slice(range.start, range.end)}
@@ -52,7 +53,7 @@ const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeN
       </span>
       {description.slice(range.end)}
 
-    </div>;
+    </span>;
   } else {
     return description;
   }
@@ -303,7 +304,7 @@ export const TreeContainerNode = (
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
       return <Icon
         key={action.title || index}
-        iconClass={icon}
+        iconClass={cls(styles.action_icon, icon)}
         title={action.title}
         onClick={clickHandler} />;
     });
@@ -352,7 +353,7 @@ export const TreeContainerNode = (
     </div>;
   };
 
-  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { } ) => {
+  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
     const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name === TEMP_FILE_NAME ? '' : node.name);
     const [validateMessage, setValidateMessage] = React.useState<string>('');
 
@@ -380,7 +381,8 @@ export const TreeContainerNode = (
     };
 
     const keydownHandler = (event: React.KeyboardEvent) => {
-      if (event.keyCode === 13) {
+      const { key } = KeyCode.createKeyCode(event.nativeEvent);
+      if (key && Key.ENTER.keyCode === key.keyCode) {
         event.stopPropagation();
         event.preventDefault();
         if (validateMessage) {
@@ -388,6 +390,10 @@ export const TreeContainerNode = (
         } else {
           onChange(node, value);
         }
+      } else if (key && Key.ESCAPE.keyCode === key.keyCode) {
+        event.stopPropagation();
+        event.preventDefault();
+        onChange(node, '');
       }
     };
 
@@ -464,11 +470,18 @@ export const TreeContainerNode = (
 
   const itemStyle = {
     height: itemLineHeight,
+    lineHeight: `${itemLineHeight}px`,
+  } as React.CSSProperties;
+
+  const titleStyle = {
+    height: itemLineHeight,
+    lineHeight: `${itemLineHeight}px`,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${10 + (leftPadding || 0)}px` : 0,
   } as React.CSSProperties;
 
   const renderTitle = (node: TreeNode) => {
     if (node.title) {
-      return <div className={styles.kt_treenode_title} style={itemStyle}>{node.title}</div>;
+      return <div className={styles.kt_treenode_title} style={titleStyle}>{node.title}</div>;
     }
   };
 

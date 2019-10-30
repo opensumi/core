@@ -3,105 +3,98 @@ import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { Markdown } from '@ali/ide-markdown';
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
-import { ExtensionDetail, IExtensionManagerService } from '../common';
+import { ExtensionDetail, IExtensionManagerService, EnableScope } from '../common';
 import * as clx from 'classnames';
 import * as styles from './extension-detail.module.less';
+import * as commonStyles from './extension-manager.common.module.less';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { Button } from '@ali/ide-core-browser/lib/components';
+import { Dropdown, Menu } from 'antd';
+import Tabs from 'antd/lib/tabs';
+import 'antd/lib/tabs/style/index.less';
+
+const { TabPane } = Tabs;
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
   const { extensionId, version } = props.resource.uri.getParsedQuery();
   const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
   const [isInstalling, setIsInstalling] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [isUnInstalling, setUnIsInstalling] = React.useState(false);
-  const [tabIndex, setTabIndex] = React.useState(0);
   const [reloadRequire, setReloadRequire] = React.useState(false);
   const [updated, setUpdated] = React.useState(false);
-  const tabs = [{
-    name: 'readme',
-    displayName: localize('marketplace.extension.readme', '细节'),
-  }, {
-    name: 'changelog',
-    displayName: localize('marketplace.extension.changelog', '更改日志'),
-  }];
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const logger = useInjectable<ILogger>(ILogger);
   const clientApp = useInjectable<IClientApp>(IClientApp);
-  const delayReload = localize('marketplace.extension.reload.delay');
-  const nowReload = localize('marketplace.extension.reload.now');
   const delayUpdate = localize('marketplace.extension.update.delay', '稍后我自己更新');
   const nowUpdate = localize('marketplace.extension.update.now', '是，现在更新');
 
-  if (currentExtension && (!currentExtension.enable || !currentExtension.installed)) {
-    updateReloadStateIfNeed(currentExtension);
-  }
-
   React.useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
+      let remote;
       try {
-        const remote = await extensionManagerService.getDetailFromMarketplace(extensionId);
+        // 获取最新的插件信息，用来做更新提示
+        remote = await extensionManagerService.getDetailFromMarketplace(extensionId, version);
         if (remote) {
           setLatestExtension(remote);
-        }
-
-        if (isLocal) {
-          const local = await extensionManagerService.getDetailById(extensionId);
-          if (local) {
-            setCurrentExtension(local);
-          }
-        } else {
-          setCurrentExtension(remote!);
         }
       } catch (err) {
         logger.error(err);
       }
-      setIsLoading(false);
+
+      // 打开本地
+      if (isLocal) {
+        const local = await extensionManagerService.getDetailById(extensionId);
+        if (local) {
+          setCurrentExtension(local);
+        }
+      } else if (remote) {
+        // 打开远程
+        setCurrentExtension(remote);
+      }
     };
 
     fetchData();
   }, [extensionId]);
 
-  function getContent(name: string, extension: ExtensionDetail) {
-    switch (name) {
-      case 'readme':
-        return <Markdown content={extension.readme}/>;
-      case 'changelog':
-        return <Markdown content={extension.changelog}/>;
-      default:
-        return null;
-    }
-  }
-
-  async function updateReloadStateIfNeed(extension) {
+  /**
+   * 检查是否需要强制重启插件
+   * @param extension
+   */
+  async function updateReloadStateIfNeed(extension: ExtensionDetail) {
     const reloadRequire = await extensionManagerService.computeReloadState(extension.path);
     if (reloadRequire) {
       setReloadRequire(true);
     }
   }
 
-  async function toggleActive() {
+  /**
+   * 禁用/启用工作区间
+   * @param scope
+   */
+  async function toggleActive(scope: EnableScope) {
     if (currentExtension) {
       const enable = !currentExtension.enable;
-      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, enable);
+      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, enable, scope);
       if (!enable) {
         await extensionManagerService.onDisableExtension(currentExtension.path);
       } else {
         await extensionManagerService.onEnableExtension(currentExtension.path);
       }
+      await updateReloadStateIfNeed(currentExtension);
       setCurrentExtension({
         ...currentExtension,
         enable,
+        enableScope: scope,
       });
-      await updateReloadStateIfNeed(currentExtension);
+
     }
   }
 
@@ -113,6 +106,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       setCurrentExtension({
         ...currentExtension,
         path,
+        // 默认安装后就启用
+        enable: true,
         installed: true,
       });
       // 更新插件进程信息
@@ -125,18 +120,19 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   async function uninstall() {
     if (currentExtension && !isUnInstalling) {
       setUnIsInstalling(true);
-      const res = await extensionManagerService.uninstallExtension(currentExtension.path);
-      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, true);
+      const res = await extensionManagerService.uninstallExtension(currentExtension.extensionId, currentExtension.path);
+      // TODO 卸载后为什么要设置启用？
+      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, true, EnableScope.GLOBAL);
 
       if (res) {
+        await extensionManagerService.makeExtensionStatus(false, currentExtension.extensionId, '');
+        await updateReloadStateIfNeed(currentExtension);
         setUnIsInstalling(false);
         setCurrentExtension({
           ...currentExtension,
+          enable: false,
           installed: false,
         });
-        await updateReloadStateIfNeed(currentExtension);
-        // 标记为未安装
-        await extensionManagerService.makeExtensionStatus(false, currentExtension.extensionId, '');
       } else {
         dialogService.info(localize('marketplace.extension.uninstall.failed', '卸载失败'));
       }
@@ -162,20 +158,39 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }
 
   const canUpdate = React.useMemo(() => {
-    return currentExtension && latestExtension && compareVersions(currentExtension.version, latestExtension!.version);
+    return currentExtension && latestExtension && compareVersions(currentExtension.version, latestExtension.version) === -1;
   }, [currentExtension, latestExtension]);
 
+  const downloadCount = React.useMemo(() => {
+    return currentExtension && currentExtension.downloadCount
+    || latestExtension && latestExtension.downloadCount
+    || 0;
+  }, [currentExtension, latestExtension]);
+
+  // 是否弹出要更新提示
   React.useEffect(() => {
-    if (canUpdate) {
+    if (canUpdate && latestExtension) {
       messageService
-      .info(localize('marketplace.extension.findUpdate', `发现插件有最新版本 ${latestExtension!.version}，是否要更新到最新版本？`), [delayUpdate, nowUpdate])
+      .info(localize('marketplace.extension.findUpdate', `发现插件 ${latestExtension.name} 有最新版本 ${latestExtension.version}，是否要更新到最新版本？`), [delayUpdate, nowUpdate])
       .then((message) => {
         if (message === nowUpdate) {
           update();
         }
       });
     }
-  }, [canUpdate]);
+  }, [canUpdate, latestExtension]);
+
+  // https://yuque.antfin-inc.com/cloud-ide/za8zpk/kpwylo#RvfMV
+  const menu = (
+    currentExtension && (<Menu>
+      <Menu.Item onClick={() => toggleActive(EnableScope.GLOBAL)} disabled={currentExtension.enableScope === EnableScope.WORKSPACE && currentExtension.enable}>
+      {currentExtension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}
+      </Menu.Item>
+      <Menu.Item onClick={() => toggleActive(EnableScope.WORKSPACE)}>
+      {currentExtension.enable ? localize('marketplace.extension.disable.workspace') : localize('marketplace.extension.enable.workspace')}
+      </Menu.Item>
+    </Menu>)
+  );
   return (
     <div className={styles.wrap}>
       {currentExtension && (
@@ -187,58 +202,44 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           <div className={styles.details}>
             <div className={styles.title}>
               <span className={styles.name}>{currentExtension.displayName}</span>
-              <span className={styles.identifier}>{currentExtension.id}</span>
+              {currentExtension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin', '内置')}</span>) : null}
+              {canUpdate ? (<span className={clx(commonStyles.tag, styles.green)}>{localize('marketplace.extension.canupdate', '有新版本')}</span>) : null}
             </div>
             <div className={styles.subtitle}>
-              <span className={styles.subtitle_item}>{currentExtension.publisher}</span>
-              {currentExtension && currentExtension.downloadCount && currentExtension.downloadCount > 0 ? (
-              <span className={styles.subtitle_item}><i className={getIcon('cloud-download')}></i> {currentExtension.downloadCount}</span>
+              {downloadCount > 0 ? (
+              <span className={styles.subtitle_item}><i className={clx(commonStyles.icon, getIcon('download'))}></i>{downloadCount}</span>
               ) : null}
-              {currentExtension.license && (
-              <span className={styles.subtitle_item}>
-                <a target='_blank' href={currentExtension.license}>{localize('marketplace.extension.license', '许可证')}</a>
-              </span>
-              )}
+              <span className={styles.subtitle_item}>{currentExtension.publisher}</span>
+              <span className={styles.subtitle_item}>V{currentExtension.version}</span>
             </div>
-            <div className={styles.description}>{currentExtension.description}{currentExtension.version}</div>
+            <div className={styles.description}>{currentExtension.description}</div>
             <div className={styles.actions}>
               {canUpdate && !updated ? (
-                <a className={styles.action} onClick={update}>{isUpdating ? localize('marketplace.extension.reloading', '更新中') : localize('marketplace.extension.reload', '更新')}</a>
+                <Button className={styles.action} onClick={update} loading={isUpdating}>{isUpdating ? localize('marketplace.extension.reloading', '更新中') : localize('marketplace.extension.reload', '更新')}</Button>
               ) : null}
               {!currentExtension.installed ? (
-                <a className={styles.action} onClick={install}>{isInstalling ? localize('marketplace.extension.installing', '安装中') : localize('marketplace.extension.install', '安装')}</a>
+                <Button className={styles.action} onClick={install} loading={isInstalling}>{isInstalling ? localize('marketplace.extension.installing', '安装中') : localize('marketplace.extension.install', '安装')}</Button>
               ) : null}
-              {reloadRequire && <a className={clx(styles.action)} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure', '需要重启')}</a>}
-              {isLocal && currentExtension.installed ? (
-                <a className={clx(styles.action, {
-                  [styles.gray]: currentExtension.enable,
-                })} onClick={toggleActive}>{currentExtension.enable ? localize('marketplace.extension.disable', '禁用') : localize('marketplace.extension.enable', '启用')}</a>
-              ) : null}
+              {reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure', '需要重启')}</Button>}
+              {currentExtension.installed ? (
+                <Dropdown overlay={menu} trigger={['click']}>
+                  <Button ghost={true} className={styles.action}>{currentExtension.enable ? localize('marketplace.extension.disable', '禁用') : localize('marketplace.extension.enable', '启用')}</Button>
+                </Dropdown>) : null}
               {currentExtension.installed && !currentExtension.isBuiltin  && (
-                <a className={clx(styles.action, styles.gray)} onClick={uninstall}>{isUnInstalling ? localize('marketplace.extension.uninstalling', '卸载中') : localize('marketplace.extension.uninstall', '卸载')}</a>
+                <Button ghost={true} type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling', '卸载中') : localize('marketplace.extension.uninstall', '卸载')}</Button>
               )}
             </div>
           </div>
         </div>
         <div className={styles.body}>
-          <div className={styles.navbar}>
-            <ul className={styles.actions_container}>
-              {tabs.map((tab, index) => (
-                <li key={tab.name} className={styles.action_item}>
-                  <a className={clx(styles.action_label, {
-                    [styles.action_label_show]: index === tabIndex,
-                  })} onClick={() => setTabIndex(index)}>{tab.displayName}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className={styles.content}>
-            {tabs.map((tab, index) => (
-              <div key={tab.name} className={clx(styles.content_item, {
-                [styles.content_item_show]: index === tabIndex,
-              })}>{getContent(tab.name, currentExtension)}</div>
-            ))}
-          </div>
+          <Tabs tabBarStyle={{marginBottom: 0}}>
+            <TabPane className={styles.content} tab={localize('marketplace.extension.readme', '简介')} key='readme'>
+              <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`}/>
+            </TabPane>
+            <TabPane tab={localize('marketplace.extension.changelog', '更改日志')} key='changelog'>
+              <Markdown content={currentExtension.changelog ? currentExtension.changelog : 'no changelog'}/>
+            </TabPane>
+          </Tabs>
         </div>
       </>
       )}

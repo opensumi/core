@@ -26,7 +26,7 @@ import {
   IElectronMenuFactory,
 } from '../menu';
 import { Logger, ILogger } from '../logger';
-import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution } from '../layout';
+import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
 import { useNativeContextMenu } from '../utils';
 import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
 import { createElectronMainApi } from '../utils/electron';
@@ -49,6 +49,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, ComponentContribution);
   createContributionProvider(injector, PreferenceContribution);
   createContributionProvider(injector, VariableContribution);
+  createContributionProvider(injector, TabBarToolbarContribution);
 
   // 一些内置抽象实现
   const providers: Provider[] = [

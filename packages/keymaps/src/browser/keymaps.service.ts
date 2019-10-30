@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeyCode, KeysOrKeyCodes, IDisposable, DisposableCollection } from '@ali/ide-core-browser';
+import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeyCode, KeysOrKeyCodes, IDisposable, DisposableCollection, KeybindingService } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import { UserStorageUri } from '@ali/ide-userstorage/lib/browser';
 import * as jsoncparser from 'jsonc-parser';
@@ -9,9 +9,6 @@ import { KEYMAPS_FILE_NAME, IKeymapService, KeybindingJson, KEYMAPS_SCHEME, Keyb
 
 @Injectable()
 export class KeymapService implements IKeymapService {
-
-  @Autowired(KeybindingRegistry)
-  protected readonly keyBindingRegistry: KeybindingRegistry;
 
   @Autowired(ResourceProvider)
   protected readonly resourceProvider: ResourceProvider;
@@ -28,12 +25,17 @@ export class KeymapService implements IKeymapService {
   @Autowired(KeybindingRegistry)
   protected readonly keybindingRegistry: KeybindingRegistry;
 
+  @Autowired(KeybindingService)
+  protected readonly keybindingService: KeybindingService;
+
   protected resource: Resource;
 
   protected readonly keymapChangeEmitter = new Emitter<void>();
   onDidKeymapChanges = this.keymapChangeEmitter.event;
 
   private searchTimer: any = null;
+
+  protected convertKeySequence: KeySequence = [];
 
   protected readonly toDisposeOnDetach = new DisposableCollection();
 
@@ -62,7 +64,7 @@ export class KeymapService implements IKeymapService {
         await this.reconcile();
       });
     }
-    this.keyBindingRegistry.onKeybindingsChanged(() => this.keymapChangeEmitter.fire(undefined));
+    this.keybindingRegistry.onKeybindingsChanged(() => this.keymapChangeEmitter.fire(undefined));
     this.keybindings = this.getKeybindingItems();
     this.onDidKeymapChanges(() => {
       this.keybindings = this.getKeybindingItems();
@@ -76,7 +78,7 @@ export class KeymapService implements IKeymapService {
   // 重新加载并设置Keymap定义的快捷键
   async reconcile() {
     const keybindings = await this.parseKeybindings();
-    this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keybindings);
+    this.keybindingRegistry.setKeymap(KeybindingScope.USER, keybindings);
     this.keymapChangeEmitter.fire(undefined);
   }
 
@@ -119,6 +121,14 @@ export class KeymapService implements IKeymapService {
       keybindings.push(item);
     }
     await this.resource.saveContents(JSON.stringify(keybindings, undefined, 4));
+  }
+
+  covert = (event: KeyboardEvent) => {
+    return this.keybindingService.convert(event, ' ');
+  }
+
+  clearCovert = () => {
+    return this.keybindingService.clearCovert();
   }
 
   /**

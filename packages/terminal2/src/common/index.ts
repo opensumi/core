@@ -61,6 +61,8 @@ export interface Terminal {
    * Dispose and free associated resources.
    */
   dispose(): void;
+
+  clear(): void;
 }
 
 export interface TerminalOptions {
@@ -140,6 +142,7 @@ export interface ITerminalServiceClient {
   disposeById(id: string);
   getProcessId(id: string): number;
   clientMessage(id, data);
+  setConnectionClientId(clientId: string);
   dispose();
 }
 
@@ -165,16 +168,11 @@ export interface ITerminalClient {
 
   onSelectChange(e: React.ChangeEvent);
 
-  wrapElSize: {
-    height: string,
-    width: string,
-  };
-
   setWrapEl(el: HTMLElement);
 
   sendText(id, text: string, addNewLine?: boolean);
 
-  createTerminal(options?: TerminalOptions, id?: string): Terminal;
+  createTerminal(options?: TerminalOptions, id?: string): Promise<Terminal | null>;
 
   showTerm(id: string, preserveFocus?: boolean);
 
@@ -207,7 +205,7 @@ export interface IExternlTerminalService {
    * @param cols
    * @param options
    */
-  create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions): void;
+  create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions): Promise<boolean>;
   /**
    * 发送一段文字到后端，用于外部调用
    *

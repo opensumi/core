@@ -40,7 +40,10 @@ describe('template test', () => {
     it('search for extension called es', async (done) => {
       injector.mock(IExtensionManagerServer, 'request', () => {
         return {
-          data: [{}, {}],
+          status: 200,
+          data: {
+            data: [{}, {}],
+          },
         };
       });
       const res = await service.search('es');
@@ -49,9 +52,12 @@ describe('template test', () => {
     });
 
     it('search non-existent extension', async (done) => {
-      injector.mock(IExtensionManagerServer, 'request', () => {
+      injector.mock(IExtensionManagerServer, 'request', async () => {
         return {
-          data: [],
+          status: 200,
+          data: {
+            data: [],
+          },
         };
       });
       const res = await service.search(uuid());
@@ -65,7 +71,7 @@ describe('template test', () => {
       injector.mock(IExtensionManagerServer, 'request', () => {
         throw new Error('请求错误');
       });
-      expect(service.getExtensionFromMarketPlace(uuid()))
+      expect(service.getExtensionFromMarketPlace(uuid(), '0.0.1'))
         .rejects.toEqual(new Error('请求错误'));
     }, 10000);
   });

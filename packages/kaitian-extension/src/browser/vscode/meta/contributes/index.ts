@@ -295,12 +295,15 @@ export class VSCodeContributeRunner extends Disposable {
   @Autowired(ISchemaRegistry)
   schemaRegistry: ISchemaRegistry;
 
-  constructor(@Optional(CONTRIBUTES_SYMBOL) private extension) {
+  constructor(@Optional(CONTRIBUTES_SYMBOL) private extension: IExtensionMetaData) {
     super();
   }
 
   public async run() {
     const contributes: ContributesSchema = this.extension.packageJSON.contributes;
+    if (!contributes) {
+      return;
+    }
     const extensionSchemas = {};
     for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
@@ -310,6 +313,7 @@ export class VSCodeContributeRunner extends Disposable {
             contributes[contributeName],
             contributes,
             this.extension,
+            this.extension.packageNlsJSON,
           ]);
 
           console.log('contributePoint', this.extension.packageJSON.name, contributeName);

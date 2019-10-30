@@ -4,7 +4,6 @@ import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContributi
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { localize } from '@ali/ide-core-common';
-import { InitedEvent } from '@ali/ide-main-layout';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { MenuBar } from './menu-bar.view';

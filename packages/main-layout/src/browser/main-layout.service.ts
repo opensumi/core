@@ -8,10 +8,10 @@ import {
 } from '@phosphor/widgets';
 import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
-import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
+import { ActivityBarService } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent, MaybeNull } from '@ali/ide-core-common';
-import { InitedEvent, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData } from '../common';
-import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
+import { IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData } from '../common';
+import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload, RenderedEvent, Side } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
@@ -20,7 +20,8 @@ import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-pan
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { CustomSplitLayout } from './split-layout';
 import { TrackerSplitPanel } from './split-panel';
-import { IIconService } from '@ali/ide-theme';
+import { ViewContainerWidget } from '@ali/ide-activity-panel/lib/browser';
+import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -40,7 +41,8 @@ const getSideBarSize = (layoutSize?: number) => {
 };
 
 export interface TabbarCollection extends ComponentCollection {
-  side: string;
+  side: Side;
+  component?: React.FunctionComponent;
 }
 
 @Injectable()
@@ -66,8 +68,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   @Autowired(MainLayoutContribution)
   private readonly contributions: ContributionProvider<MainLayoutContribution>;
 
-  @Autowired(IIconService)
-  private iconService: IIconService;
+  @Autowired()
+  private viewContainerRegistry: ViewContainerRegistry;
 
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
@@ -75,6 +77,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   @Autowired()
   layoutState: LayoutState;
 
+  @Autowired(AppConfig)
   private configContext: AppConfig;
 
   private topBarWidget: IdeWidget;
@@ -103,7 +106,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private viewsMap: Map<string, {view: View, props?: any}[]> = new Map();
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
-  createLayout(node: HTMLElement) {
+  private createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
     this.horizontalPanel = this.createSplitHorizontalPanel();
     this.statusBarWidget = this.initIdeWidget(SlotLocation.bottomBar);
@@ -127,10 +130,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   // TODO 后续可以把配置和contribution整合起来
-  useConfig(configContext: AppConfig, node: HTMLElement) {
-    this.configContext = configContext;
+  useConfig(node: HTMLElement) {
     this.createLayout(node);
-    const { layoutConfig } = configContext;
+    const { layoutConfig } = this.configContext;
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
         const tokens = layoutConfig[location].modules;
@@ -144,7 +146,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           const components = views ? views.map((view) => {
             return view.component!;
           }) : [];
-          widgets.push(new ReactWidget(configContext, components));
+          widgets.push(new ReactWidget(this.configContext, components));
           widgets[i].node.style[targetSize] = `${size}px`;
           slotHeight += size;
         }
@@ -166,7 +168,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           if (!options || !options.containerId) {
             console.warn('请在options内传入containerId!', token);
           }
-          this.collectTabbarComponent(views || [], options || {containerId: token}, location);
+          this.collectTabbarComponent(views || [], options || {containerId: token}, location as Side, options.component);
         });
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -179,7 +181,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     }
     // 声明式注册的Tabbar组件注册完毕，渲染数据
     for (const tabbarItem of this.tabbarComponents) {
-      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
+      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '', tabbarItem.component);
     }
     for (const [containerId, viewWithProps] of this.viewsMap.entries()) {
       viewWithProps.forEach(({view, props}) => {
@@ -223,7 +225,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   // TODO expand状态支持
   public async restoreState() {
-    const defaultState = {
+    let defaultState: SideStateManager = {
       left: {
         size: 400,
         currentIndex: 0,
@@ -240,6 +242,15 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         tabbars: [],
       },
     };
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.provideDefaultState) {
+        try {
+          defaultState = contribution.provideDefaultState();
+        } catch (e) {
+          // noop
+        }
+      }
+    }
     this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
     // this.sideState = defaultState;
   }
@@ -308,7 +319,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return this.middleWidget.relativeSizes().join(',') === '0,1';
   }
 
-  private prevRelativeSize: number[];
+  private prevRelativeSize: number[] = [3, 1];
   async expandBottom(expand?: boolean) {
     if (expand) {
       this.prevRelativeSize = this.middleWidget.relativeSizes();
@@ -323,27 +334,28 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return tabbar.panel.isVisible;
   }
 
-  protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
-    return this.activityBarService.append(views, options, side as Side);
+  protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: Side, Fc?: React.FunctionComponent) {
+    return this.activityBarService.append(options, side as Side, views, Fc);
   }
 
-  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string {
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: Side, Fc?: React.FunctionComponent): string {
     if (!this.tabRendered) {
       this.tabbarComponents.push({
         views,
         options,
         side,
+        component: options.component,
       });
       return options.containerId!;
     } else {
-      return this.registerTabbarComponent(views, options, side);
+      return this.registerTabbarComponent(views, options, side, Fc);
     }
   }
 
   protected registerViewComponent(view: View, containerId: string, props?: any) {
-    const viewContainer = this.activityBarService.getContainer(containerId);
-    if (viewContainer) {
-      viewContainer.addWidget(view, props);
+    const accordion = this.viewContainerRegistry.getAccordion(containerId);
+    if (accordion) {
+      accordion.addWidget(view, props);
     } else {
       console.warn(`找不到${containerId}对应的容器，无法注册视图！`);
     }
@@ -473,6 +485,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       activityPanelWidget.addClass('lock-width');
       this.leftPanelWidget = activityPanelWidget;
     } else if (side === SlotLocation.right) {
+      activityPanelWidget.addClass('lock-width');
       this.rightPanelWidget = activityPanelWidget;
       direction = 'right-to-left';
     } else {
@@ -526,6 +539,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private createMiddleWidget(bottomSlotWidget: Widget) {
     this.mainSlotWidget = this.initIdeWidget(SlotLocation.main);
     this.mainSlotWidget.addClass('overflow-visible');
+    this.mainSlotWidget.addClass('lock-width');
     const middleLayout = this.createSplitLayout([this.mainSlotWidget, bottomSlotWidget], [1, 0], {orientation: 'vertical', spacing: 0});
     const middleWidget = new TrackerSplitPanel({ layout: middleLayout });
     middleWidget.addClass('overflow-visible');
@@ -535,10 +549,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   updateResizeWidget() {
     this.layoutPanel.update();
     this.topBoxPanel.update();
-  }
-
-  initedLayout() {
-    this.eventBus.fire(new InitedEvent());
   }
 
   destroy() {

@@ -1,6 +1,6 @@
 import {Injectable, Optional, Autowired, Inject} from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getLogger, Disposable } from '@ali/ide-core-common';
+import { getLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo } from '@ali/ide-core-common';
 import { VSCodeMetaService } from './vscode/meta';
 
 const metaDataSymbol = Symbol.for('metaDataSymbol');
@@ -13,6 +13,7 @@ export class Extension extends Disposable implements IExtension {
   public readonly name: string;
   public readonly extraMetadata: JSONType = {};
   public readonly packageJSON: JSONType;
+  public readonly packageNlsJSON: JSONType | undefined;
   public readonly path: string;
   public readonly realPath: string;
   public readonly extendConfig: JSONType;
@@ -38,6 +39,7 @@ export class Extension extends Disposable implements IExtension {
 
     this._enabled = isUseEnable;
     this.packageJSON = this.extensionData.packageJSON;
+    this.packageNlsJSON = this.extensionData.packageNlsJSON;
     this.id = this.extensionData.id;
     this.extensionId = this.extensionData.extensionId;
     this.name = this.packageJSON.name;
@@ -80,6 +82,12 @@ export class Extension extends Disposable implements IExtension {
     if (this._enabled) {
       this.addDispose(this.vscodeMetaService);
       this.logger.log(`${this.name} vscodeMetaService.run`);
+      if (this.packageNlsJSON) {
+        registerLocalizationBundle( {
+          ...getCurrentLanguageInfo(),
+          contents: this.packageNlsJSON as any,
+        }, this.packageJSON.name);
+      }
       await this.vscodeMetaService.run(this);
     }
   }
@@ -110,6 +118,7 @@ export class Extension extends Disposable implements IExtension {
       activated: this.activated,
       enabled: this.enabled,
       packageJSON: this.packageJSON,
+      packageNlsJSON: this.packageNlsJSON,
       path: this.path,
       realPath: this.realPath,
       isUseEnable: this.isUseEnable,

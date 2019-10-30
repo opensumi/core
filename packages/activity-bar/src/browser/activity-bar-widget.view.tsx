@@ -3,14 +3,13 @@ import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from
 import { TabBar, Widget, SingletonLayout, Title, BoxPanel } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 import { ActivityTabBar } from './activity-tabbar';
-import { Side } from './activity-bar.service';
 import { ActivityPanelService } from '@ali/ide-activity-panel/lib/browser/activity-panel.service';
 import { CommandService, DisposableCollection } from '@ali/ide-core-common';
-import { MenuModelRegistry, ITabbarWidget, TabBarWidget } from '@ali/ide-core-browser';
+import { MenuModelRegistry, ITabbarWidget, TabBarWidget, Side, AccordionWidget } from '@ali/ide-core-browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { SIDE_MENU_PATH } from '../common';
+import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 
 const WIDGET_OPTION = Symbol();
 
@@ -34,6 +33,9 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   @Autowired()
   activationEventService: ActivationEventService;
 
+  @Autowired()
+  private viewContainerRegistry: ViewContainerRegistry;
+
   private previousWidget: Widget;
 
   currentChanged = new Signal<this, TabBarWidget.ICurrentChangedArgs>(this);
@@ -43,6 +45,8 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   inited = false;
 
   private expanded = false;
+
+  private _toDispose: DisposableCollection | undefined;
 
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
@@ -69,18 +73,20 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   private handleContextMenu(event: MouseEvent) {
     event.preventDefault();
 
-    const toDisposeOnHide = new DisposableCollection();
+    if (this._toDispose) {
+      this._toDispose.dispose();
+    }
+    this._toDispose = new DisposableCollection();
     for (const title of this.tabBar.titles) {
       const sideWrap = title.owner as any;
-      toDisposeOnHide.push(this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${this.side}`, '1_widgets'], {
-        label: title.label.toUpperCase(),
+      this._toDispose.push(this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${this.side}`, '1_widgets'], {
+        label: (title.label || '').toUpperCase(),
         commandId: sideWrap.command,
       }));
     }
     this.contextMenuRenderer.render(
       [`${SIDE_MENU_PATH}/${this.side}`],
       {x: event.clientX, y: event.clientY},
-      () => toDisposeOnHide.dispose(),
     );
   }
 
@@ -174,10 +180,11 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
           this.expanded = true;
         }
         await this.doOpen(previousWidget, currentWidget, expandSize);
-        const container = (currentWidget as BoxPanel).widgets[1] as ViewsContainerWidget;
+        const currentId = (currentWidget as any).containerId;
+        const accordion = this.viewContainerRegistry.getAccordion(currentId);
         // 不使用view container的情况（业务组件）
-        if (container) {
-          for (const section of container.sections.values()) {
+        if (accordion) {
+          for (const section of accordion.sections.values()) {
             this.activationEventService.fireEvent('onView', section.view.id);
           }
         }

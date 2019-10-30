@@ -1,10 +1,10 @@
 import { IDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
-import { Emitter, Event } from '@ali/ide-core-common';
-import { ISplice, ISequence } from '@ali/ide-core-common/lib/sequence';
+import { Emitter, Event, getLogger } from '@ali/ide-core-common';
+import { ISplice } from '@ali/ide-core-common/lib/sequence';
 
 import { ISCMRepository, ISCMResourceGroup, ISCMResource } from '../common';
 import { observable, computed, action } from 'mobx';
-import { createContext } from 'react';
+import { Injectable } from '@ali/common-di';
 
 export interface IGroupItem {
   readonly group: ISCMResourceGroup;
@@ -185,7 +185,10 @@ function isGroupVisible(group: ISCMResourceGroup) {
   return group.elements.length > 0 || !group.hideWhenEmpty;
 }
 
-class ViewModel {
+@Injectable()
+export class ViewModelContext {
+  private logger = getLogger();
+
   @observable
   public repoList = observable.array<ISCMRepository>([]);
 
@@ -208,7 +211,7 @@ class ViewModel {
   @action
   addRepo(repo: ISCMRepository) {
     if (this.repoList.indexOf(repo) > -1) {
-      console.warn('depulicate scm repo', repo);
+      this.logger.warn('depulicate scm repo', repo);
       return;
     }
     this.repoList.push(repo);
@@ -218,7 +221,7 @@ class ViewModel {
   deleteRepo(repo: ISCMRepository) {
     const index = this.repoList.indexOf(repo);
     if (index < 0) {
-      console.warn('no such scm repo', repo);
+      this.logger.warn('no such scm repo', repo);
       return;
     }
     this.repoList.splice(index, 1);
@@ -229,5 +232,3 @@ class ViewModel {
     this.scmList.splice(start, deleteCount, ...toInsert);
   }
 }
-
-export const ViewModelContext = createContext(new ViewModel());

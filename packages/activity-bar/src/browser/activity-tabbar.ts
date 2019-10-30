@@ -20,7 +20,7 @@ class SideTabRender extends TabBar.Renderer {
   renderCloseIcon(data: TabBar.IRenderData<Widget>): VirtualElement {
     // TODO 类型优化
     // @ts-ignore
-    if (data.title.badge) {
+    if (data.title.badge && data.title.badge !== '0') {
       // @ts-ignore
       return h.div({ className: 'p-TabBar-tabBadge' }, data.title.badge);
     }

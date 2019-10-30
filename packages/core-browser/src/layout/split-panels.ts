@@ -108,7 +108,8 @@ export class SplitPositionHandler {
         if (move.ended || move.referenceWidget && move.referenceWidget.isHidden) {
             this.splitMoves.splice(this.currentMoveIndex, 1);
             if (move.startPosition === undefined || move.targetPosition === undefined) {
-                move.reject!('Panel is not visible.');
+                console.warn('Panel is not visible!');
+                move.resolve!(0);
             } else {
                 move.resolve!(move.targetPosition);
             }

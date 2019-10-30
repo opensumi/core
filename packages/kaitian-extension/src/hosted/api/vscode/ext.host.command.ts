@@ -220,20 +220,6 @@ export class ExtHostCommands implements IExtHostCommands {
         }
       }
     }
-    args = cloneAndChange(args, (value) => {
-      if (value instanceof Position) {
-        return extHostTypeConverter.fromPosition(value);
-      }
-      if (value instanceof Range) {
-        return extHostTypeConverter.fromRange(value);
-      }
-      if (value instanceof Location) {
-        return extHostTypeConverter.fromLocation(value);
-      }
-      if (!Array.isArray(value)) {
-        return value;
-      }
-    });
     try {
       const result = handler.apply(thisArg, this.processArguments(args));
       return Promise.resolve(result);

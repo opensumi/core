@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
-import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection , IContextKeyService} from '@ali/ide-core-browser';
+import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection, IContextKeyService } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
@@ -344,10 +344,7 @@ export class DebugSessionManager {
     if (session && session.state > DebugState.Initializing) {
       return session.getBreakpoints(uri);
     }
-    return this.breakpoints.findMarkers({ uri }).map(({ data }) => {
-      const model = this.modelManager.resolve(new URI(data.uri));
-      return new DebugBreakpoint(data, this.labelProvider, this.breakpoints, model, this.workbenchEditorService);
-    });
+    return this.breakpoints.findMarkers({ uri }).map(({ data }) => new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService));
   }
   getBreakpoint(uri: URI, line: number): DebugBreakpoint | undefined {
     const session = this.currentSession;
@@ -355,7 +352,6 @@ export class DebugSessionManager {
       return session.getBreakpoints(uri).filter((breakpoint) => breakpoint.line === line)[0];
     }
     const origin = this.breakpoints.getBreakpoint(uri, line);
-    const model = this.modelManager.resolve(uri);
-    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, model, this.workbenchEditorService);
+    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService);
   }
 }

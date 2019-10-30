@@ -58,6 +58,8 @@ export interface BrowserEditorContribution {
   registerEditorComponent?(editorComponentRegistry: EditorComponentRegistry): void;
 
   registerEditorDocumentModelContentProvider?(registry: IEditorDocumentModelContentRegistry): void;
+
+  onDidRestoreState?(): void;
 }
 
 export interface IGridResizeEventPayload {

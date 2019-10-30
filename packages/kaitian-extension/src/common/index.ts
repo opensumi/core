@@ -12,6 +12,7 @@ export interface IExtensionMetaData {
   extensionId: string;
   path: string;
   packageJSON: {[key: string]: any};
+  packageNlsJSON: {[key: string]: any} | undefined;
   extraMetadata: JSONType;
   realPath: string; // 真实路径，用于去除symbolicLink
   extendConfig: JSONType;
@@ -29,13 +30,13 @@ export interface ExtraMetaData {
 
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
-  getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
+  getAllExtensions(scan: string[], extenionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess2(clientId: string): Promise<void>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
   resolveConnection();
   resolveProcessInit();
-  getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string,  info: boolean): Promise<void>;
 }
@@ -43,9 +44,9 @@ export interface IExtensionNodeService {
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
 export interface IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string>;
-  getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
+  getAllExtensions(scan: string[], extenionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string): Promise<void>;
-  getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   infoProcessNotExist(): void;
   infoProcessCrash(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
@@ -57,7 +58,6 @@ export abstract class ExtensionService {
   abstract async activeExtension(extension: IExtension): Promise<void>;
   abstract async getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T>;
   abstract async getAllExtensions(): Promise<IExtensionMetaData[]>;
-  abstract setExtensionEnable(extensionId: string, enable: boolean): Promise<void>;
   abstract getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined>;
   abstract getAllExtensionJson(): Promise<IExtensionProps[]>;
   abstract async postChangedExtension(upgrade: boolean, extensionPath: string, oldExtensionPath?: string): Promise<void>;
@@ -82,6 +82,7 @@ export interface IExtensionProps {
   readonly activated: boolean;
   readonly enabled: boolean;
   readonly packageJSON: JSONType;
+  readonly packageNlsJSON: JSONType | undefined;
   readonly path: string;
   readonly realPath: string;
   readonly extraMetadata: JSONType;
@@ -100,7 +101,7 @@ export interface IExtension extends IExtensionProps {
 
 //  VSCode Types
 export abstract class VSCodeContributePoint< T extends JSONType = JSONType > extends Disposable {
-  constructor(protected json: T, protected contributes: any, protected extension: IExtensionMetaData) {
+  constructor(protected json: T, protected contributes: any, protected extension: IExtensionMetaData, protected packageNlsJSON: JSONType | undefined) {
     super();
   }
   schema?: IJSONSchema;

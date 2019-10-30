@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import * as styles from './debug-console.module.less';
 import { ViewState } from '@ali/ide-activity-panel';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, KeyCode, Key } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
 import { SourceTree, Input } from '@ali/ide-core-browser/lib/components';
 
@@ -25,7 +25,8 @@ export const DebugConsoleView = observer(({
   };
 
   const onKeydownHanlder = (event: React.KeyboardEvent) => {
-    if (event.keyCode === 13) {
+    const { key } = KeyCode.createKeyCode(event.nativeEvent);
+    if (key && Key.ENTER.keyCode === key.keyCode) {
       event.stopPropagation();
       event.preventDefault();
       execute(value);
@@ -43,15 +44,17 @@ export const DebugConsoleView = observer(({
       nodes={nodes}
       onSelect={onSelect}
       outline={false}
+      itemLineHeight={16}
       scrollContainerStyle={scrollContainerStyle}
     />
     <div className={styles.variable_repl_bar}>
       <Input
         type='text' placeholder=''
+        className={styles.variable_repl_bar_input}
         value={value}
         onChange={onChangeHandler}
         onKeyDown={onKeydownHanlder}
-        />
+      />
     </div>
   </div>;
 });

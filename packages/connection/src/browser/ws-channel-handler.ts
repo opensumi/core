@@ -1,13 +1,23 @@
 import {WSChannel} from '../common/ws-channel';
 import * as shorid from 'shortid';
-import ReconnectingWebSocket from 'reconnecting-websocket';
+let ReconnectingWebSocket = require('reconnecting-websocket');
+
+if (ReconnectingWebSocket.default) {
+  /* istanbul ignore next */
+  ReconnectingWebSocket = ReconnectingWebSocket.default;
+}
+// import ReconnectingWebSocket from 'reconnecting-websocket';
+// import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
 // 前台链接管理类
 export class WSChanneHandler {
-  public readonly connection: ReconnectingWebSocket;
+  static CLOSESTATUSCOLOR = '#ff0000';
+
+  public connection: WebSocket;
   private channelMap: Map<number|string, WSChannel> = new Map();
   private logger = console;
   public clientId: string = `CLIENT_ID:${shorid.generate()}`;
+  private heartbeatMessageTimer: NodeJS.Timeout;
 
   constructor(public wsPath: string, public protocols?: string[]) {
     this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
@@ -20,7 +30,7 @@ export class WSChanneHandler {
     this.connection.send(clientMsg);
   }
   private heartbeatMessage() {
-    setTimeout(() => {
+    this.heartbeatMessageTimer = setTimeout(() => {
       const msg = JSON.stringify({
         kind: 'heartbeat',
         clientId: this.clientId,
@@ -50,6 +60,7 @@ export class WSChanneHandler {
         resolve();
 
         // 重连 channel
+        /* FIXME: 暂时不需要，直接通过重新生成实例
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
             channel.onOpen(() => {
@@ -61,6 +72,7 @@ export class WSChanneHandler {
             }
           });
         }
+        */
       });
     });
   }
@@ -87,6 +99,12 @@ export class WSChanneHandler {
     });
 
     return channel;
+  }
+
+  public dispose() {
+    if (this.heartbeatMessageTimer) {
+      clearTimeout(this.heartbeatMessageTimer);
+    }
   }
 
 }

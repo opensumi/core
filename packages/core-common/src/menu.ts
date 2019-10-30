@@ -188,33 +188,39 @@ export class CompositeMenuNode implements MenuNode {
 
     public when: string;
 
+    private _pendingSort: boolean;
+
     constructor(
         public readonly id: string,
         public label?: string
     ) { }
 
     get children(): ReadonlyArray<MenuNode> {
+        if (this._pendingSort) {
+            this._children.sort((m1, m2) => {
+                // The navigation group is special as it will always be sorted to the top/beginning of a menu.
+                if (CompositeMenuNode.isNavigationGroup(m1)) {
+                    return -1;
+                }
+                if (CompositeMenuNode.isNavigationGroup(m2)) {
+                    return 1;
+                }
+                if (m1.sortString < m2.sortString) {
+                    return -1;
+                } else if (m1.sortString > m2.sortString) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            });
+            this._pendingSort = false;
+        }
         return this._children;
     }
 
     public addNode(node: MenuNode): IDisposable {
         this._children.push(node);
-        this._children.sort((m1, m2) => {
-            // The navigation group is special as it will always be sorted to the top/beginning of a menu.
-            if (CompositeMenuNode.isNavigationGroup(m1)) {
-                return -1;
-            }
-            if (CompositeMenuNode.isNavigationGroup(m2)) {
-                return 1;
-            }
-            if (m1.sortString < m2.sortString) {
-                return -1;
-            } else if (m1.sortString > m2.sortString) {
-                return 1;
-            } else {
-                return 0;
-            }
-        });
+        this._pendingSort = true;
         return {
             dispose: () => {
                 const idx = this._children.indexOf(node);

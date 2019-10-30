@@ -58,7 +58,6 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       contribution.registerSchema(this.jsonContributionRegistry);
     }
     this.setSchemaPreferenceListener(this.schemaStore);
-    this.textmateService.init();
     // monaco 的 keycode 和 ide 之间的映射
     // 依赖 Monaco 加载完毕
     this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
@@ -71,11 +70,11 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     });
   }
 
-  async onStart() {
-    this.themeService.getCurrentTheme().then((currentTheme) => {
-      const themeData = currentTheme.themeData;
-      this.textmateService.setTheme(themeData);
-    });
+  onStart() {
+    this.textmateService.init();
+    const currentTheme = this.themeService.getCurrentThemeSync();
+    const themeData = currentTheme.themeData;
+    this.textmateService.setTheme(themeData);
   }
 
   onMonacoLoaded(monacoService: MonacoService) {
@@ -97,6 +96,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       token: IContextKeyService,
       useValue: new MonacoContextKeyService(contextKeyService, this.injector.get(IEventBus)),
     });
+
     monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService);
   }
 

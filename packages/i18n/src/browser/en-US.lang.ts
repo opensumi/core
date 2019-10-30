@@ -36,6 +36,8 @@ export const localizationBundle = {
     'menu-bar.view.outward.right-panel.toggle': 'Toggle Right Panel',
     'menu-bar.view.outward.right-panel.hide': 'Hide Right Panel',
     'menu-bar.view.outward.right-panel.show': 'Show Right Panel',
+    'menu-bar.view.outward.left-panel.hide': 'Hide Left Panel',
+    'menu-bar.view.outward.left-panel.show': 'Show Left Panel',
     'menu-bar.view.outward.theme.toggle': 'switch skin',
     'menu-bar.view.outward.localize.toggle': 'switch language',
     'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
@@ -108,6 +110,8 @@ export const localizationBundle = {
     'search.help.matchRange': 'To declare a range of characters to match',
     'search.help.modify': 'Modify',
     'search.replace.buttonOK': 'Replace',
+    'search.quickOpen.leftRight': 'Open on the side',
+    'search.quickOpen.upDown': 'Open at the bottom',
     'fileResults': 'File results',
     'historyMatches': 'Recently opened',
     'replaceAll.occurrences.files.message': "Replaced {0} occurrences across {1} files with '{2}'.",
@@ -147,6 +151,7 @@ export const localizationBundle = {
     'debug.action.step-out': 'Step Out',
     'debug.action.restart': 'Restart',
     'debug.action.pause': 'Pause',
+    'debug.action.disattach': 'Disattach',
     'debug.breakpoint.toggle': 'Enable/Disable Breakpoints',
     'debug.breakpoint.removeAll': 'Remove All Breakpoints',
     'debug.watch.removeAll': 'Remove All Watch',
@@ -169,6 +174,9 @@ export const localizationBundle = {
     'debug.breakpoint.conditionalMessage': 'Conditional Breakpoint',
     'debug.breakpoint.unverified': 'Unverified ',
     'debug.breakpoint.disabled': 'Disabled ',
+    'debug.configuration.comment1': 'Use IntelliSense to learn about possible attributes.',
+    'debug.configuration.comment2': 'Hover to view descriptions of existing attributes.',
+    'debug.configuration.comment3': 'For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
 
     'output.tabbar.title': 'OUTPUT',
     'output.channel.none': '<no output yet>',
@@ -205,6 +213,11 @@ export const localizationBundle = {
     'preference.general.language.change.refresh.now': 'now',
     'preference.general.language.change.refresh.later': 'later',
 
+    'preference.debug.internalConsoleOptions': 'Controls when the internal debug console should open.',
+    'preference.debug.openDebug': 'Controls when the debug view should open.',
+    'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
+    'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
+
     'preference.title': 'Settings',
     'keymaps.titile': 'Keyboard Shortcuts',
 
@@ -237,5 +250,6 @@ export const localizationBundle = {
     'keymaps.keybinding.collide': 'keybinding currently collides',
     'keymaps.keybinding.require': 'keybinding value is required',
 
+    'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
   },
 };
