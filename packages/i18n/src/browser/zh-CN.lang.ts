@@ -271,6 +271,7 @@ export const localizationBundle = {
     'marketplace.extension.uninstall': '卸载',
     'marketplace.extension.readme': '简介',
     'marketplace.extension.changelog': '更改日志',
+    'marketplace.extension.installed': '已安装',
 
     'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
     'validate.tree.fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',

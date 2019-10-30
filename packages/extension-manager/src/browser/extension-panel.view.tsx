@@ -153,7 +153,7 @@ export default observer(() => {
     return () => {
       commandRegistry.unregisterCommand(SearchFromMarketplaceCommandId);
     };
-  }, [hideHotSearch]);
+  }, [handleChangeFromMarket]);
 
   function handleChangeFromInstalled(value: string) {
     extensionManagerService.installedQuery = value;

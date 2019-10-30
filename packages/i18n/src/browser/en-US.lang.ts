@@ -254,6 +254,7 @@ export const localizationBundle = {
     'marketplace.extension.uninstall.failed': 'Failed to uninstall',
     'marketplace.extension.reload.delay': 'Restart later',
     'marketplace.extension.reload.now': 'Restart now',
+    'marketplace.extension.builtin': 'Builtin',
     'marketplace.extension.enable': 'Enable',
     'marketplace.extension.disable': 'Disable',
     'marketplace.extension.enable.workspace': 'Enable(workspace)',
@@ -280,5 +281,6 @@ export const localizationBundle = {
     'marketplace.extension.uninstall': 'Uninstall',
     'marketplace.extension.readme': 'Readme',
     'marketplace.extension.changelog': 'Changelog',
+    'marketplace.extension.installed': 'Installed',
   },
 };
