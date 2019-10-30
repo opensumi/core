@@ -33,6 +33,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME } from '../common';
 import { PreferenceView } from './preferences.view';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
@@ -49,7 +50,7 @@ export class PrefResourceProvider extends WithEventBus implements IResourceProvi
     // 获取文件类型 getFileType: (path: string) => string
     return {
       name: localize('preference.tab.name'),
-      icon: 'volans_icon setting',
+      icon: getIcon('setting'),
       uri,
     };
   }
