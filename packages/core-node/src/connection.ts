@@ -19,9 +19,6 @@ import {
 export {RPCServiceCenter};
 
 const logger = getLogger();
-const serviceInjectorMap = new Map();
-const clientServerConnectionMap = new Map();
-const clientServiceCenterMap = new Map();
 
 export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[]) {
   const socketRoute = new WebSocketServerRoute(server, logger);
@@ -32,62 +29,21 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
       handler: (connection: WSChannel, clientId: string) => {
         logger.log(`set rpc connection ${clientId}`);
 
-        // if (serviceInjectorMap.has(clientId)) {
-        //   logger.log(`set already rpc connection ${clientId}`);
-        //   return;
-        // }
-
         const serviceCenter = new RPCServiceCenter();
+        const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
+
         const serverConnection = createWebSocketConnection(connection);
         connection.messageConnection = serverConnection;
         serviceCenter.setConnection(serverConnection);
 
-        // 服务链接创建
-        const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
-        serviceInjectorMap.set(clientId, serviceChildInjector);
-        clientServerConnectionMap.set(clientId, serverConnection);
-        clientServiceCenterMap.set(clientId, serviceCenter);
-        console.log('serviceInjectorMap', serviceInjectorMap.keys());
-
         connection.onClose(() => {
-          // 删除对应后台到前台逻辑
           serviceCenter.removeConnection(serverConnection);
-
           serviceChildInjector.disposeAll();
 
-          serviceInjectorMap.delete(clientId);
-          clientServerConnectionMap.delete(clientId);
-          clientServiceCenterMap.delete(clientId);
           console.log(`remove rpc connection ${clientId} `);
-
         });
       },
-      // reconnect: (connection: ws, connectionClientId: string) => {
-
-      // },
       dispose: (connection: ws, connectionClientId: string) => {
-        // logger.log('remove rpc serverConnection');
-        // if (connection) {
-        //   serviceCenter.removeConnection(connection.messageConnection);
-        // }
-
-        /* FIXME: 临时先不删除调用对象
-        if (clientServerConnectionMap.has(connectionClientId)) {
-          const removeResult = (clientServiceCenterMap.get(connectionClientId) as any).removeConnection(
-            clientServerConnectionMap.get(connectionClientId),
-          );
-
-          console.log(`${connectionClientId} remove rpc connection`, removeResult);
-        }
-        */
-
-        /*
-        if (serviceInjectorMap.has(connectionClientId)) {
-          const inejctor = serviceInjectorMap.get(connectionClientId) as Injector;
-
-        }
-        */
-
       },
   });
 
@@ -98,27 +54,23 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
     }
   }
   socketRoute.init();
-
-  // return serviceCenter;
 }
 
 export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
-
   const serviceCenter = new RPCServiceCenter();
+  const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, process.env.CODE_WINDOW_CLIENT_ID as string);
 
-  let serverConnection;
-  bindModuleBackService(injector, modulesInstances, serviceCenter, process.env.CODE_WINDOW_CLIENT_ID as string);
-  function createConnectionDispose(connection, serverConnection) {
-    connection.on('close', () => {
-      serviceCenter.removeConnection(serverConnection);
-    });
-  }
   server.on('connection', (connection) => {
     logger.log(`set net rpc connection`);
-    serverConnection = createSocketConnection(connection);
+    const serverConnection = createSocketConnection(connection);
     serviceCenter.setConnection(serverConnection);
 
-    createConnectionDispose(connection, serverConnection);
+    connection.on('close', () => {
+      serviceCenter.removeConnection(serverConnection);
+      serviceChildInjector.disposeAll();
+
+      console.log('remove net rpc connection');
+    });
   });
 
   return serviceCenter;

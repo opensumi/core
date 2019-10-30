@@ -13,13 +13,13 @@ if (ReconnectingWebSocket.default) {
 export class WSChanneHandler {
   static CLOSESTATUSCOLOR = '#ff0000';
 
-  private connection: WebSocket;
+  public connection: WebSocket;
   private channelMap: Map<number|string, WSChannel> = new Map();
   private logger = console;
   public clientId: string = `CLIENT_ID:${shorid.generate()}`;
   private heartbeatMessageTimer: NodeJS.Timeout;
 
-  constructor(public wsPath: string, public statusBarService, public protocols?: string[]) {
+  constructor(public wsPath: string, public protocols?: string[]) {
     this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
   private clientMessage() {
@@ -54,8 +54,7 @@ export class WSChanneHandler {
       }
     };
     await new Promise((resolve) => {
-      this.connection.onopen = () => {
-
+      this.connection.addEventListener('open', () => {
         this.clientMessage();
         this.heartbeatMessage();
         resolve();
@@ -74,13 +73,7 @@ export class WSChanneHandler {
           });
         }
         */
-
-        this.statusBarService.setBackgroundColor('var(--statusBar-background)');
-      };
-
-      this.connection.onclose = () => {
-        this.statusBarService.setBackgroundColor(WSChanneHandler.CLOSESTATUSCOLOR);
-      };
+      });
     });
   }
   private getChannelSend = (connection) => {
