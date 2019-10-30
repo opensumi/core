@@ -247,10 +247,24 @@ export class FileTreeService extends WithEventBus {
     }
     const exist = await this.fileAPI.exists(uri);
     if (!exist) {
+      const parentStatusKey = this.getStatutsKey(uri.parent);
+      const parent = this.status.get(parentStatusKey!)!.file as Directory;
+      if (!parent) {
+        return;
+      }
+      const newFile = this.fileAPI.generatorFileFromFilestat({
+        uri: uri.parent.resolve(newName).toString(),
+        lastModification: new Date().getTime(),
+        isDirectory,
+      }, parent);
+      parent.addChildren(newFile);
+      this.updateFileStatus([parent]);
+      // 先修改数据，后置文件操作，在文件创建成功后会有事件通知前台更新
+      // 保证在调用定位文件命令时文件树中存在新建的文件
       if (isDirectory) {
-        await this.fileAPI.createFolder(uri.parent.resolve(newName));
+        this.fileAPI.createFolder(uri.parent.resolve(newName));
       } else {
-        await this.fileAPI.createFile(uri.parent.resolve(newName));
+        this.fileAPI.createFile(uri.parent.resolve(newName));
       }
     }
   }
@@ -383,9 +397,27 @@ export class FileTreeService extends WithEventBus {
   }
 
   async renameFile(node: Directory | File, value: string) {
-    if (value && value !== node.name) {
-      await this.fileAPI.moveFile(node.uri, node.uri.parent.resolve(value), node.filestat.isDirectory);
+    const exist = await this.fileAPI.exists(node.uri.parent.resolve(value));
+    const uri = node.uri;
+    if (!exist && (value && value !== node.name)) {
+      const parentStatusKey = this.getStatutsKey(uri.parent);
+      const parent = this.status.get(parentStatusKey!)!.file as Directory;
+      if (!parent) {
+        return;
+      }
+      const newFile = this.fileAPI.generatorFileFromFilestat({
+        uri: uri.parent.resolve(value).toString(),
+        lastModification: new Date().getTime(),
+        isDirectory: node.filestat.isDirectory,
+      }, parent);
+      parent.removeChildren(uri);
+      parent.addChildren(newFile);
+      this.updateFileStatus([parent]);
+      // 先修改数据，后置文件操作，在文件重命名成功后会有事件通知前台更新
+      // 保证在调用定位文件命令时文件树中存在修改后的文件
+      this.fileAPI.moveFile(node.uri, node.uri.parent.resolve(value), node.filestat.isDirectory);
     }
+
     const statusKey = this.getStatutsKey(node);
     const status = this.status.get(statusKey);
     if (!status) {

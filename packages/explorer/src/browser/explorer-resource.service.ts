@@ -240,7 +240,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @action.bound
   onSelect(files: (Directory | File)[]) {
     this._selectTimes++;
-    // 单选操作
+    // 单选操作默认先更新选中状态
+    this.filetreeService.updateFilesSelectedStatus(files, true);
     // 如果为文件夹需展开
     // 如果为文件，则需要打开文件
     if (files.length === 1) {
