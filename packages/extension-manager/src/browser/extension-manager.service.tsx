@@ -317,8 +317,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
-  async getDetailFromMarketplace( extensionId: string ): Promise<ExtensionDetail | undefined> {
-    const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId);
+  async getDetailFromMarketplace(extensionId: string, version: string): Promise<ExtensionDetail | undefined> {
+    const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId, version);
     if (res && res.data) {
       return {
         id: `${res.data.publisher}.${res.data.name}`,
