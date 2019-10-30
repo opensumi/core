@@ -22,7 +22,6 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
-import { KeymapService } from './keymaps.service';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 

@@ -224,10 +224,8 @@ export class KeymapService implements IKeymapService {
     const sorted: KeybindingItem[] = items.sort((a: KeybindingItem, b: KeybindingItem) => this.compareItem(a.command, b.command));
     // 获取定义了快捷键的列表
     const keyItems: KeybindingItem[] = sorted.filter((a: KeybindingItem) => !!a.keybinding);
-    // 获取剩余的未定义快捷键列表.
-    const otherItems: KeybindingItem[] = sorted.filter((a: KeybindingItem) => !a.keybinding);
 
-    return [...keyItems, ...otherItems];
+    return [...keyItems];
   }
 
   // 字典排序
