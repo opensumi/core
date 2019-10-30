@@ -1,0 +1,108 @@
+import * as md5 from 'md5';
+import { uniqueId } from 'lodash';
+import { promisify } from 'util';
+import { URI } from '@ali/ide-core-browser';
+import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { LocalStorageDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
+import { IWorkspaceStorageService } from '@ali/ide-workspace';
+
+import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
+import {  IDocPersistentCacheProvider } from '../../../lib/common';
+import { EditorDocumentModel } from '../../../lib/browser/doc-model/main';
+
+describe('LocalStorageDocCacheImpl', () => {
+  let injector: MockInjector;
+  let uri: URI;
+  let content: string;
+
+  beforeEach(() => {
+    injector = createBrowserInjector([]);
+    injector.addProviders(
+      {
+        token: IDocPersistentCacheProvider,
+        useClass: LocalStorageDocCacheImpl,
+      },
+      {
+        token: IWorkspaceStorageService,
+        useValue: {
+          getData() {},
+          setData() {},
+        },
+      },
+    );
+    (global as any).monaco = createMockedMonaco() as any;
+
+    uri = new URI('test://testUri1');
+    content = uniqueId('content');
+  });
+
+  afterEach(() => {
+    delete (global as any).monaco;
+  });
+
+  it('get undefined from storageService', async () => {
+    const storageService: IWorkspaceStorageService = injector.get(IWorkspaceStorageService);
+    jest.spyOn(storageService, 'getData').mockResolvedValue(undefined as any);
+
+    const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
+    expect(docModel.dirty).toBeFalsy();
+
+    await promisify(setTimeout)(100);
+    expect(docModel.dirty).toBeFalsy();
+  });
+
+  it('get ChangeCache from storageService', async () => {
+    const storageService: IWorkspaceStorageService = injector.get(IWorkspaceStorageService);
+
+    jest.spyOn(storageService, 'getData').mockResolvedValue({
+      path: uri.path.toString(),
+      startMD5: md5(content),
+      changeMatrix: [
+        [
+          ['a', 0, 0, 1, 0],
+        ],
+      ],
+    } as any);
+
+    const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
+    expect(docModel.getMonacoModel().getValue()).toBe(content);
+    expect(docModel.dirty).toBeFalsy();
+
+    await promisify(setTimeout)(100);
+    expect(docModel.dirty).toBeTruthy();
+    expect(docModel.getMonacoModel().getValue()).toBe('a' + content);
+  });
+
+  it('call persistCache when content change', () => {
+    const storageService: IWorkspaceStorageService = injector.get(IWorkspaceStorageService);
+    const setDataSpy = jest.spyOn(storageService, 'setData');
+
+    const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true } ]);
+    const newContent = uniqueId('content');
+    docModel.getMonacoModel().setValue(newContent);
+
+    expect(setDataSpy).toBeCalledTimes(1);
+    expect(setDataSpy).toBeCalledWith(`LocalStorageDocCacheImpl_${uri.toString()}`, {
+      path: '',
+      startMD5: md5(content),
+      changeMatrix: [
+        [
+          [ '', 0, 8, 0 , 8],
+        ],
+      ],
+    });
+  });
+
+  it('call persistCache when content change not dirty', () => {
+    const storageService: IWorkspaceStorageService = injector.get(IWorkspaceStorageService);
+    const setDataSpy = jest.spyOn(storageService, 'setData');
+
+    const docModel = injector.get(EditorDocumentModel, [ uri, content ]);
+    const newContent = uniqueId('content');
+    docModel.getMonacoModel().setValue(newContent);
+
+    expect(setDataSpy).toBeCalledTimes(1);
+    expect(setDataSpy).toBeCalledWith(`LocalStorageDocCacheImpl_${uri.toString()}`, undefined);
+  });
+});
