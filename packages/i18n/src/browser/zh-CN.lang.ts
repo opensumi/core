@@ -308,5 +308,10 @@ export const localizationBundle = {
     'status-bar.label.line': '行',
     'status-bar.label.column': '列',
     'status-bar.label.selected': '已选择',
+
+    'saveChangesMessage': '是否要保存对 {0} 的更改?',
+    'file.prompt.dontSave': '不保存',
+    'file.prompt.save': '保存',
+    'file.prompt.cancel': '取消',
   },
 };
