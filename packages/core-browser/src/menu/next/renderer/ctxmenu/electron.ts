@@ -50,7 +50,7 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
       // 暂时不支持 SubmenuItem
 
       return {
-        label: mnemonicButtonLabel(menuNode.label) + menuNode.isKeyCombination ? menuNode.keybinding : '',
+        label: `${mnemonicButtonLabel(menuNode.label, true)} ${menuNode.isKeyCombination ? menuNode.keybinding : ''}`,
         id: menuNode.id,
         action: true,
         role: menuNode.nativeRole,
