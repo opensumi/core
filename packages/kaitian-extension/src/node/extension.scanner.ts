@@ -67,9 +67,13 @@ export class ExtensionScanner {
     }
 
     const pkgPath = path.join(extensionPath, 'package.json');
-    const pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
+    let pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
     const extendPath = path.join(extensionPath, 'kaitian.js');
-    const pkgExist = await fs.pathExists(pkgPath);
+    let pkgExist = await fs.pathExists(pkgPath);
+    if (!pkgExist && (localization && localization !== 'en-US')) {
+      pkgNlsPath = path.join(extensionPath, 'package.nls.json');
+      pkgExist = await fs.pathExists(pkgPath);
+    }
     const pkgNlsExist = await fs.pathExists(pkgNlsPath);
     const extendExist = await fs.pathExists(extendPath);
 
