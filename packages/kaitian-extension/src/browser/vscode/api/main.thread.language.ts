@@ -726,7 +726,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  // -- smart select
+  // TODO 新版的monaco有直接的monaco api -- smart select
 
   $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
     // @ts-ignore

@@ -20,6 +20,12 @@ export type LinkProvider = monaco.languages.LinkProvider;
 export type CompletionItemProvider = monaco.languages.CompletionItemProvider;
 export type DocumentColorProvider = monaco.languages.DocumentColorProvider;
 export type FoldingRangeProvider = monaco.languages.FoldingRangeProvider;
+
+export interface SelectionRangeProvider {
+  provideSelectionRanges(model, position, token): Promise<{
+    range: monaco.Range;
+  }[][]>;
+}
 export type IDisposable = monaco.IDisposable;
 
 export const mockFeatureProviderRegistry: Map<string, any> = new Map();

@@ -1205,6 +1205,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 export class DocumentLink {
   range: Range;
   target: URI;
+  tooltip?: string;
 
   constructor(range: Range, target: URI) {
     if (target && !(target instanceof URI)) {

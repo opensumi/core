@@ -13,7 +13,7 @@ import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
-import { mockFeatureProviderRegistry, CodeLensProvider, DefinitionProvider, ImplementationProvider, TypeDefinitionProvider, ReferenceProvider, DocumentHighlightProvider } from '@ali/ide-monaco/lib/__mocks__/monaco/langauge';
+import { mockFeatureProviderRegistry, CodeLensProvider, DefinitionProvider, ImplementationProvider, TypeDefinitionProvider, ReferenceProvider, DocumentHighlightProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider, DocumentColorProvider, LinkProvider, SelectionRangeProvider } from '@ali/ide-monaco/lib/__mocks__/monaco/langauge';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -133,7 +133,7 @@ describe('ExtHostLanguageFeatures', () => {
     setTimeout(async () => {
       const provider: DefinitionProvider = mockFeatureProviderRegistry.get('registerDefinitionProvider');
       expect(provider).toBeDefined();
-      const value = await provider.provideDefinition(model, {lineNumber: 1, column: 1} as any, CancellationToken.None);
+      const value = await provider.provideDefinition(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -163,7 +163,7 @@ describe('ExtHostLanguageFeatures', () => {
     setTimeout(async () => {
       const provider: ImplementationProvider = mockFeatureProviderRegistry.get('registerImplementationProvider');
       expect(provider).toBeDefined();
-      const value = await provider.provideImplementation(model, {lineNumber: 1, column: 1} as any, CancellationToken.None);
+      const value = await provider.provideImplementation(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -180,7 +180,7 @@ describe('ExtHostLanguageFeatures', () => {
     setTimeout(async () => {
       const provider: TypeDefinitionProvider = mockFeatureProviderRegistry.get('registerTypeDefinitionProvider');
       expect(provider).toBeDefined();
-      const value = await provider.provideTypeDefinition(model, {lineNumber: 1, column: 1} as any, CancellationToken.None);
+      const value = await provider.provideTypeDefinition(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
@@ -209,7 +209,7 @@ describe('ExtHostLanguageFeatures', () => {
     setTimeout(async () => {
       const provider: DocumentHighlightProvider = mockFeatureProviderRegistry.get('registerDocumentHighlightProvider');
       expect(provider).toBeDefined();
-      const value = await provider.provideDocumentHighlights(model, {lineNumber: 1, column: 2} as any, CancellationToken.None);
+      const value = await provider.provideDocumentHighlights(model, { lineNumber: 1, column: 2 } as any, CancellationToken.None);
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 });
@@ -230,7 +230,7 @@ describe('ExtHostLanguageFeatures', () => {
   test('References, registration order', async () => {
 
   });
-  test.only('References, data conversion', async (done) => {
+  test('References, data conversion', async (done) => {
     disposables.push(extHost.registerReferenceProvider(defaultSelector, new class implements vscode.ReferenceProvider {
       provideReferences(): any {
         return [new types.Location(model.uri, new types.Position(0, 0))];
@@ -240,7 +240,7 @@ describe('ExtHostLanguageFeatures', () => {
       const provider: ReferenceProvider = mockFeatureProviderRegistry.get('registerReferenceProvider');
       expect(provider).toBeDefined();
       // FIXME 第三个参数context mock
-      const value = await provider.provideReferences(model, {lineNumber: 1, column: 2} as any, {} as any, CancellationToken.None);
+      const value = await provider.provideReferences(model, { lineNumber: 1, column: 2 } as any, {} as any, CancellationToken.None);
       // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
@@ -300,17 +300,33 @@ describe('ExtHostLanguageFeatures', () => {
   test('Suggest, CompletionList', async () => {
 
   });
-  test('Format Doc, data conversion', async () => {
+  // TODO 实现 registerDocumentFormattingEditProvider api
+  // test('Format Doc, data conversion', async () => {
 
-  });
+  // });
   test('Format Doc, evil provider', async () => {
 
   });
   test('Format Doc, order', async () => {
 
   });
-  test('Format Range, data conversion', async () => {
+  test('Format Range, data conversion', async (done) => {
+    disposables.push(extHost.registerDocumentRangeFormattingEditProvider(defaultSelector, new class implements vscode.DocumentRangeFormattingEditProvider {
+      provideDocumentRangeFormattingEdits(): any {
+        return [new types.TextEdit(new types.Range(0, 0, 0, 0), 'testing')];
+      }
+    }));
 
+    setTimeout(async () => {
+      const provider: DocumentRangeFormattingEditProvider = mockFeatureProviderRegistry.get('registerDocumentRangeFormattingEditProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideDocumentRangeFormattingEdits(model, { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 } as any, { insertSpaces: true, tabSize: 4 }, CancellationToken.None))!;
+      expect(value.length).toEqual(1);
+      const [first] = value;
+      expect(first.text).toEqual('testing');
+      expect(first.range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
+      done();
+    }, 0);
   });
   test('Format Range, + format_doc', async () => {
 
@@ -318,23 +334,85 @@ describe('ExtHostLanguageFeatures', () => {
   test('Format Range, evil provider', async () => {
 
   });
-  test('Format on Type, data conversion', async () => {
+  test('Format on Type, data conversion', async (done) => {
+    disposables.push(extHost.registerOnTypeFormattingEditProvider(defaultSelector, new class implements vscode.OnTypeFormattingEditProvider {
+      provideOnTypeFormattingEdits(): any {
+        return [new types.TextEdit(new types.Range(0, 0, 0, 0), arguments[2])];
+      }
+    }, [';']));
 
+    setTimeout(async () => {
+      const provider: OnTypeFormattingEditProvider = mockFeatureProviderRegistry.get('registerOnTypeFormattingEditProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideOnTypeFormattingEdits(model, { lineNumber: 1, column: 2 } as any, ';', { insertSpaces: true, tabSize: 2 }, CancellationToken.None))!;
+      expect(value.length).toEqual(1);
+      const [first] = value;
+      expect(first.text).toEqual(';');
+      expect(first.range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
+      done();
+    }, 0);
   });
-  test('Links, data conversion', async () => {
+  test('Links, data conversion', async (done) => {
+    disposables.push(extHost.registerDocumentLinkProvider(defaultSelector, new class implements vscode.DocumentLinkProvider {
+      provideDocumentLinks() {
+        const link = new types.DocumentLink(new types.Range(0, 0, 1, 1), URI.parse('foo:bar#3'));
+        link.tooltip = 'tooltip';
+        return [link];
+      }
+    }));
 
+    setTimeout(async () => {
+      const provider: LinkProvider = mockFeatureProviderRegistry.get('registerLinkProvider');
+      expect(provider).toBeDefined();
+      const { links } = (await provider.provideLinks(model, CancellationToken.None))!;
+      expect(links.length).toEqual(1);
+      const [first] = links;
+      expect(first.url!.toString()).toEqual('foo:bar#3');
+      expect(first.range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 2, endColumn: 2 });
+      expect((first as any).tooltip).toEqual('tooltip');
+      done();
+    }, 0);
   });
   test('Links, evil provider', async () => {
 
   });
-  test('Document colors, data conversion', async () => {
+  test('Document colors, data conversion', async (done) => {
+    disposables.push(extHost.registerColorProvider(defaultSelector, new class implements vscode.DocumentColorProvider {
+      provideDocumentColors(): vscode.ColorInformation[] {
+        return [new types.ColorInformation(new types.Range(0, 0, 0, 20), new types.Color(0.1, 0.2, 0.3, 0.4))];
+      }
+      provideColorPresentations(color: vscode.Color, context: { range: vscode.Range, document: vscode.TextDocument }): vscode.ColorPresentation[] {
+        return [];
+      }
+    }));
 
+    setTimeout(async () => {
+      const provider: DocumentColorProvider = mockFeatureProviderRegistry.get('registerColorProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideDocumentColors(model, CancellationToken.None))!;
+      expect(value.length).toEqual(1);
+      const [first] = value;
+      expect(first.color).toStrictEqual({ red: 0.1, green: 0.2, blue: 0.3, alpha: 0.4 });
+      expect(first.range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 21 });
+      done();
+    });
   });
-  test('Selection Ranges, data conversion', async () => {
-
-  });
-  test('Selection Ranges, bad data', async () => {
-
+  test('Selection Ranges, data conversion', async (done) => {
+    disposables.push(extHost.registerSelectionRangeProvider(defaultSelector, new class implements vscode.SelectionRangeProvider {
+      provideSelectionRanges() {
+        return [
+          new types.SelectionRange(new types.Range(0, 10, 0, 18), new types.SelectionRange(new types.Range(0, 2, 0, 20))),
+        ];
+      }
+    }));
+    setTimeout(async () => {
+      const provider: SelectionRangeProvider = mockFeatureProviderRegistry.get('registerSelectionRangeProvider');
+      expect(provider).toBeDefined();
+      const ranges = await provider.provideSelectionRanges(model, [{ lineNumber: 1, column: 17 }] as any, CancellationToken.None);
+      expect(ranges.length).toEqual(1);
+      expect(ranges[0].length).toBeGreaterThan(1);
+      done();
+    });
   });
 
 });

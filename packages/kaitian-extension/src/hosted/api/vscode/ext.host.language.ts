@@ -124,7 +124,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
       return extHostLanguages.registerDocumentHighlightProvider(selector, provider);
     },
     registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
-      return extHostLanguages.registerLinkProvider(selector, provider);
+      return extHostLanguages.registerDocumentLinkProvider(selector, provider);
     },
     registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable {
       return extHostLanguages.registerReferenceProvider(selector, provider);
@@ -474,7 +474,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.resolveLink(link, token));
   }
 
-  registerLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
+  registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
     const callId = this.addNewAdapter(new LinkProviderAdapter(provider, this.documents));
     this.proxy.$registerDocumentLinkProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
