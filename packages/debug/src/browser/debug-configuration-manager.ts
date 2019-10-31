@@ -25,6 +25,7 @@ import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspac
 import { WorkbenchEditorService, ICodeEditor, IEditor } from '@ali/ide-editor';
 import debounce = require('lodash.debounce');
 import { launchSchemaUri } from './debug-schema-updater';
+import { DebugPreferences } from './debug-preferences';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillProvideDebugConfiguration extends WaitUntilEvent {
@@ -35,10 +36,13 @@ export class DebugConfigurationManager {
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
+
   @Autowired(WorkbenchEditorService)
   protected readonly workbenchEditorService: WorkbenchEditorService;
+
   @Autowired(IDebugServer)
   protected readonly debug: DebugServer;
+
   @Autowired(QuickPickService)
   protected readonly quickPick: QuickPickService;
 
@@ -57,8 +61,17 @@ export class DebugConfigurationManager {
   @Autowired(WorkspaceVariableContribution)
   protected readonly workspaceVariables: WorkspaceVariableContribution;
 
+  @Autowired(WorkspaceStorageService)
+  protected readonly storage: WorkspaceStorageService;
+
   @Autowired(CommandService)
-  commandService: CommandService;
+  protected readonly commandService: CommandService;
+
+  @Autowired(DebugPreferences)
+  protected readonly debugPreferences: DebugPreferences;
+
+  // 用于存储支持断点的语言
+  private breakpointModeIdsSet = new Set<string>();
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
@@ -341,9 +354,6 @@ export class DebugConfigurationManager {
     );
   }
 
-  @Autowired(WorkspaceStorageService)
-  protected readonly storage: WorkspaceStorageService;
-
   async load(): Promise<void> {
     await this.initialized;
     const data = await this.storage.getData<DebugConfigurationManager.Data>('debug.configurations', {});
@@ -362,6 +372,33 @@ export class DebugConfigurationManager {
       };
     }
     this.storage.setData('debug.configurations', data);
+  }
+
+  /**
+   * 判断当前文档是否支持断点
+   * @param model
+   */
+  canSetBreakpointsIn(model?: any) {
+    if (!model) {
+      return false;
+    }
+    const modeId = model.getLanguageIdentifier().language;
+    if (!modeId || modeId === 'jsonc' || modeId === 'log') {
+      // 不允许在JSONC类型文件及log文件中断点
+      return false;
+    }
+    if (this.debugPreferences['preference.debug.allowBreakpointsEverywhere']) {
+      return true;
+    }
+    return this.breakpointModeIdsSet.has(modeId);
+  }
+
+  addSupportBreakpoints(languageId: string) {
+    this.breakpointModeIdsSet.add(languageId);
+  }
+
+  removeSupportBreakpoints(languageId: string) {
+    this.breakpointModeIdsSet.delete(languageId);
   }
 }
 
