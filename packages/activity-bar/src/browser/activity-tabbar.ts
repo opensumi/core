@@ -96,5 +96,5 @@ export class ActivityTabBar extends TabBar<Widget> {
 
   }
 
-  renderer = this.side === 'bottom ' ? new SideTabRender() : new SideTabRender();
+  renderer = new SideTabRender();
 }

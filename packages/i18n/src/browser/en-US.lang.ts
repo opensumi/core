@@ -48,6 +48,9 @@ export const localizationBundle = {
     'editor.splitToTop': 'Split To Top',
     'editor.splitToBottom': 'Split To Bottom',
     'editor.closeAllInGroup': 'Close All',
+    'status-bar.label.line': 'Ln',
+    'status-bar.label.column': 'Col',
+    'status-bar.label.selected': 'Selected',
     'editor.closeOtherEditors': 'Close Others',
 
     'edit.cut': 'Cut',
@@ -233,6 +236,9 @@ export const localizationBundle = {
 
     'terminal.name': 'Terminal',
 
+    'theme.toggle': 'Color Theme',
+    'theme.icon.toggle': 'File Icon Theme',
+
     'preference.workbench.list.openMode': 'Controls how to open items in trees and lists using the mouse (if supported). For parents with children in trees, this setting will control if a single click expands the parent or a double click. Note that some trees and lists might choose to ignore this setting if it is not applicable.',
 
     'keymaps.search.placeholder': 'Type to search in keybindings',
@@ -249,6 +255,8 @@ export const localizationBundle = {
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
+    'layout.tabbar.hide': 'HIDE',
+    'layout.view.hide': 'HIDE',
     'marketplace.extension.update.now': 'Update now',
     'marketplace.extension.update.delay': 'Update later',
     'marketplace.extension.uninstall.failed': 'Failed to uninstall',

@@ -285,6 +285,9 @@ export const localizationBundle = {
 
     'terminal.name': '终端',
 
+    'theme.toggle': '颜色主题',
+    'theme.icon.toggle': '文件图标主题',
+
     'preference.workbench.list.openMode': '控制如何（如果支持）在树和列表中打开项目。对于有子节点的父节点，此设置将控制单击展开父节点还是双击。请注意，如果某些设置不启用，一些树和列表可能会选择忽略此设置。',
 
     'keymaps.search.placeholder': '搜索快捷键',
@@ -300,6 +303,10 @@ export const localizationBundle = {
     'keymaps.keybinding.require': '请输入快捷键',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-
+    'layout.tabbar.hide': '隐藏',
+    'layout.view.hide': '隐藏',
+    'status-bar.label.line': '行',
+    'status-bar.label.column': '列',
+    'status-bar.label.selected': '已选择',
   },
 };
