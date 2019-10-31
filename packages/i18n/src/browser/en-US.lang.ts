@@ -230,6 +230,10 @@ export const localizationBundle = {
     'open.editors.title': 'OPEN EDITORS',
     'open.editors.save.all': 'Save All',
     'open.editors.close.all': 'Close All',
+    'open.editors.close.byId': 'Close files on group',
+    'open.editors.save.byId': 'Save files on group',
+    'open.editors.empty': 'No file is open in the editor',
+    'open.editors.group.title': 'Group {0}',
 
     'terminal.name': 'Terminal',
 

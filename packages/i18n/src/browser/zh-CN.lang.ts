@@ -281,6 +281,10 @@ export const localizationBundle = {
     'open.editors.title': '打开的编辑器',
     'open.editors.save.all': '保存全部',
     'open.editors.close.all': '关闭全部',
+    'open.editors.close.byId': '关闭组',
+    'open.editors.save.byId': '保存组中未保存文件',
+    'open.editors.empty': '编辑器中暂无打开文件',
+    'open.editors.group.title': '第{0}组',
 
     'terminal.name': '终端',
 
