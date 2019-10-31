@@ -3,16 +3,17 @@ import { MainThreadLanguages } from '../../src/browser/vscode/api/main.thread.la
 import URI from 'vscode-uri';
 import * as vscode from 'vscode';
 import * as types from '../../src/common/vscode/ext-types';
+import * as modes from '../../src/common/vscode/model.api';
 
 import { RPCProtocol } from '@ali/ide-connection';
-import { Emitter, CancellationToken, MonacoService, CommandRegistry, CommandRegistryImpl } from '@ali/ide-core-browser';
+import { Emitter, CancellationToken, MonacoService, CommandRegistry, CommandRegistryImpl, DisposableCollection } from '@ali/ide-core-browser';
 import { ExtensionDocumentDataManagerImpl } from '../../src/hosted/api/vscode/doc';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
-import { mockFeatureProviderRegistry, CodeLensProvider } from '@ali/ide-monaco/lib/__mocks__/monaco/langauge';
+import { mockFeatureProviderRegistry, CodeLensProvider, DefinitionProvider, ImplementationProvider, TypeDefinitionProvider, ReferenceProvider, DocumentHighlightProvider } from '@ali/ide-monaco/lib/__mocks__/monaco/langauge';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -30,6 +31,7 @@ const rpcProtocolExt = new RPCProtocol(mockClientA);
 const rpcProtocolMain = new RPCProtocol(mockClientB);
 
 const defaultSelector = { scheme: 'far' };
+const disposables: DisposableCollection = new DisposableCollection();
 
 const extHostDocuments = new ExtensionDocumentDataManagerImpl(rpcProtocolExt);
 
@@ -40,7 +42,7 @@ let model: monaco.editor.ITextModel;
 // tslint:disable new-parens
 describe('ExtHostLanguageFeatures', () => {
   const injector = createBrowserInjector([]);
-  (global as any).amdLoader = {require: null};
+  (global as any).amdLoader = { require: null };
   let monacoService: MonacoService;
 
   injector.addProviders(
@@ -50,7 +52,7 @@ describe('ExtHostLanguageFeatures', () => {
     },
   );
 
-  (global as any).amdLoader = {require: null};
+  (global as any).amdLoader = { require: null };
 
   beforeAll(async (done) => {
     monacoService = injector.get(MonacoService);
@@ -91,11 +93,12 @@ describe('ExtHostLanguageFeatures', () => {
   afterAll(() => {
     model.dispose();
     mainThread.dispose();
+    disposables.dispose();
   });
 
   // TODO  --- outline
-  test.only('CodeLens should work', async (done) => {
-    extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
+  test('CodeLens should work', async (done) => {
+    disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
       provideCodeLenses() {
         return [new types.CodeLens(
           new types.Range(0, 0, 0, 0),
@@ -104,8 +107,8 @@ describe('ExtHostLanguageFeatures', () => {
       resolveCodeLens(): any {
         console.log('resolve codelens');
       }
-    });
-    // TODO 这样还是会有概率挂的 吧？
+    }));
+    // TODO 通信保障主进程已被调用
     setTimeout(async () => {
       const provider: CodeLensProvider = mockFeatureProviderRegistry.get('registerCodeLensProvider');
       expect(provider).toBeDefined();
@@ -121,8 +124,22 @@ describe('ExtHostLanguageFeatures', () => {
   test('CodeLens, missing command', async () => {
 
   });
-  test('Definition, data conversion', async () => {
-
+  test('Definition, data conversion', async (done) => {
+    disposables.push(extHost.registerDefinitionProvider(defaultSelector, new class implements vscode.DefinitionProvider {
+      provideDefinition(): any {
+        return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
+      }
+    }));
+    setTimeout(async () => {
+      const provider: DefinitionProvider = mockFeatureProviderRegistry.get('registerDefinitionProvider');
+      expect(provider).toBeDefined();
+      const value = await provider.provideDefinition(model, {lineNumber: 1, column: 1} as any, CancellationToken.None);
+      // @ts-ignore
+      expect(value!.length).toEqual(1);
+      expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
+      console.log('Definition Test', value);
+      done();
+    }, 0);
   });
   test('Definition, one or many', async () => {
 
@@ -133,14 +150,43 @@ describe('ExtHostLanguageFeatures', () => {
   test('Definition, evil provider', async () => {
 
   });
-  test('Declaration, data conversion', async () => {
+  // TODO 实现 Declaration
+  // test('Declaration, data conversion', async () => {
 
+  // });
+  test('Implementation, data conversion', async (done) => {
+    disposables.push(extHost.registerImplementationProvider(defaultSelector, new class implements vscode.ImplementationProvider {
+      provideImplementation(): any {
+        return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
+      }
+    }));
+    setTimeout(async () => {
+      const provider: ImplementationProvider = mockFeatureProviderRegistry.get('registerImplementationProvider');
+      expect(provider).toBeDefined();
+      const value = await provider.provideImplementation(model, {lineNumber: 1, column: 1} as any, CancellationToken.None);
+      // @ts-ignore
+      expect(value!.length).toEqual(1);
+      expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
+      console.log('Implementation Test', value);
+      done();
+    }, 0);
   });
-  test('Implementation, data conversion', async () => {
-
-  });
-  test('Type Definition, data conversion', async () => {
-
+  test('Type Definition, data conversion', async (done) => {
+    disposables.push(extHost.registerTypeDefinitionProvider(defaultSelector, new class implements vscode.TypeDefinitionProvider {
+      provideTypeDefinition(): any {
+        return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
+      }
+    }));
+    setTimeout(async () => {
+      const provider: TypeDefinitionProvider = mockFeatureProviderRegistry.get('registerTypeDefinitionProvider');
+      expect(provider).toBeDefined();
+      const value = await provider.provideTypeDefinition(model, {lineNumber: 1, column: 1} as any, CancellationToken.None);
+      // @ts-ignore
+      expect(value!.length).toEqual(1);
+      expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
+      console.log('Type Definition Test', value);
+      done();
+    }, 0);
   });
   test('HoverProvider, word range at pos', async () => {
 
@@ -154,8 +200,23 @@ describe('ExtHostLanguageFeatures', () => {
   test('HoverProvider, evil provider', async () => {
 
   });
-  test('Occurrences, data conversion', async () => {
-
+  test('Occurrences, data conversion', async (done) => {
+    disposables.push(extHost.registerDocumentHighlightProvider(defaultSelector, new class implements vscode.DocumentHighlightProvider {
+      provideDocumentHighlights(): any {
+        return [new types.DocumentHighlight(new types.Range(0, 0, 0, 4))];
+      }
+    }));
+    setTimeout(async () => {
+      const provider: DocumentHighlightProvider = mockFeatureProviderRegistry.get('registerDocumentHighlightProvider');
+      expect(provider).toBeDefined();
+      const value = await provider.provideDocumentHighlights(model, {lineNumber: 1, column: 2} as any, CancellationToken.None);
+      // @ts-ignore
+      expect(value!.length).toEqual(1);
+      expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 });
+      expect(value![0].kind).toEqual(modes.DocumentHighlightKind.Text);
+      console.log('Occurrences Test', value);
+      done();
+    }, 0);
   });
   test('Occurrences, order 1/2', async () => {
 
@@ -169,8 +230,24 @@ describe('ExtHostLanguageFeatures', () => {
   test('References, registration order', async () => {
 
   });
-  test('References, data conversion', async () => {
-
+  test.only('References, data conversion', async (done) => {
+    disposables.push(extHost.registerReferenceProvider(defaultSelector, new class implements vscode.ReferenceProvider {
+      provideReferences(): any {
+        return [new types.Location(model.uri, new types.Position(0, 0))];
+      }
+    }));
+    setTimeout(async () => {
+      const provider: ReferenceProvider = mockFeatureProviderRegistry.get('registerReferenceProvider');
+      expect(provider).toBeDefined();
+      // FIXME 第三个参数context mock
+      const value = await provider.provideReferences(model, {lineNumber: 1, column: 2} as any, {} as any, CancellationToken.None);
+      // @ts-ignore
+      expect(value!.length).toEqual(1);
+      expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
+      expect(value![0].uri.toString()).toEqual(model.uri.toString());
+      console.log('References Test', value);
+      done();
+    }, 0);
   });
   test('References, evil provider', async () => {
 

@@ -354,7 +354,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
               highlights.push(
                 {
                   ...item,
-                  kind: (item.kind ? item.kind : monaco.languages.DocumentHighlightKind.Text),
+                  kind: (item.kind !== undefined ? item.kind : monaco.languages.DocumentHighlightKind.Text),
                 });
             }
             return highlights;

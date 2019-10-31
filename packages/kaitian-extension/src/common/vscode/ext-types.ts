@@ -920,7 +920,7 @@ export class DocumentHighlight {
 
   constructor(
     range: Range,
-    kind?: DocumentHighlightKind,
+    kind: DocumentHighlightKind = DocumentHighlightKind.Text,
   ) {
     this.range = range;
     this.kind = kind;
