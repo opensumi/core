@@ -123,6 +123,7 @@ export class ClientApp implements IClientApp {
       appName: opts.appName,
       staticServicePath: opts.staticServicePath,
       editorBackgroudImage: opts.editorBackgroudImage,
+      extensionCandidate: opts.extensionCandidate,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;

@@ -21,3 +21,9 @@ export interface IExtensionProps {
 }
 
 export class ExtensionEnabledEvent extends BasicEvent<IExtensionProps> {}
+
+export class ExtensionCandiDate {
+  // 插件路径
+  path: string;
+  isBuiltin: boolean;
+}

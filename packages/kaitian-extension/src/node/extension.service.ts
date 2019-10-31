@@ -68,9 +68,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   private pendingClientExtProcessDisposer: Promise<void> | null;
 
-  public async getAllExtensions(scan: string[], extenionCandidate: string[], localization: string, extraMetaData: { [key: string]: any } = {}): Promise<IExtensionMetaData[]> {
+  public async getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: { [key: string]: any } = {}): Promise<IExtensionMetaData[]> {
     // 扫描内置插件和插件市场的插件目录
-    this.extensionScanner = new ExtensionScanner([...scan, this.appConfig.marketplace.extensionDir], localization, extenionCandidate, extraMetaData);
+    this.extensionScanner = new ExtensionScanner([...scan, this.appConfig.marketplace.extensionDir], localization, extensionCandidate, extraMetaData);
     return this.extensionScanner.run();
   }
 
