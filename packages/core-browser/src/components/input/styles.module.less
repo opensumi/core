@@ -133,6 +133,17 @@
   input {
     width: 100%;
     height: 100%;
+    &.error {
+      border: 1px solid var(--inputValidation-errorBorder);
+    }
+
+    &.info {
+      border: 1px solid var(--inputValidation-infoBorder);
+    }
+
+    &.warning {
+      border: 1px solid var(--inputValidation-warningBorder);
+    }
   }
 
   .validate_message {
@@ -170,6 +181,5 @@
       color: var(--inputValidation-warningForeground);
       border: 1px solid var(--inputValidation-warningBorder);
     }
-    border: 2px solid var(--kt-inputOption-hoverBorder)!important;
   }
 }

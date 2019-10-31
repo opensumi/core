@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { RecycleTree } from '@ali/ide-core-browser/lib/components';
+import { RecycleTree, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItem } from '../common';
 import * as cls from 'classnames';
 import * as styles from './index.module.less';
 import { MenuPath, Event, FileDecorationsProvider, ThemeProvider } from '@ali/ide-core-common';
 import { IFileTreeServiceProps } from './file-tree.service';
 import { useDebounce } from '@ali/ide-core-browser/lib/utils';
+import { Directory, File } from './file-tree-item';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
   selected?: boolean;
@@ -47,6 +48,10 @@ export interface FileTreeProps extends IFileTreeServiceProps {
    * 主题颜色变化事件
    */
   notifyThemeChange?: Event<ThemeProvider>;
+  /**
+   * 编辑校验函数
+  */
+  validate?: (item: Directory | File, value: string ) => ValidateMessage | null;
 }
 
 export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
@@ -76,6 +81,7 @@ export const FileTree = ({
   notifyFileDecorationsChange,
   notifyThemeChange,
   onTwistieClick,
+  validate,
 }: FileTreeProps) => {
   const FILETREE_LINE_HEIGHT = treeNodeHeight || 22;
   const FILETREE_PRERENDER_NUMBERS = preloadLimit || 10;
@@ -165,6 +171,7 @@ export const FileTree = ({
           themeProvider={themeProvider}
           notifyFileDecorationsChange={notifyFileDecorationsChange}
           notifyThemeChange={notifyThemeChange}
+          validate={validate}
         ></RecycleTree>
       </div>
     </div>
