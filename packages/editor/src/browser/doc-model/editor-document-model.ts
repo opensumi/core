@@ -350,7 +350,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       },
       get changeMatrix() {
         // 计算从起始版本到现在所有的 change 内容，然后让缓存对象进行持久化
-        return self.getChangesFromVersion(this._persistVersionId)
+        return self.getChangesFromVersion(self._persistVersionId)
           .map(({ changes }) => changes);
       },
       encoding: this.encoding,
