@@ -6,7 +6,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 
 @Injectable()
 export class SchemaStore implements ISchemaStore {
-  private _schemas: JsonSchemaConfiguration[] = [];
+  private _schemas: Map<string, JsonSchemaConfiguration> = new Map();
 
   protected readonly onSchemasChangedEmitter = new Emitter<void>();
   readonly onSchemasChanged = this.onSchemasChangedEmitter.event;
@@ -15,20 +15,13 @@ export class SchemaStore implements ISchemaStore {
     this.onSchemasChangedEmitter.fire(undefined);
   }, 500) as any;
 
-  register(config: JsonSchemaConfiguration): IDisposable {
-    this._schemas.push(config);
+  register(config: JsonSchemaConfiguration) {
+    this._schemas.set(config.url, config);
     this.notifyChanged();
-    return Disposable.create(() => {
-      const idx = this._schemas.indexOf(config);
-      if (idx > -1) {
-        this._schemas.splice(idx, 1);
-      }
-      this.notifyChanged();
-    });
   }
 
   getConfigurations(): JsonSchemaConfiguration[] {
-    return [...this._schemas];
+    return [...this._schemas.values()];
   }
 }
 
