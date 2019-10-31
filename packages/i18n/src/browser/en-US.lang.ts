@@ -36,7 +36,6 @@ export const localizationBundle = {
     'menu-bar.view.outward.localize.toggle': 'switch language',
     'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
 
-    'selection.all': 'Select All',
     'selectAll': 'Select All',
 
     'editor': 'Editor',
