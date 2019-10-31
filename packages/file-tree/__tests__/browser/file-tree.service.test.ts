@@ -212,6 +212,25 @@ describe('FileTreeService should be work', () => {
     });
 
     it('createFile and createFolder should be work', async (done) => {
+      const childUri = new URI(`${root}/child.js`);
+      const newName = 'newName';
+      const childFile: File = new File(
+        fileApi,
+        childUri,
+        childUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: childUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      treeService.updateFileStatus([childFile]);
+      rootFile.addChildren(childFile);
       const fileName = 'file';
       const folderName = 'folder';
       const exists = jest.fn(() => {
@@ -220,12 +239,18 @@ describe('FileTreeService should be work', () => {
       injector.mock(IFileTreeAPI, 'exists', exists);
       const createFile = jest.fn();
       injector.mock(IFileTreeAPI, 'createFile', createFile);
-      await treeService.createFile(rootFile, fileName);
+      await treeService.createFile(childFile, fileName);
       expect(createFile).toBeCalledWith(rootUri.resolve(fileName));
       const createFolder = jest.fn();
       injector.mock(IFileTreeAPI, 'createFolder', createFolder);
-      await treeService.createFolder(rootFile, folderName);
+      await treeService.createFolder(childFile, folderName);
       expect(createFolder).toBeCalledWith(rootUri.resolve(folderName));
+      // 新建的文件已生成
+      const parentStatusKey = treeService.getStatutsKey(childUri.parent);
+      const parentStatus = treeService.status.get(parentStatusKey);
+      const parent = parentStatus!.file as Directory;
+      expect(parent.hasChildren(childUri.parent.resolve(fileName))).toBeTruthy();
+      expect(parent.hasChildren(childUri.parent.resolve(folderName))).toBeTruthy();
       done();
     });
 
@@ -294,7 +319,7 @@ describe('FileTreeService should be work', () => {
       expect(treeService.getChildren(rootUri)![0].isTemporary).toBeTruthy();
     });
 
-    it('can rename file', () => {
+    it('can rename file', async (done) => {
       const childUri = new URI(`${root}/child.js`);
       const newName = 'newName';
       const childFile: File = new File(
@@ -315,10 +340,20 @@ describe('FileTreeService should be work', () => {
       treeService.updateFileStatus([childFile]);
       rootFile.addChildren(childFile);
       const moveFile = jest.fn();
+      const exists = jest.fn(() => false);
       injector.mock(IFileTreeAPI, 'moveFile', moveFile);
-      treeService.renameFile(childFile, newName);
+      injector.mock(IFileTreeAPI, 'exists', exists);
+      await treeService.renameFile(childFile, newName);
       expect(moveFile).toBeCalledWith(childUri, childUri.parent.resolve(newName), false);
+      expect(exists).toBeCalledWith(childUri.parent.resolve(newName));
       expect(treeService.status.get(treeService.getStatutsKey(childFile))!.file.isTemporary).toBeFalsy();
+      // 重命名后的文件已生成
+      const parentStatusKey = treeService.getStatutsKey(childUri.parent);
+      const parentStatus = treeService.status.get(parentStatusKey);
+      const parent = parentStatus!.file as Directory;
+      expect(parent.hasChildren(childUri)).toBeFalsy();
+      expect(parent.hasChildren(childUri.parent.resolve(newName))).toBeTruthy();
+      done();
     });
 
     it('delete file should be work', async (done) => {
