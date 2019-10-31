@@ -12,6 +12,7 @@ import {
   URI,
   Emitter,
   isUndefined,
+  DebugLog,
 } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher';
@@ -25,6 +26,8 @@ import {
   FileAccess,
   FileSystemProvider,
 } from '../common/';
+
+const debugLog = new DebugLog();
 
 function notEmpty<T>(value: T | undefined): value is T {
   return value !== undefined;
@@ -145,7 +148,12 @@ export class DiskFileSystemProvider implements FileSystemProvider {
       return await this.createFile(uri, { content });
     }
 
-    await writeFileAtomicSync(FileUri.fsPath(_uri), content);
+    try {
+      await writeFileAtomicSync(FileUri.fsPath(_uri), content);
+    } catch (e) {
+      debugLog.warn('writeFileAtomicSync 出错，使用 fs', e);
+      fs.writeFileSync(FileUri.fsPath(_uri), content);
+    }
   }
 
   async exists(uri: Uri | string): Promise<boolean> {
