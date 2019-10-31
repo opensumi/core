@@ -260,6 +260,7 @@ export const localizationBundle = {
     'marketplace.panel.disabled': '已禁用',
     'marketplace.panel.tab.marketplace': '扩展市场',
     'marketplace.panel.tab.placeholder.search': '搜索市场中的扩展',
+    'marketplace.panel.tab.placeholder.installed': '搜索已安装的扩展',
     'marketplace.tab.installed': '已安装的扩展',
     'marketplace.extension.findUpdate': '发现插件 {0} 有最新版本 {1}，是否要更新到最新版本？`',
     'marketplace.extension.canupdate': '有新版本',
