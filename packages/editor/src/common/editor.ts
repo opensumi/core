@@ -109,7 +109,6 @@ export class CollectionEditorsUpdateEvent extends BasicEvent<IEditor[]> { }
 export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> { }
 
 export interface IEditorGroup {
-  
 
   index: number;
 
