@@ -35,6 +35,7 @@ const PureInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
       spellCheck={false}
       autoCapitalize='off'
       autoCorrect='off'
+      autoComplete='off'
       {...restProps}
     />
   );
