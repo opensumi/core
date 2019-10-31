@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as clx from 'classnames';
-import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components/scrollbar';
+import { PerfectScrollbar, RecycleList } from '@ali/ide-core-browser/lib/components';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { RawExtensionView } from '../raw-extension';
 import { RawExtension, IExtensionManagerService } from '../../../common';
@@ -13,12 +13,14 @@ interface ExtensionListProps {
   loading?: boolean;
   empty?: React.ReactNode | string;
   list: RawExtension[];
+  showInstalled?: boolean;
 }
 
 export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   loading = false,
   list,
   empty,
+  showInstalled,
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
@@ -54,9 +56,11 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
     <div className={styles.wrap}>
       <ProgressBar loading={loading} />
       {list && list.length ? (
-        <PerfectScrollbar>
-          {list.map((rawExtension, index) => {
-            return (<RawExtensionView className={clx({
+        <RecycleList
+          data={list}
+          template={({data: rawExtension}, index) => {
+            return <RawExtensionView
+            className={clx({
               [styles.selected]: rawExtension.extensionId === selectExtensionId,
               [styles.gray]: rawExtension.installed && !rawExtension.enable,
               [styles.last_item]: index === list.length - 1,
@@ -65,9 +69,10 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
             extension={rawExtension}
             select={select}
             install={install}
-            />);
-          })}
-        </PerfectScrollbar>
+            showInstalled={showInstalled}
+            />;
+          }}
+        />
       ) : typeof empty === 'string' ? (<div className={styles.empty}>{empty}</div>) : empty}
     </div>
   );

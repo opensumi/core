@@ -1,7 +1,13 @@
 import { MockedMonacoUri } from '../common/uri';
 import { Disposable, Emitter } from '@ali/ide-core-common';
+import { EOL, EndOfLineSequence } from '@ali/ide-editor';
 
 let id = 1;
+
+const eolStringMap = new Map<number, string>([
+  [ EndOfLineSequence.LF, EOL.LF ],
+  [ EndOfLineSequence.CRLF, EOL.CRLF ],
+]);
 
 export class MockedMonacoModel extends Disposable implements monaco.editor.ITextModel {
 
@@ -29,6 +35,8 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   onWillDispose = this._onWillDispose.event;
 
   private versionId = 0;
+  private eol: monaco.editor.EndOfLineSequence = EndOfLineSequence.LF as any;
+  private value: string;
 
   options: monaco.editor.TextModelResolvedOptions;
 
@@ -38,6 +46,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     this._lines = value.split('\n');
     this.uri = uri || MockedMonacoUri.parse('inmemory://' + (id).toString());
     this.language = language;
+    this.value = value;
   }
 
   getOptions(): monaco.editor.TextModelResolvedOptions {
@@ -52,11 +61,32 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     return this.versionId;
   }
   setValue(newValue: string): void {
-    throw new Error('Method not implemented.');
+    const oldValue = this.value;
+    this.value = newValue;
+    this.versionId++;
+
+    this._onDidChangeContent.fire({
+      changes: [{
+        range: {
+          startColumn: oldValue.length,
+          endColumn: newValue.length,
+          startLineNumber: 0,
+          endLineNumber: 0,
+        },
+        rangeOffset: oldValue.length,
+        rangeLength: newValue.length - oldValue.length,
+        text: newValue.substr(oldValue.length),
+      }],
+      eol: this.getEOL(),
+      versionId: this.versionId,
+      isUndoing: false,
+      isRedoing: false,
+      isFlush: true,
+    });
   }
 
   getValue(eol?: monaco.editor.EndOfLinePreference | undefined, preserveBOM?: boolean | undefined): string {
-    throw new Error('Method not implemented.');
+    return this.value;
   }
 
   getValueLength(eol?: monaco.editor.EndOfLinePreference | undefined, preserveBOM?: boolean | undefined): number {
@@ -81,7 +111,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     throw new Error('Method not implemented.');
   }
   getEOL(): string {
-    return '\n';
+    return eolStringMap.get(this.eol)!;
   }
   getLineMinColumn(lineNumber: number): number {
     throw new Error('Method not implemented.');
@@ -179,10 +209,33 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     throw new Error('Method not implemented.');
   }
   applyEdits(operations: monaco.editor.IIdentifiedSingleEditOperation[]): monaco.editor.IIdentifiedSingleEditOperation[] {
-    throw new Error('Method not implemented.');
+    for (const operation of operations) {
+      this.value =
+        this.value.substr(0, operation.range.startColumn) +
+        operation.text +
+        this.value.substr(operation.range.endColumn);
+
+      this.versionId++;
+
+      this._onDidChangeContent.fire({
+        changes: [{
+          range: operation.range,
+          rangeOffset: operation.range.startColumn,
+          rangeLength: operation.range.endColumn - operation.range.startColumn,
+          text: operation.text || '',
+        }],
+        eol: this.getEOL(),
+        versionId: this.versionId,
+        isUndoing: false,
+        isRedoing: false,
+        isFlush: true,
+      });
+    }
+
+    return [];
   }
   setEOL(eol: monaco.editor.EndOfLineSequence): void {
-    throw new Error('Method not implemented.');
+    this.eol = eol;
   }
 
 }

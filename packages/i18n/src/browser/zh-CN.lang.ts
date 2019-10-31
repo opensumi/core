@@ -6,13 +6,8 @@ export const localizationBundle = {
     'ButtonOK': '确定',
     'ButtonCancel': '取消',
 
-    'mFile': '文件',
     'file.new': '新建文件',
     'file.folder.new': '新建文件夹',
-    'mEdit': '编辑',
-    'mView': '视图',
-    'mHelp': '帮助',
-    'menu-bar.file.open': '打开文件',
 
     'file.save': '保存文件',
     'file.open': '打开文件',
@@ -27,10 +22,13 @@ export const localizationBundle = {
     'file.copy.file': '复制',
     'file.cut.file': '剪切',
 
+    'menu-bar.file': '文件',
+    'menu-bar.edit': '编辑',
+    'menu-bar.view': '视图',
+    'menu-bar.help': '帮助',
+    'menu-bar.file.open': '打开文件',
     'menu-bar.file.save-as': '另存为',
     'menu-bar.file.save-all': '全部保存',
-
-    'menu-bar.view': '查看',
     'menu-bar.view.quick.command': '命令面板',
     'menu-bar.view.outward': '外观',
     'menu-bar.view.outward.right-panel.toggle': '切换右侧面板',
@@ -54,6 +52,7 @@ export const localizationBundle = {
     'editor.splitToTop': '向上拆分',
     'editor.splitToBottom': '向下拆分',
     'editor.closeAllInGroup': '关闭全部',
+    'editor.closeOtherEditors': '关闭其他',
 
     'edit.cut': '剪切',
     'edit.copy': '复制',
@@ -239,7 +238,7 @@ export const localizationBundle = {
     'common.replace': '替换',
 
     'preference.tab.name': '设置',
-    'keymaps.title': '快捷键设置',
+    'keymaps.tab.name': '快捷键设置',
 
     'marketplace.extension.update.now': '是，现在更新',
     'marketplace.extension.update.delay': '稍后我自己更新',
@@ -272,6 +271,7 @@ export const localizationBundle = {
     'marketplace.extension.uninstall': '卸载',
     'marketplace.extension.readme': '简介',
     'marketplace.extension.changelog': '更改日志',
+    'marketplace.extension.installed': '已安装',
 
     'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
     'validate.tree.fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',

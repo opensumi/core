@@ -3,17 +3,8 @@ export const localizationBundle = {
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
-    'ButtonOK': 'Ok',
-    'ButtonCancel': 'Cancel',
-
-    'mFile': 'File',
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
-    'mEdit': 'Edit',
-    'mView': 'View',
-    'mHelp': 'Help',
-    'menu-bar.file.open': 'Open File',
-
     'file.save': 'Save File',
     'file.open': 'Open',
     'file.open.side': 'Open to the Side',
@@ -27,10 +18,13 @@ export const localizationBundle = {
     'file.copy.file': 'Copy',
     'file.cut.file': 'Cut',
 
+    'menu-bar.file': 'File',
+    'menu-bar.edit': 'Edit',
+    'menu-bar.view': 'View',
+    'menu-bar.help': 'Help',
     'menu-bar.file.save-as': 'Save As',
     'menu-bar.file.save-all': 'Save All',
-
-    'menu-bar.view': 'View',
+    'menu-bar.file.open': 'Open File',
     'menu-bar.view.quick.command': 'Command',
     'menu-bar.view.outward': 'Outward',
     'menu-bar.view.outward.right-panel.toggle': 'Toggle Right Panel',
@@ -57,6 +51,7 @@ export const localizationBundle = {
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
+    'editor.closeOtherEditors': 'Close Others',
 
     'edit.cut': 'Cut',
     'edit.copy': 'Copy',
@@ -113,6 +108,7 @@ export const localizationBundle = {
     'search.help.matchRange': 'To declare a range of characters to match',
     'search.help.modify': 'Modify',
     'search.replace.buttonOK': 'Replace',
+    'search.replace.buttonCancel': 'Cancel',
     'search.quickOpen.leftRight': 'Open on the side',
     'search.quickOpen.upDown': 'Open at the bottom',
     'fileResults': 'File results',
@@ -209,6 +205,8 @@ export const localizationBundle = {
     'settings.group.extension': 'Extensions',
     'settings.group.feature': 'Feature',
 
+    'settings.menu.keymaps': 'Settings',
+
     'preference.general.theme': 'Theme',
     'preference.general.icon': 'Icon Theme',
     'preference.general.language': 'Language',
@@ -221,12 +219,11 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
     'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
 
-    'preference.title': 'Settings',
-    'keymaps.titile': 'Keyboard Shortcuts',
+    'preference.tab.name': 'Settings',
+    'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
-    'preference.tab.name': 'Settings',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
@@ -262,6 +259,7 @@ export const localizationBundle = {
     'marketplace.extension.uninstall.failed': 'Failed to uninstall',
     'marketplace.extension.reload.delay': 'Restart later',
     'marketplace.extension.reload.now': 'Restart now',
+    'marketplace.extension.builtin': 'Builtin',
     'marketplace.extension.enable': 'Enable',
     'marketplace.extension.disable': 'Disable',
     'marketplace.extension.enable.workspace': 'Enable(workspace)',
@@ -288,5 +286,6 @@ export const localizationBundle = {
     'marketplace.extension.uninstall': 'Uninstall',
     'marketplace.extension.readme': 'Readme',
     'marketplace.extension.changelog': 'Changelog',
+    'marketplace.extension.installed': 'Installed',
   },
 };

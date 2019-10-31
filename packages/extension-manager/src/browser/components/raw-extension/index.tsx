@@ -12,10 +12,12 @@ interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   extension: RawExtension;
   select: (extension: RawExtension, isDouble: boolean) => void;
   install: (extension: RawExtension) => Promise<void>;
+  // 是否显示已安装文案
+  showInstalled?: boolean;
 }
 
 export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
-   extension, select, install, className,
+   extension, select, install, className, showInstalled,
   }) => {
   const [installing, setInstalling] = React.useState(false);
   const timmer = React.useRef<any>();
@@ -54,6 +56,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
             </div>
             {!extension.installed && <Button loading={installing} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button>}
+            {extension.installed && showInstalled ? localize('marketplace.extension.installed') : null}
           </div>
           <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i>{extension.downloadCount}</span>) : null}
