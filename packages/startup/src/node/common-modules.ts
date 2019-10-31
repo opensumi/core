@@ -12,7 +12,6 @@ import { Terminal2Module } from '@ali/ide-terminal2/lib/node';
 import { LogServiceModule } from '@ali/ide-logs/lib/node';
 import { KaitianExtensionModule } from '@ali/ide-kaitian-extension';
 import { DebugModule } from '@ali/ide-debug/lib/node';
-import { DebugNodejsModule } from '@ali/ide-debug-nodejs/lib/node';
 import { ExtensionManagerModule } from '@ali/ide-extension-manager';
 import { FileSchemeNodeModule } from '@ali/ide-file-scheme/lib/node';
 
@@ -26,7 +25,6 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   SearchModule,
   Terminal2Module,
   DebugModule,
-  DebugNodejsModule,
 
   KaitianExtensionModule,
   ExtensionManagerModule,

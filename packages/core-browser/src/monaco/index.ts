@@ -37,14 +37,14 @@ export const Extensions = {
 };
 
 export interface ISchemaContributions {
-  schemas: { [id: string]: IJSONSchema };
+  schemas: { [id: string]: string };
 }
 
 export interface ISchemaRegistry {
 
   readonly onDidChangeSchema: Event<string>;
 
-  registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema, fileMatch: string[]): void;
+  registerSchema(uri: string, unresolvedSchemaContent: string, fileMatch: string[]): void;
 
   notifySchemaChanged(uri: string): void;
 

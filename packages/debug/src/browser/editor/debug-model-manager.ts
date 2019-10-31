@@ -5,6 +5,7 @@ import { DebugModel, DebugModelFactory } from './debug-model';
 import { DebugSessionManager } from '../debug-session-manager';
 import { IDebugSessionManager } from '../../common';
 import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
+import { DebugConfigurationManager } from '../debug-configuration-manager';
 
 export enum DebugModelSupportedEventType {
   down = 'Down',
@@ -28,6 +29,9 @@ export class DebugModelManager extends Disposable {
 
   @Autowired(BreakpointManager)
   private breakpointManager: BreakpointManager;
+
+  @Autowired(DebugConfigurationManager)
+  private debugConfigurationManager: DebugConfigurationManager;
 
   private _onMouseDown = new Emitter<monaco.editor.IEditorMouseEvent>();
   private _onMouseMove = new Emitter<monaco.editor.IEditorMouseEvent>();
@@ -146,11 +150,14 @@ export class DebugModelManager extends Disposable {
 
   handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: monaco.editor.ICodeEditor) {
     const debugModel = this.models.get(uri.toString());
-
     if (!debugModel) {
       throw new Error('Not find debug model');
     }
-
+    // 同一个uri可能对应多个打开的monacoEditor，这里只需要验证其中一个即可
+    const canSetBreakpoints = this.debugConfigurationManager.canSetBreakpointsIn(debugModel[0].editor.getModel());
+    if (!canSetBreakpoints) {
+      return;
+    }
     for (const model of debugModel) {
       if ((model.editor as any)._id === (monacoEditor as any)._id) {
         model[`onMouse${type}`](event);

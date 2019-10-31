@@ -49,7 +49,6 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   }
 
   protected init(): void {
-    this.logger.log('Extension DebugService Init.');
     this.toDispose.pushAll([
       Disposable.create(() => this.debugService.dispose()),
       Disposable.create(() => {

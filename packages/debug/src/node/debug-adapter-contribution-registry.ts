@@ -132,7 +132,16 @@ export class DebugAdapterContributionRegistry {
    * @param config
    */
   async provideDebugAdapterExecutable(config: DebugConfiguration): Promise<DebugAdapterExecutable> {
-    for (const contribution of this.getContributions(config.type)) {
+    let { type } = config;
+    if (config.type === 'node') {
+      if (config.protocol === 'legacy') {
+        type = 'node';
+      }
+      if (config.protocol === 'inspector') {
+        type = 'node2';
+      }
+    }
+    for (const contribution of this.getContributions(type)) {
       if (contribution.provideDebugAdapterExecutable) {
         const executable = await contribution.provideDebugAdapterExecutable(config);
         if (executable) {
@@ -140,7 +149,7 @@ export class DebugAdapterContributionRegistry {
         }
       }
     }
-    throw DebugError.NotFound(config.type);
+    throw DebugError.NotFound(type);
   }
 
   /**

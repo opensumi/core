@@ -1,5 +1,5 @@
 import { ISchemaStore, JsonSchemaConfiguration } from '../common';
-import debounce = require('lodash.debounce');
+import throttle = require('lodash.throttle');
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 import { Emitter, Event, ISchemaRegistry, ISchemaContributions, IJSONSchema } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -11,7 +11,7 @@ export class SchemaStore implements ISchemaStore {
   protected readonly onSchemasChangedEmitter = new Emitter<void>();
   readonly onSchemasChanged = this.onSchemasChangedEmitter.event;
 
-  protected notifyChanged = debounce(() => {
+  protected notifyChanged = throttle(() => {
     this.onSchemasChangedEmitter.fire(undefined);
   }, 500) as any;
 
@@ -22,8 +22,8 @@ export class SchemaStore implements ISchemaStore {
       const idx = this._schemas.indexOf(config);
       if (idx > -1) {
         this._schemas.splice(idx, 1);
-        this.notifyChanged();
       }
+      this.notifyChanged();
     });
   }
 
@@ -45,7 +45,7 @@ export class SchemaRegistry implements ISchemaRegistry {
   @Autowired(ISchemaStore)
   schemaStore: ISchemaStore;
 
-  private schemasById: { [id: string]: IJSONSchema };
+  private schemasById: { [id: string]: string };
 
   private readonly _onDidChangeSchema = new Emitter<string>();
   readonly onDidChangeSchema: Event<string> = this._onDidChangeSchema.event;
@@ -54,18 +54,18 @@ export class SchemaRegistry implements ISchemaRegistry {
     this.schemasById = {};
   }
 
-  public registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema, fileMatch: string[]): void {
+  public registerSchema(uri: string, unresolvedSchemaContent: string, fileMatch: string[]): void {
     this.schemasById[normalizeId(uri)] = unresolvedSchemaContent;
     this.schemaStore.register({
       fileMatch,
       url: uri,
     });
-    this._onDidChangeSchema.fire(uri);
+    this.notifySchemaChanged(uri);
   }
 
-  public notifySchemaChanged(uri: string): void {
+  notifySchemaChanged = throttle((uri: string) => {
     this._onDidChangeSchema.fire(uri);
-  }
+  }, 500) as any;
 
   public getSchemaContributions(): ISchemaContributions {
     return {

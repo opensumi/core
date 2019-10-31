@@ -198,6 +198,7 @@ export const localizationBundle = {
     'preference.debug.openDebug': '控制何时打开调试视图。',
     'preference.debug.debugViewLocation': '控制调试视图的位置。',
     'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
+    'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',

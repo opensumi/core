@@ -32,7 +32,7 @@ export class DebugSchemaUpdater {
       }
     }
     items.defaultSnippets!.push(...await this.debug.getConfigurationSnippets());
-    this.schemaRegistry.registerSchema(launchSchemaUri, schema, ['launch.json']);
+    this.schemaRegistry.registerSchema(launchSchemaUri, JSON.stringify(schema), ['launch.json']);
   }
 }
 

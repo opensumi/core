@@ -25,6 +25,11 @@ export const debugPreferencesSchema: PreferenceSchema = {
       default: 'openOnFirstSessionStart',
       description: localize('preference.debug.internalConsoleOptions'),
     },
+    'debug.allowBreakpointsEverywhere': {
+      type: 'boolean',
+      description: localize('preference.debug.allowBreakpointsEverywhere'),
+      default: false,
+    },
   },
 };
 
@@ -33,6 +38,7 @@ export class IDebugConfiguration {
   'debug.debugViewLocation': 'default' | 'left' | 'right' | 'bottom';
   'debug.openDebug': 'neverOpen' | 'openOnSessionStart' | 'openOnFirstSessionStart' | 'openOnDebugBreak';
   'debug.internalConsoleOptions': 'neverOpen' | 'openOnSessionStart' | 'openOnFirstSessionStart';
+  'debug.allowBreakpointsEverywhere': boolean;
 }
 
 export const DebugPreferences = Symbol('DebugPreferences');
