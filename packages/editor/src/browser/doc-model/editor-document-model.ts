@@ -1,5 +1,5 @@
 import * as md5 from 'md5';
-import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize } from '@ali/ide-core-browser';
+import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { EOL, EndOfLineSequence, IDocPersistentCacheProvider, IDocCache, isDocContentCache, parseRangeFrom } from '../../common';
@@ -37,6 +37,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   @Autowired(IDocPersistentCacheProvider)
   cacheProvider: IDocPersistentCacheProvider;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
 
   @Autowired(IMessageService)
   messageService: IMessageService;
@@ -223,6 +226,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   async save(force: boolean = false): Promise<boolean> {
+    if (!this.preferenceService.get<boolean>('editor.askIfDiff')) {
+      force = true;
+    }
     if (!this.dirty) {
       return false;
     }
@@ -244,7 +250,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this.messageService.error(localize('doc.saveError.failed') + '\n' + res.errorMessage);
       return false;
     } else if (res.state === 'diff') {
-      this.messageService.error(localize('doc.saveError.diff').replace('{0}', this.uri.toString()), [localize('doc.saveError.diffAndSave')]).then((res) => {
+      this.messageService.error(formatLocalize('doc.saveError.diff', this.uri.toString()), [localize('doc.saveError.diffAndSave')]).then((res) => {
         if (res) {
           this.compareAndSave();
         }

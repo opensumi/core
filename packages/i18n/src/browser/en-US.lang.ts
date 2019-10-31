@@ -52,6 +52,8 @@ export const localizationBundle = {
     'editor.closeAllInGroup': 'Close All',
     'editor.closeToRight': 'Close To Right',
     'editor.close': 'Close',
+    'editor.action.accept': 'Accept Changes (Use version on the right)',
+    'editor.action.revert': 'Revert Changes (Use version on the left)',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
@@ -228,6 +230,8 @@ export const localizationBundle = {
 
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
+    'preference.editor.askIfDiff': 'Error If File On Disk is ewer',
+    'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
@@ -303,6 +307,6 @@ export const localizationBundle = {
     'doc.saveError.failed': 'File Saving Failed. Reason: ',
     'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',
     'doc.saveError.diffAndSave': 'Compare...',
-    'editor.compareAndSave.title': '%s (on Disk) <=> %s (Editing) ',
+    'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
   },
 };
