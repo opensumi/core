@@ -62,7 +62,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  private isInit: boolean = false;
+  @observable
+  isInit: boolean = false;
 
   // 是否显示内置插件
   private isShowBuiltinExtensions: boolean = false;
@@ -354,13 +355,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @param extension
    */
   private getI18nInfo(extension: IExtension): { description: string, displayName: string} {
-    let displayName = extension.packageJSON.displayName;
-    let description = extension.packageJSON.description;
-
-    if (extension.packageNlsJSON) {
-      displayName = replaceLocalizePlaceholder(extension.packageNlsJSON.displayName);
-      description = replaceLocalizePlaceholder(extension.packageNlsJSON.description);
-    }
+    const displayName = replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.packageJSON.name)!;
+    const description = replaceLocalizePlaceholder(extension.packageJSON.description, extension.packageJSON.name)!;
 
     return {
       description,

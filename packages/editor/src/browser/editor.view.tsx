@@ -301,7 +301,7 @@ export const ComponentWrapper = ({component, resource, hidden}) => {
     [styles.kt_hidden]: hidden,
    })}>
      <Scroll>
-       <ErrorBoundary><div ref={(el) => { containerRef = el; }} style={{height: '100%'}}>{componentNode}</div></ErrorBoundary>;
+       <ErrorBoundary><div ref={(el) => { containerRef = el; }} style={{height: '100%'}}>{componentNode}</div></ErrorBoundary>
      </Scroll>
    </div>;
 };
