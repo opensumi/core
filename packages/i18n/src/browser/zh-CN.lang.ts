@@ -299,6 +299,10 @@ export const localizationBundle = {
     'keymaps.keybinding.require': '请输入快捷键',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-
+    'layout.tabbar.hide': '隐藏',
+    'layout.view.hide': '隐藏',
+    'status-bar.label.line': '行',
+    'status-bar.label.column': '列',
+    'status-bar.label.selected': '已选择',
   },
 };
