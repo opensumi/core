@@ -313,5 +313,10 @@ export const localizationBundle = {
     'file.prompt.dontSave': '不保存',
     'file.prompt.save': '保存',
     'file.prompt.cancel': '取消',
+
+    'doc.saveError.failed': '文件保存失败， 原因:',
+    'doc.saveError.diff': '{0} 已经在磁盘上被修改，不能保存',
+    'doc.saveError.diffAndSave': '进行比较',
+    'editor.compareAndSave.title': '%s (在磁盘上) <=> %s (编辑中) ',
   },
 };

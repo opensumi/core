@@ -53,19 +53,19 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
     return false;
   }
 
-  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string): Promise<IEditorDocumentModelSaveResult> {
+  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff:boolean = false): Promise<IEditorDocumentModelSaveResult> {
     // TODO
     const baseMd5 = md5(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
       return this.fileDocBackendService.$saveByChange(uri.toString(), {
         baseMd5,
         changes,
-      }, encoding);
+      }, encoding, ignoreDiff);
     } else {
       return await this.fileDocBackendService.$saveByContent(uri.toString(), {
         baseMd5,
         content,
-      }, encoding);
+      }, encoding, ignoreDiff);
     }
   }
 

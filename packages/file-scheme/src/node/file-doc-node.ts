@@ -11,17 +11,18 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
   @Autowired(IFileService)
   private fileService: IFileService;
 
-  async $saveByChange(uri: string, change: IContentChange, encoding?: string | undefined): Promise<IEditorDocumentModelSaveResult> {
+  async $saveByChange(uri: string, change: IContentChange, encoding?: string | undefined, force: boolean = false): Promise<IEditorDocumentModelSaveResult> {
     try {
       const stat = await this.fileService.getFileStat(uri);
       if (stat) {
-        // FIXME 暂时先不返回diff状态，直接保存
-        // const res = await this.fileService.resolveContent(uri, {encoding});
-        // if (change.baseMd5 !== md5(res.content)) {
-        //   return {
-        //     state: 'diff',
-        //   };
-        // }
+        if (!force) {
+          const res = await this.fileService.resolveContent(uri, {encoding});
+          if (change.baseMd5 !== md5(res.content)) {
+            return {
+              state: 'diff',
+            };
+          }
+        }
         const docChanges: TextDocumentContentChangeEvent[] = [];
         change.changes!.forEach((c) => {
           if ((c as IEditorDocumentEditChange).changes) {
@@ -52,17 +53,18 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
     }
   }
 
-  async $saveByContent(uri: string, content: ISavingContent, encoding?: string | undefined): Promise<IEditorDocumentModelSaveResult> {
+  async $saveByContent(uri: string, content: ISavingContent, encoding?: string | undefined, force: boolean = false): Promise<IEditorDocumentModelSaveResult> {
     try {
       const stat = await this.fileService.getFileStat(uri);
       if (stat) {
-        // FIXME 暂时先不返回diff状态，直接保存
-        // const res = await this.fileService.resolveContent(uri, {encoding});
-        // if (change.baseMd5 !== md5(res.content)) {
-        //   return {
-        //     state: 'diff',
-        //   };
-        // }
+        if (!force) {
+          const res = await this.fileService.resolveContent(uri, {encoding});
+          if (content.baseMd5 !== md5(res.content)) {
+            return {
+              state: 'diff',
+            };
+          }
+        }
         await this.fileService.setContent(stat, content.content, {encoding});
         return {
           state: 'success',

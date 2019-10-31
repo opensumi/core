@@ -7,7 +7,7 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { EditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
-import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry } from './types';
+import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry, ICompareService } from './types';
 import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
@@ -17,6 +17,7 @@ import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl 
 import { EditorActionRegistryImpl } from './menu/editor.menu';
 import { IDocPersistentCacheProvider } from '../common/doc-cache';
 import { EmptyDocCacheImpl, LocalStorageDocCacheImpl } from './doc-cache';
+import { CompareService, CompareEditorContribution } from './diff/compare';
 export * from './types';
 export * from './doc-model/types';
 export * from './doc-cache';
@@ -65,9 +66,15 @@ export class EditorModule extends BrowserModule {
       useClass: EmptyDocCacheImpl,
       // useClass: LocalStorageDocCacheImpl,
     },
+    {
+      token: ICompareService,
+      useClass: CompareService,
+      // useClass: LocalStorageDocCacheImpl,
+    },
     DefaultDiffEditorContribution,
     EditorClientAppContribution,
     EditorContribution,
+    CompareEditorContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 

@@ -300,5 +300,9 @@ export const localizationBundle = {
     'file.prompt.save': 'Save',
     'file.prompt.cancel': 'Cancel',
 
+    'doc.saveError.failed': 'File Saving Failed. Reason: ',
+    'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',
+    'doc.saveError.diffAndSave': 'Compare...',
+    'editor.compareAndSave.title': '%s (on Disk) <=> %s (Editing) ',
   },
 };
