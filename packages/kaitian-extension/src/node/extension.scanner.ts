@@ -21,7 +21,7 @@ export class ExtensionScanner {
   constructor(
     private scan: string[],
     private localization: string,
-    private extenionCandidate: string[],
+    private extensionCandidate: string[],
     private extraMetaData: ExtraMetaData,
   ) { }
 
@@ -36,7 +36,7 @@ export class ExtensionScanner {
       scan.map((dir) => {
         return this.scanDir(dir);
       }).concat(
-        this.extenionCandidate.map(async (extension) => {
+        this.extensionCandidate.map(async (extension) => {
           await this.getExtension(extension, this.localization);
         }),
       ),

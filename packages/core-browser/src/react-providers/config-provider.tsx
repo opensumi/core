@@ -20,7 +20,6 @@ export interface AppConfig {
    */
   webviewEndpoint?: string;
   extWorkerHost?: string;
-  extenionCandidate?: string;
   extensionCandidate?: ExtensionCandiDate[];
   staticServicePath?: string;
 
