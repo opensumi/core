@@ -59,9 +59,6 @@ export class ExtensionScanner {
 
   static async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
-    // 插件校验逻辑
-    console.log('localization !!', localization);
-
     if (!await fs.pathExists(extensionPath)) {
       getLogger().error('extension path does not exist');
     }
@@ -69,12 +66,12 @@ export class ExtensionScanner {
     const pkgPath = path.join(extensionPath, 'package.json');
     let pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
     const extendPath = path.join(extensionPath, 'kaitian.js');
-    let pkgExist = await fs.pathExists(pkgPath);
-    if (!pkgExist && (localization && localization !== 'en-US')) {
+    const pkgExist = await fs.pathExists(pkgPath);
+    let pkgNlsExist = await fs.pathExists(pkgNlsPath);
+    if (!pkgNlsExist && (localization && localization !== 'en-US')) {
       pkgNlsPath = path.join(extensionPath, 'package.nls.json');
-      pkgExist = await fs.pathExists(pkgPath);
+      pkgNlsExist = await fs.pathExists(pkgNlsPath);
     }
-    const pkgNlsExist = await fs.pathExists(pkgNlsPath);
     const extendExist = await fs.pathExists(extendPath);
 
     let pkgCheckResult = pkgExist;
