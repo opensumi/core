@@ -172,6 +172,7 @@ export const FileTree = ({
           notifyFileDecorationsChange={notifyFileDecorationsChange}
           notifyThemeChange={notifyThemeChange}
           validate={validate}
+          leftPadding={6}
         ></RecycleTree>
       </div>
     </div>
