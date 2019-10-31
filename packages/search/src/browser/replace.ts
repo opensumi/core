@@ -69,6 +69,9 @@ export async function replace(
 
   await workspaceEditService.apply({
     edits: [{
+      options: {
+        dirtyIfInEditor: true,
+      },
       resource: new URI(results[0].fileUri),
       edits: results.map((result) => {
         return {

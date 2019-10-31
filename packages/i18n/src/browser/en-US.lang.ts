@@ -112,6 +112,7 @@ export const localizationBundle = {
     'search.replace.buttonOK': 'Replace',
     'search.quickOpen.leftRight': 'Open on the side',
     'search.quickOpen.upDown': 'Open at the bottom',
+    'search.fileReplaceChanges': '{0} ↔ {1} (Replace Preview)',
     'fileResults': 'File results',
     'historyMatches': 'Recently opened',
     'replaceAll.occurrences.files.message': "Replaced {0} occurrences across {1} files with '{2}'.",

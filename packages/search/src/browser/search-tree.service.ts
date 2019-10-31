@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { action } from 'mobx';
-import { URI, Schemas, MaybePromise } from '@ali/ide-core-common';
+import { URI, Schemas, MaybePromise, Emitter, Event, localize } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
@@ -8,7 +8,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 
-import { replaceAll } from './replace';
+import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
 import {
   SEARCH_CONTEXT_MENU,
@@ -24,19 +24,72 @@ const toReplaceResource = (fileResource: URI): URI => {
 
 @Injectable()
 class ReplaceDocumentModelContentProvider implements IEditorDocumentModelContentProvider {
+
+  contentMap: Map<string, string> = new Map();
+
+  @Autowired(IEditorDocumentModelService)
+  private documentModelManager: IEditorDocumentModelService;
+
+  @Autowired(ContentSearchClientService)
+  private searchBrowserService: ContentSearchClientService;
+
+  @Autowired(IWorkspaceEditService)
+  private workspaceEditService: IWorkspaceEditService;
+
+  private onDidChangeContentEvent: Emitter<URI> = new Emitter();
+
   handlesScheme(scheme: string) {
     return scheme === Schemas.internal;
   }
 
-  provideEditorDocumentModelContent(uri: URI, encoding?: string): MaybePromise<string> {
-    return '';
+  provideEditorDocumentModelContent(uri: URI, encoding?: string): string {
+    return this.contentMap.get(uri.toString()) || '';
   }
 
   isReadonly() {
     return true;
   }
 
-  onDidChangeContent;
+  async updateContent(uri: URI, encoding?: string): Promise<any> {
+    const sourceFileUri = uri.withScheme(JSON.parse(uri.query).scheme).withoutQuery().withoutFragment();
+    const sourceDocModelRef = this.documentModelManager.getModelReference(sourceFileUri) || await this.documentModelManager.createModelReference(sourceFileUri);
+    const sourceDocModel = sourceDocModelRef.instance;
+    const value = sourceDocModel.getText();
+    const replaceViewDocModelRef = this.documentModelManager.getModelReference(uri) || await this.documentModelManager.createModelReference(uri);
+    const replaceViewDocModel = replaceViewDocModelRef.instance;
+
+    replaceViewDocModel.updateContent(value);
+
+    let searchResults = this.searchBrowserService.searchResults.get(sourceFileUri.toString());
+
+    if (!searchResults) {
+      return '';
+    }
+
+    searchResults = searchResults.map((result) => {
+      return Object.assign({}, result, {
+        fileUri: uri.toString(),
+      });
+    });
+
+    await replace(
+      this.workspaceEditService,
+      searchResults,
+      this.searchBrowserService.replaceValue,
+    );
+
+    this.contentMap.set(uri.toString(), replaceViewDocModel.getText());
+  }
+
+  onDidChangeContent = this.onDidChangeContentEvent.event;
+
+  delete(uri: URI) {
+    this.contentMap.delete(uri.toString());
+  }
+
+  clear() {
+    this.contentMap.clear();
+  }
 }
 
 @Injectable()
@@ -66,9 +119,12 @@ export class SearchTreeService {
   @Autowired(IEditorDocumentModelContentRegistry)
   private contentRegistry: IEditorDocumentModelContentRegistry;
 
+  @Autowired(ReplaceDocumentModelContentProvider)
+  private replaceDocumentModelContentProvider: ReplaceDocumentModelContentProvider;
+
   constructor() {
     this.contentRegistry.registerEditorDocumentModelContentProvider(
-      new ReplaceDocumentModelContentProvider(),
+      this.replaceDocumentModelContentProvider,
     );
   }
 
@@ -113,7 +169,7 @@ export class SearchTreeService {
   }
 
   @action.bound
-  onSelect(
+  async onSelect(
     files: ISearchTreeItem[],
   ) {
     const file: ISearchTreeItem = files[0];
@@ -141,16 +197,24 @@ export class SearchTreeService {
     if (replaceValue.length > 0) {
       // Open diff editor
       const originalURI = new URI(result.fileUri);
-      return this.workbenchEditorService.open(
+      const replaceURI = toReplaceResource(originalURI);
+
+      await this.replaceDocumentModelContentProvider.updateContent(replaceURI);
+
+      await this.workbenchEditorService.open(
         URI.from({
           scheme: 'diff',
           query: URI.stringifyQuery({
-            name: 'Replace', // TODO
+            name: localize('search.fileReplaceChanges')
+              .replace('{0}', originalURI.displayName)
+              .replace('{1}', replaceURI.displayName),
             original: originalURI,
-            modified: toReplaceResource(originalURI),
+            modified: replaceURI,
           }),
         }),
       );
+
+      this.replaceDocumentModelContentProvider.delete(replaceURI);
     } else {
       return this.workbenchEditorService.open(
         new URI(result.fileUri),
