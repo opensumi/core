@@ -11,6 +11,7 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { IEditorDocumentModelService } from './doc-model/types';
 
 interface Resource {
   group: EditorGroup;
@@ -43,6 +44,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   @Autowired(ContextMenuRenderer)
   private contextMenuRenderer: ContextMenuRenderer;
+
+  @Autowired(IEditorDocumentModelService)
+  private editorDocumentModelService: IEditorDocumentModelService;
 
   @Autowired(IDocPersistentCacheProvider)
   cacheProvider: IDocPersistentCacheProvider;
@@ -145,6 +149,19 @@ export class EditorContribution implements CommandContribution, MenuContribution
         const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
         if (editor) {
           await editor.save();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.SAVE_URI, {
+      execute: async (uri: URI) => {
+        const docRef = this.editorDocumentModelService.getModelReference(uri);
+        if (docRef && docRef.instance.dirty) {
+          try {
+            await docRef.instance.save();
+          } catch (e) {
+            docRef.dispose();
+          }
         }
       },
     });

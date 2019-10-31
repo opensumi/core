@@ -109,6 +109,7 @@ export class CollectionEditorsUpdateEvent extends BasicEvent<IEditor[]> { }
 export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> { }
 
 export interface IEditorGroup {
+  
 
   index: number;
 
@@ -131,6 +132,10 @@ export interface IEditorGroup {
   getState(): IEditorGroupState;
 
   restoreState(IEditorGroupState): Promise<void>;
+
+  saveAll(): Promise<void>;
+
+  closeAll(): Promise<void>;
 
 }
 export abstract class WorkbenchEditorService {

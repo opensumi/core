@@ -299,15 +299,15 @@ export class ExplorerOpenedEditorService {
     const groups = this.openEditorTreeDataProvider.getChildren();
     const group = groups[id] as IEditorGroup;
     if (group) {
-      const resources = group.resources;
-      for (const resource of resources) {
-        this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id, resource.uri);
-      }
+      group.closeAll();
     }
   }
 
   saveByGroupId(id: number) {
     const groups = this.openEditorTreeDataProvider.getChildren();
     const group = groups[id] as IEditorGroup;
+    if (group) {
+      group.saveAll();
+    }
   }
 }
