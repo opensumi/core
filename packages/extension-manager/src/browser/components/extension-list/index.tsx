@@ -67,6 +67,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
           extension={rawExtension}
           select={select}
           install={install}
+          showInstalled={showInstalled}
           />);
         })}
       </PerfectScrollbar>
