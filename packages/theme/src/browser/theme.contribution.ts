@@ -4,12 +4,12 @@ import { Autowired } from '@ali/common-di';
 
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
-  label: localize('theme.toggle', '颜色主题'),
+  label: '%theme.toggle%',
 };
 
 export const ICON_THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.icon.toggle',
-  label: localize('theme.icon.toggle', '文件图标主题'),
+  label: '%theme.icon.toggle%',
 };
 
 @Domain(MenuContribution, CommandContribution)
