@@ -3,6 +3,8 @@ import { MessageType } from '@ali/ide-core-common';
 
 export const IMessageService = Symbol('IMessageService');
 
+export * from '../browser/snackbar';
+
 export interface IMessageService {
   info(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined>;
   warning(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined>;

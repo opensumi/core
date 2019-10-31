@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
-import { getLogger } from '@ali/ide-core-node';
+import { getLogger, getNodeRequire } from '@ali/ide-core-node';
 import * as semver from 'semver';
 import { IExtensionMetaData, ExtraMetaData } from '../common';
 
@@ -119,7 +119,7 @@ export class ExtensionScanner {
     let extendConfig = {};
     if (await fs.pathExists(extendPath)) {
       try {
-        extendConfig = require(extendPath);
+        extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
         console.error(extendPath, e);
         getLogger().error(e);
