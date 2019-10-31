@@ -36,6 +36,8 @@ export const localizationBundle = {
     'menu-bar.view.outward.localize.toggle': 'switch language',
     'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
 
+    'selectAll': 'Select All',
+
     'editor': 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
@@ -48,6 +50,8 @@ export const localizationBundle = {
     'editor.splitToTop': 'Split To Top',
     'editor.splitToBottom': 'Split To Bottom',
     'editor.closeAllInGroup': 'Close All',
+    'editor.closeToRight': 'Close To Right',
+    'editor.close': 'Close',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
@@ -290,5 +294,11 @@ export const localizationBundle = {
     'marketplace.extension.readme': 'Readme',
     'marketplace.extension.changelog': 'Changelog',
     'marketplace.extension.installed': 'Installed',
+
+    'saveChangesMessage': 'Do you want to save the changes you made to {0}?',
+    'file.prompt.dontSave': 'Don\'t Save',
+    'file.prompt.save': 'Save',
+    'file.prompt.cancel': 'Cancel',
+
   },
 };
