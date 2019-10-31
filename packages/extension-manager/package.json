@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-extension-manager",
-  "version": "1.3.10",
+  "version": "1.4.0",
   "files": [
     "lib"
   ],
@@ -19,15 +19,15 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "1.3.10",
-    "@ali/ide-core-node": "1.3.10",
-    "@ali/ide-editor": "1.3.10",
-    "@ali/ide-kaitian-extension": "1.3.10",
-    "@ali/ide-main-layout": "1.3.10",
-    "@ali/ide-markdown": "1.3.10",
-    "@ali/ide-overlay": "1.3.10",
-    "@ali/ide-static-resource": "1.3.10",
-    "@ali/ide-theme": "1.3.10",
+    "@ali/ide-core-common": "1.4.0",
+    "@ali/ide-core-node": "1.4.0",
+    "@ali/ide-editor": "1.4.0",
+    "@ali/ide-kaitian-extension": "1.4.0",
+    "@ali/ide-main-layout": "1.4.0",
+    "@ali/ide-markdown": "1.4.0",
+    "@ali/ide-overlay": "1.4.0",
+    "@ali/ide-static-resource": "1.4.0",
+    "@ali/ide-theme": "1.4.0",
     "await-event": "^2.1.0",
     "compare-versions": "^3.5.1",
     "compressing": "^1.4.0",
@@ -37,7 +37,7 @@
     "urllib": "^2.34.1"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.3.10",
+    "@ali/ide-core-browser": "1.4.0",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
