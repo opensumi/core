@@ -89,7 +89,7 @@ export class AccordionWidget extends Widget {
     layout.addWidget(this.panel);
     this.menuRegistry.registerMenuAction([...this.contextMenuPath, '0_global'], {
       commandId: this.registerGlobalHideCommand(),
-      label: '%layout.view.hide%',
+      label: localize('layout.view.hide', '隐藏'),
     });
   }
 
