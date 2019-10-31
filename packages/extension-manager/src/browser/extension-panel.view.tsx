@@ -126,6 +126,13 @@ export default observer(() => {
   }, [installedAccordion, installedElement]);
 
   React.useEffect(() => {
+    // resize accordion
+    if (extensionManagerService.isInit && marketAccordion) {
+      marketAccordion.update();
+    }
+  }, [marketAccordion, extensionManagerService.isInit]);
+
+  React.useEffect(() => {
     // 默认要调用一次，不使用layout状态
     showEnableAndDisable();
     showHotSection();

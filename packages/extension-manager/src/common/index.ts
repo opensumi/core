@@ -86,6 +86,7 @@ export const ExtensionManagerServerPath = 'ExtensionManagerServerPath';
 // 插件市场前端服务
 export const IExtensionManagerService = Symbol('IExtensionManagerService');
 export interface IExtensionManagerService {
+  isInit: boolean;
   loading: SearchState;
   hotExtensions: RawExtension[];
   enableResults: RawExtension[];

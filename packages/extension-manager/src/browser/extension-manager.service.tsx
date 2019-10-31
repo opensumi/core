@@ -62,7 +62,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  private isInit: boolean = false;
+  @observable
+  isInit: boolean = false;
 
   // 是否显示内置插件
   private isShowBuiltinExtensions: boolean = false;
