@@ -112,7 +112,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         });
       }
       this._previousVersionId = e.versionId;
-      this.notifyChangeEvent();
+      this.notifyChangeEvent(e.changes);
     });
 
     this.addDispose(monacoModel);
@@ -357,12 +357,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this._baseContentMd5;
   }
 
-  private notifyChangeEvent() {
+  private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
     // 发出内容变化的事件
     this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
       uri: this.uri,
       dirty: this.dirty,
-      changes: [],
+      changes,
       eol: this.eol,
       versionId: this.monacoModel.getVersionId(),
     }));
