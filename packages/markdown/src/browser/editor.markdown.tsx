@@ -29,9 +29,12 @@ export const MarkdownEditorComponent: ReactEditorComponent<any> = ({resource}) =
         disposer.addDispose(documentRef.instance.getMonacoModel().onDidChangeContent((e) => {
           onUpdate.fire(documentRef.instance.getText());
         }));
-        markdownService.previewMarkdownInContainer(documentRef.instance.getText(), container!, cancellation.token, onUpdate.event).then((r) => {
-          disposer.addDispose(r);
-        });
+        if (container) {
+          // container可能已不存在
+          markdownService.previewMarkdownInContainer(documentRef.instance.getText(), container!, cancellation.token, onUpdate.event).then((r) => {
+            disposer.addDispose(r);
+          });
+        }
         disposer.addDispose(documentRef);
       });
 
