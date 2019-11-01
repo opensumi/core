@@ -756,6 +756,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                 containerId: `${extension.id}:${component.id}`,
                 activateKeyBinding: component.keyBinding,
                 title: component.title,
+                priority: component.priority,
               },
               pos,
             );
