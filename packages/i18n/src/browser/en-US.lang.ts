@@ -308,5 +308,9 @@ export const localizationBundle = {
     'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',
     'doc.saveError.diffAndSave': 'Compare...',
     'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
+
+    'window.toggleDevTools': 'Toggle Developer Tools',
+    'window.reload': 'Reload Window',
+    'about': 'About',
   },
 };
