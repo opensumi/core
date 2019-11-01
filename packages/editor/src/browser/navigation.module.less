@@ -3,23 +3,23 @@
   align-items: center;
   overflow: auto;
   height: 23px;
-  
+
   &::-webkit-scrollbar{
     display:none !important;
     background: rgb(50, 50, 50);
   }
   .navigation {
+    padding-left: 6px;
     white-space: nowrap;
     .navigation-part{
       color: var(--breadcrumb-foreground);
       font-size:12px;
-      padding: 0 15px 0 10px;
+      padding: 0 4px;
       position:relative;
       line-height:22px;
       cursor: pointer;
       user-select: none;
       &:hover{
-        text-decoration: underline;
         color: var(--breadcrumb-focusForeground);
       }
       &:first-child{
@@ -29,18 +29,6 @@
         &::after {
           content: none;
         }
-      }
-      &::before {
-        border-left: var(--breadcrumb-foreground) solid 6px;
-        border-top: transparent solid 4px;
-        border-bottom: transparent solid 4px;
-        content: '';
-        position: absolute;
-        top: 50%;
-        margin-top: -4px;
-        height: 0;
-        left: -5px;
-        width: 0;
       }
     }
   }
