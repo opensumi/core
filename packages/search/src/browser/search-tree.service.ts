@@ -201,7 +201,7 @@ export class SearchTreeService {
 
       await this.replaceDocumentModelContentProvider.updateContent(replaceURI);
 
-      await this.workbenchEditorService.open(
+      const openResourceResult = await this.workbenchEditorService.open(
         URI.from({
           scheme: 'diff',
           query: URI.stringifyQuery({
@@ -213,7 +213,14 @@ export class SearchTreeService {
           }),
         }),
       );
-
+      if (openResourceResult) {
+        const group = openResourceResult.group;
+        const editor = group.currentEditor;
+        if (editor) {
+          const monaco = editor.monacoEditor;
+          monaco.revealLineInCenter(result.line);
+        }
+      }
       this.replaceDocumentModelContentProvider.delete(replaceURI);
     } else {
       return this.workbenchEditorService.open(
