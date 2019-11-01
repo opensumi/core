@@ -54,6 +54,7 @@ export const defaultIconMap = {
   'search': 'search',
   'explorer': 'explorer',
   'arrow-down': 'arrow-down',
+  'arrow-right': 'arrow-right',
   'dashboard-fill': 'dashboard-fill',
   'info-circle': 'info-circle',
   'info-circle-fill': 'info-circle-fill',
