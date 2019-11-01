@@ -59,3 +59,6 @@ export const ktTooltipBackground = registerColor('kt.tooltip.background', {
 
 /* ---  menu --- */
 export const menuDescriptionForeground = registerColor('kt.menu.descriptionForeground', { dark: menuForeground, light: menuForeground, hc: menuForeground }, localize('menuDescriptionForeground', 'Description foreground color of menu items.'));
+
+/* --- menubar --- */
+export const menubarBorder = registerColor('kt.menubar.border', { dark: null, light: null, hc: null }, localize('menubarBorder', 'Border color of menu bar.'));
