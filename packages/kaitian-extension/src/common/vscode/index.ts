@@ -4,7 +4,7 @@ import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier }
 // import { VSCodeExtensionService } from '../browser/types';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager, IExtensionHostDocService } from './doc';
 import { IMainThreadCommands, IExtHostCommands } from './command';
-import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput, IExtHostWindowState } from './window';
+import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput, IExtHostWindowState, IExtHostWindow, IMainThreadWindow } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
 import { ExtHostLanguages } from '../../hosted/api/vscode/ext.host.language'; // '../node/api/ext.host.language';
@@ -60,6 +60,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadDebug: createExtHostContextProxyIdentifier<IMainThreadDebug>('MainThreadDebug'),
   MainThreadConnection: createExtHostContextProxyIdentifier<IMainThreadConnection>('MainThreadConnection'),
   MainThreadTerminal: createExtHostContextProxyIdentifier<IMainThreadTerminal>('MainThreadTerminal'),
+  MainThreadWindow: createExtHostContextProxyIdentifier<IMainThreadWindow>('MainThreadWindow'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -86,6 +87,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostDebug: createExtHostContextProxyIdentifier<IExtHostDebug>('ExtHostDebug'),
   ExtHostConnection: createExtHostContextProxyIdentifier<IExtHostConnection>('ExtHostConnection'),
   ExtHostTerminal: createExtHostContextProxyIdentifier<IExtHostTerminal>('ExtHostTerminal'),
+  ExtHostWindow: createExtHostContextProxyIdentifier<IExtHostWindow>('ExtHostWindow'),
 };
 
 export abstract class VSCodeExtensionNodeService {

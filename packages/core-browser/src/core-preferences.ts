@@ -89,7 +89,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'editor.askIfDiff': {
       type: 'boolean',
-      default: false,
+      default: true,
       description: '%editor.configuration.askIfDiff%',
     },
     'editor.previewMode': {
