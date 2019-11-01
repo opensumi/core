@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { DebugServer, IDebugServer, DebugEditor } from '../common';
+import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
 import { QuickPickService } from '@ali/ide-quick-open';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import {
@@ -24,7 +24,6 @@ import { DebugConfiguration } from '../common';
 import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspace-storage-service';
 import { WorkbenchEditorService, ICodeEditor, IEditor } from '@ali/ide-editor';
 import debounce = require('lodash.debounce');
-import { launchSchemaUri } from './debug-schema-updater';
 import { DebugPreferences } from './debug-preferences';
 
 // tslint:disable-next-line:no-empty-interface
@@ -72,6 +71,8 @@ export class DebugConfigurationManager {
 
   // 用于存储支持断点的语言
   private breakpointModeIdsSet = new Set<string>();
+  // 用于存储debugger信息
+  private debuggers: IDebuggerContribution[] = [];
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
@@ -399,6 +400,26 @@ export class DebugConfigurationManager {
 
   removeSupportBreakpoints(languageId: string) {
     this.breakpointModeIdsSet.delete(languageId);
+  }
+
+  registerDebugger(debuggerContribution: IDebuggerContribution) {
+    if (debuggerContribution.type !== '*') {
+      const existing = this.getDebugger(debuggerContribution.type as string);
+      if (existing) {
+        // VSCode中会将插件贡献点根据isBuildIn进行覆盖式合并
+        return;
+      } else {
+        this.debuggers.push(debuggerContribution);
+      }
+    }
+  }
+
+  getDebugger(type: string): IDebuggerContribution | undefined {
+    return this.debuggers.filter((dbg) => dbg.type === type).pop();
+  }
+
+  getDebuggers(): IDebuggerContribution[] {
+    return this.debuggers;
   }
 }
 

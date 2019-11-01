@@ -5,8 +5,8 @@ import { Disposable, Uri } from '../../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier } from '../../../../common/vscode/';
 import { ExtensionDebugAdapterSession } from './extension-debug-adapter-session';
-import { Breakpoint, DebuggerContribution } from '../../../../common/vscode/models';
-import { DebugConfiguration, DebugStreamConnection } from '@ali/ide-debug';
+import { Breakpoint } from '../../../../common/vscode/models';
+import { DebugConfiguration, DebugStreamConnection, IDebuggerContribution } from '@ali/ide-debug';
 import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker';
 import { connectDebugAdapter, startDebugAdapter } from './extension-debug-adapter-starter';
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
@@ -119,8 +119,8 @@ export class ExtHostDebug implements IExtHostDebugService {
    * @param extensionPath 拓展路径
    * @param contributions 有效的贡献点
    */
-  registerDebuggersContributions(extensionPath: string, contributions: DebuggerContribution[]): void {
-    contributions.forEach((contribution: DebuggerContribution) => {
+  registerDebuggersContributions(extensionPath: string, contributions: IDebuggerContribution[]): void {
+    contributions.forEach((contribution: IDebuggerContribution) => {
       this.contributionPaths.set(contribution.type, extensionPath);
       this.debuggersContributions.set(contribution.type, contribution);
       this.proxy.$registerDebuggerContribution({
@@ -318,8 +318,8 @@ export class ExtHostDebug implements IExtHostDebugService {
     return current;
   }
 
-  async $registerDebuggerContributions(extensionFolder: string, contributions: DebuggerContribution[]) {
-    contributions.forEach((contribution: DebuggerContribution) => {
+  async $registerDebuggerContributions(extensionFolder: string, contributions: IDebuggerContribution[]) {
+    contributions.forEach((contribution: IDebuggerContribution) => {
       this.contributionPaths.set(contribution.type, extensionFolder);
       this.debuggersContributions.set(contribution.type, contribution);
       console.log(`Debugger contribution has been registered: ${contribution.type}`);

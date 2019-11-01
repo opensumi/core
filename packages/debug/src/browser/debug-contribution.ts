@@ -10,7 +10,7 @@ import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';
-import { DebugSchemaUpdater, launchSchemaUri, launchSchema } from './debug-schema-updater';
+import { launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/debug-watch.view';
 
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
@@ -22,7 +22,7 @@ import { DebugViewModel } from './view/debug-view-model';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
-import { IDebugSessionManager } from '../common';
+import { IDebugSessionManager, launchSchemaUri } from '../common';
 import { DebugConsoleService } from './view/debug-console.service';
 
 export namespace DEBUG_COMMANDS {
@@ -72,9 +72,6 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
   @Autowired(DebugConfigurationManager)
   protected readonly configurations: DebugConfigurationManager;
-
-  @Autowired(DebugSchemaUpdater)
-  protected readonly debugSchemaUpdater: DebugSchemaUpdater;
 
   @Autowired(DebugModelManager)
   protected debugEditorController: DebugModelManager;
@@ -163,7 +160,6 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         }
       });
       this.debugEditorController.init();
-      this.debugSchemaUpdater.update();
       this.configurations.load();
       await this.breakpointManager.load();
     }

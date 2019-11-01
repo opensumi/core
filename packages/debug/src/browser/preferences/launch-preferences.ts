@@ -1,5 +1,5 @@
 import { PreferenceSchema } from '@ali/ide-core-browser';
-import { launchSchemaUri } from '../debug-schema-updater';
+import { launchSchemaUri } from '../../common';
 
 export const launchPreferencesSchema: PreferenceSchema = {
   type: 'object',
