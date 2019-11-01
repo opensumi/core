@@ -48,7 +48,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
   registerComponent(registry: ComponentRegistry): void {
     registry.register('@ali/ide-extension-manager', [], {
       iconClass: getIcon('extension'),
-      title: localize('marketplace.extension.container', '扩展'),
+      title: localize('marketplace.extension.container'),
       priority: 5,
       containerId: enableExtensionsContainerId,
       component: ExtensionPanelView,

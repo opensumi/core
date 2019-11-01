@@ -1,4 +1,4 @@
-import { Event, IJSONSchema } from '..';
+import { Event, IJSONSchema, IContextKeyService } from '..';
 
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
@@ -28,7 +28,8 @@ export abstract class MonacoService {
 export const MonacoContribution = Symbol('MonacoContribution');
 
 export interface MonacoContribution {
-  onMonacoLoaded(monacoService: MonacoService);
+  onMonacoLoaded?(monacoService: MonacoService);
+  onContextKeyServiceReady?(contextKeyService: IContextKeyService);
 }
 
 export const Extensions = {

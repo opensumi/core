@@ -6,13 +6,8 @@ export const localizationBundle = {
     'ButtonOK': '确定',
     'ButtonCancel': '取消',
 
-    'mFile': '文件',
     'file.new': '新建文件',
     'file.folder.new': '新建文件夹',
-    'mEdit': '编辑',
-    'mView': '视图',
-    'mHelp': '帮助',
-    'menu-bar.file.open': '打开文件',
 
     'file.save': '保存文件',
     'file.open': '打开文件',
@@ -27,10 +22,13 @@ export const localizationBundle = {
     'file.copy.file': '复制',
     'file.cut.file': '剪切',
 
+    'menu-bar.file': '文件',
+    'menu-bar.edit': '编辑',
+    'menu-bar.view': '视图',
+    'menu-bar.help': '帮助',
+    'menu-bar.file.open': '打开文件',
     'menu-bar.file.save-as': '另存为',
     'menu-bar.file.save-all': '全部保存',
-
-    'menu-bar.view': '查看',
     'menu-bar.view.quick.command': '命令面板',
     'menu-bar.view.outward': '外观',
     'menu-bar.view.outward.right-panel.toggle': '切换右侧面板',
@@ -54,6 +52,7 @@ export const localizationBundle = {
     'editor.splitToTop': '向上拆分',
     'editor.splitToBottom': '向下拆分',
     'editor.closeAllInGroup': '关闭全部',
+    'editor.closeOtherEditors': '关闭其他',
 
     'edit.cut': '剪切',
     'edit.copy': '复制',
@@ -228,10 +227,14 @@ export const localizationBundle = {
     'preference.editor.insertSpace': '使用空格代替Tab',
     'preference.editor.wordWrap': '自动换行',
     'preference.editor.wordWrapColumn': '自动换行长度',
+    'preference.editor.askIfDiff': '保存文件冲突时提示',
 
     'preference.array.additem': '添加',
 
     'editor.configuration.fontFamily': '',
+    'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行报警',
+    'editor.action.accept': '接受更改（使用右边)',
+    'editor.action.revert': '回退更改（使用左边)',
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
@@ -239,15 +242,41 @@ export const localizationBundle = {
     'common.replace': '替换',
 
     'preference.tab.name': '设置',
-    'keymaps.title': '快捷键设置',
+    'keymaps.tab.name': '快捷键设置',
 
-    'marketplace.extension.uninstall.failed': '删除失败',
+    'marketplace.extension.update.now': '是，现在更新',
+    'marketplace.extension.update.delay': '稍后我自己更新',
+    'marketplace.extension.uninstall.failed': '卸载失败',
     'marketplace.extension.reload.delay': '稍后我自己重启',
     'marketplace.extension.reload.now': '是，现在重启',
     'marketplace.extension.enable': '启用',
     'marketplace.extension.disable': '禁用',
     'marketplace.extension.enable.workspace': '启用(工作空间)',
     'marketplace.extension.disable.workspace': '禁用(工作空间)',
+    'marketplace.extension.builtin': '内置',
+    'marketplace.extension.install': '安装',
+    'marketplace.extension.container': '扩展',
+    'marketplace.extension.empty.disabled': '暂无已禁用的扩展',
+    'marketplace.extension.notfound': '找不到扩展',
+    'marketplace.panel.hot': '热门插件',
+    'marketplace.panel.search': '搜索',
+    'marketplace.panel.enabled': '已启用',
+    'marketplace.panel.disabled': '已禁用',
+    'marketplace.panel.tab.marketplace': '扩展市场',
+    'marketplace.panel.tab.placeholder.search': '搜索市场中的扩展',
+    'marketplace.panel.tab.placeholder.installed': '搜索已安装的扩展',
+    'marketplace.tab.installed': '已安装的扩展',
+    'marketplace.extension.findUpdate': '发现插件 {0} 有最新版本 {1}，是否要更新到最新版本？`',
+    'marketplace.extension.canupdate': '有新版本',
+    'marketplace.extension.updating': '更新中',
+    'marketplace.extension.update': '更新',
+    'marketplace.extension.installing': '安装中',
+    'marketplace.extension.reloadrequure': '需要重启',
+    'marketplace.extension.uninstalling': '卸载中',
+    'marketplace.extension.uninstall': '卸载',
+    'marketplace.extension.readme': '简介',
+    'marketplace.extension.changelog': '更改日志',
+    'marketplace.extension.installed': '已安装',
 
     'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
     'validate.tree.fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
@@ -259,6 +288,9 @@ export const localizationBundle = {
     'open.editors.close.all': '关闭全部',
 
     'terminal.name': '终端',
+
+    'theme.toggle': '颜色主题',
+    'theme.icon.toggle': '文件图标主题',
 
     'preference.workbench.list.openMode': '控制如何（如果支持）在树和列表中打开项目。对于有子节点的父节点，此设置将控制单击展开父节点还是双击。请注意，如果某些设置不启用，一些树和列表可能会选择忽略此设置。',
 
@@ -275,6 +307,20 @@ export const localizationBundle = {
     'keymaps.keybinding.require': '请输入快捷键',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
+    'layout.tabbar.hide': '隐藏',
+    'layout.view.hide': '隐藏',
+    'status-bar.label.line': '行',
+    'status-bar.label.column': '列',
+    'status-bar.label.selected': '已选择',
 
+    'saveChangesMessage': '是否要保存对 {0} 的更改?',
+    'file.prompt.dontSave': '不保存',
+    'file.prompt.save': '保存',
+    'file.prompt.cancel': '取消',
+
+    'doc.saveError.failed': '文件保存失败， 原因:',
+    'doc.saveError.diff': '{0} 已经在磁盘上被修改，不能保存',
+    'doc.saveError.diffAndSave': '进行比较',
+    'editor.compareAndSave.title': '{0} (在磁盘上) <=> {1} (编辑中) ',
   },
 };

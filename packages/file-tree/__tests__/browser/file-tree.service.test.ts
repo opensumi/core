@@ -1,15 +1,17 @@
 import { URI, localize } from '@ali/ide-core-common';
 import { FileTreeService } from '../../src/browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { IFileTreeAPI } from '../../src/common';
 import { MockFileTreeAPIImpl } from '../../src/common/mocks';
-import { IFileServiceClient, MockFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { File, Directory } from '../../src/browser/file-tree-item';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { CorePreferences, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IDialogService } from '@ali/ide-overlay';
+import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
+import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 
 describe('FileTreeService should be work', () => {
   let treeService: FileTreeService;
@@ -210,6 +212,25 @@ describe('FileTreeService should be work', () => {
     });
 
     it('createFile and createFolder should be work', async (done) => {
+      const childUri = new URI(`${root}/child.js`);
+      const newName = 'newName';
+      const childFile: File = new File(
+        fileApi,
+        childUri,
+        childUri.displayName,
+        {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: childUri.toString(),
+        } as FileStat,
+        '',
+        '',
+        rootFile,
+        1,
+      );
+      treeService.updateFileStatus([childFile]);
+      rootFile.addChildren(childFile);
       const fileName = 'file';
       const folderName = 'folder';
       const exists = jest.fn(() => {
@@ -218,12 +239,18 @@ describe('FileTreeService should be work', () => {
       injector.mock(IFileTreeAPI, 'exists', exists);
       const createFile = jest.fn();
       injector.mock(IFileTreeAPI, 'createFile', createFile);
-      await treeService.createFile(rootFile, fileName);
+      await treeService.createFile(childFile, fileName);
       expect(createFile).toBeCalledWith(rootUri.resolve(fileName));
       const createFolder = jest.fn();
       injector.mock(IFileTreeAPI, 'createFolder', createFolder);
-      await treeService.createFolder(rootFile, folderName);
+      await treeService.createFolder(childFile, folderName);
       expect(createFolder).toBeCalledWith(rootUri.resolve(folderName));
+      // 新建的文件已生成
+      const parentStatusKey = treeService.getStatutsKey(childUri.parent);
+      const parentStatus = treeService.status.get(parentStatusKey);
+      const parent = parentStatus!.file as Directory;
+      expect(parent.hasChildren(childUri.parent.resolve(fileName))).toBeTruthy();
+      expect(parent.hasChildren(childUri.parent.resolve(folderName))).toBeTruthy();
       done();
     });
 
@@ -292,7 +319,7 @@ describe('FileTreeService should be work', () => {
       expect(treeService.getChildren(rootUri)![0].isTemporary).toBeTruthy();
     });
 
-    it('can rename file', () => {
+    it('can rename file', async (done) => {
       const childUri = new URI(`${root}/child.js`);
       const newName = 'newName';
       const childFile: File = new File(
@@ -313,10 +340,20 @@ describe('FileTreeService should be work', () => {
       treeService.updateFileStatus([childFile]);
       rootFile.addChildren(childFile);
       const moveFile = jest.fn();
+      const exists = jest.fn(() => false);
       injector.mock(IFileTreeAPI, 'moveFile', moveFile);
-      treeService.renameFile(childFile, newName);
+      injector.mock(IFileTreeAPI, 'exists', exists);
+      await treeService.renameFile(childFile, newName);
       expect(moveFile).toBeCalledWith(childUri, childUri.parent.resolve(newName), false);
+      expect(exists).toBeCalledWith(childUri.parent.resolve(newName));
       expect(treeService.status.get(treeService.getStatutsKey(childFile))!.file.isTemporary).toBeFalsy();
+      // 重命名后的文件已生成
+      const parentStatusKey = treeService.getStatutsKey(childUri.parent);
+      const parentStatus = treeService.status.get(parentStatusKey);
+      const parent = parentStatus!.file as Directory;
+      expect(parent.hasChildren(childUri)).toBeFalsy();
+      expect(parent.hasChildren(childUri.parent.resolve(newName))).toBeTruthy();
+      done();
     });
 
     it('delete file should be work', async (done) => {
@@ -665,25 +702,18 @@ describe('FileTreeService should be work', () => {
       done();
     });
 
-    it('should open file with preview mode while workbench.list.openMode === "doubleClick" && editor.previewMode', () => {
+    it('should open file with preview mode while editor.previewMode === true', () => {
       const firstCall = jest.fn();
       const openUri = new URI(`${root}/child.js`);
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, firstCall);
       injector.overrideProviders({
         token: CorePreferences,
         useValue: {
-          'workbench.list.openMode': 'doubleClick',
           'editor.previewMode': true,
         },
       });
       treeService.openFile(openUri);
-      expect(firstCall).toBeCalledWith(openUri, { disableNavigate: true });
-      injector.mock(CorePreferences, 'workbench.list.openMode', 'singleClick');
-      const secondCall = jest.fn();
-      injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, secondCall);
-      treeService.openFile(openUri);
-      expect(secondCall).toBeCalledWith(openUri, { disableNavigate: true, preview: false });
-      injector.mock(CorePreferences, 'workbench.list.openMode', 'doubleClick');
+      expect(firstCall).toBeCalledWith(openUri, { disableNavigate: true, preview: true });
       injector.mock(CorePreferences, 'editor.previewMode', false);
       const thirdCall = jest.fn();
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, thirdCall);

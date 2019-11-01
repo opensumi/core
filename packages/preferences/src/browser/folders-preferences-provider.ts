@@ -5,8 +5,6 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 @Injectable()
 export class FoldersPreferencesProvider extends PreferenceProvider {
 
-  public name: 'folder';
-
   @Autowired(FolderPreferenceProviderFactory)
   protected readonly folderPreferenceProviderFactory: FolderPreferenceProviderFactory;
 

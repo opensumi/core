@@ -2,6 +2,8 @@ import * as React from 'react';
 import { useInjectable, URI } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Path } from '@ali/ide-core-common/lib/path';
+import Icon from '@ali/ide-core-browser/lib/components/icon';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 import * as styles from './navigation.module.less';
 import { IResource, IEditorGroup } from '../common';
@@ -20,7 +22,12 @@ export const NavigationBar = (({ editorGroup }: { editorGroup: IEditorGroup }) =
   return (parts.length === 0 ? null : <div className={styles.navigation_container}><div className={styles.navigation}>
     {
       parts.map((p, i) => {
-        return <span className={styles['navigation-part']} key={i}>{p}</span>;
+        return <React.Fragment key={i}>
+          {i > 0 && <Icon icon={'right'} size='small' /> }
+          <span className={styles['navigation-part']}>
+            {p}
+          </span>
+        </React.Fragment>;
       })
     }
   </div></div>);

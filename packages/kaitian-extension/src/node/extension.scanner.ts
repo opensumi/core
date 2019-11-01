@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
-import { getLogger } from '@ali/ide-core-node';
+import { getLogger, getNodeRequire } from '@ali/ide-core-node';
 import * as semver from 'semver';
 import { IExtensionMetaData, ExtraMetaData } from '../common';
 
@@ -20,7 +20,8 @@ export class ExtensionScanner {
 
   constructor(
     private scan: string[],
-    private extenionCandidate: string[],
+    private localization: string,
+    private extensionCandidate: string[],
     private extraMetaData: ExtraMetaData,
   ) { }
 
@@ -35,8 +36,8 @@ export class ExtensionScanner {
       scan.map((dir) => {
         return this.scanDir(dir);
       }).concat(
-        this.extenionCandidate.map(async (extension) => {
-          await this.getExtension(extension);
+        this.extensionCandidate.map(async (extension) => {
+          await this.getExtension(extension, this.localization);
         }),
       ),
     );
@@ -49,21 +50,28 @@ export class ExtensionScanner {
       const extensionDirArr = await fs.readdir(dir);
       await Promise.all(extensionDirArr.map((extensionDir) => {
         const extensionPath = path.join(dir, extensionDir);
-        return this.getExtension(extensionPath);
+        return this.getExtension(extensionPath, this.localization);
       }));
     } catch (e) {
       getLogger().error(e);
     }
   }
 
-  static async getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+  static async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
-    // 插件校验逻辑
+    if (!await fs.pathExists(extensionPath)) {
+      getLogger().error('extension path does not exist');
+    }
+
     const pkgPath = path.join(extensionPath, 'package.json');
-    const pkgNlsPath = path.join(extensionPath, 'package.nls.json');
+    let pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
     const extendPath = path.join(extensionPath, 'kaitian.js');
     const pkgExist = await fs.pathExists(pkgPath);
-    const pkgNlsExist = await fs.pathExists(pkgNlsPath);
+    let pkgNlsExist = await fs.pathExists(pkgNlsPath);
+    if (!pkgNlsExist && (localization && localization !== 'en-US')) {
+      pkgNlsPath = path.join(extensionPath, 'package.nls.json');
+      pkgNlsExist = await fs.pathExists(pkgNlsPath);
+    }
     const extendExist = await fs.pathExists(extendPath);
 
     let pkgCheckResult = pkgExist;
@@ -111,8 +119,9 @@ export class ExtensionScanner {
     let extendConfig = {};
     if (await fs.pathExists(extendPath)) {
       try {
-        extendConfig = require(extendPath);
+        extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
+        console.error(extendPath, e);
         getLogger().error(e);
       }
     }
@@ -158,13 +167,13 @@ export class ExtensionScanner {
     return true;
   }
 
-  public async getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+  public async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
     if (this.results.has(extensionPath)) {
       return;
     }
 
-    const extension = await ExtensionScanner.getExtension(extensionPath, {
+    const extension = await ExtensionScanner.getExtension(extensionPath, localization, {
       ...this.extraMetaData,
       ...extraMetaData,
     });

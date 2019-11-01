@@ -1,4 +1,4 @@
-import { Disposable, DisposableCollection, Event, Emitter } from '@ali/ide-core-common';
+import { Disposable, Event, PreferenceScope } from '@ali/ide-core-common';
 import { PreferenceService } from './preference-service';
 import { PreferenceSchema, OverridePreferenceName } from './preference-contribution';
 
@@ -9,6 +9,13 @@ export interface PreferenceChangeEvent<T> {
   affects(resourceUri?: string, overrideIdentifier?: string): boolean;
 }
 
+export interface PreferenceProxyOptions {
+  prefix?: string;
+  resourceUri?: string;
+  overrideIdentifier?: string;
+  style?: 'flat' | 'deep' | 'both';
+}
+
 export interface PreferenceEventEmitter<T> {
   readonly onPreferenceChanged: Event<PreferenceChangeEvent<T>>;
   readonly ready: Promise<void>;
@@ -16,98 +23,168 @@ export interface PreferenceEventEmitter<T> {
 
 export interface PreferenceRetrieval<T> {
 
-  get<K extends keyof T>(preferenceName: K |
-    {
-      preferenceName: K,
-      overrideIdentifier?: string,
-    },                   defaultValue?: T[K], resourceUri?: string): T[K];
+  get<K extends keyof T>(preferenceName: K | { preferenceName: K, overrideIdentifier?: string }, defaultValue?: T[K], resourceUri?: string): T[K];
 }
 
 export type PreferenceProxy<T> = Readonly<T> & Disposable & PreferenceEventEmitter<T> & PreferenceRetrieval<T>;
 
-export function createPreferenceProxy<T>(preferences: PreferenceService, schema: PreferenceSchema): PreferenceProxy<T> {
-  const toDispose = new DisposableCollection();
-  const onPreferenceChangedEmitter = new Emitter<PreferenceChangeEvent<T>>();
-  toDispose.push(onPreferenceChangedEmitter);
-  toDispose.push(preferences.onPreferenceChanged((e) => {
-    const overridden = preferences.overriddenPreferenceName(e.preferenceName);
-    const preferenceName: any = overridden ? overridden.preferenceName : e.preferenceName;
-    if (schema.properties[preferenceName]) {
-      const { newValue, oldValue } = e;
-      // 让独立的Preference也可以感知到全局Preference的变化
-      onPreferenceChangedEmitter.fire({
-        newValue, oldValue, preferenceName,
-        affects: (resourceUri, overrideIdentifier) => {
-          if (overrideIdentifier !== undefined) {
-            if (overridden && overridden.overrideIdentifier !== overrideIdentifier) {
-              return false;
-            }
-          }
-          return e.affects(resourceUri);
-        },
-      });
+export function createPreferenceProxy<T>(preferences: PreferenceService, schema: PreferenceSchema, options?: PreferenceProxyOptions): PreferenceProxy<T> {
+  const opts = options || {};
+  const prefix = opts.prefix || '';
+  const style = opts.style || 'flat';
+  const isDeep = style === 'deep' || style === 'both';
+  const isFlat = style === 'both' || style === 'flat';
+  const onPreferenceChanged = (listener: (e: PreferenceChangeEvent<T>) => any, thisArgs?: any, disposables?: Disposable[]) => preferences.onPreferencesChanged((changes) => {
+    for (const key of Object.keys(changes)) {
+      const e = changes[key];
+      const overridden = preferences.overriddenPreferenceName(e.preferenceName);
+      const preferenceName: any = overridden ? overridden.preferenceName : e.preferenceName;
+      if (preferenceName.startsWith(prefix) && (!overridden || !opts.overrideIdentifier || overridden.overrideIdentifier === opts.overrideIdentifier)) {
+        if (schema.properties[preferenceName]) {
+          const { newValue, oldValue } = e;
+          listener({
+            newValue, oldValue, preferenceName,
+            affects: (resourceUri, overrideIdentifier) => {
+              if (overrideIdentifier !== undefined) {
+                if (overridden && overridden.overrideIdentifier !== overrideIdentifier) {
+                  return false;
+                }
+              }
+              return e.affects(resourceUri);
+            },
+          });
+        }
+      }
     }
-  }));
+  }, thisArgs, disposables);
 
   const unsupportedOperation = (_: any, __: string) => {
     throw new Error('Unsupported operation');
   };
+
   const getValue: PreferenceRetrieval<any>['get'] = (arg, defaultValue, resourceUri) => {
-    const preferenceName = typeof arg === 'object' && arg.overrideIdentifier ?
-      preferences.overridePreferenceName(arg as OverridePreferenceName) :
+    const preferenceName = OverridePreferenceName.is(arg) ?
+      preferences.overridePreferenceName(arg) :
       arg as string;
-    return preferences.get(preferenceName, defaultValue, resourceUri);
+    return preferences.get(preferenceName, defaultValue, resourceUri || opts.resourceUri);
   };
-  const target = {};
-  Object.defineProperties(target, {
-    onPreferenceChanged: {
-      get: () => {
-        return onPreferenceChangedEmitter.event;
-      },
-      enumerable: false,
-      configurable: false,
-    },
-    dispose: {
-      get: () => {
-        return () => toDispose.dispose();
-      },
-      enumerable: false,
-      configurable: false,
-    },
-    ready: {
-      get: () => {
-        return preferences.ready;
-      },
-      enumerable: false,
-      configurable: false,
-    },
-    get: {
-      get: () => {
-        return getValue;
-      },
-    },
-  });
-  return new Proxy(target, {
-    get: (_, property: string) => {
-      if (schema.properties[property]) {
-        return preferences.get(property);
+
+  const ownKeys: () => string[] = () => {
+    const properties: string[] = [];
+    for (const p of Object.keys(schema.properties)) {
+      if (p.startsWith(prefix)) {
+        const idx = p.indexOf('.', prefix.length);
+        if (idx !== -1 && isDeep) {
+          const pre = p.substr(prefix.length, idx - prefix.length);
+          if (properties.indexOf(pre) === -1) {
+            properties.push(pre);
+          }
+        }
+        const prop = p.substr(prefix.length);
+        if (isFlat || prop.indexOf('.') === -1) {
+          properties.push(prop);
+        }
       }
-      if (_[property]) {
-        return _[property];
+    }
+    return properties;
+  };
+
+  const set: (target: any, prop: string, value: any, receiver: any) => boolean = (_, property: string | symbol | number, value: any) => {
+    if (typeof property !== 'string') {
+      throw new Error(`unexpected property: ${String(property)}`);
+    }
+    if (style === 'deep' && property.indexOf('.') !== -1) {
+      return false;
+    }
+    const fullProperty = prefix ? prefix + property : property;
+    if (schema.properties[fullProperty]) {
+      preferences.set(fullProperty, value, PreferenceScope.Default);
+      return true;
+    }
+    const newPrefix = fullProperty + '.';
+    for (const p of Object.keys(schema.properties)) {
+      if (p.startsWith(newPrefix)) {
+        const subProxy: { [k: string]: any } = createPreferenceProxy(preferences, schema, {
+          prefix: newPrefix,
+          resourceUri: opts.resourceUri,
+          overrideIdentifier: opts.overrideIdentifier,
+          style,
+        });
+        for (const k of Object.keys(value)) {
+          subProxy[k] = value[k];
+        }
       }
-      throw new Error(`unexpected property: ${property}`);
-    },
-    ownKeys: () => Object.keys(schema.properties),
+    }
+    return false;
+  };
+
+  const get: (target: any, prop: string) => any = (_, property: string | symbol | number) => {
+    if (typeof property !== 'string') {
+      throw new Error(`unexpected property: ${String(property)}`);
+    }
+    const fullProperty = prefix ? prefix + property : property;
+    if (isFlat || property.indexOf('.') === -1) {
+      if (schema.properties[fullProperty]) {
+        let value;
+        if (opts.overrideIdentifier) {
+          value = preferences.get(preferences.overridePreferenceName({
+            overrideIdentifier: opts.overrideIdentifier,
+            preferenceName: fullProperty,
+          }), undefined, opts.resourceUri);
+        }
+        if (value === undefined) {
+          value = preferences.get(fullProperty, undefined, opts.resourceUri);
+        }
+        return value;
+      }
+    }
+    if (property === 'onPreferenceChanged') {
+      return onPreferenceChanged;
+    }
+    if (property === 'dispose') {
+      return () => { /* do nothing */ };
+    }
+    if (property === 'ready') {
+      return preferences.ready;
+    }
+    if (property === 'get') {
+      return getValue;
+    }
+    if (property === 'toJSON') {
+      return toJSON();
+    }
+    if (isDeep) {
+      const newPrefix = fullProperty + '.';
+      for (const p of Object.keys(schema.properties)) {
+        if (p.startsWith(newPrefix)) {
+          return createPreferenceProxy(preferences, schema, { prefix: newPrefix, resourceUri: opts.resourceUri, overrideIdentifier: opts.overrideIdentifier, style });
+        }
+      }
+    }
+    return undefined;
+  };
+
+  const toJSON = () => {
+    const result: any = {};
+    for (const k of ownKeys()) {
+      result[k] = get(undefined, k);
+    }
+    return result;
+  };
+
+  return new Proxy({}, {
+    get,
+    ownKeys,
     getOwnPropertyDescriptor: (_, property: string) => {
-      if (schema.properties[property]) {
+      if (ownKeys().indexOf(property) !== -1) {
         return {
           enumerable: true,
           configurable: true,
         };
       }
-      return Object.getOwnPropertyDescriptor(_, property);
+      return {};
     },
-    set: unsupportedOperation,
+    set,
     deleteProperty: unsupportedOperation,
     defineProperty: unsupportedOperation,
   });

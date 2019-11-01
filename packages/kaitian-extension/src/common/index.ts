@@ -30,13 +30,13 @@ export interface ExtraMetaData {
 
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
-  getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
+  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess2(clientId: string): Promise<void>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
   resolveConnection();
   resolveProcessInit();
-  getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string,  info: boolean): Promise<void>;
 }
@@ -44,9 +44,9 @@ export interface IExtensionNodeService {
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
 export interface IExtensionNodeClientService {
   getElectronMainThreadListenPath(clientId: string): Promise<string>;
-  getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
+  getAllExtensions(scan: string[], extensionCandidate: string[], localization: string, extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string): Promise<void>;
-  getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   infoProcessNotExist(): void;
   infoProcessCrash(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;

@@ -115,7 +115,7 @@ export class EditorGrid implements IDisposable {
 
   serialize(): IEditorGridState | null {
     if (this.editorGroup) {
-      if (this.parent && this.editorGroup.resources.length === 0) {
+      if (this.parent && this.editorGroup.resources.filter((r) => r.uri.scheme === 'file').length === 0) {
         return null;
       }
       return {

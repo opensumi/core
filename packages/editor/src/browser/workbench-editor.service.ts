@@ -753,7 +753,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
     this.currentState = null;
-    this.resources.splice(0, this.resources.length);
+    const closed = this.resources.splice(0, this.resources.length);
+    closed.forEach((resource) => {
+      this.eventBus.fire(new EditorGroupCloseEvent({
+        group: this,
+        resource,
+      }));
+    });
     this.activeComponents.clear();
     if (this.workbenchEditorService.editorGroups.length > 1) {
       this.dispose();

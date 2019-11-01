@@ -398,6 +398,10 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       panel.show();
       // 全屏
       if (targetSize && targetSize >= 9999) {
+        this.mainSlotWidget.removeClass('lock-width');
+        // 重新计算widget的尺寸
+        this.middleWidget.fit();
+        this.horizontalPanel.fit();
         const prev = this.horizontalPanel.relativeSizes();
         this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
         tabbar.expanded = true;
@@ -410,6 +414,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         }
         await this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
         tabbar.expanded = false;
+        this.mainSlotWidget.addClass('lock-width');
+        this.middleWidget.fit();
+        this.horizontalPanel.fit();
       }
     } else {
       panel.hide();

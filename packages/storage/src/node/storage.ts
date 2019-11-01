@@ -1,7 +1,7 @@
-import { IStorageServer, IUpdateRequest, IStoragePathServer } from '../common';
+import { IStorageServer, IUpdateRequest, IStoragePathServer, StorageChange } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileService } from '@ali/ide-file-service';
-import { Deferred, URI } from '@ali/ide-core-common';
+import { Deferred, URI, Emitter, Event } from '@ali/ide-core-common';
 import * as path from 'path';
 
 @Injectable()
@@ -19,6 +19,9 @@ export class WorkspaceStorageServer implements IStorageServer {
   private storageName: string;
   private workspaceNamespace: string | undefined;
   private _cache: any = {};
+
+  private onDidChangeEmiter = new Emitter<StorageChange>();
+  readonly onDidChange: Event<StorageChange> = this.onDidChangeEmiter.event;
 
   public async init(workspaceNamespace?: string) {
     this.workspaceNamespace = workspaceNamespace;
@@ -132,6 +135,11 @@ export class WorkspaceStorageServer implements IStorageServer {
         storageFile = await this.fileSystem.createFile(uriString);
       }
       await this.fileSystem.setContent(storageFile, JSON.stringify(raw));
+      const change: StorageChange = {
+        path: storageFile.uri,
+        data: JSON.stringify(raw),
+      };
+      this.onDidChangeEmiter.fire(change);
     }
   }
 
@@ -154,6 +162,9 @@ export class GlobalStorageServer implements IStorageServer {
 
   private storageName: string;
   private _cache: any = {};
+
+  private onDidChangeEmiter = new Emitter<StorageChange>();
+  readonly onDidChange: Event<StorageChange> = this.onDidChangeEmiter.event;
 
   public async init() {
     return await this.setupDirectories();
@@ -245,6 +256,11 @@ export class GlobalStorageServer implements IStorageServer {
         storageFile = await this.fileSystem.createFile(uriString);
       }
       await this.fileSystem.setContent(storageFile, JSON.stringify(raw));
+      const change: StorageChange = {
+        path: storageFile.uri,
+        data: JSON.stringify(raw),
+      };
+      this.onDidChangeEmiter.fire(change);
     }
   }
 

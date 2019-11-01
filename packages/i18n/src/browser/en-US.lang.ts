@@ -3,17 +3,8 @@ export const localizationBundle = {
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
-    'ButtonOK': 'Ok',
-    'ButtonCancel': 'Cancel',
-
-    'mFile': 'File',
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
-    'mEdit': 'Edit',
-    'mView': 'View',
-    'mHelp': 'Help',
-    'menu-bar.file.open': 'Open File',
-
     'file.save': 'Save File',
     'file.open': 'Open',
     'file.open.side': 'Open to the Side',
@@ -27,10 +18,13 @@ export const localizationBundle = {
     'file.copy.file': 'Copy',
     'file.cut.file': 'Cut',
 
+    'menu-bar.file': 'File',
+    'menu-bar.edit': 'Edit',
+    'menu-bar.view': 'View',
+    'menu-bar.help': 'Help',
     'menu-bar.file.save-as': 'Save As',
     'menu-bar.file.save-all': 'Save All',
-
-    'menu-bar.view': 'View',
+    'menu-bar.file.open': 'Open File',
     'menu-bar.view.quick.command': 'Command',
     'menu-bar.view.outward': 'Outward',
     'menu-bar.view.outward.right-panel.toggle': 'Toggle Right Panel',
@@ -41,6 +35,8 @@ export const localizationBundle = {
     'menu-bar.view.outward.theme.toggle': 'switch skin',
     'menu-bar.view.outward.localize.toggle': 'switch language',
     'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
+
+    'selectAll': 'Select All',
 
     'editor': 'Editor',
     'editor.undo': 'Undo',
@@ -54,6 +50,14 @@ export const localizationBundle = {
     'editor.splitToTop': 'Split To Top',
     'editor.splitToBottom': 'Split To Bottom',
     'editor.closeAllInGroup': 'Close All',
+    'editor.closeToRight': 'Close To Right',
+    'editor.close': 'Close',
+    'editor.action.accept': 'Accept Changes (Use version on the right)',
+    'editor.action.revert': 'Revert Changes (Use version on the left)',
+    'status-bar.label.line': 'Ln',
+    'status-bar.label.column': 'Col',
+    'status-bar.label.selected': 'Selected',
+    'editor.closeOtherEditors': 'Close Others',
 
     'edit.cut': 'Cut',
     'edit.copy': 'Copy',
@@ -110,6 +114,7 @@ export const localizationBundle = {
     'search.help.matchRange': 'To declare a range of characters to match',
     'search.help.modify': 'Modify',
     'search.replace.buttonOK': 'Replace',
+    'search.replace.buttonCancel': 'Cancel',
     'search.quickOpen.leftRight': 'Open on the side',
     'search.quickOpen.upDown': 'Open at the bottom',
     'fileResults': 'File results',
@@ -206,6 +211,8 @@ export const localizationBundle = {
     'settings.group.extension': 'Extensions',
     'settings.group.feature': 'Feature',
 
+    'settings.menu.keymaps': 'Settings',
+
     'preference.general.theme': 'Theme',
     'preference.general.icon': 'Icon Theme',
     'preference.general.language': 'Language',
@@ -218,12 +225,13 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
     'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
 
-    'preference.title': 'Settings',
-    'keymaps.titile': 'Keyboard Shortcuts',
+    'preference.tab.name': 'Settings',
+    'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
-    'preference.tab.name': 'Settings',
+    'preference.editor.askIfDiff': 'Error If File On Disk is ewer',
+    'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
@@ -235,6 +243,9 @@ export const localizationBundle = {
     'open.editors.close.all': 'Close All',
 
     'terminal.name': 'Terminal',
+
+    'theme.toggle': 'Color Theme',
+    'theme.icon.toggle': 'File Icon Theme',
 
     'preference.workbench.list.openMode': 'Controls how to open items in trees and lists using the mouse (if supported). For parents with children in trees, this setting will control if a single click expands the parent or a double click. Note that some trees and lists might choose to ignore this setting if it is not applicable.',
 
@@ -251,5 +262,51 @@ export const localizationBundle = {
     'keymaps.keybinding.require': 'keybinding value is required',
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
+
+    'layout.tabbar.hide': 'HIDE',
+    'layout.view.hide': 'HIDE',
+    'marketplace.extension.update.now': 'Update now',
+    'marketplace.extension.update.delay': 'Update later',
+    'marketplace.extension.uninstall.failed': 'Failed to uninstall',
+    'marketplace.extension.reload.delay': 'Restart later',
+    'marketplace.extension.reload.now': 'Restart now',
+    'marketplace.extension.builtin': 'Builtin',
+    'marketplace.extension.enable': 'Enable',
+    'marketplace.extension.disable': 'Disable',
+    'marketplace.extension.enable.workspace': 'Enable(workspace)',
+    'marketplace.extension.disable.workspace': 'Disable(workspace)',
+    'marketplace.extension.install': 'Install',
+    'marketplace.extension.container': 'Extension',
+    'marketplace.extension.empty.disabled': 'No disabled extensions yet',
+    'marketplace.extension.notfound': 'No Extension',
+    'marketplace.panel.hot': 'Hot Extensions',
+    'marketplace.panel.search': 'Search',
+    'marketplace.panel.enabled': 'Enabled',
+    'marketplace.panel.disabled': 'Disabled',
+    'marketplace.panel.tab.marketplace': 'Marketplace',
+    'marketplace.panel.tab.placeholder.search': 'Search from marketplace',
+    'marketplace.tab.installed': 'Installed',
+    'marketplace.panel.tab.placeholder.installed': 'Search from installed',
+    'marketplace.extension.findUpdate': 'Find Extension {0} has new version {1}，Do you want to update？`',
+    'marketplace.extension.canupdate': 'Can update',
+    'marketplace.extension.updating': 'Updating',
+    'marketplace.extension.update': 'Update',
+    'marketplace.extension.installing': 'Installing',
+    'marketplace.extension.reloadrequure': 'Requure reload',
+    'marketplace.extension.uninstalling': 'Uninstalling',
+    'marketplace.extension.uninstall': 'Uninstall',
+    'marketplace.extension.readme': 'Readme',
+    'marketplace.extension.changelog': 'Changelog',
+    'marketplace.extension.installed': 'Installed',
+
+    'saveChangesMessage': 'Do you want to save the changes you made to {0}?',
+    'file.prompt.dontSave': 'Don\'t Save',
+    'file.prompt.save': 'Save',
+    'file.prompt.cancel': 'Cancel',
+
+    'doc.saveError.failed': 'File Saving Failed. Reason: ',
+    'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',
+    'doc.saveError.diffAndSave': 'Compare...',
+    'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
   },
 };

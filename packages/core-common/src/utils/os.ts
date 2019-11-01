@@ -88,3 +88,14 @@ export function isElectronNode() {
 export function isDevelopment() {
     return (global as any).isDev || (process && process.env.IS_DEV);
 }
+
+/**
+ * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
+ */
+declare var __webpack_require__: any;
+declare var __non_webpack_require__: any;
+
+// https://github.com/webpack/webpack/issues/4175#issuecomment-342931035
+export function getNodeRequire() {
+  return typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require;
+}

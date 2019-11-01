@@ -62,7 +62,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  private isInit: boolean = false;
+  @observable
+  isInit: boolean = false;
 
   // 是否显示内置插件
   private isShowBuiltinExtensions: boolean = false;
@@ -206,13 +207,23 @@ export class ExtensionManagerService implements IExtensionManagerService {
     this.loading = SearchState.LOADING;
     // 获取所有已安装的插件
     const extensions = await this.extensionService.getAllExtensionJson();
-    const hotExtensions = await this.getHotExtensions(extensions.map((extensions) => extensions.extensionId));
+    let hotExtensions: RawExtension[] = [];
+    try {
+      hotExtensions = await this.getHotExtensions(extensions.map((extensions) => extensions.extensionId));
+      runInAction(() => {
+        this.hotExtensions = hotExtensions;
+        this.loading = SearchState.LOADED;
+      });
+    } catch (err) {
+      this.logger.error(err);
+      runInAction(() => {
+        this.loading = SearchState.NO_CONTENT;
+      });
+    }
     // 是否要展示内置插件
     this.isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
     runInAction(() => {
-      this.hotExtensions = hotExtensions;
       this.extensions = extensions;
-      this.loading = SearchState.LOADED;
       this.isInit = true;
     });
   }
@@ -302,18 +313,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
       changelog: './CHANGELOG.md',
     });
     if (extensionDetail) {
-      const readme = extensionDetail.extraMetadata.readme
-                  ? extensionDetail.extraMetadata.readme
-                  : `# ${extension.displayName}\n${extension.description}`;
-
-      const changelog = extensionDetail.extraMetadata.changelog
-                  ? extensionDetail.extraMetadata.changelog
-                  : `no changelog`;
-
       return {
         ...extension,
-        readme,
-        changelog,
+        readme: extensionDetail.extraMetadata.readme,
+        changelog: extensionDetail.extraMetadata.changelog,
         license: '',
         categories: '',
         repository: extensionDetail.packageJSON.repository ? extensionDetail.packageJSON.repository.url : '',
@@ -325,8 +328,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
-  async getDetailFromMarketplace( extensionId: string ): Promise<ExtensionDetail | undefined> {
-    const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId);
+  async getDetailFromMarketplace(extensionId: string, version: string): Promise<ExtensionDetail | undefined> {
+    const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId, version);
     if (res && res.data) {
       return {
         id: `${res.data.publisher}.${res.data.name}`,
@@ -362,13 +365,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @param extension
    */
   private getI18nInfo(extension: IExtension): { description: string, displayName: string} {
-    let displayName = extension.packageJSON.displayName;
-    let description = extension.packageJSON.description;
-
-    if (extension.packageNlsJSON) {
-      displayName = replaceLocalizePlaceholder(extension.packageNlsJSON.displayName);
-      description = replaceLocalizePlaceholder(extension.packageNlsJSON.description);
-    }
+    const displayName = replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.packageJSON.name)!;
+    const description = replaceLocalizePlaceholder(extension.packageJSON.description, extension.packageJSON.name)!;
 
     return {
       description,

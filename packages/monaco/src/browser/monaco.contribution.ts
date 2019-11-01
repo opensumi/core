@@ -52,7 +52,9 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     await this.monacoService.loadMonaco();
     // 执行所有 contribution 的 onMonacoLoaded 事件，用来添加 overrideService
     for (const contribution of this.monacoContributionProvider.getContributions()) {
-      contribution.onMonacoLoaded(this.monacoService);
+      if (contribution.onMonacoLoaded) {
+        contribution.onMonacoLoaded(this.monacoService);
+      }
     }
     for (const contribution of this.schemaContributionProvider.getContributions()) {
       contribution.registerSchema(this.jsonContributionRegistry);
@@ -98,6 +100,12 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     });
 
     monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService);
+
+    for (const contribution of this.monacoContributionProvider.getContributions()) {
+      if (contribution.onContextKeyServiceReady) {
+        contribution.onContextKeyServiceReady(this.injector.get(IContextKeyService));
+      }
+    }
   }
 
   registerCommands() {

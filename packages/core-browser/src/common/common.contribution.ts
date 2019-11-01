@@ -65,10 +65,10 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
   }
 
   registerMenus(menus: MenuModelRegistry): void {
-    menus.registerSubmenu(COMMON_MENUS.FILE, localize('mFile'));
-    menus.registerSubmenu(COMMON_MENUS.EDIT, localize('mEdit'));
-    menus.registerSubmenu(COMMON_MENUS.VIEW, localize('mView'));
-    menus.registerSubmenu(COMMON_MENUS.HELP, localize('mHelp'));
+    menus.registerSubmenu(COMMON_MENUS.FILE, localize('menu-bar.file'));
+    menus.registerSubmenu(COMMON_MENUS.EDIT, localize('menu-bar.edit'));
+    menus.registerSubmenu(COMMON_MENUS.VIEW, localize('menu-bar.view'));
+    menus.registerSubmenu(COMMON_MENUS.HELP, localize('menu-bar.help'));
 
     menus.registerMenuAction(COMMON_MENUS.FILE_NEW, {
       commandId: FILE_COMMANDS.NEW_FILE.id,

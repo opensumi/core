@@ -10,14 +10,18 @@ import { observer } from 'mobx-react-lite';
 
 interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   extension: RawExtension;
-  select: (extension: RawExtension) => void;
+  select: (extension: RawExtension, isDouble: boolean) => void;
   install: (extension: RawExtension) => Promise<void>;
+  // 是否显示已安装文案
+  showInstalled?: boolean;
 }
 
 export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
-   extension, select, install, className,
+   extension, select, install, className, showInstalled,
   }) => {
   const [installing, setInstalling] = React.useState(false);
+  const timmer = React.useRef<any>();
+  const clickCount = React.useRef(0);
 
   async function handleInstall(e) {
     e.stopPropagation();
@@ -25,9 +29,23 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
     await install(extension);
     setInstalling(false);
   }
+
+  function handleClick(e) {
+    clickCount.current++;
+    clearTimeout(timmer.current);
+    timmer.current = setTimeout(() => {
+      if (clickCount.current === 1) {
+        select(extension, false);
+      } else if (clickCount.current === 2) {
+        select(extension, true);
+      }
+      clickCount.current = 0;
+    }, 200);
+  }
+
   return (
     <div className={className}>
-      <div onClick={() => select(extension)} className={styles.wrap}>
+      <div onClick={handleClick} className={styles.wrap}>
         <div>
           <img className={styles.icon} src={extension.icon}></img>
         </div>
@@ -35,9 +53,10 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
           <div className={styles.info_header}>
             <div className={styles.name_wrapper}>
               <div className={styles.name}>{extension.displayName}</div>
-              {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin', '内置')}</span>) : null}
+              {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
             </div>
-            {!extension.installed && <Button loading={installing} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>安装</Button>}
+            {!extension.installed && <Button loading={installing} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button>}
+            {extension.installed && showInstalled ? localize('marketplace.extension.installed') : null}
           </div>
           <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i>{extension.downloadCount}</span>) : null}

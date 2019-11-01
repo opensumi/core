@@ -10,6 +10,9 @@ import { KEYMAPS_FILE_NAME, IKeymapService, KeybindingJson, KEYMAPS_SCHEME, Keyb
 @Injectable()
 export class KeymapService implements IKeymapService {
 
+  @Autowired(KeybindingRegistry)
+  protected readonly keyBindingRegistry: KeybindingRegistry;
+
   @Autowired(ResourceProvider)
   protected readonly resourceProvider: ResourceProvider;
 
@@ -64,7 +67,7 @@ export class KeymapService implements IKeymapService {
         await this.reconcile();
       });
     }
-    this.keybindingRegistry.onKeybindingsChanged(() => this.keymapChangeEmitter.fire(undefined));
+    this.keyBindingRegistry.onKeybindingsChanged(() => this.keymapChangeEmitter.fire(undefined));
     this.keybindings = this.getKeybindingItems();
     this.onDidKeymapChanges(() => {
       this.keybindings = this.getKeybindingItems();
@@ -78,7 +81,7 @@ export class KeymapService implements IKeymapService {
   // 重新加载并设置Keymap定义的快捷键
   async reconcile() {
     const keybindings = await this.parseKeybindings();
-    this.keybindingRegistry.setKeymap(KeybindingScope.USER, keybindings);
+    this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keybindings);
     this.keymapChangeEmitter.fire(undefined);
   }
 
@@ -221,10 +224,8 @@ export class KeymapService implements IKeymapService {
     const sorted: KeybindingItem[] = items.sort((a: KeybindingItem, b: KeybindingItem) => this.compareItem(a.command, b.command));
     // 获取定义了快捷键的列表
     const keyItems: KeybindingItem[] = sorted.filter((a: KeybindingItem) => !!a.keybinding);
-    // 获取剩余的未定义快捷键列表.
-    const otherItems: KeybindingItem[] = sorted.filter((a: KeybindingItem) => !a.keybinding);
 
-    return [...keyItems, ...otherItems];
+    return [...keyItems];
   }
 
   // 字典排序
