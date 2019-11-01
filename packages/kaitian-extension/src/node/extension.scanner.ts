@@ -121,6 +121,7 @@ export class ExtensionScanner {
       try {
         extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
+        console.error(extendPath, e);
         getLogger().error(e);
       }
     }

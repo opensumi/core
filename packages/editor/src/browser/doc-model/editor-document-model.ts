@@ -1,11 +1,13 @@
 import * as md5 from 'md5';
-import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable } from '@ali/ide-core-browser';
+import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { EOL, EndOfLineSequence, IDocPersistentCacheProvider, IDocCache, isDocContentCache, parseRangeFrom } from '../../common';
-import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IEditorDocumentModelContentChange, EditorDocumentModelSavedEvent } from './types';
+import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IEditorDocumentModelContentChange, EditorDocumentModelSavedEvent, ORIGINAL_DOC_SCHEME } from './types';
 import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
 import { EditorDocumentError } from './editor-document-error';
+import { IMessageService } from '@ali/ide-overlay';
+import { ICompareService, CompareResult } from '../types';
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
@@ -30,8 +32,17 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   @Autowired(IEditorDocumentModelService)
   service: IEditorDocumentModelServiceImpl;
 
+  @Autowired(ICompareService)
+  compareService: ICompareService;
+
   @Autowired(IDocPersistentCacheProvider)
   cacheProvider: IDocPersistentCacheProvider;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
+
+  @Autowired(IMessageService)
+  messageService: IMessageService;
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
@@ -214,7 +225,10 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this.monacoModel;
   }
 
-  async save(treatDiffAsError?: boolean | undefined): Promise<boolean> {
+  async save(force: boolean = false): Promise<boolean> {
+    if (!this.preferenceService.get<boolean>('editor.askIfDiff')) {
+      force = true;
+    }
     if (!this.dirty) {
       return false;
     }
@@ -223,7 +237,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (lastSavingTask && lastSavingTask.versionId === versionId) {
       return false;
     }
-    const task = new SaveTask(this.uri, versionId, this.monacoModel.getAlternativeVersionId(), this.getText());
+    const task = new SaveTask(this.uri, versionId, this.monacoModel.getAlternativeVersionId(), this.getText(), force);
     this.savingTasks.push(task);
     if (this.savingTasks.length === 1) {
       this.initSave();
@@ -233,17 +247,34 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       return true;
     } else if (res.state === 'error') {
       this.logger.error(res.errorMessage);
+      this.messageService.error(localize('doc.saveError.failed') + '\n' + res.errorMessage);
       return false;
     } else if (res.state === 'diff') {
-      if (treatDiffAsError) {
-        this.logger.error('文件无法保存，版本和磁盘不一致');
-        return false;
-      } else {
-        this.logger.error('文件无法保存，版本和磁盘不一致');
-        return false;
-      }
+      this.messageService.error(formatLocalize('doc.saveError.diff', this.uri.toString()), [localize('doc.saveError.diffAndSave')]).then((res) => {
+        if (res) {
+          this.compareAndSave();
+        }
+      });
+      this.logger.error('文件无法保存，版本和磁盘不一致');
+      return false;
     }
     return false;
+  }
+
+  private async compareAndSave() {
+    const originalUri = URI.from({
+      scheme: ORIGINAL_DOC_SCHEME,
+      query: URI.stringifyQuery({
+        target: this.uri.toString(),
+      }),
+    });
+    const fileName = this.uri.path.base;
+    const res = await this.compareService.compare(originalUri, this.uri, formatLocalize('editor.compareAndSave.title', fileName, fileName));
+    if (res === CompareResult.revert ) {
+      this.revert();
+    } else if (res === CompareResult.accept ) {
+      this.save(true);
+    }
   }
 
   async initSave() {

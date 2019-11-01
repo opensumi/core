@@ -212,3 +212,20 @@ export interface IEditorActionItem {
 }
 
 export const IEditorActionRegistry = Symbol('IEditorActionRegistry');
+
+export interface ICompareService {
+
+  /**
+   * 在编辑器中compare两个文件
+   */
+  compare(original: URI, modified: URI, name: string): Promise<CompareResult>;
+
+}
+
+export const ICompareService = Symbol('ICompareService');
+
+export enum CompareResult {
+  revert = 'revert', // original -> modified
+  accept = 'accept', // modified -> original
+  cancel = 'cancel',
+}

@@ -166,6 +166,7 @@ export const defaultSettingSections: {
     {
       preferences: [
         {id: 'editor.previewMode', localized: 'preference.editor.previewMode'},
+        {id: 'editor.askIfDiff', localized: 'preference.editor.askIfDiff' },
         {id: 'editor.fontFamily', localized: 'preference.editor.fontFamily'},
         {id: 'editor.fontWeight', localized: 'preference.editor.fontWeight'},
         {id: 'editor.fontSize', localized: 'preference.editor.fontSize'},

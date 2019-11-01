@@ -47,15 +47,9 @@ export interface IEditorDocumentModel {
 
   /**
    *  保存文档, 如果文档不可保存，则不会有任何反应
-   *  @param treatDiffAsError
-   *
-   *  在保存传入文件系统时，如果本地版本与此次编辑的基础版本不同, 如何处理这种情况
-   *
-   *  false时，弹出错误需要用户进行merge和保存。（默认行为） //TODO
-   *
-   *  true时，直接报错。
+   *  @param force 强制保存, 不管diff
    */
-  save(treatDiffAsError?: boolean): Promise<boolean>;
+  save(force?: boolean): Promise<boolean>;
 
   /**
    * 恢复文件内容
@@ -96,8 +90,9 @@ export interface IEditorDocumentModelContentProvider {
    * @param uri
    * @param content
    * @param baseContent dirty前的内容
+   * @param ignoreDiff 无视diff错误, 强行覆盖保存
    */
-  saveDocumentModel?(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string): MaybePromise<IEditorDocumentModelSaveResult>;
+  saveDocumentModel?(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): MaybePromise<IEditorDocumentModelSaveResult>;
 
   /**
    * 为一个uri提供喜好的语言id，返回undefined则交由编辑器自己去判断
@@ -228,3 +223,6 @@ export interface IEOLStackElement extends IStackElement {
 
   eol: EndOfLineSequence;
 }
+
+// original_doc://?target=file://aaa.js
+export const ORIGINAL_DOC_SCHEME = 'original_doc';

@@ -227,10 +227,14 @@ export const localizationBundle = {
     'preference.editor.insertSpace': '使用空格代替Tab',
     'preference.editor.wordWrap': '自动换行',
     'preference.editor.wordWrapColumn': '自动换行长度',
+    'preference.editor.askIfDiff': '保存文件冲突时提示',
 
     'preference.array.additem': '添加',
 
     'editor.configuration.fontFamily': '',
+    'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行报警',
+    'editor.action.accept': '接受更改（使用右边)',
+    'editor.action.revert': '回退更改（使用左边)',
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
@@ -313,5 +317,10 @@ export const localizationBundle = {
     'file.prompt.dontSave': '不保存',
     'file.prompt.save': '保存',
     'file.prompt.cancel': '取消',
+
+    'doc.saveError.failed': '文件保存失败， 原因:',
+    'doc.saveError.diff': '{0} 已经在磁盘上被修改，不能保存',
+    'doc.saveError.diffAndSave': '进行比较',
+    'editor.compareAndSave.title': '{0} (在磁盘上) <=> {1} (编辑中) ',
   },
 };
