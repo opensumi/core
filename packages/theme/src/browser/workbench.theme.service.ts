@@ -9,7 +9,7 @@ import { ThemeStore } from './theme-store';
 import { Logger, getPreferenceThemeId, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import { Registry } from 'vscode-textmate';
 
-const DEFAULT_THEME_ID = 'ide-dark vscode-theme-defaults-themes-dark_plus-json';
+const DEFAULT_THEME_ID = 'ide-dark';
 // from vscode
 const colorIdPattern = '^\\w+[.\\w+]*$';
 
