@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { action } from 'mobx';
-import { URI, Schemas, MaybePromise, Emitter, Event, localize } from '@ali/ide-core-common';
+import { URI, Schemas, Emitter, formatLocalize } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
@@ -24,7 +24,7 @@ const toReplaceResource = (fileResource: URI): URI => {
 };
 
 @Injectable()
-class ReplaceDocumentModelContentProvider implements IEditorDocumentModelContentProvider {
+export class ReplaceDocumentModelContentProvider implements IEditorDocumentModelContentProvider {
 
   contentMap: Map<string, string> = new Map();
 
@@ -210,9 +210,7 @@ export class SearchTreeService {
         URI.from({
           scheme: 'diff',
           query: URI.stringifyQuery({
-            name: localize('search.fileReplaceChanges')
-              .replace('{0}', originalURI.displayName)
-              .replace('{1}', replaceURI.displayName),
+            name: formatLocalize('search.fileReplaceChanges', originalURI.displayName, replaceURI.displayName),
             original: originalURI,
             modified: replaceURI,
           }),
