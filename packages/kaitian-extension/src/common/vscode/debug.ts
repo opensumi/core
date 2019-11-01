@@ -1,8 +1,8 @@
 import { IJSONSchema, IJSONSchemaSnippet, Event } from '@ali/ide-core-common';
-import { Breakpoint, DebuggerContribution } from './models';
+import { Breakpoint } from './models';
 import * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { DebuggerDescription, DebugConfiguration } from '@ali/ide-debug';
+import { DebuggerDescription, DebugConfiguration, IDebuggerContribution } from '@ali/ide-debug';
 import { WorkspaceFolder } from './models';
 
 export interface IMainThreadDebug {
@@ -30,7 +30,7 @@ export interface IExtHostDebug {
   $createDebugSession(debugConfiguration: vscode.DebugConfiguration): Promise<string>;
   $terminateDebugSession(sessionId: string): Promise<void>;
   $getTerminalCreationOptions(debugType: string): Promise<any>;
-  $registerDebuggerContributions(extensionFolder: string, contributions: DebuggerContribution[]);
+  $registerDebuggerContributions(extensionFolder: string, contributions: IDebuggerContribution[]);
 }
 
 export interface IExtHostDebugService extends IExtHostDebug {

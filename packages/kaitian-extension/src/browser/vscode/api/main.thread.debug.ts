@@ -44,9 +44,6 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(DebugPreferences)
   protected readonly debugPreferences: DebugPreferences;
 
-  @Autowired(DebugSchemaUpdater)
-  protected readonly debugSchemaUpdater: DebugSchemaUpdater;
-
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
 
@@ -167,8 +164,6 @@ export class MainThreadDebug implements IMainThreadDebug {
         debugSessionFactory: () => debugSessionFactory,
       }),
     ]);
-
-    this.debugSchemaUpdater.update();
   }
 
   async $unregisterDebuggerConfiguration(debugType: string): Promise<void> {
@@ -176,7 +171,6 @@ export class MainThreadDebug implements IMainThreadDebug {
     if (disposable) {
       disposable.dispose();
       this.toDispose.delete(debugType);
-      this.debugSchemaUpdater.update();
     }
   }
 
