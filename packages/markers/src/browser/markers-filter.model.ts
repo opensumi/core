@@ -1,9 +1,9 @@
 
 import { IMarker, MarkerSeverity, ResourceGlobMatcher, URI } from '@ali/ide-core-common';
-import { IFilter, matchesFuzzy, matchesFuzzy2, matchesPrefix } from '@ali/ide-core-common/lib/filters';
+import { IFilter, IMatch, matchesFuzzy, matchesFuzzy2, matchesPrefix } from '@ali/ide-core-common/lib/filters';
 import { getEmptyExpression, IExpression, splitGlobAware } from '@ali/ide-core-common/lib/glob';
 import * as strings from '@ali/ide-core-common/lib/strings';
-import { IRenderableMarkerModel, IRenderableMarker, IFilterOptions, MarkerItemBuilder, MarkerModelBuilder } from '../common';
+import { IFilterOptions, IRenderableMarker, IRenderableMarkerModel, MarkerItemBuilder, MarkerModelBuilder } from '../common';
 import Messages from './messages';
 
 /**
@@ -77,8 +77,9 @@ export class Filter {
   constructor(public options: FilterOptions) { }
 
   public filterModel(model: IRenderableMarkerModel): IRenderableMarkerModel {
+    const includeMatch = this.options.includesMatcher.matches(new URI(model.resource));
     const filenameMatches = model.filename ? FilterOptions._filter(this.options.textFilter, model.filename) : undefined;
-    const parentMatch = filenameMatches && filenameMatches.length > 0;
+    const parentMatch = includeMatch || filenameMatches && filenameMatches.length > 0;
     if (parentMatch) {
       return MarkerModelBuilder.buildFilterModel(model, this.filterMarkerItems(model.markers, false), parentMatch, true, { filenameMatches });
     } else {

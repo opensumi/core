@@ -107,4 +107,8 @@ export class MarkerViewModel {
     return this.markers.size > 0;
   }
 
+  public hasFilter() {
+    return this.filter !== undefined;
+  }
+
 }

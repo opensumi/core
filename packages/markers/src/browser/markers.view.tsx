@@ -178,29 +178,35 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
       }
     });
   }
-  if (result.length > 0) {
+  return (
+    <div className={styles.markerList}>
+      {result}
+    </div>
+  );
+});
+
+/**
+ * empty marker
+ */
+const Empty: React.FC = observer(() => {
+  const markerService = MarkerService.useInjectable();
+  const viewModel = markerService.getViewModel();
+  if (viewModel.hasFilter()) {
     return (
-      <div className={styles.markerList}>
-        {result}
+      <div className={styles.empty}>
+        { Messages.MARKERS_PANEL_FILTER_CONTENT_EMPTY }
+        <div className={styles.reset} onClick={() => {
+          markerService.fireFilterChanged(undefined);
+        }}>
+          { Messages.MARKERS_PANEL_FILTER_RESET }
+        </div>
       </div>
     );
   } else {
-    return <FilterEmpty />;
+    return (
+      <div className={styles.empty}>{Messages.MARKERS_PANEL_CONTENT_EMPTY}</div>
+    );
   }
-});
-
-/**
- * empty maker
- */
-const Empty: React.FC = observer(() => {
-  return <div className={styles.empty}>{Messages.MARKERS_PANEL_CONTENT_EMPTY}</div>;
-});
-
-/**
- * empty maker when filtered
- */
-const FilterEmpty: React.FC = observer(() => {
-  return <div className={styles.empty}>{Messages.MARKERS_PANEL_FILTER_CONTENT_EMPTY}</div>;
 });
 
 /**

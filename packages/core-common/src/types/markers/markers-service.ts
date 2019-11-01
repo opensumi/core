@@ -83,7 +83,7 @@ export class MarkerStats implements MarkerStatistics {
 				result.warnings += 1;
 			} else if (severity === MarkerSeverity.Info) {
 				result.infos += 1;
-			} else {
+			} else {// Hint
 				result.unknowns += 1;
 			}
 		}

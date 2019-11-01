@@ -9,10 +9,23 @@ import Messages from './messages';
  * Marker过滤面板
  */
 export const MarkerFilterPanel = observer(() => {
+  const ref = React.useRef<HTMLInputElement | null>();
   const markerService = MarkerService.useInjectable();
+
+  React.useEffect(() => {
+    markerService.onMarkerFilterChanged((opt) => {
+      if (opt === undefined) {
+        if (ref.current) {
+          ref.current.value = '';
+        }
+      }
+    });
+  });
+
   return (
     <div className={styles.markerFilterContent}>
       <input className={styles.filterInput}
+        ref={(ele) => ref.current = ele}
         placeholder={Messages.MARKERS_PANEL_FILTER_INPUT_PLACEHOLDER}
         onChange={(event) => {
           const value = event.target.value;
