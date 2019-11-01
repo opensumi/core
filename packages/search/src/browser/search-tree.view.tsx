@@ -101,7 +101,7 @@ export const SearchTree = React.forwardRef((
 
   React.useEffect(() => {
     setScrollContainerStyle(getScrollContainerStyle(viewState, searchPanelLayout));
-  }, [searchPanelLayout, viewState.height, viewState.width]);
+  }, [searchPanelLayout.height, viewState.height, viewState.width, searchPanelLayout.width]);
 
   React.useEffect(() => {
     updateNodes();
