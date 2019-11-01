@@ -1,5 +1,5 @@
 import { uuid } from '@ali/ide-core-common';
-import { IExtensionManagerServer } from '../../src/common';
+import { IExtensionManagerServer, BaseExtension } from '../../src/common';
 import { ExtensionManagerModule } from '../../src/node';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { AppConfig, INodeLogger } from '@ali/ide-core-node';
@@ -79,10 +79,15 @@ describe('template test', () => {
   describe('download extension', () => {
     it('download a extension', async (done) => {
       const extensionId = uuid();
-      const extensionDirName = await createExtension(extensionId);
-      await service.downloadExtension(extensionId);
+      const { path: extensionPath } = await createExtension(extensionId);
+      await service.installExtension({
+        extensionId,
+        name: '',
+        path: '',
+        version: '',
+      });
       // 文件成功下载
-      expect(await fs.pathExists(path.join(extensionDir, extensionDirName, 'package.json')));
+      expect(await fs.pathExists(path.join(extensionPath, 'package.json')));
       done();
     }, 30000);
   });
@@ -92,12 +97,12 @@ describe('template test', () => {
       // 先下载一个插件
       const extensionId = uuid();
       const version = '1.0.0';
-      const extensionDirName = await createExtension(extensionId, version);
-      await service.downloadExtension(extensionId);
-      const packageFile = path.join(extensionDir, extensionDirName, 'package.json');
+      const extension = await createExtension(extensionId, version);
+      await service.installExtension(extension);
+      const packageFile = path.join(extension.path, 'package.json');
       // 文件应该存在
       expect(await fs.pathExists(packageFile));
-      const res = await service.uninstallExtension(extensionId);
+      const res = await service.uninstallExtension(extension);
       // 删除成功
       expect(res);
       // 文件被删除
@@ -107,7 +112,12 @@ describe('template test', () => {
 
     it('uninstall non-existent extension', async (done) => {
       // 填写不存在的插件 id
-      const res = await service.uninstallExtension(uuid());
+      const res = await service.uninstallExtension({
+        extensionId: uuid(),
+        version: '',
+        path: '',
+        name: '',
+      });
       // 结果返回 false
       expect(!res);
       done();
@@ -115,20 +125,20 @@ describe('template test', () => {
   });
 
   describe('update extension', () => {
-    it.skip('update a extension', async (done) => {
+    it('update a extension', async (done) => {
       const version1 = '1.0.0';
       const version2 = '1.0.1';
       // 先下载一个插件
       const extensionId = uuid();
-      const extensionDirName1 = await createExtension(extensionId, version1);
-      await service.downloadExtension(extensionId);
+      const extension1 = await createExtension(extensionId, version1);
+      await service.installExtension(extension1);
       // 再更新插件
-      const extensionDirName2 = await createExtension(extensionId, version1);
-      await service.updateExtension(extensionId, version2, path.join(extensionDir, extensionDirName1));
+      const extension2 = await createExtension(extensionId, version2);
+      await service.updateExtension(extension1, version2);
       // 新插件已经下载
-      expect(await fs.pathExists(path.join(extensionDir, extensionDirName2, 'package.json')));
+      expect(await fs.pathExists(path.join(extension2.path, 'package.json')));
       // 找不到之前的插件了
-      expect(!await fs.pathExists(path.join(extensionDir, extensionDirName1, 'package.json')));
+      expect(!await fs.pathExists(path.join(extension1.path, 'package.json')));
       done();
     });
   });
@@ -139,7 +149,7 @@ describe('template test', () => {
    * @param version 插件版本
    * @return 插件名称
    */
-  async function createExtension(extensionId = uuid(), version = '0.0.1'): Promise<string> {
+  async function createExtension(extensionId = uuid(), version = '0.0.1'): Promise<BaseExtension> {
     await fs.mkdirp(extensionDir);
     const extensionName = uuid();
     const extensionDirName = `${extensionId}-${extensionName}-${version}`;
@@ -150,7 +160,12 @@ describe('template test', () => {
       },
       res: fs.createReadStream(path.join(__dirname, `../res/5d7102ffe8ecb2045ca51ef5-1.9.1.zip`)),
     }));
-    return extensionDirName;
+    return {
+      extensionId,
+      name: extensionName,
+      version,
+      path: path.join(extensionDir, extensionDirName),
+    };
   }
 
 });
