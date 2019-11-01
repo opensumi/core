@@ -109,6 +109,16 @@
         "name": "ide-dark-theme",
         "id": "5d9094c5845342e87e0f2ebf",
         "version": "1.4.4"
+      },
+      {
+        "name": "node-debug",
+        "id": "5dbbd53b999d421844c82d76",
+        "version": "1.40.1"
+      },
+      {
+        "name": "node-debug2",
+        "id": "5dbbd463999d421844c82d71",
+        "version": "1.39.3"
       }
     ],
     "sample": [
