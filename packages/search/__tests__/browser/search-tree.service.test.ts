@@ -70,6 +70,7 @@ class MockWorkbenchEditorService {
 
 @Injectable()
 class MockWorkspaceEditorService {
+  apply() {}
 }
 
 @Injectable()
