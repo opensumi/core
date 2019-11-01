@@ -88,7 +88,7 @@ export class MarkerViewModel {
         } else {
           this.markers.delete(resource);
         }
-      } else {
+      } else {// TODO 考虑优化性能
         this.markers.set(resource, markerModel);
       }
     }
