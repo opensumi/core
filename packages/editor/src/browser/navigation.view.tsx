@@ -22,12 +22,12 @@ export const NavigationBar = (({ editorGroup }: { editorGroup: IEditorGroup }) =
   return (parts.length === 0 ? null : <div className={styles.navigation_container}><div className={styles.navigation}>
     {
       parts.map((p, i) => {
-        return <>
+        return <React.Fragment key={i}>
           {i > 0 && <Icon icon={'right'} size='small' /> }
-          <span className={styles['navigation-part']} key={i}>
+          <span className={styles['navigation-part']}>
             {p}
           </span>
-        </>;
+        </React.Fragment>;
       })
     }
   </div></div>);
