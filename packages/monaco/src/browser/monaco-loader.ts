@@ -30,14 +30,15 @@ function doLoadMonaco(): Promise<void> {
     vsRequire.config({
       paths: {
         vs: URI.file(join((window as any).monacoPath, isDevelopment() ? 'dev' : 'min', 'vs')).codeUri.fsPath,
-        'vs/nls': {
-          // 设置 monaco 内部的 i18n
-          availableLanguages: {
-            // en-US -> en-us
-            '*': lang,
-          },
+      },
+      'vs/nls': {
+        // 设置 monaco 内部的 i18n
+        availableLanguages: {
+          // en-US -> en-us
+          '*': lang,
         },
-    }});
+      },
+    });
   } else {
     let lang = getLanguageId().toLowerCase();
     if (lang === 'en-us') {
