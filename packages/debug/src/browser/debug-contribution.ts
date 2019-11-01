@@ -286,7 +286,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   }
 
   registerSchema(registry: ISchemaRegistry) {
-    registry.registerSchema(launchSchemaUri, launchSchema, ['launch.json']);
+    registry.registerSchema(launchSchemaUri, JSON.stringify(launchSchema), ['launch.json']);
   }
 
   registerKeybindings(keybindings) {

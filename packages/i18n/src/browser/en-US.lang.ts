@@ -218,7 +218,7 @@ export const localizationBundle = {
     'preference.debug.openDebug': 'Controls when the debug view should open.',
     'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
     'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
-    'preference.debug.allowBreakpointsEverywhere': 'Allow setting breakpoints in any file.'
+    'preference.debug.allowBreakpointsEverywhere': 'Allow setting breakpoints in any file.',
 
     'preference.tab.name': 'Settings',
     'keymaps.tab.name': 'Keyboard Shortcuts',
