@@ -69,7 +69,6 @@ export class EditorModule extends BrowserModule {
     {
       token: ICompareService,
       useClass: CompareService,
-      // useClass: LocalStorageDocCacheImpl,
     },
     DefaultDiffEditorContribution,
     EditorClientAppContribution,
