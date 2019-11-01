@@ -53,8 +53,9 @@ export interface IEditorDocumentModel {
 
   /**
    * 恢复文件内容
+   * @param notOnDisk 文档已经不存在磁盘
    */
-  revert(): Promise<void>;
+  revert(notOnDisk?: boolean): Promise<void>;
 
   getText(range?: IRange): string;
 
