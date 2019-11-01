@@ -207,13 +207,23 @@ export class ExtensionManagerService implements IExtensionManagerService {
     this.loading = SearchState.LOADING;
     // 获取所有已安装的插件
     const extensions = await this.extensionService.getAllExtensionJson();
-    const hotExtensions = await this.getHotExtensions(extensions.map((extensions) => extensions.extensionId));
+    let hotExtensions: RawExtension[] = [];
+    try {
+      hotExtensions = await this.getHotExtensions(extensions.map((extensions) => extensions.extensionId));
+      runInAction(() => {
+        this.hotExtensions = hotExtensions;
+        this.loading = SearchState.LOADED;
+      });
+    } catch (err) {
+      this.logger.error(err);
+      runInAction(() => {
+        this.loading = SearchState.NO_CONTENT;
+      });
+    }
     // 是否要展示内置插件
     this.isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
     runInAction(() => {
-      this.hotExtensions = hotExtensions;
       this.extensions = extensions;
-      this.loading = SearchState.LOADED;
       this.isInit = true;
     });
   }
