@@ -15,6 +15,7 @@ import {
   ContentSearchResult,
   ISearchTreeItem,
 } from '../common';
+import { SearchPreferences } from './search-preferences';
 
 const REPLACE_PREVIEW = 'replacePreview';
 
@@ -122,6 +123,9 @@ export class SearchTreeService {
   @Autowired(ReplaceDocumentModelContentProvider)
   private replaceDocumentModelContentProvider: ReplaceDocumentModelContentProvider;
 
+  @Autowired(SearchPreferences)
+  private searchPreferences: SearchPreferences;
+
   constructor() {
     this.contentRegistry.registerEditorDocumentModelContentProvider(
       this.replaceDocumentModelContentProvider,
@@ -193,8 +197,9 @@ export class SearchTreeService {
     // Click file result line
     const result: ContentSearchResult = file.searchResult!;
     const replaceValue = this.searchBrowserService.replaceValue;
+    const isOpenReplaceView = this.searchPreferences['search.useReplacePreview'];
 
-    if (replaceValue.length > 0) {
+    if (isOpenReplaceView && replaceValue.length > 0) {
       // Open diff editor
       const originalURI = new URI(result.fileUri);
       const replaceURI = toReplaceResource(originalURI);

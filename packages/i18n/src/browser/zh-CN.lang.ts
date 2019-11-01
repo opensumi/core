@@ -195,6 +195,7 @@ export const localizationBundle = {
     'preference.search.exclude': '配置在搜索中排除的文件和文件夹的 glob 模式。已经继承 `#files.exclude#` 设置的所有 glob 模式。',
     'preference.files.watcherExclude.title': '排除文件监听 `files.watcherExclude`',
     'preference.search.exclude.title': '搜索排除文件 `search.exclude`',
+    'preference.search.useReplacePreview': '控制搜索替换打开编辑器时，是否打开“替换预览”。',
     'preference.files.exclude.title': '排除文件显示 `files.exclude`',
     'preference.debug.internalConsoleOptions': '控制何时打开内部调试控制台。',
     'preference.debug.openDebug': '控制何时打开调试视图。',
