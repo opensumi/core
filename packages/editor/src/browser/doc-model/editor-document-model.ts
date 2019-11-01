@@ -296,15 +296,25 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   async reload() {
-    const content = await this.contentRegistry.getContentForUri(this.uri, this._encoding);
-    if (!isUndefinedOrNull(content)) {
-      this.cleanAndUpdateContent(content);
+    try {
+      const content = await this.contentRegistry.getContentForUri(this.uri, this._encoding);
+      if (!isUndefinedOrNull(content)) {
+        this.cleanAndUpdateContent(content);
+      }
+    } catch (e) {
+      this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     }
   }
 
-  async revert() {
-    // 利用修改编码的副作用
-    this.updateEncoding(this._originalEncoding);
+  async revert(notOnDisk?: boolean) {
+    if (notOnDisk) {
+      // FIXME
+      // 暂时就让它不dirty, 不是真正的revert
+      this._persistVersionId = this.monacoModel.getAlternativeVersionId();
+    } else {
+      // 利用修改编码的副作用
+      await this.updateEncoding(this._originalEncoding);
+    }
   }
 
   getText(range?: IRange) {
