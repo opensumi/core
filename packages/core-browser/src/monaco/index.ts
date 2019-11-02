@@ -1,4 +1,4 @@
-import { Event, IJSONSchema, IContextKeyService } from '..';
+import { Event, IJSONSchema, IContextKeyService, IDisposable } from '..';
 
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
@@ -63,7 +63,7 @@ export interface JsonSchemaConfiguration {
 }
 export interface ISchemaStore {
   onSchemasChanged: Event<void>;
-  register(config: JsonSchemaConfiguration): void;
+  register(config: JsonSchemaConfiguration): IDisposable;
   getConfigurations(): JsonSchemaConfiguration[];
 }
 

@@ -41,7 +41,7 @@ export class DebugSchemaUpdater {
         items.defaultSnippets.push(...configurationSnippets);
       }
     }
-    this.schemaRegistry.registerSchema(launchSchemaUri, schema, ['launch.json']);
+    this.schemaRegistry.registerSchema(`${launchSchemaUri}/extension`, schema, ['launch.json']);
   }
 }
 

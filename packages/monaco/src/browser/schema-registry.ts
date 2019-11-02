@@ -54,13 +54,14 @@ export class SchemaRegistry implements ISchemaRegistry {
     this.schemasById = {};
   }
 
-  public registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema, fileMatch: string[]): void {
+  public registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema, fileMatch: string[]): IDisposable {
     this.schemasById[normalizeId(uri)] = unresolvedSchemaContent;
-    this.schemaStore.register({
+    const disposable = this.schemaStore.register({
       fileMatch,
       url: uri,
     });
     this._onDidChangeSchema.fire(uri);
+    return disposable;
   }
 
   public notifySchemaChanged(uri: string): void {
