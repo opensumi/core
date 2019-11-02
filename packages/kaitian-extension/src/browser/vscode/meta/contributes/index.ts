@@ -327,6 +327,6 @@ export class VSCodeContributeRunner extends Disposable {
         }
       }
     }
-    this.schemaRegistry.registerSchema(EXTENSION_JSON_URI, JSON.stringify(schema), ['package.json']);
+    this.schemaRegistry.registerSchema(EXTENSION_JSON_URI, schema, ['package.json']);
   }
 }
