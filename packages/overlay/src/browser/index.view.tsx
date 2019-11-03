@@ -23,10 +23,10 @@ export const Overlay = observer(() => {
   }
 
   return (
-    <>
+    <div className={'ide-overlay'}>
       <Dialog />
       <CtxMenu />
       <SlotRenderer Component={extraComponents} />
-    </>
+    </div>
   );
 });

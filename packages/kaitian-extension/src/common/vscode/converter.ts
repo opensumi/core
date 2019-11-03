@@ -680,45 +680,45 @@ export function pathOrURIToURI(value: string | types.Uri): types.Uri {
 
 export namespace SymbolKind {
   // tslint:disable-next-line:no-null-keyword
-  const fromMapping: { [kind: number]: model.SymbolKind } = Object.create(null);
-  fromMapping[model.SymbolKind.File] = model.SymbolKind.File;
-  fromMapping[model.SymbolKind.Module] = model.SymbolKind.Module;
-  fromMapping[model.SymbolKind.Namespace] = model.SymbolKind.Namespace;
-  fromMapping[model.SymbolKind.Package] = model.SymbolKind.Package;
-  fromMapping[model.SymbolKind.Class] = model.SymbolKind.Class;
-  fromMapping[model.SymbolKind.Method] = model.SymbolKind.Method;
-  fromMapping[model.SymbolKind.Property] = model.SymbolKind.Property;
-  fromMapping[model.SymbolKind.Field] = model.SymbolKind.Field;
-  fromMapping[model.SymbolKind.Constructor] = model.SymbolKind.Constructor;
-  fromMapping[model.SymbolKind.Enum] = model.SymbolKind.Enum;
-  fromMapping[model.SymbolKind.Interface] = model.SymbolKind.Interface;
-  fromMapping[model.SymbolKind.Function] = model.SymbolKind.Function;
-  fromMapping[model.SymbolKind.Variable] = model.SymbolKind.Variable;
-  fromMapping[model.SymbolKind.Constant] = model.SymbolKind.Constant;
-  fromMapping[model.SymbolKind.String] = model.SymbolKind.String;
-  fromMapping[model.SymbolKind.Number] = model.SymbolKind.Number;
-  fromMapping[model.SymbolKind.Boolean] = model.SymbolKind.Boolean;
-  fromMapping[model.SymbolKind.Array] = model.SymbolKind.Array;
-  fromMapping[model.SymbolKind.Object] = model.SymbolKind.Object;
-  fromMapping[model.SymbolKind.Key] = model.SymbolKind.Key;
-  fromMapping[model.SymbolKind.Null] = model.SymbolKind.Null;
-  fromMapping[model.SymbolKind.EnumMember] = model.SymbolKind.EnumMember;
-  fromMapping[model.SymbolKind.Struct] = model.SymbolKind.Struct;
-  fromMapping[model.SymbolKind.Event] = model.SymbolKind.Event;
-  fromMapping[model.SymbolKind.Operator] = model.SymbolKind.Operator;
-  fromMapping[model.SymbolKind.TypeParameter] = model.SymbolKind.TypeParameter;
+  const fromMapping: { [kind: number]: types.SymbolKind } = Object.create(null);
+  fromMapping[types.SymbolKind.File] = types.SymbolKind.File;
+  fromMapping[types.SymbolKind.Module] = types.SymbolKind.Module;
+  fromMapping[types.SymbolKind.Namespace] = types.SymbolKind.Namespace;
+  fromMapping[types.SymbolKind.Package] = types.SymbolKind.Package;
+  fromMapping[types.SymbolKind.Class] = types.SymbolKind.Class;
+  fromMapping[types.SymbolKind.Method] = types.SymbolKind.Method;
+  fromMapping[types.SymbolKind.Property] = types.SymbolKind.Property;
+  fromMapping[types.SymbolKind.Field] = types.SymbolKind.Field;
+  fromMapping[types.SymbolKind.Constructor] = types.SymbolKind.Constructor;
+  fromMapping[types.SymbolKind.Enum] = types.SymbolKind.Enum;
+  fromMapping[types.SymbolKind.Interface] = types.SymbolKind.Interface;
+  fromMapping[types.SymbolKind.Function] = types.SymbolKind.Function;
+  fromMapping[types.SymbolKind.Variable] = types.SymbolKind.Variable;
+  fromMapping[types.SymbolKind.Constant] = types.SymbolKind.Constant;
+  fromMapping[types.SymbolKind.String] = types.SymbolKind.String;
+  fromMapping[types.SymbolKind.Number] = types.SymbolKind.Number;
+  fromMapping[types.SymbolKind.Boolean] = types.SymbolKind.Boolean;
+  fromMapping[types.SymbolKind.Array] = types.SymbolKind.Array;
+  fromMapping[types.SymbolKind.Object] = types.SymbolKind.Object;
+  fromMapping[types.SymbolKind.Key] = types.SymbolKind.Key;
+  fromMapping[types.SymbolKind.Null] = types.SymbolKind.Null;
+  fromMapping[types.SymbolKind.EnumMember] = types.SymbolKind.EnumMember;
+  fromMapping[types.SymbolKind.Struct] = types.SymbolKind.Struct;
+  fromMapping[types.SymbolKind.Event] = types.SymbolKind.Event;
+  fromMapping[types.SymbolKind.Operator] = types.SymbolKind.Operator;
+  fromMapping[types.SymbolKind.TypeParameter] = types.SymbolKind.TypeParameter;
 
-  export function fromSymbolKind(kind: vscode.SymbolKind): model.SymbolKind {
-    return fromMapping[kind] || model.SymbolKind.Property;
+  export function fromSymbolKind(kind: vscode.SymbolKind): types.SymbolKind {
+    return fromMapping[kind] || types.SymbolKind.Property;
   }
 
-  export function toSymbolKind(kind: model.SymbolKind): vscode.SymbolKind {
+  export function toSymbolKind(kind: types.SymbolKind): vscode.SymbolKind {
     for (const k in fromMapping) {
       if (fromMapping[k] === kind) {
         return Number(k);
       }
     }
-    return model.SymbolKind.Property;
+    return types.SymbolKind.Property;
   }
 }
 export function fromDocumentSymbol(info: vscode.DocumentSymbol): model.DocumentSymbol {
