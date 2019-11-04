@@ -1,11 +1,17 @@
 import { Event, IBaseMarkerService, IMarker } from '@ali/ide-core-common';
 import { IMatch } from '@ali/ide-core-common/lib/filters';
 
+export const IMarkerService = Symbol('IMarkerService');
 export interface IMarkerService extends IBaseMarkerService {
   /**
    * 获取当前所有的marker来源uri
    */
   getResources(): string[];
+
+  /**
+   * 获取badge数量
+   */
+  getBadge(): string | undefined;
 
   /**
    * filter内容变化时触发事件

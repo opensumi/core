@@ -1,8 +1,9 @@
 'use strict';
 import { Autowired, Injectable } from '@ali/common-di';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, WithEventBus } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { Emitter, Event, IMarker, IMarkerData, MapMap, MarkerStats, URI } from '@ali/ide-core-common';
+import { Emitter, Event, IMarker, IMarkerData, MapMap, MarkerStats, URI, OnEvent } from '@ali/ide-core-common';
+import { EditorGroupOpenEvent, EditorGroupCloseEvent } from '@ali/ide-editor/lib/browser';
 import { isFalsyOrEmpty } from '@ali/ide-core-common/lib/arrays';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IThemeService, ThemeType } from '@ali/ide-theme';
@@ -10,8 +11,10 @@ import { IMarkerService } from '../common/types';
 import { FilterOptions } from './markers-filter.model';
 import { MarkerViewModel } from './markers.model';
 
+const MAX_DIAGNOSTICS_BADGE = 1000;
+
 @Injectable()
-export class MarkerService implements IMarkerService {
+export class MarkerService extends WithEventBus implements IMarkerService {
 
   @Autowired(IThemeService)
   private readonly themeService: IThemeService;
@@ -25,6 +28,9 @@ export class MarkerService implements IMarkerService {
   // 所有Marker
   private readonly _byResource: MapMap<IMarker[]> = Object.create(null);
   private readonly _byType: MapMap<IMarker[]> = Object.create(null);
+
+  private readonly _byResourceCloseCache: MapMap<IMarker[]> = Object.create(null);
+  private readonly _byTypeCloseCache: MapMap<IMarker[]> = Object.create(null);
 
   // marker 显示模型
   private markerViewModel: MarkerViewModel;
@@ -41,8 +47,37 @@ export class MarkerService implements IMarkerService {
   public readonly onMarkerFilterChanged: Event<FilterOptions | undefined> = this.onMarkerFilterChangedEmitter.event;
 
   constructor() {
+    super();
     this._stats = new MarkerStats(this);
     this.markerViewModel = new MarkerViewModel(this, this.labelService);
+  }
+
+  @OnEvent(EditorGroupOpenEvent)
+  onEditorGroupOpen(e: EditorGroupOpenEvent) {
+    // TODO，重新打开没有走changeDiagnostics事件
+    const uri = e.payload.resource.uri;
+    const resource = uri.toString();
+
+    const cacheMap = MapMap.removeMap(this._byResourceCloseCache, resource);
+    if (cacheMap) {
+      MapMap.setMap(this._byResource, resource, cacheMap);
+      Object.keys(cacheMap).forEach((type) => {
+        MapMap.set(this._byType, type, resource, cacheMap[type]);
+      });
+      this.onMarkerChangedEmitter.fire([resource]);
+    }
+  }
+
+  @OnEvent(EditorGroupCloseEvent)
+  onEditorGroupClose(e: EditorGroupCloseEvent) {
+    const uri = e.payload.resource.uri;
+    const resource = uri.toString();
+
+    const resourceToCache = MapMap.getMap(this._byResource, resource);
+    if (resourceToCache) {
+      MapMap.setMap(this._byResourceCloseCache, resource, resourceToCache);
+    }
+    this.clearMarkersOfUri(resource);
   }
 
   /**
@@ -218,6 +253,20 @@ export class MarkerService implements IMarkerService {
 
   public getStats(): MarkerStats {
     return this._stats;
+  }
+
+  public getBadge(): string | undefined {
+    if (this._stats) {
+      const total = this._stats.errors + this._stats.infos + this._stats.warnings;
+      if (total > MAX_DIAGNOSTICS_BADGE) {
+        return '1K+';
+      } else if (total === MAX_DIAGNOSTICS_BADGE) {
+        return '1K';
+      } else if (total > 0) {
+        return String(total);
+      }
+    }
+    return undefined;
   }
 
   public getThemeType(): ThemeType {

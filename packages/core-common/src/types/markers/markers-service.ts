@@ -36,10 +36,10 @@ export interface IBaseMarkerService {
 
 export class MarkerStats implements MarkerStatistics {
 
-	errors: number = 0;
-	infos: number = 0;
-	warnings: number = 0;
-	unknowns: number = 0;
+	public errors: number = 0;
+	public infos: number = 0;
+	public warnings: number = 0;
+	public unknowns: number = 0;
 
   private _data?: { [resource: string]: MarkerStatistics } = Object.create(null);
   private _service: IBaseMarkerService;

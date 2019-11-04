@@ -4,6 +4,7 @@ import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout
 import { nls } from '../common';
 import { MarkerFilterPanel } from './markers-filter.view';
 import { MarkerPanel } from './markers.view';
+import { MarkerService } from './markers-service';
 
 const MARKER_CONTAINER_ID = 'ide-markers';
 
@@ -16,10 +17,18 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
   @Autowired(IMainLayoutService)
   protected readonly mainlayoutService: IMainLayoutService;
 
+  @Autowired(MarkerService)
+  protected readonly markerService: MarkerService;
+
   onDidUseConfig() {
     const handler = this.mainlayoutService.getTabbarHandler(MARKER_CONTAINER_ID);
     if (handler) {
       handler.setTitleComponent(MarkerFilterPanel);
+
+      this.markerService.onMarkerChanged(() => {
+        const badge = this.markerService.getBadge();
+        handler.setBadge(badge || '');
+      });
     }
   }
 
