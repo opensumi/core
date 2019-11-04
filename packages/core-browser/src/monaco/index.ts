@@ -1,4 +1,4 @@
-import { Event, IJSONSchema, IContextKeyService } from '..';
+import { Event, IJSONSchema, IContextKeyService, IDisposable } from '..';
 
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
@@ -37,14 +37,14 @@ export const Extensions = {
 };
 
 export interface ISchemaContributions {
-  schemas: { [id: string]: string };
+  schemas: { [id: string]: IJSONSchema };
 }
 
 export interface ISchemaRegistry {
 
   readonly onDidChangeSchema: Event<string>;
 
-  registerSchema(uri: string, unresolvedSchemaContent: string, fileMatch: string[]): void;
+  registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema, fileMatch: string[]): void;
 
   notifySchemaChanged(uri: string): void;
 
@@ -63,7 +63,7 @@ export interface JsonSchemaConfiguration {
 }
 export interface ISchemaStore {
   onSchemasChanged: Event<void>;
-  register(config: JsonSchemaConfiguration): void;
+  register(config: JsonSchemaConfiguration): IDisposable;
   getConfigurations(): JsonSchemaConfiguration[];
 }
 

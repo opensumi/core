@@ -132,7 +132,7 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
     const uriString = uri.toString();
     const schema = this.jsonRegistry.getSchemaContributions().schemas[uriString];
     if (schema) {
-      const modelContent = schema;
+      const modelContent = JSON.stringify(schema);
       if (!this.listeners[uriString]) {
         const disposable = Disposable.create(() => {
           this.jsonRegistry.onDidChangeSchema((schemaUri) => {
