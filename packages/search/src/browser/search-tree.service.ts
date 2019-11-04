@@ -99,6 +99,8 @@ export class SearchTreeService {
   _nodes: ISearchTreeItem[] = [];
   isContextmenuOnFile: boolean = false;
 
+  private lastSelectTime: number = Number(new Date());
+
   @Autowired(ContextMenuRenderer)
   contextMenuRenderer: ContextMenuRenderer;
 
@@ -198,6 +200,10 @@ export class SearchTreeService {
     const result: ContentSearchResult = file.searchResult!;
     const replaceValue = this.searchBrowserService.replaceValue;
     const isOpenReplaceView = this.searchPreferences['search.useReplacePreview'];
+    const now = Number(new Date());
+    const isPreview = (now - this.lastSelectTime) / 100 > 2; // 200 毫秒 认为双击
+
+    this.lastSelectTime = now;
 
     if (isOpenReplaceView && replaceValue.length > 0) {
       // Open diff editor
@@ -215,6 +221,9 @@ export class SearchTreeService {
             modified: replaceURI,
           }),
         }),
+        {
+          preview: isPreview,
+        },
       );
       if (openResourceResult) {
         const group = openResourceResult.group;
@@ -229,6 +238,7 @@ export class SearchTreeService {
       return this.workbenchEditorService.open(
         new URI(result.fileUri),
         {
+          preview: isPreview,
           disableNavigate: true,
           range: {
             startLineNumber: result.line,
