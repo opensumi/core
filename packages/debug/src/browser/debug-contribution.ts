@@ -102,12 +102,6 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-debug', [
       {
-        component: DebugThreadView,
-        id: DebugContribution.DEBUG_THREAD_ID,
-        name: localize('debug.threads.title'),
-        collapsed: false,
-      },
-      {
         component: DebugWatchView,
         id: DebugContribution.DEBUG_WATCH_ID,
         name: localize('debug.watch.title'),
