@@ -8,7 +8,9 @@
 }
 .kt_editor_main_wrapper {
   flex-grow: 1;
-} 
+  max-width: 100%;
+}
+
 .kt_editor_right_widget {
   flex-shrink: 0;
 }
@@ -75,7 +77,6 @@
   }
 
   .kt_editor_tabs_scroll {
-    border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
     background: var(--editorGroupHeader-noTabsBackground);
   }
   .kt_editor_tab_preview {
@@ -111,7 +112,7 @@
         font-size: 12px;
       }
       div.tab_right{
-        margin-left: 10px;
+        margin-left: 8px;
         display: flex;
         justify-content: center;
         align-items: center;

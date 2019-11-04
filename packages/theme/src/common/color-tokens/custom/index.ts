@@ -6,6 +6,7 @@ import { inputValidationErrorBackground, inputOptionActiveBorder } from '../inpu
 import { ACTIVITY_BAR_FOREGROUND } from '../activity-bar';
 import { NOTIFICATIONS_FOREGROUND, NOTIFICATIONS_BACKGROUND } from '../notification';
 import { contrastBorder } from '../base';
+import { menuForeground } from '../menu';
 
 // 自定义颜色
 
@@ -55,3 +56,9 @@ export const ktTooltipBackground = registerColor('kt.tooltip.background', {
   light: NOTIFICATIONS_BACKGROUND,
   hc: NOTIFICATIONS_BACKGROUND,
 }, localize('tooltipBackground', 'Tooltip background color. Tooltips when hover a icon or link to show some informations'));
+
+/* ---  menu --- */
+export const menuDescriptionForeground = registerColor('kt.menu.descriptionForeground', { dark: menuForeground, light: menuForeground, hc: menuForeground }, localize('menuDescriptionForeground', 'Description foreground color of menu items.'));
+
+/* --- menubar --- */
+export const menubarBorder = registerColor('kt.menubar.border', { dark: null, light: null, hc: null }, localize('menubarBorder', 'Border color of menu bar.'));

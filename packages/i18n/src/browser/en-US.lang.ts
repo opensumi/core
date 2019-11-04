@@ -36,6 +36,8 @@ export const localizationBundle = {
     'menu-bar.view.outward.localize.toggle': 'switch language',
     'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
 
+    'selectAll': 'Select All',
+
     'editor': 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
@@ -48,6 +50,10 @@ export const localizationBundle = {
     'editor.splitToTop': 'Split To Top',
     'editor.splitToBottom': 'Split To Bottom',
     'editor.closeAllInGroup': 'Close All',
+    'editor.closeToRight': 'Close To Right',
+    'editor.close': 'Close',
+    'editor.action.accept': 'Accept Changes (Use version on the right)',
+    'editor.action.revert': 'Revert Changes (Use version on the left)',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
@@ -226,6 +232,8 @@ export const localizationBundle = {
 
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
+    'preference.editor.askIfDiff': 'Error If File On Disk is ewer',
+    'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
@@ -277,9 +285,9 @@ export const localizationBundle = {
     'marketplace.panel.search': 'Search',
     'marketplace.panel.enabled': 'Enabled',
     'marketplace.panel.disabled': 'Disabled',
-    'marketplace.panel.tab.marketplace': 'Extension Marketplace',
+    'marketplace.panel.tab.marketplace': 'Marketplace',
     'marketplace.panel.tab.placeholder.search': 'Search from marketplace',
-    'marketplace.tab.installed': 'Installed Extension',
+    'marketplace.tab.installed': 'Installed',
     'marketplace.panel.tab.placeholder.installed': 'Search from installed',
     'marketplace.extension.findUpdate': 'Find Extension {0} has new version {1}，Do you want to update？`',
     'marketplace.extension.canupdate': 'Can update',
@@ -292,5 +300,19 @@ export const localizationBundle = {
     'marketplace.extension.readme': 'Readme',
     'marketplace.extension.changelog': 'Changelog',
     'marketplace.extension.installed': 'Installed',
+
+    'saveChangesMessage': 'Do you want to save the changes you made to {0}?',
+    'file.prompt.dontSave': 'Don\'t Save',
+    'file.prompt.save': 'Save',
+    'file.prompt.cancel': 'Cancel',
+
+    'doc.saveError.failed': 'File Saving Failed. Reason: ',
+    'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',
+    'doc.saveError.diffAndSave': 'Compare...',
+    'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
+
+    'window.toggleDevTools': 'Toggle Developer Tools',
+    'window.reload': 'Reload Window',
+    'about': 'About',
   },
 };

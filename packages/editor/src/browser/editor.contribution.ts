@@ -458,8 +458,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL, {
-      execute: async () => {
-        this.workbenchEditorService.closeAll();
+      execute: async (uri?: URI) => {
+        this.workbenchEditorService.closeAll(uri);
       },
     });
   }

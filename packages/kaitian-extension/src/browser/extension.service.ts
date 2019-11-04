@@ -47,6 +47,7 @@ import {
   ILogger,
   getLanguageId,
   getPreferenceLanguageId,
+  isElectronRenderer,
 } from '@ali/ide-core-browser';
 import {
   getIcon,
@@ -755,6 +756,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                 containerId: `${extension.id}:${component.id}`,
                 activateKeyBinding: component.keyBinding,
                 title: component.title,
+                priority: component.priority,
               },
               pos,
             );
@@ -792,6 +794,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   private async loadBrowser(browserPath: string): Promise<any> {
     return await new Promise((resolve) => {
       console.log('extend browser load', browserPath);
+      if (isElectronRenderer()) {
+        browserPath = decodeURIComponent(browserPath);
+      }
       getAMDRequire()([browserPath], (exported) => {
         console.log('extend browser exported', exported);
         resolve(exported);

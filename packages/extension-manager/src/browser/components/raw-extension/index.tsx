@@ -56,7 +56,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
             </div>
             {!extension.installed && <Button loading={installing} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button>}
-            {extension.installed && showInstalled ? localize('marketplace.extension.installed') : null}
+            {extension.installed && showInstalled ? (<span style={{flexShrink: 0}}>{localize('marketplace.extension.installed')}</span>) : null}
           </div>
           <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i>{extension.downloadCount}</span>) : null}
