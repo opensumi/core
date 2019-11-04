@@ -4,7 +4,7 @@ import { equals } from '@ali/ide-core-common/lib/utils/arrays';
 
 import { MenuNode } from '../menu/next/base';
 import { IMenu } from '../menu/next/menu-service';
-import { splitMenuItems } from '../menu/next/menu-util';
+import { generateInlineActions } from '../menu/next/menu-util';
 
 export function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -43,7 +43,7 @@ function menuNodeEquals(a: MenuNode, b: MenuNode): boolean {
   return a.id === b.id;
 }
 
-export function useMenus(menuInitalizer: IMenu | (() => IMenu), splitMarker?: 'navigation' | 'inline') {
+export function useMenus(menuInitalizer: IMenu | (() => IMenu), separator: 'navigation' | 'inline') {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
 
   const initalizer = useCallback(() => {
@@ -58,8 +58,7 @@ export function useMenus(menuInitalizer: IMenu | (() => IMenu), splitMarker?: 'n
     updateMenuConfig(menus);
 
     function updateMenuConfig(menus: IMenu) {
-      const menuNodes = menus.getMenuNodes();
-      const result = splitMenuItems(menuNodes, splitMarker);
+      const result = generateInlineActions({ menus, separator });
 
       // menu nodes 对比
       if (
