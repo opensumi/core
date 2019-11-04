@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 
-import { JSONUtils, Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI } from '@ali/ide-core-common';
+import { JSONUtils, Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI, isUndefined } from '@ali/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';
 import { PreferenceSchemaProvider, OverridePreferenceName } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
@@ -68,8 +68,6 @@ export interface PreferenceService extends IDisposable {
   overriddenPreferenceName(preferenceName: string): OverridePreferenceName | undefined;
 
   resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T>;
-
-  initializeProviders(): void;
 }
 
 export const PreferenceProviderProvider = Symbol('PreferenceProviderProvider');
@@ -89,7 +87,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   @Autowired(PreferenceSchemaProvider)
   protected readonly schema: PreferenceSchemaProvider;
 
-  @Autowired(PreferenceProvider, {tag: PreferenceScope.Default})
+  @Autowired(PreferenceProvider, { tag: PreferenceScope.Default })
   protected readonly defaultPreferenceProvider: PreferenceProvider;
 
   @Autowired(PreferenceProviderProvider)
@@ -98,8 +96,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   @Autowired(PreferenceConfigurations)
   protected readonly configurations: PreferenceConfigurations;
 
-  protected readonly providers: PreferenceProvider[] = [];
-  protected providersMap: Map<PreferenceScope, PreferenceProvider> = new Map();
+  protected readonly preferenceProviders = new Map<PreferenceScope, PreferenceProvider>();
 
   /**
    * 使用 getPreferences()方法获取
@@ -110,9 +107,9 @@ export class PreferenceServiceImpl implements PreferenceService {
     this.init();
   }
 
-  protected init(): void {
+  protected async init(): Promise<void> {
     this.toDispose.push(Disposable.create(() => this._ready.reject(new Error('preference service is disposed'))));
-    this.doSetProvider(PreferenceScope.Default, this.defaultPreferenceProvider);
+    this.initializeProviders();
   }
 
   dispose(): void {
@@ -127,42 +124,29 @@ export class PreferenceServiceImpl implements PreferenceService {
   /**
    * 初始化并创建默认的PreferenceProvider
    */
-  initializeProviders(): void {
+  protected async initializeProviders(): Promise<void> {
     try {
-      this.createProviders();
-      if (this.toDispose.disposed) {
-        return;
+      const scopes = PreferenceScope.getScopes();
+      for (const scope of scopes) {
+        const provider = this.providerProvider(scope);
+        this.preferenceProviders.set(scope, provider);
+        this.setExternalProvider(scope, provider);
+        this.toDispose.push(provider.onDidPreferencesChanged((changes) =>
+          this.reconcilePreferences(changes),
+        ));
+        await provider.ready;
       }
-      for (const provider of this.providersMap.values()) {
-        this.toDispose.push(provider.onDidPreferencesChanged((changes) => {
-          return this.reconcilePreferences(changes);
-        }));
-      }
-      Promise.all(this.providers.map((p) => p.ready)).then(() => this._ready.resolve());
+      this._ready.resolve();
     } catch (e) {
       this._ready.reject(e);
     }
   }
 
   /**
-   * 获取多个Scope下对应的PreferenceProvider
-   */
-  protected createProviders(): PreferenceProvider[] {
-    const providers: PreferenceProvider[] = [];
-    PreferenceScope.getScopes().forEach((scope) => {
-      const p = this.doCreateProvider(scope);
-      if (p) {
-        providers.push(p);
-      }
-    });
-    return providers;
-  }
-
-  /**
    * 合并preference 变化
    * @param changes
    */
-  protected reconcilePreferences(changes?: PreferenceProviderDataChanges): void {
+  protected reconcilePreferences(changes: PreferenceProviderDataChanges): void {
     const changesToEmit: PreferenceChanges = {};
     const acceptChange = (change: PreferenceProviderDataChange) => {
       return this.getAffectedPreferenceNames(change, (preferenceName) =>
@@ -170,58 +154,43 @@ export class PreferenceServiceImpl implements PreferenceService {
       );
     };
 
-    if (changes) {
-      for (const preferenceName of Object.keys(changes)) {
-        let change = changes[preferenceName];
-        if (change.newValue === undefined) {
-          const overridden = this.overriddenPreferenceName(change.preferenceName);
-          if (overridden) {
-            change = {
-              ...change, newValue: this.doGet(overridden.preferenceName),
-            };
-          }
+    for (const preferenceName of Object.keys(changes)) {
+      let change = changes[preferenceName];
+      if (change.newValue === undefined) {
+        const overridden = this.overriddenPreferenceName(change.preferenceName);
+        if (overridden) {
+          change = {
+            ...change, newValue: this.doGet(overridden.preferenceName),
+          };
         }
-        if (this.schema.isValidInScope(preferenceName, PreferenceScope.Folder)) {
-          acceptChange(change);
-          continue;
-        }
-        for (const scope of PreferenceScope.getReversedScopes()) {
-          if (this.schema.isValidInScope(preferenceName, scope)) {
-            const provider = this.getProvider(scope);
-            if (provider) {
-              const value = provider.get(preferenceName);
-              if (scope > change.scope && value !== undefined) {
-                // preference defined in a more specific scope
-                break;
-              } else if (scope === change.scope && change.newValue !== undefined) {
-                // preference is changed into something other than `undefined`
-                acceptChange(change);
-              } else if (scope < change.scope && change.newValue === undefined && value !== undefined) {
-                // preference is changed to `undefined`, use the value from a more general scope
-                change = {
-                  ...change,
-                  newValue: value,
-                  scope,
-                };
-                acceptChange(change);
-              }
+      }
+      if (this.schema.isValidInScope(preferenceName, PreferenceScope.Folder)) {
+        acceptChange(change);
+        continue;
+      }
+      for (const scope of PreferenceScope.getReversedScopes()) {
+        if (this.schema.isValidInScope(preferenceName, scope)) {
+          const provider = this.getProvider(scope);
+          if (provider) {
+            const value = provider.get(preferenceName);
+            if (scope > change.scope && value !== undefined) {
+              // preference defined in a more specific scope
+              break;
+            } else if (scope === change.scope && change.newValue !== undefined) {
+              // preference is changed into something other than `undefined`
+              acceptChange(change);
+            } else if (scope < change.scope && change.newValue === undefined && value !== undefined) {
+              // preference is changed to `undefined`, use the value from a more general scope
+              change = {
+                ...change,
+                newValue: value,
+                scope,
+              };
+              acceptChange(change);
             }
           }
         }
       }
-    } else {
-      const newPrefs = this.getPreferences();
-      const oldPrefs = this.preferences;
-      for (const preferenceName of Object.keys(newPrefs)) {
-        const newValue = newPrefs[preferenceName];
-        const oldValue = oldPrefs[preferenceName];
-        if (newValue === undefined && oldValue !== newValue
-          || oldValue === undefined && newValue !== oldValue // JSONUtils.deepEqual() does not support handling `undefined`
-          || !JSONUtils.deepEqual(oldValue, newValue)) {
-          acceptChange({ newValue, oldValue, preferenceName, scope: PreferenceScope.Workspace, domain: [] });
-        }
-      }
-      this.preferences = newPrefs;
     }
     // 触发配置变更事件
     const changedPreferenceNames = Object.keys(changesToEmit);
@@ -243,50 +212,39 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   /**
-   * 获取对应scope下的PreferenceProvider
-   * 存储对应的provider到providersMap中
-   * @param scope
-   */
-  protected doCreateProvider(scope: PreferenceScope): PreferenceProvider | undefined {
-    if (!this.providersMap.has(scope)) {
-      // 获取特定scope下的PreferenceProvider
-      const provider = this.providerProvider(scope);
-      this.doSetProvider(scope, provider);
-      return provider;
-    }
-    return this.providersMap.get(scope);
-  }
-
-  /**
-   * 存储对应provider及退出函数
+   * 通知外部的配置项样式更改
    * @private
    * @param {PreferenceScope} scope
    * @param {PreferenceProvider} provider
    * @memberof PreferenceServiceImpl
    */
-  private doSetProvider(scope: PreferenceScope, provider: PreferenceProvider): void {
-    this.providersMap.set(scope, provider);
-    this.providers.push(provider);
-    this.toDispose.push(provider);
-    Object.keys(provider.getPreferences).forEach((key) => {
-      const externalProvider = getExternalPreferenceProvider(key);
-      if (externalProvider) {
-        const value = provider.getPreferences()[key];
-        if (externalProvider.get(scope) !== value) {
-          provider.setPreference(key, externalProvider.get(scope));
-        }
-      }
-    });
-    provider.onDidPreferencesChanged((e: PreferenceProviderDataChanges) => {
-      if (e) {
-        Object.keys(e).forEach((key) => {
-          const externalProvider = getExternalPreferenceProvider(key);
-          if (externalProvider) {
-            externalProvider.set(e[key].newValue, scope);
+  private setExternalProvider(scope: PreferenceScope, provider: PreferenceProvider): void {
+    if (!provider) {
+      return;
+    }
+    if (provider.getPreferences) {
+      Object.keys(provider.getPreferences()).forEach((key) => {
+        const externalProvider = getExternalPreferenceProvider(key);
+        if (externalProvider) {
+          const value = provider.getPreferences()[key];
+          if (externalProvider.get(scope) !== value) {
+            provider.setPreference(key, externalProvider.get(scope));
           }
-        });
-      }
-    });
+        }
+      });
+    }
+    if (provider.onDidPreferencesChanged) {
+      provider.onDidPreferencesChanged((e: PreferenceProviderDataChanges) => {
+        if (e) {
+          Object.keys(e).forEach((key) => {
+            const externalProvider = getExternalPreferenceProvider(key);
+            if (externalProvider) {
+              externalProvider.set(e[key].newValue, scope);
+            }
+          });
+        }
+      });
+    }
   }
 
   /**
@@ -297,7 +255,7 @@ export class PreferenceServiceImpl implements PreferenceService {
    * @memberof PreferenceServiceImpl
    */
   protected getProvider(scope: PreferenceScope): PreferenceProvider | undefined {
-    return this.providersMap.get(scope);
+    return this.preferenceProviders.get(scope);
   }
 
   /**
@@ -338,7 +296,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     value?: T,
   } {
     const { value, configUri } = this.doResolve(preferenceName, defaultValue, resourceUri);
-    if (value === undefined) {
+    if (typeof value === 'undefined') {
       const overridden = this.overriddenPreferenceName(preferenceName);
       if (overridden) {
         return this.doResolve(overridden.preferenceName, defaultValue, resourceUri);
@@ -348,7 +306,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
-    const resolvedScope = scope !== undefined ? scope : (!resourceUri ? PreferenceScope.Workspace : PreferenceScope.Folder);
+    const resolvedScope = !isUndefined(scope) ? scope : (!resourceUri ? PreferenceScope.Workspace : PreferenceScope.Folder);
     // TODO: 错误日志错误码机制
     if (resolvedScope === PreferenceScope.User && this.configurations.isSectionName(preferenceName.split('.', 1)[0])) {
       throw new Error(`Unable to write to User Settings because ${preferenceName} does not support for global scope.`);
@@ -390,7 +348,7 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   getString(preferenceName: string): string | undefined;
   getString(preferenceName: string, defaultValue: string): string;
-    // tslint:disable-next-line:unified-signatures
+  // tslint:disable-next-line:unified-signatures
   getString(preferenceName: string, defaultValue: string, resourceUri: string): string;
   getString(preferenceName: string, defaultValue?: string, resourceUri?: string): string | undefined {
     const value = resourceUri ? this.get(preferenceName, defaultValue, resourceUri) : this.get(preferenceName, defaultValue);
@@ -461,13 +419,14 @@ export class PreferenceServiceImpl implements PreferenceService {
     return this.doResolve(preferenceName, defaultValue, resourceUri).value;
   }
 
-  protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T> {
-    const result: PreferenceResolveResult<T> = {scope: PreferenceScope.Default};
+  protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, untilScope?: PreferenceScope): PreferenceResolveResult<T> {
+    const result: PreferenceResolveResult<T> = { scope: PreferenceScope.Default };
     const externalProvider = getExternalPreferenceProvider(preferenceName);
     if (externalProvider) {
-      return getExternalPreference(preferenceName);
+      return getExternalPreference(preferenceName, this.schema.getPreferenceProperty(preferenceName));
     }
-    for (const scope of PreferenceScope.getScopes()) {
+    const scopes = untilScope ? PreferenceScope.getScopes().filter((s) => s <= untilScope) : PreferenceScope.getScopes();
+    for (const scope of scopes) {
       if (this.schema.isValidInScope(preferenceName, scope)) {
         const provider = this.getProvider(scope);
         if (provider) {
@@ -483,7 +442,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     return {
       configUri: result.configUri,
       value: result.value !== undefined ? deepFreeze(result.value) : defaultValue,
-      scope: PreferenceScope.Default, // TODO @魁武 这里可以是Default吗
+      scope: result.scope || PreferenceScope.Default, // TODO @魁武 这里可以是Default吗
     };
   }
 
@@ -518,17 +477,6 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   protected readonly _onDidChangeConfiguration = new Emitter<IConfigurationChangeEvent>();
   readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
-
-  // onDidChangeConfiguration: Event<IConfigurationChangeEvent>;
-  // getValue<T>(): T;
-
-  // event.source === ConfigurationTarget.DEFAULT
-  // event.affectedKeys
-  // export interface IConfigurationChangeEvent {
-
-  //   source: ConfigurationTarget;
-  //   affectedKeys: string[];
-  // }
 }
 
 // copied from vscdoe

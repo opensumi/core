@@ -1,4 +1,4 @@
-import { KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
+import { KeySequence, KeybindingRegistry, QuickOpenActionProvider, QuickOpenAction } from '@ali/ide-core-browser';
 import { MessageType, MarkerSeverity } from '@ali/ide-core-common';
 import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions, HideReason } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -10,6 +10,58 @@ export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOp
   ignoreFocusOut?: boolean;
   onType?(lookFor: string, acceptor: (model: monaco.quickOpen.QuickOpenModel) => void): void;
   onClose?(canceled: boolean): void;
+}
+
+export class MonacoQuickOpenAction implements monaco.quickOpen.IAction {
+  constructor(public readonly action: QuickOpenAction) { }
+
+  get id(): string {
+      return this.action.id;
+  }
+
+  get label(): string {
+      return this.action.label || '';
+  }
+
+  get tooltip(): string {
+      return this.action.tooltip || '';
+  }
+
+  get class(): string | undefined {
+      return this.action.class;
+  }
+
+  get enabled(): boolean {
+      return this.action.enabled || true;
+  }
+
+  get checked(): boolean {
+      return this.action.checked || false;
+  }
+
+  get radio(): boolean {
+      return this.action.radio || false;
+  }
+
+  run(entry: QuickOpenEntry | QuickOpenEntryGroup): PromiseLike<any> {
+      return this.action.run(entry.item);
+  }
+
+  dispose(): void {
+      this.action.dispose();
+  }
+}
+
+export class MonacoQuickOpenActionProvider implements monaco.quickOpen.IActionProvider {
+  constructor(public readonly provider: QuickOpenActionProvider) { }
+
+  hasActions(element: any, entry: QuickOpenEntry | QuickOpenEntryGroup): boolean {
+    return this.provider.hasActions(entry.item);
+  }
+
+  getActions(element: any, entry: QuickOpenEntry | QuickOpenEntryGroup): ReadonlyArray<monaco.quickOpen.IAction> {
+    return this.provider.getActions(entry.item).map((action) => new MonacoQuickOpenAction(action));
+  }
 }
 
 @Injectable()
@@ -174,8 +226,8 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
   }
 
   onType(lookFor: string, acceptor: (model: monaco.quickOpen.QuickOpenModel) => void): void {
-    this.model.onType(lookFor, (items) => {
-        const result = this.toOpenModel(lookFor, items);
+    this.model.onType(lookFor, (items, actionProvider) => {
+        const result = this.toOpenModel(lookFor, items, actionProvider);
         acceptor(result);
     });
   }
@@ -184,7 +236,7 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     throw new Error('getModel not supported!');
   }
 
-  private toOpenModel(lookFor: string, items: QuickOpenItem[]): monaco.quickOpen.QuickOpenModel {
+  private toOpenModel(lookFor: string, items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider): monaco.quickOpen.QuickOpenModel {
     const entries: monaco.quickOpen.QuickOpenEntry[] = [];
     for (const item of items) {
         const entry = this.createEntry(item, lookFor);
@@ -195,7 +247,7 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     if (this.options.fuzzySort) {
         entries.sort((a, b) => monaco.quickOpen.compareEntries(a, b, lookFor));
     }
-    return new monaco.quickOpen.QuickOpenModel(entries);
+    return new monaco.quickOpen.QuickOpenModel(entries, actionProvider ? new MonacoQuickOpenActionProvider(actionProvider) : undefined);
 }
 
   protected createEntry(item: QuickOpenItem, lookFor: string): monaco.quickOpen.QuickOpenEntry | undefined {
@@ -206,7 +258,7 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     const labelHighlights = fuzzyMatchLabel ? this.matchesFuzzy(lookFor, item.getLabel(), fuzzyMatchLabel) : item.getLabelHighlights();
     const descriptionHighlights = this.options.fuzzyMatchDescription ? this.matchesFuzzy(lookFor, item.getDescription(), fuzzyMatchDescription) : item.getDescriptionHighlights();
     const detailHighlights = this.options.fuzzyMatchDetail ? this.matchesFuzzy(lookFor, item.getDetail(), fuzzyMatchDetail) : item.getDetailHighlights();
-    if ((lookFor && !labelHighlights && !descriptionHighlights && !detailHighlights)) {
+    if ((lookFor && !labelHighlights && !descriptionHighlights && (!detailHighlights || detailHighlights.length === 0))) {
       return undefined;
     }
     const entry = item instanceof QuickOpenGroupItem ? new QuickOpenEntryGroup(item, this.keybindingRegistry) : new QuickOpenEntry(item, this.keybindingRegistry);

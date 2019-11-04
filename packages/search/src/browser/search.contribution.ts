@@ -6,10 +6,10 @@ import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, Comp
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
-import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { Search } from './search.view';
-import { SearchBrowserService } from './search.service';
+import { ContentSearchClientService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { SEARCH_CONTAINER_ID, SearchBindingContextIds, SEARCH_CONTEXT_MENU } from '../common/content-search';
@@ -56,37 +56,37 @@ export const getBackRecentSearchWordCmd: Command = {
 export const menuReplaceCmd: Command = {
   id: 'search.menu.replace',
   category: 'search',
-  label: localize('search.replace.title'),
+  label: '%search.replace.title%',
 };
 
 export const menuReplaceAllCmd: Command = {
   id: 'search.menu.replaceAll',
   category: 'search',
-  label: localize('search.replaceAll.label'),
+  label: '%search.replaceAll.label%',
 };
 
 export const menuHideCmd: Command = {
   id: 'search.menu.hide',
   category: 'search',
-  label: localize('search.result.hide'),
+  label: '%search.result.hide%',
 };
 
 export const menuCopyCmd: Command = {
   id: 'search.menu.copy',
   category: 'search',
-  label: localize('file.copy.file'),
+  label: '%file.copy.file%',
 };
 
 export const menuCopyAllCmd: Command = {
   id: 'search.menu.copyAll',
   category: 'search',
-  label: localize('search.menu.copyAll'),
+  label: '%search.menu.copyAll%',
 };
 
 export const menuCopyPathCmd: Command = {
   id: 'search.menu.copyPath',
   category: 'search',
-  label: localize('file.copy.path'),
+  label: '%file.copy.path%',
 };
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution)
@@ -95,8 +95,8 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 
-  @Autowired(SearchBrowserService)
-  searchBrowserService: SearchBrowserService;
+  @Autowired(ContentSearchClientService)
+  searchBrowserService: ContentSearchClientService;
 
   @Autowired(SearchTreeService)
   searchTreeService: SearchTreeService;

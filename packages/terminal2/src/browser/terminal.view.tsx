@@ -20,8 +20,8 @@ export const TerminalView = observer(() => {
   }, []);
 
   return (
-    <div>
-      <div className={styles.terminal_container} style={{...terminalClient.wrapElSize}} ref={(el) => { ref.current = el; }} />
+    <div className={styles.terminal_wrapper}>
+      <div className={styles.terminal_container} ref={(el) => { ref.current = el; }} />
     </div>
   );
 });

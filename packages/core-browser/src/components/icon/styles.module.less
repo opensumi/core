@@ -9,4 +9,21 @@
   &:global(.mask-mode) {
     background-color: var(--foreground);
   }
+
+  &.loading {
+    animation: loadingCircle 1s infinite linear;
+  }
+
+  &.small {
+    font-size: 12px;
+    height: 12px;
+    line-height: 12px;
+    width: 12px;
+  }
+}
+
+@keyframes loadingCircle {
+  100% {
+    transform: rotate(360deg)
+  }
 }

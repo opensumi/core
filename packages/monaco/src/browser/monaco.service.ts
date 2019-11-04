@@ -50,6 +50,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       },
       automaticLayout: true,
       renderLineHighlight: 'none',
+      ignoreTrimWhitespace: false,
       ...options,
     }, this.overrideServices);
     return editor;
@@ -64,7 +65,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
    */
   public async loadMonaco() {
     if (!this.loadingPromise) {
-      this.loadingPromise = loadMonaco((global as any).amdLoader.require).then(() => {
+      this.loadingPromise = loadMonaco().then(() => {
         // TODO 改成eventbus
         this._onMonacoLoaded.fire(true);
       });

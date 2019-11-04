@@ -1,23 +1,47 @@
 const iconPrefixes = ['kaitian-icon kticon-'];
 
-export function getIcon(iconKey: string) {
+export enum ROTATE_TYPE {
+  rotate_90,
+  rotate_180,
+  rotate_270,
+  flip_horizontal,
+  flip_vertical,
+  flip_both,
+}
+
+export enum ANIM_TYPE {
+  spin,
+  pulse,
+}
+
+const ROTATE_CLASS_NAME = ['rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both'];
+const ANIM_CLASS_NAME = ['spin', 'pulse'];
+
+export function getIcon(iconKey: string, rotate?: ROTATE_TYPE, anim?: ANIM_TYPE) {
   let lastIndex = iconPrefixes.length;
   while (!iconMap[iconPrefixes[--lastIndex]][iconKey]) {
     if (lastIndex === 0) { break; }
   }
-  const iconClass = iconMap[iconPrefixes[lastIndex]][iconKey];
-  if (!iconClass) {
+  const iconValue = iconMap[iconPrefixes[lastIndex]][iconKey];
+  if (!iconValue) {
     console.warn('图标库缺失图标:' + iconKey);
   }
 
-  return `${iconPrefixes[lastIndex]}${iconClass || 'smile'}`;
+  let iconClass = `${iconPrefixes[lastIndex]}${iconValue || 'smile'}`;
+  if (rotate !== undefined) {
+    iconClass += ` iconfont-${ROTATE_CLASS_NAME[rotate]}`;
+  }
+  if (anim !== undefined) {
+    iconClass += ` iconfont-anim-${ANIM_CLASS_NAME[anim]}`;
+  }
+  return iconClass;
 }
 
 export function getOctIcon(iconKey: string) {
   return `octicon octicon-${iconKey}`;
 }
 
-export function updateIconMap(prefix: string, customIconMap: {[iconKey: string]: string}) {
+export function updateIconMap(prefix: string, customIconMap: { [iconKey: string]: string }) {
   iconMap[prefix] = customIconMap;
   iconPrefixes.push(prefix);
 }
@@ -30,6 +54,7 @@ export const defaultIconMap = {
   'search': 'search',
   'explorer': 'explorer',
   'arrow-down': 'arrow-down',
+  'arrow-right': 'arrow-right',
   'dashboard-fill': 'dashboard-fill',
   'info-circle': 'info-circle',
   'info-circle-fill': 'info-circle-fill',
@@ -81,8 +106,24 @@ export const defaultIconMap = {
   'collapse-all': 'collapse-all',
   'close-all': 'close-all',
   'save-all': 'save-all',
+  'setting-general': 'setting',
+  'setting-editor': 'codelibrary-fill',
+  'setting-file': 'file-text',
+  'setting-extension': 'extension',
+  'edit': 'edit',
+  'rollback': 'rollback',
+  'terminate': 'terminate',
+  'step': 'step',
+  'stop': 'stop',
+  'step-out': 'step-out',
+  'step-in': 'step-in',
+  'start': 'start',
+  'reload': 'reload',
+  'toggle-breakpoints': 'deactivate-breakpoints',
+  'disconnect': 'disconnect',
+  'download': 'download',
 };
 
-const iconMap: {[iconPrefix: string]: {[iconKey: string]: string}} = {
+const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {
   [iconPrefixes[0]]: defaultIconMap,
 };

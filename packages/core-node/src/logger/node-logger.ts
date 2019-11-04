@@ -45,19 +45,23 @@ export class NodeLogger implements INodeLogger {
   }
 
   setOptions(options) {
-    return this.setOptions(options);
+    return this.logger.setOptions(options);
   }
 
   sendLog(level: LogLevel, message: string) {
-    return this.sendLog(level, message);
+    return this.logger.sendLog(level, message);
   }
 
   drop() {
-    return this.drop();
+    return this.logger.drop();
+  }
+
+  flush() {
+    return this.logger.flush();
   }
 
   getLevel() {
-    return this.getLevel();
+    return this.logger.getLevel();
   }
 
   setLevel(level: LogLevel) {

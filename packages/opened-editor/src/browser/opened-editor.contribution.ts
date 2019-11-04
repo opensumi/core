@@ -3,7 +3,7 @@ import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout
 import { Autowired } from '@ali/common-di';
 import { ExplorerOpenEditorPanel } from './opened-editor-panel.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
-import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ClientAppContribution } from '@ali/ide-core-browser';
@@ -15,14 +15,14 @@ export namespace OPEN_EDITORS_COMMANDS {
   export const SAVE_ALL: Command = {
     id: 'open.editors.save.all',
     category: CATEGORY,
-    label: localize('open.editors.save.all'),
+    label: '%open.editors.save.all%',
     iconClass: getIcon('save-all'),
   };
 
   export const CLOSE_ALL: Command = {
     id: 'open.editors.close.all',
     category: CATEGORY,
-    label: localize('open.editors.close.all'),
+    label: '%open.editors.close.all%',
     iconClass: getIcon('close-all'),
   };
 }

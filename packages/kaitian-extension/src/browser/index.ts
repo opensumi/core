@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, ClientAppContribution, Domain, SlotLocation, localize, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { BrowserModule, ClientAppContribution, Domain, SlotLocation, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp } from '@ali/ide-core-browser';
 import { ExtensionNodeServiceServerPath, ExtensionService, ExtensionCapabilityRegistry /*Extension*/ } from '../common';
 import { ExtensionServiceImpl /*ExtensionCapabilityRegistryImpl*/ } from './extension.service';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
@@ -7,6 +7,11 @@ import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout
 import { IDebugServer } from '@ali/ide-debug';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
 import { DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
+
+const RELOAD_WINDOW_COMMAND = {
+  id: 'reload_window',
+};
 
 @Injectable()
 export class KaitianExtensionModule extends BrowserModule {
@@ -36,8 +41,8 @@ export class KaitianExtensionModule extends BrowserModule {
   ];
 }
 
-@Domain(ClientAppContribution)
-export class KaitianExtensionClientAppContribution implements ClientAppContribution {
+@Domain(ClientAppContribution, CommandContribution)
+export class KaitianExtensionClientAppContribution implements ClientAppContribution, CommandContribution {
   @Autowired(ExtensionService)
   private extensionService: ExtensionService;
 
@@ -47,6 +52,9 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   @Autowired(IPreferenceSettingsService)
   preferenceSettingsService: IPreferenceSettingsService;
 
+  @Autowired(IClientApp)
+  clientApp: IClientApp;
+
   async initialize() {
     await this.extensionService.activate();
   }
@@ -55,8 +63,15 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
     this.preferenceSettingsService.registerSettingGroup({
       id: 'extension',
       title: localize('settings.group.extension'),
-      iconClass: 'volans_icon plug_in',
+      iconClass: getIcon('setting-extension'),
     });
   }
 
+  registerCommands(registry: CommandRegistry) {
+    registry.registerCommand(RELOAD_WINDOW_COMMAND, {
+      execute: () => {
+        this.clientApp.fireOnReload();
+      },
+    });
+  }
 }

@@ -1,13 +1,14 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename, TreeViewAction, isTreeViewActionComponent, isUndefined } from '@ali/ide-core-common';
+import { TreeViewAction, isTreeViewActionComponent, isUndefined } from '@ali/ide-core-common';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../icon';
 import Icon from '../icon';
 import Badge from '../badge';
-import { Input } from '../input';
+import { ValidateInput } from '../input';
+import { KeyCode, Key } from '../../keyboard';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -22,6 +23,7 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   onDragOver?: any;
   onDragLeave?: any;
   onDrag?: any;
+  validate?: any;
   draggable?: boolean;
   isEdited?: boolean;
   actions?: TreeViewAction[];
@@ -29,20 +31,12 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   commandActuator?: CommandActuator;
 }
 
-const trimLongName = (name: string): string => {
-  if (name && name.length > 255) {
-    return `${name.substr(0, 255)}...`;
-  }
-
-  return name;
-};
-
 const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeNodeHighlightRange, replace?: string) => {
   if (isUndefined(description)) {
     return '';
   }
   if (range) {
-    return <div>
+    return <span>
       {description.slice(0, range.start)}
       <span className={cls(styles.kt_search_match, replace && styles.replace)}>
         {description.slice(range.start, range.end)}
@@ -52,7 +46,7 @@ const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeN
       </span>
       {description.slice(range.end)}
 
-    </div>;
+    </span>;
   } else {
     return description;
   }
@@ -63,56 +57,6 @@ const renderName = (name: string = 'UNKNOW') => {
     return 'UNKNOW';
   }
   return name;
-};
-
-const getWellFormedFileName = (filename: string): string => {
-  if (!filename) {
-    return filename;
-  }
-
-  // 去除空格
-  filename = trim(filename, '\t');
-
-  // 移除尾部的 . / \\
-  filename = rtrim(filename, '.');
-  filename = rtrim(filename, '/');
-  filename = rtrim(filename, '\\');
-
-  return filename;
-};
-
-const validateFileName = (item: TreeNode, name: string): string | null => {
-  // 转换为合适的名称
-  name = getWellFormedFileName(name);
-
-  // 不存在文件名称
-  if (!name || name.length === 0 || /^\s+$/.test(name)) {
-    return localize('validate.tree.emptyFileNameError');
-  }
-
-  // 不允许开头为分隔符的名称
-  if (name[0] === '/' || name[0] === '\\') {
-    return localize('validate.tree.fileNameStartsWithSlashError');
-  }
-
-  const names = coalesce(name.split(/[\\/]/));
-  const parent = item.parent;
-  if (name !== item.name) {
-    if (parent) {
-      // 不允许覆盖已存在的文件
-      const child = parent.children.find((child) => child.name === name);
-      if (child) {
-        return formatLocalize('validate.tree.fileNameExistsError', name);
-      }
-    }
-
-  }
-  // 判断子路径是否合法
-  if (names.some((folderName) => !isValidBasename(folderName))) {
-    return formatLocalize('validate.tree.invalidFileNameError', trimLongName(name));
-  }
-
-  return null;
 };
 
 const renderBadge = (node: TreeNode) => {
@@ -177,6 +121,7 @@ export const TreeContainerNode = (
     commandActuator,
     replace = '',
     itemLineHeight,
+    validate,
   }: TreeNodeProps,
 ) => {
 
@@ -303,7 +248,7 @@ export const TreeContainerNode = (
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
       return <Icon
         key={action.title || index}
-        iconClass={icon}
+        iconClass={cls(styles.action_icon, icon)}
         title={action.title}
         onClick={clickHandler} />;
     });
@@ -338,13 +283,15 @@ export const TreeContainerNode = (
 
   const renderIcon = (node: TreeNode) => {
     const treeNodeLeftActions: TreeViewAction[] = [];
-    for (const action of actions) {
-      switch (action.location) {
-        case TreeViewActionTypes.TreeNode_Left:
-          treeNodeLeftActions.push(action);
-          break;
-        default:
-          break;
+    if (!ExpandableTreeNode.is(node)) {
+      for (const action of actions) {
+        switch (action.location) {
+          case TreeViewActionTypes.TreeNode_Left:
+            treeNodeLeftActions.push(action);
+            break;
+          default:
+            break;
+        }
       }
     }
     return <div className={cls(node.icon, styles.kt_file_icon)}>
@@ -352,27 +299,16 @@ export const TreeContainerNode = (
     </div>;
   };
 
-  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { } ) => {
-    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
-    const [validateMessage, setValidateMessage] = React.useState<string>('');
+  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
+    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name === TEMP_FILE_NAME ? '' : node.name);
 
     const changeHandler = (event) => {
       const newValue = event.target.value;
       setValue(newValue);
-      if (!newValue) {
-        setValidateMessage('');
-        return;
-      }
-      const message = validateFileName(node, newValue);
-      if (message && message !== validateMessage) {
-        setValidateMessage(message);
-      } else {
-        setValidateMessage('');
-      }
     };
 
     const blurHandler = (event) => {
-      if (validateMessage) {
+      if (actualValidate(value)) {
         onChange(node, '');
       } else {
         onChange(node, value);
@@ -380,40 +316,41 @@ export const TreeContainerNode = (
     };
 
     const keydownHandler = (event: React.KeyboardEvent) => {
-      if (event.keyCode === 13) {
+      const { key } = KeyCode.createKeyCode(event.nativeEvent);
+      if (key && Key.ENTER.keyCode === key.keyCode) {
         event.stopPropagation();
         event.preventDefault();
-        if (validateMessage) {
+        if (actualValidate(value)) {
           onChange(node, '');
         } else {
           onChange(node, value);
         }
+      } else if (key && Key.ESCAPE.keyCode === key.keyCode) {
+        event.stopPropagation();
+        event.preventDefault();
+        onChange(node, '');
       }
     };
 
-    const renderValidateMessage = (message: string) => {
-      return message && <div className={cls(styles.kt_validate_message, styles.error)}>
-        {message}
-      </div>;
+    const actualValidate = (value: string) => {
+      return validate(node, value);
     };
 
     if (node.isTemporary) {
       return <div
-        className={cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible)}
+        className={cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, actualValidate(value) && styles.overflow_visible)}
       >
         <div className={styles.kt_input_wrapper}>
-          <Input
+          <ValidateInput
             type='text'
-            insertClass={cls(styles.kt_input_box, validateMessage && styles.error)}
+            className={cls(styles.kt_input_box)}
             autoFocus={true}
             onBlur={blurHandler}
             value={value}
             onChange={changeHandler}
             onKeyDown={keydownHandler}
+            validate={actualValidate}
           />
-          {
-            renderValidateMessage(validateMessage)
-          }
         </div>
       </div>;
     }
@@ -464,11 +401,18 @@ export const TreeContainerNode = (
 
   const itemStyle = {
     height: itemLineHeight,
+    lineHeight: `${itemLineHeight}px`,
+  } as React.CSSProperties;
+
+  const titleStyle = {
+    height: itemLineHeight,
+    lineHeight: `${itemLineHeight}px`,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${10 + (leftPadding || 0)}px` : 0,
   } as React.CSSProperties;
 
   const renderTitle = (node: TreeNode) => {
     if (node.title) {
-      return <div className={styles.kt_treenode_title} style={itemStyle}>{node.title}</div>;
+      return <div className={styles.kt_treenode_title} style={titleStyle}>{node.title}</div>;
     }
   };
 

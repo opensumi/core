@@ -49,6 +49,37 @@ textarea::placeholder {
   background: transparent;
 }
 
+a {
+  color: var(--textLink-foreground);
+
+  &:hover,
+  &:active,
+  &:focus {
+    color: var(--textLink-activeForeground);
+  }
+}
+
+blockquote {
+  background-color: var(--textBlockQuote-background);
+  border-color: var(--textBlockQuote-border);
+}
+
+code {
+  background-color: var(--textCodeBlock-background);
+}
+
+pre {
+  background-color: var(--textPreformat-foreground);
+}
+
+.kt-text-desc {
+  color: var(--descriptionForeground);
+}
+
+.kt-text-error {
+  color: var(--errorForeground);
+}
+
 // :focus {
 //   outline:0;
 // }
@@ -57,7 +88,7 @@ textarea::placeholder {
 .monaco-quick-open-widget .quick-open-tree .quick-open-entry .quick-open-row .quick-open-entry-icon {
   position: relative;
   background-image: none;
-  margin-right: 0px;
+  margin-right: 8px;
 
   // 让 icon 位于容器中间
   &:before {
@@ -67,10 +98,23 @@ textarea::placeholder {
     right: 0;
   }
 }
+.monaco-tree .monaco-tree-row > .content.actions > .primary-action-bar .action-label {
+  margin-right: 4px;
+  margin-left: 4px;
+  margin-top: 0px;
+  background-repeat: no-repeat;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
 
 // 覆盖 monaco quickopen input 的 outline
 .monaco-quick-open-widget .quick-open-input input {
   outline: none;
+}
+
+.monaco-quick-open-widget .quick-open-tree .results-group {
+  color: var(--textLink-foreground) !important;
 }
 
 .monaco-keybinding-key {
@@ -109,4 +153,10 @@ textarea::placeholder {
 
 .none-pointer-event {
   pointer-events: none;
+}
+
+// monaco editor 内部 menu 的分割线
+.monaco-action-bar.vertical .action-label.separator {
+  margin-left: 0;
+  margin-right: 0;
 }

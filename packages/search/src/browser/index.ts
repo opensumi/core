@@ -3,8 +3,7 @@ import { SearchContribution } from './search.contribution';
 import { FileSearchContribution } from './file-search.contribution';
 import { FileSearchServicePath, ContentSearchServerPath } from '../common/';
 import { BrowserModule } from '@ali/ide-core-browser';
-import { SearchBrowserService } from '../browser/search.service';
-import { SearchTreeService } from './search-tree.service';
+import { ContentSearchClientService } from '../browser/search.service';
 import { bindSearchPreference } from './search-preferences';
 import { SearchKeybindingContext } from './search-keybinding-contexts';
 
@@ -21,7 +20,7 @@ export class SearchModule extends BrowserModule {
     clientToken: FileSearchContribution,
   }, {
     servicePath: ContentSearchServerPath,
-    clientToken: SearchBrowserService,
+    clientToken: ContentSearchClientService,
   }];
 
   preferences = bindSearchPreference;

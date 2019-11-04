@@ -9,13 +9,8 @@ export type FolderPreferenceProviderFactory = (options: FolderPreferenceProvider
 
 export const FolderPreferenceProviderOptions = Symbol('FolderPreferenceProviderOptions');
 export interface FolderPreferenceProviderOptions {
-  folder: FileStat;
-  configUri: URI;
-}
-
-export interface FolderPreferenceProviderOptions {
-  folder: FileStat;
-  configUri: URI;
+  readonly folder: FileStat;
+  readonly configUri: URI;
 }
 
 @Injectable()
@@ -27,9 +22,14 @@ export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
+  // 缓存目录URI
+  private _folderUri: URI;
 
   get folderUri(): URI {
-    return new URI(this.options.folder.uri);
+    if (!this._folderUri) {
+      this._folderUri = new URI(this.options.folder.uri);
+    }
+    return this._folderUri;
   }
 
   protected getUri(): URI {

@@ -8,7 +8,8 @@
 @import '~@phosphor/default-theme/style/index.css';
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
-#main, #main-layout {
+#main,
+#main-layout {
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -21,25 +22,31 @@
   overflow: hidden;
   background-color: var(--background);
 }
+
 #status-bar {
   position: absolute;
   width: 100%;
   bottom: 0;
 }
-#activity-bar{
+
+#activity-bar {
   background-color: var(--activityBar-background);
 }
-#bottom-bar{
+
+#bottom-bar {
   min-height: 28px;
-  background-color: var(--panel-background);
+  background-color: var(--kt-panelTitle-background);
   border-top: 1px solid var(--panel-border);
+
   .p-TabBar {
     min-height: 28px;
   }
+
   .p-TabBar-content {
     border: none;
     align-items: center;
   }
+
   .p-TabBar-tab {
     background: transparent;
     border: none;
@@ -47,27 +54,31 @@
     min-height: 28px;
     max-height: 28px;
     z-index: 1000;
+
     .p-TabBar-tabLabel {
       text-align: center;
       line-height: 28px;
       color: var(--panelTitle-inactiveForeground);
       cursor: pointer;
     }
+
     &.p-mod-current {
       min-height: 28px;
       max-height: 28px;
       transform: none;
     }
   }
+
   .p-TabBar-tab:hover:not(.p-mod-current) {
     background: transparent;
   }
+
   .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel {
     color: var(--panelTitle-activeForeground);
     position: relative;
   }
 
-  .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel:after{
+  .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel:after {
     content: '';
     position: absolute;
     bottom: 1px;
@@ -76,15 +87,33 @@
     width: 100%;
     height: 1px;
   }
+  .p-TabBar-tabBadge {
+    margin-left: 5px;
+    padding-top: 5px;
+    >div {
+      border-radius: 11px;
+      font-size: 12px;
+      min-width: 18px;
+      min-height: 18px;
+      line-height: 18px;
+      font-weight: 400;
+      text-align: center;
+      display: inline-block;
+      box-sizing: border-box;
+      background-color: var(--badge-background);
+      color: var(--badge-foreground);
+    }
+  }
 }
 
 .bottom-container {
-  height: 100%!important;
-  width: 100%!important;
-  z-index: 99!important;
+  height: 100% !important;
+  width: 100% !important;
+  z-index: 99 !important;
+
   >.bottom-wrap {
-    width: 100%!important;
-    height: 100%!important;
+    width: 100% !important;
+    height: 100% !important;
   }
 }
 
@@ -99,11 +128,11 @@
 }
 
 .overflow-visible {
-  overflow: visible!important;
+  overflow: visible !important;
 }
 
 .lock-width {
-  min-width: 150px;
+  min-width: 220px;
 }
 
 .lock-height {

@@ -397,6 +397,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       applyDecoration(key, options) {
         decorationApplierOriginal.applyDecoration(key, options);
       },
+      async save() {
+        // do nothing
+      },
       onSelectionsChanged(listener) {
         return diffEditor.monacoDiffEditor.getOriginalEditor().onDidChangeCursorSelection((e) => {
           listener({
@@ -457,6 +460,11 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       },
       applyDecoration(key: string, options: IDecorationApplyOptions[]) {
         decorationApplierModified.applyDecoration(key, options);
+      },
+      async save() {
+        if (diffEditor.modifiedDocModel) {
+          diffEditor.modifiedDocModel.save();
+        }
       },
       onSelectionsChanged(listener) {
         const monacoEditor = diffEditor.monacoDiffEditor.getModifiedEditor();

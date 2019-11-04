@@ -4,8 +4,6 @@
   // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
-
     {
       "type": "node",
       "request": "attach",
@@ -95,5 +93,11 @@
       "protocol": "inspector",
       "console": "internalConsole",
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "changelog",
+      "program": "${workspaceFolder}/scripts/changelog/index.js"
+    }
   ]
 }

@@ -18,8 +18,8 @@ export class ElectronMainApp {
 
   constructor(private config: ElectronAppConfig) {
 
-    config.extensionDir = config.extensionDir || [];
-    config.extraExtensions = config.extraExtensions || [];
+    config.extensionDir = config.extensionDir || '';
+    config.extenionCandidate = config.extenionCandidate || [];
 
     this.injector.addProviders({
       token: ElectronAppConfig,
@@ -55,13 +55,16 @@ export class ElectronMainApp {
     }
   }
 
-  loadWorkspace(workspace?: string, metadata?: any, options?: BrowserWindowConstructorOptions): CodeWindow {
+  loadWorkspace(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions = {}): CodeWindow {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
     const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
     this.codeWindows.add(window);
     window.start();
+    if (options.show !== false) {
+      window.getBrowserWindow().show();
+    }
     window.onDispose(() => {
       this.codeWindows.delete(window);
     });
@@ -155,6 +158,13 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
     const window = BrowserWindow.fromId(windowId);
     if (window) {
       window.maximize();
+    }
+  }
+
+  unmaximizeWindow(windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      window.unmaximize();
     }
   }
   closeWindow(windowId: number) {

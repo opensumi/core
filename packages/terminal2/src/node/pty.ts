@@ -16,7 +16,7 @@ export class PtyService {
       name: 'xterm-color',
       cols: cols || 100,
       rows: rows || 30,
-      cwd: options.cwd!.toString(),
+      cwd: options.cwd ? options.cwd!.toString() : '',
       env: (() => {
         if (options.strictEnv) {
           return options.env as { [key: string]: string };
@@ -32,7 +32,6 @@ export class PtyService {
     try {
       termninal.resize(cols, rows);
     } catch (e) {
-      console.log(e);
       return false;
     }
 

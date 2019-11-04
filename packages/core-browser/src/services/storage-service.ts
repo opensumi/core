@@ -43,7 +43,7 @@ export class LocalStorageService implements StorageService {
     }
   }
 
-  setData<T>(key: string, data?: T): Promise<void> {
+  async setData<T>(key: string, data?: T): Promise<void> {
     if (data !== undefined) {
       try {
         this.storage[this.prefix(key)] = JSON.stringify(data);
@@ -53,15 +53,14 @@ export class LocalStorageService implements StorageService {
     } else {
       delete this.storage[this.prefix(key)];
     }
-    return Promise.resolve();
   }
 
-  getData<T>(key: string, defaultValue?: T): Promise<T | undefined> {
+  async getData<T>(key: string, defaultValue?: T): Promise<T | undefined> {
     const result = this.storage[this.prefix(key)];
     if (result === undefined) {
-      return Promise.resolve(defaultValue);
+      return defaultValue;
     }
-    return Promise.resolve(JSON.parse(result));
+    return JSON.parse(result);
   }
 
   protected prefix(key: string): string {

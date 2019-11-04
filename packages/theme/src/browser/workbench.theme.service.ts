@@ -7,8 +7,9 @@ import { ThemeChangedEvent } from '../common/event';
 import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';
 import { Logger, getPreferenceThemeId, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { Registry } from 'vscode-textmate';
 
-const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
+const DEFAULT_THEME_ID = 'ide-dark';
 // from vscode
 const colorIdPattern = '^\\w+[.\\w+]*$';
 
@@ -48,29 +49,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.listen();
   }
 
-  listen() {
-    this.eventBus.on(ThemeChangedEvent, (e) => {
-      this.themeChangeEmitter.fire( e.payload.theme);
-    });
-    this.preferenceService.onPreferenceChanged( (e) => {
-      if (e.preferenceName === 'general.theme') {
-        this.applyTheme(this.preferenceService.get<string>('general.theme')!);
-      }
-    });
-  }
-
-  private parseColorValue = (s: string, name: string) => {
-    if (s.length > 0) {
-      if (s[0] === '#') {
-        return Color.Format.CSS.parseHex(s);
-      } else {
-        return s;
-      }
-    }
-    this.logger.error(localize('invalid.default.colorType', '{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.', name));
-    return Color.red;
-  }
-
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
     themeContributions.forEach((contribution) => {
       const themeExtContribution = { basePath: extPath, contribution };
@@ -79,7 +57,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
         properties: {
           'general.theme': {
             type: 'string',
-            default: 'vs-dark',
+            default: 'Default Dark+',
             enum: this.getAvailableThemeInfos().map((info) => info.themeId),
             description: '%preference.description.general.theme%',
           },
@@ -114,27 +92,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }));
   }
 
-  private checkColorContribution(contribution: ExtColorContribution) {
-    if (typeof contribution.id !== 'string' || contribution.id.length === 0) {
-      this.logger.error(localize('invalid.id', "'configuration.colors.id' must be defined and can not be empty"));
-      return false;
-    }
-    if (!contribution.id.match(colorIdPattern)) {
-      this.logger.error(localize('invalid.id.format', "'configuration.colors.id' must follow the word[.word]*"));
-      return false;
-    }
-    if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
-      this.logger.error(localize('invalid.description', "'configuration.colors.description' must be defined and can not be empty"));
-      return false;
-    }
-    const defaults = contribution.defaults;
-    if (!defaults || typeof defaults !== 'object' || typeof defaults.light !== 'string' || typeof defaults.dark !== 'string' || typeof defaults.highContrast !== 'string') {
-      this.logger.error(localize('invalid.defaults', "'configuration.colors.defaults' must be defined and must contain 'light', 'dark' and 'highContrast'"));
-      return false;
-    }
-    return true;
-  }
-
   // TODO 插件机制需要支持 contribution 增/减量，来做deregister
   public registerColor(contribution: ExtColorContribution) {
     if (!this.checkColorContribution(contribution)) {
@@ -148,6 +105,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }, contribution.description);
   }
 
+  // @deprecated 请直接使用sync方法，主题加载由时序保障
   public async getCurrentTheme() {
     if (this.currentTheme) {
       return this.currentTheme;
@@ -202,6 +160,50 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       });
     }
     return themeInfos;
+  }
+
+  private listen() {
+    this.eventBus.on(ThemeChangedEvent, (e) => {
+      this.themeChangeEmitter.fire( e.payload.theme);
+    });
+    this.preferenceService.onPreferenceChanged( (e) => {
+      if (e.preferenceName === 'general.theme') {
+        this.applyTheme(this.preferenceService.get<string>('general.theme')!);
+      }
+    });
+  }
+
+  private checkColorContribution(contribution: ExtColorContribution) {
+    if (typeof contribution.id !== 'string' || contribution.id.length === 0) {
+      this.logger.error(localize('invalid.id', "'configuration.colors.id' must be defined and can not be empty"));
+      return false;
+    }
+    if (!contribution.id.match(colorIdPattern)) {
+      this.logger.error(localize('invalid.id.format', "'configuration.colors.id' must follow the word[.word]*"));
+      return false;
+    }
+    if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
+      this.logger.error(localize('invalid.description', "'configuration.colors.description' must be defined and can not be empty"));
+      return false;
+    }
+    const defaults = contribution.defaults;
+    if (!defaults || typeof defaults !== 'object' || typeof defaults.light !== 'string' || typeof defaults.dark !== 'string' || typeof defaults.highContrast !== 'string') {
+      this.logger.error(localize('invalid.defaults', "'configuration.colors.defaults' must be defined and must contain 'light', 'dark' and 'highContrast'"));
+      return false;
+    }
+    return true;
+  }
+
+  private parseColorValue = (s: string, name: string) => {
+    if (s.length > 0) {
+      if (s[0] === '#') {
+        return Color.Format.CSS.parseHex(s);
+      } else {
+        return s;
+      }
+    }
+    this.logger.error(localize('invalid.default.colorType', '{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.', name));
+    return Color.red;
   }
 
   private async getTheme(id: string): Promise<IThemeData> {
@@ -308,6 +310,7 @@ class Theme implements ITheme {
     this.type = type;
     this.themeData = themeData;
     this.patchColors();
+    this.patchTokenColors();
   }
 
   protected patchColors() {
@@ -323,6 +326,26 @@ class Theme implements ITheme {
         }
       }
     }
+  }
+
+  // 将encodedTokensColors转为monaco可用的形式
+  private patchTokenColors() {
+    const reg = new Registry();
+    // 当默认颜色不在settings当中时，此处不能使用之前那种直接给encodedTokenColors赋值的做法，会导致monaco使用时颜色错位（theia的bug
+    if (this.themeData.settings.filter((setting) => !setting.scope).length === 0) {
+
+      this.themeData.settings.unshift({
+        settings: {
+          foreground: this.themeData.colors['editor.foreground'] ? this.themeData.colors['editor.foreground'].substr(0, 7) : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.foreground', this)!), // 这里要去掉透明度信息
+          background: this.themeData.colors['editor.background'] ? this.themeData.colors['editor.background'].substr(0, 7) : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.background', this)!),
+        },
+      });
+    }
+    reg.setTheme(this.themeData);
+    this.themeData.encodedTokensColors = reg.getColorMap();
+    // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
+    // tslint:disable-next-line:no-null-keyword
+    this.themeData.encodedTokensColors[0] = null!;
   }
 
   // 返回主题内的颜色值

@@ -254,7 +254,7 @@ export class ExplorerOpenedEditorService {
   }
 
   getStatusKey(node) {
-    return node.parent && node.parent.name + node.uri.toString();
+    return node.parent ? node.parent.name + node.uri.toString() : node.uri.toString();
   }
 
   /**

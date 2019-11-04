@@ -1,4 +1,4 @@
-import { endsWith, startsWith } from '@ali/ide-core-common';
+import { endsWith, startsWith, URI } from '@ali/ide-core-common';
 import { TreeNode, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
@@ -52,7 +52,7 @@ export interface IContentSearchServer {
   // dispose(): void;
 }
 
-export interface IContentSearchClient {
+export interface IContentSearchClientService {
   replaceValue: string;
   searchValue: string;
   searchError: string;
@@ -62,10 +62,10 @@ export interface IContentSearchClient {
   resultTotal: ResultTotal;
   docModelSearchedList: string[];
   currentSearchId: number;
-  replaceInputEl: HTMLInputElement | null;
-  searchInputEl: HTMLInputElement | null;
-  includeInputEl: HTMLInputElement | null;
-  excludeInputEl: HTMLInputElement | null;
+  searchInputEl: React.MutableRefObject<HTMLInputElement | null>;
+  replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
+
+  updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent);
 }
 
 export interface IUIState {
@@ -77,41 +77,48 @@ export interface IUIState {
   isUseRegexp: boolean;
 
   isIncludeIgnored: boolean;
-  isReplaceDoing: boolean;
 }
 
 export interface ContentSearchResult {
   /**
-   * The string uri to the root folder that the search was performed.
+   * 该参数已经废弃
    */
-  root: string;
+  root?: string;
 
   /**
-   * The string uri to the file containing the result.
+   * 文件Uri
    */
   fileUri: string;
 
   /**
-   * The (1-based) line number of the result.
+   * 所在行号
    */
   line: number;
 
   /**
-   * The (1-based) character number in the result line.  For UTF-8 files,
-   * one multi-byte character counts as one character.
+   * 匹配开始
    */
   matchStart: number;
 
   /**
-   * The length of the match, in characters.  For UTF-8 files, one
-   * multi-byte character counts as one character.
+   * 匹配长度
    */
   matchLength: number;
 
   /**
-   * The text of the line containing the result.
+   * 整行的内容，出于性能考虑，存在 rangeLineText 时为空
    */
-  lineText: string;
+  lineText?: string;
+
+  /**
+   * 过长的行内容，被裁剪后的开始位置
+   */
+  renderStart?: number;
+
+  /**
+    * 过长的行内容，被裁剪后的内容
+   */
+  renderLineText?: string;
 }
 
 export enum SEARCH_STATE {
@@ -184,4 +191,45 @@ export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   highLightRange?: TreeNodeHighlightRange;
   searchResult?: ContentSearchResult;
   [key: string]: any;
+}
+
+/**
+ * 裁剪处理过长的结果，计算出 renderLineText、renderStart
+ * @param insertResult
+ */
+
+export function cutShortSearchResult(insertResult: ContentSearchResult): ContentSearchResult {
+  const result = Object.assign({}, insertResult);
+  const { lineText, matchLength, matchStart } = result;
+  const maxLineLength = 500;
+  const maxMatchLength = maxLineLength;
+
+  if (!lineText) {
+    return result;
+  }
+
+  if (lineText.length > maxLineLength)  {
+    // 行内容太多的时候，裁剪行
+    const preLength = 20;
+    const start = matchStart - preLength > -1 ? matchStart - preLength : 0;
+    result.renderLineText = lineText.slice(
+      start,
+      start + 500,
+    );
+    delete result.lineText;
+    result.renderStart = matchStart - start;
+    result.matchLength = matchLength > maxMatchLength ? maxMatchLength : matchLength;
+    return result;
+  } else {
+    // 将可见区域前移
+    const preLength = 40;
+    const start = matchStart - preLength > -1 ? matchStart - preLength : 0;
+    result.renderLineText = lineText.slice(
+      start,
+      lineText.length,
+    );
+    delete result.lineText;
+    result.renderStart = matchStart - start;
+    return result;
+  }
 }

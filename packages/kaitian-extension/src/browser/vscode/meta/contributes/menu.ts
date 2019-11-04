@@ -1,11 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction } from '@ali/ide-core-browser';
-import { TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction, replaceLocalizePlaceholder, IContextKeyService } from '@ali/ide-core-browser';
+import { TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { SCMMenuId } from '@ali/ide-scm/lib/common';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next/base';
 
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
+import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
+import { IEditorGroup } from '@ali/ide-editor';
 
 export interface MenuActionFormat {
   when: string;
@@ -142,6 +144,12 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   @Autowired()
   toolBarRegistry: TabBarToolbarRegistry;
 
+  @Autowired(IEditorActionRegistry)
+  editorActionRegistry: IEditorActionRegistry;
+
+  @Autowired(IContextKeyService)
+  contextKeyService: IContextKeyService;
+
   protected createSyntheticCommandId(menu: MenuActionFormat, prefix: string): string {
     const command = menu.command;
     let id = prefix + command;
@@ -188,6 +196,30 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             when: item.when,
             group: item.group,
           }));
+        }
+      } else if (menuPosition === 'editor/title') {
+        for (const item of this.json[menuPosition]) {
+          const command = this.commandRegistry.getCommand(item.command);
+          if (command) {
+            if (command.iconClass) {
+              this.addDispose(this.editorActionRegistry.registerEditorAction({
+                title: replaceLocalizePlaceholder(command.label)!,
+                onClick: () => {
+                  this.commandService.executeCommand(command.id);
+                },
+                iconClass: command.iconClass,
+                when: item.when,
+              }));
+              // TODO Alt未实现
+            } else {
+              const menuPath = item.group ? ['editor', 'title', item.group] : ['editor', 'title'];
+              this.menuRegistry.registerMenuAction(menuPath, {
+                commandId: command.id,
+                when: item.when,
+              });
+            }
+          }
+          // won't register if no corresponding command exists;
         }
       } else {
         const menuActions = this.json[menuPosition];

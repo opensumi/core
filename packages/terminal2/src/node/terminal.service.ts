@@ -3,6 +3,9 @@ import { RPCService } from '@ali/ide-connection';
 import { PtyService, IPty } from './pty';
 import { ITerminalService, TerminalOptions, ITerminalServiceClient } from '../common';
 
+/**
+ * terminal service 的具体实现
+ */
 @Injectable()
 export class TerminalServiceImpl extends RPCService implements ITerminalService {
   private terminalMap: Map<string, IPty> = new Map();
@@ -33,10 +36,7 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
       }
     });
     this.terminalMap.set(id , terminal);
-    return {
-      pid: terminal.pid,
-      name: this.getShellName(id),
-    };
+    return terminal;
   }
 
   public onMessage(id, msg) {
@@ -85,8 +85,8 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
   }
 
   dispose() {
-    this.terminalMap.forEach((term) => {
-      term.kill();
+    this.serviceClientMap.forEach((client) => {
+      client.dispose();
     });
   }
 

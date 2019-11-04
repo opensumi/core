@@ -8,6 +8,18 @@ import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection
 import { SELECT_ALL_COMMAND } from './monaco-menu';
 
 /**
+ * vscode 会有一些别名 command，如果直接执行这些别名 command 会报错，做一个转换
+ */
+const MonacoCommandAlias = {
+  'editor.action.smartSelect.grow': 'editor.action.smartSelect.expand',
+  'cursorWordPartStartLeft': 'cursorWordPartLeft',
+  'cursorWordPartStartLeftSelect': 'cursorWordPartLeftSelect',
+  'editor.action.previewDeclaration': 'editor.action.peekDefinition',
+  'editor.action.openDeclarationToTheSide': 'editor.action.revealDefinitionAside',
+  'editor.action.goToDeclaration': 'editor.action.revealDefinition',
+};
+
+/**
  * monaco 命令分两种
  *  一种命令不需要带参数，是封装过的命令，即为 action
  * 一种是正常命令，执行可以带参数
@@ -74,7 +86,7 @@ export class MonacoCommandService implements ICommandService {
       }
     }
     if (this.delegate) {
-      return this.delegate.executeCommand(commandId, ...args);
+      return this.delegate.executeCommand(MonacoCommandAlias[commandId] ? MonacoCommandAlias[commandId] : commandId, ...args);
     }
     return Promise.reject(new Error(`command '${commandId}' not found`));
   }
@@ -210,7 +222,7 @@ export class MonacoActionRegistry {
    * 需要添加的 Monaco 为包含的 action
    */
   protected static readonly ACTIONS: MonacoCommand[] = [
-    { id: SELECT_ALL_COMMAND, label: localize('selection.all'), type: MonacoCommandType.COMMAND },
+    { id: SELECT_ALL_COMMAND, label: '%selection.all%', type: MonacoCommandType.COMMAND },
   ];
 
   @Autowired()
@@ -241,7 +253,7 @@ export class MonacoActionRegistry {
     const allActions: MonacoCommand[] = [...MonacoActionRegistry.ACTIONS, ...monaco.editorExtensions.EditorExtensionsRegistry.getEditorActions().map((action) => ({...action, type: MonacoCommandType.ACTION}))];
     return allActions
       .filter((action) => MonacoActionRegistry.EXCLUDE_ACTIONS.indexOf(action.id) === -1)
-      .map(({ id, label, type }) => ({ id, label, type }));
+      .map(({ id, label, type, alias }) => ({ id, label, type, alias }));
   }
 
   /**

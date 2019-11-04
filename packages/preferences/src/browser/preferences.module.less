@@ -33,21 +33,22 @@
     display: flex;
     .preferences_indexes {
       flex-shrink:0;
-      border-right:1px solid var(--editorGroup-border);
+      border-right:1px solid var(--editorGroupHeader-tabsBorder);
       .index_item {
         padding: 7px 45px 7px 15px;
         cursor: pointer;
         > span {
           margin-right:10px;
           display:inline-block;
+          font-size: 1em;
         }
         &:hover {
           color: var(--list-hoverForeground);
           background-color: var(--list-hoverBackground);
         }
         &.activated {
-          color: var(--list-focusForeground);
-          background-color: var(--list-focusBackground);
+          color: var(--list-activeSelectionForeground);
+          background: var(--list-activeSelectionBackground);
         }
       }
     }
@@ -95,7 +96,9 @@
             margin: 0;
         }
       }
-      .desc {
+      .add_button {
+        margin: 0 4px;
+        padding: 0 5px!important;
       }
       .text_control {
         max-width: 500px;

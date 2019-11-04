@@ -2,14 +2,15 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { IResource, ResourceService } from '../common';
+import { IResource, ResourceService, IEditorGroup } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
-import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent } from '@ali/ide-core-browser';
+import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, localize } from '@ali/ide-core-browser';
 // TODO editor 不应该依赖main-layout
 import { Scroll } from './component/scroll/scroll';
-import { GridResizeEvent } from './types';
+import { GridResizeEvent, IEditorActionRegistry } from './types';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 const pkgName = require('../../package.json').name;
 
@@ -23,10 +24,12 @@ export interface ITabsProps {
   onContextMenu: (event: React.MouseEvent, resource: IResource) => void;
   onDrop?: (event: React.DragEvent, targetResource?: IResource) => void; // targetResource为undefined表示扔在空白处
   gridId: () => string;
-  previewIndex: number;
+  hasFocus: boolean;
+  previewUri: URI | null;
+  group: IEditorGroup;
 }
 
-export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId, previewIndex, onDbClick}: ITabsProps) => {
+export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId, previewUri, onDbClick, hasFocus, group}: ITabsProps) => {
   const tabContainer = React.useRef<HTMLDivElement | null>();
   const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
@@ -73,7 +76,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
   }, [currentResource, resources]);
 
   return <div className={styles.kt_editor_tabs}>
-    {/* <PerfectScrollbar style={ {width: '100%', height: '35px'} } options={{suppressScrollY: true}} containerRef={(el) => tabContainer.current = el}> */}
+    <div className={styles.kt_editor_tabs_scroll_wrapper}>
     <Scroll ref={(el) => el ? tabContainer.current = el.ref : null } className={styles.kt_editor_tabs_scroll}>
     <div className={styles.kt_editor_tabs_content}>
     {resources.map((resource, i) => {
@@ -83,7 +86,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
       return <div draggable={true} className={classnames({
                     [styles.kt_editor_tab]: true,
                     [styles.kt_editor_tab_current]: currentResource === resource,
-                    [styles.kt_editor_tab_preview]: i === previewIndex,
+                    [styles.kt_editor_tab_preview]: previewUri && previewUri.isEqual(resource.uri),
                   })}
                   onContextMenu={(e) => {
                     onContextMenu(e, resource);
@@ -137,7 +140,33 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
       </div>;
     })}
   </div>
-  </Scroll></div>;
+  </Scroll>
+  </div>
+    <EditorActions hasFocus={hasFocus} group={group}/>
+  <div></div>
+  </div>;
+});
+
+export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, group: IEditorGroup}) => {
+  const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
+  const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
+
+  return <div className={styles.editor_actions}>
+    {
+      hasFocus ? editorActionRegistry.getActions(group).map((item) => {
+        return <div className={classnames(styles.editor_action, item.iconClass)} title={item.title}
+                    onClick={() => item.onClick(group.currentResource)} />;
+      }) : null
+    }
+    <div className={classnames(styles.editor_action, getIcon('ellipsis'))} title={localize('editor.moreActions')}
+      onClick={(event) => {
+        const { x, y } = event.nativeEvent;
+        contextMenuRenderer.render(['editor', 'title'], { x, y });
+        event.stopPropagation();
+        event.preventDefault();
+      }}
+    />
+  </div>;
 });
 
 /**

@@ -2,7 +2,7 @@ import { Injector, ConstructorOf, Domain } from '@ali/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
-import { KeybindingRegistry, KeybindingService } from '../keybinding';
+import { KeybindingRegistry, KeybindingService, noKeybidingInputName } from '../keybinding';
 import {
   CommandRegistry,
   MenuModelRegistry,
@@ -26,7 +26,7 @@ import {
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
-import {RPCMessageConnection} from '@ali/ide-connection';
+import { RPCMessageConnection } from '@ali/ide-connection';
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId,
 } from '../preferences';
@@ -38,7 +38,7 @@ import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 
-const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3vqhnf9u72f.css';
+const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_e2ikewyk1kq.css';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -63,7 +63,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
 export interface LayoutConfig {
   [area: string]: {
     modules: Array<string>;
-    direction?: Direction;
     // TabPanel支持配置尺寸
     size?: number;
   };
@@ -115,7 +114,7 @@ export class ClientApp implements IClientApp {
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       coreExtensionDir: opts.coreExtensionDir,
-      extensionDir: opts.extensionDir,
+      extensionDir: opts.extensionDir || (isElectronRenderer() ? electronEnv.metadata.extensionDir : ''),
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
@@ -124,6 +123,7 @@ export class ClientApp implements IClientApp {
       appName: opts.appName,
       staticServicePath: opts.staticServicePath,
       editorBackgroudImage: opts.editorBackgroudImage,
+      extensionCandidate: opts.extensionCandidate,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
@@ -431,8 +431,10 @@ export class ClientApp implements IClientApp {
           });
         }
       } else {
+        // 为了避免不必要的弹窗，如果页面并没有发生交互浏览器可能不会展示在 beforeunload 事件中引发的弹框，甚至可能即使发生交互了也直接不显示。
         if (this.preventStop()) {
-          return ''; // web
+          (event || window.event).returnValue = true;
+          return true;
         }
       }
     });
@@ -447,8 +449,10 @@ export class ClientApp implements IClientApp {
     window.addEventListener('resize', () => {
       // 浏览器resize事件
     });
-    document.addEventListener('keydown', (event) => {
-      this.keybindingService.run(event);
+    document.addEventListener('keydown', (event: any) => {
+      if (event && event.target!.name !== noKeybidingInputName) {
+        this.keybindingService.run(event);
+      }
     }, true);
 
     if (isOSX) {
@@ -461,7 +465,7 @@ export class ClientApp implements IClientApp {
   injectPreferenceService(injector: Injector): void {
     const preferencesProviderFactory = () => {
       return (scope: PreferenceScope) => {
-        return injector.get(PreferenceProvider, {tag: scope});
+        return injector.get(PreferenceProvider, { tag: scope });
       };
     };
     injectPreferenceConfigurations(this.injector);

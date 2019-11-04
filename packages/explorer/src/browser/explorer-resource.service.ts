@@ -1,24 +1,44 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IFileTreeItem, IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
+import { IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
 import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
 import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
+import { TEMP_FILE_NAME, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
-import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey, Emitter, Event, FileDecorationsProvider, IFileDecoration } from '@ali/ide-core-browser';
+import {
+  DisposableCollection,
+  Disposable,
+  Logger,
+  URI, Uri,
+  IContextKeyService,
+  IContextKey,
+  Emitter,
+  Event,
+  FileDecorationsProvider,
+  IFileDecoration,
+  CorePreferences,
+  formatLocalize,
+  localize,
+  rtrim,
+  coalesce,
+  isValidBasename,
+  trim,
+} from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
+import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
+import { ExplorerFolderContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
-  onSelect(files: IFileTreeItem[]) {}
-  onDragStart(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onDragOver(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onDragEnter(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onDragLeave(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onDrop(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {}
-  onChange(node: IFileTreeItemRendered, value: string) {}
+  onSelect(files: (Directory | File)[]) { }
+  onDragStart(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onDragOver(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onDragEnter(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onDragLeave(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onDrop(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) { }
+  onChange(node: IFileTreeItemRendered, value: string) { }
   draggable = true;
   editable = true;
   multiSelectable = true;
@@ -38,7 +58,7 @@ const setTreeNodeAsData = (data: DataTransfer, node: IFileTreeItemRendered): voi
   data.setData('tree-node', node.id.toString());
 };
 
-const getNodesFromExpandedDir = (container: IFileTreeItem[]) => {
+const getNodesFromExpandedDir = (container: IFileTreeItemRendered[]) => {
   let result: any = [];
   if (!container) {
     return result;
@@ -75,7 +95,7 @@ const getNodeById = (nodes: IFileTreeItemRendered[], id: number | string): IFile
 
 const extractFileItemShouldBeRendered = (
   filetreeService: FileTreeService,
-  files: IFileTreeItem[],
+  files: (Directory | File)[],
   statusMap: IFileTreeItemStatus,
   depth: number = 0,
 ): IFileTreeItemRendered[] => {
@@ -83,11 +103,10 @@ const extractFileItemShouldBeRendered = (
     return [];
   }
   let renderedFiles: IFileTreeItemRendered[] = [];
-  files.forEach((file: IFileTreeItem) => {
+  files.forEach((file: Directory | File) => {
     const uri = filetreeService.getStatutsKey(file);
     const status = statusMap.get(uri);
     if (status) {
-      const childrens = file.children;
       const isSelected = status.selected;
       const isExpanded = status.expanded;
       const isFocused = status.focused;
@@ -101,8 +120,8 @@ const extractFileItemShouldBeRendered = (
         expanded: isExpanded,
         focused: isFocused,
       });
-      if (isExpanded && childrens && childrens.length > 0) {
-        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, statusMap, depth + 1 ));
+      if (isExpanded && file instanceof Directory) {
+        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, statusMap, depth + 1));
       }
     }
   });
@@ -126,6 +145,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
+
+  @Autowired(CorePreferences)
+  corePreferences: CorePreferences;
 
   private _currentRelativeUriContextKey: IContextKey<string>;
 
@@ -152,10 +174,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _selectTimer;
   private _selectTimes: number = 0;
 
+  private folderContext: IContextKey<boolean>;
+
   public overrideFileDecorationService: FileDecorationsProvider = {
-    getDecoration : (uri, hasChildren = false) => {
+    getDecoration: (uri, hasChildren = false) => {
       // 转换URI为vscode.uri
-      if (uri instanceof URI ) {
+      if (uri instanceof URI) {
         uri = Uri.parse(uri.toString());
       }
       return this.decorationsService.getDecoration(uri, hasChildren) as IFileDecoration;
@@ -165,6 +189,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   constructor() {
     super();
     this.listen();
+
+    this.folderContext = ExplorerFolderContext.bind(this.contextKeyService);
   }
 
   listen() {
@@ -197,7 +223,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return status;
   }
 
-  getFiles() {
+  getFiles = () => {
     if (this.filetreeService.isMutiWorkspace) {
       return extractFileItemShouldBeRendered(this.filetreeService, this.filetreeService.files, this.status);
     } else {
@@ -224,15 +250,23 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return this._currentContextUriContextKey;
   }
 
+  private setContextKeys(file: Directory | File) {
+    const isSingleFolder = !this.filetreeService.isMutiWorkspace;
+    this.folderContext.set((isSingleFolder && !file) || !!file && Directory.isDirectory(file));
+  }
+
   @action.bound
-  onSelect(files: IFileTreeItem[]) {
-    this._selectTimes ++;
-    // 单选操作
+  onSelect(files: (Directory | File)[]) {
+    this._selectTimes++;
+    // 单选操作默认先更新选中状态
+    this.filetreeService.updateFilesSelectedStatus(files, true);
     // 如果为文件夹需展开
     // 如果为文件，则需要打开文件
     if (files.length === 1) {
       if (files[0].filestat.isDirectory) {
-        this.filetreeService.updateFilesExpandedStatus(files[0]);
+        if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
+          this.filetreeService.updateFilesExpandedStatus(files[0]);
+        }
       } else {
         this.filetreeService.openFile(files[0].uri);
       }
@@ -245,6 +279,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         if (this._selectTimes > 1) {
           if (!files[0].filestat.isDirectory) {
             this.filetreeService.openAndFixedFile(files[0].uri);
+          } else {
+            if (this.corePreferences['workbench.list.openMode'] === 'doubleClick') {
+              this.filetreeService.updateFilesExpandedStatus(files[0]);
+            }
           }
         }
         this._selectTimes = 0;
@@ -254,10 +292,15 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   }
 
   @action.bound
+  onTwistieClick(file: IFileTreeItemRendered) {
+    this.filetreeService.updateFilesExpandedStatus(file as (Directory | File));
+  }
+
+  @action.bound
   onDragStart(node: IFileTreeItemRendered, event: React.DragEvent) {
     event.stopPropagation();
 
-    let selectedNodes: IFileTreeItem[] = this.filetreeService.selectedFiles;
+    let selectedNodes: IFileTreeItemRendered[] = this.filetreeService.selectedFiles;
 
     let isDragWithSelectedNode = false;
     for (const selected of selectedNodes) {
@@ -273,9 +316,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     if (event.dataTransfer) {
       let label: string;
       if (selectedNodes.length === 1) {
-          label = node.name;
+        label = node.name;
       } else {
-          label = String(selectedNodes.length);
+        label = String(selectedNodes.length);
       }
       const dragImage = document.createElement('div');
       dragImage.className = styles.kt_filetree_drag_image;
@@ -296,7 +339,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     const timer = setTimeout(() => {
       if (node.filestat.isDirectory) {
         if (!node.expanded) {
-          this.filetreeService.updateFilesExpandedStatus(node);
+          this.filetreeService.updateFilesExpandedStatus(node as (Directory | File));
         }
       }
     }, 500);
@@ -337,7 +380,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         if (!status) {
           return;
         } else {
-          containing = status.file ;
+          containing = status.file;
         }
       }
       if (!!containing) {
@@ -354,14 +397,15 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @action.bound
   onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {
     const { x, y } = event.nativeEvent;
-    let uris;
-    this.filetreeService.updateFilesFocusedStatus(nodes, true);
+    let uris: URI[];
+    this.filetreeService.updateFilesFocusedStatus(nodes as (Directory | File)[], true);
     if (nodes && nodes.length > 0) {
-     uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
+      uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
     } else {
-     uris = [this.root];
+      uris = [this.root];
     }
-    const data = { x, y , uris };
+    const data = { x, y, uris };
+    this.setContextKeys(nodes[0] as (Directory | File));
     this.currentContextUriContextKey.set(uris[0].toString());
     this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
     this.contextMenuRenderer.render(CONTEXT_MENU, data);
@@ -372,16 +416,16 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     if (!node) {
       this.filetreeService.removeTempStatus();
     } else if (!value) {
-      this.filetreeService.removeTempStatus();
+      this.filetreeService.removeTempStatus(node as (Directory | File));
     } else if (node && value) {
       if (node.name === TEMP_FILE_NAME) {
         if (node.filestat.isDirectory) {
-          this.filetreeService.createFolder(node, value);
+          this.filetreeService.createFolder(node as (Directory | File), value);
         } else {
-          this.filetreeService.createFile(node, value);
+          this.filetreeService.createFile(node as (Directory | File), value);
         }
       } else {
-        this.filetreeService.renameFile(node, value);
+        this.filetreeService.renameFile(node as (Directory | File), value);
       }
     }
   }
@@ -410,7 +454,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       return;
     }
 
-    const status = this.status.get(uri.toString());
+    const statusKey = this.filetreeService.getStatutsKey(uri);
+    const status = this.status.get(statusKey);
 
     // 当不存在status及父节点时
     // 定位到根目录顶部
@@ -420,7 +465,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       });
       return;
     }
-    const file: IFileTreeItem = status.file;
+    const file: Directory | File = status.file;
     let index = 0;
     const files = this.getFiles();
     const len = files.length;
@@ -447,12 +492,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       // 非工作区目录文件，直接结束查找
       return false;
     }
-    while ( parent && !parent.isEqual(root) ) {
+    while (parent && !parent.isEqual(root)) {
       expandedQueue.push(parent);
       parent = parent.parent;
     }
     try {
-      await this.filetreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(0));
+      await this.filetreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(1));
     } catch (error) {
       this.logger.error(error && error.stack);
       return false;
@@ -463,5 +508,74 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @action
   updatePosition(position) {
     this.position = position;
+  }
+
+  getWellFormedFileName(filename: string): string {
+    if (!filename) {
+      return filename;
+    }
+
+    // 去除空格
+    filename = trim(filename, '\t');
+
+    // 移除尾部的 . / \\
+    filename = rtrim(filename, '.');
+    filename = rtrim(filename, '/');
+    filename = rtrim(filename, '\\');
+
+    return filename;
+  }
+
+  trimLongName(name: string): string  {
+    if (name && name.length > 255) {
+      return `${name.substr(0, 255)}...`;
+    }
+    return name;
+  }
+
+  validateFileName = (item: Directory | File, name: string): ValidateMessage | null => {
+    // 转换为合适的名称
+    name = this.getWellFormedFileName(name);
+
+    // 不存在文件名称
+    if (!name || name.length === 0 || /^\s+$/.test(name)) {
+      return {
+        message: localize('validate.tree.emptyFileNameError'),
+        type: VALIDATE_TYPE.ERROR,
+      };
+    }
+
+    // 不允许开头为分隔符的名称
+    if (name[0] === '/' || name[0] === '\\') {
+      return {
+        message: localize('validate.tree.fileNameStartsWithSlashError'),
+        type: VALIDATE_TYPE.ERROR,
+      };
+    }
+
+    const names = coalesce(name.split(/[\\/]/));
+    const parent = item.parent;
+    if (name !== item.name) {
+      if (parent) {
+        // 不允许覆盖已存在的文件
+        const child = parent.children.find((child) => child.name === name);
+        if (child) {
+          return {
+            message: formatLocalize('validate.tree.fileNameExistsError', name),
+            type: VALIDATE_TYPE.ERROR,
+          };
+        }
+      }
+
+    }
+    // 判断子路径是否合法
+    if (names.some((folderName) => !isValidBasename(folderName))) {
+      return {
+        message: formatLocalize('validate.tree.invalidFileNameError', this.trimLongName(name)),
+        type: VALIDATE_TYPE.ERROR,
+      };
+    }
+
+    return null;
   }
 }

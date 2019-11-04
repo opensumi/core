@@ -1,6 +1,6 @@
-import { IStorage, ThrottledDelayer, isUndefinedOrNull, STORAGE_NAMESPACE, Emitter, DisposableCollection } from '@ali/ide-core-common';
-import { IUpdateRequest, IDatabaseStorageServer, DatabaseStorageServerPath } from '../common';
+import { IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
+import { IStorageServer, IUpdateRequest } from '../common';
 
 enum StorageState {
   None,
@@ -8,7 +8,7 @@ enum StorageState {
   Closed,
 }
 
-export class DatabaseStorage implements IStorage {
+export class Storage implements IStorage {
   private static readonly DEFAULT_FLUSH_DELAY = 100;
 
   private _onDidChangeStorage = new Emitter<string>();
@@ -29,10 +29,10 @@ export class DatabaseStorage implements IStorage {
 
   private _init: Promise<any>;
 
-  constructor(private readonly database: IDatabaseStorageServer, private readonly workspace: IWorkspaceService, storageName: string) {
+  constructor(private readonly database: IStorageServer, private readonly workspace: IWorkspaceService, storageName: string) {
     this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);
-    this.flushDelayer = new ThrottledDelayer(DatabaseStorage.DEFAULT_FLUSH_DELAY);
+    this.flushDelayer = new ThrottledDelayer(Storage.DEFAULT_FLUSH_DELAY);
     this._init = this.init(storageName);
   }
 
@@ -59,14 +59,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async reConnectInit() {
-    console.log('DatabaseStorage reConnectInit');
     const storageName = this.storageName;
     await this.workspace.whenReady;
     const workspace = this.workspace.workspace;
     await this.database.init(workspace && workspace.uri);
     const cache = await this.database.getItems(storageName);
     this.cache = this.jsonToMap(cache);
-    console.log('DatabaseStorage reConnectInit done');
   }
 
   private jsonToMap(json) {

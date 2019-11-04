@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as styles from './status-bar.module.less';
 import { StatusBarEntry } from '@ali/ide-core-browser/lib/services';
-import { parseLabel, LabelPart, LabelIcon } from '@ali/ide-core-browser';
+import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import cls from 'classnames';
 import { getOctIcon } from '@ali/ide-core-browser/lib/icon';
 
@@ -25,18 +25,18 @@ export function StatusBarItem(props: StatusBarEntry) {
         color,
       }}
     >
-      {[
-        iconClass && <span key={-1} className={iconClass}></span>,
-        items.map((item, key) => {
+      <div>
+        {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
+        {items.map((item, key) => {
           if (!(typeof item === 'string') && LabelIcon.is(item)) {
             hasIcon = true;
             // TODO 支持内置的iconfont
-            return <span key={key} className={cls(getOctIcon(item.name), `${item.animation ? 'fa-' + item.animation : ''}`)}></span>;
+            return <span key={key} className={cls(styles.icon, getOctIcon(item.name), `${item.animation ? 'iconfont-anim-' + item.animation : ''}`)}></span>;
           } else {
-            return <span style={{marginLeft: iconClass || hasIcon ? '2px' : 0}} key={key}>{item}</span>;
+            return <span style={{marginLeft: iconClass || hasIcon ? '2px' : 0}} key={key}>{replaceLocalizePlaceholder(item)}</span>;
           }
-        }),
-      ]}
-    </div >
+        })}
+      </div>
+    </div>
   );
 }

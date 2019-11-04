@@ -135,7 +135,7 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
   private _webview: MaybeNull<T>;
 
   open(groupIndex?: number | undefined) {
-    this.workbenchEditorService.open(this.webviewUri, {groupIndex: groupIndex ? groupIndex - 1 : 0});
+    return this.workbenchEditorService.open(this.webviewUri, {groupIndex: groupIndex ? groupIndex - 1 : 0, preview: false});
   }
 
   close() {
@@ -189,6 +189,13 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
     });
   }
 
+  get editorGroup(): IEditorGroup | undefined {
+    const uri = this.webviewUri;
+    return this.workbenchEditorService.editorGroups.find((g) => {
+      return g.resources.findIndex((r) => r.uri.isEqual(uri)) !== -1;
+    });
+  }
+
   constructor(public readonly id: string, public webviewFactory: () =>  T) {
     super();
     const componentId = EDITOR_WEBVIEW_SCHEME + '_' + this.id;
@@ -212,6 +219,13 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
   createWebview(): T {
     this._webview = this.webviewFactory();
     this.addDispose(this._webview!);
+    if ((this._webview as IWebview).onDidFocus) {
+      this.addDispose((this._webview as IWebview).onDidFocus(() => {
+        if (this.editorGroup) {
+          (this.editorGroup as any).gainFocus();
+        }
+      }));
+    }
     return this._webview;
   }
 

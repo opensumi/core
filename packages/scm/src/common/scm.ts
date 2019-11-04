@@ -65,7 +65,7 @@ export interface ISCMResource {
   readonly sourceUri: Uri;
   readonly decorations: ISCMResourceDecorations;
   open(): Promise<void>;
-// 句柄参数转换
+  // 句柄参数转换
   toJSON(): { [key: string]: number };
 }
 

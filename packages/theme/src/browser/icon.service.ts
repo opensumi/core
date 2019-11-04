@@ -41,7 +41,7 @@ export class IconService implements IIconService {
     this.listen();
   }
 
-  listen() {
+  private listen() {
     this.preferenceService.onPreferenceChanged( (e) => {
       if (e.preferenceName === 'general.icon') {
         this.applyTheme(this.preferenceService.get<string>('general.icon')!);
@@ -69,6 +69,11 @@ export class IconService implements IIconService {
     return cssRule;
   }
 
+  protected getBackgroundStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
+    const cssRule = `${baseTheme || ''} .${className} {background: url(${iconUrl}) no-repeat 50% 50%;background-size:contain;}`;
+    return cssRule;
+  }
+
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined {
     if (!icon) {
       return;
@@ -86,6 +91,12 @@ export class IconService implements IIconService {
       }
     }
     return randomClass + ' ' + 'mask-mode';
+  }
+
+  fromIconUrl(iconUrl: string): string {
+    const randomClass = this.getRandomIconClass();
+    this.appendStyleSheet(this.getBackgroundStyleSheet(iconUrl, randomClass));
+    return randomClass;
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {
@@ -124,7 +135,7 @@ export class IconService implements IIconService {
     return themeInfos;
   }
 
-  async getIconTheme(themeId: string): Promise<IIconTheme> {
+  async getIconTheme(themeId: string): Promise<IIconTheme | undefined> {
     let theme = this.iconThemes.get(themeId);
     if (theme) {
       return theme;
@@ -134,18 +145,25 @@ export class IconService implements IIconService {
       theme = await this.iconThemeStore.getIconTheme(extContribution.contribution, extContribution.basePath);
       return theme;
     }
-    return await this.iconThemeStore.getIconTheme();
+    return;
   }
 
   async applyTheme(themeId?: string) {
+    this.toggleIconVisible(true);
     if (!themeId) {
       themeId = getPreferenceIconThemeId();
     }
     if (this.currentTheme && this.currentThemeId === themeId) {
       return;
     }
-    this.currentThemeId = themeId;
     const iconThemeData = await this.getIconTheme(themeId);
+    if (!iconThemeData) {
+      console.warn('没有检测到目标图标主题插件，使用内置图标！');
+      document.getElementsByTagName('body')[0].classList.add('default-file-icons');
+      return;
+    }
+    this.currentThemeId = themeId;
+    document.getElementsByTagName('body')[0].classList.remove('default-file-icons');
     this.currentTheme = iconThemeData;
     const { styleSheetContent } = iconThemeData;
     let styleNode = document.getElementById('icon-style');
@@ -157,11 +175,10 @@ export class IconService implements IIconService {
       styleNode.innerHTML = styleSheetContent;
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
-    this.toggleIconVisible(true);
   }
 
   toggleIconVisible(show?: boolean) {
-    const rootNode = document.getElementById('main')!;
+    const rootNode = document.getElementsByTagName('body')[0]!;
     if (show === undefined) {
       rootNode.classList.toggle('show-file-icons');
     } else if (show === true) {

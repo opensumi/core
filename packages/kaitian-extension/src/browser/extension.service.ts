@@ -44,6 +44,10 @@ import {
   ClientAppContribution,
   ContributionProvider,
   SlotLocation,
+  ILogger,
+  getLanguageId,
+  getPreferenceLanguageId,
+  isElectronRenderer,
 } from '@ali/ide-core-browser';
 import {
   getIcon,
@@ -76,6 +80,7 @@ import { IThemeService, IIconService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
+import * as BrowserApi from './kaitian-browser';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -98,7 +103,7 @@ function getAMDDefine(): any {
 @Injectable()
 export class ExtensionServiceImpl implements ExtensionService {
   private extensionScanDir: string[] = [];
-  private extenionCandidate: string[] = [];
+  private extensionCandidate: string[] = [];
   private extraMetadata: IExtraMetaData = {};
   private protocol: RPCProtocol;
 
@@ -150,6 +155,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IClientApp)
   clientApp: IClientApp;
 
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
+
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
 
@@ -176,7 +184,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     this.extensionMetaDataArr = await this.getAllExtensions();
     console.log('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
     await this.initExtension();
-    await this.enableExtensions();
+    await this.enableAvailableExtensions();
     await this.themeService.applyTheme();
     await this.iconService.applyTheme();
     this.doActivate();
@@ -208,6 +216,82 @@ export class ExtensionServiceImpl implements ExtensionService {
     // this.ready.resolve();
 
   }
+
+  public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
+    const extensionMetadata = await this.extensionNodeService.getExtension(path, getPreferenceLanguageId());
+    if (extensionMetadata) {
+      const extension = this.injector.get(Extension, [
+        extensionMetadata,
+        this,
+        await this.checkExtensionEnable(extensionMetadata),
+        extensionMetadata.realPath.startsWith(this.appConfig.extensionDir!),
+      ]);
+
+      this.extensionMap.set(path, extension);
+
+      if (upgrade) {
+        const oldExtension = this.extensionMap.get(oldExtensionPath!);
+        if (oldExtension) {
+          oldExtension.dispose();
+          this.extensionMap.delete(oldExtensionPath!);
+        }
+      }
+
+      extension.enable();
+      await extension.contributeIfEnabled();
+
+      // @柳千这个判断是否必要，否则在安装插件后可能是 undefined
+      if (this.protocol) {
+        const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+        await proxy.$initExtensions();
+      }
+
+      const { packageJSON: { activationEvents = [] } } = extension;
+      this.fireActivationEventsIfNeed(activationEvents);
+    }
+  }
+
+  private fireActivationEventsIfNeed(activationEvents: string[]) {
+    if (activationEvents.find((event) => event === '*')) {
+      this.activationEventService.fireEvent('*');
+    }
+
+    const _activationEvents = activationEvents.filter((event) => event !== '*');
+    const shouldFireEvents = Array.from(
+      this.activationEventService.activatedEventSet.values(),
+    ).filter(({ topic, data }) => _activationEvents.find((_event) => _event === `${topic}:${data}`));
+
+    for (const event of shouldFireEvents) {
+      this.logger.log(`Fire activation event ${event.topic}:${event.data}`);
+      this.activationEventService.fireEvent(event.topic, event.data);
+    }
+  }
+
+  public async postDisableExtension(extensionPath: string) {
+    const extension = this.extensionMap.get(extensionPath)!;
+    extension.disable();
+  }
+
+  public async postEnableExtension(extensionPath: string) {
+    const extension = this.extensionMap.get(extensionPath)!;
+
+    extension.enable();
+    await extension.contributeIfEnabled();
+
+    if (extension.packageJSON.activationEvents) {
+      this.fireActivationEventsIfNeed(extension.packageJSON.activationEvents);
+    }
+  }
+
+  public async isExtensionRunning(extensionPath: string) {
+    const extension = this.extensionMap.get(extensionPath);
+    if (!extension) {
+      return false;
+    }
+
+    return extension.activated;
+  }
+
   get clientId() {
     let clientId;
 
@@ -234,7 +318,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (!init) {
       this.disposeExtensions();
       await this.initExtension();
-      await this.enableExtensions();
+      await this.enableAvailableExtensions();
       // await this.layoutContribute();
     }
 
@@ -269,7 +353,8 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
     if (!this.extensionMetaDataArr) {
-      const extensions = await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extenionCandidate, this.extraMetadata);
+      const extensions = await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extensionCandidate, getPreferenceLanguageId(), this.extraMetadata);
+      console.log(extensions);
       this.extensionMetaDataArr = extensions;
     }
     return this.extensionMetaDataArr;
@@ -282,7 +367,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined> {
-    const extensionMetaData = await this.extensionNodeService.getExtension(extensionPath, extraMetaData);
+    const extensionMetaData = await this.extensionNodeService.getExtension(extensionPath, getPreferenceLanguageId(), extraMetaData);
     if (extensionMetaData) {
       const extension = this.extensionMap.get(extensionPath);
       if (extension) {
@@ -296,12 +381,8 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
     const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
-    return storage.get(extension.extensionId) !== '0';
-  }
-
-  public async setExtensionEnable(extensionId: string, enable: boolean) {
-    const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
-    storage.set(extensionId, enable ? '1' : '0');
+    // 全局设置会同步到 workspace 中，所以只检查 workspace 就可以了
+    return storage.get(extension.extensionId, '1') === '1';
   }
 
   private async initBrowserDependency() {
@@ -311,26 +392,33 @@ export class ExtensionServiceImpl implements ExtensionService {
     getAMDDefine()('ReactDOM', [] , () => {
       return ReactDOM;
     });
+    getAMDDefine()('kaitian-browser', [] , () => {
+      return BrowserApi;
+    });
   }
   private async initBaseData() {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
     }
-    if (this.appConfig.extenionCandidate) {
-      this.extenionCandidate.push(this.appConfig.extenionCandidate);
+    if (isElectronEnv() && electronEnv.metadata.extenionCandidate) {
+      this.extensionCandidate = this.extensionCandidate.concat(electronEnv.metadata.extenionCandidate);
+    }
+    if (this.appConfig.extensionCandidate) {
+      this.extensionCandidate = this.extensionCandidate.concat(this.appConfig.extensionCandidate.map((extension) => extension.path));
     }
     this.extraMetadata[LANGUAGE_BUNDLE_FIELD] = './package.nls.json';
   }
 
   private async initExtension() {
     for (const extensionMetaData of this.extensionMetaDataArr) {
+      const extensionCandidate = this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === extensionMetaData.realPath);
       const extension = this.injector.get(Extension, [
         extensionMetaData,
         this,
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
         // 通过路径判决是否是内置插件
-        extensionMetaData.realPath.startsWith(this.appConfig.extensionDir!),
+        extensionMetaData.realPath.startsWith(this.appConfig.extensionDir!) || (extensionCandidate ? extensionCandidate.isBuiltin : false),
       ]);
 
       this.extensionMap.set(extensionMetaData.path, extension);
@@ -338,9 +426,9 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   }
 
-  private async enableExtensions() {
+  private async enableAvailableExtensions() {
     await Promise.all(Array.from(this.extensionMap.values()).map((extension) => {
-      return extension.enable();
+      return extension.contributeIfEnabled();
     }));
   }
 
@@ -668,6 +756,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                 containerId: `${extension.id}:${component.id}`,
                 activateKeyBinding: component.keyBinding,
                 title: component.title,
+                priority: component.priority,
               },
               pos,
             );
@@ -705,6 +794,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   private async loadBrowser(browserPath: string): Promise<any> {
     return await new Promise((resolve) => {
       console.log('extend browser load', browserPath);
+      if (isElectronRenderer()) {
+        browserPath = decodeURIComponent(browserPath);
+      }
       getAMDRequire()([browserPath], (exported) => {
         console.log('extend browser exported', exported);
         resolve(exported);

@@ -48,7 +48,7 @@ abstract class BaseContextKeyService implements IContextKeyService {
     return expression;
   }
 
-  abstract match(expression: string | monaco.contextkey.ContextKeyExpr, context?: HTMLElement): boolean;
+  abstract match(expression: string | monaco.contextkey.ContextKeyExpr, context?: HTMLElement | null): boolean;
   abstract dispose(): void;
 }
 

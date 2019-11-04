@@ -1,1 +1,2 @@
-export const KEYMAPS_SCHEME = 'keymaps';
+export * from './const';
+export * from './keymaps';

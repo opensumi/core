@@ -92,12 +92,12 @@ export const ExtensionTabbarTreeView = observer(({
         }
         return;
       } else {
-        onTwistieClickHandler(node);
+        onTwistieClick(node);
       }
     }
   };
 
-  const onTwistieClickHandler = (node: TreeNode<any>) => {
+  const onTwistieClick = (node: TreeNode<any>) => {
     const nodeModel = model.get(node.id);
     if (nodeModel && !nodeModel.expanded) {
       model.set(node.id, {
@@ -231,7 +231,7 @@ export const ExtensionTabbarTreeView = observer(({
       containerHeight={ height }
       onSelect={onSelectHandler}
       onContextMenu={onContextMenuHandler}
-      onTwistieClickHandler={onTwistieClickHandler}
+      onTwistieClick={onTwistieClick}
     >
     </RecycleTree>
   </div>;

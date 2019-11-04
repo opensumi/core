@@ -95,9 +95,9 @@ export class DefaultResourceProvider {
   async get(uri: URI): Promise<Resource> {
     const resolvers = this.resolversProvider.getContributions();
     for (const resolver of resolvers) {
-      const resourceResolver =  await resolver.resolve(uri);
+      const resourceResolver = await resolver.resolve(uri);
       if (resourceResolver) {
-        return Promise.resolve(resourceResolver)
+        return resourceResolver;
       }
     }
     return Promise.reject(new Error(`A resource provider for '${uri.toString()}' is not registered.`));
@@ -167,13 +167,13 @@ export class InMemoryResourceResolver implements ResourceResolverContribution {
  */
 export namespace DataUri {
 
-	export const META_DATA_LABEL = 'label';
-	export const META_DATA_DESCRIPTION = 'description';
-	export const META_DATA_SIZE = 'size';
-	export const META_DATA_MIME = 'mime';
+  export const META_DATA_LABEL = 'label';
+  export const META_DATA_DESCRIPTION = 'description';
+  export const META_DATA_SIZE = 'size';
+  export const META_DATA_MIME = 'mime';
 
-	export function parseMetaData(dataUri: monaco.Uri): Map<string, string> {
-		const metadata = new Map<string, string>();
+  export function parseMetaData(dataUri: monaco.Uri): Map<string, string> {
+    const metadata = new Map<string, string>();
     const uriPath = dataUri.path;
 		// Given a URI of:  data:image/png;size:2313;label:SomeLabel;description:SomeDescription;base64,77+9UE5...
 		// the metadata is: size:2313;label:SomeLabel;description:SomeDescription

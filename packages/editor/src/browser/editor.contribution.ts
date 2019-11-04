@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer } from '@ali/ide-core-browser';
@@ -8,7 +8,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { EditorGroupsResetSizeEvent } from './types';
+import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
@@ -17,8 +17,8 @@ interface Resource {
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -44,6 +44,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
   @Autowired(ContextMenuRenderer)
   private contextMenuRenderer: ContextMenuRenderer;
 
+  @Autowired(IDocPersistentCacheProvider)
+  cacheProvider: IDocPersistentCacheProvider;
+
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
       id: 'ide-editor',
@@ -65,7 +68,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     if (isElectronRenderer()) {
       return this.onWillStopElectron();
     } else {
-      return this.workbenchEditorService.hasDirty();
+      return this.workbenchEditorService.hasDirty() || !this.cacheProvider.isFlushed();
     }
   }
 
@@ -77,6 +80,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
         }
       }
     }
+
+    if (!this.cacheProvider.isFlushed()) {
+      return true;
+    }
+
     return false;
   }
 
@@ -450,8 +458,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL, {
-      execute: async () => {
-        this.workbenchEditorService.closeAll();
+      execute: async (uri?: URI) => {
+        this.workbenchEditorService.closeAll(uri);
       },
     });
   }
@@ -490,29 +498,22 @@ export class EditorContribution implements CommandContribution, MenuContribution
       commandId: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
       label: localize('editor.closeToRight', '关闭到右侧'),
     });
+
+    menus.registerMenuAction(['editor', 'title', '9_close'], {
+      commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
+      label: localize('editor.closeAllInGroup', '关闭全部'),
+    });
   }
 
   registerToolBarElement(registry: IToolBarViewService): void {
-    registry.registerToolBarElement({
-      type: 'action',
-      position: ToolBarPosition.RIGHT,
+  }
+
+  registerEditorActions(registry: IEditorActionRegistry) {
+    registry.registerEditorAction({
       iconClass: getIcon('embed'),
       title: localize('editor.splitToRight'),
-      click: () => {
+      onClick: () => {
         this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
-      },
-    });
-
-    registry.registerToolBarElement({
-      type: 'action',
-      position: ToolBarPosition.RIGHT,
-      iconClass: getIcon('arrow-down'),
-      title: localize('editor.moreActions'),
-      click: (event) => {
-        const { x, y } = event.nativeEvent;
-        this.contextMenuRenderer.render(['editor', 'title'], { x, y });
-        event.stopPropagation();
-        event.preventDefault();
       },
     });
   }

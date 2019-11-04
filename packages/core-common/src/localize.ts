@@ -1,4 +1,4 @@
-import { format } from './utils/strings';
+import { format, mnemonicButtonLabel } from './utils/strings';
 
 export type ILocalizationKey = string; //ts不支持symbol作为key
 
@@ -49,7 +49,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
 
   private localizationMap: Map<string, ILocalizationContents> = new Map() ;
 
-  private localizationInfo: Map<string, ILocalizationInfo> = new Map();
+  public readonly localizationInfo: Map<string, ILocalizationInfo> = new Map();
 
   get currentLanguageId() {
     return this._currentLanguageId;
@@ -64,7 +64,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
     const existingMessages = this.getContents(bundle.languageId);
     Object.keys(bundle.contents).forEach((key: ILocalizationKey)=> {
-      existingMessages[key] = bundle.contents[key];
+      existingMessages[key] = mnemonicButtonLabel(bundle.contents[key], true); // 暂时去除所有注记符
     });
     if (!this.localizationInfo.has(bundle.languageId)) {
       this.localizationInfo.set(bundle.languageId, Object.assign({}, bundle, {contents: undefined}));
@@ -98,6 +98,10 @@ export function getLanguageId(env: string = 'host'): string {
   return getLocalizationRegistry(env).currentLanguageId;
 }
 
+export function getCurrentLanguageInfo(env: string = 'host'): ILocalizationInfo {
+  return getLocalizationRegistry(env).localizationInfo.get(getLocalizationRegistry(env).currentLanguageId)!;
+}
+
 export function setLanguageId(language,env: string = 'host'): void {
   getLocalizationRegistry(env).currentLanguageId = language;
 }
@@ -106,9 +110,12 @@ export function getAvailableLanguages(env: string = 'host'): ILocalizationInfo[]
   return getLocalizationRegistry(env).getAllLanguages();
 }
 
-function getLocalizationRegistry(env: string) {
+function getLocalizationRegistry(env: string): LocalizationRegistry {
   if(!localizationRegistryMap[env]){
     localizationRegistryMap[env] = new LocalizationRegistry();
+    if (env !== 'host') {
+      localizationRegistryMap[env]!.currentLanguageId = localizationRegistryMap['host'].currentLanguageId;
+    }
   }
   return localizationRegistryMap[env];
 }
@@ -117,9 +124,9 @@ function getLocalizationRegistry(env: string) {
  * 含有占位符标识的 key 转换
  * @param label
  */
-export function replaceLocalizePlaceholder(label?: string): string | undefined {
+export function replaceLocalizePlaceholder(label?: string, env?: string): string | undefined {
   if (label) {
-    return label.replace(/%(.*?)%/g, (_, p) => localize(p)) ;
+    return label.replace(/%(.*?)%/g, (_, p) => localize(p, undefined, env)) ;
   }
 }
 

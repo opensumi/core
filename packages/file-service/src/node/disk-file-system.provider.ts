@@ -12,6 +12,7 @@ import {
   URI,
   Emitter,
   isUndefined,
+  DebugLog,
 } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher';
@@ -25,6 +26,8 @@ import {
   FileAccess,
   FileSystemProvider,
 } from '../common/';
+
+const debugLog = new DebugLog();
 
 function notEmpty<T>(value: T | undefined): value is T {
   return value !== undefined;
@@ -145,7 +148,12 @@ export class DiskFileSystemProvider implements FileSystemProvider {
       return await this.createFile(uri, { content });
     }
 
-    await writeFileAtomicSync(FileUri.fsPath(_uri), content);
+    try {
+      await writeFileAtomicSync(FileUri.fsPath(_uri), content);
+    } catch (e) {
+      debugLog.warn('writeFileAtomicSync 出错，使用 fs', e);
+      fs.writeFileSync(FileUri.fsPath(_uri), content);
+    }
   }
 
   async exists(uri: Uri | string): Promise<boolean> {
@@ -449,5 +457,59 @@ export class DiskFileSystemProvider implements FileSystemProvider {
 export class DiskFileSystemProviderWithoutWatcher extends DiskFileSystemProvider {
   initWatcher() {
     // Do nothing
+  }
+}
+
+// 这里的 DiskFileSystemProviderWithoutWatcherForExtHost 仅仅给插件使用
+export class DiskFileSystemProviderWithoutWatcherForExtHost extends DiskFileSystemProviderWithoutWatcher {
+  initWatcher() {
+    // Do nothing
+  }
+
+  stat(uri: Uri | string): FileStat | Thenable<FileStat> {
+    const _uri = new URI(uri);
+    return this.doGetStat(_uri, 1);
+  }
+
+  protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
+    try {
+      const filePath = FileUri.fsPath(uri);
+      const lstat = await fs.lstat(filePath);
+
+      if (lstat.isSymbolicLink()) {
+        let realPath;
+        realPath = await fs.realpath(FileUri.fsPath(uri));
+
+        const stat = await fs.stat(filePath);
+        const realURI = FileUri.create(realPath);
+        const realStat = await fs.lstat(realPath);
+
+        let realStatData;
+        if (stat.isDirectory()) {
+          realStatData = await this.doCreateDirectoryStat(realURI, realStat, depth);
+        } else {
+          realStatData = await this.doCreateFileStat(realURI, realStat);
+        }
+
+        return {
+          ...realStatData,
+          isSymbolicLink: true,
+          uri: uri.toString(),
+        };
+
+      } else {
+        if (lstat.isDirectory()) {
+          return await this.doCreateDirectoryStat(uri, lstat, depth);
+        }
+        const fileStat = await this.doCreateFileStat(uri, lstat);
+
+        return fileStat;
+      }
+
+    } catch (error) {
+      // 将错误直接抛出，因为插件有对应的依赖
+      // https://yuque.antfin-inc.com/zymuwz/topics/17
+      throw error;
+    }
   }
 }

@@ -2,9 +2,9 @@ import { Injectable, Autowired } from '@ali/common-di';
 import * as compressing from 'compressing';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { IExtensionManagerServer, PREFIX } from '../common';
+import { IExtensionManagerServer, PREFIX, RequestHeaders, EXTENSION_DIR } from '../common';
 import * as urllib from 'urllib';
-import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
+import { AppConfig, URI, INodeLogger, isElectronEnv, MarketplaceRequest} from '@ali/ide-core-node';
 import * as contentDisposition from 'content-disposition';
 import * as awaitEvent from 'await-event';
 import { renameSync } from 'fs-extra';
@@ -17,12 +17,56 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   @Autowired(INodeLogger)
   private logger: INodeLogger;
+  private headers: RequestHeaders;
 
-  async search(query: string) {
-    return await this.request(`search?query=${query}`);
+  async search(query: string, ignoreId?: string[]) {
+    try {
+      const res = await this.request(`search?query=${query}${ignoreId ? ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
+    }
   }
-  async getExtensionFromMarketPlace(extensionId: string) {
-    return await this.request(`extension/${extensionId}`);
+  async getExtensionFromMarketPlace(extensionId: string, version: string) {
+    try {
+      const res = await this.request(`extension/${extensionId}?version=${version}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
+    }
+  }
+
+  async getHotExtensions(ignoreId?: string[]) {
+    try {
+      const res = await this.request(`hot${ignoreId ? '?' + ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
+    }
   }
 
   /**
@@ -30,9 +74,8 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param extensionId 插件 id
    */
   async requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
-    const request = await urllib.request<NodeJS.ReadWriteStream>(this.getApi(`download/${extensionId}${version ? `?version=${version}` : ''}`), {
+    const request = await this.request<NodeJS.ReadWriteStream>(`download/${extensionId}${version ? `?version=${version}` : ''}`, {
       streaming: true,
-      headers: this.getHeaders(),
     });
     return request;
   }
@@ -57,11 +100,12 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param version 要更新的版本
    * @param oldExtensionPath 更新后需要卸载之前的插件
    */
-  async updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<boolean> {
+  async updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string> {
     // 先下载插件
-    await this.downloadExtension(extensionId, version);
+    const extensionDir = await this.downloadExtension(extensionId, version);
     // 卸载之前的插件
-    return await this.uninstallExtension(oldExtensionPath);
+    await this.uninstallExtension(oldExtensionPath);
+    return extensionDir;
   }
 
   /**
@@ -70,7 +114,6 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param extensionDirName 插件文件夹名
    */
   private async uncompressExtension(source: any, extensionDirName: string): Promise<string> {
-    let root: string;
     const zipStream = new compressing.zip.UncompressStream({ source });
     // 插件目录
     const extensionDir = path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
@@ -78,47 +121,35 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
     await fs.mkdirp(extensionDir);
 
     zipStream.on('entry', async (header, stream, next) => {
-        if (header.type === 'directory') {
-          // mac 打包后会生成一个已文件夹名命名的目录
-          if (/^((?!\/).)*\/$/.test(header.name)) {
-            root = header.name;
-          }
+      if (header.type === 'directory') {
+        next();
+      } else {
+        if (!header.name.startsWith(EXTENSION_DIR)) {
           next();
         } else {
-          // 说明是 vsix 类型的目录
-          if (header.name === 'extension.vsixmanifest') {
-            root = 'extension/';
+          // 说明进入了插件目录
+          // 去除插件目录
+          const fileName = header.name.replace(EXTENSION_DIR, '');
+          let distFile = path.join(extensionDir, fileName);
+
+          if (fileName.endsWith('.asar') && isElectronEnv()) {
+            // 在Electron中，如果解包的文件中存在.asar文件，会由于Electron本身的bug导致无法对.asar创建writeStream
+            // 此处先把.asar文件写到另外一个目标文件中，完成后再进行重命名
+            const originalDistFile = distFile;
+            distFile += '_prevent_bug';
+            stream.on('end', () => {
+              renameSync(distFile, originalDistFile);
+            });
           }
-          if (!root) {
+
+          // 创建目录
+          await fs.mkdirp(path.dirname(distFile));
+          stream.on('end', () => {
             next();
-          } else {
-            // 说明进入了插件目录
-            if (header.name.startsWith(root)) {
-              // 去除插件目录
-              const fileName = header.name.replace(root, '');
-              let distFile = path.join(extensionDir, fileName);
-
-              if (fileName.endsWith('.asar') && isElectronEnv()) {
-                // 在Electron中，如果解包的文件中存在.asar文件，会由于Electron本身的bug导致无法对.asar创建writeStream
-                // 此处先把.asar文件写到另外一个目标文件中，完成后再进行重命名
-                const originalDistFile = distFile;
-                distFile += '_prevent_bug';
-                stream.on('end', () => {
-                  renameSync(distFile, originalDistFile);
-                });
-              }
-
-              // 创建目录
-              await fs.mkdirp(path.dirname(distFile));
-              stream.on('end', () => {
-                next();
-              });
-              stream.pipe(fs.createWriteStream(distFile));
-            } else {
-              next();
-            }
-          }
+          });
+          stream.pipe(fs.createWriteStream(distFile));
         }
+      }
     });
 
     try {
@@ -149,24 +180,31 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * 请求插件市场
    * @param path 请求路径
    */
-  async request(path: string) {
-    try {
-      const url = this.getApi(path);
-      this.logger.log(`request: ${url}`);
-      const res = await urllib.request(url, {
-        dataType: 'json',
-        timeout: 5000,
-        headers: this.getHeaders(),
-      });
-      if (res.status === 200) {
-        return res.data;
-      } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
-      }
-    } catch (err) {
-      this.logger.error(err);
-      throw new Error(err.message);
-    }
+  async request<T = any>(path: string, options?: urllib.RequestOptions): Promise<urllib.HttpClientResponse<T>> {
+    const url = this.getApi(path);
+    this.logger.log(`marketplace request url: ${url}`);
+    return await urllib.request<T>(url, {
+      ...options,
+      headers: {
+        'x-account-id': this.appConfig.marketplace.accountId,
+        'x-master-key': this.appConfig.marketplace.masterKey,
+        ...this.headers,
+      },
+      beforeRequest: (options) => {
+        if (this.appConfig.marketplace.transformRequest) {
+          const { headers, path} = this.appConfig.marketplace.transformRequest({
+            path: options.path,
+            headers: options.headers,
+          });
+          if (path) {
+            options.path = path;
+          }
+          if (headers) {
+            options.headers = headers;
+          }
+        }
+      },
+    });
 
   }
 
@@ -176,19 +214,13 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   }
 
   /**
-   * 获取 headers
-   */
-  private getHeaders() {
-    return {
-      'x-account-id': this.appConfig.marketplace.accountId,
-      'x-master-key': this.appConfig.marketplace.masterKey,
-    };
-  }
-
-  /**
    * 是否显示插件市场
    */
   isShowBuiltinExtensions(): boolean {
     return this.appConfig.marketplace.showBuiltinExtensions;
+  }
+
+  setHeaders(headers: RequestHeaders) {
+    this.headers = headers;
   }
 }

@@ -3,7 +3,6 @@ import { Autowired, Injectable } from '@ali/common-di';
 import {
   ClientAppContribution,
   InMemoryResourceResolver,
-  JsonSchemaStore,
   PreferenceSchemaProvider,
   URI,
   Domain,
@@ -22,6 +21,9 @@ import {
   EDITOR_COMMANDS,
   MenuModelRegistry,
   SETTINGS_MENU_PATH,
+  ISchemaStore,
+  JsonSchemaContribution,
+  ISchemaRegistry,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -31,6 +33,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME } from '../common';
 import { PreferenceView } from './preferences.view';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
@@ -47,7 +50,7 @@ export class PrefResourceProvider extends WithEventBus implements IResourceProvi
     // 获取文件类型 getFileType: (path: string) => string
     return {
       name: localize('preference.tab.name'),
-      icon: 'volans_icon setting',
+      icon: getIcon('setting'),
       uri,
     };
   }
@@ -66,17 +69,17 @@ export namespace PreferenceContextMenu {
   export const OPEN = [...SETTINGS_MENU_PATH, '1_open'];
 }
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution)
-export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution {
+@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution, JsonSchemaContribution)
+export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution, JsonSchemaContribution {
 
-  @Autowired(JsonSchemaStore)
-  private readonly jsonSchemaStore: JsonSchemaStore;
+  @Autowired(ISchemaStore)
+  private readonly schemaStore: ISchemaStore;
   @Autowired(PreferenceSchemaProvider)
   private readonly schemaProvider: PreferenceSchemaProvider;
   @Autowired(InMemoryResourceResolver)
   private readonly inmemoryResources: InMemoryResourceResolver;
 
-  @Autowired(PreferenceProvider, {tag: PreferenceScope.Workspace})
+  @Autowired(PreferenceProvider, { tag: PreferenceScope.Workspace })
   protected readonly workspacePreferenceProvider: WorkspacePreferenceProvider;
 
   @Autowired(IFileServiceClient)
@@ -90,6 +93,9 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   @Autowired(CommandService)
   commandService: CommandService;
+
+  @Autowired(ISchemaRegistry)
+  schemaRegistry: ISchemaRegistry;
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
@@ -118,21 +124,13 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   }
 
   onStart() {
-    const serializeSchema = () => JSON.stringify(this.schemaProvider.getCombinedSchema());
-    const uri = new URI('vscode://schemas/settings/user');
-    this.inmemoryResources.add(uri, serializeSchema());
-    this.jsonSchemaStore.registerSchema({
-      fileMatch: ['settings.json', USER_PREFERENCE_URI.toString()],
-      url: uri.toString(),
+    this.schemaProvider.onDidPreferenceSchemaChanged(() => {
+      this.registerSchema(this.schemaRegistry);
     });
-    this.schemaProvider.onDidPreferenceSchemaChanged(() =>
-      this.inmemoryResources.update(uri, serializeSchema()),
-    );
   }
 
-  // 初始化PreferenceService下的PreferenceProvider，如Folder，Workspace
-  initialize(): void {
-    this.preferenceService.initializeProviders();
+  registerSchema(registry: ISchemaRegistry) {
+    registry.registerSchema('vscode://schemas/settings/user', this.schemaProvider.getCombinedSchema(), ['settings.json', USER_PREFERENCE_URI.toString()]);
   }
 
   registerResource(resourceService: ResourceService) {

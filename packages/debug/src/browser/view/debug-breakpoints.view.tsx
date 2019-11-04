@@ -17,11 +17,12 @@ export interface BreakpointItem {
 export const DebugBreakpointView = observer(() => {
   const {
     nodes,
+    enable,
   }: DebugBreakpointsService = useInjectable(DebugBreakpointsService);
-  return <div className={styles.debug_breakpoints}>
+  return <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
     {
       nodes && nodes.map((node) => {
-        return <BreakpointItem data={node} key={node.id}></BreakpointItem>;
+        return <BreakpointItem data={node} key={node.id} enable={enable}></BreakpointItem>;
       })
     }
 
@@ -30,15 +31,17 @@ export const DebugBreakpointView = observer(() => {
 
 export const BreakpointItem = ({
   data,
+  enable,
 }: {
   data: BreakpointItem,
+  enable: boolean,
 }) => {
   const [value] = React.useState<boolean>(true);
   const onChange = () => {
     data.breakpoint.remove();
   };
   return <div className={styles.debug_breakpoints_item}>
-    <div className={cls('kaitian-debug-breakpoint', styles.debug_breakpoints_icon)}></div>
+    <div className={cls(enable ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled', styles.debug_breakpoints_icon)}></div>
     <CheckBox size={CheckBoxSize.SMALL} id={data.id} label={data.name} defaultChecked={value} onChange={onChange}></CheckBox>
     <div className={styles.debug_breakpoints_description}>{data.description}</div>
   </div>;

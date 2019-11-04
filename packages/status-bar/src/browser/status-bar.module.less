@@ -4,7 +4,7 @@
 @kt-statusbar-color: @kt-accent-color1;
 @kt-statusBar-font-color: @kt-ui-font-color1;
 @kt-statusBar-font-size: 12px;
-@kt-statusBar-height: 19px;
+@kt-statusBar-height: 28px;
 
 .statusBar {
   background: var(--statusBar-background);
@@ -51,14 +51,19 @@
   margin-left: @kt-ui-padding;
 }
 
-.element {
-  /* https://css-tricks.com/os-specific-fonts-css/#article-header-id-0 */
-  /* https://github.com/Microsoft/vscode/blob/5dbdc8d19c8cf6dd10d558eabcc48bba962ea45f/src/vs/workbench/browser/media/style.css#L8-L24 */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif;
-  font-size: 12px;
-  text-rendering: auto;
-  text-decoration: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+// .element {
+//   /* https://css-tricks.com/os-specific-fonts-css/#article-header-id-0 */
+//   /* https://github.com/Microsoft/vscode/blob/5dbdc8d19c8cf6dd10d558eabcc48bba962ea45f/src/vs/workbench/browser/media/style.css#L8-L24 */
+//   font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif;
+//   font-size: 12px;
+//   text-rendering: auto;
+//   text-decoration: none;
+//   -webkit-font-smoothing: antialiased;
+//   -moz-osx-font-smoothing: grayscale;
+// }
 
+.element {
+  span.icon {
+    font-size:1em;
+  }
+}

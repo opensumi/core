@@ -1,0 +1,98 @@
+// section style
+.views-container-section-wrap {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+.views-container-section-title .p-TabBar-toolbar {
+  padding-right: 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  overflow: visible;
+  .item {
+    display: none;
+    cursor: pointer;
+    >div {
+      width: 16px;
+      background-repeat: no-repeat;
+      &.mask-mode {
+        background-color: var(--foreground);
+      }
+    }
+
+    & + .item {
+      margin-left: 8px;
+    }
+  }
+}
+.views-container-section:hover {
+  .item {
+    display: block;
+  }
+}
+.views-container-section {
+  width: 100%!important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--sideBarSectionHeader-border);
+}
+
+.views-container-section-title {
+  display: flex;
+  padding-left: 4px;
+  overflow: hidden;
+  line-height: 22px;
+  min-height: 22px;
+  color: var(--sideBarSectionHeader-foreground);
+  font-size: 80%;
+  font-weight: 500;
+  background-color: var(--sideBarSectionHeader-background);
+  text-transform:  uppercase;
+  cursor: pointer;
+  user-select: none;
+  flex-direction: row;
+  justify-content: space-between;
+  &.p-mod-hidden {
+    display: none;
+  }
+}
+
+.views-container-section-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+.views-container-section-content {
+  flex: 1;
+  min-height: 120px;
+  // color: var(--activityBar-foreground);
+  font-size: 12px;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.views-container-section-content > div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.views-container-section-content .tree-view-icon {
+  padding-right: 6px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tree-view-inline-action {
+  background-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.views-container-section-content .TreeNodeContent {
+  align-items: center;
+}

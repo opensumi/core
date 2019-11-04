@@ -2,9 +2,20 @@
 
 @tabWidth: 48px;
 
+.left-slot {
+  .activity-bar {
+    border-right: 1px solid var(--activityBar-border);
+  }
+}
+.right-slot {
+  .activity-bar {
+    border-left: 1px solid var(--activityBar-border);
+  }
+}
 .activity-bar {
   min-height: 100%;
   display: flex;
+  border-top: 1px solid var(--activityBar-border);
   flex-direction: column;
   .tab-container {
     flex: 1;
@@ -32,8 +43,8 @@
     }
   }
   .p-TabBar-tabBadge {
-    background-color: var(--badge-background);
-    color: var(--badge-foreground);
+    background-color: var(--activityBarBadge-background);
+    color: var(--activityBarBadge-foreground);
     position: absolute;
     top: 26px;
     right: 8px;

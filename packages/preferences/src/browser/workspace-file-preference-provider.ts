@@ -6,7 +6,7 @@ import { AbstractResourcePreferenceProvider } from './abstract-resource-preferen
 
 @Injectable()
 export class WorkspaceFilePreferenceProviderOptions {
-    workspaceUri: URI;
+  workspaceUri: URI;
 }
 
 export const WorkspaceFilePreferenceProviderFactory = Symbol('WorkspaceFilePreferenceProviderFactory');
@@ -15,36 +15,34 @@ export type WorkspaceFilePreferenceProviderFactory = (options: WorkspaceFilePref
 @Injectable()
 export class WorkspaceFilePreferenceProvider extends AbstractResourcePreferenceProvider {
 
-    public name: 'workspace';
+  @Autowired(IWorkspaceService)
+  protected readonly workspaceService: IWorkspaceService;
 
-    @Autowired(IWorkspaceService)
-    protected readonly workspaceService: IWorkspaceService;
+  @Autowired(WorkspaceFilePreferenceProviderOptions)
+  protected readonly options: WorkspaceFilePreferenceProviderOptions;
 
-    @Autowired(WorkspaceFilePreferenceProviderOptions)
-    protected readonly options: WorkspaceFilePreferenceProviderOptions;
+  protected getUri(): URI {
+    return this.options.workspaceUri;
+  }
 
-    protected getUri(): URI {
-        return this.options.workspaceUri;
+  protected parse(content: string): any {
+    const data = super.parse(content);
+    if (WorkspaceData.is(data)) {
+      return data.settings || {};
     }
+    return {};
+  }
 
-    protected parse(content: string): any {
-        const data = super.parse(content);
-        if (WorkspaceData.is(data)) {
-            return data.settings || {};
-        }
-        return {};
-    }
+  protected getPath(preferenceName: string): string[] {
+    return ['settings', preferenceName];
+  }
 
-    protected getPath(preferenceName: string): string[] {
-        return ['settings', preferenceName];
-    }
+  protected getScope(): PreferenceScope {
+    return PreferenceScope.Workspace;
+  }
 
-    protected getScope(): PreferenceScope {
-        return PreferenceScope.Workspace;
-    }
-
-    getDomain(): string[] {
-        // workspace file is treated as part of the workspace
-        return this.workspaceService.tryGetRoots().map((r) => r.uri).concat([this.options.workspaceUri.toString()]);
-    }
+  getDomain(): string[] {
+    // workspace file is treated as part of the workspace
+    return this.workspaceService.tryGetRoots().map((r) => r.uri).concat([this.options.workspaceUri.toString()]);
+  }
 }

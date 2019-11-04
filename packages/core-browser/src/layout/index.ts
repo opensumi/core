@@ -78,6 +78,8 @@ export interface ExtViewContainerOptions {
   initialProps?: object;
   activateKeyBinding?: string;
   hidden?: boolean;
+  // 直接使用自定义的React组件，会失去一些对面板的控制能力
+  component?: React.FunctionComponent;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
@@ -110,6 +112,7 @@ export class ComponentRegistryImpl implements ComponentRegistry {
         options,
       });
     }
+    // deprecated, use layout config instead
     if (location) {
       let targetLocation = this.config.layoutConfig[location];
       if (!targetLocation) {
@@ -236,3 +239,13 @@ export namespace TabBarWidget {
     currentWidget: Widget | null;
   }
 }
+
+export interface ViewState {
+  width: number;
+  height: number;
+}
+
+export * from './accordion/accordion.widget';
+export * from './accordion/tab-bar-toolbar';
+export * from './accordion/view-context-key.registry';
+export * from './accordion/view-container-state';

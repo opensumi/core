@@ -3,9 +3,9 @@ import { Injectable } from '@ali/common-di';
 import { IMessageService, AbstractMessageService } from '../common';
 import notification, { ArgsProps } from 'antd/lib/notification';
 import 'antd/lib/notification/style/index.css';
-import Button from 'antd/lib/button';
-import 'antd/lib/button/style/index.css';
+import { Button } from '@ali/ide-core-browser/lib/components';
 import { Deferred, MessageType } from '@ali/ide-core-common';
+import clx from 'classnames';
 
 import * as styles from './message.module.less';
 @Injectable()
@@ -50,10 +50,14 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     this.showTime = Date.now();
     this.deferred = new Deferred<string>();
     const args: ArgsProps = {
-      className: styles.wrapper,
+      className: clx(styles.wrapper, {
+        [styles.info]: type === MessageType.Info,
+        [styles.error]: type === MessageType.Error,
+        [styles.warning]: type === MessageType.Warning,
+      }),
       duration: MessageService.DURATION[type] / 1000,
       onClose: () => this.hide(),
-      btn: buttons ? buttons.map((button, index) => (<Button onClick={this.handlerClickButton(button)} key={button} className={styles.button} type={index === buttons.length - 1 ? 'primary' : 'default'} size='small'>{button}</Button>)) : null,
+      btn: buttons ? buttons.map((button, index) => (<Button className={clx(styles.button)} onClick={this.handlerClickButton(button)} key={button}>{button}</Button>)) : null,
       message,
     };
 

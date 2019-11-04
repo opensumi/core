@@ -1,7 +1,9 @@
 import * as React from 'react';
-import { MessageType } from '@ali/ide-core-common';
+import { MessageType, URI } from '@ali/ide-core-common';
 
 export const IMessageService = Symbol('IMessageService');
+
+export * from '../browser/snackbar';
 
 export interface IMessageService {
   info(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined>;
@@ -39,4 +41,21 @@ export abstract class AbstractMessageService implements IMessageService {
   }
   abstract open(message: string | React.ReactNode, type: MessageType, buttons?: any[]): Promise<string | undefined>;
   abstract hide(value?: string): void;
+}
+
+export interface IWindowDialogService {
+  showOpenDialog(options?: IOpenDialogOptions): Promise<URI[] | undefined>;
+}
+
+export const IWindowDialogService = Symbol('IWindowDialogService');
+
+export interface IOpenDialogOptions {
+  canSelectFiles?: boolean;
+  canSelectFolders?: boolean;
+  canSelectMany?: boolean;
+  defaultUri?: URI;
+  filters?: {
+    [name: string]: string,
+  };
+  openLabel?: string;
 }

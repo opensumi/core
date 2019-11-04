@@ -33,22 +33,27 @@ export class MockTerminalService implements IExternlTerminalService {
     };
   }
 
-  create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions) {
+  async create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions) {
     const socket = this.createMockSocket(id);
-    this.terminalService.create(id, rows, cols, options)
-      .then((info) => {
-        if (!info) {
-          return;
-        }
-        if (!terminal.name) {
-          terminal.setName(info.name);
-        }
-        terminal.setProcessId(info.id);
-      });
+    (this.terminalService.create(id, rows, cols, options) as Promise<{
+      pid: number,
+      name: string,
+    }>)
+    .then((info) => {
+      if (!info) {
+        return;
+      }
+      if (!terminal.name) {
+        terminal.setName(info.name);
+      }
+      terminal.setProcessId(info.pid);
+    });
 
     // @ts-ignore
     terminal.xterm.attach(socket);
     this.terminals.set(id, terminal);
+
+    return true;
   }
 
   resize(id: string, rows: number, cols: number) {

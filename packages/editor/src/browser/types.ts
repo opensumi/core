@@ -1,5 +1,5 @@
-import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType } from '../common';
-import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
+import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType, IEditor } from '../common';
+import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event, IContextKeyExpr } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 
@@ -58,6 +58,10 @@ export interface BrowserEditorContribution {
   registerEditorComponent?(editorComponentRegistry: EditorComponentRegistry): void;
 
   registerEditorDocumentModelContentProvider?(registry: IEditorDocumentModelContentRegistry): void;
+
+  registerEditorActions?(editorActionRegistry: IEditorActionRegistry): void;
+
+  onDidRestoreState?(): void;
 }
 
 export interface IGridResizeEventPayload {
@@ -193,3 +197,35 @@ export interface IEditorDecorationProvider {
 export class EditorDecorationProviderRegistrationEvent extends BasicEvent<IEditorDecorationProvider> {}
 
 export class EditorDecorationChangeEvent extends BasicEvent<{uri: URI, key: string}> {}
+
+export interface IEditorActionRegistry {
+  registerEditorAction(action: IEditorActionItem): IDisposable;
+  getActions(editorGroup: IEditorGroup): IEditorActionItem[];
+}
+
+export interface IEditorActionItem {
+  title: string;
+  iconClass: string;
+  isVisible?: (resource: MaybeNull<IResource>, editorGroup: IEditorGroup) => boolean;
+  onClick: (resource: MaybeNull<IResource>) => void;
+  when?: string; // 使用contextkey
+}
+
+export const IEditorActionRegistry = Symbol('IEditorActionRegistry');
+
+export interface ICompareService {
+
+  /**
+   * 在编辑器中compare两个文件
+   */
+  compare(original: URI, modified: URI, name: string): Promise<CompareResult>;
+
+}
+
+export const ICompareService = Symbol('ICompareService');
+
+export enum CompareResult {
+  revert = 'revert', // original -> modified
+  accept = 'accept', // modified -> original
+  cancel = 'cancel',
+}

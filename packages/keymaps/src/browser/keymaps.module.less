@@ -1,3 +1,123 @@
-.name {
-  color: grey;
+.keybinding_container {
+  padding: 11px 0 0 27px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.keybinding_header {
+  padding: 0 10px 11px 0;
+  height: 30px;
+  box-sizing: content-box;
+}
+
+
+.keybinding_body {
+  height: calc(100% - 52px);
+  overflow: hidden;
+}
+
+.keybinding_list_header {
+  background-color: hsla(0, 0%, 51%, .04);
+  height: 30px;
+  line-height: 30px;
+}
+
+.keybinding_key_input {
+  width: 100%;
+}
+
+.keybinding_list_container {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: separate;
+  height: 100%;
+
+  span {
+    display: inline-block;
+  }
+}
+
+.keybinding_list_item {
+  cursor: default;
+  display: flex;
+  height: 24px;
+  flex-direction: row;
+  line-height: 24px;
+  position: relative;
+
+  match {
+    color: #FF7673;
+  }
+
+  .keybinding_list_item_box {
+    align-items: center;
+    width: 25%;
+    font-size: 12px;
+    opacity: 0.8;
+    box-sizing: content-box;
+    padding-left: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    span {
+      height: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &.odd {
+    background-color: hsla(0, 0%, 51%, .04);
+  }
+
+  .keybinding_inline_action {
+    display: none;
+    height: 24px;
+    line-height: 24px;
+    width: 30px;
+    text-align: left;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+
+  .keybinding_action {
+    display: none;
+    position: absolute;
+    left: 0;
+    height: 24px;
+    line-height: 24px;
+    width: 30px;
+    text-align: center;
+    z-index: 10;
+    cursor: pointer;
+  }
+
+  &:hover {
+    color: var(--list-hoverForeground);
+    background-color: var(--list-hoverBackground);
+
+    .keybinding_action,
+    .keybinding_inline_action {
+      display: inline-block;
+    }
+  }
+}
+
+.keybinding_header_item {
+  width: 25%;
+  box-sizing: content-box;
+  padding-left: 30px;
+}
+
+.search_container {
+  position: relative;
+  height: 100%;
+}
+
+.search_input {
+  height: 30px;
+  width: 100%;
 }

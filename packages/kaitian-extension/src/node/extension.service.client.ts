@@ -54,23 +54,23 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
    * @param extensionPath 插件路径
    * @param extraMetaData 补充数据
    */
-  public async getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
-    return await this.extensionService.getExtension(extensionPath, extraMetaData);
+  public async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+    return await this.extensionService.getExtension(extensionPath, localization, extraMetaData);
   }
 
   /**
    * 获取所有插件
    *
    * @param scan 插件存放目录
-   * @param extenionCandidate 执行插件目录
+   * @param extensionCandidate 执行插件目录
    * @param extraMetaData 扫描数据字段
    */
   public async getAllExtensions(
     scan: string[],
-    extenionCandidate: string[],
-    extraMetaData: { [key: string]: any }): Promise<IExtensionMetaData[]> {
-
-    return await this.extensionService.getAllExtensions(scan, extenionCandidate, extraMetaData);
+    extensionCandidate: string[],
+    localization: string,
+    extraMetaData: { [key: string]: any } = {}): Promise<IExtensionMetaData[]> {
+    return await this.extensionService.getAllExtensions(scan, extensionCandidate, localization, extraMetaData);
   }
 
   public async disposeClientExtProcess(clientId: string, info: boolean = true): Promise<void> {

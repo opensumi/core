@@ -13,9 +13,10 @@
 
 .content {
   position: absolute;
-  background: var(--notifications-background);
+  color: var(--kt-tooltip-foreground);
+  background: var(--kt-tooltip-background);
   border-color: var(--notifications-border);
-  box-shadow: #000 0 5px 15px 0;
+  box-shadow: 0 5px 15px 0 var(--widget-shadow);
   padding: 5px 10px;
   z-index: 10001;
   margin-top: -5px;
@@ -25,11 +26,11 @@
     left: 50%;
     margin-left: -5px;
     top: 100%;
-    content: '';  
+    content: '';
     width: 0;
     height: 0;
     border-style: solid;
     border-width: 7px 7px 0 7px;
-    border-color: var(--notifications-background) transparent transparent transparent;  
+    border-color: var(--notifications-background) transparent transparent transparent;
   }
 }

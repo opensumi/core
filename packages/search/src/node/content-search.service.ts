@@ -11,7 +11,7 @@ import {
   SEARCH_STATE,
   SendClientResult,
   anchorGlob,
-  getRoot,
+  cutShortSearchResult,
 } from '../common';
 interface RipGrepArbitraryData {
   text?: string;
@@ -189,14 +189,13 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
           const matchLength = byteRangeLengthToCharacterLength(lineText, character, endByte - startByte);
           const fileUri = FileUri.create(file);
 
-          const searchResult: ContentSearchResult = {
+          const searchResult: ContentSearchResult = cutShortSearchResult({
             fileUri: fileUri.toString(),
-            root: getRoot(rootUris, fileUri.codeUri.path),
             line,
             matchStart: character + 1,
             matchLength,
             lineText: lineText.replace(/[\r\n]+$/, ''),
-          };
+          });
 
           if (opts && opts.maxResults && searchInfo.resultLength >= opts.maxResults) {
             // 达到设置上限，停止搜索
@@ -228,7 +227,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   }
 
   private getSearchArgs(options?: ContentSearchOptions): string[] {
-    const args = ['--json', '--max-count=100', '--no-ignore-parent'];
+    const args = ['--json', '--max-count=100'];
     args.push(options && options.matchCase ? '--case-sensitive' : '--ignore-case');
     if (options && options.includeIgnored) {
       args.push('-uu');

@@ -98,7 +98,12 @@ export class QuickCommandHandler implements QuickOpenHandler {
   getOptions() {
     return {
       placeholder: localize('quickopen.command.placeholder'),
-      fuzzyMatchLabel: true,
+      fuzzyMatchLabel: {
+        enableSeparateSubstringMatching: true,
+      },
+      fuzzyMatchDetail: {
+        enableSeparateSubstringMatching: true,
+      },
       // 关闭模糊排序，否则会按照 label 长度排序
       // 按照 CommandRegistry 默认排序
       fuzzySort: false,
@@ -136,6 +141,10 @@ export class CommandQuickOpenItem extends QuickOpenGroupItem {
 
   isHidden(): boolean {
     return super.isHidden();
+  }
+
+  getDetail(): string | undefined {
+    return this.command.label !== this.command.alias ? this.command.alias : undefined;
   }
 
   getKeybinding(): Keybinding | undefined {

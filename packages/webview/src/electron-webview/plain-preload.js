@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 const { ipcRenderer } = require('electron');
 
 const postMessage = (message) => {

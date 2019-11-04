@@ -105,18 +105,6 @@
       "@ali/ide-status-bar/lib/*": [
         "../packages/status-bar/src/*"
       ],
-      "@ali/ide-terminal": [
-        "../packages/terminal/src/index.ts"
-      ],
-      "@ali/ide-terminal/lib/*": [
-        "../packages/terminal/src/*"
-      ],
-      "@ali/ide-terminal-server": [
-        "../packages/terminal-server/src/index.ts"
-      ],
-      "@ali/ide-terminal-server/lib/*": [
-        "../packages/terminal-server/src/*"
-      ],
       "@ali/ide-static-resource": [
         "../packages/static-resource/src/index.ts"
       ],
@@ -171,12 +159,6 @@
       "@ali/ide-quick-open/lib/*": [
         "../packages/quick-open/src/*"
       ],
-      "@ali/ide-feature-extension": [
-        "../packages/feature-extension/src/index.ts"
-      ],
-      "@ali/ide-feature-extension/lib/*": [
-        "../packages/feature-extension/src/*"
-      ],
       "@ali/ide-vscode-extension": [
         "../packages/vscode-extension/src/index.ts"
       ],
@@ -212,12 +194,6 @@
       ],
       "@ali/ide-workspace/lib/*": [
         "../packages/workspace/src/*"
-      ],
-      "@ali/ide-core-extension": [
-        "../packages/core-extension/src/index.ts"
-      ],
-      "@ali/ide-core-extension/lib/*": [
-        "../packages/core-extension/src/*"
       ],
       "@ali/ide-opened-editor": [
         "../packages/opened-editor/src/index.ts"

@@ -1,4 +1,4 @@
-import { localize } from '@ali/ide-core-browser';
+import { localize, QuickOpenActionProvider } from '@ali/ide-core-browser';
 import { MaybePromise, DisposableCollection, IDisposable, Disposable, ILogger } from '@ali/ide-core-common';
 import { QuickOpenModel, QuickOpenOptions, QuickOpenService, QuickOpenItem, PrefixQuickOpenService } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -72,9 +72,6 @@ export class QuickOpenHandlerRegistry implements IDisposable {
     return [...this.handlers.values()];
   }
 
-  /**
-   * Return a handler that matches the given text or the default handler if none.
-   */
   getHandlerOrDefault(text: string): QuickOpenHandler | undefined {
     for (const handler of this.handlers.values()) {
       if (text.startsWith(handler.prefix)) {
@@ -143,7 +140,7 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
     }, options);
   }
 
-  protected onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void): void {
+  protected onType(lookFor: string, acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider) => void): void {
     const handler = this.handlers.getHandlerOrDefault(lookFor);
     if (handler === undefined) {
         const items: QuickOpenItem[] = [];
@@ -156,7 +153,7 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
     } else {
         const handlerModel = handler.getModel();
         const searchValue = this.handlers.isDefaultHandler(handler) ? lookFor : lookFor.substr(handler.prefix.length);
-        handlerModel.onType(searchValue, (items) => acceptor(items));
+        handlerModel.onType(searchValue, (items, actionProvider) => acceptor(items, actionProvider));
     }
 }
 }

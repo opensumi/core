@@ -1,12 +1,12 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WithEventBus, isElectronEnv } from '@ali/ide-core-browser';
-import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, StandardTokenType } from 'vscode-textmate';
+import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
 import { getNodeRequire } from './monaco-loader';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
-import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap } from '../common';
+import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
 import * as JSON5 from 'json5';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -83,7 +83,7 @@ export class TextmateService extends WithEventBus {
 
   private injections = new Map<string, string[]>();
 
-  private registedLanguage = new Set<string>();
+  private activatedLanguage = new Set<string>();
 
   init() {
     this.initGrammarRegistry();
@@ -192,7 +192,7 @@ export class TextmateService extends WithEventBus {
     return result;
   }
 
-  private extractValidSurroundingPairs(languageId: string, configuration: any): monaco.languages.IAutoClosingPair[] | undefined {
+  private extractValidSurroundingPairs(languageId: string, configuration: ILanguageConfiguration): monaco.languages.IAutoClosingPair[] | undefined {
     if (!configuration) { return; }
     const source = configuration.surroundingPairs;
     if (typeof source === 'undefined') {
@@ -233,6 +233,106 @@ export class TextmateService extends WithEventBus {
     return result;
   }
 
+  private extractValidBrackets(languageId: string, configuration: ILanguageConfiguration): CharacterPair[] | undefined {
+    const source = configuration.brackets;
+    if (typeof source === 'undefined') {
+      return undefined;
+    }
+    if (!Array.isArray(source)) {
+      console.warn(`[${languageId}]: language configuration: expected \`brackets\` to be an array.`);
+      return undefined;
+    }
+
+    let result: CharacterPair[] | undefined;
+    for (let i = 0, len = source.length; i < len; i++) {
+      const pair = source[i];
+      if (!isCharacterPair(pair)) {
+        console.warn(`[${languageId}]: language configuration: expected \`brackets[${i}]\` to be an array of two strings.`);
+        continue;
+      }
+
+      result = result || [];
+      result.push(pair);
+    }
+    return result;
+  }
+
+  private extractValidAutoClosingPairs(languageId: string, configuration: ILanguageConfiguration): IAutoClosingPairConditional[] | undefined {
+    const source = configuration.autoClosingPairs;
+    if (typeof source === 'undefined') {
+      return undefined;
+    }
+    if (!Array.isArray(source)) {
+      console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs\` to be an array.`);
+      return undefined;
+    }
+
+    let result: IAutoClosingPairConditional[] | undefined;
+    for (let i = 0, len = source.length; i < len; i++) {
+      const pair = source[i];
+      if (Array.isArray(pair)) {
+        if (!isCharacterPair(pair)) {
+          console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
+          continue;
+        }
+        result = result || [];
+        result.push({ open: pair[0], close: pair[1] });
+      } else {
+        if (typeof pair !== 'object') {
+          console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
+          continue;
+        }
+        if (typeof pair.open !== 'string') {
+          console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].open\` to be a string.`);
+          continue;
+        }
+        if (typeof pair.close !== 'string') {
+          console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].close\` to be a string.`);
+          continue;
+        }
+        if (typeof pair.notIn !== 'undefined') {
+          if (!isStringArr(pair.notIn)) {
+            console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].notIn\` to be a string array.`);
+            continue;
+          }
+        }
+        result = result || [];
+        result.push({ open: pair.open, close: pair.close, notIn: pair.notIn });
+      }
+    }
+    return result;
+  }
+
+  private extractValidCommentRule(languageId: string, configuration: ILanguageConfiguration): CommentRule | undefined {
+    const source = configuration.comments;
+    if (typeof source === 'undefined') {
+      return undefined;
+    }
+    if (typeof source !== 'object') {
+      console.warn(`[${languageId}]: language configuration: expected \`comments\` to be an object.`);
+      return undefined;
+    }
+
+    let result: CommentRule | undefined;
+    if (typeof source.lineComment !== 'undefined') {
+      if (typeof source.lineComment !== 'string') {
+        console.warn(`[${languageId}]: language configuration: expected \`comments.lineComment\` to be a string.`);
+      } else {
+        result = result || {};
+        result.lineComment = source.lineComment;
+      }
+    }
+    if (typeof source.blockComment !== 'undefined') {
+      if (!isCharacterPair(source.blockComment)) {
+        console.warn(`[${languageId}]: language configuration: expected \`comments.blockComment\` to be an array of two strings.`);
+      } else {
+        result = result || {};
+        result.blockComment = source.blockComment;
+      }
+    }
+    return result;
+  }
+
   async registerLanguage(language: LanguagesContribution, extPath: string) {
     monaco.languages.register({
       id: language.id,
@@ -249,9 +349,9 @@ export class TextmateService extends WithEventBus {
       const configuration = this.safeParseJSON(content);
       monaco.languages.setLanguageConfiguration(language.id, {
         wordPattern: this.createRegex(configuration.wordPattern),
-        autoClosingPairs: configuration.autoClosingPairs,
-        brackets: configuration.brackets,
-        comments: configuration.comments,
+        autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
+        brackets: this.extractValidBrackets(language.id, configuration),
+        comments: this.extractValidCommentRule(language.id, configuration),
         folding: this.convertFolding(configuration.folding),
         surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
         indentationRules: this.convertIndentationRules(configuration.indentationRules),
@@ -267,12 +367,7 @@ export class TextmateService extends WithEventBus {
     if (grammar.path) {
       grammar.path = new Path(extPath).join(grammar.path.replace(/^\.\//, '')).toString();
     }
-    if (grammar.language) {
-      const disposer = monaco.languages.onLanguage(grammar.language, () => {
-        this.doRegisterGrammar(grammar);
-        disposer.dispose();
-      });
-    }
+    this.doRegisterGrammar(grammar);
   }
 
   async doRegisterGrammar(grammar: GrammarsContribution) {
@@ -286,21 +381,11 @@ export class TextmateService extends WithEventBus {
         injections.push(grammar.scopeName);
       }
     }
-    if (grammar.path) {
-      const { content } = await this.fileServiceClient.resolveContent(URI.file(grammar.path).toString());
-      if (/\.json$/.test(grammar.path)) {
-        grammar.grammar = this.safeParseJSON(content);
-        grammar.format = 'json';
-      } else {
-        grammar.grammar = content;
-        grammar.format = 'plist';
-      }
-    }
     this.textmateRegistry.registerTextmateGrammarScope(grammar.scopeName, {
       async getGrammarDefinition() {
         return {
-          format: grammar.format,
-          content: grammar.grammar || '',
+          format: /\.json$/.test(grammar.path) ? 'json' : 'plist',
+          location: URI.file(grammar.path),
         };
       },
       getInjections: (scopeName: string) => this.injections.get(scopeName)!,
@@ -311,14 +396,14 @@ export class TextmateService extends WithEventBus {
         embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
         tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
       });
-      if (this.registedLanguage.has(grammar.language)) {
-        console.warn(`${grammar.language}语言已被注册过`);
-      }
-      this.activateLanguage(grammar.language!);
     }
   }
 
   async activateLanguage(languageId: string) {
+    if (this.activatedLanguage.has(languageId)) {
+      return;
+    }
+    this.activatedLanguage.add(languageId);
     const scopeName = this.textmateRegistry.getScope(languageId);
     if (!scopeName) {
       return;
@@ -335,13 +420,13 @@ export class TextmateService extends WithEventBus {
       const grammar = await this.grammarRegistry.loadGrammarWithConfiguration(
         scopeName, initialLanguage, configuration);
       const options = configuration.tokenizerOption ? configuration.tokenizerOption : TokenizerOptionDEFAULT;
+      // 要保证grammar把所有的languageID关联的语法都注册好了
       monaco.languages.setTokensProvider(languageId, createTextmateTokenizer(grammar, options));
     } catch (error) {
       // console.warn('No grammar for this language id', languageId, error);
     }
   }
 
-  // TODO embed 语言（比如vue、php？）
   private async initGrammarRegistry() {
     this.grammarRegistry = new Registry({
       getOnigLib: this.getOnigLib,
@@ -349,6 +434,8 @@ export class TextmateService extends WithEventBus {
         const provider = this.textmateRegistry.getProvider(scopeName);
         if (provider) {
           const definition = await provider.getGrammarDefinition();
+          const { content } = await this.fileServiceClient.resolveContent(definition.location.toString());
+          definition.content = definition.format === 'json' ? this.safeParseJSON(content) : content;
           let rawGrammar: IRawGrammar;
           if (typeof definition.content === 'string') {
             rawGrammar = parseRawGrammar(
@@ -368,6 +455,9 @@ export class TextmateService extends WithEventBus {
         return [];
       },
     });
+    for (const { id: languageId } of monaco.languages.getLanguages()) {
+      monaco.languages.onLanguage(languageId, () => this.activateLanguage(languageId));
+    }
   }
 
   public setTheme(themeData: ThemeMix) {

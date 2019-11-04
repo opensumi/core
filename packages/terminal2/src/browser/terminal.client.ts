@@ -49,12 +49,6 @@ export class TerminalClient extends Themable implements ITerminalClient {
   @observable
   activeId: string;
 
-  @observable
-  wrapElSize: {
-    height: string,
-    width: string,
-  } = { height: '100%', width: '100%' };
-
   private changeActiveTerminalEvent: Emitter<string> = new Emitter();
   private closeTerminalEvent: Emitter<string> = new Emitter();
   private openTerminalEvent: Emitter<TerminalInfo> = new Emitter();
@@ -128,7 +122,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
     }
   }
 
-  createTerminal = (options?: TerminalOptions, createdId?: string): TerminalImpl => {
+  createTerminal = async (options?: TerminalOptions, createdId?: string): Promise<TerminalImpl | null> => {
     if (!this.wrapEl) {
       this.logger.error('没有设置 wrapEl');
     }
@@ -160,9 +154,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
       el,
     }, options));
 
-    this.termMap.set(id, Terminal);
-
-    this.terminalService.create(
+    const ret = await this.terminalService.create(
       id,
       Terminal,
       this.rows,
@@ -172,6 +164,12 @@ export class TerminalClient extends Themable implements ITerminalClient {
       },
         options,
       ));
+
+    if (!ret) {
+      return null;
+    }
+
+    this.termMap.set(id, Terminal);
 
     term.on('resize', (size) => {
       const { cols, rows } = size;
@@ -200,15 +198,23 @@ export class TerminalClient extends Themable implements ITerminalClient {
     }
   }
 
+  isFocused() {
+    let findFocused = false;
+    this.termMap.forEach((term) => {
+      if (term.isFocused()) {
+        findFocused = true;
+      }
+    });
+    return findFocused;
+  }
+
   showTerm(id: string, preserveFocus?: boolean) {
     const terminal = this.termMap.get(id);
     if (!terminal) {
       return;
     }
     const handler = this.layoutService.getTabbarHandler('terminal');
-    if (!handler.isVisible) {
-      handler.activate();
-    }
+    handler.activate();
     this.termMap.forEach((term) => {
       if (term.id === id) {
         term.el.style.display = 'block';
@@ -225,9 +231,10 @@ export class TerminalClient extends Themable implements ITerminalClient {
       }
     });
     setTimeout(() => {
+      // 当底部bar 隐藏时，handler.activate() 后立即 fit() 会报错
       terminal.appendEl();
       (terminal.xterm as any).fit();
-    }, 20);
+    });
   }
 
   hideTerm(id: string) {
@@ -294,10 +301,6 @@ export class TerminalClient extends Themable implements ITerminalClient {
   @OnEvent(ResizeEvent)
   onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig)) {
-      this.wrapElSize = {
-        width: e.payload.width + 'px',
-        height: e.payload.height + 'px',
-      };
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {
         this.termMap.forEach((term) => {
