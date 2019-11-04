@@ -131,7 +131,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         }
         return {
           suggestions: result.items,
-          incomplete: result.incomplete,
+          incomplete: result.isIncomplete,
           // TODO dispose support
           // tslint:disable-next-line:no-any
           dispose: () => this.proxy.$releaseCompletionItems(handle, (result as any)._id),

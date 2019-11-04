@@ -13,7 +13,7 @@ import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
-import { mockFeatureProviderRegistry, CodeLensProvider, DefinitionProvider, ImplementationProvider, TypeDefinitionProvider, ReferenceProvider, DocumentHighlightProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider, DocumentColorProvider, LinkProvider, SelectionRangeProvider } from '@ali/ide-monaco/lib/__mocks__/monaco/langauge';
+import { mockFeatureProviderRegistry, CodeLensProvider, DefinitionProvider, ImplementationProvider, TypeDefinitionProvider, ReferenceProvider, DocumentHighlightProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider, DocumentColorProvider, LinkProvider, SelectionRangeProvider, HoverProvider, CodeActionProvider, RenameProvider, SignatureHelpProvider, CompletionItemProvider } from '@ali/ide-monaco/lib/__mocks__/monaco/langauge';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -97,32 +97,63 @@ describe('ExtHostLanguageFeatures', () => {
   });
 
   // TODO  --- outline
-  test('CodeLens should work', async (done) => {
+  // --- codelens
+  test('CodeLens, evil provider', async (done) => {
+
+    disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
+      provideCodeLenses(): any {
+        throw new Error('evil');
+      }
+    }));
     disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
       provideCodeLenses() {
+        return [new types.CodeLens(new types.Range(0, 0, 0, 0))];
+      }
+    }));
+    setTimeout(async () => {
+      const provider: CodeLensProvider = mockFeatureProviderRegistry.get('registerCodeLensProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
+      expect(value.length).toEqual(1);
+      done();
+    }, 0);
+  });
+
+  test('CodeLens, do not resolve a resolved lens', async (done) => {
+    disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
+      provideCodeLenses(): any {
         return [new types.CodeLens(
           new types.Range(0, 0, 0, 0),
           { command: 'id', title: 'Title' })];
       }
       resolveCodeLens(): any {
-        console.log('resolve codelens');
+        console.warn('do not resolve');
       }
     }));
-    // TODO 通信保障主进程已被调用
     setTimeout(async () => {
       const provider: CodeLensProvider = mockFeatureProviderRegistry.get('registerCodeLensProvider');
-      expect(provider).toBeDefined();
-      const value = await provider.provideCodeLenses(model, CancellationToken.None);
-      expect(value).toBeDefined();
-      console.log('CodeLens Test', value);
+      const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
+      expect(value.length).toEqual(1);
+      const symbol = value[0];
+      expect(symbol!.command!.id).toEqual('id');
+      expect(symbol!.command!.title).toEqual('Title');
       done();
     }, 0);
   });
-  test('CodeLens, do not resolve a resolved lens', async () => {
-
-  });
-  test('CodeLens, missing command', async () => {
-
+  test('CodeLens, missing command', async (done) => {
+    disposables.push(extHost.registerCodeLensProvider(defaultSelector, new class implements vscode.CodeLensProvider {
+      provideCodeLenses() {
+        return [new types.CodeLens(new types.Range(0, 0, 0, 0))];
+      }
+    }));
+    setTimeout(async () => {
+      const provider: CodeLensProvider = mockFeatureProviderRegistry.get('registerCodeLensProvider');
+      const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
+      expect(value.length).toEqual(1);
+      const symbol = value[0];
+      expect(symbol!.command).toBeUndefined();
+      done();
+    }, 0);
   });
   test('Definition, data conversion', async (done) => {
     disposables.push(extHost.registerDefinitionProvider(defaultSelector, new class implements vscode.DefinitionProvider {
@@ -133,23 +164,15 @@ describe('ExtHostLanguageFeatures', () => {
     setTimeout(async () => {
       const provider: DefinitionProvider = mockFeatureProviderRegistry.get('registerDefinitionProvider');
       expect(provider).toBeDefined();
-      const value = await provider.provideDefinition(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None);
+      const value = (await provider.provideDefinition(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
       // @ts-ignore
-      expect(value!.length).toEqual(1);
-      expect(value![0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
+      expect(value.length).toEqual(1);
+      expect(value[0].range).toStrictEqual({ startLineNumber: 2, startColumn: 3, endLineNumber: 4, endColumn: 5 });
       console.log('Definition Test', value);
       done();
     }, 0);
   });
-  test('Definition, one or many', async () => {
 
-  });
-  test('Definition, registration order', async () => {
-
-  });
-  test('Definition, evil provider', async () => {
-
-  });
   // TODO 实现 Declaration
   // test('Declaration, data conversion', async () => {
 
@@ -188,18 +211,35 @@ describe('ExtHostLanguageFeatures', () => {
       done();
     }, 0);
   });
-  test('HoverProvider, word range at pos', async () => {
-
+  test('HoverProvider, word range at pos', async (done) => {
+    disposables.push(extHost.registerHoverProvider(defaultSelector, new class implements vscode.HoverProvider {
+      provideHover(): any {
+        return new types.Hover('Hello');
+      }
+    }));
+    setTimeout(async () => {
+      const provider: HoverProvider = mockFeatureProviderRegistry.get('registerHoverProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideHover(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
+      expect(value.range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 });
+      done();
+    }, 0);
   });
-  test('HoverProvider, given range', async () => {
-
+  test('HoverProvider, given range', async (done) => {
+    disposables.push(extHost.registerHoverProvider(defaultSelector, new class implements vscode.HoverProvider {
+      provideHover(): any {
+        return new types.Hover('Hello', new types.Range(3, 0, 8, 7));
+      }
+    }));
+    setTimeout(async () => {
+      const provider: HoverProvider = mockFeatureProviderRegistry.get('registerHoverProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideHover(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
+      expect(value.range).toStrictEqual({ startLineNumber: 4, startColumn: 1, endLineNumber: 9, endColumn: 8 });
+      done();
+    }, 0);
   });
-  test('HoverProvider, registration order', async () => {
 
-  });
-  test('HoverProvider, evil provider', async () => {
-
-  });
   test('Occurrences, data conversion', async (done) => {
     disposables.push(extHost.registerDocumentHighlightProvider(defaultSelector, new class implements vscode.DocumentHighlightProvider {
       provideDocumentHighlights(): any {
@@ -214,22 +254,12 @@ describe('ExtHostLanguageFeatures', () => {
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 });
       expect(value![0].kind).toEqual(modes.DocumentHighlightKind.Text);
-      console.log('Occurrences Test', value);
       done();
     }, 0);
   });
-  test('Occurrences, order 1/2', async () => {
 
-  });
-  test('Occurrences, order 2/2', async () => {
+  // --- references
 
-  });
-  test('Occurrences, evil provider', async () => {
-
-  });
-  test('References, registration order', async () => {
-
-  });
   test('References, data conversion', async (done) => {
     disposables.push(extHost.registerReferenceProvider(defaultSelector, new class implements vscode.ReferenceProvider {
       provideReferences(): any {
@@ -241,75 +271,153 @@ describe('ExtHostLanguageFeatures', () => {
       expect(provider).toBeDefined();
       // FIXME 第三个参数context mock
       const value = await provider.provideReferences(model, { lineNumber: 1, column: 2 } as any, {} as any, CancellationToken.None);
-      // @ts-ignore
       expect(value!.length).toEqual(1);
       expect(value![0].range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 });
       expect(value![0].uri.toString()).toEqual(model.uri.toString());
-      console.log('References Test', value);
       done();
     }, 0);
   });
-  test('References, evil provider', async () => {
 
+  // --- quick fix
+
+  test('Quick Fix, command data conversion', async (done) => {
+    disposables.push(extHost.registerCodeActionsProvider(defaultSelector, {
+      provideCodeActions(): vscode.Command[] {
+        return [
+          { command: 'test1', title: 'Testing1' },
+          { command: 'test2', title: 'Testing2' },
+        ];
+      },
+    }));
+
+    setTimeout(async () => {
+      const provider: CodeActionProvider = mockFeatureProviderRegistry.get('registerCodeActionProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideCodeActions(model, model.getFullModelRange(), {} as any, CancellationToken.None))!;
+      expect(value.length).toEqual(2);
+      const [first, second] = value;
+      expect(first.title).toEqual('Testing1');
+      expect((first as monaco.languages.CodeAction).command!.id).toEqual('test1');
+      expect(second.title).toEqual('Testing2');
+      expect((second as monaco.languages.CodeAction).command!.id).toEqual('test2');
+      done();
+    }, 0);
   });
-  test('Quick Fix, command data conversion', async () => {
+  test('Quick Fix, code action data conversion', async (done) => {
+    disposables.push(extHost.registerCodeActionsProvider(defaultSelector, {
+      provideCodeActions(): vscode.CodeAction[] {
+        return [
+          {
+            title: 'Testing1',
+            command: { title: 'Testing1Command', command: 'test1' },
+            kind: types.CodeActionKind.Empty.append('test.scope'),
+          },
+        ];
+      },
+    }));
 
+    setTimeout(async () => {
+      const provider: CodeActionProvider = mockFeatureProviderRegistry.get('registerCodeActionProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideCodeActions(model, model.getFullModelRange(), {} as any, CancellationToken.None))!;
+      expect(value.length).toEqual(1);
+      const first = value[0] as monaco.languages.CodeAction;
+      expect(first.title).toEqual('Testing1');
+      expect(first.command!.id).toEqual('test1');
+      expect(first.command!.title).toEqual('Testing1Command');
+      expect(first.kind).toEqual('test.scope');
+      done();
+    }, 0);
   });
-  test('Quick Fix, code action data conversion', async () => {
+  test('Cannot read property \'id\' of undefined, #29469', async (done) => {
+    disposables.push(extHost.registerCodeActionsProvider(defaultSelector, new class implements vscode.CodeActionProvider {
+      provideCodeActions(): any {
+        return [
+          undefined,
+          null,
+          { command: 'test', title: 'Testing' },
+        ];
+      }
+    }));
 
+    setTimeout(async () => {
+      const provider: CodeActionProvider = mockFeatureProviderRegistry.get('registerCodeActionProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideCodeActions(model, model.getFullModelRange(), {} as any, CancellationToken.None))!;
+      expect(value.length).toEqual(1);
+      done();
+    }, 0);
   });
-  test('Cannot read property \'id\' of undefined, #29469', async () => {
 
+  // --- rename
+
+  test('Rename', async (done) => {
+    disposables.push(extHost.registerRenameProvider(defaultSelector, new class implements vscode.RenameProvider {
+      provideRenameEdits(): any {
+        const edit = new types.WorkspaceEdit();
+        edit.replace(model.uri, new types.Range(0, 0, 0, 0), 'testing');
+        return edit;
+      }
+    }));
+
+    setTimeout(async () => {
+      const provider: RenameProvider = mockFeatureProviderRegistry.get('registerRenameProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideRenameEdits(model, { lineNumber: 1, column: 1 } as any, 'newName', CancellationToken.None))!;
+      expect((value as monaco.languages.WorkspaceEdit).edits.length).toEqual(1);
+      done();
+    }, 0);
   });
-  test('Quick Fix, evil provider', async () => {
 
+  // --- parameter hints
+
+  test('Parameter Hints, evil provider', async (done) => {
+    disposables.push(extHost.registerSignatureHelpProvider(defaultSelector, new class implements vscode.SignatureHelpProvider {
+      provideSignatureHelp(): vscode.SignatureHelp {
+        return {
+          signatures: [],
+          activeParameter: 0,
+          activeSignature: 0,
+        };
+      }
+    }, []));
+
+    setTimeout(async () => {
+      const provider: SignatureHelpProvider = mockFeatureProviderRegistry.get('registerSignatureHelpProvider');
+      expect(provider).toBeDefined();
+      const value = await provider.provideSignatureHelp(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None, { triggerKind: modes.SignatureHelpTriggerKind.Invoke, isRetrigger: false });
+      expect(value).toBeTruthy();
+      done();
+    }, 0);
   });
-  test('Navigate types, evil provider', async () => {
 
-  });
-  test('Rename, evil provider 0/2', async () => {
+  // --- suggestions
 
-  });
-  test('Rename, evil provider 1/2', async () => {
+  test('Suggest, CompletionList', async (done) => {
+    disposables.push(extHost.registerCompletionItemProvider(defaultSelector, new class implements vscode.CompletionItemProvider {
+      provideCompletionItems(): any {
+        return new types.CompletionList([new types.CompletionItem('hello') as any], true);
+      }
+    }, []));
 
-  });
-  test('Rename, evil provider 2/2', async () => {
-
-  });
-  test('Rename, ordering', async () => {
-
-  });
-  test('Parameter Hints, order', async () => {
-
-  });
-  test('Parameter Hints, evil provider', async () => {
-
-  });
-  test('Suggest, order 1/3', async () => {
-
-  });
-  test('Suggest, order 2/3', async () => {
-
-  });
-  test('Suggest, order 2/3', async () => {
-
-  });
-  test('Suggest, evil provider', async () => {
-
-  });
-  test('Suggest, CompletionList', async () => {
-
+    setTimeout(async () => {
+      const provider: CompletionItemProvider = mockFeatureProviderRegistry.get('registerCompletionItemProvider');
+      expect(provider).toBeDefined();
+      const value = (await provider.provideCompletionItems(model, { lineNumber: 1, column: 1 } as any, { triggerKind: 0 }, CancellationToken.None))!;
+      expect(value.incomplete).toEqual(true);
+      done();
+    }, 0);
   });
   // TODO 实现 registerDocumentFormattingEditProvider api
   // test('Format Doc, data conversion', async () => {
 
   // });
-  test('Format Doc, evil provider', async () => {
+  // test('Format Doc, evil provider', async (done) => {
 
-  });
-  test('Format Doc, order', async () => {
+  // });
+  // test('Format Doc, order', async (done) => {
 
-  });
+  // });
   test('Format Range, data conversion', async (done) => {
     disposables.push(extHost.registerDocumentRangeFormattingEditProvider(defaultSelector, new class implements vscode.DocumentRangeFormattingEditProvider {
       provideDocumentRangeFormattingEdits(): any {
@@ -328,12 +436,11 @@ describe('ExtHostLanguageFeatures', () => {
       done();
     }, 0);
   });
-  test('Format Range, + format_doc', async () => {
+  // TODO doc
+  // test('Format Range, + format_doc', async (done) => {
 
-  });
-  test('Format Range, evil provider', async () => {
+  // });
 
-  });
   test('Format on Type, data conversion', async (done) => {
     disposables.push(extHost.registerOnTypeFormattingEditProvider(defaultSelector, new class implements vscode.OnTypeFormattingEditProvider {
       provideOnTypeFormattingEdits(): any {
@@ -373,9 +480,7 @@ describe('ExtHostLanguageFeatures', () => {
       done();
     }, 0);
   });
-  test('Links, evil provider', async () => {
 
-  });
   test('Document colors, data conversion', async (done) => {
     disposables.push(extHost.registerColorProvider(defaultSelector, new class implements vscode.DocumentColorProvider {
       provideDocumentColors(): vscode.ColorInformation[] {
@@ -397,6 +502,7 @@ describe('ExtHostLanguageFeatures', () => {
       done();
     });
   });
+
   test('Selection Ranges, data conversion', async (done) => {
     disposables.push(extHost.registerSelectionRangeProvider(defaultSelector, new class implements vscode.SelectionRangeProvider {
       provideSelectionRanges() {

@@ -16,7 +16,6 @@ module.exports = {
     "packages/*/src/**/*.ts",
     "!packages/**/*.contribution.ts",
     "!packages/startup/**/*.ts",
-    "!packages/kaitian-extension/**/*.ts",
     "!packages/core-electron-main/**/*.ts",
     "!packages/*/src/electron-main/**/*.ts",
   ],

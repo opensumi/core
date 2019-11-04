@@ -154,7 +154,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
       return extHostLanguages.registerImplementationProvider(selector, provider);
     },
     registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable {
-      return extHostLanguages.registerCodeActionsProvider(selector, provider, '', metadata);
+      return extHostLanguages.registerCodeActionsProvider(selector, provider, metadata);
     },
     registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
       return extHostLanguages.registerRenameProvider(selector, provider);
@@ -422,10 +422,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
   registerCodeActionsProvider(
     selector: DocumentSelector,
     provider: CodeActionProvider,
-    pluginModel: any,
     metadata?: CodeActionProviderMetadata,
   ): Disposable {
-    const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics, pluginModel ? pluginModel.id : ''));
+    const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics));
     this.proxy.$registerQuickFixProvider(
       callId,
       this.transformDocumentSelector(selector),
