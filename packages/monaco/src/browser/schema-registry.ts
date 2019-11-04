@@ -16,6 +16,14 @@ export class SchemaStore implements ISchemaStore {
   }, 500) as any;
 
   register(config: JsonSchemaConfiguration): IDisposable {
+    // NOTE 不同的文件请绑定到不同的schema uri
+    const existIndex = this._schemas.findIndex((item) => item.url === config.url);
+    if (existIndex > -1) {
+      return Disposable.create(() => {
+        this._schemas.splice(existIndex, 1);
+        this.notifyChanged();
+      });
+    }
     this._schemas.push(config);
     this.notifyChanged();
     return Disposable.create(() => {
