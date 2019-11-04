@@ -29,6 +29,9 @@ import { DebugPreferences } from './debug-preferences';
 // tslint:disable-next-line:no-empty-interface
 export interface WillProvideDebugConfiguration extends WaitUntilEvent {
 }
+// tslint:disable-next-line:no-empty-interface
+export interface WillInitialConfiguration extends WaitUntilEvent {
+}
 
 @Injectable()
 export class DebugConfigurationManager {
@@ -165,6 +168,7 @@ export class DebugConfigurationManager {
   set current(option: DebugSessionOptions | undefined) {
     this.updateCurrent(option);
   }
+
   protected updateCurrent(options: DebugSessionOptions | undefined = this._currentOptions): void {
     this._currentOptions = options
       && this.find(options.configuration.name, options.workspaceFolderUri);
@@ -183,6 +187,7 @@ export class DebugConfigurationManager {
     this.debugConfigurationTypeKey.set(this.current && this.current.configuration.type);
     this.onDidChangeEmitter.fire(undefined);
   }
+
   find(name: string, workspaceFolderUri: string | undefined): DebugSessionOptions | undefined {
     for (const model of this.models.values()) {
       if (model.workspaceFolderUri === workspaceFolderUri) {

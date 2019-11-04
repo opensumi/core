@@ -1,11 +1,14 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { DebugServer, DebuggerDescription, DebugServerPath } from '@ali/ide-debug';
+import { DebugServer, DebuggerDescription, DebugServerPath, IDebugSessionManager } from '@ali/ide-debug';
 import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
-import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-browser';
+import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet, WaitUntilEvent } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { WSChanneHandler } from '@ali/ide-connection';
 import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@ali/ide-logs/lib/browser';
 import { DebugConfiguration } from '@ali/ide-debug/lib/common/debug-configuration';
+import { DebugConfigurationManager } from '@ali/ide-debug/lib/browser';
+import { DebugActivationEvent } from '../../../../common/vscode';
+import { ActivationEventService } from '@ali/ide-activation-event';
 
 export interface ExtensionDebugAdapterContributionRegistrator {
   /**
@@ -38,17 +41,31 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   protected readonly workspaceService: IWorkspaceService;
 
   @Autowired(DebugServerPath)
-  debugServer: DebugServer;
+  protected readonly debugServer: DebugServer;
 
   @Autowired(ILoggerManagerClient)
-  private LoggerManager: ILoggerManagerClient;
-  private logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+  protected readonly LoggerManager: ILoggerManagerClient;
+  protected readonly logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+
+  @Autowired(IDebugSessionManager)
+  protected readonly debugSessionManager: IDebugSessionManager;
+
+  @Autowired(DebugConfigurationManager)
+  protected readonly debugConfigurationManager: DebugConfigurationManager;
+
+  @Autowired(ActivationEventService)
+  protected readonly activationEventService: ActivationEventService;
+
+  protected readonly activationEvents = new Set<string>();
 
   constructor() {
     this.init();
   }
 
   protected init(): void {
+    this.debugSessionManager.onWillStartDebugSession((event) => this.ensureDebugActivation(event));
+    this.debugSessionManager.onWillResolveDebugConfiguration((event) => this.ensureDebugActivation(event, 'onDebugResolve', event.debugType));
+    this.debugConfigurationManager.onWillProvideDebugConfiguration((event) => this.ensureDebugActivation(event, 'onDebugInitialConfigurations'));
     this.toDispose.pushAll([
       Disposable.create(() => this.debugServer.dispose()),
       Disposable.create(() => {
@@ -74,6 +91,21 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
 
   unregisterDebugAdapterContribution(debugType: string): void {
     this.contributors.delete(debugType);
+  }
+
+  protected ensureDebugActivation(event: WaitUntilEvent, activationEvent?: DebugActivationEvent, debugType?: string): void {
+    event.waitUntil(this.activateByDebug(activationEvent, debugType));
+  }
+
+  async activateByDebug(activationEvent?: DebugActivationEvent, debugType?: string): Promise<void> {
+    const promises = [this.activationEventService.fireEvent('onDebug')];
+    if (activationEvent) {
+      promises.push(this.activationEventService.fireEvent(activationEvent));
+      if (debugType) {
+        promises.push(this.activationEventService.fireEvent(activationEvent, debugType));
+      }
+    }
+    await Promise.all(promises);
   }
 
   async debugTypes(): Promise<string[]> {
