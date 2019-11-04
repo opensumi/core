@@ -73,7 +73,7 @@ export class ExtHostDebug implements IExtHostDebugService {
   private readonly onDidReceiveDebugSessionCustomEmitter = new Emitter<vscode.DebugSessionCustomEvent>();
 
   private sessions = new Map<string, ExtensionDebugAdapterSession>();
-  private debuggersContributions = new Map<string, DebuggerContribution>();
+  private debuggersContributions = new Map<string, IDebuggerContribution>();
   private contributionPaths = new Map<string, string>();
   private configurationProviders = new Map<string, Set<vscode.DebugConfigurationProvider>>();
   private trackerFactories: [string, vscode.DebugAdapterTrackerFactory][] = [];

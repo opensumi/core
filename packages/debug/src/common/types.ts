@@ -1,3 +1,5 @@
+import { IJSONSchemaSnippet } from '@ali/ide-core-common';
+
 export interface IPlatformSpecificAdapterContribution {
   program?: string;
   args?: string[];

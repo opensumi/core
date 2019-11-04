@@ -1,7 +1,7 @@
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
-import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer } from '@ali/ide-debug';
+import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution } from '@ali/ide-debug';
 import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSchemaUpdater, DebugBreakpoint, DebugSessionContributionRegistry, DebugModelManager, SourceBreakpoint } from '@ali/ide-debug/lib/browser';
 import { IRPCProtocol, WSChanneHandler } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -12,7 +12,7 @@ import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry
 import { ExtensionDebugService } from './debug/extension-debug-service';
 import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
 import { ActivationEventService } from '@ali/ide-activation-event';
-import { Breakpoint, WorkspaceFolder, DebuggerContribution } from '../../../common/vscode/models';
+import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
 import { DebugConsoleSession } from '@ali/ide-debug/lib/browser/console/debug-console-session';
@@ -95,7 +95,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     // 将ContributionPoints中的debuggers数据传递给插件
     // 后续时序若发生调整，这块逻辑也需要调整
     for (const [folder, contributions] of debugContributionPoints) {
-      this.proxy.$registerDebuggerContributions(folder, contributions as DebuggerContribution[]);
+      this.proxy.$registerDebuggerContributions(folder, contributions as IDebuggerContribution[]);
       contributions.forEach((contribution: any) => {
         this.$registerDebuggerContribution({
           type: contribution.type,
