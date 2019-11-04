@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
-import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection, IContextKeyService } from '@ali/ide-core-browser';
+import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection, IContextKeyService, formatLocalize } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
@@ -122,6 +122,10 @@ export class DebugSessionManager {
   }
 
   async start(options: DebugSessionOptions): Promise<DebugSession | undefined> {
+    if (this.isExistedDebugSession(options)) {
+      this.messageService.error(formatLocalize('debug.launch.existed', options.configuration.name));
+      return;
+    }
     try {
       await this.fireWillStartDebugSession();
       const resolved = await this.resolveConfiguration(options);
@@ -130,7 +134,7 @@ export class DebugSessionManager {
     } catch (e) {
       if (DebugError.NotFound.is(e)) {
         this.messageService.error(`The debug session type "${e.data.type}" is not supported.`);
-        return undefined;
+        return;
       }
 
       this.messageService.error('There was an error starting the debug session, check the logs for more details.');
@@ -204,6 +208,16 @@ export class DebugSessionManager {
       this.onDidReceiveDebugSessionCustomEventEmitter.fire({ event, body, session }),
     );
     return session;
+  }
+
+  protected isExistedDebugSession(options: DebugSessionOptions): boolean {
+    const { name } = options.configuration;
+    for (const session of [...this._sessions.values()]) {
+      if (session.configuration.name === name) {
+        return true;
+      }
+    }
+    return false;
   }
 
   restart(): Promise<DebugSession | undefined>;

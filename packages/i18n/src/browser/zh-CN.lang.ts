@@ -180,6 +180,7 @@ export const localizationBundle = {
     'debug.configuration.comment1': '使用 IntelliSense 了解相关属性。 ',
     'debug.configuration.comment2': '悬停以查看现有属性的描述。',
     'debug.configuration.comment3': '欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387',
+    'debug.launch.existed': '调试配置"{0}"已在运行',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
