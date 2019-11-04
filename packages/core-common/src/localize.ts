@@ -4,16 +4,17 @@ export type ILocalizationKey = string; //ts不支持symbol作为key
 
 const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
 
-export function localize(symbol: ILocalizationKey, defaultMessage?: string, env: string = 'host'): string {
-  return getLocalizationRegistry(env).getLocalizeString(symbol, defaultMessage);
+export function localize(symbol: ILocalizationKey, defaultMessage?: string | undefined, scope: string = 'host'): string {
+  const localizationRegistry = getLocalizationRegistry(scope);
+  return localizationRegistry.getLocalizeString(symbol, defaultMessage);
 }
 
 export function formatLocalize(symbol: ILocalizationKey, ...args: any){
   return format(localize(symbol), ...args);
 }
 
-export function registerLocalizationBundle(bundle: ILocalizationBundle, env: string = 'host') {
-  return getLocalizationRegistry(env).registerLocalizationBundle(bundle);
+export function registerLocalizationBundle(bundle: ILocalizationBundle, scope: string = 'host') {
+  return getLocalizationRegistry(scope).registerLocalizationBundle(bundle);
 }
 
 export interface ILocalizationBundle extends ILocalizationInfo{
@@ -52,7 +53,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
   public readonly localizationInfo: Map<string, ILocalizationInfo> = new Map();
 
   get currentLanguageId() {
-    return this._currentLanguageId;
+    return this._currentLanguageId!;
   }
 
   set currentLanguageId(languageId: string) {
@@ -71,9 +72,12 @@ class LocalizationRegistry implements ILocalizationRegistry {
     }
   }
 
-  getLocalizeString(key: ILocalizationKey, defaultLabel?: string): string {
-
-    return this.getContents(this.currentLanguageId)[key as keyof ILocalizationContents] || defaultLabel || '';
+  getLocalizeString(key: ILocalizationKey, defaultLabel?: string | null): string {
+    let defaultMessage = defaultLabel;
+    if (defaultLabel === null) {
+      defaultMessage = this.getContents('en-US')[key as keyof ILocalizationContents]
+    }
+    return this.getContents(this.currentLanguageId)[key as keyof ILocalizationContents] || defaultMessage || '';
   }
 
   private getContents(languageId: string): ILocalizationContents {
@@ -94,30 +98,27 @@ class LocalizationRegistry implements ILocalizationRegistry {
  * TODO 临时通过 href 获取
  * @returns 当前语言别名
  */
-export function getLanguageId(env: string = 'host'): string {
-  return getLocalizationRegistry(env).currentLanguageId;
+export function getLanguageId(scope: string = 'host'): string {
+  return getLocalizationRegistry(scope).currentLanguageId;
 }
 
-export function getCurrentLanguageInfo(env: string = 'host'): ILocalizationInfo {
-  return getLocalizationRegistry(env).localizationInfo.get(getLocalizationRegistry(env).currentLanguageId)!;
+export function getCurrentLanguageInfo(scope: string = 'host'): ILocalizationInfo {
+  return getLocalizationRegistry(scope).localizationInfo.get(getLocalizationRegistry(scope).currentLanguageId)!;
 }
 
-export function setLanguageId(language,env: string = 'host'): void {
-  getLocalizationRegistry(env).currentLanguageId = language;
+export function setLanguageId(language, scope: string = 'host'): void {
+  getLocalizationRegistry(scope).currentLanguageId = language;
 }
 
-export function getAvailableLanguages(env: string = 'host'): ILocalizationInfo[] {
-  return getLocalizationRegistry(env).getAllLanguages();
+export function getAvailableLanguages(scope: string = 'host'): ILocalizationInfo[] {
+  return getLocalizationRegistry(scope).getAllLanguages();
 }
 
-function getLocalizationRegistry(env: string): LocalizationRegistry {
-  if(!localizationRegistryMap[env]){
-    localizationRegistryMap[env] = new LocalizationRegistry();
-    if (env !== 'host') {
-      localizationRegistryMap[env]!.currentLanguageId = localizationRegistryMap['host'].currentLanguageId;
-    }
+function getLocalizationRegistry(scope: string): LocalizationRegistry {
+  if(!localizationRegistryMap[scope]){
+    localizationRegistryMap[scope] = new LocalizationRegistry(window.localStorage && window.localStorage.getItem('1:general.language') || 'zh-CN');
   }
-  return localizationRegistryMap[env];
+  return localizationRegistryMap[scope];
 }
 
 /**

@@ -202,7 +202,7 @@ export interface IExtensionDescription extends IExtensionManifest {
   enableProposedApi?: boolean;
 }
 
-export function isLanguagePackExtension(manifest: IExtensionManifest): boolean {
+export function isLanguagePackExtension(manifest: { [key: string]: any }): boolean {
   return manifest.contributes && manifest.contributes.localizations ? manifest.contributes.localizations.length > 0 : false;
 }
 
