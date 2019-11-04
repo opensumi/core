@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { action } from 'mobx';
-import { URI, Schemas, Emitter, formatLocalize } from '@ali/ide-core-common';
+import { URI, Schemas, Emitter, formatLocalize, IDisposable, DisposableStore, IRange } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { WorkbenchEditorService, TrackedRangeStickiness } from '@ali/ide-editor';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 
 import { replaceAll, replace } from './replace';
@@ -22,6 +22,81 @@ const REPLACE_PREVIEW = 'replacePreview';
 const toReplaceResource = (fileResource: URI): URI => {
   return fileResource.withScheme(Schemas.internal).withFragment(REPLACE_PREVIEW).withQuery(JSON.stringify({ scheme: fileResource.scheme }));
 };
+
+@Injectable()
+export class RangeHighlightDecorations implements IDisposable {
+
+  private _decorationId: string | null = null;
+  private _model: monaco.editor.ITextModel | null = null;
+  private readonly _modelDisposables = new DisposableStore();
+
+  @Autowired(IEditorDocumentModelService)
+  documentModelManager: IEditorDocumentModelService;
+
+  removeHighlightRange() {
+    if (this._model && this._decorationId) {
+      this._model.deltaDecorations([this._decorationId], []);
+    }
+    this._decorationId = null;
+  }
+
+  highlightRange(resource: URI | monaco.editor.ITextModel, range: IRange, ownerId: number = 0): void {
+    let model: monaco.editor.ITextModel | null = null;
+    if (URI.isUri(resource)) {
+      const modelRef = this.documentModelManager.getModelReference(resource);
+      if (modelRef) {
+        model = modelRef.instance.getMonacoModel();
+      }
+    } else {
+      model = resource;
+    }
+
+    if (model) {
+      this.doHighlightRange(model, range);
+    }
+  }
+
+  private doHighlightRange(model: monaco.editor.ITextModel, range: IRange) {
+    this.removeHighlightRange();
+    this._decorationId = model.deltaDecorations([], [{ range, options: RangeHighlightDecorations._RANGE_HIGHLIGHT_DECORATION }])[0];
+    this.setModel(model);
+  }
+
+  private setModel(model: monaco.editor.ITextModel) {
+    if (this._model !== model) {
+      this.clearModelListeners();
+      this._model = model;
+      this._modelDisposables.add(this._model.onDidChangeDecorations((e) => {
+        this.clearModelListeners();
+        this.removeHighlightRange();
+        this._model = null;
+      }));
+      this._modelDisposables.add(this._model.onWillDispose(() => {
+        this.clearModelListeners();
+        this.removeHighlightRange();
+        this._model = null;
+      }));
+    }
+  }
+
+  private clearModelListeners() {
+    this._modelDisposables.clear();
+  }
+
+  dispose() {
+    if (this._model) {
+      this.removeHighlightRange();
+      this._modelDisposables.dispose();
+      this._model = null;
+    }
+  }
+
+  private static readonly _RANGE_HIGHLIGHT_DECORATION = {
+    stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+    className: 'rangeHighlight',
+    isWholeLine: true,
+  } as any;
+}
 
 @Injectable()
 export class ReplaceDocumentModelContentProvider implements IEditorDocumentModelContentProvider {
@@ -127,6 +202,9 @@ export class SearchTreeService {
 
   @Autowired(SearchPreferences)
   private searchPreferences: SearchPreferences;
+
+  @Autowired(RangeHighlightDecorations)
+  private rangeHighlightDecorations: RangeHighlightDecorations;
 
   constructor() {
     this.contentRegistry.registerEditorDocumentModelContentProvider(
@@ -235,7 +313,8 @@ export class SearchTreeService {
       }
       this.replaceDocumentModelContentProvider.delete(replaceURI);
     } else {
-      return this.workbenchEditorService.open(
+      const uri = new URI(result.fileUri);
+      await this.workbenchEditorService.open(
         new URI(result.fileUri),
         {
           preview: isPreview,
@@ -248,6 +327,8 @@ export class SearchTreeService {
           },
         },
       );
+
+      this.rangeHighlightDecorations.highlightRange(uri, new monaco.Range(result.line, result.matchStart, result.line, result.matchStart + result.matchLength));
     }
 
   }
@@ -349,6 +430,14 @@ export class SearchTreeService {
       return;
     }
     return methods[commandId]();
+  }
+
+  removeHighlightRange() {
+    this.rangeHighlightDecorations.removeHighlightRange();
+  }
+
+  dispose() {
+    this.rangeHighlightDecorations.dispose();
   }
 
   private getChildrenNodes(resultList: ContentSearchResult[], uri: URI, parent?): ISearchTreeItem[] {
