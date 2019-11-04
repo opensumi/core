@@ -19,7 +19,7 @@ export interface IMainThreadDebug {
 export interface IExtHostDebug {
   $onSessionCustomEvent(sessionId: string, event: string, body?: any): void;
   $breakpointsDidChange(all: Breakpoint[], added: Breakpoint[], removed: Breakpoint[], changed: Breakpoint[]): void;
-  $sessionDidCreate(sessionId: string): void;
+  $sessionDidStart(sessionId: string): void;
   $sessionDidDestroy(sessionId: string): void;
   $sessionDidChange(sessionId: string | undefined): void;
   $provideDebugConfigurations(debugType: string, workspaceFolder: string | undefined): Promise<vscode.DebugConfiguration[]>;

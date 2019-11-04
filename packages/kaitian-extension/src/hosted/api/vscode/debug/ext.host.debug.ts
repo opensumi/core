@@ -157,7 +157,6 @@ export class ExtHostDebug implements IExtHostDebugService {
   }
 
   registerDebugConfigurationProvider(type: string, provider: vscode.DebugConfigurationProvider): vscode.Disposable {
-    console.log(`Debug configuration provider has been registered: ${type}`);
     const providers = this.configurationProviders.get(type) || new Set<vscode.DebugConfigurationProvider>();
     this.configurationProviders.set(type, providers);
     providers.add(provider);
@@ -200,7 +199,7 @@ export class ExtHostDebug implements IExtHostDebugService {
     }
   }
 
-  async $sessionDidCreate(sessionId: string): Promise<void> {
+  async $sessionDidStart(sessionId: string): Promise<void> {
     const session = this.sessions.get(sessionId);
     if (session) {
       this.onDidStartDebugSessionEmitter.fire(session);

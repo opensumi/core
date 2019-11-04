@@ -23,6 +23,7 @@ import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 export class MainThreadDebug implements IMainThreadDebug {
 
   private readonly toDispose = new Map<string, DisposableCollection>();
+  private readonly listenerDispose = new DisposableCollection();
 
   private proxy: IExtHostDebug;
 
@@ -112,18 +113,33 @@ export class MainThreadDebug implements IMainThreadDebug {
     });
 
     this.toDispose.clear();
+    this.listenerDispose.dispose();
   }
 
   listen() {
-    this.breakpointManager.onDidChangeBreakpoints(({ added, removed, changed }) => {
-      const all = this.breakpointManager.getBreakpoints();
-      this.proxy.$breakpointsDidChange(
-        this.toCustomApiBreakpoints(all),
-        this.toCustomApiBreakpoints(added),
-        this.toCustomApiBreakpoints(removed),
-        this.toCustomApiBreakpoints(changed),
-      );
-    });
+    this.listenerDispose.pushAll([
+      this.breakpointManager.onDidChangeBreakpoints(({ added, removed, changed }) => {
+        const all = this.breakpointManager.getBreakpoints();
+        this.proxy.$breakpointsDidChange(
+          this.toCustomApiBreakpoints(all),
+          this.toCustomApiBreakpoints(added),
+          this.toCustomApiBreakpoints(removed),
+          this.toCustomApiBreakpoints(changed),
+        );
+      }),
+      this.sessionManager.onDidStartDebugSession((debugSession) => {
+        this.proxy.$sessionDidStart(debugSession.id);
+      }),
+      this.sessionManager.onDidDestroyDebugSession((debugSession) => {
+        this.proxy.$sessionDidDestroy(debugSession.id);
+      }),
+      this.sessionManager.onDidChangeActiveDebugSession((event) => {
+        this.proxy.$sessionDidChange(event.current && event.current.id);
+      }),
+      this.sessionManager.onDidReceiveDebugSessionCustomEvent((event) => {
+        this.proxy.$onSessionCustomEvent(event.session.id, event.event, event.body);
+      }),
+    ]);
   }
 
   async $appendToDebugConsole(value: string): Promise<void> {
