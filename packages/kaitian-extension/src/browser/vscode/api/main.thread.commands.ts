@@ -63,7 +63,7 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
     try {
-      // monaco 转换参数适配
+      // monaco 内置命令转换参数适配
       if (id === 'editor.action.showReferences') {
         return this.monacoCommandService.executeCommand(id, ...[monaco.Uri.parse(args[0]), ...args.slice(1)]);
       }
