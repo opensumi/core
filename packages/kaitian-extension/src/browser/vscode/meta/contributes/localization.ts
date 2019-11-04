@@ -71,12 +71,13 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
             languageName: localization.languageName,
             localizedLanguageName: localization.localizedLanguageName,
             contents,
-          });
+          }, translate.id);
         });
       }
     });
 
-    await this.extensionService.updateLanguagePack(this.preferenceService.get('general.language') || 'zh-CN', this.extension.path);
+    const currentLanguage: string = this.preferenceService.get('general.language') || 'zh-CN';
+    await this.extensionService.updateLanguagePack(currentLanguage, this.extension.path);
   }
 
   async registerLanguage(translate: TranslationFormat) {
