@@ -74,7 +74,8 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
           contrib.terminateDebugSession(sessionId);
         }
         this.sessionId2contrib.clear();
-      })]);
+      }),
+    ]);
   }
 
   registerDebugAdapterContribution(contrib: ExtensionDebugAdapterContribution): IDisposable {

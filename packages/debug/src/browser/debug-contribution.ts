@@ -1,6 +1,5 @@
 import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
-import { DebugThreadView } from './view/debug-threads.view';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
 import { DebugStackFrameView } from './view/debug-stack-frames.view';
 import { DebugVariableView } from './view/debug-variable.view';
@@ -24,6 +23,8 @@ import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager, launchSchemaUri } from '../common';
 import { DebugConsoleService } from './view/debug-console.service';
+import { IStatusBarService } from '@ali/ide-status-bar';
+import { IThemeService } from '@ali/ide-theme';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -97,6 +98,9 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   @Autowired(IDebugSessionManager)
   protected readonly sessionManager: DebugSessionManager;
 
+  @Autowired(IStatusBarService)
+  protected readonly statusBar: IStatusBarService;
+
   firstSessionStart: boolean = true;
 
   registerComponent(registry: ComponentRegistry) {
@@ -146,11 +150,19 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
           this.debugModel.init(session);
         }
         this.firstSessionStart = false;
+        this.statusBar.setBackgroundColor('var(--statusBar-debuggingBackground)');
+        this.statusBar.setColor('var(--statusBar-debuggingForeground)');
       });
       this.sessionManager.onDidStopDebugSession((session) => {
         const { openDebug } = session.configuration;
         if (openDebug === 'openOnDebugBreak') {
           this.openView();
+        }
+      });
+      this.sessionManager.onDidDestroyDebugSession((session) => {
+        if (this.sessionManager.sessions.length === 0) {
+          this.statusBar.setBackgroundColor('var(--statusBar-background)');
+          this.statusBar.setColor('var(--statusBar-foreground)');
         }
       });
       this.debugEditorController.init();
