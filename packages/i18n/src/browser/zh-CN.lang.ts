@@ -97,6 +97,7 @@ export const localizationBundle = {
     'search.ClearSearchResultsAction.label': '清空搜索结果',
     'search.RefreshAction.label': '刷新',
     'search.removeAll.occurrences.files.confirmation.message': '确定替换 {1} 个文件中的 {0} 个结果吗?',
+    'search.removeAll.occurrences.file.confirmation.message': '确定替换该文件中的 {0} 个结果吗?',
     'search.result.hide': '隐藏',
     'search.menu.copyAll': '全部复制',
     'search.help.showIncludeRule': '查看语法规则',
