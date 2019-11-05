@@ -24,7 +24,6 @@ import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager, launchSchemaUri } from '../common';
 import { DebugConsoleService } from './view/debug-console.service';
 import { IStatusBarService } from '@ali/ide-status-bar';
-import { IThemeService } from '@ali/ide-theme';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
