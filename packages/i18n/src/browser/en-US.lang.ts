@@ -145,6 +145,7 @@ export const localizationBundle = {
     'scm.statusbar.repo': 'Repo',
     'scm.provider.title': 'Source Control Providers',
     'scm.provider.empty': 'No source control providers registered.',
+    'scm.provider.init': 'Click to initialize a repository',
 
     'debug.action.add.configuration': 'Add Configuration...',
     'debug.action.no.configuration': 'No Configurations',
