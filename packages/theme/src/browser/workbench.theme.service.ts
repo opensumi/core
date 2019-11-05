@@ -115,7 +115,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
   }
 
-  // 正常情况下请使用getCurrentTheme方法，当前主题未加载时，会使用默认的主题而不会主动激活主题
   public getCurrentThemeSync() {
     if (this.currentTheme) {
       return this.currentTheme;
@@ -145,7 +144,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return colorKey ? `var(--${colorKey.replace(/\./g, '-')})` : undefined;
   }
 
-  // TODO 前台缓存
   public getAvailableThemeInfos(): ThemeInfo[] {
     const themeInfos: ThemeInfo[] = [];
     for (const {contribution} of this.themeContributionRegistry.values()) {
@@ -256,9 +254,10 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.toggleBaseThemeClass(getThemeTypeSelector(theme.type));
   }
 
+  // 会替换掉html节点
   protected toggleBaseThemeClass(themeSelector: string) {
-    const bodyNode = document.getElementsByTagName('body')[0];
-    bodyNode.classList.value = themeSelector;
+    const htmlNode = document.getElementsByTagName('html')[0];
+    htmlNode.classList.value = themeSelector;
   }
 }
 
