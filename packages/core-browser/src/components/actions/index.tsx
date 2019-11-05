@@ -40,8 +40,8 @@ const MenuAction: React.FC<{
 export const MenuActionList: React.FC<{
   data: MenuNode[];
   onClick?: (item: MenuNode) => void;
-  context?: any;
-}> = ({ data = [], context, onClick }) => {
+  context?: any[];
+}> = ({ data = [], context = [], onClick }) => {
   const handleClick = React.useCallback(({ key }: ClickParam) => {
     // do nothing when click separator node
     if (key === SeparatorMenuItemNode.ID) {
@@ -80,8 +80,8 @@ export const MenuActionList: React.FC<{
 
 const IconAction: React.FC<{
   data: MenuNode;
-  context?: any;
-} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context, ...restProps }) => {
+  context?: any[];
+} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context = [], ...restProps }) => {
   const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -106,8 +106,8 @@ const IconAction: React.FC<{
 export const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
-  context?: any;
-}> = ({ nav: primary = [], more: secondary = [], context }) => {
+  context?: any[];
+}> = ({ nav: primary = [], more: secondary = [], context = [] }) => {
   const ctxMenuRenderer = useInjectable(ICtxMenuRenderer);
 
   const handleShowMore = React.useCallback((e: React.MouseEvent<HTMLElement>) => {

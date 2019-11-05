@@ -2,7 +2,7 @@ import { MenuNode } from '../../base';
 
 export interface CtxMenuParams {
   menuNodes: MenuNode[];
-  context?: any; // 额外的参数传递给 menu 执行 execute 时调用
+  context?: any[]; // 额外的参数传递给 menu 执行 execute 时调用
 }
 
 export interface CtxMenuRenderParams extends CtxMenuParams {

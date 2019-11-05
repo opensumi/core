@@ -35,13 +35,13 @@ export function splitMenuItems(
 
 interface MenuGeneratePayload {
   menus: IMenu;
+  separator?: 'navigation' | 'inline';
   options?: IMenuNodeOptions;
-  separator: 'navigation' | 'inline';
   withAlt?: boolean;
 }
 
 export function generateCtxMenu(payload: MenuGeneratePayload) {
-  const { menus, options, separator } = payload;
+  const { menus, options, separator = 'navigation' } = payload;
   const menuNodes = menus.getMenuNodes(options);
   const menuItems = splitMenuItems(menuNodes, separator);
   return menuItems;

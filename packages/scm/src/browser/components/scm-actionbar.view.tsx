@@ -12,7 +12,7 @@ export const SCMInlineActionBar: React.FC<{
   const [menuConfig] = useMenus(menus, 'inline');
 
   return (
-    <TitleActionList nav={menuConfig} context={context} />
+    <TitleActionList nav={menuConfig} context={[context]} />
   );
 };
 
@@ -23,6 +23,6 @@ export const SCMTitleToolBar: React.FC<{
   const [navMenu, moreMenu] = useMenus(menus, 'navigation');
 
   return (
-    <TitleActionList nav={navMenu} more={moreMenu} context={context} />
+    <TitleActionList nav={navMenu} more={moreMenu} context={[context]} />
   );
 };

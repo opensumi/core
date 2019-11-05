@@ -9,7 +9,7 @@ import { MenuId } from './menu-id';
 import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
 
 export interface IMenuNodeOptions {
-  arg?: any; // 固定参数从这里传入
+  args?: any[]; // 固定参数可从这里传入
 }
 
 export interface IMenu extends IDisposable {
@@ -77,14 +77,11 @@ export class MenuItemNode extends MenuNode {
     this.item = command;
   }
 
-  execute(...args: any[]): Promise<any> {
-    let runArgs: any[] = [];
-
-    if (this._options.arg) {
-      runArgs = [...runArgs, this._options.arg];
-    }
-
-    runArgs = [...runArgs, ...args];
+  execute(args?: any[]): Promise<any> {
+    const runArgs = [
+      ...(this._options.args || []),
+      ...(args || []),
+    ];
 
     return this.commandService.executeCommand(this.item.id, ...runArgs);
   }

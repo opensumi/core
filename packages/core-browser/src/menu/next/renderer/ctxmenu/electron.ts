@@ -26,13 +26,13 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
 
     // bind actions in this context
     this.contextMenuActions.clear();
-    this.bindActions(menuNodes, context, this.contextMenuActions);
+    this.bindActions(menuNodes, this.contextMenuActions, context);
 
     const template = this.getTemplate(menuNodes);
     this.createNativeContextMenu({submenu: template}, onHide);
   }
 
-  private bindActions(menuNodes: MenuNode[], context: any, map: Map<string, () => void>) {
+  private bindActions(menuNodes: MenuNode[], map: Map<string, () => void>, context?: any[]) {
     menuNodes.forEach((data) => {
       map.set(data.id, () => {
         if (typeof data.execute === 'function') {
