@@ -19,7 +19,7 @@ import { SCMMenus } from './scm-menu';
 import { SCMTitleToolBar } from './components/scm-actionbar.view';
 import { ISCMProvider } from '../common';
 
-// 更新左侧 ActivityBar 中 SCM 模块边的数字
+// 更新 ActivityBar 中 SCM 模块边的数字
 @Injectable()
 export class SCMBadgeController {
   private disposables: IDisposable[] = [];
