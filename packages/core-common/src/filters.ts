@@ -5,7 +5,7 @@
 
 import { CharCode } from './charCode';
 import { LRUCache } from './map';
-import * as strings from './strings';
+import * as strings from './utils/strings';
 
 export interface IFilter {
 	// Returns null if word doesn't match.

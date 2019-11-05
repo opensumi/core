@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isWindows } from './platform';
-import { startsWithIgnoreCase, equalsIgnoreCase, endsWith, rtrim } from './strings';
+import { startsWithIgnoreCase, equalsIgnoreCase, endsWith, rtrim } from './utils/strings';
 import { CharCode } from './charCode';
 import { sep, posix, isAbsolute, join, normalize } from './path';
 

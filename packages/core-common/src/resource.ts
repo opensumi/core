@@ -8,9 +8,9 @@ import { MaybePromise } from './async';
 import { CancellationToken } from './cancellation';
 import { ApplicationError } from './application-error';
 import { Domain } from './di-helper'
-import { parse, IExpression, ParsedExpression } from './glob';
+import { parse, IExpression, ParsedExpression } from './utils/glob';
 import { TernarySearchTree } from './map';
-import { equalsIgnoreCase } from './strings';
+import { equalsIgnoreCase } from './utils/strings';
 import { Schemas } from './network';
 import * as paths from './path';
 import * as extpath from './extpath';
