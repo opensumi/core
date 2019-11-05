@@ -18,63 +18,63 @@ export interface FileUri {
 @Domain(ClientAppContribution, NextMenuContribution)
 export class FileTreeContribution implements NextMenuContribution {
   registerNextMenus(menuRegistry: IMenuRegistry): void {
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.OPEN_RESOURCES,
       order: 4,
       group: '1_open',
     });
 
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.OPEN_TO_THE_SIDE,
       order: 3,
       group: '1_open',
     });
 
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FILE,
       order: 2,
       group: '1_open',
     });
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FOLDER,
       order: 1,
       group: '1_open',
     });
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.DELETE_FILE,
       order: 1,
       group: '2_operator',
     });
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.RENAME_FILE,
       order: 3,
       group: '2_operator',
     });
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.COMPARE_SELECTED,
       order: 2,
       group: '2_operator',
     });
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.COPY_FILE,
       order: 1,
       group: '3_copy',
     });
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.CUT_FILE,
       order: 2,
       group: '3_copy',
     });
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.PASTE_FILE,
       order: 3,
       group: '3_copy',
     });
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.COPY_PATH,
       group: '4_path',
     });
-    menuRegistry.appendMenuItem(MenuId.ExplorerContext, {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.COPY_RELATIVE_PATH,
       group: '4_path',
     });

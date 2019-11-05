@@ -36,7 +36,7 @@ export abstract class IMenuRegistry {
   abstract addCommand(userCommand: Command): IDisposable;
   abstract getCommand(id: string): Command | undefined;
   abstract getCommands(): ICommandsMap;
-  abstract appendMenuItem(menu: MenuId, item: IMenuItem | ISubmenuItem): IDisposable;
+  abstract registerMenuItem(menu: MenuId, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
 }
 
@@ -80,7 +80,7 @@ export class MenuRegistry implements IMenuRegistry {
     return map;
   }
 
-  appendMenuItem(id: MenuId, item: IMenuItem | ISubmenuItem): IDisposable {
+  registerMenuItem(id: MenuId, item: IMenuItem | ISubmenuItem): IDisposable {
     let array = this._menuItems.get(id);
     if (!array) {
       array = [item];
