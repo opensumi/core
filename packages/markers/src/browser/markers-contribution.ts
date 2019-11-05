@@ -3,8 +3,8 @@ import { ComponentContribution, ComponentRegistry, Domain, Logger } from '@ali/i
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { nls } from '../common';
 import { MarkerFilterPanel } from './markers-filter.view';
-import { MarkerPanel } from './markers.view';
 import { MarkerService } from './markers-service';
+import { MarkerPanel } from './markers.view';
 
 const MARKER_CONTAINER_ID = 'ide-markers';
 
@@ -25,7 +25,7 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
     if (handler) {
       handler.setTitleComponent(MarkerFilterPanel);
 
-      this.markerService.onMarkerChanged(() => {
+      this.markerService.getManager().onMarkerChanged(() => {
         const badge = this.markerService.getBadge();
         handler.setBadge(badge || '');
       });

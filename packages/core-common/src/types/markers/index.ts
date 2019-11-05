@@ -1,2 +1,2 @@
 export * from './markers';
-export * from './markers-service';
+export * from './markers-manager';

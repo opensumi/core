@@ -220,7 +220,7 @@ export const MarkerPanel = observer(() => {
 
   React.useEffect(() => {
     if (ref.current) {
-      markerService.onMarkerChanged(() => {
+      markerService.getManager().onMarkerChanged(() => {
         updateTag(TAG_NONE);
       });
     }
