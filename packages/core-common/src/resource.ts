@@ -13,7 +13,7 @@ import { TernarySearchTree } from './map';
 import { equalsIgnoreCase } from './utils/strings';
 import { Schemas } from './network';
 import * as paths from './path';
-import * as extpath from './extpath';
+import * as extpath from './utils/paths';
 import { isLinux, isWindows } from './platform';
 
 
