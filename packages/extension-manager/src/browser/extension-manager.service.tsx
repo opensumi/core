@@ -1,5 +1,5 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, hotExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsContainerId, searchExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, SearchExtension, RequestHeaders } from '../common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, hotExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsContainerId, searchExtensionsFromMarketplaceTarbarHandlerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, SearchExtension, RequestHeaders, BaseExtension } from '../common';
 import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -125,8 +125,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
-  async downloadExtension(extensionId: string, version?: string): Promise<string> {
-    return await this.extensionManagerServer.downloadExtension(extensionId, version);
+  async installExtension(extension: BaseExtension, version?: string): Promise<string> {
+    return await this.extensionManagerServer.installExtension(extension, version || extension.version);
   }
 
   /**
@@ -160,8 +160,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   @action
-  async updateExtension(extensionId: string, version: string, oldExtensionPath: string ): Promise<string> {
-    const extensionPath =  await this.extensionManagerServer.updateExtension(extensionId, version, oldExtensionPath);
+  async updateExtension(extension: BaseExtension, version: string): Promise<string> {
+    const extensionId = extension.extensionId;
+    const extensionPath =  await this.extensionManagerServer.updateExtension(extension, version);
     runInAction(() => {
       const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
       if (extension) {
@@ -383,11 +384,12 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   @action
-  async uninstallExtension(extensionId: string, extensionPath: string): Promise<boolean> {
-    const res =  await this.extensionManagerServer.uninstallExtension(extensionPath);
+  async uninstallExtension(extension: BaseExtension): Promise<boolean> {
+    const extensionPath = extension.path;
+    const res =  await this.extensionManagerServer.uninstallExtension(extension);
     if (res) {
       // 如果删除成功，在列表页删除
-      await this.removeExtensionConfig(extensionId);
+      await this.removeExtensionConfig(extension.extensionId);
       runInAction(() => {
         this.extensions = this.extensions.filter((extension) => extension.path !== extensionPath);
       });

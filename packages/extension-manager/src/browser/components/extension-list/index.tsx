@@ -45,7 +45,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   }
 
   async function install(extension: RawExtension) {
-    const path = await extensionManagerService.downloadExtension(extension.extensionId);
+    const path = await extensionManagerService.installExtension(extension);
     // 更新插件进程信息
     await extensionManagerService.onInstallExtension(extension.extensionId, path);
     // 标记为已安装

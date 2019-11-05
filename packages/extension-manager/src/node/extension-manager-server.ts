@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import * as compressing from 'compressing';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { IExtensionManagerServer, PREFIX, RequestHeaders, EXTENSION_DIR } from '../common';
+import { IExtensionManagerServer, PREFIX, RequestHeaders, EXTENSION_DIR, BaseExtension } from '../common';
 import * as urllib from 'urllib';
 import { AppConfig, URI, INodeLogger, isElectronEnv, MarketplaceRequest} from '@ali/ide-core-node';
 import * as contentDisposition from 'content-disposition';
@@ -82,10 +82,10 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   /**
    * 通过插件 id 下载插件
-   * @param extensionId 插件 id
+   * @param extension 插件
    */
-  async downloadExtension(extensionId: string, version?: string): Promise<string> {
-    const request = await this.requestExtension(extensionId, version);
+  async installExtension(extension: BaseExtension, version?: string): Promise<string> {
+    const request = await this.requestExtension(extension.extensionId, version || extension.version);
 
     // 获取插件文件名
     const disposition = contentDisposition.parse(request.headers['content-disposition']);
@@ -96,15 +96,14 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   /**
    * 更新插件
-   * @param extensionId 插件 id
+   * @param extension 插件
    * @param version 要更新的版本
-   * @param oldExtensionPath 更新后需要卸载之前的插件
    */
-  async updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string> {
+  async updateExtension(extension: BaseExtension, version: string): Promise<string> {
     // 先下载插件
-    const extensionDir = await this.downloadExtension(extensionId, version);
+    const extensionDir = await this.installExtension(extension, version);
     // 卸载之前的插件
-    await this.uninstallExtension(oldExtensionPath);
+    await this.uninstallExtension(extension);
     return extensionDir;
   }
 
@@ -162,13 +161,11 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   /**
    * 卸载插件
-   * @TODO 卸载不直接从文件系统删除插件，而是使用存放变量来判断是否卸载 @蛋总
-   * @param extensionId 插件 id
-   * @param version 插件版本
+   * @param extension 插件
    */
-  async uninstallExtension(extensionPath: string) {
+  async uninstallExtension(extension: BaseExtension) {
     try {
-      await fs.remove(extensionPath);
+      await fs.remove(extension.path);
       return true;
     } catch (err) {
       this.logger.error(err);

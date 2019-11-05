@@ -45,18 +45,22 @@ export interface SearchExtension {
   publisher: string;
 }
 
-// 插件面板左侧显示
-export interface RawExtension {
-  id: string; // publisher.name
+// 最小单元的插件信息
+export interface BaseExtension {
   extensionId: string; // 插件市场 extensionId
   name: string;
-  displayName: string;
   version: string;
+  path: string;
+}
+
+// 插件面板左侧显示
+export interface RawExtension extends BaseExtension {
+  id: string; // publisher.name
+  displayName: string;
   description: string;
   publisher: string;
   installed: boolean;
   icon: string;
-  path: string;
   enable: boolean;
   isBuiltin: boolean;
   downloadCount?: number;
@@ -85,7 +89,13 @@ export const ExtensionManagerServerPath = 'ExtensionManagerServerPath';
 
 // 插件市场前端服务
 export const IExtensionManagerService = Symbol('IExtensionManagerService');
-export interface IExtensionManagerService {
+
+export interface IExtensionManager {
+  installExtension(extension: BaseExtension, version?: string): Promise<string>;
+  updateExtension(extension: BaseExtension, version: string): Promise<string>;
+  uninstallExtension(extension: BaseExtension): Promise<boolean>;
+}
+export interface IExtensionManagerService extends IExtensionManager {
   isInit: boolean;
   loading: SearchState;
   hotExtensions: RawExtension[];
@@ -105,9 +115,6 @@ export interface IExtensionManagerService {
   toggleActiveExtension(extensionId: string, active: boolean, scope: EnableScope): Promise<void>;
   searchFromMarketplace(query: string): void;
   searchFromInstalled(query: string): void;
-  downloadExtension(extensionId: string, version?: string): Promise<string>;
-  updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string>;
-  uninstallExtension(extensionId: string, extensionPath: string): Promise<boolean>;
   onInstallExtension(extensionId: string, path: string): Promise<void>;
   onUpdateExtension(path: string, oldExtensionPath: string): Promise<void>;
   computeReloadState(extensionPath: string): Promise<boolean>;
@@ -118,15 +125,12 @@ export interface IExtensionManagerService {
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
-export interface IExtensionManagerServer {
+export interface IExtensionManagerServer extends IExtensionManager {
   search(query: string, ignoreId?: string[]): Promise<any>;
   getExtensionFromMarketPlace(extensionId: string, version: string): Promise<any>;
-  downloadExtension(extensionId: string, version?: string): Promise<string>;
   getHotExtensions(ignoreId?: string[]): Promise<any>;
-  updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string>;
   request(path: string): Promise<any>;
   requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>>;
-  uninstallExtension(extensionPath: string): Promise<boolean>;
   isShowBuiltinExtensions(): boolean;
   setHeaders(headers: RequestHeaders): void;
 }
