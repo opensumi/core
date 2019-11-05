@@ -1,15 +1,17 @@
 import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Event, IEventBus } from '@ali/ide-core-common';
-import { Disposable, DisposableStore } from '@ali/ide-core-common/lib/disposable';
+import { Event, IEventBus, CommandService } from '@ali/ide-core-common';
+import { Disposable, DisposableStore, DisposableCollection } from '@ali/ide-core-common/lib/disposable';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { PreferenceService } from '@ali/ide-core-browser';
+import { IDirtyDiffWorkbenchController } from '../../common';
 
 import { SCMPreferences } from '../scm-preference';
 import { DirtyDiffModel } from './dirty-diff-model';
 import { DirtyDiffDecorator } from './dirty-diff-decorator';
-import { DirtyDiffController } from './dirty-diff-controller';
+import { DirtyDiffWidget } from './dirty-diff-widget';
+import { toRange } from './utils';
 
 import './dirty-diff.module.less';
 
@@ -24,10 +26,11 @@ class DirtyDiffItem {
 }
 
 @Injectable()
-export class DirtyDiffWorkbenchController extends Disposable {
+export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDiffWorkbenchController {
 
   private enabled = false;
   private models: monaco.editor.ITextModel[] = [];
+  private widgets = new Map<string, DirtyDiffWidget>();
   private items: { [modelId: string]: DirtyDiffItem; } = Object.create(null);
   private readonly transientDisposables = new DisposableStore();
 
@@ -46,6 +49,9 @@ export class DirtyDiffWorkbenchController extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(CommandService)
+  commandService: CommandService;
+
   constructor() {
     super();
   }
@@ -58,6 +64,10 @@ export class DirtyDiffWorkbenchController extends Disposable {
     const onDidChangeDiffWidthConfiguration = Event.filter(this.preferenceService.onPreferenceChanged, (e) => e.affects('scm.diffDecorationsGutterWidth'));
     onDidChangeDiffWidthConfiguration(this.onDidChangeDiffWidthConfiguration, this);
     this.onDidChangeDiffWidthConfiguration();
+
+    this.addDispose(monaco.editor.onDidCreateEditor((codeEditor) => {
+      this.attachEvents(codeEditor);
+    }));
   }
 
   private onDidChangeConfiguration() {
@@ -149,6 +159,49 @@ export class DirtyDiffWorkbenchController extends Disposable {
     delete this.items[editorModel.id];
   }
 
+  public openDirtyDiffWidget(codeEditor: monaco.editor.ICodeEditor, position: monaco.IPosition) {
+    const model = codeEditor.getModel();
+    if (model && position) {
+      let widget = this.widgets.get(codeEditor.getId());
+      const dirtyModel = this.getModel(model);
+      if (dirtyModel) {
+        if (widget) {
+          widget.dispose();
+          this.widgets.delete(codeEditor.getId());
+        }
+        widget = new DirtyDiffWidget(codeEditor, dirtyModel, this.commandService);
+        dirtyModel.onClickDecoration(widget, toRange(position));
+        this.widgets.set(codeEditor.getId(), widget);
+      }
+    }
+  }
+
+  private attachEvents(codeEditor: monaco.editor.ICodeEditor) {
+    const disposeCollecton = new DisposableCollection();
+
+    disposeCollecton.push(codeEditor.onMouseDown((event) => {
+      console.log(event);
+      if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
+        if (event.target.position) {
+          this.openDirtyDiffWidget(codeEditor, event.target.position);
+        }
+      }
+    }));
+
+    disposeCollecton.push(codeEditor.onDidChangeModel(({ oldModelUrl }) => {
+      if (oldModelUrl) {
+        const oldWidget = this.widgets.get(codeEditor.getId());
+        if (oldWidget) {
+          oldWidget.dispose();
+        }
+      }
+    }));
+
+    disposeCollecton.push(codeEditor.onDidDispose(() => {
+      disposeCollecton.dispose();
+    }));
+  }
+
   getModel(editorModel: monaco.editor.ITextModel): DirtyDiffModel | null {
     const item = this.items[editorModel.id];
 
@@ -161,6 +214,10 @@ export class DirtyDiffWorkbenchController extends Disposable {
 
   dispose(): void {
     this.disable();
+
+    this.widgets.forEach((widget) => widget.dispose());
+    this.widgets.clear();
+
     super.dispose();
   }
 }
