@@ -338,6 +338,12 @@
       ],
       "@ali/ide-outline/lib/*": [
         "../packages/outline/src/*"
+      ],
+      "@ali/ide-monaco-enhance": [
+        "../packages/monaco-enhance/src/index.ts"
+      ],
+      "@ali/ide-monaco-enhance/lib/*": [
+        "../packages/monaco-enhance/src/*"
       ]
     }
   }

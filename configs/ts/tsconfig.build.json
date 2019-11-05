@@ -161,6 +161,9 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
+    },
+    {
+      "path": "./references/tsconfig.monaco-enhance.json"
     }
   ]
 }
