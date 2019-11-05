@@ -112,6 +112,7 @@ export const localizationBundle = {
     'search.replace.buttonOK': 'Replace',
     'search.quickOpen.leftRight': 'Open on the side',
     'search.quickOpen.upDown': 'Open at the bottom',
+    'search.fileReplaceChanges': '{0} ↔ {1} (Replace Preview)',
     'fileResults': 'File results',
     'historyMatches': 'Recently opened',
     'replaceAll.occurrences.files.message': "Replaced {0} occurrences across {1} files with '{2}'.",
@@ -188,6 +189,7 @@ export const localizationBundle = {
     'preference.search.exclude': 'Configure glob patterns for excluding files and folders in searches. Inherits all glob patterns from the `#files.exclude#` setting.',
     'preference.files.watcherExclude.title': 'Exclusion file watch `files.watcherExclude`',
     'preference.search.exclude.title': 'Search exclusion file `search.exclude`',
+    'preference.search.useReplacePreview': 'Controls whether to open Replace Preview when selecting or replacing a match.',
     'preference.files.exclude.title': 'Exclude file display `files.exclude`',
     'preference.array.additem': 'Add',
 

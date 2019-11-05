@@ -345,6 +345,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         this.searchBrowserService.focus();
         this.searchBrowserService.searchHistory.initSearchHistory();
       });
+      handler.onInActivate(() => {
+        this.searchTreeService.removeHighlightRange();
+      });
     }
   }
 
