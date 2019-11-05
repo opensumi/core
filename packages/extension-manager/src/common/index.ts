@@ -1,3 +1,5 @@
+import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IDisposable } from '@ali/ide-core-common';
 
 export const EXTENSION_DIR = 'extension/';
 
@@ -96,7 +98,7 @@ export interface IExtensionManager {
   updateExtension(extension: BaseExtension, version: string): Promise<string>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
 }
-export interface IExtensionManagerService extends IExtensionManager {
+export interface IExtensionManagerService extends IExtensionManager  {
   isInit: boolean;
   loading: SearchState;
   hotExtensions: RawExtension[];
@@ -109,6 +111,7 @@ export interface IExtensionManagerService extends IExtensionManager {
   searchInstalledResults: RawExtension[];
   searchMarketplaceState: SearchState;
   searchMarketplaceResults: RawExtension[];
+  contextMenu: IMenu;
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined>;

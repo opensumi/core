@@ -5,6 +5,9 @@ import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize } from '@ali/ide-core-browser';
+import { memoize, IDisposable, dispose } from '@ali/ide-core-common';
+import { IMenu, MenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IContextKeyService } from '@ali/ide-core-browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -28,6 +31,14 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
+
+  @Autowired(MenuService)
+  private readonly menuService: MenuService;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  private readonly disposables: IDisposable[] = [];
 
   @observable
   extensions: IExtension[] = [];
@@ -65,8 +76,20 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @observable
   isInit: boolean = false;
 
+  @observable contextMenu: IMenu;
+
   // 是否显示内置插件
   private isShowBuiltinExtensions: boolean = false;
+
+  constructor() {
+    // 创建 contextMenu
+    this.contextMenu = this.menuService.createMenu(MenuId.ExtensionContext, this.contextKeyService);
+    this.disposables.push(this.contextMenu);
+  }
+
+  dispose(): void {
+    dispose(this.disposables);
+  }
 
   @action
   searchFromMarketplace(query: string) {

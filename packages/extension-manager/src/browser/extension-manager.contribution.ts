@@ -1,5 +1,5 @@
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { Domain, localize } from '@ali/ide-core-common';
+import { Command, CommandContribution, Domain, localize, CommandRegistry } from '@ali/ide-core-common';
 import { IExtensionManagerService, EXTENSION_SCHEME, enableExtensionsContainerId} from '../common';
 import { ExtensionDetailView } from './extension-detail.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
@@ -8,11 +8,22 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService } from '@ali/ide-editor';
 import { ExtensionResourceProvider } from './extension-resource-provider';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { MenuId, NextMenuContribution as MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
 import ExtensionPanelView from './extension-panel.view';
 
-@Domain(ComponentContribution, MainLayoutContribution, BrowserEditorContribution)
-export class ExtensionManagerContribution implements MainLayoutContribution, ComponentContribution, BrowserEditorContribution {
+const category = '%extension%';
+
+class ExtensionCommands {
+  static UNINSTALL: Command = {
+    id: 'extension.uninstall',
+    category,
+    label: '%explorer.location%',
+  };
+}
+
+@Domain(ComponentContribution, MainLayoutContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
+export class ExtensionManagerContribution implements MainLayoutContribution, ComponentContribution, BrowserEditorContribution, MenuContribution, CommandContribution {
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -52,6 +63,22 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       priority: 5,
       containerId: enableExtensionsContainerId,
       component: ExtensionPanelView,
+    });
+  }
+
+  registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(ExtensionCommands.UNINSTALL, {
+      execute: (...args) => {
+        console.log(args, 'args');
+      },
+    });
+  }
+
+  registerNextMenus(menuRegistry: IMenuRegistry): void {
+    menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
+      command: ExtensionCommands.UNINSTALL,
+      order: 4,
+      group: '1_open',
     });
   }
 

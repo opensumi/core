@@ -1,12 +1,16 @@
 import * as React from 'react';
-import { RawExtension } from '../../../common';
-import { localize } from '@ali/ide-core-browser';
+import { localize, useMenus } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { Button, Icon } from '@ali/ide-core-browser/lib/components';
+import { TitleActionList } from '@ali/ide-core-browser/lib/components/actions';
 import * as clx from 'classnames';
-import * as styles from './index.module.less';
-import * as commonStyles from '../../extension-manager.common.module.less';
-import { Button } from '@ali/ide-core-browser/lib/components';
 import { observer } from 'mobx-react-lite';
+import { useInjectable } from '@ali/ide-core-browser';
+import { generateCtxMenu, ICtxMenuRenderer, IMenu } from '@ali/ide-core-browser/lib/menu/next';
+
+import { RawExtension, IExtensionManagerService } from '../../../common';
+import * as commonStyles from '../../extension-manager.common.module.less';
+import * as styles from './index.module.less';
 
 interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   extension: RawExtension;
@@ -16,12 +20,26 @@ interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   showInstalled?: boolean;
 }
 
+const InlineActions: React.FC<{
+  menus: IMenu,
+  context?: any[];
+}> = ({ menus, context }) => {
+  const [navMenu, moreMenu] = useMenus(menus, 'navigation');
+
+  return (
+    <TitleActionList nav={navMenu} more={moreMenu} context={context} />
+  );
+};
+
 export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
    extension, select, install, className, showInstalled,
   }) => {
   const [installing, setInstalling] = React.useState(false);
   const timmer = React.useRef<any>();
   const clickCount = React.useRef(0);
+
+  const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
+  const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
   async function handleInstall(e) {
     e.stopPropagation();
@@ -43,8 +61,24 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
     }, 200);
   }
 
+  const handleCtxMenu = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    // 只有已安装才有右键菜单
+    if (!extension.installed) {
+      return;
+    }
+
+    const result = generateCtxMenu({ menus: extensionManagerService.contextMenu });
+
+    ctxMenuRenderer.show({
+      anchor: { x: e.clientX, y: e.clientY },
+      menuNodes: result[1],
+      context: ['hello world'],
+    });
+  }, []);
+
   return (
-    <div className={className}>
+    <div className={className} onContextMenu={handleCtxMenu}>
       <div onClick={handleClick} className={styles.wrap}>
         <div>
           <img className={styles.icon} src={extension.icon}></img>
@@ -64,8 +98,13 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
             <span>{extension.publisher}</span>
           </div>
           <div className={styles.description}>{extension.description}</div>
-          </div>
+          {
+            extension.installed && (
+              <InlineActions menus={extensionManagerService.contextMenu} context={['hello world']} />
+            )
+          }
         </div>
+      </div>
     </div>
   );
 });
