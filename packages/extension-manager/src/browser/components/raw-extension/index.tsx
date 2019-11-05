@@ -2,7 +2,7 @@ import * as React from 'react';
 import { localize, useMenus } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { Button, Icon } from '@ali/ide-core-browser/lib/components';
-import { TitleActionList } from '@ali/ide-core-browser/lib/components/actions';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import * as clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
@@ -19,17 +19,6 @@ interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   // 是否显示已安装文案
   showInstalled?: boolean;
 }
-
-const InlineActions: React.FC<{
-  menus: IMenu,
-  context?: any[];
-}> = ({ menus, context }) => {
-  const [navMenu, moreMenu] = useMenus(menus, 'navigation');
-
-  return (
-    <TitleActionList nav={navMenu} more={moreMenu} context={context} />
-  );
-};
 
 export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
    extension, select, install, className, showInstalled,
@@ -100,7 +89,9 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
           <div className={styles.description}>{extension.description}</div>
           {
             extension.installed && (
-              <InlineActions menus={extensionManagerService.contextMenu} context={['hello world']} />
+              <InlineActionBar
+                menus={extensionManagerService.contextMenu}
+                context={['hello world']} />
             )
           }
         </div>
