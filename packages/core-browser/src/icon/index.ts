@@ -1,3 +1,5 @@
+import { SymbolKind } from '@ali/ide-core-common';
+
 const iconPrefixes = ['kaitian-icon kticon-'];
 
 export enum ROTATE_TYPE {
@@ -127,3 +129,41 @@ export const defaultIconMap = {
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {
   [iconPrefixes[0]]: defaultIconMap,
 };
+
+/**
+ * @internal
+ */
+export const getSymbolIcon = (() => {
+
+  const _fromMapping: { [n: number]: string } = Object.create(null);
+  _fromMapping[SymbolKind.File] = 'file';
+  _fromMapping[SymbolKind.Module] = 'module';
+  _fromMapping[SymbolKind.Namespace] = 'namespace';
+  _fromMapping[SymbolKind.Package] = 'package';
+  _fromMapping[SymbolKind.Class] = 'class';
+  _fromMapping[SymbolKind.Method] = 'method';
+  _fromMapping[SymbolKind.Property] = 'property';
+  _fromMapping[SymbolKind.Field] = 'field';
+  _fromMapping[SymbolKind.Constructor] = 'constructor';
+  _fromMapping[SymbolKind.Enum] = 'enum';
+  _fromMapping[SymbolKind.Interface] = 'interface';
+  _fromMapping[SymbolKind.Function] = 'function';
+  _fromMapping[SymbolKind.Variable] = 'variable';
+  _fromMapping[SymbolKind.Constant] = 'constant';
+  _fromMapping[SymbolKind.String] = 'string';
+  _fromMapping[SymbolKind.Number] = 'number';
+  _fromMapping[SymbolKind.Boolean] = 'boolean';
+  _fromMapping[SymbolKind.Array] = 'array';
+  _fromMapping[SymbolKind.Object] = 'object';
+  _fromMapping[SymbolKind.Key] = 'key';
+  _fromMapping[SymbolKind.Null] = 'null';
+  _fromMapping[SymbolKind.EnumMember] = 'enum-member';
+  _fromMapping[SymbolKind.Struct] = 'struct';
+  _fromMapping[SymbolKind.Event] = 'event';
+  _fromMapping[SymbolKind.Operator] = 'operator';
+  _fromMapping[SymbolKind.TypeParameter] = 'type-parameter';
+
+  return function toCssClassName(kind: SymbolKind, inline?: boolean): string {
+    return `symbol-icon ${inline ? 'inline' : 'block'} ${_fromMapping[kind] || 'property'}`;
+  };
+})();

@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, MaybeNull, OnEvent, BasicEvent, IRange, URI, CancellationTokenSource } from '@ali/ide-core-browser';
+import { WithEventBus, MaybeNull, OnEvent, BasicEvent, IRange, URI, CancellationTokenSource, SymbolKind } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
 import debounce = require('lodash.debounce');
@@ -28,7 +28,7 @@ export class DocumentSymbolStore extends WithEventBus {
     });
   }
 
-  getDocumentSymbol(uri: URI): DocumentSymbol[] | undefined  {
+  getDocumentSymbol(uri: URI): DocumentSymbol[] | undefined {
     if (!this.documentSymbols.has(uri.toString())) {
       this.documentSymbols.set(uri.toString(), undefined);
       this.createDocumentSymbolCache(uri);
@@ -71,7 +71,7 @@ export class DocumentSymbolStore extends WithEventBus {
     if (!this.debounced.has(uri.toString())) {
       this.debounced.set(uri.toString(), debounce(() => {
         return this.doUpdateDocumentSymbolCache(uri);
-      }, 100, {maxWait: 1000}));
+      }, 100, { maxWait: 1000 }));
     }
     this.debounced.get(uri.toString())!();
   }
@@ -101,7 +101,7 @@ export class DocumentSymbolStore extends WithEventBus {
 
 }
 
-export class DocumentSymbolChangedEvent extends BasicEvent<URI> {}
+export class DocumentSymbolChangedEvent extends BasicEvent<URI> { }
 
 export interface DocumentSymbol {
   name: string;
@@ -111,33 +111,4 @@ export interface DocumentSymbol {
   range: IRange;
   selectionRange: IRange;
   children?: DocumentSymbol[];
-}
-
-enum SymbolKind {
-  File = 0,
-  Module = 1,
-  Namespace = 2,
-  Package = 3,
-  Class = 4,
-  Method = 5,
-  Property = 6,
-  Field = 7,
-  Constructor = 8,
-  Enum = 9,
-  Interface = 10,
-  Function = 11,
-  Variable = 12,
-  Constant = 13,
-  String = 14,
-  Number = 15,
-  Boolean = 16,
-  Array = 17,
-  Object = 18,
-  Key = 19,
-  Null = 20,
-  EnumMember = 21,
-  Struct = 22,
-  Event = 23,
-  Operator = 24,
-  TypeParameter = 25,
 }

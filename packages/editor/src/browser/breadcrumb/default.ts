@@ -13,7 +13,7 @@ import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } f
 import { WorkbenchEditorService, IEditor } from '../../common';
 import { DocumentSymbolChangedEvent, DocumentSymbol, DocumentSymbolStore } from './document-symbol';
 import debounce = require('lodash.debounce');
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon, getSymbolIcon } from '@ali/ide-core-browser/lib/icon';
 
 @Injectable()
 export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCrumbProvider {
@@ -173,7 +173,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
     const symbol = documentSymbol as INormalizedDocumentSymbol;
     const res: IBreadCrumbPart = {
       name: documentSymbol.name,
-      icon: getIcon('documentSymbol_' + symbol.kind),
+      icon: getSymbolIcon(symbol.kind),
       onClick: () => {
         editor.setSelection({
           startColumn: symbol.range.startColumn,
