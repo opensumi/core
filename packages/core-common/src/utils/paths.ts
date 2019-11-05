@@ -23,7 +23,7 @@
 'use strict';
 
 import { CharCode, isWindows, startsWithIgnoreCase } from '../';
-
+import { posix } from '../path';
 /**
  * The forward slash path separator.
  */

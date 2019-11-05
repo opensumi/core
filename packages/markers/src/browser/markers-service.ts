@@ -269,6 +269,10 @@ export class MarkerService extends WithEventBus implements IMarkerService {
     return undefined;
   }
 
+  public getUris(): string[] {
+    return MapMap.keys(this._byResource);
+  }
+
   public getThemeType(): ThemeType {
     return this.themeService.getCurrentThemeSync().type;
   }
