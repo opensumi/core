@@ -6,10 +6,11 @@ import { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 import 'antd/lib/dropdown/style/index.less';
 
-import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode } from '../../menu/next';
+import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator } from '../../menu/next';
 import Icon from '../icon';
 import { getIcon } from '../../icon';
 import { useInjectable } from '../../react-hooks';
+import { useMenus } from '../../utils';
 
 import * as styles from './styles.module.less';
 
@@ -152,3 +153,36 @@ export const TitleActionList: React.FC<{
     </div>
   );
 };
+
+type TupleContext<T, U, K, M> = (
+  M extends undefined
+  ? K extends undefined
+    ? U extends undefined
+      ? T extends undefined
+        ? []
+        : [T]
+      : [T, U]
+    : [T, U, K]
+  : [T, U, K, M]
+);
+
+export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(props: {
+  context?: TupleContext<T, U, K, M>;
+  menus: IMenu;
+  seperator?: MenuSeparator;
+}): React.ReactElement<{
+  context?: TupleContext<T, U, K, M>;
+  menus: IMenu;
+  seperator?: MenuSeparator;
+}> {
+  const { menus, context, seperator } = props;
+  const [navMenu, moreMenu] = useMenus(menus, seperator);
+
+  // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
+  return (
+    <TitleActionList
+      nav={navMenu}
+      more={seperator === 'inline' ? [] : moreMenu}
+      context={context} />
+  );
+}

@@ -16,8 +16,8 @@ import { getOctIcon } from '@ali/ide-core-browser/lib/icon';
 import { SCMService, ISCMRepository, scmResourceViewId, scmContainerId, scmProviderViewId } from '../common';
 import { getSCMRepositoryDesc } from './scm-util';
 import { SCMMenus } from './scm-menu';
-import { SCMTitleToolBar } from './components/scm-actionbar.view';
 import { ISCMProvider } from '../common';
+import { InlineActionBar } from '../../../core-browser/src/components/actions';
 
 // 更新 ActivityBar 中 SCM 模块边的数字
 @Injectable()
@@ -366,8 +366,11 @@ export class SCMViewController {
 
     if (container) {
       ReactDOM.render(
-        <ConfigProvider value={this.configContext} >
-          <SCMTitleToolBar menus={titleMenu} context={provider} />
+        <ConfigProvider value={this.configContext}>
+          <InlineActionBar
+            menus={titleMenu}
+            context={provider && [provider]}
+            seperator='navigation' />
         </ConfigProvider>,
         container,
         () => {

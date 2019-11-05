@@ -12,7 +12,7 @@ export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
  */
 export function splitMenuItems(
   groups: Array<[string, Array<MenuItemNode | SubmenuItemNode>]>,
-  separator: 'navigation' | 'inline' = 'navigation',
+  separator: MenuSeparator = 'navigation',
 ): TupleMenuNodeResult {
   const result: TupleMenuNodeResult = [ [], [] ];
   for (const tuple of groups) {
@@ -33,9 +33,11 @@ export function splitMenuItems(
   return result;
 }
 
+export type MenuSeparator = 'navigation' | 'inline';
+
 interface MenuGeneratePayload {
   menus: IMenu;
-  separator?: 'navigation' | 'inline';
+  separator?: MenuSeparator;
   options?: IMenuNodeOptions;
   withAlt?: boolean;
 }
