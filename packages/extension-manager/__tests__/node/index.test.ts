@@ -1,5 +1,5 @@
 import { uuid } from '@ali/ide-core-common';
-import { IExtensionManagerServer, BaseExtension } from '../../src/common';
+import { IExtensionManagerServer, BaseExtension, IExtensionManagerRequester } from '../../src/common';
 import { ExtensionManagerModule } from '../../src/node';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { AppConfig, INodeLogger } from '@ali/ide-core-node';
@@ -26,6 +26,7 @@ describe('template test', () => {
     }, {
       token: INodeLogger,
       useValue: {
+        log: console.log,
         error: console.error,
       },
     });
@@ -38,7 +39,7 @@ describe('template test', () => {
 
   describe('search extension', () => {
     it('search for extension called es', async (done) => {
-      injector.mock(IExtensionManagerServer, 'request', () => {
+      injector.mock(IExtensionManagerRequester, 'request', () => {
         return {
           status: 200,
           data: {
@@ -52,7 +53,7 @@ describe('template test', () => {
     });
 
     it('search non-existent extension', async (done) => {
-      injector.mock(IExtensionManagerServer, 'request', async () => {
+      injector.mock(IExtensionManagerRequester, 'request', async () => {
         return {
           status: 200,
           data: {
@@ -68,7 +69,7 @@ describe('template test', () => {
 
   describe('get extension details', () => {
     it('get details for non-existent extension ', () => {
-      injector.mock(IExtensionManagerServer, 'request', () => {
+      injector.mock(IExtensionManagerRequester, 'request', () => {
         throw new Error('请求错误');
       });
       expect(service.getExtensionFromMarketPlace(uuid(), '0.0.1'))
@@ -154,7 +155,7 @@ describe('template test', () => {
     const extensionName = uuid();
     const extensionDirName = `${extensionId}-${extensionName}-${version}`;
     // mock 请求方法
-    injector.mock(IExtensionManagerServer, 'requestExtension', () => ({
+    injector.mock(IExtensionManagerRequester, 'request', () => ({
       headers: {
         'content-disposition': `attachment; filename="${extensionDirName}.zip"`,
       },

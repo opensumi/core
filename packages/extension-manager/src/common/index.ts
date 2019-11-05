@@ -90,6 +90,7 @@ export const ExtensionManagerServerPath = 'ExtensionManagerServerPath';
 // 插件市场前端服务
 export const IExtensionManagerService = Symbol('IExtensionManagerService');
 
+export const IExtensionManager = Symbol('IExtensionManager');
 export interface IExtensionManager {
   installExtension(extension: BaseExtension, version?: string): Promise<string>;
   updateExtension(extension: BaseExtension, version: string): Promise<string>;
@@ -129,12 +130,17 @@ export interface IExtensionManagerServer extends IExtensionManager {
   search(query: string, ignoreId?: string[]): Promise<any>;
   getExtensionFromMarketPlace(extensionId: string, version: string): Promise<any>;
   getHotExtensions(ignoreId?: string[]): Promise<any>;
-  request(path: string): Promise<any>;
-  requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>>;
   isShowBuiltinExtensions(): boolean;
   setHeaders(headers: RequestHeaders): void;
 }
 
 export interface RequestHeaders {
   [header: string]: string;
+}
+
+export const IExtensionManagerRequester = Symbol('IExtensionManagerRequester');
+
+export interface IExtensionManagerRequester {
+  request<T = any>(path: string, options?: urllib.RequestOptions): Promise<urllib.HttpClientResponse<T>>;
+  setHeaders(headers: RequestHeaders): void;
 }

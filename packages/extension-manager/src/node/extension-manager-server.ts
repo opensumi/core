@@ -2,89 +2,78 @@ import { Injectable, Autowired } from '@ali/common-di';
 import * as compressing from 'compressing';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { IExtensionManagerServer, PREFIX, RequestHeaders, EXTENSION_DIR, BaseExtension } from '../common';
+import { IExtensionManagerServer, PREFIX, RequestHeaders, EXTENSION_DIR, BaseExtension, IExtensionManager, IExtensionManagerRequester } from '../common';
 import * as urllib from 'urllib';
-import { AppConfig, URI, INodeLogger, isElectronEnv, MarketplaceRequest} from '@ali/ide-core-node';
+import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
 import * as contentDisposition from 'content-disposition';
 import * as awaitEvent from 'await-event';
 import { renameSync } from 'fs-extra';
 
 @Injectable()
-export class ExtensionManagerServer implements IExtensionManagerServer {
+export class ExtensionManagerRequester implements IExtensionManagerRequester {
+
+  @Autowired(INodeLogger)
+  private logger: INodeLogger;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
-  @Autowired(INodeLogger)
-  private logger: INodeLogger;
   private headers: RequestHeaders;
 
-  async search(query: string, ignoreId?: string[]) {
-    try {
-      const res = await this.request(`search?query=${query}${ignoreId ? ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
-        dataType: 'json',
-        timeout: 5000,
-      });
-      if (res.status === 200) {
-        return res.data;
-      } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
-      }
-    } catch (err) {
-      this.logger.error(err);
-      throw new Error(err.message);
-    }
-  }
-  async getExtensionFromMarketPlace(extensionId: string, version: string) {
-    try {
-      const res = await this.request(`extension/${extensionId}?version=${version}`, {
-        dataType: 'json',
-        timeout: 5000,
-      });
-      if (res.status === 200) {
-        return res.data;
-      } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
-      }
-    } catch (err) {
-      this.logger.error(err);
-      throw new Error(err.message);
-    }
-  }
-
-  async getHotExtensions(ignoreId?: string[]) {
-    try {
-      const res = await this.request(`hot${ignoreId ? '?' + ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
-        dataType: 'json',
-        timeout: 5000,
-      });
-      if (res.status === 200) {
-        return res.data;
-      } else {
-        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
-      }
-    } catch (err) {
-      this.logger.error(err);
-      throw new Error(err.message);
-    }
-  }
-
   /**
-   * 请求下载插件接口
-   * @param extensionId 插件 id
+   * 请求插件市场
+   * @param path 请求路径
    */
-  async requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
-    const request = await this.request<NodeJS.ReadWriteStream>(`download/${extensionId}${version ? `?version=${version}` : ''}`, {
-      streaming: true,
+  async request<T = any>(path: string, options?: urllib.RequestOptions): Promise<urllib.HttpClientResponse<T>> {
+    const url = this.getApi(path);
+    this.logger.log(`marketplace request url: ${url}`);
+    return await urllib.request<T>(url, {
+      ...options,
+      headers: {
+        'x-account-id': this.appConfig.marketplace.accountId,
+        'x-master-key': this.appConfig.marketplace.masterKey,
+        ...this.headers,
+      },
+      beforeRequest: (options) => {
+        if (this.appConfig.marketplace.transformRequest) {
+          const { headers, path} = this.appConfig.marketplace.transformRequest({
+            path: options.path,
+            headers: options.headers,
+          });
+          if (path) {
+            options.path = path;
+          }
+          if (headers) {
+            options.headers = headers;
+          }
+        }
+      },
     });
-    return request;
   }
 
-  /**
-   * 通过插件 id 下载插件
-   * @param extension 插件
-   */
-  async installExtension(extension: BaseExtension, version?: string): Promise<string> {
+  private getApi(path: string) {
+    const uri = new URI(this.appConfig.marketplace.endpoint);
+    return decodeURIComponent(uri.withPath(`${PREFIX}${path}`).toString());
+  }
+
+  setHeaders(headers: RequestHeaders): void {
+    this.headers = headers;
+  }
+}
+
+@Injectable()
+export class ExtensionManager implements IExtensionManager {
+
+  @Autowired(IExtensionManagerRequester)
+  extensionManagerRequester: IExtensionManagerRequester;
+
+  @Autowired(INodeLogger)
+  private logger: INodeLogger;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
+  async installExtension(extension: BaseExtension, version?: string | undefined): Promise<string> {
     const request = await this.requestExtension(extension.extensionId, version || extension.version);
 
     // 获取插件文件名
@@ -93,18 +82,21 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
     return await this.uncompressExtension(request.res, extensionDirName);
   }
-
-  /**
-   * 更新插件
-   * @param extension 插件
-   * @param version 要更新的版本
-   */
   async updateExtension(extension: BaseExtension, version: string): Promise<string> {
     // 先下载插件
     const extensionDir = await this.installExtension(extension, version);
     // 卸载之前的插件
     await this.uninstallExtension(extension);
     return extensionDir;
+  }
+  async uninstallExtension(extension: BaseExtension): Promise<boolean> {
+    try {
+      await fs.remove(extension.path);
+      return true;
+    } catch (err) {
+      this.logger.error(err);
+      return false;
+    }
   }
 
   /**
@@ -160,54 +152,105 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   }
 
   /**
-   * 卸载插件
-   * @param extension 插件
+   * 请求下载插件接口
+   * @param extensionId 插件 id
    */
-  async uninstallExtension(extension: BaseExtension) {
+  private async requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
+    const request = await this.extensionManagerRequester.request<NodeJS.ReadWriteStream>(`download/${extensionId}${version ? `?version=${version}` : ''}`, {
+      streaming: true,
+    });
+    return request;
+  }
+}
+
+@Injectable()
+export class ExtensionManagerServer implements IExtensionManagerServer {
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
+  @Autowired(INodeLogger)
+  private logger: INodeLogger;
+
+  @Autowired(IExtensionManager)
+  extensionManager: IExtensionManager;
+
+  @Autowired(IExtensionManagerRequester)
+  extensionManagerRequester: IExtensionManagerRequester;
+
+  async search(query: string, ignoreId?: string[]) {
     try {
-      await fs.remove(extension.path);
-      return true;
+      const res = await this.extensionManagerRequester.request(`search?query=${query}${ignoreId ? ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
     } catch (err) {
       this.logger.error(err);
-      return false;
+      throw new Error(err.message);
+    }
+  }
+  async getExtensionFromMarketPlace(extensionId: string, version: string) {
+    try {
+      const res = await this.extensionManagerRequester.request(`extension/${extensionId}?version=${version}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
+    }
+  }
+
+  async getHotExtensions(ignoreId?: string[]) {
+    try {
+      const res = await this.extensionManagerRequester.request(`hot${ignoreId ? '?' + ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
+        dataType: 'json',
+        timeout: 5000,
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
     }
   }
 
   /**
-   * 请求插件市场
-   * @param path 请求路径
+   * 通过插件 id 下载插件
+   * @param extension 插件
    */
-  async request<T = any>(path: string, options?: urllib.RequestOptions): Promise<urllib.HttpClientResponse<T>> {
-    const url = this.getApi(path);
-    this.logger.log(`marketplace request url: ${url}`);
-    return await urllib.request<T>(url, {
-      ...options,
-      headers: {
-        'x-account-id': this.appConfig.marketplace.accountId,
-        'x-master-key': this.appConfig.marketplace.masterKey,
-        ...this.headers,
-      },
-      beforeRequest: (options) => {
-        if (this.appConfig.marketplace.transformRequest) {
-          const { headers, path} = this.appConfig.marketplace.transformRequest({
-            path: options.path,
-            headers: options.headers,
-          });
-          if (path) {
-            options.path = path;
-          }
-          if (headers) {
-            options.headers = headers;
-          }
-        }
-      },
-    });
-
+  async installExtension(extension: BaseExtension, version?: string): Promise<string> {
+    return await this.extensionManager.installExtension(extension, version);
   }
 
-  private getApi(path: string) {
-    const uri = new URI(this.appConfig.marketplace.endpoint);
-    return decodeURIComponent(uri.withPath(`${PREFIX}${path}`).toString());
+  /**
+   * 更新插件
+   * @param extension 插件
+   * @param version 要更新的版本
+   */
+  async updateExtension(extension: BaseExtension, version: string): Promise<string> {
+    return await this.extensionManager.updateExtension(extension, version);
+  }
+
+  /**
+   * 卸载插件
+   * @param extension 插件
+   */
+  async uninstallExtension(extension: BaseExtension) {
+    return await this.extensionManager.uninstallExtension(extension);
   }
 
   /**
@@ -218,6 +261,6 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   }
 
   setHeaders(headers: RequestHeaders) {
-    this.headers = headers;
+    this.extensionManagerRequester.setHeaders(headers);
   }
 }
