@@ -4,6 +4,7 @@ import { FilterOptions } from './markers-filter.model';
 import * as styles from './markers-filter.module.less';
 import { MarkerService } from './markers-service';
 import Messages from './messages';
+import debounce = require('lodash.debounce');
 
 /**
  * Marker过滤面板
@@ -11,7 +12,6 @@ import Messages from './messages';
 export const MarkerFilterPanel = observer(() => {
   const ref = React.useRef<HTMLInputElement | null>();
   const markerService = MarkerService.useInjectable();
-  let currentTimer: NodeJS.Timer | undefined;
 
   React.useEffect(() => {
     markerService.onMarkerFilterChanged((opt) => {
@@ -21,13 +21,15 @@ export const MarkerFilterPanel = observer(() => {
         }
       }
     });
+  });
 
-    return () => {// clear timer on stop
-      if (currentTimer) {
-        clearTimeout(currentTimer);
-      }
-    };
-  }, [currentTimer]);
+  const onChangeCallback = debounce((value) => {
+    if (value) {
+      markerService.fireFilterChanged(new FilterOptions(value));
+    } else {
+      markerService.fireFilterChanged(undefined);
+    }
+  }, 250);
 
   return (
     <div className={styles.markerFilterContent}>
@@ -35,17 +37,7 @@ export const MarkerFilterPanel = observer(() => {
         ref={(ele) => ref.current = ele}
         placeholder={Messages.MARKERS_PANEL_FILTER_INPUT_PLACEHOLDER}
         onChange={(event) => {
-          if (currentTimer) {
-            clearTimeout(currentTimer);
-          }
-          currentTimer = setTimeout((value) => {
-            currentTimer = undefined;
-            if (value) {
-              markerService.fireFilterChanged(new FilterOptions(value));
-            } else {
-              markerService.fireFilterChanged(undefined);
-            }
-          }, 250, event.target.value);
+          onChangeCallback(event.target.value);
         }} />
     </div>
   );
