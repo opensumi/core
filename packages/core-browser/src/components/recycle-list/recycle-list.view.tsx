@@ -101,5 +101,5 @@ export const RecycleList = ({
       sliceThreshold={sliceThreshold}
       onLoad={onLoad}
     />
-  </div >;
+  </div>;
 };
