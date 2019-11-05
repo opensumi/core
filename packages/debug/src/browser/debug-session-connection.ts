@@ -115,20 +115,6 @@ export class DebugSessionConnection implements IDisposable {
     return this.toDispose.disposed;
   }
 
-  protected checkDisposed(): void {
-    if (this.disposed) {
-      throw new Error('the debug session connection is disposed, id: ' + this.sessionId);
-    }
-  }
-
-  close(): void {
-    const { code, reson } = DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT;
-    this.connection.then((conn) => {
-      conn.close(code, reson);
-      this.fire('exited', { code, reason: reson });
-    });
-  }
-
   dispose(): void {
     this.toDispose.dispose();
   }
@@ -148,6 +134,7 @@ export class DebugSessionConnection implements IDisposable {
   }
 
   protected allThreadsContinued = true;
+
   async sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
     const result = await this.doSendRequest(command, args);
     if (command === 'next' || command === 'stepIn' ||
@@ -166,9 +153,11 @@ export class DebugSessionConnection implements IDisposable {
     }
     return result;
   }
+
   sendCustomRequest<T extends DebugProtocol.Response>(command: string, args?: any): Promise<T> {
     return this.doSendRequest<T>(command, args);
   }
+
   protected async doSendRequest<K extends DebugProtocol.Response>(command: string, args?: any): Promise<K> {
     const result = new Deferred<K>();
 
@@ -265,23 +254,31 @@ export class DebugSessionConnection implements IDisposable {
 
   protected readonly emitters = new Map<string, Emitter<DebugProtocol.Event | DebugExitEvent>>();
   on<K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any): IDisposable {
+    if (this.disposed) {
+      return Disposable.create(() => {});
+    }
     return this.getEmitter(kind).event(listener);
   }
 
   public fire<K extends keyof DebugEventTypes>(kind: K, e: DebugEventTypes[K]): void {
     this.doFire(kind, e);
   }
+
   protected doFire(kind: string, e: DebugProtocol.Event | DebugExitEvent): void {
+    if (this.disposed) {
+      return ;
+    }
     this.getEmitter(kind).fire(e);
   }
+
   protected getEmitter(kind: string): Emitter<DebugProtocol.Event | DebugExitEvent> {
     const emitter = this.emitters.get(kind) || this.newEmitter();
     this.emitters.set(kind, emitter);
     return emitter;
   }
+
   protected newEmitter(): Emitter<DebugProtocol.Event | DebugExitEvent> {
     const emitter = new Emitter<DebugProtocol.Event | DebugExitEvent>();
-    this.checkDisposed();
     this.toDispose.push(emitter);
     return emitter;
   }

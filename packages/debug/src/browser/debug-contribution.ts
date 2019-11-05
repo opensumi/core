@@ -1,6 +1,5 @@
 import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
-import { DebugThreadView } from './view/debug-threads.view';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
 import { DebugStackFrameView } from './view/debug-stack-frames.view';
 import { DebugVariableView } from './view/debug-variable.view';
@@ -10,7 +9,7 @@ import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';
-import { DebugSchemaUpdater, launchSchemaUri, launchSchema } from './debug-schema-updater';
+import { launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/debug-watch.view';
 
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
@@ -22,8 +21,10 @@ import { DebugViewModel } from './view/debug-view-model';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
-import { IDebugSessionManager } from '../common';
+import { IDebugSessionManager, launchSchemaUri } from '../common';
 import { DebugConsoleService } from './view/debug-console.service';
+import { IStatusBarService } from '@ali/ide-status-bar';
+import { IThemeService } from '@ali/ide-theme';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -73,9 +74,6 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   @Autowired(DebugConfigurationManager)
   protected readonly configurations: DebugConfigurationManager;
 
-  @Autowired(DebugSchemaUpdater)
-  protected readonly debugSchemaUpdater: DebugSchemaUpdater;
-
   @Autowired(DebugModelManager)
   protected debugEditorController: DebugModelManager;
 
@@ -100,16 +98,13 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   @Autowired(IDebugSessionManager)
   protected readonly sessionManager: DebugSessionManager;
 
+  @Autowired(IStatusBarService)
+  protected readonly statusBar: IStatusBarService;
+
   firstSessionStart: boolean = true;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-debug', [
-      {
-        component: DebugThreadView,
-        id: DebugContribution.DEBUG_THREAD_ID,
-        name: localize('debug.threads.title'),
-        collapsed: false,
-      },
       {
         component: DebugWatchView,
         id: DebugContribution.DEBUG_WATCH_ID,
@@ -155,6 +150,8 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
           this.debugModel.init(session);
         }
         this.firstSessionStart = false;
+        this.statusBar.setBackgroundColor('var(--statusBar-debuggingBackground)');
+        this.statusBar.setColor('var(--statusBar-debuggingForeground)');
       });
       this.sessionManager.onDidStopDebugSession((session) => {
         const { openDebug } = session.configuration;
@@ -162,8 +159,13 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
           this.openView();
         }
       });
+      this.sessionManager.onDidDestroyDebugSession((session) => {
+        if (this.sessionManager.sessions.length === 0) {
+          this.statusBar.setBackgroundColor('var(--statusBar-background)');
+          this.statusBar.setColor('var(--statusBar-foreground)');
+        }
+      });
       this.debugEditorController.init();
-      this.debugSchemaUpdater.update();
       this.configurations.load();
       await this.breakpointManager.load();
     }
@@ -286,7 +288,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   }
 
   registerSchema(registry: ISchemaRegistry) {
-    registry.registerSchema(launchSchemaUri, launchSchema, ['launch.json']);
+    registry.registerSchema(`${launchSchemaUri}/default`, launchSchema, ['launch.json']);
   }
 
   registerKeybindings(keybindings) {

@@ -1,7 +1,7 @@
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
-import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer } from '@ali/ide-debug';
+import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution } from '@ali/ide-debug';
 import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSchemaUpdater, DebugBreakpoint, DebugSessionContributionRegistry, DebugModelManager, SourceBreakpoint } from '@ali/ide-debug/lib/browser';
 import { IRPCProtocol, WSChanneHandler } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -12,7 +12,7 @@ import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry
 import { ExtensionDebugService } from './debug/extension-debug-service';
 import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
 import { ActivationEventService } from '@ali/ide-activation-event';
-import { Breakpoint, WorkspaceFolder, DebuggerContribution } from '../../../common/vscode/models';
+import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
 import { DebugConsoleSession } from '@ali/ide-debug/lib/browser/console/debug-console-session';
@@ -23,6 +23,7 @@ import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 export class MainThreadDebug implements IMainThreadDebug {
 
   private readonly toDispose = new Map<string, DisposableCollection>();
+  private readonly listenerDispose = new DisposableCollection();
 
   private proxy: IExtHostDebug;
 
@@ -43,9 +44,6 @@ export class MainThreadDebug implements IMainThreadDebug {
 
   @Autowired(DebugPreferences)
   protected readonly debugPreferences: DebugPreferences;
-
-  @Autowired(DebugSchemaUpdater)
-  protected readonly debugSchemaUpdater: DebugSchemaUpdater;
 
   @Autowired(IFileServiceClient)
   protected readonly fileServiceClient: IFileServiceClient;
@@ -98,7 +96,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     // 将ContributionPoints中的debuggers数据传递给插件
     // 后续时序若发生调整，这块逻辑也需要调整
     for (const [folder, contributions] of debugContributionPoints) {
-      this.proxy.$registerDebuggerContributions(folder, contributions as DebuggerContribution[]);
+      this.proxy.$registerDebuggerContributions(folder, contributions as IDebuggerContribution[]);
       contributions.forEach((contribution: any) => {
         this.$registerDebuggerContribution({
           type: contribution.type,
@@ -115,18 +113,33 @@ export class MainThreadDebug implements IMainThreadDebug {
     });
 
     this.toDispose.clear();
+    this.listenerDispose.dispose();
   }
 
   listen() {
-    this.breakpointManager.onDidChangeBreakpoints(({ added, removed, changed }) => {
-      const all = this.breakpointManager.getBreakpoints();
-      this.proxy.$breakpointsDidChange(
-        this.toCustomApiBreakpoints(all),
-        this.toCustomApiBreakpoints(added),
-        this.toCustomApiBreakpoints(removed),
-        this.toCustomApiBreakpoints(changed),
-      );
-    });
+    this.listenerDispose.pushAll([
+      this.breakpointManager.onDidChangeBreakpoints(({ added, removed, changed }) => {
+        const all = this.breakpointManager.getBreakpoints();
+        this.proxy.$breakpointsDidChange(
+          this.toCustomApiBreakpoints(all),
+          this.toCustomApiBreakpoints(added),
+          this.toCustomApiBreakpoints(removed),
+          this.toCustomApiBreakpoints(changed),
+        );
+      }),
+      this.sessionManager.onDidStartDebugSession((debugSession) => {
+        this.proxy.$sessionDidStart(debugSession.id);
+      }),
+      this.sessionManager.onDidDestroyDebugSession((debugSession) => {
+        this.proxy.$sessionDidDestroy(debugSession.id);
+      }),
+      this.sessionManager.onDidChangeActiveDebugSession((event) => {
+        this.proxy.$sessionDidChange(event.current && event.current.id);
+      }),
+      this.sessionManager.onDidReceiveDebugSessionCustomEvent((event) => {
+        this.proxy.$onSessionCustomEvent(event.session.id, event.event, event.body);
+      }),
+    ]);
   }
 
   async $appendToDebugConsole(value: string): Promise<void> {
@@ -167,8 +180,6 @@ export class MainThreadDebug implements IMainThreadDebug {
         debugSessionFactory: () => debugSessionFactory,
       }),
     ]);
-
-    this.debugSchemaUpdater.update();
   }
 
   async $unregisterDebuggerConfiguration(debugType: string): Promise<void> {
@@ -176,7 +187,6 @@ export class MainThreadDebug implements IMainThreadDebug {
     if (disposable) {
       disposable.dispose();
       this.toDispose.delete(debugType);
-      this.debugSchemaUpdater.update();
     }
   }
 

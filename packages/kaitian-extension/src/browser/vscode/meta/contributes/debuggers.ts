@@ -1,8 +1,8 @@
 import { VSCodeContributePoint, Contributes } from '../../../../common';
-import { DebuggerContribution } from '../../../../common/vscode/models';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IJSONSchema, IJSONSchemaSnippet, deepClone, localize } from '@ali/ide-core-common';
-import { IDebugService } from '@ali/ide-debug';
+import { IDebugService, IDebuggerContribution } from '@ali/ide-debug';
+import { DebugConfigurationManager, DebugSchemaUpdater } from '@ali/ide-debug/lib/browser';
 
 const INTERNAL_CONSOLE_OPTIONS_SCHEMA = {
   enum: ['neverOpen', 'openOnSessionStart', 'openOnFirstSessionStart'],
@@ -45,18 +45,29 @@ export interface DebuggersContributionScheme extends VSCodePlatformSpecificAdapt
 @Contributes('debuggers')
 export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersContributionScheme[]> {
   @Autowired(IDebugService)
-  debugService: IDebugService;
+  private debugService: IDebugService;
+
+  @Autowired(DebugConfigurationManager)
+  private debugConfigurationManager: DebugConfigurationManager;
+
+  @Autowired(DebugSchemaUpdater)
+  protected readonly debugSchemaUpdater: DebugSchemaUpdater;
 
   contribute() {
     this.debugService.registerDebugContributionPoints(this.extension.path, this.resolveDebuggers(this.json) as IJSONSchema[]);
+    this.debugSchemaUpdater.update();
   }
 
-  private resolveDebuggers(debuggersContributionPoints: DebuggersContributionScheme[]): DebuggerContribution[] {
-    return debuggersContributionPoints.map((debuggersContributionPoint) => this.doResolveDebuggers(debuggersContributionPoint));
+  private resolveDebuggers(debuggersContributionPoints: DebuggersContributionScheme[]): IDebuggerContribution[] {
+    return debuggersContributionPoints.map((debuggersContributionPoint) => {
+      const debuggers = this.doResolveDebuggers(debuggersContributionPoint);
+      this.debugConfigurationManager.registerDebugger(debuggers);
+      return debuggers;
+    });
   }
 
-  private doResolveDebuggers(debuggersContributionPoint: DebuggersContributionScheme): DebuggerContribution {
-    const result: DebuggerContribution = {
+  private doResolveDebuggers(debuggersContributionPoint: DebuggersContributionScheme): IDebuggerContribution {
+    const result: IDebuggerContribution = {
       type: debuggersContributionPoint.type,
       label: debuggersContributionPoint.label,
       languages: debuggersContributionPoint.languages,

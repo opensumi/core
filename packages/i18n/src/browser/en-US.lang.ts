@@ -182,6 +182,7 @@ export const localizationBundle = {
     'debug.configuration.comment1': 'Use IntelliSense to learn about possible attributes.',
     'debug.configuration.comment2': 'Hover to view descriptions of existing attributes.',
     'debug.configuration.comment3': 'For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
+    'debug.launch.existed': 'Debug configuration "{0}" is already running',
 
     'output.tabbar.title': 'OUTPUT',
     'output.channel.none': '<no output yet>',
@@ -224,6 +225,7 @@ export const localizationBundle = {
     'preference.debug.openDebug': 'Controls when the debug view should open.',
     'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
     'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
+    'preference.debug.allowBreakpointsEverywhere': 'Allow setting breakpoints in any file.',
 
     'preference.tab.name': 'Settings',
     'keymaps.tab.name': 'Keyboard Shortcuts',

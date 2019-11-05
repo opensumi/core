@@ -180,6 +180,7 @@ export const localizationBundle = {
     'debug.configuration.comment1': '使用 IntelliSense 了解相关属性。 ',
     'debug.configuration.comment2': '悬停以查看现有属性的描述。',
     'debug.configuration.comment3': '欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387',
+    'debug.launch.existed': '调试配置"{0}"已在运行',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
@@ -198,6 +199,7 @@ export const localizationBundle = {
     'preference.debug.openDebug': '控制何时打开调试视图。',
     'preference.debug.debugViewLocation': '控制调试视图的位置。',
     'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
+    'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
