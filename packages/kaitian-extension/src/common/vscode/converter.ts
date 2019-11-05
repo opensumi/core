@@ -203,12 +203,6 @@ export function fromDocumentHighlight(documentHighlight: vscode.DocumentHighligh
   } as model.DocumentHighlight;
 }
 
-function toArrayConversion<T, U>(f: (a: T) => U): (a: T[]) => U[] {
-  return (a: T[]) => {
-    return a.map(f);
-  };
-}
-
 export function convertDiagnosticToMarkerData(diagnostic: vscode.Diagnostic): IMarkerData {
   return {
     code: convertCode(diagnostic.code),
