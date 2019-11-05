@@ -217,6 +217,17 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   }
 
+  public getExtensions() {
+    return Array.from(this.extensionMap.values());
+  }
+
+  public async activateExtensionByExtPath(path: string) {
+    const extension = this.extensionMap.get(path);
+    if (extension) {
+      return extension.activate();
+    }
+  }
+
   public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
     const extensionMetadata = await this.extensionNodeService.getExtension(path, getPreferenceLanguageId());
     if (extensionMetadata) {
