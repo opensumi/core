@@ -109,6 +109,7 @@ export const localizationBundle = {
     'search.help.matchRange': '匹配的字符范围',
     'search.help.modify': '修改',
     'search.replace.buttonOK': '替换',
+    'search.replace.buttonCancel': '取消',
     'search.quickOpen.leftRight': '在侧边打开',
     'search.quickOpen.upDown': '在底部打开',
     'fileResults': '文件结果',
@@ -139,6 +140,7 @@ export const localizationBundle = {
     'scm.statusbar.repo': '当前仓库',
     'scm.provider.title': '代码仓库列表',
     'scm.provider.empty': '没有可用的源代码仓库',
+    'scm.provider.init': '点击初始化仓库',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
