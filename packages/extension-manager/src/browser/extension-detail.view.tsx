@@ -157,6 +157,10 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }
 
   const canUpdate = React.useMemo(() => {
+    // 内置插件不应该升级
+    if (currentExtension && currentExtension.isBuiltin) {
+      return false;
+    }
     return currentExtension && latestExtension && compareVersions(currentExtension.version, latestExtension.version) === -1;
   }, [currentExtension, latestExtension]);
 
