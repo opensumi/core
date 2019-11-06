@@ -24,6 +24,7 @@ import {
   VSCodeExtensionService,
   ExtHostAPIIdentifier,
   IMainThreadCommands,
+  isLanguagePackExtension,
 } from '../common/vscode';
 
 import {
@@ -438,9 +439,23 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   private async enableAvailableExtensions() {
-    await Promise.all(Array.from(this.extensionMap.values()).map((extension) => {
-      return extension.contributeIfEnabled();
-    }));
+    const extensions = Array.from(this.extensionMap.values());
+    const languagePackExtensions: Extension[] = [];
+    const normalExtensions: Extension[] = [];
+
+    for (const extension of extensions) {
+      if (isLanguagePackExtension(extension.packageJSON)) {
+        languagePackExtensions.push(extension);
+        continue;
+      } else {
+        normalExtensions.push(extension);
+        continue;
+      }
+    }
+
+    // 优先执行 languagePack 的 contribute
+    await Promise.all(languagePackExtensions.map((languagePack) => languagePack.contributeIfEnabled()));
+    await Promise.all(normalExtensions.map((extension) => extension.contributeIfEnabled()));
   }
 
   // FIXME: 临时处理组件激活

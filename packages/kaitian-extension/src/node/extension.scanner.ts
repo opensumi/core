@@ -64,14 +64,12 @@ export class ExtensionScanner {
     }
 
     const pkgPath = path.join(extensionPath, 'package.json');
-    let pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
+    const defaultPkgNlsPath = path.join(extensionPath, 'package.nls.json');
+    const pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
     const extendPath = path.join(extensionPath, 'kaitian.js');
     const pkgExist = await fs.pathExists(pkgPath);
-    let pkgNlsExist = await fs.pathExists(pkgNlsPath);
-    if (!pkgNlsExist && (localization && localization !== 'en-US')) {
-      pkgNlsPath = path.join(extensionPath, 'package.nls.json');
-      pkgNlsExist = await fs.pathExists(pkgNlsPath);
-    }
+    const defaultPkgNlsPathExist = await fs.pathExists(defaultPkgNlsPath);
+    const pkgNlsExist = await fs.pathExists(pkgNlsPath);
     const extendExist = await fs.pathExists(extendPath);
 
     let pkgCheckResult = pkgExist;
@@ -92,6 +90,11 @@ export class ExtensionScanner {
     let pkgNlsJSON: { [key: string]: string} | undefined;
     if (pkgNlsExist) {
       pkgNlsJSON = await fs.readJSON(pkgNlsPath);
+    }
+
+    let deafaultPkgNlsJSON: { [key: string]: string } | undefined;
+    if (defaultPkgNlsPathExist) {
+      deafaultPkgNlsJSON = await fs.readJSON(defaultPkgNlsPath);
     }
 
     if ( !(pkgCheckResult || extendCheckResult) ) {
@@ -135,6 +138,7 @@ export class ExtensionScanner {
       extendConfig,
       path: extensionPath,
       packageJSON,
+      deafaultPkgNlsJSON,
       packageNlsJSON: pkgNlsJSON,
       extraMetadata: extensionExtraMetaData,
       realPath: await fs.realpath(extensionPath),
