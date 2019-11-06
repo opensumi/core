@@ -29,6 +29,7 @@
     "@ali/ide-activity-panel": "1.4.4",
     "@ali/ide-core-browser": "1.4.4",
     "@ali/ide-dev-tool": "^1.1.0",
+    "@ali/ide-status-bar": "1.4.4",
     "@ali/ide-editor": "1.4.4",
     "@ali/ide-file-service": "1.4.4",
     "@ali/ide-main-layout": "1.4.4",

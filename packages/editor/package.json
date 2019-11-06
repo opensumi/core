@@ -27,6 +27,7 @@
     "@ali/vscode-jsonrpc": "^4.0.1",
     "@ali/ide-workspace": "1.4.4",
     "@ali/ide-overlay": "1.4.4",
+    "@ali/ide-file-service": "1.4.4",
     "md5": "^2.2.1"
   },
   "devDependencies": {
