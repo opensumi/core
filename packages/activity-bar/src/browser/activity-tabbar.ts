@@ -22,7 +22,7 @@ class SideTabRender extends TabBar.Renderer {
     // @ts-ignore
     if (data.title.badge && data.title.badge !== '0') {
       // @ts-ignore
-      return h.div({ className: 'p-TabBar-tabBadge' }, data.title.badge);
+      return h.div({ className: 'p-TabBar-tabBadge' }, h.div(data.title.badge));
     }
     return h.div({ className: 'p-TabBar-empty-badge' });
   }
@@ -96,5 +96,5 @@ export class ActivityTabBar extends TabBar<Widget> {
 
   }
 
-  renderer = this.side === 'bottom ' ? new SideTabRender() : new SideTabRender();
+  renderer = new SideTabRender();
 }

@@ -144,7 +144,7 @@ export class CommandQuickOpenItem extends QuickOpenGroupItem {
   }
 
   getDetail(): string | undefined {
-    return this.command.alias;
+    return this.command.label !== this.command.alias ? this.command.alias : undefined;
   }
 
   getKeybinding(): Keybinding | undefined {

@@ -33,7 +33,7 @@
     display: flex;
     .preferences_indexes {
       flex-shrink:0;
-      border-right:1px solid var(--editorGroup-border);
+      border-right:1px solid var(--editorGroupHeader-tabsBorder);
       .index_item {
         padding: 7px 45px 7px 15px;
         cursor: pointer;
@@ -47,8 +47,8 @@
           background-color: var(--list-hoverBackground);
         }
         &.activated {
-          color: var(--list-focusForeground);
-          background-color: var(--list-focusBackground);
+          color: var(--list-activeSelectionForeground);
+          background: var(--list-activeSelectionBackground);
         }
       }
     }

@@ -1,9 +1,9 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { PlatformSpecificAdapterContribution, DebuggerContribution } from '../../../../common/vscode/models';
 import { isWindows, isOSX } from '@ali/ide-core-node';
+import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@ali/ide-debug';
 
-export async function resolveDebugAdapterExecutable(pluginPath: string, debuggerContribution: DebuggerContribution): Promise<vscode.DebugAdapterExecutable | undefined> {
+export async function resolveDebugAdapterExecutable(pluginPath: string, debuggerContribution: IDebuggerContribution): Promise<vscode.DebugAdapterExecutable | undefined> {
   const info = toPlatformInfo(debuggerContribution);
   let program = (info && info.program || debuggerContribution.program);
   if (!program) {
@@ -24,7 +24,7 @@ export async function resolveDebugAdapterExecutable(pluginPath: string, debugger
   };
 }
 
-function toPlatformInfo(executable: DebuggerContribution): PlatformSpecificAdapterContribution | undefined {
+function toPlatformInfo(executable: IDebuggerContribution): IPlatformSpecificAdapterContribution | undefined {
   if (isWindows && !process.env.hasOwnProperty('PROCESSOR_ARCHITEW6432')) {
     return executable.winx86 || executable.win || executable.windows;
   }

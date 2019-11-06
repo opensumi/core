@@ -166,6 +166,7 @@ export const defaultSettingSections: {
     {
       preferences: [
         {id: 'editor.previewMode', localized: 'preference.editor.previewMode'},
+        {id: 'editor.askIfDiff', localized: 'preference.editor.askIfDiff' },
         {id: 'editor.fontFamily', localized: 'preference.editor.fontFamily'},
         {id: 'editor.fontWeight', localized: 'preference.editor.fontWeight'},
         {id: 'editor.fontSize', localized: 'preference.editor.fontSize'},
@@ -174,6 +175,7 @@ export const defaultSettingSections: {
         {id: 'editor.cursorStyle', localized: 'preference.editor.cursorStyle'},
         {id: 'editor.insertSpace', localized: 'preference.editor.insertSpace'},
         {id: 'editor.wordWrap', localized: 'preference.editor.wordWrap'},
+        {id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles'},
       ],
     },
   ],

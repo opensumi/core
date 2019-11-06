@@ -3,7 +3,7 @@ import { IEditorDocumentModelService } from './types';
 
 export interface IEditorDocumentModelServiceImpl extends IEditorDocumentModelService {
 
-  saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string): Promise<IEditorDocumentModelSaveResult>;
+  saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): Promise<IEditorDocumentModelSaveResult>;
 
 }
 
@@ -19,14 +19,15 @@ export class SaveTask {
     private uri: URI,
     public readonly versionId: number,
     public readonly alternativeVersionId: number,
-    public content: string) {
+    public content: string,
+    private ignoreDiff: boolean) {
 
   }
 
   async run(service: IEditorDocumentModelServiceImpl, baseContent: string, changes: IEditorDocumentChange[], encoding?: string): Promise<IEditorDocumentModelSaveResult> {
     this.started = true;
     try {
-      const res = await service.saveEditorDocumentModel(this.uri, this.content, baseContent, changes, encoding);
+      const res = await service.saveEditorDocumentModel(this.uri, this.content, baseContent, changes, encoding, this.ignoreDiff);
       this.deferred.resolve(res);
       return res;
     } catch (e) {

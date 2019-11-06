@@ -1,6 +1,6 @@
 import { createMockedMonacoEditorApi } from './editor';
 import { MockedMonacoUri } from './common/uri';
-import { createMockedMonacoLanguageApi } from './langauge';
+import { createMockedMonacoLanguageApi, mockFeatureProviderRegistry } from './langauge';
 import { createMockedMonacoRamgeApi } from './range';
 
 export function createMockedMonaco(): Partial<typeof monaco> {
@@ -9,6 +9,15 @@ export function createMockedMonaco(): Partial<typeof monaco> {
     languages: createMockedMonacoLanguageApi(),
     Uri: MockedMonacoUri as any,
     Range: createMockedMonacoRamgeApi(),
+    modes: {
+      // @ts-ignore
+      SelectionRangeRegistry: {
+        register(selector, provider) {
+          console.log('SelectionRangeRegistry noop');
+          mockFeatureProviderRegistry.set('registerSelectionRangeProvider', provider);
+        },
+      },
+    },
   };
 }
 

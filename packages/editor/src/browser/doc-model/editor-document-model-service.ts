@@ -131,7 +131,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       (async () => provider.isReadonly ? provider.isReadonly(uri) : undefined)(),
       (async () => provider.preferLanguageForUri ? provider.preferLanguageForUri(uri) : undefined)(),
       (async () => provider.provideEOL ? provider.provideEOL(uri) : undefined)(),
-    ]);
+    ] as const);
 
     const savable = !!provider.saveDocumentModel;
 
@@ -147,7 +147,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     return model;
   }
 
-  async saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string): Promise<IEditorDocumentModelSaveResult> {
+  async saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): Promise<IEditorDocumentModelSaveResult> {
     const provider = this.contentRegistry.getProvider(uri);
 
     if (!provider) {
@@ -157,7 +157,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       throw new Error(`${uri.toString()}的文档提供商不存在保存方法`);
     }
 
-    const result = await provider.saveDocumentModel(uri, content, baseContent, changes, encoding);
+    const result = await provider.saveDocumentModel(uri, content, baseContent, changes, encoding, ignoreDiff);
     return result;
   }
 }

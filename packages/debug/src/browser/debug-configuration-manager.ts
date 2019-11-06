@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { DebugServer, IDebugServer, DebugEditor } from '../common';
+import { DebugServer, IDebugServer, IDebuggerContribution, launchSchemaUri } from '../common';
 import { QuickPickService } from '@ali/ide-quick-open';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import {
@@ -24,10 +24,13 @@ import { DebugConfiguration } from '../common';
 import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspace-storage-service';
 import { WorkbenchEditorService, ICodeEditor, IEditor } from '@ali/ide-editor';
 import debounce = require('lodash.debounce');
-import { launchSchemaUri } from './debug-schema-updater';
+import { DebugPreferences } from './debug-preferences';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillProvideDebugConfiguration extends WaitUntilEvent {
+}
+// tslint:disable-next-line:no-empty-interface
+export interface WillInitialConfiguration extends WaitUntilEvent {
 }
 
 @Injectable()
@@ -35,10 +38,13 @@ export class DebugConfigurationManager {
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
+
   @Autowired(WorkbenchEditorService)
   protected readonly workbenchEditorService: WorkbenchEditorService;
+
   @Autowired(IDebugServer)
   protected readonly debug: DebugServer;
+
   @Autowired(QuickPickService)
   protected readonly quickPick: QuickPickService;
 
@@ -57,8 +63,19 @@ export class DebugConfigurationManager {
   @Autowired(WorkspaceVariableContribution)
   protected readonly workspaceVariables: WorkspaceVariableContribution;
 
+  @Autowired(WorkspaceStorageService)
+  protected readonly storage: WorkspaceStorageService;
+
   @Autowired(CommandService)
-  commandService: CommandService;
+  protected readonly commandService: CommandService;
+
+  @Autowired(DebugPreferences)
+  protected readonly debugPreferences: DebugPreferences;
+
+  // 用于存储支持断点的语言
+  private breakpointModeIdsSet = new Set<string>();
+  // 用于存储debugger信息
+  private debuggers: IDebuggerContribution[] = [];
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
@@ -151,6 +168,7 @@ export class DebugConfigurationManager {
   set current(option: DebugSessionOptions | undefined) {
     this.updateCurrent(option);
   }
+
   protected updateCurrent(options: DebugSessionOptions | undefined = this._currentOptions): void {
     this._currentOptions = options
       && this.find(options.configuration.name, options.workspaceFolderUri);
@@ -169,6 +187,7 @@ export class DebugConfigurationManager {
     this.debugConfigurationTypeKey.set(this.current && this.current.configuration.type);
     this.onDidChangeEmitter.fire(undefined);
   }
+
   find(name: string, workspaceFolderUri: string | undefined): DebugSessionOptions | undefined {
     for (const model of this.models.values()) {
       if (model.workspaceFolderUri === workspaceFolderUri) {
@@ -341,9 +360,6 @@ export class DebugConfigurationManager {
     );
   }
 
-  @Autowired(WorkspaceStorageService)
-  protected readonly storage: WorkspaceStorageService;
-
   async load(): Promise<void> {
     await this.initialized;
     const data = await this.storage.getData<DebugConfigurationManager.Data>('debug.configurations', {});
@@ -362,6 +378,53 @@ export class DebugConfigurationManager {
       };
     }
     this.storage.setData('debug.configurations', data);
+  }
+
+  /**
+   * 判断当前文档是否支持断点
+   * @param model
+   */
+  canSetBreakpointsIn(model?: any) {
+    if (!model) {
+      return false;
+    }
+    const modeId = model.getLanguageIdentifier().language;
+    if (!modeId || modeId === 'jsonc' || modeId === 'log') {
+      // 不允许在JSONC类型文件及log文件中断点
+      return false;
+    }
+    if (this.debugPreferences['preference.debug.allowBreakpointsEverywhere']) {
+      return true;
+    }
+    return this.breakpointModeIdsSet.has(modeId);
+  }
+
+  addSupportBreakpoints(languageId: string) {
+    this.breakpointModeIdsSet.add(languageId);
+  }
+
+  removeSupportBreakpoints(languageId: string) {
+    this.breakpointModeIdsSet.delete(languageId);
+  }
+
+  registerDebugger(debuggerContribution: IDebuggerContribution) {
+    if (debuggerContribution.type !== '*') {
+      const existing = this.getDebugger(debuggerContribution.type as string);
+      if (existing) {
+        // VSCode中会将插件贡献点根据isBuildIn进行覆盖式合并
+        return;
+      } else {
+        this.debuggers.push(debuggerContribution);
+      }
+    }
+  }
+
+  getDebugger(type: string): IDebuggerContribution | undefined {
+    return this.debuggers.filter((dbg) => dbg.type === type).pop();
+  }
+
+  getDebuggers(): IDebuggerContribution[] {
+    return this.debuggers;
   }
 }
 

@@ -36,6 +36,7 @@ import { MainThreadWindowState } from './main.thread.window-state';
 import { MainThreadDebug } from './main.thread.debug';
 import { MainThreadConnection } from './main.thread.connection';
 import { MainThreadTerminal } from './main.thread.terminal';
+import { MainThreadWindow } from './main.thread.window';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -61,6 +62,7 @@ export function createApiFactory(
   const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [rpcProtocol]);
   const MainThreadDecorationsAPI = injector.get(MainThreadDecorations, [rpcProtocol]);
   const MainThreadWindowStateAPI = injector.get(MainThreadWindowState, [rpcProtocol]);
+  const MainThreadWindowAPI = injector.get(MainThreadWindow, [rpcProtocol]);
   const MainThreadConnectionAPI = injector.get(MainThreadConnection, [rpcProtocol]);
   const MainThreadDebugAPI = injector.get(MainThreadDebug, [rpcProtocol, MainThreadConnectionAPI]);
   const MainThreadTerminalAPI = injector.get(MainThreadTerminal, [rpcProtocol]);
@@ -84,6 +86,7 @@ export function createApiFactory(
   rpcProtocol.set<MainThreadTreeView>(MainThreadAPIIdentifier.MainThreadTreeView, MainThreadTreeViewAPI);
   rpcProtocol.set<MainThreadDecorations>(MainThreadAPIIdentifier.MainThreadDecorations, MainThreadDecorationsAPI);
   rpcProtocol.set<MainThreadWindowState>(MainThreadAPIIdentifier.MainThreadWindowState, MainThreadWindowStateAPI);
+  rpcProtocol.set<MainThreadWindow>(MainThreadAPIIdentifier.MainThreadWindow, MainThreadWindowAPI);
   rpcProtocol.set<MainThreadConnection>(MainThreadAPIIdentifier.MainThreadConnection, MainThreadConnectionAPI);
   rpcProtocol.set<MainThreadDebug>(MainThreadAPIIdentifier.MainThreadDebug, MainThreadDebugAPI);
   rpcProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, MainThreadTerminalAPI);
@@ -107,6 +110,7 @@ export function createApiFactory(
     MainThreadTreeViewAPI.dispose();
     MainThreadDecorationsAPI.dispose();
     MainThreadWindowStateAPI.dispose();
+    MainThreadWindowAPI.dispose();
     MainThreadDebugAPI.dispose();
     MainThreadTerminalAPI.dispose();
   };

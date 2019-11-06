@@ -222,7 +222,7 @@ export class MonacoActionRegistry {
    * 需要添加的 Monaco 为包含的 action
    */
   protected static readonly ACTIONS: MonacoCommand[] = [
-    { id: SELECT_ALL_COMMAND, label: localize('selection.all'), type: MonacoCommandType.COMMAND },
+    { id: SELECT_ALL_COMMAND, label: '%selection.all%', type: MonacoCommandType.COMMAND },
   ];
 
   @Autowired()

@@ -4,32 +4,34 @@
   @clsx: extract(@antdMenuClx, @i);
 
   .@{clsx} {
-    padding: 3px 0px;
-    color: var(--menu-foreground);
-    font-size: 13px;
-    background-color: var(--menu-background);
-    border: none;
-    box-shadow: 0px 2px 4px #000000;
-    display: block;
-    border-radius: 0;
+    padding: 3px 0px !important;
+    color: var(--menu-foreground) !important;
+    font-size: 13px !important;
+    background-color: var(--menu-background)  !important;
+    border: none  !important;
+    box-shadow: 0px 2px 4px #000000 !important;
+    display: block !important;
+    border-radius: 0 !important;
 
     .@{clsx}-item {
       margin: 0 !important;
       padding: 4px !important;
-      cursor: default;
-      height: 26px;
-      display: flex;
-      align-items: center;
+      cursor: default !important;
+      height: 26px !important;
+      display: flex !important;
+      align-items: center !important;
+      color: inherit !important;
     }
 
     .@{clsx}-item-divider {
-      margin: 4px 10px;
-      pointer-events: none;
+      margin: 4px 0 !important;
+      pointer-events: none !important;
+      background: var(--menu-separatorBackground) !important;
     }
 
     .@{clsx}-item-active {
-      background: var(--menu-selectionBackground);
-      color: var(--menu-selectionForeground);
+      background: var(--menu-selectionBackground) !important;
+      color: var(--menu-selectionForeground) !important;
     }
   }
 

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { AccordionWidget } from '@ali/ide-core-browser/lib/layout';
 import Tabs from 'antd/lib/tabs';
 import 'antd/lib/tabs/style/index.less';
-import { useInjectable, localize, CommandRegistry } from '@ali/ide-core-browser';
+import { useInjectable, localize, CommandRegistry, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
 import { Widget } from '@phosphor/widgets';
 import { enableExtensionsContainerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromMarketplaceTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, IExtensionManagerService, hotExtensionsFromMarketplaceTarbarHandlerId, TabActiveKey, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionHotAccordion, ExtensionEnableAccordion, ExtensionDisableAccordion, ExtensionSearchInstalledAccordion, ExtensionSearchMarketplaceAccordion } from './extension-panel-accordion.view';
@@ -21,6 +21,8 @@ export default observer(() => {
   const [ installedAccordion, setInstalledAccordion ] = React.useState<AccordionWidget>();
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
+  const eventBus = useInjectable<IEventBus>(IEventBus);
+
   React.useEffect(() => {
     const marketAccordionInstance = injector.get(AccordionWidget, [enableExtensionsContainerId, [{
       component: ExtensionHotAccordion,
@@ -53,7 +55,26 @@ export default observer(() => {
     // 设置 accordion 只设置一次
     setMarketAccordion(marketAccordionInstance);
     setInstalledAccordion(installedAccordionInstance);
+
   }, []);
+
+  // 监听 resize 事件，重新渲染 list
+  React.useEffect(() => {
+    const disposer = eventBus.on(ResizeEvent, (event) => {
+      if (marketAccordion) {
+        marketAccordion.update();
+      }
+
+      if (installedAccordion) {
+        installedAccordion.update();
+      }
+    });
+
+    return () => {
+      disposer.dispose();
+    };
+
+  }, [marketAccordion, installedAccordion]);
 
   const hotExtensionSection = React.useMemo(() => {
     return marketAccordion && marketAccordion.sections.get(hotExtensionsFromMarketplaceTarbarHandlerId);
@@ -124,6 +145,13 @@ export default observer(() => {
       Widget.attach(installedAccordion, installedElement);
     }
   }, [installedAccordion, installedElement]);
+
+  React.useEffect(() => {
+    // resize accordion
+    if (extensionManagerService.isInit && marketAccordion) {
+      marketAccordion.update();
+    }
+  }, [marketAccordion, extensionManagerService.isInit]);
 
   React.useEffect(() => {
     // 默认要调用一次，不使用layout状态

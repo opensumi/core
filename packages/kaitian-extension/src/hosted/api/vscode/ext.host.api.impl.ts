@@ -2,7 +2,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind, VSCodeExtensionService } from '../../../common/vscode'; // '../../common';
 import { IExtensionHostService} from '../../../common';
-import { createWindowApiFactory } from './ext.host.window.api.impl';
+import { createWindowApiFactory, ExtHostWindow } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from './doc';
 import * as extTypes from '../../../common/vscode/ext-types';
@@ -88,6 +88,7 @@ export function createApiFactory(
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
+  const extHostWindow = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindow, new ExtHostWindow(rpcProtocol)) as ExtHostWindow;
   const extHostConnection = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostConnection, new ExtHostConnection(rpcProtocol)) as IExtHostConnectionService;
   const extHostDebug = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDebug, new ExtHostDebug(rpcProtocol, extHostConnection, extHostCommands)) as IExtHostDebugService;
   const extHostTerminal = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocol));
@@ -100,7 +101,7 @@ export function createApiFactory(
       window: createWindowApiFactory(
         extension, extHostEditors, extHostMessage, extHostWebview,
         extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,
-        extHostQuickOpen, extHostOutput, extHostTerminal,
+        extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow,
       ),
       languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),

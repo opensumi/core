@@ -6,6 +6,7 @@ import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor'
 import { runInAction } from 'mobx';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
+import { EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 
 type WorkspaceEdit = ResourceTextEdit | ResourceFileEdit;
 
@@ -201,49 +202,76 @@ export class ResourceFileEdit implements IResourceFileEdit {
     this.options = edit.options;
   }
 
+  async notifyEditor(editorService: WorkbenchEditorService, documentModelService: IEditorDocumentModelService) {
+    if (this.oldUri && this.newUri) {
+      const promises: Promise<any>[] = [];
+      const urisToDealWith: Set<string> = new Set();
+      editorService.editorGroups.forEach((g) => {
+        g.resources.forEach((r) => {
+          if (this.oldUri!.isEqualOrParent(r.uri)) {
+            urisToDealWith.add(r.uri.toString());
+          }
+        });
+      });
+      urisToDealWith.forEach((uriString) => {
+        const oldUri = new URI(uriString);
+        const subPath = uriString.substr(this.oldUri!.toString().length);
+        const newUri = new URI(this.newUri!.toString()! + subPath);
+        promises.push(this.notifyOnResource(oldUri, newUri, editorService, documentModelService));
+      });
+      return Promise.all(promises);
+    }
+  }
+
+  async notifyOnResource(oldUri: URI, newUri: URI, editorService: WorkbenchEditorService, documentModelService: IEditorDocumentModelService) {
+    const docRef = documentModelService.getModelReference(oldUri, 'bulk-file-move');
+    let dirtyContent: string | undefined;
+    let dirtyEOL: EOL | undefined;
+    if (docRef && docRef.instance.dirty) {
+      dirtyContent = docRef.instance.getText();
+      dirtyEOL = docRef.instance  .eol;
+      await docRef.instance.revert(true);
+    }
+    if (docRef) {
+      docRef.dispose();
+    }
+    // 如果之前的文件在编辑器中被打开，重新打开文件
+    await Promise.all([editorService.editorGroups.map(async (g) => {
+      const index = g.resources.findIndex((r) => r.uri.isEqual(oldUri));
+      if (index !== -1) {
+        await runInAction(async () => {
+          await g.open(newUri, {
+            index,
+            backend: !(g.currentResource && g.currentResource.uri.isEqual(oldUri)),
+            // 如果旧的是preview模式，应该保持，如果不是，应该不要关闭其他处于preview模式的资源tab
+            preview: (g as EditorGroup).previewURI ? (g as EditorGroup).previewURI!.isEqual(oldUri) : false,
+          });
+          await g.close(oldUri);
+        });
+      }
+    })]);
+
+    if (dirtyContent) {
+      const newDocRef = await documentModelService.createModelReference(newUri, 'bulk-file-move');
+      newDocRef.instance.updateContent(dirtyContent, dirtyEOL);
+      newDocRef.dispose();
+    }
+  }
+
   async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IEditorDocumentModelService, eventBus: IEventBus) {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
-      await fileSystemService.move(this.oldUri.toString(), this.newUri.toString(), options);
-      if (this.options.isDirectory) {
-        return;
-      }
       // rename
       if (options.overwrite === undefined && options.ignoreIfExists && await fileSystemService.exists(this.newUri.toString())) {
         return; // not overwriting, but ignoring, and the target file exists
       }
-      const docRef = documentModelService.getModelReference(this.oldUri, 'bulk-file-move');
-      let dirtyContent: string | undefined;
-      let dirtyEOL: EOL | undefined;
-      if (docRef && docRef.instance.dirty) {
-        dirtyContent = docRef.instance.getText();
-        dirtyEOL = docRef.instance.eol;
-        docRef.instance.revert();
-      }
-      if (docRef) {
-        docRef.dispose();
-      }
-      // 如果之前的文件在编辑器中被打开，重新打开文件
-      await Promise.all([editorService.editorGroups.map(async (g) => {
-        const index = g.resources.findIndex((r) => r.uri.isEqual(this.oldUri!));
-        if (index !== -1) {
-          await runInAction(async () => {
-            await g.open(this.newUri!, {
-              index,
-              backend: !(g.currentResource && g.currentResource.uri.isEqual(this.oldUri!)),
-            });
-            await g.close(this.oldUri!);
-          });
-        }
-      })]);
 
-      if (dirtyContent) {
-        const newDocRef = await documentModelService.createModelReference(this.newUri, 'bulk-file-move');
-        newDocRef.instance.updateContent(dirtyContent, dirtyEOL);
-        newDocRef.dispose();
-      }
+      await fileSystemService.move(this.oldUri.toString(), this.newUri.toString(), options);
 
+      await this.notifyEditor(editorService, documentModelService);
+
+      // TODO 文件夹rename应该带传染性, 但是遍历实现比较坑，先不实现
       eventBus.fire(new WorkspaceEditDidRenameFileEvent({ oldUri: this.oldUri, newUri: this.newUri }));
 
     } else if (!this.newUri && this.oldUri) {

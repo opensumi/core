@@ -9,7 +9,7 @@ import { ThemeStore } from './theme-store';
 import { Logger, getPreferenceThemeId, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import { Registry } from 'vscode-textmate';
 
-const DEFAULT_THEME_ID = 'ide-dark vscode-theme-defaults-themes-dark_plus-json';
+const DEFAULT_THEME_ID = 'ide-dark';
 // from vscode
 const colorIdPattern = '^\\w+[.\\w+]*$';
 
@@ -82,10 +82,13 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     if (this.currentThemeId === themeId) {
       return;
     }
+    const prevThemeType = this.currentTheme ? this.currentTheme.type : 'dark';
     this.currentThemeId = themeId;
     const theme = await this.getTheme(themeId);
     const themeType = getThemeType(theme.base);
     this.currentTheme = new Theme(themeType, theme);
+    const currentThemeType = this.currentTheme.type;
+    this.toggleBaseThemeClass(prevThemeType, currentThemeType);
     this.useUITheme(this.currentTheme);
     this.eventBus.fire(new ThemeChangedEvent({
       theme: this.currentTheme,
@@ -115,7 +118,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
   }
 
-  // 正常情况下请使用getCurrentTheme方法，当前主题未加载时，会使用默认的主题而不会主动激活主题
   public getCurrentThemeSync() {
     if (this.currentTheme) {
       return this.currentTheme;
@@ -145,7 +147,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return colorKey ? `var(--${colorKey.replace(/\./g, '-')})` : undefined;
   }
 
-  // TODO 前台缓存
   public getAvailableThemeInfos(): ThemeInfo[] {
     const themeInfos: ThemeInfo[] = [];
     for (const {contribution} of this.themeContributionRegistry.values()) {
@@ -253,12 +254,12 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       styleNode.innerHTML = cssVariables + '}';
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
-    this.toggleBaseThemeClass(getThemeTypeSelector(theme.type));
   }
 
-  protected toggleBaseThemeClass(themeSelector: string) {
-    const bodyNode = document.getElementsByTagName('body')[0];
-    bodyNode.classList.value = themeSelector;
+  protected toggleBaseThemeClass(prevThemeType: ThemeType, themeType: ThemeType) {
+    const htmlNode = document.getElementsByTagName('html')[0];
+    htmlNode.classList.remove(getThemeTypeSelector(prevThemeType));
+    htmlNode.classList.add(getThemeTypeSelector(themeType));
   }
 }
 

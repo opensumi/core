@@ -13,12 +13,12 @@ export interface IContextKeyService {
   onDidChangeContext: Event<ContextKeyChangeEvent>;
 
   createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
-  match(expression: string | IContextKeyExpr | undefined, context?: HTMLElement): boolean;
+  match(expression: string | IContextKeyExpr | undefined, context?: HTMLElement | null): boolean;
   getKeysInWhen(when: string | IContextKeyExpr | undefined): string[];
   getContextValue<T>(key: string): T | undefined;
 
   createScoped(domNode?: monaco.contextkey.IContextKeyServiceTarget): IContextKeyService;
-
+  parse(when: string | undefined): IContextKeyExpr | undefined;
   dispose(): void;
 }
 

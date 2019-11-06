@@ -3,6 +3,7 @@ import * as types from './ext-types';
 import { CancellationToken, MessageType, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-quick-open';
 import { Event } from '@ali/ide-core-common';
+import { UriComponents } from './ext-types';
 
 export interface IMainThreadMessage {
   $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<number | undefined>;
@@ -80,4 +81,23 @@ export interface IExtHostWindowState {
 
   onDidChangeWindowState: Event<types.WindowState>;
 
+}
+
+export interface IExtHostWindow {
+  $onOpenDialogResult(id: string, result: UriComponents[] | undefined): void;
+}
+
+export interface IMainThreadWindow {
+  $showOpenDialog(id: string, options: IExtOpenDialogOptions ): void;
+}
+
+export interface IExtOpenDialogOptions {
+  canSelectFiles?: boolean;
+  canSelectFolders?: boolean;
+  canSelectMany?: boolean;
+  defaultUri?: UriComponents;
+  filters?: {
+    [name: string]: string,
+  };
+  openLabel?: string;
 }

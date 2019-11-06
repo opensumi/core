@@ -1,4 +1,5 @@
 import { Event } from './event';
+import { isUndefined } from './utils';
 
 export enum LogLevel {
   Verbose,
@@ -187,7 +188,7 @@ export interface IDebugLog {
 * @class DebugLog
 * @implements {IDebugLog}
 */
-const isNode = typeof process !== undefined && process.release;
+const isNode = !isUndefined(process) && process.release;
 const isChrome = !isNode && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 export class DebugLog implements IDebugLog {
   private namespace: string;
@@ -195,7 +196,7 @@ export class DebugLog implements IDebugLog {
 
   constructor(namespace?: string) {
 
-    if (typeof process !== undefined &&
+    if (!isUndefined(process) &&
       process.env &&
       process.env.KTLOG_SHOW_DEBUG) {
       this.isEnable = true;

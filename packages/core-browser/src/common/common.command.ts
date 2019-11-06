@@ -112,12 +112,12 @@ export namespace COMMON_COMMANDS {
 
   export const OPEN_PREFERENCES: Command = {
     id: 'core.openpreference',
-    label: localize('common.preference.open'),
+    label: '%common.preference.open%',
   };
 
   export const OPEN_KEYMAPS: Command = {
     id: 'core.keymaps.open',
-    label: localize('common.keymaps.open'),
+    label: '%common.keymaps.open%',
   };
 }
 

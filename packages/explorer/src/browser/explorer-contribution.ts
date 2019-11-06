@@ -49,7 +49,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     commands.registerCommand(EXPLORER_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
         const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
-        if (!handler || !handler.isVisible) {
+        if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
           return;
         }
         let locationUri = uri;

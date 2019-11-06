@@ -1,8 +1,8 @@
 import { Injector } from '@ali/common-di';
 import { PreferenceService, PreferenceProxy, createPreferenceProxy, PreferenceSchema, localize } from '@ali/ide-core-browser';
 
-// 这里都是 scm 相关颜色变量注册
-/* istanbul ignore next */
+// 这里都是 scm 相关配置项注册
+/* istanbul ignore file */
 export const scmPreferenceSchema: PreferenceSchema = {
   id: 'scm',
   order: 5,

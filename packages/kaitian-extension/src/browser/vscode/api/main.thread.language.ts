@@ -131,7 +131,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         }
         return {
           suggestions: result.items,
-          incomplete: result.incomplete,
+          incomplete: result.isIncomplete,
           // TODO dispose support
           // tslint:disable-next-line:no-any
           dispose: () => this.proxy.$releaseCompletionItems(handle, (result as any)._id),
@@ -354,7 +354,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
               highlights.push(
                 {
                   ...item,
-                  kind: (item.kind ? item.kind : monaco.languages.DocumentHighlightKind.Text),
+                  kind: (item.kind !== undefined ? item.kind : monaco.languages.DocumentHighlightKind.Text),
                 });
             }
             return highlights;
@@ -665,8 +665,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   protected createDocumentSymbolProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentSymbolProvider {
     return {
-      provideDocumentSymbols: (model, token) =>
-        this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => v!),
+      provideDocumentSymbols: (model, token) => {
+        return this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => v!);
+      },
     };
   }
 
@@ -726,7 +727,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  // -- smart select
+  // TODO 新版的monaco有直接的monaco api -- smart select
 
   $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
     // @ts-ignore

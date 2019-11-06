@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelContentProvider, IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, IFileSchemeDocNodeService, FileSchemeDocNodeServicePath, FILE_SAVE_BY_CHANGE_THRESHOLD } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, IEditorDocumentEditChange, ISchemaStore, DisposableStore, IDisposable, Disposable, ISchemaRegistry } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, IEditorDocumentEditChange, CorePreferences, ISchemaStore, DisposableStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
 import * as md5 from 'md5';
 
@@ -20,6 +20,9 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
 
   @Autowired(FileSchemeDocNodeServicePath)
   fileDocBackendService: IFileSchemeDocNodeService;
+
+  @Autowired(CorePreferences)
+  protected readonly corePreferences: CorePreferences;
 
   constructor() {
     this.fileServiceClient.onFilesChanged((changes) => {
@@ -50,22 +53,30 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   }
 
   isReadonly(uri: URI): boolean {
+    const readonlyFiles: string[] = this.corePreferences['editor.readonlyFiles'];
+    if (readonlyFiles && readonlyFiles.length) {
+      for (const file of readonlyFiles) {
+        if (uri.isEqual(URI.file(file)) || uri.matchGlobPattern(file) || uri.toString().endsWith(file.replace('./', ''))) {
+          return true;
+        }
+      }
+    }
     return false;
   }
 
-  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string): Promise<IEditorDocumentModelSaveResult> {
+  async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false): Promise<IEditorDocumentModelSaveResult> {
     // TODO
     const baseMd5 = md5(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
       return this.fileDocBackendService.$saveByChange(uri.toString(), {
         baseMd5,
         changes,
-      }, encoding);
+      }, encoding, ignoreDiff);
     } else {
       return await this.fileDocBackendService.$saveByContent(uri.toString(), {
         baseMd5,
         content,
-      }, encoding);
+      }, encoding, ignoreDiff);
     }
   }
 
@@ -125,7 +136,7 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
 
   async provideEditorDocumentModelContent(uri: URI, encoding) {
     const content = this.getSchemaContent(uri);
-    return content;
+    return replaceLocalizePlaceholder(content)!;
   }
 
   protected getSchemaContent(uri: URI): string {

@@ -77,7 +77,7 @@ export const Search = observer(({
       width: searchOptionRef.current && searchOptionRef.current.clientWidth || 0,
       height: searchOptionRef.current && searchOptionRef.current.clientHeight || 0,
     });
-  }, [UIState]);
+  }, [UIState, searchOptionRef.current, searchResults.size > 0]);
 
   const collapsePanelContainerStyle = {
     width: viewState.width,

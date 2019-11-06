@@ -351,7 +351,7 @@ export class TextmateService extends WithEventBus {
         wordPattern: this.createRegex(configuration.wordPattern),
         autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
         brackets: this.extractValidBrackets(language.id, configuration),
-        comments: this.extractValidCommentRule(language.id, configuration.comments),
+        comments: this.extractValidCommentRule(language.id, configuration),
         folding: this.convertFolding(configuration.folding),
         surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
         indentationRules: this.convertIndentationRules(configuration.indentationRules),

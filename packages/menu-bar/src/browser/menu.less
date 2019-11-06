@@ -8,7 +8,7 @@ body {
     font-size: @kt-ui-font-size1;
     background-color: var(--menu-background);
     border: none;
-    box-shadow: 0px 2px 4px rgb(0, 0, 0);
+    box-shadow: var(--widget-shadow);
     display: block;
   }
 
@@ -45,6 +45,7 @@ body {
     padding: 4px 0px;
     justify-content: right;
     flex-grow: 1;
+    color: var(--kt-menu-descriptionForeground);
   }
 
 
@@ -62,7 +63,6 @@ body {
 
   .p-Menu-item[data-type='separator'] {
     display: block;
-    padding: 0 10px;
   }
 
 
