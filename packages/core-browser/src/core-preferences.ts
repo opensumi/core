@@ -154,6 +154,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.wordWrapColumn,
       description: '%editor.configuration.wordWrapColumn%',
     },
+    'editor.readonlyFiles': {
+      type: 'array',
+      default: [],
+      description: '%editor.configuration.readonlyFiles%',
+    },
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,

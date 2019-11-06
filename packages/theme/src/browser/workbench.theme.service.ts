@@ -82,10 +82,13 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     if (this.currentThemeId === themeId) {
       return;
     }
+    const prevThemeType = this.currentTheme ? this.currentTheme.type : 'dark';
     this.currentThemeId = themeId;
     const theme = await this.getTheme(themeId);
     const themeType = getThemeType(theme.base);
     this.currentTheme = new Theme(themeType, theme);
+    const currentThemeType = this.currentTheme.type;
+    this.toggleBaseThemeClass(prevThemeType, currentThemeType);
     this.useUITheme(this.currentTheme);
     this.eventBus.fire(new ThemeChangedEvent({
       theme: this.currentTheme,
@@ -251,13 +254,12 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       styleNode.innerHTML = cssVariables + '}';
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
-    this.toggleBaseThemeClass(getThemeTypeSelector(theme.type));
   }
 
-  // 会替换掉html节点
-  protected toggleBaseThemeClass(themeSelector: string) {
+  protected toggleBaseThemeClass(prevThemeType: ThemeType, themeType: ThemeType) {
     const htmlNode = document.getElementsByTagName('html')[0];
-    htmlNode.classList.value = themeSelector;
+    htmlNode.classList.remove(getThemeTypeSelector(prevThemeType));
+    htmlNode.classList.add(getThemeTypeSelector(themeType));
   }
 }
 
