@@ -11,6 +11,8 @@ export const OutLineTree = observer(({
   const outlineService = useInjectable<OutLineService>(OutLineService);
   const {
     treeNodes,
+    handleTwistieClick,
+    onSelect,
   } = outlineService;
   return (
     <RecycleTree
@@ -19,6 +21,8 @@ export const OutLineTree = observer(({
         ...viewState,
       }}
       containerHeight={viewState.height}
+      onTwistieClick={handleTwistieClick}
+      onSelect={onSelect}
     >
     </RecycleTree>
   );

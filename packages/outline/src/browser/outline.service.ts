@@ -4,6 +4,11 @@ import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol } from 
 import { observable } from 'mobx';
 import { getSymbolIcon } from '@ali/ide-core-browser/lib/icon';
 
+export interface NodeStatus {
+  selected?: boolean;
+  expanded?: boolean;
+}
+
 // TODO 点击事件，展开状态，父子关系
 @Injectable()
 export class OutLineService extends WithEventBus {
@@ -12,17 +17,40 @@ export class OutLineService extends WithEventBus {
 
   @observable.ref treeNodes: TreeSymbol[] = [];
 
+  // 状态存储
+  private statusMap: Map<string, NodeStatus> = new Map();
+
   @OnEvent(DocumentSymbolChangedEvent)
   onDocumentSymbolChange(e: DocumentSymbolChangedEvent) {
     const symbols = this.documentSymbolStore.getDocumentSymbol(e.payload);
     if (symbols) {
       const nodes: TreeSymbol[] = [];
       createTreeNodesFromSymbolTreeDeep({ children: symbols } as TreeSymbol, -1, nodes);
-      this.treeNodes = nodes;
-      console.log(this.treeNodes);
+      this.treeNodes = nodes.map((node) => {
+        const symbolId = e.payload + node.name;
+        let status = this.statusMap.get(symbolId);
+        if (!status) {
+          status = {
+            selected: false,
+            expanded: node.children && node.children.length > 0 ? true : undefined,
+          };
+          this.statusMap.set(symbolId, status);
+        }
+        return {
+          ...node,
+          ...status,
+        };
+      });
     }
   }
 
+  handleTwistieClick(node: TreeSymbol) {
+    console.log(node);
+  }
+
+  onSelect(node: TreeSymbol) {
+    console.log(node);
+  }
 }
 
 // 将 SymbolTree 打平成 TreeNodeList
