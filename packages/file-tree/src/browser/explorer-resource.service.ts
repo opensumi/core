@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
-import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
-import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
+import * as styles from './index.module.less';
+import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
@@ -28,7 +27,7 @@ import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
 import { ExplorerFolderContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
-import { CSSProperties } from 'react';
+import { IFileTreeItemRendered, CONTEXT_MENU } from './file-tree.view';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();

@@ -41,7 +41,7 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
       id: ExplorerOpenedEditorViewId,
       name: 'OPEN EDITORS',
       weight: 1,
-      priority: 3,
+      priority: 10,
       collapsed: true,
       component: ExplorerOpenEditorPanel,
     }, ExplorerContainerId);
