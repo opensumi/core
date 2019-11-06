@@ -12,12 +12,12 @@ import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { AppConfig, ConfigProvider } from '@ali/ide-core-browser';
 import { getOctIcon } from '@ali/ide-core-browser/lib/icon';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { SCMService, ISCMRepository, scmResourceViewId, scmContainerId, scmProviderViewId } from '../common';
 import { getSCMRepositoryDesc } from './scm-util';
 import { SCMMenus } from './scm-menu';
 import { ISCMProvider } from '../common';
-import { InlineActionBar } from '../../../core-browser/src/components/actions';
 
 // 更新 ActivityBar 中 SCM 模块边的数字
 @Injectable()
