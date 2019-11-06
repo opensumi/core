@@ -16,8 +16,15 @@ const logger = getLogger();
 
 export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string, onReconnect: () => void, protocols?: string[]) {
   const statusBarService = injector.get(IStatusBarService);
-  const wsChannelHandler = new WSChanneHandler(wsPath, statusBarService, protocols);
+  const wsChannelHandler = new WSChanneHandler(wsPath, protocols);
+  wsChannelHandler.connection.addEventListener('open', () => {
+    statusBarService.setBackgroundColor('var(--statusBar-background)');
+  });
+  wsChannelHandler.connection.addEventListener('close', () => {
+    statusBarService.setBackgroundColor('#ff0000');
+  });
   await wsChannelHandler.initHandler();
+
   injector.addProviders({
     token: WSChanneHandler,
     useValue: wsChannelHandler,

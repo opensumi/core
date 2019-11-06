@@ -151,6 +151,12 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const SAVE_URI: Command = {
+    id: 'editor.saveUri',
+    category: CATEGORY,
+    label: '%editor.saveUri%',
+  };
+
   export const SAVE_CURRENT: Command = {
     id: 'editor.saveCurrent',
     category: CATEGORY,

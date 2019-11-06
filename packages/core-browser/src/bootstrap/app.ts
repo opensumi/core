@@ -37,6 +37,7 @@ import { renderClientApp } from './app.view';
 import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
+import { MenuRegistry, IMenuRegistry } from '../menu/next';
 
 const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_e2ikewyk1kq.css';
 
@@ -103,6 +104,8 @@ export class ClientApp implements IClientApp {
   commandRegistry: CommandRegistry;
 
   menuRegistry: MenuModelRegistry;
+
+  nextMenuRegistry: MenuRegistry;
 
   stateService: ClientAppStateService;
 
@@ -204,8 +207,9 @@ export class ClientApp implements IClientApp {
     this.commandRegistry = this.injector.get(CommandRegistry);
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
-    this.menuRegistry = this.injector.get(MenuModelRegistry);
     this.stateService = this.injector.get(ClientAppStateService);
+    this.menuRegistry = this.injector.get(MenuModelRegistry);
+    this.nextMenuRegistry = this.injector.get(IMenuRegistry);
   }
 
   private createBrowserModules(opts: IClientAppOpts) {
@@ -273,6 +277,7 @@ export class ClientApp implements IClientApp {
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
     this.menuRegistry.onStart();
+    this.nextMenuRegistry.onStart();
 
     for (const contribution of this.contributions) {
       if (contribution.onStart) {

@@ -117,10 +117,10 @@ export interface ResolvedKeybinding extends Keybinding {
    * KeyboardLayoutService会根据用户的键盘布局来转换keybinding得到最终在UI中使用的值
    * 如果尚未调用KeyboardLayoutService来解析键绑定，则该值为unfedined。
    */
-  resolved?: KeyCode[];
+  resolved?: KeySequence;
 }
 
-export interface ScopedKeybinding extends Keybinding {
+export interface ScopedKeybinding extends ResolvedKeybinding {
   scope?: KeybindingScope;
 }
 
@@ -179,7 +179,7 @@ export interface KeybindingService {
   /**
    * 清空键盘事件队列
    */
-  clearCovert(): void;
+  clearConvert(): void;
 }
 
 @Injectable()
@@ -277,7 +277,7 @@ export class KeybindingServiceImpl implements KeybindingService {
   /**
    * 清空键盘事件队列
    */
-  clearCovert() {
+  clearConvert() {
     this.convertKeySequence = [];
   }
 

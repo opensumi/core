@@ -1,15 +1,18 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands, ArgumentProcessor } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@ali/ide-core-browser';
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { fromPosition } from '../../../common/vscode/converter';
+import { URI, isNonEmptyArray } from '@ali/ide-core-common';
 
 @Injectable({multiple: true})
 export class MainThreadCommands implements IMainThreadCommands {
   private readonly proxy: IExtHostCommands;
 
   private readonly commands = new Map<string, IDisposable>();
+
+  protected readonly argumentProcessors: ArgumentProcessor[] = [];
 
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
@@ -27,6 +30,29 @@ export class MainThreadCommands implements IMainThreadCommands {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
     this.proxy.$registerBuiltInCommands();
 
+    this.registerUriArgProcessor();
+  }
+
+  private registerUriArgProcessor() {
+    this.registerArgumentProcessor({
+      processArgument: (arg: any) => {
+        if (arg instanceof URI) {
+          return (arg as URI).codeUri;
+        }
+
+        // 数组参数的处理
+        if (isNonEmptyArray(arg)) {
+          return arg.map((item) => {
+            if (item instanceof URI) {
+              return (item as URI).codeUri;
+            }
+            return item;
+          });
+        }
+
+        return arg;
+      },
+    });
   }
 
   dispose() {
@@ -36,6 +62,10 @@ export class MainThreadCommands implements IMainThreadCommands {
     this.commands.clear();
   }
 
+  registerArgumentProcessor(processor: ArgumentProcessor): void {
+    this.argumentProcessors.push(processor);
+  }
+
   $registerCommand(id: string): void {
     // this.logger.log('$registerCommand id', id);
     const proxy = this.proxy;
@@ -43,6 +73,7 @@ export class MainThreadCommands implements IMainThreadCommands {
       id,
     }, {
       execute: (...args) => {
+        args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
         return proxy.$executeContributedCommand(id, ...args);
       },
     }));

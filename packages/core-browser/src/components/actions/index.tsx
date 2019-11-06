@@ -1,16 +1,18 @@
 import * as React from 'react';
-import { Dropdown, Menu } from 'antd';
+import { Menu } from 'antd';
+import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
 import { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 import 'antd/lib/dropdown/style/index.less';
 
-import { MenuNode } from '../../menu/next/base';
-import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
+import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator } from '../../menu/next';
 import Icon from '../icon';
+import { getIcon } from '../../icon';
+import { useInjectable } from '../../react-hooks';
+import { useMenus } from '../../utils';
 
 import * as styles from './styles.module.less';
-import { getIcon } from '../../icon';
 
 const MenuAction: React.FC<{
   data: MenuNode;
@@ -20,11 +22,15 @@ const MenuAction: React.FC<{
       <div className={styles.icon}>
         { data.icon && <Icon iconClass={data.icon} /> }
       </div>
-      {data.label}
-      <div className={styles.shortcut}>{data.shortcut}</div>
-      <div className={styles.submenuIcon}>
-        {/* need a arrow right here */}
-      </div>
+      <div className={styles.label}>{mnemonicButtonLabel(data.label, true)}</div>
+      {
+        data.keybinding
+          ? <div className={styles.shortcut}>{data.keybinding}</div>
+          : null
+      }
+      {/* <div className={styles.submenuIcon}>
+        <Icon iconClass={getIcon('right')} />
+      </div> */}
     </>
   );
 };
@@ -35,8 +41,8 @@ const MenuAction: React.FC<{
 export const MenuActionList: React.FC<{
   data: MenuNode[];
   onClick?: (item: MenuNode) => void;
-  context?: any;
-}> = ({ data = [], context, onClick }) => {
+  context?: any[];
+}> = ({ data = [], context = [], onClick }) => {
   const handleClick = React.useCallback(({ key }: ClickParam) => {
     // do nothing when click separator node
     if (key === SeparatorMenuItemNode.ID) {
@@ -63,7 +69,7 @@ export const MenuActionList: React.FC<{
             return <Menu.Divider key={`divider-${index}`} />;
           }
           return (
-            <Menu.Item key={menuNode.id}>
+            <Menu.Item key={menuNode.id} disabled={menuNode.disabled}>
               <MenuAction key={menuNode.id} data={menuNode} />
             </Menu.Item>
           );
@@ -75,8 +81,8 @@ export const MenuActionList: React.FC<{
 
 const IconAction: React.FC<{
   data: MenuNode;
-  context?: any;
-} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context, ...restProps }) => {
+  context?: any[];
+} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context = [], ...restProps }) => {
   const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -101,8 +107,21 @@ const IconAction: React.FC<{
 export const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
-  context?: any;
-}> = ({ nav: primary = [], more: secondary = [], context }) => {
+  context?: any[];
+}> = ({ nav: primary = [], more: secondary = [], context = [] }) => {
+  const ctxMenuRenderer = useInjectable(ICtxMenuRenderer);
+
+  const handleShowMore = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
+    if (secondary) {
+      ctxMenuRenderer.show({
+        anchor: { x: e.clientX, y: e.clientY },
+        // 合并结果
+        menuNodes: secondary,
+        context,
+      });
+    }
+  }, [ secondary, context ]);
+
   return (
     <div className={styles.titleActions}>
       {
@@ -116,13 +135,54 @@ export const TitleActionList: React.FC<{
       }
       {
         secondary.length > 0
+          ? <span
+            className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`}
+            onClick={handleShowMore} />
+          : null
+      }
+      {/* {
+        secondary.length > 0
           ? <Dropdown
+            transitionName=''
             trigger={['click']}
             overlay={<MenuActionList data={secondary} context={context} />}>
             <span className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`} />
           </Dropdown>
           : null
-      }
+      } */}
     </div>
   );
 };
+
+type TupleContext<T, U, K, M> = (
+  M extends undefined
+  ? K extends undefined
+    ? U extends undefined
+      ? T extends undefined
+        ? []
+        : [T]
+      : [T, U]
+    : [T, U, K]
+  : [T, U, K, M]
+);
+
+export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(props: {
+  context?: TupleContext<T, U, K, M>;
+  menus: IMenu;
+  seperator?: MenuSeparator;
+}): React.ReactElement<{
+  context?: TupleContext<T, U, K, M>;
+  menus: IMenu;
+  seperator?: MenuSeparator;
+}> {
+  const { menus, context, seperator } = props;
+  const [navMenu, moreMenu] = useMenus(menus, seperator);
+
+  // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
+  return (
+    <TitleActionList
+      nav={navMenu}
+      more={seperator === 'inline' ? [] : moreMenu}
+      context={context} />
+  );
+}

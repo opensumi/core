@@ -1,4 +1,4 @@
-import { Emitter, WithEventBus, OnEvent, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { Emitter, WithEventBus, OnEvent, EDITOR_COMMANDS, formatLocalize, uuid } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup, WorkbenchEditorService, ResourceDecorationChangeEvent, IResourceDecorationChangeEventPayload } from '@ali/ide-editor';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent } from '@ali/ide-editor/lib/browser';
@@ -6,8 +6,6 @@ import { TreeNode } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 
 export type OpenedEditorData = IEditorGroup | IResource;
-
-let id = 0;
 
 export interface IOpenEditorStatus {
   [key: string]: {
@@ -94,7 +92,7 @@ export function isEditorGroup(data: OpenedEditorData): data is IEditorGroup {
 }
 
 export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> {
-  public id: number;
+  public id: string;
 
   constructor(
     private resource: IResource,
@@ -102,7 +100,7 @@ export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> 
     public depth: number,
     public roots: FileStat[],
   ) {
-    this.id = id++;
+    this.id = uuid();
   }
 
   get parent() {
@@ -151,14 +149,14 @@ export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> 
 
 export class EditorGroupTreeItem {
 
-  public id: number;
+  public id: number | string;
 
   constructor(
     public readonly group: IEditorGroup,
     public order: number,
     public depth: number,
   ) {
-    this.id = id++;
+    this.id = this.group.index;
   }
 
   get label() {
@@ -166,7 +164,7 @@ export class EditorGroupTreeItem {
   }
 
   get name() {
-    return 'Group ' + (this.group.index + 1);
+    return formatLocalize('open.editors.group.title', this.group.index + 1);
   }
 
   get icon() {

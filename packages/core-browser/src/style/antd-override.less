@@ -7,26 +7,29 @@
     padding: 3px 0px !important;
     color: var(--menu-foreground) !important;
     font-size: 13px !important;
-    background-color: var(--menu-background)  !important;
-    border: none  !important;
+    background-color: var(--menu-background) !important;
+    border: none !important;
     box-shadow: 0px 2px 4px #000000 !important;
     display: block !important;
     border-radius: 0 !important;
 
     .@{clsx}-item {
       margin: 0 !important;
-      padding: 4px !important;
-      cursor: default !important;
+      padding: 4px 8px 4px 4px !important;
       height: 26px !important;
       display: flex !important;
       align-items: center !important;
       color: inherit !important;
     }
 
+    .@{clsx}-item:not(.@{clsx}-item-disabled) {
+      cursor: default !important;
+    }
+
     .@{clsx}-item-divider {
       margin: 4px 0 !important;
       pointer-events: none !important;
-      background: var(--menu-separatorBackground) !important;
+      background-color: var(--menu-separatorBackground) !important;
     }
 
     .@{clsx}-item-active {
