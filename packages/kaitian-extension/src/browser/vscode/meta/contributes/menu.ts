@@ -311,7 +311,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           }
         }
 
-        this.addDispose(this.newMenuRegistry.appendMenuItem(
+        this.addDispose(this.newMenuRegistry.registerMenuItem(
           menuId,
           {
             command,

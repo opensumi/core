@@ -124,7 +124,7 @@ export const SCMResouceList: React.FC<{
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes: ctxmenuActions,
-      context: isSCMResource(item) ? file.resourceState : repository.provider.toJSON(),
+      context: [ isSCMResource(item) ? file.resourceState : repository.provider.toJSON() ],
     });
   }, []);
 

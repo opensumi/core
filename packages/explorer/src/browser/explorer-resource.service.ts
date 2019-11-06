@@ -28,9 +28,7 @@ import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
 import { ExplorerFolderContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
-import { IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
-import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
-import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
+import { IMenu, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -415,19 +413,16 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
     // this.contextMenuRenderer.render(CONTEXT_MENU, data);
 
-    const menu = this.filetreeService.contributedContextMenu;
-    const groups = menu.getMenuNodes({
-      arg: uris[0],
-    });
-    const result = splitMenuItems(groups);
+    const menus = this.filetreeService.contributedContextMenu;
+    const result = generateCtxMenu({ menus });
 
-    menu.dispose();
+    menus.dispose();
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       // 合并结果
       menuNodes: [...result[0], ...result[1]],
-      context: uris,
+      context: [ uris[0], uris ],
     });
   }
 

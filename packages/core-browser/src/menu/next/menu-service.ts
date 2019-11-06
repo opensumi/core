@@ -9,7 +9,7 @@ import { MenuId } from './menu-id';
 import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
 
 export interface IMenuNodeOptions {
-  arg?: any; // 固定参数从这里传入
+  args?: any[]; // 固定参数可从这里传入
 }
 
 export interface IMenu extends IDisposable {
@@ -77,14 +77,11 @@ export class MenuItemNode extends MenuNode {
     this.item = command;
   }
 
-  execute(...args: any[]): Promise<any> {
-    let runArgs: any[] = [];
-
-    if (this._options.arg) {
-      runArgs = [...runArgs, this._options.arg];
-    }
-
-    runArgs = [...runArgs, ...args];
+  execute(args?: any[]): Promise<any> {
+    const runArgs = [
+      ...(this._options.args || []),
+      ...(args || []),
+    ];
 
     return this.commandService.executeCommand(this.item.id, ...runArgs);
   }
@@ -202,7 +199,7 @@ class Menu extends Disposable implements IMenu {
     return this._onDidChange.event;
   }
 
-  getMenuNodes(options: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
+  getMenuNodes(options: IMenuNodeOptions = {}): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
     const result: [string, Array<MenuItemNode | SubmenuItemNode>][] = [];
     for (const group of this._menuGroups) {
       const [id, items] = group;
@@ -211,8 +208,9 @@ class Menu extends Disposable implements IMenu {
         if (this.contextKeyService.match(item.when)) {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
-            if (this.commandRegistry.isVisible(item.command.id)) {
-              const disabled = !this.commandRegistry.isEnabled(item.command.id);
+            const { args = [] } = options;
+            if (this.commandRegistry.isVisible(item.command.id, ...args)) {
+              const disabled = !this.commandRegistry.isEnabled(item.command.id, ...args);
               const action = this.injector.get(MenuItemNode, [item.command, options, disabled, item.nativeRole]);
               activeActions.push(action);
             }

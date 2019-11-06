@@ -9,3 +9,4 @@ export * from './popover';
 export * from './recycle-list';
 export * from './list';
 export * from './button';
+export { default as Icon } from './icon';

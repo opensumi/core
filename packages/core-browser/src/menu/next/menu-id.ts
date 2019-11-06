@@ -44,4 +44,5 @@ export const enum MenuId {
   CommentTitle,
   CommentActions,
   GlobalActivity,
+  ExtensionContext, // 插件市场 item
 }
