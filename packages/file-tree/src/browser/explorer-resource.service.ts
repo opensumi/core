@@ -25,7 +25,7 @@ import {
 } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
-import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
+import { Directory, File } from './file-tree-item';
 import { ExplorerFolderContext, ExplorerFocusedContext, FilesExplorerFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { IFileTreeItemRendered, CONTEXT_MENU } from './file-tree.view';
 

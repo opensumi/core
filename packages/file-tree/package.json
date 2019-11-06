@@ -31,6 +31,7 @@
     "@ali/ide-core-browser": "1.4.1",
     "@ali/ide-dev-tool": "^1.1.0",
     "@ali/ide-overlay": "1.4.1",
+    "@ali/ide-explorer": "1.4.1",
     "@ali/ide-activity-bar": "1.4.1",
     "@ali/ide-decoration": "1.4.1",
     "@ali/ide-editor": "1.4.1",
