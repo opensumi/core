@@ -18,6 +18,8 @@ export const ExplorerResourcePanel = observer(({
     onDragLeave,
     onChange,
     onDrop,
+    onBlur,
+    onFocus,
     draggable,
     editable,
     multiSelectable,
@@ -42,6 +44,8 @@ export const ExplorerResourcePanel = observer(({
     onDragLeave={ onDragLeave }
     onChange = { onChange }
     onDrop={ onDrop }
+    onBlur={ onBlur }
+    onFocus={ onFocus }
     draggable={ draggable }
     editable={ editable }
     multiSelectable={ multiSelectable }

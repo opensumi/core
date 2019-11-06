@@ -73,6 +73,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   onDrag?: any;
   onDrop?: any;
   onChange?: any;
+  onBlur?: any;
   /**
    * 节点中替换文本，需在node节点中存在hightlightRange时可用
    */
@@ -143,6 +144,8 @@ export const TreeContainer = (
     onDrag,
     onDrop,
     onChange,
+    onBlur,
+    onFocus,
     draggable,
     foldable = true,
     editable,
@@ -312,8 +315,13 @@ export const TreeContainer = (
   };
 
   const outerBlurHandler = (event) => {
+    onBlur(event);
     setOuterFocused(false);
     setOuterDragOver(false);
+  };
+
+  const outerFocusHandler = (event) => {
+    onFocus(event);
   };
 
   const getNodeTooltip = (node: TreeNode): string | undefined => {
@@ -374,6 +382,7 @@ export const TreeContainer = (
     className={cls(styles.kt_treenode_container, outerFocused && styles.kt_treenode_container_focused, outerDragOver && styles.kt_treenode_all_focused)}
     style={style}
     onBlur={outerBlurHandler}
+    onFocus={outerFocusHandler}
     onContextMenu={outerContextMenuHandler}
     onDrop={outerDropHandler}
     onDragStart={outerDragStartHandler}

@@ -11,6 +11,7 @@ import {
   AppConfig,
   formatLocalize,
   localize,
+  IContextKey,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode } from '../common';
@@ -21,6 +22,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { IDialogService } from '@ali/ide-overlay';
 import { Directory, File } from './file-tree-item';
+import { ExplorerResourceCut } from '@ali/ide-core-browser/lib/contextkey/explorer';
 
 export type IFileTreeItemStatus = Map<string, {
   selected?: boolean;
@@ -41,6 +43,8 @@ export interface IFileTreeServiceProps {
   onDrop: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
   onContextMenu: (nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) => void;
   onChange: (node: IFileTreeItemRendered, value: string) => void;
+  onBlur: () => void;
+  onFocus: () => void;
   draggable: boolean;
   editable: boolean;
 }
@@ -64,6 +68,7 @@ export class FileTreeService extends WithEventBus {
   status: IFileTreeItemStatus = new Map();
 
   private _root: FileStat | undefined;
+  private _isFocused: boolean = false;
 
   private fileServiceWatchers: {
     [uri: string]: IFileServiceWatcher,
@@ -94,6 +99,7 @@ export class FileTreeService extends WithEventBus {
   corePreferences: CorePreferences;
 
   private statusChangeEmitter = new Emitter<Uri[]>();
+  private explorerResourceCut: IContextKey<boolean>;
 
   private pasteStore: IParseStore = {
     files: [],
@@ -112,6 +118,8 @@ export class FileTreeService extends WithEventBus {
 
   async init() {
     const roots: IWorkspaceRoots = await this.workspaceService.roots;
+
+    this.explorerResourceCut = ExplorerResourceCut.bind(this.contextKeyService);
 
     this._root = this.workspaceService.workspace;
     await this.getFiles(roots);
@@ -134,12 +142,11 @@ export class FileTreeService extends WithEventBus {
   }
 
   get isFocused(): boolean {
-    for (const [, status] of this.status) {
-      if (status.focused) {
-        return true;
-      }
-    }
-    return false;
+    return this._isFocused;
+  }
+
+  set isFocused(value: boolean) {
+    this._isFocused = value;
   }
 
   get isSelected(): boolean {
@@ -964,6 +971,9 @@ export class FileTreeService extends WithEventBus {
 
   @action
   cutFile(from: URI[]) {
+    if (from.length > 0) {
+      this.explorerResourceCut.set(true);
+    }
     this.pasteStore = {
       files: from,
       type: PasteTypes.CUT,
@@ -983,13 +993,13 @@ export class FileTreeService extends WithEventBus {
     if (this.pasteStore.type === PasteTypes.CUT) {
       this.pasteStore.files.forEach((file) => {
         this.fileAPI.moveFile(file, to.resolve(file.displayName));
-        const statusKey = this.getStatutsKey(file);
-        this.status.delete(statusKey);
       });
+      this.resetFilesCutedStatus();
       this.pasteStore = {
         files: [],
         type: PasteTypes.NONE,
       };
+      this.explorerResourceCut.set(false);
     } else if (this.pasteStore.type === PasteTypes.COPY) {
       this.pasteStore.files.forEach((file) => {
         this.fileAPI.copyFile(file, to.resolve(file.displayName));

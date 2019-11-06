@@ -97,6 +97,8 @@ export const RecycleTree = (
     search,
     replace,
     onSelect,
+    onBlur,
+    onFocus,
     onTwistieClick,
     scrollTop,
     prerenderNumber = 10,
@@ -208,6 +210,8 @@ export const RecycleTree = (
         leftPadding={leftPadding}
         onContextMenu={onContextMenu || noop}
         onDrag={onDrag || noop}
+        onBlur={onBlur || noop}
+        onFocus={onFocus || noop}
         onDragStart={onDragStart || noop}
         onDragEnter={onDragEnter || noop}
         onDragEnd={onDragEnd || noop}

@@ -184,6 +184,11 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           if (uris && uris.length) {
             this.filetreeService.renameTempFile(uris[0]);
           }
+        } else {
+          const seletedUris = this.filetreeService.selectedUris;
+          if (seletedUris && seletedUris.length) {
+            this.filetreeService.renameTempFile(seletedUris[0]);
+          }
         }
       },
       isVisible: () => {
@@ -309,6 +314,11 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           if (uris && uris.length) {
             this.filetreeService.copyFile(uris);
           }
+        } else {
+          const seletedUris = this.filetreeService.selectedUris;
+          if (seletedUris && seletedUris.length) {
+            this.filetreeService.cutFile(seletedUris);
+          }
         }
       },
       isVisible: () => {
@@ -321,6 +331,11 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           const { uris } = data;
           if (uris && uris.length) {
             this.filetreeService.cutFile(uris);
+          }
+        } else {
+          const seletedUris = this.filetreeService.selectedUris;
+          if (seletedUris && seletedUris.length) {
+            this.filetreeService.cutFile(seletedUris);
           }
         }
       },
@@ -335,9 +350,17 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
           if (uris && uris.length > 0) {
             const pasteUri: URI = uris[0];
             this.filetreeService.pasteFile(pasteUri);
-          } else {
-            this.filetreeService.pasteFile(this.filetreeService.root);
           }
+        } else if (this.filetreeService.selectedFiles.length > 0) {
+          const selectedFiles = this.filetreeService.selectedFiles;
+          const to = selectedFiles[0];
+          if (to.filestat.isDirectory) {
+            this.filetreeService.pasteFile(to.uri);
+          } else {
+            this.filetreeService.pasteFile(to.uri.parent);
+          }
+        } else {
+          this.filetreeService.pasteFile(this.filetreeService.root);
         }
       },
       isVisible: () => {
@@ -353,6 +376,30 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     bindings.registerKeybinding({
       command: FILE_COMMANDS.LOCATION.id,
       keybinding: 'cmd+shift+e',
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.COPY_FILE.id,
+      keybinding: 'ctrlcmd+c',
+      when: 'filesExplorerFocus',
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.PASTE_FILE.id,
+      keybinding: 'ctrlcmd+v',
+      when: 'filesExplorerFocus',
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.CUT_FILE.id,
+      keybinding: 'ctrlcmd+x',
+      when: 'filesExplorerFocus',
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.RENAME_FILE.id,
+      keybinding: 'enter',
+      when: 'filesExplorerFocus',
     });
   }
 
