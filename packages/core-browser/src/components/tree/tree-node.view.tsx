@@ -7,7 +7,7 @@ import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../icon';
 import Icon from '../icon';
 import Badge from '../badge';
-import { ValidateInput } from '../input';
+import { ValidateInput, InputSelection } from '../input';
 import { KeyCode, Key } from '../../keyboard';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
@@ -337,6 +337,16 @@ export const TreeContainerNode = (
     };
 
     if (node.isTemporary) {
+      let selection: InputSelection = {
+        start: 0,
+        end: 0,
+      };
+      if (node.name !== TEMP_FILE_NAME) {
+        selection = {
+          start: 0,
+          end: node.name.replace(/\.\w+/, '').length,
+        };
+      }
       return <div
         className={cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, actualValidate(value) && styles.overflow_visible)}
       >
@@ -350,6 +360,7 @@ export const TreeContainerNode = (
             onChange={changeHandler}
             onKeyDown={keydownHandler}
             validate={actualValidate}
+            selection={selection}
           />
         </div>
       </div>;

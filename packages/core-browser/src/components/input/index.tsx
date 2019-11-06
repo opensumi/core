@@ -3,6 +3,11 @@ import * as cls from 'classnames';
 
 import * as styles from './styles.module.less';
 
+export interface InputSelection {
+  start: number;
+  end: number;
+}
+
 export enum VALIDATE_TYPE {
   INFO,
   WRANING,
@@ -13,18 +18,27 @@ export interface ValidateMessage {
   message: string | void;
   type: VALIDATE_TYPE;
 }
-export interface ValidateInputProp extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface ValidateInputProp extends InputProp {
   // void 返回代表验证通过
   // string 代表有错误信息
   validate: (value: string) => ValidateMessage;
 }
 
-const PureInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
-  { className, autoFocus, ...restProps },
+export interface InputProp extends React.InputHTMLAttributes<HTMLInputElement> {
+  // 选中范围
+  selection: InputSelection;
+}
+
+const PureInput: React.FC<InputProp> = (
+  { className, autoFocus, selection, ...restProps },
   ref: React.MutableRefObject<HTMLInputElement>,
 ) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   React.useImperativeHandle(ref, () => inputRef.current!);
+
+  React.useEffect(() => {
+    inputRef.current!.setSelectionRange(selection.start, selection.end);
+  }, [selection]);
 
   return (
     <input
