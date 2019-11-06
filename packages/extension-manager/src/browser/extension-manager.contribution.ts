@@ -121,6 +121,10 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
           this.etensionManagerService.uninstallExtension(extension);
         }
       },
+      isVisible: (extension: RawExtension) => {
+        console.log(extension, 'extension');
+        return true;
+      },
     });
   }
 
