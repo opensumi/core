@@ -58,7 +58,7 @@ export const NavigationItem = ({part}: {part: IBreadCrumbPart}) => {
         } : undefined;
 
   return <span onClick={onClick} className={styles['navigation-part']} ref={itemRef as any}>
-    <span className={part.icon || getIcon('smile')}></span>
+    <span className={part.icon}></span>
     <span>{part.name}</span>
   </span>;
 };
