@@ -12,7 +12,7 @@ import { ExplorerResourceService } from './explorer-resource.service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as copy from 'copy-to-clipboard';
 import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService } from '@ali/ide-workspace';
-import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 
 export namespace FileTreeContextMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
@@ -63,7 +63,6 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         resourceTitle = resourceTitle.slice(0, resourceTitle.lastIndexOf('.'));
       }
     }
-
     this.mainLayoutService.collectViewComponent({
       id: ExplorerResourceViewId,
       name: resourceTitle,
@@ -180,12 +179,14 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         await this.filetreeService.refresh(this.filetreeService.root);
       },
     });
-    commands.registerCommand(FILE_COMMANDS.DELETE_FILE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            this.filetreeService.deleteFiles(uris);
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
+          this.filetreeService.deleteFiles(uris);
+        } else {
+          const seletedUris = this.filetreeService.selectedUris;
+          if (seletedUris && seletedUris.length) {
+            this.filetreeService.deleteFiles(seletedUris);
           }
         }
       },
@@ -193,14 +194,11 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.focusedUris.length > 0;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.RENAME_FILE, {
-      execute: (data: FileUri) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.RENAME_FILE, {
+      execute: (_, uris) => {
         // 默认使用uris中下标为0的uri作为创建基础
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            this.filetreeService.renameTempFile(uris[0]);
-          }
+        if (uris && uris.length) {
+          this.filetreeService.renameTempFile(uris[0]);
         } else {
           const seletedUris = this.filetreeService.selectedUris;
           if (seletedUris && seletedUris.length) {
@@ -212,8 +210,8 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.focusedUris.length > 0;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.NEW_FILE, {
-      execute: async (data?: FileUri) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
+      execute: async (uri) => {
         // 默认获取焦点元素
         const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
@@ -221,9 +219,8 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (selectedFile.length === 1) {
           fromUri = selectedFile[0];
         } else {
-          if (data) {
-            const { uris } = data;
-            fromUri = uris[0];
+          if (uri) {
+            fromUri = uri;
           } else {
             fromUri = this.filetreeService.root;
           }
@@ -235,17 +232,16 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
       },
     });
-    commands.registerCommand(FILE_COMMANDS.NEW_FOLDER, {
-      execute: async (data?: FileUri) => {
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
+      execute: async (uri) => {
         const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
           fromUri = selectedFile[0];
         } else {
-          if (data) {
-            const { uris } = data;
-            fromUri = uris[0];
+          if (uri) {
+            fromUri = uri;
           } else {
             fromUri = this.filetreeService.root;
           }
@@ -256,15 +252,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         }
       },
     });
-    commands.registerCommand(FILE_COMMANDS.COMPARE_SELECTED, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            const currentEditor = this.editorService.currentEditor;
-            if (currentEditor && currentEditor.currentUri) {
-              this.filetreeService.compare(uris[0], currentEditor.currentUri);
-            }
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COMPARE_SELECTED, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
+          const currentEditor = this.editorService.currentEditor;
+          if (currentEditor && currentEditor.currentUri) {
+            this.filetreeService.compare(uris[0], currentEditor.currentUri);
           }
         }
       },
@@ -272,10 +265,9 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_RESOURCES, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
           this.filetreeService.openAndFixedFile(uris[0]);
         }
       },
@@ -283,10 +275,9 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
           this.filetreeService.openToTheSide(uris[0]);
         }
       },
@@ -294,13 +285,23 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.COPY_PATH, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            const copyUri: URI = uris[0];
-            copy(decodeURIComponent(copyUri.withScheme('').toString()));
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
+          const copyUri: URI = uris[0];
+          copy(decodeURIComponent(copyUri.withScheme('').toString()));
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedUris.length === 1;
+      },
+    });
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
+          const copyUri: URI = uris[0];
+          if (this.filetreeService.root) {
+            copy(decodeURIComponent(this.filetreeService.root.relative(copyUri)!.toString()));
           }
         }
       },
@@ -308,29 +309,10 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.focusedUris.length === 1;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.COPY_RELATIVE_PATH, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            const copyUri: URI = uris[0];
-            if (this.filetreeService.root) {
-              copy(decodeURIComponent(this.filetreeService.root.relative(copyUri)!.toString()));
-            }
-          }
-        }
-      },
-      isVisible: () => {
-        return this.filetreeService.focusedUris.length === 1;
-      },
-    });
-    commands.registerCommand(FILE_COMMANDS.COPY_FILE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            this.filetreeService.copyFile(uris);
-          }
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_FILE, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
+          this.filetreeService.copyFile(uris);
         } else {
           const seletedUris = this.filetreeService.selectedUris;
           if (seletedUris && seletedUris.length) {
@@ -342,13 +324,10 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.focusedFiles.length >= 1;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.CUT_FILE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            this.filetreeService.cutFile(uris);
-          }
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
+          this.filetreeService.cutFile(uris);
         } else {
           const seletedUris = this.filetreeService.selectedUris;
           if (seletedUris && seletedUris.length) {
@@ -360,14 +339,11 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.focusedFiles.length >= 1;
       },
     });
-    commands.registerCommand(FILE_COMMANDS.PASTE_FILE, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length > 0) {
-            const pasteUri: URI = uris[0];
-            this.filetreeService.pasteFile(pasteUri);
-          }
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
+      execute: (_, uris) => {
+        if (uris && uris.length > 0) {
+          const pasteUri: URI = uris[0];
+          this.filetreeService.pasteFile(pasteUri);
         } else if (this.filetreeService.selectedFiles.length > 0) {
           const selectedFiles = this.filetreeService.selectedFiles;
           const to = selectedFiles[0];
@@ -416,6 +392,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.RENAME_FILE.id,
       keybinding: 'enter',
+      when: 'filesExplorerFocus',
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.DELETE_FILE.id,
+      keybinding: 'delete',
       when: 'filesExplorerFocus',
     });
   }

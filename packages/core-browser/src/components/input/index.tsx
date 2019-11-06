@@ -37,7 +37,9 @@ const PureInput: React.FC<InputProp> = (
   React.useImperativeHandle(ref, () => inputRef.current!);
 
   React.useEffect(() => {
-    inputRef.current!.setSelectionRange(selection.start, selection.end);
+    if (selection && selection.start) {
+      inputRef.current!.setSelectionRange(selection.start, selection.end);
+    }
   }, [selection]);
 
   return (
