@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { action } from 'mobx';
-import { URI, Schemas, Emitter, formatLocalize, IDisposable, DisposableStore, IRange } from '@ali/ide-core-common';
+import { URI, Schemas, Emitter, formatLocalize, IDisposable, DisposableStore, IRange, localize, MessageType } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkbenchEditorService, TrackedRangeStickiness } from '@ali/ide-editor';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
+import { IDialogService } from '@ali/ide-overlay';
 
 import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
@@ -206,6 +207,9 @@ export class SearchTreeService {
   @Autowired(RangeHighlightDecorations)
   private rangeHighlightDecorations: RangeHighlightDecorations;
 
+  @Autowired(IDialogService)
+  private dialogService: IDialogService;
+
   constructor() {
     this.contentRegistry.registerEditorDocumentModelContentProvider(
       this.replaceDocumentModelContentProvider,
@@ -400,7 +404,7 @@ export class SearchTreeService {
         resultTotal.resultNum = resultTotal.resultNum - oldData!.length;
         searchResults.delete(parentId);
       },
-      replaceResults() {
+      replaceResults: async () => {
         let select: ISearchTreeItem | null = null;
         items.some((item) => {
           if (id === item.id) {
@@ -415,6 +419,18 @@ export class SearchTreeService {
         const contentSearchResult: ContentSearchResult[] = select!.children!.map((child) => {
           return child.searchResult!;
         });
+        const buttons = {
+          [localize('ButtonCancel')]: false,
+          [localize('search.replace.buttonOK')]: true,
+        };
+        const selection = await this.dialogService.open(
+          formatLocalize('search.removeAll.occurrences.file.confirmation.message', String(contentSearchResult.length)),
+          MessageType.Warning,
+          Object.keys(buttons),
+        );
+        if (!buttons[selection!]) {
+          return buttons[selection!];
+        }
         resultMap.set(select!.fileUri, contentSearchResult);
         replaceAll(
           workspaceEditService,
@@ -480,6 +496,10 @@ export class SearchTreeService {
       const resultList = searchResultArray[1];
       const _uri = new URI(uri);
       const description = await workspaceService.asRelativePath(uri) || uri;
+
+      if (!resultList || resultList.length < 1) {
+        continue;
+      }
 
       const node: ISearchTreeItem  = {
         description,

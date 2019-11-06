@@ -97,6 +97,7 @@ export const localizationBundle = {
     'search.ClearSearchResultsAction.label': 'Clear Search Results',
     'search.RefreshAction.label': 'Refresh',
     'search.removeAll.occurrences.files.confirmation.message': 'Are you sure to replace {0} of the {1} files',
+    'search.removeAll.occurrences.file.confirmation.message': 'Are you sure to replace the {0} results in this file?',
     'search.result.hide': 'Hide',
     'search.menu.copyAll': 'Copy all',
     'search.help.showIncludeRule': 'View syntax rules',
