@@ -11,6 +11,7 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { EditorHistoryService } from './history';
 
 interface Resource {
   group: EditorGroup;
@@ -46,6 +47,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   @Autowired(IDocPersistentCacheProvider)
   cacheProvider: IDocPersistentCacheProvider;
+
+  @Autowired()
+  historyService: EditorHistoryService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
@@ -105,13 +109,35 @@ export class EditorContribution implements CommandContribution, MenuContribution
       command: EDITOR_COMMANDS.NEXT.id,
       keybinding: 'alt+cmd+right', // FIXME web上会被chrome拦截
     });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.GO_FORWARD.id,
+      keybinding: 'ctrl+=',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.GO_BACK.id,
+      keybinding: 'ctrl+-',
+    });
   }
 
   initialize() {
     this.editorStatusBarService.setListener();
+    this.historyService.start();
   }
 
   registerCommands(commands: CommandRegistry): void {
+
+    commands.registerCommand(EDITOR_COMMANDS.GO_FORWARD, {
+      execute: () => {
+        this.historyService.forward();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.GO_BACK, {
+      execute: () => {
+        this.historyService.back();
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.OPEN_RESOURCE, {
       execute: (uri: URI, options?: IResourceOpenOptions) => {
         this.workbenchEditorService.open(uri, options);
@@ -154,6 +180,15 @@ export class EditorContribution implements CommandContribution, MenuContribution
         const group = this.workbenchEditorService.currentEditorGroup;
         if (group) {
           await group.closeAll();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.CLOSE_SAVED, {
+      execute: async (uri?: URI) => {
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group) {
+          await group.closeSaved();
         }
       },
     });
@@ -488,6 +523,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
     menus.registerMenuAction(['editor', '0tab'], {
       commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
       label: localize('editor.closeAllInGroup'),
+    });
+
+    menus.registerMenuAction(['editor', '0tab'], {
+      commandId: EDITOR_COMMANDS.CLOSE_SAVED.id,
+      label: localize('editor.closeSaved'),
     });
 
     menus.registerMenuAction(['editor', '0tab'], {
