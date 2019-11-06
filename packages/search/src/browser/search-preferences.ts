@@ -23,6 +23,11 @@ export const searchPreferenceSchema: PreferenceSchema = {
         '**/bower_components': true,
       },
     },
+    'search.useReplacePreview': {
+      type: 'boolean',
+      description: localize('preference.search.useReplacePreview'),
+      default: true,
+    },
   },
 };
 

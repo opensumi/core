@@ -6,7 +6,7 @@ import {
   OpenedResourceTreeItem,
   IOpenEditorStatus,
 } from './opened-editor.service';
-import { IResource, IResourceDecorationChangeEventPayload } from '@ali/ide-editor';
+import { IResource, IResourceDecorationChangeEventPayload, IEditorGroup } from '@ali/ide-editor';
 import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -14,6 +14,7 @@ import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import * as styles from './index.module.less';
+import { OPEN_EDITORS_COMMANDS } from './opened-editor.contribution';
 
 @Injectable()
 export class ExplorerOpenedEditorService {
@@ -45,6 +46,20 @@ export class ExplorerOpenedEditorService {
       command: EDITOR_COMMANDS.CLOSE.id,
       location: TreeViewActionTypes.TreeNode_Left,
       paramsKey: 'uri',
+    },
+    {
+      icon: getIcon('save-all'),
+      title: localize('open.editors.save.byId'),
+      command: OPEN_EDITORS_COMMANDS.SAVE_BY_GROUP_ID.id,
+      location: TreeViewActionTypes.TreeContainer,
+      paramsKey: 'id',
+    },
+    {
+      icon: getIcon('clear'),
+      title: localize('open.editors.close.byId'),
+      command: OPEN_EDITORS_COMMANDS.CLOSE_BY_GROUP_ID.id,
+      location: TreeViewActionTypes.TreeContainer,
+      paramsKey: 'id',
     },
   ];
 
@@ -135,7 +150,7 @@ export class ExplorerOpenedEditorService {
             if (this.status[statusKey].dirty) {
               node  = {
                 ...node,
-                headClass: styles.kt_dirty_icon,
+                headClass: styles.dirty_icon,
               };
             }
             treeData.push({
@@ -186,7 +201,7 @@ export class ExplorerOpenedEditorService {
         };
         return {
           ...node,
-          headClass: payload.decoration.dirty ? styles.kt_dirty_icon : '',
+          headClass: payload.decoration.dirty ? styles.dirty_icon : '',
         };
       }
       return node;
@@ -236,6 +251,10 @@ export class ExplorerOpenedEditorService {
    */
   @action.bound
   onSelect(nodes: TreeNode[]) {
+    if (!nodes || nodes.length === 0) {
+      this.resetStatus();
+      return;
+    }
     // 仅支持单选
     const node = nodes[0];
     this.updateStatus(node);
@@ -274,5 +293,21 @@ export class ExplorerOpenedEditorService {
 
   commandActuator = (commandId: string, params: any) => {
     return this.commandService.executeCommand(commandId, params);
+  }
+
+  async closeByGroupId(id: number) {
+    const groups = this.openEditorTreeDataProvider.getChildren();
+    const group = groups[id] as IEditorGroup;
+    if (group) {
+      group.closeAll();
+    }
+  }
+
+  saveByGroupId(id: number) {
+    const groups = this.openEditorTreeDataProvider.getChildren();
+    const group = groups[id] as IEditorGroup;
+    if (group) {
+      group.saveAll();
+    }
   }
 }

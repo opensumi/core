@@ -10,6 +10,6 @@ export interface CtxMenuRenderParams extends CtxMenuParams {
   onHide?: () => void;
 }
 
-export abstract class CtxMenuRenderer {
+export abstract class ICtxMenuRenderer {
   abstract show(payload: CtxMenuRenderParams): void;
 }

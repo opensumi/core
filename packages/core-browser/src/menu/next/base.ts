@@ -1,52 +1,10 @@
-import { IDisposable, Event, Emitter, Command } from '@ali/ide-core-common';
-import { Injectable } from '@ali/common-di';
+import { IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ali/common-di';
+import { MenuId } from './menu-id';
 
-// 可枚举的 menu id 列表
-export const enum MenuId {
-  CommandPalette,
-  DebugBreakpointsContext,
-  DebugCallStackContext,
-  DebugConsoleContext,
-  DebugVariablesContext,
-  DebugWatchContext,
-  DebugToolBar,
-  EditorContext,
-  EditorTitle,
-  EditorTitleContext,
-  EmptyEditorGroupContext,
-  ExplorerContext,
-  MenubarAppearanceMenu,
-  MenubarDebugMenu,
-  MenubarEditMenu,
-  MenubarFileMenu,
-  MenubarGoMenu,
-  MenubarHelpMenu,
-  MenubarLayoutMenu,
-  MenubarNewBreakpointMenu,
-  MenubarPreferencesMenu,
-  MenubarRecentMenu,
-  MenubarSelectionMenu,
-  MenubarSwitchEditorMenu,
-  MenubarSwitchGroupMenu,
-  MenubarTerminalMenu,
-  MenubarViewMenu,
-  OpenEditorsContext,
-  ProblemsPanelContext,
-  SCMChangeContext,
-  SCMResourceContext,
-  SCMResourceGroupContext,
-  SCMSourceControl,
-  SCMTitle,
-  SearchContext,
-  StatusBarWindowIndicatorMenu,
-  TouchBarContext,
-  ViewItemContext,
-  ViewTitle,
-  CommentThreadTitle,
-  CommentThreadActions,
-  CommentTitle,
-  CommentActions,
-  GlobalActivity,
+export const NextMenuContribution = Symbol('NextMenuContribution');
+export interface NextMenuContribution {
+  registerNextMenus(menus: IMenuRegistry): void;
 }
 
 export interface ILocalizedString {
@@ -59,6 +17,7 @@ export interface IMenuItem {
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
+  nativeRole?: string; // electron native 菜单使用
 }
 
 export interface ISubmenuItem {
@@ -67,6 +26,7 @@ export interface ISubmenuItem {
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
+  nativeRole?: string; // electron native 菜单使用
 }
 
 export type ICommandsMap = Map<string, Command>;
@@ -87,6 +47,16 @@ export class MenuRegistry implements IMenuRegistry {
   private readonly _onDidChangeMenu = new Emitter<MenuId>();
 
   readonly onDidChangeMenu: Event<MenuId> = this._onDidChangeMenu.event;
+
+  @Autowired(NextMenuContribution)
+  protected readonly contributions: ContributionProvider<NextMenuContribution>;
+
+  // MenuContribution
+  onStart() {
+    for (const contrib of this.contributions.getContributions()) {
+      contrib.registerNextMenus(this);
+    }
+  }
 
   addCommand(command: Command): IDisposable {
     this._commands.set(command.id, command);
@@ -171,7 +141,10 @@ export interface IMenuAction {
   tooltip: string;
   className?: string;
   icon: string; // 标准的 vscode icon 是分两种主题的
-  shortcut?: string; // 快捷键
+  keybinding: string; // 快捷键描述
+  isKeyCombination: boolean; // 是否为组合键
+  disabled?: boolean; // disable 状态的 menu
+  nativeRole?: string; // eletron menu 使用
   execute(event?: any): Promise<any>;
 }
 
@@ -181,22 +154,31 @@ export class MenuNode implements IMenuAction {
   tooltip: string;
   className: string | undefined;
   icon: string;
-  shortcut: string;
+  keybinding: string;
+  isKeyCombination: boolean;
+  disabled: boolean;
+  nativeRole: string;
   readonly _actionCallback?: (event?: any) => Promise<any>;
 
   constructor(
-    id: string,
+    commandId: string,
     icon: string = '',
     label: string = '',
-    shortcut: string = '',
+    disabled = false,
+    nativeRole: string = '',
+    keybinding: string = '',
+    isKeyCombination: boolean = false,
     className: string = '',
     actionCallback?: (event?: any) => Promise<any>,
   ) {
-    this.id = id;
+    this.id = commandId;
     this.label = label;
     this.className = className;
     this.icon = icon;
-    this.shortcut = shortcut;
+    this.keybinding = keybinding;
+    this.isKeyCombination = isKeyCombination;
+    this.disabled = disabled;
+    this.nativeRole = nativeRole;
     this._actionCallback = actionCallback;
   }
 

@@ -5,10 +5,11 @@ import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { LoggerManagerClient  } from '@ali/ide-logs/src/browser/log-manage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
+import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 
 import { ContentSearchClientService } from '../../src/browser/search.service';
 import {
@@ -64,6 +65,17 @@ class MockSearchContentService {
 @Injectable()
 class MockWorkbenchEditorService {
   open() {}
+  apply() {}
+}
+
+@Injectable()
+class MockWorkspaceEditorService {
+  apply() {}
+}
+
+@Injectable()
+class MockEditorDocumentModelContentRegistry {
+  registerEditorDocumentModelContentProvider() {}
 }
 
 describe('search.service.ts', () => {
@@ -111,6 +123,12 @@ describe('search.service.ts', () => {
     }, {
       token: WorkbenchEditorService,
       useClass: MockWorkbenchEditorService,
+    }, {
+      token: IWorkspaceEditService,
+      useClass: MockWorkspaceEditorService,
+    }, {
+      token: IEditorDocumentModelContentRegistry,
+      useClass: MockEditorDocumentModelContentRegistry,
     });
 
     searchService = injector.get(ContentSearchClientService);

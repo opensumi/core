@@ -27,6 +27,7 @@ import {
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
+import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { observable, transaction, action } from 'mobx';
 import {
   ContentSearchResult,
@@ -87,6 +88,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
   private dialogService;
   @Autowired(IMessageService)
   private messageService;
+
+  @Autowired(IWorkspaceEditService)
+  private workspaceEditService: IWorkspaceEditService;
 
   workbenchEditorService: WorkbenchEditorService;
 
@@ -453,7 +457,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
     this.isReplaceDoing = true;
     replaceAll(
-      this.documentModelManager,
+      this.workspaceEditService,
       this.searchResults,
       this.replaceValue || '',
       this.dialogService,
