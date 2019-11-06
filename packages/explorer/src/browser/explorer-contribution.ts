@@ -85,7 +85,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
 
-    // 注册给ExplorerMenu的Command执行参数为 ExplorerContextParams
+    // 注册给Explorer ContextMenu的Command执行参数为 ExplorerContextParams
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: async (_, uris) => {
         if (uris && uris.length) {

@@ -1,4 +1,4 @@
-import { Uri, URI } from '@ali/ide-core-common';
+import { URI } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 
 // explorer/context
@@ -11,13 +11,13 @@ export type ExplorerContextParams = [URI, URI[]];
 export type ExplorerContextCallback = (...args: ExplorerContextParams) => void;
 
 // editor/context
-export type EditorContextArgs = [Uri, Uri[]];
-export type EditorContextCallback = (...args: [Uri]) => void;
+export type EditorContextArgs = [URI, URI[]];
+export type EditorContextCallback = (...args: [URI]) => void;
 
 type GroupId = number; // vscode.IEditorGroupView['id'];
 // editor/title
 // editor tab group 最右侧 ellipsis 图标点击 dropdown
-type EditorTitleCallback = (...args: [Uri, { groupId: GroupId }]) => void;
+type EditorTitleCallback = (...args: [URI, { groupId: GroupId }]) => void;
 
 // editor/title/context
 // editor tab ctxmenu
@@ -26,7 +26,7 @@ interface EditorTitleExtraArgs {
   editorIndex: number;
 }
 // 参考 src/vs/workbench/browser/parts/editor/titleControl.ts#304,310
-type EditorTitleContextCallback = (...args: [Uri, EditorTitleExtraArgs]) => void;
+type EditorTitleContextCallback = (...args: [URI, EditorTitleExtraArgs]) => void;
 
 // debug/callstack/context
 // debug 时 callstack list item 的 ctxmenu
@@ -56,7 +56,7 @@ type ScmResourceStateContextCallback = (...args: [vscode.SourceControlResourceSt
 // scm/change/title
 // diff editor 的最右侧 ellipsis 图标点击 dropdown
 // 此处 Uri 是 git scheme 的
-type ScmChangeTitleCallback = (...args: [Uri, GroupId]) => void;
+type ScmChangeTitleCallback = (...args: [URI, GroupId]) => void;
 
 // view/title
 // 自定义 contributed view 的 inline actions/more actions
