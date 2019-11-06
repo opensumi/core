@@ -14,9 +14,10 @@ export const OutLineTree = observer(({
     handleTwistieClick,
     onSelect,
   } = outlineService;
+  const nodes = React.useMemo(() => treeNodes, [treeNodes]);
   return (
     <RecycleTree
-      nodes={treeNodes}
+      nodes={nodes}
       scrollContainerStyle={{
         ...viewState,
       }}
