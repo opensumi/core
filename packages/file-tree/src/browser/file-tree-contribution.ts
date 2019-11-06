@@ -129,7 +129,7 @@ export class FileTreeContribution implements MenuContribution, CommandContributi
     commands.registerCommand(FILE_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
         const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-        if (!handler || !handler.isVisible) {
+        if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
           return;
         }
         let locationUri = uri;
