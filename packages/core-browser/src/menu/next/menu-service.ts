@@ -199,7 +199,7 @@ class Menu extends Disposable implements IMenu {
     return this._onDidChange.event;
   }
 
-  getMenuNodes(options: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
+  getMenuNodes(options: IMenuNodeOptions = {}): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
     const result: [string, Array<MenuItemNode | SubmenuItemNode>][] = [];
     for (const group of this._menuGroups) {
       const [id, items] = group;
@@ -208,8 +208,9 @@ class Menu extends Disposable implements IMenu {
         if (this.contextKeyService.match(item.when)) {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
-            if (this.commandRegistry.isVisible(item.command.id)) {
-              const disabled = !this.commandRegistry.isEnabled(item.command.id);
+            const { args = [] } = options;
+            if (this.commandRegistry.isVisible(item.command.id, ...args)) {
+              const disabled = !this.commandRegistry.isEnabled(item.command.id, ...args);
               const action = this.injector.get(MenuItemNode, [item.command, options, disabled, item.nativeRole]);
               activeActions.push(action);
             }
