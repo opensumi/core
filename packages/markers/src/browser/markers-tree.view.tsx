@@ -29,7 +29,7 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
       updateSelectTag(TAG_NONE);
     });
     markerService.onViewResize((size: ViewSize) => {
-      console.error(size);
+      // console.error(size);
       updateViewSize(size);
     });
   });
