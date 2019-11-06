@@ -15,6 +15,7 @@ import { SCMBadgeController, SCMStatusBarController, SCMViewController } from '.
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { MainLayoutContribution } from '@ali/ide-main-layout';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
@@ -22,8 +23,8 @@ export const SCM_ACCEPT_INPUT: Command = {
 
 export const SCM_CONTEXT_MENU: MenuPath = ['scm-context-menu'];
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, PreferenceContribution)
-export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution, PreferenceContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution)
+export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution {
   @Autowired()
   protected readonly logger: Logger;
 

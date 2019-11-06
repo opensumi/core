@@ -920,7 +920,7 @@ export class DocumentHighlight {
 
   constructor(
     range: Range,
-    kind?: DocumentHighlightKind,
+    kind: DocumentHighlightKind = DocumentHighlightKind.Text,
   ) {
     this.range = range;
     this.kind = kind;
@@ -1070,13 +1070,6 @@ export class Selection extends Range {
   }
 }
 
-export interface FileOperationOptions {
-  overwrite?: boolean;
-  ignoreIfExists?: boolean;
-  ignoreIfNotExists?: boolean;
-  recursive?: boolean;
-}
-
 export interface FileOperation {
   _type: 1;
   from: URI | undefined;
@@ -1205,6 +1198,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 export class DocumentLink {
   range: Range;
   target: URI;
+  tooltip?: string;
 
   constructor(range: Range, target: URI) {
     if (target && !(target instanceof URI)) {

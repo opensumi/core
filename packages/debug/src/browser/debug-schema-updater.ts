@@ -1,7 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { InMemoryResourceResolver, deepClone, IJSONSchema, URI, ISchemaRegistry } from '@ali/ide-core-browser';
 import { DebugServer, IDebugServer } from '../common/debug-service';
-import { debugPreferencesSchema } from './debug-preferences';
+import { DebugConfigurationManager } from './debug-configuration-manager';
+import { launchSchemaUri } from '../common';
 
 @Injectable()
 export class DebugSchemaUpdater {
@@ -15,28 +16,34 @@ export class DebugSchemaUpdater {
   @Autowired(ISchemaRegistry)
   private schemaRegistry: ISchemaRegistry;
 
+  @Autowired(DebugConfigurationManager)
+  private config: DebugConfigurationManager;
+
   async update(): Promise<void> {
-    const types = await this.debug.debugTypes();
+
+    const debuggers = this.config.getDebuggers();
     const schema = { ...deepClone(launchSchema) };
     const items = (schema!.properties!.configurations.items as IJSONSchema);
-
-    const attributePromises = types.map((type) => this.debug.getSchemaAttributes(type));
-    for (const attributes of await Promise.all(attributePromises)) {
-      for (const attribute of attributes) {
-        const properties: typeof attribute['properties'] = {};
-        for (const key of ['debugViewLocation', 'openDebug', 'internalConsoleOptions']) {
-          properties[key] = debugPreferencesSchema.properties[`debug.${key}`];
-        }
-        attribute.properties = Object.assign(properties, attribute.properties);
-        items.oneOf!.push(attribute);
+    const configurations = debuggers.map((dbg) => {
+      return {
+        attributes: Object.keys(dbg.configurationAttributes).map((request) => {
+          const attributes: IJSONSchema = dbg.configurationAttributes[request];
+          return attributes;
+        }),
+        configurationSnippets: dbg.configurationSnippets,
+      };
+    });
+    for (const { attributes, configurationSnippets } of configurations) {
+      if (attributes && items.oneOf) {
+        items.oneOf!.push(...attributes);
+      }
+      if (configurationSnippets && items.defaultSnippets) {
+        items.defaultSnippets.push(...configurationSnippets);
       }
     }
-    items.defaultSnippets!.push(...await this.debug.getConfigurationSnippets());
-    this.schemaRegistry.registerSchema(launchSchemaUri, schema, ['launch.json']);
+    this.schemaRegistry.registerSchema(`${launchSchemaUri}/extension`, schema, ['launch.json']);
   }
 }
-
-export const launchSchemaUri = 'vscode://schemas/launch';
 
 export const launchSchema: IJSONSchema = {
   $id: launchSchemaUri,

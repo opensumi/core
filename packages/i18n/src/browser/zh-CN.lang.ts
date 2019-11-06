@@ -109,6 +109,7 @@ export const localizationBundle = {
     'search.help.matchRange': '匹配的字符范围',
     'search.help.modify': '修改',
     'search.replace.buttonOK': '替换',
+    'search.replace.buttonCancel': '取消',
     'search.quickOpen.leftRight': '在侧边打开',
     'search.quickOpen.upDown': '在底部打开',
     'fileResults': '文件结果',
@@ -139,6 +140,7 @@ export const localizationBundle = {
     'scm.statusbar.repo': '当前仓库',
     'scm.provider.title': '代码仓库列表',
     'scm.provider.empty': '没有可用的源代码仓库',
+    'scm.provider.init': '点击初始化仓库',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
@@ -180,6 +182,7 @@ export const localizationBundle = {
     'debug.configuration.comment1': '使用 IntelliSense 了解相关属性。 ',
     'debug.configuration.comment2': '悬停以查看现有属性的描述。',
     'debug.configuration.comment3': '欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387',
+    'debug.launch.existed': '调试配置"{0}"已在运行',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
@@ -198,6 +201,7 @@ export const localizationBundle = {
     'preference.debug.openDebug': '控制何时打开调试视图。',
     'preference.debug.debugViewLocation': '控制调试视图的位置。',
     'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
+    'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
@@ -228,6 +232,7 @@ export const localizationBundle = {
     'preference.editor.wordWrap': '自动换行',
     'preference.editor.wordWrapColumn': '自动换行长度',
     'preference.editor.askIfDiff': '保存文件冲突时提示',
+    'preference.editor.readonlyFiles': '只读文件列表',
 
     'preference.array.additem': '添加',
 

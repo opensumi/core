@@ -107,7 +107,6 @@ export class DebugSession implements IDisposable {
       }),
       this.on('terminated', () => {
         this.terminated = true;
-        this.connection.close();
       }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
       // 断点更新时更新断点数据
