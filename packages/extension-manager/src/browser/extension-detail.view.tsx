@@ -25,7 +25,6 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const [isInstalling, setIsInstalling] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [isUnInstalling, setUnIsInstalling] = React.useState(false);
-  const [reloadRequire, setReloadRequire] = React.useState(false);
   const [updated, setUpdated] = React.useState(false);
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
@@ -64,36 +63,23 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }, [extensionId]);
 
   /**
-   * 检查是否需要强制重启插件
-   * @param extension
-   */
-  async function updateReloadStateIfNeed(extension: ExtensionDetail) {
-    const reloadRequire = await extensionManagerService.computeReloadState(extension.path);
-    if (reloadRequire) {
-      setReloadRequire(true);
-    }
-  }
-
-  /**
    * 禁用/启用工作区间
    * @param scope
    */
   async function toggleActive(scope: EnableScope) {
     if (currentExtension) {
       const enable = !currentExtension.enable;
-      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, enable, scope);
-      if (!enable) {
-        await extensionManagerService.onDisableExtension(currentExtension.path);
-      } else {
-        await extensionManagerService.onEnableExtension(currentExtension.path);
-      }
-      await updateReloadStateIfNeed(currentExtension);
+      await extensionManagerService.toggleActiveExtension(currentExtension, enable, scope);
+      const reloadRequire = await extensionManagerService.computeReloadState(currentExtension.path);
       setCurrentExtension({
         ...currentExtension,
-        enable,
+        // 如果不需要重启，才能修改器状态
+        ...!reloadRequire && {
+          enable,
+        },
         enableScope: scope,
+        reloadRequire,
       });
-
     }
   }
 
@@ -109,10 +95,6 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         enable: true,
         installed: true,
       });
-      // 更新插件进程信息
-      await extensionManagerService.onInstallExtension(currentExtension.extensionId, path);
-      // 标记为已安装
-      await extensionManagerService.makeExtensionStatus(true, currentExtension.extensionId, path);
     }
   }
 
@@ -120,17 +102,17 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     if (currentExtension && !isUnInstalling) {
       setUnIsInstalling(true);
       const res = await extensionManagerService.uninstallExtension(currentExtension);
-      // TODO 卸载后为什么要设置启用？
-      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, true, EnableScope.GLOBAL);
-
+      const reloadRequire = await extensionManagerService.computeReloadState(currentExtension.path);
       if (res) {
-        await extensionManagerService.makeExtensionStatus(false, currentExtension.extensionId, '');
-        await updateReloadStateIfNeed(currentExtension);
         setUnIsInstalling(false);
         setCurrentExtension({
           ...currentExtension,
-          enable: false,
+          // 如果不需要重启，才能修改器状态
+          ...!reloadRequire && {
+            enable: false,
+          },
           installed: false,
+          reloadRequire,
         });
       } else {
         dialogService.info(localize('marketplace.extension.uninstall.failed'));
@@ -149,9 +131,9 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         path: newExtensionPath,
         installed: true,
         version: latestExtension!.version,
+        reloadRequire: await extensionManagerService.computeReloadState(oldExtensionPath),
       });
       await extensionManagerService.onUpdateExtension(newExtensionPath, oldExtensionPath);
-      await updateReloadStateIfNeed(currentExtension);
       setUpdated(true);
     }
   }
@@ -223,7 +205,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               {!currentExtension.installed ? (
                 <Button className={styles.action} onClick={install} loading={isInstalling}>{isInstalling ? localize('marketplace.extension.installing') : localize('marketplace.extension.install')}</Button>
               ) : null}
-              {reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure')}</Button>}
+              {currentExtension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure')}</Button>}
               {currentExtension.installed ? (
                 <Dropdown overlay={menu} trigger={['click']}>
                   <Button ghost={true} className={styles.action}>{currentExtension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>

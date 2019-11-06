@@ -66,6 +66,7 @@ export interface RawExtension extends BaseExtension {
   enable: boolean;
   isBuiltin: boolean;
   downloadCount?: number;
+  reloadRequire?: boolean;
   engines: {
     vscode: string,
     kaitian: string,
@@ -116,7 +117,7 @@ export interface IExtensionManagerService extends IExtensionManager  {
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined>;
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
-  toggleActiveExtension(extensionId: string, active: boolean, scope: EnableScope): Promise<void>;
+  toggleActiveExtension(extension: BaseExtension, active: boolean, scope: EnableScope): Promise<void>;
   searchFromMarketplace(query: string): void;
   searchFromInstalled(query: string): void;
   onInstallExtension(extensionId: string, path: string): Promise<void>;

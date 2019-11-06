@@ -1,6 +1,6 @@
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Command, CommandContribution, Domain, localize, CommandRegistry } from '@ali/ide-core-common';
-import { IExtensionManagerService, EXTENSION_SCHEME, enableExtensionsContainerId} from '../common';
+import { IExtensionManagerService, EXTENSION_SCHEME, enableExtensionsContainerId, RawExtension, EnableScope} from '../common';
 import { ExtensionDetailView } from './extension-detail.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
@@ -14,11 +14,31 @@ import ExtensionPanelView from './extension-panel.view';
 
 const category = '%extension%';
 
-class ExtensionCommands {
-  static UNINSTALL: Command = {
+namespace ExtensionCommands {
+  export const ENABLE: Command = {
+    id: 'extension.enable',
+    category,
+    label: '%marketplace.extension.enable%',
+  };
+  export const ENABLE_WORKSPACE: Command = {
+    id: 'extension.enable.workspace',
+    category,
+    label: '%marketplace.extension.enable.workspace%',
+  };
+  export const DISABLE: Command = {
+    id: 'extension.disable',
+    category,
+    label: '%marketplace.extension.disable%',
+  };
+  export const DISABLE_WORKSPACE: Command = {
+    id: 'extension.disable.workspace',
+    category,
+    label: '%marketplace.extension.disable.workspace%',
+  };
+  export const UNINSTALL: Command = {
     id: 'extension.uninstall',
     category,
-    label: '%explorer.location%',
+    label: '%marketplace.extension.uninstall%',
   };
 }
 
@@ -67,18 +87,68 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
   }
 
   registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(ExtensionCommands.ENABLE, {
+      execute: (extension: RawExtension) => {
+        if (extension) {
+          this.etensionManagerService.toggleActiveExtension(extension, true, EnableScope.GLOBAL);
+        }
+      },
+    });
+    commands.registerCommand(ExtensionCommands.ENABLE_WORKSPACE, {
+      execute: (extension: RawExtension) => {
+        if (extension) {
+          this.etensionManagerService.toggleActiveExtension(extension, true, EnableScope.WORKSPACE);
+        }
+      },
+    });
+    commands.registerCommand(ExtensionCommands.DISABLE, {
+      execute: (extension: RawExtension) => {
+        if (extension) {
+          this.etensionManagerService.toggleActiveExtension(extension, false, EnableScope.GLOBAL);
+        }
+      },
+    });
+    commands.registerCommand(ExtensionCommands.DISABLE_WORKSPACE, {
+      execute: (extension: RawExtension) => {
+        if (extension) {
+          this.etensionManagerService.toggleActiveExtension(extension, false, EnableScope.GLOBAL);
+        }
+      },
+    });
     commands.registerCommand(ExtensionCommands.UNINSTALL, {
-      execute: (...args) => {
-        console.log(args, 'args');
+      execute: (extension: RawExtension) => {
+        if (extension) {
+          this.etensionManagerService.uninstallExtension(extension);
+        }
       },
     });
   }
 
   registerNextMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
+      command: ExtensionCommands.ENABLE,
+      order: 0,
+      group: '1_enable',
+    });
+    menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
+      command: ExtensionCommands.ENABLE_WORKSPACE,
+      order: 1,
+      group: '1_enable',
+    });
+    menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
+      command: ExtensionCommands.DISABLE,
+      order: 0,
+      group: '2_disable',
+    });
+    menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
+      command: ExtensionCommands.DISABLE_WORKSPACE,
+      order: 1,
+      group: '2_disable',
+    });
+    menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
       command: ExtensionCommands.UNINSTALL,
-      order: 4,
-      group: '1_open',
+      order: 5,
+      group: '3_unstall',
     });
   }
 

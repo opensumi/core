@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { localize, useMenus } from '@ali/ide-core-browser';
+import { localize, useMenus, IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { Button, Icon } from '@ali/ide-core-browser/lib/components';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
@@ -27,6 +27,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
   const timmer = React.useRef<any>();
   const clickCount = React.useRef(0);
 
+  const clientApp = useInjectable<IClientApp>(IClientApp);
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
@@ -56,13 +57,12 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
     if (!extension.installed) {
       return;
     }
-
     const result = generateCtxMenu({ menus: extensionManagerService.contextMenu });
 
     ctxMenuRenderer.show({
       anchor: { x: e.clientX, y: e.clientY },
       menuNodes: result[1],
-      context: ['hello world'],
+      context: [extension],
     });
   }, []);
 
@@ -79,7 +79,16 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
             </div>
             {!extension.installed && <Button loading={installing} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button>}
-            {extension.installed && showInstalled ? (<span style={{flexShrink: 0}}>{localize('marketplace.extension.installed')}</span>) : null}
+
+            {/* {loading && <Icon loading iconClass={getIcon('reload')} />} */}
+            { extension.installed && (
+              <span style={{display: 'flex', flexShrink: 0}} onClick={(e) => e.stopPropagation()}>
+                {extension.reloadRequire && <Button ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure')}</Button>}
+                <InlineActionBar
+                menus={extensionManagerService.contextMenu}
+                context={[extension]} />
+              </span>
+            )}
           </div>
           <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i>{extension.downloadCount}</span>) : null}
@@ -87,13 +96,6 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
             <span>{extension.publisher}</span>
           </div>
           <div className={styles.description}>{extension.description}</div>
-          {
-            extension.installed && (
-              <InlineActionBar
-                menus={extensionManagerService.contextMenu}
-                context={['hello world']} />
-            )
-          }
         </div>
       </div>
     </div>
