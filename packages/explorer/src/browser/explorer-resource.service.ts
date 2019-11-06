@@ -28,6 +28,7 @@ import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
 import { ExplorerFolderContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { CSSProperties } from 'react';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -110,11 +111,13 @@ const extractFileItemShouldBeRendered = (
       const isSelected = status.selected;
       const isExpanded = status.expanded;
       const isFocused = status.focused;
+      const isCuted = status.cuted;
       renderedFiles.push({
         ...file,
         filestat: {
           ...status.file.filestat,
         },
+        style: isCuted ? {opacity: .5} as React.CSSProperties : {},
         depth,
         selected: isSelected,
         expanded: isExpanded,

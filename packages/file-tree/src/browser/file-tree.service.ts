@@ -26,6 +26,7 @@ export type IFileTreeItemStatus = Map<string, {
   selected?: boolean;
   expanded?: boolean;
   focused?: boolean;
+  cuted?: boolean;
   needUpdated?: boolean;
   file: Directory | File;
 }>;
@@ -947,17 +948,28 @@ export class FileTreeService extends WithEventBus {
     };
   }
 
+  @action
   cutFile(from: URI[]) {
     this.pasteStore = {
       files: from,
       type: PasteTypes.CUT,
     };
+    for (const uri of from) {
+      const statusKey = this.getStatutsKey(uri);
+      const status = this.status.get(statusKey);
+      this.status.set(statusKey, {
+        ...status!,
+        cuted: true,
+      });
+    }
   }
 
   pasteFile(to: URI) {
     if (this.pasteStore.type === PasteTypes.CUT) {
       this.pasteStore.files.forEach((file) => {
         this.fileAPI.moveFile(file, to.resolve(file.displayName));
+        const statusKey = this.getStatutsKey(file);
+        this.status.delete(statusKey);
       });
     } else if (this.pasteStore.type === PasteTypes.COPY) {
       this.pasteStore.files.forEach((file) => {
