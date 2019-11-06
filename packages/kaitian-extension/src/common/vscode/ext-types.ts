@@ -1070,13 +1070,6 @@ export class Selection extends Range {
   }
 }
 
-export interface FileOperationOptions {
-  overwrite?: boolean;
-  ignoreIfExists?: boolean;
-  ignoreIfNotExists?: boolean;
-  recursive?: boolean;
-}
-
 export interface FileOperation {
   _type: 1;
   from: URI | undefined;

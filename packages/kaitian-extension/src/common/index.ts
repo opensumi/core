@@ -12,6 +12,7 @@ export interface IExtensionMetaData {
   extensionId: string;
   path: string;
   packageJSON: {[key: string]: any};
+  deafaultPkgNlsJSON: { [key: string]: any } | undefined;
   packageNlsJSON: {[key: string]: any} | undefined;
   extraMetadata: JSONType;
   realPath: string; // 真实路径，用于去除symbolicLink
@@ -50,7 +51,7 @@ export interface IExtensionNodeClientService {
   infoProcessNotExist(): void;
   infoProcessCrash(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
-  updateLanguagePack(languageId: string, languagePackPath: string): void;
+  updateLanguagePack(languageId: string, languagePackPath: string): Promise<void>;
 }
 
 export abstract class ExtensionService {
@@ -84,6 +85,7 @@ export interface IExtensionProps {
   readonly activated: boolean;
   readonly enabled: boolean;
   readonly packageJSON: JSONType;
+  readonly deafaultPkgNlsJSON: JSONType | undefined;
   readonly packageNlsJSON: JSONType | undefined;
   readonly path: string;
   readonly realPath: string;
@@ -103,7 +105,13 @@ export interface IExtension extends IExtensionProps {
 
 //  VSCode Types
 export abstract class VSCodeContributePoint< T extends JSONType = JSONType > extends Disposable {
-  constructor(protected json: T, protected contributes: any, protected extension: IExtensionMetaData, protected packageNlsJSON: JSONType | undefined) {
+  constructor(
+    protected json: T,
+    protected contributes: any,
+    protected extension: IExtensionMetaData,
+    protected packageNlsJSON: JSONType | undefined,
+    protected deafaultPkgNlsJSON: JSONType | undefined,
+  ) {
     super();
   }
   schema?: IJSONSchema;

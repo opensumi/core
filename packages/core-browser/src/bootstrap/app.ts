@@ -46,6 +46,9 @@ export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | '
 export interface IconMap {
   [iconKey: string]: string;
 }
+export interface IPreferences {
+  [key: string]: any;
+}
 export interface IconInfo { cssPath: string; prefix: string; iconMap: IconMap; }
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
@@ -59,6 +62,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   iconStyleSheets?: IconInfo[];
   useCdnIcon?: boolean;
   editorBackgroudImage?: string;
+  defaultPreferences?: IPreferences;
 }
 export interface LayoutConfig {
   [area: string]: {
@@ -131,7 +135,7 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.appendIconStyleSheets(opts.iconStyleSheets, opts.useCdnIcon);
-    this.createBrowserModules();
+    this.createBrowserModules(opts);
   }
   /**
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
@@ -190,7 +194,6 @@ export class ClientApp implements IClientApp {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
-
   }
 
   /**
@@ -205,7 +208,7 @@ export class ClientApp implements IClientApp {
     this.stateService = this.injector.get(ClientAppStateService);
   }
 
-  private createBrowserModules() {
+  private createBrowserModules(opts: IClientAppOpts) {
     const injector = this.injector;
 
     for (const Constructor of this.modules) {
@@ -224,7 +227,7 @@ export class ClientApp implements IClientApp {
     injectCorePreferences(this.injector);
 
     // 注册PreferenceService
-    this.injectPreferenceService(this.injector);
+    this.injectPreferenceService(this.injector, opts);
 
     // 注册资源处理服务
     this.injectResourceProvider(this.injector);
@@ -462,7 +465,7 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  injectPreferenceService(injector: Injector): void {
+  injectPreferenceService(injector: Injector, opts: IClientAppOpts): void {
     const preferencesProviderFactory = () => {
       return (scope: PreferenceScope) => {
         return injector.get(PreferenceProvider, { tag: scope });
@@ -476,12 +479,17 @@ export class ClientApp implements IClientApp {
     injector.addProviders({
       token: PreferenceProviderProvider,
       useFactory: preferencesProviderFactory,
-    });
-
-    injector.addProviders({
+    }, {
       token: PreferenceService,
       useClass: PreferenceServiceImpl,
     });
+    // 设置默认配置
+    if (opts.defaultPreferences) {
+      const preferenceService: PreferenceService = injector.get(PreferenceService);
+      for (const key of Object.keys(opts.defaultPreferences)) {
+        preferenceService.set(key, opts.defaultPreferences[key], PreferenceScope.Default);
+      }
+    }
   }
 
   injectResourceProvider(injector: Injector) {

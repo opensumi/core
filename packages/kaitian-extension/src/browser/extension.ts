@@ -13,6 +13,7 @@ export class Extension extends Disposable implements IExtension {
   public readonly name: string;
   public readonly extraMetadata: JSONType = {};
   public readonly packageJSON: JSONType;
+  public readonly deafaultPkgNlsJSON: JSONType | undefined;
   public readonly packageNlsJSON: JSONType | undefined;
   public readonly path: string;
   public readonly realPath: string;
@@ -39,6 +40,7 @@ export class Extension extends Disposable implements IExtension {
 
     this._enabled = isUseEnable;
     this.packageJSON = this.extensionData.packageJSON;
+    this.deafaultPkgNlsJSON = this.extensionData.deafaultPkgNlsJSON;
     this.packageNlsJSON = this.extensionData.packageNlsJSON;
     this.id = this.extensionData.id;
     this.extensionId = this.extensionData.extensionId;
@@ -86,8 +88,18 @@ export class Extension extends Disposable implements IExtension {
         registerLocalizationBundle( {
           ...getCurrentLanguageInfo(),
           contents: this.packageNlsJSON as any,
-        }, this.packageJSON.name);
+        }, this.id);
       }
+
+      if (this.deafaultPkgNlsJSON) {
+        registerLocalizationBundle( {
+          languageId: 'en-us',
+          languageName: 'en-US',
+          localizedLanguageName: '英文(默认)',
+          contents: this.deafaultPkgNlsJSON as any,
+        }, this.id);
+      }
+
       await this.vscodeMetaService.run(this);
     }
   }
@@ -118,6 +130,7 @@ export class Extension extends Disposable implements IExtension {
       activated: this.activated,
       enabled: this.enabled,
       packageJSON: this.packageJSON,
+      deafaultPkgNlsJSON: this.deafaultPkgNlsJSON,
       packageNlsJSON: this.packageNlsJSON,
       path: this.path,
       realPath: this.realPath,
