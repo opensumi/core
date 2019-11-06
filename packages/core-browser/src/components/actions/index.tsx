@@ -104,7 +104,7 @@ const IconAction: React.FC<{
 /**
  * 用于 scm/title or view/title or inline actions
  */
-export const TitleActionList: React.FC<{
+const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
   context?: any[];
@@ -176,13 +176,13 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
   seperator?: MenuSeparator;
 }> {
   const { menus, context, seperator } = props;
-  const [navMenu, moreMenu] = useMenus(menus, seperator);
+  // todo: 从一致性考虑是否这里不用 context 的命名
+  const [navMenu, moreMenu] = useMenus(menus, seperator, context);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
   return (
     <TitleActionList
       nav={navMenu}
-      more={seperator === 'inline' ? [] : moreMenu}
-      context={context} />
+      more={seperator === 'inline' ? [] : moreMenu} />
   );
 }
