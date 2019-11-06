@@ -57,12 +57,14 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
     if (!extension.installed) {
       return;
     }
-    const result = generateCtxMenu({ menus: extensionManagerService.contextMenu });
+    const result = generateCtxMenu({
+      menus: extensionManagerService.contextMenu,
+      options: { args: [extension] },
+    });
 
     ctxMenuRenderer.show({
       anchor: { x: e.clientX, y: e.clientY },
       menuNodes: result[1],
-      context: [extension],
     });
   }, []);
 
@@ -85,8 +87,8 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               <span style={{display: 'flex', flexShrink: 0}} onClick={(e) => e.stopPropagation()}>
                 {extension.reloadRequire && <Button ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure')}</Button>}
                 <InlineActionBar
-                menus={extensionManagerService.contextMenu}
-                context={[extension]} />
+                  menus={extensionManagerService.contextMenu}
+                  context={[extension]} />
               </span>
             )}
           </div>
