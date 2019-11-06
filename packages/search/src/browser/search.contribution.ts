@@ -14,13 +14,7 @@ import { searchPreferenceSchema } from './search-preferences';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { SEARCH_CONTAINER_ID, SearchBindingContextIds, SEARCH_CONTEXT_MENU } from '../common/content-search';
 import { SearchTreeService } from './search-tree.service';
-import { ContentSearchResult, ISearchTreeItem } from '../common';
-
-const openSearchCmd: Command = {
-  id: 'content-search.openSearch',
-  category: 'search',
-  label: 'Open search sidebar',
-};
+import { ContentSearchResult, ISearchTreeItem, openSearchCmd, OpenSearchCmdOptions } from '../common';
 
 export const searchRefresh: Command = {
   id: 'file-search.refresh',
@@ -117,12 +111,18 @@ export class SearchContribution implements CommandContribution, KeybindingContri
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(openSearchCmd, {
-      execute: (...args: any[]) => {
+      execute: (options?: OpenSearchCmdOptions) => {
         const bar = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
         if (!bar) {
           return;
         }
         bar.activate();
+        if (options && options.includeValue) {
+          this.searchBrowserService.includeValue = options.includeValue;
+          this.searchBrowserService.updateUIState({isDetailOpen: true });
+          this.searchBrowserService.search();
+          return;
+        }
         this.searchBrowserService.setSearchValueFromActivatedEditor();
         this.searchBrowserService.focus();
       },

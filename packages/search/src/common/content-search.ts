@@ -1,4 +1,4 @@
-import { endsWith, startsWith, URI } from '@ali/ide-core-common';
+import { endsWith, startsWith, Command } from '@ali/ide-core-common';
 import { TreeNode, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
@@ -233,3 +233,13 @@ export function cutShortSearchResult(insertResult: ContentSearchResult): Content
     return result;
   }
 }
+
+export interface OpenSearchCmdOptions {
+  includeValue: string;
+}
+
+export const openSearchCmd: Command = {
+  id: 'content-search.openSearch',
+  category: 'search',
+  label: 'Open search sidebar',
+};
