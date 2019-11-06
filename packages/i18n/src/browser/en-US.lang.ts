@@ -101,6 +101,7 @@ export const localizationBundle = {
     'search.ClearSearchResultsAction.label': 'Clear Search Results',
     'search.RefreshAction.label': 'Refresh',
     'search.removeAll.occurrences.files.confirmation.message': 'Are you sure to replace {0} of the {1} files',
+    'search.removeAll.occurrences.file.confirmation.message': 'Are you sure to replace the {0} results in this file?',
     'search.result.hide': 'Hide',
     'search.menu.copyAll': 'Copy all',
     'search.help.showIncludeRule': 'View syntax rules',
@@ -117,6 +118,7 @@ export const localizationBundle = {
     'search.replace.buttonCancel': 'Cancel',
     'search.quickOpen.leftRight': 'Open on the side',
     'search.quickOpen.upDown': 'Open at the bottom',
+    'search.fileReplaceChanges': '{0} ↔ {1} (Replace Preview)',
     'fileResults': 'File results',
     'historyMatches': 'Recently opened',
     'replaceAll.occurrences.files.message': "Replaced {0} occurrences across {1} files with '{2}'.",
@@ -195,6 +197,7 @@ export const localizationBundle = {
     'preference.search.exclude': 'Configure glob patterns for excluding files and folders in searches. Inherits all glob patterns from the `#files.exclude#` setting.',
     'preference.files.watcherExclude.title': 'Exclusion file watch `files.watcherExclude`',
     'preference.search.exclude.title': 'Search exclusion file `search.exclude`',
+    'preference.search.useReplacePreview': 'Controls whether to open Replace Preview when selecting or replacing a match.',
     'preference.files.exclude.title': 'Exclude file display `files.exclude`',
     'preference.array.additem': 'Add',
 
@@ -244,6 +247,10 @@ export const localizationBundle = {
     'open.editors.title': 'OPEN EDITORS',
     'open.editors.save.all': 'Save All',
     'open.editors.close.all': 'Close All',
+    'open.editors.close.byId': 'Close files in the group',
+    'open.editors.save.byId': 'Save files in the group',
+    'open.editors.empty': 'No file is open in the editor',
+    'open.editors.group.title': 'Group {0}',
 
     'terminal.name': 'Terminal',
 

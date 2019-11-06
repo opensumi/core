@@ -9,7 +9,6 @@ describe('connection browser', () => {
 
     const fakeWSURL = 'ws://localhost:8089';
     const mockServer = new Server(fakeWSURL);
-    // TODO: 增加消息发送测试
 
     mockServer.on('connection', (socket) => {
       socket.on('message', (msg) => {
@@ -23,9 +22,7 @@ describe('connection browser', () => {
       });
     });
 
-    const wsChannelHandler = new WSChanneHandler(fakeWSURL, {
-      setBackgroundColor: () => {},
-    });
+    const wsChannelHandler = new WSChanneHandler(fakeWSURL);
 
     await wsChannelHandler.initHandler();
     await new Promise((resolve) => {
