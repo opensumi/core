@@ -3,6 +3,9 @@ import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI } from '@ali/id
 import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { observable, action } from 'mobx';
 import { getSymbolIcon } from '@ali/ide-core-browser/lib/icon';
+import { WorkbenchEditorService } from '@ali/ide-editor';
+import { EditorSelectionChangeEvent } from '@ali/ide-editor/lib/browser';
+import debounce = require('lodash.debounce');
 
 export interface NodeStatus {
   selected?: boolean;
@@ -14,6 +17,9 @@ export class OutLineService extends WithEventBus {
   @Autowired()
   documentSymbolStore: DocumentSymbolStore;
 
+  @Autowired(WorkbenchEditorService)
+  editorService: WorkbenchEditorService;
+
   @observable.ref treeNodes: TreeSymbol[] = [];
 
   // 状态存储
@@ -23,16 +29,62 @@ export class OutLineService extends WithEventBus {
   private currentUri: URI;
   private currentSelectedId: string;
 
+  // 处理事件去重 + debounce
+  private debouncedChangeEvent: Map<string, () => any> = new Map();
+
+  @OnEvent(EditorSelectionChangeEvent)
+  onEditorSelectionChangeEvent(e: EditorSelectionChangeEvent) {
+    this.doUpdate(e.payload.editorUri);
+  }
+
   @OnEvent(DocumentSymbolChangedEvent)
   onDocumentSymbolChange(e: DocumentSymbolChangedEvent) {
-    const symbols = this.documentSymbolStore.getDocumentSymbol(e.payload);
+    this.doUpdate(e.payload);
+  }
+
+  @action.bound
+  handleTwistieClick(node: TreeSymbol) {
+    const status = this.statusMap.get(node.id)!;
+    status.expanded = !status.expanded;
+    const nodes: TreeSymbol[] = [];
+    createTreeNodesFromSymbolTreeDeep({ children: this.currentSymbols } as TreeSymbol, -1, nodes, this.statusMap, this.currentUri.toString());
+    this.treeNodes = nodes;
+  }
+
+  // 树重新生成逻辑会比较好维护，但是性能会差一些
+  @action.bound
+  onSelect(nodes: TreeSymbol[]) {
+    this.revealRange(nodes[0]);
+    const prevNode = this.treeNodes.find((item) => item.id === this.currentSelectedId)!;
+    if (prevNode) {
+      prevNode.selected = false;
+      this.statusMap.get(this.currentSelectedId)!.selected = false;
+    }
+    this.treeNodes.find((item) => item.id === nodes[0].id)!.selected = true;
+    this.statusMap.get(nodes[0].id)!.selected = true;
+    this.currentSelectedId = nodes[0].id;
+    // 改变引用
+    this.treeNodes = this.treeNodes.slice();
+  }
+
+  protected notifyUpdate(uri: URI) {
+    if (!this.debouncedChangeEvent.has(uri.toString())) {
+      this.debouncedChangeEvent.set(uri.toString(), debounce(() => {
+        this.doUpdate(uri);
+      }, 100, {maxWait: 1000}));
+    }
+    this.debouncedChangeEvent.get(uri.toString())!();
+  }
+
+  protected doUpdate(uri: URI) {
+    const symbols = this.documentSymbolStore.getDocumentSymbol(uri);
+    this.currentSymbols = symbols || [];
+    this.currentUri = uri;
     if (symbols) {
-      this.currentSymbols = symbols;
-      this.currentUri = e.payload;
       const nodes: TreeSymbol[] = [];
-      createTreeNodesFromSymbolTreeDeep({ children: symbols } as TreeSymbol, -1, nodes, this.statusMap, e.payload.toString());
+      createTreeNodesFromSymbolTreeDeep({ children: symbols } as TreeSymbol, -1, nodes, this.statusMap, uri.toString());
       this.treeNodes = nodes.map((node) => {
-        const symbolId = e.payload + node.name;
+        const symbolId = uri + node.name;
         let status = this.statusMap.get(symbolId);
         if (!status) {
           status = {
@@ -48,31 +100,15 @@ export class OutLineService extends WithEventBus {
           ...status,
         };
       });
+    } else {
+      this.treeNodes = [];
     }
   }
 
-  @action.bound
-  handleTwistieClick(node: TreeSymbol) {
-    const status = this.statusMap.get(node.id)!;
-    status.expanded = !status.expanded;
-    const nodes: TreeSymbol[] = [];
-    createTreeNodesFromSymbolTreeDeep({ children: this.currentSymbols } as TreeSymbol, -1, nodes, this.statusMap, this.currentUri.toString());
-    this.treeNodes = nodes;
-  }
-
-  // 树重新生成逻辑会比较好维护，但是性能会差一些
-  @action.bound
-  onSelect(nodes: TreeSymbol) {
-    const prevNode = this.treeNodes.find((item) => item.id === this.currentSelectedId)!;
-    if (prevNode) {
-      prevNode.selected = false;
-      this.statusMap.get(this.currentSelectedId)!.selected = false;
-    }
-    this.treeNodes.find((item) => item.id === nodes[0].id)!.selected = true;
-    this.statusMap.get(nodes[0].id)!.selected = true;
-    this.currentSelectedId = nodes[0].id;
-    // 改变引用
-    this.treeNodes = this.treeNodes.slice();
+  protected revealRange(symbol: TreeSymbol) {
+    const currentEditor = this.editorService.currentEditorGroup.codeEditor;
+    currentEditor.setSelection(symbol.selectionRange);
+    currentEditor.monacoEditor.revealRangeInCenter(symbol.range);
   }
 }
 
@@ -95,7 +131,7 @@ function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, tr
       depth: depth + 1,
       parent,
       id: symbolId,
-      icon: getSymbolIcon(symbol.kind),
+      icon: getSymbolIcon(symbol.kind) + ' outline-icon',
       ...status,
     };
     treeNodes.push(treeSymbol);

@@ -314,5 +314,6 @@ export const localizationBundle = {
     'about': 'About',
 
     'outline.title': 'OutLine',
+    'outline.noinfo': 'There is no outline information from the active editor',
   },
 };
