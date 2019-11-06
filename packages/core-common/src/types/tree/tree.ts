@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { URI } from '../../uri';
+import { CSSProperties } from 'react';
 
 export interface TreeNodeHighlightRange {
   start: number;
@@ -51,6 +52,10 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
    * 图标的classname
    */
   readonly icon?: string;
+  /**
+   * 图标的样式
+   */
+  readonly iconStyle?: CSSProperties;
   /**
    * 节点描述
    */

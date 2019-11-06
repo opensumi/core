@@ -294,7 +294,7 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.kt_file_icon)}>
+    return <div className={cls(node.icon, styles.kt_file_icon)} style={node.iconStyle}>
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
     </div>;
   };
