@@ -40,4 +40,7 @@ export const defaultConfig: LayoutConfig = {
   [SlotLocation.bottomPanel]: {
     modules: ['@ali/ide-activity-panel/bottom'],
   },
+  [SlotLocation.extra]: {
+    modules: ['breadcrumb-menu'],
+  },
 };

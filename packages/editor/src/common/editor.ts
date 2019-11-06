@@ -156,6 +156,8 @@ export abstract class WorkbenchEditorService {
   abstract saveAll(includeUntitled?: boolean): Promise<void>;
 
   abstract async close(uri: any, force?: boolean): Promise<void>;
+
+  abstract getAllOpenedUris(): URI[];
 }
 
 export interface IResourceOpenOptions {
