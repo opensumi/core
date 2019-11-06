@@ -4,9 +4,7 @@ import { IDisposable, dispose, Disposable } from '@ali/ide-core-common/lib/dispo
 import { equals } from '@ali/ide-core-common/lib/utils/arrays';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { MenuId, MenuNode } from '@ali/ide-core-browser/lib/menu/next/base';
-import { MenuService, IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
-import { splitMenuItems, TupleMenuNodeResult } from '@ali/ide-core-browser/lib/menu/next/menu-util';
+import { MenuService, IMenu, MenuId, MenuNode, splitMenuItems, TupleMenuNodeResult } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMProvider, ISCMResource, ISCMResourceGroup } from '../common';
 import { getSCMResourceContextKey } from './scm-util';

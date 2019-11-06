@@ -1,16 +1,17 @@
 import * as React from 'react';
-import { Dropdown, Menu } from 'antd';
+import { Menu } from 'antd';
+import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
 import { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 import 'antd/lib/dropdown/style/index.less';
 
-import { MenuNode } from '../../menu/next/base';
-import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
+import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode } from '../../menu/next';
 import Icon from '../icon';
+import { getIcon } from '../../icon';
+import { useInjectable } from '../../react-hooks';
 
 import * as styles from './styles.module.less';
-import { getIcon } from '../../icon';
 
 const MenuAction: React.FC<{
   data: MenuNode;
@@ -20,11 +21,15 @@ const MenuAction: React.FC<{
       <div className={styles.icon}>
         { data.icon && <Icon iconClass={data.icon} /> }
       </div>
-      {data.label}
-      <div className={styles.shortcut}>{data.shortcut}</div>
-      <div className={styles.submenuIcon}>
-        {/* need a arrow right here */}
-      </div>
+      <div className={styles.label}>{mnemonicButtonLabel(data.label, true)}</div>
+      {
+        data.keybinding
+          ? <div className={styles.shortcut}>{data.keybinding}</div>
+          : null
+      }
+      {/* <div className={styles.submenuIcon}>
+        <Icon iconClass={getIcon('right')} />
+      </div> */}
     </>
   );
 };
@@ -63,7 +68,7 @@ export const MenuActionList: React.FC<{
             return <Menu.Divider key={`divider-${index}`} />;
           }
           return (
-            <Menu.Item key={menuNode.id}>
+            <Menu.Item key={menuNode.id} disabled={menuNode.disabled}>
               <MenuAction key={menuNode.id} data={menuNode} />
             </Menu.Item>
           );
@@ -103,6 +108,19 @@ export const TitleActionList: React.FC<{
   more?: MenuNode[];
   context?: any;
 }> = ({ nav: primary = [], more: secondary = [], context }) => {
+  const ctxMenuRenderer = useInjectable(ICtxMenuRenderer);
+
+  const handleShowMore = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
+    if (secondary) {
+      ctxMenuRenderer.show({
+        anchor: { x: e.clientX, y: e.clientY },
+        // 合并结果
+        menuNodes: secondary,
+        context,
+      });
+    }
+  }, [ secondary, context ]);
+
   return (
     <div className={styles.titleActions}>
       {
@@ -116,13 +134,21 @@ export const TitleActionList: React.FC<{
       }
       {
         secondary.length > 0
+          ? <span
+            className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`}
+            onClick={handleShowMore} />
+          : null
+      }
+      {/* {
+        secondary.length > 0
           ? <Dropdown
+            transitionName=''
             trigger={['click']}
             overlay={<MenuActionList data={secondary} context={context} />}>
             <span className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`} />
           </Dropdown>
           : null
-      }
+      } */}
     </div>
   );
 };

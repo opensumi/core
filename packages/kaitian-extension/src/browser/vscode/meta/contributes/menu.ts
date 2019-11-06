@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction, replaceLocalizePlaceholder, IContextKeyService } from '@ali/ide-core-browser';
 import { TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { SCMMenuId } from '@ali/ide-scm/lib/common';
-import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next/base';
+import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';

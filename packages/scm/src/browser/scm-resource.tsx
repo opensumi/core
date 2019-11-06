@@ -4,7 +4,6 @@ import { TreeViewActionTypes, SelectableTreeNode, URI } from '@ali/ide-core-comm
 import * as paths from '@ali/ide-core-common/lib/path';
 import { IThemeService } from '@ali/ide-theme';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
 import { ISCMResource, ISCMResourceGroup } from '../common';
 import { SCMMenus } from './scm-menu';

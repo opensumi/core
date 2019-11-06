@@ -10,15 +10,16 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
 import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { AppConfig, ConfigProvider } from '@ali/ide-core-browser';
+import { getOctIcon } from '@ali/ide-core-browser/lib/icon';
 
 import { SCMService, ISCMRepository, scmResourceViewId, scmContainerId, scmProviderViewId } from '../common';
 import { getSCMRepositoryDesc } from './scm-util';
 import { SCMMenus } from './scm-menu';
 import { SCMTitleToolBar } from './components/scm-actionbar.view';
 import { ISCMProvider } from '../common';
-import { getOctIcon } from '@ali/ide-core-browser/lib/icon';
 
-// 更新左侧 ActivityBar 中 SCM 模块边的数字
+// 更新 ActivityBar 中 SCM 模块边的数字
 @Injectable()
 export class SCMBadgeController {
   private disposables: IDisposable[] = [];
@@ -252,6 +253,9 @@ export class SCMViewController {
   @Autowired(IMainLayoutService)
   private readonly  layoutService: IMainLayoutService;
 
+  @Autowired(AppConfig)
+  private configContext: AppConfig;
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -362,7 +366,9 @@ export class SCMViewController {
 
     if (container) {
       ReactDOM.render(
-        <SCMTitleToolBar menus={titleMenu} context={provider} />,
+        <ConfigProvider value={this.configContext} >
+          <SCMTitleToolBar menus={titleMenu} context={provider} />
+        </ConfigProvider>,
         container,
         () => {
           container.classList.remove('p-mod-hidden');
