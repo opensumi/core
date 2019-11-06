@@ -13,8 +13,9 @@ export class ExplorerContribution implements ComponentContribution {
       // TODO: 支持只注册容器，不注册View
       {
         component: ExplorerContainer,
-        id: 'file-explorer',
-        weight: 3,
+        id: 'explorer-container',
+        weight: 0,
+        collapsed: false,
       },
     ], {
       iconClass: getIcon('explorer'),
