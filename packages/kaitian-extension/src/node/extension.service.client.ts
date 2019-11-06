@@ -77,7 +77,7 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     return await this.extensionService.disposeClientExtProcess(clientId, info);
   }
 
-  public async updateLanguagePack(languageId: string, languagePack: string) {
+  public async updateLanguagePack(languageId: string, languagePack: string): Promise<void> {
     let languagePacks: { [key: string]: any } = {};
     if (fs.existsSync(path.join(DEFAULT_NLS_CONFIG_DIR, 'languagepacks.json'))) {
       const rawLanguagePacks = fs.readFileSync(path.join(DEFAULT_NLS_CONFIG_DIR, 'languagepacks.json')).toString();

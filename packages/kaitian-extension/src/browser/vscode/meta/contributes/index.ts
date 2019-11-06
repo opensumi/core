@@ -314,6 +314,7 @@ export class VSCodeContributeRunner extends Disposable {
             contributes,
             this.extension,
             this.extension.packageNlsJSON,
+            this.extension.deafaultPkgNlsJSON,
           ]);
 
           console.log('contributePoint', this.extension.packageJSON.name, contributeName);

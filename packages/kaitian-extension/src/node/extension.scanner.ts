@@ -62,9 +62,11 @@ export class ExtensionScanner {
     // 插件校验逻辑
     console.log('localization !!', localization);
     const pkgPath = path.join(extensionPath, 'package.json');
+    const defaultPkgNlsPath = path.join(extensionPath, 'package.nls.json');
     const pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
     const extendPath = path.join(extensionPath, 'kaitian.js');
     const pkgExist = await fs.pathExists(pkgPath);
+    const defaultPkgNlsPathExist = await fs.pathExists(defaultPkgNlsPath);
     const pkgNlsExist = await fs.pathExists(pkgNlsPath);
     const extendExist = await fs.pathExists(extendPath);
 
@@ -86,6 +88,11 @@ export class ExtensionScanner {
     let pkgNlsJSON: { [key: string]: string} | undefined;
     if (pkgNlsExist) {
       pkgNlsJSON = await fs.readJSON(pkgNlsPath);
+    }
+
+    let deafaultPkgNlsJSON: { [key: string]: string } | undefined;
+    if (defaultPkgNlsPathExist) {
+      deafaultPkgNlsJSON = await fs.readJSON(defaultPkgNlsPath);
     }
 
     if ( !(pkgCheckResult || extendCheckResult) ) {
@@ -128,6 +135,7 @@ export class ExtensionScanner {
       extendConfig,
       path: extensionPath,
       packageJSON,
+      deafaultPkgNlsJSON,
       packageNlsJSON: pkgNlsJSON,
       extraMetadata: extensionExtraMetaData,
       realPath: await fs.realpath(extensionPath),
