@@ -318,5 +318,6 @@ export const localizationBundle = {
 
     'outline.title': 'OutLine',
     'outline.noinfo': 'There is no outline information from the active editor',
+    'outline.collapse.all': 'Collapse All',
   },
 };
