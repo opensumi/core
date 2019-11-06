@@ -22,6 +22,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     getScope,
     covert,
     clearCovert,
+    fixed,
   }: KeymapService = useInjectable(IKeymapService);
   const message: IMessageService = useInjectable(IMessageService);
 
@@ -39,7 +40,15 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     }: KeybindingItem = data;
     const [isEditing, setIsEditing] = React.useState(false);
     const [value, setValue] = React.useState(keybinding);
+    const [isDirty, setIsDirty] = React.useState(false);
     const clickHandler = () => {
+      // 修改时固定设置页面
+      if (!isDirty) {
+        fixed();
+        setIsDirty(true);
+      }
+      clearCovert();
+      setValue(keybinding);
       setIsEditing(true);
     };
     const updateKeybinding = (value: string) => {
@@ -83,6 +92,11 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     };
 
     const renderReset = (source?: string) => {
+      // 修改时固定设置页面
+      if (!isDirty) {
+        fixed();
+        setIsDirty(true);
+      }
       const reset = () => {
         removeKeybinding(id);
       };

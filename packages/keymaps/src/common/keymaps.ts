@@ -76,4 +76,10 @@ export interface IKeymapService {
    */
   open(): Promise<void>;
 
+  /**
+   * 固定快捷键面板
+   * @returns {Promise<void>}
+   * @memberof IKeymapService
+   */
+  fixed(): Promise<void>;
 }
