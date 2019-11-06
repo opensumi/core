@@ -1,7 +1,8 @@
 import * as React from 'react';
 import * as cls from 'classnames';
-
 import * as styles from './styles.module.less';
+
+import { isUndefined } from '@ali/ide-core-common';
 
 export interface InputSelection {
   start: number;
@@ -30,17 +31,27 @@ export interface InputProp extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 const PureInput: React.FC<InputProp> = (
-  { className, autoFocus, selection, ...restProps },
+  { className, autoFocus, selection, onChange, ...restProps },
   ref: React.MutableRefObject<HTMLInputElement>,
 ) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isDirty, setIsDirty] = React.useState(false);
   React.useImperativeHandle(ref, () => inputRef.current!);
 
+  const changeHandler = (event) => {
+    if (onChange) {
+      onChange(event);
+    }
+    if (!isDirty) {
+      setIsDirty(true);
+    }
+  };
+
   React.useEffect(() => {
-    if (selection && selection.start) {
+    if (selection && !isUndefined(selection.start) && !isDirty) {
       inputRef.current!.setSelectionRange(selection.start, selection.end);
     }
-  }, [selection]);
+  }, [selection, isDirty]);
 
   return (
     <input
@@ -48,6 +59,7 @@ const PureInput: React.FC<InputProp> = (
       className={cls(styles.input, className)}
       ref={inputRef}
       autoFocus={autoFocus}
+      onChange={changeHandler}
       spellCheck={false}
       autoCapitalize='off'
       autoCorrect='off'
