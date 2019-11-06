@@ -95,7 +95,7 @@ export namespace FILE_COMMANDS {
   export const LOCATION: Command = {
     id: 'explorer.location',
     category: CATEGORY,
-    label: '%explorer.location%',
+    label: '%file.location%',
   };
 }
 

@@ -458,9 +458,9 @@ export class FileTreeService extends WithEventBus {
     }
     if (status) {
       // 如果已存在该文件，提示是否替换文件
-      const ok = localize('explorer.comfirm.replace.ok');
-      const cancel = localize('explorer.comfirm.replace.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.replace', from.displayName, targetDir.displayName), [cancel, ok]);
+      const ok = localize('file.comfirm.replace.ok');
+      const cancel = localize('file.comfirm.replace.cancel');
+      const comfirm = await this.dislogService.warning(formatLocalize('file.comfirm.replace', from.displayName, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       } else {
@@ -483,9 +483,9 @@ export class FileTreeService extends WithEventBus {
       }
     }
     if (this.corePreferences['explorer.confirmMove']) {
-      const ok = localize('explorer.comfirm.move.ok');
-      const cancel = localize('explorer.comfirm.move.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.move', `[${froms.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
+      const ok = localize('file.comfirm.move.ok');
+      const cancel = localize('file.comfirm.move.cancel');
+      const comfirm = await this.dislogService.warning(formatLocalize('file.comfirm.move', `[${froms.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       }
@@ -497,10 +497,10 @@ export class FileTreeService extends WithEventBus {
 
   async deleteFiles(uris: URI[]) {
     if (this.corePreferences['explorer.confirmDelete']) {
-      const ok = localize('explorer.comfirm.delete.ok');
-      const cancel = localize('explorer.comfirm.delete.cancel');
+      const ok = localize('file.comfirm.delete.ok');
+      const cancel = localize('file.comfirm.delete.cancel');
       const deleteFilesMessage = `[${uris.map((uri) => uri.displayName).join(',')}]`;
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.delete', deleteFilesMessage), [cancel, ok]);
+      const comfirm = await this.dislogService.warning(formatLocalize('file.comfirm.delete', deleteFilesMessage), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       }
@@ -626,6 +626,19 @@ export class FileTreeService extends WithEventBus {
         ...status,
         selected: false,
         focused: false,
+      });
+    }
+  }
+
+  /**
+   * 重置所有文件cuted属性
+   */
+  @action
+  resetFilesCutedStatus() {
+    for (const [key, status] of this.status) {
+      this.status.set(key, {
+        ...status,
+        cuted: false,
       });
     }
   }
@@ -942,6 +955,7 @@ export class FileTreeService extends WithEventBus {
   }
 
   copyFile(from: URI[]) {
+    this.resetFilesCutedStatus();
     this.pasteStore = {
       files: from,
       type: PasteTypes.COPY,
@@ -954,6 +968,7 @@ export class FileTreeService extends WithEventBus {
       files: from,
       type: PasteTypes.CUT,
     };
+    this.resetFilesCutedStatus();
     for (const uri of from) {
       const statusKey = this.getStatutsKey(uri);
       const status = this.status.get(statusKey);
@@ -971,14 +986,14 @@ export class FileTreeService extends WithEventBus {
         const statusKey = this.getStatutsKey(file);
         this.status.delete(statusKey);
       });
+      this.pasteStore = {
+        files: [],
+        type: PasteTypes.NONE,
+      };
     } else if (this.pasteStore.type === PasteTypes.COPY) {
       this.pasteStore.files.forEach((file) => {
         this.fileAPI.copyFile(file, to.resolve(file.displayName));
       });
     }
-    this.pasteStore = {
-      files: [],
-      type: PasteTypes.NONE,
-    };
   }
 }

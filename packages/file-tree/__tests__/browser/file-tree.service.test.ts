@@ -433,7 +433,7 @@ describe('FileTreeService should be work', () => {
       });
 
       const warning = jest.fn(() => {
-        return localize('explorer.comfirm.replace.ok');
+        return localize('file.comfirm.replace.ok');
       });
       injector.mock(IDialogService, 'warning', warning);
       const moveFile = jest.fn();
@@ -474,7 +474,7 @@ describe('FileTreeService should be work', () => {
         useValue: {},
       });
       const warning = jest.fn(() => {
-        return localize('explorer.comfirm.delete.ok');
+        return localize('file.comfirm.delete.ok');
       });
       injector.mock(IDialogService, 'warning', warning);
       const deleteFile = jest.fn();
