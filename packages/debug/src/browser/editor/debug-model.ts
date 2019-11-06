@@ -1,7 +1,7 @@
 import { URI, IDisposable, DisposableCollection, isOSX } from '@ali/ide-core-common';
 import { Injector, Injectable, Autowired } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
-import { DebugBreakpointWidget, TopStackType } from './debug-breakpoint-widget';
+import { DebugBreakpointWidget } from './debug-breakpoint-widget';
 import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { BreakpointManager } from '../breakpoint';
 import { DebugEditor, IDebugSessionManager } from '../../common';

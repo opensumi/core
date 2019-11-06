@@ -58,31 +58,3 @@ export interface BreakpointsChangeEvent {
 export interface ScopeMap {
   [scopeName: string]: string;
 }
-
-export interface PlatformSpecificAdapterContribution {
-  program?: string;
-  args?: string[];
-  runtime?: string;
-  runtimeArgs?: string[];
-}
-
-/**
- * package.json中的debugger贡献点定义
- */
-export interface DebuggerContribution extends PlatformSpecificAdapterContribution {
-  type: string;
-  label?: string;
-  languages?: string[];
-  enableBreakpointsFor?: {
-      languageIds: string[],
-  };
-  configurationAttributes?: IJSONSchema[];
-  configurationSnippets?: IJSONSchemaSnippet[];
-  variables?: ScopeMap;
-  adapterExecutableCommand?: string;
-  win?: PlatformSpecificAdapterContribution;
-  winx86?: PlatformSpecificAdapterContribution;
-  windows?: PlatformSpecificAdapterContribution;
-  osx?: PlatformSpecificAdapterContribution;
-  linux?: PlatformSpecificAdapterContribution;
-}

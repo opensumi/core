@@ -6,3 +6,5 @@ export * from './debug-session';
 export * from './debug-session-options';
 export * from './debug-editor';
 export * from './debug-console';
+export * from './debug-schema-updater';
+export * from './types';

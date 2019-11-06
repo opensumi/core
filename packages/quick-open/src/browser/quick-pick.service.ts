@@ -18,10 +18,6 @@ export class QuickPickServiceImpl implements QuickPickService {
         resolve(undefined);
         return;
       }
-      if (items.length === 1) {
-        items[0].run(QuickOpenMode.OPEN);
-        return;
-      }
 
       this.quickOpenService.open({
         onType: (lookfor, acceptor) => acceptor(items),

@@ -134,7 +134,11 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
             return renderTextValue();
           }
         case 'array':
-          return renderArrayValue();
+          if (prop.items && prop.items.type === 'string') {
+            return renderArrayValue();
+          } else {
+            return renderOtherValue();
+          }
         default:
           return renderOtherValue();
       }

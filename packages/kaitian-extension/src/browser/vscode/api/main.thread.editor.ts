@@ -250,7 +250,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   $setSelections(id: string, selections: ISelection[]): Promise<void>  {
     if (!this.getEditor(id)) {
-      return Promise.reject(`TextEditor: ${id}`);
+      return Promise.reject(`No Such TextEditor: ${id}`);
     }
     this.getEditor(id)!.setSelections(selections);
     return Promise.resolve();
