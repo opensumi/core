@@ -1,22 +1,28 @@
 'use strict';
 import { Autowired, Injectable } from '@ali/common-di';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Emitter, Event, IBaseMarkerManager, IMarkerData, MarkerManager, OnEvent, URI } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { EditorGroupCloseEvent, EditorGroupOpenEvent } from '@ali/ide-editor/lib/browser';
-import { IThemeService, ThemeType } from '@ali/ide-theme';
+import { ThemeType } from '@ali/ide-theme';
 import { IMarkerService } from '../common/types';
 import { FilterOptions } from './markers-filter.model';
 import { MarkerViewModel } from './markers.model';
+import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
+import debounce = require('lodash.debounce');
 
 const MAX_DIAGNOSTICS_BADGE = 1000;
 
-@Injectable()
-export class MarkerService implements IMarkerService {
+export interface ViewSize {
+  w: string | number;
+  h: number;
+}
 
-  @Autowired(IThemeService)
-  private readonly themeService: IThemeService;
+@Injectable()
+export class MarkerService extends Themable implements IMarkerService {
+  @Autowired(AppConfig)
+  private config: AppConfig;
 
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
@@ -34,7 +40,13 @@ export class MarkerService implements IMarkerService {
   private readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
   public readonly onMarkerFilterChanged: Event<FilterOptions | undefined> = this.onMarkerFilterChangedEmitter.event;
 
+  private readonly onViewResizeEmitter = new Emitter<ViewSize>();
+  public readonly onViewResize: Event<ViewSize> = this.onViewResizeEmitter.event;
+
+  private onViewResizeCaller = debounce((viewSize: ViewSize) => this.onViewResizeEmitter.fire(viewSize), 20);
+
   constructor() {
+    super();
     this.markerViewModel = new MarkerViewModel(this, this.labelService);
   }
 
@@ -67,6 +79,15 @@ export class MarkerService implements IMarkerService {
 
   public getManager(): IBaseMarkerManager {
     return this.markerManager;
+  }
+
+  @OnEvent(ResizeEvent)
+  onResize(e: ResizeEvent) {
+    if (e.payload.slotLocation === getSlotLocation('@ali/ide-markers', this.config.layoutConfig)) {
+      const width = e.payload.width;
+      const height = e.payload.height;
+      this.onViewResizeCaller({w: width, h: height});
+    }
   }
 
   /**

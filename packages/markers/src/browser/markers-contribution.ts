@@ -4,7 +4,8 @@ import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout
 import { nls } from '../common';
 import { MarkerFilterPanel } from './markers-filter.view';
 import { MarkerService } from './markers-service';
-import { MarkerPanel } from './markers.view';
+// import { MarkerPanel } from './markers.view';
+import { MarkerPanel } from './markers-tree.view';
 
 const MARKER_CONTAINER_ID = 'ide-markers';
 

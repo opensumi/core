@@ -45,6 +45,7 @@ function getIconStyle(severity: MarkerSeverity, theme: ThemeType): CSSProperties
     height: '16px',
     width: '16px',
     minWidth: '16px',
+    marginRight: '5px',
   };
 }
 
