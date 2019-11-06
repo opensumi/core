@@ -9,12 +9,11 @@ export const USER_PREFERENCE_URI = new URI().withScheme(UserStorageUri.SCHEME).w
 @Injectable()
 export class UserPreferenceProvider extends AbstractResourcePreferenceProvider {
 
-    public name: 'user';
-    protected getUri(): URI {
-        return USER_PREFERENCE_URI;
-    }
+  protected getUri(): URI {
+    return USER_PREFERENCE_URI;
+  }
 
-    protected getScope() {
-        return PreferenceScope.User;
-    }
+  protected getScope() {
+    return PreferenceScope.User;
+  }
 }

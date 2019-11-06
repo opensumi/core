@@ -103,7 +103,7 @@ function getAMDDefine(): any {
 @Injectable()
 export class ExtensionServiceImpl implements ExtensionService {
   private extensionScanDir: string[] = [];
-  private extenionCandidate: string[] = [];
+  private extensionCandidate: string[] = [];
   private extraMetadata: IExtraMetaData = {};
   private protocol: RPCProtocol;
 
@@ -353,7 +353,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
     if (!this.extensionMetaDataArr) {
-      const extensions = await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extenionCandidate, getPreferenceLanguageId(), this.extraMetadata);
+      const extensions = await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extensionCandidate, getPreferenceLanguageId(), this.extraMetadata);
       console.log(extensions);
       this.extensionMetaDataArr = extensions;
     }
@@ -400,24 +400,25 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
     }
-    if (this.appConfig.extenionCandidate) {
-      this.extenionCandidate.push(this.appConfig.extenionCandidate);
-    }
     if (isElectronEnv() && electronEnv.metadata.extenionCandidate) {
-      this.extenionCandidate = this.extenionCandidate.concat(electronEnv.metadata.extenionCandidate);
+      this.extensionCandidate = this.extensionCandidate.concat(electronEnv.metadata.extenionCandidate);
+    }
+    if (this.appConfig.extensionCandidate) {
+      this.extensionCandidate = this.extensionCandidate.concat(this.appConfig.extensionCandidate.map((extension) => extension.path));
     }
     this.extraMetadata[LANGUAGE_BUNDLE_FIELD] = './package.nls.json';
   }
 
   private async initExtension() {
     for (const extensionMetaData of this.extensionMetaDataArr) {
+      const extensionCandidate = this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === extensionMetaData.realPath);
       const extension = this.injector.get(Extension, [
         extensionMetaData,
         this,
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
         // 通过路径判决是否是内置插件
-        extensionMetaData.realPath.startsWith(this.appConfig.extensionDir!),
+        extensionMetaData.realPath.startsWith(this.appConfig.extensionDir!) || (extensionCandidate ? extensionCandidate.isBuiltin : false),
       ]);
 
       this.extensionMap.set(extensionMetaData.path, extension);

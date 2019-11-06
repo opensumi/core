@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer } from '@ali/ide-core-browser';
@@ -11,6 +11,7 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { IEditorDocumentModelService } from './doc-model/types';
 
 interface Resource {
   group: EditorGroup;
@@ -44,6 +45,12 @@ export class EditorContribution implements CommandContribution, MenuContribution
   @Autowired(ContextMenuRenderer)
   private contextMenuRenderer: ContextMenuRenderer;
 
+  @Autowired(IEditorDocumentModelService)
+  private editorDocumentModelService: IEditorDocumentModelService;
+
+  @Autowired(IDocPersistentCacheProvider)
+  cacheProvider: IDocPersistentCacheProvider;
+
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
       id: 'ide-editor',
@@ -65,7 +72,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     if (isElectronRenderer()) {
       return this.onWillStopElectron();
     } else {
-      return this.workbenchEditorService.hasDirty();
+      return this.workbenchEditorService.hasDirty() || !this.cacheProvider.isFlushed();
     }
   }
 
@@ -77,6 +84,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
         }
       }
     }
+
+    if (!this.cacheProvider.isFlushed()) {
+      return true;
+    }
+
     return false;
   }
 
@@ -137,6 +149,19 @@ export class EditorContribution implements CommandContribution, MenuContribution
         const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
         if (editor) {
           await editor.save();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.SAVE_URI, {
+      execute: async (uri: URI) => {
+        const docRef = this.editorDocumentModelService.getModelReference(uri);
+        if (docRef && docRef.instance.dirty) {
+          try {
+            await docRef.instance.save();
+          } catch (e) {
+            docRef.dispose();
+          }
         }
       },
     });

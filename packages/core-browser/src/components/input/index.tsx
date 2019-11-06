@@ -64,9 +64,7 @@ export const ValidateInput: React.FC<ValidateInputProp> = (
   { className, autoFocus, validate, onChange, ...restProps },
   ref: React.MutableRefObject<HTMLInputElement>,
 ) => {
-  const inputRef = React.useRef<HTMLInputElement | null>(null);
   const [validateMessage, setValidateMessage] = React.useState<ValidateMessage>();
-  React.useImperativeHandle(ref, () => inputRef.current!);
 
   const renderValidateMessage = () => {
     if (validateMessage && validateMessage.message) {
@@ -77,7 +75,6 @@ export const ValidateInput: React.FC<ValidateInputProp> = (
       </div>;
     }
   };
-
   const onChangeHandler = (event) => {
     if (typeof validate === 'function') {
       const message = validate(event.target.value);
@@ -91,8 +88,7 @@ export const ValidateInput: React.FC<ValidateInputProp> = (
   return <div className={styles.input_box}>
     <Input
       type='text'
-      className={cls(styles.input, className)}
-      ref={inputRef}
+      className={cls(styles.input, validateMessage && (validateMessage.type === VALIDATE_TYPE.ERROR ? styles.error : validateMessage.type === VALIDATE_TYPE.WRANING ? styles.wraning : styles.info), className)}
       autoFocus={autoFocus}
       spellCheck={false}
       onChange={onChangeHandler}

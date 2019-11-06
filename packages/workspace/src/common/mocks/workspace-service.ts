@@ -24,12 +24,12 @@ export class MockWorkspaceService implements IWorkspaceService {
     await this.setWorkspace();
   }
 
-  async setWorkspace() {
-    await this.updateWorkspace();
+  async setWorkspace(workspaceStat?: FileStat | undefined) {
+    await this.updateWorkspace(workspaceStat);
   }
 
-  async updateWorkspace() {
-    await this.updateRoots();
+  async updateWorkspace(workspaceStat?: FileStat | undefined) {
+    await this.updateRoots(workspaceStat);
   }
 
   containsSome(paths: string[]): Promise<boolean> {
@@ -48,8 +48,8 @@ export class MockWorkspaceService implements IWorkspaceService {
     return this._roots;
   }
 
-  protected async updateRoots(): Promise<void> {
-    const root: FileStat = {
+  protected async updateRoots(workspaceStat?: FileStat | undefined): Promise<void> {
+    const root: FileStat = workspaceStat || {
       isDirectory: true,
       uri: 'file://userhome',
       lastModification: 0,
@@ -64,7 +64,7 @@ export class MockWorkspaceService implements IWorkspaceService {
   onWorkspaceChanged = this._onWorkspaceChanged.event;
 
   _onWorkspaceLocationChanged: Emitter<FileStat | undefined> = new Emitter();
-  onWorkspaceLocationChanged =  this._onWorkspaceLocationChanged.event;
+  onWorkspaceLocationChanged = this._onWorkspaceLocationChanged.event;
 
   async setMostRecentlyUsedWorkspace(): Promise<void> {
     return;

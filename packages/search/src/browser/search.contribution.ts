@@ -56,37 +56,37 @@ export const getBackRecentSearchWordCmd: Command = {
 export const menuReplaceCmd: Command = {
   id: 'search.menu.replace',
   category: 'search',
-  label: localize('search.replace.title'),
+  label: '%search.replace.title%',
 };
 
 export const menuReplaceAllCmd: Command = {
   id: 'search.menu.replaceAll',
   category: 'search',
-  label: localize('search.replaceAll.label'),
+  label: '%search.replaceAll.label%',
 };
 
 export const menuHideCmd: Command = {
   id: 'search.menu.hide',
   category: 'search',
-  label: localize('search.result.hide'),
+  label: '%search.result.hide%',
 };
 
 export const menuCopyCmd: Command = {
   id: 'search.menu.copy',
   category: 'search',
-  label: localize('file.copy.file'),
+  label: '%file.copy.file%',
 };
 
 export const menuCopyAllCmd: Command = {
   id: 'search.menu.copyAll',
   category: 'search',
-  label: localize('search.menu.copyAll'),
+  label: '%search.menu.copyAll%',
 };
 
 export const menuCopyPathCmd: Command = {
   id: 'search.menu.copyPath',
   category: 'search',
-  label: localize('file.copy.path'),
+  label: '%file.copy.path%',
 };
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution)

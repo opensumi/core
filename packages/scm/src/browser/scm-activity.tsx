@@ -11,7 +11,7 @@ import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
 import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 
-import { SCMService, ISCMRepository, scmResourceViewId, scmContainerId, scmProviderViewId, scmPanelTitle } from '../common';
+import { SCMService, ISCMRepository, scmResourceViewId, scmContainerId, scmProviderViewId } from '../common';
 import { getSCMRepositoryDesc } from './scm-util';
 import { SCMMenus } from './scm-menu';
 import { SCMTitleToolBar } from './components/scm-actionbar.view';
@@ -204,14 +204,17 @@ export class SCMStatusBarController {
       ? `${basename(repository.provider.rootUri.path)} (${repository.provider.label})`
       : repository.provider.label;
 
-    // 注册当前 repo 的信息到 statusbar
-    this.statusbarService.addElement('status.scm.0', {
-      text: label,
-      priority: 10000, // copy from vscode
-      alignment: StatusBarAlignment.LEFT,
-      tooltip: `${localize('scm.statusbar.repo')} - ${label}`,
-      iconClass: getOctIcon('repo'),
-    });
+    // 多 repo 时增加当前 repo 信息到 statusbar
+    if (this.scmService.repositories.length > 1) {
+      // 注册当前 repo 的信息到 statusbar
+      this.statusbarService.addElement('status.scm.0', {
+        text: label,
+        priority: 10000, // copy from vscode
+        alignment: StatusBarAlignment.LEFT,
+        tooltip: `${localize('scm.statusbar.repo')} - ${label}`,
+        iconClass: getOctIcon('repo'),
+      });
+    }
 
     // 注册 statusbar elements
     commands.forEach((c, index) => {
@@ -345,8 +348,8 @@ export class SCMViewController {
       // 优先使用选中的 repo
       const selectedRepo = this.scmService.selectedRepositories[0];
       const text = this.scmService.repositories.length === 1 && selectedRepo
-        ? `${scmPanelTitle}: ${selectedRepo.provider.label}` // 将当前 repo 信息写到 scm panel title 中去
-        : scmPanelTitle; // 使用默认 scm panel title
+        ? `${localize('scm.title')}: ${selectedRepo.provider.label}` // 将当前 repo 信息写到 scm panel title 中去
+        : localize('scm.title'); // 使用默认 scm panel title
 
       this.$scmPanel.updateTitle(text);
     }

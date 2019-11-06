@@ -132,6 +132,10 @@ export interface IEditorGroup {
 
   restoreState(IEditorGroupState): Promise<void>;
 
+  saveAll(): Promise<void>;
+
+  closeAll(): Promise<void>;
+
 }
 export abstract class WorkbenchEditorService {
 

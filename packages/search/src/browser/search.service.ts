@@ -59,7 +59,7 @@ function splitOnComma(patterns: string): string[] {
   return patterns.length > 0 ? patterns.split(',').map((s) => s.trim()) : [];
 }
 
-const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0});
+const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0 });
 
 @Injectable()
 export class ContentSearchClientService implements IContentSearchClientService {
@@ -191,7 +191,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     });
 
     // 从服务端搜索
-    this.contentSearchServer.search(value, rootDirs , searchOptions).then((id) => {
+    this.contentSearchServer.search(value, rootDirs, searchOptions).then((id) => {
       this.currentSearchId = id;
       this.onSearchResult({
         id,
@@ -338,7 +338,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   clean() {
     this.searchValue = '';
     this.searchResults.clear();
-    this.resultTotal = {fileNum: 0, resultNum: 0};
+    this.resultTotal = { fileNum: 0, resultNum: 0 };
     this.searchState = SEARCH_STATE.todo;
     this.searchValue = '';
     this.replaceValue = '';
@@ -500,7 +500,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     total?: ResultTotal,
   ) {
 
-    const theTotal = total || { fileNum: 0, resultNum: 0};
+    const theTotal = total || { fileNum: 0, resultNum: 0 };
     data.forEach((result: ContentSearchResult) => {
       const oldData: ContentSearchResult[] | undefined = searchResultMap.get(result.fileUri);
       if (docSearchedList.indexOf(result.fileUri) > -1) {
@@ -510,11 +510,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
       if (oldData) {
         oldData.push(result);
         searchResultMap.set(result.fileUri, oldData);
-        theTotal.resultNum ++;
+        theTotal.resultNum++;
       } else {
         searchResultMap.set(result.fileUri, [result]);
-        theTotal.fileNum ++;
-        theTotal.resultNum ++;
+        theTotal.fileNum++;
+        theTotal.resultNum++;
       }
     });
 

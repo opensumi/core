@@ -13,7 +13,6 @@ export const Output = observer(() => {
 
   const renderLines = (): React.ReactNode[] => {
 
-    let id = 0;
     const result: React.ReactNode[] = [];
 
     const style: React.CSSProperties = {
@@ -24,9 +23,9 @@ export const Output = observer(() => {
     if (outputService.selectedChannel) {
         for (const text of outputService.selectedChannel.getLines) {
             const lines = text.split(/[\n\r]+/);
-            for (const line of lines) {
-                result.push(<div style={style} key={id++}><Ansi linkify={false}>{line}</Ansi></div>);
-            }
+            lines.map((line, idx) => {
+              result.push(<div style={style} key={`${idx}-${line}`}><Ansi linkify={false}>{line}</Ansi></div>);
+            });
         }
     } else {
       setTimeout(() => {
@@ -34,7 +33,7 @@ export const Output = observer(() => {
       });
     }
     if (result.length === 0) {
-        result.push(<div style={style} key={id++}>{localize('output.channel.none', '还没有任何输出')}</div>);
+        result.push(<div style={style} key={'none-output'}>{localize('output.channel.none', '还没有任何输出')}</div>);
     }
     return result;
   };
@@ -62,8 +61,8 @@ export const ChannelSelector = observer(() => {
 
   const outputService = useInjectable<OutputService>(OutputService);
   const channelOptionElements: React.ReactNode[] = [];
-  outputService.getChannels().forEach((channel) => {
-      channelOptionElements.push(<option value={channel.name} key={channel.name}>{channel.name}</option>);
+  outputService.getChannels().forEach((channel, idx) => {
+      channelOptionElements.push(<option value={channel.name} key={`${idx} - ${channel.name}`}>{channel.name}</option>);
   });
   if (channelOptionElements.length === 0) {
       channelOptionElements.push(<option key={NONE} value={NONE}>{NONE}</option>);

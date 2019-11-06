@@ -1,5 +1,5 @@
 import { Domain, localize, Command, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
-import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { ExplorerOpenEditorPanel } from './opened-editor-panel.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
@@ -7,6 +7,7 @@ import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ClientAppContribution } from '@ali/ide-core-browser';
+import { ExplorerOpenedEditorService } from './explorer-opened-editor.service';
 
 export const ExplorerOpenedEditorViewId = 'file-opened-editor';
 
@@ -15,15 +16,25 @@ export namespace OPEN_EDITORS_COMMANDS {
   export const SAVE_ALL: Command = {
     id: 'open.editors.save.all',
     category: CATEGORY,
-    label: localize('open.editors.save.all'),
+    label: '%open.editors.save.all%',
     iconClass: getIcon('save-all'),
   };
 
   export const CLOSE_ALL: Command = {
     id: 'open.editors.close.all',
     category: CATEGORY,
-    label: localize('open.editors.close.all'),
+    label: '%open.editors.close.all%',
     iconClass: getIcon('close-all'),
+  };
+
+  export const SAVE_BY_GROUP_ID: Command = {
+    id: 'open.editors.save.byID',
+    label: '%open.editors.save.byID%',
+  };
+
+  export const CLOSE_BY_GROUP_ID: Command = {
+    id: 'open.editors.close.byID',
+    label: '%open.editors.close.byID%',
   };
 }
 
@@ -35,6 +46,9 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
 
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(ExplorerOpenedEditorService)
+  openEditorService: ExplorerOpenedEditorService;
 
   onStart() {
     this.mainLayoutService.collectViewComponent({
@@ -57,6 +71,18 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
     commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE_ALL, {
       execute: () => {
         this.workbenchEditorService.closeAll();
+      },
+    });
+
+    commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE_BY_GROUP_ID, {
+      execute: (id) => {
+        this.openEditorService.closeByGroupId(id);
+      },
+    });
+
+    commands.registerCommand(OPEN_EDITORS_COMMANDS.SAVE_BY_GROUP_ID, {
+      execute: (id) => {
+        this.openEditorService.saveByGroupId(id);
       },
     });
   }

@@ -27,7 +27,7 @@ export function getPreferenceIconThemeId(): string {
 }
 
 export function getPreferenceLanguageId(): string {
-  return getExternalPreference<string>('general.language').value;
+  return getExternalPreference<string>('general.language').value || 'zh-CN';
 }
 
 // 默认使用localStorage

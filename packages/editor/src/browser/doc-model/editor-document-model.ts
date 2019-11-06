@@ -1,10 +1,11 @@
 import * as md5 from 'md5';
-import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange } from '@ali/ide-core-browser';
+import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 
-import { EOL, EndOfLineSequence } from '../../common';
+import { EOL, EndOfLineSequence, IDocPersistentCacheProvider, IDocCache, isDocContentCache, parseRangeFrom } from '../../common';
 import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IEditorDocumentModelContentChange, EditorDocumentModelSavedEvent } from './types';
 import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
+import { EditorDocumentError } from './editor-document-error';
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
@@ -28,6 +29,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   @Autowired(IEditorDocumentModelService)
   service: IEditorDocumentModelServiceImpl;
+
+  @Autowired(IDocPersistentCacheProvider)
+  cacheProvider: IDocPersistentCacheProvider;
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
@@ -69,7 +73,6 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (options.eol) {
       this.eol = options.eol;
     }
-    this.addDispose(this.monacoModel);
     this._originalEncoding = this._encoding;
     this.eventBus.fire(new EditorDocumentModelCreationEvent({
       uri: this.uri,
@@ -81,14 +84,15 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       versionId: this.monacoModel.getVersionId(),
     }));
     this._previousVersionId = this.monacoModel.getVersionId(),
-    this.monacoModel.onDidChangeContent((e) => {
-      this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
-        uri: this.uri,
-        dirty: this.dirty,
-        changes: e.changes,
-        eol: e.eol,
-        versionId: e.versionId,
-      }));
+    this._persistVersionId = this.monacoModel.getAlternativeVersionId();
+    this.baseContent = content;
+
+    this.listenTo(this.monacoModel);
+    this.readCacheToApply();
+  }
+
+  private listenTo(monacoModel: monaco.editor.ITextModel) {
+    monacoModel.onDidChangeContent((e) => {
       if (e.changes && e.changes.length > 0) {
         this.dirtyChanges.push({
           fromVersionId: this._previousVersionId,
@@ -97,23 +101,67 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         });
       }
       this._previousVersionId = e.versionId;
+      this.notifyChangeEvent();
     });
-    this._persistVersionId = this.monacoModel.getAlternativeVersionId();
-    this.baseContent = content;
+
+    this.addDispose(monacoModel);
+  }
+
+  private readCacheToApply() {
+    if (!this.cacheProvider.hasCache(this.uri)) {
+      return;
+    }
+
+    const maybePromiseCache = this.cacheProvider.getCache(this.uri, this.encoding);
+    if (maybePromiseCache) {
+      if (isThenable(maybePromiseCache)) {
+        maybePromiseCache
+          .then((cache) => {
+            if (cache) {
+              this.applyCache(cache);
+            }
+          })
+          .catch((err) => {
+            this.logger.error(`${EditorDocumentError.READ_CACHE_ERROR} ${err && err.message}`);
+          });
+      } else {
+        this.applyCache(maybePromiseCache as IDocCache);
+      }
+    }
+  }
+
+  private applyCache(cache: IDocCache) {
+    if (this.dirty) {
+      // TODO: 此时应该弹出 DiffView 让用户选择
+      this.logger.error(EditorDocumentError.APPLY_CACHE_TO_DIRTY_DOCUMENT);
+      return;
+    }
+
+    if (this.baseContentMd5 !== cache.startMD5) {
+      // TODO: 此时应该弹出 DiffView 让用户选择
+      this.logger.error(EditorDocumentError.APPLY_CACHE_TO_DIFFERENT_DOCUMENT);
+      return;
+    }
+
+    if (isDocContentCache(cache)) {
+      this.monacoModel.setValue(cache.content);
+    } else {
+      for (const changes of cache.changeMatrix) {
+        const operations = changes.map((change) => ({
+          range: parseRangeFrom(change),
+          text: change[0],
+        }));
+        this.monacoModel.applyEdits(operations);
+      }
+    }
   }
 
   cleanAndUpdateContent(content) {
     this.monacoModel.setValue(content);
     (this.monacoModel as any)._commandManager.clear();
-    this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
-      uri: this.uri,
-      dirty: this.dirty,
-      eol: this.eol,
-      changes: [],
-      versionId: this.monacoModel.getVersionId(),
-    }));
     this._persistVersionId = this.monacoModel.getVersionId();
     this.savingTasks = [];
+    this.notifyChangeEvent();
   }
 
   async updateEncoding(encoding: string) {
@@ -213,13 +261,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   setPersist(versionId) {
     this._persistVersionId = versionId;
-    this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
-      uri: this.uri,
-      dirty: this.dirty,
-      changes: [],
-      eol: this.eol,
-      versionId: this.monacoModel.getVersionId(),
-    }));
+    this.notifyChangeEvent();
   }
 
   async reload() {
@@ -255,7 +297,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     }
   }
 
-  getChangesFromVersion(versionId): Array<IEditorDocumentEditChange> {
+  getChangesFromVersion(versionId) {
     for (let i = this.dirtyChanges.length - 1; i >= 0; i --) {
       if (this.dirtyChanges[i].fromVersionId === versionId) {
         return this.dirtyChanges.slice(i).map((d) => {
@@ -284,4 +326,34 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this._baseContentMd5;
   }
 
+  private notifyChangeEvent() {
+    // 发出内容变化的事件
+    this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
+      uri: this.uri,
+      dirty: this.dirty,
+      changes: [],
+      eol: this.eol,
+      versionId: this.monacoModel.getVersionId(),
+    }));
+
+    const self = this;
+    this.cacheProvider.persistCache(this.uri, {
+      // 使用 getter 让需要计算的数据变成 lazy 获取的
+      get dirty() {
+        return self.dirty;
+      },
+      get startMD5() {
+        return self.baseContentMd5;
+      },
+      get content() {
+        return self.getText();
+      },
+      get changeMatrix() {
+        // 计算从起始版本到现在所有的 change 内容，然后让缓存对象进行持久化
+        return self.getChangesFromVersion(self._persistVersionId)
+          .map(({ changes }) => changes);
+      },
+      encoding: this.encoding,
+    });
+  }
 }

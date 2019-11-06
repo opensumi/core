@@ -62,15 +62,15 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
    * 获取所有插件
    *
    * @param scan 插件存放目录
-   * @param extenionCandidate 执行插件目录
+   * @param extensionCandidate 执行插件目录
    * @param extraMetaData 扫描数据字段
    */
   public async getAllExtensions(
     scan: string[],
-    extenionCandidate: string[],
+    extensionCandidate: string[],
     localization: string,
     extraMetaData: { [key: string]: any } = {}): Promise<IExtensionMetaData[]> {
-    return await this.extensionService.getAllExtensions(scan, extenionCandidate, localization, extraMetaData);
+    return await this.extensionService.getAllExtensions(scan, extensionCandidate, localization, extraMetaData);
   }
 
   public async disposeClientExtProcess(clientId: string, info: boolean = true): Promise<void> {
