@@ -64,7 +64,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
 
     let p = root.path;
     const result: IBreadCrumbPart[] = [];
-    for (const r of relativePaths.toString().split(Path.separator)) {
+    for (const r of relativePaths.toString().split(Path.separator).filter((p) => !!p)) {
       p = p.join(r);
       const u = root.withPath(p);
       result.push(this.createFilePartBreadCrumbUri(u,  !u.isEqual(uri)));
@@ -134,7 +134,9 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
             name: '...',
             getSiblings: () => {
               return {
-                parts: symbols.map((symbol) => this.createFromDocumentSymbol(symbol, editor)),
+                parts: symbols.sort((a, b) => {
+                  return sortByRangeStart(a.range, b.range);
+                }).map((symbol) => this.createFromDocumentSymbol(symbol, editor)),
                 currentIndex: -1,
               };
             },
@@ -188,14 +190,18 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
     if (symbol.parent) {
       res.getSiblings = () => {
         return {
-          parts: symbol.parent!.children!.map((symbol) => this.createFromDocumentSymbol(symbol, editor)),
+          parts: symbol.parent!.children!.sort((a, b) => {
+            return sortByRangeStart(a.range, b.range);
+          }).map((symbol) => this.createFromDocumentSymbol(symbol, editor)),
           currentIndex: symbol.parent!.children!.indexOf(symbol),
         };
       };
     }
     if (symbol.children && symbol.children.length > 0) {
       res.getChildren = () => {
-        return symbol.children!.map((symbol) => this.createFromDocumentSymbol(symbol, editor));
+        return symbol.children!.sort((a, b) => {
+          return sortByRangeStart(a.range, b.range);
+        }).map((symbol) => this.createFromDocumentSymbol(symbol, editor));
       };
     }
     return res;
@@ -269,4 +275,17 @@ export interface INormalizedDocumentSymbol extends DocumentSymbol {
 
 export interface IDummyRoot {
   children?: INormalizedDocumentSymbol[];
+}
+
+function sortByRangeStart(rangeA: IRange, rangeB: IRange) {
+  if (rangeA.startLineNumber > rangeB.startLineNumber) {
+    return 1;
+  } else if (rangeA.startLineNumber < rangeB.startLineNumber) {
+    return -1;
+  } else {
+    if (rangeA.startColumn === rangeB.startColumn) {
+      return 0;
+    }
+    return rangeA.startColumn > rangeB.startColumn ? 1 : -1;
+  }
 }

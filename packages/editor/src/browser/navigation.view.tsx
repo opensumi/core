@@ -43,7 +43,7 @@ export const NavigationBar = observer(({ editorGroup }: { editorGroup: IEditorGr
     }
   </div></div>);
 });
-
+console.log();
 export const NavigationItem = ({part}: {part: IBreadCrumbPart}) => {
 
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
@@ -53,12 +53,17 @@ export const NavigationItem = ({part}: {part: IBreadCrumbPart}) => {
           if (itemRef.current) {
             const { left, top, height} = itemRef.current.getBoundingClientRect();
             const siblings = await part.getSiblings!();
-            viewService.showMenu(siblings.parts, left, top + height + 5, siblings.currentIndex);
+            let leftPos = left;
+            if (window.innerWidth - leftPos < 200 + 10) {
+              // 放左边
+              leftPos = window.innerWidth - 200 - 5;
+            }
+            viewService.showMenu(siblings.parts, leftPos, top + height + 5, siblings.currentIndex);
           }
         } : undefined;
 
   return <span onClick={onClick} className={styles['navigation-part']} ref={itemRef as any}>
-    <span className={part.icon || getIcon('smile')}></span>
+    {part.icon && <span className={part.icon || getIcon('smile')}></span> }
     <span>{part.name}</span>
   </span>;
 };
