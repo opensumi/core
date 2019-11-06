@@ -159,6 +159,10 @@ export class FileTreeService extends WithEventBus {
   }
 
   set isFocused(value: boolean) {
+    if (!value) {
+      // 清空focused状态
+      this.resetFilesFocusedStatus();
+    }
     this._isFocused = value;
   }
 
