@@ -1,6 +1,6 @@
 import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, PreferenceService, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, PreferenceService, localize } from '@ali/ide-core-browser';
 import { ExtHostAPIIdentifier } from '../../../../common/vscode';
 import { ThemeType, IIconService } from '@ali/ide-theme';
 
@@ -41,19 +41,19 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
   logger: ILogger;
 
   private getLocalieFromNlsJSON(title: string) {
-    if (!this.packageNlsJSON || this.preferenceService.get('general.language') !== 'en-US') {
-      return title;
-    }
     const nlsRegx = /^%([\w\d.-]+)%$/i;
     const result = nlsRegx.exec(title);
-    return result ? this.packageNlsJSON[result[1]] : title;
+    if (result) {
+      return localize(result[1], undefined, this.extension.id);
+    }
+    return title;
   }
 
-  contribute() {
+  async contribute() {
     this.json.forEach((command) => {
       this.addDispose(this.commandRegistry.registerCommand({
         category: command.category,
-        label: replaceLocalizePlaceholder(command.title, this.extension.packageJSON.name),
+        label: this.getLocalieFromNlsJSON(command.title),
         id: command.command,
         iconClass: this.iconService.fromIcon(this.extension.path, command.icon),
       }, {

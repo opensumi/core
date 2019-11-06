@@ -4,7 +4,7 @@ import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/li
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
+import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize } from '@ali/ide-core-browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -366,8 +366,11 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @param extension
    */
   private getI18nInfo(extension: IExtension): { description: string, displayName: string} {
-    const displayName = replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.packageJSON.name)!;
-    const description = replaceLocalizePlaceholder(extension.packageJSON.description, extension.packageJSON.name)!;
+    let displayName;
+    let description;
+
+    displayName = localize('displayName', undefined, extension.id) || extension.packageJSON.displayName;
+    description = localize('description', undefined, extension.id) || extension.packageJSON.description;
 
     return {
       description,
