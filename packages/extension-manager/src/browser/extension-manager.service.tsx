@@ -369,8 +369,14 @@ export class ExtensionManagerService implements IExtensionManagerService {
     let displayName;
     let description;
 
-    displayName = localize('displayName', undefined, extension.id) || extension.packageJSON.displayName;
-    description = localize('description', undefined, extension.id) || extension.packageJSON.description;
+    displayName = localize('displayName', undefined, extension.id) ||
+      extension.packageNlsJSON && extension.packageNlsJSON.displayName ||
+      extension.deafaultPkgNlsJSON && extension.deafaultPkgNlsJSON.displayName ||
+      extension.packageJSON.displayName;
+    description = localize('description', undefined, extension.id) ||
+      extension.packageNlsJSON && extension.packageNlsJSON.description ||
+      extension.deafaultPkgNlsJSON && extension.deafaultPkgNlsJSON.description ||
+      extension.packageJSON.description;
 
     return {
       description,
