@@ -43,7 +43,11 @@ function menuNodeEquals(a: MenuNode, b: MenuNode): boolean {
   return a.id === b.id;
 }
 
-export function useMenus(menuInitalizer: IMenu | (() => IMenu), separator?: MenuSeparator) {
+export function useMenus(
+  menuInitalizer: IMenu | (() => IMenu),
+  separator?: MenuSeparator,
+  args?: any[],
+) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
 
   const initalizer = useCallback(() => {
@@ -55,15 +59,19 @@ export function useMenus(menuInitalizer: IMenu | (() => IMenu), separator?: Menu
   useDisposable(() => {
     // initialize
     const menus = initalizer();
-    updateMenuConfig(menus);
+    updateMenuConfig(menus, args);
 
-    function updateMenuConfig(menus: IMenu) {
-      const result = generateInlineActions({ menus, separator });
+    function updateMenuConfig(menuArg: IMenu, argList?: any[]) {
+      const result = generateInlineActions({
+        menus: menuArg,
+        separator,
+        options: { args: argList },
+      });
 
       // menu nodes 对比
       if (
-        equals(result[0], menus[0], menuNodeEquals)
-        && equals(result[1], menus[1], menuNodeEquals)
+        equals(result[0], menuArg[0], menuNodeEquals)
+        && equals(result[1], menuArg[1], menuNodeEquals)
       ) {
         return;
       }
@@ -77,7 +85,7 @@ export function useMenus(menuInitalizer: IMenu | (() => IMenu), separator?: Menu
         updateMenuConfig(menus);
       }),
     ];
-  }, [ initalizer ]);
+  }, [ initalizer, args ]);
 
   return menuConfig;
 }
