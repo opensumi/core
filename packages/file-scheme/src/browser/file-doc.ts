@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelContentProvider, IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, IFileSchemeDocNodeService, FileSchemeDocNodeServicePath, FILE_SAVE_BY_CHANGE_THRESHOLD } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, IEditorDocumentEditChange, CorePreferences, ISchemaStore, DisposableStore, IDisposable, Disposable, ISchemaRegistry } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, IEditorDocumentEditChange, CorePreferences, ISchemaStore, DisposableStore, IDisposable, Disposable, ISchemaRegistry, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
 import * as md5 from 'md5';
 
@@ -136,7 +136,7 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
 
   async provideEditorDocumentModelContent(uri: URI, encoding) {
     const content = this.getSchemaContent(uri);
-    return content;
+    return replaceLocalizePlaceholder(content)!;
   }
 
   protected getSchemaContent(uri: URI): string {

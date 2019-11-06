@@ -731,7 +731,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         // 当前不是最后一个 editor Group
         this.dispose();
       }
-
+      this.availableOpenTypes = [];
     }
   }
 

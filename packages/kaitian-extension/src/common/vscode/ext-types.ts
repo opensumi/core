@@ -920,7 +920,7 @@ export class DocumentHighlight {
 
   constructor(
     range: Range,
-    kind?: DocumentHighlightKind,
+    kind: DocumentHighlightKind = DocumentHighlightKind.Text,
   ) {
     this.range = range;
     this.kind = kind;
@@ -1205,6 +1205,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 export class DocumentLink {
   range: Range;
   target: URI;
+  tooltip?: string;
 
   constructor(range: Range, target: URI) {
     if (target && !(target instanceof URI)) {

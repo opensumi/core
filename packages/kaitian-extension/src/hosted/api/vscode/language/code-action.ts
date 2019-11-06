@@ -31,7 +31,6 @@ export class CodeActionAdapter {
         private readonly provider: vscode.CodeActionProvider,
         private readonly document: ExtensionDocumentDataManager,
         private readonly diagnostics: Diagnostics,
-        private readonly pluginId: string,
     ) { }
 
     provideCodeAction(resource: URI, rangeOrSelection: Range | Selection, context: monaco.languages.CodeActionContext, commandConverter: CommandsConverter): Promise<monaco.languages.CodeAction[]> {
@@ -76,10 +75,10 @@ export class CodeActionAdapter {
                     if (codeActionContext.only) {
                         if (!candidate.kind) {
                             /* tslint:disable-next-line:max-line-length */
-                            console.warn(`${this.pluginId} - Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`);
+                            console.warn(`Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`);
                         } else if (!codeActionContext.only.contains(candidate.kind)) {
                             /* tslint:disable-next-line:max-line-length */
-                            console.warn(`${this.pluginId} - Code actions of kind '${codeActionContext.only.value}' requested but returned code action is of kind '${candidate.kind.value}'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.`);
+                            console.warn(`Code actions of kind '${codeActionContext.only.value}' requested but returned code action is of kind '${candidate.kind.value}'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.`);
                         }
                     }
 

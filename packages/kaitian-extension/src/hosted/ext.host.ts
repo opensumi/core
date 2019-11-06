@@ -198,7 +198,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     const modulePath: string = extension.path;
     this.logger.debug(`${extension.name} - ${modulePath}`);
-    const extensionModule: any = getNodeRequire()(modulePath);
 
     this.logger.debug('kaitian exthost $activateExtension path', modulePath);
     const extendProxy = this.getExtendModuleProxy(extension);
@@ -210,18 +209,23 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     let extendModule;
     let exportsData;
     let extendExports;
+    let extensionModule: any = {};
 
-    if (extensionModule.activate) {
-      this.logger.debug(`try activate ${extension.name}`);
-      // FIXME: 考虑在 Context 这里直接注入服务注册的能力
-      try {
-        const extensionExports = await extensionModule.activate(context) || extensionModule;
-        exportsData = extensionExports;
+    if (extension.packageJSON.main) {
+      extensionModule = getNodeRequire()(modulePath);
 
-      } catch (e) {
-        activationFailed = true;
-        activationFailedError = e;
-        this.logger.error(e);
+      if (extensionModule.activate) {
+        this.logger.debug(`try activate ${extension.name}`);
+        // FIXME: 考虑在 Context 这里直接注入服务注册的能力
+        try {
+          const extensionExports = await extensionModule.activate(context) || extensionModule;
+          exportsData = extensionExports;
+
+        } catch (e) {
+          activationFailed = true;
+          activationFailedError = e;
+          this.logger.error(e);
+        }
       }
     }
 
