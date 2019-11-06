@@ -200,9 +200,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (uris && uris.length) {
           this.filetreeService.renameTempFile(uris[0]);
         } else {
-          const seletedUris = this.filetreeService.selectedUris;
-          if (seletedUris && seletedUris.length) {
-            this.filetreeService.renameTempFile(seletedUris[0]);
+          const selectedFiles = this.filetreeService.selectedFiles;
+          if (selectedFiles && selectedFiles.length) {
+            const selected = selectedFiles[0];
+            if (!selected.isTemporary) {
+              this.filetreeService.renameTempFile(selectedFiles[0].uri);
+            }
           }
         }
       },
@@ -392,7 +395,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.RENAME_FILE.id,
       keybinding: 'enter',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
