@@ -194,9 +194,9 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       throw new Error(err.message);
     }
   }
-  async getExtensionFromMarketPlace(extensionId: string, version: string) {
+  async getExtensionFromMarketPlace(extensionId: string, version?: string) {
     try {
-      const res = await this.extensionManagerRequester.request(`extension/${extensionId}?version=${version}`, {
+      const res = await this.extensionManagerRequester.request(`extension/${extensionId}${version ? `?version=${version}` : ''}`, {
         dataType: 'json',
         timeout: 5000,
       });

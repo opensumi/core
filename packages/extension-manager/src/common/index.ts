@@ -111,7 +111,7 @@ export interface IExtensionManagerService extends IExtensionManager {
   searchMarketplaceResults: RawExtension[];
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
-  getDetailFromMarketplace(extensionId: string, version: string): Promise<ExtensionDetail | undefined>;
+  getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined>;
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
   toggleActiveExtension(extensionId: string, active: boolean, scope: EnableScope): Promise<void>;
   searchFromMarketplace(query: string): void;
@@ -128,7 +128,7 @@ export interface IExtensionManagerService extends IExtensionManager {
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
 export interface IExtensionManagerServer extends IExtensionManager {
   search(query: string, ignoreId?: string[]): Promise<any>;
-  getExtensionFromMarketPlace(extensionId: string, version: string): Promise<any>;
+  getExtensionFromMarketPlace(extensionId: string, version?: string): Promise<any>;
   getHotExtensions(ignoreId?: string[]): Promise<any>;
   isShowBuiltinExtensions(): boolean;
   setHeaders(headers: RequestHeaders): void;
