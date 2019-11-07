@@ -218,16 +218,16 @@ export class SearchTreeService {
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
-  @memoize get contextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.SearchContext, this.contextKeyService);
-    this.disposables.push(contributedContextMenu);
-    return contributedContextMenu;
-  }
-
   constructor() {
     this.contentRegistry.registerEditorDocumentModelContentProvider(
       this.replaceDocumentModelContentProvider,
     );
+  }
+
+  @memoize get contextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(MenuId.SearchContext, this.contextKeyService);
+    this.disposables.push(contributedContextMenu);
+    return contributedContextMenu;
   }
 
   set nodes(data: ISearchTreeItem[]) {
@@ -253,9 +253,8 @@ export class SearchTreeService {
     if (!file) {
       return;
     }
-    const data: any = { x, y, id : file.id};
+    const data: any = { id : file.id};
     const menus = this.contextMenu;
-    const result = generateCtxMenu({ menus });
 
     menus.dispose();
     data.file = file;
@@ -270,11 +269,11 @@ export class SearchTreeService {
       this.isContextmenuOnFile = true;
     }
 
+    const result = generateCtxMenu({ menus, options: { args: [data]} });
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       // 合并结果
       menuNodes: [...result[0], ...result[1]],
-      context: [ data ],
     });
   }
 
