@@ -547,10 +547,11 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.mainSlotWidget = this.initIdeWidget(SlotLocation.main);
     this.mainSlotWidget.addClass('overflow-visible');
     this.mainSlotWidget.addClass('lock-width');
-    this.mainSlotWidget.node.style.zIndex = '1';
+    this.mainSlotWidget.node.style.zIndex = 'auto';
     const middleLayout = this.createSplitLayout([this.mainSlotWidget, bottomSlotWidget], [1, 0], {orientation: 'vertical', spacing: 0});
     const middleWidget = new TrackerSplitPanel({ layout: middleLayout });
     middleWidget.addClass('overflow-visible');
+    middleWidget.node.style.zIndex = 'auto';
     return middleWidget;
   }
 
