@@ -3,12 +3,11 @@ import { Uri, URI } from '@ali/ide-core-common/lib/uri';
 import { Emitter, Event, sortedDiff } from '@ali/ide-core-common';
 import { IDisposable, dispose, Disposable, DisposableStore, toDisposable } from '@ali/ide-core-common/lib/disposable';
 import { first } from '@ali/ide-core-common/lib/async';
-import { ThrottledDelayer } from '@ali/ide-core-common';
-import { IChange, EditorCollectionService } from '@ali/ide-editor';
+import { ThrottledDelayer, IChange } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
-import { IDirtyDiffModel } from '../../common';
+import { EditorCollectionService } from '@ali/ide-editor';
 
-import { SCMService, ISCMRepository } from '../../common';
+import { SCMService, ISCMRepository, IDirtyDiffModel } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { DirtyDiffWidget } from './dirty-diff-widget';

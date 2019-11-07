@@ -1,5 +1,4 @@
-import { IChange } from '@ali/ide-editor';
-import { Command } from '@ali/ide-core-common';
+import { IChange, Command } from '@ali/ide-core-common';
 
 export interface IDirtyDiffModel {
   changes: IChange[];
