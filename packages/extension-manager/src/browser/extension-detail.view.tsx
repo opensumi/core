@@ -19,7 +19,7 @@ const { TabPane } = Tabs;
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
-  const { extensionId, version } = props.resource.uri.getParsedQuery();
+  const { extensionId } = props.resource.uri.getParsedQuery();
   const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
   const [isInstalling, setIsInstalling] = React.useState(false);
@@ -40,7 +40,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       let remote;
       try {
         // 获取最新的插件信息，用来做更新提示
-        remote = await extensionManagerService.getDetailFromMarketplace(extensionId, version);
+        remote = await extensionManagerService.getDetailFromMarketplace(extensionId);
         if (remote) {
           setLatestExtension(remote);
         }
@@ -157,6 +157,10 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }
 
   const canUpdate = React.useMemo(() => {
+    // 内置插件不应该升级
+    if (currentExtension && currentExtension.isBuiltin) {
+      return false;
+    }
     return currentExtension && latestExtension && compareVersions(currentExtension.version, latestExtension.version) === -1;
   }, [currentExtension, latestExtension]);
 

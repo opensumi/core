@@ -196,6 +196,12 @@ export namespace EDITOR_COMMANDS {
     label: '%editor.close.all%',
   };
 
+  export const CLOSE_SAVED: Command = {
+    id: 'editor.closeSaved',
+    category: CATEGORY,
+    label: '%editor.closeSaved%',
+  };
+
   export const SAVE_ALL: Command = {
     id: 'editor.saveAll',
     category: CATEGORY,
@@ -325,4 +331,13 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const GO_FORWARD: Command = {
+    id: 'editor.goForward',
+    category: CATEGORY,
+  };
+
+  export const GO_BACK: Command = {
+    id: 'editor.goBack',
+    category: CATEGORY,
+  };
 }
