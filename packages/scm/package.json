@@ -24,6 +24,7 @@
     "@ali/ide-core-common": "1.4.4",
     "@ali/ide-editor": "1.4.4",
     "@ali/ide-main-layout": "1.4.4",
+    "@ali/ide-monaco-enhance": "1.4.4",
     "@ali/ide-status-bar": "1.4.4",
     "@ali/ide-theme": "1.4.4"
   },

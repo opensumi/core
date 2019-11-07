@@ -2,7 +2,8 @@ import { ZoneWidget } from '@ali/ide-monaco-enhance/lib/browser';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
 import { toRange } from './utils';
-import { CommandService } from '@ali/ide-core-common';
+import { URI, CommandService } from '@ali/ide-core-common';
+import { ScmChangeTitleCallback } from '@ali/ide-core-browser/lib/menu/next';
 
 export enum DirtyDiffWidgetActionType {
   close,
@@ -22,6 +23,11 @@ export class DirtyDiffWidget extends ZoneWidget {
 
   private _model: IDirtyDiffModel;
   private _currentChangeIndex: number = 0;
+
+  private get uri(): URI {
+    // vscode 用的是 this.model.modified!.uri
+    return URI.from(this.editor.getModel()!.uri);
+  }
 
   constructor(editor: monaco.editor.ICodeEditor, dirtyModel: IDirtyDiffModel, readonly commandService: CommandService) {
     super(editor);
@@ -109,6 +115,12 @@ export class DirtyDiffWidget extends ZoneWidget {
     let lineNumber: number;
     const current = this.currentRange;
 
+    const args: Parameters<ScmChangeTitleCallback> = [
+      this.uri,
+      this._model.changes,
+      this._currentChangeIndex - 1,
+    ];
+
     switch (type) {
       case DirtyDiffWidgetActionType.next:
         lineNumber = this._model.findNextClosestChangeLineNumber(current.startLineNumber, false);
@@ -123,10 +135,10 @@ export class DirtyDiffWidget extends ZoneWidget {
         }
         break;
       case DirtyDiffWidgetActionType.save:
-        // TODO
+        this.commandService.executeCommand('git.stageChange', ...args);
         break;
       case DirtyDiffWidgetActionType.reset:
-        // TODO
+        this.commandService.executeCommand('git.revertChange', ...args);
         break;
       case DirtyDiffWidgetActionType.close:
         this.dispose();
