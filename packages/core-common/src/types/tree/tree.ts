@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { URI } from '../../uri';
-import { CSSProperties } from 'react';
 
 export interface TreeNodeHighlightRange {
   start: number;
@@ -29,8 +28,9 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   readonly id: number | string;
   /**
    * 可读的节点名称
+   * 可能为ReactComponent
    */
-  readonly name: string;
+  readonly name: string | React.JSXElementConstructor<any>;
   /**
    * 节点头部，会影响节点计算逻辑
    * 不适用于RecycleTree面板
@@ -55,11 +55,12 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   /**
    * 图标的样式
    */
-  readonly iconStyle?: CSSProperties;
+  readonly iconStyle?: React.CSSProperties;
   /**
    * 节点描述
+   * 可能为ReactComponent
    */
-  readonly description?: string;
+  readonly description?: string | React.JSXElementConstructor<any>;
   /**
    * 当该值为false时节点不渲染，否则渲染
    */

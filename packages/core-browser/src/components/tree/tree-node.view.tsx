@@ -31,42 +31,54 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   commandActuator?: CommandActuator;
 }
 
-const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeNodeHighlightRange, replace?: string) => {
+const renderDescriptionWithRangeAndReplace = (description: any, range?: TreeNodeHighlightRange, replace?: string) => {
   if (isUndefined(description)) {
     return '';
   }
-  if (!!range) {
-    return <span>
-      {description.slice(0, range.start)}
-      <span className={cls(styles.kt_search_match, replace && styles.replace)}>
-        {description.slice(range.start, range.end)}
-      </span>
-      <span className={replace && styles.kt_search_replace}>
-        {replace}
-      </span>
-      {description.slice(range.end)}
+  const isComponent = typeof name !== 'string';
+  if (!isComponent) {
+    if (!!range) {
+      return <span>
+        {description.slice(0, range.start)}
+        <span className={cls(styles.kt_search_match, replace && styles.replace)}>
+          {description.slice(range.start, range.end)}
+        </span>
+        <span className={replace && styles.kt_search_replace}>
+          {replace}
+        </span>
+        {description.slice(range.end)}
 
-    </span>;
+      </span>;
+    } else {
+      return description;
+    }
   } else {
-    return description;
+    const Template = description as React.JSXElementConstructor<any>;
+    return <Template />;
   }
 };
 
-const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
-  if (!!range) {
-    return <span>
-      {name.slice(0, range.start)}
-      <span className={cls(styles.kt_search_match, replace && styles.replace)}>
-        {name.slice(range.start, range.end)}
-      </span>
-      <span className={replace && styles.kt_search_replace}>
-        {replace}
-      </span>
-      {name.slice(range.end)}
+const renderNameWithRangeAndReplace = (name: any, range?: TreeNodeHighlightRange, replace?: string) => {
+  const isComponent = typeof name !== 'string';
+  if (!isComponent) {
+    if (!!range) {
+      return <span>
+        {name.slice(0, range.start)}
+        <span className={cls(styles.kt_search_match, replace && styles.replace)}>
+          {name.slice(range.start, range.end)}
+        </span>
+        <span className={replace && styles.kt_search_replace}>
+          {replace}
+        </span>
+        {name.slice(range.end)}
 
-    </span>;
+      </span>;
+    } else {
+      return name;
+    }
   } else {
-    return name;
+    const Template = name as React.JSXElementConstructor<any>;
+    return <Template />;
   }
 };
 
@@ -311,7 +323,8 @@ export const TreeContainerNode = (
   };
 
   const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
-    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name === TEMP_FILE_NAME ? '' : node.name);
+    const isComponent = typeof node.name !== 'string';
+    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : !isComponent && node.name === TEMP_FILE_NAME ? '' : (!isComponent && node.name) || '');
 
     const changeHandler = (event) => {
       const newValue = event.target.value;
