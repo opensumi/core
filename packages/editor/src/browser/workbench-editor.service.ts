@@ -629,10 +629,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
       this.availableOpenTypes = openTypes;
 
-      this.currentState = {
-        currentResource: resource,
-        currentOpenType: activeOpenType,
-      };
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range);
@@ -684,6 +680,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       } else {
         return; // other type not handled
       }
+
+      this.currentState = {
+        currentResource: resource,
+        currentOpenType: activeOpenType,
+      };
+
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
     }
   }
