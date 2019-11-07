@@ -42,6 +42,7 @@ import {
   IContentSearchClientService,
   IUIState,
   cutShortSearchResult,
+  FilterFileWithGlobRelativePath,
 } from '../common';
 import { SearchPreferences } from './search-preferences';
 import { SearchHistory } from './search-history';
@@ -619,6 +620,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
     const group = workbenchEditorService.currentEditorGroup;
     const resources = group.resources;
 
+    const filterFileWithGlobRelativePath = new FilterFileWithGlobRelativePath(rootDirs, searchOptions.include || []);
+
     docModels.forEach((docModel: IEditorDocumentModel) => {
       const uriString = docModel.uri.toString();
 
@@ -626,6 +629,10 @@ export class ContentSearchClientService implements IContentSearchClientService {
       if (!resources.some((res) => {
         return res.uri.toString() === uriString;
       })) {
+        return;
+      }
+
+      if (!filterFileWithGlobRelativePath.test(uriString)) {
         return;
       }
 
