@@ -10,15 +10,15 @@ import Messages from './messages';
 const TAG_NONE = '';
 const EMPTY_FOLDING: string[] = [];
 const DEFAULT_VIEWSIZE: ViewSize = {
-  w: '100%',
-  h: 500,
+  w: 0,
+  h: 0,
 };
 
 /**
  * render marker list
  * @param viewModel marker view model
  */
-const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewModel }) => {
+const MarkerList: React.FC<{ viewModel: MarkerViewModel, search?: string }> = observer(({ viewModel, search }) => {
   const markerService = MarkerService.useInjectable();
   const [selectTag, updateSelectTag] = React.useState('');
   const [folding, updateFolding] = React.useState(EMPTY_FOLDING);
@@ -50,6 +50,7 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
           expanded: !isFolding,
           depth: 0,
         };
+
         nodes.push(item);
         if (!isFolding) {// 非folding状态显示
           item.children = model.markers.map((marker, cindex) => {
@@ -92,6 +93,8 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
     <div style={contentStyle}>
       <RecycleTree
         nodes={ nodes }
+        search={ search }
+        searchable={ true }
         outline={ false }
         scrollContainerStyle={{ width: viewSize.w - (CONTENT_PADDING_RIGHT + CONTENT_PADDING_LEFT), height: viewSize.h - (CONTENT_PADDING_TOP + CONTENT_PADDING_BOTTOM), key: 'marker-list' }}
         containerHeight={ viewSize.h - (CONTENT_PADDING_TOP + CONTENT_PADDING_BOTTOM) }
@@ -152,7 +155,7 @@ export const MarkerPanel = observer(() => {
     <div className={styles.markersContent}>
       {
         viewModel.hasData() ?
-          <MarkerList viewModel={viewModel} /> :
+          <MarkerList viewModel={viewModel}  search={'ts'}/> :
           <Empty />
       }
     </div>

@@ -188,7 +188,7 @@ export const SEARCH_CONTEXT_MENU = 'search-context-menu-path';
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
   badge?: number;
-  highLightRange?: TreeNodeHighlightRange;
+  highLightRanges?: TreeNodeHighlightRange[];
   searchResult?: ContentSearchResult;
   [key: string]: any;
 }

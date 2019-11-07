@@ -35,7 +35,7 @@ const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeN
   if (isUndefined(description)) {
     return '';
   }
-  if (range) {
+  if (!!range) {
     return <span>
       {description.slice(0, range.start)}
       <span className={cls(styles.kt_search_match, replace && styles.replace)}>
@@ -52,11 +52,22 @@ const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeN
   }
 };
 
-const renderName = (name: string = 'UNKNOW') => {
-  if (name === 'UNKNOW') {
-    return 'UNKNOW';
+const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
+  if (!!range) {
+    return <span>
+      {name.slice(0, range.start)}
+      <span className={cls(styles.kt_search_match, replace && styles.replace)}>
+        {name.slice(range.start, range.end)}
+      </span>
+      <span className={replace && styles.kt_search_replace}>
+        {replace}
+      </span>
+      {name.slice(range.end)}
+
+    </span>;
+  } else {
+    return name;
   }
-  return name;
 };
 
 const renderBadge = (node: TreeNode) => {
@@ -71,7 +82,7 @@ const renderBadge = (node: TreeNode) => {
 
 const renderDescription = (node: any, replace: string) => {
   return <div className={cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass)}>
-    {renderDescriptionWithRangeAndReplace(node.description || '', node.highLightRange, replace)}
+    {renderDescriptionWithRangeAndReplace(node.description || '', node.highLightRanges && node.highLightRanges.length > 1 && node.highLightRanges[1] || undefined, replace)}
   </div>;
 };
 
@@ -358,7 +369,7 @@ export const TreeContainerNode = (
       className={cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass)}
     >
       {node.beforeLabel}
-      {renderName(node.name)}
+      {renderNameWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.length > 0 && node.highLightRanges[0] || undefined, replace)}
       {node.afterLabel}
     </div>;
   };

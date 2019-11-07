@@ -466,10 +466,13 @@ export class SearchTreeService {
         id: `${uri.toString()}?index=${index}`,
         name: '',
         description: searchResult.renderLineText || searchResult.lineText,
-        highLightRange: {
+        highLightRanges: [{
+          start: 0,
+          end: 0,
+        }, {
           start,
           end: start + searchResult.matchLength,
-        },
+        }],
         order: index,
         depth: 1,
         searchResult: insertSearchResult,

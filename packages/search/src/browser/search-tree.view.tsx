@@ -12,7 +12,7 @@ import { ResultTotal } from '../common';
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
   badge?: number;
-  highLightRange?: TreeNodeHighlightRange;
+  highLightRanges?: TreeNodeHighlightRange[];
   [key: string]: any;
 }
 

@@ -132,22 +132,46 @@ export const RecycleTree = (
       return renderedStart <= index && index <= renderedEnd;
     });
     renderedFileItems = renderedFileItems.map((item: TreeNode, index: number) => {
-      let highLightRange = item.highLightRange;
-      if (!highLightRange && searchable && search) {
-        const start = item.name.indexOf(search);
+      let highLightRanges = item.highLightRanges;
+      if (!highLightRanges && searchable && search) {
+        highLightRanges = [];
+        let start;
         let end;
-        if (start >= 0) {
-          end = start + search.length;
-          highLightRange = {
-            start,
-            end,
-          };
+        if (item.name) {
+          start =  item.name.indexOf(search);
+          if (start >= 0) {
+            end = start + search.length;
+            highLightRanges.push({
+              start,
+              end,
+            });
+          } else {
+            highLightRanges.push({
+              start: 0,
+              end: 0,
+            });
+          }
+        }
+        if (item.description) {
+          start =  item.description.indexOf(search);
+          if (start >= 0) {
+            end = start + search.length;
+            highLightRanges.push({
+              start,
+              end,
+            });
+          } else {
+            highLightRanges.push({
+              start: 0,
+              end: 0,
+            });
+          }
         }
       }
       return {
         ...item,
         order: renderedStart + index,
-        highLightRange,
+        highLightRanges,
         replace,
       };
     });
