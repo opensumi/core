@@ -136,7 +136,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         return true;
       },
       isEnabled: () => {
-        return this.searchBrowserService.refreshIsEnable();
+        // TODO: 等mainLayoutService重构完成后，适配
+        return true;
+        // return this.searchBrowserService.refreshIsEnable();
       },
     });
     commands.registerCommand(searchClean, {
@@ -147,7 +149,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         return true;
       },
       isEnabled: () => {
-        return this.searchBrowserService.cleanIsEnable();
+        // TODO: 等mainLayoutService重构完成后，适配
+        return true;
+        // return this.searchBrowserService.cleanIsEnable();
       },
     });
     commands.registerCommand(searchFold, {
