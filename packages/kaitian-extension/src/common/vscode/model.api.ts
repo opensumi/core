@@ -1,7 +1,7 @@
 // 内置的api类型声明
 import * as vscode from 'vscode';
 import URI, { UriComponents } from 'vscode-uri';
-import { MarkerSeverity, MarkerTag, SymbolKind } from './ext-types';
+import { SymbolKind } from './ext-types';
 import { IndentAction } from './ext-types';
 import { IRange } from '@ali/ide-core-common';
 import { SymbolInformation } from 'vscode-languageserver-types';

@@ -70,7 +70,8 @@
     "@ali/ide-window": "1.4.4",
     "@ali/ide-workspace": "1.4.4",
     "@ali/ide-workspace-edit": "1.4.4",
-    "@ali/ide-keymaps": "1.4.4"
+    "@ali/ide-keymaps": "1.4.4",
+    "@ali/ide-markers": "1.4.4"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
