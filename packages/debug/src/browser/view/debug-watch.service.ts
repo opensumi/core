@@ -209,7 +209,7 @@ export class DebugWatchService {
     for (const node of this.nodes) {
       // 只保留父节点
       if (!node.parent) {
-        data.push(node.name);
+        data.push(node.name as string);
       }
     }
     this.storage.setData('debug.watchers.list', data);
