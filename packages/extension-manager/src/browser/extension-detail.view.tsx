@@ -73,10 +73,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       const reloadRequire = await extensionManagerService.computeReloadState(currentExtension.path);
       setCurrentExtension({
         ...currentExtension,
-        // 如果不需要重启，才能修改器状态
-        ...!reloadRequire && {
-          enable,
-        },
+        enable,
         enableScope: scope,
         reloadRequire,
       });
@@ -107,10 +104,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         setUnIsInstalling(false);
         setCurrentExtension({
           ...currentExtension,
-          // 如果不需要重启，才能修改器状态
-          ...!reloadRequire && {
-            enable: false,
-          },
+          enable: false,
           installed: false,
           reloadRequire,
         });

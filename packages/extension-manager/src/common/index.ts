@@ -67,6 +67,8 @@ export interface RawExtension extends BaseExtension {
   isBuiltin: boolean;
   downloadCount?: number;
   reloadRequire?: boolean;
+  // 启用范围
+  enableScope: EnableScope;
   engines: {
     vscode: string,
     kaitian: string,
@@ -81,8 +83,6 @@ export interface ExtensionDetail extends RawExtension {
   categories: string;
   // 代码仓库
   repository: string;
-  // 启用范围
-  enableScope: EnableScope;
   contributes: {
     [name: string]: any;
   };

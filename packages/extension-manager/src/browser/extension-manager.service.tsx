@@ -13,6 +13,7 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 // IExtensionProps 属性为 readonly，改为 writeable
 type IExtension = Writeable<IExtensionProps> & {
+  enableScope: EnableScope,
   reloadRequire?: boolean;
 };
 
@@ -232,13 +233,36 @@ export class ExtensionManagerService implements IExtensionManagerService {
       || this.hotExtensions.find((r) => r.extensionId === extensionId);
 
     if (rawExt && installed) {
-      const extension = await this.extensionService.getExtensionProps(extensionPath);
-      if (extension) {
+      const extensionProp = await this.extensionService.getExtensionProps(extensionPath);
+      if (extensionProp) {
+        const extension = await this.trasformFromExtensionProp(extensionProp);
         // 添加到 extensions，下次获取 rawExtension
         runInAction(() => {
           this.extensions.push(extension);
         });
       }
+    }
+  }
+
+  /**
+   * 转换 IExtensionProps 到 IExtension
+   * @param extensionProps
+   */
+  private async trasformFromExtensionProp(extensionProps: IExtensionProps[]): Promise<IExtension[]>;
+  private async trasformFromExtensionProp(extensionProps: IExtensionProps): Promise<IExtension>;
+  private async trasformFromExtensionProp(extensionProps: IExtensionProps[] | IExtensionProps): Promise<IExtension[] | IExtension> {
+    if (Array.isArray(extensionProps)) {
+      return await Promise.all(extensionProps.map(async (extension) => {
+        return {
+          ...extension,
+          enableScope: await this.getEnableScope(extension.extensionId),
+        };
+      }));
+    } else {
+      return {
+        ...extensionProps,
+        enableScope: await this.getEnableScope(extensionProps.extensionId),
+      };
     }
   }
 
@@ -249,7 +273,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
     this.loading = SearchState.LOADING;
     // 获取所有已安装的插件
-    const extensions = await this.extensionService.getAllExtensionJson();
+    const extensionProps = await this.extensionService.getAllExtensionJson();
+    const extensions = await this.trasformFromExtensionProp(extensionProps);
     let hotExtensions: RawExtension[] = [];
     try {
       hotExtensions = await this.getHotExtensions(extensions.map((extensions) => extensions.extensionId));
@@ -311,6 +336,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         enable: extension.isUseEnable,
         isBuiltin: extension.isBuiltin,
         reloadRequire: extension.reloadRequire,
+        enableScope: extension.enableScope,
         engines: {
           vscode: extension.packageJSON.engines.vscode,
           kaitian: '',
@@ -343,6 +369,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
           extension.isUseEnable = enable;
         }
         extension.reloadRequire = reloadRequire;
+        extension.enableScope = scope;
       }
     });
   }
@@ -542,6 +569,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
       isBuiltin: false,
       enable: false,
       reloadRequire: false,
+      enableScope: EnableScope.GLOBAL,
       engines: {
         vscode: '',
         kaitian: '',

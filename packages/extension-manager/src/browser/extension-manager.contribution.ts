@@ -93,12 +93,18 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
           this.etensionManagerService.toggleActiveExtension(extension, true, EnableScope.GLOBAL);
         }
       },
+      isVisible: (extension: RawExtension) => {
+        return !extension.enable;
+      },
     });
     commands.registerCommand(ExtensionCommands.ENABLE_WORKSPACE, {
       execute: (extension: RawExtension) => {
         if (extension) {
           this.etensionManagerService.toggleActiveExtension(extension, true, EnableScope.WORKSPACE);
         }
+      },
+      isVisible: (extension: RawExtension) => {
+        return !extension.enable;
       },
     });
     commands.registerCommand(ExtensionCommands.DISABLE, {
@@ -107,12 +113,19 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
           this.etensionManagerService.toggleActiveExtension(extension, false, EnableScope.GLOBAL);
         }
       },
+      isVisible: (extension: RawExtension) => {
+        // https://yuque.antfin-inc.com/cloud-ide/za8zpk/kpwylo#RvfMV
+        return extension.enableScope === EnableScope.GLOBAL || (extension.enableScope === EnableScope.WORKSPACE && !extension.enable);
+      },
     });
     commands.registerCommand(ExtensionCommands.DISABLE_WORKSPACE, {
       execute: (extension: RawExtension) => {
         if (extension) {
           this.etensionManagerService.toggleActiveExtension(extension, false, EnableScope.GLOBAL);
         }
+      },
+      isVisible: (extension: RawExtension) => {
+        return extension.enable;
       },
     });
     commands.registerCommand(ExtensionCommands.UNINSTALL, {
@@ -122,8 +135,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
         }
       },
       isVisible: (extension: RawExtension) => {
-        console.log(extension, 'extension');
-        return true;
+        return extension.installed;
       },
     });
   }
