@@ -329,6 +329,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @observable.shallow activeComponents = new Map<IEditorComponent, IResource[]>();
 
+  @observable.shallow activateComponentsProps = new Map<IEditorComponent, any>();
+
   public grid: EditorGrid;
 
   private codeEditorReady: Deferred<any> = new Deferred<any>();
@@ -636,9 +638,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         await this.diffEditor.compare(original, modified);
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
+        const initialProps = this.editorComponentRegistry.getEditorInitialProps(activeOpenType.componentId as string);
         if (!component) {
           throw new Error('Cannot find Editor Component with id: ' + activeOpenType.componentId);
         } else {
+          this.activateComponentsProps.set(component, initialProps);
           if (component.renderMode === EditorComponentRenderMode.ONE_PER_RESOURCE) {
             const openedResources = this.activeComponents.get(component) || [];
             const index = openedResources.findIndex((r) => r.uri.toString() === resource.uri.toString());
