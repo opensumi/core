@@ -75,29 +75,45 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
     return nodes;
   }, [ selectTag, folding ]);
 
-  return (
-    <RecycleTree
-      nodes={ nodes }
-      scrollContainerStyle={{ width: viewSize.w, height: viewSize.h, key: 'marker-list' }}
-      containerHeight={ viewSize.h }
-      onSelect={ (items) => {
-        const item = items && items[0];
-        if (!item) { return; }
+  const CONTENT_PADDING_RIGHT = 5;
+  const CONTENT_PADDING_LEFT = 5;
+  const CONTENT_PADDING_TOP = 2;
+  const CONTENT_PADDING_BOTTOM = 5;
 
-        if (item.parent) {// children
-          updateSelectTag(item.id);
-          markerService.openEditor(item.marker.resource, item.marker);
-        } else {
-          const index = folding.indexOf(item.id);
-          if (index > -1) {
-            folding.splice(index, 1);
+  const contentStyle = {
+    paddingLeft: CONTENT_PADDING_LEFT,
+    paddingRight: CONTENT_PADDING_RIGHT,
+    paddingTop: CONTENT_PADDING_TOP,
+    paddingBottom: CONTENT_PADDING_BOTTOM,
+    width: '100%' ,
+    height: '100%' ,
+  };
+  return (
+    <div style={contentStyle}>
+      <RecycleTree
+        nodes={ nodes }
+        outline={ false }
+        scrollContainerStyle={{ width: viewSize.w - (CONTENT_PADDING_RIGHT + CONTENT_PADDING_LEFT), height: viewSize.h - (CONTENT_PADDING_TOP + CONTENT_PADDING_BOTTOM), key: 'marker-list' }}
+        containerHeight={ viewSize.h - (CONTENT_PADDING_TOP + CONTENT_PADDING_BOTTOM) }
+        onSelect={ (items) => {
+          const item = items && items[0];
+          if (!item) { return; }
+
+          if (item.parent) {// children
+            updateSelectTag(item.id);
+            markerService.openEditor(item.marker.resource, item.marker);
           } else {
-            folding.push(item.id);
+            const index = folding.indexOf(item.id);
+            if (index > -1) {
+              folding.splice(index, 1);
+            } else {
+              folding.push(item.id);
+            }
+            updateFolding([...folding]);
           }
-          updateFolding([...folding]);
-        }
-      }}
-    />
+        }}
+      />
+    </div>
   );
 });
 

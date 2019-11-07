@@ -15,7 +15,7 @@ import debounce = require('lodash.debounce');
 const MAX_DIAGNOSTICS_BADGE = 1000;
 
 export interface ViewSize {
-  w: string | number;
+  w: number;
   h: number;
 }
 

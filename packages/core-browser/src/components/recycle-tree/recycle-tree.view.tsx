@@ -115,6 +115,7 @@ export const RecycleTree = (
   const contentNumber = Math.ceil(containerHeight / itemLineHeight);
   const [scrollRef, setScrollRef] = React.useState<HTMLDivElement>();
   const [renderedStart, setRenderedStart] = React.useState(0);
+  const [renderNodes, setRenderNodes] = React.useState<TreeNode[]>([]);
   const renderedEnd: number = renderedStart + contentNumber + prerenderNumber;
   // 预加载因子
   const preFactor = 3 / 4;
@@ -126,7 +127,7 @@ export const RecycleTree = (
     setRenderedStart(scrollTop ? Math.floor(scrollTop / itemLineHeight) : 0);
   }, [scrollTop]);
 
-  const renderNodes = React.useMemo((): TreeNode[] => {
+  React.useEffect(() => {
     let renderedFileItems = nodes!.filter((item: TreeNode, index: number) => {
       return renderedStart <= index && index <= renderedEnd;
     });
@@ -150,7 +151,7 @@ export const RecycleTree = (
         replace,
       };
     });
-    return renderedFileItems;
+    setRenderNodes(renderedFileItems);
   }, [nodes, renderedStart, scrollContainerStyle]);
 
   const scrollUpHanlder = (element: Element) => {

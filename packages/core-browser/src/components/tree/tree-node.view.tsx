@@ -384,6 +384,10 @@ export const TreeContainerNode = (
           {renderTreeContainerActions(node, treeContainerActions, commandActuator)}
           {renderBadge(node)}
         </div>;
+      } else {
+        return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
+          {renderBadge(node)}
+        </div>;
       }
     } else if (treeNodeRightActions.length !== 0) {
       return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
@@ -392,9 +396,7 @@ export const TreeContainerNode = (
       </div>;
     } else {
       return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
-        {
-          renderBadge(node)
-        }
+        {renderBadge(node)}
       </div>;
     }
   };
