@@ -159,7 +159,7 @@ type TupleContext<T, U, K, M> = (
   ? K extends undefined
     ? U extends undefined
       ? T extends undefined
-        ? []
+        ? undefined
         : [T]
       : [T, U]
     : [T, U, K]
