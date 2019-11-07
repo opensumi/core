@@ -665,8 +665,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   protected createDocumentSymbolProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentSymbolProvider {
     return {
-      provideDocumentSymbols: (model, token) =>
-        this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => v!),
+      provideDocumentSymbols: (model, token) => {
+        return this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => v!);
+      },
     };
   }
 

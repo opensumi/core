@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { CharCode } from './char-code';
-import { FileOperationOptions, SymbolKind } from './model.api';
+import { FileOperationOptions } from './model.api';
 import { startsWithIgnoreCase, uuid } from '@ali/ide-core-common';
 export * from './models';
 export { URI as Uri };
@@ -1070,13 +1070,6 @@ export class Selection extends Range {
   }
 }
 
-export interface FileOperationOptions {
-  overwrite?: boolean;
-  ignoreIfExists?: boolean;
-  ignoreIfNotExists?: boolean;
-  recursive?: boolean;
-}
-
 export interface FileOperation {
   _type: 1;
   from: URI | undefined;
@@ -1393,6 +1386,34 @@ export class SymbolInformation {
   }
 }
 
+export enum SymbolKind {
+  File = 0,
+  Module = 1,
+  Namespace = 2,
+  Package = 3,
+  Class = 4,
+  Method = 5,
+  Property = 6,
+  Field = 7,
+  Constructor = 8,
+  Enum = 9,
+  Interface = 10,
+  Function = 11,
+  Variable = 12,
+  Constant = 13,
+  String = 14,
+  Number = 15,
+  Boolean = 16,
+  Array = 17,
+  Object = 18,
+  Key = 19,
+  Null = 20,
+  EnumMember = 21,
+  Struct = 22,
+  Event = 23,
+  Operator = 24,
+  TypeParameter = 25,
+}
 export class DocumentSymbol {
 
   static validate(candidate: DocumentSymbol): void {

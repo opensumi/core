@@ -12,6 +12,7 @@ import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionReg
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { EditorHistoryService } from './history';
+import { NavigationMenuContainer } from './navigation.view';
 
 interface Resource {
   group: EditorGroup;
@@ -55,6 +56,10 @@ export class EditorContribution implements CommandContribution, MenuContribution
     registry.register('@ali/ide-editor', {
       id: 'ide-editor',
       component: EditorView,
+    });
+    registry.register('breadcrumb-menu', {
+      id: 'breadcrumb-menu',
+      component: NavigationMenuContainer,
     });
   }
 

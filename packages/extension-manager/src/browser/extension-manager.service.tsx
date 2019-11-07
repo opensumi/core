@@ -4,7 +4,7 @@ import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/li
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
+import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize } from '@ali/ide-core-browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -169,7 +169,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         extension.packageJSON.version = version;
         extension.isUseEnable = true;
         extension.enabled = true;
-        extension.path = extensionPath;
+        extension.realPath = extensionPath;
       }
     });
     return extensionPath;
@@ -205,6 +205,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @action
   async init() {
+    if (this.isInit) {
+      return;
+    }
     this.loading = SearchState.LOADING;
     // 获取所有已安装的插件
     const extensions = await this.extensionService.getAllExtensionJson();
@@ -277,10 +280,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   async getRawExtensionById(extensionId: string): Promise<RawExtension> {
-    // 说明是刚进入页面看到了上次打开的插件详情窗口，需要先调用初始化
-    if (!this.isInit) {
-      await this.init();
-    }
+    await this.init();
 
     return this.rawExtension.find((extension) => extension.extensionId === extensionId)!;
   }
@@ -306,9 +306,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   async getDetailById(extensionId: string): Promise<ExtensionDetail | undefined> {
-
     const extension = await this.getRawExtensionById(extensionId);
-
     const extensionDetail = await this.extensionService.getExtensionProps(extension.path, {
       readme: './README.md',
       changelog: './CHANGELOG.md',
@@ -329,7 +327,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
-  async getDetailFromMarketplace(extensionId: string, version: string): Promise<ExtensionDetail | undefined> {
+  async getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined> {
     const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId, version);
     if (res && res.data) {
       return {
@@ -366,8 +364,11 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @param extension
    */
   private getI18nInfo(extension: IExtension): { description: string, displayName: string} {
-    const displayName = replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.packageJSON.name)!;
-    const description = replaceLocalizePlaceholder(extension.packageJSON.description, extension.packageJSON.name)!;
+    let displayName;
+    let description;
+
+    displayName = localize('displayName', undefined, extension.id) || extension.packageJSON.displayName;
+    description = localize('description', undefined, extension.id) || extension.packageJSON.description;
 
     return {
       description,
@@ -391,7 +392,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
       // 如果删除成功，在列表页删除
       await this.removeExtensionConfig(extension.extensionId);
       runInAction(() => {
-        this.extensions = this.extensions.filter((extension) => extension.path !== extensionPath);
+        this.extensions = this.extensions.filter((extension) => extension.realPath !== extensionPath);
       });
     }
     return res;
