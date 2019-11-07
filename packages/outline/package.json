@@ -22,6 +22,7 @@
   "dependencies": {
     "@ali/ide-core-common": "1.4.4",
     "@ali/ide-editor": "1.4.4",
+    "@ali/ide-explorer": "1.4.4",
     "@ali/ide-core-node": "1.4.4",
     "@ali/ide-main-layout": "1.4.4",
     "lodash.debounce": "^4.0.8"

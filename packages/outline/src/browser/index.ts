@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { BrowserModule, ComponentContribution, Domain, ComponentRegistry, localize, TabBarToolbarContribution, TabBarToolbarRegistry, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
 import { OutLineTree } from './outline.tree.view';
-import { ExplorerContainerId } from '../../../explorer/lib/browser/explorer-contribution';
+import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { OutLineService } from './outline.service';
 import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser/lib/icon';
