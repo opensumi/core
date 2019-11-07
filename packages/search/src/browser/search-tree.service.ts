@@ -1,18 +1,18 @@
 import * as React from 'react';
 import { action } from 'mobx';
-import { URI, Schemas, Emitter, formatLocalize, IDisposable, DisposableStore, IRange, localize, MessageType } from '@ali/ide-core-common';
+import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkbenchEditorService, TrackedRangeStickiness } from '@ali/ide-editor';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { IDialogService } from '@ali/ide-overlay';
+import { memoize, IContextKeyService } from '@ali/ide-core-browser';
+import { MenuService, IMenu, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
 import {
-  SEARCH_CONTEXT_MENU,
   ContentSearchResult,
   ISearchTreeItem,
 } from '../common';
@@ -177,8 +177,7 @@ export class SearchTreeService {
 
   private lastSelectTime: number = Number(new Date());
 
-  @Autowired(ContextMenuRenderer)
-  contextMenuRenderer: ContextMenuRenderer;
+  private readonly disposables: IDisposable[] = [];
 
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
@@ -210,6 +209,21 @@ export class SearchTreeService {
   @Autowired(IDialogService)
   private dialogService: IDialogService;
 
+  @Autowired(MenuService)
+  private readonly menuService: MenuService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly ctxMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  @memoize get contextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(MenuId.SearchContext, this.contextKeyService);
+    this.disposables.push(contributedContextMenu);
+    return contributedContextMenu;
+  }
+
   constructor() {
     this.contentRegistry.registerEditorDocumentModelContentProvider(
       this.replaceDocumentModelContentProvider,
@@ -240,7 +254,10 @@ export class SearchTreeService {
       return;
     }
     const data: any = { x, y, id : file.id};
+    const menus = this.contextMenu;
+    const result = generateCtxMenu({ menus });
 
+    menus.dispose();
     data.file = file;
 
     if (!file.parent) {
@@ -253,7 +270,12 @@ export class SearchTreeService {
       this.isContextmenuOnFile = true;
     }
 
-    this.contextMenuRenderer.render([SEARCH_CONTEXT_MENU], data);
+    this.ctxMenuRenderer.show({
+      anchor: { x, y },
+      // 合并结果
+      menuNodes: [...result[0], ...result[1]],
+      context: [ data ],
+    });
   }
 
   @action.bound
@@ -453,6 +475,7 @@ export class SearchTreeService {
   }
 
   dispose() {
+    dispose(this.disposables);
     this.rangeHighlightDecorations.dispose();
   }
 
