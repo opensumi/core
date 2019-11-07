@@ -22,7 +22,9 @@
 // tslint:disable:no-bitwise variable-name
 'use strict';
 
-import { CharCode, isWindows, startsWithIgnoreCase } from '../';
+import { isWindows } from '../platform';
+import { CharCode } from '../charCode';
+import { startsWithIgnoreCase } from './strings';
 
 /**
  * The forward slash path separator.
