@@ -429,13 +429,15 @@ export class ExtensionServiceImpl implements ExtensionService {
   private async initExtension() {
     for (const extensionMetaData of this.extensionMetaDataArr) {
       const extensionCandidate = this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === extensionMetaData.realPath);
+      // 1. 通过路径判决是否是内置插件
+      // 2. candidate 是否有  isBuiltin 标识符
+      const isBuiltin = (this.appConfig.extensionDir ? extensionMetaData.realPath.startsWith(this.appConfig.extensionDir) : false) || (extensionCandidate ? extensionCandidate.isBuiltin : false);
       const extension = this.injector.get(Extension, [
         extensionMetaData,
         this,
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
-        // 通过路径判决是否是内置插件
-        extensionMetaData.realPath.startsWith(this.appConfig.extensionDir!) || (extensionCandidate ? extensionCandidate.isBuiltin : false),
+        isBuiltin,
       ]);
 
       this.extensionMap.set(extensionMetaData.path, extension);
