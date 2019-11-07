@@ -51,6 +51,7 @@ export const localizationBundle = {
     'editor.splitToBottom': 'Split To Bottom',
     'editor.closeAllInGroup': 'Close All',
     'editor.closeToRight': 'Close To Right',
+    'editor.closeSaved': 'Close Saved',
     'editor.close': 'Close',
     'editor.action.accept': 'Accept Changes (Use version on the right)',
     'editor.action.revert': 'Revert Changes (Use version on the left)',

@@ -172,7 +172,15 @@ export interface IResourceOpenOptions {
 
   split?: EditorGroupSplitAction;
 
+  /**
+   * @deprecated use focus instead
+   */
   preserveFocus?: boolean;
+
+  /**
+   * 获取焦点
+   */
+  focus?: boolean;
 
   forceOpenType?: IEditorOpenType;
 
