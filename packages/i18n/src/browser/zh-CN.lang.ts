@@ -334,5 +334,7 @@ export const localizationBundle = {
     'doc.saveError.diff': '{0} 已经在磁盘上被修改，不能保存',
     'doc.saveError.diffAndSave': '进行比较',
     'editor.compareAndSave.title': '{0} (在磁盘上) <=> {1} (编辑中) ',
+
+    'outline.title': '大纲',
   },
 };
