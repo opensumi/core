@@ -18,7 +18,7 @@ export interface IMenu extends IDisposable {
 }
 
 export abstract class MenuService {
-  abstract createMenu(id: MenuId, scopedKeybindingService: IContextKeyService): IMenu;
+  abstract createMenu(id: MenuId | string, scopedKeybindingService?: IContextKeyService): IMenu;
 }
 
 // 后续 MenuNode 要看齐 @ali/ide-core-common 的 ActionMenuNode
@@ -107,8 +107,11 @@ export class MenuServiceImpl implements MenuService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  createMenu(id: MenuId, contextKeyService: IContextKeyService): IMenu {
-    return this.injector.get(Menu, [id, contextKeyService]);
+  @Autowired(IContextKeyService)
+  globalCtxKeyService: IContextKeyService;
+
+  createMenu(id: MenuId, contextKeyService?: IContextKeyService): IMenu {
+    return this.injector.get(Menu, [id, contextKeyService || this.globalCtxKeyService]);
   }
 }
 

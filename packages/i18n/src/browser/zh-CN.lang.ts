@@ -263,7 +263,7 @@ export const localizationBundle = {
     'marketplace.extension.disable.workspace': '禁用(工作空间)',
     'marketplace.extension.builtin': '内置',
     'marketplace.extension.install': '安装',
-    'marketplace.extension.container': '扩展',
+    'marketplace.extension.container': '扩展市场',
     'marketplace.extension.empty.disabled': '暂无已禁用的扩展',
     'marketplace.extension.notfound': '找不到扩展',
     'marketplace.panel.hot': '热门插件',

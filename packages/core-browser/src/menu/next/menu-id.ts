@@ -1,5 +1,6 @@
 // 可枚举的 menu id 列表
 export const enum MenuId {
+  ActivityBarContext,
   CommandPalette,
   DebugBreakpointsContext,
   DebugCallStackContext,

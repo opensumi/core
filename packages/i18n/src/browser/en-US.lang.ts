@@ -286,7 +286,7 @@ export const localizationBundle = {
     'marketplace.extension.enable.workspace': 'Enable(workspace)',
     'marketplace.extension.disable.workspace': 'Disable(workspace)',
     'marketplace.extension.install': 'Install',
-    'marketplace.extension.container': 'Extension',
+    'marketplace.extension.container': 'Extension Market',
     'marketplace.extension.empty.disabled': 'No disabled extensions yet',
     'marketplace.extension.notfound': 'No Extension',
     'marketplace.panel.hot': 'Hot Extensions',
