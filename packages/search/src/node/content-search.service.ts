@@ -237,7 +237,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   }
 
   private getSearchArgs(options?: ContentSearchOptions): string[] {
-    const args = ['--json', '--max-count=200'];
+    const args = ['--json', '--max-count=100'];
     args.push(options && options.matchCase ? '--case-sensitive' : '--ignore-case');
     if (options && options.includeIgnored) {
       args.push('-uu');
