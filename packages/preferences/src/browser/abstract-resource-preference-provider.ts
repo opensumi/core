@@ -92,7 +92,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     try {
       let newContent = '';
       if (path.length || value !== undefined) {
-        const formattingOptions = { tabSize: 3, insertSpaces: true, eol: '' };
+        const formattingOptions = { tabSize: 2, insertSpaces: true, eol: '' };
         const edits = jsoncparser.modify(content, path, value, { formattingOptions });
         newContent = jsoncparser.applyEdits(content, edits);
       }
