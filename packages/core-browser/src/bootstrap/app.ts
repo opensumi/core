@@ -37,6 +37,7 @@ import { renderClientApp } from './app.view';
 import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
+import { MenuRegistry, IMenuRegistry } from '../menu/next';
 
 const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_e2ikewyk1kq.css';
 
@@ -45,6 +46,9 @@ export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
 export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top');
 export interface IconMap {
   [iconKey: string]: string;
+}
+export interface IPreferences {
+  [key: string]: any;
 }
 export interface IconInfo { cssPath: string; prefix: string; iconMap: IconMap; }
 export interface IClientAppOpts extends Partial<AppConfig> {
@@ -59,6 +63,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   iconStyleSheets?: IconInfo[];
   useCdnIcon?: boolean;
   editorBackgroudImage?: string;
+  defaultPreferences?: IPreferences;
 }
 export interface LayoutConfig {
   [area: string]: {
@@ -100,6 +105,8 @@ export class ClientApp implements IClientApp {
 
   menuRegistry: MenuModelRegistry;
 
+  nextMenuRegistry: MenuRegistry;
+
   stateService: ClientAppStateService;
 
   container: HTMLElement;
@@ -131,7 +138,7 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.appendIconStyleSheets(opts.iconStyleSheets, opts.useCdnIcon);
-    this.createBrowserModules();
+    this.createBrowserModules(opts);
   }
   /**
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
@@ -190,7 +197,6 @@ export class ClientApp implements IClientApp {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
-
   }
 
   /**
@@ -201,11 +207,12 @@ export class ClientApp implements IClientApp {
     this.commandRegistry = this.injector.get(CommandRegistry);
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
-    this.menuRegistry = this.injector.get(MenuModelRegistry);
     this.stateService = this.injector.get(ClientAppStateService);
+    this.menuRegistry = this.injector.get(MenuModelRegistry);
+    this.nextMenuRegistry = this.injector.get(IMenuRegistry);
   }
 
-  private createBrowserModules() {
+  private createBrowserModules(opts: IClientAppOpts) {
     const injector = this.injector;
 
     for (const Constructor of this.modules) {
@@ -224,7 +231,7 @@ export class ClientApp implements IClientApp {
     injectCorePreferences(this.injector);
 
     // 注册PreferenceService
-    this.injectPreferenceService(this.injector);
+    this.injectPreferenceService(this.injector, opts);
 
     // 注册资源处理服务
     this.injectResourceProvider(this.injector);
@@ -270,6 +277,7 @@ export class ClientApp implements IClientApp {
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
     this.menuRegistry.onStart();
+    this.nextMenuRegistry.onStart();
 
     for (const contribution of this.contributions) {
       if (contribution.onStart) {
@@ -462,7 +470,7 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  injectPreferenceService(injector: Injector): void {
+  injectPreferenceService(injector: Injector, opts: IClientAppOpts): void {
     const preferencesProviderFactory = () => {
       return (scope: PreferenceScope) => {
         return injector.get(PreferenceProvider, { tag: scope });
@@ -476,12 +484,17 @@ export class ClientApp implements IClientApp {
     injector.addProviders({
       token: PreferenceProviderProvider,
       useFactory: preferencesProviderFactory,
-    });
-
-    injector.addProviders({
+    }, {
       token: PreferenceService,
       useClass: PreferenceServiceImpl,
     });
+    // 设置默认配置
+    if (opts.defaultPreferences) {
+      const preferenceService: PreferenceService = injector.get(PreferenceService);
+      for (const key of Object.keys(opts.defaultPreferences)) {
+        preferenceService.set(key, opts.defaultPreferences[key], PreferenceScope.Default);
+      }
+    }
   }
 
   injectResourceProvider(injector: Injector) {

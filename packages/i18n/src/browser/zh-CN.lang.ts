@@ -96,6 +96,7 @@ export const localizationBundle = {
     'search.ClearSearchResultsAction.label': '清空搜索结果',
     'search.RefreshAction.label': '刷新',
     'search.removeAll.occurrences.files.confirmation.message': '确定替换 {1} 个文件中的 {0} 个结果吗?',
+    'search.removeAll.occurrences.file.confirmation.message': '确定替换该文件中的 {0} 个结果吗?',
     'search.result.hide': '隐藏',
     'search.menu.copyAll': '全部复制',
     'search.help.showIncludeRule': '查看语法规则',
@@ -109,8 +110,10 @@ export const localizationBundle = {
     'search.help.matchRange': '匹配的字符范围',
     'search.help.modify': '修改',
     'search.replace.buttonOK': '替换',
+    'search.replace.buttonCancel': '取消',
     'search.quickOpen.leftRight': '在侧边打开',
     'search.quickOpen.upDown': '在底部打开',
+    'search.fileReplaceChanges': '{0} ↔ {1} (替换预览)',
     'fileResults': '文件结果',
     'historyMatches': '最近打开',
     'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',
@@ -139,6 +142,7 @@ export const localizationBundle = {
     'scm.statusbar.repo': '当前仓库',
     'scm.provider.title': '代码仓库列表',
     'scm.provider.empty': '没有可用的源代码仓库',
+    'scm.provider.init': '点击初始化仓库',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
@@ -180,6 +184,7 @@ export const localizationBundle = {
     'debug.configuration.comment1': '使用 IntelliSense 了解相关属性。 ',
     'debug.configuration.comment2': '悬停以查看现有属性的描述。',
     'debug.configuration.comment3': '欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387',
+    'debug.launch.existed': '调试配置"{0}"已在运行',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
@@ -193,11 +198,13 @@ export const localizationBundle = {
     'preference.search.exclude': '配置在搜索中排除的文件和文件夹的 glob 模式。已经继承 `#files.exclude#` 设置的所有 glob 模式。',
     'preference.files.watcherExclude.title': '排除文件监听 `files.watcherExclude`',
     'preference.search.exclude.title': '搜索排除文件 `search.exclude`',
+    'preference.search.useReplacePreview': '控制搜索替换打开编辑器时，是否打开“替换预览”。',
     'preference.files.exclude.title': '排除文件显示 `files.exclude`',
     'preference.debug.internalConsoleOptions': '控制何时打开内部调试控制台。',
     'preference.debug.openDebug': '控制何时打开调试视图。',
     'preference.debug.debugViewLocation': '控制调试视图的位置。',
     'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
+    'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
@@ -228,6 +235,7 @@ export const localizationBundle = {
     'preference.editor.wordWrap': '自动换行',
     'preference.editor.wordWrapColumn': '自动换行长度',
     'preference.editor.askIfDiff': '保存文件冲突时提示',
+    'preference.editor.readonlyFiles': '只读文件列表',
 
     'preference.array.additem': '添加',
 
@@ -286,6 +294,10 @@ export const localizationBundle = {
     'open.editors.title': '打开的编辑器',
     'open.editors.save.all': '保存全部',
     'open.editors.close.all': '关闭全部',
+    'open.editors.close.byId': '关闭组',
+    'open.editors.save.byId': '保存组中未保存文件',
+    'open.editors.empty': '编辑器中暂无打开文件',
+    'open.editors.group.title': '第{0}组',
 
     'terminal.name': '终端',
 

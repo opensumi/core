@@ -100,7 +100,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   async function install() {
     if (currentExtension && !isInstalling) {
       setIsInstalling(true);
-      const path = await extensionManagerService.downloadExtension(currentExtension.extensionId);
+      const path = await extensionManagerService.installExtension(currentExtension);
       setIsInstalling(false);
       setCurrentExtension({
         ...currentExtension,
@@ -119,7 +119,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   async function uninstall() {
     if (currentExtension && !isUnInstalling) {
       setUnIsInstalling(true);
-      const res = await extensionManagerService.uninstallExtension(currentExtension.extensionId, currentExtension.path);
+      const res = await extensionManagerService.uninstallExtension(currentExtension);
       // TODO 卸载后为什么要设置启用？
       await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, true, EnableScope.GLOBAL);
 
@@ -142,7 +142,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     if (currentExtension && !isUpdating) {
       setIsUpdating(true);
       const oldExtensionPath = currentExtension.path;
-      const newExtensionPath = await extensionManagerService.updateExtension(currentExtension.extensionId, latestExtension!.version, currentExtension.path);
+      const newExtensionPath = await extensionManagerService.updateExtension(currentExtension, latestExtension!.version);
       setIsUpdating(false);
       setCurrentExtension({
         ...currentExtension,
@@ -157,6 +157,10 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }
 
   const canUpdate = React.useMemo(() => {
+    // 内置插件不应该升级
+    if (currentExtension && currentExtension.isBuiltin) {
+      return false;
+    }
     return currentExtension && latestExtension && compareVersions(currentExtension.version, latestExtension.version) === -1;
   }, [currentExtension, latestExtension]);
 

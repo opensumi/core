@@ -22,7 +22,7 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
         window.on('focus' , () => {
           Menu.setApplicationMenu(menu);
         });
-        if (window.isFocused) {
+        if (window.isFocused()) {
           Menu.setApplicationMenu(menu);
         }
       } else {

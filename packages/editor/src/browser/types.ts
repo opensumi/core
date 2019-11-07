@@ -145,6 +145,8 @@ export interface IEditorSelectionChangeEventPayload {
   selections: ISelection[];
 
   source: string | undefined;
+
+  editorUri: URI;
 }
 
 export class EditorVisibleChangeEvent extends BasicEvent<IEditorVisibleChangeEventPayload> {}
@@ -228,4 +230,41 @@ export enum CompareResult {
   revert = 'revert', // original -> modified
   accept = 'accept', // modified -> original
   cancel = 'cancel',
+}
+
+export interface IBreadCrumbService {
+
+  registerBreadCrumbProvider(provider: IBreadCrumbProvider): IDisposable;
+
+  getBreadCrumbs(uri: URI, editor?: MaybeNull<IEditor>): IBreadCrumbPart[] | undefined;
+
+  disposeCrumb(uri: URI): void;
+
+}
+
+export const IBreadCrumbService = Symbol('IBreadScrumbService');
+
+export interface IBreadCrumbProvider {
+
+  handlesUri(URI: URI): boolean;
+
+  provideBreadCrumbForUri(uri: URI, editor?: MaybeNull<IEditor>): IBreadCrumbPart[];
+
+  onDidUpdateBreadCrumb: Event<URI>;
+
+}
+
+export interface IBreadCrumbPart {
+
+  name: string;
+
+  icon?: string;
+
+  getSiblings?(): MaybePromise<{parts: IBreadCrumbPart[], currentIndex: number}>;
+
+  // getChildren和onClick只能存在一个，如果同时存在,getChildren生效
+  getChildren?(): MaybePromise<IBreadCrumbPart[]>;
+
+  onClick?(): void;
+
 }

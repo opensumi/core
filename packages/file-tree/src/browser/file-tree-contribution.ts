@@ -1,7 +1,7 @@
 import { URI, ClientAppContribution, FILE_COMMANDS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { CONTEXT_MENU } from './file-tree.view';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export namespace FileTreeContextMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
@@ -15,51 +15,68 @@ export interface FileUri {
   uris: URI[];
 }
 
-@Domain(ClientAppContribution, MenuContribution)
-export class FileTreeContribution implements MenuContribution {
-  registerMenus(menus: MenuModelRegistry): void {
-    menus.registerMenuAction(FileTreeContextMenu.OPEN, {
-      commandId: FILE_COMMANDS.OPEN_TO_THE_SIDE.id,
-      order: '4',
+@Domain(ClientAppContribution, NextMenuContribution)
+export class FileTreeContribution implements NextMenuContribution {
+  registerNextMenus(menuRegistry: IMenuRegistry): void {
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.OPEN_RESOURCES,
+      order: 4,
+      group: '1_open',
     });
-    menus.registerMenuAction(FileTreeContextMenu.OPEN, {
-      commandId: FILE_COMMANDS.OPEN_RESOURCES.id,
-      order: '3',
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.OPEN_TO_THE_SIDE,
+      order: 3,
+      group: '1_open',
     });
-    menus.registerMenuAction(FileTreeContextMenu.OPEN, {
-      commandId: FILE_COMMANDS.NEW_FILE.id,
-      order: '2',
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.NEW_FILE,
+      order: 2,
+      group: '1_open',
     });
-    menus.registerMenuAction(FileTreeContextMenu.OPEN, {
-      commandId: FILE_COMMANDS.NEW_FOLDER.id,
-      order: '1',
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.NEW_FOLDER,
+      order: 1,
+      group: '1_open',
     });
-    menus.registerMenuAction(FileTreeContextMenu.OPERATOR, {
-      commandId: FILE_COMMANDS.DELETE_FILE.id,
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.DELETE_FILE,
+      order: 1,
+      group: '2_operator',
     });
-    menus.registerMenuAction(FileTreeContextMenu.OPERATOR, {
-      commandId: FILE_COMMANDS.RENAME_FILE.id,
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.RENAME_FILE,
+      order: 3,
+      group: '2_operator',
     });
-    menus.registerMenuAction(FileTreeContextMenu.OPERATOR, {
-      commandId: FILE_COMMANDS.COMPARE_SELECTED.id,
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.COMPARE_SELECTED,
+      order: 2,
+      group: '2_operator',
     });
-    menus.registerMenuAction(FileTreeContextMenu.COPY, {
-      commandId: FILE_COMMANDS.COPY_FILE.id,
-      order: '1',
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.COPY_FILE,
+      order: 1,
+      group: '3_copy',
     });
-    menus.registerMenuAction(FileTreeContextMenu.COPY, {
-      commandId: FILE_COMMANDS.CUT_FILE.id,
-      order: '2',
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.CUT_FILE,
+      order: 2,
+      group: '3_copy',
     });
-    menus.registerMenuAction(FileTreeContextMenu.COPY, {
-      commandId: FILE_COMMANDS.PASTE_FILE.id,
-      order: '3',
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.PASTE_FILE,
+      order: 3,
+      group: '3_copy',
     });
-    menus.registerMenuAction(FileTreeContextMenu.PATH, {
-      commandId: FILE_COMMANDS.COPY_PATH.id,
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.COPY_PATH,
+      group: '4_path',
     });
-    menus.registerMenuAction(FileTreeContextMenu.PATH, {
-      commandId: FILE_COMMANDS.COPY_RELATIVE_PATH.id,
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.COPY_RELATIVE_PATH,
+      group: '4_path',
     });
   }
 }

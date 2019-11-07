@@ -4,7 +4,7 @@ import { equals } from '@ali/ide-core-common/lib/utils/arrays';
 
 import { MenuNode } from '../menu/next/base';
 import { IMenu } from '../menu/next/menu-service';
-import { splitMenuItems } from '../menu/next/menu-util';
+import { generateInlineActions, MenuSeparator } from '../menu/next/menu-util';
 
 export function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -43,7 +43,11 @@ function menuNodeEquals(a: MenuNode, b: MenuNode): boolean {
   return a.id === b.id;
 }
 
-export function useMenus(menuInitalizer: IMenu | (() => IMenu), splitMarker?: 'navigation' | 'inline') {
+export function useMenus(
+  menuInitalizer: IMenu | (() => IMenu),
+  separator?: MenuSeparator,
+  args?: any[],
+) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
 
   const initalizer = useCallback(() => {
@@ -55,16 +59,19 @@ export function useMenus(menuInitalizer: IMenu | (() => IMenu), splitMarker?: 'n
   useDisposable(() => {
     // initialize
     const menus = initalizer();
-    updateMenuConfig(menus);
+    updateMenuConfig(menus, args);
 
-    function updateMenuConfig(menus: IMenu) {
-      const menuNodes = menus.getMenuNodes();
-      const result = splitMenuItems(menuNodes, splitMarker);
+    function updateMenuConfig(menuArg: IMenu, argList?: any[]) {
+      const result = generateInlineActions({
+        menus: menuArg,
+        separator,
+        options: { args: argList },
+      });
 
       // menu nodes 对比
       if (
-        equals(result[0], menus[0], menuNodeEquals)
-        && equals(result[1], menus[1], menuNodeEquals)
+        equals(result[0], menuArg[0], menuNodeEquals)
+        && equals(result[1], menuArg[1], menuNodeEquals)
       ) {
         return;
       }
@@ -78,7 +85,7 @@ export function useMenus(menuInitalizer: IMenu | (() => IMenu), splitMarker?: 'n
         updateMenuConfig(menus);
       }),
     ];
-  }, [ initalizer ]);
+  }, [ initalizer, args ]);
 
   return menuConfig;
 }

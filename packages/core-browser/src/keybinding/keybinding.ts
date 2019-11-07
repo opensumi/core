@@ -117,10 +117,10 @@ export interface ResolvedKeybinding extends Keybinding {
    * KeyboardLayoutService会根据用户的键盘布局来转换keybinding得到最终在UI中使用的值
    * 如果尚未调用KeyboardLayoutService来解析键绑定，则该值为unfedined。
    */
-  resolved?: KeyCode[];
+  resolved?: KeySequence;
 }
 
-export interface ScopedKeybinding extends Keybinding {
+export interface ScopedKeybinding extends ResolvedKeybinding {
   scope?: KeybindingScope;
 }
 
@@ -179,7 +179,7 @@ export interface KeybindingService {
   /**
    * 清空键盘事件队列
    */
-  clearCovert(): void;
+  clearConvert(): void;
 }
 
 @Injectable()
@@ -203,6 +203,10 @@ export class KeybindingServiceImpl implements KeybindingService {
   protected keySequence: KeySequence = [];
   protected convertKeySequence: KeySequence = [];
 
+  private keySequenceTimer: any;
+
+  static KEYSEQUENCE_TIMEOUT = 5000;
+
   /**
    * 执行匹配键盘事件的命令
    *
@@ -212,7 +216,9 @@ export class KeybindingServiceImpl implements KeybindingService {
     if (event.defaultPrevented) {
       return;
     }
-
+    if (this.keySequenceTimer) {
+      clearTimeout(this.keySequenceTimer);
+    }
     const keyCode = KeyCode.createKeyCode(event);
     // 当传入的Keycode仅为修饰符，忽略，等待下次输入
     if (keyCode.isModifierOnly()) {
@@ -225,6 +231,7 @@ export class KeybindingServiceImpl implements KeybindingService {
 
     if (this.tryKeybindingExecution(bindings.full, event)) {
       this.keySequence = [];
+      this.statusBar.removeElement('keybinding-status');
     } else if (bindings.partial.length > 0) {
       // 堆积keySequence, 用于实现组合键
       event.preventDefault();
@@ -235,7 +242,10 @@ export class KeybindingServiceImpl implements KeybindingService {
         alignment: StatusBarAlignment.LEFT,
         priority: 2,
       });
-
+      this.keySequenceTimer = setTimeout(() => {
+        this.keySequence = [];
+        this.statusBar.removeElement('keybinding-status');
+      }, KeybindingServiceImpl.KEYSEQUENCE_TIMEOUT);
     } else {
       this.keySequence = [];
       this.statusBar.removeElement('keybinding-status');
@@ -267,7 +277,7 @@ export class KeybindingServiceImpl implements KeybindingService {
   /**
    * 清空键盘事件队列
    */
-  clearCovert() {
+  clearConvert() {
     this.convertKeySequence = [];
   }
 

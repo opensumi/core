@@ -2,8 +2,9 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ViewState } from '@ali/ide-activity-panel';
-import { localize } from '@ali/ide-core-common';
+import { CommandService, localize } from '@ali/ide-core-common';
 import { IContextKeyService } from '@ali/ide-core-browser';
+import { Button } from '@ali/ide-core-browser/lib/components';
 
 import { ISCMRepository, SCMService } from '../common';
 import { ViewModelContext } from './scm.store';
@@ -17,9 +18,18 @@ import * as styles from './scm.module.less';
  * 空视图
  */
 const SCMEmpty = () => {
+  const commandService = useInjectable<CommandService>(CommandService);
+
+  const handleClick = React.useCallback(() => {
+    commandService.executeCommand('git.init');
+  }, []);
+
   return (
     <div className={styles.noop}>
       {localize('scm.provider.empty')}
+      <div style={{ marginTop: 10 }}>
+        <Button onClick={handleClick} block>{localize('scm.provider.init')}</Button>
+      </div>
     </div>
   );
 };

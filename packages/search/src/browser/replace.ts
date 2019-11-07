@@ -1,14 +1,14 @@
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MessageType, URI } from '@ali/ide-core-common';
 import { localize } from '@ali/ide-core-browser';
+import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import {
   ContentSearchResult,
   ResultTotal,
 } from '../common/';
-import { IEditorDocumentModelService, IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
 
 export async function replaceAll(
-  documentModelManager: IEditorDocumentModelService,
+  workspaceEditService: IWorkspaceEditService,
   resultMap: Map<string, ContentSearchResult[]>,
   replaceText: string,
   dialogService?: IDialogService,
@@ -38,11 +38,7 @@ export async function replaceAll(
   }
   for (const resultArray of resultMap) {
     const results = resultArray[1];
-    const fileUri = results[0].fileUri;
-
-    const docModel = await documentModelManager.createModelReference(new URI(fileUri), 'replace');
-    await replace(docModel.instance, results, replaceText);
-    docModel.dispose();
+    await replace(workspaceEditService, results, replaceText);
   }
   if (messageService && resultTotal) {
     messageService.info(
@@ -66,33 +62,28 @@ export function getSelection(result: ContentSearchResult) {
 }
 
 export async function replace(
-  docModel: IEditorDocumentModel,
+  workspaceEditService: IWorkspaceEditService,
   results: ContentSearchResult[],
   replaceText: string,
 ) {
-  const model = docModel.getMonacoModel();
-  const isKeepDirty = docModel.dirty;
 
-  model.pushEditOperations(
-    getSelection(results[0]),
-    results.map((result) => {
-      return {
-        range: new monaco.Range(
-          result.line,
-          result.matchStart,
-          result.line,
-          result.matchStart + result.matchLength,
-        ),
-        text: replaceText,
-      };
-    }),
-    (edits) => {
-      // TODO 更正确的位置
-      return getSelection(results[results.length - 1]);
-    },
-  );
-  model.pushStackElement();
-  if (!isKeepDirty) {
-    await docModel.save();
-  }
+  await workspaceEditService.apply({
+    edits: [{
+      options: {
+        dirtyIfInEditor: true,
+      },
+      resource: new URI(results[0].fileUri),
+      edits: results.map((result) => {
+        return {
+          range: new monaco.Range(
+            result.line,
+            result.matchStart,
+            result.line,
+            result.matchStart + result.matchLength,
+          ),
+          text: replaceText,
+        };
+      }),
+    }],
+  });
 }

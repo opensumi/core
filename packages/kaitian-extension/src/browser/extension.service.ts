@@ -24,6 +24,7 @@ import {
   VSCodeExtensionService,
   ExtHostAPIIdentifier,
   IMainThreadCommands,
+  isLanguagePackExtension,
 } from '../common/vscode';
 
 import {
@@ -217,6 +218,17 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   }
 
+  public getExtensions() {
+    return Array.from(this.extensionMap.values());
+  }
+
+  public async activateExtensionByExtPath(path: string) {
+    const extension = this.extensionMap.get(path);
+    if (extension) {
+      return extension.activate();
+    }
+  }
+
   public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
     const extensionMetadata = await this.extensionNodeService.getExtension(path, getPreferenceLanguageId());
     if (extensionMetadata) {
@@ -380,9 +392,14 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   private async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
-    const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
-    // 全局设置会同步到 workspace 中，所以只检查 workspace 就可以了
-    return storage.get(extension.extensionId, '1') === '1';
+    const [ workspaceStorage, globalStorage ] = await Promise.all([
+      this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS),
+      this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
+    ]);
+    // 全局默认为启用
+    const globalEnableFlag = globalStorage.get(extension.extensionId, '1');
+    // 如果 workspace 未设置则读取全局配置
+    return workspaceStorage.get(extension.extensionId, globalEnableFlag) === '1';
   }
 
   private async initBrowserDependency() {
@@ -427,9 +444,23 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   private async enableAvailableExtensions() {
-    await Promise.all(Array.from(this.extensionMap.values()).map((extension) => {
-      return extension.contributeIfEnabled();
-    }));
+    const extensions = Array.from(this.extensionMap.values());
+    const languagePackExtensions: Extension[] = [];
+    const normalExtensions: Extension[] = [];
+
+    for (const extension of extensions) {
+      if (isLanguagePackExtension(extension.packageJSON)) {
+        languagePackExtensions.push(extension);
+        continue;
+      } else {
+        normalExtensions.push(extension);
+        continue;
+      }
+    }
+
+    // 优先执行 languagePack 的 contribute
+    await Promise.all(languagePackExtensions.map((languagePack) => languagePack.contributeIfEnabled()));
+    await Promise.all(normalExtensions.map((extension) => extension.contributeIfEnabled()));
   }
 
   // FIXME: 临时处理组件激活

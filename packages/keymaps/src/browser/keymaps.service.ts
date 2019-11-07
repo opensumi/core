@@ -131,7 +131,7 @@ export class KeymapService implements IKeymapService {
   }
 
   clearCovert = () => {
-    return this.keybindingService.clearCovert();
+    return this.keybindingService.clearConvert();
   }
 
   /**
@@ -170,7 +170,11 @@ export class KeymapService implements IKeymapService {
    * @memberof KeymapService
    */
   async open(): Promise<void> {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME));
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), {preview: true});
+  }
+
+  fixed = async () => {
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), {preview: false});
   }
 
   getWhen(keybinding?: Keybinding) {

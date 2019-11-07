@@ -66,6 +66,19 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     }
   }
 
+  getAllOpenedUris() {
+    const uris: URI[] = [];
+    for (const group of this.editorGroups) {
+      for (const resource of group.resources) {
+        const index = uris.findIndex((u) => u.isEqual(resource.uri));
+        if (index === -1) {
+          uris.push(resource.uri);
+        }
+      }
+    }
+    return uris;
+  }
+
   async saveAll(includeUntitled?: boolean) {
     for (const editorGroup of this.editorGroups) {
       await editorGroup.saveAll();
@@ -433,6 +446,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           resource: this.currentResource!,
           selections: e.selections,
           source: e.source,
+          editorUri: this.codeEditor.currentUri!,
         }));
       }
     }));
@@ -466,6 +480,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           resource: this.currentResource!,
           selections: e.selections,
           source: e.source,
+          editorUri: this.diffEditor.modifiedEditor.currentUri!,
         }));
       }
     }));
@@ -731,7 +746,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         // 当前不是最后一个 editor Group
         this.dispose();
       }
-
+      this.availableOpenTypes = [];
     }
   }
 

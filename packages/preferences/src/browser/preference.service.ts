@@ -175,6 +175,7 @@ export const defaultSettingSections: {
         {id: 'editor.cursorStyle', localized: 'preference.editor.cursorStyle'},
         {id: 'editor.insertSpace', localized: 'preference.editor.insertSpace'},
         {id: 'editor.wordWrap', localized: 'preference.editor.wordWrap'},
+        {id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles'},
       ],
     },
   ],

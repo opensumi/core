@@ -1,8 +1,8 @@
 import { IJSONSchema, IJSONSchemaSnippet, Event } from '@ali/ide-core-common';
-import { Breakpoint, DebuggerContribution } from './models';
+import { Breakpoint } from './models';
 import * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { DebuggerDescription, DebugConfiguration } from '@ali/ide-debug';
+import { DebuggerDescription, DebugConfiguration, IDebuggerContribution } from '@ali/ide-debug';
 import { WorkspaceFolder } from './models';
 
 export interface IMainThreadDebug {
@@ -19,7 +19,7 @@ export interface IMainThreadDebug {
 export interface IExtHostDebug {
   $onSessionCustomEvent(sessionId: string, event: string, body?: any): void;
   $breakpointsDidChange(all: Breakpoint[], added: Breakpoint[], removed: Breakpoint[], changed: Breakpoint[]): void;
-  $sessionDidCreate(sessionId: string): void;
+  $sessionDidStart(sessionId: string): void;
   $sessionDidDestroy(sessionId: string): void;
   $sessionDidChange(sessionId: string | undefined): void;
   $provideDebugConfigurations(debugType: string, workspaceFolder: string | undefined): Promise<vscode.DebugConfiguration[]>;
@@ -30,7 +30,7 @@ export interface IExtHostDebug {
   $createDebugSession(debugConfiguration: vscode.DebugConfiguration): Promise<string>;
   $terminateDebugSession(sessionId: string): Promise<void>;
   $getTerminalCreationOptions(debugType: string): Promise<any>;
-  $registerDebuggerContributions(extensionFolder: string, contributions: DebuggerContribution[]);
+  $registerDebuggerContributions(extensionFolder: string, contributions: IDebuggerContribution[]);
 }
 
 export interface IExtHostDebugService extends IExtHostDebug {
@@ -50,3 +50,5 @@ export interface IExtHostDebugService extends IExtHostDebug {
   registerDebugAdapterDescriptorFactory(type: string, factory: vscode.DebugAdapterDescriptorFactory): vscode.Disposable;
   registerDebugAdapterTrackerFactory(type: string, factory: vscode.DebugAdapterTrackerFactory): vscode.Disposable;
 }
+
+export type DebugActivationEvent = 'onDebugResolve' | 'onDebugInitialConfigurations' | 'onDebugAdapterProtocolTracker';

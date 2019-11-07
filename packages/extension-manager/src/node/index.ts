@@ -1,7 +1,7 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
-import { IExtensionManagerServer, ExtensionManagerServerPath } from '../common';
-import { ExtensionManagerServer } from './extension-manager-server';
+import { IExtensionManagerServer, ExtensionManagerServerPath, IExtensionManager, IExtensionManagerRequester } from '../common';
+import { ExtensionManager, ExtensionManagerServer, ExtensionManagerRequester } from './extension-manager-server';
 import { ExtensionManagerContribution } from './extension-manager.contribution';
 
 @Injectable()
@@ -10,6 +10,14 @@ export class ExtensionManagerModule extends NodeModule {
     {
       token: IExtensionManagerServer,
       useClass: ExtensionManagerServer,
+    },
+    {
+      token: IExtensionManager,
+      useClass: ExtensionManager,
+    },
+    {
+      token: IExtensionManagerRequester,
+      useClass: ExtensionManagerRequester,
     },
     ExtensionManagerContribution,
   ];

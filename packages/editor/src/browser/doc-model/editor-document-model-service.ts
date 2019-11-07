@@ -131,7 +131,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       (async () => provider.isReadonly ? provider.isReadonly(uri) : undefined)(),
       (async () => provider.preferLanguageForUri ? provider.preferLanguageForUri(uri) : undefined)(),
       (async () => provider.provideEOL ? provider.provideEOL(uri) : undefined)(),
-    ]);
+    ] as const);
 
     const savable = !!provider.saveDocumentModel;
 

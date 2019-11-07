@@ -1,6 +1,6 @@
 import { Sequence, ISplice } from '@ali/ide-core-common/lib/sequence';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
-import { Uri } from '@ali/ide-core-common/lib/uri';
+import Uri from 'vscode-uri';
 
 import { ISCMProvider, ISCMResourceGroup, ISCMResource } from '../src/common';
 
