@@ -392,9 +392,14 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   private async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
-    const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
-    // 全局设置会同步到 workspace 中，所以只检查 workspace 就可以了
-    return storage.get(extension.extensionId, '1') === '1';
+    const [ workspaceStorage, globalStorage ] = await Promise.all([
+      this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS),
+      this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
+    ]);
+    // 全局默认为启用
+    const globalEnableFlag = globalStorage.get(extension.extensionId, '1');
+    // 如果 workspace 未设置则读取全局配置
+    return workspaceStorage.get(extension.extensionId, globalEnableFlag) === '1';
   }
 
   private async initBrowserDependency() {
