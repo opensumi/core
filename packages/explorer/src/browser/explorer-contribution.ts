@@ -9,15 +9,7 @@ export const ExplorerContainerId = 'explorer';
 export class ExplorerContribution implements ComponentContribution {
   // Explorer 只注册容器
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-explorer', [
-      // TODO: 支持只注册容器，不注册View
-      {
-        component: ExplorerContainer,
-        id: 'explorer-container',
-        weight: 0,
-        collapsed: false,
-      },
-    ], {
+    registry.register('@ali/ide-explorer', [], {
       iconClass: getIcon('explorer'),
       title: localize('explorer.title'),
       priority: 10,
