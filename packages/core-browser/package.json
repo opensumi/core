@@ -54,7 +54,6 @@
     "vscode-debugprotocol": "^1.35.0",
     "vscode-languageserver-protocol": "^3.14.1",
     "vscode-textmate": "^4.1.1",
-    "xterm": "^3.13.2",
     "mock-socket": "^9.0.2"
   }
 }

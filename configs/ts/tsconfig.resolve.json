@@ -332,6 +332,12 @@
       ],
       "@ali/ide-outline/lib/*": [
         "../packages/outline/src/*"
+      ],
+      "@ali/ide-terminal-next": [
+        "../packages/terminal-next/src/index.ts"
+      ],
+      "@ali/ide-terminal-next/lib/*": [
+        "../packages/terminal-next/src/*"
       ]
     }
   }

@@ -158,6 +158,12 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
+    },
+    {
+      "path": "./references/tsconfig.terminal-next.json"
+    },
+    {
+      "path": "./references/tsconfig.terminal-next.json"
     }
   ]
 }

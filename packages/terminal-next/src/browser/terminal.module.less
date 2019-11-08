@@ -1,0 +1,55 @@
+.widgetPanel {
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+
+.widgetResizeGroups {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+
+  & > :last-child {
+    .resizeDelegate {
+      pointer-events: none;
+      background: inherit;
+    }
+  }
+}
+
+.resizeDelegateContainer {
+  height: 100%;
+  pointer-events: all;
+
+  .resizeDelegate {
+    float: right;
+    width: 4px;
+    height: 100%;
+    cursor: ew-resize;
+    transform: translateX(2px);
+    pointer-events: all;
+    background: white;
+  }
+}
+
+.widgetGroups {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+
+  .widgetContainer {
+    height: 100%;
+    overflow: hidden;
+
+    .widgetContent {
+      width: 100%;
+      height: 100%;
+      padding: 4px;
+    }
+  }
+}
