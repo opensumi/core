@@ -181,6 +181,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: (_, uris) => {
+        console.log('delete');
         if (uris && uris.length) {
           this.filetreeService.deleteFiles(uris);
         } else {
@@ -400,7 +401,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.DELETE_FILE.id,
-      keybinding: 'delete',
+      keybinding: 'ctrlcmd+backspace',
       when: 'filesExplorerFocus',
     });
   }
