@@ -125,7 +125,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
     const symbols = this.documentSymbolStore.getDocumentSymbol(uri);
     if (symbols && symbols.length > 0) {
       normalizeDocumentSymbols(symbols, {children: symbols});
-      const currentSymbols = this.findCurrentDocumentSymbol(symbols, editor.monacoEditor.getPosition());
+      const currentSymbols = findCurrentDocumentSymbol(symbols, editor.monacoEditor.getPosition());
       if (currentSymbols.length > 0) {
         return currentSymbols.map((symbol) => this.createFromDocumentSymbol(symbol, editor));
       } else {
@@ -146,29 +146,6 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
     } else {
       return [];
     }
-  }
-
-  private findCurrentDocumentSymbol(documentSymbols: DocumentSymbol[], position: MaybeNull<IPosition>): DocumentSymbol[] {
-    const result: DocumentSymbol[] = [];
-    if (!position) {
-      return result;
-    }
-    let toFindIn: DocumentSymbol[] | undefined  = documentSymbols;
-    while (toFindIn && toFindIn.length > 0) {
-      let found = false;
-      for (const documentSymbol of toFindIn) {
-        if (positionInRange(position, documentSymbol.range)) {
-          result.push(documentSymbol);
-          toFindIn = documentSymbol.children;
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        break;
-      }
-    }
-    return result;
   }
 
   private createFromDocumentSymbol(documentSymbol: DocumentSymbol, editor: IEditor): IBreadCrumbPart {
@@ -225,6 +202,29 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
     }
     this.debouncedFireUriEvent.get(uri.toString())!();
   }
+}
+
+export function findCurrentDocumentSymbol(documentSymbols: DocumentSymbol[], position: MaybeNull<IPosition>): DocumentSymbol[] {
+  const result: DocumentSymbol[] = [];
+  if (!position) {
+    return result;
+  }
+  let toFindIn: DocumentSymbol[] | undefined  = documentSymbols;
+  while (toFindIn && toFindIn.length > 0) {
+    let found = false;
+    for (const documentSymbol of toFindIn) {
+      if (positionInRange(position, documentSymbol.range)) {
+        result.push(documentSymbol);
+        toFindIn = documentSymbol.children;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      break;
+    }
+  }
+  return result;
 }
 
 function sortByNumeric(files: FileStat[]): FileStat[] {

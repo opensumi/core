@@ -339,7 +339,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     if (event.dataTransfer) {
       let label: string;
       if (selectedNodes.length === 1) {
-        label = node.name;
+        label = typeof node.name === 'string' ? node.name : '';
       } else {
         label = String(selectedNodes.length);
       }

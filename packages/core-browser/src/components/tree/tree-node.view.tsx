@@ -52,11 +52,12 @@ const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeN
   }
 };
 
-const renderName = (name: string = 'UNKNOW') => {
-  if (name === 'UNKNOW') {
-    return 'UNKNOW';
+const renderName = (Template: any) => {
+  if (typeof Template === 'string') {
+    return Template;
+  } else {
+    return <Template />;
   }
-  return name;
 };
 
 const renderBadge = (node: TreeNode) => {
@@ -300,7 +301,8 @@ export const TreeContainerNode = (
   };
 
   const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
-    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name === TEMP_FILE_NAME ? '' : node.name);
+    const isComponent = typeof node.name !== 'string';
+    const [value, setValue] = React.useState<string>(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : !isComponent && node.name === TEMP_FILE_NAME ? '' : node.name as string);
 
     const changeHandler = (event) => {
       const newValue = event.target.value;

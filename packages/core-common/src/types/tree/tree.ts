@@ -29,7 +29,7 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   /**
    * 可读的节点名称
    */
-  readonly name: string;
+  readonly name: string | React.JSXElementConstructor<any>;
   /**
    * 节点头部，会影响节点计算逻辑
    * 不适用于RecycleTree面板

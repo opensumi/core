@@ -135,7 +135,7 @@ export const RecycleTree = (
     renderedFileItems = renderedFileItems.map((item: TreeNode, index: number) => {
       let highLightRange = item.highLightRange;
       if (!highLightRange && searchable && search) {
-        const start = item.name.indexOf(search);
+        const start = typeof item.name === 'string' ? item.name.indexOf(search) : -1;
         let end;
         if (start >= 0) {
           end = start + search.length;

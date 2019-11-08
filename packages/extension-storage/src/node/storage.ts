@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred, URI, ExtensionPaths } from '@ali/ide-core-node';
+import { Deferred, URI, ExtensionPaths, INodeLogger } from '@ali/ide-core-node';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue } from '../common/';
 
@@ -17,6 +17,9 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
   @Autowired(IFileService)
   protected readonly fileSystem: IFileService;
+
+  @Autowired(INodeLogger)
+  protected readonly logger: INodeLogger;
 
   public async init(workspace: FileStat | undefined, roots: FileStat[]): Promise<ExtensionStoragePath> {
     return await this.setupDirectories(workspace, roots);
@@ -49,7 +52,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
       throw new Error('Cannot save data: no opened workspace');
     }
 
-    const data = this.readFromFile(dataPath);
+    const data = await this.readFromFile(dataPath);
 
     if (value === undefined || value === {}) {
       delete data[key];
@@ -57,7 +60,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
       data[key] = value;
     }
 
-    this.writeToFile(dataPath, data);
+    await this.writeToFile(dataPath, data);
     return true;
   }
 
@@ -66,7 +69,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     if (!dataPath) {
     return {};
     }
-    const data = this.readFromFile(dataPath);
+    const data = await this.readFromFile(dataPath);
     return data[key];
   }
 
@@ -76,7 +79,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
       return {};
     }
 
-    const data = this.readFromFile(dataPath);
+    const data = await this.readFromFile(dataPath);
     return data;
   }
 
@@ -94,26 +97,31 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     }
   }
 
-  private readFromFile(pathToFile: string): KeysToKeysToAnyValue {
-    if (!fs.existsSync(pathToFile)) {
+  private async readFromFile(pathToFile: string): Promise<KeysToKeysToAnyValue> {
+    const existed = await this.fileSystem.exists(pathToFile);
+    if (!existed) {
       return {};
     }
-
-    const rawData = fs.readFileSync(pathToFile, 'utf8');
     try {
-      return JSON.parse(rawData);
+      const { content } = await this.fileSystem.resolveContent(pathToFile);
+      return JSON.parse(content);
     } catch (error) {
-      console.error('Failed to parse data from "', pathToFile, '". Reason:', error);
+      this.logger.error('Failed to parse data from "', pathToFile, '". Reason:', error);
       return {};
     }
   }
 
-  private writeToFile(pathToFile: string, data: KeysToKeysToAnyValue): void {
-    if (!fs.existsSync(path.dirname(pathToFile))) {
-      fs.mkdirSync(path.dirname(pathToFile));
+  private async writeToFile(pathToFile: string, data: KeysToKeysToAnyValue): Promise<void> {
+    const existed = await this.fileSystem.exists(path.dirname(pathToFile));
+    if (!existed) {
+      await this.fileSystem.createFolder(path.dirname(pathToFile));
     }
-
     const rawData = JSON.stringify(data);
-    fs.writeFileSync(pathToFile, rawData, 'utf8');
+
+    await this.fileSystem.setContent({
+      uri: pathToFile,
+      lastModification: new Date().getTime(),
+      isDirectory: false,
+    } as FileStat, rawData);
   }
 }

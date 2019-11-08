@@ -154,6 +154,9 @@
       "path": "./references/tsconfig.keymaps.json"
     },
     {
+      "path": "./references/tsconfig.outline.json"
+    },
+    {
       "path": "./references/tsconfig.startup.json"
     }
   ]

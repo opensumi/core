@@ -332,7 +332,7 @@ export const TreeContainer = (
       const uri = node.uri.toString();
       return uri ? uri : undefined;
     }
-    if (node.name) {
+    if (typeof node.name === 'string' ) {
       return node.name;
     }
   };
@@ -395,7 +395,7 @@ export const TreeContainer = (
     {
       nodes!.map(<T extends TreeNode>(node: T, index: number) => {
         if (fileDecorationProvider && themeProvider) {
-          const deco: IFileDecoration = fileDecorationProvider.getDecoration(node.uri || node.name || node.id, ExpandableTreeNode.is(node));
+          const deco: IFileDecoration = fileDecorationProvider.getDecoration(node.uri || typeof node.name === 'string' && node.name || node.id, ExpandableTreeNode.is(node));
           if (deco) {
             node = {
               ...node,
