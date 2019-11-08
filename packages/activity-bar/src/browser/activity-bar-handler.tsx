@@ -187,7 +187,14 @@ export class ActivityBarHandler {
   // 刷新 title
   refreshTitle() {
     if (this.titleWidget) {
-      this.titleWidget.update();
+      let viewId: string | undefined;
+      if (this.accordion) {
+        const visibleViews = this.accordion.getVisibleSections();
+        if (visibleViews.length === 1) {
+          viewId = visibleViews[0].view.id;
+        }
+      }
+      this.titleWidget.updateToolbar(viewId);
     }
     if (this.side !== 'bottom') {
       if (this.accordion) {
