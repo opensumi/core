@@ -46,4 +46,5 @@ export const enum MenuId {
   CommentActions,
   GlobalActivity,
   ExtensionContext, // 插件市场 item
+  SettingsIconMenu, // 右下角 setting menu
 }

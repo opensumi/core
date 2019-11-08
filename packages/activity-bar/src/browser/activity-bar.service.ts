@@ -1,15 +1,14 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE, MaybeNull, MenuModelRegistry, localize, SETTINGS_MENU_PATH } from '@ali/ide-core-browser';
+import { IContextKeyService, WithEventBus, OnEvent, SlotLocation, CommandRegistry, KeybindingRegistry, CommandService, localize } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
-import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent, measurePriority, Side, ViewContextKeyRegistry, findClosestPart } from '@ali/ide-core-browser/lib/layout';
-import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
+import { ViewContainerOptions, View, ResizeEvent, SideStateManager, RenderedEvent, measurePriority, Side, ViewContextKeyRegistry, findClosestPart } from '@ali/ide-core-browser/lib/layout';
+import { BoxPanel } from '@phosphor/widgets';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { SIDE_MENU_PATH } from '../common';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
-import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -51,9 +50,6 @@ export class ActivityBarService extends WithEventBus {
   private viewToContainerMap: Map<string, string> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
   private tabbarState: SideStateManager;
-
-  @Autowired(AppConfig)
-  private config: AppConfig;
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
@@ -379,7 +375,12 @@ export class ActivityBarService extends WithEventBus {
     this.listenCurrentChange();
   }
 
-  handleSetting = (event) => {
-    // this.contextMenuRenderer.render(SETTINGS_MENU_PATH, event.nativeEvent);
+  handleSetting = (event: React.MouseEvent<HTMLElement>) => {
+    const menus = this.menuService.createMenu(MenuId.SettingsIconMenu);
+    const menuNodes = generateCtxMenu({ menus });
+    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+      x: event.clientX,
+      y: event.clientY,
+    } });
   }
 }
