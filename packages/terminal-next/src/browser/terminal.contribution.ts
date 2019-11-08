@@ -101,12 +101,11 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       },
     });
 
-    registry.registerHandler(toggleBottomPanel.id, {
-      execute: (...args: any[]) => {
-        if (this._terminalController.groups.length === 0) {
-          this._terminalController.firstInitialize();
-        }
-      },
+    registry.afterExecuteCommand(toggleBottomPanel.id, () => {
+      console.log(111);
+      if (this._terminalController.groups.length === 0) {
+        this._terminalController.firstInitialize();
+      }
     });
   }
 

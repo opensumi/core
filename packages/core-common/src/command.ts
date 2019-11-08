@@ -4,6 +4,8 @@ import { ContributionProvider } from './contribution-provider';
 import { MaybePromise } from './async';
 import { replaceLocalizePlaceholder } from './localize';
 
+type InterceptorFunction = (result: any) => MaybePromise<any>;
+
 export interface Command {
   /**
    * 命令 id，全局唯一
@@ -209,7 +211,7 @@ export interface CommandRegistry {
 
   beforeExecuteCommand(interceptor: PreCommandInterceptor): IDisposable;
 
-  afterExecuteCommand(interceptor: PostCommandInterceptor): IDisposable;
+  afterExecuteCommand(interceptor: string | PostCommandInterceptor, result?: InterceptorFunction): IDisposable;
 
 }
 
@@ -230,6 +232,8 @@ export class CommandRegistryImpl implements CommandRegistry {
 
   public readonly postCommandInterceptors: PostCommandInterceptor[] = [];
 
+  private readonly postCommandInterceptor: Map<string, InterceptorFunction[]> = new Map<string, InterceptorFunction[]>();
+
   /**
    * 命令执行方法
    * @param commandId 命令执行方法
@@ -247,6 +251,12 @@ export class CommandRegistryImpl implements CommandRegistry {
         args = await preCommand(commandId, args);
       }
       let result = await handler.execute(...args);
+      const commandInterceptor = this.postCommandInterceptor.get(commandId);
+      if (commandInterceptor) {
+        for (const postInterceptor of commandInterceptor) {
+          result = await postInterceptor(result);
+        }
+      }
       for (const postCommand of this.postCommandInterceptors) {
         result = await postCommand(commandId, result);
       }
@@ -474,16 +484,38 @@ export class CommandRegistryImpl implements CommandRegistry {
     }
   }
 
-  public afterExecuteCommand(interceptor: PostCommandInterceptor) {
-    this.postCommandInterceptors.push(interceptor);
-    return {
-      dispose: () => {
-        const index = this.postCommandInterceptors.indexOf(interceptor);
-        if (index !== -1) {
-          this.postCommandInterceptors.splice(index, 1);
+  public afterExecuteCommand(command: string, result: InterceptorFunction);
+  public afterExecuteCommand(interceptor: string | PostCommandInterceptor, result?: InterceptorFunction) {
+    if (typeof interceptor === 'string') {
+      const commandInterceptor = this.postCommandInterceptor.get(interceptor);
+      if (commandInterceptor) {
+        result && commandInterceptor.push(result);
+      } else {
+        result && this.postCommandInterceptor.set(interceptor, [result]);
+      }
+      return {
+        dispose: () => {
+          const commandInterceptor = this.postCommandInterceptor.get(interceptor);
+          if (commandInterceptor && result) {
+            const index = commandInterceptor.indexOf(result);
+            if (index !== -1) {
+              commandInterceptor.splice(index, 1);
+            }
+          }
+        }
+      }
+    } else {
+      this.postCommandInterceptors.push(interceptor);
+      return {
+        dispose: () => {
+          const index = this.postCommandInterceptors.indexOf(interceptor);
+          if (index !== -1) {
+            this.postCommandInterceptors.splice(index, 1);
+          }
         }
       }
     }
+
   }
 
   /**
