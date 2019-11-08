@@ -1,1 +1,0 @@
-export const SETTINGS_MENU_PATH: string = 'SETTINGS_CONTEXT_MENU';

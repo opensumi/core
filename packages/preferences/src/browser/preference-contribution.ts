@@ -20,7 +20,6 @@ import {
   CommandService,
   EDITOR_COMMANDS,
   MenuModelRegistry,
-  SETTINGS_MENU_PATH,
   ISchemaStore,
   JsonSchemaContribution,
   ISchemaRegistry,
@@ -34,7 +33,7 @@ import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME } from '../common';
 import { PreferenceView } from './preferences.view';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
-import { NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
@@ -108,7 +107,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   }
 
   registerNextMenus(menus: IMenuRegistry) {
-    menus.registerMenuItem(SETTINGS_MENU_PATH, {
+    menus.registerMenuItem(MenuId.SettingsIconMenu, {
       command: {
         id: COMMON_COMMANDS.OPEN_PREFERENCES.id,
       },

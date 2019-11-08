@@ -15,7 +15,6 @@ import {
   MenuModelRegistry,
   EDITOR_COMMANDS,
   CommandService,
-  SETTINGS_MENU_PATH,
 } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
@@ -23,7 +22,7 @@ import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
-import { NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 
@@ -80,7 +79,7 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
   }
 
   registerNextMenus(menus: IMenuRegistry) {
-    menus.registerMenuItem(SETTINGS_MENU_PATH, {
+    menus.registerMenuItem(MenuId.SettingsIconMenu, {
       command: {
         id: COMMON_COMMANDS.OPEN_KEYMAPS.id,
       },

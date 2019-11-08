@@ -19,7 +19,7 @@ export interface IMenu extends IDisposable {
 }
 
 export abstract class MenuService {
-  abstract createMenu(id: MenuId | string, scopedKeybindingService?: IContextKeyService): IMenu;
+  abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
 // 后续 MenuNode 要看齐 @ali/ide-core-common 的 ActionMenuNode
