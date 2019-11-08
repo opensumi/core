@@ -116,7 +116,7 @@ export class ActivityBarService extends WithEventBus {
     if (tabbarWidget) {
       let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
       const command = this.registerVisibleToggleCommand(containerId);
-      if (!views || !views.length) {
+      if (!views) {
         if (!Fc) {
           console.error('视图数据或自定义视图请至少传入一种！');
         }
