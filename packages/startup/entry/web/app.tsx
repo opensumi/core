@@ -10,9 +10,12 @@ import '@ali/ide-core-browser/lib/style/index.less';
 import '@ali/ide-core-browser/lib/style/icon.less';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
 
+import { TerminalNextModule } from '../../../terminal-next/src/browser';
+
 renderApp({
   modules: [
     ...CommonBrowserModules,
+    TerminalNextModule,
     ExpressFileServerModule,
     StartupModule,
   ],
