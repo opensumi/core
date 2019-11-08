@@ -240,7 +240,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         extensionMetadata,
         this,
         await this.checkExtensionEnable(extensionMetadata),
-        extensionMetadata.realPath.startsWith(this.appConfig.extensionDir!),
+        this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false,
       ]);
 
       this.extensionMap.set(path, extension);
