@@ -1,6 +1,7 @@
 import { MenuContribution, Domain, MenuModelRegistry, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, SETTINGS_MENU_PATH, replaceLocalizePlaceholder, PreferenceScope } from '@ali/ide-core-browser';
 import { IThemeService, IIconService } from '../common';
 import { Autowired } from '@ali/common-di';
+import { NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
@@ -12,8 +13,8 @@ export const ICON_THEME_TOGGLE_COMMAND: Command = {
   label: '%theme.icon.toggle%',
 };
 
-@Domain(MenuContribution, CommandContribution)
-export class ThemeContribution implements MenuContribution, CommandContribution {
+@Domain(NextMenuContribution, CommandContribution)
+export class ThemeContribution implements NextMenuContribution, CommandContribution {
 
   @Autowired(IThemeService)
   themeService: IThemeService;
@@ -27,12 +28,18 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
 
-  registerMenus(menus: MenuModelRegistry) {
-    menus.registerMenuAction([...SETTINGS_MENU_PATH, '4_theme'], {
-      commandId: THEME_TOGGLE_COMMAND.id,
+  registerNextMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(SETTINGS_MENU_PATH, {
+      command: {
+        id: THEME_TOGGLE_COMMAND.id,
+      },
+      group: '4_theme',
     });
-    menus.registerMenuAction([...SETTINGS_MENU_PATH, '4_theme'], {
-      commandId: ICON_THEME_TOGGLE_COMMAND.id,
+    menus.registerMenuItem(SETTINGS_MENU_PATH, {
+      command: {
+        id: ICON_THEME_TOGGLE_COMMAND.id,
+      },
+      group: '4_theme',
     });
   }
 

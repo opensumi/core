@@ -9,7 +9,7 @@ import { SIDE_MENU_PATH } from '../common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
-import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -379,7 +379,12 @@ export class ActivityBarService extends WithEventBus {
     this.listenCurrentChange();
   }
 
-  handleSetting = (event) => {
-    // this.contextMenuRenderer.render(SETTINGS_MENU_PATH, event.nativeEvent);
+  handleSetting = (event: MouseEvent) => {
+    const menus = this.menuService.createMenu(SETTINGS_MENU_PATH);
+    const menuNodes = generateCtxMenu({ menus });
+    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+      x: event.clientX,
+      y: event.clientY,
+    } });
   }
 }

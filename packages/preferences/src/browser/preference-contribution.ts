@@ -34,6 +34,7 @@ import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME } from '../common';
 import { PreferenceView } from './preferences.view';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
@@ -66,11 +67,11 @@ export class PrefResourceProvider extends WithEventBus implements IResourceProvi
 
 export namespace PreferenceContextMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
-  export const OPEN = [...SETTINGS_MENU_PATH, '1_open'];
+  export const OPEN = '1_open';
 }
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution, JsonSchemaContribution)
-export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution, JsonSchemaContribution {
+@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution, JsonSchemaContribution)
+export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution, JsonSchemaContribution {
 
   @Autowired(ISchemaStore)
   private readonly schemaStore: ISchemaStore;
@@ -106,9 +107,12 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     });
   }
 
-  registerMenus(menus: MenuModelRegistry): void {
-    menus.registerMenuAction(PreferenceContextMenu.OPEN, {
-      commandId: COMMON_COMMANDS.OPEN_PREFERENCES.id,
+  registerNextMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(SETTINGS_MENU_PATH, {
+      command: {
+        id: COMMON_COMMANDS.OPEN_PREFERENCES.id,
+      },
+      group: PreferenceContextMenu.OPEN,
     });
   }
 
