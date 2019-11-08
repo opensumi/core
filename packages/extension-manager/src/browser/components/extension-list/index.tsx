@@ -13,14 +13,12 @@ interface ExtensionListProps {
   loading?: boolean;
   empty?: React.ReactNode | string;
   list: RawExtension[];
-  showInstalled?: boolean;
 }
 
 export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   loading = false,
   list,
   empty,
-  showInstalled,
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
@@ -67,7 +65,6 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
           extension={rawExtension}
           select={select}
           install={install}
-          showInstalled={showInstalled}
           />);
         })}
       </PerfectScrollbar>

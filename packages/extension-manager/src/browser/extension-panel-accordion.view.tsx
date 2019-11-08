@@ -34,7 +34,6 @@ export const ExtensionHotAccordion = observer(() => {
 
   return (
     <ExtensionList
-      showInstalled={true}
       loading={extensionManagerService.loading === SearchState.LOADING}
       list={extensionManagerService.hotExtensions}
       empty={extensionManagerService.loading === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound') : ''}
@@ -67,7 +66,6 @@ export const ExtensionSearchMarketplaceAccordion = observer(() => {
 
   return (
     <ExtensionList
-      showInstalled={true}
       loading={extensionManagerService.searchMarketplaceState === SearchState.LOADING}
       list={extensionManagerService.searchMarketplaceResults}
       empty={extensionManagerService.searchMarketplaceState === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound') : ''}
