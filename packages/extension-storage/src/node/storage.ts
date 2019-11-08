@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred, URI, ExtensionPaths } from '@ali/ide-core-node';
+import { Deferred, URI, ExtensionPaths, INodeLogger } from '@ali/ide-core-node';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue } from '../common/';
 
@@ -17,6 +17,9 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
   @Autowired(IFileService)
   protected readonly fileSystem: IFileService;
+
+  @Autowired(INodeLogger)
+  protected readonly logger: INodeLogger;
 
   public async init(workspace: FileStat | undefined, roots: FileStat[]): Promise<ExtensionStoragePath> {
     return await this.setupDirectories(workspace, roots);
@@ -103,7 +106,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
       const { content } = await this.fileSystem.resolveContent(pathToFile);
       return JSON.parse(content);
     } catch (error) {
-      console.error('Failed to parse data from "', pathToFile, '". Reason:', error);
+      this.logger.error('Failed to parse data from "', pathToFile, '". Reason:', error);
       return {};
     }
   }
