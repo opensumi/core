@@ -245,7 +245,7 @@ export const localizationBundle = {
     'validate.tree.fileNameExistsError': 'File or folder **{0}** already exists. Please use a different name.',
     'validate.tree.invalidFileNameError': 'The name **{0}** is not available. Please use a different name.',
 
-    'open.editors.title': 'OPEN EDITORS',
+    'open.editors.title': 'OPEND EDITORS',
     'open.editors.save.all': 'Save All',
     'open.editors.close.all': 'Close All',
     'open.editors.close.byId': 'Close files in the group',
@@ -287,7 +287,7 @@ export const localizationBundle = {
     'marketplace.extension.enable.workspace': 'Enable(workspace)',
     'marketplace.extension.disable.workspace': 'Disable(workspace)',
     'marketplace.extension.install': 'Install',
-    'marketplace.extension.container': 'Extension',
+    'marketplace.extension.container': 'Extension Market',
     'marketplace.extension.empty.disabled': 'No disabled extensions yet',
     'marketplace.extension.notfound': 'No Extension',
     'marketplace.panel.hot': 'Hot Extensions',

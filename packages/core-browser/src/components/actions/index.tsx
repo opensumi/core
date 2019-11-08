@@ -19,10 +19,16 @@ const MenuAction: React.FC<{
 }> = ({ data }) => {
   return (
     <>
-      <div className={styles.icon}>
-        { data.icon && <Icon iconClass={data.icon} /> }
+      {
+        data.icon && (
+          <div className={styles.icon}>
+            <Icon iconClass={data.icon} />
+          </div>
+        )
+      }
+      <div className={styles.label}>
+        {data.label ? mnemonicButtonLabel(data.label, true) : ''}
       </div>
-      <div className={styles.label}>{mnemonicButtonLabel(data.label, true)}</div>
       {
         data.keybinding
           ? <div className={styles.shortcut}>{data.keybinding}</div>

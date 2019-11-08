@@ -36,7 +36,7 @@ export abstract class IMenuRegistry {
   abstract addCommand(userCommand: Command): IDisposable;
   abstract getCommand(id: string): Command | undefined;
   abstract getCommands(): ICommandsMap;
-  abstract registerMenuItem(menu: MenuId, item: IMenuItem | ISubmenuItem): IDisposable;
+  abstract registerMenuItem(menu: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
 }
 
