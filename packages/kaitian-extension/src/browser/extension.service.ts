@@ -769,7 +769,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                 id: `${extension.id}:${component.id}`,
               }],
               {
-                iconClass: getIcon(component.icon),
+                iconClass: component.icon ? getIcon(component.icon) : component.iconPath ? this.iconService.fromIcon(extension.path, component.iconPath) : '',
                 initialProps: {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,
