@@ -164,6 +164,10 @@ export class TerminalController extends Disposable implements ITerminalControlle
     this.state = observable.object({ index: 0 });
   }
 
+  get currentGroup() {
+    return this.groups[this.state.index];
+  }
+
   firstInitialize() {
     this.createGroup();
     this.focus(this.groups[0].members[0]);
@@ -179,15 +183,16 @@ export class TerminalController extends Disposable implements ITerminalControlle
 
   selectIndex(index: number) {
     this.state = { index };
+    this.focus(this.currentGroup.last);
   }
 
   focus(widget: Widget) {
+    widget.focus();
     this.focusedId = widget.id;
   }
 
   split() {
-    const current = this.groups[this.state.index].add('bash');
-    current.focus();
+    const current = this.currentGroup.add('bash');
     this.focus(current);
   }
 
@@ -205,7 +210,7 @@ export class TerminalController extends Disposable implements ITerminalControlle
   }
 
   removeWidget(id: string) {
-    const group = this.groups[this.state.index];
+    const group = this.currentGroup;
     const index = group.findIndex(id);
     if (index > -1) {
       group.del(index);
