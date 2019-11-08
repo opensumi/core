@@ -1,3 +1,5 @@
+import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IDisposable } from '@ali/ide-core-common';
 
 export const EXTENSION_DIR = 'extension/';
 
@@ -64,6 +66,9 @@ export interface RawExtension extends BaseExtension {
   enable: boolean;
   isBuiltin: boolean;
   downloadCount?: number;
+  reloadRequire?: boolean;
+  // 启用范围
+  enableScope: EnableScope;
   engines: {
     vscode: string,
     kaitian: string,
@@ -78,8 +83,6 @@ export interface ExtensionDetail extends RawExtension {
   categories: string;
   // 代码仓库
   repository: string;
-  // 启用范围
-  enableScope: EnableScope;
   contributes: {
     [name: string]: any;
   };
@@ -96,7 +99,7 @@ export interface IExtensionManager {
   updateExtension(extension: BaseExtension, version: string): Promise<string>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
 }
-export interface IExtensionManagerService extends IExtensionManager {
+export interface IExtensionManagerService extends IExtensionManager  {
   isInit: boolean;
   loading: SearchState;
   hotExtensions: RawExtension[];
@@ -109,11 +112,12 @@ export interface IExtensionManagerService extends IExtensionManager {
   searchInstalledResults: RawExtension[];
   searchMarketplaceState: SearchState;
   searchMarketplaceResults: RawExtension[];
+  contextMenu: IMenu;
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined>;
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
-  toggleActiveExtension(extensionId: string, active: boolean, scope: EnableScope): Promise<void>;
+  toggleActiveExtension(extension: BaseExtension, active: boolean, scope: EnableScope): Promise<void>;
   searchFromMarketplace(query: string): void;
   searchFromInstalled(query: string): void;
   onInstallExtension(extensionId: string, path: string): Promise<void>;

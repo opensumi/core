@@ -240,7 +240,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         extensionMetadata,
         this,
         await this.checkExtensionEnable(extensionMetadata),
-        extensionMetadata.realPath.startsWith(this.appConfig.extensionDir!),
+        this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false,
       ]);
 
       this.extensionMap.set(path, extension);
@@ -769,7 +769,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                 id: `${extension.id}:${component.id}`,
               }],
               {
-                iconClass: getIcon(component.icon),
+                iconClass: component.icon ? getIcon(component.icon) : component.iconPath ? this.iconService.fromIcon(extension.path, component.iconPath) : '',
                 initialProps: {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,

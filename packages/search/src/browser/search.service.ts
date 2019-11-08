@@ -346,6 +346,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.excludeValue = '';
     this.includeValue = '';
     this.titleStateEmitter.fire();
+    this.searchError = '';
   }
 
   cleanIsEnable() {

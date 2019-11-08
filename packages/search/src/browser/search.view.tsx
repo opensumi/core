@@ -3,9 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { Input, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
 import { ViewState } from '@ali/ide-activity-panel';
-import {
-  IEditorDocumentModelService,
-} from '@ali/ide-editor/lib/browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
@@ -71,6 +68,7 @@ export const Search = observer(({
   const doReplaceAll = searchBrowserService.doReplaceAll;
   const updateUIState = searchBrowserService.updateUIState;
   const UIState = searchBrowserService.UIState;
+  const searchError = searchBrowserService.searchError;
 
   React.useEffect(() => {
     setSearchPanelLayout({
@@ -225,16 +223,20 @@ export const Search = observer(({
 
       </div>
       {
-        (searchResults && searchResults.size > 0) ? <SearchTree
+        (searchResults && searchResults.size > 0 && !searchError ) ? <SearchTree
           searchPanelLayout={searchPanelLayout}
           viewState={viewState}
           ref={searchTreeRef}
-        /> : <div className={cls(searchState === SEARCH_STATE.done ? styles.result_describe : '')}>
+        /> : <div
+              className={cls(
+                { [styles.result_describe]: searchState === SEARCH_STATE.done },
+                { [styles.result_error]: searchState === SEARCH_STATE.error || searchError },
+              )}
+            >
             {
-              searchState === SEARCH_STATE.done ?
-                localize('noResultsFound').replace('-', '')
-                : ''
+              searchState === SEARCH_STATE.done && !searchError ? localize('noResultsFound').replace('-', '') : ''
             }
+            { searchError }
           </div>
       }
     </div >

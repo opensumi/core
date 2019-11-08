@@ -8,11 +8,12 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
+import { MenuId, NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { Search } from './search.view';
 import { ContentSearchClientService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
-import { SEARCH_CONTAINER_ID, SearchBindingContextIds, SEARCH_CONTEXT_MENU } from '../common/content-search';
+import { SEARCH_CONTAINER_ID, SearchBindingContextIds } from '../common/content-search';
 import { SearchTreeService } from './search-tree.service';
 import { ContentSearchResult, ISearchTreeItem, openSearchCmd, OpenSearchCmdOptions } from '../common';
 
@@ -83,8 +84,8 @@ export const menuCopyPathCmd: Command = {
   label: '%file.copy.path%',
 };
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution)
-export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution)
+export class SearchContribution implements CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution {
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -135,7 +136,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         return true;
       },
       isEnabled: () => {
-        return this.searchBrowserService.refreshIsEnable();
+        // TODO: 等mainLayoutService重构完成后，适配
+        return true;
+        // return this.searchBrowserService.refreshIsEnable();
       },
     });
     commands.registerCommand(searchClean, {
@@ -146,7 +149,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         return true;
       },
       isEnabled: () => {
-        return this.searchBrowserService.cleanIsEnable();
+        // TODO: 等mainLayoutService重构完成后，适配
+        return true;
+        // return this.searchBrowserService.cleanIsEnable();
       },
     });
     commands.registerCommand(searchFold, {
@@ -258,30 +263,36 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     });
   }
 
-  registerMenus(menus: MenuModelRegistry): void {
-    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '0_'], {
-      commandId: menuReplaceCmd.id,
-      order: '1',
+  registerNextMenus(menuRegistry: IMenuRegistry): void {
+    menuRegistry.registerMenuItem(MenuId.SearchContext, {
+      command: menuReplaceCmd,
+      order: 1,
+      group: '0_0',
     });
-    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '0_'], {
-      commandId: menuReplaceAllCmd.id,
-      order: '2',
+    menuRegistry.registerMenuItem(MenuId.SearchContext, {
+      command: menuReplaceAllCmd,
+      order: 2,
+      group: '0_0',
     });
-    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '0_'], {
-      commandId: menuHideCmd.id,
-      order: '3',
+    menuRegistry.registerMenuItem(MenuId.SearchContext, {
+      command: menuHideCmd,
+      order: 3,
+      group: '0_0',
     });
-    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '1_'], {
-      commandId: menuCopyCmd.id,
-      order: '1',
+    menuRegistry.registerMenuItem(MenuId.SearchContext, {
+      command: menuCopyCmd,
+      order: 1,
+      group: '1_1',
     });
-    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '1_'], {
-      commandId: menuCopyPathCmd.id,
-      order: '2',
+    menuRegistry.registerMenuItem(MenuId.SearchContext, {
+      command: menuCopyPathCmd,
+      order: 2,
+      group: '1_1',
     });
-    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '1_'], {
-      commandId: menuCopyAllCmd.id,
-      order: '3',
+    menuRegistry.registerMenuItem(MenuId.SearchContext, {
+      command: menuCopyAllCmd,
+      order: 3,
+      group: '1_1',
     });
   }
 
