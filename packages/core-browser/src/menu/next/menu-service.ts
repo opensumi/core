@@ -7,6 +7,7 @@ import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { MenuId } from './menu-id';
 import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
+import { getIcon } from '../../icon';
 
 export interface IMenuNodeOptions {
   args?: any[]; // 固定参数可从这里传入
@@ -59,9 +60,12 @@ export class MenuItemNode extends MenuNode {
     @Optional() item: Command,
     @Optional() options: IMenuNodeOptions = {},
     @Optional() disabled: boolean,
+    @Optional() toggled: boolean,
     @Optional() nativeRole?: string,
   ) {
-    super(item.id, item.iconClass!, item.label!, disabled, nativeRole);
+    // 将 isToggled 属性通过 iconClass 来实现
+    const icon = toggled ? getIcon('check') : '';
+    super(item.id, icon, item.label!, disabled, nativeRole);
     // 后置获取 i18n 数据 主要处理 ide-framework 内部的 command 的 i18n
     const command = this.commandRegistry.getCommand(item.id)!;
     this.label = command.label!;
@@ -212,9 +216,11 @@ class Menu extends Disposable implements IMenu {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
             const { args = [] } = options;
-            if (this.commandRegistry.isVisible(item.command.id, ...args)) {
-              const disabled = !this.commandRegistry.isEnabled(item.command.id, ...args);
-              const action = this.injector.get(MenuItemNode, [item.command, options, disabled, item.nativeRole]);
+            const command = item.command;
+            if (this.commandRegistry.isVisible(command.id, ...args)) {
+              const disabled = !this.commandRegistry.isEnabled(command.id, ...args);
+              const toggled = this.commandRegistry.isToggled(command.id, ...args);
+              const action = this.injector.get(MenuItemNode, [command, options, disabled, toggled, item.nativeRole]);
               activeActions.push(action);
             }
           } else {
