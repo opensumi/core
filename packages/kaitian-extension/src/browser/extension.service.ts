@@ -48,6 +48,7 @@ import {
   ILogger,
   getLanguageId,
   getPreferenceLanguageId,
+  isElectronRenderer,
 } from '@ali/ide-core-browser';
 import {
   getIcon,
@@ -81,6 +82,7 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
 import * as BrowserApi from './kaitian-browser';
+import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -166,6 +168,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IToolBarViewService)
   private toolBarViewService: IToolBarViewService;
 
+  @Autowired()
+  editorComponentRegistry: EditorComponentRegistry;
+
   public extensionMap: Map<string, Extension> = new Map();
 
   public extensionComponentMap: Map<string, string[]> = new Map();
@@ -215,6 +220,17 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     // this.ready.resolve();
 
+  }
+
+  public getExtensions() {
+    return Array.from(this.extensionMap.values());
+  }
+
+  public async activateExtensionByExtPath(path: string) {
+    const extension = this.extensionMap.get(path);
+    if (extension) {
+      return extension.activate();
+    }
   }
 
   public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
@@ -380,9 +396,14 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   private async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
-    const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
-    // 全局设置会同步到 workspace 中，所以只检查 workspace 就可以了
-    return storage.get(extension.extensionId, '1') === '1';
+    const [ workspaceStorage, globalStorage ] = await Promise.all([
+      this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS),
+      this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
+    ]);
+    // 全局默认为启用
+    const globalEnableFlag = globalStorage.get(extension.extensionId, '1');
+    // 如果 workspace 未设置则读取全局配置
+    return workspaceStorage.get(extension.extensionId, globalEnableFlag) === '1';
   }
 
   private async initBrowserDependency() {
@@ -720,6 +741,14 @@ export class ExtensionServiceImpl implements ExtensionService {
     return extendProtocol;
   }
 
+  private getExtensionExtendService(extension: IExtension, id: string) {
+    const protocol = this.createExtensionExtendProtocol2(extension, id);
+    return {
+      extendProtocol: protocol,
+      extendService: protocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER),
+    };
+  }
+
   private registerBrowserComponent(browserExported: any, extension: IExtension) {
     if (browserExported.default) {
       browserExported = browserExported.default;
@@ -731,31 +760,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         if (pos === 'left' || pos === 'right' || pos === 'bottom') {
           for (let i = 0, len = posComponent.length; i < len; i++) {
             const component = posComponent[i];
-
-            /*
-            const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
-            const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
-            this.layoutService.collectTabbarComponent(
-              [{
-                component: component.panel,
-                id: `${extension.id}:${component.id}`,
-              }],
-              {
-                iconClass: component.icon,
-                initialProps: {
-                  kaitianExtendService: extendService,
-                  kaitianExtendSet: extendProtocol,
-                },
-                containerId: extension.id,
-                title: component.title,
-                activateKeyBinding: component.keyBinding,
-              },
-              pos,
-            );
-            */
-
-            const extendProtocol = this.createExtensionExtendProtocol2(extension, component.id);
-            const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
+            const { extendProtocol, extendService } = this.getExtensionExtendService(extension, component.id);
             const componentId = this.layoutService.collectTabbarComponent(
               [{
                 component: component.panel,
@@ -770,6 +775,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                 containerId: `${extension.id}:${component.id}`,
                 activateKeyBinding: component.keyBinding,
                 title: component.title,
+                priority: component.priority,
               },
               pos,
             );
@@ -785,8 +791,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         } else if (pos === 'toolBar') {
           for (let i = 0, len = posComponent.length; i < len; i += 1) {
             const component = posComponent[i];
-            const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
-            const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
+            const { extendProtocol, extendService } = this.getExtensionExtendService(extension, component.id);
             this.toolBarViewService.registerToolBarElement({
               type: 'component',
               component: component.panel as React.FunctionComponent | React.ComponentClass,
@@ -797,8 +802,36 @@ export class ExtensionServiceImpl implements ExtensionService {
               },
             } as IToolBarComponent);
           }
-        }
+        } else if (pos === 'editor') {
+          for (const com of posComponent) {
+            const { extendProtocol, extendService } = this.getExtensionExtendService(extension, com.id);
+            this.editorComponentRegistry.registerEditorComponent({
+              uid: com.id,
+              scheme: 'file',
+              component: com.panel,
+            }, {
+              kaitianExtendService: extendService,
+              kaitianExtendSet: extendProtocol,
+            });
 
+            this.editorComponentRegistry.registerEditorComponentResolver('file', (resource, results) => {
+              if ((com.fileExt && com.fileExt.indexOf(resource.uri.path.ext) > -1)) {
+                if (!com.shouldPreview) {
+                  return;
+                }
+                const shouldPreview = com.shouldPreview(resource.uri.path);
+                if (shouldPreview) {
+                  results.push({
+                    type: 'component',
+                    componentId: com.id,
+                    title: com.title || '预览',
+                    weight: 10,
+                  });
+                }
+              }
+            });
+          }
+        }
       }
     }
 
@@ -807,6 +840,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   private async loadBrowser(browserPath: string): Promise<any> {
     return await new Promise((resolve) => {
       console.log('extend browser load', browserPath);
+      if (isElectronRenderer()) {
+        browserPath = decodeURIComponent(browserPath);
+      }
       getAMDRequire()([browserPath], (exported) => {
         console.log('extend browser exported', exported);
         resolve(exported);

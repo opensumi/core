@@ -160,6 +160,8 @@ export abstract class WorkbenchEditorService {
   abstract saveAll(includeUntitled?: boolean): Promise<void>;
 
   abstract async close(uri: any, force?: boolean): Promise<void>;
+
+  abstract getAllOpenedUris(): URI[];
 }
 
 export interface IResourceOpenOptions {
@@ -174,7 +176,15 @@ export interface IResourceOpenOptions {
 
   split?: EditorGroupSplitAction;
 
+  /**
+   * @deprecated use focus instead
+   */
   preserveFocus?: boolean;
+
+  /**
+   * 获取焦点
+   */
+  focus?: boolean;
 
   forceOpenType?: IEditorOpenType;
 

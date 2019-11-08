@@ -52,7 +52,8 @@ export const localizationBundle = {
     'editor.splitToTop': '向上拆分',
     'editor.splitToBottom': '向下拆分',
     'editor.closeAllInGroup': '关闭全部',
-    'editor.closeOtherEditors': '关闭组中其他编辑器',
+    'editor.closeSaved': '关闭已保存',
+    'editor.closeOtherEditors': '关闭其他',
 
     'edit.cut': '剪切',
     'edit.copy': '复制',
@@ -110,6 +111,7 @@ export const localizationBundle = {
     'search.help.matchRange': '匹配的字符范围',
     'search.help.modify': '修改',
     'search.replace.buttonOK': '替换',
+    'search.replace.buttonCancel': '取消',
     'search.quickOpen.leftRight': '在侧边打开',
     'search.quickOpen.upDown': '在底部打开',
     'search.fileReplaceChanges': '{0} ↔ {1} (替换预览)',
@@ -141,6 +143,7 @@ export const localizationBundle = {
     'scm.statusbar.repo': '当前仓库',
     'scm.provider.title': '代码仓库列表',
     'scm.provider.empty': '没有可用的源代码仓库',
+    'scm.provider.init': '点击初始化仓库',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
@@ -182,6 +185,7 @@ export const localizationBundle = {
     'debug.configuration.comment1': '使用 IntelliSense 了解相关属性。 ',
     'debug.configuration.comment2': '悬停以查看现有属性的描述。',
     'debug.configuration.comment3': '欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387',
+    'debug.launch.existed': '调试配置"{0}"已在运行',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
@@ -201,6 +205,7 @@ export const localizationBundle = {
     'preference.debug.openDebug': '控制何时打开调试视图。',
     'preference.debug.debugViewLocation': '控制调试视图的位置。',
     'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
+    'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
@@ -230,10 +235,15 @@ export const localizationBundle = {
     'preference.editor.insertSpace': '使用空格代替Tab',
     'preference.editor.wordWrap': '自动换行',
     'preference.editor.wordWrapColumn': '自动换行长度',
+    'preference.editor.askIfDiff': '保存文件冲突时提示',
+    'preference.editor.readonlyFiles': '只读文件列表',
 
     'preference.array.additem': '添加',
 
     'editor.configuration.fontFamily': '',
+    'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行报警',
+    'editor.action.accept': '接受更改（使用右边)',
+    'editor.action.revert': '回退更改（使用左边)',
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
@@ -263,6 +273,7 @@ export const localizationBundle = {
     'marketplace.panel.disabled': '已禁用',
     'marketplace.panel.tab.marketplace': '扩展市场',
     'marketplace.panel.tab.placeholder.search': '搜索市场中的扩展',
+    'marketplace.panel.tab.placeholder.installed': '搜索已安装的扩展',
     'marketplace.tab.installed': '已安装的扩展',
     'marketplace.extension.findUpdate': '发现插件 {0} 有最新版本 {1}，是否要更新到最新版本？`',
     'marketplace.extension.canupdate': '有新版本',
@@ -291,6 +302,9 @@ export const localizationBundle = {
 
     'terminal.name': '终端',
 
+    'theme.toggle': '颜色主题',
+    'theme.icon.toggle': '文件图标主题',
+
     'preference.workbench.list.openMode': '控制如何（如果支持）在树和列表中打开项目。对于有子节点的父节点，此设置将控制单击展开父节点还是双击。请注意，如果某些设置不启用，一些树和列表可能会选择忽略此设置。',
 
     'keymaps.search.placeholder': '搜索快捷键',
@@ -306,6 +320,20 @@ export const localizationBundle = {
     'keymaps.keybinding.require': '请输入快捷键',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
+    'layout.tabbar.hide': '隐藏',
+    'layout.view.hide': '隐藏',
+    'status-bar.label.line': '行',
+    'status-bar.label.column': '列',
+    'status-bar.label.selected': '已选择',
 
+    'saveChangesMessage': '是否要保存对 {0} 的更改?',
+    'file.prompt.dontSave': '不保存',
+    'file.prompt.save': '保存',
+    'file.prompt.cancel': '取消',
+
+    'doc.saveError.failed': '文件保存失败， 原因:',
+    'doc.saveError.diff': '{0} 已经在磁盘上被修改，不能保存',
+    'doc.saveError.diffAndSave': '进行比较',
+    'editor.compareAndSave.title': '{0} (在磁盘上) <=> {1} (编辑中) ',
   },
 };

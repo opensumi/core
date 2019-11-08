@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
-import { getLogger } from '@ali/ide-core-node';
+import { getLogger, getNodeRequire } from '@ali/ide-core-node';
 import * as semver from 'semver';
 import { IExtensionMetaData, ExtraMetaData } from '../common';
 
@@ -58,9 +58,6 @@ export class ExtensionScanner {
   }
 
   static async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
-
-    // 插件校验逻辑
-    console.log('localization !!', localization);
 
     if (!await fs.pathExists(extensionPath)) {
       getLogger().error('extension path does not exist');
@@ -125,8 +122,9 @@ export class ExtensionScanner {
     let extendConfig = {};
     if (await fs.pathExists(extendPath)) {
       try {
-        extendConfig = require(extendPath);
+        extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
+        console.error(extendPath, e);
         getLogger().error(e);
       }
     }

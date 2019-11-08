@@ -1,5 +1,6 @@
 import Uri from 'vscode-uri';
 import { Path } from './path';
+import { IRelativePattern, match } from './utils/glob';
 
 export { default as Uri } from 'vscode-uri'
 export class URI {
@@ -216,6 +217,11 @@ export class URI {
 
   isEqual(uri: URI): boolean {
     return this.authority === uri.authority && this.scheme === uri.scheme && this.path.isEqual(uri.path) && this.query === uri.query;
+  }
+
+  matchGlobPattern(pattern: string | IRelativePattern): boolean {
+    console.log(pattern, this.path.toString());
+    return match(pattern, this.path.toString());
   }
 
   static getDistinctParents(uris: URI[]): URI[] {

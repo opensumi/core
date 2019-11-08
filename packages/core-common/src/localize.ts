@@ -125,9 +125,9 @@ function getLocalizationRegistry(scope: string): LocalizationRegistry {
  * 含有占位符标识的 key 转换
  * @param label
  */
-export function replaceLocalizePlaceholder(label?: string): string | undefined {
+export function replaceLocalizePlaceholder(label?: string, env?: string): string | undefined {
   if (label) {
-    return label.replace(/%(.*?)%/g, (_, p) => localize(p)) ;
+    return label.replace(/%(.*?)%/g, (_, p) => localize(p, undefined, env)) ;
   }
 }
 

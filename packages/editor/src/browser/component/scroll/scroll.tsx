@@ -9,6 +9,11 @@ export interface ScrollAreaProps {
   atTopClassName?: string;
   style?: any;
   containerStyle?: any;
+  delegate?: (delegate: IScrollDelegate) => void;
+}
+
+export interface IScrollDelegate {
+  scrollTo(position: ScrollPosition): void;
 }
 
 export interface ScrollPosition {
@@ -180,11 +185,21 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
 
   componentDidUpdate() {
     this.update();
+    if (this.props.delegate) {
+      this.props.delegate({
+        scrollTo: this.scrollTo.bind(this),
+      });
+    }
   }
 
   componentDidMount() {
     this.update();
     window.addEventListener('resize', this.handleWindowResize);
+    if (this.props.delegate) {
+      this.props.delegate({
+        scrollTo: this.scrollTo.bind(this),
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -277,6 +292,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
   }
 
   render() {
+
     return (
       <div
         className={classnames(styles.scroll, styles['hide-thumb'])}

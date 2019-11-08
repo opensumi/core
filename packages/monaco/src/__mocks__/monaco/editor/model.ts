@@ -141,7 +141,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     throw new Error('Method not implemented.');
   }
   getFullModelRange(): monaco.Range {
-    throw new Error('Method not implemented.');
+    return { startLineNumber: 4, startColumn: 1, endLineNumber: 9, endColumn: 8 } as monaco.Range;
   }
   isDisposed(): boolean {
     throw new Error('Method not implemented.');

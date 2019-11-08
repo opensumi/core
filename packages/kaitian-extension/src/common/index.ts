@@ -65,6 +65,8 @@ export abstract class ExtensionService {
   abstract async isExtensionRunning(extensionPath: string): Promise<boolean>;
   abstract async postDisableExtension(extensionPath: string): Promise<void>;
   abstract async postEnableExtension(extensionPath: string): Promise<void>;
+  abstract getExtensions(): IExtension[];
+  abstract async activateExtensionByExtPath(extensionPath: string): Promise<void>;
 }
 
 export abstract class ExtensionCapabilityRegistry {

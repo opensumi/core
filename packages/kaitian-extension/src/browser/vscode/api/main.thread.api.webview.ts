@@ -32,6 +32,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWebivew);
+    this.initEvents();
   }
 
   initEvents() {

@@ -1,3 +1,5 @@
+import { Event } from '@ali/ide-core-common';
+
 export interface IUpdateRequest {
   insert?: StringKeyToAnyValue;
   delete?: string[];
@@ -24,4 +26,11 @@ export interface IStorageServer {
   updateItems(storageName: string, request: IUpdateRequest): Promise<void>;
 
   close(recovery?: () => Map<string, string>): Promise<void>;
+
+  onDidChange: Event<StorageChange>;
+}
+
+export interface StorageChange {
+  path: string;
+  data: string;
 }

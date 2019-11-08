@@ -66,6 +66,19 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     }
   }
 
+  getAllOpenedUris() {
+    const uris: URI[] = [];
+    for (const group of this.editorGroups) {
+      for (const resource of group.resources) {
+        const index = uris.findIndex((u) => u.isEqual(resource.uri));
+        if (index === -1) {
+          uris.push(resource.uri);
+        }
+      }
+    }
+    return uris;
+  }
+
   async saveAll(includeUntitled?: boolean) {
     for (const editorGroup of this.editorGroups) {
       await editorGroup.saveAll();
@@ -316,6 +329,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @observable.shallow activeComponents = new Map<IEditorComponent, IResource[]>();
 
+  @observable.shallow activateComponentsProps = new Map<IEditorComponent, any>();
+
   public grid: EditorGrid;
 
   private codeEditorReady: Deferred<any> = new Deferred<any>();
@@ -433,6 +448,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           resource: this.currentResource!,
           selections: e.selections,
           source: e.source,
+          editorUri: this.codeEditor.currentUri!,
         }));
       }
     }));
@@ -466,6 +482,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           resource: this.currentResource!,
           selections: e.selections,
           source: e.source,
+          editorUri: this.diffEditor.modifiedEditor.currentUri!,
         }));
       }
     }));
@@ -536,6 +553,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const oldOpenType = this.currentOpenType;
       if (this.currentResource && this.currentResource.uri === uri) {
         // 就是当前打开的resource
+        if (options.focus && this.currentEditor) {
+          this.currentEditor.monacoEditor.focus();
+        }
+        if (options.range && this.currentEditor) {
+          this.currentEditor.monacoEditor.revealRangeInCenter(options.range);
+          this.currentEditor.monacoEditor.setSelection(options.range)
+;        }
         return {
           group: this,
           resource: this.currentResource,
@@ -610,20 +634,24 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range);
-        if (options.preserveFocus) {
+        if (options.focus || options.preserveFocus) {
           this.codeEditor.focus();
         }
-
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;
         await this.diffEditorReady.promise;
         const [original, modified] = await Promise.all([this.getDocumentModelRef(diffResource.metadata!.original), this.getDocumentModelRef(diffResource.metadata!.modified)]);
         await this.diffEditor.compare(original, modified);
+        if (options.focus || options.preserveFocus) {
+          this.diffEditor.focus();
+        }
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
+        const initialProps = this.editorComponentRegistry.getEditorInitialProps(activeOpenType.componentId as string);
         if (!component) {
           throw new Error('Cannot find Editor Component with id: ' + activeOpenType.componentId);
         } else {
+          this.activateComponentsProps.set(component, initialProps);
           if (component.renderMode === EditorComponentRenderMode.ONE_PER_RESOURCE) {
             const openedResources = this.activeComponents.get(component) || [];
             const index = openedResources.findIndex((r) => r.uri.toString() === resource.uri.toString());
@@ -656,12 +684,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       } else {
         return; // other type not handled
       }
+
       this.currentState = {
         currentResource: resource,
         currentOpenType: activeOpenType,
       };
+
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
-      getLogger().log(this.resources);
     }
   }
 
@@ -731,7 +760,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         // 当前不是最后一个 editor Group
         this.dispose();
       }
-
+      this.availableOpenTypes = [];
     }
   }
 
@@ -763,6 +792,27 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.activeComponents.clear();
     if (this.workbenchEditorService.editorGroups.length > 1) {
       this.dispose();
+    }
+  }
+
+  /**
+   * 关闭已保存（非dirty）
+   */
+  @action.bound
+  async closeSaved() {
+    const saved = this.resources.filter((r) => {
+      const decoration = this.resourceService.getResourceDecoration(r.uri);
+      if (!decoration || !decoration.dirty) {
+        return true;
+      }
+    });
+    for (const resource of saved) {
+      if (!await this.shouldClose(resource)) {
+        return;
+      }
+    }
+    for (const resource of saved) {
+      await this.close(resource.uri);
     }
   }
 

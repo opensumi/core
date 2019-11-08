@@ -1,11 +1,13 @@
 import * as md5 from 'md5';
-import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable } from '@ali/ide-core-browser';
+import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { EOL, EndOfLineSequence, IDocPersistentCacheProvider, IDocCache, isDocContentCache, parseRangeFrom } from '../../common';
-import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IEditorDocumentModelContentChange, EditorDocumentModelSavedEvent } from './types';
+import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IEditorDocumentModelContentChange, EditorDocumentModelSavedEvent, ORIGINAL_DOC_SCHEME } from './types';
 import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
 import { EditorDocumentError } from './editor-document-error';
+import { IMessageService } from '@ali/ide-overlay';
+import { ICompareService, CompareResult } from '../types';
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
@@ -30,8 +32,17 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   @Autowired(IEditorDocumentModelService)
   service: IEditorDocumentModelServiceImpl;
 
+  @Autowired(ICompareService)
+  compareService: ICompareService;
+
   @Autowired(IDocPersistentCacheProvider)
   cacheProvider: IDocPersistentCacheProvider;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
+
+  @Autowired(IMessageService)
+  messageService: IMessageService;
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
@@ -101,7 +112,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
         });
       }
       this._previousVersionId = e.versionId;
-      this.notifyChangeEvent();
+      this.notifyChangeEvent(e.changes);
     });
 
     this.addDispose(monacoModel);
@@ -214,7 +225,10 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this.monacoModel;
   }
 
-  async save(treatDiffAsError?: boolean | undefined): Promise<boolean> {
+  async save(force: boolean = false): Promise<boolean> {
+    if (!this.preferenceService.get<boolean>('editor.askIfDiff')) {
+      force = true;
+    }
     if (!this.dirty) {
       return false;
     }
@@ -223,7 +237,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (lastSavingTask && lastSavingTask.versionId === versionId) {
       return false;
     }
-    const task = new SaveTask(this.uri, versionId, this.monacoModel.getAlternativeVersionId(), this.getText());
+    const task = new SaveTask(this.uri, versionId, this.monacoModel.getAlternativeVersionId(), this.getText(), force);
     this.savingTasks.push(task);
     if (this.savingTasks.length === 1) {
       this.initSave();
@@ -233,17 +247,34 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       return true;
     } else if (res.state === 'error') {
       this.logger.error(res.errorMessage);
+      this.messageService.error(localize('doc.saveError.failed') + '\n' + res.errorMessage);
       return false;
     } else if (res.state === 'diff') {
-      if (treatDiffAsError) {
-        this.logger.error('文件无法保存，版本和磁盘不一致');
-        return false;
-      } else {
-        this.logger.error('文件无法保存，版本和磁盘不一致');
-        return false;
-      }
+      this.messageService.error(formatLocalize('doc.saveError.diff', this.uri.toString()), [localize('doc.saveError.diffAndSave')]).then((res) => {
+        if (res) {
+          this.compareAndSave();
+        }
+      });
+      this.logger.error('文件无法保存，版本和磁盘不一致');
+      return false;
     }
     return false;
+  }
+
+  private async compareAndSave() {
+    const originalUri = URI.from({
+      scheme: ORIGINAL_DOC_SCHEME,
+      query: URI.stringifyQuery({
+        target: this.uri.toString(),
+      }),
+    });
+    const fileName = this.uri.path.base;
+    const res = await this.compareService.compare(originalUri, this.uri, formatLocalize('editor.compareAndSave.title', fileName, fileName));
+    if (res === CompareResult.revert ) {
+      this.revert();
+    } else if (res === CompareResult.accept ) {
+      this.save(true);
+    }
   }
 
   async initSave() {
@@ -265,15 +296,25 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   async reload() {
-    const content = await this.contentRegistry.getContentForUri(this.uri, this._encoding);
-    if (!isUndefinedOrNull(content)) {
-      this.cleanAndUpdateContent(content);
+    try {
+      const content = await this.contentRegistry.getContentForUri(this.uri, this._encoding);
+      if (!isUndefinedOrNull(content)) {
+        this.cleanAndUpdateContent(content);
+      }
+    } catch (e) {
+      this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     }
   }
 
-  async revert() {
-    // 利用修改编码的副作用
-    this.updateEncoding(this._originalEncoding);
+  async revert(notOnDisk?: boolean) {
+    if (notOnDisk) {
+      // FIXME
+      // 暂时就让它不dirty, 不是真正的revert
+      this._persistVersionId = this.monacoModel.getAlternativeVersionId();
+    } else {
+      // 利用修改编码的副作用
+      await this.updateEncoding(this._originalEncoding);
+    }
   }
 
   getText(range?: IRange) {
@@ -326,12 +367,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this._baseContentMd5;
   }
 
-  private notifyChangeEvent() {
+  private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
     // 发出内容变化的事件
     this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
       uri: this.uri,
       dirty: this.dirty,
-      changes: [],
+      changes,
       eol: this.eol,
       versionId: this.monacoModel.getVersionId(),
     }));

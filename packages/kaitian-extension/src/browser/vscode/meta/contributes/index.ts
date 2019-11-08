@@ -304,7 +304,6 @@ export class VSCodeContributeRunner extends Disposable {
     if (!contributes) {
       return;
     }
-    const extensionSchemas = {};
     for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
       if (contributes[contributeName] !== undefined) {
@@ -317,7 +316,6 @@ export class VSCodeContributeRunner extends Disposable {
             this.extension.deafaultPkgNlsJSON,
           ]);
 
-          console.log('contributePoint', this.extension.packageJSON.name, contributeName);
           if (contributePoint.schema) {
             schema.properties.contributes.properties[contributeName] = contributePoint.schema;
           }

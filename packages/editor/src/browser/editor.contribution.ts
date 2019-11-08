@@ -8,9 +8,11 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { EditorGroupsResetSizeEvent } from './types';
+import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { EditorHistoryService } from './history';
+import { NavigationMenuContainer } from './navigation.view';
 import { IEditorDocumentModelService } from './doc-model/types';
 
 interface Resource {
@@ -18,8 +20,8 @@ interface Resource {
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -51,10 +53,17 @@ export class EditorContribution implements CommandContribution, MenuContribution
   @Autowired(IDocPersistentCacheProvider)
   cacheProvider: IDocPersistentCacheProvider;
 
+  @Autowired()
+  historyService: EditorHistoryService;
+
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
       id: 'ide-editor',
       component: EditorView,
+    });
+    registry.register('breadcrumb-menu', {
+      id: 'breadcrumb-menu',
+      component: NavigationMenuContainer,
     });
   }
 
@@ -109,13 +118,35 @@ export class EditorContribution implements CommandContribution, MenuContribution
       command: EDITOR_COMMANDS.NEXT.id,
       keybinding: 'alt+cmd+right', // FIXME web上会被chrome拦截
     });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.GO_FORWARD.id,
+      keybinding: 'ctrl+=',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.GO_BACK.id,
+      keybinding: 'ctrl+-',
+    });
   }
 
   initialize() {
     this.editorStatusBarService.setListener();
+    this.historyService.start();
   }
 
   registerCommands(commands: CommandRegistry): void {
+
+    commands.registerCommand(EDITOR_COMMANDS.GO_FORWARD, {
+      execute: () => {
+        this.historyService.forward();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.GO_BACK, {
+      execute: () => {
+        this.historyService.back();
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.OPEN_RESOURCE, {
       execute: (uri: URI, options?: IResourceOpenOptions) => {
         this.workbenchEditorService.open(uri, options);
@@ -171,6 +202,15 @@ export class EditorContribution implements CommandContribution, MenuContribution
         const group = this.workbenchEditorService.currentEditorGroup;
         if (group) {
           await group.closeAll();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.CLOSE_SAVED, {
+      execute: async (uri?: URI) => {
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group) {
+          await group.closeSaved();
         }
       },
     });
@@ -475,8 +515,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL, {
-      execute: async () => {
-        this.workbenchEditorService.closeAll();
+      execute: async (uri?: URI) => {
+        this.workbenchEditorService.closeAll(uri);
       },
     });
   }
@@ -508,6 +548,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     menus.registerMenuAction(['editor', '0tab'], {
+      commandId: EDITOR_COMMANDS.CLOSE_SAVED.id,
+      label: localize('editor.closeSaved'),
+    });
+
+    menus.registerMenuAction(['editor', '0tab'], {
       commandId: EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP.id,
     });
 
@@ -515,29 +560,22 @@ export class EditorContribution implements CommandContribution, MenuContribution
       commandId: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
       label: localize('editor.closeToRight', '关闭到右侧'),
     });
+
+    menus.registerMenuAction(['editor', 'title', '9_close'], {
+      commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
+      label: localize('editor.closeAllInGroup', '关闭全部'),
+    });
   }
 
   registerToolBarElement(registry: IToolBarViewService): void {
-    registry.registerToolBarElement({
-      type: 'action',
-      position: ToolBarPosition.RIGHT,
+  }
+
+  registerEditorActions(registry: IEditorActionRegistry) {
+    registry.registerEditorAction({
       iconClass: getIcon('embed'),
       title: localize('editor.splitToRight'),
-      click: () => {
+      onClick: () => {
         this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
-      },
-    });
-
-    registry.registerToolBarElement({
-      type: 'action',
-      position: ToolBarPosition.RIGHT,
-      iconClass: getIcon('arrow-down'),
-      title: localize('editor.moreActions'),
-      click: (event) => {
-        const { x, y } = event.nativeEvent;
-        this.contextMenuRenderer.render(['editor', 'title'], { x, y });
-        event.stopPropagation();
-        event.preventDefault();
       },
     });
   }

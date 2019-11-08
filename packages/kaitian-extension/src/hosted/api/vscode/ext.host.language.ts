@@ -124,7 +124,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
       return extHostLanguages.registerDocumentHighlightProvider(selector, provider);
     },
     registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
-      return extHostLanguages.registerLinkProvider(selector, provider);
+      return extHostLanguages.registerDocumentLinkProvider(selector, provider);
     },
     registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable {
       return extHostLanguages.registerReferenceProvider(selector, provider);
@@ -154,7 +154,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
       return extHostLanguages.registerImplementationProvider(selector, provider);
     },
     registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable {
-      return extHostLanguages.registerCodeActionsProvider(selector, provider, '', metadata);
+      return extHostLanguages.registerCodeActionsProvider(selector, provider, metadata);
     },
     registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
       return extHostLanguages.registerRenameProvider(selector, provider);
@@ -422,10 +422,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
   registerCodeActionsProvider(
     selector: DocumentSelector,
     provider: CodeActionProvider,
-    pluginModel: any,
     metadata?: CodeActionProviderMetadata,
   ): Disposable {
-    const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics, pluginModel ? pluginModel.id : ''));
+    const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics));
     this.proxy.$registerQuickFixProvider(
       callId,
       this.transformDocumentSelector(selector),
@@ -474,7 +473,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.resolveLink(link, token));
   }
 
-  registerLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
+  registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
     const callId = this.addNewAdapter(new LinkProviderAdapter(provider, this.documents));
     this.proxy.$registerDocumentLinkProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);

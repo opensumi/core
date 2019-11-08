@@ -112,12 +112,12 @@ export namespace COMMON_COMMANDS {
 
   export const OPEN_PREFERENCES: Command = {
     id: 'core.openpreference',
-    label: localize('common.preference.open'),
+    label: '%common.preference.open%',
   };
 
   export const OPEN_KEYMAPS: Command = {
     id: 'core.keymaps.open',
-    label: localize('common.keymaps.open'),
+    label: '%common.keymaps.open%',
   };
 }
 
@@ -194,6 +194,12 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.closeAll',
     category: CATEGORY,
     label: '%editor.close.all%',
+  };
+
+  export const CLOSE_SAVED: Command = {
+    id: 'editor.closeSaved',
+    category: CATEGORY,
+    label: '%editor.closeSaved%',
   };
 
   export const SAVE_ALL: Command = {
@@ -325,4 +331,13 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const GO_FORWARD: Command = {
+    id: 'editor.goForward',
+    category: CATEGORY,
+  };
+
+  export const GO_BACK: Command = {
+    id: 'editor.goBack',
+    category: CATEGORY,
+  };
 }

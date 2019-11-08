@@ -1,15 +1,15 @@
-import { MenuContribution, Domain, MenuModelRegistry, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, SETTINGS_MENU_PATH } from '@ali/ide-core-browser';
+import { MenuContribution, Domain, MenuModelRegistry, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, SETTINGS_MENU_PATH, replaceLocalizePlaceholder, PreferenceScope } from '@ali/ide-core-browser';
 import { IThemeService, IIconService } from '../common';
 import { Autowired } from '@ali/common-di';
 
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
-  label: localize('theme.toggle', '颜色主题'),
+  label: '%theme.toggle%',
 };
 
 export const ICON_THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.icon.toggle',
-  label: localize('theme.icon.toggle', '文件图标主题'),
+  label: '%theme.icon.toggle%',
 };
 
 @Domain(MenuContribution, CommandContribution)
@@ -41,13 +41,12 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
       execute: async () => {
         const themeInfos = this.themeService.getAvailableThemeInfos();
         const options = themeInfos.map((themeInfo) => ({
-          label: themeInfo.name,
+          label: replaceLocalizePlaceholder(themeInfo.name)!,
           value: themeInfo.themeId,
-          description: themeInfo.base,
         }));
         const themeId = await this.quickPickService.show(options);
         if (themeId) {
-          await this.preferenceService.set('general.theme', themeId);
+          await this.preferenceService.set('general.theme', themeId, PreferenceScope.User);
         }
       },
     });
@@ -61,7 +60,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
         }));
         const themeId = await this.quickPickService.show(options);
         if (themeId) {
-          await this.preferenceService.set('general.icon', themeId);
+          await this.preferenceService.set('general.icon', themeId, PreferenceScope.User);
         }
       },
     });

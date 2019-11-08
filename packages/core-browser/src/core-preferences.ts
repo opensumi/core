@@ -87,6 +87,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       minimum: 0,
       description: 'Controls the number of recently used commands to keep in history for the command palette. Set to 0 to disable command history.',
     },
+    'editor.askIfDiff': {
+      type: 'boolean',
+      default: true,
+      description: '%editor.configuration.askIfDiff%',
+    },
     'editor.previewMode': {
       type: 'boolean',
       default: true,
@@ -148,6 +153,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'number',
       default: EDITOR_FONT_DEFAULTS.wordWrapColumn,
       description: '%editor.configuration.wordWrapColumn%',
+    },
+    'editor.readonlyFiles': {
+      type: 'array',
+      default: [],
+      description: '%editor.configuration.readonlyFiles%',
     },
     'explorer.confirmMove': {
       type: 'boolean',

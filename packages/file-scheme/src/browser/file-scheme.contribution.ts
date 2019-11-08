@@ -45,7 +45,11 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
-    return Promise.all([this.fileServiceClient.getFileStat(uri.toString()), this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([stat, name, icon]) => {
+    return Promise.all([
+      this.fileServiceClient.getFileStat(uri.toString()),
+      this.labelService.getName(uri),
+      this.labelService.getIcon(uri),
+    ] as const).then(([stat, name, icon]) => {
       return {
         name: stat ? name : (name + localize('file.resource-deleted', '(已删除)')),
         icon,
@@ -91,16 +95,16 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     }
     // 询问用户是否保存
     const buttons = {
-      [localize('dontSave', '不保存')]: AskSaveResult.REVERT,
-      [localize('save', '保存')]: AskSaveResult.SAVE,
-      [localize('cancel', '取消')]: AskSaveResult.CANCEL,
+      [localize('file.prompt.dontSave', '不保存')]: AskSaveResult.REVERT,
+      [localize('file.prompt.save', '保存')]: AskSaveResult.SAVE,
+      [localize('file.prompt.cancel', '取消')]: AskSaveResult.CANCEL,
     };
     const selection = await this.dialogService.open(localize('saveChangesMessage').replace('{0}', resource.name), MessageType.Info, Object.keys(buttons));
     const result = buttons[selection!];
     if (result === AskSaveResult.SAVE) {
-      await documentModelRef.instance.save();
+      const res = await documentModelRef.instance.save();
       documentModelRef.dispose();
-      return true;
+      return res;
     } else if (result === AskSaveResult.REVERT) {
       await documentModelRef.instance.revert();
       documentModelRef.dispose();

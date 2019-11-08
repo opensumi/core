@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as clx from 'classnames';
-import { PerfectScrollbar, RecycleList } from '@ali/ide-core-browser/lib/components';
+import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { RawExtensionView } from '../raw-extension';
 import { RawExtension, IExtensionManagerService } from '../../../common';
@@ -45,7 +45,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   }
 
   async function install(extension: RawExtension) {
-    const path = await extensionManagerService.downloadExtension(extension.extensionId);
+    const path = await extensionManagerService.installExtension(extension);
     // 更新插件进程信息
     await extensionManagerService.onInstallExtension(extension.extensionId, path);
     // 标记为已安装
@@ -56,23 +56,21 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
     <div className={styles.wrap}>
       <ProgressBar loading={loading} />
       {list && list.length ? (
-        <RecycleList
-          data={list}
-          template={({data: rawExtension}, index) => {
-            return <RawExtensionView
-            className={clx({
-              [styles.selected]: rawExtension.extensionId === selectExtensionId,
-              [styles.gray]: rawExtension.installed && !rawExtension.enable,
-              [styles.last_item]: index === list.length - 1,
-            })}
-            key={`${rawExtension.extensionId}_${rawExtension.version}`}
-            extension={rawExtension}
-            select={select}
-            install={install}
-            showInstalled={showInstalled}
-            />;
-          }}
-        />
+        <PerfectScrollbar>
+        {list.map((rawExtension, index) => {
+          return (<RawExtensionView className={clx({
+            [styles.selected]: rawExtension.extensionId === selectExtensionId,
+            [styles.gray]: rawExtension.installed && !rawExtension.enable,
+            [styles.last_item]: index === list.length - 1,
+          })}
+          key={`${rawExtension.extensionId}_${rawExtension.version}`}
+          extension={rawExtension}
+          select={select}
+          install={install}
+          showInstalled={showInstalled}
+          />);
+        })}
+      </PerfectScrollbar>
       ) : typeof empty === 'string' ? (<div className={styles.empty}>{empty}</div>) : empty}
     </div>
   );

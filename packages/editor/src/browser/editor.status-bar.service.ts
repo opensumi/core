@@ -39,9 +39,9 @@ export class EditorStatusBarService extends WithEventBus {
       this.statusBar.removeElement('editor-status-cursor');
       return;
     }
-    const lineLabel = localize('status-bar.label.line', '行');
-    const colLabel = localize('status-bar.label.column', '列');
-    const selectedLabel = localize('status-bar.label.selected', '已选择');
+    const lineLabel = '%status-bar.label.line%';
+    const colLabel = '%status-bar.label.column%';
+    const selectedLabel = '%status-bar.label.selected%';
     this.statusBar.addElement('editor-status-cursor', {
       text: `${lineLabel}${position.lineNumber}，${colLabel}${position.column}${selectionLength ? `（${selectedLabel}${selectionLength}）` : ''}`,
       priority: 4,

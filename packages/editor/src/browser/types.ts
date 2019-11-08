@@ -1,5 +1,5 @@
-import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType } from '../common';
-import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
+import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType, IEditor } from '../common';
+import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event, IContextKeyExpr } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 
@@ -29,13 +29,15 @@ export enum EditorComponentRenderMode {
 
 export abstract class EditorComponentRegistry {
 
-  abstract registerEditorComponent<T>(component: IEditorComponent<T>): IDisposable;
+  abstract registerEditorComponent<T>(component: IEditorComponent<T>, initialProps?: any): IDisposable;
 
   abstract registerEditorComponentResolver<T>(scheme: string, resolver: IEditorComponentResolver<T>): IDisposable;
 
   abstract resolveEditorComponent(resource: IResource): Promise<IEditorOpenType[]>;
 
   abstract getEditorComponent(id: string): IEditorComponent | null;
+
+  abstract getEditorInitialProps(id: string): any;
 
   abstract clearPerWorkbenchComponentCache(componentId: string): void;
 }
@@ -58,6 +60,8 @@ export interface BrowserEditorContribution {
   registerEditorComponent?(editorComponentRegistry: EditorComponentRegistry): void;
 
   registerEditorDocumentModelContentProvider?(registry: IEditorDocumentModelContentRegistry): void;
+
+  registerEditorActions?(editorActionRegistry: IEditorActionRegistry): void;
 
   onDidRestoreState?(): void;
 }
@@ -143,6 +147,8 @@ export interface IEditorSelectionChangeEventPayload {
   selections: ISelection[];
 
   source: string | undefined;
+
+  editorUri: URI;
 }
 
 export class EditorVisibleChangeEvent extends BasicEvent<IEditorVisibleChangeEventPayload> {}
@@ -195,3 +201,72 @@ export interface IEditorDecorationProvider {
 export class EditorDecorationProviderRegistrationEvent extends BasicEvent<IEditorDecorationProvider> {}
 
 export class EditorDecorationChangeEvent extends BasicEvent<{uri: URI, key: string}> {}
+
+export interface IEditorActionRegistry {
+  registerEditorAction(action: IEditorActionItem): IDisposable;
+  getActions(editorGroup: IEditorGroup): IEditorActionItem[];
+}
+
+export interface IEditorActionItem {
+  title: string;
+  iconClass: string;
+  isVisible?: (resource: MaybeNull<IResource>, editorGroup: IEditorGroup) => boolean;
+  onClick: (resource: MaybeNull<IResource>) => void;
+  when?: string; // 使用contextkey
+}
+
+export const IEditorActionRegistry = Symbol('IEditorActionRegistry');
+
+export interface ICompareService {
+
+  /**
+   * 在编辑器中compare两个文件
+   */
+  compare(original: URI, modified: URI, name: string): Promise<CompareResult>;
+
+}
+
+export const ICompareService = Symbol('ICompareService');
+
+export enum CompareResult {
+  revert = 'revert', // original -> modified
+  accept = 'accept', // modified -> original
+  cancel = 'cancel',
+}
+
+export interface IBreadCrumbService {
+
+  registerBreadCrumbProvider(provider: IBreadCrumbProvider): IDisposable;
+
+  getBreadCrumbs(uri: URI, editor?: MaybeNull<IEditor>): IBreadCrumbPart[] | undefined;
+
+  disposeCrumb(uri: URI): void;
+
+}
+
+export const IBreadCrumbService = Symbol('IBreadScrumbService');
+
+export interface IBreadCrumbProvider {
+
+  handlesUri(URI: URI): boolean;
+
+  provideBreadCrumbForUri(uri: URI, editor?: MaybeNull<IEditor>): IBreadCrumbPart[];
+
+  onDidUpdateBreadCrumb: Event<URI>;
+
+}
+
+export interface IBreadCrumbPart {
+
+  name: string;
+
+  icon?: string;
+
+  getSiblings?(): MaybePromise<{parts: IBreadCrumbPart[], currentIndex: number}>;
+
+  // getChildren和onClick只能存在一个，如果同时存在,getChildren生效
+  getChildren?(): MaybePromise<IBreadCrumbPart[]>;
+
+  onClick?(): void;
+
+}

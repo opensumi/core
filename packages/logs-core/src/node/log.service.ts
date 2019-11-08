@@ -136,7 +136,7 @@ export class BaseLogService implements IBaseLogService {
   async flush() {
     await this.spdLogLoggerPromise;
     if (this.logger) {
-      this.logger.flush();
+      return this.logger.flush();
     }
   }
 

@@ -111,6 +111,7 @@ export class ActivityBarService extends WithEventBus {
   // append一个viewContainer，支持传入初始化views
   append(options: ViewContainerOptions, side: Side, views?: View[], Fc?: React.FunctionComponent): string {
     const { iconClass, priority, containerId, title, initialProps, expanded } = options;
+    const label = (title || '').toUpperCase();
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
@@ -120,7 +121,7 @@ export class ActivityBarService extends WithEventBus {
           console.error('视图数据或自定义视图请至少传入一种！');
         }
         panelContainer = this.injector.get(ReactPanelWidget, [Fc!, containerId]);
-        panelContainer.title.label = title || '';
+        panelContainer.title.label = label;
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
         if (expanded === true) {
           panelContainer.addClass('expanded');
@@ -131,7 +132,7 @@ export class ActivityBarService extends WithEventBus {
         });
       } else if (side !== 'bottom') {
         panelContainer = this.injector.get(ViewContainerWidget, [containerId, views, side, command]);
-        panelContainer.title.label = title || '';
+        panelContainer.title.label = label;
         panelContainer.updateTitleLabel();
         // TODO 侧边栏面板expand状态回归
         if (expanded === true) {
@@ -161,7 +162,7 @@ export class ActivityBarService extends WithEventBus {
       }
 
       // 用于右键菜单显示
-      panelContainer.title.label = title!;
+      panelContainer.title.label = label;
       // dataset小写，会渲染到tab的li节点上
       panelContainer.title.dataset = {
         containerid: containerId,
@@ -359,7 +360,7 @@ export class ActivityBarService extends WithEventBus {
         this.commandService.executeCommand(`main-layout.${side}-panel.hide`);
       }
       this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${side}`, '0_global'], {
-        label: localize('tabbar.hide', '隐藏'),
+        label: localize('layout.tabbar.hide', '隐藏'),
         commandId: this.registerGlobalToggleCommand(side as Side),
       });
     }

@@ -36,6 +36,8 @@ export const localizationBundle = {
     'menu-bar.view.outward.localize.toggle': 'switch language',
     'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
 
+    'selectAll': 'Select All',
+
     'editor': 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
@@ -48,7 +50,15 @@ export const localizationBundle = {
     'editor.splitToTop': 'Split To Top',
     'editor.splitToBottom': 'Split To Bottom',
     'editor.closeAllInGroup': 'Close All',
-    'editor.closeOtherEditors': 'Close Editors in Other Groups',
+    'editor.closeToRight': 'Close To Right',
+    'editor.closeSaved': 'Close Saved',
+    'editor.close': 'Close',
+    'editor.action.accept': 'Accept Changes (Use version on the right)',
+    'editor.action.revert': 'Revert Changes (Use version on the left)',
+    'status-bar.label.line': 'Ln',
+    'status-bar.label.column': 'Col',
+    'status-bar.label.selected': 'Selected',
+    'editor.closeOtherEditors': 'Close Others',
 
     'edit.cut': 'Cut',
     'edit.copy': 'Copy',
@@ -138,6 +148,7 @@ export const localizationBundle = {
     'scm.statusbar.repo': 'Repo',
     'scm.provider.title': 'Source Control Providers',
     'scm.provider.empty': 'No source control providers registered.',
+    'scm.provider.init': 'Click to initialize a repository',
 
     'debug.action.add.configuration': 'Add Configuration...',
     'debug.action.no.configuration': 'No Configurations',
@@ -175,6 +186,7 @@ export const localizationBundle = {
     'debug.configuration.comment1': 'Use IntelliSense to learn about possible attributes.',
     'debug.configuration.comment2': 'Hover to view descriptions of existing attributes.',
     'debug.configuration.comment3': 'For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
+    'debug.launch.existed': 'Debug configuration "{0}" is already running',
 
     'output.tabbar.title': 'OUTPUT',
     'output.channel.none': '<no output yet>',
@@ -218,12 +230,15 @@ export const localizationBundle = {
     'preference.debug.openDebug': 'Controls when the debug view should open.',
     'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
     'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
+    'preference.debug.allowBreakpointsEverywhere': 'Allow setting breakpoints in any file.',
 
     'preference.tab.name': 'Settings',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
+    'preference.editor.askIfDiff': 'Error If File On Disk is ewer',
+    'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
@@ -239,6 +254,9 @@ export const localizationBundle = {
     'open.editors.group.title': 'Group {0}',
 
     'terminal.name': 'Terminal',
+
+    'theme.toggle': 'Color Theme',
+    'theme.icon.toggle': 'File Icon Theme',
 
     'preference.workbench.list.openMode': 'Controls how to open items in trees and lists using the mouse (if supported). For parents with children in trees, this setting will control if a single click expands the parent or a double click. Note that some trees and lists might choose to ignore this setting if it is not applicable.',
 
@@ -256,6 +274,8 @@ export const localizationBundle = {
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
+    'layout.tabbar.hide': 'HIDE',
+    'layout.view.hide': 'HIDE',
     'marketplace.extension.update.now': 'Update now',
     'marketplace.extension.update.delay': 'Update later',
     'marketplace.extension.uninstall.failed': 'Failed to uninstall',
@@ -274,9 +294,9 @@ export const localizationBundle = {
     'marketplace.panel.search': 'Search',
     'marketplace.panel.enabled': 'Enabled',
     'marketplace.panel.disabled': 'Disabled',
-    'marketplace.panel.tab.marketplace': 'Extension Marketplace',
+    'marketplace.panel.tab.marketplace': 'Marketplace',
     'marketplace.panel.tab.placeholder.search': 'Search from marketplace',
-    'marketplace.tab.installed': 'Installed Extension',
+    'marketplace.tab.installed': 'Installed',
     'marketplace.panel.tab.placeholder.installed': 'Search from installed',
     'marketplace.extension.findUpdate': 'Find Extension {0} has new version {1}，Do you want to update？`',
     'marketplace.extension.canupdate': 'Can update',
@@ -289,5 +309,19 @@ export const localizationBundle = {
     'marketplace.extension.readme': 'Readme',
     'marketplace.extension.changelog': 'Changelog',
     'marketplace.extension.installed': 'Installed',
+
+    'saveChangesMessage': 'Do you want to save the changes you made to {0}?',
+    'file.prompt.dontSave': 'Don\'t Save',
+    'file.prompt.save': 'Save',
+    'file.prompt.cancel': 'Cancel',
+
+    'doc.saveError.failed': 'File Saving Failed. Reason: ',
+    'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',
+    'doc.saveError.diffAndSave': 'Compare...',
+    'editor.compareAndSave.title': '{0} (on Disk) <=> {1} (Editing) ',
+
+    'window.toggleDevTools': 'Toggle Developer Tools',
+    'window.reload': 'Reload Window',
+    'about': 'About',
   },
 };

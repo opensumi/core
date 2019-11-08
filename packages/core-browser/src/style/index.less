@@ -23,6 +23,7 @@ body, html {
   // 全局默认字体颜色
   color: var(--foreground);
   background-color: var(--editor-background);
+  -webkit-font-smoothing: antialiased;
 }
 
 input::placeholder,
@@ -86,7 +87,7 @@ pre {
 // }
 
 // 需要覆盖掉 monaco quickopen 默认的图表
-.monaco-quick-open-widget .quick-open-tree .quick-open-entry .quick-open-row .quick-open-entry-icon {
+.quick-open-overlay .monaco-quick-open-widget .quick-open-tree .quick-open-entry .quick-open-row .quick-open-entry-icon {
   position: relative;
   background-image: none;
   margin-right: 8px;
@@ -114,6 +115,10 @@ pre {
   outline: none;
 }
 
+.monaco-quick-open-widget .quick-open-tree .results-group {
+  color: var(--textLink-foreground) !important;
+}
+
 .monaco-keybinding-key {
   background-color: var(--activityBar-background) !important;
   border: none !important;
@@ -132,4 +137,14 @@ pre {
 
 .none-pointer-event {
   pointer-events: none;
+}
+
+// monaco editor 内部 menu 的分割线
+.monaco-action-bar.vertical .action-label.separator {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.context-view.monaco-menu-container {
+  margin-left: 1px;
 }

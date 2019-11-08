@@ -9,16 +9,19 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
 
   private components: Map<string, IEditorComponent> = new Map();
 
+  private initialPropsMap: Map<string, any> = new Map();
+
   private resolvers: Map<string, IEditorComponentResolver[]> = new Map();
 
   public readonly perWorkbenchComponents = {};
 
-  public registerEditorComponent<T>(component: IEditorComponent<T>): IDisposable {
+  public registerEditorComponent<T>(component: IEditorComponent<T>, initialProps?: any): IDisposable {
     const uid = component.uid;
     if (!component.renderMode) {
       component.renderMode = EditorComponentRenderMode.ONE_PER_GROUP;
     }
     this.components.set(uid, component);
+    this.initialPropsMap.set(uid, initialProps);
     return {
       dispose: () => {
         if (this.components.get(uid) === component) {
@@ -71,6 +74,10 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
 
   public getEditorComponent(id: string): IEditorComponent | null {
     return this.components.get(id) || null;
+  }
+
+  public getEditorInitialProps(id: string): any {
+    return this.initialPropsMap.get(id) || null;
   }
 
   public clearPerWorkbenchComponentCache(componentId: string) {
