@@ -135,7 +135,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
         }
       },
       isVisible: (extension: RawExtension) => {
-        return extension.installed;
+        return extension.installed && !extension.isBuiltin;
       },
     });
   }
