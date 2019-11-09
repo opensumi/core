@@ -6,8 +6,8 @@ import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { MenuId } from './menu-id';
-import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
 import { getIcon } from '../../icon';
+import { KeybindingRegistry } from '../../keybinding';
 
 export interface IMenuNodeOptions {
   args?: any[]; // 固定参数可从这里传入
@@ -48,13 +48,13 @@ export class MenuItemNode extends MenuNode {
   private _options: IMenuNodeOptions;
 
   @Autowired(CommandService)
-  commandService: CommandService;
+  protected readonly commandService: CommandService;
 
   @Autowired(KeybindingRegistry)
-  keybindings: KeybindingRegistry;
+  protected readonly keybindings: KeybindingRegistry;
 
   @Autowired(CommandRegistry)
-  commandRegistry: CommandRegistry;
+  protected readonly commandRegistry: CommandRegistry;
 
   constructor(
     @Optional() item: Command,
@@ -95,7 +95,10 @@ export class MenuItemNode extends MenuNode {
       const keybindings = this.keybindings.getKeybindingsForCommand(commandId);
       if (keybindings.length > 0) {
         const isKeyCombination = Array.isArray(keybindings[0].resolved) && keybindings[0].resolved.length > 1;
-        const keybinding = isKeyCombination ? `[${keybindings[0].keybinding}]` : keybindings[0].keybinding;
+        let keybinding = this.keybindings.acceleratorFor(keybindings[0], '').join(' ');
+        if (isKeyCombination) {
+          keybinding = `[${keybinding}]`;
+        }
         return {
           keybinding,
           isKeyCombination,
