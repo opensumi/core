@@ -1,5 +1,4 @@
 import * as stripJsonComments from 'strip-json-comments';
-import * as JSON5 from 'json5';
 
 /**
  * JSON对象的值为引用类型的类型
