@@ -1,9 +1,8 @@
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { localize, getLogger, URI } from '@ali/ide-core-common';
+import { localize, getLogger, URI, parseWithComments } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IIconTheme } from '../common';
-import * as JSON5 from 'json5';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 @Injectable({multiple: true})
@@ -78,7 +77,7 @@ interface IconThemeDocument extends IconsAssociation {
 async function loadIconThemeDocument(fileService: IFileServiceClient, location: URI): Promise<IconThemeDocument> {
   try {
     const content = await fileService.resolveContent(location.toString());
-    const contentValue = JSON5.parse(content.content);
+    const contentValue = parseWithComments(content.content);
     return contentValue as IconThemeDocument;
   } catch (error) {
     getLogger().log(localize('error.cannotparseicontheme', 'Icon Theme parse出错！'));

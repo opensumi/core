@@ -1,11 +1,10 @@
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, URI, PreferenceService } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments } from '@ali/ide-core-browser';
 // import { VSCodeExtensionService } from '../types';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import * as JSON5 from 'json5';
 
 export interface TranslationFormat {
   id: string;
@@ -54,7 +53,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   private safeParseJSON(content) {
     let json;
     try {
-      json = JSON5.parse(content);
+      json = parseWithComments(content);
       return json;
     } catch (error) {
       return console.error('语言配置文件解析出错！', content);

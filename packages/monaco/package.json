@@ -26,7 +26,6 @@
     "@ali/ide-editor": "1.5.0",
     "@ali/ide-file-service": "1.5.0",
     "@ali/ide-theme": "1.5.0",
-    "json5": "2.1.0",
     "monaco-editor-core": "^0.17.0"
   },
   "devDependencies": {
