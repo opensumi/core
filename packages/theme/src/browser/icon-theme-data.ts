@@ -77,7 +77,7 @@ interface IconThemeDocument extends IconsAssociation {
 async function loadIconThemeDocument(fileService: IFileServiceClient, location: URI): Promise<IconThemeDocument> {
   try {
     const content = await fileService.resolveContent(location.toString());
-    const contentValue = parseWithComments(content);
+    const contentValue = parseWithComments(content.content);
     return contentValue as IconThemeDocument;
   } catch (error) {
     getLogger().log(localize('error.cannotparseicontheme', 'Icon Theme parse出错！'));
