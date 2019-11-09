@@ -6,14 +6,6 @@
   "configurations": [
     {
       "type": "node",
-      "request": "launch",
-      "name": "Launch Program",
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "args": ["${workspaceFolder}/test.ts"],
-      "protocol": "inspector"
-    },
-    {
-      "type": "node",
       "request": "attach",
       "name": "Attach to BackEnd",
       "port": 9999,
