@@ -2,7 +2,7 @@ import { format, mnemonicButtonLabel } from './utils/strings';
 
 export type ILocalizationKey = string; //ts不支持symbol作为key
 
-let _currentLanguageId: string = 'en-US';
+let _currentLanguageId: string = 'zh-CN';
 
 const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
 
