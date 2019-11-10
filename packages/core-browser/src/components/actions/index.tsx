@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { Menu } from 'antd';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
-import { ClickParam } from 'antd/lib/menu';
+import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
-import 'antd/lib/dropdown/style/index.less';
 
 import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator } from '../../menu/next';
 import Icon from '../icon';
