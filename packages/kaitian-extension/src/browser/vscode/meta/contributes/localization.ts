@@ -1,5 +1,5 @@
 // import { VscodeContributionPoint, Contributes } from './common';
-import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath } from '../../../../common';
+import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath, ExtensionService } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments } from '@ali/ide-core-browser';
 // import { VSCodeExtensionService } from '../types';
@@ -48,7 +48,10 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   private fileServiceClient: IFileServiceClient;
 
   @Autowired(ExtensionNodeServiceServerPath)
-  extensionService: IExtensionNodeClientService;
+  extensionNodeService: IExtensionNodeClientService;
+
+  @Autowired(ExtensionService)
+  extensionService: ExtensionService;
 
   private safeParseJSON(content) {
     let json;
@@ -61,9 +64,13 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   }
 
   async contribute() {
+    const currentExtensions = this.extensionService.getExtensions();
     this.json.forEach((localization) => {
       if (localization.translations) {
-        localization.translations.forEach(async (translate) => {
+        localization.translations.map(async (translate) => {
+          if (currentExtensions.findIndex((e) => e.id === translate.id) === -1) {
+            return;
+          }
           const contents = await this.registerLanguage(translate);
           registerLocalizationBundle({
             languageId: localization.languageId,
@@ -76,7 +83,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
     });
 
     const currentLanguage: string = this.preferenceService.get('general.language') || 'zh-CN';
-    await this.extensionService.updateLanguagePack(currentLanguage, this.extension.path);
+    await this.extensionNodeService.updateLanguagePack(currentLanguage, this.extension.path);
   }
 
   async registerLanguage(translate: TranslationFormat) {
