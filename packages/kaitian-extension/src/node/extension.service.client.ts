@@ -93,7 +93,8 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     if (packageJson.contributes && packageJson.contributes.localizations) {
       for (const localization of packageJson.contributes.localizations) {
         const md5 = createHash('md5');
-        const id = `${packageJson.publisher.toLocaleLowerCase()}.${packageJson.name.toLocaleLowerCase()}`;
+        // 这里需要添加languagePack路径作为id一部分，因为可能存在多个
+        const id = `${languagePack}-${packageJson.publisher.toLocaleLowerCase()}.${packageJson.name.toLocaleLowerCase()}`;
         const _uuid = uuid();
         md5.update(id).update(packageJson.version);
         const hash = md5.digest('hex');

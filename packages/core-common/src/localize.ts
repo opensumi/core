@@ -2,6 +2,8 @@ import { format, mnemonicButtonLabel } from './utils/strings';
 
 export type ILocalizationKey = string; //ts不支持symbol作为key
 
+let _currentLanguageId: string = 'en-US';
+
 const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
 
 export function localize(symbol: ILocalizationKey, defaultMessage?: string | undefined, scope: string = 'host'): string {
@@ -33,8 +35,6 @@ export interface ILocalizationContents{
 
 interface ILocalizationRegistry {
 
-  readonly currentLanguageId: string;
-
   registerLocalizationBundle(bundle: ILocalizationBundle): void;
 
   getLocalizeString(symbol: ILocalizationKey, defaultLabel?: string): string;
@@ -44,23 +44,9 @@ interface ILocalizationRegistry {
 
 class LocalizationRegistry implements ILocalizationRegistry {
 
-  constructor(private _currentLanguageId: string = 'zh-CN'){
-
-  }
-
   private localizationMap: Map<string, ILocalizationContents> = new Map() ;
 
   public readonly localizationInfo: Map<string, ILocalizationInfo> = new Map();
-
-  get currentLanguageId() {
-    return this._currentLanguageId!;
-  }
-
-  set currentLanguageId(languageId: string) {
-    if (languageId) {
-      this._currentLanguageId = languageId;
-    }
-  }
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
     const existingMessages = this.getContents(bundle.languageId);
@@ -77,7 +63,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
     if (defaultLabel === null) {
       defaultMessage = this.getContents('en-US')[key as keyof ILocalizationContents]
     }
-    return this.getContents(this.currentLanguageId)[key as keyof ILocalizationContents] || defaultMessage || '';
+    return this.getContents(_currentLanguageId)[key as keyof ILocalizationContents] || defaultMessage || '';
   }
 
   private getContents(languageId: string): ILocalizationContents {
@@ -99,15 +85,15 @@ class LocalizationRegistry implements ILocalizationRegistry {
  * @returns 当前语言别名
  */
 export function getLanguageId(scope: string = 'host'): string {
-  return getLocalizationRegistry(scope).currentLanguageId;
+  return _currentLanguageId;
 }
 
 export function getCurrentLanguageInfo(scope: string = 'host'): ILocalizationInfo {
-  return getLocalizationRegistry(scope).localizationInfo.get(getLocalizationRegistry(scope).currentLanguageId)!;
+  return getLocalizationRegistry(scope).localizationInfo.get(_currentLanguageId)!;
 }
 
-export function setLanguageId(language, scope: string = 'host'): void {
-  getLocalizationRegistry(scope).currentLanguageId = language;
+export function setLanguageId(language): void {
+  _currentLanguageId = language;
 }
 
 export function getAvailableLanguages(scope: string = 'host'): ILocalizationInfo[] {
@@ -116,7 +102,7 @@ export function getAvailableLanguages(scope: string = 'host'): ILocalizationInfo
 
 function getLocalizationRegistry(scope: string): LocalizationRegistry {
   if(!localizationRegistryMap[scope]){
-    localizationRegistryMap[scope] = new LocalizationRegistry(window.localStorage && window.localStorage.getItem('1:general.language') || 'zh-CN');
+    localizationRegistryMap[scope] = new LocalizationRegistry();
   }
   return localizationRegistryMap[scope];
 }

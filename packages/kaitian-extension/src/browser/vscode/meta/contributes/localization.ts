@@ -1,7 +1,7 @@
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath, ExtensionService } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments, getLanguageId } from '@ali/ide-core-browser';
 // import { VSCodeExtensionService } from '../types';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -65,25 +65,33 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
 
   async contribute() {
     const currentExtensions = this.extensionService.getExtensions();
+    const promises: Promise<void>[] = [];
     this.json.forEach((localization) => {
       if (localization.translations) {
-        localization.translations.map(async (translate) => {
+        const languageId = normalizeLanguageId(localization.languageId);
+        if (languageId !== getLanguageId()) {
+          return;
+        }
+        localization.translations.map((translate) => {
           if (currentExtensions.findIndex((e) => e.id === translate.id) === -1) {
             return;
           }
-          const contents = await this.registerLanguage(translate);
-          registerLocalizationBundle({
-            languageId: localization.languageId,
-            languageName: localization.languageName,
-            localizedLanguageName: localization.localizedLanguageName,
-            contents,
-          }, translate.id);
+          promises.push((async () => {
+            const contents = await this.registerLanguage(translate);
+            registerLocalizationBundle({
+              languageId,
+              languageName: localization.languageName,
+              localizedLanguageName: localization.localizedLanguageName,
+              contents,
+            }, translate.id);
+          })());
         });
       }
     });
 
     const currentLanguage: string = this.preferenceService.get('general.language') || 'zh-CN';
-    await this.extensionNodeService.updateLanguagePack(currentLanguage, this.extension.path);
+    promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, this.extension.path));
+    await Promise.all(promises);
   }
 
   async registerLanguage(translate: TranslationFormat) {
@@ -107,4 +115,18 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
 
   }
 
+}
+
+/**
+ * zh-cn -> zh-CN
+ * en-us -> en-US
+ * ja -> ja
+ * @param id
+ */
+function normalizeLanguageId(id: string) {
+  const parts = id.split('-');
+  if (parts[1]) {
+    parts[1] = parts[1].toUpperCase();
+  }
+  return parts.join('-');
 }
