@@ -11,6 +11,8 @@ import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { ISettingGroup, IPreferenceSettingsService, ISettingSection } from '@ali/ide-core-browser';
 import throttle = require('lodash.throttle');
 import { IWorkspaceService } from '@ali/ide-workspace';
+import * as cls from 'classnames';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
@@ -275,7 +277,11 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
 
     const items: any[] = [];
     value.map((item, idx) => {
-      items.push(<li key={`${idx} - ${JSON.stringify(item)}`} onClick={() => { removeItem(idx); }}>{JSON.stringify(item)}</li>);
+      items.push(
+      <li className={styles.arr_items} key={`${idx} - ${JSON.stringify(item)}`}>
+        <div onClick={() => { removeItem(idx); }} className={cls(getIcon('delete'), styles.rm_icon, styles.arr_item)}></div>
+        <div className={styles.arr_item}>{JSON.stringify(item)}</div>
+      </li>);
     });
 
     return (
@@ -285,7 +291,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
         </div>
         {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
         <div className={styles.control_wrap}>
-          <ul>
+          <ul className={styles.arr_list}>
             {items}
           </ul>
           <input

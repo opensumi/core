@@ -332,6 +332,12 @@
       ],
       "@ali/ide-keymaps/lib/*": [
         "../packages/keymaps/src/*"
+      ],
+      "@ali/ide-outline": [
+        "../packages/outline/src/index.ts"
+      ],
+      "@ali/ide-outline/lib/*": [
+        "../packages/outline/src/*"
       ]
     }
   }

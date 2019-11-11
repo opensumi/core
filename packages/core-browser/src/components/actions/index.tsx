@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { Menu } from 'antd';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
-import { ClickParam } from 'antd/lib/menu';
+import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
-import 'antd/lib/dropdown/style/index.less';
 
 import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator } from '../../menu/next';
 import Icon from '../icon';
@@ -19,10 +17,16 @@ const MenuAction: React.FC<{
 }> = ({ data }) => {
   return (
     <>
-      <div className={styles.icon}>
-        { data.icon && <Icon iconClass={data.icon} /> }
+      {
+        data.icon && (
+          <div className={styles.icon}>
+            <Icon iconClass={data.icon} />
+          </div>
+        )
+      }
+      <div className={styles.label}>
+        {data.label ? mnemonicButtonLabel(data.label, true) : ''}
       </div>
-      <div className={styles.label}>{mnemonicButtonLabel(data.label, true)}</div>
       {
         data.keybinding
           ? <div className={styles.shortcut}>{data.keybinding}</div>
@@ -159,7 +163,7 @@ type TupleContext<T, U, K, M> = (
   ? K extends undefined
     ? U extends undefined
       ? T extends undefined
-        ? []
+        ? undefined
         : [T]
       : [T, U]
     : [T, U, K]

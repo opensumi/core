@@ -103,7 +103,10 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   /**
    * 高亮区域
    */
-  readonly highLightRanges?: TreeNodeHighlightRange[];
+  readonly highLightRanges?: {
+    name?: TreeNodeHighlightRange[],
+    description?: TreeNodeHighlightRange[]
+  };
 
   /**
    * 高亮区域替换文本

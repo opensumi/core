@@ -6,7 +6,8 @@ import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { MenuId } from './menu-id';
-import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
+import { getIcon } from '../../icon';
+import { KeybindingRegistry } from '../../keybinding';
 
 export interface IMenuNodeOptions {
   args?: any[]; // 固定参数可从这里传入
@@ -18,7 +19,7 @@ export interface IMenu extends IDisposable {
 }
 
 export abstract class MenuService {
-  abstract createMenu(id: MenuId, scopedKeybindingService: IContextKeyService): IMenu;
+  abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
 // 后续 MenuNode 要看齐 @ali/ide-core-common 的 ActionMenuNode
@@ -47,21 +48,24 @@ export class MenuItemNode extends MenuNode {
   private _options: IMenuNodeOptions;
 
   @Autowired(CommandService)
-  commandService: CommandService;
+  protected readonly commandService: CommandService;
 
   @Autowired(KeybindingRegistry)
-  keybindings: KeybindingRegistry;
+  protected readonly keybindings: KeybindingRegistry;
 
   @Autowired(CommandRegistry)
-  commandRegistry: CommandRegistry;
+  protected readonly commandRegistry: CommandRegistry;
 
   constructor(
     @Optional() item: Command,
     @Optional() options: IMenuNodeOptions = {},
     @Optional() disabled: boolean,
+    @Optional() toggled: boolean,
     @Optional() nativeRole?: string,
   ) {
-    super(item.id, item.iconClass!, item.label!, disabled, nativeRole);
+    // 将 isToggled 属性通过 iconClass 来实现
+    const icon = toggled ? getIcon('check') : '';
+    super(item.id, icon, item.label!, disabled, nativeRole);
     // 后置获取 i18n 数据 主要处理 ide-framework 内部的 command 的 i18n
     const command = this.commandRegistry.getCommand(item.id)!;
     this.label = command.label!;
@@ -91,7 +95,10 @@ export class MenuItemNode extends MenuNode {
       const keybindings = this.keybindings.getKeybindingsForCommand(commandId);
       if (keybindings.length > 0) {
         const isKeyCombination = Array.isArray(keybindings[0].resolved) && keybindings[0].resolved.length > 1;
-        const keybinding = isKeyCombination ? `[${keybindings[0].keybinding}]` : keybindings[0].keybinding;
+        let keybinding = this.keybindings.acceleratorFor(keybindings[0], '').join(' ');
+        if (isKeyCombination) {
+          keybinding = `[${keybinding}]`;
+        }
         return {
           keybinding,
           isKeyCombination,
@@ -107,8 +114,11 @@ export class MenuServiceImpl implements MenuService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  createMenu(id: MenuId, contextKeyService: IContextKeyService): IMenu {
-    return this.injector.get(Menu, [id, contextKeyService]);
+  @Autowired(IContextKeyService)
+  globalCtxKeyService: IContextKeyService;
+
+  createMenu(id: MenuId, contextKeyService?: IContextKeyService): IMenu {
+    return this.injector.get(Menu, [id, contextKeyService || this.globalCtxKeyService]);
   }
 }
 
@@ -209,9 +219,11 @@ class Menu extends Disposable implements IMenu {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
             const { args = [] } = options;
-            if (this.commandRegistry.isVisible(item.command.id, ...args)) {
-              const disabled = !this.commandRegistry.isEnabled(item.command.id, ...args);
-              const action = this.injector.get(MenuItemNode, [item.command, options, disabled, item.nativeRole]);
+            const command = item.command;
+            if (this.commandRegistry.isVisible(command.id, ...args)) {
+              const disabled = !this.commandRegistry.isEnabled(command.id, ...args);
+              const toggled = this.commandRegistry.isToggled(command.id, ...args);
+              const action = this.injector.get(MenuItemNode, [command, options, disabled, toggled, item.nativeRole]);
               activeActions.push(action);
             }
           } else {

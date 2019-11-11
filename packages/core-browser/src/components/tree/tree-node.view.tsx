@@ -31,53 +31,37 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   commandActuator?: CommandActuator;
 }
 
-const renderDescriptionWithRangeAndReplace = (description: any, range?: TreeNodeHighlightRange, replace?: string) => {
-  if (isUndefined(description)) {
+const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRange[], replace?: string) => {
+  if (isUndefined(template)) {
     return '';
   }
   const isComponent = typeof name !== 'string';
   if (!isComponent) {
-    if (!!range) {
-      return <span>
-        {description.slice(0, range.start)}
-        <span className={cls(styles.kt_search_match, replace && styles.replace)}>
-          {description.slice(range.start, range.end)}
-        </span>
-        <span className={replace && styles.kt_search_replace}>
-          {replace}
-        </span>
-        {description.slice(range.end)}
-
-      </span>;
+    if (!!ranges) {
+      const rangeLen = ranges.length;
+      if (rangeLen > 0) {
+        const content: any = [];
+        for (let i = 0; i < rangeLen; i ++) {
+          content.push(<span>
+            { i === 0 ? template.slice(0, ranges[i].start) : template.slice(ranges[i - 1].end, ranges[i].start)}
+            <span className={cls(styles.kt_search_match, replace && styles.replace)}>
+              {template.slice(ranges[i].start, ranges[i].end)}
+            </span>
+            <span className={replace && styles.kt_search_replace}>
+              {replace}
+            </span>
+            { i + 1 < rangeLen ? template.slice(ranges[i + 1].start) : template.slice(ranges[i].end) }
+          </span>);
+        }
+        return content;
+      } else {
+        return template;
+      }
     } else {
-      return description;
+      return template;
     }
   } else {
-    const Template = description as React.JSXElementConstructor<any>;
-    return <Template />;
-  }
-};
-
-const renderNameWithRangeAndReplace = (name: any, range?: TreeNodeHighlightRange, replace?: string) => {
-  const isComponent = typeof name !== 'string';
-  if (!isComponent) {
-    if (!!range) {
-      return <span>
-        {name.slice(0, range.start)}
-        <span className={cls(styles.kt_search_match, replace && styles.replace)}>
-          {name.slice(range.start, range.end)}
-        </span>
-        <span className={replace && styles.kt_search_replace}>
-          {replace}
-        </span>
-        {name.slice(range.end)}
-
-      </span>;
-    } else {
-      return name;
-    }
-  } else {
-    const Template = name as React.JSXElementConstructor<any>;
+    const Template = template as React.JSXElementConstructor<any>;
     return <Template />;
   }
 };
@@ -94,7 +78,7 @@ const renderBadge = (node: TreeNode) => {
 
 const renderDescription = (node: any, replace: string) => {
   return <div className={cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass)}>
-    {renderDescriptionWithRangeAndReplace(node.description || '', node.highLightRanges && node.highLightRanges.length > 1 && node.highLightRanges[1] || undefined, replace)}
+    {renderWithRangeAndReplace(node.description || '', node.highLightRanges && node.highLightRanges.description, replace)}
   </div>;
 };
 
@@ -324,7 +308,7 @@ export const TreeContainerNode = (
 
   const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
     const isComponent = typeof node.name !== 'string';
-    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : !isComponent && node.name === TEMP_FILE_NAME ? '' : (!isComponent && node.name) || '');
+    const [value, setValue] = React.useState<string>(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : !isComponent && node.name === TEMP_FILE_NAME ? '' : isComponent ? '' : node.name as string);
 
     const changeHandler = (event) => {
       const newValue = event.target.value;
@@ -382,7 +366,7 @@ export const TreeContainerNode = (
       className={cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass)}
     >
       {node.beforeLabel}
-      {renderNameWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.length > 0 && node.highLightRanges[0] || undefined, replace)}
+      {renderWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.name, replace)}
       {node.afterLabel}
     </div>;
   };

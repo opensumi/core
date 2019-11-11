@@ -60,18 +60,24 @@ export class DefaultStorageProvider {
   @Autowired(StorageResolverContribution)
   protected readonly resolversProvider: ContributionProvider<StorageResolverContribution>
 
+  private storageCacheMap: Map<string, IStorage> = new Map();
+
   /**
    * 返回对应storageId的Storage类
    */
-  async get(storageId: URI): Promise<IStorage> {
+  async get(storageId: URI): Promise<IStorage | void> {
+    if (this.storageCacheMap.has(storageId.toString())) {
+      return this.storageCacheMap.get(storageId.toString())
+    }
     const resolvers = this.resolversProvider.getContributions();
     for (const resolver of resolvers) {
       const storageResolver = await resolver.resolve(storageId);
       if (storageResolver) {
-        return Promise.resolve(storageResolver);
+        this.storageCacheMap.set(storageId.toString(), storageResolver);
+        return storageResolver;
       }
     }
-    return Promise.reject(new Error(`A storage provider for '${storageId}' is not registered.`));
+    return ;
   }
 
 }

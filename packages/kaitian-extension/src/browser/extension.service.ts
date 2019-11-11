@@ -82,6 +82,7 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
 import * as BrowserApi from './kaitian-browser';
+import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -167,6 +168,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IToolBarViewService)
   private toolBarViewService: IToolBarViewService;
 
+  @Autowired()
+  editorComponentRegistry: EditorComponentRegistry;
+
   public extensionMap: Map<string, Extension> = new Map();
 
   public extensionComponentMap: Map<string, string[]> = new Map();
@@ -236,7 +240,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         extensionMetadata,
         this,
         await this.checkExtensionEnable(extensionMetadata),
-        extensionMetadata.realPath.startsWith(this.appConfig.extensionDir!),
+        this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false,
       ]);
 
       this.extensionMap.set(path, extension);
@@ -429,13 +433,15 @@ export class ExtensionServiceImpl implements ExtensionService {
   private async initExtension() {
     for (const extensionMetaData of this.extensionMetaDataArr) {
       const extensionCandidate = this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === extensionMetaData.realPath);
+      // 1. 通过路径判决是否是内置插件
+      // 2. candidate 是否有  isBuiltin 标识符
+      const isBuiltin = (this.appConfig.extensionDir ? extensionMetaData.realPath.startsWith(this.appConfig.extensionDir) : false) || (extensionCandidate ? extensionCandidate.isBuiltin : false);
       const extension = this.injector.get(Extension, [
         extensionMetaData,
         this,
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
-        // 通过路径判决是否是内置插件
-        extensionMetaData.realPath.startsWith(this.appConfig.extensionDir!) || (extensionCandidate ? extensionCandidate.isBuiltin : false),
+        isBuiltin,
       ]);
 
       this.extensionMap.set(extensionMetaData.path, extension);
@@ -737,6 +743,14 @@ export class ExtensionServiceImpl implements ExtensionService {
     return extendProtocol;
   }
 
+  private getExtensionExtendService(extension: IExtension, id: string) {
+    const protocol = this.createExtensionExtendProtocol2(extension, id);
+    return {
+      extendProtocol: protocol,
+      extendService: protocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER),
+    };
+  }
+
   private registerBrowserComponent(browserExported: any, extension: IExtension) {
     if (browserExported.default) {
       browserExported = browserExported.default;
@@ -748,38 +762,14 @@ export class ExtensionServiceImpl implements ExtensionService {
         if (pos === 'left' || pos === 'right' || pos === 'bottom') {
           for (let i = 0, len = posComponent.length; i < len; i++) {
             const component = posComponent[i];
-
-            /*
-            const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
-            const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
-            this.layoutService.collectTabbarComponent(
-              [{
-                component: component.panel,
-                id: `${extension.id}:${component.id}`,
-              }],
-              {
-                iconClass: component.icon,
-                initialProps: {
-                  kaitianExtendService: extendService,
-                  kaitianExtendSet: extendProtocol,
-                },
-                containerId: extension.id,
-                title: component.title,
-                activateKeyBinding: component.keyBinding,
-              },
-              pos,
-            );
-            */
-
-            const extendProtocol = this.createExtensionExtendProtocol2(extension, component.id);
-            const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
+            const { extendProtocol, extendService } = this.getExtensionExtendService(extension, component.id);
             const componentId = this.layoutService.collectTabbarComponent(
               [{
                 component: component.panel,
                 id: `${extension.id}:${component.id}`,
               }],
               {
-                iconClass: getIcon(component.icon),
+                iconClass: component.icon ? getIcon(component.icon) : component.iconPath ? this.iconService.fromIcon(extension.path, component.iconPath) : '',
                 initialProps: {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,
@@ -803,8 +793,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         } else if (pos === 'toolBar') {
           for (let i = 0, len = posComponent.length; i < len; i += 1) {
             const component = posComponent[i];
-            const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
-            const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
+            const { extendProtocol, extendService } = this.getExtensionExtendService(extension, component.id);
             this.toolBarViewService.registerToolBarElement({
               type: 'component',
               component: component.panel as React.FunctionComponent | React.ComponentClass,
@@ -815,8 +804,36 @@ export class ExtensionServiceImpl implements ExtensionService {
               },
             } as IToolBarComponent);
           }
-        }
+        } else if (pos === 'editor') {
+          for (const com of posComponent) {
+            const { extendProtocol, extendService } = this.getExtensionExtendService(extension, com.id);
+            this.editorComponentRegistry.registerEditorComponent({
+              uid: com.id,
+              scheme: 'file',
+              component: com.panel,
+            }, {
+              kaitianExtendService: extendService,
+              kaitianExtendSet: extendProtocol,
+            });
 
+            this.editorComponentRegistry.registerEditorComponentResolver('file', (resource, results) => {
+              if ((com.fileExt && com.fileExt.indexOf(resource.uri.path.ext) > -1)) {
+                if (!com.shouldPreview) {
+                  return;
+                }
+                const shouldPreview = com.shouldPreview(resource.uri.path);
+                if (shouldPreview) {
+                  results.push({
+                    type: 'component',
+                    componentId: com.id,
+                    title: com.title || '预览',
+                    weight: 10,
+                  });
+                }
+              }
+            });
+          }
+        }
       }
     }
 

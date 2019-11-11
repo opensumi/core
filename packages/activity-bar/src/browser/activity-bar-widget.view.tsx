@@ -10,6 +10,7 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { SIDE_MENU_PATH } from '../common';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
+import { IMenuRegistry, MenuService, ICtxMenuRenderer, IMenu, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 const WIDGET_OPTION = Symbol();
 
@@ -24,11 +25,14 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   @Autowired(CommandService)
   private commandService!: CommandService;
 
-  @Autowired(ContextMenuRenderer)
-  contextMenuRenderer: ContextMenuRenderer;
+  @Autowired(IMenuRegistry)
+  menus: IMenuRegistry;
 
-  @Autowired(MenuModelRegistry)
-  menus: MenuModelRegistry;
+  @Autowired(MenuService)
+  private readonly menuService: MenuService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly contextMenuRenderer: ICtxMenuRenderer;
 
   @Autowired()
   activationEventService: ActivationEventService;
@@ -77,17 +81,25 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
       this._toDispose.dispose();
     }
     this._toDispose = new DisposableCollection();
-    for (const title of this.tabBar.titles) {
+    for (const [index, title] of this.tabBar.titles.entries()) {
       const sideWrap = title.owner as any;
-      this._toDispose.push(this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${this.side}`, '1_widgets'], {
-        label: (title.label || '').toUpperCase(),
-        commandId: sideWrap.command,
+      this._toDispose.push(this.menus.registerMenuItem(`${SIDE_MENU_PATH}/${this.side}`, {
+        command: {
+          label: (title.label || '').toUpperCase(),
+          id: sideWrap.command,
+        },
+        group: '1_widgets',
+        order: index,
       }));
     }
-    this.contextMenuRenderer.render(
-      [`${SIDE_MENU_PATH}/${this.side}`],
-      {x: event.clientX, y: event.clientY},
-    );
+    const menus = this.menuService.createMenu(`${SIDE_MENU_PATH}/${this.side}`);
+    this._toDispose.push(menus);
+    const menuNodes = generateCtxMenu({ menus });
+    this.contextMenuRenderer.show({
+      anchor: {x: event.clientX, y: event.clientY},
+      menuNodes: menuNodes[1],
+      context: [event.clientX, event.clientY],
+    });
   }
 
   // 动画为Mainlayout slot能力，使用命令调用

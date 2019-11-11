@@ -1,18 +1,18 @@
 import * as React from 'react';
 import { action } from 'mobx';
-import { URI, Schemas, Emitter, formatLocalize, IDisposable, DisposableStore, IRange, localize, MessageType } from '@ali/ide-core-common';
+import { URI, Schemas, Emitter, formatLocalize, dispose, IDisposable, DisposableStore, IRange, localize, MessageType } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkbenchEditorService, TrackedRangeStickiness } from '@ali/ide-editor';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { IDialogService } from '@ali/ide-overlay';
+import { memoize, IContextKeyService } from '@ali/ide-core-browser';
+import { MenuService, IMenu, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
 import {
-  SEARCH_CONTEXT_MENU,
   ContentSearchResult,
   ISearchTreeItem,
 } from '../common';
@@ -177,8 +177,7 @@ export class SearchTreeService {
 
   private lastSelectTime: number = Number(new Date());
 
-  @Autowired(ContextMenuRenderer)
-  contextMenuRenderer: ContextMenuRenderer;
+  private readonly disposables: IDisposable[] = [];
 
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
@@ -210,10 +209,25 @@ export class SearchTreeService {
   @Autowired(IDialogService)
   private dialogService: IDialogService;
 
+  @Autowired(MenuService)
+  private readonly menuService: MenuService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly ctxMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
   constructor() {
     this.contentRegistry.registerEditorDocumentModelContentProvider(
       this.replaceDocumentModelContentProvider,
     );
+  }
+
+  @memoize get contextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(MenuId.SearchContext, this.contextKeyService);
+    this.disposables.push(contributedContextMenu);
+    return contributedContextMenu;
   }
 
   set nodes(data: ISearchTreeItem[]) {
@@ -239,8 +253,10 @@ export class SearchTreeService {
     if (!file) {
       return;
     }
-    const data: any = { x, y, id : file.id};
+    const data: any = { id : file.id};
+    const menus = this.contextMenu;
 
+    menus.dispose();
     data.file = file;
 
     if (!file.parent) {
@@ -253,7 +269,12 @@ export class SearchTreeService {
       this.isContextmenuOnFile = true;
     }
 
-    this.contextMenuRenderer.render([SEARCH_CONTEXT_MENU], data);
+    const result = generateCtxMenu({ menus, options: { args: [data]} });
+    this.ctxMenuRenderer.show({
+      anchor: { x, y },
+      // 合并结果
+      menuNodes: [...result[0], ...result[1]],
+    });
   }
 
   @action.bound
@@ -453,6 +474,7 @@ export class SearchTreeService {
   }
 
   dispose() {
+    dispose(this.disposables);
     this.rangeHighlightDecorations.dispose();
   }
 
@@ -466,13 +488,12 @@ export class SearchTreeService {
         id: `${uri.toString()}?index=${index}`,
         name: '',
         description: searchResult.renderLineText || searchResult.lineText,
-        highLightRanges: [{
-          start: 0,
-          end: 0,
-        }, {
-          start,
-          end: start + searchResult.matchLength,
-        }],
+        highLightRanges: {
+          description: [{
+            start,
+            end: start + searchResult.matchLength,
+          }],
+        },
         order: index,
         depth: 1,
         searchResult: insertSearchResult,

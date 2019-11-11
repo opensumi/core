@@ -65,7 +65,8 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
         const provider = this.contentRegistry.getProvider(doc.uri);
         if (provider) {
           if (provider.provideEditorDocumentModelContentMd5) {
-            if (await provider.provideEditorDocumentModelContentMd5(doc.uri) !== doc.baseContentMd5) {
+            const nextMd5 = await provider.provideEditorDocumentModelContentMd5(doc.uri);
+            if (nextMd5 !== doc.baseContentMd5) {
               doc.updateContent(await this.contentRegistry.getContentForUri(doc.uri), undefined, true);
             }
           } else {

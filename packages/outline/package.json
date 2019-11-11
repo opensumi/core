@@ -1,0 +1,37 @@
+{
+  "name": "@ali/ide-outline",
+  "version": "1.5.0",
+  "files": [
+    "lib"
+  ],
+  "private": false,
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "start": "run-p start:client start:server",
+    "start:client": "webpack-dev-server --config ./webpack.config.js",
+    "start:server": "node --inspect -r ts-node/register ./entry/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
+  },
+  "publishConfig": {
+    "registry": "http://registry.npm.alibaba-inc.com"
+  },
+  "dependencies": {
+    "@ali/ide-core-common": "1.5.0",
+    "@ali/ide-editor": "1.5.0",
+    "@ali/ide-explorer": "1.5.0",
+    "@ali/ide-core-node": "1.5.0",
+    "@ali/ide-main-layout": "1.5.0",
+    "lodash.debounce": "^4.0.8"
+  },
+  "devDependencies": {
+    "@ali/ide-core-browser": "1.5.0",
+    "@ali/ide-dev-tool": "^1.1.0",
+    "npm-run-all": "^4.1.5",
+    "ts-node": "8.0.2",
+    "webpack-dev-server": "^3.3.1"
+  }
+}

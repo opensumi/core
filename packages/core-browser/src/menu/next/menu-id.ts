@@ -1,5 +1,6 @@
 // 可枚举的 menu id 列表
 export const enum MenuId {
+  ActivityBarContext,
   CommandPalette,
   DebugBreakpointsContext,
   DebugCallStackContext,
@@ -45,4 +46,5 @@ export const enum MenuId {
   CommentActions,
   GlobalActivity,
   ExtensionContext, // 插件市场 item
+  SettingsIconMenu, // 右下角 setting menu
 }
