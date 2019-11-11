@@ -11,10 +11,6 @@ import { IRenderableMarker, IRenderableMarkerModel } from '../common';
 
 const TAG_NONE = '';
 const EMPTY_FOLDING: string[] = [];
-const DEFAULT_VIEWSIZE: ViewSize = {
-  w: 0,
-  h: 0,
-};
 
 function toggleNewFolding(folding: string[] = [], res: string): string[] {
   const index = folding.indexOf(res);
@@ -125,14 +121,10 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
   const markerService = MarkerService.useInjectable();
   const [selectTag, updateSelectTag] = React.useState('');
   const [folding, updateFolding] = React.useState(EMPTY_FOLDING);
-  const [viewSize, updateViewSize] = React.useState(DEFAULT_VIEWSIZE);
 
   React.useEffect(() => {
     markerService.getManager().onMarkerChanged(() => {
       updateSelectTag(TAG_NONE);
-    });
-    markerService.onViewResize((size: ViewSize) => {
-      updateViewSize(size);
     });
     markerService.onResouceClose((res: string) => {
       const groupId = buildItemGroupId(res);
@@ -152,6 +144,7 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
           icon: model.icon,
           description: () => <MarkerItemTitleDescription model={model} />,
           badge: model.size(),
+          badgeLimit: 999,
           parent: undefined,
           expanded: !isFolding,
           depth: 0,
@@ -185,8 +178,8 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
     <RecycleTree
       nodes={ nodes }
       outline={ false }
-      scrollContainerStyle={{ width: viewSize.w - 10, height: viewSize.h - 7, key: 'marker-list' }}
-      containerHeight={ viewSize.h - 7 }
+      scrollContainerStyle={{ width: markerService.viewSize.w, height: markerService.viewSize.h, key: 'marker-list' }}
+      containerHeight={ markerService.viewSize.h }
       onSelect={ (items) => {
         const item = items && items[0];
         if (!item) { return; }
