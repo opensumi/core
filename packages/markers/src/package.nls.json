@@ -1,0 +1,10 @@
+{
+  "markers.title": "问题",
+  "markers.panel.content.empty": "目前尚未在工作区检测到问题。",
+  "markers.panel.filter.errors": "errors",
+  "markers.panel.filter.warnings": "warnings",
+  "markers.panel.filter.infos": "infos",
+  "markers.filter.placefolder": "筛选器，例如：text、**/*.ts、!**/node_modules/**",
+  "markers.filter.content.empty": "在给定的筛选条件下，没有找到结果。",
+  "markers.filter.reset": "清除筛选器"
+}

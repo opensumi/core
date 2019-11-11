@@ -2,72 +2,19 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { DisposableCollection, Emitter, URI as CoreURI, URI } from '@ali/ide-core-common';
-import { SerializedDocumentFilter, LanguageSelector, MarkerData, RelatedInformation, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../../common/vscode/model.api';
+import { DisposableCollection, Emitter, URI, IMarkerData, MarkerManager } from '@ali/ide-core-common';
+import { SerializedDocumentFilter, LanguageSelector, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../../common/vscode/model.api';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
-import { MarkerSeverity } from '../../../common/vscode/ext-types';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
-import { MarkerManager } from '@ali/ide-editor/lib/browser/language/marker-collection';
-import { DiagnosticSeverity, DiagnosticRelatedInformation, Diagnostic } from '@ali/ide-editor';
 import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
-
-function reviveSeverity(severity: MarkerSeverity): DiagnosticSeverity {
-  switch (severity) {
-    case MarkerSeverity.Error: return DiagnosticSeverity.Error;
-    case MarkerSeverity.Warning: return DiagnosticSeverity.Warning;
-    case MarkerSeverity.Info: return DiagnosticSeverity.Information;
-    case MarkerSeverity.Hint: return DiagnosticSeverity.Hint;
-  }
-}
-
-function reviveRange(startLine: number, startColumn: number, endLine: number, endColumn: number): any {
-  // note: language server range is 0-based, marker is 1-based, so need to deduct 1 here
-  return {
-    start: {
-      line: startLine - 1,
-      character: startColumn - 1,
-    },
-    end: {
-      line: endLine - 1,
-      character: endColumn - 1,
-    },
-  };
-}
-
-function reviveRelated(related: RelatedInformation): DiagnosticRelatedInformation {
-  return {
-    message: related.message,
-    location: {
-      uri: related.resource,
-      range: reviveRange(related.startLineNumber, related.startColumn, related.endLineNumber, related.endColumn),
-    },
-  };
-}
-
-function reviveMarker(marker: MarkerData): Diagnostic {
-  const monacoMarker: Diagnostic = {
-    code: marker.code,
-    severity: reviveSeverity(marker.severity) as any,
-    range: reviveRange(marker.startLineNumber, marker.startColumn, marker.endLineNumber, marker.endColumn),
-    message: marker.message,
-    source: marker.source,
-    relatedInformation: undefined,
-  };
-
-  if (marker.relatedInformation) {
-    monacoMarker.relatedInformation = marker.relatedInformation.map(reviveRelated);
-  }
-
-  return monacoMarker;
-}
 
 @Injectable({multiple: true})
 export class MainThreadLanguages implements IMainThreadLanguages {
   private readonly proxy: IExtHostLanguages;
   private readonly disposables = new Map<number, monaco.IDisposable>();
 
-  @Autowired()
-  readonly markerManager: MarkerManager<Diagnostic>;
+  @Autowired(MarkerManager)
+  readonly markerManager: MarkerManager;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
@@ -461,15 +408,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $clearDiagnostics(id: string): void {
-    for (const uri of this.markerManager.getUris()) {
-      this.markerManager.setMarkers(new CoreURI(uri), id, []);
-    }
+    this.markerManager.clearMarkers(id);
   }
 
-  $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void {
+  $changeDiagnostics(id: string, delta: [string, IMarkerData[]][]): void {
     for (const [uriString, markers] of delta) {
-      const uri = new CoreURI(uriString);
-      this.markerManager.setMarkers(uri, id, markers.map(reviveMarker) as any);
+      this.markerManager.updateMarkers(id, uriString, markers);
     }
   }
 
