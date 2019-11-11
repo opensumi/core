@@ -133,8 +133,8 @@ export class ExtensionScanner {
       // vscode 规范
       id: `${packageJSON.publisher}.${packageJSON.name}`,
       // 使用插件市场的 id
-      // 从插件市场下载的插件命名规范为 ${id}-${name}-${version}.zip
-      extensionId: path.basename(extensionPath).split('-')[0],
+      // 从插件市场下载的插件命名规范为 ${publiser}.${name}-${version}
+      extensionId: this.getExtensionIdByExtensionPath(extensionPath, packageJSON.version),
       extendConfig,
       path: extensionPath,
       packageJSON,
@@ -144,6 +144,29 @@ export class ExtensionScanner {
       realPath: await fs.realpath(extensionPath),
     };
     return extension;
+  }
+
+  /**
+   * 通过文件夹名获取插件 id
+   * 文件夹名目前有两种：
+   *  1. ${publiser}.${name}-${version} (推荐)
+   *  2. ${extensionId}-${name}-${version}
+   *  以上两种
+   * @param folderName
+   * @param version 可能有用户使用非 semver 的规范，所以传进来
+   */
+  static getExtensionIdByExtensionPath(extensionPath: string, version?: string) {
+    const regExp = version ? new RegExp(`^(.+?)\\.(.+?)-(${version})$`) : /^(.+?)\.(.+?)-(\d+\.\d+\.\d+)$/;
+    const dirName = path.basename(extensionPath);
+    const match = regExp.exec(dirName);
+
+    if (match == null) {
+      // 按照第二种方式返回
+      return dirName.split('-')[0];
+    }
+
+    const [, publisher, name] = match;
+    return `${publisher}.${name}`;
   }
 
   private isLatestVersion(extension: IExtensionMetaData): boolean {
