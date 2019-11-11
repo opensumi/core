@@ -35,7 +35,7 @@ const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRang
   if (isUndefined(template)) {
     return '';
   }
-  const isComponent = typeof name !== 'string';
+  const isComponent = typeof template !== 'string';
   if (!isComponent) {
     if (!!ranges) {
       const rangeLen = ranges.length;
@@ -78,7 +78,7 @@ const renderBadge = (node: TreeNode) => {
 
 const renderDescription = (node: any, replace: string) => {
   return <div className={cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass)}>
-    {renderWithRangeAndReplace(node.description || '', node.highLightRanges && node.highLightRanges.description, replace)}
+    {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
   </div>;
 };
 
@@ -131,7 +131,6 @@ export const TreeContainerNode = (
     validate,
   }: TreeNodeProps,
 ) => {
-
   const selectHandler = (event: React.MouseEvent) => {
     event.stopPropagation();
     event.preventDefault();
