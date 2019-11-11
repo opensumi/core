@@ -364,10 +364,7 @@ export class ActivityBarService extends WithEventBus {
         this.commandService.executeCommand(`main-layout.${side}-panel.hide`);
       }
       this.menus.registerMenuItem(`${SIDE_MENU_PATH}/${side}`, {
-        command: {
-          id: this.registerGlobalToggleCommand(side as Side),
-          label: localize('layout.tabbar.hide', '隐藏'),
-        },
+        command: this.registerGlobalToggleCommand(side as Side),
         order: 0,
         group: '0_global',
       });

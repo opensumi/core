@@ -11,9 +11,12 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { Button } from '@ali/ide-core-browser/lib/components';
-import { Dropdown, Menu } from 'antd';
+import Dropdown from 'antd/lib/dropdown';
+import Menu from 'antd/lib/menu';
 import Tabs from 'antd/lib/tabs';
 import 'antd/lib/tabs/style/index.less';
+import 'antd/lib/dropdown/style/index.less';
+import 'antd/lib/menu/style/index.less';
 
 const { TabPane } = Tabs;
 

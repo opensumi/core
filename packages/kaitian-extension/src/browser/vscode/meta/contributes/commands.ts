@@ -56,37 +56,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
         label: this.getLocalieFromNlsJSON(command.title),
         id: command.command,
         iconClass: this.iconService.fromIcon(this.extension.path, command.icon),
-      }, {
-        execute: async (...args) => {
-          this.logger.log(command.command);
-          // 获取扩展的 command 实例
-          const proxy = await this.extensionService.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
-          // 实际执行的为在扩展进展中注册的处理函数
-          args = args.map((arg) => processArgument(arg));
-          return await proxy.$executeContributedCommand(command.command, ...args);
-        },
       }));
     });
   }
-
-}
-
-// so hacky
-// we do this in the main.thread.commands.ts
-function processArgument(arg: any) {
-  if (arg instanceof URI) {
-    return (arg as URI).codeUri;
-  }
-
-  // 数组参数的处理
-  if (isNonEmptyArray(arg)) {
-    return arg.map((item) => {
-      if (item instanceof URI) {
-        return (item as URI).codeUri;
-      }
-      return item;
-    });
-  }
-
-  return arg;
 }
