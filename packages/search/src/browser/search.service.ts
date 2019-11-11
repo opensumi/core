@@ -353,8 +353,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
     return !!(
       this.searchValue ||
       this.replaceValue ||
-      (this.excludeValue) ||
-      (this.includeValue) ||
+      this.excludeValue ||
+      this.includeValue ||
+      this.searchError ||
       (this.searchResults && this.searchResults.size > 0));
   }
 
