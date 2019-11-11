@@ -11,6 +11,7 @@ import { FilterOptions } from './markers-filter.model';
 import { MarkerViewModel } from './markers.model';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import debounce = require('lodash.debounce');
+import { observable } from 'mobx';
 
 const MAX_DIAGNOSTICS_BADGE = 1000;
 
@@ -36,12 +37,12 @@ export class MarkerService extends Themable implements IMarkerService {
   // marker 显示模型
   private markerViewModel: MarkerViewModel;
 
+  @observable
+  public viewSize: ViewSize;
+
   // marker filter 事件
   private readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
   public readonly onMarkerFilterChanged: Event<FilterOptions | undefined> = this.onMarkerFilterChangedEmitter.event;
-
-  private readonly onViewResizeEmitter = new Emitter<ViewSize>();
-  public readonly onViewResize: Event<ViewSize> = this.onViewResizeEmitter.event;
 
   // resource 事件
   private readonly onResourceOpenEmitter = new Emitter<string>();
@@ -50,7 +51,7 @@ export class MarkerService extends Themable implements IMarkerService {
   private readonly onResourceCloseEmitter = new Emitter<string>();
   public readonly onResouceClose: Event<string> = this.onResourceCloseEmitter.event;
 
-  private onViewResizeCaller = debounce((viewSize: ViewSize) => this.onViewResizeEmitter.fire(viewSize), 20);
+  private onViewResizeCaller = debounce((viewSize: ViewSize) => this.viewSize = viewSize, 20);
 
   constructor() {
     super();
