@@ -13,7 +13,6 @@ import throttle = require('lodash.throttle');
 import { IWorkspaceService } from '@ali/ide-workspace';
 import * as cls from 'classnames';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
-import uniqBy = require('lodash.uniqBy');
 
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
@@ -45,10 +44,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 });
 
 export const PreferenceSections = (({preferenceSections}: {preferenceSections: ISettingSection[]}) => {
-
-  preferenceSections = uniqBy(preferenceSections, (section) => {
-    return section.title;
-  });
 
   return <div className={styles.preference_section_link}>{
     preferenceSections.map((section, idx) => {
