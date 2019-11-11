@@ -1,13 +1,12 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, isElectronEnv } from '@ali/ide-core-browser';
+import { WithEventBus, isElectronEnv, parseWithComments } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
 import { getNodeRequire } from './monaco-loader';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
-import * as JSON5 from 'json5';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { ActivationEventService } from '@ali/ide-activation-event';
@@ -108,7 +107,7 @@ export class TextmateService extends WithEventBus {
   private safeParseJSON(content) {
     let json;
     try {
-      json = JSON5.parse(content);
+      json = parseWithComments(content);
       return json;
     } catch (error) {
       return console.error('语言配置文件解析出错！', content);

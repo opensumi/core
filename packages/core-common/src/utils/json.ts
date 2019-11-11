@@ -1,3 +1,5 @@
+import * as stripJsonComments from 'strip-json-comments';
+
 /**
  * JSON对象的值为引用类型的类型
  */
@@ -207,4 +209,52 @@ export namespace JSONUtils {
     }
     return result;
   }
+}
+
+
+export function parseWithComments(content) {
+  content = stripTrailingComma(stripJsonComments(content));
+  const res = JSON.parse(content);
+  return res;
+}
+
+export function stripTrailingComma(content: string) {
+  const subStrs: string[] = [];
+  let lastIndex = 0;
+  let inString = false;
+  let i = 0;
+  while (i < content.length) {
+    if (inString) {
+      if (content[i] === '"' && content[i - 1] !== '\\') {
+        inString = false;
+      }
+    } else {
+
+        if (content[i] === ',') {
+          // 跳过空白
+          const candidate = i;
+          while (content[i + 1] && isWhiteSpace(content[i + 1])) {
+            i++;
+          }
+          if (content[i + 1] === ']' || content[i + 1] === '}') {
+            subStrs.push(content.substring(lastIndex, candidate));
+            lastIndex = candidate + 1;
+          }
+        } else if (content[i] === '"') {
+          // 肯定是开始字符串
+          inString = true;
+        }
+    }
+    i ++;
+  }
+  if (lastIndex > 0) {
+    subStrs.push(content.substr(lastIndex));
+    return subStrs.join('');
+  } else {
+    return content;
+  }
+}
+
+function isWhiteSpace(char)  {
+  return char === ' ' || char === '\t' || char === '\n'  || char === '\r';
 }

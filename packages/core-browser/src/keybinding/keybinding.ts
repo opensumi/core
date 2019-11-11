@@ -183,22 +183,12 @@ export interface KeybindingService {
 }
 
 @Injectable()
-export class KeybindingServiceImpl implements KeybindingService {
+export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingService {
 
-  @Autowired(KeybindingRegistry)
-  keybindingRegistry: KeybindingRegistry;
-
-  @Autowired(KeyboardLayoutService)
-  protected readonly keyboardLayoutService: KeyboardLayoutService;
-
-  @Autowired(Logger)
-  protected readonly logger: Logger;
-
-  @Autowired(CommandRegistry)
-  protected readonly commandRegistry: CommandRegistry;
-
-  @Autowired(IStatusBarService)
-  statusBar: IStatusBarService;
+  // 该伪命令用于让事件冒泡，使事件不被Keybinding消费掉
+  static readonly PASSTHROUGH_PSEUDO_COMMAND = 'passthrough';
+  protected readonly contexts: { [id: string]: KeybindingContext } = {};
+  protected readonly keymaps: Keybinding[][] = [...Array(KeybindingScope.length)].map(() => []);
 
   protected keySequence: KeySequence = [];
   protected convertKeySequence: KeySequence = [];
@@ -206,190 +196,6 @@ export class KeybindingServiceImpl implements KeybindingService {
   private keySequenceTimer: any;
 
   static KEYSEQUENCE_TIMEOUT = 5000;
-
-  /**
-   * 执行匹配键盘事件的命令
-   *
-   * @param event 键盘事件
-   */
-  run(event: KeyboardEvent): void {
-    if (event.defaultPrevented) {
-      return;
-    }
-    if (this.keySequenceTimer) {
-      clearTimeout(this.keySequenceTimer);
-    }
-    const keyCode = KeyCode.createKeyCode(event);
-    // 当传入的Keycode仅为修饰符，忽略，等待下次输入
-    if (keyCode.isModifierOnly()) {
-      return;
-    }
-
-    this.keyboardLayoutService.validateKeyCode(keyCode);
-    this.keySequence.push(keyCode);
-    const bindings = this.keybindingRegistry.getKeybindingsForKeySequence(this.keySequence, event);
-
-    if (this.tryKeybindingExecution(bindings.full, event)) {
-      this.keySequence = [];
-      this.statusBar.removeElement('keybinding-status');
-    } else if (bindings.partial.length > 0) {
-      // 堆积keySequence, 用于实现组合键
-      event.preventDefault();
-      event.stopPropagation();
-
-      this.statusBar.addElement('keybinding-status', {
-        text: formatLocalize('keybinding.combination.tip', this.acceleratorForSequence(this.keySequence, '+')),
-        alignment: StatusBarAlignment.LEFT,
-        priority: 2,
-      });
-      this.keySequenceTimer = setTimeout(() => {
-        this.keySequence = [];
-        this.statusBar.removeElement('keybinding-status');
-      }, KeybindingServiceImpl.KEYSEQUENCE_TIMEOUT);
-    } else {
-      this.keySequence = [];
-      this.statusBar.removeElement('keybinding-status');
-    }
-  }
-
-  /**
-  * 返回快捷键文本
-  *
-  * @param event 键盘事件
-  */
-  convert(event: KeyboardEvent, separator: string = ' '): string {
-
-    const keyCode = KeyCode.createKeyCode(event);
-
-    // 当传入的Keycode仅为修饰符，返回上次输出结果
-    if (keyCode.isModifierOnly()) {
-      return this.acceleratorForSequence(this.convertKeySequence, '+').join(separator);
-    }
-    this.keyboardLayoutService.validateKeyCode(keyCode);
-    if (this.convertKeySequence.length <= 1) {
-      this.convertKeySequence.push(keyCode);
-    } else {
-      this.convertKeySequence = [keyCode];
-    }
-    return this.acceleratorForSequence(this.convertKeySequence, '+').join(separator);
-  }
-
-  /**
-   * 清空键盘事件队列
-   */
-  clearConvert() {
-    this.convertKeySequence = [];
-  }
-
-  /**
-   * 尝试执行Keybinding
-   * @param bindings
-   * @param event
-   * @return 命令执行成功时返回true，否则为false
-   */
-  protected tryKeybindingExecution(bindings: Keybinding[], event: KeyboardEvent): boolean {
-
-    if (bindings.length === 0) {
-      return false;
-    }
-
-    for (const binding of bindings) {
-      if (this.keybindingRegistry.isEnabled(binding, event)) {
-        if (this.keybindingRegistry.isPseudoCommand(binding.command)) {
-          // 让事件冒泡
-          return true;
-        } else {
-          const command = this.commandRegistry.getCommand(binding.command);
-          if (command) {
-            const commandHandler = this.commandRegistry.getActiveHandler(command.id);
-
-            if (commandHandler) {
-              commandHandler.execute(binding.args);
-            }
-            /* 如果键绑定在上下文中但命令是可用状态下我们仍然在这里停止处理  */
-            event.preventDefault();
-            event.stopPropagation();
-            return true;
-          }
-        }
-        return false;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * 根据队列返回可读的表达式
-   * @param keySequence
-   * @param separator
-   */
-  acceleratorForSequence(keySequence: KeySequence, separator: string = ' '): string[] {
-    return keySequence.map((keyCode) => this.acceleratorForKeyCode(keyCode, separator));
-  }
-
-  /**
-   * 根据Keycode返回可读文本
-   * @param keyCode
-   * @param separator
-   */
-  acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
-    const keyCodeResult: any[] = [];
-    if (keyCode.meta && isOSX) {
-      keyCodeResult.push('⌘');
-    }
-    if (keyCode.ctrl) {
-      keyCodeResult.push('Ctrl');
-    }
-    if (keyCode.alt) {
-      keyCodeResult.push('Alt');
-    }
-    if (keyCode.shift) {
-      keyCodeResult.push('Shift');
-    }
-    if (keyCode.key) {
-      keyCodeResult.push(this.acceleratorForKey(keyCode.key));
-    }
-    return keyCodeResult.join(separator);
-  }
-
-  /**
-   * 根据Key返回可读文本
-   * @param key
-   */
-  acceleratorForKey(key: Key): string {
-    if (isOSX) {
-      if (key === Key.ARROW_LEFT) {
-        return '←';
-      }
-      if (key === Key.ARROW_RIGHT) {
-        return '→';
-      }
-      if (key === Key.ARROW_UP) {
-        return '↑';
-      }
-      if (key === Key.ARROW_DOWN) {
-        return '↓';
-      }
-    }
-    const keyString = this.keyboardLayoutService.getKeyboardCharacter(key);
-    if (key.keyCode >= Key.KEY_A.keyCode && key.keyCode <= Key.KEY_Z.keyCode ||
-      key.keyCode >= Key.F1.keyCode && key.keyCode <= Key.F24.keyCode) {
-      return keyString.toUpperCase();
-    } else if (keyString.length > 1) {
-      return keyString.charAt(0).toUpperCase() + keyString.slice(1);
-    } else {
-      return keyString;
-    }
-  }
-}
-
-@Injectable()
-export class KeybindingRegistryImpl implements KeybindingRegistry {
-
-  // 该伪命令用于让事件冒泡，使事件不被Keybinding消费掉
-  static readonly PASSTHROUGH_PSEUDO_COMMAND = 'passthrough';
-  protected readonly contexts: { [id: string]: KeybindingContext } = {};
-  protected readonly keymaps: Keybinding[][] = [...Array(KeybindingScope.length)].map(() => []);
 
   @Autowired(KeyboardLayoutService)
   protected readonly keyboardLayoutService: KeyboardLayoutService;
@@ -408,6 +214,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
 
   @Autowired(IContextKeyService)
   protected readonly whenContextService: IContextKeyService;
+
+  @Autowired(IStatusBarService)
+  protected readonly statusBar: IStatusBarService;
 
   async onStart(): Promise<void> {
     await this.keyboardLayoutService.initialize();
@@ -612,18 +421,18 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
    * @param separator
    */
   acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
-    const keyCodeResult: string[] = [];
+    const keyCodeResult: any[] = [];
     if (keyCode.meta && isOSX) {
-      keyCodeResult.push('Cmd');
+      keyCodeResult.push('⌘');
     }
     if (keyCode.ctrl) {
-      keyCodeResult.push('Ctrl');
+      keyCodeResult.push('⌃');
     }
     if (keyCode.alt) {
-      keyCodeResult.push('Alt');
+      keyCodeResult.push('⌥');
     }
     if (keyCode.shift) {
-      keyCodeResult.push('Shift');
+      keyCodeResult.push('⇧');
     }
     if (keyCode.key) {
       keyCodeResult.push(this.acceleratorForKey(keyCode.key));
@@ -632,7 +441,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   }
 
   /**
-   * 返回用户可读的单个按键指令文本
+   * 根据Key返回可读文本
    * @param key
    */
   acceleratorForKey(key: Key): string {
@@ -648,6 +457,12 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
       }
       if (key === Key.ARROW_DOWN) {
         return '↓';
+      }
+      if (key === Key.BACKSPACE) {
+        return '⌫';
+      }
+      if (key === Key.ENTER) {
+        return '⏎';
       }
     }
     const keyString = this.keyboardLayoutService.getKeyboardCharacter(key);
@@ -873,6 +688,116 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
       this.keymaps[i] = [];
     }
   }
+
+  /**
+   * 执行匹配键盘事件的命令
+   *
+   * @param event 键盘事件
+   */
+  run(event: KeyboardEvent): void {
+    if (event.defaultPrevented) {
+      return;
+    }
+    if (this.keySequenceTimer) {
+      clearTimeout(this.keySequenceTimer);
+    }
+    const keyCode = KeyCode.createKeyCode(event);
+    // 当传入的Keycode仅为修饰符，忽略，等待下次输入
+    if (keyCode.isModifierOnly()) {
+      return;
+    }
+
+    this.keyboardLayoutService.validateKeyCode(keyCode);
+    this.keySequence.push(keyCode);
+    const bindings = this.getKeybindingsForKeySequence(this.keySequence, event);
+
+    if (this.tryKeybindingExecution(bindings.full, event)) {
+      this.keySequence = [];
+      this.statusBar.removeElement('keybinding-status');
+    } else if (bindings.partial.length > 0) {
+      // 堆积keySequence, 用于实现组合键
+      event.preventDefault();
+      event.stopPropagation();
+
+      this.statusBar.addElement('keybinding-status', {
+        text: formatLocalize('keybinding.combination.tip', this.acceleratorForSequence(this.keySequence, '+')),
+        alignment: StatusBarAlignment.LEFT,
+        priority: 2,
+      });
+      this.keySequenceTimer = setTimeout(() => {
+        this.keySequence = [];
+        this.statusBar.removeElement('keybinding-status');
+      }, KeybindingRegistryImpl.KEYSEQUENCE_TIMEOUT);
+    } else {
+      this.keySequence = [];
+      this.statusBar.removeElement('keybinding-status');
+    }
+  }
+
+  /**
+  * 返回快捷键文本
+  *
+  * @param event 键盘事件
+  */
+  convert(event: KeyboardEvent, separator: string = ' '): string {
+
+    const keyCode = KeyCode.createKeyCode(event);
+
+    // 当传入的Keycode仅为修饰符，返回上次输出结果
+    if (keyCode.isModifierOnly()) {
+      return this.acceleratorForSequence(this.convertKeySequence, '+').join(separator);
+    }
+    this.keyboardLayoutService.validateKeyCode(keyCode);
+    if (this.convertKeySequence.length <= 1) {
+      this.convertKeySequence.push(keyCode);
+    } else {
+      this.convertKeySequence = [keyCode];
+    }
+    return this.acceleratorForSequence(this.convertKeySequence, '+').join(separator);
+  }
+
+  /**
+   * 清空键盘事件队列
+   */
+  clearConvert() {
+    this.convertKeySequence = [];
+  }
+
+  /**
+   * 尝试执行Keybinding
+   * @param bindings
+   * @param event
+   * @return 命令执行成功时返回true，否则为false
+   */
+  protected tryKeybindingExecution(bindings: Keybinding[], event: KeyboardEvent): boolean {
+    if (bindings.length === 0) {
+      return false;
+    }
+    for (const binding of bindings) {
+      if (this.isEnabled(binding, event)) {
+        if (this.isPseudoCommand(binding.command)) {
+          // 让事件冒泡
+          return true;
+        } else {
+          const command = this.commandRegistry.getCommand(binding.command);
+          if (command) {
+            const commandHandler = this.commandRegistry.getActiveHandler(command.id);
+
+            if (commandHandler) {
+              commandHandler.execute(binding.args);
+            }
+            /* 如果键绑定在上下文中但命令是可用状态下我们仍然在这里停止处理  */
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+          }
+        }
+        return false;
+      }
+    }
+    return false;
+  }
+
 }
 
 export const noKeybidingInputName = 'no_keybinding';

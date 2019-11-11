@@ -1,10 +1,9 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, MaybePromise, DataUri } from '@ali/ide-core-common';
+import { URI, MaybePromise, DataUri, addElement, IDisposable, LRUMap } from '@ali/ide-core-common';
 import classnames from 'classnames';
 import { getIcon } from '../icon';
 
-export const LabelProviderContribution = Symbol('LabelProviderContribution');
-export interface LabelProviderContribution {
+export interface ILabelProvider {
 
   /**
    * 判断该Contribution是否能处理该类型，返回权重
@@ -14,17 +13,17 @@ export interface LabelProviderContribution {
   /**
    * 根据URI返回Icon样式.
    */
-  getIcon?(element: object): MaybePromise<string>;
+  getIcon(element: object, options?: ILabelOptions): string;
 
   /**
    * 返回短名称.
    */
-  getName?(element: object): string;
+  getName(element: object): string;
 
   /**
    * 返回长名称.
    */
-  getLongName?(element: object): string;
+  getLongName(element: object): string;
 
 }
 
@@ -35,7 +34,7 @@ export interface ILabelOptions {
 }
 
 @Injectable()
-export class DefaultUriLabelProviderContribution implements LabelProviderContribution {
+export class DefaultUriLabelProvider implements ILabelProvider {
 
   canHandle(uri: object): number {
     if (uri instanceof URI) {
@@ -63,18 +62,64 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
 @Injectable()
 export class LabelService {
   @Autowired()
-  public LabelProviderContribution: DefaultUriLabelProviderContribution;
+  public defaultLabelProvider: DefaultUriLabelProvider;
+
+  private providers: ILabelProvider[] = [];
+
+  private cachedProviderMap: Map<string, ILabelProvider> = new LRUMap<string, ILabelProvider>(300, 200);
+
+  constructor() {
+    this.registerLabelProvider(this.defaultLabelProvider);
+  }
+
+  private getProviderForUri(uri: URI): ILabelProvider | undefined {
+    if (this.cachedProviderMap.has(uri.toString())) {
+      return this.cachedProviderMap.get(uri.toString());
+    } else {
+      let candidate: ILabelProvider | undefined;
+      let currentWeight: number = -1;
+      for (const provider of this.providers) {
+        const weight = provider.canHandle(uri);
+        if (weight > currentWeight) {
+          candidate = provider;
+          currentWeight = weight;
+        }
+      }
+      this.cachedProviderMap.set(uri.toString(), candidate!);
+      return candidate;
+    }
+  }
+
+  registerLabelProvider(provider: ILabelProvider): IDisposable {
+    this.cachedProviderMap.clear();
+    return addElement(this.providers, provider, true);
+  }
 
   getIcon(uri: URI, options?: ILabelOptions): string {
-    return this.LabelProviderContribution!.getIcon(uri, options);
+    const provider = this.getProviderForUri(uri);
+    if (provider) {
+      return provider.getIcon(uri, options);
+    } else {
+      return '';
+    }
   }
 
   getName(uri: URI): string {
-    return this.LabelProviderContribution!.getName(uri);
+    const provider = this.getProviderForUri(uri);
+    if (provider) {
+      return provider.getName(uri);
+    } else {
+      return '';
+    }
   }
 
   getLongName(uri: URI): string {
-    return this.LabelProviderContribution!.getLongName(uri);
+    const provider = this.getProviderForUri(uri);
+    if (provider) {
+      return provider.getLongName(uri);
+    } else {
+      return '';
+    }
   }
 
 }
