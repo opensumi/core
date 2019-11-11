@@ -1,41 +1,41 @@
 import { isEmptyObject } from '../../utils/types';
 
 export interface MapMap<V> {
-	[key: string]: { [key: string]: V };
+  [key: string]: { [key: string]: V };
 }
 
 export namespace MapMap {
-	export function get<V>(map: MapMap<V>, key1: string, key2: string): V | undefined {
-		if (map[key1]) {
-			return map[key1][key2];
-		}
-		return undefined;
+  export function get<V>(map: MapMap<V>, key1: string, key2: string): V | undefined {
+    if (map[key1]) {
+      return map[key1][key2];
+    }
+    return undefined;
   }
 
   export function getMap<V>(map: MapMap<V>, key: string): { [key: string]: V } | undefined {
     return map[key];
   }
 
-	export function set<V>(map: MapMap<V>, key1: string, key2: string, value: V): void {
-		if (!map[key1]) {
-			map[key1] = Object.create(null);
-		}
-		map[key1][key2] = value;
+  export function set<V>(map: MapMap<V>, key1: string, key2: string, value: V): void {
+    if (!map[key1]) {
+      map[key1] = Object.create(null);
+    }
+    map[key1][key2] = value;
   }
 
   export function setMap<V>(map: MapMap<V>, key: string, value: { [key: string]: V }): void {
     map[key] = value;
   }
 
-	export function remove(map: MapMap<any>, key1: string, key2: string): boolean {
-		if (map[key1] && map[key1][key2]) {
-			delete map[key1][key2];
-			if (isEmptyObject(map[key1])) {
-				delete map[key1];
-			}
-			return true;
-		}
-		return false;
+  export function remove(map: MapMap<any>, key1: string, key2: string): boolean {
+    if (map[key1] && map[key1][key2]) {
+      delete map[key1][key2];
+      if (isEmptyObject(map[key1])) {
+        delete map[key1];
+      }
+      return true;
+    }
+    return false;
   }
 
   export function removeMap<V>(map: MapMap<V>, key: string): { [key: string]: V } | undefined {
@@ -70,8 +70,8 @@ export enum MarkerSeverity {
 
 export namespace MarkerSeverity {
 
-	export function compare(a: MarkerSeverity, b: MarkerSeverity): number {
-		return b - a;
+  export function compare(a: MarkerSeverity, b: MarkerSeverity): number {
+    return b - a;
   }
 
 }
@@ -118,9 +118,9 @@ export interface IMarker extends IMarkerData {
  * marker 信息统计
  */
 export interface MarkerStatistics {
-	errors: number;
-	warnings: number;
-	infos: number;
-	unknowns: number;
+  errors: number;
+  warnings: number;
+  infos: number;
+  unknowns: number;
 }
 

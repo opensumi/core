@@ -59,7 +59,7 @@ export class MarkerViewModel {
     if (resources) {
       resources.forEach((resource) => {
         // tslint:disable-next-line: no-bitwise
-        this.updateMarker(resource, this._service.getManager().getMarkers({resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info}));
+        this.updateMarker(resource, this._service.getManager().getMarkers({ resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info }));
       });
     }
   }

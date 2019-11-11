@@ -172,15 +172,15 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
       }
     });
     return nodes;
-  }, [ selectTag, folding ]);
+  }, [selectTag, folding]);
 
   return (
     <RecycleTree
-      nodes={ nodes }
-      outline={ false }
+      nodes={nodes}
+      outline={false}
       scrollContainerStyle={{ width: markerService.viewSize.w, height: markerService.viewSize.h, key: 'marker-list' }}
-      containerHeight={ markerService.viewSize.h }
-      onSelect={ (items) => {
+      containerHeight={markerService.viewSize.h}
+      onSelect={(items) => {
         const item = items && items[0];
         if (!item) { return; }
 
@@ -204,11 +204,11 @@ const Empty: React.FC = observer(() => {
   if (viewModel.hasFilter()) {
     return (
       <div className={styles.empty}>
-        { Messages.MARKERS_PANEL_FILTER_CONTENT_EMPTY }
+        {Messages.MARKERS_PANEL_FILTER_CONTENT_EMPTY}
         <div className={styles.reset} onClick={() => {
           markerService.fireFilterChanged(undefined);
         }}>
-          { Messages.MARKERS_PANEL_FILTER_RESET }
+          {Messages.MARKERS_PANEL_FILTER_RESET}
         </div>
       </div>
     );
@@ -230,7 +230,7 @@ export const MarkerPanel = observer(() => {
     <div className={styles.markersContent}>
       {
         viewModel.hasData() ?
-          <MarkerList viewModel={viewModel}/> :
+          <MarkerList viewModel={viewModel} /> :
           <Empty />
       }
     </div>

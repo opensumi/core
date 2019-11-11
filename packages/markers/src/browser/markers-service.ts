@@ -96,7 +96,7 @@ export class MarkerService extends Themable implements IMarkerService {
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-markers', this.config.layoutConfig)) {
       const width = e.payload.width;
       const height = e.payload.height;
-      this.onViewResizeCaller({w: width, h: height});
+      this.onViewResizeCaller({ w: width, h: height });
     }
   }
 

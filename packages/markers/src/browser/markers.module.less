@@ -1,5 +1,4 @@
-
-@import '~@ali/ide-core-browser/lib/style/variable.less';
+@import "~@ali/ide-core-browser/lib/style/variable.less";
 
 @kt-markers-inline-color: gray;
 @kt-markers-item-margin: 0 5px 0 5px;
@@ -35,7 +34,8 @@
   }
 
   // 列表
-  .itemTitleName {// 标题
+  .itemTitleName {
+    // 标题
     color: @kt-content-font-color0;
     margin: @kt-markers-item-margin;
     max-width: 300px;
@@ -44,7 +44,8 @@
     text-overflow: ellipsis;
   }
 
-  .itemTitleDescription {// 文件名称
+  .itemTitleDescription {
+    // 文件名称
     color: @kt-markers-inline-color;
     margin: @kt-markers-item-margin;
     text-overflow: ellipsis;
@@ -52,18 +53,21 @@
     white-space: nowrap;
   }
 
-  .itemDetailName {// 详细信息标题
+  .itemDetailName {
+    // 详细信息标题
     color: @kt-content-font-color0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
-  .itemDetailDescription {// 详细信息描述
+  .itemDetailDescription {
+    // 详细信息描述
     display: flex;
     flex-direction: row;
 
-    .typeContainer {// 详细信息中的错误码
+    .typeContainer {
+      // 详细信息中的错误码
       color: @kt-markers-inline-color;
       display: flex;
       flex-direction: row;
@@ -76,7 +80,8 @@
       }
     }
 
-    .position {// 错误位置信息
+    .position {
+      // 错误位置信息
       color: @kt-markers-inline-color;
       margin: @kt-markers-item-margin;
     }

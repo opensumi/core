@@ -194,11 +194,11 @@ const Empty: React.FC = observer(() => {
   if (viewModel.hasFilter()) {
     return (
       <div className={styles.empty}>
-        { Messages.MARKERS_PANEL_FILTER_CONTENT_EMPTY }
+        {Messages.MARKERS_PANEL_FILTER_CONTENT_EMPTY}
         <div className={styles.reset} onClick={() => {
           markerService.fireFilterChanged(undefined);
         }}>
-          { Messages.MARKERS_PANEL_FILTER_RESET }
+          {Messages.MARKERS_PANEL_FILTER_RESET}
         </div>
       </div>
     );
