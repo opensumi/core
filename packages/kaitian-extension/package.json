@@ -50,7 +50,7 @@
     "@ali/ide-workspace-edit": "1.5.0",
     "@ali/ide-preferences": "1.5.0",
     "@ali/ide-toolbar": "1.5.0",
-    "getmac": "^1.4.6",
+    "address": "^1.1.2",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
     "lodash.clonedeep": "^4.5.0",
