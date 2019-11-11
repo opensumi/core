@@ -221,7 +221,8 @@ class Menu extends Disposable implements IMenu {
             const { args = [] } = options;
 
             const command = this.commandRegistry.getCommand(item.command);
-            if (command) {
+            // 没有 desc 的 command 不展示在 menu 中
+            if (command && command.label) {
               if (this.commandRegistry.isVisible(command.id, ...args)) {
                 const disabled = !this.commandRegistry.isEnabled(command.id, ...args);
                 const toggled = this.commandRegistry.isToggled(command.id, ...args);
