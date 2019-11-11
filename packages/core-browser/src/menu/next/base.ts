@@ -105,7 +105,28 @@ export class MenuRegistry implements IMenuRegistry {
 
   getMenuItems(id: MenuId): Array<IMenuItem | ISubmenuItem> {
     const result = (this._menuItems.get(id) || []).slice(0);
+
+    if (id === MenuId.CommandPalette) {
+      // CommandPalette 特殊处理, 默认展示所有的 command
+      // CommandPalette 负责添加 when 条件
+      this.appendImplicitMenuItems(result);
+    }
+
     return result;
+  }
+
+  private appendImplicitMenuItems(result: Array<IMenuItem | ISubmenuItem>) {
+    // 只保留 MenuItem
+    const temp = result.filter((item) => isIMenuItem(item)) as IMenuItem[];
+    const set = new Set<string>(temp.map((n) => n.command));
+
+    const allCommands = this.commandRegistry.getCommands();
+    // 将 commandRegistry 中 "其他" command 加进去
+    allCommands.forEach((command) => {
+      if (!set.has(command.id)) {
+        result.push({ command: command.id });
+      }
+    });
   }
 }
 
