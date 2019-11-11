@@ -142,27 +142,27 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
 
   registerNextMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
-      command: ExtensionCommands.ENABLE,
+      command: ExtensionCommands.ENABLE.id,
       order: 0,
       group: '1_enable',
     });
     menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
-      command: ExtensionCommands.ENABLE_WORKSPACE,
+      command: ExtensionCommands.ENABLE_WORKSPACE.id,
       order: 1,
       group: '1_enable',
     });
     menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
-      command: ExtensionCommands.DISABLE,
+      command: ExtensionCommands.DISABLE.id,
       order: 0,
       group: '2_disable',
     });
     menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
-      command: ExtensionCommands.DISABLE_WORKSPACE,
+      command: ExtensionCommands.DISABLE_WORKSPACE.id,
       order: 1,
       group: '2_disable',
     });
     menuRegistry.registerMenuItem(MenuId.ExtensionContext, {
-      command: ExtensionCommands.UNINSTALL,
+      command: ExtensionCommands.UNINSTALL.id,
       order: 5,
       group: '3_unstall',
     });

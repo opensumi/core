@@ -30,15 +30,11 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
 
   registerNextMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.SettingsIconMenu, {
-      command: {
-        id: THEME_TOGGLE_COMMAND.id,
-      },
+      command: THEME_TOGGLE_COMMAND.id,
       group: '4_theme',
     });
     menus.registerMenuItem(MenuId.SettingsIconMenu, {
-      command: {
-        id: ICON_THEME_TOGGLE_COMMAND.id,
-      },
+      command: ICON_THEME_TOGGLE_COMMAND.id,
       group: '4_theme',
     });
   }
