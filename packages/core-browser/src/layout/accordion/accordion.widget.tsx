@@ -91,16 +91,10 @@ export class AccordionWidget extends Widget {
     });
     this.panel.node.tabIndex = -1;
     layout.addWidget(this.panel);
-    this.menuRegistry.registerMenuItem(this.contextMenuPath, {
-      command: {
-        id: this.registerGlobalHideCommand(),
-        label: localize('layout.view.hide', '隐藏'),
-      },
-      group: '0_global',
-    });
+    this.registerGlobalHideCommandAndMenu();
   }
 
-  private registerGlobalHideCommand() {
+  private registerGlobalHideCommandAndMenu() {
     const commandId = `view-container.hide.${this.containerId}`;
     this.commandRegistry.registerCommand({
       id: commandId,
@@ -112,7 +106,10 @@ export class AccordionWidget extends Widget {
         this.updateTitleVisibility();
       },
     });
-    return commandId;
+    this.menuRegistry.registerMenuItem(this.contextMenuPath, {
+      command: commandId,
+      group: '0_global',
+    });
   }
 
   protected findSectionForAnchor(anchor: { x: number, y: number }): ViewContainerSection | undefined {
@@ -343,11 +340,11 @@ export class AccordionWidget extends Widget {
     });
   }
 
-  registerToggleCommand(section: ViewContainerSection): string {
+  registerToggleCommandAndMenu(section: ViewContainerSection): void {
     const commandId = `view-container.toggle.${section.view.id}`;
+
     this.commandRegistry.registerCommand({
       id: commandId,
-      // TODO command和menu label保留一份 @伊北
       label: section.view.name!.toUpperCase(),
     }, {
       execute: () => {
@@ -363,7 +360,12 @@ export class AccordionWidget extends Widget {
         return true;
       },
     });
-    return commandId;
+
+    this.menuRegistry.registerMenuItem(this.contextMenuPath, {
+      command: commandId,
+      order: this.getSections().indexOf(section),
+      group: '1_widgets',
+    });
   }
 
   getSections(): ViewContainerSection[] {
@@ -378,15 +380,7 @@ export class AccordionWidget extends Widget {
     if (!section.view.name) {
       return;
     }
-    const commandId = this.registerToggleCommand(section);
-    this.menuRegistry.registerMenuItem(this.contextMenuPath, {
-      command: {
-        id: commandId,
-        label: section.view.name.toUpperCase(),
-      },
-      order: this.getSections().indexOf(section),
-      group: '1_widgets',
-    });
+    this.registerToggleCommandAndMenu(section);
   }
 
   protected get contextMenuPath(): string {
