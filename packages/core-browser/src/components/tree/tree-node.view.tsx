@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeViewAction, isTreeViewActionComponent, isUndefined } from '@ali/ide-core-common';
+import { TreeViewAction, isTreeViewActionComponent, isUndefined, isString } from '@ali/ide-core-common';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../icon';
@@ -35,8 +35,7 @@ const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRang
   if (isUndefined(template)) {
     return '';
   }
-  const isString = typeof template === 'string';
-  if (isString) {
+  if (isString(template)) {
     if (!!ranges) {
       const rangeLen = ranges.length;
       if (rangeLen > 0) {
@@ -76,8 +75,7 @@ const renderBadge = (node: TreeNode) => {
 };
 
 const renderDescription = (node: any, replace: string) => {
-  const isComponent = typeof node.description !== 'string';
-  if (isComponent) {
+  if (!isString(node.description) && !isUndefined(node.description)) {
     const Template = node.description as React.JSXElementConstructor<any>;
     return <Template />;
   } else {
@@ -311,7 +309,7 @@ export const TreeContainerNode = (
   };
 
   const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
-    const isComponent = typeof node.name !== 'string';
+    const isComponent = !isString(node.name);
     const [value, setValue] = React.useState<string>(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : !isComponent && node.name === TEMP_FILE_NAME ? '' : isComponent ? '' : node.name as string);
 
     const changeHandler = (event) => {
@@ -345,7 +343,10 @@ export const TreeContainerNode = (
     };
 
     const actualValidate = (value: string) => {
-      return validate(node, value);
+      if (validate) {
+        return validate(node, value);
+      }
+      return;
     };
 
     if (node.isTemporary) {
