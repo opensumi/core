@@ -141,33 +141,29 @@ export const RecycleTree = (
         let start;
         let end;
         if (typeof item.name === 'string') {
+          let step = 0;
           start =  item.name.indexOf(search);
-          if (start >= 0) {
+          while (start >= 0) {
             end = start + search.length;
             highLightRanges.name!.push({
-              start,
-              end,
+              start: start + step,
+              end: end + step,
             });
-          } else {
-            highLightRanges.name!.push({
-              start: 0,
-              end: 0,
-            });
+            step += end;
+            start =  item.name.indexOf(search.slice(end));
           }
         }
         if (typeof item.description === 'string') {
+          let step = 0;
           start =  item.description.indexOf(search);
-          if (start >= 0) {
+          while (start >= 0) {
             end = start + search.length;
             highLightRanges.description!.push({
-              start,
-              end,
+              start: start + step,
+              end: end + step,
             });
-          } else {
-            highLightRanges.description!.push({
-              start: 0,
-              end: 0,
-            });
+            step += end;
+            start =  item.description.indexOf(search.slice(end));
           }
         }
       }
