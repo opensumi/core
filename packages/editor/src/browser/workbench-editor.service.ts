@@ -23,9 +23,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(CommandService)
   private commands: CommandService;
 
-  @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
-
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 
@@ -165,10 +162,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   async open(uri: URI, options?: IResourceOpenOptions) {
     await this.initialize();
-    if (uri.scheme === Schemas.file) {
-      // 只记录 file 类型的
-      this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
-    }
     let group = this.currentEditorGroup;
     if (options && options.groupIndex) {
       if (options.groupIndex >= this.editorGroups.length) {
@@ -300,6 +293,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
+
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
 
   codeEditor!: ICodeEditor;
 
@@ -515,6 +511,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
+    if (uri.scheme === Schemas.file) {
+      // 只记录 file 类型的
+      this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
+    }
     if (options && options.split) {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined }));
     }

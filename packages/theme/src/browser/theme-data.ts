@@ -1,11 +1,10 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType, IThemeData } from '../common/theme.service';
-import * as JSON5 from 'json5';
 import { IRawThemeSetting } from 'vscode-textmate';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { parse as parsePList } from '../common/plistParser';
-import { localize } from '@ali/ide-core-common';
+import { localize, parseWithComments } from '@ali/ide-core-common';
 import { convertSettings } from '../common/themeCompatibility';
 import { Color } from '../common/color';
 import URI from 'vscode-uri';
@@ -32,7 +31,7 @@ export class ThemeData implements IThemeData {
   private safeParseJSON(content) {
     let json;
     try {
-      json = JSON5.parse(content);
+      json = parseWithComments(content);
       return json;
     } catch (error) {
       return console.error('主题文件解析出错！', content);

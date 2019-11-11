@@ -9,12 +9,13 @@ import { ViewUiStateManager } from './view-container-state';
 import { LayoutState, LAYOUT_STATE } from '../layout-state';
 import { ContextMenuRenderer } from '../../menu';
 import { CommandRegistry } from '@ali/ide-core-common/lib/command';
-import { Emitter, Event } from '@ali/ide-core-common';
+import { Emitter, Event, memoize } from '@ali/ide-core-common';
 import { View, measurePriority } from '..';
 import { ViewContainerLayout } from './accordion.layout';
 import { find } from '@phosphor/algorithm';
 import { Message } from '@phosphor/messaging';
 import { ViewContainerRegistry } from '../view-container.registry';
+import { IMenuRegistry, MenuService, ICtxMenuRenderer, IMenu, generateCtxMenu } from '../../menu/next';
 
 @Injectable({ multiple: true })
 export class AccordionWidget extends Widget {
@@ -39,11 +40,14 @@ export class AccordionWidget extends Widget {
   @Autowired()
   layoutState: LayoutState;
 
-  @Autowired(ContextMenuRenderer)
-  contextMenuRenderer: ContextMenuRenderer;
+  @Autowired(IMenuRegistry)
+  menuRegistry: IMenuRegistry;
 
-  @Autowired(MenuModelRegistry)
-  menuRegistry: MenuModelRegistry;
+  @Autowired(MenuService)
+  private readonly menuService: MenuService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly contextMenuRenderer: ICtxMenuRenderer;
 
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
@@ -87,24 +91,25 @@ export class AccordionWidget extends Widget {
     });
     this.panel.node.tabIndex = -1;
     layout.addWidget(this.panel);
-    this.menuRegistry.registerMenuAction([...this.contextMenuPath, '0_global'], {
-      commandId: this.registerGlobalHideCommand(),
-      label: localize('layout.view.hide', '隐藏'),
-    });
+    this.registerGlobalHideCommandAndMenu();
   }
 
-  private registerGlobalHideCommand() {
+  private registerGlobalHideCommandAndMenu() {
     const commandId = `view-container.hide.${this.containerId}`;
     this.commandRegistry.registerCommand({
       id: commandId,
+      label: localize('layout.view.hide', '隐藏'),
     }, {
-      execute: (anchor) => {
-        const section = this.findSectionForAnchor(anchor);
+      execute: (x, y) => {
+        const section = this.findSectionForAnchor({x, y});
         section!.setHidden(!section!.isHidden);
         this.updateTitleVisibility();
       },
     });
-    return commandId;
+    this.menuRegistry.registerMenuItem(this.contextMenuPath, {
+      command: commandId,
+      group: '0_global',
+    });
   }
 
   protected findSectionForAnchor(anchor: { x: number, y: number }): ViewContainerSection | undefined {
@@ -211,6 +216,12 @@ export class AccordionWidget extends Widget {
     return this.panel.layout as ViewContainerLayout;
   }
 
+  // 创建 IMenu 实例
+  @memoize get contextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(this.contextMenuPath, this.contextKeyService);
+    return contributedContextMenu;
+  }
+
   public hasView(viewId: string): boolean {
     return this.sections.has(viewId);
   }
@@ -270,7 +281,7 @@ export class AccordionWidget extends Widget {
   private appendSection(view: View, props: any) {
     this.uiStateManager.initSize(view.id, this.side);
     props.viewState = this.uiStateManager.getState(view.id)!;
-    const section = this.injector.get(ViewContainerSection, [view, this.side, {props}]);
+    const section = this.injector.get(ViewContainerSection, [view, this.side, { props }]);
     this.sections.set(view.id, section);
     let insertIndex = this.orderedSections.findIndex((item) => {
       return (item.view.priority || 0) < (view.priority || 0);
@@ -288,7 +299,14 @@ export class AccordionWidget extends Widget {
     section.header.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      this.contextMenuRenderer.render(this.contextMenuPath, { x: event.clientX, y: event.clientY });
+      const menuNodes = generateCtxMenu({
+        menus: this.contextMenu,
+      });
+      this.contextMenuRenderer.show({
+        anchor: { x: event.clientX, y: event.clientY },
+        menuNodes: menuNodes[1],
+        context: [event.clientX, event.clientY],
+      });
     });
   }
 
@@ -322,10 +340,12 @@ export class AccordionWidget extends Widget {
     });
   }
 
-  registerToggleCommand(section: ViewContainerSection): string {
+  registerToggleCommandAndMenu(section: ViewContainerSection): void {
     const commandId = `view-container.toggle.${section.view.id}`;
+
     this.commandRegistry.registerCommand({
       id: commandId,
+      label: section.view.name!.toUpperCase(),
     }, {
       execute: () => {
         section.setHidden(!section.isHidden);
@@ -340,7 +360,12 @@ export class AccordionWidget extends Widget {
         return true;
       },
     });
-    return commandId;
+
+    this.menuRegistry.registerMenuItem(this.contextMenuPath, {
+      command: commandId,
+      order: this.getSections().indexOf(section),
+      group: '1_widgets',
+    });
   }
 
   getSections(): ViewContainerSection[] {
@@ -352,20 +377,14 @@ export class AccordionWidget extends Widget {
    * The menu action is unregistered first to enable refreshing the order of menu actions.
    */
   protected refreshMenu(section: ViewContainerSection): void {
-    const commandId = this.registerToggleCommand(section);
     if (!section.view.name) {
       return;
     }
-    const action: MenuAction = {
-      commandId,
-      label: section.view.name.toUpperCase(),
-      order: this.getSections().indexOf(section).toString(),
-    };
-    this.menuRegistry.registerMenuAction([...this.contextMenuPath, '1_widgets'], action);
+    this.registerToggleCommandAndMenu(section);
   }
 
-  protected get contextMenuPath(): MenuPath {
-    return [`${this.containerId}-context-menu`];
+  protected get contextMenuPath(): string {
+    return `${this.containerId}-context-menu`;
   }
 
 }

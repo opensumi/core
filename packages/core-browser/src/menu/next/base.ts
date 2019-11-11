@@ -1,4 +1,4 @@
-import { IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { MenuId } from './menu-id';
 
@@ -13,7 +13,7 @@ export interface ILocalizedString {
 }
 
 export interface IMenuItem {
-  command: Command;
+  command: string;
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -36,20 +36,23 @@ export abstract class IMenuRegistry {
   abstract addCommand(userCommand: Command): IDisposable;
   abstract getCommand(id: string): Command | undefined;
   abstract getCommands(): ICommandsMap;
-  abstract registerMenuItem(menu: MenuId, item: IMenuItem | ISubmenuItem): IDisposable;
+  abstract registerMenuItem(menu: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
 }
 
 @Injectable()
 export class MenuRegistry implements IMenuRegistry {
   private readonly _commands = new Map<string, Command>();
-  private readonly _menuItems = new Map<number, Array<IMenuItem | ISubmenuItem>>();
+  private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
   private readonly _onDidChangeMenu = new Emitter<MenuId>();
 
   readonly onDidChangeMenu: Event<MenuId> = this._onDidChangeMenu.event;
 
   @Autowired(NextMenuContribution)
   protected readonly contributions: ContributionProvider<NextMenuContribution>;
+
+  @Autowired(CommandRegistry)
+  protected readonly commandRegistry: CommandRegistry;
 
   // MenuContribution
   onStart() {
@@ -102,28 +105,7 @@ export class MenuRegistry implements IMenuRegistry {
 
   getMenuItems(id: MenuId): Array<IMenuItem | ISubmenuItem> {
     const result = (this._menuItems.get(id) || []).slice(0);
-
-    if (id === MenuId.CommandPalette) {
-      // CommandPalette is special because it shows
-      // all commands by default
-      this._appendImplicitItems(result);
-    }
     return result;
-  }
-
-  private _appendImplicitItems(result: Array<IMenuItem | ISubmenuItem>) {
-    const set = new Set<string>();
-
-    const temp = result.filter((item) => isIMenuItem(item)) as IMenuItem[];
-
-    for (const { command } of temp) {
-      set.add(command.id);
-    }
-    this._commands.forEach((command, id) => {
-      if (!set.has(id)) {
-        result.push({ command });
-      }
-    });
   }
 }
 

@@ -7,7 +7,6 @@ import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
 import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
-import { IEditorGroup } from '@ali/ide-editor';
 
 export interface MenuActionFormat {
   when: string;
@@ -314,7 +313,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         this.addDispose(this.newMenuRegistry.registerMenuItem(
           menuId,
           {
-            command,
+            command: command.id,
             alt,
             group,
             order,
