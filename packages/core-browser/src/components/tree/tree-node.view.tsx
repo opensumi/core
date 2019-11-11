@@ -35,8 +35,8 @@ const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRang
   if (isUndefined(template)) {
     return '';
   }
-  const isComponent = typeof template !== 'string';
-  if (!isComponent) {
+  const isString = typeof template === 'string';
+  if (isString) {
     if (!!ranges) {
       const rangeLen = ranges.length;
       if (rangeLen > 0) {
@@ -60,9 +60,6 @@ const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRang
     } else {
       return template;
     }
-  } else {
-    const Template = template as React.JSXElementConstructor<any>;
-    return <Template />;
   }
 };
 
@@ -77,9 +74,15 @@ const renderBadge = (node: TreeNode) => {
 };
 
 const renderDescription = (node: any, replace: string) => {
-  return <div className={cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass)}>
-    {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
-  </div>;
+  const isComponent = typeof node.description !== 'string';
+  if (isComponent) {
+    const Template = node.description as React.JSXElementConstructor<any>;
+    return <Template />;
+  } else {
+    return <div className={cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass)}>
+      {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
+    </div>;
+  }
 };
 
 const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler: any) => {
@@ -361,13 +364,18 @@ export const TreeContainerNode = (
         </div>
       </div>;
     }
-    return <div
-      className={cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass)}
-    >
-      {node.beforeLabel}
-      {renderWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.name, replace)}
-      {node.afterLabel}
-    </div>;
+    if (isComponent) {
+      const Template = node.name as React.JSXElementConstructor<any>;
+      return <Template />;
+    } else {
+      return <div
+        className={cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass)}
+      >
+        {node.beforeLabel}
+        {renderWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.name, replace)}
+        {node.afterLabel}
+      </div>;
+    }
   };
 
   const renderStatusTail = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
