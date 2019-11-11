@@ -7,7 +7,7 @@ import { MarkerService, ViewSize } from './markers-service';
 import { MarkerViewModel } from './markers.model';
 import * as styles from './markers.module.less';
 import Messages from './messages';
-import { IFilterMatches, IRenderableMarker, IRenderableMarkerModel } from '../common';
+import { IRenderableMarker, IRenderableMarkerModel } from '../common';
 
 const TAG_NONE = '';
 const EMPTY_FOLDING: string[] = [];
@@ -16,16 +16,42 @@ const DEFAULT_VIEWSIZE: ViewSize = {
   h: 0,
 };
 
+function toggleNewFolding(folding: string[] = [], res: string): string[] {
+  const index = folding.indexOf(res);
+  if (index > -1) {
+    folding.splice(index, 1);
+  } else {
+    folding.push(res);
+  }
+  return [...folding];
+}
+
+function removeFolding(folding: string[] = [], res: string): string[] {
+  const index = folding.indexOf(res);
+  if (index > -1) {
+    folding.splice(index, 1);
+  }
+  return [...folding];
+}
+
+function buildItemGroupId(res: string): string {
+  return `marker-group-${res}`;
+}
+
+function buildItemChildId(res: string, index: number): string {
+  return `marker-group-${res}-item-${index}`;
+}
+
 /**
  * render marker filename
  * @param model model of renderable marker
  */
-const MarkerItemFilename: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
+const MarkerItemTitleName: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
   const filenameMatches = model.matches && model.matches.filenameMatches;
   if (filenameMatches) {
-    return <HightlightData data={model.filename} matches={filenameMatches} className={styles.filename} />;
+    return <HightlightData data={model.filename} matches={filenameMatches} className={styles.itemTitleName} />;
   } else {
-    return <div className={styles.filename}>{model.filename}</div>;
+    return <div className={styles.itemTitleName}>{model.filename}</div>;
   }
 });
 
@@ -33,8 +59,8 @@ const MarkerItemFilename: React.FC<{ model: IRenderableMarkerModel }> = observer
  * render marker filepath
  * @param model model of renderable marker
  */
-const MarkerItemFilePath: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
-  return <div className={styles.filepath}>{model.longname}</div>;
+const MarkerItemTitleDescription: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
+  return <div className={styles.itemTitleDescription}>{model.longname}</div>;
 });
 
 /**
@@ -61,13 +87,13 @@ const HightlightData: React.FC<{ data: string, matches: IMatch[], className: str
 /**
  * render marker message
  */
-const MarkerItemMessage: React.FC<{ data: IRenderableMarker }> = observer(({ data }) => {
+const MarkerItemName: React.FC<{ data: IRenderableMarker }> = observer(({ data }) => {
   const messageMatchs = data.matches && data.matches.messageMatches;
   if (messageMatchs) {
-    return <HightlightData data={data.message} matches={messageMatchs} className={styles.detail} />;
+    return <HightlightData data={data.message} matches={messageMatchs} className={styles.itemDetailName} />;
   } else {
     return (
-      <div className={styles.detail}>{data.message}</div>
+      <div className={styles.itemDetailName}>{data.message}</div>
     );
   }
 });
@@ -79,7 +105,7 @@ const MarkerItemDescription: React.FC<{ data: IRenderableMarker }> = observer(({
   const sourceMatches = data.matches && data.matches.sourceMatches;
   const codeMatches = data.matches && data.matches.codeMatches;
   return (
-    <div>
+    <div className={styles.itemDetailDescription}>
       <div className={styles.typeContainer}>
         {sourceMatches ? data.source && <HightlightData data={data.source} matches={sourceMatches} className={styles.type} /> : data.source}
         {data.code && '('}
@@ -108,19 +134,23 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
     markerService.onViewResize((size: ViewSize) => {
       updateViewSize(size);
     });
+    markerService.onResouceClose((res: string) => {
+      const groupId = buildItemGroupId(res);
+      updateFolding(removeFolding(folding, groupId));
+    });
   });
 
   const nodes = useComputed(() => {
     let nodes: TreeNode[] = [];
     viewModel.markers.forEach((model, _) => {
       if (model.match) {
-        const groupId = `marker-group-${model.resource}`;
+        const groupId = buildItemGroupId(model.resource);
         const isFolding = folding.indexOf(groupId) > -1;
         const item: TreeNode = {
           id: groupId,
-          name: () => <MarkerItemFilename model={model} />,
+          name: () => <MarkerItemTitleName model={model} />,
           icon: model.icon,
-          description: () => <MarkerItemFilePath model={model} />,
+          description: () => <MarkerItemTitleDescription model={model} />,
           badge: model.size(),
           parent: undefined,
           expanded: !isFolding,
@@ -130,12 +160,11 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
         nodes.push(item);
         if (!isFolding) {// 非folding状态显示
           item.children = model.markers.map((marker, cindex) => {
-            const code = marker.code && `(${marker.code})` || '';
-            const id = `marker-group-${model.resource}-item-${cindex}`;
+            const id = buildItemChildId(model.resource, cindex);
             return {
               id,
               iconStyle: SeverityIconStyle[markerService.getThemeType()][marker.severity],
-              name: () => <MarkerItemMessage data={marker} />,
+              name: () => <MarkerItemName data={marker} />,
               description: () => <MarkerItemDescription data={marker} />,
               depth: 2,
               parent,
@@ -152,45 +181,24 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
     return nodes;
   }, [ selectTag, folding ]);
 
-  const CONTENT_PADDING_RIGHT = 5;
-  const CONTENT_PADDING_LEFT = 5;
-  const CONTENT_PADDING_TOP = 2;
-  const CONTENT_PADDING_BOTTOM = 5;
-
-  const contentStyle = {
-    paddingLeft: CONTENT_PADDING_LEFT,
-    paddingRight: CONTENT_PADDING_RIGHT,
-    paddingTop: CONTENT_PADDING_TOP,
-    paddingBottom: CONTENT_PADDING_BOTTOM,
-    width: '100%' ,
-    height: '100%' ,
-  };
   return (
-    <div style={contentStyle}>
-      <RecycleTree
-        nodes={ nodes }
-        outline={ false }
-        scrollContainerStyle={{ width: viewSize.w - (CONTENT_PADDING_RIGHT + CONTENT_PADDING_LEFT), height: viewSize.h - (CONTENT_PADDING_TOP + CONTENT_PADDING_BOTTOM), key: 'marker-list' }}
-        containerHeight={ viewSize.h - (CONTENT_PADDING_TOP + CONTENT_PADDING_BOTTOM) }
-        onSelect={ (items) => {
-          const item = items && items[0];
-          if (!item) { return; }
+    <RecycleTree
+      nodes={ nodes }
+      outline={ false }
+      scrollContainerStyle={{ width: viewSize.w - 10, height: viewSize.h - 7, key: 'marker-list' }}
+      containerHeight={ viewSize.h - 7 }
+      onSelect={ (items) => {
+        const item = items && items[0];
+        if (!item) { return; }
 
-          if (item.parent) {// children
-            updateSelectTag(item.id);
-            markerService.openEditor(item.marker.resource, item.marker);
-          } else {
-            const index = folding.indexOf(item.id);
-            if (index > -1) {
-              folding.splice(index, 1);
-            } else {
-              folding.push(item.id);
-            }
-            updateFolding([...folding]);
-          }
-        }}
-      />
-    </div>
+        if (item.parent) {// children
+          updateSelectTag(item.id);
+          markerService.openEditor(item.marker.resource, item.marker);
+        } else {
+          updateFolding(toggleNewFolding(folding, item.id));
+        }
+      }}
+    />
   );
 });
 

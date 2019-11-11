@@ -43,6 +43,13 @@ export class MarkerService extends Themable implements IMarkerService {
   private readonly onViewResizeEmitter = new Emitter<ViewSize>();
   public readonly onViewResize: Event<ViewSize> = this.onViewResizeEmitter.event;
 
+  // resource 事件
+  private readonly onResourceOpenEmitter = new Emitter<string>();
+  public readonly onResouceOpen: Event<string> = this.onResourceOpenEmitter.event;
+
+  private readonly onResourceCloseEmitter = new Emitter<string>();
+  public readonly onResouceClose: Event<string> = this.onResourceCloseEmitter.event;
+
   private onViewResizeCaller = debounce((viewSize: ViewSize) => this.onViewResizeEmitter.fire(viewSize), 20);
 
   constructor() {
@@ -56,6 +63,7 @@ export class MarkerService extends Themable implements IMarkerService {
     const uri = e.payload.resource.uri;
     const resource = uri.toString();
     this.markerManager.onEditorGroupOpen(resource);
+    this.onResourceOpenEmitter.fire(resource);
   }
 
   @OnEvent(EditorGroupCloseEvent)
@@ -63,6 +71,7 @@ export class MarkerService extends Themable implements IMarkerService {
     const uri = e.payload.resource.uri;
     const resource = uri.toString();
     this.markerManager.onEditorGroupClose(resource);
+    this.onResourceCloseEmitter.fire(resource);
   }
 
   public fireFilterChanged(opt: FilterOptions | undefined) {

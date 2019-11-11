@@ -3,32 +3,6 @@
 
 @kt-markers-inline-color: gray;
 @kt-markers-item-margin: 0 0 0 5px;
-@kt-markers-item-hover: {
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    cursor: pointer;
-  }
-}
-
-@kt-markers-item-content-hover: {
-  &:hover {
-    padding-left: 5px;
-  }
-}
-
-@kt-markers-item-icon: {
-  margin-right: 5px;
-  font-size: 14px;
-}
-
-.checkedBg {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-
-.checkedContainer {
-  padding-left: 5px;
-}
-
 
 .highlight {
   background-color: rgba(255, 0, 0, 0.3);
@@ -59,126 +33,51 @@
     }
   }
 
-  // 正常内容
-  .normal {
-    display: flex;
-    flex-direction: column;
+  // 列表
+  .itemTitleName {// 标题
     color: @kt-content-font-color0;
+    margin: @kt-markers-item-margin;
+    max-width: 300px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
-  .markerList {
-    // 单个marker条目
+  .itemTitleDescription {// 文件名称
+    color: @kt-markers-inline-color;
+    margin: @kt-markers-item-margin;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
 
-    .markerItem {
-      flex: 1;
+  .itemDetailName {// 详细信息标题
+    color: @kt-content-font-color0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .itemDetailDescription {// 详细信息描述
+    display: flex;
+    flex-direction: row;
+
+    .typeContainer {// 详细信息中的错误码
+      color: @kt-markers-inline-color;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
 
-      // marker标题
-      .itemTitle {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        @kt-markers-item-hover();
-
-        .fold { // 已展开状态
-          @kt-markers-item-icon();
-          transform: rotate(90deg);
-        }
-
-        .unfold {// 收起状态
-          @kt-markers-item-icon();
-        }
-
-        .icon {
-          width: 20px;
-          height: 20px;
-          margin: @kt-markers-item-margin;
-        }
-
-        .filename {
-          color: @kt-content-font-color0;
-          margin: @kt-markers-item-margin;
-          max-width: 300px;
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-        }
-
-        .filepath {
-          color: @kt-markers-inline-color;
-          margin: @kt-markers-item-margin;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
-        }
-
-        .totalCount {
-          color: white;
-          background-color: @kt-markers-inline-color;
-          padding-left: 5px;
-          padding-right: 5px;
-          font-size: 12px;
-          border-radius: 9px;
-          margin: @kt-markers-item-margin;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      }
-
-      // marker内容
-      .itemContent {
-        display: flex;
-        flex-direction: row;
-        padding-left: 25px;
-        align-items: center;
-        height: 20px;
-        line-height: 20px;
-        @kt-markers-item-hover();
-
-        .severity {
-          margin-right: 2px;
-        }
-
-        .detailContainer {
-          flex: 1;
-          max-width: 95%;
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          line-height: 20px;
-          @kt-markers-item-content-hover();
-
-          .detail {
-            color: @kt-content-font-color0;
-            margin: @kt-markers-item-margin;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-          }
-
-          .typeContainer {
-            color: @kt-markers-inline-color;
-            margin: @kt-markers-item-margin;
-            display: flex;
-            flex-direction: row;
-          }
-
-          .type {
-            color: @kt-markers-inline-color;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-          }
-
-          .position {
-            color: @kt-markers-inline-color;
-            margin: @kt-markers-item-margin;
-          }
-        }
+      .type {
+        color: @kt-markers-inline-color;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
       }
     }
-  }
 
+    .position {// 错误位置信息
+      color: @kt-markers-inline-color;
+      margin: @kt-markers-item-margin;
+    }
+  }
 }
