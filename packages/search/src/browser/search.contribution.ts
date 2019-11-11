@@ -261,32 +261,32 @@ export class SearchContribution implements CommandContribution, KeybindingContri
 
   registerNextMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
-      command: menuReplaceCmd,
+      command: menuReplaceCmd.id,
       order: 1,
       group: '0_0',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
-      command: menuReplaceAllCmd,
+      command: menuReplaceAllCmd.id,
       order: 2,
       group: '0_0',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
-      command: menuHideCmd,
+      command: menuHideCmd.id,
       order: 3,
       group: '0_0',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
-      command: menuCopyCmd,
+      command: menuCopyCmd.id,
       order: 1,
       group: '1_1',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
-      command: menuCopyPathCmd,
+      command: menuCopyPathCmd.id,
       order: 2,
       group: '1_1',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
-      command: menuCopyAllCmd,
+      command: menuCopyAllCmd.id,
       order: 3,
       group: '1_1',
     });
