@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction, replaceLocalizePlaceholder, IContextKeyService } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction, replaceLocalizePlaceholder, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
 import { TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { SCMMenuId } from '@ali/ide-scm/lib/common';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
@@ -273,7 +273,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       }
 
       const menuId = contributedMenuUtils.parseMenuId(menuPosition);
-      if (typeof menuId !== 'number') {
+      if (isUndefined(menuId)) {
         collector.warn(formatLocalize('menuId.invalid', '`{0}` is not a valid menu identifier', menuPosition));
         return;
       }
