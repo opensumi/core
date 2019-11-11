@@ -1,7 +1,7 @@
 import { ZoneWidget } from '@ali/ide-monaco-enhance/lib/browser';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
-import { toRange } from './utils';
+import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser/lib/icon';
 import { URI, CommandService } from '@ali/ide-core-common';
 import { ScmChangeTitleCallback } from '@ali/ide-core-browser/lib/menu/next';
 
@@ -39,6 +39,10 @@ export class DirtyDiffWidget extends ZoneWidget {
     this._container.appendChild(this._wrapper);
     this._wrapper.appendChild(this._head);
     this._wrapper.appendChild(this._content);
+  }
+
+  get currentIndex() {
+    return this._currentChangeIndex;
   }
 
   updateCurrent(index: number) {
@@ -85,26 +89,30 @@ export class DirtyDiffWidget extends ZoneWidget {
   }
 
   private _renderTitle() {
-    this._title = document.createElement('div');
-    this._actions = document.createElement('div');
-    this._head.appendChild(this._title);
-    this._head.appendChild(this._actions);
+    if (this._head.children.length === 0) {
+      this._title = document.createElement('div');
+      this._actions = document.createElement('div');
+      this._head.appendChild(this._title);
+      this._head.appendChild(this._actions);
+    }
   }
 
-  private _addAction(icon: string, type: DirtyDiffWidgetActionType) {
+  private _addAction(icon: string, type: DirtyDiffWidgetActionType, rotate?: ROTATE_TYPE) {
     const action = document.createElement('div');
-    action.className = `kaitian-icon kticon-${icon}`;
+    action.className = getIcon(icon, rotate);
     this._actions.appendChild(action);
     action.onclick = () => this.handleAction(type);
     return action;
   }
 
   private _renderActions() {
-    this._addAction('plus', DirtyDiffWidgetActionType.save);
-    this._addAction('refresh', DirtyDiffWidgetActionType.reset);
-    this._addAction('up', DirtyDiffWidgetActionType.next);
-    this._addAction('up', DirtyDiffWidgetActionType.previous);
-    this._addAction('close', DirtyDiffWidgetActionType.close);
+    if (this._actions.children.length === 0) {
+      this._addAction('plus', DirtyDiffWidgetActionType.save);
+      this._addAction('refresh', DirtyDiffWidgetActionType.reset);
+      this._addAction('up', DirtyDiffWidgetActionType.next, ROTATE_TYPE.rotate_180);
+      this._addAction('up', DirtyDiffWidgetActionType.previous);
+      this._addAction('close', DirtyDiffWidgetActionType.close);
+    }
   }
 
   relayout(heightInLines: number) {

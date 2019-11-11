@@ -192,5 +192,6 @@ export abstract class ZoneWidget extends Disposable {
       this._overlay = null;
     }
     this._container.remove();
+    super.dispose();
   }
 }
