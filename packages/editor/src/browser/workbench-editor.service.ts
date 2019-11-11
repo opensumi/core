@@ -17,6 +17,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @observable.shallow
   editorGroups: EditorGroup[] = [];
 
+  private _sortedEditorGroups: EditorGroup[] | undefined = [];
+
   @Autowired(INJECTOR_TOKEN)
   private injector!: Injector;
 
@@ -118,6 +120,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         this._onCursorChange.fire(e);
       }
     });
+    this._sortedEditorGroups = undefined;
     return editorGroup;
   }
 
@@ -174,7 +177,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       if (options.groupIndex >= this.editorGroups.length) {
         return group.open(uri, Object.assign({}, options, { split: EditorGroupSplitAction.Right }));
       } else {
-        group = this.editorGroups[options.groupIndex] || this.currentEditorGroup;
+        group = this.sortedEditorGroups[options.groupIndex] || this.currentEditorGroup;
       }
     }
     return group.open(uri, options);
@@ -215,6 +218,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         }));
       }
     }
+    this._sortedEditorGroups = undefined;
   }
 
   public async saveOpenedResourceState() {
@@ -262,6 +266,14 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   async close(uri: URI, force?: boolean) {
     return this.closeAll(uri, force);
+  }
+
+  get sortedEditorGroups() {
+    if (!this._sortedEditorGroups) {
+      this._sortedEditorGroups = [];
+      this.topGrid.sortEditorGroups(this._sortedEditorGroups);
+    }
+    return this._sortedEditorGroups;
   }
 
 }
@@ -388,7 +400,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   get index(): number {
-    return this.workbenchEditorService.editorGroups.indexOf(this);
+    return this.workbenchEditorService.sortedEditorGroups.indexOf(this);
   }
 
   @OnEvent(ResourceDecorationChangeEvent)

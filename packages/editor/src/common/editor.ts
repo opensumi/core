@@ -146,6 +146,8 @@ export abstract class WorkbenchEditorService {
   // TODO
   editorGroups: IEditorGroup[];
 
+  sortedEditorGroups: IEditorGroup[];
+
   currentEditor: IEditor | null;
 
   currentResource: MaybeNull<IResource>;
@@ -407,10 +409,10 @@ export interface IEditorGroupState {
 }
 
 export enum Direction {
-  UP,
-  DOWN,
-  LEFT,
-  RIGHT,
+  UP = 'up',
+  DOWN = 'down',
+  LEFT = 'left',
+  RIGHT = 'right',
 }
 
 /**

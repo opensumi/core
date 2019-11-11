@@ -2,7 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
@@ -14,6 +14,7 @@ import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
 import { IEditorDocumentModelService } from './doc-model/types';
+import * as copy from 'copy-to-clipboard';
 
 interface Resource {
   group: EditorGroup;
@@ -125,6 +126,56 @@ export class EditorContribution implements CommandContribution, MenuContribution
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_BACK.id,
       keybinding: 'ctrl+-',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.CHANGE_LANGUAGE.id,
+      keybinding: 'ctrlcmd+k m',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
+      keybinding: 'ctrlcmd+\\',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.NAVIGATE_NEXT.id,
+      keybinding: 'ctrlcmd+k ctrlcmd+right',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.NAVIGATE_PREVIOUS.id,
+      keybinding: 'ctrlcmd+k ctrlcmd+left',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.SAVE_ALL.id,
+      keybinding: 'ctrlcmd+k s',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.CLOSE_ALL.id,
+      keybinding: 'ctrlcmd+k ctrlcmd+w',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.PIN_CURRENT.id,
+      keybinding: 'ctrlcmd+k enter',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.COPY_CURRENT_PATH.id,
+      keybinding: 'ctrlcmd+k p',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.REOPEN_CLOSED.id,
+      keybinding: 'ctrlcmd+shift+t',
+    });
+    for (let i = 1; i < 10; i ++ ) {
+      keybindings.registerKeybinding({
+        command: EDITOR_COMMANDS.GO_TO_GROUP.id,
+        keybinding: 'ctrlcmd+' + i,
+        args: [i],
+      });
+    }
+    ['left', 'up', 'down', 'right'].forEach((direction) => {
+      keybindings.registerKeybinding({
+        command: EDITOR_COMMANDS.MOVE_GROUP.id,
+        keybinding: 'ctrlcmd+k ' + direction,
+        args: [direction],
+      });
     });
   }
 
@@ -258,6 +309,24 @@ export class EditorContribution implements CommandContribution, MenuContribution
       execute: () => this.workbenchEditorService.currentEditorGroup,
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.PIN_CURRENT, {
+      execute: () => {
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group) {
+          group.pinPreviewed();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.COPY_CURRENT_PATH, {
+      execute: () => {
+        const resource = this.workbenchEditorService.currentResource;
+        if (resource && resource.uri.scheme === Schemas.file) {
+          copy(resource.uri.codeUri.fsPath);
+        }
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_LEFT, {
       execute: async (resource: Resource) => {
         resource = resource || {};
@@ -280,6 +349,26 @@ export class EditorContribution implements CommandContribution, MenuContribution
         } = resource;
         if (group && uri) {
           await group.split(EditorGroupSplitAction.Right, uri);
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.GO_TO_GROUP, {
+      execute: async (index: number = 1) => {
+        const group = this.workbenchEditorService.sortedEditorGroups[index - 1], ;
+        if (group) {
+          group.focus();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.MOVE_GROUP, {
+      execute: async (direction?: Direction) => {
+        if (direction) {
+          const group = this.workbenchEditorService.currentEditorGroup, ;
+          if (group) {
+            group.grid.move(direction);
+          }
         }
       },
     });
@@ -320,8 +409,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
         }));
         const targetLanguageId = await this.quickPickService.show(allLanguageItems);
         if (targetLanguageId && currentLanguageId !== targetLanguageId) {
-          if (this.workbenchEditorService.currentCodeEditor) {
-            const currentDocModel = this.workbenchEditorService.currentCodeEditor.currentDocumentModel;
+          if (this.workbenchEditorService.currentEditor) {
+            const currentDocModel = this.workbenchEditorService.currentEditor.currentDocumentModel;
             if (currentDocModel) {
               monaco.editor.setModelLanguage(currentDocModel.getMonacoModel(), targetLanguageId);
               currentDocModel.languageId = targetLanguageId;
@@ -337,7 +426,17 @@ export class EditorContribution implements CommandContribution, MenuContribution
         if (this.workbenchEditorService.editorGroups.length <= i) {
           i = 0;
         }
-        return this.workbenchEditorService.editorGroups[i].focus();
+        return this.workbenchEditorService.sortedEditorGroups[i].focus();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.NAVIGATE_PREVIOUS, {
+      execute: async () => {
+        let i = this.workbenchEditorService.currentEditorGroup.index - 1;
+        if (i < 0) {
+          i = this.workbenchEditorService.editorGroups.length - 1;
+        }
+        return this.workbenchEditorService.sortedEditorGroups[i].focus();
       },
     });
 
@@ -422,7 +521,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
           return editorGroup.open(editorGroup.resources[index].uri);
         } else {
           const nextEditorGroupIndex = editorGroup.index === this.workbenchEditorService.editorGroups.length - 1 ? 0 : editorGroup.index + 1;
-          const nextEditorGroup = this.workbenchEditorService.editorGroups[nextEditorGroupIndex];
+          const nextEditorGroup = this.workbenchEditorService.sortedEditorGroups[nextEditorGroupIndex];
           nextEditorGroup.focus();
           return nextEditorGroup.open(nextEditorGroup.resources[0].uri);
         }
@@ -440,7 +539,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
           return editorGroup.open(editorGroup.resources[index].uri);
         } else {
           const nextEditorGroupIndex = editorGroup.index === 0 ? this.workbenchEditorService.editorGroups.length - 1 : editorGroup.index - 1;
-          const nextEditorGroup = this.workbenchEditorService.editorGroups[nextEditorGroupIndex];
+          const nextEditorGroup = this.workbenchEditorService.sortedEditorGroups[nextEditorGroupIndex];
           nextEditorGroup.focus();
           return nextEditorGroup.open(nextEditorGroup.resources[nextEditorGroup.resources.length - 1].uri);
         }
@@ -517,6 +616,12 @@ export class EditorContribution implements CommandContribution, MenuContribution
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL, {
       execute: async (uri?: URI) => {
         this.workbenchEditorService.closeAll(uri);
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.REOPEN_CLOSED, {
+      execute: async () => {
+        this.historyService.popClosed();
       },
     });
   }
