@@ -65,10 +65,12 @@ const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRang
 
 const renderBadge = (node: TreeNode) => {
   if (typeof node.badge === 'number') {
-    return <Badge style={node.badgeStyle}>{node.badge > 99 ? '99+' : node.badge}</Badge>;
+    const limit = node.badgeLimit || 99;
+    return <Badge style={node.badgeStyle}>{node.badge > limit ? `${limit}+` : node.badge}</Badge>;
   } else if (typeof node.badge === 'string') {
+    const limit = node.badgeLimit || node.badge.length;
     return <div className={styles.kt_treenode_status} style={node.badgeStyle}>
-      {node.badge}
+      {node.badge.slice(0, limit)}
     </div>;
   }
 };

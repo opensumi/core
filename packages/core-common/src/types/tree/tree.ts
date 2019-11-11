@@ -74,6 +74,14 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
    */
   readonly badge?: number | string;
   /**
+   * badge限制
+   * 当badge为number时
+   * badgeLimit = 99，badge最多显示为99+
+   * 当badge为string时
+   * badgeLimit = 2，badge最多显示不超过2个字符
+   */
+  readonly badgeLimit?: number;
+  /**
    * 节点字体颜色
   */
   readonly color?: string;
