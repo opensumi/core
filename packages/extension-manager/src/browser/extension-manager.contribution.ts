@@ -94,7 +94,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
         }
       },
       isVisible: (extension: RawExtension) => {
-        return !extension.enable;
+        return extension && !extension.enable;
       },
     });
     commands.registerCommand(ExtensionCommands.ENABLE_WORKSPACE, {
@@ -104,7 +104,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
         }
       },
       isVisible: (extension: RawExtension) => {
-        return !extension.enable;
+        return extension && !extension.enable;
       },
     });
     commands.registerCommand(ExtensionCommands.DISABLE, {
@@ -115,7 +115,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       },
       isVisible: (extension: RawExtension) => {
         // https://yuque.antfin-inc.com/cloud-ide/za8zpk/kpwylo#RvfMV
-        return extension.enableScope === EnableScope.GLOBAL || (extension.enableScope === EnableScope.WORKSPACE && !extension.enable);
+        return extension && (extension.enableScope === EnableScope.GLOBAL || (extension.enableScope === EnableScope.WORKSPACE && !extension.enable));
       },
     });
     commands.registerCommand(ExtensionCommands.DISABLE_WORKSPACE, {
@@ -125,7 +125,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
         }
       },
       isVisible: (extension: RawExtension) => {
-        return extension.enable;
+        return extension && extension.enable;
       },
     });
     commands.registerCommand(ExtensionCommands.UNINSTALL, {
@@ -135,7 +135,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
         }
       },
       isVisible: (extension: RawExtension) => {
-        return extension.installed && !extension.isBuiltin;
+        return extension && extension.installed && !extension.isBuiltin;
       },
     });
   }
