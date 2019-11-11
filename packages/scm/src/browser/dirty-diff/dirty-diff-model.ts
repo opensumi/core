@@ -33,6 +33,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   }
 
   private _editorModel: monaco.editor.ITextModel | null;
+  private _widget: DirtyDiffWidget | null;
 
   @Autowired(SCMService)
   scmService: SCMService;
@@ -236,6 +237,17 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   }
 
   onClickDecoration(widget: DirtyDiffWidget, range: monaco.IRange) {
+    if (this._widget) {
+      if (this._widget === widget) {
+        this._widget.dispose();
+        return;
+      } else {
+        this._widget.dispose();
+      }
+    }
+
+    this._widget = widget;
+
     if (this._originalModel && this._editorModel) {
       const originalUri = new URI(this._originalModel.uri);
       const editorUri = new URI(this._editorModel.uri);
@@ -253,9 +265,19 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
           editor.modifiedEditor.monacoEditor.revealLineInCenter(
             range.startLineNumber - Math.round(DirtyDiffModel.heightInLines / 2));
 
-          this.addDispose(editor.originalEditor.monacoEditor.onDidChangeModelContent(() => {
+          widget.addDispose(editor.originalEditor.monacoEditor.onDidChangeModelContent(() => {
             widget.relayout(DirtyDiffModel.heightInLines);
           }));
+
+          widget.addDispose(this.onDidChange(() => {
+            const { change, count } = this.getChangeFromRange(range) || {};
+            widget.updateCurrent(count);
+            widget.show(toRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
+          }));
+
+          widget.onDispose(() => {
+            this._widget = null;
+          });
 
           if (count && change) {
             widget.updateCurrent(count);

@@ -122,7 +122,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     const models = this.editorService.editorGroups
 
       // only interested in code editor widgets
-      .filter((editorGroup) =>  editorGroup.currentOpenType && editorGroup.currentOpenType.type === 'code')
+      .filter((editorGroup) => editorGroup.currentOpenType && editorGroup.currentOpenType.type === 'code')
       // set model registry and map to models
       .map((editorGroup) => {
         const currentEditor = editorGroup.currentEditor as IMonacoImplEditor;
@@ -166,10 +166,20 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       const dirtyModel = this.getModel(model);
       if (dirtyModel) {
         if (widget) {
+          const currentIndex = widget.currentIndex;
+          const { count: targetIndex } = dirtyModel.getChangeFromRange(toRange(position));
+
           widget.dispose();
-          this.widgets.delete(codeEditor.getId());
+          if (currentIndex === targetIndex) {
+            return;
+          }
         }
+
+        // 每次都创建一个新的 widget
         widget = new DirtyDiffWidget(codeEditor, dirtyModel, this.commandService);
+        widget.onDispose(() => {
+          this.widgets.delete(codeEditor.getId());
+        });
         dirtyModel.onClickDecoration(widget, toRange(position));
         this.widgets.set(codeEditor.getId(), widget);
       }
@@ -180,7 +190,6 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     const disposeCollecton = new DisposableCollection();
 
     disposeCollecton.push(codeEditor.onMouseDown((event) => {
-      console.log(event);
       if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
         if (event.target.position) {
           this.openDirtyDiffWidget(codeEditor, event.target.position);
