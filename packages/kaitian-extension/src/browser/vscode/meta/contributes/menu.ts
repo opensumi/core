@@ -313,7 +313,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         this.addDispose(this.newMenuRegistry.registerMenuItem(
           menuId,
           {
-            command,
+            command: command.id,
             alt,
             group,
             order,

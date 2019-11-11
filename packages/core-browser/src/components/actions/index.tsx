@@ -17,13 +17,9 @@ const MenuAction: React.FC<{
 }> = ({ data }) => {
   return (
     <>
-      {
-        data.icon && (
-          <div className={styles.icon}>
-            <Icon iconClass={data.icon} />
-          </div>
-        )
-      }
+      <div className={styles.icon}>
+        <Icon iconClass={data.icon} />
+      </div>
       <div className={styles.label}>
         {data.label ? mnemonicButtonLabel(data.label, true) : ''}
       </div>

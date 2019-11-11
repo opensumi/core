@@ -80,9 +80,7 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
 
   registerNextMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.SettingsIconMenu, {
-      command: {
-        id: COMMON_COMMANDS.OPEN_KEYMAPS.id,
-      },
+      command: COMMON_COMMANDS.OPEN_KEYMAPS.id,
       group: KeymapsContextMenu.KEYMAPS,
     });
   }

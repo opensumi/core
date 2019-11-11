@@ -67,18 +67,18 @@ export class MenuItemNode extends MenuNode {
     const icon = toggled ? getIcon('check') : '';
     super(item.id, icon, item.label!, disabled, nativeRole);
     // 后置获取 i18n 数据 主要处理 ide-framework 内部的 command 的 i18n
-    const command = this.commandRegistry.getCommand(item.id)!;
-    this.label = command.label!;
+    // const command = this.commandRegistry.getCommand(item.id)!;
+    // this.label = command.label!;
 
     this.className = undefined;
 
-    const shortcutDesc = this.getShortcut(command.id);
+    const shortcutDesc = this.getShortcut(item.id);
 
     this.keybinding = shortcutDesc && shortcutDesc.keybinding || '';
     this.isKeyCombination = !!(shortcutDesc && shortcutDesc.isKeyCombination);
     this._options = options;
 
-    this.item = command;
+    this.item = item;
   }
 
   execute(args?: any[]): Promise<any> {
@@ -191,7 +191,7 @@ class Menu extends Disposable implements IMenu {
       // keep keys for eventing
       this.fillKeysInWhenExpr(this._contextKeys, item.when);
 
-      // @fixme: 我们的 command 有 precondition(command)/toggled 属性吗？
+      // FIXME: 我们的 command 有 precondition(command)/toggled 属性吗？
       // keep precondition keys for event if applicable
       // if (isIMenuItem(item) && item.command.precondition) {
       //   Menu._fillInKbExprKeys(item.command.precondition, this._contextKeys);
@@ -219,12 +219,15 @@ class Menu extends Disposable implements IMenu {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
             const { args = [] } = options;
-            const command = item.command;
-            if (this.commandRegistry.isVisible(command.id, ...args)) {
-              const disabled = !this.commandRegistry.isEnabled(command.id, ...args);
-              const toggled = this.commandRegistry.isToggled(command.id, ...args);
-              const action = this.injector.get(MenuItemNode, [command, options, disabled, toggled, item.nativeRole]);
-              activeActions.push(action);
+
+            const command = this.commandRegistry.getCommand(item.command);
+            if (command) {
+              if (this.commandRegistry.isVisible(command.id, ...args)) {
+                const disabled = !this.commandRegistry.isEnabled(command.id, ...args);
+                const toggled = this.commandRegistry.isToggled(command.id, ...args);
+                const action = this.injector.get(MenuItemNode, [command, options, disabled, toggled, item.nativeRole]);
+                activeActions.push(action);
+              }
             }
           } else {
             const action = new SubmenuItemNode(item);
@@ -285,5 +288,7 @@ function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
     return 1;
   }
 
-  return Command.compareCommands(a.command, b.command);
+  return 0;
+  // TODO: 临时先禁用掉这里的排序
+  // return Command.compareCommands(a.command, b.command);
 }
