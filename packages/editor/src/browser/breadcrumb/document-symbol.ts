@@ -13,7 +13,7 @@ export class DocumentSymbolStore extends WithEventBus {
   @Autowired(WorkbenchEditorService)
   editorService: WorkbenchEditorService;
 
-  private documentSymbols = new Map<string, DocumentSymbol[] | undefined>();
+  private documentSymbols = new Map<string, INormalizedDocumentSymbol[] | undefined>();
 
   private pendingUpdate = new Set<string>();
 
@@ -28,7 +28,7 @@ export class DocumentSymbolStore extends WithEventBus {
     });
   }
 
-  getDocumentSymbol(uri: URI): DocumentSymbol[] | undefined {
+  getDocumentSymbol(uri: URI): INormalizedDocumentSymbol[] | undefined {
     if (!this.documentSymbols.has(uri.toString())) {
       this.documentSymbols.set(uri.toString(), undefined);
       this.createDocumentSymbolCache(uri);
@@ -59,7 +59,8 @@ export class DocumentSymbolStore extends WithEventBus {
         }
       }
       if (result) {
-        this.documentSymbols.set(uri.toString(), result);
+        normalizeDocumentSymbols(result, { children: result } as INormalizedDocumentSymbol, uri);
+        this.documentSymbols.set(uri.toString(), result as INormalizedDocumentSymbol[]);
         this.eventBus.fire(new DocumentSymbolChangedEvent(uri));
       }
     } finally {
@@ -111,4 +112,40 @@ export interface DocumentSymbol {
   range: IRange;
   selectionRange: IRange;
   children?: DocumentSymbol[];
+}
+
+export interface INormalizedDocumentSymbol extends DocumentSymbol {
+  parent?: INormalizedDocumentSymbol | IDummyRoot;
+  children?: INormalizedDocumentSymbol[];
+  id: string;
+}
+
+export interface IDummyRoot {
+  children?: INormalizedDocumentSymbol[];
+}
+
+function normalizeDocumentSymbols(documentSymbols: DocumentSymbol[], parent: INormalizedDocumentSymbol | IDummyRoot, uri: URI): INormalizedDocumentSymbol[] {
+  documentSymbols.forEach((documentSymbol) => {
+    const symbol = documentSymbol as INormalizedDocumentSymbol;
+    symbol.parent = parent;
+    symbol.id = getSymbolId(uri, symbol);
+    if (documentSymbol.children && documentSymbol.children.length > 0) {
+      normalizeDocumentSymbols(documentSymbol.children, documentSymbol as INormalizedDocumentSymbol, uri);
+    }
+  });
+  return documentSymbols as INormalizedDocumentSymbol[];
+}
+
+function getSymbolId(uri: URI, symbol: INormalizedDocumentSymbol) {
+  const symbolNameList: string[] = [symbol.name];
+  while (symbol.parent) {
+    const parent = symbol.parent as INormalizedDocumentSymbol;
+    // dummyRoot
+    if (!parent.name) {
+      break;
+    }
+    symbolNameList.unshift(parent.name);
+    symbol = parent;
+  }
+  return uri.toString() + '__' + symbolNameList.join('-');
 }

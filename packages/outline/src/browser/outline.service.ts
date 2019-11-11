@@ -1,12 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition } from '@ali/ide-core-browser';
-import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { observable, action } from 'mobx';
 import { getSymbolIcon } from '@ali/ide-core-browser/lib/icon';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { EditorSelectionChangeEvent } from '@ali/ide-editor/lib/browser';
 import debounce = require('lodash.debounce');
-import { findCurrentDocumentSymbol, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/default';
+import { findCurrentDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/default';
 
 export interface NodeStatus {
   selected?: boolean;
@@ -92,7 +92,7 @@ export class OutLineService extends WithEventBus {
   }
 
   protected getOrCreateStatus(uri: URI, node: INormalizedDocumentSymbol): NodeStatus {
-    const symbolId = getSymbolId(uri, node);
+    const symbolId = node.id;
     let status = this.statusMap.get(symbolId);
     if (!status) {
       status = {
@@ -128,8 +128,8 @@ export class OutLineService extends WithEventBus {
     }
   }
 
-  protected selectCursorSymbol(uri: URI, symbols: DocumentSymbol[]) {
-    const activeSymbols = normalizeActiveSymbols(findCurrentDocumentSymbol(symbols, this.editorService.currentEditorGroup.codeEditor.monacoEditor.getPosition()));
+  protected selectCursorSymbol(uri: URI, symbols: INormalizedDocumentSymbol[]) {
+    const activeSymbols = findCurrentDocumentSymbol(symbols, this.editorService.currentEditorGroup.codeEditor.monacoEditor.getPosition());
     // 清除上次选中状态
     if (this.statusMap.get(this.currentSelectedId)) {
       this.statusMap.get(this.currentSelectedId)!.selected = false;
@@ -140,7 +140,7 @@ export class OutLineService extends WithEventBus {
       if (index < activeSymbols.length - 1) {
         status.expanded = true;
       } else {
-        this.currentSelectedId = getSymbolId(uri, symbol);
+        this.currentSelectedId = symbol.id;
         status.selected = true;
       }
     });
@@ -157,8 +157,7 @@ export class OutLineService extends WithEventBus {
 // 将 SymbolTree 打平成 TreeNodeList
 function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, treeNodes: TreeSymbol[], statusMap: Map<string, NodeStatus>, uri: URI) {
   parent.children!.forEach((symbol) => {
-    const symbolId = getSymbolId(uri, {...symbol, parent});
-    let status = statusMap.get(symbolId);
+    let status = statusMap.get(symbol.id);
     if (!status) {
       status = {
         selected: false,
@@ -166,13 +165,12 @@ function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, tr
       if (symbol.children && symbol.children.length > 0) {
         status.expanded = true;
       }
-      statusMap.set(symbolId, status);
+      statusMap.set(symbol.id, status);
     }
     const treeSymbol: TreeSymbol = {
       ...symbol,
       depth: depth + 1,
       parent,
-      id: symbolId,
       icon: getSymbolIcon(symbol.kind) + ' outline-icon',
       ...status,
     };
@@ -183,37 +181,10 @@ function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, tr
   });
 }
 
-// 当前激活的symbol是一个按照层级关系排序的数组
-function normalizeActiveSymbols(symbols: DocumentSymbol[]): INormalizedDocumentSymbol[] {
-  const normalizedSymbols: INormalizedDocumentSymbol[] = [];
-  symbols.forEach((symbol, index) => {
-    if (index === 0) {
-      normalizedSymbols.push(Object.assign(symbol, {parent: { children: symbol }}));
-    } else {
-      normalizedSymbols.push(Object.assign(symbol, {parent: symbols[index - 1]}));
-    }
-  });
-  return normalizedSymbols;
-}
-
-function getSymbolId(uri: URI, symbol: INormalizedDocumentSymbol) {
-  const symbolNameArr: string[] = [symbol.name];
-  while (symbol.parent) {
-    const parent = symbol.parent as INormalizedDocumentSymbol;
-    // dummyRoot
-    if (!parent.name) {
-      break;
-    }
-    symbolNameArr.unshift(parent.name);
-    symbol = parent;
-  }
-  return uri.toString() + '__' + symbolNameArr.join('-');
-}
-
-interface TreeSymbol extends DocumentSymbol {
-  id: string;
+interface TreeSymbol extends INormalizedDocumentSymbol {
   depth: number;
   parent: TreeSymbol;
+  children: TreeSymbol[];
   icon: string;
   selected?: boolean;
   expanded?: boolean;
