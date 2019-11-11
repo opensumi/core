@@ -41,7 +41,7 @@ export abstract class IMenuRegistry {
 }
 
 @Injectable()
-export class MenuRegistry implements IMenuRegistry {
+export class CoreMenuRegistry implements IMenuRegistry {
   private readonly _commands = new Map<string, Command>();
   private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
   private readonly _onDidChangeMenu = new Emitter<string>();
@@ -54,13 +54,7 @@ export class MenuRegistry implements IMenuRegistry {
   @Autowired(CommandRegistry)
   protected readonly commandRegistry: CommandRegistry;
 
-  // MenuContribution
-  onStart() {
-    for (const contrib of this.contributions.getContributions()) {
-      contrib.registerNextMenus(this);
-    }
-  }
-
+  // TODO: 待移除
   addCommand(command: Command): IDisposable {
     this._commands.set(command.id, command);
     this._onDidChangeMenu.fire(MenuId.CommandPalette);
@@ -73,10 +67,12 @@ export class MenuRegistry implements IMenuRegistry {
     };
   }
 
+  // TODO: 待移除
   getCommand(id: string): Command | undefined {
     return this._commands.get(id);
   }
 
+  // TODO: 待移除
   getCommands(): ICommandsMap {
     const map = new Map<string, Command>();
     this._commands.forEach((value, key) => map.set(key, value));
@@ -127,6 +123,19 @@ export class MenuRegistry implements IMenuRegistry {
         result.push({ command: command.id });
       }
     });
+  }
+}
+
+@Injectable()
+export class MenuRegistry extends CoreMenuRegistry {
+  @Autowired(NextMenuContribution)
+  protected readonly contributions: ContributionProvider<NextMenuContribution>;
+
+  // MenuContribution
+  onStart() {
+    for (const contrib of this.contributions.getContributions()) {
+      contrib.registerNextMenus(this);
+    }
   }
 }
 
