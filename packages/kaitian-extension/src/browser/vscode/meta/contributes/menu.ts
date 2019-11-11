@@ -164,6 +164,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
 
     const collector = console;
 
+    // TODO: deprecated
     for (const menuPosition of Object.keys(this.json)) {
       if (menuPosition === 'view/item/context') {
         for (const menu of this.json[menuPosition]) {
@@ -313,7 +314,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         this.addDispose(this.newMenuRegistry.registerMenuItem(
           menuId,
           {
-            command: command.id,
+            command: item.command,
             alt,
             group,
             order,
