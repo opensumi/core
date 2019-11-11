@@ -32,7 +32,7 @@ export interface ISubmenuItem {
 export type ICommandsMap = Map<string, Command>;
 
 export abstract class IMenuRegistry {
-  readonly onDidChangeMenu: Event<MenuId>;
+  readonly onDidChangeMenu: Event<string>;
   abstract addCommand(userCommand: Command): IDisposable;
   abstract getCommand(id: string): Command | undefined;
   abstract getCommands(): ICommandsMap;
@@ -44,9 +44,9 @@ export abstract class IMenuRegistry {
 export class MenuRegistry implements IMenuRegistry {
   private readonly _commands = new Map<string, Command>();
   private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
-  private readonly _onDidChangeMenu = new Emitter<MenuId>();
+  private readonly _onDidChangeMenu = new Emitter<string>();
 
-  readonly onDidChangeMenu: Event<MenuId> = this._onDidChangeMenu.event;
+  readonly onDidChangeMenu: Event<string> = this._onDidChangeMenu.event;
 
   @Autowired(NextMenuContribution)
   protected readonly contributions: ContributionProvider<NextMenuContribution>;
@@ -83,7 +83,7 @@ export class MenuRegistry implements IMenuRegistry {
     return map;
   }
 
-  registerMenuItem(id: MenuId, item: IMenuItem | ISubmenuItem): IDisposable {
+  registerMenuItem(id: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
     let array = this._menuItems.get(id);
     if (!array) {
       array = [item];
