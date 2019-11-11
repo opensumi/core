@@ -170,6 +170,7 @@ export class TabBarToolbar extends Widget {
     if (TabBarToolbarItem.is(item)) {
       const command = this.commandRegistry.getCommand(item.command);
       this.commands.executeCommand(item.command);
+      // FIXME 这块还是用 react 重构成响应式的吧……
       if (command && command.toogleIconClass && command.iconClass) {
         const el = e.target as HTMLElement;
         if (!this.commandRegistry.isToggled(command.id)) {
