@@ -57,7 +57,10 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
   }
 
   setHeaders(headers: RequestHeaders): void {
-    this.headers = headers;
+    this.headers = {
+      ...this.headers,
+      ...headers,
+    };
   }
 }
 

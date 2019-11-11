@@ -108,9 +108,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   registerNextMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.SettingsIconMenu, {
-      command: {
-        id: COMMON_COMMANDS.OPEN_PREFERENCES.id,
-      },
+      command: COMMON_COMMANDS.OPEN_PREFERENCES.id,
       group: PreferenceContextMenu.OPEN,
     });
   }
