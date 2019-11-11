@@ -57,6 +57,9 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
       };
     });
     this.webviewPanelStates.forEach((state, id) => {
+      if (!this.hasWebviewPanel(id)) {
+        return ;
+      }
       let hasChange = false;
       const webviewPanel = this.getWebivewPanel(id);
       if (state.active) {
@@ -124,7 +127,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     });
     this.addDispose({dispose: () => {
       if (this.webivewPanels.has(id)) {
-        this.$disposeWebview(id);
+        this.getWebivewPanel(id).dispose();
       }
     }});
     editorWebview.webview.onDidClickLink((e) => {
@@ -139,6 +142,10 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
       throw new Error('拥有ID ' + id + ' 的webviewPanel不存在在browser进程中！');
     }
     return this.webivewPanels.get(id)!;
+  }
+
+  private hasWebviewPanel(id): boolean {
+    return this.webivewPanels.has(id);
   }
 
   $disposeWebview(id: string): void {
