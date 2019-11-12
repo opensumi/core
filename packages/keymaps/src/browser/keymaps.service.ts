@@ -215,7 +215,7 @@ export class KeymapService implements IKeymapService {
       const item: KeybindingItem = {
         id: command.id,
         command: command.label || command.id,
-        keybinding: (keybindings && keybindings[0]) ? keybindings[0].keybinding.toLocaleUpperCase() : '',
+        keybinding: (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
         when: this.getWhen((keybindings && keybindings[0])),
         context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
         source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')

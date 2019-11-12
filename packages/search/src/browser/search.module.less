@@ -39,7 +39,7 @@
     }
   }
 
-  .result_describe {
+  .result_describe, .result_error {
     margin-bottom: 0;
     padding: 0 10px 5px 10px;
 
@@ -61,6 +61,10 @@
     .result_fold_enabled {
       opacity: 1;
     }
+  }
+
+  .result_error {
+    color: var(--errorForeground);
   }
 
   input[type="text"] {

@@ -276,10 +276,11 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
     });
     this.currentUri = new URI(model.uri.toString());
     this.monacoEditor.setModel(model);
-    this.restoreState();
     if (range) {
       this.monacoEditor.revealRangeInCenter(range);
       this.monacoEditor.setSelection(range);
+    } else {
+      this.restoreState();
     }
     this._onRefOpen.fire(documentModelRef);
     // monaco 在文件首次打开时不会触发 cursorChange

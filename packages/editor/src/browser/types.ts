@@ -29,13 +29,15 @@ export enum EditorComponentRenderMode {
 
 export abstract class EditorComponentRegistry {
 
-  abstract registerEditorComponent<T>(component: IEditorComponent<T>): IDisposable;
+  abstract registerEditorComponent<T>(component: IEditorComponent<T>, initialProps?: any): IDisposable;
 
   abstract registerEditorComponentResolver<T>(scheme: string, resolver: IEditorComponentResolver<T>): IDisposable;
 
   abstract resolveEditorComponent(resource: IResource): Promise<IEditorOpenType[]>;
 
   abstract getEditorComponent(id: string): IEditorComponent | null;
+
+  abstract getEditorInitialProps(id: string): any;
 
   abstract clearPerWorkbenchComponentCache(componentId: string): void;
 }

@@ -23,9 +23,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(CommandService)
   private commands: CommandService;
 
-  @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
-
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 
@@ -165,10 +162,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   async open(uri: URI, options?: IResourceOpenOptions) {
     await this.initialize();
-    if (uri.scheme === Schemas.file) {
-      // 只记录 file 类型的
-      this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
-    }
     let group = this.currentEditorGroup;
     if (options && options.groupIndex) {
       if (options.groupIndex >= this.editorGroups.length) {
@@ -301,6 +294,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
 
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
+
   codeEditor!: ICodeEditor;
 
   diffEditor!: IDiffEditor;
@@ -328,6 +324,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @observable.ref availableOpenTypes: IEditorOpenType[] = [];
 
   @observable.shallow activeComponents = new Map<IEditorComponent, IResource[]>();
+
+  @observable.shallow activateComponentsProps = new Map<IEditorComponent, any>();
 
   public grid: EditorGrid;
 
@@ -513,6 +511,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
+    if (uri.scheme === Schemas.file) {
+      // 只记录 file 类型的
+      this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
+    }
     if (options && options.split) {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined }));
     }
@@ -551,6 +553,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const oldOpenType = this.currentOpenType;
       if (this.currentResource && this.currentResource.uri === uri) {
         // 就是当前打开的resource
+        if (options.focus && this.currentEditor) {
+          this.currentEditor.monacoEditor.focus();
+        }
+        if (options.range && this.currentEditor) {
+          this.currentEditor.monacoEditor.revealRangeInCenter(options.range);
+          this.currentEditor.monacoEditor.setSelection(options.range)
+;        }
         return {
           group: this,
           resource: this.currentResource,
@@ -625,20 +634,24 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range);
-        if (options.preserveFocus) {
+        if (options.focus || options.preserveFocus) {
           this.codeEditor.focus();
         }
-
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;
         await this.diffEditorReady.promise;
         const [original, modified] = await Promise.all([this.getDocumentModelRef(diffResource.metadata!.original), this.getDocumentModelRef(diffResource.metadata!.modified)]);
         await this.diffEditor.compare(original, modified);
+        if (options.focus || options.preserveFocus) {
+          this.diffEditor.focus();
+        }
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
+        const initialProps = this.editorComponentRegistry.getEditorInitialProps(activeOpenType.componentId as string);
         if (!component) {
           throw new Error('Cannot find Editor Component with id: ' + activeOpenType.componentId);
         } else {
+          this.activateComponentsProps.set(component, initialProps);
           if (component.renderMode === EditorComponentRenderMode.ONE_PER_RESOURCE) {
             const openedResources = this.activeComponents.get(component) || [];
             const index = openedResources.findIndex((r) => r.uri.toString() === resource.uri.toString());
@@ -671,12 +684,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       } else {
         return; // other type not handled
       }
+
       this.currentState = {
         currentResource: resource,
         currentOpenType: activeOpenType,
       };
+
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
-      getLogger().log(this.resources);
     }
   }
 
@@ -778,6 +792,27 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.activeComponents.clear();
     if (this.workbenchEditorService.editorGroups.length > 1) {
       this.dispose();
+    }
+  }
+
+  /**
+   * 关闭已保存（非dirty）
+   */
+  @action.bound
+  async closeSaved() {
+    const saved = this.resources.filter((r) => {
+      const decoration = this.resourceService.getResourceDecoration(r.uri);
+      if (!decoration || !decoration.dirty) {
+        return true;
+      }
+    });
+    for (const resource of saved) {
+      if (!await this.shouldClose(resource)) {
+        return;
+      }
+    }
+    for (const resource of saved) {
+      await this.close(resource.uri);
     }
   }
 

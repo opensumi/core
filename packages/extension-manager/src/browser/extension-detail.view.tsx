@@ -11,21 +11,23 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { Button } from '@ali/ide-core-browser/lib/components';
-import { Dropdown, Menu } from 'antd';
+import Dropdown from 'antd/lib/dropdown';
+import Menu from 'antd/lib/menu';
 import Tabs from 'antd/lib/tabs';
 import 'antd/lib/tabs/style/index.less';
+import 'antd/lib/dropdown/style/index.less';
+import 'antd/lib/menu/style/index.less';
 
 const { TabPane } = Tabs;
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
-  const { extensionId, version } = props.resource.uri.getParsedQuery();
+  const { extensionId } = props.resource.uri.getParsedQuery();
   const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
   const [isInstalling, setIsInstalling] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [isUnInstalling, setUnIsInstalling] = React.useState(false);
-  const [reloadRequire, setReloadRequire] = React.useState(false);
   const [updated, setUpdated] = React.useState(false);
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
@@ -40,7 +42,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       let remote;
       try {
         // 获取最新的插件信息，用来做更新提示
-        remote = await extensionManagerService.getDetailFromMarketplace(extensionId, version);
+        remote = await extensionManagerService.getDetailFromMarketplace(extensionId);
         if (remote) {
           setLatestExtension(remote);
         }
@@ -64,36 +66,20 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }, [extensionId]);
 
   /**
-   * 检查是否需要强制重启插件
-   * @param extension
-   */
-  async function updateReloadStateIfNeed(extension: ExtensionDetail) {
-    const reloadRequire = await extensionManagerService.computeReloadState(extension.path);
-    if (reloadRequire) {
-      setReloadRequire(true);
-    }
-  }
-
-  /**
    * 禁用/启用工作区间
    * @param scope
    */
   async function toggleActive(scope: EnableScope) {
     if (currentExtension) {
       const enable = !currentExtension.enable;
-      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, enable, scope);
-      if (!enable) {
-        await extensionManagerService.onDisableExtension(currentExtension.path);
-      } else {
-        await extensionManagerService.onEnableExtension(currentExtension.path);
-      }
-      await updateReloadStateIfNeed(currentExtension);
+      await extensionManagerService.toggleActiveExtension(currentExtension, enable, scope);
+      const reloadRequire = await extensionManagerService.computeReloadState(currentExtension.path);
       setCurrentExtension({
         ...currentExtension,
         enable,
         enableScope: scope,
+        reloadRequire,
       });
-
     }
   }
 
@@ -109,10 +95,6 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         enable: true,
         installed: true,
       });
-      // 更新插件进程信息
-      await extensionManagerService.onInstallExtension(currentExtension.extensionId, path);
-      // 标记为已安装
-      await extensionManagerService.makeExtensionStatus(true, currentExtension.extensionId, path);
     }
   }
 
@@ -120,17 +102,14 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     if (currentExtension && !isUnInstalling) {
       setUnIsInstalling(true);
       const res = await extensionManagerService.uninstallExtension(currentExtension);
-      // TODO 卸载后为什么要设置启用？
-      await extensionManagerService.toggleActiveExtension(currentExtension.extensionId, true, EnableScope.GLOBAL);
-
+      const reloadRequire = await extensionManagerService.computeReloadState(currentExtension.path);
       if (res) {
-        await extensionManagerService.makeExtensionStatus(false, currentExtension.extensionId, '');
-        await updateReloadStateIfNeed(currentExtension);
         setUnIsInstalling(false);
         setCurrentExtension({
           ...currentExtension,
           enable: false,
           installed: false,
+          reloadRequire,
         });
       } else {
         dialogService.info(localize('marketplace.extension.uninstall.failed'));
@@ -149,9 +128,9 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         path: newExtensionPath,
         installed: true,
         version: latestExtension!.version,
+        reloadRequire: await extensionManagerService.computeReloadState(oldExtensionPath),
       });
       await extensionManagerService.onUpdateExtension(newExtensionPath, oldExtensionPath);
-      await updateReloadStateIfNeed(currentExtension);
       setUpdated(true);
     }
   }
@@ -223,7 +202,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               {!currentExtension.installed ? (
                 <Button className={styles.action} onClick={install} loading={isInstalling}>{isInstalling ? localize('marketplace.extension.installing') : localize('marketplace.extension.install')}</Button>
               ) : null}
-              {reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure')}</Button>}
+              {currentExtension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure')}</Button>}
               {currentExtension.installed ? (
                 <Dropdown overlay={menu} trigger={['click']}>
                   <Button ghost={true} className={styles.action}>{currentExtension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>

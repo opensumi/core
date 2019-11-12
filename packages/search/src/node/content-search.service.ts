@@ -12,6 +12,7 @@ import {
   SendClientResult,
   anchorGlob,
   cutShortSearchResult,
+  FilterFileWithGlobRelativePath,
 } from '../common';
 interface RipGrepArbitraryData {
   text?: string;
@@ -152,9 +153,14 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   ) {
     const lines = searchInfo.dataBuf.toString().split('\n');
     const result: ContentSearchResult[] = [];
+    let filterFileWithGlobRelativePath: FilterFileWithGlobRelativePath;
 
     if (lines.length < 1) {
       return;
+    }
+
+    if (rootUris && opts) {
+      filterFileWithGlobRelativePath = new FilterFileWithGlobRelativePath(rootUris, opts.include || []);
     }
 
     lines.some((line) => {
@@ -188,9 +194,13 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
           const character = byteRangeLengthToCharacterLength(lineText, 0, startByte);
           const matchLength = byteRangeLengthToCharacterLength(lineText, character, endByte - startByte);
           const fileUri = FileUri.create(file);
+          const fileUriSting = fileUri.toString();
 
+          if (filterFileWithGlobRelativePath && !filterFileWithGlobRelativePath.test(fileUriSting)) {
+            continue;
+          }
           const searchResult: ContentSearchResult = cutShortSearchResult({
-            fileUri: fileUri.toString(),
+            fileUri: fileUriSting,
             line,
             matchStart: character + 1,
             matchLength,

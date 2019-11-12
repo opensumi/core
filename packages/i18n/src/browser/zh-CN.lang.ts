@@ -52,6 +52,7 @@ export const localizationBundle = {
     'editor.splitToTop': '向上拆分',
     'editor.splitToBottom': '向下拆分',
     'editor.closeAllInGroup': '关闭全部',
+    'editor.closeSaved': '关闭已保存',
     'editor.closeOtherEditors': '关闭其他',
 
     'edit.cut': '剪切',
@@ -263,7 +264,7 @@ export const localizationBundle = {
     'marketplace.extension.disable.workspace': '禁用(工作空间)',
     'marketplace.extension.builtin': '内置',
     'marketplace.extension.install': '安装',
-    'marketplace.extension.container': '扩展',
+    'marketplace.extension.container': '扩展市场',
     'marketplace.extension.empty.disabled': '暂无已禁用的扩展',
     'marketplace.extension.notfound': '找不到扩展',
     'marketplace.panel.hot': '热门插件',
@@ -334,5 +335,7 @@ export const localizationBundle = {
     'doc.saveError.diff': '{0} 已经在磁盘上被修改，不能保存',
     'doc.saveError.diffAndSave': '进行比较',
     'editor.compareAndSave.title': '{0} (在磁盘上) <=> {1} (编辑中) ',
+
+    'outline.title': '大纲',
   },
 };

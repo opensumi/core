@@ -1,4 +1,4 @@
-import { IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { MenuId } from './menu-id';
 
@@ -13,7 +13,7 @@ export interface ILocalizedString {
 }
 
 export interface IMenuItem {
-  command: Command;
+  command: string;
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -32,32 +32,29 @@ export interface ISubmenuItem {
 export type ICommandsMap = Map<string, Command>;
 
 export abstract class IMenuRegistry {
-  readonly onDidChangeMenu: Event<MenuId>;
+  readonly onDidChangeMenu: Event<string>;
   abstract addCommand(userCommand: Command): IDisposable;
   abstract getCommand(id: string): Command | undefined;
   abstract getCommands(): ICommandsMap;
-  abstract registerMenuItem(menu: MenuId, item: IMenuItem | ISubmenuItem): IDisposable;
+  abstract registerMenuItem(menu: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
 }
 
 @Injectable()
-export class MenuRegistry implements IMenuRegistry {
+export class CoreMenuRegistry implements IMenuRegistry {
   private readonly _commands = new Map<string, Command>();
-  private readonly _menuItems = new Map<number, Array<IMenuItem | ISubmenuItem>>();
-  private readonly _onDidChangeMenu = new Emitter<MenuId>();
+  private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
+  private readonly _onDidChangeMenu = new Emitter<string>();
 
-  readonly onDidChangeMenu: Event<MenuId> = this._onDidChangeMenu.event;
+  readonly onDidChangeMenu: Event<string> = this._onDidChangeMenu.event;
 
   @Autowired(NextMenuContribution)
   protected readonly contributions: ContributionProvider<NextMenuContribution>;
 
-  // MenuContribution
-  onStart() {
-    for (const contrib of this.contributions.getContributions()) {
-      contrib.registerNextMenus(this);
-    }
-  }
+  @Autowired(CommandRegistry)
+  protected readonly commandRegistry: CommandRegistry;
 
+  // TODO: 待移除
   addCommand(command: Command): IDisposable {
     this._commands.set(command.id, command);
     this._onDidChangeMenu.fire(MenuId.CommandPalette);
@@ -70,17 +67,19 @@ export class MenuRegistry implements IMenuRegistry {
     };
   }
 
+  // TODO: 待移除
   getCommand(id: string): Command | undefined {
     return this._commands.get(id);
   }
 
+  // TODO: 待移除
   getCommands(): ICommandsMap {
     const map = new Map<string, Command>();
     this._commands.forEach((value, key) => map.set(key, value));
     return map;
   }
 
-  registerMenuItem(id: MenuId, item: IMenuItem | ISubmenuItem): IDisposable {
+  registerMenuItem(id: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
     let array = this._menuItems.get(id);
     if (!array) {
       array = [item];
@@ -104,26 +103,39 @@ export class MenuRegistry implements IMenuRegistry {
     const result = (this._menuItems.get(id) || []).slice(0);
 
     if (id === MenuId.CommandPalette) {
-      // CommandPalette is special because it shows
-      // all commands by default
-      this._appendImplicitItems(result);
+      // CommandPalette 特殊处理, 默认展示所有的 command
+      // CommandPalette 负责添加 when 条件
+      this.appendImplicitMenuItems(result);
     }
+
     return result;
   }
 
-  private _appendImplicitItems(result: Array<IMenuItem | ISubmenuItem>) {
-    const set = new Set<string>();
-
+  private appendImplicitMenuItems(result: Array<IMenuItem | ISubmenuItem>) {
+    // 只保留 MenuItem
     const temp = result.filter((item) => isIMenuItem(item)) as IMenuItem[];
+    const set = new Set<string>(temp.map((n) => n.command));
 
-    for (const { command } of temp) {
-      set.add(command.id);
-    }
-    this._commands.forEach((command, id) => {
-      if (!set.has(id)) {
-        result.push({ command });
+    const allCommands = this.commandRegistry.getCommands();
+    // 将 commandRegistry 中 "其他" command 加进去
+    allCommands.forEach((command) => {
+      if (!set.has(command.id)) {
+        result.push({ command: command.id });
       }
     });
+  }
+}
+
+@Injectable()
+export class MenuRegistry extends CoreMenuRegistry {
+  @Autowired(NextMenuContribution)
+  protected readonly contributions: ContributionProvider<NextMenuContribution>;
+
+  // MenuContribution
+  onStart() {
+    for (const contrib of this.contributions.getContributions()) {
+      contrib.registerNextMenus(this);
+    }
   }
 }
 

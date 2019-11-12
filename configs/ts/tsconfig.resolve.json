@@ -231,6 +231,12 @@
       "@ali/ide-navigation-bar/lib/*": [
         "../packages/navigation-bar/src/*"
       ],
+      "@ali/ide-markers": [
+        "../packages/markers/src/index.ts"
+      ],
+      "@ali/ide-markers/lib/*": [
+        "../packages/markers/src/*"
+      ],
       "@ali/ide-startup": [
         "../packages/startup/src/index.ts"
       ],
@@ -332,6 +338,12 @@
       ],
       "@ali/ide-keymaps/lib/*": [
         "../packages/keymaps/src/*"
+      ],
+      "@ali/ide-outline": [
+        "../packages/outline/src/index.ts"
+      ],
+      "@ali/ide-outline/lib/*": [
+        "../packages/outline/src/*"
       ]
     }
   }

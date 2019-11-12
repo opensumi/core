@@ -256,6 +256,12 @@ export class KeyCode {
         } else {
           schema.ctrl = true;
         }
+      } else if (keyString === SpecialCases.CTRL) {
+        schema.ctrl = true;
+      } else if (keyString === SpecialCases.SHIFT) {
+        schema.shift = true;
+      } else if (keyString === SpecialCases.ALT) {
+        schema.alt = true;
       } else if (Key.isKey(key)) {
         if (Key.isModifier(key.code)) {
           if (key.code === Key.CONTROL_LEFT.code || key.code === Key.CONTROL_RIGHT.code) {
@@ -457,6 +463,9 @@ const SPECIAL_ALIASES: { [index: string]: string } = {
 export namespace SpecialCases {
   export const META = 'meta';
   export const MACMETA = '⌘';
+  export const CTRL = '⌃';
+  export const ALT = '⌥';
+  export const SHIFT = '⇧';
   export const CTRLCMD = 'ctrlcmd';
 }
 

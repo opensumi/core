@@ -1,20 +1,16 @@
 import * as React from 'react';
-import Anser from 'anser';
 import { MessageType } from '@ali/ide-core-browser';
+import Ansi from 'ansi-to-react';
 
 export interface AnsiConsoleItemProps {
   content: string;
   severity?: MessageType;
 }
 
-export const AnsiConsoleItem = ({
+export const AnsiConsoleItemView = ({
   content,
   severity,
 }: React.PropsWithChildren<AnsiConsoleItemProps>) => {
-  const htmlContent = Anser.ansiToHtml(content, {
-    use_classes: true,
-    remove_empty: true,
-  });
 
-  return <div className='theia-console-ansi-console-item' dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+  return <Ansi linkify={false}>{content}</Ansi>;
 };

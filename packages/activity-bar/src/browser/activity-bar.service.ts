@@ -1,14 +1,14 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE, MaybeNull, MenuModelRegistry, localize, SETTINGS_MENU_PATH } from '@ali/ide-core-browser';
+import { IContextKeyService, WithEventBus, OnEvent, SlotLocation, CommandRegistry, KeybindingRegistry, CommandService, localize } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
-import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent, measurePriority, Side, ViewContextKeyRegistry, findClosestPart } from '@ali/ide-core-browser/lib/layout';
-import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
+import { ViewContainerOptions, View, ResizeEvent, SideStateManager, RenderedEvent, measurePriority, Side, ViewContextKeyRegistry, findClosestPart } from '@ali/ide-core-browser/lib/layout';
+import { BoxPanel } from '@phosphor/widgets';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { SIDE_MENU_PATH } from '../common';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
+import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -51,9 +51,6 @@ export class ActivityBarService extends WithEventBus {
   private containersMap: Map<string, ContainerWrap> = new Map();
   private tabbarState: SideStateManager;
 
-  @Autowired(AppConfig)
-  private config: AppConfig;
-
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
 
@@ -72,11 +69,14 @@ export class ActivityBarService extends WithEventBus {
   @Autowired()
   layoutState: LayoutState;
 
-  @Autowired(MenuModelRegistry)
-  menus: MenuModelRegistry;
+  @Autowired(IMenuRegistry)
+  menus: IMenuRegistry;
 
-  @Autowired(ContextMenuRenderer)
-  contextMenuRenderer: ContextMenuRenderer;
+  @Autowired(MenuService)
+  private readonly menuService: MenuService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly contextMenuRenderer: ICtxMenuRenderer;
 
   @Autowired()
   private viewContainerRegistry: ViewContainerRegistry;
@@ -115,12 +115,12 @@ export class ActivityBarService extends WithEventBus {
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
-      const command = this.registerVisibleToggleCommand(containerId);
+      const command = this.registerVisibleToggleCommand(containerId, label);
       if (!views || !views.length) {
         if (!Fc) {
           console.error('视图数据或自定义视图请至少传入一种！');
         }
-        panelContainer = this.injector.get(ReactPanelWidget, [Fc!, containerId]);
+        panelContainer = this.injector.get(ReactPanelWidget, [Fc!, containerId, command]);
         panelContainer.title.label = label;
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
         if (expanded === true) {
@@ -203,9 +203,10 @@ export class ActivityBarService extends WithEventBus {
     const commandId = `activity.bar.toggle.${side}`;
     this.commandRegistry.registerCommand({
       id: commandId,
+      label: localize('layout.tabbar.hide', '隐藏'),
     }, {
-      execute: (anchor: {x: number, y: number}) => {
-        const target = document.elementFromPoint(anchor.x, anchor.y);
+      execute: (x, y) => {
+        const target = document.elementFromPoint(x, y);
         const targetTab = findClosestPart(target, '.p-TabBar-tab');
         if (targetTab) {
           const containerId = (targetTab as HTMLLIElement).dataset.containerid;
@@ -219,14 +220,17 @@ export class ActivityBarService extends WithEventBus {
   }
 
   // 注册tab的隐藏显示功能
-  private registerVisibleToggleCommand(containerId: string): string {
+  private registerVisibleToggleCommand(containerId: string, label: string): string {
     const commandId = `activity.bar.toggle.${containerId}`;
     this.commandRegistry.registerCommand({
       id: commandId,
+      // TODO @伊北 label应该在一处注册就好了
+      label,
     }, {
       execute: (forceShow?: boolean) => {
         this.doToggleTab(containerId, forceShow);
       },
+      // TODO @伊北 menu上的图标实现
       isToggled: () => {
         const { container } = this.containersMap.get(containerId)!;
         return !container.inVisible;
@@ -359,15 +363,21 @@ export class ActivityBarService extends WithEventBus {
       if (!widget) {
         this.commandService.executeCommand(`main-layout.${side}-panel.hide`);
       }
-      this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${side}`, '0_global'], {
-        label: localize('layout.tabbar.hide', '隐藏'),
-        commandId: this.registerGlobalToggleCommand(side as Side),
+      this.menus.registerMenuItem(`${SIDE_MENU_PATH}/${side}`, {
+        command: this.registerGlobalToggleCommand(side as Side),
+        order: 0,
+        group: '0_global',
       });
     }
     this.listenCurrentChange();
   }
 
-  handleSetting = (event) => {
-    this.contextMenuRenderer.render(SETTINGS_MENU_PATH, event.nativeEvent);
+  handleSetting = (event: React.MouseEvent<HTMLElement>) => {
+    const menus = this.menuService.createMenu(MenuId.SettingsIconMenu);
+    const menuNodes = generateCtxMenu({ menus });
+    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+      x: event.clientX,
+      y: event.clientY,
+    } });
   }
 }

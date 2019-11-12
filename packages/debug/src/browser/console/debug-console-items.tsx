@@ -3,10 +3,11 @@ import { DebugSession } from '../debug-session';
 import { MessageType, TreeNode, uuid } from '@ali/ide-core-browser';
 import * as styles from '../editor/debug-hover.module.less';
 import * as debugConsoleStyles from '../view/debug-console.module.less';
+import * as React from 'react';
 import * as cls from 'classnames';
+import { AnsiConsoleItemView } from './ansi-console-item';
 
 export interface SourceTree<T = any> extends TreeNode {
-  name: string;
   description?: string;
   descriptionClass?: string;
   labelClass?: string;
@@ -364,8 +365,10 @@ export class AnsiConsoleItem implements SourceTree {
     return uuid();
   }
 
-  get name(): string {
-    return this.content;
+  get name(): any {
+    return () => {
+      return <AnsiConsoleItemView content={this.content} severity={this.severity}/>;
+    };
   }
 
   get children() {

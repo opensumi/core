@@ -13,14 +13,12 @@ interface ExtensionListProps {
   loading?: boolean;
   empty?: React.ReactNode | string;
   list: RawExtension[];
-  showInstalled?: boolean;
 }
 
 export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   loading = false,
   list,
   empty,
-  showInstalled,
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
@@ -45,11 +43,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   }
 
   async function install(extension: RawExtension) {
-    const path = await extensionManagerService.installExtension(extension);
-    // 更新插件进程信息
-    await extensionManagerService.onInstallExtension(extension.extensionId, path);
-    // 标记为已安装
-    await extensionManagerService.makeExtensionStatus(true, extension.extensionId, path);
+    await extensionManagerService.installExtension(extension);
   }
 
   return (
@@ -67,7 +61,6 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
           extension={rawExtension}
           select={select}
           install={install}
-          showInstalled={showInstalled}
           />);
         })}
       </PerfectScrollbar>

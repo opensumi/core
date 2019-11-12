@@ -11,6 +11,8 @@ import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { ISettingGroup, IPreferenceSettingsService, ISettingSection } from '@ali/ide-core-browser';
 import throttle = require('lodash.throttle');
 import { IWorkspaceService } from '@ali/ide-workspace';
+import * as cls from 'classnames';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
@@ -32,7 +34,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
         <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
       </div>
       <div className = {styles.preferences_body}>
-        <PreferencesIndexes groups={groups} currentGroupId={currentGroup} setCurrentGroup={setCurrentGroup}></PreferencesIndexes>
+        <PreferencesIndexes groups={groups} currentGroupId={currentGroup} setCurrentGroup={setCurrentGroup} scope={currentScope}></PreferencesIndexes>
         <div className = {styles.preferences_items}>
           <PreferenceBody groupId={currentGroup} scope={currentScope}></PreferenceBody>
         </div>
@@ -41,19 +43,41 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   );
 });
 
-export const PreferencesIndexes = ({groups, currentGroupId: currentGroup, setCurrentGroup}: {groups: ISettingGroup[] , currentGroupId: string, setCurrentGroup: (groupId) => void }) => {
+export const PreferenceSections = (({preferenceSections}: {preferenceSections: ISettingSection[]}) => {
+
+  return <div className={styles.preference_section_link}>{
+    preferenceSections.map((section, idx) => {
+      return <div key={`${section.title}-${idx}`}><a href={`#${section.title}`} >{section.title}</a></div>;
+    })
+  }</div>;
+});
+
+export const PreferencesIndexes = ({groups, currentGroupId: currentGroup, setCurrentGroup, scope}: {groups: ISettingGroup[] , currentGroupId: string, setCurrentGroup: (groupId) => void, scope: PreferenceScope }) => {
+  const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
 
   return <div className = {styles.preferences_indexes}>
     <Scroll>
       {
         groups && groups.map(({id, title, iconClass}) => {
-          return <div key={`${id} - ${title}`} className={classnames({
-            [styles.index_item]: true,
-            [styles.activated]: currentGroup === id,
-          })} onClick={() => {setCurrentGroup(id); }}>
-          <span className={iconClass}></span>
-          {replaceLocalizePlaceholder(title)}
-          </div>;
+
+          const sections = preferenceService.getSections(id, scope);
+
+          return (<div>
+            <div key={`${id} - ${title}`} className={classnames({
+              [styles.index_item]: true,
+              [styles.activated]: currentGroup === id,
+            })} onClick={() => {setCurrentGroup(id); }}>
+            <span className={iconClass}></span>
+            {replaceLocalizePlaceholder(title)}
+            </div>
+            {
+              currentGroup === id ?
+              <div>
+                <PreferenceSections preferenceSections={sections}></PreferenceSections>
+              </div>
+              : <div></div>
+            }
+          </div>);
         })
       }
     </Scroll>
@@ -71,7 +95,7 @@ export const PreferenceBody = ({groupId, scope}: {groupId: string, scope: Prefer
 };
 
 export const PreferenceSection = ({section, scope}: {section: ISettingSection, scope: PreferenceScope}) => {
-  return <div className={styles.preference_section}>
+  return <div className={styles.preference_section} id={section.title}>
     {
       section.title ? <div className={styles.section_title}>{section.title}</div> : null
     }
@@ -275,7 +299,11 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
 
     const items: any[] = [];
     value.map((item, idx) => {
-      items.push(<li key={`${idx} - ${JSON.stringify(item)}`} onClick={() => { removeItem(idx); }}>{JSON.stringify(item)}</li>);
+      items.push(
+      <li className={styles.arr_items} key={`${idx} - ${JSON.stringify(item)}`}>
+        <div onClick={() => { removeItem(idx); }} className={cls(getIcon('delete'), styles.rm_icon, styles.arr_item)}></div>
+        <div className={styles.arr_item}>{JSON.stringify(item)}</div>
+      </li>);
     });
 
     return (
@@ -285,7 +313,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
         </div>
         {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
         <div className={styles.control_wrap}>
-          <ul>
+          <ul className={styles.arr_list}>
             {items}
           </ul>
           <input

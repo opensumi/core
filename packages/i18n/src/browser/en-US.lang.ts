@@ -51,6 +51,7 @@ export const localizationBundle = {
     'editor.splitToBottom': 'Split To Bottom',
     'editor.closeAllInGroup': 'Close All',
     'editor.closeToRight': 'Close To Right',
+    'editor.closeSaved': 'Close Saved',
     'editor.close': 'Close',
     'editor.action.accept': 'Accept Changes (Use version on the right)',
     'editor.action.revert': 'Revert Changes (Use version on the left)',
@@ -244,7 +245,7 @@ export const localizationBundle = {
     'validate.tree.fileNameExistsError': 'File or folder **{0}** already exists. Please use a different name.',
     'validate.tree.invalidFileNameError': 'The name **{0}** is not available. Please use a different name.',
 
-    'open.editors.title': 'OPEN EDITORS',
+    'open.editors.title': 'OPEND EDITORS',
     'open.editors.save.all': 'Save All',
     'open.editors.close.all': 'Close All',
     'open.editors.close.byId': 'Close files in the group',
@@ -286,7 +287,7 @@ export const localizationBundle = {
     'marketplace.extension.enable.workspace': 'Enable(workspace)',
     'marketplace.extension.disable.workspace': 'Disable(workspace)',
     'marketplace.extension.install': 'Install',
-    'marketplace.extension.container': 'Extension',
+    'marketplace.extension.container': 'Extension Market',
     'marketplace.extension.empty.disabled': 'No disabled extensions yet',
     'marketplace.extension.notfound': 'No Extension',
     'marketplace.panel.hot': 'Hot Extensions',
@@ -322,5 +323,9 @@ export const localizationBundle = {
     'window.toggleDevTools': 'Toggle Developer Tools',
     'window.reload': 'Reload Window',
     'about': 'About',
+
+    'outline.title': 'OutLine',
+    'outline.noinfo': 'There is no outline information from the active editor',
+    'outline.collapse.all': 'Collapse All',
   },
 };

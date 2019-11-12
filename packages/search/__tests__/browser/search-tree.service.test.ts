@@ -10,6 +10,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
+import { IContextKeyService } from '@ali/ide-core-browser';
 
 import { ContentSearchClientService } from '../../src/browser/search.service';
 import {
@@ -78,6 +79,25 @@ class MockEditorDocumentModelContentRegistry {
   registerEditorDocumentModelContentProvider() {}
 }
 
+@Injectable()
+class MockContextKeyService {
+  store: Map<string, any> = new Map();
+  createKey(key: string, value: any) {
+    this.store.set(key, value);
+    return {
+      set: (val: any) => {
+        this.store.set(key, val);
+      },
+    };
+  }
+  createScoped() {
+    return this;
+  }
+  match(key) {
+    return this.store.get(key) !== undefined;
+  }
+}
+
 describe('search.service.ts', () => {
   let injector: Injector;
   let searchService: IContentSearchClientService;
@@ -129,6 +149,9 @@ describe('search.service.ts', () => {
     }, {
       token: IEditorDocumentModelContentRegistry,
       useClass: MockEditorDocumentModelContentRegistry,
+    }, {
+      token: IContextKeyService,
+      useClass: MockContextKeyService,
     });
 
     searchService = injector.get(ContentSearchClientService);
