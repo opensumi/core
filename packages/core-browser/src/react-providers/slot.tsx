@@ -66,29 +66,33 @@ export class ErrorBoundary extends React.Component {
 }
 
 export interface RendererProps { components: ComponentRegistryInfo[]; }
-type Renderer = React.FunctionComponent<RendererProps>;
+export type Renderer = React.FunctionComponent<RendererProps>;
 
-const rendererRegistry: Map<string, Renderer> = new Map();
+export class SlotRendererRegistry {
+  static DefaultRenderer({ components }: RendererProps) {
+    return components && <ErrorBoundary>
+      {
+        components.map((componentInfo, index: number) => {
+          // 默认的只渲染一个
+          const Component = componentInfo.views[0].component!;
+          return <Component {...(componentInfo.options && componentInfo.options.initialProps)} key={`${Component.name}-${index}`} />;
+        })
+      }
+    </ErrorBoundary>;
+  }
 
-export function registerSlotRenderer(slot: string, renderer: Renderer) {
-  rendererRegistry.set(slot, renderer);
+  rendererRegistry: Map<string, Renderer> = new Map();
+
+  registerSlotRenderer(slot: string, renderer: Renderer) {
+    this.rendererRegistry.set(slot, renderer);
+  }
+
+  getSlotRenderer(slot: string): Renderer {
+    return this.rendererRegistry.get(slot) || SlotRendererRegistry.DefaultRenderer;
+  }
 }
 
-export function DefaultRenderer({ components }: RendererProps) {
-  return components && <ErrorBoundary>
-    {
-      components.map((componentInfo, index: number) => {
-        // 默认的只渲染一个
-        const Component = componentInfo.views[0].component!;
-        return <Component {...(componentInfo.options && componentInfo.options.initialProps)} key={`${Component.name}-${index}`} />;
-      })
-    }
-  </ErrorBoundary>;
-}
-
-function getSlotRenderer(slot: string): Renderer {
-  return rendererRegistry.get(slot) || DefaultRenderer;
-}
+export const slotRendererRegistry = new SlotRendererRegistry();
 
 export function SlotRenderer({ slot, ...props }: any) {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
@@ -106,9 +110,14 @@ export function SlotRenderer({ slot, ...props }: any) {
       componentInfos.push(info);
     }
   });
-  const Renderer = getSlotRenderer(slot);
+  const Renderer = slotRendererRegistry.getSlotRenderer(slot);
   return <Renderer components={componentInfos} {...props} />;
 }
+
+export interface SlotRendererContribution {
+  registerRenderer(registry: SlotRendererRegistry): void;
+}
+export const SlotRendererContribution = Symbol('SlotRendererContribution');
 
 export interface SlotRendererProps {
   Component: React.FunctionComponent<any> | React.FunctionComponent<any>[];

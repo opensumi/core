@@ -4,13 +4,11 @@ import * as styles from './styles.module.less';
 import { Layout } from './layout';
 
 export const BoxPanel: React.FC<{
-  children?: Array<React.ReactElement<{ size?: string; flex?: number; id: string; }>>;
+  children?: Array<React.ReactElement<{ flex?: number; id: string; }>>;
   className?: string;
   direction?: Layout.direction;
-  size?: number;
   flex?: number;
-}> = (({ className, children, direction, ...restProps }) => {
-  direction = direction || 'left-to-right';
+}> = (({ className, children, direction = 'left-to-right', ...restProps }) => {
   return (
     <div {...restProps} className={clsx(styles['box-panel'], className)} style={{flexDirection: Layout.getFlexDirection(direction)}}>
       {children && children.map((child) => {
@@ -18,9 +16,7 @@ export const BoxPanel: React.FC<{
           <div
             key={child.props.id}
             className={clsx(styles.wrapper)}
-            style={
-              child.props.size ? {[Layout.getSizeProperty(direction!)]: child.props.size} : {flex: child.props.flex || 1}
-            }>
+            style={child.props.flex ? {flex: child.props.flex} : {}}>
             {child}
           </div>
         )

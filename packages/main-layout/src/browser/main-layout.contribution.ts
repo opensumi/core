@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution, SlotLocation } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry } from '@ali/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '../common';
 import { ComponentContribution, ComponentRegistry, VisibleChangedEvent } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { TabbarRenderer } from './tabbar/tabbar.view';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -39,8 +40,8 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
 
-@Domain(CommandContribution, ClientAppContribution)
-export class MainLayoutModuleContribution implements CommandContribution, ClientAppContribution {
+@Domain(CommandContribution, ClientAppContribution, SlotRendererContribution)
+export class MainLayoutModuleContribution implements CommandContribution, ClientAppContribution, SlotRendererContribution {
 
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
@@ -53,6 +54,9 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
 
   @Autowired(ComponentContribution)
   contributionProvider: ContributionProvider<ComponentContribution>;
+
+  @Autowired(SlotRendererContribution)
+  rendererContributionProvider: ContributionProvider<SlotRendererContribution>;
 
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
@@ -67,6 +71,10 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
       contribution.registerComponent(this.componentRegistry);
+    }
+    const rendererContributions = this.rendererContributionProvider.getContributions();
+    for (const contribution of rendererContributions) {
+      contribution.registerRenderer(slotRendererRegistry);
     }
     // 全局只要初始化一次
     await this.layoutState.initStorage();
@@ -91,6 +99,10 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
       bottomPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.bottom));
     });
+  }
+
+  registerRenderer(registry: SlotRendererRegistry) {
+    registry.registerSlotRenderer('right', TabbarRenderer);
   }
 
   registerCommands(commands: CommandRegistry): void {
