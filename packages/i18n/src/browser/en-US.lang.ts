@@ -42,6 +42,7 @@ export const localizationBundle = {
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
     'editor.saveCurrent': 'Save Current File',
+    'editor.title.context.close': 'Close',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',
     'editor.cannotOpenBinary': 'Cannot open binary file in this editor.',

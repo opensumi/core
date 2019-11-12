@@ -44,6 +44,7 @@ export const localizationBundle = {
     'editor.undo': '撤销',
     'editor.redo': '重做',
     'editor.saveCurrent': '保存当前文件',
+    'editor.title.context.close': '关闭',
     'editor.closeCurrent': '关闭当前编辑窗口',
     'editor.openExternal': '使用外部软件打开',
     'editor.cannotOpenBinary': '我们无法在编辑器中展示这个文件。',
@@ -54,6 +55,7 @@ export const localizationBundle = {
     'editor.closeAllInGroup': '关闭全部',
     'editor.closeSaved': '关闭已保存',
     'editor.closeOtherEditors': '关闭其他',
+    'editor.closeToRight': '关闭到右侧',
 
     'edit.cut': '剪切',
     'edit.copy': '复制',
