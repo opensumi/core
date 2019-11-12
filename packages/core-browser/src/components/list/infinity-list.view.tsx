@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './infinity-list.module.less';
+import { PerfectScrollbar } from '../scrollbar';
 
 const VISIBLE_SLICE_COUNT = 3;
 
@@ -345,7 +346,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     const { className, placeholders, isDrained } = this.props;
     const { topSpaces, bottomSpaces } = this.state;
     return (
-      <div className={cls(styles.infinity_container, className)} ref={(el) => (this.rootEl = el)}>
+      <PerfectScrollbar className={cls(styles.infinity_container, className)} containerRef={(el) => (this.rootEl = el)}>
         <div
           ref={(el) => (this.listEl = el)}
           style={{
@@ -367,7 +368,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
           </div>
         )}
         {isDrained && placeholders.drained}
-      </div>
+      </PerfectScrollbar>
     );
   }
 }
