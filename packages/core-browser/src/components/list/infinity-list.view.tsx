@@ -52,6 +52,7 @@ interface InfinityListState {
   slices: any[];
   currentSliceIndex: number;
   topSpaces: any[];
+  bottomSpaces: any[];
 }
 
 const defaultInfinityListState = {
@@ -61,6 +62,7 @@ const defaultInfinityListState = {
   slices: [],
   currentSliceIndex: 0,
   topSpaces: [],
+  bottomSpaces: [],
 };
 
 /**
@@ -209,9 +211,16 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   }
 
   bindBoundaryEls = () => {
-    const { slices, currentSliceIndex } = this.state;
+    const { slices, currentSliceIndex, bottomSpaces, topSpaces } = this.state;
     const nodeList = this.listEl.childNodes;
     this.topBoundary = nodeList[slices[currentSliceIndex].amount];
+    // 仅在初次渲染时初始化底部缺省空间
+    if (bottomSpaces.length === 0 && topSpaces.length === 0) {
+      const sliceHeight = this.topBoundary.getBoundingClientRect().top - this.listEl.firstChild.getBoundingClientRect().top;
+      this.setState({
+        bottomSpaces: new Array(slices.length - VISIBLE_SLICE_COUNT).fill(sliceHeight),
+      });
+    }
     this.bottomBoundary =
       nodeList[
       slices[currentSliceIndex].amount +
@@ -243,7 +252,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     }
 
     const { sliceThreshold } = this.props;
-    const { slices, currentSliceIndex, topSpaces } = this.state;
+    const { slices, currentSliceIndex, topSpaces, bottomSpaces } = this.state;
 
     const topBoundaryLoc = this.topBoundary.getBoundingClientRect().top;
     const bottomBoundaryLoc = this.bottomBoundary.getBoundingClientRect().top;
@@ -251,7 +260,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     const containerTop = this.containerEl.getBoundingClientRect().top;
 
     if (
-      bottomBoundaryLoc < containerTop + sliceThreshold &&
+      bottomBoundaryLoc - containerTop < sliceThreshold &&
       currentSliceIndex + VISIBLE_SLICE_COUNT < slices.length
     ) {
       this.processing = true;
@@ -261,6 +270,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
         {
           currentSliceIndex: currentSliceIndex + 1,
           topSpaces: topSpaces.concat(topSpace),
+          bottomSpaces: bottomSpaces.slice(0, bottomSpaces.length - 1),
         },
         () => {
           this.bindBoundaryEls();
@@ -281,6 +291,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
         {
           currentSliceIndex: currentSliceIndex - 1,
           topSpaces: topSpaces.slice(0, topSpaces.length - 1),
+          bottomSpaces: bottomSpaces.concat(topSpaces.slice(topSpaces.length - 1)),
         },
         () => {
           this.bindBoundaryEls();
@@ -332,13 +343,17 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
 
   render() {
     const { className, placeholders, isDrained } = this.props;
-    const { topSpaces } = this.state;
+    const { topSpaces, bottomSpaces } = this.state;
     return (
       <div className={cls(styles.infinity_container, className)} ref={(el) => (this.rootEl = el)}>
         <div
           ref={(el) => (this.listEl = el)}
           style={{
             paddingTop: `${topSpaces.reduce(
+              (total, curr) => curr + total,
+              0,
+            )}px`,
+            paddingBottom: `${bottomSpaces.reduce(
               (total, curr) => curr + total,
               0,
             )}px`,
