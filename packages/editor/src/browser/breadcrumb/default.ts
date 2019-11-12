@@ -11,7 +11,7 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { FileStat } from '@ali/ide-file-service/lib/common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
 import { WorkbenchEditorService, IEditor } from '../../common';
-import { DocumentSymbolChangedEvent, DocumentSymbol, DocumentSymbolStore } from './document-symbol';
+import { DocumentSymbolChangedEvent, DocumentSymbol, DocumentSymbolStore, INormalizedDocumentSymbol } from './document-symbol';
 import debounce = require('lodash.debounce');
 import { getIcon, getSymbolIcon } from '@ali/ide-core-browser/lib/icon';
 
@@ -124,7 +124,6 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
     }
     const symbols = this.documentSymbolStore.getDocumentSymbol(uri);
     if (symbols && symbols.length > 0) {
-      normalizeDocumentSymbols(symbols, {children: symbols});
       const currentSymbols = findCurrentDocumentSymbol(symbols, editor.monacoEditor.getPosition());
       if (currentSymbols.length > 0) {
         return currentSymbols.map((symbol) => this.createFromDocumentSymbol(symbol, editor));
@@ -148,10 +147,9 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
     }
   }
 
-  private createFromDocumentSymbol(documentSymbol: DocumentSymbol, editor: IEditor): IBreadCrumbPart {
-    const symbol = documentSymbol as INormalizedDocumentSymbol;
+  private createFromDocumentSymbol(symbol: INormalizedDocumentSymbol, editor: IEditor): IBreadCrumbPart {
     const res: IBreadCrumbPart = {
-      name: documentSymbol.name,
+      name: symbol.name,
       icon: getSymbolIcon(symbol.kind),
       onClick: () => {
         editor.setSelection({
@@ -204,12 +202,12 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
   }
 }
 
-export function findCurrentDocumentSymbol(documentSymbols: DocumentSymbol[], position: MaybeNull<IPosition>): DocumentSymbol[] {
-  const result: DocumentSymbol[] = [];
+export function findCurrentDocumentSymbol(documentSymbols: INormalizedDocumentSymbol[], position: MaybeNull<IPosition>): INormalizedDocumentSymbol[] {
+  const result: INormalizedDocumentSymbol[] = [];
   if (!position) {
     return result;
   }
-  let toFindIn: DocumentSymbol[] | undefined  = documentSymbols;
+  let toFindIn: INormalizedDocumentSymbol[] | undefined  = documentSymbols;
   while (toFindIn && toFindIn.length > 0) {
     let found = false;
     for (const documentSymbol of toFindIn) {
@@ -256,25 +254,6 @@ function positionInRange(pos: IPosition, range: IRange): boolean {
   } else {
     return false;
   }
-}
-
-function normalizeDocumentSymbols(documentSymbols: DocumentSymbol[], parent: INormalizedDocumentSymbol | IDummyRoot): INormalizedDocumentSymbol[] {
-  documentSymbols.forEach((documentSymbol) => {
-    (documentSymbol as INormalizedDocumentSymbol).parent = parent;
-    if (documentSymbol.children && documentSymbol.children.length > 0) {
-      normalizeDocumentSymbols(documentSymbol.children, documentSymbol);
-    }
-  });
-  return documentSymbols;
-}
-
-export interface INormalizedDocumentSymbol extends DocumentSymbol {
-  parent?: INormalizedDocumentSymbol | IDummyRoot;
-  children?: INormalizedDocumentSymbol[];
-}
-
-export interface IDummyRoot {
-  children?: INormalizedDocumentSymbol[];
 }
 
 function sortByRangeStart(rangeA: IRange, rangeB: IRange) {

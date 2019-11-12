@@ -51,6 +51,18 @@
           background: var(--list-activeSelectionBackground);
         }
       }
+      .preference_section_link {
+        margin-left: 20px;
+        a {
+          color: var(--titleBar-inactiveForeground);
+          &:hover {
+            color: var(--titleBar-activeForeground);
+          }
+          &.activated {
+            color: var(--titleBar-activeForeground);
+          }
+        }
+      }
     }
     .preferences_items{
       flex-grow: 1;

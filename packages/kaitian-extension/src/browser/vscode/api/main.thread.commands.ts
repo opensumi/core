@@ -69,15 +69,22 @@ export class MainThreadCommands implements IMainThreadCommands {
   $registerCommand(id: string): void {
     // this.logger.log('$registerCommand id', id);
     const proxy = this.proxy;
-    this.commands.set(id, this.commandRegistry.registerCommand({
-      id,
-    }, {
-      execute: (...args) => {
-        args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
-        return proxy.$executeContributedCommand(id, ...args);
-      },
-    }));
+    const command = this.commandRegistry.getCommand(id);
 
+    const execute = (...args) => {
+      args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
+      return proxy.$executeContributedCommand(id, ...args);
+    };
+
+    /**
+     * command 可能在 contribute/commands 通过贡献点已经贡献了 command desc
+     * 这里只需要给其注册一个 handler 即可
+     */
+    const dispose = command
+      ? this.commandRegistry.registerHandler(id, { execute })
+      : this.commandRegistry.registerCommand({ id }, { execute });
+
+    this.commands.set(id, dispose);
   }
 
   $unregisterCommand(id: string): void {

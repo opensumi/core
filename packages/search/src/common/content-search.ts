@@ -190,7 +190,6 @@ export namespace SearchBindingContextIds {
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
   badge?: number;
-  highLightRange?: TreeNodeHighlightRange;
   searchResult?: ContentSearchResult;
   [key: string]: any;
 }

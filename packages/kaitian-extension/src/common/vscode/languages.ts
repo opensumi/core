@@ -1,9 +1,10 @@
 import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
-import { SerializedDocumentFilter, MarkerData, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, SignatureHelp, TextEdit, FileOperationOptions, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem } from './model.api';
+import { SerializedDocumentFilter, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, SignatureHelp, TextEdit, FileOperationOptions, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem } from './model.api';
 import { Disposable } from './ext-types';
 import { UriComponents } from 'vscode-uri';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import globToRegExp = require('glob-to-regexp');
+import { IMarkerData } from '@ali/ide-core-common';
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;
@@ -20,7 +21,7 @@ export interface IMainThreadLanguages {
   $registerCodeLensSupport(handle: number, selector: SerializedDocumentFilter[], eventHandle?: number): void;
   $emitCodeLensEvent(eventHandle: number, event?: any): void;
   $clearDiagnostics(id: string): void;
-  $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void;
+  $changeDiagnostics(id: string, delta: [string, IMarkerData[]][]): void;
   $registerQuickFixProvider(handle: number, selector: SerializedDocumentFilter[], codeActionKinds?: string[]): void;
   $registerImplementationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $setLanguageConfiguration(handle: number, languageId: string, configuration: SerializedLanguageConfiguration): void;

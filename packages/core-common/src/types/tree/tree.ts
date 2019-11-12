@@ -28,6 +28,7 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   readonly id: number | string;
   /**
    * 可读的节点名称
+   * 可能为ReactComponent
    */
   readonly name: string | React.JSXElementConstructor<any>;
   /**
@@ -52,9 +53,14 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
    */
   readonly icon?: string;
   /**
-   * 节点描述
+   * 图标的样式
    */
-  readonly description?: string;
+  readonly iconStyle?: React.CSSProperties;
+  /**
+   * 节点描述
+   * 可能为ReactComponent
+   */
+  readonly description?: string | React.JSXElementConstructor<any>;
   /**
    * 当该值为false时节点不渲染，否则渲染
    */
@@ -67,6 +73,14 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
    * 节点尾部标志，如M，C等
    */
   readonly badge?: number | string;
+  /**
+   * badge限制
+   * 当badge为number时
+   * badgeLimit = 99，badge最多显示为99+
+   * 当badge为string时
+   * badgeLimit = 2，badge最多显示不超过2个字符
+   */
+  readonly badgeLimit?: number;
   /**
    * 节点字体颜色
   */
@@ -97,7 +111,10 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   /**
    * 高亮区域
    */
-  readonly highLightRange?: TreeNodeHighlightRange;
+  readonly highLightRanges?: {
+    name?: TreeNodeHighlightRange[],
+    description?: TreeNodeHighlightRange[]
+  };
 
   /**
    * 高亮区域替换文本

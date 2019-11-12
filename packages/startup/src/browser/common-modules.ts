@@ -29,6 +29,8 @@ import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
 import { StorageModule } from '@ali/ide-storage/lib/browser';
 import { SCMModule } from '@ali/ide-scm/lib/browser';
 
+import { MarkersModule } from '@ali/ide-markers/lib/browser';
+
 import { WindowModule } from '@ali/ide-window/lib/browser';
 import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 
@@ -64,6 +66,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     FileSchemeModule,
     OutputModule,
     QuickOpenModule,
+    MarkersModule,
 
     ThemeModule,
     ActivationEventModule,
