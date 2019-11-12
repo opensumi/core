@@ -364,7 +364,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
     commands.registerCommand(EDITOR_COMMANDS.GO_TO_GROUP, {
       execute: async (index: number = 1) => {
-        const group = this.workbenchEditorService.sortedEditorGroups[index - 1], ;
+        const group = this.workbenchEditorService.sortedEditorGroups[index - 1];
         if (group) {
           group.focus();
         }
@@ -374,7 +374,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     commands.registerCommand(EDITOR_COMMANDS.MOVE_GROUP, {
       execute: async (direction?: Direction) => {
         if (direction) {
-          const group = this.workbenchEditorService.currentEditorGroup, ;
+          const group = this.workbenchEditorService.currentEditorGroup;
           if (group) {
             group.grid.move(direction);
           }
