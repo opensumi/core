@@ -21,7 +21,7 @@ export const Output = observer(() => {
     };
 
     if (outputService.selectedChannel) {
-        for (const text of outputService.selectedChannel.getLines) {
+        for (const text of outputService.selectedChannel.getLines()) {
             const lines = text.split(/[\n\r]+/);
             lines.map((line, idx) => {
               result.push(<div style={style} key={`${idx}-${line}`}><Ansi linkify={false}>{line}</Ansi></div>);

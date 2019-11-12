@@ -7,6 +7,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 // import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
+import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from '@ali/ide-output';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
 export class StartupContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution {
@@ -27,6 +28,11 @@ export class StartupContribution implements CommandContribution, KeybindingContr
   logger: Logger;
 
   onStart() {
+    /*
+    this.eventBus.on(ContentChangeEvent, (event) => {
+      console.log(event.payload.channelName, event.payload.value);
+    });
+    */
   }
 
   registerComponent(registry: ComponentRegistry) {
