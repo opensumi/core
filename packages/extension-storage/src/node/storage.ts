@@ -30,8 +30,8 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     await this.fileSystem.createFolder(URI.file(workspaceDataDirPath).toString());
     this.workspaceDataDirPath = workspaceDataDirPath;
 
-    this.globalDataPath = path.join(this.workspaceDataDirPath, ExtensionPaths.EXTENSIONS_GLOBAL_STORAGE_DIR, 'global-state.json');
-    await this.fileSystem.createFolder(URI.file(path.dirname(this.globalDataPath)).toString());
+    this.globalDataPath = path.join(this.workspaceDataDirPath, ExtensionPaths.EXTENSIONS_GLOBAL_STORAGE_DIR);
+    await this.fileSystem.createFolder(URI.file(this.globalDataPath).toString());
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);
 
@@ -90,7 +90,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     }
 
     if (isGlobal) {
-      return this.globalDataPath!;
+      return path.join(this.globalDataPath!, 'global-state.json');
     } else {
       const storagePath = await this.extensionStoragePathsServer.getLastStoragePath();
       return storagePath ? path.join(storagePath, 'workspace-state.json') : undefined;
