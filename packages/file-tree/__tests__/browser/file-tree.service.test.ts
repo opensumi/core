@@ -1,5 +1,5 @@
 import { URI, localize } from '@ali/ide-core-common';
-import { FileTreeService } from '../../src/browser';
+import { FileTreeService } from '../../src/browser/file-tree.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IFileTreeAPI } from '../../src/common';
@@ -8,10 +8,11 @@ import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
 import { File, Directory } from '../../src/browser/file-tree-item';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
-import { CorePreferences, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { CorePreferences, EDITOR_COMMANDS, IContextKeyService } from '@ali/ide-core-browser';
 import { IDialogService } from '@ali/ide-overlay';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
+import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 
 describe('FileTreeService should be work', () => {
   let treeService: FileTreeService;
@@ -36,6 +37,10 @@ describe('FileTreeService should be work', () => {
       {
         token: IFileServiceClient,
         useClass: MockFileServiceClient,
+      },
+      {
+        token: IContextKeyService,
+        useClass: MockContextKeyService,
       },
     );
 
@@ -433,7 +438,7 @@ describe('FileTreeService should be work', () => {
       });
 
       const warning = jest.fn(() => {
-        return localize('explorer.comfirm.replace.ok');
+        return localize('file.comfirm.replace.ok');
       });
       injector.mock(IDialogService, 'warning', warning);
       const moveFile = jest.fn();
@@ -474,7 +479,7 @@ describe('FileTreeService should be work', () => {
         useValue: {},
       });
       const warning = jest.fn(() => {
-        return localize('explorer.comfirm.delete.ok');
+        return localize('file.comfirm.delete.ok');
       });
       injector.mock(IDialogService, 'warning', warning);
       const deleteFile = jest.fn();

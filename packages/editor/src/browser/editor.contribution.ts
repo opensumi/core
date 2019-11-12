@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, IEditorGroup } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas } from '@ali/ide-core-browser';
@@ -16,14 +16,15 @@ import { NavigationMenuContainer } from './navigation.view';
 import { IEditorDocumentModelService } from './doc-model/types';
 import * as copy from 'copy-to-clipboard';
 import { FormattingSelector } from './format/formatterSelect';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
-interface Resource {
+interface ResourceArgs {
   group: EditorGroup;
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution {
+@Domain(CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, BrowserEditorContribution, NextMenuContribution)
+export class EditorContribution implements CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, BrowserEditorContribution, NextMenuContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -252,8 +253,12 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP, {
-      execute: async () => {
-        const group = this.workbenchEditorService.currentEditorGroup;
+      execute: async (resource: ResourceArgs) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
         if (group) {
           await group.closeAll();
         }
@@ -261,8 +266,12 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_SAVED, {
-      execute: async (uri?: URI) => {
-        const group = this.workbenchEditorService.currentEditorGroup;
+      execute: async (resource: ResourceArgs) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
         if (group) {
           await group.closeSaved();
         }
@@ -270,7 +279,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -283,7 +292,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -296,7 +305,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_TO_RIGHT, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -331,7 +340,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_LEFT, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -344,7 +353,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -377,7 +386,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_TOP, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -390,7 +399,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_BOTTOM, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -629,53 +638,56 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
   }
 
-  registerMenus(menus: MenuModelRegistry) {
-    menus.registerMenuAction(['editor', 'split'], {
-      commandId: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
-      label: localize('editor.splitToLeft'),
+  registerNextMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
+      group: '9_split',
     });
-    menus.registerMenuAction(['editor', 'split'], {
-      commandId: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
-      label: localize('editor.splitToRight'),
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
+      group: '9_split',
     });
-    menus.registerMenuAction(['editor', 'split'], {
-      commandId: EDITOR_COMMANDS.SPLIT_TO_TOP.id,
-      label: localize('editor.splitToTop'),
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.SPLIT_TO_TOP.id,
+      group: '9_split',
     });
-    menus.registerMenuAction(['editor', 'split'], {
-      commandId: EDITOR_COMMANDS.SPLIT_TO_BOTTOM.id,
-      label: localize('editor.splitToBottom'),
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.SPLIT_TO_BOTTOM.id,
+      group: '9_split',
     });
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE.id,
-      label: localize('editor.close', '关闭'),
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE.id,
+      group: '0_tab',
+      order: 1,
     });
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
-      label: localize('editor.closeAllInGroup'),
-    });
-
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE_SAVED.id,
-      label: localize('editor.closeSaved'),
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
+      group: '0_tab',
+      order: 2,
     });
 
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP.id,
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE_SAVED.id,
+      group: '0_tab',
+      order: 3,
     });
 
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
-      label: localize('editor.closeToRight', '关闭到右侧'),
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP.id,
+      group: '0_tab',
+      order: 4,
     });
 
-    menus.registerMenuAction(['editor', 'title', '9_close'], {
-      commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
-      label: localize('editor.closeAllInGroup', '关闭全部'),
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
+      group: '0_tab',
+      order: 5,
     });
-  }
 
-  registerToolBarElement(registry: IToolBarViewService): void {
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
+      group: '0_internal',
+    });
   }
 
   registerEditorActions(registry: IEditorActionRegistry) {
