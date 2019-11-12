@@ -15,6 +15,7 @@ import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
 import { IEditorDocumentModelService } from './doc-model/types';
 import * as copy from 'copy-to-clipboard';
+import { FormattingSelector } from './format/formatterSelect';
 
 interface Resource {
   group: EditorGroup;
@@ -76,6 +77,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
     const { MonacoTextModelService } = require('./doc-model/override');
     const textModelService = this.injector.get(MonacoTextModelService);
     monacoService.registerOverride(ServiceNames.TEXT_MODEL_SERVICE, textModelService);
+    const formatSelector = this.injector.get(FormattingSelector);
+    monaco.format.FormattingConflicts._selectors.unshift(formatSelector.select.bind(formatSelector) as any);
   }
 
   onWillStop(app: IClientApp) {
@@ -355,7 +358,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand(EDITOR_COMMANDS.GO_TO_GROUP, {
       execute: async (index: number = 1) => {
-        const group = this.workbenchEditorService.sortedEditorGroups[index - 1], ;
+        const group = this.workbenchEditorService.sortedEditorGroups[index - 1];
         if (group) {
           group.focus();
         }
@@ -365,7 +368,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     commands.registerCommand(EDITOR_COMMANDS.MOVE_GROUP, {
       execute: async (direction?: Direction) => {
         if (direction) {
-          const group = this.workbenchEditorService.currentEditorGroup, ;
+          const group = this.workbenchEditorService.currentEditorGroup;
           if (group) {
             group.grid.move(direction);
           }

@@ -55,6 +55,8 @@ export const localizationBundle = {
     'editor.close': 'Close',
     'editor.action.accept': 'Accept Changes (Use version on the right)',
     'editor.action.revert': 'Revert Changes (Use version on the left)',
+    'editor.format.chooseFormatter': 'Choose the Formatter',
+    'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',

@@ -199,16 +199,16 @@ export class EditorGrid implements IDisposable {
           const index = this.parent.children.indexOf(this);
           if (index > 0) {
             runInAction(() => {
-              this.parent.children.splice(index, 1);
-              this.parent?.children.splice(index - 1, 0, this);
+              this.parent!.children.splice(index, 1);
+              this.parent!.children.splice(index - 1, 0, this);
             });
           }
         } else if (direction === Direction.RIGHT) {
           const index = this.parent.children.indexOf(this);
           if (index < this.parent.children.length) {
             runInAction(() => {
-              this.parent.children.splice(index, 1);
-              this.parent?.children.splice(index + 1, 0, this);
+              this.parent!.children.splice(index, 1);
+              this.parent!.children.splice(index + 1, 0, this);
             });
           }
         }
@@ -217,16 +217,16 @@ export class EditorGrid implements IDisposable {
           const index = this.parent.children.indexOf(this);
           if (index > 0) {
             runInAction(() => {
-              this.parent.children.splice(index, 1);
-              this.parent?.children.splice(index - 1, 0, this);
+              this.parent!.children.splice(index, 1);
+              this.parent!.children.splice(index - 1, 0, this);
             });
           }
         } else if (direction === Direction.DOWN) {
           const index = this.parent.children.indexOf(this);
           if (index < this.parent.children.length) {
             runInAction(() => {
-              this.parent.children.splice(index, 1);
-              this.parent?.children.splice(index + 1, 0, this);
+              this.parent!.children.splice(index, 1);
+              this.parent!.children.splice(index + 1, 0, this);
             });
           }
         }
