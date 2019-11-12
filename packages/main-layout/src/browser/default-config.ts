@@ -11,7 +11,7 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@ali/ide-explorer', '@ali/ide-search', '@ali/ide-scm', '@ali/ide-debug', '@ali/ide-extension-manager'],
   },
   [SlotLocation.right]: {
-    modules: [],
+    modules: ['@ali/ide-explorer'],
   },
   [SlotLocation.main]: {
     modules: ['@ali/ide-editor'],

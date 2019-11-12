@@ -5,7 +5,7 @@ import { IEventBus } from '@ali/ide-core-common';
 import { Widget } from '@phosphor/widgets';
 import { Message } from '@phosphor/messaging';
 import { Signal } from '@phosphor/signaling/lib';
-import { AppConfig, SlotLocation, ConfigProvider, SlotRenderer, ResizeEvent, ResizePayload } from '..';
+import { AppConfig, SlotLocation, ConfigProvider, ComponentRenderer, ResizeEvent, ResizePayload } from '..';
 
 const WIDGET_OPTION = Symbol();
 const WIDGET_LOCATION = Symbol();
@@ -49,7 +49,7 @@ export class IdeWidget extends Widget {
     if (this.Component) {
       ReactDOM.render(
         <ConfigProvider value={this.configContext} >
-          <SlotRenderer Component={this.Component} />
+          <ComponentRenderer Component={this.Component} />
         </ConfigProvider>
       , this.node);
     } else {
@@ -62,7 +62,7 @@ export class IdeWidget extends Widget {
     return new Promise((resolve) => {
       ReactDOM.render(
         <ConfigProvider value={this.configContext} >
-          <SlotRenderer Component={component} />
+          <ComponentRenderer Component={component} />
         </ConfigProvider>
       , this.node, () => {
         resolve();

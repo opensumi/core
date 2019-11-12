@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Title, Widget, BoxPanel } from '@phosphor/widgets';
-import { AppConfig, ConfigProvider, SlotRenderer, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
+import { AppConfig, ConfigProvider, ComponentRenderer, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
 import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
 import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload, AccordionWidget } from '@ali/ide-core-browser/lib/layout';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -116,7 +116,7 @@ export class ActivityBarHandler {
   setComponent(Fc: React.FunctionComponent | React.FunctionComponent[]) {
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={Fc} />
+        <ComponentRenderer Component={Fc} />
       </ConfigProvider>
     , this.widget.node);
   }

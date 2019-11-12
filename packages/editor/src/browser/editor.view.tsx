@@ -11,10 +11,10 @@ import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, Er
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { ResizeHandleHorizontal, ResizeHandleVertical, IResizeHandleDelegate } from './component/resize/resize';
 import { Scroll } from './component/scroll/scroll';
 import { EditorComponentRegistryImpl } from './component';
 import { NavigationBar } from './navigation.view';
+import { IResizeHandleDelegate, ResizeHandleVertical, ResizeHandleHorizontal } from '@ali/ide-core-browser/lib/components';
 
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();

@@ -5,7 +5,7 @@ import { IEventBus } from '@ali/ide-core-common';
 import { Widget } from '@phosphor/widgets';
 import { Message } from '@phosphor/messaging';
 import { Signal } from '@phosphor/signaling/lib';
-import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
+import { AppConfig, ConfigProvider, ComponentRenderer } from '@ali/ide-core-browser';
 
 @Injectable({multiple: true})
 export class ReactPanelWidget extends Widget {
@@ -26,7 +26,7 @@ export class ReactPanelWidget extends Widget {
   private initWidget = () => {
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={this.Component} />
+        <ComponentRenderer Component={this.Component} />
       </ConfigProvider>
     , this.node);
   }

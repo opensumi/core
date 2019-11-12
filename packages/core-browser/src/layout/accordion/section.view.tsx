@@ -5,7 +5,7 @@ import { Widget } from '@phosphor/widgets';
 import { Emitter, Disposable, Event, DisposableCollection } from '@ali/ide-core-common';
 import { View } from '..';
 import { getIcon } from '../../icon';
-import { ConfigProvider, SlotRenderer, AppConfig } from '../../react-providers';
+import { ConfigProvider, ComponentRenderer, AppConfig } from '../../react-providers';
 import { LoadingView } from './loading-view.view';
 import { ViewUiStateManager } from './view-container-state';
 import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
@@ -130,7 +130,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
     const Fc = this.view.component || LoadingView;
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={Fc}  initialProps={{
+        <ComponentRenderer Component={Fc}  initialProps={{
           injector: this.configContext.injector,
           ...this.options.props,
         }}/>
@@ -175,7 +175,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   addViewComponent(viewComponent: React.FunctionComponent, props: any = {}): void {
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={viewComponent} initialProps={{
+        <ComponentRenderer Component={viewComponent} initialProps={{
           injector: this.configContext.injector,
           ...props,
         }} />

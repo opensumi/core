@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ConfigContext, useInjectable, SlotRenderer, ComponentRegistry, MenuModelRegistry, IEventBus, MenuUpdateEvent, MAIN_MENU_BAR } from '@ali/ide-core-browser';
+import { ConfigContext, useInjectable, ComponentRenderer, ComponentRegistry, MenuModelRegistry, IEventBus, MenuUpdateEvent, MAIN_MENU_BAR } from '@ali/ide-core-browser';
 import { localize, isWindows, isElectronRenderer } from '@ali/ide-core-browser';
 
 import { BrowserMainMenuFactory } from '@ali/ide-core-browser/lib/menu';

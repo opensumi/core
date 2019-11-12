@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Widget } from '@phosphor/widgets';
-import { ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
+import { ConfigProvider, AppConfig, ComponentRenderer } from '@ali/ide-core-browser';
 
 export class ReactWidget extends Widget {
   constructor(
@@ -12,7 +12,7 @@ export class ReactWidget extends Widget {
     super(options);
     ReactDOM.render((
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={this.components} />
+        <ComponentRenderer Component={this.components} />
       </ConfigProvider>
     ), this.node);
   }

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import * as styles from './header.module.less';
-import { useInjectable, IEventBus, MaybeNull, isWindows, SlotRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv } from '@ali/ide-core-browser';
+import { useInjectable, IEventBus, MaybeNull, isWindows, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IWindowService } from '@ali/ide-window';
@@ -23,7 +23,7 @@ export const ElectronHeaderBar = observer(() => {
     state.maximized = (global as any).electronEnv.isMaximized();
   }}>
     {
-      (isWindows) ? <SlotRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!}/> : null
+      (isWindows) ? <ComponentRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!}/> : null
     }
     <TitleInfo />
     {
