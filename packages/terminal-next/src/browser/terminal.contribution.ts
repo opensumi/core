@@ -12,8 +12,9 @@ import { Autowired } from '@ali/common-di';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { ITerminalController } from '../common';
 import { terminalAdd, terminalRemove, terminalExpand, terminalClear, terminalSplit, toggleBottomPanel } from './terminal.command';
-import TerminalView from './terminal.view';
+// import TerminalView from './terminal.view';
 import TerminalSelect from './terminal.select';
+import ResizeView from './component/resize.test';
 
 @Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution)
 export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution {
@@ -26,7 +27,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-terminal-next', {
-      component: TerminalView,
+      component: ResizeView,
       id: 'ide-terminal-next',
     }, {
       title: localize('terminal.name'),

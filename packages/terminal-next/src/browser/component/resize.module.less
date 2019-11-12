@@ -1,0 +1,45 @@
+.resizeWrapper {
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+
+.resizePanel {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+
+  .resizeItem {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.resizeDelegate {
+  width: 100%;
+  height: 100%;
+  pointer-events: all;
+
+  .resizeHandler {
+    width: 100%;
+    height: 100%;
+
+    .resizeDelegetContainer {
+      width: 100%;
+      height: 100%;
+    }
+
+    .resizeDelegateBar {
+      float: right;
+      width: 4px;
+      height: 100%;
+      cursor: ew-resize;
+      transform: translateX(2px);
+      pointer-events: all;
+      background: white;
+    }
+  }
+}
