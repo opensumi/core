@@ -9,13 +9,11 @@ import '@ali/ide-core-browser/lib/style/index.less';
 // 引入本地icon，不使用cdn版本，与useCdnIcon配套使用
 import '@ali/ide-core-browser/lib/style/icon.less';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
-import { MonacoEnhanceModule } from '@ali/ide-monaco-enhance/lib/browser/module';
 
 renderApp({
   modules: [
     ...CommonBrowserModules,
     ExpressFileServerModule,
-    MonacoEnhanceModule,
     StartupModule,
   ],
   layoutConfig: defaultConfig,
