@@ -49,6 +49,7 @@
     "@ali/ide-markdown": "1.5.0",
     "@ali/ide-menu-bar": "1.5.0",
     "@ali/ide-monaco": "1.5.0",
+    "@ali/ide-monaco-enhance": "1.5.0",
     "@ali/ide-markers": "1.5.0",
     "@ali/ide-navigation-bar": "1.5.0",
     "@ali/ide-opened-editor": "1.5.0",
