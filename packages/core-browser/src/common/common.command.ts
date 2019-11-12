@@ -91,6 +91,12 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
     label: '%file.paste.file%',
   };
+
+  export const LOCATION: Command = {
+    id: 'explorer.location',
+    category: CATEGORY,
+    label: '%file.location%',
+  };
 }
 
 export namespace COMMON_COMMANDS {
@@ -118,16 +124,6 @@ export namespace COMMON_COMMANDS {
   export const OPEN_KEYMAPS: Command = {
     id: 'core.keymaps.open',
     label: '%common.keymaps.open%',
-  };
-}
-
-export namespace EXPLORER_COMMANDS {
-  const CATEGORY = '%explorer%';
-
-  export const LOCATION: Command = {
-    id: 'explorer.location',
-    category: CATEGORY,
-    label: '%explorer.location%',
   };
 }
 

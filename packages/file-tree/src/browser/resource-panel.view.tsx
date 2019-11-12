@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { FileTree } from '@ali/ide-file-tree/lib/browser/file-tree.view';
+import { FileTree } from './file-tree.view';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { ViewState } from '@ali/ide-activity-panel';
 import { ThemeProvider, useInjectable } from '@ali/ide-core-browser';
@@ -18,6 +18,8 @@ export const ExplorerResourcePanel = observer(({
     onDragLeave,
     onChange,
     onDrop,
+    onBlur,
+    onFocus,
     draggable,
     editable,
     multiSelectable,
@@ -42,6 +44,8 @@ export const ExplorerResourcePanel = observer(({
     onDragLeave={ onDragLeave }
     onChange = { onChange }
     onDrop={ onDrop }
+    onBlur={ onBlur }
+    onFocus={ onFocus }
     draggable={ draggable }
     editable={ editable }
     multiSelectable={ multiSelectable }

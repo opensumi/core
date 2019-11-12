@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
-import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
-import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
+import * as styles from './index.module.less';
+import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
@@ -26,9 +25,10 @@ import {
 } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
-import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
-import { ExplorerFolderContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
-import { IMenu, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { Directory, File } from './file-tree-item';
+import { ExplorerFolderContext, ExplorerFocusedContext, FilesExplorerFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { IFileTreeItemRendered } from './file-tree.view';
+import { ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -40,6 +40,8 @@ export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   onDrop(node: IFileTreeItemRendered, event: React.DragEvent) { }
   onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) { }
   onChange(node: IFileTreeItemRendered, value: string) { }
+  onBlur: () => void;
+  onFocus: () => void;
   draggable = true;
   editable = true;
   multiSelectable = true;
@@ -111,11 +113,13 @@ const extractFileItemShouldBeRendered = (
       const isSelected = status.selected;
       const isExpanded = status.expanded;
       const isFocused = status.focused;
+      const isCuted = status.cuted;
       renderedFiles.push({
         ...file,
         filestat: {
           ...status.file.filestat,
         },
+        style: isCuted ? {opacity: .5} as React.CSSProperties : {},
         depth,
         selected: isSelected,
         expanded: isExpanded,
@@ -133,22 +137,22 @@ const extractFileItemShouldBeRendered = (
 export class ExplorerResourceService extends AbstractFileTreeService {
 
   @Autowired(FileTreeService)
-  filetreeService: FileTreeService;
+  protected filetreeService: FileTreeService;
 
   @Autowired(IDecorationsService)
-  decorationsService: IDecorationsService;
-
-  @Autowired(IThemeService)
-  themeService: IThemeService;
+  protected decorationsService: IDecorationsService;
 
   @Autowired(ContextMenuRenderer)
-  contextMenuRenderer: ContextMenuRenderer;
+  protected contextMenuRenderer: ContextMenuRenderer;
 
   @Autowired(IContextKeyService)
-  contextKeyService: IContextKeyService;
+  protected contextKeyService: IContextKeyService;
 
   @Autowired(CorePreferences)
-  corePreferences: CorePreferences;
+  protected corePreferences: CorePreferences;
+
+  @Autowired(IThemeService)
+  public themeService: IThemeService;
 
   @Autowired(ICtxMenuRenderer)
   ctxMenuRenderer: ICtxMenuRenderer;
@@ -178,7 +182,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _selectTimer;
   private _selectTimes: number = 0;
 
-  private folderContext: IContextKey<boolean>;
+  private explorerFolderContext: IContextKey<boolean>;
+  private explorerFocusedContext: IContextKey<boolean>;
+  private filesExplorerFocusedContext: IContextKey<boolean>;
 
   public overrideFileDecorationService: FileDecorationsProvider = {
     getDecoration: (uri, hasChildren = false) => {
@@ -194,7 +200,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     super();
     this.listen();
 
-    this.folderContext = ExplorerFolderContext.bind(this.contextKeyService);
+    this.explorerFolderContext = ExplorerFolderContext.bind(this.contextKeyService);
+    this.explorerFocusedContext = ExplorerFocusedContext.bind(this.contextKeyService);
+    this.filesExplorerFocusedContext = FilesExplorerFocusedContext.bind(this.contextKeyService);
   }
 
   listen() {
@@ -256,7 +264,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   private setContextKeys(file: Directory | File) {
     const isSingleFolder = !this.filetreeService.isMutiWorkspace;
-    this.folderContext.set((isSingleFolder && !file) || !!file && Directory.isDirectory(file));
+    this.explorerFolderContext.set((isSingleFolder && !file) || !!file && Directory.isDirectory(file));
   }
 
   @action.bound
@@ -293,6 +301,17 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       }, 200);
     }
     this.filetreeService.updateFilesSelectedStatus(files, true);
+  }
+
+  onBlur = () => {
+    this.filetreeService.isFocused = false;
+    this.filesExplorerFocusedContext.set(false);
+  }
+
+  onFocus = () => {
+    this.filetreeService.isFocused = true;
+    this.filesExplorerFocusedContext.set(true);
+    this.explorerFocusedContext.set(true);
   }
 
   @action.bound
@@ -411,7 +430,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.setContextKeys(nodes[0] as (Directory | File));
     this.currentContextUriContextKey.set(uris[0].toString());
     this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
-    // this.contextMenuRenderer.render(CONTEXT_MENU, data);
 
     const menus = this.filetreeService.contributedContextMenu;
     const result = generateCtxMenu({ menus });

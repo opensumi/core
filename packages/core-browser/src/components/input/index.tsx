@@ -1,7 +1,13 @@
 import * as React from 'react';
 import * as cls from 'classnames';
-
 import * as styles from './styles.module.less';
+
+import { isUndefined } from '@ali/ide-core-common';
+
+export interface InputSelection {
+  start: number;
+  end: number;
+}
 
 export enum VALIDATE_TYPE {
   INFO,
@@ -13,18 +19,39 @@ export interface ValidateMessage {
   message: string | void;
   type: VALIDATE_TYPE;
 }
-export interface ValidateInputProp extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface ValidateInputProp extends InputProp {
   // void 返回代表验证通过
   // string 代表有错误信息
   validate: (value: string) => ValidateMessage;
 }
 
-const PureInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
-  { className, autoFocus, ...restProps },
+export interface InputProp extends React.InputHTMLAttributes<HTMLInputElement> {
+  // 选中范围
+  selection: InputSelection;
+}
+
+const PureInput: React.FC<InputProp> = (
+  { className, autoFocus, selection, onChange, ...restProps },
   ref: React.MutableRefObject<HTMLInputElement>,
 ) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isDirty, setIsDirty] = React.useState(false);
   React.useImperativeHandle(ref, () => inputRef.current!);
+
+  const changeHandler = (event) => {
+    if (onChange) {
+      onChange(event);
+    }
+    if (!isDirty) {
+      setIsDirty(true);
+    }
+  };
+
+  React.useEffect(() => {
+    if (selection && !isUndefined(selection.start) && !isDirty) {
+      inputRef.current!.setSelectionRange(selection.start, selection.end);
+    }
+  }, [selection, isDirty]);
 
   return (
     <input
@@ -32,6 +59,7 @@ const PureInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
       className={cls(styles.input, className)}
       ref={inputRef}
       autoFocus={autoFocus}
+      onChange={changeHandler}
       spellCheck={false}
       autoCapitalize='off'
       autoCorrect='off'
