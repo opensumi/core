@@ -354,7 +354,7 @@ export const TreeContainerNode = (
         start: 0,
         end: 0,
       };
-      if (node.name !== TEMP_FILE_NAME) {
+      if (node.name !== TEMP_FILE_NAME && isString(node.name)) {
         selection = {
           start: 0,
           end: node.name.replace(/\.\w+/, '').length,

@@ -797,7 +797,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
     }
     return false;
   }
-
 }
 
 export const noKeybidingInputName = 'no_keybinding';
