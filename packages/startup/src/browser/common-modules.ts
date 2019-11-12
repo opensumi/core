@@ -44,6 +44,7 @@ import { DecorationModule } from '@ali/ide-decoration/lib/browser';
 import { DebugModule } from '@ali/ide-debug/lib/browser';
 import { VariableModule } from '@ali/ide-variable/lib/browser';
 import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
+import { MonacoEnhanceModule } from '@ali/ide-monaco-enhance/lib/browser/module';
 
 import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
 
@@ -93,4 +94,5 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     KaitianExtensionModule,
     // FeatureExtensionModule,
     ExtensionManagerModule,
+    MonacoEnhanceModule,
 ];
