@@ -154,7 +154,7 @@ export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, gr
   return <div className={styles.editor_actions}>
     {
       hasFocus ? editorActionRegistry.getActions(group).map((item) => {
-        return <div className={classnames(styles.editor_action, item.iconClass)} title={item.title}
+        return <div className={classnames(styles.editor_action, item.iconClass)} title={item.title} key={item.title}
                     onClick={() => item.onClick(group.currentResource)} />;
       }) : null
     }

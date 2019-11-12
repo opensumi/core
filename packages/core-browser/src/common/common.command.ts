@@ -278,6 +278,11 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const NAVIGATE_PREVIOUS: Command = {
+    id: 'editor.navigatePrevious',
+    category: CATEGORY,
+  };
+
   export const PREVIOUS: Command = {
     id: 'editor.previous',
     category: CATEGORY,
@@ -338,6 +343,31 @@ export namespace EDITOR_COMMANDS {
 
   export const GO_BACK: Command = {
     id: 'editor.goBack',
+    category: CATEGORY,
+  };
+
+  export const PIN_CURRENT: Command = {
+    id: 'editor.pinCurrent',
+    category: CATEGORY,
+  };
+
+  export const COPY_CURRENT_PATH: Command = {
+    id: 'editor.copyCurrentPath',
+    category: CATEGORY,
+  };
+
+  export const GO_TO_GROUP: Command = {
+    id: 'editor.goToGroup',
+    category: CATEGORY,
+  };
+
+  export const MOVE_GROUP: Command = {
+    id: 'editor.moveGroup',
+    category: CATEGORY,
+  };
+
+  export const REOPEN_CLOSED: Command = {
+    id: 'editor.reopenClosed',
     category: CATEGORY,
   };
 }
