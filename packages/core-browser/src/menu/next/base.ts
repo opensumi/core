@@ -3,7 +3,6 @@ import { ILogger } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { MenuId } from './menu-id';
-import { Disposable } from '../../../../core-common/lib';
 
 export const NextMenuContribution = Symbol('NextMenuContribution');
 export interface NextMenuContribution {
@@ -15,9 +14,11 @@ export interface ILocalizedString {
   original: string;
 }
 
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 export interface MenuCommandDesc {
   id: string;
-  label?: string;
+  label: string;
 }
 
 export interface IMenuItem {
@@ -41,14 +42,13 @@ export type ICommandsMap = Map<string, Command>;
 
 export abstract class IMenuRegistry {
   readonly onDidChangeMenu: Event<string>;
-  abstract getMenuCommand(command: string | MenuCommandDesc): MenuCommandDesc;
+  abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
   abstract registerMenuItem(menu: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
 }
 
 @Injectable()
 export class CoreMenuRegistry implements IMenuRegistry {
-  private readonly _commands = new Map<string, ICommandsMap>();
   private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
   private readonly _onDidChangeMenu = new Emitter<string>();
 
@@ -63,43 +63,6 @@ export class CoreMenuRegistry implements IMenuRegistry {
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
-  private addCommand(menuId: MenuId | string, command: MenuCommandDesc): IDisposable {
-    if (!menuId || !command.id) {
-      this.logger.warn(`invalid namespace with menuId: ${menuId} and commandId: ${command.id}`);
-      return Disposable.NULL;
-    }
-    const currentCommandsMap = this._commands.get(menuId) || new Map<string, Command>();
-    currentCommandsMap.set(command.id, command);
-
-    this._commands.set(menuId, currentCommandsMap);
-    this._onDidChangeMenu.fire(menuId);
-    return {
-      dispose: () => {
-        if (this._commands.delete(command.id)) {
-          this._onDidChangeMenu.fire(menuId);
-        }
-      },
-    };
-  }
-
-  private getCommand(menuId: MenuId | string, commandId: string): Command | undefined {
-    if (!menuId || !commandId) {
-      this.logger.warn(`invalid namespace with menuId: ${menuId} and commandId: ${commandId}`);
-      return undefined;
-    }
-
-    const commandsMap = this._commands.get(menuId);
-    if (!commandsMap) {
-      return undefined;
-    }
-
-    return commandsMap.get(commandId);
-  }
-
-  private getCommands(menuId: MenuId | string): ICommandsMap | undefined {
-    return this._commands.get(menuId);
-  }
-
   registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
     let array = this._menuItems.get(menuId);
     if (!array) {
@@ -108,11 +71,6 @@ export class CoreMenuRegistry implements IMenuRegistry {
     } else {
       array.push(item);
     }
-
-    // // 如果当前 MenuItem 为 IMenuItem 且 command 带了额外描述, 则保存对应的内容
-    // if (isIMenuItem(item) && typeof item.command !== 'string' && item.command.id) {
-    //   this.addCommand(menuId, item.command);
-    // }
 
     this._onDidChangeMenu.fire(menuId);
     return {
@@ -138,7 +96,7 @@ export class CoreMenuRegistry implements IMenuRegistry {
     return result;
   }
 
-  getMenuCommand(command: string | MenuCommandDesc): MenuCommandDesc {
+  getMenuCommand(command: string | MenuCommandDesc) {
     if (typeof command === 'string') {
       return { id: command };
     }
