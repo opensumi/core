@@ -19,8 +19,10 @@ const getSlices = (data, sliceSize) => {
 export interface InfinityListProp {
   // 渲染模板
   template?: any;
-  // 样式
+  // 样式名
   className?: string;
+  // 样式
+  style?: React.CSSProperties;
   // 数据源
   data: any[];
   // 用于渲染template时从data中获取key属性字段
@@ -343,10 +345,10 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   }
 
   render() {
-    const { className, placeholders, isDrained } = this.props;
+    const { className, style, placeholders, isDrained } = this.props;
     const { topSpaces, bottomSpaces } = this.state;
     return (
-      <PerfectScrollbar className={cls(styles.infinity_container, className)} containerRef={(el) => (this.rootEl = el)}>
+      <PerfectScrollbar className={cls(styles.infinity_container, className)} style={style} containerRef={(el) => (this.rootEl = el)}>
         <div
           ref={(el) => (this.listEl = el)}
           style={{

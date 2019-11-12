@@ -6,7 +6,6 @@ import { BreakpointManager } from '../breakpoint';
 import { URI, IRange, localize } from '@ali/ide-core-browser';
 import { DebugSource } from './debug-source';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
-import { DebugModel } from '../editor/debug-model';
 
 export class DebugBreakpointData {
   readonly raw?: DebugProtocol.Breakpoint;
