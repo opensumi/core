@@ -211,6 +211,7 @@ export namespace EDITOR_COMMANDS {
   export const CLOSE_TO_RIGHT: Command = {
     id: 'editor.closeToRight',
     category: CATEGORY,
+    label: '%editor.closeToRight%',
   };
 
   export const GET_CURRENT: Command = {
@@ -221,21 +222,25 @@ export namespace EDITOR_COMMANDS {
   export const SPLIT_TO_LEFT: Command = {
     id: 'editor.splitToLeft',
     category: CATEGORY,
+    label: '%editor.splitToLeft%',
   };
 
   export const SPLIT_TO_RIGHT: Command = {
     id: 'editor.splitToRight',
     category: CATEGORY,
+    label: '%editor.splitToRight%',
   };
 
   export const SPLIT_TO_TOP: Command = {
     id: 'editor.splitToTop',
     category: CATEGORY,
+    label: '%editor.splitToTop%',
   };
 
   export const SPLIT_TO_BOTTOM: Command = {
     id: 'editor.splitToBottom',
     category: CATEGORY,
+    label: '%editor.splitToBottom%',
   };
 
   export const CHANGE_LANGUAGE: Command = {
