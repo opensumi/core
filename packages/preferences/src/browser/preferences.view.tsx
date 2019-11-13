@@ -34,7 +34,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
   const debouncedSearch = debounce((value) => {
     setCurrentSearch(value);
-  }, 200, {maxWait: 1000});
+  }, 100, {maxWait: 1000});
 
   return (
     <div className = {styles.preferences}>
@@ -85,7 +85,7 @@ export const PreferencesIndexes = ({groups, currentGroupId: currentGroup, setCur
 
           const sections = preferenceService.getSections(id, scope, search);
 
-          return (<div>
+          return (<div key={`${id} - ${title}`}>
             <div key={`${id} - ${title}`} className={classnames({
               [styles.index_item]: true,
               [styles.activated]: currentGroup === id,
