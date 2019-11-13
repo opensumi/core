@@ -336,15 +336,17 @@ export class ExtensionManagerService implements IExtensionManagerService {
   get rawExtension() {
     return this.extensions.map((extension) => {
       const { displayName, description } = this.getI18nInfo(extension);
-
+      const [publisher, name] = extension.extensionId.split('.');
       return {
         id: extension.id,
         extensionId: extension.extensionId,
-        name: extension.packageJSON.name,
+        // 说明加载的是新规范的插件，则用插件市场 name packageJSON 的 name
+        name: name ? name : extension.packageJSON.name,
         displayName,
         version: extension.packageJSON.version,
         description,
-        publisher: extension.packageJSON.publisher,
+        // 说明加载的是新规范的插件，则用插件市场 publisher，否则用 packageJSON 的 publisher
+        publisher: name ? publisher : extension.packageJSON.publisher,
         installed: true,
         icon: this.getIconFromExtension(extension),
         path: extension.realPath,
@@ -363,7 +365,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   async getRawExtensionById(extensionId: string): Promise<RawExtension> {
     await this.init();
 
-    return this.rawExtension.find((extension) => extension.extensionId === extensionId)!;
+    return this.rawExtension.find((extension) => this.equalExtensionId(extension, extensionId))!;
   }
 
   @action

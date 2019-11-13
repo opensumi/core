@@ -92,6 +92,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
       description: '%editor.configuration.askIfDiff%',
     },
+    'editor.preferredFormatter': {
+      type: 'object',
+      default: {},
+      description: '%editor.configuration.preferredFormatter%',
+    },
     'editor.previewMode': {
       type: 'boolean',
       default: true,

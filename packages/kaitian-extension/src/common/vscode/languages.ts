@@ -1,4 +1,4 @@
-import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
+import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider, DocumentFormattingEditProvider } from 'vscode';
 import { SerializedDocumentFilter, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, SignatureHelp, TextEdit, FileOperationOptions, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem } from './model.api';
 import { Disposable } from './ext-types';
 import { UriComponents } from 'vscode-uri';
@@ -16,7 +16,8 @@ export interface IMainThreadLanguages {
   $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDocumentColorProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $registerRangeFormattingProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerDocumentFormattingProvider(handle: number, displayName: string, selector: SerializedDocumentFilter[]): void;
+  $registerRangeFormattingProvider(handle: number, displayName: string, selector: SerializedDocumentFilter[]): void;
   $registerOnTypeFormattingProvider(handle: number, selector: SerializedDocumentFilter[], triggerCharacter: string[]): void;
   $registerCodeLensSupport(handle: number, selector: SerializedDocumentFilter[], eventHandle?: number): void;
   $emitCodeLensEvent(eventHandle: number, event?: any): void;
@@ -60,8 +61,11 @@ export interface IExtHostLanguages {
 
   $provideDocumentHighlights(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined>;
 
-  registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable;
+  registerDocumentRangeFormattingEditProvider(displayName: string, selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable;
   $provideDocumentRangeFormattingEdits(handle: number, resource: UriComponents, range: Range, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
+
+  registerDocumentFormattingEditProvider(displayName: string, selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable;
+  $provideDocumentFormattingEdits(handle: number, resource: UriComponents, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
 
   $provideOnTypeFormattingEdits(handle: number, resource: UriComponents, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
 

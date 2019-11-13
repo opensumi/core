@@ -314,9 +314,38 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerRangeFormattingProvider(handle: number, selector: SerializedDocumentFilter[]) {
+  $registerDocumentFormattingProvider(handle: number, displayName: string, selector: SerializedDocumentFilter[]) {
     const languageSelector = fromLanguageSelector(selector);
-    const documentHighlightProvider = this.createDocumentRangeFormattingEditProvider(handle, languageSelector);
+    const documentFormattingEditProvider = this.createDocumentFormattingEditProvider(handle, displayName, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerDocumentFormattingEditProvider(language, documentFormattingEditProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  createDocumentFormattingEditProvider( handle: number, displayName: string, selector: LanguageSelector | undefined): monaco.languages.DocumentFormattingEditProvider {
+    return {
+      displayName,
+      provideDocumentFormattingEdits: async (model, options) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideDocumentFormattingEdits(handle, model.uri, options).then((result) => {
+          if (!result) {
+            return undefined;
+          }
+          return result;
+        });
+      },
+    };
+  }
+
+  $registerRangeFormattingProvider(handle: number, displayName: string, selector: SerializedDocumentFilter[]) {
+    const languageSelector = fromLanguageSelector(selector);
+    const documentHighlightProvider = this.createDocumentRangeFormattingEditProvider(handle, displayName, languageSelector);
     const disposable = new DisposableCollection();
     for (const language of this.$getLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
@@ -326,8 +355,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  createDocumentRangeFormattingEditProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentRangeFormattingEditProvider {
+  createDocumentRangeFormattingEditProvider(handle: number, displayName: string, selector: LanguageSelector | undefined): monaco.languages.DocumentRangeFormattingEditProvider {
     return {
+      displayName,
       provideDocumentRangeFormattingEdits: async (model, range, options) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
