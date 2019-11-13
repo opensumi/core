@@ -220,7 +220,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
 
   const renderBooleanValue = () => {
 
-    const check = <div><CheckBox id={'pref-' + key} checked={value} onChange={(event) => {
+    const check = <div><CheckBox checked={value} onChange={(event) => {
       changeValue(key, event.target.checked);
     }}></CheckBox></div>;
     const description = prop && prop.description && replaceLocalizePlaceholder(prop.description);
