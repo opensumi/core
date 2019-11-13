@@ -11,7 +11,7 @@ module.exports = {
   },
   output: {
     filename: 'ext.process.js',
-    path: path.resolve(__dirname, "lib/hosted"),
+    path: path.resolve(__dirname, "hosted/"),
     libraryTarget: "commonjs2",
   },
   target: "node",
@@ -33,7 +33,8 @@ module.exports = {
           onlyCompileBundledFiles: true,
           configFile: tsconfigPath,
           compilerOptions: {
-            lib: ["esnext"]
+            lib: ["esnext"],
+            target: 'es5'
           }
         }
       }
