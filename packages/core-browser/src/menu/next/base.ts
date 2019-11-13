@@ -1,5 +1,7 @@
 import { CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { ILogger } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
+
 import { MenuId } from './menu-id';
 
 export const NextMenuContribution = Symbol('NextMenuContribution');
@@ -12,8 +14,15 @@ export interface ILocalizedString {
   original: string;
 }
 
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+export interface MenuCommandDesc {
+  id: string;
+  label: string;
+}
+
 export interface IMenuItem {
-  command: string;
+  command: string | MenuCommandDesc;
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -33,16 +42,13 @@ export type ICommandsMap = Map<string, Command>;
 
 export abstract class IMenuRegistry {
   readonly onDidChangeMenu: Event<string>;
-  abstract addCommand(userCommand: Command): IDisposable;
-  abstract getCommand(id: string): Command | undefined;
-  abstract getCommands(): ICommandsMap;
+  abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
   abstract registerMenuItem(menu: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
 }
 
 @Injectable()
 export class CoreMenuRegistry implements IMenuRegistry {
-  private readonly _commands = new Map<string, Command>();
   private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
   private readonly _onDidChangeMenu = new Emitter<string>();
 
@@ -52,54 +58,33 @@ export class CoreMenuRegistry implements IMenuRegistry {
   protected readonly contributions: ContributionProvider<NextMenuContribution>;
 
   @Autowired(CommandRegistry)
-  protected readonly commandRegistry: CommandRegistry;
+  private readonly commandRegistry: CommandRegistry;
 
-  // TODO: 待移除
-  addCommand(command: Command): IDisposable {
-    this._commands.set(command.id, command);
-    this._onDidChangeMenu.fire(MenuId.CommandPalette);
-    return {
-      dispose: () => {
-        if (this._commands.delete(command.id)) {
-          this._onDidChangeMenu.fire(MenuId.CommandPalette);
-        }
-      },
-    };
-  }
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
-  // TODO: 待移除
-  getCommand(id: string): Command | undefined {
-    return this._commands.get(id);
-  }
-
-  // TODO: 待移除
-  getCommands(): ICommandsMap {
-    const map = new Map<string, Command>();
-    this._commands.forEach((value, key) => map.set(key, value));
-    return map;
-  }
-
-  registerMenuItem(id: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
-    let array = this._menuItems.get(id);
+  registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
+    let array = this._menuItems.get(menuId);
     if (!array) {
       array = [item];
-      this._menuItems.set(id, array);
+      this._menuItems.set(menuId, array);
     } else {
       array.push(item);
     }
-    this._onDidChangeMenu.fire(id);
+
+    this._onDidChangeMenu.fire(menuId);
     return {
       dispose: () => {
         const idx = array!.indexOf(item);
         if (idx >= 0) {
           array!.splice(idx, 1);
-          this._onDidChangeMenu.fire(id);
+          this._onDidChangeMenu.fire(menuId);
         }
       },
     };
   }
 
-  getMenuItems(id: MenuId): Array<IMenuItem | ISubmenuItem> {
+  getMenuItems(id: MenuId | string): Array<IMenuItem | ISubmenuItem> {
     const result = (this._menuItems.get(id) || []).slice(0);
 
     if (id === MenuId.CommandPalette) {
@@ -111,10 +96,18 @@ export class CoreMenuRegistry implements IMenuRegistry {
     return result;
   }
 
+  getMenuCommand(command: string | MenuCommandDesc) {
+    if (typeof command === 'string') {
+      return { id: command };
+    }
+
+    return command;
+  }
+
   private appendImplicitMenuItems(result: Array<IMenuItem | ISubmenuItem>) {
     // 只保留 MenuItem
     const temp = result.filter((item) => isIMenuItem(item)) as IMenuItem[];
-    const set = new Set<string>(temp.map((n) => n.command));
+    const set = new Set<string>(temp.map((n) => this.getMenuCommand(n.command).id));
 
     const allCommands = this.commandRegistry.getCommands();
     // 将 commandRegistry 中 "其他" command 加进去

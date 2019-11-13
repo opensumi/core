@@ -268,4 +268,65 @@ describe('MenuService', () => {
     expect(foundA).toBeTruthy();
     expect(foundB).toBeTruthy();
   });
+
+  it('regist menu item with label', () => {
+    commandRegistry.registerCommand({
+      id: 'a',
+      label: 'a1',
+    }, {
+      execute: jest.fn(),
+    });
+
+    commandRegistry.registerCommand({
+      id: 'b',
+      label: 'b1',
+    }, {
+      execute: jest.fn(),
+    });
+
+    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
+      command: {
+        id: 'a',
+        label: 'a2',
+      },
+    }));
+
+    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+      command: {
+        id: 'b',
+        label: 'b2',
+      },
+    }));
+
+    const menuNodes1 = menuService.createMenu(MenuId.CommandPalette, contextKeyService).getMenuNodes();
+    expect(menuNodes1[0][1][0].label).toBe('b2');
+    expect(menuNodes1[0][1][1].label).toBe('a1');
+    const menuNodes2 = menuService.createMenu(testMenuId, contextKeyService).getMenuNodes();
+    expect(menuNodes2[0][1][0].label).toBe('a2');
+  });
+
+  it('hack: hide in QuickOpen', () => {
+    commandRegistry.registerCommand({
+      id: 'a',
+    }, {
+      execute: jest.fn(),
+    });
+
+    commandRegistry.registerCommand({
+      id: 'b',
+      label: 'b1',
+    }, {
+      execute: jest.fn(),
+    });
+
+    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+      command: {
+        id: 'b',
+        label: '',
+      },
+    }));
+
+    const menuNodes1 = menuService.createMenu(MenuId.CommandPalette, contextKeyService).getMenuNodes();
+    expect(menuNodes1.length).toBe(0);
+  });
 });

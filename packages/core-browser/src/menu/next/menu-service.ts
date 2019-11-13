@@ -66,9 +66,6 @@ export class MenuItemNode extends MenuNode {
     // 将 isToggled 属性通过 iconClass 来实现
     const icon = toggled ? getIcon('check') : '';
     super(item.id, icon, item.label!, disabled, nativeRole);
-    // 后置获取 i18n 数据 主要处理 ide-framework 内部的 command 的 i18n
-    // const command = this.commandRegistry.getCommand(item.id)!;
-    // this.label = command.label!;
 
     this.className = undefined;
 
@@ -219,16 +216,23 @@ class Menu extends Disposable implements IMenu {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
             const { args = [] } = options;
+            const menuCommandDesc = this.menuRegistry.getMenuCommand(item.command);
+            const command = this.commandRegistry.getCommand(menuCommandDesc.id);
+            if (!command) {
+              continue;
+            }
 
-            const command = this.commandRegistry.getCommand(item.command);
+            const menuCommand = {...command, ...menuCommandDesc };
             // 没有 desc 的 command 不展示在 menu 中
-            if (command && command.label) {
-              if (this.commandRegistry.isVisible(command.id, ...args)) {
-                const disabled = !this.commandRegistry.isEnabled(command.id, ...args);
-                const toggled = this.commandRegistry.isToggled(command.id, ...args);
-                const action = this.injector.get(MenuItemNode, [command, options, disabled, toggled, item.nativeRole]);
-                activeActions.push(action);
-              }
+            if (!menuCommand.label) {
+              continue;
+            }
+
+            if (this.commandRegistry.isVisible(menuCommand.id, ...args)) {
+              const disabled = !this.commandRegistry.isEnabled(menuCommand.id, ...args);
+              const toggled = this.commandRegistry.isToggled(menuCommand.id, ...args);
+              const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, toggled, item.nativeRole]);
+              activeActions.push(action);
             }
           } else {
             const action = new SubmenuItemNode(item);
