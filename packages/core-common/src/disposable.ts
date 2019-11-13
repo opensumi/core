@@ -118,24 +118,38 @@ export class Disposable implements IDisposable {
       const disposables = disposable;
       return disposables.map(disposable => this.addDispose(disposable));
     } else {
-      const disposables = this.disposables;
-      disposables.push(disposable);
-      const originalDispose = disposable.dispose.bind(disposable);
-      const toRemove = Disposable.create(() => {
-        const index = disposables.indexOf(disposable);
-        if (index !== -1) {
-          disposables.splice(index, 1);
-        }
-        this.checkDisposed();
-      });
-      disposable.dispose = () => {
-        toRemove.dispose();
-        originalDispose();
-      };
-      return toRemove;
+      return this.add(disposable);
     }
   }
+
+  protected register<T extends IDisposable>(disposable: T): T {
+		if ((disposable as any as Disposable) === this) {
+			throw new Error('Cannot register a disposable on itself!');
+    }
+
+    this.add(disposable);
+    return disposable;
+  }
+
+  private add(disposable: IDisposable): IDisposable {
+    const disposables = this.disposables;
+    disposables.push(disposable);
+    const originalDispose = disposable.dispose.bind(disposable);
+    const toRemove = Disposable.create(() => {
+      const index = disposables.indexOf(disposable);
+      if (index !== -1) {
+        disposables.splice(index, 1);
+      }
+      this.checkDisposed();
+    });
+    disposable.dispose = () => {
+      toRemove.dispose();
+      originalDispose();
+    };
+    return toRemove;
+  }
 }
+
 export class DisposableCollection implements IDisposable {
 
   protected readonly disposables: IDisposable[] = [];

@@ -1,45 +1,40 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ConfigContext, useInjectable, SlotRenderer, ComponentRegistry, MenuModelRegistry, IEventBus, MenuUpdateEvent, MAIN_MENU_BAR } from '@ali/ide-core-browser';
-import { localize, isWindows, isElectronRenderer } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser';
+import { ICtxMenuRenderer, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
+import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
+import Dropdown from 'antd/lib/dropdown';
+import 'antd/lib/dropdown/style/index.less';
 
-import { BrowserMainMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { MenuBarService } from './menu-bar.service';
-import './menu-bar.less';
-import './menu.less';
-import { Widget } from '@phosphor/widgets';
-
-let attachedWidget: Widget | null = null;
+import * as styles from './menu-bar.module.less';
 
 export const MenuBar = observer(() => {
+  const menuBarService = useInjectable<MenuBarService>(MenuBarService);
 
-  const ref = React.useRef<HTMLElement | null>();
-  const { injector } = React.useContext(ConfigContext);
-  const menuBarService = injector.get(MenuBarService);
-  const menuFactory = useInjectable(BrowserMainMenuFactory);
-  const eventBus: IEventBus = useInjectable(IEventBus);
-
-  React.useEffect(function widgetsInit() {
-    updateMenu();
-    const disposer = eventBus.on(MenuUpdateEvent, (e) => {
-      if (e.payload && e.payload[0] === MAIN_MENU_BAR[0]) {
-        updateMenu();
-      }
-    });
-    return () => disposer.dispose();
-  }, [ref]);
-
-  function updateMenu() {
-    if (ref.current) {
-      const menuBar = menuFactory.createMenuBar();
-      if (attachedWidget) {
-        Widget.detach(attachedWidget);
-      }
-      Widget.attach(menuBar, ref.current);
-      attachedWidget = menuBar;
-    }
-  }
+  const handleClick = React.useCallback((titleEnum: string, e: React.MouseEvent<HTMLElement>) => {
+    const menuNodes = menuBarService.getMenuNodes(titleEnum);
+  }, []);
 
   return (
-    <div className='menu-bar' ref={(ele) => ref.current = ele} />);
+    <div className={styles.menubars}>
+      {
+        Object.entries(menuBarService.titles).map((config, index) => {
+          const menuNodes = menuBarService.menuNodeCollection[config[0]];
+          return <div key={index} className={styles.menubar}>
+            {
+              Array.isArray(menuNodes)
+                ? <Dropdown
+                  transitionName=''
+                  overlay={<MenuActionList data={menuNodes} />}
+                  trigger={['click', 'hover']}>
+                  <div className={styles['menubar-title']}>{config[1]}</div>
+                </Dropdown>
+                : <div className={styles['menubar-title']}>{config[1]}</div>
+            }
+          </div>;
+        })
+      }
+    </div>
+  );
 });

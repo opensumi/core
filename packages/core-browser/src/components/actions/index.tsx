@@ -48,6 +48,10 @@ export const MenuActionList: React.FC<{
   onClick?: (item: MenuNode) => void;
   context?: any[];
 }> = ({ data = [], context = [], onClick }) => {
+  if (!data.length) {
+    return null;
+  }
+
   const handleClick = React.useCallback(({ key }: ClickParam) => {
     // do nothing when click separator node
     if (key === SeparatorMenuItemNode.ID) {

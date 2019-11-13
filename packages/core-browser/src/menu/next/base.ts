@@ -43,7 +43,8 @@ export type ICommandsMap = Map<string, Command>;
 export abstract class IMenuRegistry {
   readonly onDidChangeMenu: Event<string>;
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
-  abstract registerMenuItem(menu: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
+  abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
+  abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem>): IDisposable;
   abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
 }
 
@@ -82,6 +83,15 @@ export class CoreMenuRegistry implements IMenuRegistry {
         }
       },
     };
+  }
+
+  registerMenuItems(menuId: string, items: (IMenuItem | ISubmenuItem)[]): IDisposable {
+    const disposables = [] as IDisposable[];
+    items.forEach((item) => {
+      disposables.push(this.registerMenuItem(menuId, item));
+    });
+
+    return combinedDisposable(disposables);
   }
 
   getMenuItems(id: MenuId | string): Array<IMenuItem | ISubmenuItem> {
