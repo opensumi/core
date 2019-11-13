@@ -2,7 +2,7 @@ import { DebugSession, DebugState } from '../debug-session';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugThread } from '../model/debug-thread';
 import { DebugStackFrame } from '../model/debug-stack-frame';
-import { DebugBreakpoint, ExceptionBreakpoint } from '../model/debug-breakpoint';
+import { DebugBreakpoint, DebugExceptionBreakpoint } from '../model/debug-breakpoint';
 import { URI, IDisposable, DisposableCollection, Event, Emitter } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IDebugSessionManager } from '../../common/debug-session';
@@ -120,7 +120,7 @@ export class DebugViewModel implements IDisposable {
     return this.manager.getBreakpoints(this.currentSession);
   }
 
-  get exceptionBreakpoints(): ExceptionBreakpoint[] {
+  get exceptionBreakpoints(): DebugExceptionBreakpoint[] {
     return this.manager.getExceptionBreakpoints(this.currentSession);
   }
 

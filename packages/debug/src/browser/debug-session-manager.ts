@@ -376,7 +376,7 @@ export class DebugSessionManager {
   getExceptionBreakpoints(session?: DebugSession): DebugExceptionBreakpoint[] {
     let exceptions: DebugExceptionBreakpoint[] = [];
     if (session) {
-      const expBreakpoints = this.breakpoints.getExceptionBreakpoints(session);
+      const expBreakpoints = this.breakpoints.getExceptionBreakpoints();
       if (expBreakpoints) {
         exceptions = expBreakpoints.map((exb) => new DebugExceptionBreakpoint(exb, this.breakpoints));
       }
