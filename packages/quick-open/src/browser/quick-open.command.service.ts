@@ -1,11 +1,12 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { localize } from '@ali/ide-core-browser';
+import { localize, IContextKeyService } from '@ali/ide-core-browser';
 import { CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
 import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem } from './quick-open.model';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
+import { MenuService, MenuId, MenuItemNode } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class QuickCommandModel implements QuickOpenModel {
@@ -21,6 +22,12 @@ export class QuickCommandModel implements QuickOpenModel {
 
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
+
+  @Autowired(MenuService)
+  protected menuService: MenuService;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
 
   constructor() {
     this.init();
@@ -56,13 +63,34 @@ export class QuickCommandModel implements QuickOpenModel {
     return items;
   }
 
+  protected getOtherCommands() {
+    const menus = this.menuService.createMenu(MenuId.CommandPalette, this.contextKeyService);
+    const menuNodes = menus.getMenuNodes()
+      .reduce((r, [, actions]) => [...r, ...actions], [] as MenuItemNode[])
+      .filter((item) => item instanceof MenuItemNode && !item.disabled) as MenuItemNode[];
+    menus.dispose();
+
+    return menuNodes.reduce((prev, item) => {
+      const command = this.commandRegistry.getCommand(item.id);
+      // 过滤掉可能存在的 command "没有注册" 的情况
+      if (command) {
+        // 使用 Menu 中存在的 label
+        prev.push({
+          ...command,
+          label: item.label,
+        });
+      }
+      return prev;
+    }, [] as Command[]);
+  }
+
   protected getCommands(): { recent: Command[], other: Command[] } {
-    const allCommands = this.getValidCommands(this.commandRegistry.getCommands());
     const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
+    const otherCommands = this.getOtherCommands();
     const limit = this.corePreferences['workbench.commandPalette.history'];
     return {
       recent: recentCommands.slice(0, limit),
-      other: allCommands
+      other: otherCommands
         // 过滤掉最近使用中含有的命令
         .filter((command) => !recentCommands.some((recent) => recent.id === command.id))
         // 命令重新排序

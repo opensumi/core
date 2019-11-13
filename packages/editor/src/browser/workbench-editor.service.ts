@@ -5,7 +5,7 @@ import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEm
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { EXPLORER_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { Schemas } from '@ali/ide-core-common';
@@ -16,6 +16,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   @observable.shallow
   editorGroups: EditorGroup[] = [];
+
+  private _sortedEditorGroups: EditorGroup[] | undefined = [];
 
   @Autowired(INJECTOR_TOKEN)
   private injector!: Injector;
@@ -115,6 +117,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         this._onCursorChange.fire(e);
       }
     });
+    this._sortedEditorGroups = undefined;
     return editorGroup;
   }
 
@@ -167,7 +170,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       if (options.groupIndex >= this.editorGroups.length) {
         return group.open(uri, Object.assign({}, options, { split: EditorGroupSplitAction.Right }));
       } else {
-        group = this.editorGroups[options.groupIndex] || this.currentEditorGroup;
+        group = this.sortedEditorGroups[options.groupIndex] || this.currentEditorGroup;
       }
     }
     return group.open(uri, options);
@@ -208,6 +211,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         }));
       }
     }
+    this._sortedEditorGroups = undefined;
   }
 
   public async saveOpenedResourceState() {
@@ -255,6 +259,14 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   async close(uri: URI, force?: boolean) {
     return this.closeAll(uri, force);
+  }
+
+  get sortedEditorGroups() {
+    if (!this._sortedEditorGroups) {
+      this._sortedEditorGroups = [];
+      this.topGrid.sortEditorGroups(this._sortedEditorGroups);
+    }
+    return this._sortedEditorGroups;
   }
 
 }
@@ -384,7 +396,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   get index(): number {
-    return this.workbenchEditorService.editorGroups.indexOf(this);
+    return this.workbenchEditorService.sortedEditorGroups.indexOf(this);
   }
 
   @OnEvent(ResourceDecorationChangeEvent)
@@ -547,7 +559,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if ((options && options.disableNavigate) || (options && options.backend)) {
         // no-op
       } else {
-        this.commands.executeCommand(EXPLORER_COMMANDS.LOCATION.id, uri);
+        this.commands.executeCommand(FILE_COMMANDS.LOCATION.id, uri);
       }
       const oldResource = this.currentResource;
       const oldOpenType = this.currentOpenType;

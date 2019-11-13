@@ -72,6 +72,8 @@ export const FileTree = ({
   onDragLeave,
   onDragOver,
   onDrop,
+  onBlur,
+  onFocus,
   onChange,
   onContextMenu,
   searchable,
@@ -151,6 +153,8 @@ export const FileTree = ({
           scrollContainerStyle={scrollContainerStyle}
           containerHeight={containerHeight}
           onSelect={onSelect}
+          onBlur={onBlur}
+          onFocus={onFocus}
           onTwistieClick={onTwistieClick}
           onDragStart={onDragStart}
           onDragOver={onDragOver}

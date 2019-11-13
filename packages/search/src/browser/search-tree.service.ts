@@ -488,9 +488,11 @@ export class SearchTreeService {
         id: `${uri.toString()}?index=${index}`,
         name: '',
         description: searchResult.renderLineText || searchResult.lineText,
-        highLightRange: {
-          start,
-          end: start + searchResult.matchLength,
+        highLightRanges: {
+          description: [{
+            start,
+            end: start + searchResult.matchLength,
+          }],
         },
         order: index,
         depth: 1,

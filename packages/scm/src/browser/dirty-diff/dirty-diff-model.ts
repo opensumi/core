@@ -3,16 +3,18 @@ import { Uri, URI } from '@ali/ide-core-common/lib/uri';
 import { Emitter, Event, sortedDiff } from '@ali/ide-core-common';
 import { IDisposable, dispose, Disposable, DisposableStore, toDisposable } from '@ali/ide-core-common/lib/disposable';
 import { first } from '@ali/ide-core-common/lib/async';
-import { ThrottledDelayer } from '@ali/ide-core-common';
-import { IChange } from '@ali/ide-editor';
+import { ThrottledDelayer, IChange } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
+import { EditorCollectionService } from '@ali/ide-editor';
 
-import { SCMService, ISCMRepository } from '../../common';
+import { SCMService, ISCMRepository, IDirtyDiffModel } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { DirtyDiffWidget } from './dirty-diff-widget';
+import { toRange } from './utils';
 
 @Injectable()
-export class DirtyDiffModel extends Disposable {
+export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   private _originalModel: monaco.editor.ITextModel | null;
   get original(): monaco.editor.ITextModel | null { return this._originalModel; }
   get modified(): monaco.editor.ITextModel | null { return this._editorModel; }
@@ -31,12 +33,19 @@ export class DirtyDiffModel extends Disposable {
   }
 
   private _editorModel: monaco.editor.ITextModel | null;
+  private _widget: DirtyDiffWidget | null;
 
   @Autowired(SCMService)
   scmService: SCMService;
 
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
+
+  @Autowired(EditorCollectionService)
+  editorService: EditorCollectionService;
+
+  // TODO: dynamic
+  static heightInLines = 18;
 
   private get editorWorkerService(): monaco.commons.IEditorWorkerService {
     return monaco.services.StaticServices.editorWorkerService.get();
@@ -192,6 +201,11 @@ export class DirtyDiffModel extends Disposable {
     return 0;
   }
 
+  findNextClosestChangeLineNumber(lineNumber: number, inclusive = true) {
+    const index = this.findNextClosestChange(lineNumber, inclusive);
+    return this.changes[index].modifiedStartLineNumber;
+  }
+
   // 查找上一个changes
   findPreviousClosestChange(lineNumber: number, inclusive = true): number {
     for (let i = this.changes.length - 1; i >= 0; i--) {
@@ -209,6 +223,68 @@ export class DirtyDiffModel extends Disposable {
     }
 
     return this.changes.length - 1;
+  }
+
+  findPreviousClosestChangeLineNumber(lineNumber: number, inclusive = true) {
+    const index = this.findPreviousClosestChange(lineNumber, inclusive);
+    return this.changes[index].modifiedStartLineNumber;
+  }
+
+  getChangeFromRange(range: monaco.IRange) {
+    const index = this.findNextClosestChange(range.startLineNumber);
+    const change = this.changes[index];
+    return { change, count: index + 1 };
+  }
+
+  onClickDecoration(widget: DirtyDiffWidget, range: monaco.IRange) {
+    if (this._widget) {
+      if (this._widget === widget) {
+        this._widget.dispose();
+        return;
+      } else {
+        this._widget.dispose();
+      }
+    }
+
+    this._widget = widget;
+
+    if (this._originalModel && this._editorModel) {
+      const originalUri = new URI(this._originalModel.uri);
+      const editorUri = new URI(this._editorModel.uri);
+      this.editorService.createDiffEditor(widget.getContentNode(), { renderSideBySide: false })
+        .then(async (editor) => {
+          const original = await this.documentModelManager.createModelReference(originalUri);
+          const edit = await this.documentModelManager.createModelReference(editorUri);
+          const { change, count } = this.getChangeFromRange(range) || {};
+
+          editor.compare(original, edit);
+
+          editor.modifiedEditor.monacoEditor.updateOptions({ readOnly: true });
+          editor.originalEditor.monacoEditor.updateOptions({ readOnly: true });
+
+          editor.modifiedEditor.monacoEditor.revealLineInCenter(
+            range.startLineNumber - Math.round(DirtyDiffModel.heightInLines / 2));
+
+          widget.addDispose(editor.originalEditor.monacoEditor.onDidChangeModelContent(() => {
+            widget.relayout(DirtyDiffModel.heightInLines);
+          }));
+
+          widget.addDispose(this.onDidChange(() => {
+            const { change, count } = this.getChangeFromRange(range) || {};
+            widget.updateCurrent(count);
+            widget.show(toRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
+          }));
+
+          widget.onDispose(() => {
+            this._widget = null;
+          });
+
+          if (count && change) {
+            widget.updateCurrent(count);
+            widget.show(toRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
+          }
+        });
+    }
   }
 
   dispose(): void {
