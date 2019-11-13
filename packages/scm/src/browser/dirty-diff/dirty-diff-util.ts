@@ -1,4 +1,4 @@
-import { IChange } from '@ali/ide-editor';
+import { IChange } from '@ali/ide-core-common';
 
 export function compareChanges(a: IChange, b: IChange): number {
   let result = a.modifiedStartLineNumber - b.modifiedStartLineNumber;
