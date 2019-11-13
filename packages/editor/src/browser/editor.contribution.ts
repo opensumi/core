@@ -15,6 +15,7 @@ import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
 import { IEditorDocumentModelService } from './doc-model/types';
 import * as copy from 'copy-to-clipboard';
+import { FormattingSelector } from './format/formatterSelect';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 interface ResourceArgs {
@@ -77,6 +78,8 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     const { MonacoTextModelService } = require('./doc-model/override');
     const textModelService = this.injector.get(MonacoTextModelService);
     monacoService.registerOverride(ServiceNames.TEXT_MODEL_SERVICE, textModelService);
+    const formatSelector = this.injector.get(FormattingSelector);
+    monaco.format.FormattingConflicts._selectors.unshift(formatSelector.select.bind(formatSelector) as any);
   }
 
   onWillStop(app: IClientApp) {

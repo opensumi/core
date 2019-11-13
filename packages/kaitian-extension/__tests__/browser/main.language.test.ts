@@ -419,7 +419,7 @@ describe('ExtHostLanguageFeatures', () => {
 
   // });
   test('Format Range, data conversion', async (done) => {
-    disposables.push(extHost.registerDocumentRangeFormattingEditProvider(defaultSelector, new class implements vscode.DocumentRangeFormattingEditProvider {
+    disposables.push(extHost.registerDocumentRangeFormattingEditProvider('test', defaultSelector, new class implements vscode.DocumentRangeFormattingEditProvider {
       provideDocumentRangeFormattingEdits(): any {
         return [new types.TextEdit(new types.Range(0, 0, 0, 0), 'testing')];
       }

@@ -247,6 +247,8 @@ export const localizationBundle = {
     'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行报警',
     'editor.action.accept': '接受更改（使用右边)',
     'editor.action.revert': '回退更改（使用左边)',
+    'editor.format.chooseFormatter': '选择要使用的格式化扩展',
+    'editor.configuration.preferredFormatter': '优先使用的格式化器配置',
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
