@@ -53,6 +53,7 @@ export interface BaseExtension {
   name: string;
   version: string;
   path: string;
+  publisher: string;
 }
 
 // 插件面板左侧显示
@@ -60,7 +61,6 @@ export interface RawExtension extends BaseExtension {
   id: string; // publisher.name
   displayName: string;
   description: string;
-  publisher: string;
   installed: boolean;
   icon: string;
   enable: boolean;
