@@ -1,5 +1,4 @@
 import { BasicEvent } from '@ali/ide-core-common';
-import { OutputChannel } from '../browser/output.channel';
 
 export enum ContentChangeType {
   appendLine,
