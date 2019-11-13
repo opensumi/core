@@ -41,15 +41,31 @@ export interface ISubmenuItem {
 export type ICommandsMap = Map<string, Command>;
 
 export abstract class IMenuRegistry {
+  readonly onDidChangeMenubar: Event<string>;
+  abstract registerMenubarItem(menuId: string, item: PartialBy<IMenubarItem, 'id'>): IDisposable;
+  abstract getMenubarItem(menuId: string): IMenubarItem | undefined;
+  abstract getMenubarItems(): Array<IMenubarItem>;
+
   readonly onDidChangeMenu: Event<string>;
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
   abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem>): IDisposable;
-  abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
+  abstract getMenuItems(menuId: MenuId): Array<IMenuItem | ISubmenuItem>;
+}
+
+export interface IMenubarItem {
+  id: string;
+  label: string;
+  order?: number; // TODO: 增加排序因子
 }
 
 @Injectable()
 export class CoreMenuRegistry implements IMenuRegistry {
+  private readonly _menubarItems = new Map<string, IMenubarItem>();
+  private readonly _onDidChangeMenubar = new Emitter<string>();
+
+  readonly onDidChangeMenubar: Event<string> = this._onDidChangeMenubar.event;
+
   private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
   private readonly _onDidChangeMenu = new Emitter<string>();
 
@@ -63,6 +79,46 @@ export class CoreMenuRegistry implements IMenuRegistry {
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
+
+  /**
+   * 这里的注册只允许注册一次
+   */
+  registerMenubarItem(menuId: string, item: IMenubarItem): IDisposable {
+    // 将 menuId 存到结构中去
+    item = { ...item, id: menuId };
+    const existedItem = this._menuItems.get(menuId);
+    if (existedItem) {
+      this.logger.warn(`this menuId ${menuId} already existed`);
+      return Disposable.None;
+    }
+
+    this._menubarItems.set(menuId, item);
+    this._onDidChangeMenubar.fire(menuId);
+    return {
+      dispose: () => {
+        const item = this._menubarItems.get(menuId);
+        if (item) {
+          this._menubarItems.delete(menuId);
+          this._onDidChangeMenubar.fire(menuId);
+        }
+      },
+    };
+  }
+
+  getMenubarItem(menuId: string): IMenubarItem | undefined {
+    return this._menubarItems.get(menuId);
+  }
+
+  getMenubarItems(): IMenubarItem[] {
+    const menubarIds = Array.from(this._menubarItems.keys());
+    return menubarIds.reduce((prev, menubarId) => {
+      const menubarItem = this._menubarItems.get(menubarId);
+      if (menubarItem) {
+        prev.push(menubarItem);
+      }
+      return prev;
+    }, [] as IMenubarItem[]);
+  }
 
   registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
     let array = this._menuItems.get(menuId);

@@ -122,7 +122,7 @@ export class Disposable implements IDisposable {
     }
   }
 
-  protected register<T extends IDisposable>(disposable: T): T {
+  protected _register<T extends IDisposable>(disposable: T): T {
 		if ((disposable as any as Disposable) === this) {
 			throw new Error('Cannot register a disposable on itself!');
     }

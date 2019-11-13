@@ -1,15 +1,18 @@
-import * as React from 'react';
 import { Provider, Injectable } from '@ali/common-di';
-import { MenuBar } from './menu-bar.view';
 import { BrowserModule } from '@ali/ide-core-browser';
+
+import { MenuBar } from './menu-bar.view';
 import { MenuBarContribution } from './menu-bar.contribution';
-import { MenuBarService } from './menu-bar.service';
+import { MenubarService, AbstractMenubarService } from './menu-bar.service';
 
 @Injectable()
 export class MenuBarModule extends BrowserModule {
   providers: Provider[] = [
     MenuBarContribution,
-    MenuBarService,
+    {
+      token: AbstractMenubarService,
+      useClass: MenubarService,
+    },
   ];
 
   component = MenuBar;

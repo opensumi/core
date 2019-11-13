@@ -1,40 +1,47 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ICtxMenuRenderer, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
+import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
 import Dropdown from 'antd/lib/dropdown';
 import 'antd/lib/dropdown/style/index.less';
 
-import { MenuBarService } from './menu-bar.service';
+import { MenubarService } from './menu-bar.service';
 import * as styles from './menu-bar.module.less';
 
 export const MenuBar = observer(() => {
-  const menuBarService = useInjectable<MenuBarService>(MenuBarService);
+  const menuBarService = useInjectable<MenubarService>(MenubarService);
 
-  const handleClick = React.useCallback((titleEnum: string, e: React.MouseEvent<HTMLElement>) => {
-    const menuNodes = menuBarService.getMenuNodes(titleEnum);
+  const [clicked, setClicked] = React.useState<boolean>(false);
+
+  const handleClick = React.useCallback(() => {
+    setClicked((r) => !r);
   }, []);
 
   return (
-    <div className={styles.menubars}>
+    <ClickOutside
+      className={styles.menubars}
+      mouseEvents={['click', 'contextmenu']}
+      onOutsideClick={() => setClicked(false)}>
       {
-        Object.entries(menuBarService.titles).map((config, index) => {
-          const menuNodes = menuBarService.menuNodeCollection[config[0]];
-          return <div key={index} className={styles.menubar}>
+        menuBarService.menubarItems.map(({ id, label }) => {
+          const menuBarService = useInjectable<MenubarService>(MenubarService);
+          const menuNodes = menuBarService.menuNodeCollection.get(id) || [];
+          return <div className={styles.menubar} key={id}>
             {
-              Array.isArray(menuNodes)
+              Array.isArray(menuNodes) && menuNodes.length
                 ? <Dropdown
-                  transitionName=''
                   overlay={<MenuActionList data={menuNodes} />}
-                  trigger={['click', 'hover']}>
-                  <div className={styles['menubar-title']}>{config[1]}</div>
+                  trigger={clicked ? ['hover', 'click'] : ['click']}>
+                  <div className={styles['menubar-title']} onClick={handleClick}>{label}</div>
                 </Dropdown>
-                : <div className={styles['menubar-title']}>{config[1]}</div>
+                : <div className={styles['menubar-title']} onClick={handleClick}>{label}</div>
             }
           </div>;
         })
       }
-    </div>
+    </ClickOutside>
   );
 });
+
+MenuBar.displayName = 'MenuBar';

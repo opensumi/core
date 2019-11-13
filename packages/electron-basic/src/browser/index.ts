@@ -1,11 +1,12 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IElectronMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { ElectronHeaderBar } from './header';
 import { WelcomeContribution } from './welcome/contribution';
 import { ElectronNativeDialogService } from './dialog';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
+import { IMenuRegistry, NextMenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class ElectronBasicModule extends BrowserModule {
@@ -51,9 +52,8 @@ const nativeRoles = [
   },
 ];
 
-@Domain(ComponentContribution, ClientAppContribution, MenuContribution, CommandContribution, KeybindingContribution)
-export class ElectronBasicContribution implements KeybindingContribution, CommandContribution, ComponentContribution, ClientAppContribution, MenuContribution {
-
+@Domain(ComponentContribution, ClientAppContribution, NextMenuContribution, CommandContribution, KeybindingContribution)
+export class ElectronBasicContribution implements KeybindingContribution, CommandContribution, ComponentContribution, ClientAppContribution, NextMenuContribution {
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -86,26 +86,33 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     });
   }
 
-  registerMenus(menuRegistry: MenuModelRegistry) {
-    menuRegistry.registerSubmenu([...MAIN_MENU_BAR, '00_app'], localize('app.name', 'Kaitian'));
+  registerNextMenus(menuRegistry: IMenuRegistry) {
+    const menuId = '00_app';
+    menuRegistry.registerMenubarItem(menuId, { label: localize('app.name', 'Kaitian') });
 
-    menuRegistry.registerMenuAction([...MAIN_MENU_BAR, '00_app'], {
-      order: '0_about',
-      label: localize('about'),
+    menuRegistry.registerMenuItem(menuId, {
+      command: {
+        id: 'electron.about',
+        label: localize('about'),
+      },
+      group: '0_about',
       nativeRole: 'about',
-      commandId: 'electron.about',
     });
 
-    menuRegistry.registerMenuAction([...COMMON_MENUS.HELP], {
+    menuRegistry.registerMenuItem(MenuId.MenubarHelpMenu, {
+      command: {
+        id: 'electron.toggleDevTools',
+        label: localize('window.toggleDevTools'),
+      },
       nativeRole: 'toggledevtools',
-      commandId: 'electron.toggleDevTools',
-      label: localize('window.toggleDevTools'),
     });
 
-    menuRegistry.registerMenuAction([...COMMON_MENUS.HELP], {
+    menuRegistry.registerMenuItem(MenuId.MenubarHelpMenu, {
+      command: {
+        id: 'electron.reload',
+        label: localize('window.reload'),
+      },
       nativeRole: 'reload',
-      commandId: 'electron.reload',
-      label: localize('window.reload'),
     });
   }
 

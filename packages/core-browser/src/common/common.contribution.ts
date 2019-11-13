@@ -64,6 +64,13 @@ export class ClientCommonContribution implements CommandContribution, Preference
   }
 
   registerNextMenus(menus: IMenuRegistry): void {
+    // 注册 Menubar
+    menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file') });
+    menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit') });
+    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection') });
+    menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view') });
+    menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help') });
+
     // File 菜单
     menus.registerMenuItems(MenuId.MenubarFileMenu, [{
       command: FILE_COMMANDS.NEW_FILE.id,
