@@ -198,29 +198,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           }));
         }
       } else if (menuPosition === 'editor/title') {
-        for (const item of this.json[menuPosition]) {
-          const command = this.commandRegistry.getCommand(item.command);
-          if (command) {
-            if (command.iconClass) {
-              this.addDispose(this.editorActionRegistry.registerEditorAction({
-                title: replaceLocalizePlaceholder(command.label)!,
-                onClick: () => {
-                  this.commandService.executeCommand(command.id);
-                },
-                iconClass: command.iconClass,
-                when: item.when,
-              }));
-              // TODO Alt未实现
-            } else {
-              const menuPath = item.group ? ['editor', 'title', item.group] : ['editor', 'title'];
-              this.menuRegistry.registerMenuAction(menuPath, {
-                commandId: command.id,
-                when: item.when,
-              });
-            }
-          }
-          // won't register if no corresponding command exists;
-        }
+        // to new Registration
       } else {
         const menuActions = this.json[menuPosition];
         if (!isValidMenuItems(menuActions, console)) {
@@ -311,16 +289,27 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           }
         }
 
-        this.addDispose(this.newMenuRegistry.registerMenuItem(
-          menuId,
-          {
-            command: item.command,
-            alt,
-            group,
-            order,
+        if (menuId === MenuId.EditorTitle && command.iconClass) {
+          this.addDispose(this.editorActionRegistry.registerEditorAction({
+            title: replaceLocalizePlaceholder(command.label)!,
+            onClick: () => {
+              this.commandService.executeCommand(command.id);
+            },
+            iconClass: command.iconClass,
             when: item.when,
-          } as IMenuItem,
-        ));
+          }));
+        } else {
+          this.addDispose(this.newMenuRegistry.registerMenuItem(
+            menuId,
+            {
+              command: item.command,
+              alt,
+              group,
+              order,
+              when: item.when,
+            } as IMenuItem,
+          ));
+        }
       }
     }
   }

@@ -2,7 +2,8 @@
   "name": "@ali/ide-kaitian-extension",
   "version": "1.5.0",
   "files": [
-    "lib"
+    "lib",
+    "hosted"
   ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
