@@ -81,12 +81,6 @@
       "@ali/ide-activity-bar/lib/*": [
         "../packages/activity-bar/src/*"
       ],
-      "@ali/ide-file-tree": [
-        "../packages/file-tree/src/index.ts"
-      ],
-      "@ali/ide-file-tree/lib/*": [
-        "../packages/file-tree/src/*"
-      ],
       "@ali/ide-connection": [
         "../packages/connection/src/index.ts"
       ],
@@ -152,6 +146,12 @@
       ],
       "@ali/ide-explorer/lib/*": [
         "../packages/explorer/src/*"
+      ],
+      "@ali/ide-file-tree": [
+        "../packages/file-tree/src/index.ts"
+      ],
+      "@ali/ide-file-tree/lib/*": [
+        "../packages/file-tree/src/*"
       ],
       "@ali/ide-quick-open": [
         "../packages/quick-open/src/index.ts"
@@ -296,6 +296,12 @@
       ],
       "@ali/ide-kaitian-extension/lib/*": [
         "../packages/kaitian-extension/src/*"
+      ],
+      "@ali/ide-monaco-enhance": [
+        "../packages/monaco-enhance/src/index.ts"
+      ],
+      "@ali/ide-monaco-enhance/lib/*": [
+        "../packages/monaco-enhance/src/*"
       ],
       "@ali/ide-scm": [
         "../packages/scm/src/index.ts"

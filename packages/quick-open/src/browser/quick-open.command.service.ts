@@ -69,9 +69,19 @@ export class QuickCommandModel implements QuickOpenModel {
       .reduce((r, [, actions]) => [...r, ...actions], [] as MenuItemNode[])
       .filter((item) => item instanceof MenuItemNode && !item.disabled) as MenuItemNode[];
     menus.dispose();
-    return menuNodes.map((item) => this.commandRegistry.getCommand(item.id))
+
+    return menuNodes.reduce((prev, item) => {
+      const command = this.commandRegistry.getCommand(item.id);
       // 过滤掉可能存在的 command "没有注册" 的情况
-      .filter((c) => c) as Command[];
+      if (command) {
+        // 使用 Menu 中存在的 label
+        prev.push({
+          ...command,
+          label: item.label,
+        });
+      }
+      return prev;
+    }, [] as Command[]);
   }
 
   protected getCommands(): { recent: Command[], other: Command[] } {

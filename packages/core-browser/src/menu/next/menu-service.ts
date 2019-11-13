@@ -6,7 +6,6 @@ import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { MenuId } from './menu-id';
-import { getIcon } from '../../icon';
 import { KeybindingRegistry } from '../../keybinding';
 
 export interface IMenuNodeOptions {
@@ -60,15 +59,10 @@ export class MenuItemNode extends MenuNode {
     @Optional() item: Command,
     @Optional() options: IMenuNodeOptions = {},
     @Optional() disabled: boolean,
-    @Optional() toggled: boolean,
+    @Optional() checked: boolean,
     @Optional() nativeRole?: string,
   ) {
-    // 将 isToggled 属性通过 iconClass 来实现
-    const icon = toggled ? getIcon('check') : '';
-    super(item.id, icon, item.label!, disabled, nativeRole);
-    // 后置获取 i18n 数据 主要处理 ide-framework 内部的 command 的 i18n
-    // const command = this.commandRegistry.getCommand(item.id)!;
-    // this.label = command.label!;
+    super(item.id, item.iconClass, item.label!, checked, disabled, nativeRole);
 
     this.className = undefined;
 
@@ -219,16 +213,28 @@ class Menu extends Disposable implements IMenu {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
             const { args = [] } = options;
+            const menuCommandDesc = this.menuRegistry.getMenuCommand(item.command);
+            const command = this.commandRegistry.getCommand(menuCommandDesc.id);
+            if (!command) {
+              continue;
+            }
 
-            const command = this.commandRegistry.getCommand(item.command);
+            const menuCommand = {...command, ...menuCommandDesc };
             // 没有 desc 的 command 不展示在 menu 中
-            if (command && command.label) {
-              if (this.commandRegistry.isVisible(command.id, ...args)) {
-                const disabled = !this.commandRegistry.isEnabled(command.id, ...args);
-                const toggled = this.commandRegistry.isToggled(command.id, ...args);
-                const action = this.injector.get(MenuItemNode, [command, options, disabled, toggled, item.nativeRole]);
-                activeActions.push(action);
-              }
+            if (!menuCommand.label) {
+              continue;
+            }
+
+            if (this.commandRegistry.isVisible(menuCommand.id, ...args)) {
+              // FIXME: Command.isVisible 待废弃
+              const disabled = !this.commandRegistry.isEnabled(menuCommand.id, ...args);
+              // toggledWhen 的优先级高于 isToggled
+              // 若设置了 toggledWhen 则忽略 Command 的 isVisible
+              const checked = 'toggledWhen' in item
+                ? this.contextKeyService.match(item.toggledWhen)
+                : this.commandRegistry.isToggled(menuCommand.id, ...args);
+              const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);
+              activeActions.push(action);
             }
           } else {
             const action = new SubmenuItemNode(item);
