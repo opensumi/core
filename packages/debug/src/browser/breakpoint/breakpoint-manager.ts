@@ -1,9 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, Event, URI } from '@ali/ide-core-browser';
+import { Emitter, Event, URI, isUndefined } from '@ali/ide-core-browser';
 import { IWorkspaceStorageService } from '@ali/ide-workspace';
 import { SourceBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
 import { DebugProtocol } from 'vscode-debugprotocol';
+import { DebugSession } from '../debug-session';
+import { DebugExceptionBreakpoint } from '../model';
 
 export interface BreakpointsChangeEvent {
   uri: URI;
@@ -12,13 +14,17 @@ export interface BreakpointsChangeEvent {
   changed: SourceBreakpoint[];
 }
 
+export interface ExceptionBreakpointsChangeEvent {
+  filters: string[];
+}
+
 @Injectable()
 export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
 
   protected readonly owner = 'breakpoint';
 
-  private exceptionFilter: DebugProtocol.ExceptionBreakpointsFilter[];
-
+  private defaultExceptionFilter: DebugProtocol.ExceptionBreakpointsFilter[] = [];
+  private exceptionFilterValue: {[key: string]: boolean} = {};
   @Autowired(IWorkspaceStorageService)
   protected readonly storage: IWorkspaceStorageService;
 
@@ -27,9 +33,9 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
   }
 
   protected readonly onDidChangeBreakpointsEmitter = new Emitter<BreakpointsChangeEvent>();
-  protected readonly onDidChangeExceptionBreakpointsEmitter = new Emitter<ExceptionBreakpointsChangeEvent>();
   readonly onDidChangeBreakpoints: Event<BreakpointsChangeEvent> = this.onDidChangeBreakpointsEmitter.event;
-  readonly onDidChangeExceptionsBreakpoints: Event<ExceptionBreakpointsChangeEvent> = this.onDidChangeExceptionBreakpointsEmitter.event;
+  protected readonly onDidChangeExceptionsBreakpointsEmitter = new Emitter<ExceptionBreakpointsChangeEvent>();
+  readonly onDidChangeExceptionsBreakpoints: Event<ExceptionBreakpointsChangeEvent> = this.onDidChangeExceptionsBreakpointsEmitter.event;
 
   setMarkers(uri: URI, owner: string, newMarkers: SourceBreakpoint[]): Marker<SourceBreakpoint>[] {
     const result = super.setMarkers(uri, owner, newMarkers);
@@ -117,18 +123,21 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     const data = await this.storage.getData<BreakpointManager.Data>('breakpoints', {
       breakpointsEnabled: true,
       breakpoints: {},
+      exceptionsBreakpoints: {},
     });
     this._breakpointsEnabled = data!.breakpointsEnabled;
     // tslint:disable-next-line:forin
     for (const uri in data!.breakpoints) {
       this.setBreakpoints(new URI(uri), data!.breakpoints[uri]);
     }
+    this.exceptionFilterValue = data!.exceptionsBreakpoints;
   }
 
   save(): void {
     const data: BreakpointManager.Data = {
       breakpointsEnabled: this._breakpointsEnabled,
       breakpoints: {},
+      exceptionsBreakpoints: this.exceptionFilterValue,
     };
     const uris = this.getUris();
     for (const uri of uris) {
@@ -137,14 +146,43 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     this.storage.setData('breakpoints', data);
   }
 
-  setExceptionBreakpoints(filter: DebugProtocol.ExceptionBreakpointsFilter[]) {
-    this.exceptionFilter = filter;
+  /**
+   * 设置异常断点元信息
+   * @param session
+   * @param filter
+   */
+  setExceptionBreakpoints(filters: DebugProtocol.ExceptionBreakpointsFilter[]) {
+    this.defaultExceptionFilter = filters;
+    for (const item of filters) {
+      if (!isUndefined(this.exceptionFilterValue[item.filter])) {
+        this.updateExceptionBreakpoints(item.filter, this.exceptionFilterValue[item.filter]);
+        break;
+      }
+    }
   }
 
+  /**
+   * 获取异常断点元信息
+   * @param session
+   */
   getExceptionBreakpoints(): DebugProtocol.ExceptionBreakpointsFilter[] {
-    return this.exceptionFilter;
+    return this.defaultExceptionFilter.map((breakpoint) => {
+      return {
+        ...breakpoint,
+        default: this.exceptionFilterValue[breakpoint.filter] || false,
+      };
+    });
   }
 
+  /**
+   * 通知DebugSession更新Exception配置
+   * @param exceptionBreakpoints
+   */
+  updateExceptionBreakpoints(filter: string, value: boolean) {
+    this.exceptionFilterValue[filter] = value;
+    const filters = this.defaultExceptionFilter.filter((exp) => this.exceptionFilterValue[exp.filter]).map((exp) => exp.filter);
+    this.onDidChangeExceptionsBreakpointsEmitter.fire({filters});
+  }
 }
 
 export namespace BreakpointManager {
@@ -152,6 +190,9 @@ export namespace BreakpointManager {
     breakpointsEnabled: boolean;
     breakpoints: {
       [uri: string]: SourceBreakpoint[],
+    };
+    exceptionsBreakpoints: {
+      [filter: string]: boolean,
     };
   }
 }

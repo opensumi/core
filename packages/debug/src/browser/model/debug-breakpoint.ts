@@ -3,7 +3,7 @@ import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { DebugSession } from '../debug-session';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { BreakpointManager } from '../breakpoint';
-import { URI, IRange, localize } from '@ali/ide-core-browser';
+import { URI, IRange, localize, uuid } from '@ali/ide-core-browser';
 import { DebugSource } from './debug-source';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
 
@@ -68,8 +68,6 @@ export class DebugBreakpoint extends DebugBreakpointData {
     if (shouldUpdate) {
       this.breakpoints.setBreakpoints(this.uri, breakpoints);
     }
-    console.log(this.session, 'this.session');
-
   }
 
   updateOrigins(data: Partial<DebugProtocol.SourceBreakpoint>): void {
@@ -226,9 +224,23 @@ export class DebugBreakpoint extends DebugBreakpointData {
   }
 }
 
-export class ExceptionBreakpoint {
-  constructor(public enabled: boolean, public filter: string) {
+export class DebugExceptionBreakpoint {
+  private _id;
+  public enabled: boolean;
+  public filter: string;
+  public label: string;
+  constructor(
+    protected readonly meta: DebugProtocol.ExceptionBreakpointsFilter,
+    protected readonly breakpoints: BreakpointManager,
+  ) {
+    this.enabled = meta.default || false,
+    this.filter = meta.filter,
+    this.label = meta.label;
+    this._id = uuid();
+  }
 
+  get id() {
+    return this._id;
   }
 
   get uri() {
@@ -245,6 +257,7 @@ export class ExceptionBreakpoint {
 
   setEnabled(value: boolean) {
     this.enabled = value;
+    this.breakpoints.updateExceptionBreakpoints(this.filter, value);
   }
 
   open() {

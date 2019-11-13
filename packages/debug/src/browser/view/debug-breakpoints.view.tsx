@@ -5,7 +5,7 @@ import * as styles from './debug-breakpoints.module.less';
 import * as cls from 'classnames';
 import { CheckBox, CheckBoxSize } from '@ali/ide-core-browser/lib/components/input';
 import { observer } from 'mobx-react-lite';
-import { DebugBreakpoint, ExceptionBreakpoint } from '../model';
+import { DebugBreakpoint, DebugExceptionBreakpoint } from '../model';
 import { RecycleList } from '@ali/ide-core-browser/lib/components';
 import Badge from '@ali/ide-core-browser/lib/components/badge';
 
@@ -13,7 +13,7 @@ export interface BreakpointItem {
   name: string;
   id: string;
   description: string;
-  breakpoint: DebugBreakpoint | ExceptionBreakpoint;
+  breakpoint: DebugBreakpoint | DebugExceptionBreakpoint;
 }
 
 export const DebugBreakpointView = observer(({
