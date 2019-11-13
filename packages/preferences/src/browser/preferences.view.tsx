@@ -91,7 +91,7 @@ export const PreferencesIndexes = ({groups, currentGroupId: currentGroup, setCur
               [styles.activated]: currentGroup === id,
             })} onClick={() => {setCurrentGroup(id); }}>
             <span className={iconClass}></span>
-            {replaceLocalizePlaceholder(title)}
+              {toNormalCase(replaceLocalizePlaceholder(title) || '')}
             </div>
             {
               currentGroup === id ?
@@ -125,7 +125,7 @@ export const PreferenceBody = ({groupId, scope, search}: {groupId: string, scope
 export const PreferenceSection = ({section, scope}: {section: ISettingSection, scope: PreferenceScope}) => {
   return <div className={styles.preference_section} id={'preferenceSection-' + section.title}>
     {
-      section.title ? <div className={styles.section_title}>{section.title}</div> : null
+      section.title ? <div className={styles.section_title}>{toNormalCase(section.title!)}</div> : null
     }
     {
       section.component ? <section.component scope={scope}/> :
@@ -422,7 +422,10 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     }
   };
 
-  return <div className={styles.preference_item}>
+  return <div className={classnames({
+    [styles.preference_item]: true,
+    [styles.modified]: effectingScope === scope,
+  })}>
     {renderPreferenceItem()}
 
   </div>;

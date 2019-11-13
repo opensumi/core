@@ -95,14 +95,19 @@
       flex-grow: 1;
     }
     .preference_section{
-      padding:15px 20px 0;
+      padding:15px 20px 0 5px;
       .section_title{
         font-size:14px;
         font-weight:bold;
         margin-bottom:10px;
+        padding:0 15px;
       }
       .preference_item{
-        margin-bottom: 20px;
+        margin-bottom: 10px;
+        padding:5px 0px 5px 15px;
+        &.modified {
+          border-left:3px solid var(--settings-modifiedItemIndicator);
+        }
       }
       .key { 
         margin-bottom:5px;
