@@ -346,7 +346,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     };
 
     const items: any[] = [];
-    value.map((item, idx) => {
+    (value || []).map((item, idx) => {
       items.push(
       <li className={styles.arr_items} key={`${idx} - ${JSON.stringify(item)}`}>
         <div onClick={() => { removeItem(idx); }} className={cls(getIcon('delete'), styles.rm_icon, styles.arr_item)}></div>

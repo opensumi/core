@@ -20,10 +20,14 @@
       flex-shrink: 0;
       margin-right: 50px;
       > div {
+        cursor: pointer;
         padding:10px;
         border-bottom: 1px solid transparent;
         z-index: 1;
         color: var(--titleBar-inactiveForeground);
+        &:hover {
+          color: var(--titleBar-activeForeground);
+        }
         &.activated {
           border-bottom-color: var(--titleBar-activeForeground);
           color: var(--titleBar-activeForeground);

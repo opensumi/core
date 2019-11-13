@@ -77,7 +77,7 @@ export enum CheckBoxSize {
 }
 
 export const CheckBox: React.FC<{
-  id: string,
+  id?: string,
   insertClass?: string;
   label?: string,
   size?: CheckBoxSize,
