@@ -2,7 +2,8 @@
   "name": "@ali/ide-kaitian-extension",
   "version": "1.5.0",
   "files": [
-    "lib"
+    "lib",
+    "hosted"
   ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -11,7 +12,8 @@
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "node --inspect -r ts-node/register ./entry/server.ts",
     "build": "tsc --build ../../configs/ts/references/tsconfig.kaitian-extension.json",
-    "compile:worker": "webpack --config webpack.config.worker.js --progress"
+    "compile:worker": "webpack --config webpack.config.worker.js --progress",
+    "compile:ext-host": "webpack --config webpack.config.ext-host.js --progress"
   },
   "repository": {
     "type": "git",
@@ -49,7 +51,7 @@
     "@ali/ide-workspace-edit": "1.5.0",
     "@ali/ide-preferences": "1.5.0",
     "@ali/ide-toolbar": "1.5.0",
-    "getmac": "^1.4.6",
+    "address": "^1.1.2",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
     "lodash.clonedeep": "^4.5.0",

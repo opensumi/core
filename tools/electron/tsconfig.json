@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "moduleResolution": "node",
+    "rootDir": "src",
+    "baseUrl": "src",
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "declaration": false,
+    "sourceMap": true,
+    "removeComments": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "importHelpers": true,
+    "resolveJsonModule": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
+    "noEmitOnError": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "esnext"
+    ],
+    "typeRoots": [
+      "../../node_modules/@types",
+      "../../typings"
+    ]
+  },
+  "include": [
+    "src/main/**/*",
+    "src/node/**/*",
+  ]
+}
