@@ -109,17 +109,14 @@ export class ActivityBarService extends WithEventBus {
   }
 
   // append一个viewContainer，支持传入初始化views
-  append(options: ViewContainerOptions, side: Side, views?: View[], Fc?: React.FunctionComponent): string {
+  append(options: ViewContainerOptions, side: Side, views: View[], Fc?: React.FunctionComponent): string {
     const { iconClass, priority, containerId, title, initialProps, expanded } = options;
     const label = (title || '').toUpperCase();
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
       const command = this.registerVisibleToggleCommand(containerId, label);
-      if (!views) {
-        if (!Fc) {
-          console.error('视图数据或自定义视图请至少传入一种！');
-        }
+      if (Fc) {
         panelContainer = this.injector.get(ReactPanelWidget, [Fc!, containerId, command]);
         panelContainer.title.label = label;
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
