@@ -24,6 +24,7 @@ export interface MenuCommandDesc {
 export interface IMenuItem {
   command: string | MenuCommandDesc;
   when?: string | monaco.contextkey.ContextKeyExpr;
+  toggledWhen?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
   nativeRole?: string; // electron native 菜单使用
@@ -149,6 +150,7 @@ export interface IMenuAction {
   keybinding: string; // 快捷键描述
   isKeyCombination: boolean; // 是否为组合键
   disabled?: boolean; // disable 状态的 menu
+  checked?: boolean; // checked 状态 通过 toggleWhen 实现
   nativeRole?: string; // eletron menu 使用
   execute(event?: any): Promise<any>;
 }
@@ -162,6 +164,7 @@ export class MenuNode implements IMenuAction {
   keybinding: string;
   isKeyCombination: boolean;
   disabled: boolean;
+  checked: boolean;
   nativeRole: string;
   readonly _actionCallback?: (event?: any) => Promise<any>;
 
@@ -169,6 +172,7 @@ export class MenuNode implements IMenuAction {
     commandId: string,
     icon: string = '',
     label: string = '',
+    checked = false,
     disabled = false,
     nativeRole: string = '',
     keybinding: string = '',
@@ -183,6 +187,7 @@ export class MenuNode implements IMenuAction {
     this.keybinding = keybinding;
     this.isKeyCombination = isKeyCombination;
     this.disabled = disabled;
+    this.checked = checked;
     this.nativeRole = nativeRole;
     this._actionCallback = actionCallback;
   }

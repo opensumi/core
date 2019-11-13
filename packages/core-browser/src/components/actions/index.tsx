@@ -15,10 +15,15 @@ import * as styles from './styles.module.less';
 const MenuAction: React.FC<{
   data: MenuNode;
 }> = ({ data }) => {
+  // 这里遵循 native menu 的原则，保留一个 icon 位置
   return (
     <>
       <div className={styles.icon}>
-        <Icon iconClass={data.icon} />
+        {
+          data.checked
+           ? <Icon icon='check' />
+           : null
+        }
       </div>
       <div className={styles.label}>
         {data.label ? mnemonicButtonLabel(data.label, true) : ''}
