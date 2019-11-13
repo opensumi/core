@@ -7,7 +7,7 @@ import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';
 import { DebugThread } from './model/debug-thread';
-import { DebugBreakpoint } from './model/debug-breakpoint';
+import { DebugBreakpoint, ExceptionBreakpoint } from './model/debug-breakpoint';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-session-contribution';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -352,13 +352,15 @@ export class DebugSessionManager {
 
   getBreakpoints(session?: DebugSession): DebugBreakpoint[];
   getBreakpoints(uri: URI, session?: DebugSession): DebugBreakpoint[];
-  getBreakpoints(arg?: URI | DebugSession, arg2?: DebugSession): DebugBreakpoint[] {
+  getBreakpoints(arg?: URI | DebugSession, arg2?: DebugSession): (DebugBreakpoint | ExceptionBreakpoint)[] {
     const uri = arg instanceof URI ? arg : undefined;
     const session = arg instanceof DebugSession ? arg : arg2 instanceof DebugSession ? arg2 : this.currentSession;
     if (session && session.state > DebugState.Initializing) {
       return session.getBreakpoints(uri);
     }
-    return this.breakpoints.findMarkers({ uri }).map(({ data }) => new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService));
+    const breakpoints = this.breakpoints.findMarkers({ uri }).map(({ data }) => new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService));
+    const exceptionBreakpoints = this.breakpoints.getExceptionBreakpoints().map((exb) => new ExceptionBreakpoint(exb.default, exb.filter, exb.label));
+    return [...exceptionBreakpoints, ...breakpoints];
   }
   getBreakpoint(uri: URI, line: number): DebugBreakpoint | undefined {
     const session = this.currentSession;

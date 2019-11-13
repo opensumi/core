@@ -3,6 +3,7 @@ import { Emitter, Event, URI } from '@ali/ide-core-browser';
 import { IWorkspaceStorageService } from '@ali/ide-workspace';
 import { SourceBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
+import { DebugProtocol } from 'vscode-debugprotocol';
 
 export interface BreakpointsChangeEvent {
   uri: URI;
@@ -11,14 +12,12 @@ export interface BreakpointsChangeEvent {
   changed: SourceBreakpoint[];
 }
 
-export interface ExceptionBreakpointsChangeEvent {
-  filters: string[];
-}
-
 @Injectable()
 export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
 
   protected readonly owner = 'breakpoint';
+
+  private exceptionFilter: DebugProtocol.ExceptionBreakpointsFilter[];
 
   @Autowired(IWorkspaceStorageService)
   protected readonly storage: IWorkspaceStorageService;
@@ -138,17 +137,12 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     this.storage.setData('breakpoints', data);
   }
 
-  async setExceptionBreakpoint(options: {
-    filters: string[],
-  }): Promise<void> {
-    this.storage.setData('exceptionBreakpointOptions', options);
-    this.onDidChangeExceptionBreakpointsEmitter.fire(options);
+  setExceptionBreakpoints(filter: DebugProtocol.ExceptionBreakpointsFilter[]) {
+    this.exceptionFilter = filter;
   }
 
-  async getExceptionBreakpointOptions(): Promise<ExceptionBreakpointsChangeEvent | undefined> {
-    return this.storage.getData<ExceptionBreakpointsChangeEvent>('exceptionBreakpointOptions', {
-      filters: [],
-    });
+  getExceptionBreakpoints(): DebugProtocol.ExceptionBreakpointsFilter[] {
+    return this.exceptionFilter;
   }
 
 }

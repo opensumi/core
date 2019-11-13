@@ -68,6 +68,8 @@ export class DebugBreakpoint extends DebugBreakpointData {
     if (shouldUpdate) {
       this.breakpoints.setBreakpoints(this.uri, breakpoints);
     }
+    console.log(this.session, 'this.session');
+
   }
 
   updateOrigins(data: Partial<DebugProtocol.SourceBreakpoint>): void {
@@ -170,11 +172,6 @@ export class DebugBreakpoint extends DebugBreakpointData {
         range,
       });
     } else {
-      // if (this.models) {
-      //   for (const model of this.models) {
-      //     model.render();
-      //   }
-      // }
       await this.workbenchEditorService.open(this.uri, {
         ...options,
         range,
@@ -226,5 +223,31 @@ export class DebugBreakpoint extends DebugBreakpointData {
       className: decoration.className + '-unverified',
       message: [this.message || localize('debug.breakpoint.unverified') + decoration.message[0]],
     };
+  }
+}
+
+export class ExceptionBreakpoint {
+  constructor(public enabled: boolean, public filter: string) {
+
+  }
+
+  get uri() {
+    return undefined;
+  }
+
+  get line() {
+    return undefined;
+  }
+
+  get column() {
+    return undefined;
+  }
+
+  setEnabled(value: boolean) {
+    this.enabled = value;
+  }
+
+  open() {
+    // do nothing
   }
 }

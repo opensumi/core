@@ -1,15 +1,15 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { DebugConsoleSession } from '../console/debug-console-session';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from './debug-view-model';
 import { DebugBreakpoint } from '../model';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { URI, localize } from '@ali/ide-core-browser';
+import { URI, WithEventBus, OnEvent, localize } from '@ali/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
 import { BreakpointManager } from '../breakpoint';
+import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ali/ide-workspace-edit';
 
 @Injectable()
-export class DebugBreakpointsService {
+export class DebugBreakpointsService extends WithEventBus {
 
   @Autowired(DebugViewModel)
   protected readonly model: DebugViewModel;
@@ -29,6 +29,7 @@ export class DebugBreakpointsService {
   roots: URI[];
 
   constructor() {
+    super();
     this.init();
   }
 
@@ -41,6 +42,21 @@ export class DebugBreakpointsService {
     this.breakpointsManager.onDidChangeBreakpoints(() => {
       this.updateBreakpoints();
     });
+  }
+
+  @OnEvent(WorkspaceEditDidRenameFileEvent)
+  onRenameFile(e: WorkspaceEditDidRenameFileEvent) {
+    this.removeBreakpoints(e.payload.oldUri);
+  }
+
+  @OnEvent(WorkspaceEditDidDeleteFileEvent)
+  onDeleteFile(e: WorkspaceEditDidDeleteFileEvent) {
+    this.removeBreakpoints(e.payload.oldUri);
+  }
+
+  private removeBreakpoints(uri: URI) {
+    this.breakpointsManager.cleanAllMarkers(uri);
+    this.updateBreakpoints();
   }
 
   async updateRoots() {
@@ -64,6 +80,7 @@ export class DebugBreakpointsService {
     return nodes;
   }
 
+  @action
   updateBreakpoints() {
     this.nodes = this.extractNodes(this.model.breakpoints);
   }
