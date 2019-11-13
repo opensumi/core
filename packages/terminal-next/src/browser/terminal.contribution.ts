@@ -12,9 +12,8 @@ import { Autowired } from '@ali/common-di';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { ITerminalController } from '../common';
 import { terminalAdd, terminalRemove, terminalExpand, terminalClear, terminalSplit, toggleBottomPanel } from './terminal.command';
-// import TerminalView from './terminal.view';
+import TerminalView from './terminal.view';
 import TerminalSelect from './terminal.select';
-import ResizeView from './component/resize.test';
 
 @Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution)
 export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution {
@@ -27,7 +26,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-terminal-next', {
-      component: ResizeView,
+      component: TerminalView,
       id: 'ide-terminal-next',
     }, {
       title: localize('terminal.name'),
@@ -52,7 +51,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
     registry.registerCommand(terminalRemove, {
       execute: (...args: any[]) => {
-        this._terminalController.removeFocus();
+        this._terminalController.removeFocused();
       },
       isEnabled: () => {
         return true;
@@ -64,7 +63,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
     registry.registerCommand(terminalSplit, {
       execute: (...args: any[]) => {
-        this._terminalController.split();
+        this._terminalController.addWidget();
       },
       isEnabled: () => {
         return true;
@@ -103,7 +102,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     });
 
     registry.afterExecuteCommand(toggleBottomPanel.id, () => {
-      console.log(111);
       if (this._terminalController.groups.length === 0) {
         this._terminalController.firstInitialize();
       }

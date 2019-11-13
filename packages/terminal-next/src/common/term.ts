@@ -1,5 +1,4 @@
 import { Terminal, ITerminalOptions } from 'xterm';
-import { uuid } from '@ali/ide-core-common';
 
 export const ITerminalExternalService = Symbol('ITerminalExternalService');
 export interface ITerminalExternalService {

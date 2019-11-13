@@ -3,10 +3,16 @@ import { Disposable, uuid } from '@ali/ide-core-common';
 import { IWidget, IWidgetGroup } from '../../common/resize';
 
 export class Widget extends Disposable implements IWidget {
-  private _id = uuid();
+  private _id: string;
 
   @observable
-  state: { dynamic: number } = { dynamic: 0 };
+  state: { dynamic: number, shadowDynamic: number };
+
+  constructor(id?: string) {
+    super();
+    this._id = id || uuid();
+    this.state = observable.object({ dynamic: 0, shadowDynamic: 0 });
+  }
 
   get id() {
     return this._id;
@@ -17,8 +23,26 @@ export class Widget extends Disposable implements IWidget {
     return this.state.dynamic;
   }
 
-  resize(dynamic: number) {
-    this.state.dynamic = dynamic;
+  set dynamic(d: number) {
+    this.state.dynamic = d;
+  }
+
+  @computed
+  get shadowDynamic() {
+    return this.state.shadowDynamic;
+  }
+
+  set shadowDynamic(d: number) {
+    this.state.shadowDynamic = d;
+  }
+
+  resize(dynamic?: number) {
+    this.dynamic = dynamic || this.shadowDynamic;
+    this.shadowDynamic = this.dynamic;
+  }
+
+  increase(increment: number) {
+    this.shadowDynamic += increment;
   }
 }
 
@@ -45,15 +69,21 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     return this._id;
   }
 
-  firstInitialize() {
-    this.createWidget();
+  get length() {
+    return this.widgets.length;
   }
 
-  createWidget() {
-    const widget = new Widget();
+  get last() {
+    return this.widgets[this.length - 1];
+  }
+
+  createWidget(id?: string) {
+    const widget = new Widget(id);
     this.widgets.push(widget);
     this.widgetsMap.set(widget.id, widget);
     this._averageLayout();
+
+    return widget;
   }
 
   removeWidgetByIndex(index: number) {
@@ -61,6 +91,8 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     this.widgetsMap.delete(widget[0].id);
     widget[0].dispose();
     this._averageLayout();
+
+    return widget[0];
   }
 
   private _isLast(widget: Widget) {

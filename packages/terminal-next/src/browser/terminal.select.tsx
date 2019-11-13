@@ -9,15 +9,17 @@ export default observer(() => {
 
   const onChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const index = event.target.value;
-    controller.selectIndex(parseInt(index, 10));
+    controller.selectGroup(parseInt(index, 10));
   };
+
+  const index = controller.state && controller.state.index;
 
   return (
     <div>
-      <select value={ controller.state.index } onChange={ onChange }>
+      <select value={ index || 0 } onChange={ onChange }>
         {
-          controller.groups.map((group, index) => {
-            return <option key={ `${group}-${index}` } value={ index }>{ `${index + 1}: ${group.snapshot()}` }</option>;
+          (controller.groups || []).map((group, index) => {
+            return <option key={ `${group}-${index}` } value={ index }>{ `${index + 1}: ${controller.snapshot()}` }</option>;
           })
         }
       </select>

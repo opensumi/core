@@ -59,7 +59,6 @@ export class TerminalClient extends Themable implements ITerminalClient {
 
   constructor() {
     super();
-
   }
 
   get onDidChangeActiveTerminal(): Event<string> {

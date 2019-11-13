@@ -286,6 +286,13 @@ export class Themable extends WithEventBus {
     return this.theme.getColor(id, useDefault);
   }
 
+  protected getColorSync(id: ColorIdentifier, useDefault?: boolean) {
+    if (!this.theme) {
+      this.theme = this.themeService.getCurrentThemeSync();
+    }
+    return this.theme.getColor(id, useDefault);
+  }
+
   private listenThemeChange() {
     this.themeService.onThemeChange((theme) => {
       this.theme = theme;

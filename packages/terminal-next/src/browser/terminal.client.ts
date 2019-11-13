@@ -1,12 +1,9 @@
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable, ThrottledDelayer } from '@ali/ide-core-common';
 import { Terminal, ITerminalOptions } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { AttachAddon } from 'xterm-addon-attach';
 import { ITerminalExternalService } from '../common';
-
-export class TerminalTheme {
-
-}
+import { ITerminalTheme } from './terminal.theme';
 
 export class TerminalClient extends Disposable {
   private _container: HTMLDivElement;
@@ -16,6 +13,8 @@ export class TerminalClient extends Disposable {
   // add on
   private _fitAddon: FitAddon;
   private _attachAddon: AttachAddon;
+
+  private _layer = new ThrottledDelayer(50);
 
   private _attached: boolean;
   private _activated: boolean;
@@ -31,13 +30,17 @@ export class TerminalClient extends Disposable {
     fontSize: 12,
   };
 
-  constructor(protected readonly service: ITerminalExternalService) {
+  constructor(
+    protected readonly service: ITerminalExternalService,
+    protected readonly theme: ITerminalTheme,
+  ) {
     super();
 
     this._attached = false;
     this._activated = false;
     this._uid = this.service.makeId();
     this._term = new Terminal({
+      theme: this.theme.terminalTheme,
       ...TerminalClient.defaultOptions,
       ...this.service.getOptions(),
     });
@@ -119,6 +122,13 @@ export class TerminalClient extends Disposable {
       }
     }
     return Promise.resolve();
+  }
+
+  layout() {
+    this._layer.trigger(() => {
+      this._fitAddon.fit();
+      return Promise.resolve();
+    });
   }
 
   private _doFocus() {

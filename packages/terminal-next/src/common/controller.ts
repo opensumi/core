@@ -1,14 +1,20 @@
-import { IWidgetGroup, IWidget } from './widget';
+import { IWidgetGroup } from './resize';
 
 export const ITerminalController = Symbol('ITerminalController');
 export interface ITerminalController {
   groups: IWidgetGroup[];
   state: { index: number };
-  focusedId: string;
   firstInitialize(): void;
-  split(): void;
-  focus(current: IWidget): void;
-  selectIndex(index: number): void;
-  removeFocus(): void;
+  removeFocused(): void;
+  snapshot(): string;
+
+  addWidget(): void;
+  focusWidget(widgetId: string): void;
+
   createGroup(): void;
+  selectGroup(index: number): void;
+
+  drawTerminalClient(dom: HTMLDivElement, termId: string): void;
+  layoutTerminalClient(widgetId: string): void;
+  eraseTerminalClient(termId: string): void;
 }

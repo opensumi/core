@@ -4,30 +4,34 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { ITerminalController, IWidget } from '../common';
 
 export interface IProps {
-  flex: number;
   id: string;
+  dynamic: number;
   widget: IWidget;
 }
 
-export default ({ flex, widget, id }: IProps) => {
+export default ({ widget, id, dynamic }: IProps) => {
   const content = React.createRef<HTMLDivElement>();
   const controller = useInjectable<ITerminalController>(ITerminalController);
 
   React.useEffect(() => {
-    widget.draw(content.current);
+    if (content.current) {
+      controller.drawTerminalClient(content.current, id);
+    }
 
     return () => {
-      widget.erase();
+      controller.eraseTerminalClient(id);
     };
   }, [id]);
 
+  React.useEffect(() => {
+    controller.layoutTerminalClient(id);
+  }, [dynamic]);
+
   const onFocus = () => {
-    controller.focus(widget);
+    controller.focusWidget(widget.id);
   };
 
   return (
-    <div onFocus={ onFocus } style={ { flex } } className={ styles.widgetContainer }>
-      <div data-term-id={ id } className={ styles.widgetContent } ref={ content }></div>
-    </div>
+    <div data-term-id={ id } onFocus={ onFocus } className={ styles.terminalContent } ref={ content }></div>
   );
 };

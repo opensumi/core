@@ -12,16 +12,23 @@ export enum ResizeDirection {
 export interface IResizeViewProps {
   direction: ResizeDirection;
   useFlex: boolean;
+  shadow: boolean;
   group: IWidgetGroup;
   draw: (widget: IWidget) => JSX.Element;
 }
 
+// todo: 将这些变量放到一个实例中管理
+let wholeWidth: number = Infinity;
+
 export default observer((props: IResizeViewProps) => {
-  const { group } = props;
-  const [event, setEvent] = React.useState(false);
+  const { group, shadow } = props;
+  const [ event, setEvent ] = React.useState(false);
 
   return (
-    <div className={ styles.resizeWrapper }>
+    <div
+      className={ styles.resizeWrapper }
+      ref={ (ref) => wholeWidth = (ref && ref.clientWidth) || Infinity }
+    >
       <div
         style={ {
           pointerEvents: !event ? 'all' : 'none',
@@ -32,7 +39,7 @@ export default observer((props: IResizeViewProps) => {
           group && group.widgets.map((widget) => {
             return (
               <div
-                style={ { width: `${widget.dynamic}%` } }
+                style={ { width: `${shadow ? widget.dynamic : widget.shadowDynamic}%` } }
                 className={ styles.resizeItem }
               >
                 {
@@ -56,15 +63,17 @@ export default observer((props: IResizeViewProps) => {
             const right = index + 1 < group.widgets.length ? group.widgets[index + 1] : null;
             return (
               <div
-                style={ { width: `${widget.dynamic}%` } }
+                style={ { width: `${widget.shadowDynamic}%` } }
                 className={ styles.resizeHandler }
               >
                 <ResizeDelegate
+                  wholeWidth={ wholeWidth }
                   start={ () => setEvent(true) }
                   stop={ () => setEvent(false) }
                   self={ self }
                   left={ left }
                   right={ right }
+                  last={ index === (group.widgets.length - 1) }
                 />
               </div>
             );

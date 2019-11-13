@@ -5,6 +5,7 @@ import { ITerminalController, ITerminalExternalService } from '../common';
 import { TerminalBrowserContribution } from './terminal.contribution';
 import { TerminalController } from './terminal.controller';
 import { NodeTerminalServiceProxy } from './terminal.service';
+import { ITerminalTheme, DefaultTerminalTheme } from './terminal.theme';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {
@@ -17,6 +18,10 @@ export class TerminalNextModule extends BrowserModule {
     {
       token: ITerminalExternalService,
       useClass: NodeTerminalServiceProxy,
+    },
+    {
+      token: ITerminalTheme,
+      useClass: DefaultTerminalTheme,
     },
   ];
 }
