@@ -111,7 +111,9 @@ export function SlotRenderer({ slot, ...props }: any) {
     }
   });
   const Renderer = slotRendererRegistry.getSlotRenderer(slot);
-  return <Renderer components={componentInfos} {...props} />;
+  return <ErrorBoundary>
+    <Renderer components={componentInfos} {...props} />
+  </ErrorBoundary>;
 }
 
 export interface SlotRendererContribution {

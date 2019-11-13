@@ -14,6 +14,7 @@ export interface ResizeHandleProps {
 
 export interface IResizeHandleDelegate {
   setSize(prev: number, next: number): void;
+  setAbsoluteSize(size: number, isLatter?: boolean): void;
 }
 
 function preventWebviewCatchMouseEvents() {
@@ -51,6 +52,23 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   const setSize = (prev: number, next: number) => {
     nextElement.current!.style.width = next * 100 + '%';
     prevElement.current!.style.width = prev * 100 + '%';
+    if (props.onResize) {
+      props.onResize();
+    }
+  };
+
+  const setAbsoluteSize = (size: number, isLatter?: boolean) => {
+    const currentPrev = prevElement.current!.clientWidth;
+    const currentNext = nextElement.current!.clientWidth;
+    const totalSize = currentPrev + currentNext;
+    const currentTotalWidth = +nextElement.current!.style.width!.replace('%', '') + +prevElement.current!.style.width!.replace('%', '');
+    if (isLatter) {
+      nextElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+      prevElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
+    } else {
+      prevElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+      nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
+    }
     if (props.onResize) {
       props.onResize();
     }
@@ -106,6 +124,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   if (props.delegate) {
     props.delegate({
       setSize,
+      setAbsoluteSize,
     });
   }
 
@@ -133,6 +152,23 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       if (props.onResize) {
         props.onResize();
       }
+  };
+
+  const setAbsoluteSize = (size: number, isLatter?: boolean) => {
+    const currentPrev = prevElement.current!.clientWidth;
+    const currentNext = nextElement.current!.clientWidth;
+    const totalSize = currentPrev + currentNext;
+    const currentTotalWidth = +nextElement.current!.style.width!.replace('%', '') + +prevElement.current!.style.width!.replace('%', '');
+    if (isLatter) {
+      nextElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+      prevElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
+    } else {
+      prevElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
+      nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
+    }
+    if (props.onResize) {
+      props.onResize();
+    }
   };
 
   const onMouseDown = ((e) => {
@@ -182,6 +218,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   if (props.delegate) {
     props.delegate({
       setSize,
+      setAbsoluteSize,
     });
   }
 

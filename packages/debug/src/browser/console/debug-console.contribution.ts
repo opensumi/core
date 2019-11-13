@@ -5,6 +5,7 @@ import { DebugConsoleView } from '../view/debug-console.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { DebugConsoleToolbarView } from '../view/debug-console-toolbar.view';
 import { DebugContribution } from '../debug-contribution';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 
@@ -25,6 +26,7 @@ export class DebugConsoleContribution implements ComponentContribution, MainLayo
       title: localize('debug.console.panel.title'),
       priority: 8,
       containerId: DebugContribution.DEBUG_CONSOLE_CONTAINER_ID,
+      iconClass: getIcon('debug'),
     });
   }
 

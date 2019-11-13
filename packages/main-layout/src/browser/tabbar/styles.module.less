@@ -1,0 +1,112 @@
+:global {
+
+  @tabWidth: 48px;
+
+  .left-slot {
+    height: 100%;
+    .tab-bar {
+      border-right: 1px solid var(--activityBar-border);
+    }
+  }
+  .right-slot {
+    height: 100%;
+    .tab-bar {
+      border-left: 1px solid var(--activityBar-border);
+    }
+  }
+  .tab-bar {
+    background-color: var(--activityBar-background);
+    height: 100%;
+    display: flex;
+    border-top: 1px solid var(--activityBar-border);
+    flex-direction: column;
+    .icon-tab {
+      flex: 1;
+    }
+    .bottom-icon-tab {
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      display: flex;
+      .activity-icon {
+        margin-top: 6px;
+        &:hover {
+          color: var(--activityBar-foreground);
+        }
+      }
+    }
+    .activity-icon {
+      font-size: 24px;
+      width: 24px;
+      color: var(--activityBar-inactiveForeground);
+      line-height:@tabWidth;
+      height: @tabWidth;
+      &.mask-mode {
+        background-color: var(--activityBar-inactiveForeground);
+      }
+    }
+    .tab-badge {
+      background-color: var(--activityBarBadge-background);
+      color: var(--activityBarBadge-foreground);
+      position: absolute;
+      top: 26px;
+      right: 8px;
+      font-size: 11px;
+      min-width: 8px;
+      height: 18px;
+      line-height: 18px;
+      padding: 0 5px;
+      border-radius: 20px;
+      text-align: center;
+    }
+    .tabbar-content{
+      border: none;
+      align-items: center;
+    }
+    .icon-tab {
+      padding: 0 0;
+      position: relative;
+      min-height: @tabWidth;
+      max-height: @tabWidth;
+      background-color: transparent;
+      border: none;
+      line-height: normal;
+      display:flex;
+      justify-content: center;
+      align-items: center;
+      width: @tabWidth;
+    }
+    .icon-tab.active {
+      background-color: transparent;
+      transform: translateY(0);
+      .activity-icon {
+        color: var(--activityBar-foreground);
+        &.mask-mode {
+          background-color: var(--activityBar-foreground);
+        }
+      }
+    }
+    .icon-tab:hover {
+      cursor: pointer;
+      .activity-icon {
+        color: var(--activityBar-foreground);
+      }
+    }
+    .icon-tab:hover:not(.active){
+      background-color: transparent;
+    }
+  }
+
+  .tab-panel {
+    position: relative;
+    flex: 1;
+  }
+}
+.tab_container {
+  display: flex;
+}
+.panel_wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+}

@@ -63,6 +63,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
       component: Output,
     }, {
       title: localize('output.tabbar.title', '输出'),
+      iconClass: getIcon('output'),
       priority: 9,
       containerId: OUTPUT_CONTAINER_ID,
       activateKeyBinding: 'ctrlcmd+shift+u',
