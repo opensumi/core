@@ -6,7 +6,6 @@ import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { MenuId } from './menu-id';
-import { getIcon } from '../../icon';
 import { KeybindingRegistry } from '../../keybinding';
 
 export interface IMenuNodeOptions {
@@ -60,12 +59,10 @@ export class MenuItemNode extends MenuNode {
     @Optional() item: Command,
     @Optional() options: IMenuNodeOptions = {},
     @Optional() disabled: boolean,
-    @Optional() toggled: boolean,
+    @Optional() checked: boolean,
     @Optional() nativeRole?: string,
   ) {
-    // 将 isToggled 属性通过 iconClass 来实现
-    const icon = toggled ? getIcon('check') : '';
-    super(item.id, icon, item.label!, disabled, nativeRole);
+    super(item.id, item.iconClass, item.label!, checked, disabled, nativeRole);
 
     this.className = undefined;
 
@@ -229,9 +226,14 @@ class Menu extends Disposable implements IMenu {
             }
 
             if (this.commandRegistry.isVisible(menuCommand.id, ...args)) {
+              // FIXME: Command.isVisible 待废弃
               const disabled = !this.commandRegistry.isEnabled(menuCommand.id, ...args);
-              const toggled = this.commandRegistry.isToggled(menuCommand.id, ...args);
-              const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, toggled, item.nativeRole]);
+              // toggledWhen 的优先级高于 isToggled
+              // 若设置了 toggledWhen 则忽略 Command 的 isVisible
+              const checked = 'toggledWhen' in item
+                ? this.contextKeyService.match(item.toggledWhen)
+                : this.commandRegistry.isToggled(menuCommand.id, ...args);
+              const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);
               activeActions.push(action);
             }
           } else {
