@@ -8,11 +8,6 @@ export interface NextMenuContribution {
   registerNextMenus(menus: IMenuRegistry): void;
 }
 
-export interface ILocalizedString {
-  value: string;
-  original: string;
-}
-
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export interface MenuCommandDesc {
@@ -30,8 +25,8 @@ export interface IMenuItem {
 }
 
 export interface ISubmenuItem {
-  title: string | ILocalizedString;
-  submenu: MenuId; // 暂时尚未遇到
+  label: string;
+  submenu: MenuId;
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;

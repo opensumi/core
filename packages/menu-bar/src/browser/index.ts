@@ -3,15 +3,15 @@ import { BrowserModule } from '@ali/ide-core-browser';
 
 import { MenuBar } from './menu-bar.view';
 import { MenuBarContribution } from './menu-bar.contribution';
-import { MenubarService, AbstractMenubarService } from './menu-bar.service';
+import { AbstractMenubarStore, MenubarStore } from './menu-bar.store';
 
 @Injectable()
 export class MenuBarModule extends BrowserModule {
   providers: Provider[] = [
     MenuBarContribution,
     {
-      token: AbstractMenubarService,
-      useClass: MenubarService,
+      token: AbstractMenubarStore,
+      useClass: MenubarStore,
     },
   ];
 
