@@ -6,8 +6,12 @@ import { useInjectable } from '../../react-hooks';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IResizeHandleDelegate } from '../resize/resize';
 
-export const PanelContext = React.createContext({
+export const PanelContext = React.createContext<{
+  setSize: (targetSize: number, side: string) => void,
+  getSize: (side: string) => number,
+}>({
   setSize: (targetSize: number, side: string) => {},
+  getSize: (side: string) => 0,
 });
 
 export const SplitPanel: React.FC<{
@@ -21,13 +25,23 @@ export const SplitPanel: React.FC<{
   const panels: {[panelId: string]: React.ReactElement<any>} = {};
   const elements: React.ReactNodeArray = [];
   const resizeDelegates: IResizeHandleDelegate[] = [];
-  // TODO
-  const delegateHandle = (index) => {
+
+  const setSizeHandle = (index) => {
     return (size, side) => {
       const targetIndex = side === 'right' || side === 'bottom' ? index - 1 : index;
       if (resizeDelegates[targetIndex]) {
         resizeDelegates[targetIndex].setAbsoluteSize(size, side === 'right' || side === 'bottom' ? true : false);
       }
+    };
+  };
+
+  const getSizeHandle = (index) => {
+    return (side) => {
+      const targetIndex = side === 'right' || side === 'bottom' ? index - 1 : index;
+      if (resizeDelegates[targetIndex]) {
+        return resizeDelegates[targetIndex].getAbsoluteSize(side === 'right' || side === 'bottom' ? true : false);
+      }
+      return 0;
     };
   };
 
@@ -38,7 +52,7 @@ export const SplitPanel: React.FC<{
       elements.push(<ResizeHandle key={`split-handle-${index}`} delegate={(delegate) => { resizeDelegates.push(delegate); }} />);
     }
     elements.push(
-      <PanelContext.Provider value={{setSize: delegateHandle(index)}}>
+      <PanelContext.Provider value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index)}}>
         <div key={panelId} style={{[Layout.getSizeProperty(direction)]: ((element.props.flex || 1) / totalFlexNum * 100) + '%'}}>
           {element}
         </div>

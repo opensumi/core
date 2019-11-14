@@ -38,6 +38,10 @@ export class LayoutService extends WithEventBus {
           this.collectViewComponent(view, containerId, props);
         });
       }
+      // TODO 暂不记录状态，激活首个
+      for (const service of this.services.values()) {
+        service.currentContainerId = service.containersMap.keys().next().value;
+      }
     }, 3000);
   }
 

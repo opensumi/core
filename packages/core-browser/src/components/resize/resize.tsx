@@ -15,6 +15,7 @@ export interface ResizeHandleProps {
 export interface IResizeHandleDelegate {
   setSize(prev: number, next: number): void;
   setAbsoluteSize(size: number, isLatter?: boolean): void;
+  getAbsoluteSize(isLatter?: boolean): number;
 }
 
 function preventWebviewCatchMouseEvents() {
@@ -74,6 +75,13 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     }
   };
 
+  const getAbsoluteSize = (isLatter?: boolean) => {
+    if (isLatter) {
+      return nextElement.current!.clientWidth;
+    }
+    return prevElement.current!.clientWidth;
+  };
+
   const onMouseMove =  ((e) => {
     const prevWidth = startPrevWidth.current + e.pageX - startX.current;
     const nextWidth = startNextWidth.current - ( e.pageX - startX.current);
@@ -125,6 +133,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     props.delegate({
       setSize,
       setAbsoluteSize,
+      getAbsoluteSize,
     });
   }
 
@@ -169,6 +178,13 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     if (props.onResize) {
       props.onResize();
     }
+  };
+
+  const getAbsoluteSize = (isLatter?: boolean) => {
+    if (isLatter) {
+      return nextElement.current!.clientHeight;
+    }
+    return prevElement.current!.clientHeight;
   };
 
   const onMouseDown = ((e) => {
@@ -219,6 +235,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     props.delegate({
       setSize,
       setAbsoluteSize,
+      getAbsoluteSize,
     });
   }
 

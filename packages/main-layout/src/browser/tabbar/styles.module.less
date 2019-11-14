@@ -53,6 +53,16 @@
     border-top: 1px solid var(--activityBar-border);
     li {
       list-style: none;
+      &.active {
+        background-color: transparent;
+        transform: translateY(0);
+        .activity-icon {
+          color: var(--activityBar-foreground);
+          &.mask-mode {
+            background-color: var(--activityBar-foreground);
+          }
+        }
+      }
     }
     .icon-tab {
       flex: 1;
@@ -109,16 +119,6 @@
       justify-content: center;
       align-items: center;
       width: @tabWidth;
-    }
-    .icon-tab.active {
-      background-color: transparent;
-      transform: translateY(0);
-      .activity-icon {
-        color: var(--activityBar-foreground);
-        &.mask-mode {
-          background-color: var(--activityBar-foreground);
-        }
-      }
     }
     .icon-tab:hover {
       cursor: pointer;
