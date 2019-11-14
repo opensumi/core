@@ -85,8 +85,10 @@ export class QuickCommandModel implements QuickOpenModel {
   }
 
   protected getCommands(): { recent: Command[], other: Command[] } {
-    const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
+    // FIXME: 待 context key 补齐之后再开启该功能
     const otherCommands = this.getOtherCommands();
+    const allCommands = this.getValidCommands(this.commandRegistry.getCommands());
+    const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
     const limit = this.corePreferences['workbench.commandPalette.history'];
     return {
       recent: recentCommands.slice(0, limit),
