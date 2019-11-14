@@ -42,13 +42,24 @@ export class TabBarHandler {
   @Autowired()
   private viewContainerRegistry: ViewContainerRegistry;
 
+  // FIXME panel类型的tababr和侧边栏的tabbar需要一个标志来判断
   constructor(private containerId: string, private tabbarService: TabbarService) {
+    this.tabbarService.onCurrentChange((e) => {
+      if (e.currentId === this.containerId) {
+        this.onActivateEmitter.fire();
+        this.isVisible = true;
+      } else if (e.previousId === this.containerId) {
+        this.onInActivateEmitter.fire();
+        this.isVisible = false;
+      }
+    });
     this.titleWidget = this.viewContainerRegistry.getTitleBar(this.containerId);
     this.accordion = this.viewContainerRegistry.getAccordion(this.containerId);
   }
 
   dispose() {
     // remove tab
+    this.tabbarService.containersMap.delete(this.containerId);
   }
 
   disposeView(viewId: string) {
@@ -58,11 +69,11 @@ export class TabBarHandler {
   }
 
   activate() {
-
+    this.tabbarService.currentContainerId = this.containerId;
   }
 
   isActivated() {
-
+    return this.tabbarService.currentContainerId === this.containerId;
   }
 
   show() {

@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action } from 'mobx';
 
@@ -10,6 +10,9 @@ export class TabbarService extends WithEventBus {
   @observable currentContainerId: string;
 
   @observable.shallow containersMap: Map<string, ComponentRegistryInfo> = new Map();
+
+  private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
+  readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
 
   private prevSize?: number;
 
@@ -35,10 +38,12 @@ export class TabbarService extends WithEventBus {
       this.prevSize = getSize(this.location);
       this.currentContainerId = '';
       setSize(50, this.location);
+      this.onCurrentChangeEmitter.fire({previousId: containerId, currentId: ''});
     } else {
       if (this.prevSize === undefined) {
         this.prevSize = getSize(this.location);
       }
+      this.onCurrentChangeEmitter.fire({previousId: this.currentContainerId, currentId: containerId});
       this.currentContainerId = containerId;
       setSize(this.prevSize || 400, this.location);
     }
