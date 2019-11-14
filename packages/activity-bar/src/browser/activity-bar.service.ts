@@ -2,7 +2,8 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { IContextKeyService, WithEventBus, OnEvent, SlotLocation, CommandRegistry, KeybindingRegistry, CommandService, localize } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
-import { ViewContainerOptions, View, ResizeEvent, SideStateManager, RenderedEvent, measurePriority, Side, ViewContextKeyRegistry, findClosestPart } from '@ali/ide-core-browser/lib/layout';
+import { ViewContainerOptions, View, ResizeEvent, SideStateManager, RenderedEvent, measurePriority, Side, ViewContextKeyRegistry } from '@ali/ide-core-browser/lib/layout';
+import { findClosestPart } from '@ali/ide-core-browser/lib/layout/accordion/accordion.widget';
 import { BoxPanel } from '@phosphor/widgets';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { SIDE_MENU_PATH } from '../common';

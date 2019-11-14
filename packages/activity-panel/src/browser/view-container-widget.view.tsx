@@ -1,7 +1,7 @@
 import { Injectable, INJECTOR_TOKEN, Injector, Autowired, Inject } from '@ali/common-di';
 import { ActivityPanelToolbar } from '@ali/ide-core-browser/lib/layout/view-container-toolbar';
-import { View, Side, CommandRegistry, SectionState, ContainerState, Deferred, IContextKeyService } from '@ali/ide-core-browser';
-import { AccordionWidget } from '@ali/ide-core-browser/lib/layout/accordion/accordion.widget';
+import { View, Side, CommandRegistry, Deferred, IContextKeyService } from '@ali/ide-core-browser';
+import { AccordionWidget, SectionState, ContainerState } from '@ali/ide-core-browser/lib/layout/accordion/accordion.widget';
 import { Widget, BoxPanel, BoxLayout, Title } from '@phosphor/widgets';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { SECTION_HEADER_HEIGHT } from '@ali/ide-core-browser/lib/layout/accordion/section.view';
