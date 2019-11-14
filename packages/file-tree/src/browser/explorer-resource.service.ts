@@ -503,7 +503,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     const files = this.getFiles();
     const len = files.length;
     for (; index < len; index++) {
-      if (file.id === files[index].id) {
+      if (file.uri.isEqual(files[index].uri)) {
         break;
       }
     }

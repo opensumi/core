@@ -4,6 +4,11 @@
   height: 100%;
 }
 
+// 临时解决热门插件高度问题，等 Layout 重构后完全解决
+:global(#extensions\.marketplace\.hot) {
+  height: 100% !important;
+}
+
 .panel :global(.ant-tabs) {
   color: var(--foreground);
 }

@@ -24,6 +24,7 @@ import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager, launchSchemaUri } from '../common';
 import { DebugConsoleService } from './view/debug-console.service';
 import { IStatusBarService } from '@ali/ide-status-bar';
+import { DebugToolbarService } from './view/debug-toolbar.service';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -46,8 +47,23 @@ export namespace DEBUG_COMMANDS {
     id: 'debug.breakpoints.toggle',
     iconClass: getIcon('toggle-breakpoints'),
   };
-  export const START_DEBUG = {
+  export const START = {
     id: 'debug.start',
+  };
+  export const NEXT = {
+    id: 'debug.next',
+  };
+  export const PREV = {
+    id: 'debug.prev',
+  };
+  export const OVER = {
+    id: 'debug.over',
+  };
+  export const STOP = {
+    id: 'debug.stop',
+  };
+  export const CONTINUE = {
+    id: 'debug.continue',
   };
 }
 
@@ -99,6 +115,9 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
   @Autowired(IStatusBarService)
   protected readonly statusBar: IStatusBarService;
+
+  @Autowired(DebugToolbarService)
+  protected readonly debugToolbarService: DebugToolbarService;
 
   firstSessionStart: boolean = true;
 
@@ -229,9 +248,34 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         return handler && handler.isVisible;
       },
     });
-    commands.registerCommand(DEBUG_COMMANDS.START_DEBUG, {
+    commands.registerCommand(DEBUG_COMMANDS.START, {
       execute: (data) => {
         this.debugConfigurationService.start();
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.STOP, {
+      execute: (data) => {
+        this.debugToolbarService.doStop();
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.NEXT, {
+      execute: (data) => {
+        this.debugToolbarService.doStepIn();
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.PREV, {
+      execute: (data) => {
+        this.debugToolbarService.doStepOut();
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.CONTINUE, {
+      execute: (data) => {
+        this.debugToolbarService.doContinue();
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.OVER, {
+      execute: (data) => {
+        this.debugToolbarService.doContinue();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.TOGGLE_BREAKPOINTS, {
@@ -290,8 +334,39 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
   registerKeybindings(keybindings) {
     keybindings.registerKeybinding({
-      command: DEBUG_COMMANDS.START_DEBUG.id,
+      command: DEBUG_COMMANDS.START.id,
       keybinding: 'f5',
+      when: '!inDebugMode',
+    });
+    keybindings.registerKeybinding({
+      command: DEBUG_COMMANDS.CONTINUE.id,
+      keybinding: 'f5',
+      when: 'inDebugMode',
+    });
+    keybindings.registerKeybinding({
+      command: DEBUG_COMMANDS.STOP.id,
+      keybinding: 'shfit+f5',
+      when: 'inDebugMode',
+    });
+    keybindings.registerKeybinding({
+      command: DEBUG_COMMANDS.NEXT.id,
+      keybinding: 'f11',
+      when: 'inDebugMode',
+    });
+    keybindings.registerKeybinding({
+      command: DEBUG_COMMANDS.PREV.id,
+      keybinding: 'shfit+f11',
+      when: 'inDebugMode',
+    });
+    keybindings.registerKeybinding({
+      command: DEBUG_COMMANDS.OVER.id,
+      keybinding: 'f10',
+      when: 'inDebugMode',
+    });
+    keybindings.registerKeybinding({
+      command: DEBUG_COMMANDS.OVER.id,
+      keybinding: 'cmd+k cmd+',
+      when: 'inDebugMode',
     });
   }
 }

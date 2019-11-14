@@ -171,6 +171,8 @@ export const localizationBundle = {
     'debug.action.disattach': 'Disattach',
     'debug.breakpoint.toggle': 'Enable/Disable Breakpoints',
     'debug.breakpoint.removeAll': 'Remove All Breakpoints',
+    'debug.breakpoint.uncaughtExceptions': 'Uncaught Exceptions',
+    'debug.breakpoint.allExceptions': 'All Exceptions',
     'debug.watch.removeAll': 'Remove All Watch',
     'debug.watch.collapseAll': 'Collapse All Watch',
     'debug.watch.add': 'Add Watch',
@@ -342,5 +344,13 @@ export const localizationBundle = {
 
     'welcome.quckstart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',
+    'markers.title': 'PROBLEMS',
+    'markers.panel.content.empty': 'No problems have been detected in the workspace so far.',
+    'markers.panel.filter.errors': 'errors',
+    'markers.panel.filter.warnings': 'warnings',
+    'markers.panel.filter.infos': 'infos',
+    'markers.filter.placefolder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
+    'markers.filter.content.empty': 'No results found with provided filter criteria.',
+    'markers.filter.reset': 'Clear Filter.',
   },
 };

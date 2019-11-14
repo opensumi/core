@@ -2,7 +2,8 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "../../../packages/kaitian-extension/src",
-    "outDir": "../../../packages/kaitian-extension/lib"
+    "outDir": "../../../packages/kaitian-extension/lib",
+    "target": "es6"
   },
   "include": [
     "../../../packages/kaitian-extension/src"
