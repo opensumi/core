@@ -50,6 +50,7 @@
       align-items: center;
       padding:0 5px 0 10px;
       background: var(--editorGroupHeader-tabsBackground);
+      border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
       .editor_action {
         margin-left: 5px;
         &:first-child {
@@ -86,6 +87,18 @@
     height: @TAB_HEIGHT;
     display:flex;
     background: var(--editorGroupHeader-tabsBackground);
+    position: relative;
+    &::before {
+      content: '';
+      height:1px;
+      background: var(--editorGroupHeader-tabsBorder);
+      bottom:0;
+      width:100%;
+      left:0;
+      position: absolute;
+      display: block;
+      z-index: 0;
+    }
     &::-webkit-scrollbar {
       display: none;
     }
@@ -100,6 +113,8 @@
       cursor: pointer;
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
+      border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
+      z-index: 1;
       div:first-child {
         margin-right:5px;
       }
@@ -121,6 +136,7 @@
       &.kt_editor_tab_current {
         background: var(--tab-activeBackground);
         color: var(--tab-activeForeground);
+        border-bottom: 1px solid var(--tab-activeBorder);
       }
       &.kt_on_drag_over {
         background: rgba(0,0,0,.5);
@@ -152,7 +168,7 @@
   }
 
   .editorGroupHeader {
-    border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
+    
   }
 
   .kt_editor_body {
