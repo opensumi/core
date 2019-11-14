@@ -111,7 +111,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
         brightWhite: ansiColorMap['terminal.ansiBrightWhite'].defaults[this.theme.type],
       });
       if (this.wrapEl && this.wrapEl.style) {
-        this.wrapEl.style.backgroundColor = String(termBgColor);
+        this.wrapEl.parentElement!.style.backgroundColor = String(termBgColor);
       }
     }
   }
