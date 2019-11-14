@@ -1,11 +1,10 @@
 import { Autowired } from '@ali/common-di';
 import { ComponentContribution, ComponentRegistry, Domain, Logger } from '@ali/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
-import { nls } from '../common';
 import { MarkerFilterPanel } from './markers-filter.view';
 import { MarkerService } from './markers-service';
-// import { MarkerPanel } from './markers.view';
 import { MarkerPanel } from './markers-tree.view';
+import Messages from './messages';
 
 const MARKER_CONTAINER_ID = 'ide-markers';
 
@@ -38,7 +37,7 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
       id: MARKER_CONTAINER_ID,
       component: MarkerPanel,
     }, {
-      title: nls.localize('markers.title', '问题'),
+      title: Messages.markerTile(),
       priority: 11,
       containerId: MARKER_CONTAINER_ID,
     });

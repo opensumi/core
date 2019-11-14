@@ -35,7 +35,7 @@ export const MarkerFilterPanel = observer(() => {
     <div className={styles.markerFilterContent}>
       <input className={styles.filterInput}
         ref={(ele) => ref.current = ele}
-        placeholder={Messages.MARKERS_PANEL_FILTER_INPUT_PLACEHOLDER}
+        placeholder={Messages.markerPanelFilterInputPlaceholder()}
         onChange={(event) => {
           onChangeCallback(event.target.value);
         }} />
