@@ -119,7 +119,7 @@ export class ClientApp implements IClientApp {
     // moduleInstance必须第一个是layout模块
     this.browserModules = opts.modulesInstances || [];
     this.config = {
-      workspaceDir: '/Users/song/Projects/node/cloudide/lsp-ext-test', // opts.workspaceDir || '',
+      workspaceDir: opts.workspaceDir || '',
       coreExtensionDir: opts.coreExtensionDir,
       extensionDir: opts.extensionDir || (isElectronRenderer() ? electronEnv.metadata.extensionDir : ''),
       injector: this.injector,
