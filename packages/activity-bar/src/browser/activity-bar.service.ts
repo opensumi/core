@@ -1,15 +1,14 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE, MaybeNull, MenuModelRegistry, localize, SETTINGS_MENU_PATH } from '@ali/ide-core-browser';
+import { IContextKeyService, WithEventBus, OnEvent, SlotLocation, CommandRegistry, KeybindingRegistry, CommandService, localize } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
-import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent, measurePriority, Side, ViewContextKeyRegistry, findClosestPart } from '@ali/ide-core-browser/lib/layout';
-import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
+import { ViewContainerOptions, View, ResizeEvent, SideStateManager, RenderedEvent, measurePriority, Side, ViewContextKeyRegistry, findClosestPart } from '@ali/ide-core-browser/lib/layout';
+import { BoxPanel } from '@phosphor/widgets';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { SIDE_MENU_PATH } from '../common';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
-import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -51,9 +50,6 @@ export class ActivityBarService extends WithEventBus {
   private viewToContainerMap: Map<string, string> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
   private tabbarState: SideStateManager;
-
-  @Autowired(AppConfig)
-  private config: AppConfig;
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
@@ -113,17 +109,14 @@ export class ActivityBarService extends WithEventBus {
   }
 
   // append一个viewContainer，支持传入初始化views
-  append(options: ViewContainerOptions, side: Side, views?: View[], Fc?: React.FunctionComponent): string {
+  append(options: ViewContainerOptions, side: Side, views: View[], Fc?: React.FunctionComponent): string {
     const { iconClass, priority, containerId, title, initialProps, expanded } = options;
     const label = (title || '').toUpperCase();
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
       const command = this.registerVisibleToggleCommand(containerId, label);
-      if (!views || !views.length) {
-        if (!Fc) {
-          console.error('视图数据或自定义视图请至少传入一种！');
-        }
+      if (Fc) {
         panelContainer = this.injector.get(ReactPanelWidget, [Fc!, containerId, command]);
         panelContainer.title.label = label;
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
@@ -368,10 +361,7 @@ export class ActivityBarService extends WithEventBus {
         this.commandService.executeCommand(`main-layout.${side}-panel.hide`);
       }
       this.menus.registerMenuItem(`${SIDE_MENU_PATH}/${side}`, {
-        command: {
-          id: this.registerGlobalToggleCommand(side as Side),
-          label: localize('layout.tabbar.hide', '隐藏'),
-        },
+        command: this.registerGlobalToggleCommand(side as Side),
         order: 0,
         group: '0_global',
       });
@@ -379,7 +369,12 @@ export class ActivityBarService extends WithEventBus {
     this.listenCurrentChange();
   }
 
-  handleSetting = (event) => {
-    // this.contextMenuRenderer.render(SETTINGS_MENU_PATH, event.nativeEvent);
+  handleSetting = (event: React.MouseEvent<HTMLElement>) => {
+    const menus = this.menuService.createMenu(MenuId.SettingsIconMenu);
+    const menuNodes = generateCtxMenu({ menus });
+    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+      x: event.clientX,
+      y: event.clientY,
+    } });
   }
 }

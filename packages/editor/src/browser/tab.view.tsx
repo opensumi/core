@@ -10,7 +10,6 @@ import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI,
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent, IEditorActionRegistry } from './types';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 const pkgName = require('../../package.json').name;
 
@@ -149,21 +148,18 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
 
 export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, group: IEditorGroup}) => {
   const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
-  const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
 
   return <div className={styles.editor_actions}>
     {
       hasFocus ? editorActionRegistry.getActions(group).map((item) => {
-        return <div className={classnames(styles.editor_action, item.iconClass)} title={item.title}
+        return <div className={classnames(styles.editor_action, item.iconClass)} title={item.title} key={item.title}
                     onClick={() => item.onClick(group.currentResource)} />;
       }) : null
     }
     <div className={classnames(styles.editor_action, getIcon('ellipsis'))} title={localize('editor.moreActions')}
       onClick={(event) => {
         const { x, y } = event.nativeEvent;
-        contextMenuRenderer.render(['editor', 'title'], { x, y });
-        event.stopPropagation();
-        event.preventDefault();
+        editorActionRegistry.showMore(x, y, group);
       }}
     />
   </div>;

@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { Menu } from 'antd';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
-import { ClickParam } from 'antd/lib/menu';
+import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
-import 'antd/lib/dropdown/style/index.less';
 
 import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator } from '../../menu/next';
 import Icon from '../icon';
@@ -17,15 +15,16 @@ import * as styles from './styles.module.less';
 const MenuAction: React.FC<{
   data: MenuNode;
 }> = ({ data }) => {
+  // 这里遵循 native menu 的原则，保留一个 icon 位置
   return (
     <>
-      {
-        data.icon && (
-          <div className={styles.icon}>
-            <Icon iconClass={data.icon} />
-          </div>
-        )
-      }
+      <div className={styles.icon}>
+        {
+          data.checked
+           ? <Icon icon='check' />
+           : null
+        }
+      </div>
       <div className={styles.label}>
         {data.label ? mnemonicButtonLabel(data.label, true) : ''}
       </div>

@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -19,8 +19,8 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-connection": "1.4.4",
-    "@ali/ide-core-common": "1.4.4",
+    "@ali/ide-connection": "1.5.0",
+    "@ali/ide-core-common": "1.5.0",
     "@ant-design/dark-theme": "^0.2.2",
     "@phosphor/commands": "^1.6.1",
     "@phosphor/default-theme": "^0.1.0",
@@ -37,10 +37,11 @@
     "jsonc-parser": "^2.1.0",
     "keycode": "^2.2.0",
     "lodash.throttle": "^4.1.1",
+    "lodash.uniqby": "^4.1.1",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",
     "native-keymap": "^1.2.5",
-    "onigasm": "^2.2.2",
+    "onigasm": "2.2.2",
     "rc-menu": "^7.4.30",
     "react": "^16.8.6",
     "react-autosize-textarea": "^7.0.0",

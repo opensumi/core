@@ -5,8 +5,9 @@ import { FileStat } from '@ali/ide-file-service';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
-import { EDITOR_COMMANDS, URI, CommandService } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, URI, CommandService, localize } from '@ali/ide-core-browser';
 import { AbstractFileTreeItem, Directory, File } from './file-tree-item';
+import { IMessageService } from '@ali/ide-overlay';
 
 @Injectable()
 export class FileTreeAPI implements IFileTreeAPI {
@@ -17,11 +18,14 @@ export class FileTreeAPI implements IFileTreeAPI {
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;
 
+  @Autowired(IMessageService)
+  private messageService: IMessageService;
+
   @Autowired(CommandService)
-  commandService: CommandService;
+  private commandService: CommandService;
 
   @Autowired()
-  labelService: LabelService;
+  private labelService: LabelService;
 
   private userhomePath: URI;
 
@@ -86,6 +90,11 @@ export class FileTreeAPI implements IFileTreeAPI {
   }
 
   async moveFile(from: URI, to: URI, isDirectory: boolean = false) {
+    const exists = await this.fileServiceClient.exists(to.toString());
+    if (exists) {
+      this.messageService.error(localize('file.move.existMessage'));
+      return;
+    }
     await this.workspaceEditService.apply({
       edits: [
         {
@@ -101,6 +110,14 @@ export class FileTreeAPI implements IFileTreeAPI {
   }
 
   async copyFile(from: URI, to: URI) {
+    let idx = 1;
+    let exists = await this.fileServiceClient.exists(to.toString());
+    while (exists) {
+      const name = to.displayName.replace(/\Wcopy\W\d+/, '');
+      to = to.parent.resolve(`${name} copy ${idx}`);
+      idx++;
+      exists = await this.fileServiceClient.exists(to.toString());
+    }
     this.fileServiceClient.copy(from.toString(), to.toString());
   }
 

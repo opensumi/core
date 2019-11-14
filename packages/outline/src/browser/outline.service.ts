@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition } from '@ali/ide-core-browser';
-import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { observable, action } from 'mobx';
 import { getSymbolIcon } from '@ali/ide-core-browser/lib/icon';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -91,8 +91,8 @@ export class OutLineService extends WithEventBus {
     this.debouncedChangeEvent.get(uri.toString())!();
   }
 
-  protected getOrCreateStatus(uri: URI, node: DocumentSymbol): NodeStatus {
-    const symbolId = getSymbolId(uri, node);
+  protected getOrCreateStatus(uri: URI, node: INormalizedDocumentSymbol): NodeStatus {
+    const symbolId = node.id;
     let status = this.statusMap.get(symbolId);
     if (!status) {
       status = {
@@ -128,7 +128,7 @@ export class OutLineService extends WithEventBus {
     }
   }
 
-  protected selectCursorSymbol(uri: URI, symbols: DocumentSymbol[]) {
+  protected selectCursorSymbol(uri: URI, symbols: INormalizedDocumentSymbol[]) {
     const activeSymbols = findCurrentDocumentSymbol(symbols, this.editorService.currentEditorGroup.codeEditor.monacoEditor.getPosition());
     // 清除上次选中状态
     if (this.statusMap.get(this.currentSelectedId)) {
@@ -140,7 +140,7 @@ export class OutLineService extends WithEventBus {
       if (index < activeSymbols.length - 1) {
         status.expanded = true;
       } else {
-        this.currentSelectedId = getSymbolId(uri, symbol);
+        this.currentSelectedId = symbol.id;
         status.selected = true;
       }
     });
@@ -157,8 +157,7 @@ export class OutLineService extends WithEventBus {
 // 将 SymbolTree 打平成 TreeNodeList
 function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, treeNodes: TreeSymbol[], statusMap: Map<string, NodeStatus>, uri: URI) {
   parent.children!.forEach((symbol) => {
-    const symbolId = getSymbolId(uri, symbol);
-    let status = statusMap.get(symbolId);
+    let status = statusMap.get(symbol.id);
     if (!status) {
       status = {
         selected: false,
@@ -166,13 +165,12 @@ function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, tr
       if (symbol.children && symbol.children.length > 0) {
         status.expanded = true;
       }
-      statusMap.set(symbolId, status);
+      statusMap.set(symbol.id, status);
     }
     const treeSymbol: TreeSymbol = {
       ...symbol,
       depth: depth + 1,
       parent,
-      id: symbolId,
       icon: getSymbolIcon(symbol.kind) + ' outline-icon',
       ...status,
     };
@@ -183,14 +181,10 @@ function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, tr
   });
 }
 
-function getSymbolId(uri: URI, symbol: DocumentSymbol) {
-  return uri.toString() + '__' + symbol.name;
-}
-
-interface TreeSymbol extends DocumentSymbol {
-  id: string;
+interface TreeSymbol extends INormalizedDocumentSymbol {
   depth: number;
   parent: TreeSymbol;
+  children: TreeSymbol[];
   icon: string;
   selected?: boolean;
   expanded?: boolean;

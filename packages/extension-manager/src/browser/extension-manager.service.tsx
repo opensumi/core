@@ -5,7 +5,7 @@ import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize } from '@ali/ide-core-browser';
-import { memoize, IDisposable, dispose } from '@ali/ide-core-common';
+import { memoize, IDisposable, dispose, getLanguageId } from '@ali/ide-core-common';
 import { IMenu, MenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 
@@ -215,22 +215,33 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return extensionPath;
   }
 
+  /**
+   * 比较两个插件 id 是否相等
+   * 因为兼容性问题，线上返回的 extensionId 会是真实 id，需要比较 id 和 extensionId
+   * @param extension
+   * @param extensionId
+   */
+  private equalExtensionId(extension: RawExtension, extensionId: string): boolean {
+    return extension.extensionId === extensionId || extension.id === extensionId;
+  }
+
   @action
   async makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string) {
-    this.searchMarketplaceResults = this.searchMarketplaceResults.map((r) => r.extensionId === extensionId ? {
+    this.searchMarketplaceResults = this.searchMarketplaceResults.map((r) => this.equalExtensionId(r, extensionId) ? {
       ...r,
       installed,
       enable: installed,
       path: extensionPath,
       } : r);
-    this.hotExtensions = this.hotExtensions.map((r) => r.extensionId === extensionId ? {
+    this.hotExtensions = this.hotExtensions.map((r) => this.equalExtensionId(r, extensionId) ? {
       ...r,
       installed,
       enable: installed,
       path: extensionPath,
       } : r);
-    const rawExt = this.searchMarketplaceResults.find((r) => r.extensionId === extensionId)
-      || this.hotExtensions.find((r) => r.extensionId === extensionId);
+    const rawExt = this.searchMarketplaceResults.find((r) => this.equalExtensionId(r, extensionId))
+      || this.hotExtensions.find((r) => this.equalExtensionId(r, extensionId))
+      || this.searchInstalledResults.find((r) => this.equalExtensionId(r, extensionId));
 
     if (rawExt && installed) {
       const extensionProp = await this.extensionService.getExtensionProps(extensionPath);
@@ -271,6 +282,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
     if (this.isInit) {
       return;
     }
+    // 设置插件市场国际化
+    await this.extensionManagerServer.setHeaders({
+      'x-language-id': getLanguageId(),
+    });
     this.loading = SearchState.LOADING;
     // 获取所有已安装的插件
     const extensionProps = await this.extensionService.getAllExtensionJson();
@@ -321,15 +336,17 @@ export class ExtensionManagerService implements IExtensionManagerService {
   get rawExtension() {
     return this.extensions.map((extension) => {
       const { displayName, description } = this.getI18nInfo(extension);
-
+      const [publisher, name] = extension.extensionId.split('.');
       return {
         id: extension.id,
         extensionId: extension.extensionId,
-        name: extension.packageJSON.name,
+        // 说明加载的是新规范的插件，则用插件市场 name packageJSON 的 name
+        name: name ? name : extension.packageJSON.name,
         displayName,
         version: extension.packageJSON.version,
         description,
-        publisher: extension.packageJSON.publisher,
+        // 说明加载的是新规范的插件，则用插件市场 publisher，否则用 packageJSON 的 publisher
+        publisher: name ? publisher : extension.packageJSON.publisher,
         installed: true,
         icon: this.getIconFromExtension(extension),
         path: extension.realPath,
@@ -348,7 +365,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   async getRawExtensionById(extensionId: string): Promise<RawExtension> {
     await this.init();
 
-    return this.rawExtension.find((extension) => extension.extensionId === extensionId)!;
+    return this.rawExtension.find((extension) => this.equalExtensionId(extension, extensionId))!;
   }
 
   @action

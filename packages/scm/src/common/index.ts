@@ -8,3 +8,4 @@ export const scmItemLineHeight = 22; // copied from vscode
 
 export * from './scm';
 export * from './scm.service';
+export * from './dirty-diff';

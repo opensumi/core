@@ -15,7 +15,6 @@ import {
   MenuModelRegistry,
   EDITOR_COMMANDS,
   CommandService,
-  SETTINGS_MENU_PATH,
 } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
@@ -23,6 +22,7 @@ import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 
@@ -54,11 +54,11 @@ export class KeymapsResourceProvider extends WithEventBus implements IResourcePr
 
 export namespace KeymapsContextMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
-  export const KEYMAPS = [...SETTINGS_MENU_PATH, '2_keymaps'];
+  export const KEYMAPS = '2_keymaps';
 }
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution)
-export class KeymapsContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution {
+@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution)
+export class KeymapsContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution {
 
   @Autowired(IFileServiceClient)
   protected readonly filesystem: IFileServiceClient;
@@ -78,9 +78,10 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
     });
   }
 
-  registerMenus(menus: MenuModelRegistry): void {
-    menus.registerMenuAction(KeymapsContextMenu.KEYMAPS, {
-      commandId: COMMON_COMMANDS.OPEN_KEYMAPS.id,
+  registerNextMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(MenuId.SettingsIconMenu, {
+      command: COMMON_COMMANDS.OPEN_KEYMAPS.id,
+      group: KeymapsContextMenu.KEYMAPS,
     });
   }
 

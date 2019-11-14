@@ -30,8 +30,8 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     await this.fileSystem.createFolder(URI.file(workspaceDataDirPath).toString());
     this.workspaceDataDirPath = workspaceDataDirPath;
 
-    this.globalDataPath = path.join(this.workspaceDataDirPath, ExtensionPaths.EXTENSIONS_GLOBAL_STORAGE_DIR, 'global-state.json');
-    await this.fileSystem.createFolder(URI.file(path.dirname(this.globalDataPath)).toString());
+    this.globalDataPath = path.join(this.workspaceDataDirPath, ExtensionPaths.EXTENSIONS_GLOBAL_STORAGE_DIR);
+    await this.fileSystem.createFolder(URI.file(this.globalDataPath).toString());
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);
 
@@ -90,7 +90,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     }
 
     if (isGlobal) {
-      return this.globalDataPath!;
+      return path.join(this.globalDataPath!, 'global-state.json');
     } else {
       const storagePath = await this.extensionStoragePathsServer.getLastStoragePath();
       return storagePath ? path.join(storagePath, 'workspace-state.json') : undefined;
@@ -98,30 +98,31 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   }
 
   private async readFromFile(pathToFile: string): Promise<KeysToKeysToAnyValue> {
-    const existed = await this.fileSystem.exists(pathToFile);
+    const target = URI.file(pathToFile);
+    const existed = await this.fileSystem.exists(target.toString());
     if (!existed) {
       return {};
     }
     try {
-      const { content } = await this.fileSystem.resolveContent(pathToFile);
+      const { content } = await this.fileSystem.resolveContent(target.toString());
       return JSON.parse(content);
     } catch (error) {
-      this.logger.error('Failed to parse data from "', pathToFile, '". Reason:', error);
+      this.logger.error('Failed to parse data from "', target.toString(), '". Reason:', error);
       return {};
     }
   }
 
   private async writeToFile(pathToFile: string, data: KeysToKeysToAnyValue): Promise<void> {
-    const existed = await this.fileSystem.exists(path.dirname(pathToFile));
+    const target = URI.file(pathToFile);
+    const existed = await this.fileSystem.exists(target.parent.toString());
     if (!existed) {
-      await this.fileSystem.createFolder(path.dirname(pathToFile));
+      await this.fileSystem.createFolder(target.parent.toString());
     }
     const rawData = JSON.stringify(data);
-
-    await this.fileSystem.setContent({
-      uri: pathToFile,
-      lastModification: new Date().getTime(),
-      isDirectory: false,
-    } as FileStat, rawData);
+    let fileStat = await this.fileSystem.getFileStat(target.toString());
+    if (!fileStat) {
+      fileStat = await this.fileSystem.createFile(target.toString());
+    }
+    await this.fileSystem.setContent(fileStat, rawData);
   }
 }

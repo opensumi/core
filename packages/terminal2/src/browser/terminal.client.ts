@@ -110,7 +110,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
         brightWhite: ansiColorMap['terminal.ansiBrightWhite'].defaults[this.theme.type],
       });
       if (this.wrapEl && this.wrapEl.style) {
-        this.wrapEl.style.backgroundColor = String(termBgColor);
+        this.wrapEl.parentElement!.style.backgroundColor = String(termBgColor);
       }
     }
   }
@@ -298,8 +298,8 @@ export class TerminalClient extends Themable implements ITerminalClient {
   }
 
   @OnEvent(ResizeEvent)
-  onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig)) {
+  onResize(e: ResizeEvent, force?: boolean) {
+    if (force || e.payload.slotLocation === getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig)) {
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {
         this.termMap.forEach((term) => {
@@ -308,7 +308,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
           }
           (term.xterm as any).fit();
         });
-      }, 50);
+      }, 100);
     }
   }
 

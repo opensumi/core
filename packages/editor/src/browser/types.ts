@@ -205,6 +205,7 @@ export class EditorDecorationChangeEvent extends BasicEvent<{uri: URI, key: stri
 export interface IEditorActionRegistry {
   registerEditorAction(action: IEditorActionItem): IDisposable;
   getActions(editorGroup: IEditorGroup): IEditorActionItem[];
+  showMore(x: number, y: number, group: IEditorGroup);
 }
 
 export interface IEditorActionItem {

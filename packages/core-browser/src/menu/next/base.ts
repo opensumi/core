@@ -1,5 +1,7 @@
-import { IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { ILogger } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
+
 import { MenuId } from './menu-id';
 
 export const NextMenuContribution = Symbol('NextMenuContribution');
@@ -12,9 +14,17 @@ export interface ILocalizedString {
   original: string;
 }
 
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+export interface MenuCommandDesc {
+  id: string;
+  label: string;
+}
+
 export interface IMenuItem {
-  command: Command;
+  command: string | MenuCommandDesc;
   when?: string | monaco.contextkey.ContextKeyExpr;
+  toggledWhen?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
   nativeRole?: string; // electron native 菜单使用
@@ -32,22 +42,86 @@ export interface ISubmenuItem {
 export type ICommandsMap = Map<string, Command>;
 
 export abstract class IMenuRegistry {
-  readonly onDidChangeMenu: Event<MenuId>;
-  abstract addCommand(userCommand: Command): IDisposable;
-  abstract getCommand(id: string): Command | undefined;
-  abstract getCommands(): ICommandsMap;
+  readonly onDidChangeMenu: Event<string>;
+  abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
   abstract registerMenuItem(menu: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
 }
 
 @Injectable()
-export class MenuRegistry implements IMenuRegistry {
-  private readonly _commands = new Map<string, Command>();
-  private readonly _menuItems = new Map<number, Array<IMenuItem | ISubmenuItem>>();
-  private readonly _onDidChangeMenu = new Emitter<MenuId>();
+export class CoreMenuRegistry implements IMenuRegistry {
+  private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
+  private readonly _onDidChangeMenu = new Emitter<string>();
 
-  readonly onDidChangeMenu: Event<MenuId> = this._onDidChangeMenu.event;
+  readonly onDidChangeMenu: Event<string> = this._onDidChangeMenu.event;
 
+  @Autowired(NextMenuContribution)
+  protected readonly contributions: ContributionProvider<NextMenuContribution>;
+
+  @Autowired(CommandRegistry)
+  private readonly commandRegistry: CommandRegistry;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
+  registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
+    let array = this._menuItems.get(menuId);
+    if (!array) {
+      array = [item];
+      this._menuItems.set(menuId, array);
+    } else {
+      array.push(item);
+    }
+
+    this._onDidChangeMenu.fire(menuId);
+    return {
+      dispose: () => {
+        const idx = array!.indexOf(item);
+        if (idx >= 0) {
+          array!.splice(idx, 1);
+          this._onDidChangeMenu.fire(menuId);
+        }
+      },
+    };
+  }
+
+  getMenuItems(id: MenuId | string): Array<IMenuItem | ISubmenuItem> {
+    const result = (this._menuItems.get(id) || []).slice(0);
+
+    if (id === MenuId.CommandPalette) {
+      // CommandPalette 特殊处理, 默认展示所有的 command
+      // CommandPalette 负责添加 when 条件
+      this.appendImplicitMenuItems(result);
+    }
+
+    return result;
+  }
+
+  getMenuCommand(command: string | MenuCommandDesc) {
+    if (typeof command === 'string') {
+      return { id: command };
+    }
+
+    return command;
+  }
+
+  private appendImplicitMenuItems(result: Array<IMenuItem | ISubmenuItem>) {
+    // 只保留 MenuItem
+    const temp = result.filter((item) => isIMenuItem(item)) as IMenuItem[];
+    const set = new Set<string>(temp.map((n) => this.getMenuCommand(n.command).id));
+
+    const allCommands = this.commandRegistry.getCommands();
+    // 将 commandRegistry 中 "其他" command 加进去
+    allCommands.forEach((command) => {
+      if (!set.has(command.id)) {
+        result.push({ command: command.id });
+      }
+    });
+  }
+}
+
+@Injectable()
+export class MenuRegistry extends CoreMenuRegistry {
   @Autowired(NextMenuContribution)
   protected readonly contributions: ContributionProvider<NextMenuContribution>;
 
@@ -56,74 +130,6 @@ export class MenuRegistry implements IMenuRegistry {
     for (const contrib of this.contributions.getContributions()) {
       contrib.registerNextMenus(this);
     }
-  }
-
-  addCommand(command: Command): IDisposable {
-    this._commands.set(command.id, command);
-    this._onDidChangeMenu.fire(MenuId.CommandPalette);
-    return {
-      dispose: () => {
-        if (this._commands.delete(command.id)) {
-          this._onDidChangeMenu.fire(MenuId.CommandPalette);
-        }
-      },
-    };
-  }
-
-  getCommand(id: string): Command | undefined {
-    return this._commands.get(id);
-  }
-
-  getCommands(): ICommandsMap {
-    const map = new Map<string, Command>();
-    this._commands.forEach((value, key) => map.set(key, value));
-    return map;
-  }
-
-  registerMenuItem(id: MenuId, item: IMenuItem | ISubmenuItem): IDisposable {
-    let array = this._menuItems.get(id);
-    if (!array) {
-      array = [item];
-      this._menuItems.set(id, array);
-    } else {
-      array.push(item);
-    }
-    this._onDidChangeMenu.fire(id);
-    return {
-      dispose: () => {
-        const idx = array!.indexOf(item);
-        if (idx >= 0) {
-          array!.splice(idx, 1);
-          this._onDidChangeMenu.fire(id);
-        }
-      },
-    };
-  }
-
-  getMenuItems(id: MenuId): Array<IMenuItem | ISubmenuItem> {
-    const result = (this._menuItems.get(id) || []).slice(0);
-
-    if (id === MenuId.CommandPalette) {
-      // CommandPalette is special because it shows
-      // all commands by default
-      this._appendImplicitItems(result);
-    }
-    return result;
-  }
-
-  private _appendImplicitItems(result: Array<IMenuItem | ISubmenuItem>) {
-    const set = new Set<string>();
-
-    const temp = result.filter((item) => isIMenuItem(item)) as IMenuItem[];
-
-    for (const { command } of temp) {
-      set.add(command.id);
-    }
-    this._commands.forEach((command, id) => {
-      if (!set.has(id)) {
-        result.push({ command });
-      }
-    });
   }
 }
 
@@ -144,6 +150,7 @@ export interface IMenuAction {
   keybinding: string; // 快捷键描述
   isKeyCombination: boolean; // 是否为组合键
   disabled?: boolean; // disable 状态的 menu
+  checked?: boolean; // checked 状态 通过 toggleWhen 实现
   nativeRole?: string; // eletron menu 使用
   execute(event?: any): Promise<any>;
 }
@@ -157,6 +164,7 @@ export class MenuNode implements IMenuAction {
   keybinding: string;
   isKeyCombination: boolean;
   disabled: boolean;
+  checked: boolean;
   nativeRole: string;
   readonly _actionCallback?: (event?: any) => Promise<any>;
 
@@ -164,6 +172,7 @@ export class MenuNode implements IMenuAction {
     commandId: string,
     icon: string = '',
     label: string = '',
+    checked = false,
     disabled = false,
     nativeRole: string = '',
     keybinding: string = '',
@@ -178,6 +187,7 @@ export class MenuNode implements IMenuAction {
     this.keybinding = keybinding;
     this.isKeyCombination = isKeyCombination;
     this.disabled = disabled;
+    this.checked = checked;
     this.nativeRole = nativeRole;
     this._actionCallback = actionCallback;
   }

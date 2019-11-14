@@ -5,7 +5,7 @@ import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEm
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { EXPLORER_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { Schemas } from '@ali/ide-core-common';
@@ -17,14 +17,13 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @observable.shallow
   editorGroups: EditorGroup[] = [];
 
+  private _sortedEditorGroups: EditorGroup[] | undefined = [];
+
   @Autowired(INJECTOR_TOKEN)
   private injector!: Injector;
 
   @Autowired(CommandService)
   private commands: CommandService;
-
-  @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
 
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
@@ -118,6 +117,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         this._onCursorChange.fire(e);
       }
     });
+    this._sortedEditorGroups = undefined;
     return editorGroup;
   }
 
@@ -165,16 +165,12 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   async open(uri: URI, options?: IResourceOpenOptions) {
     await this.initialize();
-    if (uri.scheme === Schemas.file) {
-      // 只记录 file 类型的
-      this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
-    }
     let group = this.currentEditorGroup;
     if (options && options.groupIndex) {
       if (options.groupIndex >= this.editorGroups.length) {
         return group.open(uri, Object.assign({}, options, { split: EditorGroupSplitAction.Right }));
       } else {
-        group = this.editorGroups[options.groupIndex] || this.currentEditorGroup;
+        group = this.sortedEditorGroups[options.groupIndex] || this.currentEditorGroup;
       }
     }
     return group.open(uri, options);
@@ -215,6 +211,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         }));
       }
     }
+    this._sortedEditorGroups = undefined;
   }
 
   public async saveOpenedResourceState() {
@@ -264,6 +261,14 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return this.closeAll(uri, force);
   }
 
+  get sortedEditorGroups() {
+    if (!this._sortedEditorGroups) {
+      this._sortedEditorGroups = [];
+      this.topGrid.sortEditorGroups(this._sortedEditorGroups);
+    }
+    return this._sortedEditorGroups;
+  }
+
 }
 
 export interface IEditorCurrentState {
@@ -300,6 +305,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
+
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
 
   codeEditor!: ICodeEditor;
 
@@ -388,7 +396,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   get index(): number {
-    return this.workbenchEditorService.editorGroups.indexOf(this);
+    return this.workbenchEditorService.sortedEditorGroups.indexOf(this);
   }
 
   @OnEvent(ResourceDecorationChangeEvent)
@@ -515,6 +523,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
+    if (uri.scheme === Schemas.file) {
+      // 只记录 file 类型的
+      this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
+    }
     if (options && options.split) {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined }));
     }
@@ -547,7 +559,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if ((options && options.disableNavigate) || (options && options.backend)) {
         // no-op
       } else {
-        this.commands.executeCommand(EXPLORER_COMMANDS.LOCATION.id, uri);
+        this.commands.executeCommand(FILE_COMMANDS.LOCATION.id, uri);
       }
       const oldResource = this.currentResource;
       const oldOpenType = this.currentOpenType;

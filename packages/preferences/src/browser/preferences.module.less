@@ -2,20 +2,46 @@
 .preferences {
   height:100%;
   font-size: 12px;
+  overflow: hidden;
+  .preference_noResults{
+    font-size:13px;
+    padding:20px;
+    color: var(--foreground);
+  }
   .preferences_header {
     display: flex;
     position: relative;
-    > div {
-      padding:10px;
-      border-bottom: 1px solid transparent;
-      z-index: 1;
-      color: var(--titleBar-inactiveForeground);
-      &.activated {
-        border-bottom-color: var(--titleBar-activeForeground);
-        color: var(--titleBar-activeForeground);
+    justify-content: space-between;
+    align-items: center;
+    padding-right:20px;
+    .preferences_scopes {
+      display: flex;
+      position: relative;
+      flex-shrink: 0;
+      margin-right: 50px;
+      > div {
+        cursor: pointer;
+        padding:10px;
+        border-bottom: 1px solid transparent;
+        z-index: 1;
+        color: var(--titleBar-inactiveForeground);
+        &:hover {
+          color: var(--titleBar-activeForeground);
+        }
+        &.activated {
+          border-bottom-color: var(--titleBar-activeForeground);
+          color: var(--titleBar-activeForeground);
+        }
       }
     }
     height: 40px;
+    .search_pref {
+      flex-grow:1;
+      max-width: 500px;
+      input {
+        width:100%;
+      }
+    }
     &:after {
       content: '';
       position: absolute;
@@ -34,6 +60,8 @@
     .preferences_indexes {
       flex-shrink:0;
       border-right:1px solid var(--editorGroupHeader-tabsBorder);
+      flex-grow: 0;
+      width: 150px;
       .index_item {
         padding: 7px 45px 7px 15px;
         cursor: pointer;
@@ -51,45 +79,59 @@
           background: var(--list-activeSelectionBackground);
         }
       }
+      .preference_section_link {
+        > div {
+          padding: 5px 5px 5px 20px;
+          color: var(--titleBar-inactiveForeground);
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 12px;
+          cursor: pointer;
+          &:hover {
+            color: var(--list-hoverForeground);
+            background-color: var(--list-hoverBackground);
+          }
+        }
+      }
     }
     .preferences_items{
       flex-grow: 1;
     }
     .preference_section{
-      padding:15px 20px 0;
+      padding:15px 20px 0 5px;
       .section_title{
         font-size:14px;
         font-weight:bold;
         margin-bottom:10px;
+        padding:0 15px;
       }
-      .preference_line {
-        margin-bottom: 20px;
+      .preference_item{
+        margin-bottom: 10px;
+        padding:5px 0px 5px 15px;
+        &.modified {
+          border-left:3px solid var(--settings-modifiedItemIndicator);
+        }
       }
       .key { 
         margin-bottom:5px;
+        font-size:13px;
+      }
+      .check {
+        display: flex;
+        align-items: center;
+        > div:first-child {
+          margin-right: 2px;
+          display: flex;
+          align-items: center;
+        }
+      }
+      .desc {
+        font-style: italic;
+        opacity: 0.75;
+        margin-bottom: 5px;
       }
       .control_wrap {
-        select, input{
-          border: none;
-          padding: 3px 5px;
-          line-height: 27px;
-          height: 27px;
-        }
-        select {
-          background: var(--input-background);
-          color: var(--input-foreground);
-          border: var(--input-border);
-        }
-        input {
-          background: var(--input-background);
-          color: var(--input-foreground);
-          border-radius: var(--input-border-radius);
-          border: var(--input-border);
-        }
-        input[type=number] {
-          background: var(--input-background);
-          color: var(--input-foreground);
-        }
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -128,4 +170,20 @@
     }
   }
 
+}
+
+.preference_status {
+  margin-left: 5px;
+  .preference_overwritten {
+    font-size:12px;
+    opacity: 0.75;
+  }
+  .preference_reset {
+    font-size: 13px;
+    cursor: pointer;
+    display:inline-block;
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
 }

@@ -97,6 +97,8 @@ export const RecycleTree = (
     search,
     replace,
     onSelect,
+    onBlur,
+    onFocus,
     onTwistieClick,
     scrollTop,
     prerenderNumber = 10,
@@ -115,6 +117,7 @@ export const RecycleTree = (
   const contentNumber = Math.ceil(containerHeight / itemLineHeight);
   const [scrollRef, setScrollRef] = React.useState<HTMLDivElement>();
   const [renderedStart, setRenderedStart] = React.useState(0);
+  const [renderNodes, setRenderNodes] = React.useState<TreeNode[]>([]);
   const renderedEnd: number = renderedStart + contentNumber + prerenderNumber;
   // 预加载因子
   const preFactor = 3 / 4;
@@ -126,31 +129,54 @@ export const RecycleTree = (
     setRenderedStart(scrollTop ? Math.floor(scrollTop / itemLineHeight) : 0);
   }, [scrollTop]);
 
-  const renderNodes = React.useMemo((): TreeNode[] => {
+  React.useEffect(() => {
     let renderedFileItems = nodes!.filter((item: TreeNode, index: number) => {
       return renderedStart <= index && index <= renderedEnd;
     });
     renderedFileItems = renderedFileItems.map((item: TreeNode, index: number) => {
-      let highLightRange = item.highLightRange;
-      if (!highLightRange && searchable && search) {
-        const start = typeof item.name === 'string' ? item.name.indexOf(search) : -1;
+      let highLightRanges = item.highLightRanges;
+      if (!highLightRanges && searchable && search) {
+        highLightRanges = {
+          name: [],
+          description: [],
+        };
+        let start;
         let end;
-        if (start >= 0) {
-          end = start + search.length;
-          highLightRange = {
-            start,
-            end,
-          };
+        if (typeof item.name === 'string') {
+          let step = 0;
+          start =  item.name.indexOf(search);
+          while (start >= 0) {
+            end = start + search.length;
+            highLightRanges.name!.push({
+              start: start + step,
+              end: end + step,
+            });
+            step += end;
+            start =  item.name.indexOf(search.slice(end));
+          }
+        }
+        if (typeof item.description === 'string') {
+          let step = 0;
+          start =  item.description.indexOf(search);
+          while (start >= 0) {
+            end = start + search.length;
+            highLightRanges.description!.push({
+              start: start + step,
+              end: end + step,
+            });
+            step += end;
+            start =  item.description.indexOf(search.slice(end));
+          }
         }
       }
       return {
         ...item,
         order: renderedStart + index,
-        highLightRange,
+        highLightRanges,
         replace,
       };
     });
-    return renderedFileItems;
+    setRenderNodes(renderedFileItems);
   }, [nodes, renderedStart, scrollContainerStyle]);
 
   const scrollUpHanlder = (element: Element) => {
@@ -208,6 +234,8 @@ export const RecycleTree = (
         leftPadding={leftPadding}
         onContextMenu={onContextMenu || noop}
         onDrag={onDrag || noop}
+        onBlur={onBlur || noop}
+        onFocus={onFocus || noop}
         onDragStart={onDragStart || noop}
         onDragEnter={onDragEnter || noop}
         onDragEnd={onDragEnd || noop}

@@ -116,3 +116,24 @@ tnpm owner ls @ali/ide-file-tree
 - git 分支和提交管理: https://yuque.antfin-inc.com/zymuwz/stxo68/asp0ag
 - merge request 模块: [链接](/merge_request_template.md)
 - [changelog 文档](https://yuque.antfin-inc.com/zymuwz/ezg0nz)
+
+
+### Electron环境
+
+由于Lerna管理的包不能平铺依赖，需要先手动link
+
+````
+npm run link:electron
+````
+
+Electron的运行时每一个进程都会单独打包成js， 需要进行构建
+
+````
+npm run prod:electron
+````
+
+启动electron
+
+````
+npm run start:electron
+````

@@ -1,0 +1,89 @@
+@import "~@ali/ide-core-browser/lib/style/variable.less";
+
+@kt-markers-inline-color: gray;
+@kt-markers-item-margin: 0 5px 0 5px;
+
+.highlight {
+  background-color: rgba(255, 0, 0, 0.3);
+  font-weight: bold;
+}
+
+.markersContent {
+  font-size: @kt-content-font-size;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  height: inherit;
+  overflow: auto;
+  box-sizing: border-box;
+
+  // 空内容
+  .empty {
+    color: @kt-markers-inline-color;
+    margin: 10px 0 0 10px;
+    display: flex;
+    flex-direction: row;
+
+    .reset {
+      text-decoration: underline;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  // 列表
+  .itemTitleName {
+    // 标题
+    color: @kt-content-font-color0;
+    margin: @kt-markers-item-margin;
+    max-width: 300px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .itemTitleDescription {
+    // 文件名称
+    color: @kt-markers-inline-color;
+    margin: @kt-markers-item-margin;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .itemDetailName {
+    // 详细信息标题
+    color: @kt-content-font-color0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .itemDetailDescription {
+    // 详细信息描述
+    display: flex;
+    flex-direction: row;
+
+    .typeContainer {
+      // 详细信息中的错误码
+      color: @kt-markers-inline-color;
+      display: flex;
+      flex-direction: row;
+
+      .type {
+        color: @kt-markers-inline-color;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .position {
+      // 错误位置信息
+      color: @kt-markers-inline-color;
+      margin: @kt-markers-item-margin;
+    }
+  }
+}

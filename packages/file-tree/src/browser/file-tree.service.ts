@@ -11,7 +11,7 @@ import {
   AppConfig,
   formatLocalize,
   localize,
-  IDisposable,
+  IContextKey,
   memoize,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
@@ -23,6 +23,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { IDialogService } from '@ali/ide-overlay';
 import { Directory, File } from './file-tree-item';
+import { ExplorerResourceCut } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -31,6 +32,7 @@ export type IFileTreeItemStatus = Map<string, {
   selected?: boolean;
   expanded?: boolean;
   focused?: boolean;
+  cuted?: boolean;
   needUpdated?: boolean;
   file: Directory | File;
 }>;
@@ -45,6 +47,8 @@ export interface IFileTreeServiceProps {
   onDrop: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
   onContextMenu: (nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) => void;
   onChange: (node: IFileTreeItemRendered, value: string) => void;
+  onBlur: () => void;
+  onFocus: () => void;
   draggable: boolean;
   editable: boolean;
 }
@@ -68,6 +72,7 @@ export class FileTreeService extends WithEventBus {
   status: IFileTreeItemStatus = new Map();
 
   private _root: FileStat | undefined;
+  private _isFocused: boolean = false;
 
   private fileServiceWatchers: {
     [uri: string]: IFileServiceWatcher,
@@ -101,6 +106,7 @@ export class FileTreeService extends WithEventBus {
   private readonly menuService: MenuService;
 
   private statusChangeEmitter = new Emitter<Uri[]>();
+  private explorerResourceCut: IContextKey<boolean>;
 
   private pasteStore: IParseStore = {
     files: [],
@@ -119,6 +125,8 @@ export class FileTreeService extends WithEventBus {
 
   async init() {
     const roots: IWorkspaceRoots = await this.workspaceService.roots;
+
+    this.explorerResourceCut = ExplorerResourceCut.bind(this.contextKeyService);
 
     this._root = this.workspaceService.workspace;
     await this.getFiles(roots);
@@ -147,12 +155,15 @@ export class FileTreeService extends WithEventBus {
   }
 
   get isFocused(): boolean {
-    for (const [, status] of this.status) {
-      if (status.focused) {
-        return true;
-      }
+    return this._isFocused;
+  }
+
+  set isFocused(value: boolean) {
+    if (!value) {
+      // 清空focused状态
+      this.resetFilesFocusedStatus();
     }
-    return false;
+    this._isFocused = value;
   }
 
   get isSelected(): boolean {
@@ -471,9 +482,9 @@ export class FileTreeService extends WithEventBus {
     }
     if (status) {
       // 如果已存在该文件，提示是否替换文件
-      const ok = localize('explorer.comfirm.replace.ok');
-      const cancel = localize('explorer.comfirm.replace.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.replace', from.displayName, targetDir.displayName), [cancel, ok]);
+      const ok = localize('file.comfirm.replace.ok');
+      const cancel = localize('file.comfirm.replace.cancel');
+      const comfirm = await this.dislogService.warning(formatLocalize('file.comfirm.replace', from.displayName, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       } else {
@@ -496,9 +507,9 @@ export class FileTreeService extends WithEventBus {
       }
     }
     if (this.corePreferences['explorer.confirmMove']) {
-      const ok = localize('explorer.comfirm.move.ok');
-      const cancel = localize('explorer.comfirm.move.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.move', `[${froms.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
+      const ok = localize('file.comfirm.move.ok');
+      const cancel = localize('file.comfirm.move.cancel');
+      const comfirm = await this.dislogService.warning(formatLocalize('file.comfirm.move', `[${froms.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       }
@@ -510,10 +521,10 @@ export class FileTreeService extends WithEventBus {
 
   async deleteFiles(uris: URI[]) {
     if (this.corePreferences['explorer.confirmDelete']) {
-      const ok = localize('explorer.comfirm.delete.ok');
-      const cancel = localize('explorer.comfirm.delete.cancel');
+      const ok = localize('file.comfirm.delete.ok');
+      const cancel = localize('file.comfirm.delete.cancel');
       const deleteFilesMessage = `[${uris.map((uri) => uri.displayName).join(',')}]`;
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.delete', deleteFilesMessage), [cancel, ok]);
+      const comfirm = await this.dislogService.warning(formatLocalize('file.comfirm.delete', deleteFilesMessage), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       }
@@ -530,9 +541,11 @@ export class FileTreeService extends WithEventBus {
   collapseAll(uri?: URI) {
     if (!uri) {
       for (const [key, status] of this.status) {
+        if (key === this.root.toString()) {
+          continue;
+        }
         this.status.set(key, {
           ...status,
-          file: status.file,
           expanded: false,
         });
       }
@@ -639,6 +652,19 @@ export class FileTreeService extends WithEventBus {
         ...status,
         selected: false,
         focused: false,
+      });
+    }
+  }
+
+  /**
+   * 重置所有文件cuted属性
+   */
+  @action
+  resetFilesCutedStatus() {
+    for (const [key, status] of this.status) {
+      this.status.set(key, {
+        ...status,
+        cuted: false,
       });
     }
   }
@@ -955,17 +981,31 @@ export class FileTreeService extends WithEventBus {
   }
 
   copyFile(from: URI[]) {
+    this.resetFilesCutedStatus();
     this.pasteStore = {
       files: from,
       type: PasteTypes.COPY,
     };
   }
 
+  @action
   cutFile(from: URI[]) {
+    if (from.length > 0) {
+      this.explorerResourceCut.set(true);
+    }
     this.pasteStore = {
       files: from,
       type: PasteTypes.CUT,
     };
+    this.resetFilesCutedStatus();
+    for (const uri of from) {
+      const statusKey = this.getStatutsKey(uri);
+      const status = this.status.get(statusKey);
+      this.status.set(statusKey, {
+        ...status!,
+        cuted: true,
+      });
+    }
   }
 
   pasteFile(to: URI) {
@@ -973,14 +1013,16 @@ export class FileTreeService extends WithEventBus {
       this.pasteStore.files.forEach((file) => {
         this.fileAPI.moveFile(file, to.resolve(file.displayName));
       });
+      this.resetFilesCutedStatus();
+      this.pasteStore = {
+        files: [],
+        type: PasteTypes.NONE,
+      };
+      this.explorerResourceCut.set(false);
     } else if (this.pasteStore.type === PasteTypes.COPY) {
       this.pasteStore.files.forEach((file) => {
         this.fileAPI.copyFile(file, to.resolve(file.displayName));
       });
     }
-    this.pasteStore = {
-      files: [],
-      type: PasteTypes.NONE,
-    };
   }
 }

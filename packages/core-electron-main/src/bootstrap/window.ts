@@ -1,4 +1,4 @@
-import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri } from '@ali/ide-core-common';
+import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri, Deferred } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ElectronAppConfig, ICodeWindow } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
@@ -27,6 +27,10 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   public metadata: any;
 
+  private _nodeReady = new Deferred<void>();
+
+  private rpcListenPath: string | undefined = undefined;
+
   constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions = {}) {
     super();
     this._workspace = new URI(workspace);
@@ -48,7 +52,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     this.browser.on('closed', () => {
       this.dispose();
     });
-    const metadataResponser = (event, windowId) => {
+    const metadataResponser = async (event, windowId) => {
+      await this._nodeReady.promise;
       if (windowId === this.browser.id) {
         event.returnValue = JSON.stringify({
           workspace: this.workspace ? FileUri.fsPath(this.workspace) : undefined,
@@ -60,6 +65,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
           extenionCandidate: this.appConfig.extenionCandidate,
           ...this.metadata,
           windowClientId: this.windowClientId,
+          rpcListenPath: this.rpcListenPath,
         });
       }
     };
@@ -87,23 +93,25 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   async start() {
     this.clear();
     try {
-      this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId, this.appConfig.extensionDir);
-      const rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
-
-      await this.node.start(rpcListenPath, (this.workspace || '').toString());
+      await this.startNode();
       getLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
       this.browser.loadURL(this.appConfig.browserUrl);
-      this.browser.webContents.on('did-finish-load', () => {
-        this.browser.webContents.send('preload:listenPath', rpcListenPath);
-      });
       this.browser.webContents.on('devtools-reload-page', () => {
-        console.log('DEEEEVVV');
         this.isReloading = true;
+        this.startNode();
       });
       this.bindEvents();
     } catch (e) {
       getLogger().error(e);
     }
+  }
+
+  async startNode() {
+    this._nodeReady = new Deferred();
+    this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId, this.appConfig.extensionDir);
+    this.rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
+    await this.node.start(this.rpcListenPath!, (this.workspace || '').toString());
+    this._nodeReady.resolve();
   }
 
   bindEvents() {

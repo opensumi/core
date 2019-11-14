@@ -1,13 +1,13 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeViewAction, isTreeViewActionComponent, isUndefined } from '@ali/ide-core-common';
+import { TreeViewAction, isTreeViewActionComponent, isUndefined, isString } from '@ali/ide-core-common';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../icon';
 import Icon from '../icon';
 import Badge from '../badge';
-import { ValidateInput } from '../input';
+import { ValidateInput, InputSelection } from '../input';
 import { KeyCode, Key } from '../../keyboard';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
@@ -31,49 +31,58 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   commandActuator?: CommandActuator;
 }
 
-const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeNodeHighlightRange, replace?: string) => {
-  if (isUndefined(description)) {
+const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRange[], replace?: string) => {
+  if (isUndefined(template)) {
     return '';
   }
-  if (range) {
-    return <span>
-      {description.slice(0, range.start)}
-      <span className={cls(styles.kt_search_match, replace && styles.replace)}>
-        {description.slice(range.start, range.end)}
-      </span>
-      <span className={replace && styles.kt_search_replace}>
-        {replace}
-      </span>
-      {description.slice(range.end)}
-
-    </span>;
-  } else {
-    return description;
-  }
-};
-
-const renderName = (Template: any) => {
-  if (typeof Template === 'string') {
-    return Template;
-  } else {
-    return <Template />;
+  if (isString(template)) {
+    if (!!ranges) {
+      const rangeLen = ranges.length;
+      if (rangeLen > 0) {
+        const content: any = [];
+        for (let i = 0; i < rangeLen; i ++) {
+          content.push(<span>
+            { i === 0 ? template.slice(0, ranges[i].start) : template.slice(ranges[i - 1].end, ranges[i].start)}
+            <span className={cls(styles.kt_search_match, replace && styles.replace)}>
+              {template.slice(ranges[i].start, ranges[i].end)}
+            </span>
+            <span className={replace && styles.kt_search_replace}>
+              {replace}
+            </span>
+            { i + 1 < rangeLen ? template.slice(ranges[i + 1].start) : template.slice(ranges[i].end) }
+          </span>);
+        }
+        return content;
+      } else {
+        return template;
+      }
+    } else {
+      return template;
+    }
   }
 };
 
 const renderBadge = (node: TreeNode) => {
   if (typeof node.badge === 'number') {
-    return <Badge style={node.badgeStyle}>{node.badge > 99 ? '99+' : node.badge}</Badge>;
+    const limit = node.badgeLimit || 99;
+    return <Badge style={node.badgeStyle}>{node.badge > limit ? `${limit}+` : node.badge}</Badge>;
   } else if (typeof node.badge === 'string') {
+    const limit = node.badgeLimit || node.badge.length;
     return <div className={styles.kt_treenode_status} style={node.badgeStyle}>
-      {node.badge}
+      {node.badge.slice(0, limit)}
     </div>;
   }
 };
 
 const renderDescription = (node: any, replace: string) => {
-  return <div className={cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass)}>
-    {renderDescriptionWithRangeAndReplace(node.description || '', node.highLightRange, replace)}
-  </div>;
+  if (!isString(node.description) && !isUndefined(node.description)) {
+    const Template = node.description as React.JSXElementConstructor<any>;
+    return <Template />;
+  } else {
+    return <div className={cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass)}>
+      {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
+    </div>;
+  }
 };
 
 const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler: any) => {
@@ -125,7 +134,6 @@ export const TreeContainerNode = (
     validate,
   }: TreeNodeProps,
 ) => {
-
   const selectHandler = (event: React.MouseEvent) => {
     event.stopPropagation();
     event.preventDefault();
@@ -295,14 +303,14 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.kt_file_icon)}>
+    return <div className={cls(node.icon, styles.kt_file_icon)} style={node.iconStyle}>
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
     </div>;
   };
 
   const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
-    const isComponent = typeof node.name !== 'string';
-    const [value, setValue] = React.useState<string>(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : !isComponent && node.name === TEMP_FILE_NAME ? '' : node.name as string);
+    const isComponent = !isString(node.name);
+    const [value, setValue] = React.useState<string>(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : !isComponent && node.name === TEMP_FILE_NAME ? '' : isComponent ? '' : node.name as string);
 
     const changeHandler = (event) => {
       const newValue = event.target.value;
@@ -335,10 +343,23 @@ export const TreeContainerNode = (
     };
 
     const actualValidate = (value: string) => {
-      return validate(node, value);
+      if (validate) {
+        return validate(node, value);
+      }
+      return;
     };
 
     if (node.isTemporary) {
+      let selection: InputSelection = {
+        start: 0,
+        end: 0,
+      };
+      if (node.name !== TEMP_FILE_NAME && isString(node.name)) {
+        selection = {
+          start: 0,
+          end: node.name.replace(/\.\w+/, '').length,
+        };
+      }
       return <div
         className={cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, actualValidate(value) && styles.overflow_visible)}
       >
@@ -352,17 +373,23 @@ export const TreeContainerNode = (
             onChange={changeHandler}
             onKeyDown={keydownHandler}
             validate={actualValidate}
+            selection={selection}
           />
         </div>
       </div>;
     }
-    return <div
-      className={cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass)}
-    >
-      {node.beforeLabel}
-      {renderName(node.name)}
-      {node.afterLabel}
-    </div>;
+    if (isComponent) {
+      const Template = node.name as React.JSXElementConstructor<any>;
+      return <Template />;
+    } else {
+      return <div
+        className={cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass)}
+      >
+        {node.beforeLabel}
+        {renderWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.name, replace)}
+        {node.afterLabel}
+      </div>;
+    }
   };
 
   const renderStatusTail = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
@@ -386,6 +413,10 @@ export const TreeContainerNode = (
           {renderTreeContainerActions(node, treeContainerActions, commandActuator)}
           {renderBadge(node)}
         </div>;
+      } else {
+        return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
+          {renderBadge(node)}
+        </div>;
       }
     } else if (treeNodeRightActions.length !== 0) {
       return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
@@ -394,9 +425,7 @@ export const TreeContainerNode = (
       </div>;
     } else {
       return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
-        {
-          renderBadge(node)
-        }
+        {renderBadge(node)}
       </div>;
     }
   };

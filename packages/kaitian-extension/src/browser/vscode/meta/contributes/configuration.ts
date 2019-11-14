@@ -1,6 +1,6 @@
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { replaceLocalizePlaceholder, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties, IPreferenceSettingsService, PreferenceService } from '@ali/ide-core-browser';
 
 export interface ConfigurationSnippets {
   body: {
@@ -14,10 +14,13 @@ export interface ConfigurationSnippets {
 export class ConfigurationContributionPoint extends VSCodeContributePoint<PreferenceSchema[] | PreferenceSchema> {
 
   @Autowired(PreferenceSchemaProvider)
-  preferenceSchemaProvider: PreferenceSchemaProvider;
+  protected preferenceSchemaProvider: PreferenceSchemaProvider;
 
   @Autowired(IPreferenceSettingsService)
-  preferenceSettingsService: IPreferenceSettingsService;
+  protected preferenceSettingsService: IPreferenceSettingsService;
+
+  @Autowired(PreferenceService)
+  protected preferenceService: PreferenceService;
 
   contribute() {
     let configurations = this.json;
@@ -30,7 +33,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
         for (const prop of Object.keys(configuration.properties)) {
           properties[prop] = configuration.properties[prop];
           if (configuration.properties[prop].description) {
-            properties[prop].description = configuration.properties[prop].description;
+            properties[prop].description = replaceLocalizePlaceholder(configuration.properties[prop].description, this.extension.id);
           }
         }
         configuration.properties = properties;

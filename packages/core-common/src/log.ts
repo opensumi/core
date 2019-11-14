@@ -131,7 +131,7 @@ export interface IBaseLogService {
    * 立即写入数据
    */
   flush(): Promise<void>;
-  
+
   dispose(): void;
 }
 
@@ -151,7 +151,7 @@ export interface ILogServiceClient {
   warn(...args: any[]): Promise<void>;
   error(...args: any[]): Promise<void>;
   critical(...args: any[]): Promise<void>;
-  
+
   dispose(): Promise<void>;
 }
 
@@ -188,7 +188,7 @@ export interface IDebugLog {
 * @class DebugLog
 * @implements {IDebugLog}
 */
-const isNode = !isUndefined(process) && process.release;
+const isNode = typeof process !== 'undefined' && process.release;
 const isChrome = !isNode && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 export class DebugLog implements IDebugLog {
   private namespace: string;
@@ -196,7 +196,7 @@ export class DebugLog implements IDebugLog {
 
   constructor(namespace?: string) {
 
-    if (!isUndefined(process) &&
+    if (typeof process !== 'undefined' &&
       process.env &&
       process.env.KTLOG_SHOW_DEBUG) {
       this.isEnable = true;
@@ -286,7 +286,7 @@ export const ILogger = Symbol('ILogger');
 // tslint:disable-next-line:no-empty-interface
 export interface ILogger extends ILogServiceClient {}
 
-/** 
+/**
  * 只输出在控制台，不会落盘
  */
 export function getLogger(namespace?: string): any {

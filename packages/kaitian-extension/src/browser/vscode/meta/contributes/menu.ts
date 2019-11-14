@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction, replaceLocalizePlaceholder, IContextKeyService } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction, replaceLocalizePlaceholder, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
 import { TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { SCMMenuId } from '@ali/ide-scm/lib/common';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
@@ -7,7 +7,6 @@ import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
 import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
-import { IEditorGroup } from '@ali/ide-editor';
 
 export interface MenuActionFormat {
   when: string;
@@ -165,6 +164,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
 
     const collector = console;
 
+    // TODO: deprecated
     for (const menuPosition of Object.keys(this.json)) {
       if (menuPosition === 'view/item/context') {
         for (const menu of this.json[menuPosition]) {
@@ -198,29 +198,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           }));
         }
       } else if (menuPosition === 'editor/title') {
-        for (const item of this.json[menuPosition]) {
-          const command = this.commandRegistry.getCommand(item.command);
-          if (command) {
-            if (command.iconClass) {
-              this.addDispose(this.editorActionRegistry.registerEditorAction({
-                title: replaceLocalizePlaceholder(command.label)!,
-                onClick: () => {
-                  this.commandService.executeCommand(command.id);
-                },
-                iconClass: command.iconClass,
-                when: item.when,
-              }));
-              // TODO Alt未实现
-            } else {
-              const menuPath = item.group ? ['editor', 'title', item.group] : ['editor', 'title'];
-              this.menuRegistry.registerMenuAction(menuPath, {
-                commandId: command.id,
-                when: item.when,
-              });
-            }
-          }
-          // won't register if no corresponding command exists;
-        }
+        // to new Registration
       } else {
         const menuActions = this.json[menuPosition];
         if (!isValidMenuItems(menuActions, console)) {
@@ -273,7 +251,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       }
 
       const menuId = contributedMenuUtils.parseMenuId(menuPosition);
-      if (typeof menuId !== 'number') {
+      if (isUndefined(menuId)) {
         collector.warn(formatLocalize('menuId.invalid', '`{0}` is not a valid menu identifier', menuPosition));
         return;
       }
@@ -311,16 +289,27 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           }
         }
 
-        this.addDispose(this.newMenuRegistry.registerMenuItem(
-          menuId,
-          {
-            command,
-            alt,
-            group,
-            order,
+        if (menuId === MenuId.EditorTitle && command.iconClass) {
+          this.addDispose(this.editorActionRegistry.registerEditorAction({
+            title: replaceLocalizePlaceholder(command.label)!,
+            onClick: () => {
+              this.commandService.executeCommand(command.id);
+            },
+            iconClass: command.iconClass,
             when: item.when,
-          } as IMenuItem,
-        ));
+          }));
+        } else {
+          this.addDispose(this.newMenuRegistry.registerMenuItem(
+            menuId,
+            {
+              command: item.command,
+              alt,
+              group,
+              order,
+              when: item.when,
+            } as IMenuItem,
+          ));
+        }
       }
     }
   }

@@ -8,6 +8,7 @@ import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
 import * as contentDisposition from 'content-disposition';
 import * as awaitEvent from 'await-event';
 import { renameSync } from 'fs-extra';
+import * as pkg from '@ali/ide-core-node/package.json';
 
 @Injectable()
 export class ExtensionManagerRequester implements IExtensionManagerRequester {
@@ -30,6 +31,7 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
     return await urllib.request<T>(url, {
       ...options,
       headers: {
+        'x-framework-version': pkg.version,
         'x-account-id': this.appConfig.marketplace.accountId,
         'x-master-key': this.appConfig.marketplace.masterKey,
         ...this.headers,
@@ -57,7 +59,10 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
   }
 
   setHeaders(headers: RequestHeaders): void {
-    this.headers = headers;
+    this.headers = {
+      ...this.headers,
+      ...headers,
+    };
   }
 }
 

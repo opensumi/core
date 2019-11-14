@@ -1,8 +1,8 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, IEditorGroup } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
@@ -14,14 +14,17 @@ import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
 import { IEditorDocumentModelService } from './doc-model/types';
+import * as copy from 'copy-to-clipboard';
+import { FormattingSelector } from './format/formatterSelect';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
-interface Resource {
+interface ResourceArgs {
   group: EditorGroup;
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution, BrowserEditorContribution {
+@Domain(CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, BrowserEditorContribution, NextMenuContribution)
+export class EditorContribution implements CommandContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, BrowserEditorContribution, NextMenuContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -75,6 +78,13 @@ export class EditorContribution implements CommandContribution, MenuContribution
     const { MonacoTextModelService } = require('./doc-model/override');
     const textModelService = this.injector.get(MonacoTextModelService);
     monacoService.registerOverride(ServiceNames.TEXT_MODEL_SERVICE, textModelService);
+    const formatSelector = this.injector.get(FormattingSelector);
+    monaco.format.FormattingConflicts._selectors.unshift(formatSelector.select.bind(formatSelector) as any);
+    (monaco.services.StaticServices as any).codeEditorService = {
+      get: () => {
+        return codeEditorService;
+      },
+    }; // TODO 可能其他服务也要做类似的事情
   }
 
   onWillStop(app: IClientApp) {
@@ -125,6 +135,56 @@ export class EditorContribution implements CommandContribution, MenuContribution
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_BACK.id,
       keybinding: 'ctrl+-',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.CHANGE_LANGUAGE.id,
+      keybinding: 'ctrlcmd+k m',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
+      keybinding: 'ctrlcmd+\\',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.NAVIGATE_NEXT.id,
+      keybinding: 'ctrlcmd+k ctrlcmd+right',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.NAVIGATE_PREVIOUS.id,
+      keybinding: 'ctrlcmd+k ctrlcmd+left',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.SAVE_ALL.id,
+      keybinding: 'ctrlcmd+k s',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.CLOSE_ALL.id,
+      keybinding: 'ctrlcmd+k ctrlcmd+w',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.PIN_CURRENT.id,
+      keybinding: 'ctrlcmd+k enter',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.COPY_CURRENT_PATH.id,
+      keybinding: 'ctrlcmd+k p',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.REOPEN_CLOSED.id,
+      keybinding: 'ctrlcmd+shift+t',
+    });
+    for (let i = 1; i < 10; i ++ ) {
+      keybindings.registerKeybinding({
+        command: EDITOR_COMMANDS.GO_TO_GROUP.id,
+        keybinding: 'ctrlcmd+' + i,
+        args: [i],
+      });
+    }
+    ['left', 'up', 'down', 'right'].forEach((direction) => {
+      keybindings.registerKeybinding({
+        command: EDITOR_COMMANDS.MOVE_GROUP.id,
+        keybinding: 'ctrlcmd+k ' + direction,
+        args: [direction],
+      });
     });
   }
 
@@ -198,8 +258,12 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP, {
-      execute: async () => {
-        const group = this.workbenchEditorService.currentEditorGroup;
+      execute: async (resource: ResourceArgs) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
         if (group) {
           await group.closeAll();
         }
@@ -207,8 +271,12 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_SAVED, {
-      execute: async (uri?: URI) => {
-        const group = this.workbenchEditorService.currentEditorGroup;
+      execute: async (resource: ResourceArgs) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
         if (group) {
           await group.closeSaved();
         }
@@ -216,7 +284,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -229,7 +297,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -242,7 +310,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_TO_RIGHT, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -258,8 +326,26 @@ export class EditorContribution implements CommandContribution, MenuContribution
       execute: () => this.workbenchEditorService.currentEditorGroup,
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.PIN_CURRENT, {
+      execute: () => {
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group) {
+          group.pinPreviewed();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.COPY_CURRENT_PATH, {
+      execute: () => {
+        const resource = this.workbenchEditorService.currentResource;
+        if (resource && resource.uri.scheme === Schemas.file) {
+          copy(resource.uri.codeUri.fsPath);
+        }
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_LEFT, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -272,7 +358,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -284,8 +370,28 @@ export class EditorContribution implements CommandContribution, MenuContribution
       },
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.GO_TO_GROUP, {
+      execute: async (index: number = 1) => {
+        const group = this.workbenchEditorService.sortedEditorGroups[index - 1];
+        if (group) {
+          group.focus();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.MOVE_GROUP, {
+      execute: async (direction?: Direction) => {
+        if (direction) {
+          const group = this.workbenchEditorService.currentEditorGroup;
+          if (group) {
+            group.grid.move(direction);
+          }
+        }
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_TOP, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -298,7 +404,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_BOTTOM, {
-      execute: async (resource: Resource) => {
+      execute: async (resource: ResourceArgs) => {
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
@@ -320,8 +426,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
         }));
         const targetLanguageId = await this.quickPickService.show(allLanguageItems);
         if (targetLanguageId && currentLanguageId !== targetLanguageId) {
-          if (this.workbenchEditorService.currentCodeEditor) {
-            const currentDocModel = this.workbenchEditorService.currentCodeEditor.currentDocumentModel;
+          if (this.workbenchEditorService.currentEditor) {
+            const currentDocModel = this.workbenchEditorService.currentEditor.currentDocumentModel;
             if (currentDocModel) {
               monaco.editor.setModelLanguage(currentDocModel.getMonacoModel(), targetLanguageId);
               currentDocModel.languageId = targetLanguageId;
@@ -337,7 +443,17 @@ export class EditorContribution implements CommandContribution, MenuContribution
         if (this.workbenchEditorService.editorGroups.length <= i) {
           i = 0;
         }
-        return this.workbenchEditorService.editorGroups[i].focus();
+        return this.workbenchEditorService.sortedEditorGroups[i].focus();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.NAVIGATE_PREVIOUS, {
+      execute: async () => {
+        let i = this.workbenchEditorService.currentEditorGroup.index - 1;
+        if (i < 0) {
+          i = this.workbenchEditorService.editorGroups.length - 1;
+        }
+        return this.workbenchEditorService.sortedEditorGroups[i].focus();
       },
     });
 
@@ -422,7 +538,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
           return editorGroup.open(editorGroup.resources[index].uri);
         } else {
           const nextEditorGroupIndex = editorGroup.index === this.workbenchEditorService.editorGroups.length - 1 ? 0 : editorGroup.index + 1;
-          const nextEditorGroup = this.workbenchEditorService.editorGroups[nextEditorGroupIndex];
+          const nextEditorGroup = this.workbenchEditorService.sortedEditorGroups[nextEditorGroupIndex];
           nextEditorGroup.focus();
           return nextEditorGroup.open(nextEditorGroup.resources[0].uri);
         }
@@ -440,7 +556,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
           return editorGroup.open(editorGroup.resources[index].uri);
         } else {
           const nextEditorGroupIndex = editorGroup.index === 0 ? this.workbenchEditorService.editorGroups.length - 1 : editorGroup.index - 1;
-          const nextEditorGroup = this.workbenchEditorService.editorGroups[nextEditorGroupIndex];
+          const nextEditorGroup = this.workbenchEditorService.sortedEditorGroups[nextEditorGroupIndex];
           nextEditorGroup.focus();
           return nextEditorGroup.open(nextEditorGroup.resources[nextEditorGroup.resources.length - 1].uri);
         }
@@ -519,55 +635,64 @@ export class EditorContribution implements CommandContribution, MenuContribution
         this.workbenchEditorService.closeAll(uri);
       },
     });
-  }
 
-  registerMenus(menus: MenuModelRegistry) {
-    menus.registerMenuAction(['editor', 'split'], {
-      commandId: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
-      label: localize('editor.splitToLeft'),
-    });
-    menus.registerMenuAction(['editor', 'split'], {
-      commandId: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
-      label: localize('editor.splitToRight'),
-    });
-    menus.registerMenuAction(['editor', 'split'], {
-      commandId: EDITOR_COMMANDS.SPLIT_TO_TOP.id,
-      label: localize('editor.splitToTop'),
-    });
-    menus.registerMenuAction(['editor', 'split'], {
-      commandId: EDITOR_COMMANDS.SPLIT_TO_BOTTOM.id,
-      label: localize('editor.splitToBottom'),
-    });
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE.id,
-      label: localize('editor.close', '关闭'),
-    });
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
-      label: localize('editor.closeAllInGroup'),
-    });
-
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE_SAVED.id,
-      label: localize('editor.closeSaved'),
-    });
-
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP.id,
-    });
-
-    menus.registerMenuAction(['editor', '0tab'], {
-      commandId: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
-      label: localize('editor.closeToRight', '关闭到右侧'),
-    });
-
-    menus.registerMenuAction(['editor', 'title', '9_close'], {
-      commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
-      label: localize('editor.closeAllInGroup', '关闭全部'),
+    commands.registerCommand(EDITOR_COMMANDS.REOPEN_CLOSED, {
+      execute: async () => {
+        this.historyService.popClosed();
+      },
     });
   }
 
-  registerToolBarElement(registry: IToolBarViewService): void {
+  registerNextMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
+      group: '9_split',
+    });
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
+      group: '9_split',
+    });
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.SPLIT_TO_TOP.id,
+      group: '9_split',
+    });
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.SPLIT_TO_BOTTOM.id,
+      group: '9_split',
+    });
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE.id,
+      group: '0_tab',
+      order: 1,
+    });
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
+      group: '0_tab',
+      order: 2,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE_SAVED.id,
+      group: '0_tab',
+      order: 3,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP.id,
+      group: '0_tab',
+      order: 4,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
+      group: '0_tab',
+      order: 5,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitle, {
+      command: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
+      group: '0_internal',
+    });
   }
 
   registerEditorActions(registry: IEditorActionRegistry) {
