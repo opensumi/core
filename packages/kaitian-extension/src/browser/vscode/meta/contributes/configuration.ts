@@ -30,7 +30,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
         for (const prop of Object.keys(configuration.properties)) {
           properties[prop] = configuration.properties[prop];
           if (configuration.properties[prop].description) {
-            properties[prop].description = configuration.properties[prop].description;
+            properties[prop].description = replaceLocalizePlaceholder(configuration.properties[prop].description, this.extension.id);
           }
         }
         configuration.properties = properties;

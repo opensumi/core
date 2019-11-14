@@ -77,15 +77,33 @@ export enum CheckBoxSize {
 }
 
 export const CheckBox: React.FC<{
-  id: string,
+  id?: string,
   insertClass?: string;
   label?: string,
   size?: CheckBoxSize,
   [key: string]: any;
 } > = ({ insertClass, label, id, size = CheckBoxSize.NORMAL,  ...restProps }) => {
+  const labelProps: any = {};
+  let inputRef: HTMLInputElement;
+  if (!id) {
+    labelProps.onClick = (e: React.MouseEvent<HTMLLabelElement>) => {
+      inputRef.checked = !inputRef.checked;
+      const event = new Event('change', {bubbles: true});
+      inputRef.dispatchEvent(event);
+    };
+  }
   return <span className={cls(styles.checkbox_wrap, insertClass, size === CheckBoxSize.SMALL ? styles.small : '')} >
-    <input {...restProps} className={cls(styles.checkbox)} id={id} type='checkbox'/>
-    <label htmlFor={id}>{label || ''}</label>
+    <input {...restProps} className={cls(styles.checkbox)} id={id} type='checkbox' ref={(el) => {
+      if (el) {
+        inputRef = el;
+        if (!id && restProps.onChange) {
+          inputRef.onchange = (e) => {
+            restProps.onChange(e);
+          };
+        }
+      }
+    }}/>
+    <label htmlFor={id} {...labelProps}>{label || ''}</label>
   </span>;
 };
 
