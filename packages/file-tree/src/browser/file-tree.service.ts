@@ -541,9 +541,11 @@ export class FileTreeService extends WithEventBus {
   collapseAll(uri?: URI) {
     if (!uri) {
       for (const [key, status] of this.status) {
+        if (key === this.root.toString()) {
+          continue;
+        }
         this.status.set(key, {
           ...status,
-          file: status.file,
           expanded: false,
         });
       }
