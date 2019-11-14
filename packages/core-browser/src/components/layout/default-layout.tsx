@@ -5,11 +5,12 @@ import { SplitPanel } from './split-panel';
 
 export function DefaultLayout() {
   return <BoxPanel direction='top-to-bottom'>
-    <SlotRenderer size={54} slot='top' />
+    <SlotRenderer slot='top' />
     <SplitPanel flex={1}>
+      <SlotRenderer flex={1} slot='left' />
       <SlotRenderer flex={4} slot='main' />
       <SlotRenderer flex={1} slot='right' />
     </SplitPanel>
-    <SlotRenderer size={28} slot='statusBar' />
+    <SlotRenderer slot='statusBar' />
   </BoxPanel>;
 }

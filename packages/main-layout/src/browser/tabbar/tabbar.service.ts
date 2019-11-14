@@ -10,7 +10,7 @@ export class TabbarServiceManager {
   injector: Injector;
 
   getService(side: string) {
-    const service = this.services.get(side) || this.injector.get(TabbarService);
+    const service = this.services.get(side) || this.injector.get(TabbarService, [side]);
     if (!this.services.get(side)) {
       this.services.set(side, service);
     }
@@ -18,19 +18,25 @@ export class TabbarServiceManager {
   }
 }
 
+export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
+
 @Injectable({multiple: true})
 export class TabbarService extends WithEventBus {
   @observable currentContainerId: string;
+
+  constructor(private side: string) {
+    super();
+  }
 
   @action.bound handleTabClick(e: React.MouseEvent, setSize: (size: number, side: string) => void) {
     const containerId = e.currentTarget.id;
     if (containerId === this.currentContainerId) {
       this.currentContainerId = '';
-      setSize(50, 'right');
+      setSize(50, this.side);
     } else {
       this.currentContainerId = containerId;
       // FIXME 上次状态存储，视情况调用
-      setSize(400, 'right');
+      setSize(400, this.side);
     }
   }
 

@@ -3,8 +3,13 @@ import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
 import { ComponentRegistryInfo } from '@ali/ide-core-browser';
-import { RightTabbarRenderer } from './bar.view';
-import { RightTabPanelRenderer } from './panel.view';
+import { RightTabbarRenderer, LeftTabbarRenderer } from './bar.view';
+import { RightTabPanelRenderer, LeftTabPanelRenderer } from './panel.view';
+
+// TODO 将过深的prop挪到这里
+const TabbarConfig = React.createContext({
+  side: 'left',
+});
 
 export const TabRendererBase: React.FC<{
   side: string;
@@ -24,4 +29,8 @@ export const TabRendererBase: React.FC<{
 
 export const RightTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (
   <TabRendererBase side='right' direction='right-to-left' className={clsx(className, 'right-slot')} components={components} TabbarView={RightTabbarRenderer} TabpanelView={RightTabPanelRenderer} />
+);
+
+export const LeftTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (
+  <TabRendererBase side='left' direction='left-to-right' className={clsx(className, 'left-slot')} components={components} TabbarView={LeftTabbarRenderer} TabpanelView={LeftTabPanelRenderer} />
 );

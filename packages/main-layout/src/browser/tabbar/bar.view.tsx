@@ -3,7 +3,7 @@ import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
 import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
-import { TabbarService, TabbarServiceManager } from './tabbar.service';
+import { TabbarService, TabbarServiceManager, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { PanelContext } from '@ali/ide-core-browser/lib/components/layout/split-panel';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -14,8 +14,7 @@ export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>
 }> = observer(({ components, TabView, side }) => {
   const { setSize } = React.useContext(PanelContext);
-  const serviceManager = useInjectable<TabbarServiceManager>(TabbarServiceManager);
-  const tabbarService: TabbarService = serviceManager.getService(side);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const { currentContainerId, handleTabClick } = tabbarService;
 
   return (
@@ -39,6 +38,11 @@ const IconTabView: React.FC<{component: ComponentRegistryInfo}> = (({ component 
 });
 
 export const RightTabbarRenderer: React.FC<{
+  components: ComponentRegistryInfo[];
+  side: string;
+}> = ({components, side}) => <TabbarViewBase side={side} components={components} TabView={IconTabView} />;
+
+export const LeftTabbarRenderer: React.FC<{
   components: ComponentRegistryInfo[];
   side: string;
 }> = ({components, side}) => <TabbarViewBase side={side} components={components} TabView={IconTabView} />;
