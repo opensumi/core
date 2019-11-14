@@ -79,26 +79,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     // 全局只要初始化一次
     await this.layoutState.initStorage();
     await this.mainLayoutService.restoreState();
-
-    const rightPanelVisible = this.contextKeyService.createKey<boolean>('rightPanelVisible', false);
-    const updateRightPanelVisible = () => {
-      rightPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.right));
-    };
-    this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
-      updateRightPanelVisible();
-    });
-
-    const leftPanelVisible = this.contextKeyService.createKey<boolean>('leftPanelVisible', false);
-    const updateLeftPanelVisible = () => {
-      leftPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.left));
-    };
-    this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
-      updateLeftPanelVisible();
-    });
-    const bottomPanelVisible = this.contextKeyService.createKey<boolean>('bottomPanelVisible', false);
-    this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
-      bottomPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.bottom));
-    });
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
