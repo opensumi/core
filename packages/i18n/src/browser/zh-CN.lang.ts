@@ -258,6 +258,10 @@ export const localizationBundle = {
     'common.replace': '替换',
 
     'preference.tab.name': '设置',
+    'preference.noResults': '未找到包含 \'{0}\' 的设置项',
+    'preference.editSettingsJson': '在 settings.json 中编辑',
+    'preference.overwritten': '（已被下一级设置覆盖）',
+    'preference.searchPlaceholder': '搜索设置...',
     'keymaps.tab.name': '快捷键设置',
 
     'marketplace.extension.update.now': '是，现在更新',

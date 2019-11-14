@@ -239,6 +239,10 @@ export const localizationBundle = {
     'preference.debug.allowBreakpointsEverywhere': 'Allow setting breakpoints in any file.',
 
     'preference.tab.name': 'Settings',
+    'preference.noResults': 'No Setting Found Containing \'{0}\'',
+    'preference.editSettingsJson': 'Edit in settings.json',
+    'preference.overwritten': '(Overwritten by next scope)',
+    'preference.searchPlaceholder': 'Search settings...',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',

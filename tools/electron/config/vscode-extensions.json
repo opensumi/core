@@ -1,0 +1,137 @@
+{
+  "version": "3.0.0",
+  "extensions": {
+    "vscode": [
+      {
+        "name": "git",
+        "id": "5d81d6c95d4f8fc77a790063",
+        "version": "1.0.0"
+      },
+      {
+        "name": "merge-conflict",
+        "id": "5d81d6f25d4f8fc77a790066",
+        "version": "1.0.0"
+      },
+      {
+        "name": "css",
+        "id": "5d81d58c18e033a1af371ef2",
+        "version": "1.0.0"
+      },
+      {
+        "name": "html",
+        "id": "5d81d68a5d4f8fc77a79005f",
+        "version": "1.0.0"
+      },
+      {
+        "name": "json",
+        "id": "5d81d63718e033a1af371ef8",
+        "version": "1.0.0"
+      },
+      {
+        "name": "javascript",
+        "id": "5da19225392bdd7063eb0dd8",
+        "version": "1.37.1",
+        "vscode-version": "1.37.1"
+      },
+      {
+        "name": "typescript-basics",
+        "id": "5da1888a845342e87e0f3071",
+        "version": "1.37.1",
+        "vscode-version": "1.37.1"
+      },
+      {
+        "name": "typescript-language-features",
+        "id": "5d84a0acd988b2a6c15f19a2",
+        "version": "1.37.1-patch.1",
+        "vscode-version": "1.37.1"
+      },
+      {
+        "name": "atom-one-dark",
+        "id": "5d8354cc606d531b27357331",
+        "version": "2.1.0"
+      },
+      {
+        "name": "java",
+        "id": "5d835531606d531b27357334",
+        "version": "1.0.0"
+      },
+      {
+        "name": "markdown-basics",
+        "id": "5d835cc7606d531b27357373",
+        "version": "1.0.0"
+      },
+      {
+        "name": "markdown-language-features",
+        "id": "5d8355b0606d531b27357337",
+        "version": "1.0.0"
+      },
+      {
+        "name": "theme-defaults",
+        "id": "5d8355cd606d531b2735733a",
+        "version": "1.0.0"
+      },
+      {
+        "name": "vscode-eslint",
+        "id": "5d8d6c64845342e87e0f2e83",
+        "version": "1.9.0-patch.1"
+      },
+      {
+        "name": "vscode-java",
+        "id": "5d82f46beda500379cc0237c",
+        "version": "0.47.0"
+      },
+      {
+        "name": "vscode-language-pack-jp",
+        "id": "5d835716606d531b27357344",
+        "version": "1.36.2"
+      },
+      {
+        "name": "vscode-language-pack-zh-hans",
+        "id": "5d835738606d531b27357347",
+        "version": "1.37.1"
+      },
+      {
+        "name": "vscode-icons",
+        "id": "5d9f1463392bdd7063eb0d62",
+        "version": "9.4.0"
+      },
+      {
+        "name": "json-language-feature",
+        "id": "5da45bb2392bdd7063eb0e0d",
+        "version": "1.0.0"
+      },
+      {
+        "name": "configuration-editing",
+        "id": "5da45c36392bdd7063eb0e11",
+        "version": "1.0.0"
+      },
+      {
+        "name": "ide-dark-theme",
+        "id": "5d9094c5845342e87e0f2ebf",
+        "version": "1.6.1"
+      },
+      {
+        "name": "node-debug",
+        "id": "5dbbd53b999d421844c82d76",
+        "version": "1.40.1"
+      },
+      {
+        "name": "node-debug2",
+        "id": "5dbbd463999d421844c82d71",
+        "version": "1.39.3"
+      }
+    ],
+    "sample": [
+      {
+        "name": "init",
+        "id": "5d835782606d531b2735734a",
+        "version": "0.0.1"
+      },
+      {
+        "name": "fsprovider-sample",
+        "id": "5d8357df606d531b27357350",
+        "version": "0.0.3"
+      }
+    ]
+  }
+}

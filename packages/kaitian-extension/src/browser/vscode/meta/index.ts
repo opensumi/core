@@ -35,7 +35,7 @@ export class VSCodeMetaService extends Disposable {
       this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
       await runner.run();
       await this.registerActivationEvent(extension);
-      await this.activateByWorkspaceContains(extension);
+      this.activateByWorkspaceContains(extension);
     } catch (e) {
       this.logger.error('vscode meta启用插件出错' + extension.name);
       this.logger.error(e);

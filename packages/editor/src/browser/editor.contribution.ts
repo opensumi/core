@@ -80,6 +80,11 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     monacoService.registerOverride(ServiceNames.TEXT_MODEL_SERVICE, textModelService);
     const formatSelector = this.injector.get(FormattingSelector);
     monaco.format.FormattingConflicts._selectors.unshift(formatSelector.select.bind(formatSelector) as any);
+    (monaco.services.StaticServices as any).codeEditorService = {
+      get: () => {
+        return codeEditorService;
+      },
+    }; // TODO 可能其他服务也要做类似的事情
   }
 
   onWillStop(app: IClientApp) {

@@ -209,7 +209,8 @@ class Menu extends Disposable implements IMenu {
       const [id, items] = group;
       const activeActions: Array<MenuItemNode | SubmenuItemNode> = [];
       for (const item of items) {
-        if (this.contextKeyService.match(item.when)) {
+        // FIXME: 由于缺失比较多的 context key, 因此 CommandPalette 跳过 when 匹配
+        if (this.id === MenuId.CommandPalette || this.contextKeyService.match(item.when)) {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
             const { args = [] } = options;
