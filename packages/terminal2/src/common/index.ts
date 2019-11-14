@@ -183,6 +183,8 @@ export interface ITerminalClient {
   getProcessId(id: string): Promise<number>;
 
   getTerminal(id: string): Terminal | undefined;
+
+  onResize(e: any, force?: boolean);
 }
 
 export interface TerminalInfo {
