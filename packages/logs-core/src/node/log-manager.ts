@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, ConstructorOf } from '@ali/common-di';
 import * as path from 'path';
 import { AppConfig, Emitter } from '@ali/ide-core-node';
 import {
@@ -24,6 +24,7 @@ export class LogServiceManager implements ILogServiceManager {
   private logMap = new Map<SupportLogNamespace, ILogService>();
   private logRootFolderPath: string;
   private logFolderPath: string;
+  private LogServiceClass: ConstructorOf<ILogService>;
 
   constructor() {
     this.init({
@@ -37,6 +38,7 @@ export class LogServiceManager implements ILogServiceManager {
     this.logRootFolderPath = options.logDir || DEFAULT_LOG_FOLDER;
     this.logFolderPath = this._getLogFolder();
     this.globalLogLevel = options.logLevel || LogLevel.Info;
+    this.LogServiceClass = this.appConfig.LogServiceClass || LogService;
   }
 
   getLogger = (namespace: SupportLogNamespace, loggerOptions?: BaseLogServiceOptions): ILogService => {
@@ -47,7 +49,7 @@ export class LogServiceManager implements ILogServiceManager {
       }
       return logger;
     }
-    const logger = new LogService(
+    const logger = new this.LogServiceClass(
       Object.assign({
         namespace,
         logLevel: this.globalLogLevel,

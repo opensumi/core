@@ -192,7 +192,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
         const component = views && views.map((view) => view.component);
-        const size = options && options.size || 19;
+        const size = layoutConfig[location].size || (options && options.size) || 28;
         // TODO statusBar支持堆叠
         this.statusBarWidget.node.style.minHeight = `${size}px`;
         this.statusBarWidget.setComponent(component);
@@ -295,7 +295,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           // bar的宽度
           this.storeState(side, e.payload.width + tabbarInfo.barSize);
         } else {
-          this.storeState(side, e.payload.height + 28);
+          this.storeState(side, e.payload.height + this.statusBarWidget.node.offsetHeight);
         }
       }, 60);
     }
@@ -353,7 +353,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     if (expand) {
       this.prevRelativeSize = this.middleWidget.relativeSizes();
       this.middleWidget.setRelativeSizes([0, 1]);
+      this.mainSlotWidget.hide();
     } else {
+      this.mainSlotWidget.show();
       this.middleWidget.setRelativeSizes(this.prevRelativeSize);
     }
   }
@@ -433,8 +435,12 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         this.horizontalPanel.fit();
         const prev = this.horizontalPanel.relativeSizes();
         this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
+        this.middleWidget.hide();
         tabbar.expanded = true;
       } else {
+        if (this.middleWidget.isHidden) {
+          this.middleWidget.show();
+        }
         // 右侧状态可能是0
         const initSize = this.sideState[side]!.size || undefined;
         let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
@@ -448,6 +454,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         this.horizontalPanel.fit();
       }
     } else {
+      if (this.middleWidget.isHidden) {
+        this.middleWidget.show();
+      }
       panel.hide();
       await this.splitHandler.setSidePanelSize(widget, barSize, { side, duration: 0 });
       if (!tabbar.expanded) {
