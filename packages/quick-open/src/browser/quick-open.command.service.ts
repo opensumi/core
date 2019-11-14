@@ -67,7 +67,11 @@ export class QuickCommandModel implements QuickOpenModel {
     const menus = this.menuService.createMenu(MenuId.CommandPalette, this.contextKeyService);
     const menuNodes = menus.getMenuNodes()
       .reduce((r, [, actions]) => [...r, ...actions], [] as MenuItemNode[])
-      .filter((item) => item instanceof MenuItemNode && !item.disabled) as MenuItemNode[];
+      .filter((item) => item instanceof MenuItemNode && !item.disabled)
+      // FIXME: 因为 CommandPalette 会重复注册命令，但是目前没有接入 when，所以这里先做一次去重
+      .filter((item, index, array) => {
+        return array.findIndex((n) => n.id === item.id) === index;
+      }) as MenuItemNode[];
     menus.dispose();
 
     return menuNodes.reduce((prev, item) => {
@@ -87,7 +91,6 @@ export class QuickCommandModel implements QuickOpenModel {
   protected getCommands(): { recent: Command[], other: Command[] } {
     // FIXME: 待 context key 补齐之后再开启该功能
     const otherCommands = this.getOtherCommands();
-    const allCommands = this.getValidCommands(this.commandRegistry.getCommands());
     const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
     const limit = this.corePreferences['workbench.commandPalette.history'];
     return {
