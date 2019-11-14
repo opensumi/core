@@ -192,7 +192,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
         const component = views && views.map((view) => view.component);
-        const size = options && options.size || 19;
+        const size = layoutConfig[location].size || (options && options.size) || 28;
         // TODO statusBar支持堆叠
         this.statusBarWidget.node.style.minHeight = `${size}px`;
         this.statusBarWidget.setComponent(component);
@@ -295,7 +295,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           // bar的宽度
           this.storeState(side, e.payload.width + tabbarInfo.barSize);
         } else {
-          this.storeState(side, e.payload.height + 28);
+          this.storeState(side, e.payload.height + this.statusBarWidget.node.offsetHeight);
         }
       }, 60);
     }
