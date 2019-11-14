@@ -137,37 +137,35 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   }
 
   async onStart() {
-    if (!isElectronRenderer()) {
-      this.sessionManager.onDidCreateDebugSession((session: DebugSession) => {
+    this.sessionManager.onDidCreateDebugSession((session: DebugSession) => {
+      this.debugModel.init(session);
+    });
+    this.sessionManager.onDidStartDebugSession((session: DebugSession) => {
+      const { noDebug } = session.configuration;
+      const openDebug = session.configuration.openDebug || this.preferences['debug.openDebug'];
+      if (!noDebug && (openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart))) {
+        this.openView();
         this.debugModel.init(session);
-      });
-      this.sessionManager.onDidStartDebugSession((session: DebugSession) => {
-        const { noDebug } = session.configuration;
-        const openDebug = session.configuration.openDebug || this.preferences['debug.openDebug'];
-        if (!noDebug && (openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart))) {
-          this.openView();
-          this.debugModel.init(session);
-        }
-        this.firstSessionStart = false;
-        this.statusBar.setBackgroundColor('var(--statusBar-debuggingBackground)');
-        this.statusBar.setColor('var(--statusBar-debuggingForeground)');
-      });
-      this.sessionManager.onDidStopDebugSession((session) => {
-        const { openDebug } = session.configuration;
-        if (openDebug === 'openOnDebugBreak') {
-          this.openView();
-        }
-      });
-      this.sessionManager.onDidDestroyDebugSession((session) => {
-        if (this.sessionManager.sessions.length === 0) {
-          this.statusBar.setBackgroundColor('var(--statusBar-background)');
-          this.statusBar.setColor('var(--statusBar-foreground)');
-        }
-      });
-      this.debugEditorController.init();
-      this.configurations.load();
-      await this.breakpointManager.load();
-    }
+      }
+      this.firstSessionStart = false;
+      this.statusBar.setBackgroundColor('var(--statusBar-debuggingBackground)');
+      this.statusBar.setColor('var(--statusBar-debuggingForeground)');
+    });
+    this.sessionManager.onDidStopDebugSession((session) => {
+      const { openDebug } = session.configuration;
+      if (openDebug === 'openOnDebugBreak') {
+        this.openView();
+      }
+    });
+    this.sessionManager.onDidDestroyDebugSession((session) => {
+      if (this.sessionManager.sessions.length === 0) {
+        this.statusBar.setBackgroundColor('var(--statusBar-background)');
+        this.statusBar.setColor('var(--statusBar-foreground)');
+      }
+    });
+    this.debugEditorController.init();
+    this.configurations.load();
+    await this.breakpointManager.load();
   }
 
   openView() {
