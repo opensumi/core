@@ -1,5 +1,7 @@
 import * as os from 'os';
 import * as pty from 'node-pty';
+import * as shellPath from 'shell-path';
+import * as osLocale from 'os-locale';
 import { ITerminalService, TerminalOptions } from '../common';
 
 export { pty };
@@ -21,7 +23,10 @@ export class PtyService {
         if (options.strictEnv) {
           return options.env as { [key: string]: string };
         }
-        return (Object.assign({}, process.env, options.env) ) as { [key: string]: string };
+        return (Object.assign({
+          PATH: shellPath.sync(),
+          LANG: `${osLocale.sync()}.UTF-8`,
+        }, process.env, options.env) ) as { [key: string]: string };
       })(),
     });
     (ptyProcess as any).bin = bin;
