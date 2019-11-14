@@ -23,11 +23,16 @@ export class PtyService {
         if (options.strictEnv) {
           return options.env as { [key: string]: string };
         }
-        return (Object.assign({
-          PATH: shellPath.sync(),
-          LANG: `${osLocale.sync()}.UTF-8`,
-        }, process.env, options.env) ) as { [key: string]: string };
-      })(),
+        return (
+          Object.assign({},
+            process.env,
+            {
+              PATH: shellPath.sync(),
+              LANG: `${osLocale.sync()}.UTF-8`,
+            },
+            options.env,
+          )) as { [key: string]: string };
+        })(),
     });
     (ptyProcess as any).bin = bin;
     return ptyProcess as IPty;
