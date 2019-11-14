@@ -34,7 +34,7 @@ module.exports = {
           configFile: tsconfigPath,
           compilerOptions: {
             lib: ["esnext"],
-            target: 'es5'
+            target: 'es6'
           }
         }
       }

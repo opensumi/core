@@ -3,52 +3,9 @@ import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { CharCode } from './char-code';
 import { FileOperationOptions } from './model.api';
-import { startsWithIgnoreCase, uuid } from '@ali/ide-core-common';
+import { startsWithIgnoreCase, uuid, es5ClassCompat } from '@ali/ide-core-common';
 export * from './models';
 export { URI as Uri };
-
-export class DiagnosticRelatedInformation {
-  location: Location;
-  message: string;
-
-  constructor(location: Location, message: string) {
-    this.location = location;
-    this.message = message;
-  }
-}
-
-export class Diagnostic {
-  range: Range;
-  message: string;
-  severity: DiagnosticSeverity;
-  source?: string;
-  code?: string | number;
-  relatedInformation?: DiagnosticRelatedInformation[];
-  tags?: DiagnosticTag[];
-
-  constructor(range: Range, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error) {
-    this.range = range;
-    this.message = message;
-    this.severity = severity;
-  }
-}
-
-export class CodeAction {
-  title: string;
-
-  command?: vscode.Command;
-
-  edit?: WorkspaceEdit;
-
-  diagnostics?: Diagnostic[];
-
-  kind?: CodeActionKind;
-
-  constructor(title: string, kind?: CodeActionKind) {
-    this.title = title;
-    this.kind = kind;
-  }
-}
 
 export enum ProgressLocation {
 
@@ -110,6 +67,7 @@ export enum Schemas {
   untitled = 'untitled',
 }
 
+@es5ClassCompat
 export class Position {
 
   static Min(...positions: Position[]): Position {
@@ -281,6 +239,7 @@ export class Position {
   }
 }
 
+@es5ClassCompat
 export class Range {
 
   static isRange(thing: any): thing is vscode.Range {
@@ -415,11 +374,29 @@ export class Range {
   }
 }
 
+@es5ClassCompat
+export class Diagnostic {
+  range: Range;
+  message: string;
+  severity: DiagnosticSeverity;
+  source?: string;
+  code?: string | number;
+  relatedInformation?: DiagnosticRelatedInformation[];
+  tags?: DiagnosticTag[];
+
+  constructor(range: Range, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error) {
+    this.range = range;
+    this.message = message;
+    this.severity = severity;
+  }
+}
+
 export enum EndOfLine {
   LF = 1,
   CRLF = 2,
 }
 
+@es5ClassCompat
 export class RelativePattern {
 
   base: string;
@@ -443,6 +420,8 @@ export class RelativePattern {
     return 'not implement!';
   }
 }
+
+@es5ClassCompat
 export class Location {
   static isLocation(thing: any): thing is Location {
     if (thing instanceof Location) {
@@ -480,6 +459,18 @@ export class Location {
   }
 }
 
+@es5ClassCompat
+export class DiagnosticRelatedInformation {
+  location: Location;
+  message: string;
+
+  constructor(location: Location, message: string) {
+    this.location = location;
+    this.message = message;
+  }
+}
+
+@es5ClassCompat
 export class Disposable {
   private disposable: undefined | (() => void);
 
@@ -514,6 +505,7 @@ export class Disposable {
   }
 }
 
+@es5ClassCompat
 export class Hover {
 
   public contents: MarkdownString[] | vscode.MarkedString[];
@@ -537,6 +529,7 @@ export class Hover {
   }
 }
 
+@es5ClassCompat
 export class MarkdownString {
 
   value: string;
@@ -578,6 +571,7 @@ export function isMarkdownString(thing: any): thing is MarkdownString {
   return false;
 }
 
+@es5ClassCompat
 export class SnippetString {
 
   static isSnippetString(thing: {}): thing is SnippetString {
@@ -659,6 +653,7 @@ export class SnippetString {
   }
 }
 
+@es5ClassCompat
 export class TextEdit {
 
   protected _range: Range;
@@ -766,6 +761,8 @@ export enum CompletionItemKind {
   Operator = 23,
   TypeParameter = 24,
 }
+
+@es5ClassCompat
 export class CompletionItem implements vscode.CompletionItem {
 
   label: string;
@@ -803,6 +800,7 @@ export class CompletionItem implements vscode.CompletionItem {
   }
 }
 
+@es5ClassCompat
 export class CompletionList {
 
   isIncomplete?: boolean;
@@ -847,6 +845,7 @@ export enum TextEditorLineNumbersStyle {
   Relative = 2,
 }
 
+@es5ClassCompat
 export class ThemeColor {
   id: string;
   constructor(id: string) {
@@ -876,6 +875,7 @@ export enum DecorationRangeBehavior {
   ClosedOpen = 3,
 }
 
+@es5ClassCompat
 export class FoldingRange {
   start: number;
   end: number;
@@ -893,6 +893,8 @@ export enum FoldingRangeKind {
   Imports = 2,
   Region = 3,
 }
+
+@es5ClassCompat
 export class Color {
   readonly red: number;
   readonly green: number;
@@ -913,6 +915,7 @@ export enum DocumentHighlightKind {
   Write = 2,
 }
 
+@es5ClassCompat
 export class DocumentHighlight {
 
   public range: Range;
@@ -927,6 +930,7 @@ export class DocumentHighlight {
   }
 }
 
+@es5ClassCompat
 export class ColorPresentation {
   label: string;
   textEdit?: TextEdit;
@@ -952,6 +956,7 @@ export enum DiagnosticTag {
   Deprecated = 2,
 }
 
+@es5ClassCompat
 export class CodeActionKind {
   private static readonly sep = '.';
 
@@ -982,6 +987,24 @@ export class CodeActionKind {
   }
 }
 
+@es5ClassCompat
+export class CodeAction {
+  title: string;
+
+  command?: vscode.Command;
+
+  edit?: WorkspaceEdit;
+
+  diagnostics?: Diagnostic[];
+
+  kind?: CodeActionKind;
+
+  constructor(title: string, kind?: CodeActionKind) {
+    this.title = title;
+    this.kind = kind;
+  }
+}
+
 export function isAsciiLetter(code: number): boolean {
   return isLowerAsciiLetter(code) || isUpperAsciiLetter(code);
 }
@@ -994,6 +1017,7 @@ export function isLowerAsciiLetter(code: number): boolean {
   return code >= CharCode.a && code <= CharCode.z;
 }
 
+@es5ClassCompat
 export class Selection extends Range {
 
   static isSelection(thing: any): thing is Selection {
@@ -1072,6 +1096,7 @@ export interface FileTextEdit {
   edit: TextEdit;
 }
 
+@es5ClassCompat
 export class WorkspaceEdit implements vscode.WorkspaceEdit {
 
   private _edits = new Array<FileOperation | FileTextEdit | undefined>();
@@ -1184,6 +1209,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
   }
 }
 
+@es5ClassCompat
 export class DocumentLink {
   range: Range;
   target: URI;
@@ -1332,6 +1358,7 @@ export interface WindowState {
   focused: boolean;
 }
 
+@es5ClassCompat
 export class SymbolInformation {
 
   static validate(candidate: SymbolInformation): void {
@@ -1403,6 +1430,8 @@ export enum SymbolKind {
   Operator = 24,
   TypeParameter = 25,
 }
+
+@es5ClassCompat
 export class DocumentSymbol {
 
   static validate(candidate: DocumentSymbol): void {
@@ -1454,6 +1483,8 @@ export enum SignatureHelpTriggerKind {
    */
   ContentChange = 3,
 }
+
+@es5ClassCompat
 export class ParameterInformation {
   label: string;
   documentation?: string | MarkdownString;
@@ -1464,6 +1495,7 @@ export class ParameterInformation {
   }
 }
 
+@es5ClassCompat
 export class SignatureInformation {
   label: string;
   documentation?: string | MarkdownString;
@@ -1476,6 +1508,7 @@ export class SignatureInformation {
   }
 }
 
+@es5ClassCompat
 export class SignatureHelp {
   signatures: SignatureInformation[];
   activeSignature: number;
@@ -1496,6 +1529,7 @@ export enum TreeItemCollapsibleState {
   * A reference to a named icon. Currently only [File](#ThemeIcon.File) and [Folder](#ThemeIcon.Folder) are supported.
   * Using a theme icon is preferred over a custom icon as it gives theme authors the possibility to change the icons.
 */
+@es5ClassCompat
 export class ThemeIcon {
   /**
    * Reference to a icon representing a file. The icon is taken from the current file icon theme or a placeholder icon.
@@ -1544,6 +1578,7 @@ export enum SourceControlInputBoxValidationType {
   Information = 2,
 }
 
+@es5ClassCompat
 export class ColorInformation {
   range: Range;
   color: Color;
@@ -1565,6 +1600,7 @@ export class ColorInformation {
 /**
  * Represents a debug adapter running as a socket based server.
  */
+@es5ClassCompat
 export class DebugAdapterServer {
 
   /**
@@ -1586,6 +1622,7 @@ export class DebugAdapterServer {
   }
 }
 
+@es5ClassCompat
 export class SelectionRange {
 
   range: Range;
@@ -1604,6 +1641,7 @@ export class SelectionRange {
 /**
  * The base class of all breakpoint types.
  */
+@es5ClassCompat
 export class Breakpoint {
   /**
    * Is breakpoint enabled.
@@ -1645,6 +1683,7 @@ export class Breakpoint {
 /**
 * A breakpoint specified by a source location.
 */
+@es5ClassCompat
 export class SourceBreakpoint extends Breakpoint {
   /**
    * The source and line position of this breakpoint.
@@ -1663,6 +1702,7 @@ export class SourceBreakpoint extends Breakpoint {
 /**
 * A breakpoint specified by a function name.
 */
+@es5ClassCompat
 export class FunctionBreakpoint extends Breakpoint {
   /**
    * The name of the function to which this breakpoint is attached.
