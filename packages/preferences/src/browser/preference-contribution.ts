@@ -72,12 +72,8 @@ export namespace PreferenceContextMenu {
 @Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution, JsonSchemaContribution)
 export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, NextMenuContribution, JsonSchemaContribution {
 
-  @Autowired(ISchemaStore)
-  private readonly schemaStore: ISchemaStore;
   @Autowired(PreferenceSchemaProvider)
   private readonly schemaProvider: PreferenceSchemaProvider;
-  @Autowired(InMemoryResourceResolver)
-  private readonly inmemoryResources: InMemoryResourceResolver;
 
   @Autowired(PreferenceProvider, { tag: PreferenceScope.Workspace })
   protected readonly workspacePreferenceProvider: WorkspacePreferenceProvider;
@@ -124,7 +120,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(PREF_SCHEME));
   }
 
-  onStart() {
+  initialize() {
     this.schemaProvider.onDidPreferenceSchemaChanged(() => {
       this.registerSchema(this.schemaRegistry);
     });
