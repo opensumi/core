@@ -14,12 +14,46 @@
       border-left: 1px solid var(--activityBar-border);
     }
   }
+  .bottom-slot {
+    height: 100%;
+    .tab-bar {
+      background-color: var(--kt-panelTitle-background);
+      border-top: 1px solid var(--panel-border);
+      height: 28px;
+      color: var(--panelTitle-inactiveForeground);
+      font-size: 12px;
+      align-items: center;
+      justify-content: flex-start;
+      li {
+        padding: 0 10px;
+        position: relative;
+        &:hover {
+          color: var(--panelTitle-activeForeground);
+          cursor: pointer;
+        }
+        &.active {
+          color: var(--panelTitle-activeForeground);
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 1px;
+            left: 0;
+            background-color: var(--panelTitle-activeBorder);
+            width: 100%;
+            height: 1px;
+          }
+        }
+      }
+    }
+  }
   .tab-bar {
     background-color: var(--activityBar-background);
     height: 100%;
     display: flex;
     border-top: 1px solid var(--activityBar-border);
-    flex-direction: column;
+    li {
+      list-style: none;
+    }
     .icon-tab {
       flex: 1;
     }
@@ -131,4 +165,7 @@
 }
 .container_wrap {
   flex: 1;
+}
+.text_tab {
+
 }

@@ -3,14 +3,18 @@ import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
 import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
-import { RightTabbarRenderer, LeftTabbarRenderer } from './bar.view';
-import { RightTabPanelRenderer, LeftTabPanelRenderer } from './panel.view';
+import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer } from './bar.view';
+import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer } from './panel.view';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TabbarServiceFactory, TabbarService } from './tabbar.service';
 
 // TODO 将过深的prop挪到这里
-export const TabbarConfig = React.createContext({
+export const TabbarConfig = React.createContext<{
+  side: string;
+  direction: Layout.direction;
+}>({
   side: 'left',
+  direction: 'left-to-right',
 });
 
 export const TabRendererBase: React.FC<{
@@ -27,7 +31,7 @@ export const TabRendererBase: React.FC<{
   });
   return (
     <div className={clsx( styles.tab_container, className )} style={{flexDirection: Layout.getFlexDirection(direction)}}>
-      <TabbarConfig.Provider value={{side}}>
+      <TabbarConfig.Provider value={{side, direction}}>
         <TabbarView />
         <TabpanelView />
       </TabbarConfig.Provider>
@@ -41,4 +45,8 @@ export const RightTabRenderer = ({className, components}: {className: string, co
 
 export const LeftTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (
   <TabRendererBase side='left' direction='left-to-right' className={clsx(className, 'left-slot')} components={components} TabbarView={LeftTabbarRenderer} TabpanelView={LeftTabPanelRenderer} />
+);
+
+export const BottomTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (
+  <TabRendererBase side='bottom' direction='top-to-bottom' className={clsx(className, 'bottom-slot')} components={components} TabbarView={BottomTabbarRenderer} TabpanelView={BottomTabPanelRenderer} />
 );

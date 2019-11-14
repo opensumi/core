@@ -22,9 +22,9 @@ export class TabbarService extends WithEventBus {
     return this.containersMap.get(containerId);
   }
 
-  @action.bound handleTabClick(e: React.MouseEvent, setSize: (size: number, side: string) => void) {
+  @action.bound handleTabClick(e: React.MouseEvent, setSize: (size: number, side: string) => void, forbidCollapse?: boolean) {
     const containerId = e.currentTarget.id;
-    if (containerId === this.currentContainerId) {
+    if (containerId === this.currentContainerId && !forbidCollapse) {
       this.currentContainerId = '';
       setSize(50, this.location);
     } else {

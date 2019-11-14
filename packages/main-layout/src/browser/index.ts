@@ -4,7 +4,7 @@ import { MainLayoutModuleContribution } from './main-layout.contribution';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '../common';
 import { MainLayoutService } from './main-layout.service';
-import { TabbarServiceFactory, TabbarServiceManager } from './tabbar/tabbar.service';
+import { TabbarServiceFactory } from './tabbar/tabbar.service';
 import { LayoutService } from './layout.service';
 
 @Injectable()

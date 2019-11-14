@@ -5,7 +5,7 @@ import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientA
 import { IMainLayoutService, MainLayoutContribution } from '../common';
 import { ComponentContribution, ComponentRegistry, VisibleChangedEvent } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { RightTabRenderer, LeftTabRenderer } from './tabbar/renderer.view';
+import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -84,6 +84,7 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   registerRenderer(registry: SlotRendererRegistry) {
     registry.registerSlotRenderer('right', RightTabRenderer);
     registry.registerSlotRenderer('left', LeftTabRenderer);
+    registry.registerSlotRenderer('bottom', BottomTabRenderer);
   }
 
   registerCommands(commands: CommandRegistry): void {

@@ -32,7 +32,7 @@ export const BaseTabPanelView: React.FC<{
   );
 });
 
-const PanelView: React.FC<{
+const ContainerView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
 }> = (({ component, side }) => {
@@ -58,6 +58,28 @@ const PanelView: React.FC<{
   );
 });
 
-export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;
+const PanelView: React.FC<{
+  component: ComponentRegistryInfo;
+  side: string;
+}> = (({ component, side }) => {
+  const ref = React.useRef<HTMLElement | null>();
+  const accordionManager = useInjectable<AccordionManager>(AccordionManager);
+  const {containerId} = component.options!;
+  const accordion = accordionManager.getAccordion(containerId, component.views, side);
+  React.useEffect(() => {
+    if (ref.current) {
+      Widget.attach(accordion, ref.current);
+    }
+  }, [ref]);
+  return (
+    <div className={styles.view_container}>
+      <div className={styles.container_wrap} ref={(ele) => ref.current = ele}></div>
+    </div>
+  );
+});
 
-export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;
+export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
+
+export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
+
+export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;

@@ -36,4 +36,11 @@ export namespace Layout {
     }
     return ResizeHandleHorizontal;
   }
+
+  export function getTabbarDirection(direction: Layout.direction) {
+    if (direction === 'bottom-to-top' || direction === 'top-to-bottom') {
+      return 'row';
+    }
+    return 'column';
+  }
 }

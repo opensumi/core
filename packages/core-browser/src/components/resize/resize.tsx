@@ -155,16 +155,16 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   };
 
   const setAbsoluteSize = (size: number, isLatter?: boolean) => {
-    const currentPrev = prevElement.current!.clientWidth;
-    const currentNext = nextElement.current!.clientWidth;
+    const currentPrev = prevElement.current!.clientHeight;
+    const currentNext = nextElement.current!.clientHeight;
     const totalSize = currentPrev + currentNext;
-    const currentTotalWidth = +nextElement.current!.style.width!.replace('%', '') + +prevElement.current!.style.width!.replace('%', '');
+    const currentTotalHeight = +nextElement.current!.style.height!.replace('%', '') + +prevElement.current!.style.height!.replace('%', '');
     if (isLatter) {
-      nextElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
-      prevElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
+      nextElement.current!.style.height = currentTotalHeight * (size / totalSize) + '%';
+      prevElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
     } else {
-      prevElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
-      nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
+      prevElement.current!.style.height = currentTotalHeight * (size / totalSize) + '%';
+      nextElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
     }
     if (props.onResize) {
       props.onResize();
