@@ -177,6 +177,8 @@ export const localizationBundle = {
     'debug.container.title': '调试管理器',
     'debug.breakpoint.toggle': '启用/禁用断点',
     'debug.breakpoint.removeAll': '移除所有断点',
+    'debug.breakpoint.uncaughtExceptions': '未捕获的异常',
+    'debug.breakpoint.allExceptions': '所有异常',
     'debug.watch.removeAll': '移除所有监听',
     'debug.watch.collapseAll': '折叠所有变量',
     'debug.watch.add': '添加监听',

@@ -167,6 +167,8 @@ export const localizationBundle = {
     'debug.action.disattach': 'Disattach',
     'debug.breakpoint.toggle': 'Enable/Disable Breakpoints',
     'debug.breakpoint.removeAll': 'Remove All Breakpoints',
+    'debug.breakpoint.uncaughtExceptions': 'Uncaught Exceptions',
+    'debug.breakpoint.allExceptions': 'All Exceptions',
     'debug.watch.removeAll': 'Remove All Watch',
     'debug.watch.collapseAll': 'Collapse All Watch',
     'debug.watch.add': 'Add Watch',
