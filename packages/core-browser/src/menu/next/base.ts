@@ -219,9 +219,10 @@ export class MenuNode implements IMenuAction {
   readonly id: string;
   label: string;
   tooltip: string;
-  className: string | undefined;
+  className: string | undefined ;
   icon: string;
   keybinding: string;
+  rawKeybinding: MaybeNull<string>;
   isKeyCombination: boolean;
   disabled: boolean;
   checked: boolean;
@@ -236,6 +237,7 @@ export class MenuNode implements IMenuAction {
     disabled = false,
     nativeRole: string = '',
     keybinding: string = '',
+    rawKeybinding?: string,
     isKeyCombination: boolean = false,
     className: string = '',
     actionCallback?: (event?: any) => Promise<any>,
@@ -245,6 +247,7 @@ export class MenuNode implements IMenuAction {
     this.className = className;
     this.icon = icon;
     this.keybinding = keybinding;
+    this.rawKeybinding = rawKeybinding;
     this.isKeyCombination = isKeyCombination;
     this.disabled = disabled;
     this.checked = checked;

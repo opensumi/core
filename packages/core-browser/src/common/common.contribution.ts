@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
 import { corePreferenceSchema } from '../core-preferences';
-import { CommandContribution, CommandService, PreferenceSchema, CommandRegistry, localize, Domain, Event, isElectronRenderer, replaceLocalizePlaceholder } from '@ali/ide-core-common';
+import { CommandContribution, CommandService, PreferenceSchema, CommandRegistry, localize, Domain, Event, isElectronRenderer, replaceLocalizePlaceholder, isOSX } from '@ali/ide-core-common';
 import { PreferenceContribution } from '../preferences';
 import { ClientAppContribution } from './common.define';
 import { IContextKeyService, IContextKey } from '../context-key';
@@ -65,6 +65,9 @@ export class ClientCommonContribution implements CommandContribution, Preference
 
   registerNextMenus(menus: IMenuRegistry): void {
     // 注册 Menubar
+    if (isElectronRenderer()) {
+      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'Kaitian Electron') });
+    }
     menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file') });
     menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit') });
     menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection') });
@@ -85,6 +88,15 @@ export class ClientCommonContribution implements CommandContribution, Preference
       },
       group: '3_save',
     }]);
+
+    const aboutItem = {
+      command: {
+        id: COMMON_COMMANDS.ABOUT_COMMAND.id,
+        label: localize('common.about'),
+      },
+      nativeRole: 'about',
+      group: '9_help',
+    };
 
     // Edit 菜单
     if (isElectronRenderer()) {
@@ -125,6 +137,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
         nativeRole: 'paste',
         group: '2_clipboard',
       }]);
+      menus.registerMenuItem(MenuId.MenubarAppMenu, aboutItem);
     } else {
       menus.registerMenuItems(MenuId.MenubarEditMenu, [{
         command: EDITOR_COMMANDS.REDO.id,
@@ -133,16 +146,8 @@ export class ClientCommonContribution implements CommandContribution, Preference
         command: EDITOR_COMMANDS.UNDO.id,
         group: '1_undo',
       }]);
+      // 帮助菜单
+      menus.registerMenuItem(MenuId.MenubarHelpMenu, aboutItem);
     }
-
-    // 帮助菜单
-    menus.registerMenuItem(MenuId.MenubarHelpMenu, {
-      command: {
-        id: COMMON_COMMANDS.ABOUT_COMMAND.id,
-        label: localize('common.about'),
-      },
-      nativeRole: 'about',
-      group: '9_help',
-    });
   }
 }

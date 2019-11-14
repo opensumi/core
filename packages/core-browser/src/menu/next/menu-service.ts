@@ -69,6 +69,7 @@ export class MenuItemNode extends MenuNode {
     const shortcutDesc = this.getShortcut(item.id);
 
     this.keybinding = shortcutDesc && shortcutDesc.keybinding || '';
+    this.rawKeybinding = shortcutDesc && shortcutDesc.rawKeybinding;
     this.isKeyCombination = !!(shortcutDesc && shortcutDesc.isKeyCombination);
     this._options = options;
 
@@ -95,6 +96,7 @@ export class MenuItemNode extends MenuNode {
         }
         return {
           keybinding,
+          rawKeybinding: keybindings[0].keybinding,
           isKeyCombination,
         };
       }

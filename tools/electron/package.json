@@ -25,7 +25,7 @@
     "build-prod": "rimraf -rf ./out && run-p build-prod:node build-prod:browser build-prod:main build-prod:extension build-prod:webview",
     "pack": "npm run build && node build/pack.js",
     "rebuild-native": "node ./scripts/rebuild-native.js --target=electron",
-    "start": "electron .",
+    "start": "electron --inspect=9229 .",
     "download-extension": "node scripts/download.js"
   },
   "repository": {

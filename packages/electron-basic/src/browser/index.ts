@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IElectronMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { ElectronHeaderBar } from './header';
@@ -7,6 +7,7 @@ import { WelcomeContribution } from './welcome/contribution';
 import { ElectronNativeDialogService } from './dialog';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { IMenuRegistry, NextMenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IElectronMenuBarService } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
 
 @Injectable()
 export class ElectronBasicModule extends BrowserModule {
@@ -49,6 +50,8 @@ const nativeRoles = [
   {
     name: 'toggleDevTools',
     key: 'alt+ctrlcmd+i',
+    label: '%window.toggleDevTools%',
+    alias: 'Toggle Developer Tools',
   },
 ];
 
@@ -60,8 +63,8 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  @Autowired(IElectronMenuFactory)
-  private electronMenuFactory: IElectronMenuFactory;
+  @Autowired(IElectronMenuBarService)
+  private electronMenuBarService: IElectronMenuBarService;
 
   @Autowired(IElectronMainMenuService)
   private electronMainMenuService: IElectronMainMenuService;
@@ -112,7 +115,6 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
         id: 'electron.reload',
         label: localize('window.reload'),
       },
-      nativeRole: 'reload',
     });
   }
 
@@ -120,6 +122,8 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     nativeRoles.forEach((role) => {
       commands.registerCommand({
         id: 'electron.' + role.name,
+        label: replaceLocalizePlaceholder(role.label),
+        alias: role.alias,
       }, {
         execute: () => {
           this.electronMainMenuService.runNativeRoleAction(role.name);
@@ -129,6 +133,8 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
 
     commands.registerCommand({
       id: 'electron.reload',
+      label: localize('window.reload'),
+      alias: 'Reload Window',
     }, {
       execute: () => {
         this.electronMainLifeCycleService.reloadWindow(electronEnv.currentWindowId);
@@ -155,13 +161,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
 
   onStart() {
     if (isOSX) {
-      this.electronMenuFactory.setApplicationMenu(MAIN_MENU_BAR);
-      const eventBus = this.injector.get(IEventBus);
-      eventBus.on(MenuUpdateEvent, (e) => {
-        if (e.payload && e.payload[0] === MAIN_MENU_BAR[0]) {
-          this.electronMenuFactory.setApplicationMenu(MAIN_MENU_BAR);
-        }
-      });
+      this.electronMenuBarService.start();
     }
   }
 }
