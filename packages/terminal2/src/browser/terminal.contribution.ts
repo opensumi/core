@@ -150,10 +150,11 @@ export class TerminalContribution implements ComponentContribution, KeybindingCo
     const handler = this.layoutService.getTabbarHandler('terminal');
 
     if (handler) {
-      handler.onActivate(() => {
+      handler.onActivate(async () => {
         if (this.terminalClient.termMap.size < 1) {
-          this.terminalClient.createTerminal();
+          await this.terminalClient.createTerminal();
         }
+        this.terminalClient.onResize({}, true);
       });
       handler.setTitleComponent(TerminalToolbarView);
 
