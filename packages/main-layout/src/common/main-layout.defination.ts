@@ -21,6 +21,7 @@ export interface IMainLayoutService {
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent): string;
   collectViewComponent(view: View, containerId: string, props?: any): string;
   expandBottom(expand?: boolean): void;
+  setFloatSize(size: number): void;
   bottomExpanded: boolean;
 }
 

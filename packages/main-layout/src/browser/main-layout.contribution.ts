@@ -141,5 +141,10 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
         this.mainLayoutService.toggleSlot(SlotLocation.bottom);
       },
     });
+    commands.registerCommand(SET_PANEL_SIZE_COMMAND, {
+      execute: (size: number) => {
+        this.mainLayoutService.setFloatSize(size);
+      },
+    });
   }
 }
