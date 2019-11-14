@@ -25,7 +25,8 @@
     "@ali/ide-core-node": "1.4.4",
     "@ali/ide-main-layout": "1.4.4",
     "@ali/ide-theme": "1.4.4",
-    "node-pty": "^0.8.1"
+    "node-pty": "^0.8.1",
+    "xterm": "^3.14.5"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.4.4",

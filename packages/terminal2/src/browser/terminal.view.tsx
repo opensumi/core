@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { observer, useObservable } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import * as styles from './terminal.module.less';
 import 'xterm/lib/xterm.css';
 import 'xterm/lib/addons/fullscreen/fullscreen.css';

@@ -84,6 +84,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     DebugModule,
     VariableModule,
     KeymapsModule,
+    Terminal2Module,
 
     // Extension Modules
     KaitianExtensionModule,
