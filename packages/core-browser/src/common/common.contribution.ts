@@ -78,6 +78,12 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
       commandId: FILE_COMMANDS.NEW_FOLDER.id,
     });
 
+    if (isElectronRenderer()) {
+      menus.registerMenuAction(COMMON_MENUS.FILE_NEW, {
+        commandId: FILE_COMMANDS.OPEN_FOLDER.id,
+      });
+    }
+
     menus.registerMenuAction(COMMON_MENUS.FILE_SAVE, {
       commandId: EDITOR_COMMANDS.SAVE_CURRENT.id,
       label: localize('file.save'),

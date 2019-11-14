@@ -482,9 +482,9 @@ export class FileTreeService extends WithEventBus {
     }
     if (status) {
       // 如果已存在该文件，提示是否替换文件
-      const ok = localize('file.comfirm.replace.ok');
-      const cancel = localize('file.comfirm.replace.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('file.comfirm.replace', from.displayName, targetDir.displayName), [cancel, ok]);
+      const ok = localize('file.confirm.replace.ok');
+      const cancel = localize('file.confirm.replace.cancel');
+      const comfirm = await this.dislogService.warning(formatLocalize('file.confirm.replace', from.displayName, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       } else {
@@ -507,9 +507,9 @@ export class FileTreeService extends WithEventBus {
       }
     }
     if (this.corePreferences['explorer.confirmMove']) {
-      const ok = localize('file.comfirm.move.ok');
-      const cancel = localize('file.comfirm.move.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('file.comfirm.move', `[${froms.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
+      const ok = localize('file.confirm.move.ok');
+      const cancel = localize('file.confirm.move.cancel');
+      const comfirm = await this.dislogService.warning(formatLocalize('file.confirm.move', `[${froms.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       }
@@ -521,10 +521,10 @@ export class FileTreeService extends WithEventBus {
 
   async deleteFiles(uris: URI[]) {
     if (this.corePreferences['explorer.confirmDelete']) {
-      const ok = localize('file.comfirm.delete.ok');
-      const cancel = localize('file.comfirm.delete.cancel');
+      const ok = localize('file.confirm.delete.ok');
+      const cancel = localize('file.confirm.delete.cancel');
       const deleteFilesMessage = `[${uris.map((uri) => uri.displayName).join(',')}]`;
-      const comfirm = await this.dislogService.warning(formatLocalize('file.comfirm.delete', deleteFilesMessage), [cancel, ok]);
+      const comfirm = await this.dislogService.warning(formatLocalize('file.confirm.delete', deleteFilesMessage), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       }

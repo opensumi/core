@@ -97,6 +97,12 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
     label: '%file.location%',
   };
+
+  export const OPEN_FOLDER: Command = {
+    id: 'explorer.open.folder',
+    category: CATEGORY,
+    label: '%file.open.folder%',
+  };
 }
 
 export namespace COMMON_COMMANDS {
