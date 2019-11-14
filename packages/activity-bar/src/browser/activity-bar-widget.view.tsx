@@ -5,7 +5,7 @@ import { Signal } from '@phosphor/signaling';
 import { ActivityTabBar } from './activity-tabbar';
 import { ActivityPanelService } from '@ali/ide-activity-panel/lib/browser/activity-panel.service';
 import { CommandService, DisposableCollection } from '@ali/ide-core-common';
-import { MenuModelRegistry, ITabbarWidget, TabBarWidget, Side, AccordionWidget } from '@ali/ide-core-browser';
+import { MenuModelRegistry, ITabbarWidget, TabBarWidget, Side } from '@ali/ide-core-browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { SIDE_MENU_PATH } from '../common';

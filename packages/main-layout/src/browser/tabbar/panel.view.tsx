@@ -6,16 +6,20 @@ import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { AccordionManager } from '@ali/ide-core-browser/lib/layout/accordion/accordion.manager';
 import { Widget } from '@phosphor/widgets';
+import { TabbarConfig } from './renderer.view';
 
 export const BaseTabPanelView: React.FC<{
-  side: string;
-  components: ComponentRegistryInfo[];
   PanelView: React.FC<{component: ComponentRegistryInfo, side: string}>;
-}> = observer(({components, PanelView, side}) => {
+}> = observer(({PanelView}) => {
+  const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const { currentContainerId } = tabbarService;
   const panelVisible = {zIndex: 1, display: 'block'};
   const panelInVisible = {zIndex: -1, display: 'none'};
+  const components: ComponentRegistryInfo[] = [];
+  tabbarService.containersMap.forEach((component) => {
+    components.push(component);
+  });
   return (
     <div className='tab-panel'>
       {components.map((component) => {
@@ -54,12 +58,6 @@ const PanelView: React.FC<{
   );
 });
 
-export const RightTabPanelRenderer: React.FC<{
-  components: ComponentRegistryInfo[];
-  side: string;
-}> = ({components, side}) => <BaseTabPanelView side={side} components={components} PanelView={PanelView} />;
+export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;
 
-export const LeftTabPanelRenderer: React.FC<{
-  components: ComponentRegistryInfo[];
-  side: string;
-}> = ({components, side}) => <BaseTabPanelView side={side} components={components} PanelView={PanelView} />;
+export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;

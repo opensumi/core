@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { AccordionWidget } from '@ali/ide-core-browser/lib/layout';
+import { AccordionWidget } from '@ali/ide-core-browser/lib/layout/accordion/accordion.widget';
 import Tabs from 'antd/lib/tabs';
 import 'antd/lib/tabs/style/index.less';
 import { useInjectable, localize, CommandRegistry, IEventBus, ResizeEvent } from '@ali/ide-core-browser';

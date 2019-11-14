@@ -5,6 +5,7 @@ import { BrowserModule } from '@ali/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '../common';
 import { MainLayoutService } from './main-layout.service';
 import { TabbarServiceFactory, TabbarServiceManager } from './tabbar/tabbar.service';
+import { LayoutService } from './layout.service';
 
 @Injectable()
 export class MainLayoutModule extends BrowserModule {
@@ -12,14 +13,14 @@ export class MainLayoutModule extends BrowserModule {
     MainLayoutModuleContribution,
     {
       token: IMainLayoutService,
-      useClass: MainLayoutService,
+      useClass: LayoutService,
     },
     {
       token: TabbarServiceFactory,
       useFactory: (injector: Injector) => {
-        return (side: string) => {
-          const manager = injector.get(TabbarServiceManager);
-          return manager.getService(side);
+        return (location: string) => {
+          const manager = injector.get(IMainLayoutService);
+          return manager.getTabbarService(location);
         };
       },
     },

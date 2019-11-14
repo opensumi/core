@@ -2,12 +2,14 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
-import { ComponentRegistryInfo } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
 import { RightTabbarRenderer, LeftTabbarRenderer } from './bar.view';
 import { RightTabPanelRenderer, LeftTabPanelRenderer } from './panel.view';
+import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { TabbarServiceFactory, TabbarService } from './tabbar.service';
 
 // TODO 将过深的prop挪到这里
-const TabbarConfig = React.createContext({
+export const TabbarConfig = React.createContext({
   side: 'left',
 });
 
@@ -16,13 +18,19 @@ export const TabRendererBase: React.FC<{
   className?: string;
   components: ComponentRegistryInfo[];
   direction?: Layout.direction;
-  TabbarView: React.FC<{components: ComponentRegistryInfo[]; side: string; }>;
-  TabpanelView: React.FC<{components: ComponentRegistryInfo[]; side: string; }>;
+  TabbarView: React.FC;
+  TabpanelView: React.FC;
 }> = (({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView, ...restProps }) => {
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  components.forEach((component) => {
+    tabbarService.registerContainer(component.options!.containerId, component);
+  });
   return (
     <div className={clsx( styles.tab_container, className )} style={{flexDirection: Layout.getFlexDirection(direction)}}>
-      <TabbarView side={side} components={components} />
-      <TabpanelView side={side} components={components} />
+      <TabbarConfig.Provider value={{side}}>
+        <TabbarView />
+        <TabpanelView />
+      </TabbarConfig.Provider>
     </div>
   );
 });

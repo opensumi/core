@@ -3,10 +3,11 @@ import * as ReactDOM from 'react-dom';
 import { Title, Widget, BoxPanel } from '@phosphor/widgets';
 import { AppConfig, ConfigProvider, ComponentRenderer, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
 import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
-import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload, AccordionWidget } from '@ali/ide-core-browser/lib/layout';
+import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload } from '@ali/ide-core-browser/lib/layout';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ActivityPanelToolbar } from '@ali/ide-core-browser/lib/layout/view-container-toolbar';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
+import { AccordionWidget } from '@ali/ide-core-browser/lib/layout/accordion/accordion.widget';
 
 @Injectable({multiple: true})
 export class ActivityBarHandler {
