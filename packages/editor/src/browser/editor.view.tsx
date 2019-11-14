@@ -214,7 +214,6 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               group.pinPreviewed(resource.uri);
             }}
           />
-          <NavigationBar editorGroup={group} />
         </div>}
       <div className={styles.kt_editor_body}
         onDragOver={(e) => {
@@ -243,6 +242,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
           }
         }}
         ref={editorBodyRef as any}>
+        <NavigationBar editorGroup={group} />
         <div className={classnames({
           [styles.kt_editor_component]: true,
           [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'component',

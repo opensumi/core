@@ -353,7 +353,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     if (expand) {
       this.prevRelativeSize = this.middleWidget.relativeSizes();
       this.middleWidget.setRelativeSizes([0, 1]);
+      this.mainSlotWidget.hide();
     } else {
+      this.mainSlotWidget.show();
       this.middleWidget.setRelativeSizes(this.prevRelativeSize);
     }
   }
@@ -433,8 +435,12 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         this.horizontalPanel.fit();
         const prev = this.horizontalPanel.relativeSizes();
         this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
+        this.middleWidget.hide();
         tabbar.expanded = true;
       } else {
+        if (this.middleWidget.isHidden) {
+          this.middleWidget.show();
+        }
         // 右侧状态可能是0
         const initSize = this.sideState[side]!.size || undefined;
         let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
@@ -448,6 +454,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         this.horizontalPanel.fit();
       }
     } else {
+      if (this.middleWidget.isHidden) {
+        this.middleWidget.show();
+      }
       panel.hide();
       await this.splitHandler.setSidePanelSize(widget, barSize, { side, duration: 0 });
       if (!tabbar.expanded) {
