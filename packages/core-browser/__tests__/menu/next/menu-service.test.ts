@@ -2,15 +2,18 @@ import { CoreCommandRegistryImpl,  CommandRegistry, DisposableStore } from '@ali
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { Injector } from '@ali/common-di';
 
-import { createBrowserInjector } from '../../../../../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../../../../../tools/dev-tool/src/mock-injector';
-import { MenuService, MenuRegistry, MenuServiceImpl, IMenuRegistry, MenuId, isIMenuItem } from '../../../../../../src/menu/next';
-import { IContextKeyService } from '../../../../../../src/context-key';
+import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { generateCtxMenu, MenuService, MenuRegistry, MenuServiceImpl, IMenuRegistry, MenuId, isIMenuItem, generateMergedCtxMenu } from '../../../src/menu/next';
+import { IContextKeyService } from '../../../src/context-key';
 import { Command } from '@ali/ide-core-common';
 
 // tslint:disable-next-line:new-parens
 const contextKeyService = new class extends MockContextKeyService {
-  match() {
+  match(bool) {
+    if (bool) {
+      return bool;
+    }
     return true;
   }
 };
@@ -52,6 +55,51 @@ describe('MenuService', () => {
 
   afterEach(() => {
     disposables.clear();
+  });
+
+  it('basic property check', () => {
+    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+      command: 'a',
+    }));
+
+    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+      command: {
+        id: 'b',
+        label: 'b1',
+      },
+      toggledWhen: 'true',
+      order: 3,
+    }));
+
+    // 注册一个 visible 为 false 的 menu item
+    commandRegistry.registerCommand({
+      id: 'c',
+      label: 'c1',
+    }, {
+      execute: jest.fn(),
+      isEnabled: () => false,
+      isToggled: () => true,
+      isVisible: () => true,
+    });
+
+    commandRegistry.registerCommand({
+      id: 'd',
+      label: 'd1',
+    }, {
+      execute: jest.fn(),
+      isVisible: () => false,
+    });
+
+    const menus = menuService.createMenu(MenuId.CommandPalette, contextKeyService);
+    const menuNodes = generateMergedCtxMenu({ menus });
+    menus.dispose();
+    expect(menuNodes.length).toBe(2);
+    expect(menuNodes[0].label).toBe('c1');
+    expect(menuNodes[0].disabled).toBeTruthy();
+    expect(menuNodes[0].checked).toBeTruthy();
+
+    expect(menuNodes[1].label).toBe('b1');
+    expect(menuNodes[1].checked).toBeTruthy();
   });
 
   it('group sorting', () => {
@@ -269,7 +317,7 @@ describe('MenuService', () => {
     expect(foundB).toBeTruthy();
   });
 
-  it('regist menu item with label', () => {
+  it('register menu item with label', () => {
     commandRegistry.registerCommand({
       id: 'a',
       label: 'a1',
@@ -328,5 +376,36 @@ describe('MenuService', () => {
 
     const menuNodes1 = menuService.createMenu(MenuId.CommandPalette, contextKeyService).getMenuNodes();
     expect(menuNodes1.length).toBe(0);
+  });
+
+  it('register menu item without command', () => {
+    disposables.add(menuRegistry.registerMenuItem(testMenuId, {
+      command: {
+        id: 'a',
+        label: 'a1',
+      },
+    }));
+
+    disposables.add(menuRegistry.registerMenuItem(MenuId.CommandPalette, {
+      command: {
+        id: 'b',
+        label: 'b1',
+      },
+    }));
+
+    // 注册一个 visible 为 false 的 menu item
+    commandRegistry.registerCommand({
+      id: 'c',
+      label: 'c1',
+    }, {
+      execute: jest.fn(),
+      isVisible: () => false,
+    });
+
+    const menuNodes1 = menuService.createMenu(MenuId.CommandPalette, contextKeyService).getMenuNodes();
+    expect(menuNodes1[0][1].length).toBe(1);
+    expect(menuNodes1[0][1][0].label).toBe('b1');
+    const menuNodes2 = menuService.createMenu(testMenuId, contextKeyService).getMenuNodes();
+    expect(menuNodes2[0][1][0].label).toBe('a1');
   });
 });
