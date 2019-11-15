@@ -21,13 +21,13 @@ export abstract class MenuService {
   abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
-// 后续 MenuNode 要看齐 @ali/ide-core-common 的 ActionMenuNode
 export class SubmenuItemNode extends MenuNode {
+  static readonly ID = 'menu.item.node.submenu';
+
   readonly item: ISubmenuItem;
 
-  // todo: 需要再去看下 submenu 如何实现，我们这边目前没有看到
   constructor(item: ISubmenuItem) {
-    typeof item.title === 'string' ? super('', item.title, 'submenu') : super('', item.title.value, 'submenu');
+    super(SubmenuItemNode.ID, '', item.label);
     this.item = item;
   }
 }
@@ -69,6 +69,7 @@ export class MenuItemNode extends MenuNode {
     const shortcutDesc = this.getShortcut(item.id);
 
     this.keybinding = shortcutDesc && shortcutDesc.keybinding || '';
+    this.rawKeybinding = shortcutDesc && shortcutDesc.rawKeybinding;
     this.isKeyCombination = !!(shortcutDesc && shortcutDesc.isKeyCombination);
     this._options = options;
 
@@ -95,6 +96,7 @@ export class MenuItemNode extends MenuNode {
         }
         return {
           keybinding,
+          rawKeybinding: keybindings[0].keybinding,
           isKeyCombination,
         };
       }
@@ -121,6 +123,9 @@ type MenuItemGroup = [string, Array<IMenuItem | ISubmenuItem>];
 @Injectable()
 class Menu extends Disposable implements IMenu {
   private readonly _onDidChange = new Emitter<IMenu | undefined>();
+  get onDidChange(): Event<IMenu | undefined> {
+    return this._onDidChange.event;
+  }
 
   private _menuGroups: MenuItemGroup[];
   private _contextKeys: Set<string>;
@@ -153,7 +158,6 @@ class Menu extends Disposable implements IMenu {
     // when context keys change we need to check if the menu also
     // has changed
     this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
-      // (listener) => this.eventBus.on(ContextKeyChangeEvent, listener),
       this.contextKeyService.onDidChangeContext,
       (last, event) => last || event.payload.affectsSome(this._contextKeys),
       50,
@@ -199,10 +203,6 @@ class Menu extends Disposable implements IMenu {
     this._onDidChange.fire(this);
   }
 
-  get onDidChange(): Event<IMenu | undefined> {
-    return this._onDidChange.event;
-  }
-
   getMenuNodes(options: IMenuNodeOptions = {}): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
     const result: [string, Array<MenuItemNode | SubmenuItemNode>][] = [];
     for (const group of this._menuGroups) {
@@ -238,8 +238,11 @@ class Menu extends Disposable implements IMenu {
               activeActions.push(action);
             }
           } else {
-            const action = new SubmenuItemNode(item);
-            activeActions.push(action);
+            // 只有 label 存在值的时候才渲染
+            if (item.label) {
+              const action = new SubmenuItemNode(item);
+              activeActions.push(action);
+            }
           }
         }
       }

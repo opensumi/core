@@ -33,7 +33,7 @@ export class BrowserCtxMenuService implements IBrowserCtxMenu {
     this.visible = true;
   }
 
-  @action
+  @action.bound
   public hide() {
     if (typeof this.onHide === 'function') {
       this.onHide();
@@ -41,7 +41,7 @@ export class BrowserCtxMenuService implements IBrowserCtxMenu {
     this.reset();
   }
 
-  @action
+  @action.bound
   private reset() {
     this.visible = false;
     // this.onHide = undefined;

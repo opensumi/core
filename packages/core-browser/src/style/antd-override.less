@@ -10,15 +10,20 @@
     background-color: var(--menu-background) !important;
     border: none !important;
     box-shadow: 0px 2px 4px #000000 !important;
-    display: block !important;
+    // display: block !important;
     border-radius: 0 !important;
 
-    .@{clsx}-item {
+    .@{clsx}-item,
+    .@{clsx}-submenu-title {
       margin: 0 !important;
       padding: 4px 8px 4px 4px !important;
       height: 26px !important;
       display: flex !important;
       align-items: center !important;
+      color: inherit !important;
+    }
+
+    .@{clsx}-submenu-title:hover {
       color: inherit !important;
     }
 
@@ -36,9 +41,16 @@
       background-color: var(--menu-separatorBackground) !important;
     }
 
-    .@{clsx}-item-active {
+    .@{clsx}-item-active,
+    .@{clsx}-item-open,
+    .@{clsx}-submenu-active,
+    .@{clsx}-submenu-open {
       background: var(--menu-selectionBackground) !important;
       color: var(--menu-selectionForeground) !important;
+    }
+
+    .@{clsx}-submenu-arrow {
+      display: none;
     }
   }
 
