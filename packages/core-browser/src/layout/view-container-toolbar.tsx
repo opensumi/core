@@ -14,7 +14,6 @@ export class ActivityPanelToolbar extends Widget {
   protected outerWrap: HTMLElement;
   protected titleContainer: HTMLElement | undefined;
   protected titleComponentContainer: HTMLElement;
-  private _toolbarTitle: Title<Widget> | undefined;
   private toolBarContainer: HTMLElement | undefined;
 
   @Autowired()
@@ -95,11 +94,9 @@ export class ActivityPanelToolbar extends Widget {
     if (!this.toolbar || this.containerId.startsWith('scm')) {
       return;
     }
-    const current = this._toolbarTitle;
-    const widget = current && current.owner || undefined;
     const containerItems = this.tabBarToolbarRegistry.visibleItems(this.containerId);
-    const items = widget && viewId ? this.tabBarToolbarRegistry.visibleItems(viewId).concat(containerItems) : containerItems;
-    this.toolbar.updateItems(items, widget);
+    const items = viewId ? this.tabBarToolbarRegistry.visibleItems(viewId).concat(containerItems) : containerItems;
+    this.toolbar.updateItems(items);
   }
 
   protected init(): void {
@@ -126,12 +123,10 @@ export class ActivityPanelToolbar extends Widget {
     this.update();
   }
 
-  set toolbarTitle(title: Title<Widget> | undefined) {
+  set toolbarTitle(title: string) {
     if (this.titleContainer && title) {
-      this._toolbarTitle = title;
-      if (this._toolbarTitle.label) {
-        this.titleContainer.innerHTML = this._toolbarTitle.label;
-        // this.update();
+      if (title) {
+        this.titleContainer.innerHTML = title;
       } else {
         // title不传时隐藏标题栏
         this.titleContainer!.style.display = 'none';

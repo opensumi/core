@@ -7,6 +7,8 @@ import { observer } from 'mobx-react-lite';
 import { AccordionManager } from '@ali/ide-core-browser/lib/layout/accordion/accordion.manager';
 import { Widget } from '@phosphor/widgets';
 import { TabbarConfig } from './renderer.view';
+import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { ActivityPanelToolbar } from '@ali/ide-core-browser/lib/layout/view-container-toolbar';
 
 export const BaseTabPanelView: React.FC<{
   PanelView: React.FC<{component: ComponentRegistryInfo, side: string}>;
@@ -37,20 +39,27 @@ const ContainerView: React.FC<{
   side: string;
 }> = (({ component, side }) => {
   const ref = React.useRef<HTMLElement | null>();
+  const titleRef = React.useRef<HTMLElement | null>();
   const accordionManager = useInjectable<AccordionManager>(AccordionManager);
   const {containerId, title} = component.options!;
   const accordion = accordionManager.getAccordion(containerId, component.views, side);
+  const injector = useInjectable<Injector>(INJECTOR_TOKEN);
   React.useEffect(() => {
     if (ref.current) {
       Widget.attach(accordion, ref.current);
     }
   }, [ref]);
+  React.useEffect(() => {
+    if (titleRef.current) {
+      const titleBar = injector.get(ActivityPanelToolbar, [side as any, containerId]);
+      Widget.attach(titleBar, titleRef.current);
+      titleBar.toolbarTitle = title || '';
+    }
+  }, [titleRef]);
   return (
     <div className={styles.view_container}>
       <div className={styles.panel_titlebar}>
-        <div className={styles.title_wrap}>
-          <h1>{title}</h1>
-        </div>
+        <div className={styles.title_wrap} ref={(ele) => titleRef.current = ele}></div>
         <div className={styles.panel_component}></div>
       </div>
       <div className={styles.container_wrap} ref={(ele) => ref.current = ele}></div>

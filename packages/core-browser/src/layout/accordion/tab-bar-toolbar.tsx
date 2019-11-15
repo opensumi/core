@@ -69,7 +69,7 @@ export class TabBarToolbar extends Widget {
   }
 
   // 调用该方法时数据由外部传入
-  updateItems(items: Array<TabBarToolbarItem>, current: Widget | undefined): void {
+  updateItems(items: Array<TabBarToolbarItem>): void {
     this.inline.clear();
     this.more.clear();
     for (const item of items.sort(TabBarToolbarItem.PRIORITY_COMPARATOR).reverse()) {
@@ -79,7 +79,6 @@ export class TabBarToolbar extends Widget {
         this.more.set(item.id, item);
       }
     }
-    this.setCurrent(current);
     if (!items.length) {
       this.hide();
     }
@@ -89,23 +88,6 @@ export class TabBarToolbar extends Widget {
       }
     }));
     this.update();
-  }
-
-  protected readonly toDisposeOnSetCurrent = new DisposableCollection();
-  protected setCurrent(current: Widget | undefined): void {
-    this.toDisposeOnSetCurrent.dispose();
-    this.toDispose.push(this.toDisposeOnSetCurrent);
-    this.current = current;
-    if (current) {
-      const resetCurrent = () => {
-        this.setCurrent(undefined);
-        this.update();
-      };
-      current.disposed.connect(resetCurrent);
-      this.toDisposeOnSetCurrent.push(Disposable.create(() =>
-        current.disposed.disconnect(resetCurrent),
-      ));
-    }
   }
 
   protected onUpdateRequest(msg: Message): void {
@@ -313,66 +295,22 @@ export interface TabBarToolbarContribution {
  */
 export interface TabBarToolbarItem {
 
-  /**
-   * The unique ID of the toolbar item.
-   */
   readonly id: string;
 
-  /**
-   * The command to execute.
-   */
   readonly command: string;
 
-  /**
-   * Optional text of the item.
-   *
-   * Shamelessly copied and reused from `status-bar`:
-   *
-   * More details about the available `fontawesome` icons and CSS class names can be hound [here](http://fontawesome.io/icons/).
-   * To set a text with icon use the following pattern in text string:
-   * ```typescript
-   * $(fontawesomeClassName)
-   * ```
-   *
-   * To use animated icons use the following pattern:
-   * ```typescript
-   * $(fontawesomeClassName~typeOfAnimation)
-   * ````
-   * The type of animation can be either `spin` or `pulse`.
-   * Look [here](http://fontawesome.io/examples/#animated) for more information to animated icons.
-   */
   readonly iconClass?: string;
 
-  /**
-   * Priority among the items. Can be negative. The smaller the number the left-most the item will be placed in the toolbar. It is `0` by default.
-   */
   readonly priority?: number;
 
-  /**
-   * Optional group for the item.
-   */
   readonly group?: string;
 
-  /**
-   * Optional tooltip for the item.
-   */
   readonly tooltip?: string;
 
-  /**
-   * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
-   */
   when?: string;
 
-  /**
-   * 未传when时传入，默认会转成when: view == viewId
-   */
   viewId?: string;
 
-  /**
-   * When defined, the container tool-bar will be updated if this event is fired.
-   *
-   * Note: currently, each item of the container toolbar will be re-rendered if any of the items have changed.
-   */
   readonly onDidChange?: Event<void>;
 
 }

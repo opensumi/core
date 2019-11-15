@@ -3,7 +3,7 @@ import { CommandContribution, CommandRegistry, Command, CommandService } from '@
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry } from '@ali/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '../common';
-import { ComponentContribution, ComponentRegistry, VisibleChangedEvent } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry, VisibleChangedEvent, TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
 
@@ -67,6 +67,12 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   @Autowired()
   private layoutState: LayoutState;
 
+  @Autowired(TabBarToolbarContribution)
+  protected readonly toolBarContributionProvider: ContributionProvider<TabBarToolbarContribution>;
+
+  @Autowired()
+  private toolBarRegistry: TabBarToolbarRegistry;
+
   async onStart() {
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
@@ -75,6 +81,10 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     const rendererContributions = this.rendererContributionProvider.getContributions();
     for (const contribution of rendererContributions) {
       contribution.registerRenderer(slotRendererRegistry);
+    }
+    const contributions = this.toolBarContributionProvider.getContributions();
+    for (const contribution of contributions) {
+      contribution.registerToolbarItems(this.toolBarRegistry);
     }
     // 全局只要初始化一次
     await this.layoutState.initStorage();

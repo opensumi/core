@@ -52,6 +52,7 @@ export const SplitPanel: React.FC<{
     const panelId = element.props.id;
     panels[panelId] = element;
     if (index !== 0) {
+      // FIXME window resize支持
       elements.push(<ResizeHandle onResize={(prev, next) => {
         const prevLocation = children[index - 1].props.slot;
         const nextLocation = children[index].props.slot;

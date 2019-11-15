@@ -22,17 +22,8 @@ export class ActivityPanelContribution implements ComponentContribution, ClientA
     });
   }
 
-  @Autowired(TabBarToolbarContribution)
-  protected readonly contributionProvider: ContributionProvider<TabBarToolbarContribution>;
-
-  @Autowired()
-  private toolBarRegistry: TabBarToolbarRegistry;
-
   onStart() {
-    const contributions = this.contributionProvider.getContributions();
-    for (const contribution of contributions) {
-      contribution.registerToolbarItems(this.toolBarRegistry);
-    }
+
   }
 
 }

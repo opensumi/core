@@ -229,8 +229,6 @@ export class AccordionWidget extends Widget {
   public addWidget(view: View, props?: any) {
     const { id: viewId } = view;
     const section = this.sections.get(viewId);
-    const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(viewId, this.contextKeyService.createScoped());
-    contextKeyService.createKey('view', viewId);
     const viewState = this.uiStateManager.getState(viewId)!;
     if (section) {
       section.addViewComponent(view.component!, {
@@ -279,6 +277,8 @@ export class AccordionWidget extends Widget {
 
   private priorities: number[] = [];
   private appendSection(view: View, props: any) {
+    const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped());
+    contextKeyService.createKey('view', view.id);
     this.uiStateManager.initSize(view.id, this.side);
     props.viewState = this.uiStateManager.getState(view.id)!;
     const section = this.injector.get(ViewContainerSection, [view, this.side, { props }]);
