@@ -42,16 +42,16 @@ const ContainerView: React.FC<{
   const titleRef = React.useRef<HTMLElement | null>();
   const accordionManager = useInjectable<AccordionManager>(AccordionManager);
   const configContext = useInjectable<AppConfig>(AppConfig);
-  const { containerId, title, titleComponent } = component.options!;
+  const { containerId, title, titleComponent, component: CustomComponent } = component.options!;
   const accordion = accordionManager.getAccordion(containerId, component.views, side);
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
   React.useEffect(() => {
-    if (ref.current) {
+    if (!CustomComponent && ref.current) {
       Widget.attach(accordion, ref.current);
     }
   }, [ref]);
   React.useEffect(() => {
-    if (titleRef.current) {
+    if (!CustomComponent && titleRef.current) {
       const titleBar = injector.get(ActivityPanelToolbar, [side as any, containerId]);
       Widget.attach(titleBar, titleRef.current);
       titleBar.toolbarTitle = title || '';
@@ -67,7 +67,11 @@ const ContainerView: React.FC<{
           </ConfigProvider>
         </div>}
       </div>
-      <div className={styles.container_wrap} ref={(ele) => ref.current = ele}></div>
+      <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
+        {CustomComponent && <ConfigProvider value={configContext} >
+          <ComponentRenderer Component={CustomComponent} />
+        </ConfigProvider>}
+      </div>
     </div>
   );
 });
