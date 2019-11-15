@@ -541,7 +541,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     const mainThreadWorkerProtocol = new RPCProtocol({
       onMessage,
       send: extendWorkerHost.postMessage.bind(extendWorkerHost),
-    });
+    }, this.logger);
 
     this.workerProtocol = mainThreadWorkerProtocol;
     const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
