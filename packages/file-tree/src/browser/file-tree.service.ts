@@ -734,6 +734,9 @@ export class FileTreeService extends WithEventBus {
     if (Directory.isDirectory(item)) {
       await item.getChildren();
       const children = item.children;
+      if (!Array.isArray(children)) {
+        return ;
+      }
       if (lowcost) {
         for (const child of children) {
           const childStatusKey = this.getStatutsKey(child);
@@ -777,7 +780,7 @@ export class FileTreeService extends WithEventBus {
       if (status && !status.expanded) {
         // 如果当前目录下的子文件为空，同时具备父节点，尝试调用fileservice加载文件
         // 如果当前目录具备父节点(即非根目录)，尝试调用fileservice加载文件
-        if (item.children.length === 0 && item.parent || status && status.needUpdated && item.parent) {
+        if (item.children && item.children.length === 0 && item.parent || status && status.needUpdated && item.parent) {
           await item.getChildren();
           this.updateFileStatus([item]);
         }
