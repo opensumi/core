@@ -8,37 +8,19 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@ali/ide-menu-bar'],
   },
   [SlotLocation.left]: {
-    modules: ['@ali/ide-explorer', '@ali/ide-search', '@ali/ide-scm', '@ali/ide-debug', '@ali/ide-extension-manager'],
+    modules: ['@ali/ide-explorer', '@ali/ide-search', '@ali/ide-scm', '@ali/ide-extension-manager'],
   },
   [SlotLocation.right]: {
-    modules: ['@ali/ide-output', 'debug-console'],
+    modules: ['@ali/ide-debug'],
   },
   [SlotLocation.main]: {
     modules: ['@ali/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: ['@ali/ide-terminal2', '@ali/ide-markers'],
+    modules: ['@ali/ide-terminal2', '@ali/ide-markers', '@ali/ide-output', 'debug-console'],
   },
   [SlotLocation.statusBar]: {
     modules: ['@ali/ide-status-bar'],
-  },
-  [SlotLocation.leftBar]: {
-    modules: ['@ali/ide-activity-bar/left'],
-  },
-  [SlotLocation.leftPanel]: {
-    modules: ['@ali/ide-activity-panel/left'],
-  },
-  [SlotLocation.rightBar]: {
-    modules: ['@ali/ide-activity-bar/right'],
-  },
-  [SlotLocation.rightPanel]: {
-    modules: ['@ali/ide-activity-panel/right'],
-  },
-  [SlotLocation.bottomBar]: {
-    modules: ['@ali/ide-activity-bar/bottom'],
-  },
-  [SlotLocation.bottomPanel]: {
-    modules: ['@ali/ide-activity-panel/bottom'],
   },
   [SlotLocation.extra]: {
     modules: ['breadcrumb-menu'],

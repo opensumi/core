@@ -65,7 +65,7 @@ const PanelView: React.FC<{
   // TODO 底部支持多个view
   return (
     <div className={styles.panel_container}>
-      <div className={styles.container_wrap}><ComponentRenderer Component={component.views[0].component!} /> </div>
+      <ComponentRenderer Component={component.views[0].component!} />
     </div>
   );
 });
