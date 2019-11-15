@@ -4,7 +4,7 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 
-import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator } from '../../menu/next';
+import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator, SubmenuItemNode } from '../../menu/next';
 import Icon from '../icon';
 import { getIcon } from '../../icon';
 import { useInjectable } from '../../react-hooks';
@@ -14,7 +14,8 @@ import * as styles from './styles.module.less';
 
 const MenuAction: React.FC<{
   data: MenuNode;
-}> = ({ data }) => {
+  hasSubmenu?: boolean;
+}> = ({ data, hasSubmenu }) => {
   // 这里遵循 native menu 的原则，保留一个 icon 位置
   return (
     <>
@@ -33,9 +34,13 @@ const MenuAction: React.FC<{
           ? <div className={styles.shortcut}>{data.keybinding}</div>
           : null
       }
-      {/* <div className={styles.submenuIcon}>
-        <Icon iconClass={getIcon('right')} />
-      </div> */}
+      {
+        hasSubmenu && (
+          <div className={styles.submenuIcon}>
+            <Icon iconClass={getIcon('right')} />
+          </div>
+        )
+      }
     </>
   );
 };
@@ -48,6 +53,10 @@ export const MenuActionList: React.FC<{
   onClick?: (item: MenuNode) => void;
   context?: any[];
 }> = ({ data = [], context = [], onClick }) => {
+  if (!data.length) {
+    return null;
+  }
+
   const handleClick = React.useCallback(({ key }: ClickParam) => {
     // do nothing when click separator node
     if (key === SeparatorMenuItemNode.ID) {
@@ -63,23 +72,35 @@ export const MenuActionList: React.FC<{
     }
   }, [ data, context ]);
 
+  const recursiveRender = React.useCallback((dataSource: MenuNode[]) => {
+    return dataSource.map((menuNode, index) => {
+      if (menuNode.id === SeparatorMenuItemNode.ID) {
+        return <Menu.Divider key={`divider-${index}`} />;
+      }
+
+      if (menuNode.id === SubmenuItemNode.ID) {
+        return (
+          <Menu.SubMenu
+            key={`${menuNode.id}-${index}`}
+            title={<MenuAction hasSubmenu data={menuNode} />}>
+            {recursiveRender(menuNode.items)}
+          </Menu.SubMenu>
+        );
+      }
+
+      return (
+        <Menu.Item key={menuNode.id} disabled={menuNode.disabled}>
+          <MenuAction data={menuNode} />
+        </Menu.Item>
+      );
+    });
+  }, []);
+
   return (
     <Menu
-      mode='inline'
-      selectable={false}
+      openTransitionName=''
       onClick={handleClick}>
-      {
-        data.map((menuNode, index) => {
-          if (menuNode.id === SeparatorMenuItemNode.ID) {
-            return <Menu.Divider key={`divider-${index}`} />;
-          }
-          return (
-            <Menu.Item key={menuNode.id} disabled={menuNode.disabled}>
-              <MenuAction key={menuNode.id} data={menuNode} />
-            </Menu.Item>
-          );
-        })
-      }
+      {recursiveRender(data)}
     </Menu>
   );
 };

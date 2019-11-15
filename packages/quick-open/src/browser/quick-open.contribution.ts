@@ -1,6 +1,8 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, MenuContribution, CommandRegistry, Command, KeybindingRegistry, MAIN_MENU_BAR, MenuModelRegistry, localize } from '@ali/ide-core-browser';
-import { ClientAppContribution, COMMON_MENUS, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, CommandRegistry, Command, KeybindingRegistry, localize } from '@ali/ide-core-browser';
+import { ClientAppContribution, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
+import { MenuId, NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+
 import { QuickOpenService, PrefixQuickOpenService } from './quick-open.model';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickCommandHandler } from './quick-open.command.service';
@@ -9,8 +11,8 @@ import { HelpQuickOpenHandler } from './quick-open.help.service';
 export const quickCommand: Command = {
   id: 'editor.action.quickCommand',
 };
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ClientAppContribution, MonacoContribution)
-export class QuickOpenClientContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ClientAppContribution, MonacoContribution {
+@Domain(CommandContribution, KeybindingContribution, NextMenuContribution, QuickOpenContribution, ClientAppContribution, MonacoContribution)
+export class QuickOpenClientContribution implements CommandContribution, KeybindingContribution, NextMenuContribution, QuickOpenContribution, ClientAppContribution, MonacoContribution {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -58,10 +60,13 @@ export class QuickOpenClientContribution implements CommandContribution, Keybind
     });
   }
 
-  registerMenus(menus: MenuModelRegistry): void {
-    menus.registerMenuAction(COMMON_MENUS.VIEW_PRIMARY, {
-      commandId: quickCommand.id,
-      label: localize('menu-bar.view.quick.command'),
+  registerNextMenus(menus: IMenuRegistry): void {
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: quickCommand.id,
+        label: localize('menu-bar.view.quick.command'),
+      },
+      group: '0_primary',
     });
   }
 

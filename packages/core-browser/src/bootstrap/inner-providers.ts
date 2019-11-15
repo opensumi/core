@@ -23,21 +23,19 @@ import { BrowserKeyboardLayoutImpl } from '../keyboard';
 import {
   ContextMenuRenderer,
   BrowserContextMenuRenderer,
-  IElectronMenuFactory,
 } from '../menu';
 import { Logger, ILogger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
 import { useNativeContextMenu } from '../utils';
-import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
+import { ElectronContextMenuRenderer } from '../menu/electron/electron-menu';
 import { createElectronMainApi } from '../utils/electron';
 import { IElectronMainUIService, IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { PreferenceContribution } from '../preferences';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../variable';
 
-import { MenuService, MenuServiceImpl } from '../menu/next/menu-service';
-import { IMenuRegistry, MenuRegistry, NextMenuContribution } from '../menu/next/base';
+import { MenuService, MenuServiceImpl, AbstractMenubarService, MenubarServiceImpl, IMenuRegistry, MenuRegistry, NextMenuContribution } from '../menu/next';
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
-import { ElectronCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/electron';
+import { ElectronCtxMenuRenderer, ElectronMenuBarService, IElectronMenuFactory, IElectronMenuBarService, ElectronMenuFactory } from '../menu/next/renderer/ctxmenu/electron';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
 
 export function injectInnerProviders(injector: Injector) {
@@ -115,6 +113,10 @@ export function injectInnerProviders(injector: Injector) {
       token: ICtxMenuRenderer,
       useClass: useNativeContextMenu() ? ElectronCtxMenuRenderer : BrowserCtxMenuRenderer,
     },
+    {
+      token: AbstractMenubarService,
+      useClass: MenubarServiceImpl,
+    },
   ];
   injector.addProviders(...providers);
 
@@ -129,9 +131,15 @@ export function injectInnerProviders(injector: Injector) {
     }, {
       token: IElectronMainLifeCycleService,
       useValue: createElectronMainApi('lifecycle'),
-    }, {
+    },
+    {
       token: IElectronMenuFactory,
       useClass: ElectronMenuFactory,
-    });
+    },
+    {
+      token: IElectronMenuBarService,
+      useClass: ElectronMenuBarService,
+    },
+    );
   }
 }

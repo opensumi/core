@@ -98,7 +98,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.browser.loadURL(this.appConfig.browserUrl);
       this.browser.webContents.on('devtools-reload-page', () => {
         this.isReloading = true;
-        this.startNode();
       });
       this.bindEvents();
     } catch (e) {

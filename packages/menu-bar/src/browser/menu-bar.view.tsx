@@ -1,45 +1,47 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ConfigContext, useInjectable, SlotRenderer, ComponentRegistry, MenuModelRegistry, IEventBus, MenuUpdateEvent, MAIN_MENU_BAR } from '@ali/ide-core-browser';
-import { localize, isWindows, isElectronRenderer } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser';
+import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
+import { IMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
+import Dropdown from 'antd/lib/dropdown';
+import 'antd/lib/dropdown/style/index.less';
 
-import { BrowserMainMenuFactory } from '@ali/ide-core-browser/lib/menu';
-import { MenuBarService } from './menu-bar.service';
-import './menu-bar.less';
-import './menu.less';
-import { Widget } from '@phosphor/widgets';
+import { MenubarStore } from './menu-bar.store';
+import * as styles from './menu-bar.module.less';
 
-let attachedWidget: Widget | null = null;
+const MenubarItem = observer<IMenubarItem>(({ id, label }) => {
+  const menubarStore = useInjectable<MenubarStore>(MenubarStore);
+  const [menuNodes, setMenuNodes] = React.useState<MenuNode[]>([]);
 
-export const MenuBar = observer(() => {
-
-  const ref = React.useRef<HTMLElement | null>();
-  const { injector } = React.useContext(ConfigContext);
-  const menuBarService = injector.get(MenuBarService);
-  const menuFactory = useInjectable(BrowserMainMenuFactory);
-  const eventBus: IEventBus = useInjectable(IEventBus);
-
-  React.useEffect(function widgetsInit() {
-    updateMenu();
-    const disposer = eventBus.on(MenuUpdateEvent, (e) => {
-      if (e.payload && e.payload[0] === MAIN_MENU_BAR[0]) {
-        updateMenu();
-      }
-    });
-    return () => disposer.dispose();
-  }, [ref]);
-
-  function updateMenu() {
-    if (ref.current) {
-      const menuBar = menuFactory.createMenuBar();
-      if (attachedWidget) {
-        Widget.detach(attachedWidget);
-      }
-      Widget.attach(menuBar, ref.current);
-      attachedWidget = menuBar;
-    }
-  }
+  const handleClick = React.useCallback(() => {
+    const newMenuNodes = menubarStore.getMenubarItem(id);
+    setMenuNodes(newMenuNodes);
+  }, [id]);
 
   return (
-    <div className='menu-bar' ref={(ele) => ref.current = ele} />);
+    <Dropdown
+      transitionName=''
+      overlay={<MenuActionList data={menuNodes} />}
+      trigger={['click']}>
+      <div className={styles['menubar-title']} onClick={handleClick}>{label}</div>
+    </Dropdown>
+  );
 });
+
+export const MenuBar = observer(() => {
+  const menubarStore = useInjectable<MenubarStore>(MenubarStore);
+
+  return (
+    <div className={styles.menubars}>
+      {
+        menubarStore.menubarItems.map(({ id, label }) => {
+          return <div className={styles.menubar}>
+            <MenubarItem key={id} id={id} label={label} />
+          </div>;
+        })
+      }
+    </div>
+  );
+});
+
+MenuBar.displayName = 'MenuBar';
