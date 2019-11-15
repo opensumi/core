@@ -2,24 +2,33 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
-import { ComponentRegistryInfo, useInjectable, ConfigProvider, ComponentRenderer, AppConfig } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ConfigProvider, ComponentRenderer, AppConfig, TabBarToolbar } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { PanelContext } from '@ali/ide-core-browser/lib/components/layout/split-panel';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TabbarConfig } from './renderer.view';
+import { Widget } from '@phosphor/widgets';
 
 export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,
   forbidCollapse?: boolean;
   hasToolBar?: boolean;
 }> = observer(({ TabView, forbidCollapse, hasToolBar }) => {
+  const measureRef = React.useCallback((node) => {
+    if (node) {
+      const toolbar = injector.get(TabBarToolbar, [side]);
+      tabbarService.registerToolbar(toolbar);
+      Widget.attach(toolbar, node);
+    }
+  }, []);
   const { setSize, getSize } = React.useContext(PanelContext);
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const { currentContainerId, handleTabClick } = tabbarService;
   const components: ComponentRegistryInfo[] = [];
   const configContext = useInjectable<AppConfig>(AppConfig);
+  const injector = useInjectable<Injector>(INJECTOR_TOKEN);
   tabbarService.containersMap.forEach((component) => {
     components.push(component);
   });
@@ -41,10 +50,11 @@ export const TabbarViewBase: React.FC<{
           );
         })}
       </div>
-      {hasToolBar && titleComponent && <div>
+      {hasToolBar && titleComponent && <div className={styles.toolbar_container}>
         <ConfigProvider value={configContext} >
           <ComponentRenderer Component={titleComponent} />
         </ConfigProvider>
+        <div className='tab-tool-bar' ref={measureRef}></div>
       </div>}
     </div>
   );

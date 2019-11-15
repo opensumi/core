@@ -27,6 +27,8 @@
       li {
         padding: 0 10px;
         position: relative;
+        height: 28px;
+        line-height: 28px;
         &:hover {
           color: var(--panelTitle-activeForeground);
           cursor: pointer;
@@ -135,6 +137,14 @@
     position: relative;
     flex: 1;
   }
+
+  .tab-tool-bar {
+    .p-TabBar-toolbar {
+      display: flex;
+      flex-direction: row;
+      padding-right: 10px;
+    }
+  }
 }
 .tab_container {
   display: flex;
@@ -171,5 +181,9 @@
   flex: 1;
 }
 .bar_content {
+  display: flex;
+}
+.toolbar_container {
+  flex-direction: row;
   display: flex;
 }
