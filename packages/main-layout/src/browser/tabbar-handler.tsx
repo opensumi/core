@@ -84,9 +84,12 @@ export class TabBarHandler {
 
   }
 
-  // 设定title自定义组件，注意设置高度
-  setTitleComponent(Fc: React.FunctionComponent, size?: number) {
-
+  // @deprecated 设定title自定义组件，应通过contribution声明
+  setTitleComponent(Fc: React.FunctionComponent) {
+    const componentInfo = this.tabbarService.getContainer(this.containerId);
+    if (componentInfo) {
+      componentInfo.options!.titleComponent = Fc;
+    }
   }
 
   setSize(size: number) {
@@ -130,16 +133,40 @@ export class TabBarHandler {
   }
 
   updateViewTitle(viewId: string, title: string) {
-
+    if (!this.accordion) {
+      return;
+    }
+    const section = this.accordion.sections.get(viewId);
+    if (!section) {
+      console.warn(`没有找到${viewId}对应的视图，跳过`);
+      return;
+    }
+    section.titleLabel = title;
   }
 
   // 刷新 title
   refreshTitle() {
-
+    if (this.titleWidget) {
+      let viewId: string | undefined;
+      if (this.accordion) {
+        const visibleViews = this.accordion.getVisibleSections();
+        if (visibleViews.length === 1) {
+          viewId = visibleViews[0].view.id;
+        }
+      }
+      this.titleWidget.updateToolbar(viewId);
+    }
+    if (this.accordion) {
+      this.accordion.sections.forEach((section) => {
+        section.update();
+      });
+    }
   }
 
-  // 更新 title
+  // @deprecated 更新 title
   updateTitle(label: string) {
-
+    if (this.accordion) {
+      this.accordion.update();
+    }
   }
 }

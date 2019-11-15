@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
-import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ConfigProvider, ComponentRenderer, AppConfig } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { PanelContext } from '@ali/ide-core-browser/lib/components/layout/split-panel';
@@ -12,29 +12,40 @@ import { TabbarConfig } from './renderer.view';
 export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,
   forbidCollapse?: boolean;
-}> = observer(({ TabView, forbidCollapse }) => {
+  hasToolBar?: boolean;
+}> = observer(({ TabView, forbidCollapse, hasToolBar }) => {
   const { setSize, getSize } = React.useContext(PanelContext);
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const { currentContainerId, handleTabClick } = tabbarService;
   const components: ComponentRegistryInfo[] = [];
+  const configContext = useInjectable<AppConfig>(AppConfig);
   tabbarService.containersMap.forEach((component) => {
     components.push(component);
   });
+  const currentComponent = tabbarService.getContainer(currentContainerId)!;
+  const titleComponent = currentComponent && currentComponent.options && currentComponent.options.titleComponent;
   return (
-    <div style={{flexDirection: Layout.getTabbarDirection(direction)}} className='tab-bar'>
-      {components.map((component) => {
-        const containerId = component.options!.containerId;
-        return (
-          <li
-            key={containerId}
-            id={containerId}
-            onClick={(e) => handleTabClick(e, setSize, getSize, forbidCollapse)}
-            className={clsx({active: currentContainerId === containerId})}>
-            <TabView component={component} />
-          </li>
-        );
-      })}
+    <div className='tab-bar'>
+      <div className={styles.bar_content} style={{flexDirection: Layout.getTabbarDirection(direction)}}>
+        {components.map((component) => {
+          const containerId = component.options!.containerId;
+          return (
+            <li
+              key={containerId}
+              id={containerId}
+              onClick={(e) => handleTabClick(e, setSize, getSize, forbidCollapse)}
+              className={clsx({active: currentContainerId === containerId})}>
+              <TabView component={component} />
+            </li>
+          );
+        })}
+      </div>
+      {hasToolBar && titleComponent && <div>
+        <ConfigProvider value={configContext} >
+          <ComponentRenderer Component={titleComponent} />
+        </ConfigProvider>
+      </div>}
     </div>
   );
 });
@@ -57,4 +68,4 @@ export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={Icon
 
 export const LeftTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} />;
 
-export const BottomTabbarRenderer: React.FC = () => <TabbarViewBase forbidCollapse={true} TabView={TextTabView} />;
+export const BottomTabbarRenderer: React.FC = () => <TabbarViewBase hasToolBar={true} forbidCollapse={true} TabView={TextTabView} />;

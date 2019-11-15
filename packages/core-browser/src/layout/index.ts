@@ -81,6 +81,7 @@ export interface ExtViewContainerOptions {
   badge?: string;
   // 直接使用自定义的React组件，会失去一些对面板的控制能力
   component?: React.FunctionComponent;
+  titleComponent?: React.FunctionComponent;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
