@@ -145,9 +145,6 @@
       "path": "./references/tsconfig.debug.json"
     },
     {
-      "path": "./references/tsconfig.debug-nodejs.json"
-    },
-    {
       "path": "./references/tsconfig.markers.json"
     },
     {
