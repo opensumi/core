@@ -38,9 +38,11 @@ export class RPCProxy {
   private connectionPromiseResolve: (connection: MessageConnection) => void;
   private connection: MessageConnection;
   private proxyService: any = {};
+  private logger: any;
 
-  constructor(public target?: RPCService) {
+  constructor(public target?: RPCService, logger?: any) {
     this.waitForConnection();
+    this.logger = logger || console;
   }
   public listenService(service) {
     if (this.connection) {
@@ -219,7 +221,7 @@ export class RPCProxy {
     try {
       this.proxyService[prop](...args);
     } catch (e) {
-      console.log('notification', e);
+      this.logger.log('notification', e);
     }
   }
 
