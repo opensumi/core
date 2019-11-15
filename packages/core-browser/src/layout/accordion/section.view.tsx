@@ -2,8 +2,8 @@ import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject } from '@ali/common-di';
 import { Widget } from '@phosphor/widgets';
-import { Emitter, Disposable, Event, DisposableCollection } from '@ali/ide-core-common';
-import { View } from '..';
+import { Emitter, Disposable, Event, DisposableCollection, IEventBus } from '@ali/ide-core-common';
+import { View, ResizeEvent } from '..';
 import { getIcon } from '../../icon';
 import { ConfigProvider, ComponentRenderer, AppConfig } from '../../react-providers';
 import { LoadingView } from './loading-view.view';
@@ -39,6 +39,9 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   @Autowired(AppConfig)
   private configContext: AppConfig;
 
+  @Autowired(IEventBus)
+  private eventBus: IEventBus;
+
   constructor(@Inject(Symbol()) public view: View, @Inject(Symbol()) private side: string, @Inject(Symbol()) private options) {
     super(options);
     this.addClass('views-container-section');
@@ -46,6 +49,12 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
     this.createContent();
     this.uiStateManager = this.injector.get(ViewUiStateManager);
     this.id = this.view.id;
+    // FIXME 临时支持，后续废弃 phospher accordion
+    this.eventBus.on(ResizeEvent, (e) => {
+      if (this.side === e.payload.slotLocation) {
+        this.uiStateManager.updateSize(this.view.id, this.contentHeight, e.payload.width - 50);
+      }
+    });
   }
 
   get contentHeight() {

@@ -21,9 +21,11 @@ export class ViewUiStateManager extends Disposable {
     this.sideViews[side].push(viewId);
   }
 
-  updateSize(viewId: string, height: number, width?: number) {
+  updateSize(viewId: string, height?: number, width?: number) {
     const viewState = this.viewStateMap.get(viewId)!;
-    viewState.height = height;
+    if (height) {
+      viewState.height = height;
+    }
     if (width) {
       viewState.width = width;
     }
