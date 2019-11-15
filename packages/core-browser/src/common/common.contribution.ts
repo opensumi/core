@@ -75,19 +75,19 @@ export class ClientCommonContribution implements CommandContribution, Preference
     menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help') });
 
     /* ---- test for submenu ---- */
-    const testSubmenuId = 'greatmenu';
-    menus.registerMenuItem(MenuId.MenubarFileMenu, {
-      label: '屌炸了',
-      submenu: testSubmenuId,
-    });
+    // const testSubmenuId = 'greatmenu';
+    // menus.registerMenuItem(MenuId.MenubarFileMenu, {
+    //   label: '屌炸了',
+    //   submenu: testSubmenuId,
+    // });
 
-    menus.registerMenuItems(testSubmenuId, [{
-      command: FILE_COMMANDS.NEW_FILE.id,
-      group: '1_new',
-    }, {
-      command: FILE_COMMANDS.NEW_FOLDER.id,
-      group: '1_new',
-    }]);
+    // menus.registerMenuItems(testSubmenuId, [{
+    //   command: FILE_COMMANDS.NEW_FILE.id,
+    //   group: '1_new',
+    // }, {
+    //   command: FILE_COMMANDS.NEW_FOLDER.id,
+    //   group: '1_new',
+    // }]);
 
     /* ---- end for submenu ---- */
 

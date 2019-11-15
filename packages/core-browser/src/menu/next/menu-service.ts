@@ -189,6 +189,11 @@ class Menu extends Disposable implements IMenu {
       // keep keys for eventing
       this.fillKeysInWhenExpr(this._contextKeys, item.when);
 
+      // 收集 toggledWhen
+      if (isIMenuItem(item)) {
+        this.fillKeysInWhenExpr(this._contextKeys, item.toggledWhen);
+      }
+
       // FIXME: 我们的 command 有 precondition(command)/toggled 属性吗？
       // keep precondition keys for event if applicable
       // if (isIMenuItem(item) && item.command.precondition) {
