@@ -158,7 +158,6 @@ export class ClientApp implements IClientApp {
   public async start(container: HTMLElement, type?: string, connection?: RPCMessageConnection) {
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
-      this.logger.log('extract connection');
     } else {
       if (type === 'electron') {
         const netConnection = await (window as any).createRPCNetConnection();
