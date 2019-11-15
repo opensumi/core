@@ -242,6 +242,9 @@ export const localizationBundle = {
     'preference.editor.wordWrapColumn': '自动换行长度',
     'preference.editor.askIfDiff': '保存文件冲突时提示',
     'preference.editor.readonlyFiles': '只读文件列表',
+    'preference.editor.formatOnSave': '在保存时格式化文件',
+    'preference.editor.formatOnSaveTimeout': '控制在保存文件时进行格式化的超时时间（毫秒）',
+    'preference.editor.formatOnSaveTimeoutError': '格式化时间超过 {0} 毫秒，终止格式化',
 
     'preference.array.additem': '添加',
 

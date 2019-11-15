@@ -243,6 +243,9 @@ export const localizationBundle = {
     'preference.editSettingsJson': 'Edit in settings.json',
     'preference.overwritten': '(Overwritten by next scope)',
     'preference.searchPlaceholder': 'Search settings...',
+    'preference.editor.formatOnSave': 'Enable format on manual save.',
+    'preference.editor.formatOnSaveTimeout': 'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
+    'preference.editor.formatOnSaveTimeoutError': 'Aborted format on save after ${0}ms',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',

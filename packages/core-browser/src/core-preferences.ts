@@ -164,6 +164,16 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: [],
       description: '%editor.configuration.readonlyFiles%',
     },
+    'editor.formatOnSave': {
+      type: 'boolean',
+      default: false,
+      description: '%preference.editor.formatOnSave%',
+    },
+    'editor.formatOnSaveTimeout': {
+      type: 'number',
+      default: 750,
+      description: '%editor.configuration.readonlyFiles%',
+    },
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,
