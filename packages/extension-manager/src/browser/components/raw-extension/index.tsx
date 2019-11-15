@@ -21,19 +21,18 @@ interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
 export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
    extension, select, install, className,
   }) => {
-  const [installing, setInstalling] = React.useState(false);
   const timmer = React.useRef<any>();
   const clickCount = React.useRef(0);
 
   const clientApp = useInjectable<IClientApp>(IClientApp);
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+  const extensionMomentState = extensionManagerService.extensionMomentState.get(extension.extensionId);
+  const isInstalling = extensionMomentState?.isInstalling;
 
-  async function handleInstall(e) {
+  function handleInstall(e) {
     e.stopPropagation();
-    setInstalling(true);
-    await install(extension);
-    setInstalling(false);
+    install(extension);
   }
 
   function handleClick(e) {
@@ -85,7 +84,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
                   menus={extensionManagerService.contextMenu}
                   context={[extension]} />
               </span>
-            ) : <Button loading={installing} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button>}
+            ) : <Button loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button>}
           </div>
           <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i>{extension.downloadCount}</span>) : null}
