@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceSchemaProperty, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceSchemaProperty, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference.service';
 import './index.less';
 import * as styles from './preferences.module.less';
@@ -142,6 +142,7 @@ export const PreferenceSection = ({section, scope}: {section: ISettingSection, s
 
 export const PreferenceItemView = ({preferenceName, localizedName, scope}: {preferenceName: string, localizedName?: string, scope: PreferenceScope}) => {
 
+  const logger = useInjectable(ILogger);
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = useInjectable(PreferenceSchemaProvider);
 
