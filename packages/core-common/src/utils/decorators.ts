@@ -83,3 +83,15 @@ export function debounce<T>(delay: number, reducer?: IDebouceReducer<T>, initial
 		};
 	});
 }
+
+
+export function es5ClassCompat(target: any): any {
+	/// @ts-ignore
+	function _() { return Reflect.construct(target, arguments, this.constructor); }
+	Object.defineProperty(_, 'name', Object.getOwnPropertyDescriptor(target, 'name')!);
+	/// @ts-ignore
+	Object.setPrototypeOf(_, target);
+	/// @ts-ignore
+	Object.setPrototypeOf(_.prototype, target.prototype);
+	return _;
+}

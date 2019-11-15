@@ -297,7 +297,9 @@ export class DebugModel implements IDisposable {
    */
   protected createCurrentBreakpointDecorations(): monaco.editor.IModelDeltaDecoration[] {
     const breakpoints = this.debugSessionManager.getBreakpoints(this.uri);
-    return breakpoints.map((breakpoint) => this.createCurrentBreakpointDecoration(breakpoint));
+    return breakpoints
+    .filter((breakpoint) => breakpoint instanceof DebugBreakpoint)
+    .map((breakpoint) => this.createCurrentBreakpointDecoration(breakpoint));
   }
 
   /**

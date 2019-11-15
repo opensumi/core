@@ -1,4 +1,4 @@
-import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent } from '../common';
+import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '../common';
 import { URI, IEventBus } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
@@ -280,6 +280,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
         // 默认recursive
         await editorService.close(this.oldUri, true);
         await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: true });
+        eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldUri}));
       } else if (!options.ignoreIfNotExists) {
         throw new Error(`${this.oldUri} 不存在`);
       }

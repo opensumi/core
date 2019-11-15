@@ -24,7 +24,7 @@ export class PreferenceConfigurations {
   private readonly preferenceConfigurationProvider: ContributionProvider<PreferenceConfiguration>;
 
   getPaths(): string[] {
-    return [WORKSPACE_FOLDER_NAME, '.vscode'];
+    return [WORKSPACE_FOLDER_NAME];
   }
 
   getConfigName(): string {

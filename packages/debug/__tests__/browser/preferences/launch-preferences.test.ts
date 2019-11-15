@@ -30,7 +30,7 @@ process.on('unhandledRejection', (reason, promise) => {
  */
 describe('Launch Preferences', () => {
 
-  type ConfigMode = '.vscode' | '.kaitian' | ['.kaitian', '.vscode'];
+  type ConfigMode = '.kaitian' | ['.kaitian'];
 
   const defaultLaunch = {
     'configurations': [],
@@ -345,19 +345,6 @@ describe('Launch Preferences', () => {
           ...options,
           configMode: '.kaitian',
         });
-
-        // TODO: 支持VSCODE配置
-        // if (options.settings || options.launch) {
-        //   testConfigSuite({
-        //     ...options,
-        //     configMode: '.vscode',
-        //   });
-
-        //   testConfigSuite({
-        //     ...options,
-        //     configMode: ['.kaitian', '.vscode'],
-        //   });
-        // }
       }
 
     });

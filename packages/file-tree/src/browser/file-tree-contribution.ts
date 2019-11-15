@@ -159,15 +159,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       },
     });
     commands.registerCommand(FILE_COMMANDS.COLLAPSE_ALL, {
-      execute: (uri?: URI) => {
+      execute: () => {
         const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
         if (!handler || !handler.isVisible) {
           return;
         }
-        if (!uri) {
-          uri = this.filetreeService.root;
-        }
-        this.filetreeService.collapseAll(uri);
+        this.filetreeService.collapseAll();
       },
     });
     commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {

@@ -177,6 +177,8 @@ export const localizationBundle = {
     'debug.container.title': '调试管理器',
     'debug.breakpoint.toggle': '启用/禁用断点',
     'debug.breakpoint.removeAll': '移除所有断点',
+    'debug.breakpoint.uncaughtExceptions': '未捕获的异常',
+    'debug.breakpoint.allExceptions': '所有异常',
     'debug.watch.removeAll': '移除所有监听',
     'debug.watch.collapseAll': '折叠所有变量',
     'debug.watch.add': '添加监听',
@@ -346,5 +348,14 @@ export const localizationBundle = {
     'editor.compareAndSave.title': '{0} (在磁盘上) <=> {1} (编辑中) ',
 
     'outline.title': '大纲',
+
+    'markers.title': '问题',
+    'markers.panel.content.empty': '目前尚未在工作区检测到问题。',
+    'markers.panel.filter.errors': '错误',
+    'markers.panel.filter.warnings': '警告',
+    'markers.panel.filter.infos': '信息',
+    'markers.filter.placefolder': '筛选器，例如：text、**/*.ts、!**/node_modules/**',
+    'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
+    'markers.filter.reset': '清除筛选器',
   },
 };
