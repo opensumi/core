@@ -221,27 +221,30 @@ class Menu extends Disposable implements IMenu {
             const { args = [] } = options;
             const menuCommandDesc = this.menuRegistry.getMenuCommand(item.command);
             const command = this.commandRegistry.getCommand(menuCommandDesc.id);
-            if (!command) {
-              continue;
-            }
 
-            const menuCommand = {...command, ...menuCommandDesc };
+            const menuCommand = { ...(command || {}), ...menuCommandDesc };
             // 没有 desc 的 command 不展示在 menu 中
             if (!menuCommand.label) {
               continue;
             }
 
-            if (this.commandRegistry.isVisible(menuCommand.id, ...args)) {
-              // FIXME: Command.isVisible 待废弃
-              const disabled = !this.commandRegistry.isEnabled(menuCommand.id, ...args);
-              // toggledWhen 的优先级高于 isToggled
-              // 若设置了 toggledWhen 则忽略 Command 的 isVisible
-              const checked = 'toggledWhen' in item
-                ? this.contextKeyService.match(item.toggledWhen)
-                : this.commandRegistry.isToggled(menuCommand.id, ...args);
-              const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);
-              activeActions.push(action);
+            // FIXME: Command.isVisible 待废弃
+            // command 存在但是 isVisible 为 false 则跳过
+            if (command && !this.commandRegistry.isVisible(menuCommand.id, ...args)) {
+              continue;
             }
+
+            const commandEnablement = Boolean(command && this.commandRegistry.isEnabled(menuCommand.id, ...args));
+            const commandToggle = Boolean(command && this.commandRegistry.isToggled(menuCommand.id, ...args));
+
+            const disabled = !commandEnablement;
+            // toggledWhen 的优先级高于 isToggled
+            // 若设置了 toggledWhen 则忽略 Command 的 isVisible
+            const checked = 'toggledWhen' in item
+              ? this.contextKeyService.match(item.toggledWhen)
+              : commandToggle;
+            const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);
+            activeActions.push(action);
           } else {
             // 只有 label 存在值的时候才渲染
             if (item.label) {
