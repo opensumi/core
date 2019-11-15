@@ -411,10 +411,15 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
     if (formatOnSave) {
       const formatOnSaveTimeout = this.corePreferences['editor.formatOnSaveTimeout'];
-      await Promise.race([
-        new Promise((reject) => setTimeout(() => reject(formatLocalize('preference.editor.formatOnSaveTimeoutError', formatOnSaveTimeout)), formatOnSaveTimeout)),
-        this.commandService.executeCommand('monaco.editor.action.formatDocument'),
-      ]);
+      try {
+        await Promise.race([
+          new Promise((_, reject) => setTimeout(() => reject(formatLocalize('preference.editor.formatOnSaveTimeoutError', formatOnSaveTimeout)), formatOnSaveTimeout)),
+          this.commandService.executeCommand('monaco.editor.action.formatDocument'),
+        ]);
+      } catch (err) {
+        // 目前 command 没有读取到 contextkey，在不支持 format 的地方执行 format 命令会报错，先警告下，后续要接入 contextkey 来判断
+        this.logger.warn(`${EditorDocumentError.FORMAT_ERROR} ${err && err.message}`);
+      }
     }
   }
 }
