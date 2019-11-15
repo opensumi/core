@@ -2,7 +2,10 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
 import { BrowserWindow, dialog, shell } from 'electron';
 import { ElectronMainMenuService } from './menu';
-import { Domain } from '@ali/ide-core-common';
+import { Domain, isWindows } from '@ali/ide-core-common';
+import { stat } from 'fs-extra';
+import { dirname } from 'path';
+import { spawn } from 'child_process';
 
 @Injectable()
 export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {
@@ -21,6 +24,19 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' |
 
   async moveToTrash(path: string) {
     shell.moveItemToTrash(path);
+  }
+
+  async revealInFinder(path: string) {
+    shell.showItemInFolder(path);
+  }
+
+  async revealInSystemTerminal(path: string) {
+    const fileStat = await stat(path);
+    let targetPath = path;
+    if ( !fileStat.isDirectory() ) {
+      targetPath = dirname(path);
+    }
+    openInTerminal(targetPath);
   }
 
   async showOpenDialog(windowId: number, options: Electron.OpenDialogOptions): Promise<string[] | undefined> {
@@ -59,4 +75,16 @@ export class UIElectronMainContribution implements ElectronMainContribution {
     registry.registerMainApi('ui', this.injector.get(ElectronMainUIService));
   }
 
+}
+
+export async function openInTerminal(dir: string) {
+  if (isWindows) {
+    spawn('cmd', ['/s', '/c', 'start', 'cmd.exe', '/K', 'cd', '/D', dir], {
+      detached: true,
+    });
+  } else {
+    spawn('open', ['-a', 'Terminal', dir], {
+      detached: true,
+    });
+  }
 }

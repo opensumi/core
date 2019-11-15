@@ -201,7 +201,7 @@ export namespace EDITOR_COMMANDS {
   export const SAVE_ALL: Command = {
     id: 'editor.saveAll',
     category: CATEGORY,
-    label: '%editor.save.all%',
+    label: '%editor.saveAll%',
   };
 
   export const CLOSE_TO_RIGHT: Command = {

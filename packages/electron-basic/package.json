@@ -24,7 +24,8 @@
     "@ali/ide-editor": "1.5.0",
     "@ali/ide-main-layout": "1.5.0",
     "@ali/ide-window": "1.5.0",
-    "@ali/ide-workspace": "1.5.0"
+    "@ali/ide-workspace": "1.5.0",
+    "@ali/ide-overlay": "1.5.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.5.0",
