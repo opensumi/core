@@ -64,6 +64,7 @@
     "@ali/ide-status-bar": "1.5.0",
     "@ali/ide-storage": "1.5.0",
     "@ali/ide-terminal2": "1.5.0",
+    "@ali/ide-terminal-next": "1.5.0",
     "@ali/ide-theme": "1.5.0",
     "@ali/ide-toolbar": "1.5.0",
     "@ali/ide-userstorage": "1.5.0",
