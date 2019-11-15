@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Event, Emitter } from '@ali/ide-core-browser';
+import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { MenuService, IMenu, SubmenuItemNode } from './menu-service';

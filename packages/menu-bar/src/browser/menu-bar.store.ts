@@ -5,7 +5,7 @@ import { AbstractMenubarService, IMenubarItem, IMenuRegistry, MenuNode, generate
 
 export abstract class AbstractMenubarStore extends Disposable {
   menubarItems: IMenubarItem[];
-  abstract getMenubarItem(menuId: string): IMenu | undefined;
+  abstract getMenubarItem(menuId: string): MenuNode[];
 }
 
 @Injectable()
@@ -40,7 +40,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
     }
   }
 
-  public getMenubarItem(menuId: string): IMenu | undefined {
-    return this.menubarService.getMenuItem(menuId);
+  public getMenubarItem(menuId: string): MenuNode[] {
+    return this.menubarService.getNewMenuItem(menuId) || [];
   }
 }

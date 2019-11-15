@@ -2,8 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
-import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
-import { IMenubarItem, generateCtxMenu, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
 import Dropdown from 'antd/lib/dropdown';
 import 'antd/lib/dropdown/style/index.less';
 
@@ -15,13 +14,8 @@ const MenubarItem = observer<IMenubarItem>(({ id, label }) => {
   const [menuNodes, setMenuNodes] = React.useState<MenuNode[]>([]);
 
   const handleClick = React.useCallback(() => {
-    const menus = menubarStore.getMenubarItem(id);
-    if (menus) {
-      const result = generateCtxMenu({ menus });
-      if (result.length === 2) {
-        setMenuNodes([ ...result[0], ...result[1] ]);
-      }
-    }
+    const newMenuNodes = menubarStore.getMenubarItem(id);
+    setMenuNodes(newMenuNodes);
   }, [id]);
 
   return (
