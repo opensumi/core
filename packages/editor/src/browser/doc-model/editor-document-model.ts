@@ -1,5 +1,5 @@
 import * as md5 from 'md5';
-import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService } from '@ali/ide-core-browser';
+import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService, CorePreferences, CommandService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { EOL, EndOfLineSequence, IDocPersistentCacheProvider, IDocCache, isDocContentCache, parseRangeFrom } from '../../common';
@@ -49,6 +49,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   @Autowired(ILogger)
   logger: ILogger;
+
+  @Autowired(CorePreferences)
+  private corePreferences: CorePreferences;
+
+  @Autowired(CommandService)
+  private commandService: CommandService;
 
   private monacoModel: monaco.editor.ITextModel;
 
@@ -226,6 +232,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   async save(force: boolean = false): Promise<boolean> {
+    await this.formatOnSave();
     if (!this.preferenceService.get<boolean>('editor.askIfDiff')) {
       force = true;
     }
@@ -397,5 +404,17 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       },
       encoding: this.encoding,
     });
+  }
+
+  protected async formatOnSave() {
+    const formatOnSave = this.corePreferences['editor.formatOnSave'];
+
+    if (formatOnSave) {
+      const formatOnSaveTimeout = this.corePreferences['editor.formatOnSaveTimeout'];
+      await Promise.race([
+        new Promise((reject) => setTimeout(() => reject(formatLocalize('preference.editor.formatOnSaveTimeoutError', formatOnSaveTimeout)), formatOnSaveTimeout)),
+        this.commandService.executeCommand('monaco.editor.action.formatDocument'),
+      ]);
+    }
   }
 }
