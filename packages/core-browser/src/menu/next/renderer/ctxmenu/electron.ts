@@ -44,11 +44,10 @@ export class ElectronMenuFactory extends Disposable {
       if (menuNode.id === SeparatorMenuItemNode.ID) {
         return { type: 'separator' };
       }
-      if (menuNode instanceof SubmenuItemNode) {
-        const submenuNode: SubmenuItemNode = menuNode;
+      if (menuNode.id === SubmenuItemNode.ID) {
         return {
           label: `${mnemonicButtonLabel(menuNode.label, true)}`,
-          submenu: this.getTemplate(submenuNode.items, map, context),
+          submenu: this.getTemplate(menuNode.items, map, context),
         };
       } else {
         this.bindAction(menuNode, map, context);
