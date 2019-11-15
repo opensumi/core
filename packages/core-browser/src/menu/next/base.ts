@@ -210,7 +210,7 @@ export interface IMenuAction {
   keybinding: string; // 快捷键描述
   isKeyCombination: boolean; // 是否为组合键
   disabled?: boolean; // disable 状态的 menu
-  checked?: boolean; // checked 状态 通过 toggleWhen 实现
+  checked?: boolean; // checked 状态 通过 toggledWhen 实现
   nativeRole?: string; // eletron menu 使用
   execute(event?: any): Promise<any>;
 }
