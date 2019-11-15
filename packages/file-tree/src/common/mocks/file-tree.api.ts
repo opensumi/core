@@ -77,6 +77,7 @@ export class MockFileTreeAPIImpl implements IFileTreeAPI {
         },
         this.getReadableTooltip(uri),
         icon,
+        '',
         parent,
         1,
       );
@@ -128,6 +129,7 @@ export class MockFileTreeAPIImpl implements IFileTreeAPI {
         filestat,
         this.getReadableTooltip(uri),
         '',
+        '',
         parent,
         1,
       );
@@ -157,6 +159,7 @@ export class MockFileTreeAPIImpl implements IFileTreeAPI {
         uri,
         TEMP_FILE_NAME,
         filestat,
+        '',
         '',
         '',
         parent,

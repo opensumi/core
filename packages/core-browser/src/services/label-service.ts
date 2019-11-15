@@ -8,22 +8,22 @@ export interface ILabelProvider {
   /**
    * 判断该Contribution是否能处理该类型，返回权重
    */
-  canHandle(element: object): number;
+  canHandle(element: URI, options?: ILabelOptions): number;
 
   /**
    * 根据URI返回Icon样式.
    */
-  getIcon(element: object, options?: ILabelOptions): string;
+  getIcon?(element: URI, options?: ILabelOptions): string;
 
   /**
    * 返回短名称.
    */
-  getName(element: object): string;
+  getName?(element: URI): string;
 
   /**
    * 返回长名称.
    */
-  getLongName(element: object): string;
+  getLongName?(element: URI): string;
 
 }
 
@@ -33,10 +33,18 @@ export interface ILabelOptions {
   isSymbolicLink?: boolean;
 }
 
+function serializeLabelOptions(options?: ILabelOptions): string {
+  if (!options) {
+    return '';
+  } else {
+    return [options.isDirectory ? '0' : '1', options.isOpenedDirectory ? '0' : '1', options.isSymbolicLink ? '0' : '1'].join('');
+  }
+}
+
 @Injectable()
 export class DefaultUriLabelProvider implements ILabelProvider {
 
-  canHandle(uri: object): number {
+  canHandle(uri: object, options?: ILabelOptions): number {
     if (uri instanceof URI) {
       return 1;
     }
@@ -72,20 +80,21 @@ export class LabelService {
     this.registerLabelProvider(this.defaultLabelProvider);
   }
 
-  private getProviderForUri(uri: URI): ILabelProvider | undefined {
-    if (this.cachedProviderMap.has(uri.toString())) {
-      return this.cachedProviderMap.get(uri.toString());
+  private getProviderForUri(uri: URI, options?: ILabelOptions): ILabelProvider | undefined {
+    const key = uri.toString() + serializeLabelOptions(options);
+    if (this.cachedProviderMap.has(key)) {
+      return this.cachedProviderMap.get(key);
     } else {
       let candidate: ILabelProvider | undefined;
       let currentWeight: number = -1;
       for (const provider of this.providers) {
-        const weight = provider.canHandle(uri);
+        const weight = provider.canHandle(uri, options);
         if (weight > currentWeight) {
           candidate = provider;
           currentWeight = weight;
         }
       }
-      this.cachedProviderMap.set(uri.toString(), candidate!);
+      this.cachedProviderMap.set(key, candidate!);
       return candidate;
     }
   }
@@ -96,9 +105,9 @@ export class LabelService {
   }
 
   getIcon(uri: URI, options?: ILabelOptions): string {
-    const provider = this.getProviderForUri(uri);
+    const provider = this.getProviderForUri(uri, options);
     if (provider) {
-      return provider.getIcon(uri, options);
+      return provider.getIcon!(uri, options);
     } else {
       return '';
     }
@@ -107,7 +116,7 @@ export class LabelService {
   getName(uri: URI): string {
     const provider = this.getProviderForUri(uri);
     if (provider) {
-      return provider.getName(uri);
+      return provider.getName!(uri);
     } else {
       return '';
     }
@@ -116,7 +125,7 @@ export class LabelService {
   getLongName(uri: URI): string {
     const provider = this.getProviderForUri(uri);
     if (provider) {
-      return provider.getLongName(uri);
+      return provider.getLongName!(uri);
     } else {
       return '';
     }

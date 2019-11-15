@@ -116,6 +116,7 @@ const extractFileItemShouldBeRendered = (
       const isCuted = status.cuted;
       renderedFiles.push({
         ...file,
+        icon: file.getIcon(isExpanded!),
         filestat: {
           ...status.file.filestat,
         },
