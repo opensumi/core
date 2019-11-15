@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
-import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { AccordionManager } from '@ali/ide-core-browser/lib/layout/accordion/accordion.manager';
@@ -62,18 +62,10 @@ const PanelView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
 }> = (({ component, side }) => {
-  const ref = React.useRef<HTMLElement | null>();
-  const accordionManager = useInjectable<AccordionManager>(AccordionManager);
-  const {containerId} = component.options!;
-  const accordion = accordionManager.getAccordion(containerId, component.views, side);
-  React.useEffect(() => {
-    if (ref.current) {
-      Widget.attach(accordion, ref.current);
-    }
-  }, [ref]);
+  // TODO 底部支持多个view
   return (
-    <div className={styles.view_container}>
-      <div className={styles.container_wrap} ref={(ele) => ref.current = ele}></div>
+    <div className={styles.panel_container}>
+      <div className={styles.container_wrap}><ComponentRenderer Component={component.views[0].component!} /> </div>
     </div>
   );
 });

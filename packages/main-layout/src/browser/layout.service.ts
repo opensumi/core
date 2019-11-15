@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject, Domain } from '@ali/common-di';
-import { WithEventBus, View, ViewContainerOptions, ContributionProvider } from '@ali/ide-core-browser';
+import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent } from '@ali/ide-core-browser';
 import { IMainLayoutService, ComponentCollection, MainLayoutContribution } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
@@ -26,23 +26,24 @@ export class LayoutService extends WithEventBus {
 
   constructor() {
     super();
-    setTimeout(() => {
-      // TODO rendered contribution
-      for (const contribution of this.contributions.getContributions()) {
-        if (contribution.onDidUseConfig) {
-          contribution.onDidUseConfig();
-        }
+  }
+
+  @OnEvent(RenderedEvent)
+  didMount() {
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.onDidUseConfig) {
+        contribution.onDidUseConfig();
       }
-      for (const [containerId, views] of this.pendingViewsMap.entries()) {
-        views.forEach(({view, props}) => {
-          this.collectViewComponent(view, containerId, props);
-        });
-      }
-      // TODO 暂不记录状态，激活首个
-      for (const service of this.services.values()) {
-        service.currentContainerId = service.containersMap.keys().next().value;
-      }
-    }, 3000);
+    }
+    for (const [containerId, views] of this.pendingViewsMap.entries()) {
+      views.forEach(({view, props}) => {
+        this.collectViewComponent(view, containerId, props);
+      });
+    }
+    // TODO 暂不记录状态，激活首个
+    for (const service of this.services.values()) {
+      service.currentContainerId = service.containersMap.keys().next().value;
+    }
   }
 
   tabbarComponents: ComponentCollection[] = [];

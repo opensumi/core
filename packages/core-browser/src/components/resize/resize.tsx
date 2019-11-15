@@ -4,7 +4,7 @@ import classnames from 'classnames';
 
 export interface ResizeHandleProps {
   onFinished?: () => void;
-  onResize?: () => void;
+  onResize?: (prevElement: HTMLElement, nextElement: HTMLElement) => void;
   max?: number;
   min?: number;
   preserve?: number; // percentage
@@ -54,7 +54,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     nextElement.current!.style.width = next * 100 + '%';
     prevElement.current!.style.width = prev * 100 + '%';
     if (props.onResize) {
-      props.onResize();
+      props.onResize(prevElement.current!, nextElement.current!);
     }
   };
 
@@ -71,7 +71,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
     }
     if (props.onResize) {
-      props.onResize();
+      props.onResize(prevElement.current!, nextElement.current!);
     }
   };
 
@@ -159,7 +159,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       nextElement.current!.style.height = next * 100 + '%';
       prevElement.current!.style.height = prev * 100 + '%';
       if (props.onResize) {
-        props.onResize();
+        props.onResize(prevElement.current!, nextElement.current!);
       }
   };
 
@@ -176,7 +176,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       nextElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
     }
     if (props.onResize) {
-      props.onResize();
+      props.onResize(prevElement.current!, nextElement.current!);
     }
   };
 

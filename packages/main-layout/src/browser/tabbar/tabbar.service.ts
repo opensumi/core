@@ -1,6 +1,6 @@
 import { WithEventBus, ComponentRegistryInfo, Emitter, Event } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { observable, action } from 'mobx';
+import { observable, action, observe } from 'mobx';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 
@@ -18,6 +18,7 @@ export class TabbarService extends WithEventBus {
 
   constructor(public location: string) {
     super();
+    this.listenCurrentChange();
   }
 
   registerContainer(containerId: string, componentInfo: ComponentRegistryInfo) {
@@ -38,15 +39,23 @@ export class TabbarService extends WithEventBus {
       this.prevSize = getSize(this.location);
       this.currentContainerId = '';
       setSize(50, this.location);
-      this.onCurrentChangeEmitter.fire({previousId: containerId, currentId: ''});
     } else {
       if (this.prevSize === undefined) {
         this.prevSize = getSize(this.location);
       }
-      this.onCurrentChangeEmitter.fire({previousId: this.currentContainerId, currentId: containerId});
       this.currentContainerId = containerId;
       setSize(this.prevSize || 400, this.location);
     }
+  }
+
+  protected listenCurrentChange() {
+    observe(this, 'currentContainerId', (change) => {
+      if (this.prevSize === undefined) {
+        // this.prevSize = getSize(this.location);
+      }
+      this.onCurrentChangeEmitter.fire({previousId: change.oldValue || '', currentId: change.newValue});
+      // setSize(this.prevSize || 400, this.location);
+    });
   }
 
 }

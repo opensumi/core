@@ -5,6 +5,8 @@ import { Layout } from './layout';
 import { useInjectable } from '../../react-hooks';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IResizeHandleDelegate } from '../resize/resize';
+import { IEventBus } from '@ali/ide-core-common';
+import { ResizeEvent } from '../../layout';
 
 export const PanelContext = React.createContext<{
   setSize: (targetSize: number, side: string) => void,
@@ -15,7 +17,7 @@ export const PanelContext = React.createContext<{
 });
 
 export const SplitPanel: React.FC<{
-  children?: Array<React.ReactElement<{ id: string; minSize?: number; maxSize?: number; flex?: number; }>>;
+  children?: Array<React.ReactElement<{ id: string; minSize?: number; maxSize?: number; flex?: number; slot: string; }>>;
   className?: string;
   direction?: Layout.direction;
   flex?: number;
@@ -25,6 +27,7 @@ export const SplitPanel: React.FC<{
   const panels: {[panelId: string]: React.ReactElement<any>} = {};
   const elements: React.ReactNodeArray = [];
   const resizeDelegates: IResizeHandleDelegate[] = [];
+  const eventBus = useInjectable<IEventBus>(IEventBus);
 
   const setSizeHandle = (index) => {
     return (size, side) => {
@@ -49,7 +52,16 @@ export const SplitPanel: React.FC<{
     const panelId = element.props.id;
     panels[panelId] = element;
     if (index !== 0) {
-      elements.push(<ResizeHandle key={`split-handle-${index}`} delegate={(delegate) => { resizeDelegates.push(delegate); }} />);
+      elements.push(<ResizeHandle onResize={(prev, next) => {
+        const prevLocation = children[index - 1].props.slot;
+        const nextLocation = children[index].props.slot;
+        if (prevLocation) {
+          eventBus.fire(new ResizeEvent({slotLocation: prevLocation, width: prev.clientWidth, height: prev.clientHeight}));
+        }
+        if (nextLocation) {
+          eventBus.fire(new ResizeEvent({slotLocation: nextLocation, width: next.clientWidth, height: next.clientHeight}));
+        }
+      }} key={`split-handle-${index}`} delegate={(delegate) => { resizeDelegates.push(delegate); }} />);
     }
     elements.push(
       <PanelContext.Provider value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index)}}>
