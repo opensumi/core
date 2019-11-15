@@ -187,7 +187,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     await this.initBaseData();
     // 前置 contribute 操作
     this.extensionMetaDataArr = await this.getAllExtensions();
-    console.log('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
+    this.logger.verbose('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
     await this.initExtension();
     await this.enableAvailableExtensions();
     await this.themeService.applyTheme();
@@ -196,10 +196,10 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   private async doActivate() {
-    console.log('ExtensionServiceImpl active');
+    this.logger.verbose('ExtensionServiceImpl active');
     await this.workspaceService.whenReady;
     await this.extensionStorageService.whenReady;
-    console.log('ExtensionServiceImpl active 2');
+    this.logger.verbose('ExtensionServiceImpl active 2');
 
     await this.registerVSCodeDependencyService();
 
@@ -208,9 +208,9 @@ export class ExtensionServiceImpl implements ExtensionService {
       label: '重启进程',
     }, {
       execute: async () => {
-        console.log('插件进程开始重启');
+        this.logger.log('插件进程开始重启');
         await this.restartProcess();
-        console.log('插件进程重启结束');
+        this.logger.log('插件进程重启结束');
       },
     });
 
@@ -278,7 +278,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     ).filter(({ topic, data }) => _activationEvents.find((_event) => _event === `${topic}:${data}`));
 
     for (const event of shouldFireEvents) {
-      this.logger.log(`Fire activation event ${event.topic}:${event.data}`);
+      this.logger.verbose(`Fire activation event ${event.topic}:${event.data}`);
       this.activationEventService.fireEvent(event.topic, event.data);
     }
   }
@@ -312,7 +312,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     let clientId;
 
     if (isElectronEnv()) {
-      console.log('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
+      this.logger.verbose('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
       clientId = electronEnv.metadata.windowClientId;
     } else {
       const WSChanneHandler = this.injector.get(IWSChanneHandler);
@@ -349,7 +349,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (!init) {
       if ( this.activationEventService.activatedEventSet.size) {
         await Promise.all(Array.from(this.activationEventService.activatedEventSet.values()).map((event) => {
-          console.log('fireEvent', 'event.topic', event.topic, 'event.data', event.data);
+          this.logger.verbose('fireEvent', 'event.topic', event.topic, 'event.data', event.data);
           return this.activationEventService.fireEvent(event.topic, event.data);
         }));
       }
@@ -358,19 +358,9 @@ export class ExtensionServiceImpl implements ExtensionService {
     }
   }
 
-  // private onSelectContributions(){
-  //   const contributions = this.injector.get(ClientAppContribution).getContributions();
-  //   for(let contribution of contributions){
-  //     if(contribution.onReconnect){
-  //       contribution.onReconnect(this)
-  //     }
-  //   }
-  // }
-
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
     if (!this.extensionMetaDataArr) {
       const extensions = await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extensionCandidate, getPreferenceLanguageId(), this.extraMetadata);
-      console.log(extensions);
       this.extensionMetaDataArr = extensions;
     }
     return this.extensionMetaDataArr;
@@ -538,7 +528,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       return;
     }
 
-    console.log('workerUrl', workerUrl);
+    this.logger.verbose('workerUrl', workerUrl);
 
     const extendWorkerHost = new Worker(workerUrl);
     const onMessageEmitter = new Emitter<string>();
@@ -551,7 +541,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     const mainThreadWorkerProtocol = new RPCProtocol({
       onMessage,
       send: extendWorkerHost.postMessage.bind(extendWorkerHost),
-    });
+    }, this.logger);
 
     this.workerProtocol = mainThreadWorkerProtocol;
     const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
@@ -563,7 +553,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     if (isElectronEnv()) {
       const connectPath = await this.extensionNodeService.getElectronMainThreadListenPath(electronEnv.metadata.windowClientId);
-      console.log('electron initExtProtocol connectPath', connectPath);
+      this.logger.verbose('electron initExtProtocol connectPath', connectPath);
       const connection = (window as any).createNetConnection(connectPath);
       mainThreadCenter.setConnection(createSocketConnection(connection));
     } else {
@@ -667,7 +657,7 @@ export class ExtensionServiceImpl implements ExtensionService {
               }
             }
 
-            console.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
+            this.logger.verbose('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
 
             return obj.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
           };
@@ -729,7 +719,7 @@ export class ExtensionServiceImpl implements ExtensionService {
               }
             }
 
-            console.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
+            this.logger.verbose('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
 
             if (workerProtocol) {
               workerProtocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
@@ -841,12 +831,12 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private async loadBrowser(browserPath: string): Promise<any> {
     return await new Promise((resolve) => {
-      console.log('extend browser load', browserPath);
+      this.logger.verbose('extend browser load', browserPath);
       if (isElectronRenderer()) {
         browserPath = decodeURIComponent(browserPath);
       }
       getAMDRequire()([browserPath], (exported) => {
-        console.log('extend browser exported', exported);
+        this.logger.verbose('extend browser exported', exported);
         resolve(exported);
       });
     });

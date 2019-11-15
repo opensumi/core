@@ -186,7 +186,6 @@ export class KTNodeProcess {
           forkArgs.push('--listenPath', rpcListenPath);
           this._process = fork(this.forkPath, forkArgs, forkOptions);
           this._process.on('message', (message) => {
-            console.log(message);
             if (message === 'ready') {
               resolve();
             }

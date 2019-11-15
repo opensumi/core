@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ILogger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { CONTEXT_MENU } from './file-tree.view';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -51,6 +51,9 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   @Autowired(WorkbenchEditorService)
   private editorService: WorkbenchEditorService;
+
+  @Autowired(ILogger)
+  private logger;
 
   onStart() {
     const workspace = this.workspaceService.workspace;
@@ -178,7 +181,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: (_, uris) => {
-        console.log('delete');
+        this.logger.verbose('delete');
         if (uris && uris.length) {
           this.filetreeService.deleteFiles(uris);
         } else {
