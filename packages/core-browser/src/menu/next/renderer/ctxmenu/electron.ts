@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
-import { INativeMenuTemplate, CommandService, IElectronMainMenuService, CommandRegistry} from '@ali/ide-core-common';
+import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService, CommandRegistry} from '@ali/ide-core-common';
+import { Event } from '@ali/ide-core-common/lib/event';
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
 import { MenuNode, IMenubarItem } from '../../base';
-import { SeparatorMenuItemNode, SubmenuItemNode } from '../../menu-service';
+import { SeparatorMenuItemNode, SubmenuItemNode, MenuService } from '../../menu-service';
 import { electronEnv } from '../../../../utils';
 import { AbstractMenubarService } from '../../menubar-service';
 import { generateCtxMenu } from '../../menu-util';
@@ -20,7 +21,7 @@ export interface IElectronMenuBarService {
 }
 
 @Injectable()
-export class ElectronMenuFactory {
+export class ElectronMenuFactory extends Disposable {
 
   @Autowired(AbstractMenubarService)
   menubarService: AbstractMenubarService;
@@ -47,7 +48,7 @@ export class ElectronMenuFactory {
         const submenuNode: SubmenuItemNode = menuNode;
         return {
           label: `${mnemonicButtonLabel(menuNode.label, true)}`,
-          submenu: this.getTemplate(this.getMenuNodes(submenuNode.item.submenu), map, context),
+          submenu: this.getTemplate(submenuNode.items, map, context),
         };
       } else {
         this.bindAction(menuNode, map, context);
@@ -159,7 +160,11 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
       }
     });
     this.updateMenuBar();
+    // 同时监听 onDidMenuBarChange/onDidMenuChange
     this.menubarService.onDidMenuBarChange(() => {
+      this.updateMenuBar();
+    });
+    this.menubarService.onDidMenuChange(() => {
       this.updateMenuBar();
     });
   }
@@ -169,7 +174,9 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
     const menubarItems = this.menubarService.getMenubarItems();
     const appMenuTemplate: INativeMenuTemplate[] = [];
     menubarItems.forEach((item) => {
-      const templates = this.factory.getTemplate(this.factory.getMenuNodes(item.id), this.menuBarActions);
+      const menuId = item.id;
+      const menuNodes = this.menubarService.getNewMenuItem(menuId);
+      const templates = this.factory.getTemplate(menuNodes, this.menuBarActions);
       if (templates && templates.length > 0) {
         appMenuTemplate.push({
           label: mnemonicButtonLabel(item.label, true),

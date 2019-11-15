@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, Event, Emitter } from '@ali/ide-core-browser';
-import { IDisposable } from '@ali/ide-core-common';
+import { Event, Emitter } from '@ali/ide-core-browser';
+import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 
-import { MenuService, IMenu } from './menu-service';
-import { IMenubarItem, IMenuRegistry } from './base';
+import { MenuService, IMenu, SubmenuItemNode } from './menu-service';
+import { IMenubarItem, IMenuRegistry, MenuNode } from './base';
+import { generateCtxMenu } from './menu-util';
 import { Logger } from '../../logger';
 
 export abstract class AbstractMenubarService extends Disposable {
@@ -12,8 +13,13 @@ export abstract class AbstractMenubarService extends Disposable {
   abstract getMenubarItem(menuId: string): IMenubarItem | undefined;
 
   readonly onDidMenuChange: Event<string>;
+  // TODO: deprecaated
   abstract getMenuItems(): Map<string, IMenu>;
+  // TODO: deprecaated
   abstract getMenuItem(menuId: string): IMenu | undefined;
+
+  abstract getNewMenuItems(): Map<string, MenuNode[]>;
+  abstract getNewMenuItem(menuId: string): MenuNode[];
 }
 
 @Injectable()
@@ -44,7 +50,9 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     return this._onDidMenuChange.event;
   }
 
-  private menuItems: Map<string, IMenu> = new Map();
+  private menus: Map<string, IMenu> = new Map();
+
+  menuNodes: Map<string, MenuNode[]> = new Map();
 
   private listenerDisposables: Map<string, IDisposable> = new Map();
 
@@ -80,11 +88,19 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
   }
 
   public getMenuItems() {
-    return this.menuItems;
+    return this.menus;
   }
 
   public getMenuItem(menuId: string) {
-    return this.menuItems.get(menuId);
+    return this.menus.get(menuId);
+  }
+
+  public getNewMenuItem(menuId: string) {
+    return this.menuNodes.get(menuId) || [];
+  }
+
+  public getNewMenuItems() {
+    return this.menuNodes;
   }
 
   private collectMenubarIds() {
@@ -92,7 +108,7 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     menubarItems.forEach((menubarItem) => {
       const menuId = menubarItem.id;
       this.menubarIds.add(menuId);
-      this.addMenuFromMenubar(menuId);
+      this.generateMenuItemForMenubar(menuId);
     });
     this._onDidMenuBarChange.fire(undefined);
   }
@@ -112,12 +128,12 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     }
     this.menubarIds.add(menuId);
     this._onDidMenuBarChange.fire(menuId);
-    this.addMenuFromMenubar(menuId);
+    this.generateMenuItemForMenubar(menuId);
   }
 
-  private addMenuFromMenubar(menuId: string) {
+  private generateMenuItemForMenubar(menuId: string) {
     const menus = this.menuService.createMenu(menuId);
-    const oldMenus = this.menuItems.get(menuId);
+    const oldMenus = this.menus.get(menuId);
     if (oldMenus) {
       // 清理
       oldMenus.dispose();
@@ -127,7 +143,45 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
         this.listenerDisposables.delete(menuId);
       }
     }
-    this.menuItems.set(menuId, menus);
+
+    this.menus.set(menuId, menus);
     this.listenerDisposables.set(menuId, menus.onDidChange(this.handleMenuChanged(menuId), this, this.disposables));
+
+    const menubarMenu = [];
+    this.populateMenuItems(menuId, menus, menubarMenu);
+    this.menuNodes.set(menuId, menubarMenu);
+  }
+
+  populateMenuItems(menuId: string, menus: IMenu, menuToPopulate: any[]) {
+    const result = generateCtxMenu({ menus });
+    const menuItems = [...result[0], ...result[1]];
+    menuItems.forEach((menuItem) => {
+      if (menuItem instanceof SubmenuItemNode) {
+        const submenuItems = [];
+
+        const submenuId = menuItem.item.submenu;
+        if (!this.menus[submenuId]) {
+          const menu = this.registerDispose(this.menuService.createMenu(submenuId));
+          this.menus.set(submenuId, menu);
+          this.registerDispose(menu.onDidChange(() => {
+            this._onDidMenuChange.fire(menuId);
+          }));
+        }
+
+        const menuToDispose = this.menuService.createMenu(submenuId);
+        this.populateMenuItems(submenuId, menuToDispose, submenuItems);
+
+        const menubarSubmenuItem = {
+          id: menuItem.id,
+          label: menuItem.label,
+          submenu: submenuId,
+          items: submenuItems,
+        };
+        menuToPopulate.push(menubarSubmenuItem);
+        menuToDispose.dispose();
+      } else {
+        menuToPopulate.push(menuItem);
+      }
+    });
   }
 }

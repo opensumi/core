@@ -21,13 +21,13 @@ export abstract class MenuService {
   abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
-// 后续 MenuNode 要看齐 @ali/ide-core-common 的 ActionMenuNode
 export class SubmenuItemNode extends MenuNode {
+  static readonly ID = 'menu.item.node.submenu';
+
   readonly item: ISubmenuItem;
 
-  // todo: 需要再去看下 submenu 如何实现，我们这边目前没有看到
   constructor(item: ISubmenuItem) {
-    super('', item.label, 'submenu');
+    super(SubmenuItemNode.ID, '', item.label);
     this.item = item;
   }
 }

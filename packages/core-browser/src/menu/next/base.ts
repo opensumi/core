@@ -1,4 +1,4 @@
-import { CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, ILogger } from '@ali/ide-core-common';
+import { ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, MaybeNull } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { MenuId } from './menu-id';
@@ -26,7 +26,7 @@ export interface IMenuItem {
 
 export interface ISubmenuItem {
   label: string;
-  submenu: MenuId;
+  submenu: MenuId | string;
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -227,6 +227,8 @@ export class MenuNode implements IMenuAction {
   disabled: boolean;
   checked: boolean;
   nativeRole: string;
+  items: MenuNode[] = [];
+
   readonly _actionCallback?: (event?: any) => Promise<any>;
 
   constructor(
