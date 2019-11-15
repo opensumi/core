@@ -1,5 +1,4 @@
-import { CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
-import { ILogger } from '@ali/ide-core-browser';
+import { CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, ILogger } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { MenuId } from './menu-id';

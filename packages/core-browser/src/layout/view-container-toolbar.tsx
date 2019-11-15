@@ -4,7 +4,6 @@ import { Widget, Title } from '@phosphor/widgets';
 import { Message } from '@phosphor/messaging';
 import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath, TabBarToolbarRegistry, TabBarToolbar } from '../';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewContainerRegistry } from './view-container.registry';
 import { ICtxMenuRenderer, IMenuRegistry, MenuService, generateCtxMenu } from '../menu/next';
 
