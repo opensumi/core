@@ -98,6 +98,7 @@ export const MenuActionList: React.FC<{
 
   return (
     <Menu
+      openTransitionName=''
       onClick={handleClick}>
       {recursiveRender(data)}
     </Menu>
