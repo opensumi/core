@@ -104,6 +104,12 @@ export class ClientCommonContribution implements CommandContribution, Preference
         label: localize('file.save'),
       },
       group: '3_save',
+    }, {
+      command: {
+        id: EDITOR_COMMANDS.SAVE_ALL.id,
+        label: localize('file.saveAll'),
+      },
+      group: '3_save',
     }]);
 
     const aboutItem = {
@@ -122,6 +128,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
           id: 'electron.undo',
           label: localize('editor.undo'),
         },
+        nativeRole: 'undo',
         group: '1_undo',
       }, {
         command: {
@@ -129,9 +136,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
           label: localize('editor.redo'),
         },
         group: '1_undo',
-      }, {
-        command: EDITOR_COMMANDS.REDO.id,
-        group: '1_undo',
+        nativeRole: 'redo',
       }, {
         command: {
           label: localize('edit.cut'),
@@ -152,6 +157,13 @@ export class ClientCommonContribution implements CommandContribution, Preference
           id: 'electron.paste',
         },
         nativeRole: 'paste',
+        group: '2_clipboard',
+      }, {
+        command: {
+          label: localize('edit.selectAll'),
+          id: 'electron.selectAll',
+        },
+        nativeRole: 'selectAll',
         group: '2_clipboard',
       }]);
       menus.registerMenuItem(MenuId.MenubarAppMenu, aboutItem);

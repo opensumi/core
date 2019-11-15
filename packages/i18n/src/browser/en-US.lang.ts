@@ -6,6 +6,7 @@ export const localizationBundle = {
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
     'file.save': 'Save File',
+    'file.saveAll': 'Save All',
     'file.open': 'Open',
     'file.open.side': 'Open to the Side',
     'file.delete': 'Delete',
@@ -87,6 +88,7 @@ export const localizationBundle = {
     'edit.cut': 'Cut',
     'edit.copy': 'Copy',
     'edit.paste': 'Paste',
+    'edit.selectAll': 'Select All',
 
     'quickopen.command.placeholder': 'Placeholder',
     'quickopen.command.description': 'Run Ide Command',
@@ -94,6 +96,9 @@ export const localizationBundle = {
     'quickopen.quickinput.prompt': "Press 'Enter' to confirm your input or 'Escape' to cancel",
 
     'explorer.title': 'EXPLORER',
+    'explorer.electron.revealInFinder': 'Reveal In Explorer',
+    'explorer.electron.openInSystemTerminal': 'Open In Terminal',
+    'explorer.electron.openInSystemTerminal.error': 'Open {0} In Terminal Fail: {1}',
 
     'search.title': 'Cross-file search',
     'search.input.placeholder': 'Enter search content',

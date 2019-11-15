@@ -93,12 +93,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FILE.id,
-      order: 2,
+      order: 1,
       group: '1_open',
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FOLDER.id,
-      order: 1,
+      order: 2,
       group: '1_open',
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {

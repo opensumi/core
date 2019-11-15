@@ -154,11 +154,17 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.SAVE_ALL.id,
-      keybinding: 'ctrlcmd+k s',
+      keybinding: 'alt+ctlcmd+s',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
+      keybinding: 'ctrlcmd+k w',
+      when: 'editorTitleContext',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE_ALL.id,
-      keybinding: 'ctrlcmd+k ctrlcmd+w',
+      keybinding: 'ctrlcmd+k w',
+      when: '!editorTitleContext',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PIN_CURRENT.id,
@@ -661,7 +667,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       group: '9_split',
     });
     menus.registerMenuItem(MenuId.EditorTitleContext, {
-      command: EDITOR_COMMANDS.CLOSE.id,
+      command: {
+        id: EDITOR_COMMANDS.CLOSE.id,
+        label: localize('editor.title.context.close'),
+      },
       group: '0_tab',
       order: 1,
     });

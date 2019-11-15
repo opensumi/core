@@ -10,6 +10,7 @@ export const localizationBundle = {
     'file.folder.new': '新建文件夹',
 
     'file.save': '保存文件',
+    'file.saveAll': '保存全部',
     'file.open': '打开文件',
     'file.open.side': '侧边栏打开',
     'file.delete': '删除',
@@ -81,6 +82,7 @@ export const localizationBundle = {
     'edit.cut': '剪切',
     'edit.copy': '复制',
     'edit.paste': '粘贴',
+    'edit.selectAll': '全选',
 
     'quickopen.command.placeholder': '请输入你要执行的命令',
     'quickopen.command.description': '执行 IDE 预设的命令',
@@ -88,6 +90,10 @@ export const localizationBundle = {
     'quickopen.quickinput.prompt': "请按 '回车(Enter)' 确认你的输入或者按 '取消(Esc)' 取消输入",
 
     'explorer.title': '资源管理器',
+
+    'explorer.electron.revealInFinder': '在文件系统中打开',
+    'explorer.electron.openInSystemTerminal': '在系统终端中打开',
+    'explorer.electron.openInSystemTerminal.error': '在系统终端中打开 {0} 失败: {1}',
 
     'search.title': '跨文件搜索',
     'search.input.placeholder': '输入搜索内容',

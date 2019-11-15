@@ -1,13 +1,14 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder, URI, ILogger, formatLocalize } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IElectronMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { ElectronHeaderBar } from './header';
 import { WelcomeContribution } from './welcome/contribution';
 import { ElectronNativeDialogService } from './dialog';
-import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { IMenuRegistry, NextMenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IElectronMenuBarService } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
+import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { IMessageService } from '@ali/ide-overlay/lib/common';
 
 @Injectable()
 export class ElectronBasicModule extends BrowserModule {
@@ -43,6 +44,11 @@ const nativeRoles = [
     when: '!editorFocus',
   },
   {
+    name: 'selectAll',
+    key: 'ctrlcmd+a',
+    when: '!editorFocus',
+  },
+  {
     name: 'cut',
     key: 'ctrlcmd+x',
     when: '!editorFocus',
@@ -72,6 +78,15 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
   @Autowired(IElectronMainLifeCycleService)
   private electronMainLifeCycleService: IElectronMainLifeCycleService;
 
+  @Autowired(IElectronMainUIService)
+  private electronMainUIService: IElectronMainLifeCycleService;
+
+  @Autowired(IMessageService)
+  private messageService: IMessageService;
+
+  @Autowired(ILogger)
+  logger: ILogger;
+
   registerComponent(registry: ComponentRegistry) {
     const top = this.config.layoutConfig[SlotLocation.top];
     if ( top && top.modules  ) {
@@ -90,8 +105,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
   }
 
   registerNextMenus(menuRegistry: IMenuRegistry) {
-    const menuId = '00_app';
-    menuRegistry.registerMenubarItem(menuId, { label: localize('app.name', 'Kaitian') });
+    const menuId = MenuId.MenubarAppMenu;
 
     menuRegistry.registerMenuItem(menuId, {
       command: {
@@ -116,6 +130,17 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
         label: localize('window.reload'),
       },
     });
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: 'electron.revealInFinder',
+      group: '12_electron',
+      order: 3,
+    });
+    menuRegistry.registerMenuItem(MenuId.EditorTitleContext, {
+      command: 'electron.revealInFinderTab',
+      group: '2_open',
+      order: 3,
+    });
   }
 
   registerCommands(commands: CommandRegistry): void {
@@ -138,6 +163,44 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     }, {
       execute: () => {
         this.electronMainLifeCycleService.reloadWindow(electronEnv.currentWindowId);
+      },
+    });
+
+    commands.registerCommand({
+      id: 'electron.revealInFinder',
+      label: localize('explorer.electron.revealInFinder'),
+    }, {
+      execute: (uri: URI) => {
+        if (uri && uri.scheme === 'file') {
+          this.electronMainUIService.revealInFinder(uri.codeUri.fsPath);
+        }
+      },
+    });
+
+    commands.registerCommand({
+      id: 'electron.revealInFinderTab',
+      label: localize('explorer.electron.revealInFinder'),
+    }, {
+      execute: ({uri}: {uri: URI}) => {
+        if (uri && uri.scheme === 'file') {
+          this.electronMainUIService.revealInFinder(uri.codeUri.fsPath);
+        }
+      },
+    });
+
+    commands.registerCommand({
+      id: 'electron.openInSystemTerminal',
+      label: localize('explorer.electron.openInSystemTerminal'),
+    }, {
+      execute: (uri: URI) => {
+        if (uri.scheme === 'file') {
+          try {
+            this.electronMainUIService.revealInSystemTerminal(uri.codeUri.fsPath);
+          } catch (e) {
+            this.logger.error(e);
+            this.messageService.error(formatLocalize('explorer.electron.openInSystemTerminal.error', uri.displayName, e.message));
+          }
+        }
       },
     });
   }
