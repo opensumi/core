@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject, Domain } from '@ali/common-di';
-import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent } from '@ali/ide-core-browser';
+import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
 import { IMainLayoutService, ComponentCollection, MainLayoutContribution } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 @Injectable()
 export class LayoutService extends WithEventBus {
@@ -28,11 +29,19 @@ export class LayoutService extends WithEventBus {
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
 
+  @Autowired()
+  layoutState: LayoutState;
+
   private handleMap: Map<string, TabBarHandler> = new Map();
 
   private services: Map<string, TabbarService> = new Map();
 
   private pendingViewsMap: Map<string, {view: View, props?: any}[]> = new Map();
+
+  private state: {[location: string]: {
+    currentId?: string;
+    size?: number;
+  }} = {};
 
   constructor() {
     super();
@@ -50,13 +59,36 @@ export class LayoutService extends WithEventBus {
         this.collectViewComponent(view, containerId, props);
       });
     }
+    this.restoreState();
     // TODO 暂不记录状态，激活首个
     for (const service of this.services.values()) {
-      service.currentContainerId = service.containersMap.keys().next().value;
+      const {currentId, size} = this.state[service.location];
+      service.prevSize = size;
+      service.currentContainerId = currentId !== undefined ? currentId : service.containersMap.keys().next().value;
     }
   }
 
-  tabbarComponents: ComponentCollection[] = [];
+  storeState(service: TabbarService, currentId: string) {
+    this.state[service.location] = {
+      currentId,
+      size: service.prevSize,
+    };
+    this.layoutState.setState(LAYOUT_STATE.MAIN, this.state);
+  }
+
+  restoreState() {
+    this.state = this.layoutState.getState(LAYOUT_STATE.MAIN, {
+      [SlotLocation.left]: {
+        currentId: undefined,
+        size: undefined,
+      },
+      [SlotLocation.right]: {
+        currentId: '',
+        size: undefined,
+      },
+    });
+  }
+
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
     const tabbarService = this.getTabbarService(location);
     if (!tabbarService) {
@@ -76,13 +108,12 @@ export class LayoutService extends WithEventBus {
     return true;
   }
 
-  restoreState(): void {
-
-  }
-
   getTabbarService(location: string) {
     const service = this.services.get(location) || this.injector.get(TabbarService, [location]);
     if (!this.services.get(location)) {
+      service.onCurrentChange(({previousId, currentId}) => {
+        this.storeState(service, currentId);
+      });
       this.services.set(location, service);
     }
     return service;

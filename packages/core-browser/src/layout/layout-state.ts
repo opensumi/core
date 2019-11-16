@@ -30,7 +30,7 @@ export class LayoutState {
 
 export namespace LAYOUT_STATE {
 
-  export const MAIN = 'main';
+  export const MAIN = 'layout';
 
   export function getContainerSpace(containerId) {
     return `view/${containerId}`;

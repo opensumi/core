@@ -88,7 +88,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     }
     // 全局只要初始化一次
     await this.layoutState.initStorage();
-    await this.mainLayoutService.restoreState();
   }
 
   registerRenderer(registry: SlotRendererRegistry) {

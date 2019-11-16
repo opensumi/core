@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, TabBarToolbar, TabBarToolbarRegistry, OnEvent, ResizeEvent } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, TabBarToolbar, TabBarToolbarRegistry, OnEvent, ResizeEvent, RenderedEvent } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe } from 'mobx';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
@@ -8,11 +8,13 @@ export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 // TODO 存尺寸，存状态
 @Injectable({multiple: true})
 export class TabbarService extends WithEventBus {
-  @observable currentContainerId: string = '';
+  @observable currentContainerId: string;
 
   previousContainerId: string = '';
 
   @observable.shallow containersMap: Map<string, ComponentRegistryInfo> = new Map();
+
+  public prevSize?: number;
 
   resizeHandle: {
     setSize: (targetSize: number, side: string) => void,
@@ -33,8 +35,6 @@ export class TabbarService extends WithEventBus {
 
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
-
-  private prevSize?: number;
 
   private toolbar: TabBarToolbar;
 
@@ -72,6 +72,16 @@ export class TabbarService extends WithEventBus {
       this.currentContainerId = '';
     } else {
       this.currentContainerId = containerId;
+    }
+  }
+
+  @OnEvent(RenderedEvent)
+  protected async onRendered() {
+    for (const component of this.containersMap.values()) {
+      const accordion = this.viewContainerRegistry.getAccordion(component.options!.containerId);
+      if (accordion) {
+        await accordion.restoreState();
+      }
     }
   }
 
