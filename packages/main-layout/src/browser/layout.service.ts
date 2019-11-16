@@ -58,7 +58,18 @@ export class LayoutService extends WithEventBus {
 
   tabbarComponents: ComponentCollection[] = [];
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
-
+    const tabbarService = this.getTabbarService(location);
+    if (!tabbarService) {
+      console.error(`没有找到${location}对应位置的TabbarService，无法切换面板`);
+      return;
+    }
+    if (show === true) {
+      tabbarService.currentContainerId = tabbarService.currentContainerId || tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
+    } else if (show === false) {
+      tabbarService.currentContainerId = '';
+    } else {
+      tabbarService.currentContainerId = tabbarService.previousContainerId;
+    }
   }
 
   isVisible(location: string): boolean {

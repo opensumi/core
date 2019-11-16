@@ -98,51 +98,57 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   }
 
   registerCommands(commands: CommandRegistry): void {
+    // @deprecated
     commands.registerCommand(HIDE_LEFT_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.left, false);
       },
     });
+    // @deprecated
     commands.registerCommand(SHOW_LEFT_PANEL_COMMAND, {
       execute: (size?: number) => {
         this.mainLayoutService.toggleSlot(SlotLocation.left, true, size);
       },
     });
     commands.registerCommand(TOGGLE_LEFT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left);
+      execute: (show?: boolean, size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.left, show, size);
       },
     });
 
+    // @deprecated
     commands.registerCommand(HIDE_RIGHT_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.right, false);
       },
     });
+    // @deprecated
     commands.registerCommand(SHOW_RIGHT_PANEL_COMMAND, {
       execute: (size?: number) => {
         this.mainLayoutService.toggleSlot(SlotLocation.right, true, size);
       },
     });
     commands.registerCommand(TOGGLE_RIGHT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right);
+      execute: (show?: boolean, size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.right, show, size);
       },
     });
 
+    // @deprecated
     commands.registerCommand(SHOW_BOTTOM_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.bottom, true);
       },
     });
+    // @deprecated
     commands.registerCommand(HIDE_BOTTOM_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.bottom, false);
       },
     });
     commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.bottom);
+      execute: (show?: boolean, size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.bottom, show, size);
       },
     });
   }

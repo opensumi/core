@@ -41,28 +41,28 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       id: 'view.outward.right-panel.hide',
     }, {
       execute: () => {
-        this.commandService.executeCommand('activity-bar.right.toggle', false);
+        this.commandService.executeCommand('main-layout.right-panel.toggle', false);
       },
     });
     commands.registerCommand({
       id: 'view.outward.right-panel.show',
     }, {
       execute: (size?: number) => {
-        this.commandService.executeCommand('activity-bar.right.toggle', true, size);
+        this.commandService.executeCommand('main-layout.right-panel.toggle', true, size);
       },
     });
     commands.registerCommand({
       id: 'view.outward.left-panel.hide',
     }, {
       execute: () => {
-        this.commandService.executeCommand('activity-bar.left.toggle', false);
+        this.commandService.executeCommand('main-layout.left-panel.toggle', false);
       },
     });
     commands.registerCommand({
       id: 'view.outward.left-panel.show',
     }, {
       execute: (size?: number) => {
-        this.commandService.executeCommand('activity-bar.left.toggle', true, size);
+        this.commandService.executeCommand('main-layout.left-panel.toggle', true, size);
       },
     });
   }

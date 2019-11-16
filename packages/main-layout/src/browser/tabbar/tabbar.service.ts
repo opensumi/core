@@ -8,9 +8,16 @@ export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 // TODO 存尺寸，存状态
 @Injectable({multiple: true})
 export class TabbarService extends WithEventBus {
-  @observable currentContainerId: string;
+  @observable currentContainerId: string = '';
+
+  previousContainerId: string = '';
 
   @observable.shallow containersMap: Map<string, ComponentRegistryInfo> = new Map();
+
+  resizeHandle: {
+    setSize: (targetSize: number, side: string) => void,
+    getSize: (side: string) => number,
+  };
 
   @Autowired()
   private viewContextKeyRegistry: ViewContextKeyRegistry;
@@ -33,6 +40,10 @@ export class TabbarService extends WithEventBus {
 
   constructor(public location: string) {
     super();
+  }
+
+  registerResizeHandle(setSize, getSize) {
+    this.resizeHandle = {setSize, getSize};
     this.listenCurrentChange();
   }
 
@@ -52,28 +63,22 @@ export class TabbarService extends WithEventBus {
 
   @action.bound handleTabClick(
     e: React.MouseEvent,
-    setSize: (size: number, side: string) => void,
-    getSize: (side: string) => number,
     forbidCollapse?: boolean) {
     const containerId = e.currentTarget.id;
     if (containerId === this.currentContainerId && !forbidCollapse) {
-      this.prevSize = getSize(this.location);
       this.currentContainerId = '';
-      setSize(50, this.location);
     } else {
-      if (this.prevSize === undefined) {
-        this.prevSize = getSize(this.location);
-      }
       this.currentContainerId = containerId;
-      setSize(this.prevSize || 400, this.location);
     }
   }
 
   // TODO 将setSize挪到这
   protected listenCurrentChange() {
+    const {getSize, setSize} = this.resizeHandle;
     observe(this, 'currentContainerId', (change) => {
       if (this.prevSize === undefined) {
       }
+      this.previousContainerId = change.oldValue || '';
       const currentId = change.newValue;
       this.onCurrentChangeEmitter.fire({previousId: change.oldValue || '', currentId});
       if (currentId) {
@@ -93,6 +98,13 @@ export class TabbarService extends WithEventBus {
             this.toolbar.updateItems(containerItems);
           }
         }
+        if (this.prevSize === undefined) {
+          this.prevSize = getSize(this.location);
+        }
+        setSize(this.prevSize || 400, this.location);
+      } else {
+        this.prevSize = getSize(this.location);
+        setSize(50, this.location);
       }
     });
   }

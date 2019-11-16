@@ -27,6 +27,9 @@ export const TabbarViewBase: React.FC<{
   const { setSize, getSize } = React.useContext(PanelContext);
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  React.useEffect(() => {
+    tabbarService.registerResizeHandle(setSize, getSize);
+  }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
   const components: ComponentRegistryInfo[] = [];
   const configContext = useInjectable<AppConfig>(AppConfig);
@@ -45,7 +48,7 @@ export const TabbarViewBase: React.FC<{
             <li
               key={containerId}
               id={containerId}
-              onClick={(e) => handleTabClick(e, setSize, getSize, forbidCollapse)}
+              onClick={(e) => handleTabClick(e, forbidCollapse)}
               className={clsx({active: currentContainerId === containerId})}>
               <TabView component={component} />
             </li>
