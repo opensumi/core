@@ -9,6 +9,8 @@ import { PanelContext } from '@ali/ide-core-browser/lib/components/layout/split-
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TabbarConfig } from './renderer.view';
 import { Widget } from '@phosphor/widgets';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { IMainLayoutService } from '../../common';
 
 export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,
@@ -76,6 +78,14 @@ const TextTabView: React.FC<{component: ComponentRegistryInfo}> = (({ component 
 
 export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} />;
 
-export const LeftTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} />;
+export const LeftTabbarRenderer: React.FC = () => {
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+  return (<div className='left-tab-bar'>
+    <TabbarViewBase TabView={IconTabView} />
+    <div className='bottom-icon-container' onClick={layoutService.handleSetting}>
+      <i className={`activity-icon ${getIcon('setting')}`}></i>
+    </div>
+  </div>);
+};
 
 export const BottomTabbarRenderer: React.FC = () => <TabbarViewBase hasToolBar={true} forbidCollapse={true} TabView={TextTabView} />;

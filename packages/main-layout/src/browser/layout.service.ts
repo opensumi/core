@@ -6,6 +6,7 @@ import { TabBarHandler } from './tabbar-handler';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
+import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class LayoutService extends WithEventBus {
@@ -17,6 +18,15 @@ export class LayoutService extends WithEventBus {
 
   @Autowired(MainLayoutContribution)
   private readonly contributions: ContributionProvider<MainLayoutContribution>;
+
+  @Autowired(IMenuRegistry)
+  menus: IMenuRegistry;
+
+  @Autowired(MenuService)
+  private readonly menuService: MenuService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly contextMenuRenderer: ICtxMenuRenderer;
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 
@@ -102,6 +112,15 @@ export class LayoutService extends WithEventBus {
       items ? items.push({view, props}) : this.pendingViewsMap.set(containerId, [{view, props}]);
     }
     return containerId;
+  }
+
+  handleSetting = (event: React.MouseEvent<HTMLElement>) => {
+    const menus = this.menuService.createMenu(MenuId.SettingsIconMenu);
+    const menuNodes = generateCtxMenu({ menus });
+    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+      x: event.clientX,
+      y: event.clientY,
+    } });
   }
 
   expandBottom(expand?: boolean | undefined): void {

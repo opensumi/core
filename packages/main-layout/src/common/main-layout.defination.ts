@@ -22,6 +22,7 @@ export interface IMainLayoutService {
   collectViewComponent(view: View, containerId: string, props?: any): string;
   expandBottom(expand?: boolean): void;
   bottomExpanded: boolean;
+  handleSetting(event: React.MouseEvent<HTMLElement>): void;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');

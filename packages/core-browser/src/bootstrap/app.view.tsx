@@ -15,6 +15,7 @@ export function App(props: AppProps) {
   return (
     <ConfigProvider value={ props.app.config }>
       {<props.main />}
+      {props.overlay && <props.overlay />}
     </ConfigProvider>
   );
 }

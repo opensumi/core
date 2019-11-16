@@ -69,18 +69,6 @@
     .icon-tab {
       flex: 1;
     }
-    .bottom-icon-tab {
-      width: 100%;
-      flex-direction: column;
-      align-items: center;
-      display: flex;
-      .activity-icon {
-        margin-top: 6px;
-        &:hover {
-          color: var(--activityBar-foreground);
-        }
-      }
-    }
     .activity-icon {
       font-size: 24px;
       width: 24px;
@@ -130,6 +118,31 @@
     }
     .icon-tab:hover:not(.active){
       background-color: transparent;
+    }
+  }
+
+  .left-tab-bar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--activityBar-background);
+    .tab-bar {
+      height: auto;
+    }
+    .bottom-icon-container {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .activity-icon {
+        font-size: 24px;
+        margin-top: 6px;
+        &:hover {
+          color: var(--activityBar-foreground);
+        }
+      }
     }
   }
 
