@@ -313,7 +313,7 @@ export interface INativeMenuTemplate {
 
     label?: string;
 
-    type?: 'separator';
+    type?: 'separator' | 'checkbox';
 
     submenu?: INativeMenuTemplate[];
 
@@ -326,6 +326,8 @@ export interface INativeMenuTemplate {
     action?: boolean;
 
     role?: string;
+
+    checked?: boolean
 
 }
 

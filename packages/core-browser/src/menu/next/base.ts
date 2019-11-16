@@ -38,6 +38,7 @@ export type ICommandsMap = Map<string, Command>;
 export abstract class IMenuRegistry {
   readonly onDidChangeMenubar: Event<string>;
   abstract registerMenubarItem(menuId: string, item: PartialBy<IMenubarItem, 'id'>): IDisposable;
+  abstract removeMenubarItem(menuId: string): void;
   abstract getMenubarItem(menuId: string): IMenubarItem | undefined;
   abstract getMenubarItems(): Array<IMenubarItem>;
 
@@ -91,13 +92,17 @@ export class CoreMenuRegistry implements IMenuRegistry {
     this._onDidChangeMenubar.fire(menuId);
     return {
       dispose: () => {
-        const item = this._menubarItems.get(menuId);
-        if (item) {
-          this._menubarItems.delete(menuId);
-          this._onDidChangeMenubar.fire(menuId);
-        }
+        this.removeMenubarItem(menuId);
       },
     };
+  }
+
+  removeMenubarItem(menuId: string) {
+    const item = this._menubarItems.get(menuId);
+    if (item) {
+      this._menubarItems.delete(menuId);
+      this._onDidChangeMenubar.fire(menuId);
+    }
   }
 
   getMenubarItem(menuId: string): IMenubarItem | undefined {

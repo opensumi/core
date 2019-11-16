@@ -51,6 +51,8 @@ export class ElectronMenuFactory extends Disposable {
       } else {
         this.bindAction(menuNode, map, context);
         return {
+          type: typeof menuNode.checked === 'boolean' ? 'checkbox' : undefined,
+          checked: typeof menuNode.checked === 'boolean' ? menuNode.checked : undefined,
           label: `${mnemonicButtonLabel(menuNode.label, true)} ${menuNode.isKeyCombination ? menuNode.keybinding : ''}`,
           id: menuNode.id,
           action: true,
