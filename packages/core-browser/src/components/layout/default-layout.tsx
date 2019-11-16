@@ -8,7 +8,7 @@ export function DefaultLayout() {
     <SlotRenderer slot='top' />
     <SplitPanel flex={1}>
       <SlotRenderer flex={1} slot='left' />
-      <SplitPanel flex={3} direction='top-to-bottom'>
+      <SplitPanel flex={2} direction='top-to-bottom'>
         <SlotRenderer flex={2} slot='main' />
         <SlotRenderer flex={1} slot='bottom' />
       </SplitPanel>

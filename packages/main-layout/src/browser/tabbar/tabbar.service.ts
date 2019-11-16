@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, TabBarToolbar, TabBarToolbarRegistry } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, TabBarToolbar, TabBarToolbarRegistry, OnEvent, ResizeEvent } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe } from 'mobx';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
@@ -38,11 +38,14 @@ export class TabbarService extends WithEventBus {
 
   private toolbar: TabBarToolbar;
 
+  private barSize: number;
+
   constructor(public location: string) {
     super();
   }
 
-  registerResizeHandle(setSize, getSize) {
+  registerResizeHandle(setSize, getSize, barSize) {
+    this.barSize = barSize;
     this.resizeHandle = {setSize, getSize};
     this.listenCurrentChange();
   }
@@ -69,6 +72,16 @@ export class TabbarService extends WithEventBus {
       this.currentContainerId = '';
     } else {
       this.currentContainerId = containerId;
+    }
+  }
+
+  @OnEvent(ResizeEvent)
+  protected onResize(e: ResizeEvent) {
+    if (e.payload.slotLocation === this.location) {
+      const size = this.resizeHandle.getSize(this.location);
+      if (size !== this.barSize) {
+        this.prevSize = size;
+      }
     }
   }
 
@@ -104,7 +117,7 @@ export class TabbarService extends WithEventBus {
         setSize(this.prevSize || 400, this.location);
       } else {
         this.prevSize = getSize(this.location);
-        setSize(50, this.location);
+        setSize(this.barSize, this.location);
       }
     });
   }
