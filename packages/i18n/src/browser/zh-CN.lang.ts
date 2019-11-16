@@ -306,7 +306,7 @@ export const localizationBundle = {
     'marketplace.extension.updating': '更新中',
     'marketplace.extension.update': '更新',
     'marketplace.extension.installing': '安装中',
-    'marketplace.extension.reloadrequure': '需要重启',
+    'marketplace.extension.reloadrequire': '需要重启',
     'marketplace.extension.uninstalling': '卸载中',
     'marketplace.extension.uninstall': '卸载',
     'marketplace.extension.readme': '简介',

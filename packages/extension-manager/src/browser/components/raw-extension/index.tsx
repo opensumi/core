@@ -79,7 +79,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
             </div>
             {extension.installed ? (
               <span style={{display: 'flex', flexShrink: 0}} onClick={(e) => e.stopPropagation()}>
-                {extension.reloadRequire && <Button ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure')}</Button>}
+                {extension.reloadRequire && <Button ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
                 <InlineActionBar
                   menus={extensionManagerService.contextMenu}
                   context={[extension]} />

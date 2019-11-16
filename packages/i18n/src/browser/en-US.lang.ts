@@ -327,7 +327,7 @@ export const localizationBundle = {
     'marketplace.extension.updating': 'Updating',
     'marketplace.extension.update': 'Update',
     'marketplace.extension.installing': 'Installing',
-    'marketplace.extension.reloadrequure': 'Requure reload',
+    'marketplace.extension.reloadrequire': 'Require reload',
     'marketplace.extension.uninstalling': 'Uninstalling',
     'marketplace.extension.uninstall': 'Uninstall',
     'marketplace.extension.readme': 'Readme',
