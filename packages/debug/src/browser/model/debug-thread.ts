@@ -157,6 +157,6 @@ export class DebugThread extends DebugThreadData {
   }
 
   async open() {
-    console.log('Do debug thread view open');
+    // console.log('Do debug thread view open');
   }
 }

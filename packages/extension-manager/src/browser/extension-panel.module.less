@@ -4,6 +4,11 @@
   height: 100%;
 }
 
+// 临时解决热门插件高度问题，等 Layout 重构后完全解决
+:global(#extensions\.marketplace\.hot) {
+  height: 100% !important;
+}
+
 .panel :global(.ant-tabs) {
   color: var(--foreground);
 }
@@ -25,7 +30,8 @@
 }
 
 .panel :global(.ant-tabs-nav .ant-tabs-tab) {
-  padding: 12px 0;
+  padding: 8px 0 5px 0;
+  line-height: 20px;
   margin-right: 16px;
   &:first-child {
     margin-left: 8px;

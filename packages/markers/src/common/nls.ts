@@ -1,7 +1,7 @@
-import nlsData = require('../package.nls.json');
+import { localize as _localize } from '@ali/ide-core-browser';
 
 export namespace nls {
   export function localize(key: string, _default: string) {
-    return nlsData[key] || _default;
+    return _localize(key, _default);
   }
 }

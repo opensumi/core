@@ -14,6 +14,7 @@ export const enum MenuId {
   EmptyEditorGroupContext = 'empty/editor/group/context',
   ExplorerContext = 'explorer/context',
   MenubarAppearanceMenu = 'menubar/appearance/menu',
+  MenubarAppMenu = 'menubar/app',
   MenubarDebugMenu = 'menubar/debug/menu',
   MenubarEditMenu = 'menubar/edit/menu',
   MenubarFileMenu = 'menubar/file/menu',

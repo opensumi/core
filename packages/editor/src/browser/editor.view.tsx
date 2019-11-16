@@ -15,6 +15,7 @@ import { Scroll } from './component/scroll/scroll';
 import { EditorComponentRegistryImpl } from './component';
 import { NavigationBar } from './navigation.view';
 import { IResizeHandleDelegate, ResizeHandleVertical, ResizeHandleHorizontal } from '@ali/ide-core-browser/lib/components';
+import { TabTitleMenuService } from './menu/title-context.menu';
 
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
@@ -126,6 +127,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const editorBodyRef = React.useRef<HTMLElement | null>();
   const contextMenuRenderer = useInjectable(ContextMenuRenderer) as ContextMenuRenderer;
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
+  const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
 
   const appConfig = useInjectable(AppConfig);
   const { editorBackgroudImage } = appConfig;
@@ -205,16 +207,13 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               }
             }}
             onContextMenu={(event, target) => {
-              const { x, y } = event.nativeEvent;
-              contextMenuRenderer.render(['editor'], { x, y, group, uri: target.uri });
-              event.stopPropagation();
+              tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, target && target.uri, group);
               event.preventDefault();
             }}
             onDbClick={(resource) => {
               group.pinPreviewed(resource.uri);
             }}
           />
-          <NavigationBar editorGroup={group} />
         </div>}
       <div className={styles.kt_editor_body}
         onDragOver={(e) => {
@@ -243,6 +242,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
           }
         }}
         ref={editorBodyRef as any}>
+        <NavigationBar editorGroup={group} />
         <div className={classnames({
           [styles.kt_editor_component]: true,
           [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'component',

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": "../../../packages/kaitian-extension/src",
     "outDir": "../../../packages/kaitian-extension/lib",
-    "target": "es5"
+    "target": "es6"
   },
   "include": [
     "../../../packages/kaitian-extension/src"

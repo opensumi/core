@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+/out/
+/testapp/out/
+lib/
+*.vsix
+vscode-node-debug2.txt
+typings/
+.browse.VC.db
+npm-debug.log
+package.nls.*.json

@@ -42,6 +42,10 @@ export function format(args: any): string {
       try {
         a = JSON.stringify(a);
       } catch (e) { }
+    } else if (typeof a === 'symbol') {
+      try {
+        a = a.toString();
+      } catch (e) { }
     }
 
     result += (i > 0 ? ' ' : '') + a;

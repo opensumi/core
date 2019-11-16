@@ -32,9 +32,9 @@ export class FilterOptions implements IFilterOptions {
     if (filter) {
       const filters = splitGlobAware(filter, ',').map((s) => s.trim()).filter((s) => !!s.length);
       for (const f of filters) {
-        this.filterErrors = this.filterErrors || this.matches(f, Messages.MARKERS_PANEL_FILTER_ERRORS);
-        this.filterWarnings = this.filterWarnings || this.matches(f, Messages.MARKERS_PANEL_FILTER_WARNINGS);
-        this.filterInfos = this.filterInfos || this.matches(f, Messages.MARKERS_PANEL_FILTER_INFOS);
+        this.filterErrors = this.filterErrors || this.matches(f, Messages.markerPanelFilterErrors());
+        this.filterWarnings = this.filterWarnings || this.matches(f, Messages.markerPanelFilterWarnings());
+        this.filterInfos = this.filterInfos || this.matches(f, Messages.markerPanelFilterInfos());
         if (strings.startsWith(f, '!')) {
           this.setPattern(excludesExpression, strings.ltrim(f, '!'));
         } else {

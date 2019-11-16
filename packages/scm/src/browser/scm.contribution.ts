@@ -10,12 +10,13 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCMResourceView, SCMProviderList } from './scm.view';
-import { SCMService, scmResourceViewId, scmProviderViewId, scmContainerId } from '../common';
+import { SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET } from '../common';
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
+import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
@@ -46,7 +47,10 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   @Autowired(SCMViewController)
   protected readonly scmViewController: SCMViewController;
 
-  @Autowired(DirtyDiffWorkbenchController)
+  @Autowired(WorkbenchEditorService)
+  editorService: WorkbenchEditorService;
+
+  @Autowired(IDirtyDiffWorkbenchController)
   protected readonly dirtyDiffWorkbenchController: DirtyDiffWorkbenchController;
 
   private toDispose = new Disposable();
@@ -75,6 +79,20 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   }
 
   registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(OPEN_DIRTY_DIFF_WIDGET, {
+      execute: async (lineNumber: number) => {
+        const editor = this.editorService.currentEditor;
+        if (editor) {
+          const codeEditor = editor.monacoEditor;
+          this.dirtyDiffWorkbenchController.openDirtyDiffWidget(codeEditor, {
+            lineNumber, column: 1,
+          });
+          setTimeout(() => {
+            codeEditor.revealLineInCenter(lineNumber);
+          }, 50);
+        }
+      },
+    });
   }
 
   registerMenus(menus: MenuModelRegistry) {

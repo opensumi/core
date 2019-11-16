@@ -129,7 +129,7 @@ export interface CommandService {
 /**
  * 命令注册和管理模块
  */
-export interface CommandRegistry {
+interface CoreCommandRegistry {
   /**
    * 注册命令
    * @param command 要注册的命令
@@ -137,11 +137,6 @@ export interface CommandRegistry {
    * @returns 销毁命令的方法
    */
   registerCommand<T = any>(command: Command, handler?: CommandHandler<T>): IDisposable;
-  /**
-   * 从 ContributionProvide 中拿到执行命令 Contributuon
-   * 执行注册操作
-   */
-  onStart(): void;
   /**
    * 解绑命令
    * @param command 要解绑的命令
@@ -213,12 +208,17 @@ export interface CommandRegistry {
 
 }
 
+export interface CommandRegistry extends CoreCommandRegistry {
+  /**
+   * 从 ContributionProvide 中拿到执行命令 Contributuon
+   * 执行注册操作
+   */
+  onStart(): void;
+}
+
+// 不带 contribution 的 CommandRegistry
 @Injectable()
-export class CommandRegistryImpl implements CommandRegistry {
-
-  @Autowired(CommandContribution)
-  protected readonly contributionProvider: ContributionProvider<CommandContribution>
-
+export class CoreCommandRegistryImpl implements CoreCommandRegistry {
   protected readonly _commands: { [id: string]: Command } = {};
   protected readonly _handlers: { [id: string]: CommandHandler[] } = {};
 
@@ -267,16 +267,6 @@ export class CommandRegistryImpl implements CommandRegistry {
    */
   getCommands(): Command[] {
     return Object.keys(this._commands).map(id => this.getCommand(id)!);
-  }
-
-  /**
-   * 执行 CommandContribution 的注册方法
-   */
-  onStart(): void {
-    const contributions = this.contributionProvider.getContributions();
-    for (const contrib of contributions) {
-      contrib.registerCommands(this);
-    }
   }
 
   /**
@@ -519,6 +509,23 @@ export class CommandRegistryImpl implements CommandRegistry {
     }
     // 将这个命令添加到最近使用的列表的第一位
     this._recent.unshift(recent);
+  }
+}
+
+@Injectable()
+export class CommandRegistryImpl extends CoreCommandRegistryImpl implements CommandRegistry  {
+
+  @Autowired(CommandContribution)
+  protected readonly contributionProvider: ContributionProvider<CommandContribution>
+
+  /**
+   * 执行 CommandContribution 的注册方法
+   */
+  onStart(): void {
+    const contributions = this.contributionProvider.getContributions();
+    for (const contrib of contributions) {
+      contrib.registerCommands(this);
+    }
   }
 }
 

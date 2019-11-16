@@ -1,5 +1,6 @@
-import { CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
+import { ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, MaybeNull } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
+
 import { MenuId } from './menu-id';
 
 export const NextMenuContribution = Symbol('NextMenuContribution');
@@ -7,22 +8,25 @@ export interface NextMenuContribution {
   registerNextMenus(menus: IMenuRegistry): void;
 }
 
-export interface ILocalizedString {
-  value: string;
-  original: string;
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+export interface MenuCommandDesc {
+  id: string;
+  label: string;
 }
 
 export interface IMenuItem {
-  command: string;
+  command: string | MenuCommandDesc;
   when?: string | monaco.contextkey.ContextKeyExpr;
+  toggledWhen?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
   nativeRole?: string; // electron native 菜单使用
 }
 
 export interface ISubmenuItem {
-  title: string | ILocalizedString;
-  submenu: MenuId; // 暂时尚未遇到
+  label: string;
+  submenu: MenuId | string;
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -32,17 +36,31 @@ export interface ISubmenuItem {
 export type ICommandsMap = Map<string, Command>;
 
 export abstract class IMenuRegistry {
+  readonly onDidChangeMenubar: Event<string>;
+  abstract registerMenubarItem(menuId: string, item: PartialBy<IMenubarItem, 'id'>): IDisposable;
+  abstract getMenubarItem(menuId: string): IMenubarItem | undefined;
+  abstract getMenubarItems(): Array<IMenubarItem>;
+
   readonly onDidChangeMenu: Event<string>;
-  abstract addCommand(userCommand: Command): IDisposable;
-  abstract getCommand(id: string): Command | undefined;
-  abstract getCommands(): ICommandsMap;
-  abstract registerMenuItem(menu: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
-  abstract getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
+  abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
+  abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
+  abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem>): IDisposable;
+  abstract getMenuItems(menuId: MenuId): Array<IMenuItem | ISubmenuItem>;
+}
+
+export interface IMenubarItem {
+  id: string;
+  label: string;
+  order?: number; // TODO: 增加排序因子
 }
 
 @Injectable()
-export class MenuRegistry implements IMenuRegistry {
-  private readonly _commands = new Map<string, Command>();
+export class CoreMenuRegistry implements IMenuRegistry {
+  private readonly _menubarItems = new Map<string, IMenubarItem>();
+  private readonly _onDidChangeMenubar = new Emitter<string>();
+
+  readonly onDidChangeMenubar: Event<string> = this._onDidChangeMenubar.event;
+
   private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
   private readonly _onDidChangeMenu = new Emitter<string>();
 
@@ -52,58 +70,82 @@ export class MenuRegistry implements IMenuRegistry {
   protected readonly contributions: ContributionProvider<NextMenuContribution>;
 
   @Autowired(CommandRegistry)
-  protected readonly commandRegistry: CommandRegistry;
+  private readonly commandRegistry: CommandRegistry;
 
-  // MenuContribution
-  onStart() {
-    for (const contrib of this.contributions.getContributions()) {
-      contrib.registerNextMenus(this);
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
+  /**
+   * 这里的注册只允许注册一次
+   */
+  registerMenubarItem(menuId: string, item: IMenubarItem): IDisposable {
+    // 将 menuId 存到结构中去
+    item = { ...item, id: menuId };
+    const existedItem = this._menuItems.get(menuId);
+    if (existedItem) {
+      this.logger.warn(`this menuId ${menuId} already existed`);
+      return Disposable.None;
     }
-  }
 
-  addCommand(command: Command): IDisposable {
-    this._commands.set(command.id, command);
-    this._onDidChangeMenu.fire(MenuId.CommandPalette);
+    this._menubarItems.set(menuId, item);
+    this._onDidChangeMenubar.fire(menuId);
     return {
       dispose: () => {
-        if (this._commands.delete(command.id)) {
-          this._onDidChangeMenu.fire(MenuId.CommandPalette);
+        const item = this._menubarItems.get(menuId);
+        if (item) {
+          this._menubarItems.delete(menuId);
+          this._onDidChangeMenubar.fire(menuId);
         }
       },
     };
   }
 
-  getCommand(id: string): Command | undefined {
-    return this._commands.get(id);
+  getMenubarItem(menuId: string): IMenubarItem | undefined {
+    return this._menubarItems.get(menuId);
   }
 
-  getCommands(): ICommandsMap {
-    const map = new Map<string, Command>();
-    this._commands.forEach((value, key) => map.set(key, value));
-    return map;
+  getMenubarItems(): IMenubarItem[] {
+    const menubarIds = Array.from(this._menubarItems.keys());
+    return menubarIds.reduce((prev, menubarId) => {
+      const menubarItem = this._menubarItems.get(menubarId);
+      if (menubarItem) {
+        prev.push(menubarItem);
+      }
+      return prev;
+    }, [] as IMenubarItem[]);
   }
 
-  registerMenuItem(id: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
-    let array = this._menuItems.get(id);
+  registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {
+    let array = this._menuItems.get(menuId);
     if (!array) {
       array = [item];
-      this._menuItems.set(id, array);
+      this._menuItems.set(menuId, array);
     } else {
       array.push(item);
     }
-    this._onDidChangeMenu.fire(id);
+
+    this._onDidChangeMenu.fire(menuId);
     return {
       dispose: () => {
         const idx = array!.indexOf(item);
         if (idx >= 0) {
           array!.splice(idx, 1);
-          this._onDidChangeMenu.fire(id);
+          this._onDidChangeMenu.fire(menuId);
         }
       },
     };
   }
 
-  getMenuItems(id: MenuId): Array<IMenuItem | ISubmenuItem> {
+  registerMenuItems(menuId: string, items: (IMenuItem | ISubmenuItem)[]): IDisposable {
+    const disposables = [] as IDisposable[];
+    items.forEach((item) => {
+      disposables.push(this.registerMenuItem(menuId, item));
+    });
+
+    return combinedDisposable(disposables);
+  }
+
+  getMenuItems(id: MenuId | string): Array<IMenuItem | ISubmenuItem> {
     const result = (this._menuItems.get(id) || []).slice(0);
 
     if (id === MenuId.CommandPalette) {
@@ -115,10 +157,18 @@ export class MenuRegistry implements IMenuRegistry {
     return result;
   }
 
+  getMenuCommand(command: string | MenuCommandDesc) {
+    if (typeof command === 'string') {
+      return { id: command };
+    }
+
+    return command;
+  }
+
   private appendImplicitMenuItems(result: Array<IMenuItem | ISubmenuItem>) {
     // 只保留 MenuItem
     const temp = result.filter((item) => isIMenuItem(item)) as IMenuItem[];
-    const set = new Set<string>(temp.map((n) => n.command));
+    const set = new Set<string>(temp.map((n) => this.getMenuCommand(n.command).id));
 
     const allCommands = this.commandRegistry.getCommands();
     // 将 commandRegistry 中 "其他" command 加进去
@@ -127,6 +177,19 @@ export class MenuRegistry implements IMenuRegistry {
         result.push({ command: command.id });
       }
     });
+  }
+}
+
+@Injectable()
+export class MenuRegistry extends CoreMenuRegistry {
+  @Autowired(NextMenuContribution)
+  protected readonly contributions: ContributionProvider<NextMenuContribution>;
+
+  // MenuContribution
+  onStart() {
+    for (const contrib of this.contributions.getContributions()) {
+      contrib.registerNextMenus(this);
+    }
   }
 }
 
@@ -147,6 +210,7 @@ export interface IMenuAction {
   keybinding: string; // 快捷键描述
   isKeyCombination: boolean; // 是否为组合键
   disabled?: boolean; // disable 状态的 menu
+  checked?: boolean; // checked 状态 通过 toggledWhen 实现
   nativeRole?: string; // eletron menu 使用
   execute(event?: any): Promise<any>;
 }
@@ -155,21 +219,27 @@ export class MenuNode implements IMenuAction {
   readonly id: string;
   label: string;
   tooltip: string;
-  className: string | undefined;
+  className: string | undefined ;
   icon: string;
   keybinding: string;
+  rawKeybinding: MaybeNull<string>;
   isKeyCombination: boolean;
   disabled: boolean;
+  checked: boolean;
   nativeRole: string;
+  items: MenuNode[] = [];
+
   readonly _actionCallback?: (event?: any) => Promise<any>;
 
   constructor(
     commandId: string,
     icon: string = '',
     label: string = '',
+    checked = false,
     disabled = false,
     nativeRole: string = '',
     keybinding: string = '',
+    rawKeybinding?: string,
     isKeyCombination: boolean = false,
     className: string = '',
     actionCallback?: (event?: any) => Promise<any>,
@@ -179,8 +249,10 @@ export class MenuNode implements IMenuAction {
     this.className = className;
     this.icon = icon;
     this.keybinding = keybinding;
+    this.rawKeybinding = rawKeybinding;
     this.isKeyCombination = isKeyCombination;
     this.disabled = disabled;
+    this.checked = checked;
     this.nativeRole = nativeRole;
     this._actionCallback = actionCallback;
   }

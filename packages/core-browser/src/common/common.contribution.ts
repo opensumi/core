@@ -1,19 +1,18 @@
 import { Autowired } from '@ali/common-di';
-import { COMMON_MENUS } from './common.menus';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
 import { corePreferenceSchema } from '../core-preferences';
-import { MenuContribution, CommandContribution, CommandService, PreferenceSchema, CommandRegistry, MenuModelRegistry, localize, Domain, Event, isElectronRenderer, replaceLocalizePlaceholder } from '@ali/ide-core-common';
+import { CommandContribution, CommandService, PreferenceSchema, CommandRegistry, localize, Domain, Event, isElectronRenderer, replaceLocalizePlaceholder, isOSX } from '@ali/ide-core-common';
 import { PreferenceContribution } from '../preferences';
 import { ClientAppContribution } from './common.define';
 import { IContextKeyService, IContextKey } from '../context-key';
 import { trackFocus } from '../dom';
 import { AppConfig } from '../react-providers/config-provider';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '../menu/next';
 
 export const inputFocusedContextKey = 'inputFocus';
 
-@Domain(MenuContribution, CommandContribution, ClientAppContribution, PreferenceContribution)
-export class ClientCommonContribution implements CommandContribution, MenuContribution, PreferenceContribution, ClientAppContribution {
-
+@Domain(CommandContribution, ClientAppContribution, PreferenceContribution, NextMenuContribution)
+export class ClientCommonContribution implements CommandContribution, PreferenceContribution, ClientAppContribution, NextMenuContribution {
   @Autowired(CommandService)
   protected commandService: CommandService;
 
@@ -64,69 +63,120 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
     });
   }
 
-  registerMenus(menus: MenuModelRegistry): void {
-    menus.registerSubmenu(COMMON_MENUS.FILE, localize('menu-bar.file'));
-    menus.registerSubmenu(COMMON_MENUS.EDIT, localize('menu-bar.edit'));
-    menus.registerSubmenu(COMMON_MENUS.VIEW, localize('menu-bar.view'));
-    menus.registerSubmenu(COMMON_MENUS.HELP, localize('menu-bar.help'));
-
-    menus.registerMenuAction(COMMON_MENUS.FILE_NEW, {
-      commandId: FILE_COMMANDS.NEW_FILE.id,
-    });
-
-    menus.registerMenuAction(COMMON_MENUS.FILE_NEW, {
-      commandId: FILE_COMMANDS.NEW_FOLDER.id,
-    });
-
-    menus.registerMenuAction(COMMON_MENUS.FILE_SAVE, {
-      commandId: EDITOR_COMMANDS.SAVE_CURRENT.id,
-      label: localize('file.save'),
-    });
-
-    if (!isElectronRenderer()) {
-      menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
-        commandId: EDITOR_COMMANDS.REDO.id,
-      });
-      menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
-        commandId: EDITOR_COMMANDS.UNDO.id,
-      });
-    } else {
-      menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
-        label: localize('editor.undo'),
-        nativeRole: 'undo',
-        commandId: 'electron.undo',
-      });
-
-      menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
-        label: localize('editor.redo'),
-        nativeRole: 'redo',
-        commandId: 'electron.redo',
-      });
-
-      menus.registerMenuAction(COMMON_MENUS.EDIT_CLIPBOARD, {
-        label: localize('edit.cut'),
-        nativeRole: 'cut',
-        commandId: 'electron.cut',
-      });
-
-      menus.registerMenuAction(COMMON_MENUS.EDIT_CLIPBOARD, {
-        label: localize('edit.copy'),
-        nativeRole: 'copy',
-        commandId: 'electron.copy',
-      });
-
-      menus.registerMenuAction(COMMON_MENUS.EDIT_CLIPBOARD, {
-        label: localize('edit.paste'),
-        nativeRole: 'paste',
-        commandId: 'electron.paste',
-      });
-
+  registerNextMenus(menus: IMenuRegistry): void {
+    // 注册 Menubar
+    if (isElectronRenderer()) {
+      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'Kaitian Electron') });
     }
+    menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file') });
+    menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit') });
+    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection') });
+    menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view') });
+    menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help') });
 
-    menus.registerMenuAction(COMMON_MENUS.HELP, {
-      commandId: COMMON_COMMANDS.ABOUT_COMMAND.id,
+    /* ---- test for submenu ---- */
+    // const testSubmenuId = 'greatmenu';
+    // menus.registerMenuItem(MenuId.MenubarFileMenu, {
+    //   label: '屌炸了',
+    //   submenu: testSubmenuId,
+    // });
+
+    // menus.registerMenuItems(testSubmenuId, [{
+    //   command: FILE_COMMANDS.NEW_FILE.id,
+    //   group: '1_new',
+    // }, {
+    //   command: FILE_COMMANDS.NEW_FOLDER.id,
+    //   group: '1_new',
+    // }]);
+
+    /* ---- end for submenu ---- */
+
+    // File 菜单
+    menus.registerMenuItems(MenuId.MenubarFileMenu, [{
+      command: FILE_COMMANDS.NEW_FILE.id,
+      group: '1_new',
+    }, {
+      command: FILE_COMMANDS.NEW_FOLDER.id,
+      group: '1_new',
+    }, {
+      command: {
+        id: EDITOR_COMMANDS.SAVE_CURRENT.id,
+        label: localize('file.save'),
+      },
+      group: '3_save',
+    }, {
+      command: {
+        id: EDITOR_COMMANDS.SAVE_ALL.id,
+        label: localize('file.saveAll'),
+      },
+      group: '3_save',
+    }]);
+
+    const aboutItem = {
+      command: {
+        id: COMMON_COMMANDS.ABOUT_COMMAND.id,
+        label: localize('common.about'),
+      },
       nativeRole: 'about',
-      label: localize('common.about'),
-    });
+      group: '9_help',
+    };
+
+    // Edit 菜单
+    if (isElectronRenderer()) {
+      menus.registerMenuItems(MenuId.MenubarEditMenu, [{
+        command: {
+          id: 'electron.undo',
+          label: localize('editor.undo'),
+        },
+        nativeRole: 'undo',
+        group: '1_undo',
+      }, {
+        command: {
+          id: 'electron.redo',
+          label: localize('editor.redo'),
+        },
+        group: '1_undo',
+        nativeRole: 'redo',
+      }, {
+        command: {
+          label: localize('edit.cut'),
+          id: 'electron.cut',
+        },
+        nativeRole: 'cut',
+        group: '2_clipboard',
+      }, {
+        command: {
+          label: localize('edit.copy'),
+          id: 'electron.copy',
+        },
+        nativeRole: 'copy',
+        group: '2_clipboard',
+      }, {
+        command: {
+          label: localize('edit.paste'),
+          id: 'electron.paste',
+        },
+        nativeRole: 'paste',
+        group: '2_clipboard',
+      }, {
+        command: {
+          label: localize('edit.selectAll'),
+          id: 'electron.selectAll',
+        },
+        nativeRole: 'selectAll',
+        group: '2_clipboard',
+      }]);
+      menus.registerMenuItem(MenuId.MenubarAppMenu, aboutItem);
+    } else {
+      menus.registerMenuItems(MenuId.MenubarEditMenu, [{
+        command: EDITOR_COMMANDS.REDO.id,
+        group: '1_undo',
+      }, {
+        command: EDITOR_COMMANDS.UNDO.id,
+        group: '1_undo',
+      }]);
+      // 帮助菜单
+      menus.registerMenuItem(MenuId.MenubarHelpMenu, aboutItem);
+    }
   }
 }

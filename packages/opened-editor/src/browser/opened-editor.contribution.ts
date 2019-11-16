@@ -53,9 +53,9 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
   onStart() {
     this.mainLayoutService.collectViewComponent({
       id: ExplorerOpenedEditorViewId,
-      name: localize('open.editors.title', 'OPEND EDITORS'),
+      name: localize('open.editors.title'),
       weight: 1,
-      priority: 3,
+      priority: 10,
       collapsed: true,
       component: ExplorerOpenEditorPanel,
     }, ExplorerContainerId);

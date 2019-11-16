@@ -92,6 +92,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
       description: '%editor.configuration.askIfDiff%',
     },
+    'editor.preferredFormatter': {
+      type: 'object',
+      default: {},
+      description: '%editor.configuration.preferredFormatter%',
+    },
     'editor.previewMode': {
       type: 'boolean',
       default: true,
@@ -157,6 +162,16 @@ export const corePreferenceSchema: PreferenceSchema = {
     'editor.readonlyFiles': {
       type: 'array',
       default: [],
+      description: '%editor.configuration.readonlyFiles%',
+    },
+    'editor.formatOnSave': {
+      type: 'boolean',
+      default: false,
+      description: '%preference.editor.formatOnSave%',
+    },
+    'editor.formatOnSaveTimeout': {
+      type: 'number',
+      default: 750,
       description: '%editor.configuration.readonlyFiles%',
     },
     'explorer.confirmMove': {

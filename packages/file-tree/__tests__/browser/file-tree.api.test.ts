@@ -11,6 +11,7 @@ import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
+import { IMessageService } from '@ali/ide-overlay';
 
 describe('FileTreeService should be work', () => {
   let fileApi: IFileTreeAPI;
@@ -181,15 +182,24 @@ describe('FileTreeService should be work', () => {
 
     it('moveFile should be work', async (done) => {
       const fromUri = new URI(`${userHome}/from.js`);
-      const toUri = new URI(`${userHome}//to`);
+      const toUri = new URI(`${userHome}/to`);
       const isDirectory = false;
       const apply = jest.fn();
+      const error = jest.fn();
       injector.addProviders({
         token: IWorkspaceEditService,
         useValue: {
           apply,
         },
-      });
+      }, {
+        token: IMessageService,
+        useValue: {
+          error,
+        },
+      },
+      );
+      const exists = jest.fn(() => false);
+      injector.mock(IFileServiceClient, 'exists', exists);
       await fileApi.moveFile(fromUri, toUri, isDirectory);
       expect(apply).toBeCalledTimes(1);
       expect(apply).toBeCalledWith({
@@ -207,11 +217,20 @@ describe('FileTreeService should be work', () => {
 
     it('copyFile should be work', async (done) => {
       const fromUri = new URI(`${userHome}/from.js`);
-      const toUri = new URI(`${userHome}//to`);
+      const toUri = new URI(`${userHome}/to`);
       const copy = jest.fn();
       injector.mock(IFileServiceClient, 'copy', copy);
+      const exists = jest.fn((uri) => {
+        if (uri === toUri.toString()) {
+          return true;
+        } else {
+          return false;
+        }
+      });
+      injector.mock(IFileServiceClient, 'exists', exists);
       await fileApi.copyFile(fromUri, toUri);
-      expect(copy).toBeCalledWith(fromUri.toString(), toUri.toString());
+      // while the file existed, the name should be /\w+ copy \d+/
+      expect(copy).toBeCalledWith(fromUri.toString(), `${toUri.parent.resolve(`${toUri.displayName} copy 1`).toString()}`);
       done();
     });
 
@@ -257,6 +276,7 @@ describe('FileTreeService should be work', () => {
         } as FileStat,
         '',
         '',
+        '',
         undefined,
         1,
       );
@@ -291,6 +311,7 @@ describe('FileTreeService should be work', () => {
         } as FileStat,
         '',
         '',
+        '',
         undefined,
         1,
       );
@@ -312,6 +333,7 @@ describe('FileTreeService should be work', () => {
           isSymbolicLink: false,
           uri: rootUri.toString(),
         } as FileStat,
+        '',
         '',
         '',
         undefined,
@@ -337,6 +359,7 @@ describe('FileTreeService should be work', () => {
         } as FileStat,
         '',
         '',
+        '',
         undefined,
         1,
       );
@@ -351,6 +374,7 @@ describe('FileTreeService should be work', () => {
           isSymbolicLink: false,
           uri: testOneDirectoryUri.toString(),
         } as FileStat,
+        '',
         '',
         '',
         undefined,

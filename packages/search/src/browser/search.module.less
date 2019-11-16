@@ -119,8 +119,21 @@
     .search_field {
       display: flex;
       align-items: center;
-      border: 1px solid transparent;
+      border: var(--input-border);
       background: var(--input-background);
+
+      &:hover {
+        border-color: var(--inputOption-activeBorder);
+      }
+
+      :global {
+          #search-input-field {
+          border-color: transparent;
+          &:hover {
+            border-color: transparent;
+          }
+        }
+      }
 
       .option_buttons {
         height: 23px;

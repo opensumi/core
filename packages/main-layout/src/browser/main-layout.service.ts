@@ -88,6 +88,10 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private leftPanelWidget: Widget;
   private rightPanelWidget: Widget;
 
+  private floatSlotWidget: IdeWidget;
+  private mainAreaWidget: BoxPanel;
+  private mainHorizontalWidget: BoxPanel;
+
   private horizontalPanel: SplitPanel;
   private middleWidget: SplitPanel;
 
@@ -111,14 +115,23 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.horizontalPanel = this.createSplitHorizontalPanel();
     this.statusBarWidget = this.initIdeWidget(SlotLocation.bottomBar);
 
+    this.floatSlotWidget = this.initIdeWidget(SlotLocation.float);
+    this.floatSlotWidget.addClass('float-widget');
+    this.mainAreaWidget = new BoxPanel({
+      layout: this.createBoxLayout([this.horizontalPanel, this.statusBarWidget], [1, 0], {direction: 'top-to-bottom', spacing: 0}),
+    });
+    this.mainHorizontalWidget = new BoxPanel({
+      layout: this.createBoxLayout([this.mainAreaWidget, this.floatSlotWidget], [1, 0], {direction: 'left-to-right', spacing: 0}),
+    });
+
     // 设置id，配置样式
     this.topBarWidget.addClass('top-slot');
     this.horizontalPanel.id = 'main-box';
     this.statusBarWidget.id = 'status-bar';
 
     const layout = this.createBoxLayout(
-      [this.topBarWidget, this.horizontalPanel, this.statusBarWidget],
-      [0, 1, 0],
+      [this.topBarWidget, this.mainHorizontalWidget],
+      [0, 1],
       { direction: 'top-to-bottom', spacing: 0 },
     );
     this.layoutPanel = new BoxPanel({ layout });
@@ -127,6 +140,12 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     window.requestAnimationFrame(() => {
       this.eventBus.fire(new RenderedEvent());
     });
+  }
+
+  setFloatSize(size: number) {
+    this.floatSlotWidget.node.style.minWidth = size + 'px';
+    this.floatSlotWidget.fit();
+    this.mainHorizontalWidget.fit();
   }
 
   // TODO 后续可以把配置和contribution整合起来
@@ -173,10 +192,20 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
         const component = views && views.map((view) => view.component);
-        const size = options && options.size || 19;
+        const size = layoutConfig[location].size || (options && options.size) || 28;
         // TODO statusBar支持堆叠
         this.statusBarWidget.node.style.minHeight = `${size}px`;
         this.statusBarWidget.setComponent(component);
+      } else if (location === SlotLocation.float) {
+        const initSize = layoutConfig[location].size || 0;
+        if (layoutConfig[location].modules[0]) {
+          const { views } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+          const component = views && views[0].component;
+          if (component) {
+            this.floatSlotWidget.setComponent(component);
+          }
+          this.floatSlotWidget.node.style.minWidth = initSize + 'px';
+        }
       }
     }
     // 声明式注册的Tabbar组件注册完毕，渲染数据
@@ -266,7 +295,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           // bar的宽度
           this.storeState(side, e.payload.width + tabbarInfo.barSize);
         } else {
-          this.storeState(side, e.payload.height + 28);
+          this.storeState(side, e.payload.height + this.statusBarWidget.node.offsetHeight);
         }
       }, 60);
     }
@@ -324,7 +353,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     if (expand) {
       this.prevRelativeSize = this.middleWidget.relativeSizes();
       this.middleWidget.setRelativeSizes([0, 1]);
+      this.mainSlotWidget.hide();
     } else {
+      this.mainSlotWidget.show();
       this.middleWidget.setRelativeSizes(this.prevRelativeSize);
     }
   }
@@ -404,8 +435,12 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         this.horizontalPanel.fit();
         const prev = this.horizontalPanel.relativeSizes();
         this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
+        this.middleWidget.hide();
         tabbar.expanded = true;
       } else {
+        if (this.middleWidget.isHidden) {
+          this.middleWidget.show();
+        }
         // 右侧状态可能是0
         const initSize = this.sideState[side]!.size || undefined;
         let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
@@ -419,6 +454,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         this.horizontalPanel.fit();
       }
     } else {
+      if (this.middleWidget.isHidden) {
+        this.middleWidget.show();
+      }
       panel.hide();
       await this.splitHandler.setSidePanelSize(widget, barSize, { side, duration: 0 });
       if (!tabbar.expanded) {

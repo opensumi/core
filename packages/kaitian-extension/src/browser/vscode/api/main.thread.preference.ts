@@ -2,7 +2,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadPreference, PreferenceData, PreferenceChangeExt } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { ConfigurationTarget } from '../../../common/vscode';
-import { PreferenceService, PreferenceProviderProvider, PreferenceScope, Deferred } from '@ali/ide-core-browser';
+import { PreferenceService, PreferenceProviderProvider, PreferenceScope, Deferred, DisposableCollection, PreferenceSchemaProvider } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 
@@ -27,24 +27,23 @@ export function getPreferences(preferenceProviderProvider: PreferenceProviderPro
 export class MainThreadPreference implements IMainThreadPreference {
 
   @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  protected preferenceService: PreferenceService;
 
   @Autowired(PreferenceProviderProvider)
-  preferenceProviderProvider: PreferenceProviderProvider;
+  protected preferenceProviderProvider: PreferenceProviderProvider;
+
+  @Autowired(PreferenceSchemaProvider)
+  protected preferenceSchemaProvider: PreferenceSchemaProvider;
 
   @Autowired(IWorkspaceService)
-  workspaceService: IWorkspaceService;
+  protected workspaceService: IWorkspaceService;
 
-  private changeEvent;
+  protected readonly toDispose = new DisposableCollection();
 
   private readonly proxy: any;
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
-    const roots = this.workspaceService.tryGetRoots();
-    const data = getPreferences(this.preferenceProviderProvider, roots);
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
-    this.proxy.$initializeConfiguration(data);
-
-    this.changeEvent = this.preferenceService.onPreferencesChanged((changes) => {
+    this.toDispose.push(this.preferenceService.onPreferencesChanged((changes) => {
       const roots = this.workspaceService.tryGetRoots();
       const data = getPreferences(this.preferenceProviderProvider, roots);
       const eventData: PreferenceChangeExt[] = [];
@@ -53,11 +52,23 @@ export class MainThreadPreference implements IMainThreadPreference {
         eventData.push({ preferenceName, newValue });
       }
       this.proxy.$acceptConfigurationChanged(data, eventData);
-    });
+    }));
+
+    this.initializeConfiguration();
+
+    this.toDispose.push(this.preferenceSchemaProvider.onDidPreferenceSchemaChanged(() => {
+      this.initializeConfiguration();
+    }));
   }
 
   dispose() {
-    this.changeEvent.dispose();
+    this.toDispose.dispose();
+  }
+
+  async initializeConfiguration() {
+    const roots = this.workspaceService.tryGetRoots();
+    const data = getPreferences(this.preferenceProviderProvider, roots);
+    this.proxy.$initializeConfiguration(data);
   }
 
   async $updateConfigurationOption(

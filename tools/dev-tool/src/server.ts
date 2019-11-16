@@ -4,7 +4,6 @@ import * as http from 'http';
 import * as Koa from 'koa';
 import { Deferred } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
-import { TerminalHandler } from '@ali/ide-terminal-server';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const app = new Koa();

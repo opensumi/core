@@ -98,7 +98,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.browser.loadURL(this.appConfig.browserUrl);
       this.browser.webContents.on('devtools-reload-page', () => {
         this.isReloading = true;
-        this.startNode();
       });
       this.bindEvents();
     } catch (e) {
@@ -187,7 +186,6 @@ export class KTNodeProcess {
           forkArgs.push('--listenPath', rpcListenPath);
           this._process = fork(this.forkPath, forkArgs, forkOptions);
           this._process.on('message', (message) => {
-            console.log(message);
             if (message === 'ready') {
               resolve();
             }

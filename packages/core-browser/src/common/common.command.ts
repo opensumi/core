@@ -91,6 +91,12 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
     label: '%file.paste.file%',
   };
+
+  export const LOCATION: Command = {
+    id: 'explorer.location',
+    category: CATEGORY,
+    label: '%file.location%',
+  };
 }
 
 export namespace COMMON_COMMANDS {
@@ -118,16 +124,6 @@ export namespace COMMON_COMMANDS {
   export const OPEN_KEYMAPS: Command = {
     id: 'core.keymaps.open',
     label: '%common.keymaps.open%',
-  };
-}
-
-export namespace EXPLORER_COMMANDS {
-  const CATEGORY = '%explorer%';
-
-  export const LOCATION: Command = {
-    id: 'explorer.location',
-    category: CATEGORY,
-    label: '%explorer.location%',
   };
 }
 
@@ -205,12 +201,13 @@ export namespace EDITOR_COMMANDS {
   export const SAVE_ALL: Command = {
     id: 'editor.saveAll',
     category: CATEGORY,
-    label: '%editor.save.all%',
+    label: '%editor.saveAll%',
   };
 
   export const CLOSE_TO_RIGHT: Command = {
     id: 'editor.closeToRight',
     category: CATEGORY,
+    label: '%editor.closeToRight%',
   };
 
   export const GET_CURRENT: Command = {
@@ -221,21 +218,25 @@ export namespace EDITOR_COMMANDS {
   export const SPLIT_TO_LEFT: Command = {
     id: 'editor.splitToLeft',
     category: CATEGORY,
+    label: '%editor.splitToLeft%',
   };
 
   export const SPLIT_TO_RIGHT: Command = {
     id: 'editor.splitToRight',
     category: CATEGORY,
+    label: '%editor.splitToRight%',
   };
 
   export const SPLIT_TO_TOP: Command = {
     id: 'editor.splitToTop',
     category: CATEGORY,
+    label: '%editor.splitToTop%',
   };
 
   export const SPLIT_TO_BOTTOM: Command = {
     id: 'editor.splitToBottom',
     category: CATEGORY,
+    label: '%editor.splitToBottom%',
   };
 
   export const CHANGE_LANGUAGE: Command = {
@@ -275,6 +276,11 @@ export namespace EDITOR_COMMANDS {
 
   export const NAVIGATE_NEXT: Command = {
     id: 'editor.navigateNext',
+    category: CATEGORY,
+  };
+
+  export const NAVIGATE_PREVIOUS: Command = {
+    id: 'editor.navigatePrevious',
     category: CATEGORY,
   };
 
@@ -338,6 +344,31 @@ export namespace EDITOR_COMMANDS {
 
   export const GO_BACK: Command = {
     id: 'editor.goBack',
+    category: CATEGORY,
+  };
+
+  export const PIN_CURRENT: Command = {
+    id: 'editor.pinCurrent',
+    category: CATEGORY,
+  };
+
+  export const COPY_CURRENT_PATH: Command = {
+    id: 'editor.copyCurrentPath',
+    category: CATEGORY,
+  };
+
+  export const GO_TO_GROUP: Command = {
+    id: 'editor.goToGroup',
+    category: CATEGORY,
+  };
+
+  export const MOVE_GROUP: Command = {
+    id: 'editor.moveGroup',
+    category: CATEGORY,
+  };
+
+  export const REOPEN_CLOSED: Command = {
+    id: 'editor.reopenClosed',
     category: CATEGORY,
   };
 }

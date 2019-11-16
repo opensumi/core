@@ -1,0 +1,68 @@
+parameters:
+  name: ''
+  vmImage: ''
+
+jobs:
+- job: ${{ parameters.name }}
+  pool:
+    vmImage: ${{ parameters.vmImage }}
+  steps:
+  - task: NodeTool@0
+    displayName: Use Node 8.x
+    inputs:
+      versionSpec: 8.x
+      checkLatest: true
+
+  - task: Npm@1
+    displayName: npm install
+    inputs:
+      command: custom
+      customCommand: install --unsafe-perms
+      verbose: false
+
+  - ${{ if eq(parameters.name, 'Linux') }}:
+    - script: |
+        cd '$(Build.SourcesDirectory)'
+
+        export npm_package_engines_vscode='^1.19.0'
+        node ./node_modules/vscode/bin/install
+
+  - task: Npm@1
+    displayName: npm build
+    inputs:
+      command: custom
+      customCommand: run build
+      verbose: false
+
+  - task: Npm@1
+    displayName: npm test
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: test
+
+  - task: Npm@1
+    displayName: npm tslint
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: 'run tslint'
+
+  - task: Npm@1
+    displayName: npm package
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: 'run package -- --packagePath="$(Build.BinariesDirectory)/vscode-node-debug2.vsix"'
+
+  - task: ArchiveFiles@2
+    displayName: Archive files
+    inputs:
+      includeRootFolder: false
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifacts: drop'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: drop
+      publishLocation: Container

@@ -3,10 +3,9 @@ import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { DebugSession } from '../debug-session';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { BreakpointManager } from '../breakpoint';
-import { URI, IRange, localize } from '@ali/ide-core-browser';
+import { URI, IRange, localize, uuid } from '@ali/ide-core-browser';
 import { DebugSource } from './debug-source';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
-import { DebugModel } from '../editor/debug-model';
 
 export class DebugBreakpointData {
   readonly raw?: DebugProtocol.Breakpoint;
@@ -171,11 +170,6 @@ export class DebugBreakpoint extends DebugBreakpointData {
         range,
       });
     } else {
-      // if (this.models) {
-      //   for (const model of this.models) {
-      //     model.render();
-      //   }
-      // }
       await this.workbenchEditorService.open(this.uri, {
         ...options,
         range,
@@ -227,5 +221,46 @@ export class DebugBreakpoint extends DebugBreakpointData {
       className: decoration.className + '-unverified',
       message: [this.message || localize('debug.breakpoint.unverified') + decoration.message[0]],
     };
+  }
+}
+
+export class DebugExceptionBreakpoint {
+  private _id;
+  public enabled: boolean;
+  public filter: string;
+  public label: string;
+  constructor(
+    protected readonly meta: DebugProtocol.ExceptionBreakpointsFilter,
+    protected readonly breakpoints: BreakpointManager,
+  ) {
+    this.enabled = meta.default || false,
+    this.filter = meta.filter,
+    this.label = meta.label;
+    this._id = uuid();
+  }
+
+  get id() {
+    return this._id;
+  }
+
+  get uri() {
+    return undefined;
+  }
+
+  get line() {
+    return undefined;
+  }
+
+  get column() {
+    return undefined;
+  }
+
+  setEnabled(value: boolean) {
+    this.enabled = value;
+    this.breakpoints.updateExceptionBreakpoints(this.filter, value);
+  }
+
+  open() {
+    // do nothing
   }
 }

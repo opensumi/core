@@ -13,6 +13,12 @@ export enum TabActiveKey {
   INSTALLED = 'installed',
 }
 
+export interface ExtensionMomentState {
+  isInstalling?: boolean;
+  isUpdating?: boolean;
+  isUnInstalling?: boolean;
+}
+
 export const SearchFromMarketplaceCommandId = 'SearchFromMarketplaceCommand';
 
 export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_d8fa74/afts/img/A*LcaZT6AAG84AAAAAAAAAAABkARQnAQ';
@@ -53,6 +59,7 @@ export interface BaseExtension {
   name: string;
   version: string;
   path: string;
+  publisher: string;
 }
 
 // 插件面板左侧显示
@@ -60,7 +67,6 @@ export interface RawExtension extends BaseExtension {
   id: string; // publisher.name
   displayName: string;
   description: string;
-  publisher: string;
   installed: boolean;
   icon: string;
   enable: boolean;
@@ -113,10 +119,11 @@ export interface IExtensionManagerService extends IExtensionManager  {
   searchMarketplaceState: SearchState;
   searchMarketplaceResults: RawExtension[];
   contextMenu: IMenu;
+  extensionMomentState: Map<string, ExtensionMomentState>;
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined>;
-  getRawExtensionById(extensionId: string): Promise<RawExtension>;
+  getRawExtensionById(extensionId: string): RawExtension;
   toggleActiveExtension(extension: BaseExtension, active: boolean, scope: EnableScope): Promise<void>;
   searchFromMarketplace(query: string): void;
   searchFromInstalled(query: string): void;

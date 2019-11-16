@@ -784,7 +784,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
             const commandHandler = this.commandRegistry.getActiveHandler(command.id);
 
             if (commandHandler) {
-              commandHandler.execute(binding.args);
+              commandHandler.execute(...(binding.args || []));
             }
             /* 如果键绑定在上下文中但命令是可用状态下我们仍然在这里停止处理  */
             event.preventDefault();
@@ -797,7 +797,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
     }
     return false;
   }
-
 }
 
 export const noKeybidingInputName = 'no_keybinding';

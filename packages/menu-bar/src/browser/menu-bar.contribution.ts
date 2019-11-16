@@ -1,28 +1,18 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, CommandService, IEventBus, formatLocalize, URI } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, COMMON_MENUS, EDITOR_COMMANDS, IClientApp } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, CommandService } from '@ali/ide-core-common';
+import { ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { localize } from '@ali/ide-core-common';
-import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+
 import { MenuBar } from './menu-bar.view';
-import { IThemeService } from '@ali/ide-theme';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
-export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution {
-
-  @Autowired(IEventBus)
-  eventBus: IEventBus;
+@Domain(ClientAppContribution, CommandContribution, MenuContribution, ComponentContribution)
+export class MenuBarContribution implements CommandContribution, MenuContribution, ClientAppContribution, ComponentContribution {
 
   @Autowired(CommandService)
-  private commandService!: CommandService;
-
-  @Autowired(IClientApp)
-  clientApp: IClientApp;
-
-  @Autowired()
-  logger: Logger;
+  private readonly commandService: CommandService;
 
   onStart() {
   }
@@ -67,34 +57,37 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
     });
   }
 
-  registerMenus(menus: MenuModelRegistry): void {
-
-    menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
-      commandId: 'view.outward.right-panel.hide',
-      label: localize('menu-bar.view.outward.right-panel.hide'),
+  registerNextMenus(menus: IMenuRegistry): void {
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.right-panel.hide',
+        label: localize('menu-bar.view.outward.right-panel.hide'),
+      },
       when: 'rightPanelVisible',
     });
 
-    menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
-      commandId: 'view.outward.right-panel.show',
-      label: localize('menu-bar.view.outward.right-panel.show'),
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.right-panel.show',
+        label: localize('menu-bar.view.outward.right-panel.show'),
+      },
       when: '!rightPanelVisible',
     });
 
-    menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
-      commandId: 'view.outward.left-panel.hide',
-      label: localize('menu-bar.view.outward.left-panel.hide'),
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.left-panel.hide',
+        label: localize('menu-bar.view.outward.left-panel.hide'),
+      },
       when: 'leftPanelVisible',
     });
 
-    menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
-      commandId: 'view.outward.left-panel.show',
-      label: localize('menu-bar.view.outward.left-panel.show'),
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.left-panel.show',
+        label: localize('menu-bar.view.outward.left-panel.show'),
+      },
       when: '!leftPanelVisible',
     });
-
-  }
-
-  registerKeybindings(keybindings: KeybindingRegistry): void {
   }
 }

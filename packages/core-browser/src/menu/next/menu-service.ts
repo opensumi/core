@@ -6,7 +6,6 @@ import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { MenuId } from './menu-id';
-import { getIcon } from '../../icon';
 import { KeybindingRegistry } from '../../keybinding';
 
 export interface IMenuNodeOptions {
@@ -22,13 +21,13 @@ export abstract class MenuService {
   abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
-// 后续 MenuNode 要看齐 @ali/ide-core-common 的 ActionMenuNode
 export class SubmenuItemNode extends MenuNode {
+  static readonly ID = 'menu.item.node.submenu';
+
   readonly item: ISubmenuItem;
 
-  // todo: 需要再去看下 submenu 如何实现，我们这边目前没有看到
   constructor(item: ISubmenuItem) {
-    typeof item.title === 'string' ? super('', item.title, 'submenu') : super('', item.title.value, 'submenu');
+    super(SubmenuItemNode.ID, '', item.label);
     this.item = item;
   }
 }
@@ -60,21 +59,17 @@ export class MenuItemNode extends MenuNode {
     @Optional() item: Command,
     @Optional() options: IMenuNodeOptions = {},
     @Optional() disabled: boolean,
-    @Optional() toggled: boolean,
+    @Optional() checked: boolean,
     @Optional() nativeRole?: string,
   ) {
-    // 将 isToggled 属性通过 iconClass 来实现
-    const icon = toggled ? getIcon('check') : '';
-    super(item.id, icon, item.label!, disabled, nativeRole);
-    // 后置获取 i18n 数据 主要处理 ide-framework 内部的 command 的 i18n
-    // const command = this.commandRegistry.getCommand(item.id)!;
-    // this.label = command.label!;
+    super(item.id, item.iconClass, item.label!, checked, disabled, nativeRole);
 
     this.className = undefined;
 
     const shortcutDesc = this.getShortcut(item.id);
 
     this.keybinding = shortcutDesc && shortcutDesc.keybinding || '';
+    this.rawKeybinding = shortcutDesc && shortcutDesc.rawKeybinding;
     this.isKeyCombination = !!(shortcutDesc && shortcutDesc.isKeyCombination);
     this._options = options;
 
@@ -101,6 +96,7 @@ export class MenuItemNode extends MenuNode {
         }
         return {
           keybinding,
+          rawKeybinding: keybindings[0].keybinding,
           isKeyCombination,
         };
       }
@@ -127,6 +123,9 @@ type MenuItemGroup = [string, Array<IMenuItem | ISubmenuItem>];
 @Injectable()
 class Menu extends Disposable implements IMenu {
   private readonly _onDidChange = new Emitter<IMenu | undefined>();
+  get onDidChange(): Event<IMenu | undefined> {
+    return this._onDidChange.event;
+  }
 
   private _menuGroups: MenuItemGroup[];
   private _contextKeys: Set<string>;
@@ -159,7 +158,6 @@ class Menu extends Disposable implements IMenu {
     // when context keys change we need to check if the menu also
     // has changed
     this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
-      // (listener) => this.eventBus.on(ContextKeyChangeEvent, listener),
       this.contextKeyService.onDidChangeContext,
       (last, event) => last || event.payload.affectsSome(this._contextKeys),
       50,
@@ -191,6 +189,11 @@ class Menu extends Disposable implements IMenu {
       // keep keys for eventing
       this.fillKeysInWhenExpr(this._contextKeys, item.when);
 
+      // 收集 toggledWhen
+      if (isIMenuItem(item)) {
+        this.fillKeysInWhenExpr(this._contextKeys, item.toggledWhen);
+      }
+
       // FIXME: 我们的 command 有 precondition(command)/toggled 属性吗？
       // keep precondition keys for event if applicable
       // if (isIMenuItem(item) && item.command.precondition) {
@@ -205,34 +208,49 @@ class Menu extends Disposable implements IMenu {
     this._onDidChange.fire(this);
   }
 
-  get onDidChange(): Event<IMenu | undefined> {
-    return this._onDidChange.event;
-  }
-
   getMenuNodes(options: IMenuNodeOptions = {}): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
     const result: [string, Array<MenuItemNode | SubmenuItemNode>][] = [];
     for (const group of this._menuGroups) {
       const [id, items] = group;
       const activeActions: Array<MenuItemNode | SubmenuItemNode> = [];
       for (const item of items) {
-        if (this.contextKeyService.match(item.when)) {
+        // FIXME: 由于缺失比较多的 context key, 因此 CommandPalette 跳过 when 匹配
+        if (this.id === MenuId.CommandPalette || this.contextKeyService.match(item.when)) {
           if (isIMenuItem(item)) {
             // 兼容现有的 Command#isVisible
             const { args = [] } = options;
+            const menuCommandDesc = this.menuRegistry.getMenuCommand(item.command);
+            const command = this.commandRegistry.getCommand(menuCommandDesc.id);
 
-            const command = this.commandRegistry.getCommand(item.command);
+            const menuCommand = { ...(command || {}), ...menuCommandDesc };
             // 没有 desc 的 command 不展示在 menu 中
-            if (command && command.label) {
-              if (this.commandRegistry.isVisible(command.id, ...args)) {
-                const disabled = !this.commandRegistry.isEnabled(command.id, ...args);
-                const toggled = this.commandRegistry.isToggled(command.id, ...args);
-                const action = this.injector.get(MenuItemNode, [command, options, disabled, toggled, item.nativeRole]);
-                activeActions.push(action);
-              }
+            if (!menuCommand.label) {
+              continue;
             }
-          } else {
-            const action = new SubmenuItemNode(item);
+
+            // FIXME: Command.isVisible 待废弃
+            // command 存在但是 isVisible 为 false 则跳过
+            if (command && !this.commandRegistry.isVisible(menuCommand.id, ...args)) {
+              continue;
+            }
+
+            const commandEnablement = Boolean(command && this.commandRegistry.isEnabled(menuCommand.id, ...args));
+            const commandToggle = Boolean(command && this.commandRegistry.isToggled(menuCommand.id, ...args));
+
+            const disabled = !commandEnablement;
+            // toggledWhen 的优先级高于 isToggled
+            // 若设置了 toggledWhen 则忽略 Command 的 isVisible
+            const checked = 'toggledWhen' in item
+              ? this.contextKeyService.match(item.toggledWhen)
+              : commandToggle;
+            const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);
             activeActions.push(action);
+          } else {
+            // 只有 label 存在值的时候才渲染
+            if (item.label) {
+              const action = new SubmenuItemNode(item);
+              activeActions.push(action);
+            }
           }
         }
       }

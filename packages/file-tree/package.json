@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-file-tree",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "@ali/ide-file-tree",
   "files": [
     "lib"
@@ -21,18 +21,24 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-core-common": "1.5.0",
-    "@ali/ide-core-node": "1.5.0",
-    "@ali/ide-file-service": "1.5.0",
-    "@ali/ide-workspace": "1.5.0",
-    "@ali/ide-workspace-edit": "1.5.0"
+    "@ali/ide-core-common": "1.5.1",
+    "@ali/ide-core-node": "1.5.1",
+    "@ali/ide-file-service": "1.5.1",
+    "@ali/ide-workspace": "1.5.1",
+    "@ali/ide-workspace-edit": "1.5.1"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.5.0",
+    "@ali/ide-core-browser": "1.5.1",
     "@ali/ide-dev-tool": "^1.1.0",
-    "@ali/ide-overlay": "1.5.0",
-    "@ali/ide-main-layout": "1.5.0",
-    "@ali/ide-activity-bar": "1.5.0",
+    "@ali/ide-overlay": "1.5.1",
+    "@ali/ide-explorer": "1.5.1",
+    "@ali/ide-activity-bar": "1.5.1",
+    "@ali/ide-decoration": "1.5.1",
+    "@ali/ide-editor": "1.5.1",
+    "@ali/ide-main-layout": "1.5.1",
+    "@ali/ide-activity-panel": "1.5.1",
+    "@ali/ide-theme": "1.5.1",
+    "@ali/ide-workspace": "1.5.1",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

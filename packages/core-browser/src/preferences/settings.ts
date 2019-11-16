@@ -5,15 +5,15 @@ export interface IPreferenceSettingsService {
 
   setPreference(key: string, value: any, scope: PreferenceScope);
 
-  getSettingGroups(): ISettingGroup[];
+  getSettingGroups(scope: PreferenceScope, search?: string): ISettingGroup[];
 
   registerSettingGroup(group: ISettingGroup): IDisposable;
 
   registerSettingSection(groupId: string, section: ISettingSection): IDisposable;
 
-  getSections(groupId: string, scope: PreferenceScope): ISettingSection[];
+  getSections(groupId: string, scope: PreferenceScope, search?: string): ISettingSection[];
 
-  getPreference(preferenceName: string, scope: PreferenceScope): {value: any, inherited: boolean};
+  getPreference(preferenceName: string, scope: PreferenceScope): {value: any, effectingScope: PreferenceScope};
 
   setEnumLabels(preferenceName: string, labels: {[key: string]: string}): void;
 }
