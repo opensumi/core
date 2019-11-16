@@ -3,7 +3,7 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService, CommandRegistry} from '@ali/ide-core-common';
 import { Event } from '@ali/ide-core-common/lib/event';
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
-import { MenuNode, IMenubarItem } from '../../base';
+import { MenuNode, IMenubarItem, IMenuRegistry } from '../../base';
 import { SeparatorMenuItemNode, SubmenuItemNode, MenuService } from '../../menu-service';
 import { electronEnv } from '../../../../utils';
 import { AbstractMenubarService } from '../../menubar-service';
@@ -22,16 +22,15 @@ export interface IElectronMenuBarService {
 
 @Injectable()
 export class ElectronMenuFactory extends Disposable {
-
-  @Autowired(AbstractMenubarService)
-  menubarService: AbstractMenubarService;
+  @Autowired(MenuService)
+  menuService: MenuService;
 
   public getMenuNodes(id: string): MenuNode[] {
-    const menus = this.menubarService.getMenuItem(id);
+    const menus = this.menuService.createMenu(id);
     if (!menus) {
       return [];
     }
-    const result = generateCtxMenu({menus});
+    const result = generateCtxMenu({ menus });
     if (result && result.length >= 2) {
       return [...result[0], ...result[1]];
     } else {
@@ -174,7 +173,7 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
     const appMenuTemplate: INativeMenuTemplate[] = [];
     menubarItems.forEach((item) => {
       const menuId = item.id;
-      const menuNodes = this.menubarService.getNewMenuItem(menuId);
+      const menuNodes = this.menubarService.getMenuItem(menuId);
       const templates = this.factory.getTemplate(menuNodes, this.menuBarActions);
       if (templates && templates.length > 0) {
         appMenuTemplate.push({
@@ -184,22 +183,5 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
       }
     });
     this.electronMainMenuService.setApplicationMenu({submenu: appMenuTemplate}, electronEnv.currentWindowId);
-  }
-
-  getResolvedMenuItems(): IResolvedMenubarItem[] {
-    const menubarItems = this.menubarService.getMenubarItems();
-    return menubarItems.map((item) => this.resolveMenuItem(item)).filter((item) => !!item) as IResolvedMenubarItem[];
-  }
-
-  resolveMenuItem(item: IMenubarItem): IResolvedMenubarItem | undefined {
-    const menus = this.menubarService.getMenuItem(item.id);
-    if (menus) {
-      const result = generateCtxMenu({menus});
-      return {
-        ...item,
-        nodes: [...result[0], ...result[1]],
-      };
-    }
-    return undefined;
   }
 }

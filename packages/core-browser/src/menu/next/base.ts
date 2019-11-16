@@ -45,7 +45,7 @@ export abstract class IMenuRegistry {
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
   abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem>): IDisposable;
-  abstract getMenuItems(menuId: MenuId): Array<IMenuItem | ISubmenuItem>;
+  abstract getMenuItems(menuId: MenuId | string): Array<IMenuItem | ISubmenuItem>;
 }
 
 export interface IMenubarItem {
