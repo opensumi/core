@@ -13,13 +13,7 @@ export abstract class AbstractMenubarService extends Disposable {
   abstract getMenubarItem(menuId: string): IMenubarItem | undefined;
 
   readonly onDidMenuChange: Event<string>;
-  // TODO: deprecaated
-  abstract getMenuItems(): Map<string, IMenu>;
-  // TODO: deprecaated
-  abstract getMenuItem(menuId: string): IMenu | undefined;
-
-  abstract getNewMenuItems(): Map<string, MenuNode[]>;
-  abstract getNewMenuItem(menuId: string): MenuNode[];
+  abstract getMenuItem(menuId: string): MenuNode[];
 }
 
 @Injectable()
@@ -43,23 +37,92 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     return this._onDidMenuBarChange.event;
   }
 
-  private menubarIds: Set<string> = new Set();
-
   private readonly _onDidMenuChange = new Emitter<string>();
   get onDidMenuChange(): Event<string> {
     return this._onDidMenuChange.event;
   }
 
-  private menus: Map<string, IMenu> = new Map();
-
-  menuNodes: Map<string, MenuNode[]> = new Map();
-
   private listenerDisposables: Map<string, IDisposable> = new Map();
+
+  private _menubarIds: Set<string> = new Set();
+  private _menus: Map<string, IMenu> = new Map();
+
+  private _menubarItems: IMenubarItem[] = [];
+  private _menuItems: Map<string, MenuNode[]> = new Map();
 
   constructor() {
     super();
-    this.collectMenubarIds();
-    this.menuRegistry.onDidChangeMenubar(this.handleMenubarChanged, this, this.disposables);
+    this._buildMenubars();
+    this._buildMenus();
+
+    // event for MenubarId
+    this.addDispose(Event.debounce(
+      Event.filter(this.menuRegistry.onDidChangeMenubar, (menubarId: string) => this._menubarIds.has(menubarId)),
+      () => { },
+      50,
+    )(this._buildMenubars, this));
+
+    // event for MenuIds
+    this.addDispose(Event.debounce(
+      Event.filter(this.menuRegistry.onDidChangeMenu, (menuId: string) => this._menus.has(menuId)),
+      () => { },
+      50,
+    )(this._buildMenus, this));
+
+    this.addDispose(this._onDidMenuBarChange);
+    this.addDispose(this._onDidMenuChange);
+  }
+
+  private _buildMenubars() {
+    // reset
+    this._menubarItems = [];
+    this._menubarIds = new Set();
+
+    let menubarItems = this.menuRegistry.getMenubarItems();
+    menubarItems = menubarItems.sort(menubarItemsSorter);
+
+    menubarItems.forEach((menubarItem) => {
+      const menuId = menubarItem.id;
+      this._menubarItems.push(menubarItem);
+      // keep menuId for eventing
+      this._menubarIds.add(menuId);
+    });
+    this._onDidMenuBarChange.fire(undefined);
+  }
+
+  private disposeMenuListener() {
+    this.listenerDisposables.forEach((disposable) => {
+      disposable.dispose();
+    });
+    this.listenerDisposables.clear();
+  }
+
+  private disposeMenus() {
+    this._menus.forEach((menu) => menu.dispose());
+    this._menus.clear();
+  }
+
+  private _buildMenus() {
+    // reset
+    this._menuItems.clear();
+    this.disposeMenus();
+    this.disposeMenuListener();
+
+    this._menubarItems.forEach(({ id: menuId }) => {
+      const menus = this.menuService.createMenu(menuId);
+
+      this._menus.set(menuId, menus);
+      this.listenerDisposables.set(
+        menuId,
+        menus.onDidChange(() => this._onDidMenuChange.fire(menuId), this, this.disposables),
+      );
+
+      const menubarMenu = [] as MenuNode[];
+      this.buildMenuItems(menuId, menus, menubarMenu);
+      this._menuItems.set(menuId, menubarMenu);
+    });
+
+    this._onDidMenuBarChange.fire(undefined);
   }
 
   dispose() {
@@ -70,7 +133,7 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
   }
 
   public getMenubarItems() {
-    return Array.from(this.menubarIds).reduce((prev, menuId: string) => {
+    return Array.from(this._menubarIds).reduce((prev, menuId: string) => {
       const menubarItem = this.menuRegistry.getMenubarItem(menuId);
       if (menubarItem) {
         prev.push(menubarItem);
@@ -80,79 +143,18 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
   }
 
   public getMenubarItem(menuId: string) {
-    if (!this.menubarIds.has(menuId)) {
+    if (!this._menubarIds.has(menuId)) {
       return undefined;
     }
 
     return this.menuRegistry.getMenubarItem(menuId);
   }
 
-  public getMenuItems() {
-    return this.menus;
-  }
-
   public getMenuItem(menuId: string) {
-    return this.menus.get(menuId);
+    return this._menuItems.get(menuId) || [];
   }
 
-  public getNewMenuItem(menuId: string) {
-    return this.menuNodes.get(menuId) || [];
-  }
-
-  public getNewMenuItems() {
-    return this.menuNodes;
-  }
-
-  private collectMenubarIds() {
-    const menubarItems = this.menuRegistry.getMenubarItems();
-    menubarItems.forEach((menubarItem) => {
-      const menuId = menubarItem.id;
-      this.menubarIds.add(menuId);
-      this.generateMenuItemForMenubar(menuId);
-    });
-    this._onDidMenuBarChange.fire(undefined);
-  }
-
-  private handleMenuChanged = (menuId: string) => () => {
-    this._onDidMenuChange.fire(menuId);
-  }
-
-  private handleMenubarChanged(menuId: string) {
-    this.collectMenuId(menuId);
-  }
-
-  private collectMenuId(menuId: string) {
-    if (this.menubarIds.has(menuId)) {
-      this.logger.warn(`MenuId: ${menuId} already exists`);
-      return;
-    }
-    this.menubarIds.add(menuId);
-    this._onDidMenuBarChange.fire(menuId);
-    this.generateMenuItemForMenubar(menuId);
-  }
-
-  private generateMenuItemForMenubar(menuId: string) {
-    const menus = this.menuService.createMenu(menuId);
-    const oldMenus = this.menus.get(menuId);
-    if (oldMenus) {
-      // 清理
-      oldMenus.dispose();
-      const listernerDispoable = this.listenerDisposables.get(menuId);
-      if (listernerDispoable) {
-        listernerDispoable.dispose();
-        this.listenerDisposables.delete(menuId);
-      }
-    }
-
-    this.menus.set(menuId, menus);
-    this.listenerDisposables.set(menuId, menus.onDidChange(this.handleMenuChanged(menuId), this, this.disposables));
-
-    const menubarMenu = [];
-    this.populateMenuItems(menuId, menus, menubarMenu);
-    this.menuNodes.set(menuId, menubarMenu);
-  }
-
-  populateMenuItems(menuId: string, menus: IMenu, menuToPopulate: any[]) {
+  buildMenuItems(menuId: string, menus: IMenu, menuToPopulate: any[]) {
     const result = generateCtxMenu({ menus });
     const menuItems = [...result[0], ...result[1]];
     menuItems.forEach((menuItem) => {
@@ -160,16 +162,16 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
         const submenuItems = [];
 
         const submenuId = menuItem.item.submenu;
-        if (!this.menus[submenuId]) {
-          const menu = this.registerDispose(this.menuService.createMenu(submenuId));
-          this.menus.set(submenuId, menu);
-          this.registerDispose(menu.onDidChange(() => {
+        if (!this._menus.has(submenuId)) {
+          const menus = this.registerDispose(this.menuService.createMenu(submenuId));
+          this._menus.set(submenuId, menus);
+          this.registerDispose(menus.onDidChange(() => {
             this._onDidMenuChange.fire(menuId);
           }));
         }
 
         const menuToDispose = this.menuService.createMenu(submenuId);
-        this.populateMenuItems(submenuId, menuToDispose, submenuItems);
+        this.buildMenuItems(submenuId, menuToDispose, submenuItems);
 
         const menubarSubmenuItem = {
           id: menuItem.id,
@@ -184,4 +186,16 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
       }
     });
   }
+}
+
+function menubarItemsSorter(a: IMenubarItem, b: IMenubarItem): number {
+  // sort on priority - default is 0
+  const aPrio = a.order || 0;
+  const bPrio = b.order || 0;
+  if (aPrio < bPrio) {
+    return -1;
+  } else if (aPrio > bPrio) {
+    return 1;
+  }
+  return 0;
 }

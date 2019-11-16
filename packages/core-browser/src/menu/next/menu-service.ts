@@ -270,7 +270,6 @@ class Menu extends Disposable implements IMenu {
   }
 }
 
-// 这里的 sort 还是有点问题的，因为 i18n 的获取是 getMenuNodes 里取的
 function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
   const aGroup = a.group;
   const bGroup = b.group;
