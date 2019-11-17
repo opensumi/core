@@ -22,7 +22,7 @@ export namespace MonacoMenus {
   export const SELECTION_MOVE_GROUP: MonacoActionGroup = {
       id: '2_copy_move_group',
       actions: [
-          'editor.action.copyLinesUpAction',
+         'editor.action.copyLinesUpAction',
          'editor.action.copyLinesDownAction',
          'editor.action.moveLinesUpAction',
          'editor.action.moveLinesDownAction',
