@@ -3,7 +3,7 @@ import { IEditorActionRegistry, IEditorActionItem } from '../types';
 import { IDisposable, URI, BasicEvent, IEventBus, Disposable, IContextKeyService, Emitter, IContextKeyExpr } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup } from '../../common';
 import { observable, reaction, computed } from 'mobx';
-import { MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class EditorActionRegistryImpl implements IEditorActionRegistry {
@@ -26,8 +26,8 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  @Autowired(MenuService)
-  menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  menuService: AbstractMenuService;
 
   @Autowired(ICtxMenuRenderer)
   ctxMenuRenderer: ICtxMenuRenderer;

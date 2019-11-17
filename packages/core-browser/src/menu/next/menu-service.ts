@@ -17,7 +17,7 @@ export interface IMenu extends IDisposable {
   getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]>;
 }
 
-export abstract class MenuService {
+export abstract class AbstractMenuService {
   abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
@@ -106,7 +106,7 @@ export class MenuItemNode extends MenuNode {
 }
 
 @Injectable()
-export class MenuServiceImpl implements MenuService {
+export class MenuServiceImpl implements AbstractMenuService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 

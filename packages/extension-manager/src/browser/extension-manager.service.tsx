@@ -6,7 +6,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize } from '@ali/ide-core-browser';
 import { memoize, IDisposable, dispose, getLanguageId } from '@ali/ide-core-common';
-import { IMenu, MenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
@@ -35,8 +35,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;

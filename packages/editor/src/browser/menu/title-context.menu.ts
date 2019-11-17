@@ -1,13 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { MenuService, ICtxMenuRenderer, IMenu, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, ICtxMenuRenderer, IMenu, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { URI } from '@ali/ide-core-common';
 import { IEditorGroup } from '../../common';
 
 @Injectable()
 export class TabTitleMenuService {
 
-  @Autowired(MenuService)
-  menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  menuService: AbstractMenuService;
 
   @Autowired(ICtxMenuRenderer)
   ctxMenuRenderer: ICtxMenuRenderer;
