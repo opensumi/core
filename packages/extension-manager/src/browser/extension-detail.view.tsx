@@ -134,7 +134,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
   // https://yuque.antfin-inc.com/cloud-ide/za8zpk/kpwylo#RvfMV
   const menu = (
-    currentExtension && (<Menu className={'kt-menu'}>
+    currentExtension && (<Menu className='kt-menu'>
       <Menu.Item onClick={() => toggleActive(EnableScope.GLOBAL)} disabled={currentExtension.enableScope === EnableScope.WORKSPACE && currentExtension.enable}>
       {currentExtension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}
       </Menu.Item>
