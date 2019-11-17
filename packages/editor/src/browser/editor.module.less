@@ -148,7 +148,8 @@
       &.kt_editor_tab_current {
         background: var(--tab-activeBackground);
         color: var(--tab-activeForeground);
-        border-bottom: 1px solid var(--tab-activeBorder);
+        border-bottom: 1px solid var(--tab-activeBackground);
+        border-bottom-color: var(--tab-activeBorder);
         .dirty {
           &::before {
             background-color: var(--tab-activeForeground);
