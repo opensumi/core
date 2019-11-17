@@ -93,7 +93,7 @@ export class Extension extends Disposable implements IExtension {
 
       if (this.deafaultPkgNlsJSON) {
         registerLocalizationBundle( {
-          languageId: 'en-us',
+          languageId: 'default',
           languageName: 'en-US',
           localizedLanguageName: '英文(默认)',
           contents: this.deafaultPkgNlsJSON as any,
