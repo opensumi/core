@@ -133,28 +133,33 @@
         align-items: center;
         width:10px;
       }
-      &.kt_editor_tab_current {
-        background: var(--tab-activeBackground);
-        color: var(--tab-activeForeground);
-        border-bottom: 1px solid var(--tab-activeBorder);
-      }
-      &.kt_on_drag_over {
-        background: rgba(0,0,0,.5);
-      }
-      .close_tab {
-        display:none;
-      }
       .dirty {
         display: flex;
         justify-content: center;
         align-items: center;
         &::before {
           content: '';
-          width: 10px;
-          height: 10px;
+          width: 8px;
+          height: 8px;
           border-radius: 5px;
-          background: var(--editorGroup-dropBackground);
+          background-color: var(--tab-inactiveForeground);
         }
+      }
+      &.kt_editor_tab_current {
+        background: var(--tab-activeBackground);
+        color: var(--tab-activeForeground);
+        border-bottom: 1px solid var(--tab-activeBorder);
+        .dirty {
+          &::before {
+            background-color: var(--tab-activeForeground);
+          }
+        }
+      }
+      &.kt_on_drag_over {
+        background: rgba(0,0,0,.5);
+      }
+      .close_tab {
+        display:none;
       }
       &:hover {
         .dirty {

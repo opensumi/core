@@ -154,7 +154,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.SAVE_ALL.id,
-      keybinding: 'alt+ctlcmd+s',
+      keybinding: 'alt+ctrlcmd+s',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
