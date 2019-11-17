@@ -1,10 +1,10 @@
-import { CoreCommandRegistryImpl,  CommandRegistry, DisposableStore } from '@ali/ide-core-common';
+import { CoreCommandRegistryImpl, CommandRegistry, DisposableStore } from '@ali/ide-core-common';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { Injector } from '@ali/common-di';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { generateCtxMenu, MenuService, MenuRegistry, MenuServiceImpl, IMenuRegistry, MenuId, isIMenuItem, generateMergedCtxMenu } from '../../../src/menu/next';
+import { AbstractMenuService, MenuRegistryImpl, MenuServiceImpl, IMenuRegistry, MenuId, isIMenuItem, generateMergedCtxMenu } from '../../../src/menu/next';
 import { IContextKeyService } from '../../../src/context-key';
 import { Command } from '@ali/ide-core-common';
 
@@ -18,11 +18,11 @@ const contextKeyService = new class extends MockContextKeyService {
   }
 };
 
-describe('MenuService', () => {
+describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   let injector: MockInjector;
 
-  let menuRegistry: MenuRegistry;
-  let menuService: MenuService;
+  let menuRegistry: IMenuRegistry;
+  let menuService: AbstractMenuService;
   let commandRegistry: CommandRegistry;
   const disposables = new DisposableStore();
   const testMenuId = 'mock/test/menu';
@@ -34,7 +34,7 @@ describe('MenuService', () => {
         useClass: MockContextKeyService,
       }, {
         token: IMenuRegistry,
-        useClass: MenuRegistry,
+        useClass: MenuRegistryImpl,
       },  {
         token: CommandRegistry,
         useClass: CoreCommandRegistryImpl,
@@ -42,13 +42,13 @@ describe('MenuService', () => {
     ]));
 
     injector.addProviders({
-      token: MenuService,
+      token: AbstractMenuService,
       useClass: MenuServiceImpl,
     });
 
     commandRegistry = injector.get(CommandRegistry);
     menuRegistry = injector.get(IMenuRegistry);
-    menuService = injector.get(MenuService);
+    menuService = injector.get(AbstractMenuService);
 
     disposables.clear();
   });
@@ -408,5 +408,28 @@ describe('MenuService', () => {
     expect(menuNodes1[0][1][0].label).toBe('b1');
     const menuNodes2 = menuService.createMenu(testMenuId, contextKeyService).getMenuNodes();
     expect(menuNodes2[0][1][0].label).toBe('a1');
+  });
+
+  it('regiser menubar item', () => {
+    disposables.add(menuRegistry.registerMenubarItem('testMenubarId1', {
+      label: 'a1',
+      order: 2,
+    }));
+
+    disposables.add(menuRegistry.registerMenubarItem('testMenubarId2', {
+      label: 'a2',
+    }));
+
+    disposables.add(menuRegistry.registerMenubarItem('testMenubarId3', {
+      label: 'a3',
+      order: -1,
+    }));
+
+    const menubarItems = menuRegistry.getMenubarItems();
+
+    expect(menubarItems.length).toBe(3);
+    // menu registry 会忽略排序，排序是在 menubar-service 里做的
+    expect(menubarItems[0].label).toBe('a1');
+    expect(menubarItems.map((n) => n.label)).toEqual(['a1', 'a2', 'a3']);
   });
 });

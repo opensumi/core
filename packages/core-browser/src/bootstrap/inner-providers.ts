@@ -33,7 +33,7 @@ import { IElectronMainUIService, IElectronMainLifeCycleService } from '@ali/ide-
 import { PreferenceContribution } from '../preferences';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../variable';
 
-import { MenuService, MenuServiceImpl, AbstractMenubarService, MenubarServiceImpl, IMenuRegistry, MenuRegistry, NextMenuContribution } from '../menu/next';
+import { AbstractMenuService, MenuServiceImpl, AbstractMenubarService, MenubarServiceImpl, IMenuRegistry, MenuRegistryImpl, NextMenuContribution } from '../menu/next';
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
 import { ElectronCtxMenuRenderer, ElectronMenuBarService, IElectronMenuFactory, IElectronMenuBarService, ElectronMenuFactory } from '../menu/next/renderer/ctxmenu/electron';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
@@ -102,12 +102,12 @@ export function injectInnerProviders(injector: Injector) {
     },
     // next version menu
     {
-      token: MenuService,
+      token: AbstractMenuService,
       useClass: MenuServiceImpl,
     },
     {
       token: IMenuRegistry,
-      useClass: MenuRegistry,
+      useClass: MenuRegistryImpl,
     },
     {
       token: ICtxMenuRenderer,

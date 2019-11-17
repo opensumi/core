@@ -10,7 +10,7 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { SIDE_MENU_PATH } from '../common';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
-import { IMenuRegistry, MenuService, ICtxMenuRenderer, IMenu, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, IMenu, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 const WIDGET_OPTION = Symbol();
 
@@ -28,8 +28,8 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   @Autowired(IMenuRegistry)
   menus: IMenuRegistry;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;

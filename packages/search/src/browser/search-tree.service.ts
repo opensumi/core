@@ -8,7 +8,7 @@ import { WorkbenchEditorService, TrackedRangeStickiness } from '@ali/ide-editor'
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { IDialogService } from '@ali/ide-overlay';
 import { memoize, IContextKeyService } from '@ali/ide-core-browser';
-import { MenuService, IMenu, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenu, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
@@ -209,8 +209,8 @@ export class SearchTreeService {
   @Autowired(IDialogService)
   private dialogService: IDialogService;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly ctxMenuRenderer: ICtxMenuRenderer;

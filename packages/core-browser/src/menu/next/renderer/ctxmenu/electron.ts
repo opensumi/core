@@ -3,8 +3,8 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService, CommandRegistry} from '@ali/ide-core-common';
 import { Event } from '@ali/ide-core-common/lib/event';
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
-import { MenuNode, IMenubarItem, IMenuRegistry } from '../../base';
-import { SeparatorMenuItemNode, SubmenuItemNode, MenuService } from '../../menu-service';
+import { MenuNode, IExtendMenubarItem, IMenuRegistry } from '../../base';
+import { SeparatorMenuItemNode, SubmenuItemNode, AbstractMenuService } from '../../menu-service';
 import { electronEnv } from '../../../../utils';
 import { AbstractMenubarService } from '../../menubar-service';
 import { generateCtxMenu } from '../../menu-util';
@@ -22,8 +22,8 @@ export interface IElectronMenuBarService {
 
 @Injectable()
 export class ElectronMenuFactory extends Disposable {
-  @Autowired(MenuService)
-  menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  menuService: AbstractMenuService;
 
   public getMenuNodes(id: string): MenuNode[] {
     const menus = this.menuService.createMenu(id);
@@ -46,7 +46,7 @@ export class ElectronMenuFactory extends Disposable {
       if (menuNode.id === SubmenuItemNode.ID) {
         return {
           label: `${mnemonicButtonLabel(menuNode.label, true)}`,
-          submenu: this.getTemplate(menuNode.items, map, context),
+          submenu: this.getTemplate(menuNode.children, map, context),
         };
       } else {
         this.bindAction(menuNode, map, context);
@@ -130,7 +130,7 @@ function toElectronAccelerator(keybinding: string) {
   return keybinding.replace('ctrlcmd', 'CmdOrCtrl');
 }
 
-interface IResolvedMenubarItem extends IMenubarItem {
+interface IResolvedMenubarItem extends IExtendMenubarItem {
   nodes: MenuNode[];
 }
 
@@ -162,7 +162,7 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
     });
     this.updateMenuBar();
     // 同时监听 onDidMenuBarChange/onDidMenuChange
-    this.menubarService.onDidMenuBarChange(() => {
+    this.menubarService.onDidMenubarChange(() => {
       this.updateMenuBar();
     });
     this.menubarService.onDidMenuChange(() => {
@@ -176,7 +176,7 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
     const appMenuTemplate: INativeMenuTemplate[] = [];
     menubarItems.forEach((item) => {
       const menuId = item.id;
-      const menuNodes = this.menubarService.getMenuItem(menuId);
+      const menuNodes = this.menubarService.getMenuNodes(menuId);
       const templates = this.factory.getTemplate(menuNodes, this.menuBarActions);
       if (templates && templates.length > 0) {
         appMenuTemplate.push({

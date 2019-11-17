@@ -6,7 +6,7 @@ import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { MenuService, MenuId, MenuItemNode } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, MenuId, MenuItemNode } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class QuickCommandModel implements QuickOpenModel {
@@ -23,8 +23,8 @@ export class QuickCommandModel implements QuickOpenModel {
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
 
-  @Autowired(MenuService)
-  protected menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  protected menuService: AbstractMenuService;
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
