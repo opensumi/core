@@ -66,13 +66,13 @@ export class ClientCommonContribution implements CommandContribution, Preference
   registerNextMenus(menus: IMenuRegistry): void {
     // 注册 Menubar
     if (isElectronRenderer()) {
-      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'Kaitian Electron') });
+      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'Kaitian Electron'), order: 0});
     }
-    menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file') });
-    menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit') });
-    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection') });
-    menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view') });
-    menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help') });
+    menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file'), order: 1 });
+    menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit'), order: 2 });
+    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection'), order: 3 });
+    menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view'), order: 4 });
+    menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
 
     /* ---- test for submenu ---- */
     // const testSubmenuId = 'greatmenu';

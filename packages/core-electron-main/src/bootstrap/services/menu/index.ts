@@ -63,6 +63,7 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
       type: template.type,
       role: template.role as any,
       enabled: !template.disabled,
+      checked: template.checked,
     };
   }
 

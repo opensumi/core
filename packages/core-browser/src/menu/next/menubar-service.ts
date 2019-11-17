@@ -57,7 +57,7 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
 
     // event for MenubarId
     this.addDispose(Event.debounce(
-      Event.filter(this.menuRegistry.onDidChangeMenubar, (menubarId: string) => this._menubarIds.has(menubarId)),
+      this.menuRegistry.onDidChangeMenubar,
       () => { },
       50,
     )(this._buildMenubars, this));
