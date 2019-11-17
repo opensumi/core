@@ -234,7 +234,8 @@ class Menu extends Disposable implements IMenu {
               continue;
             }
 
-            const commandEnablement = Boolean(command && this.commandRegistry.isEnabled(menuCommand.id, ...args));
+            // 默认为 true, command 存在则按照 command#isEnabled 的结果
+            const commandEnablement = command ? this.commandRegistry.isEnabled(menuCommand.id, ...args) : true;
             const commandToggle = Boolean(command && this.commandRegistry.isToggled(menuCommand.id, ...args));
 
             const disabled = !commandEnablement;
