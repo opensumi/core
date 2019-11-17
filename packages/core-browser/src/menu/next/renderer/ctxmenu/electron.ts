@@ -50,9 +50,10 @@ export class ElectronMenuFactory extends Disposable {
         };
       } else {
         this.bindAction(menuNode, map, context);
+        // FIXME 这里不管是不是checkbox，checked返回都会是有值的
         return {
-          type: typeof menuNode.checked === 'boolean' ? 'checkbox' : undefined,
-          checked: typeof menuNode.checked === 'boolean' ? menuNode.checked : undefined,
+          type: menuNode.checked ? 'checkbox' : undefined,
+          checked: menuNode.checked ? menuNode.checked : undefined,
           label: `${mnemonicButtonLabel(menuNode.label, true)} ${menuNode.isKeyCombination ? menuNode.keybinding : ''}`,
           id: menuNode.id,
           action: true,
