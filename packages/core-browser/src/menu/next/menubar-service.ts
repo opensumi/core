@@ -13,6 +13,7 @@ export abstract class AbstractMenubarService extends Disposable {
 
   readonly onDidMenuChange: Event<string>;
   abstract getMenuNodes(menuId: string): MenuNode[];
+  abstract rebuildMenuNodes(menuId: string): void;
 }
 
 @Injectable()
@@ -135,30 +136,6 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     this._menuItems.set(menubarId, menubarMenu);
   }
 
-  dispose() {
-    this._menusListener.forEach((disposable) => disposable.dispose());
-    this._menusListener.clear();
-    this._menus.forEach((menu) => menu.dispose());
-    this._menus.clear();
-    super.dispose();
-  }
-
-  public getMenubarItems() {
-    return this._menubarItems;
-  }
-
-  public getMenubarItem(menuId: string) {
-    if (!this._menubarIds.has(menuId)) {
-      return undefined;
-    }
-
-    return this.menuRegistry.getMenubarItem(menuId);
-  }
-
-  public getMenuNodes(menuId: string) {
-    return this._menuItems.get(menuId) || [];
-  }
-
   /**
    * 递归构建生成单个 Menubar 下所有层级菜单的数据结构的函数
    * @param menus IMenu 实例, menuService.createMenu 返回值
@@ -193,6 +170,36 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
         menuToPopulate.push(menuItem);
       }
     });
+  }
+
+  public dispose() {
+    this._menusListener.forEach((disposable) => disposable.dispose());
+    this._menusListener.clear();
+    this._menus.forEach((menu) => menu.dispose());
+    this._menus.clear();
+    super.dispose();
+  }
+
+  public getMenubarItems() {
+    return this._menubarItems;
+  }
+
+  public getMenubarItem(menuId: string) {
+    if (!this._menubarIds.has(menuId)) {
+      return undefined;
+    }
+
+    return this.menuRegistry.getMenubarItem(menuId);
+  }
+
+  public getMenuNodes(menuId: string) {
+    return this._menuItems.get(menuId) || [];
+  }
+
+  // FIXME: 由于现在的 command 无法通知 isEnable/isVisible/isToggle
+  // 所以 web 版本 menubar 每次需要强制重新计算
+  public rebuildMenuNodes(menuId: string) {
+    this._buildMenus(menuId);
   }
 }
 

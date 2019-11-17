@@ -34,6 +34,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
   }
 
   public getMenubarItem(menuId: string): MenuNode[] {
+    this.menubarService.rebuildMenuNodes(menuId);
     return this.menubarService.getMenuNodes(menuId) || [];
   }
 }
