@@ -34,7 +34,6 @@
     "@ali/ide-core-common": "1.5.1",
     "@ali/ide-core-node": "1.5.1",
     "@ali/ide-debug": "1.5.1",
-    "@ali/ide-debug-nodejs": "1.5.0",
     "@ali/ide-decoration": "1.5.1",
     "@ali/ide-editor": "1.5.1",
     "@ali/ide-explorer": "1.5.1",
