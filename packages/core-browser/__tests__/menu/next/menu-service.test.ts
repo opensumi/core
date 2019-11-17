@@ -100,6 +100,7 @@ describe('MenuService', () => {
 
     expect(menuNodes[1].label).toBe('b1');
     expect(menuNodes[1].checked).toBeTruthy();
+    expect(menuNodes[1].disabled).toBeFalsy();
   });
 
   it('group sorting', () => {
