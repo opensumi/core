@@ -2,7 +2,7 @@ import { Injectable, Autowired, Optional } from '@ali/common-di';
 import { IDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { MenuService, IMenu, MenuId, MenuNode, TupleMenuNodeResult, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenu, MenuId, MenuNode, TupleMenuNodeResult, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMProvider, ISCMResource, ISCMResourceGroup } from '../common';
 import { getSCMResourceContextKey } from './scm-util';
@@ -25,8 +25,8 @@ export class SCMMenus implements IDisposable {
 
   private readonly disposables: IDisposable[] = [];
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;

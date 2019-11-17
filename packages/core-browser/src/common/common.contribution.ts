@@ -77,7 +77,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
     /* ---- test for submenu ---- */
     // const testSubmenuId = 'greatmenu';
     // menus.registerMenuItem(MenuId.MenubarFileMenu, {
-    //   label: '屌炸了',
+    //   label: 'kaitian submenu',
     //   submenu: testSubmenuId,
     // });
 
@@ -88,6 +88,16 @@ export class ClientCommonContribution implements CommandContribution, Preference
     //   command: FILE_COMMANDS.NEW_FOLDER.id,
     //   group: '1_new',
     // }]);
+
+    // menus.registerMenuItem(testSubmenuId, {
+    //   label: 'kaitian sub_submenu',
+    //   submenu: 'sub_submenu',
+    // });
+
+    // menus.registerMenuItem('sub_submenu', {
+    //   command: FILE_COMMANDS.NEW_FILE.id,
+    //   group: '1_new',
+    // });
 
     /* ---- end for submenu ---- */
 

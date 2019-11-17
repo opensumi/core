@@ -59,7 +59,7 @@ export const MenuActionList: React.FC<{
 
   const handleClick = React.useCallback(({ key }: ClickParam) => {
     // do nothing when click separator node
-    if (key === SeparatorMenuItemNode.ID) {
+    if ([SeparatorMenuItemNode.ID, SubmenuItemNode.ID].includes(key)) {
       return;
     }
 
@@ -83,13 +83,13 @@ export const MenuActionList: React.FC<{
           <Menu.SubMenu
             key={`${menuNode.id}-${index}`}
             title={<MenuAction hasSubmenu data={menuNode} />}>
-            {recursiveRender(menuNode.items)}
+            {recursiveRender(menuNode.children)}
           </Menu.SubMenu>
         );
       }
 
       return (
-        <Menu.Item key={`${menuNode.id}-${index}`} disabled={menuNode.disabled}>
+        <Menu.Item key={menuNode.id} disabled={menuNode.disabled}>
           <MenuAction data={menuNode} />
         </Menu.Item>
       );

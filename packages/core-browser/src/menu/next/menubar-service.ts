@@ -2,38 +2,34 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 
-import { MenuService, IMenu, SubmenuItemNode } from './menu-service';
-import { IMenubarItem, IMenuRegistry, MenuNode } from './base';
-import { generateCtxMenu } from './menu-util';
-import { Logger } from '../../logger';
+import { AbstractMenuService, IMenu, SubmenuItemNode } from './menu-service';
+import { IExtendMenubarItem, IMenuRegistry, MenuNode } from './base';
+import { generateMergedCtxMenu } from './menu-util';
 
 export abstract class AbstractMenubarService extends Disposable {
-  readonly onDidMenuBarChange: Event<string | undefined>;
-  abstract getMenubarItems(): IMenubarItem[];
-  abstract getMenubarItem(menuId: string): IMenubarItem | undefined;
+  readonly onDidMenubarChange: Event<void>;
+  abstract getMenubarItems(): IExtendMenubarItem[];
+  abstract getMenubarItem(menuId: string): IExtendMenubarItem | undefined;
 
   readonly onDidMenuChange: Event<string>;
-  abstract getMenuItem(menuId: string): MenuNode[];
+  abstract getMenuNodes(menuId: string): MenuNode[];
 }
 
 @Injectable()
 export class MenubarServiceImpl extends Disposable implements AbstractMenubarService {
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;
 
-  @Autowired(Logger)
-  protected readonly logger: Logger;
-
-  private readonly _onDidMenuBarChange = new Emitter<string | undefined>();
   /**
    * Menubar 本身发生变化时的事件
    * undefined 表示整个都需要刷新
    * 带了 menuId 只需要刷新单个 MenuBarItem
   */
-  get onDidMenuBarChange(): Event<string | undefined> {
+  private readonly _onDidMenuBarChange = new Emitter<void>();
+  get onDidMenubarChange(): Event<void> {
     return this._onDidMenuBarChange.event;
   }
 
@@ -42,104 +38,113 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     return this._onDidMenuChange.event;
   }
 
-  private listenerDisposables: Map<string, IDisposable> = new Map();
+  private readonly _onMenuChange = new Emitter<string>();
+  // internal 的 MenuChange 监听器，监听 menu/submenu 的变化
+  private get onMenuChange(): Event<string | undefined> {
+    return this._onMenuChange.event;
+  }
 
   private _menubarIds: Set<string> = new Set();
   private _menus: Map<string, IMenu> = new Map();
 
-  private _menubarItems: IMenubarItem[] = [];
+  private _menubarItems: IExtendMenubarItem[] = [];
   private _menuItems: Map<string, MenuNode[]> = new Map();
+
+  private _menusListener: Map<string, IDisposable> = new Map();
 
   constructor() {
     super();
-    this._buildMenubars();
-    this._buildMenus();
+    this._build();
 
-    // event for MenubarId
+    // 监听 menubar 刷新事件
     this.addDispose(Event.debounce(
       this.menuRegistry.onDidChangeMenubar,
       () => { },
       50,
-    )(this._buildMenubars, this));
+    )(this._build, this));
 
-    // event for MenuIds
+    // 监听内部的 onMenuChange 刷新单个 menubarItem 下的所有节点
     this.addDispose(Event.debounce(
-      Event.filter(this.menuRegistry.onDidChangeMenu, (menuId: string) => this._menus.has(menuId)),
-      () => { },
+      this.onMenuChange,
+      (l, menuId: string) => menuId,
       50,
-    )(this._buildMenus, this));
+    )(this._rebuildSingleRootMenus, this));
 
     this.addDispose(this._onDidMenuBarChange);
     this.addDispose(this._onDidMenuChange);
   }
 
-  private _buildMenubars() {
+  // 构建完整的 menubarIds/_menubarItems/_menubarMenus
+  private _build() {
     // reset
     this._menubarItems = [];
     this._menubarIds = new Set();
+    this._menuItems.clear();
 
     let menubarItems = this.menuRegistry.getMenubarItems();
     menubarItems = menubarItems.sort(menubarItemsSorter);
 
     menubarItems.forEach((menubarItem) => {
-      const menuId = menubarItem.id;
+      const menubarId = menubarItem.id;
       this._menubarItems.push(menubarItem);
-      // keep menuId for eventing
-      this._menubarIds.add(menuId);
-    });
-    this._onDidMenuBarChange.fire(undefined);
-  }
-
-  private disposeMenuListener() {
-    this.listenerDisposables.forEach((disposable) => {
-      disposable.dispose();
-    });
-    this.listenerDisposables.clear();
-  }
-
-  private disposeMenus() {
-    this._menus.forEach((menu) => menu.dispose());
-    this._menus.clear();
-  }
-
-  private _buildMenus() {
-    // reset
-    this._menuItems.clear();
-    this.disposeMenus();
-    this.disposeMenuListener();
-
-    this._menubarItems.forEach(({ id: menuId }) => {
-      const menus = this.menuService.createMenu(menuId);
-
-      this._menus.set(menuId, menus);
-      this.listenerDisposables.set(
-        menuId,
-        menus.onDidChange(() => this._onDidMenuChange.fire(menuId), this, this.disposables),
-      );
-
-      const menubarMenu = [] as MenuNode[];
-      this.buildMenuItems(menuId, menus, menubarMenu);
-      this._menuItems.set(menuId, menubarMenu);
+      // keep menuId for event listener
+      this._menubarIds.add(menubarId);
+      // build mens for Menubar
+      this._buildMenus(menubarId);
     });
 
-    this._onDidMenuBarChange.fire(undefined);
+    this._onDidMenuBarChange.fire();
+  }
+
+  // 根据事件监听结果更新单个 root menuId 下的 menus
+  private _rebuildSingleRootMenus(menudId: string) {
+    this._buildMenus(menudId);
+    this._onDidMenuChange.fire(menudId);
+  }
+
+  /**
+   * 构建产生每个 menubar item 下方点击展开的 menus
+   * 包括递归产生多层级结构
+   * @param menubarId [string]
+   */
+  private _buildMenus(menubarId: string) {
+    const menus = this.menuService.createMenu(menubarId);
+
+    // clean up for IMenu
+    const oldMenus = this._menus.get(menubarId);
+    if (oldMenus) {
+      oldMenus.dispose();
+      this._menus.delete(menubarId);
+    }
+
+    // clean up for menu.onDidChange
+    const oldMenusListener = this._menusListener.get(menubarId);
+    if (oldMenusListener) {
+      oldMenusListener.dispose();
+      this._menusListener.delete(menubarId);
+    }
+
+    this._menus.set(menubarId, menus);
+    this._menusListener.set(
+      menubarId,
+      menus.onDidChange(() => this._onDidMenuChange.fire(menubarId), this, this.disposables),
+    );
+
+    const menubarMenu = [] as MenuNode[];
+    this._traverseMenuItems(menus, menubarMenu, menubarId);
+    this._menuItems.set(menubarId, menubarMenu);
   }
 
   dispose() {
-    this.listenerDisposables.forEach((disposable) => {
-      disposable.dispose();
-    });
+    this._menusListener.forEach((disposable) => disposable.dispose());
+    this._menusListener.clear();
+    this._menus.forEach((menu) => menu.dispose());
+    this._menus.clear();
     super.dispose();
   }
 
   public getMenubarItems() {
-    return Array.from(this._menubarIds).reduce((prev, menuId: string) => {
-      const menubarItem = this.menuRegistry.getMenubarItem(menuId);
-      if (menubarItem) {
-        prev.push(menubarItem);
-      }
-      return prev;
-    }, [] as IMenubarItem[]);
+    return this._menubarItems;
   }
 
   public getMenubarItem(menuId: string) {
@@ -150,36 +155,39 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     return this.menuRegistry.getMenubarItem(menuId);
   }
 
-  public getMenuItem(menuId: string) {
+  public getMenuNodes(menuId: string) {
     return this._menuItems.get(menuId) || [];
   }
 
-  buildMenuItems(menuId: string, menus: IMenu, menuToPopulate: any[]) {
-    const result = generateCtxMenu({ menus });
-    const menuItems = [...result[0], ...result[1]];
+  /**
+   * 递归构建生成单个 Menubar 下所有层级菜单的数据结构的函数
+   * @param menus IMenu 实例, menuService.createMenu 返回值
+   * @param menuToPopulate 递归中用来收集数结果
+   * @param rootMenuId 顶级的 menuId, 下方所有 submenuId 的 onDidChange 都触发顶层 menuId 事件以刷新该 menuId 下所有的数据
+   */
+  private _traverseMenuItems(menus: IMenu, menuToPopulate: MenuNode[], rootMenuId: string) {
+    const menuItems = generateMergedCtxMenu({ menus });
     menuItems.forEach((menuItem) => {
       if (menuItem instanceof SubmenuItemNode) {
-        const submenuItems = [];
+        const submenuItems = [] as MenuNode[];
 
         const submenuId = menuItem.item.submenu;
         if (!this._menus.has(submenuId)) {
           const menus = this.registerDispose(this.menuService.createMenu(submenuId));
           this._menus.set(submenuId, menus);
           this.registerDispose(menus.onDidChange(() => {
-            this._onDidMenuChange.fire(menuId);
+            // 通知外部 顶层 menuId 下所有结构变了, 需要重新生成数据结构
+            this._onMenuChange.fire(rootMenuId);
           }));
         }
 
         const menuToDispose = this.menuService.createMenu(submenuId);
-        this.buildMenuItems(submenuId, menuToDispose, submenuItems);
+        this._traverseMenuItems(menuToDispose, submenuItems, rootMenuId);
 
-        const menubarSubmenuItem = {
-          id: menuItem.id,
-          label: menuItem.label,
-          submenu: submenuId,
-          items: submenuItems,
-        };
-        menuToPopulate.push(menubarSubmenuItem);
+        // 挂载 submenu 下的子级 menuItems
+        menuItem.children = submenuItems;
+
+        menuToPopulate.push(menuItem);
         menuToDispose.dispose();
       } else {
         menuToPopulate.push(menuItem);
@@ -188,7 +196,7 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
   }
 }
 
-function menubarItemsSorter(a: IMenubarItem, b: IMenubarItem): number {
+function menubarItemsSorter(a: IExtendMenubarItem, b: IExtendMenubarItem): number {
   // sort on priority - default is 0
   const aPrio = a.order || 0;
   const bPrio = b.order || 0;

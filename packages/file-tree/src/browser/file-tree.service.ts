@@ -25,7 +25,7 @@ import { IDialogService } from '@ali/ide-overlay';
 import { Directory, File } from './file-tree-item';
 import { ExplorerResourceCut } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
-import { MenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
+import { AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export type IFileTreeItemStatus = Map<string, {
@@ -102,8 +102,8 @@ export class FileTreeService extends WithEventBus {
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   private statusChangeEmitter = new Emitter<Uri[]>();
   private explorerResourceCut: IContextKey<boolean>;

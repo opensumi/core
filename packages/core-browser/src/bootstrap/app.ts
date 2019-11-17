@@ -38,7 +38,7 @@ import { renderClientApp } from './app.view';
 import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
-import { MenuRegistry, IMenuRegistry } from '../menu/next';
+import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 
 const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_e2ikewyk1kq.css';
 
@@ -106,7 +106,8 @@ export class ClientApp implements IClientApp {
 
   menuRegistry: MenuModelRegistry;
 
-  nextMenuRegistry: MenuRegistry;
+  // 这里将 onStart contribution 方法放到 MenuRegistryImpl 上了
+  nextMenuRegistry: MenuRegistryImpl;
 
   stateService: ClientAppStateService;
 
