@@ -593,6 +593,10 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public setExtensionLogThread() {
     createExtensionLogFactory(this.protocol, this.injector);
+
+    if (this.workerProtocol) {
+      createExtensionLogFactory(this.workerProtocol, this.injector);
+    }
   }
 
   public async activeExtension(extension: IExtension) {

@@ -73,7 +73,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return extension.packageJSON.name;
     }));
     */
-    this.extentionsActivator = new ExtensionsActivator();
+    this.extentionsActivator = new ExtensionsActivator(this.logger);
     this.defineAPI();
   }
 
@@ -237,8 +237,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           const extendModuleExportsData = await extendModule.activate(context);
           extendExports = extendModuleExportsData;
         } catch (e) {
-          console.log('activateExtension extension.extendConfig error ');
-          console.log(e);
+          this.logger.log('activateExtension extension.extendConfig error ');
+          this.logger.log(e);
           getLogger().error(e);
         }
       }
@@ -306,7 +306,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     const extensionId = extension.id;
     const registerExtendFn = (exportsData) => {
-      console.log(exportsData);
       return this.registerExtendModuleService(exportsData, extension);
     };
 
