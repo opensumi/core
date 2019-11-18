@@ -243,6 +243,20 @@ export class DebugLog implements IDebugLog {
     return (colors[color] || '' ) + message + colors.reset;
   }
 
+  verbose = (...args: any[]) => {
+    if (!this.isEnable) {
+      return;
+    }
+    return console.debug(this.getPre('verbose', 'green'), ...args);
+  }
+
+  debug = (...args: any[]) => {
+    if (!this.isEnable) {
+      return;
+    }
+    return console.debug(this.getPre('debug', 'blue'), ...args);
+  }
+
   log = (...args: any[]) => {
     if (!this.isEnable) {
       return;
@@ -269,13 +283,6 @@ export class DebugLog implements IDebugLog {
     return console.info(this.getPre('log', 'green'), ...args);
   }
 
-  debug = (...args: any[]) => {
-    if (!this.isEnable) {
-      return;
-    }
-    return console.debug(this.getPre('debug', 'blue'), ...args);
-  }
-
   destroy() { }
 }
 
@@ -295,6 +302,10 @@ export function getLogger(namespace?: string): any {
   }
   const debugLog = new DebugLog(namespace);
   return {
+    get verbose() {
+      showWarn();
+      return debugLog.verbose;
+    },
     get log() {
       showWarn();
       return debugLog.log;

@@ -29,7 +29,7 @@ export class LogServiceClient implements ILogServiceClient {
   }
 
   async verbose(...args: any[]) {
-    this.debugLog.log.apply(this.debugLog, args);
+    this.debugLog.verbose.apply(this.debugLog, args);
     await this.logServiceForClient.verbose(this.namespace, format(args), this.pid);
   }
 
