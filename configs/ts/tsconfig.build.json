@@ -49,12 +49,6 @@
       "path": "./references/tsconfig.activation-event.json"
     },
     {
-      "path": "./references/tsconfig.activity-panel.json"
-    },
-    {
-      "path": "./references/tsconfig.activity-bar.json"
-    },
-    {
       "path": "./references/tsconfig.main-layout.json"
     },
     {

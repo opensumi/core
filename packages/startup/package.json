@@ -28,8 +28,6 @@
   },
   "dependencies": {
     "@ali/ide-activation-event": "1.5.1",
-    "@ali/ide-activity-bar": "1.5.1",
-    "@ali/ide-activity-panel": "1.5.1",
     "@ali/ide-core-browser": "1.5.1",
     "@ali/ide-core-common": "1.5.1",
     "@ali/ide-core-node": "1.5.1",

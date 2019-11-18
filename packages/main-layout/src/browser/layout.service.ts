@@ -3,11 +3,11 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject, Domain } from 
 import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
 import { IMainLayoutService, ComponentCollection, MainLayoutContribution } from '../common';
 import { TabBarHandler } from './tabbar-handler';
-import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
+import './main-layout.less';
 
 @Injectable()
 export class LayoutService extends WithEventBus {

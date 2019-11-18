@@ -1,6 +1,6 @@
 import { BasicEvent, SlotLocation } from '@ali/ide-core-browser';
-import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
 import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-browser/lib/layout';
+import { TabBarHandler } from '../browser/tabbar-handler';
 
 export interface ComponentCollection {
   views?: View[];
@@ -16,7 +16,7 @@ export interface IMainLayoutService {
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   isVisible(location: SlotLocation): boolean;
   restoreState(): void;
-  getTabbarHandler(handlerId: string): ActivityBarHandler;
+  getTabbarHandler(handlerId: string): TabBarHandler;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent): string;
   collectViewComponent(view: View, containerId: string, props?: any): string;

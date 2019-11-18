@@ -122,7 +122,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
     }
     const tabBarToolbarRegistry = this.injector.get(TabBarToolbarRegistry);
     const items = forceHide ? [] : tabBarToolbarRegistry.visibleItems(this.view.id);
-    this.toolBar.updateItems(items, undefined);
+    this.toolBar.updateItems(items);
   }
 
   hideTitle(): void {

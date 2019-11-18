@@ -3,15 +3,15 @@ import { DebugConsoleSession } from '../console/debug-console-session';
 import { observable, action } from 'mobx';
 import { TreeNode } from '@ali/ide-core-browser';
 import { DebugContribution } from '../debug-contribution';
-import { MainLayoutService } from '@ali/ide-main-layout/lib/browser/main-layout.service';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 @Injectable()
 export class DebugConsoleService {
   @Autowired(DebugConsoleSession)
   protected readonly debugConsole: DebugConsoleSession;
 
-  @Autowired(MainLayoutService)
-  protected readonly mainlayoutService: MainLayoutService;
+  @Autowired(IMainLayoutService)
+  protected readonly mainlayoutService: IMainLayoutService;
 
   constructor() {
     this.debugConsole.onDidChange(() => {

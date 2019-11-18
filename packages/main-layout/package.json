@@ -23,11 +23,10 @@
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
     "@ali/ide-core-common": "1.5.1",
+    "@ali/ide-status-bar": "1.5.1",
     "@ali/ide-theme": "1.5.1"
   },
   "devDependencies": {
-    "@ali/ide-activity-bar": "1.5.1",
-    "@ali/ide-activity-panel": "1.5.1",
     "@ali/ide-core-browser": "1.5.1",
     "@ali/ide-dev-tool": "^1.1.0",
     "@ali/ide-opened-editor": "1.5.1",
