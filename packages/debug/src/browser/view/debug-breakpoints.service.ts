@@ -7,7 +7,7 @@ import { URI, WithEventBus, OnEvent, localize } from '@ali/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
 import { BreakpointManager } from '../breakpoint';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ali/ide-workspace-edit';
-import { IDebugSessionManager } from '../../common';
+import { IDebugSessionManager } from '../../common/debug-session';
 import { DebugSessionManager } from '../debug-session-manager';
 
 @Injectable()

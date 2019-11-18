@@ -3,14 +3,14 @@ const disableJSDOM = enableJSDOM();
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, ResourceProvider, PreferenceScope, injectPreferenceSchemaProvider, CorePreferences, DefaultResourceProvider } from '@ali/ide-core-browser';
-import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IMessageService } from '@ali/ide-overlay';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { LaunchPreferencesContribution } from '../../../src/browser/preferences/launch-preferences-contribution';
+import { LaunchPreferencesContribution } from '../../src/browser/preferences/launch-preferences-contribution';
 import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
-import { LaunchFolderPreferenceProvider } from '../../../lib/browser/preferences/launch-folder-preference-provider';
+import { LaunchFolderPreferenceProvider } from '../../lib/browser/preferences/launch-folder-preference-provider';
 import { injectPreferenceProviders, createPreferenceProviders } from '@ali/ide-preferences/lib/browser';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { IFileServiceClient, FileServicePath, FileStat } from '@ali/ide-file-service';
@@ -475,7 +475,7 @@ describe('Launch Preferences', () => {
         );
         injectPreferenceProviders(injector);
 
-        // 注册lauch.json配置文件定义
+        // 注册launch.json配置文件定义
         injector.addProviders({
           token: FolderPreferenceProvider,
           useClass: LaunchFolderPreferenceProvider,
@@ -506,7 +506,7 @@ describe('Launch Preferences', () => {
         expect(JSON.parse(JSON.stringify(config))).toEqual(expectation);
       });
 
-      it('get from undefind', () => {
+      it('get from undefined', () => {
         const config = preferences.get('launch', undefined, undefined);
         expect(JSON.parse(JSON.stringify(config))).toEqual(expectation);
       });

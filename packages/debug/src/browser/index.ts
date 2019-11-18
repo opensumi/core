@@ -4,7 +4,7 @@ import { BrowserModule, IContextKeyService } from '@ali/ide-core-browser';
 import { injectDebugPreferences } from './debug-preferences';
 import { DebugResourceResolverContribution } from './debug-resource';
 import { DebugContribution } from './debug-contribution';
-import { DebugServerPath, IDebugService, IDebugServer, DebugEditor, IDebugSessionManager } from '../common';
+import { DebugServerPath, IDebugService, IDebugServer, DebugEditor, IDebugSessionManager, DebugModelFactory } from '../common';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugSessionFactory, DefaultDebugSessionFactory, DebugSessionContributionRegistry, DebugSessionContributionRegistryImpl, DebugSessionContribution } from './debug-session-contribution';
 import { DebugSessionManager } from './debug-session-manager';
@@ -13,7 +13,7 @@ import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folde
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
 import { DebugCallStackItemTypeKey } from './contextkeys/debug-call-stack-item-type-key';
 import { DebugService } from './debug-service';
-import { DebugModelFactory, DebugModel, DebugModelManager, DebugExpressionProvider } from './editor';
+import { DebugModel, DebugModelManager, DebugExpressionProvider } from './editor';
 import { DebugHoverSource } from './editor/debug-hover-source';
 import { DebugConsoleContribution } from './console/debug-console.contribution';
 import { DebugConsoleSession } from './console/debug-console-session';
