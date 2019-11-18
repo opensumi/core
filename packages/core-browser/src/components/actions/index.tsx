@@ -98,6 +98,7 @@ export const MenuActionList: React.FC<{
 
   return (
     <Menu
+      className='kt-menu'
       selectable={false}
       openTransitionName=''
       onClick={handleClick}>

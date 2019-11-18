@@ -134,7 +134,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
   // https://yuque.antfin-inc.com/cloud-ide/za8zpk/kpwylo#RvfMV
   const menu = (
-    currentExtension && (<Menu>
+    currentExtension && (<Menu className='kt-menu'>
       <Menu.Item onClick={() => toggleActive(EnableScope.GLOBAL)} disabled={currentExtension.enableScope === EnableScope.WORKSPACE && currentExtension.enable}>
       {currentExtension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}
       </Menu.Item>
@@ -173,7 +173,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               ) : null}
               {extension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
               {extension.installed ? (
-                <Dropdown overlay={menu} trigger={['click']}>
+                <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']}>
                   <Button ghost={true} className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>
                 </Dropdown>) : null}
               {extension.installed && !extension.isBuiltin  && (

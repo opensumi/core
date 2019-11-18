@@ -20,6 +20,7 @@ const MenubarItem = observer<IExtendMenubarItem>(({ id, label }) => {
 
   return (
     <Dropdown
+      className={'kt-menu'}
       transitionName=''
       overlay={<MenuActionList data={menuNodes} />}
       trigger={['click']}>

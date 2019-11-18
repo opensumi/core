@@ -19,7 +19,7 @@ const SCMEmpty = () => {
       <Button loading>123</Button>
       <Button type='danger'>123</Button>
       <Button loading>123</Button>
-      <Dropdown overlay={menu} trigger={['click']}>
+      <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']}>
         <Button type='danger'>123</Button>
       </Dropdown>
 
