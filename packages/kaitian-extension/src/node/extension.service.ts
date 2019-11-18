@@ -234,8 +234,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
           resolve();
         } else if (msg === 'finish') {
-          const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>;
-          finishDeferred.resolve();
+          const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId);
+          if (finishDeferred) {
+            finishDeferred.resolve();
+          }
         }
       };
       extProcess.on('message', initHandler);
