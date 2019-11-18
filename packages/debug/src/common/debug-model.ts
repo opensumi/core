@@ -1,7 +1,7 @@
 import * as stream from 'stream';
-import { IWebSocket } from '@ali/ide-connection';
 import { DebugConfiguration } from './debug-configuration';
 import { IDisposable, MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
+import { DebugEditor } from './debug-editor';
 
 export const DebugAdapterSession = Symbol('DebugAdapterSession');
 
@@ -105,4 +105,12 @@ export interface DebugAdapterContribution {
    * @returns The resolved debug configuration.
    */
   resolveDebugConfiguration?(config: DebugConfiguration, workspaceFolderUri?: string): MaybePromise<DebugConfiguration | undefined>;
+}
+
+export const DebugModelFactory = Symbol('DebugModelFactory');
+export type DebugModelFactory = (editor: DebugEditor) => IDebugModel;
+
+export const IDebugModel = Symbol('IDebugModel');
+export interface IDebugModel extends IDisposable {
+  [key: string]: any;
 }
