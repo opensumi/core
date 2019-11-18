@@ -27,9 +27,9 @@ export class ExtensionDebugSession extends DebugSession {
     super(id, options, connection, terminalService, editorService, breakpointManager, modelManager, labelService, messageService, fileSystem);
   }
 
-  protected async doRunInTerminal(terminalOptions: TerminalOptions): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+  protected async doRunInTerminal(terminalOptions: TerminalOptions, command?: string): Promise<DebugProtocol.RunInTerminalResponse['body']> {
     const terminalWidgetOptions = Object.assign({}, terminalOptions, this.terminalOptionsExt);
-    return super.doRunInTerminal(terminalWidgetOptions);
+    return super.doRunInTerminal(terminalWidgetOptions, command);
   }
 }
 

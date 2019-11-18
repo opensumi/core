@@ -127,13 +127,17 @@ export class DebugSession implements IDisposable {
   }
 
   protected async runInTerminal({ arguments: { title, cwd, args, env } }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    return this.doRunInTerminal({ name: title, cwd, shellPath: args[0], shellArgs: args.slice(1), env });
+    // TODO: shellPath 参数解析
+    return this.doRunInTerminal({ name: title, cwd,  env }, args.join(' '));
   }
 
-  protected async doRunInTerminal(options: TerminalOptions): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+  protected async doRunInTerminal(options: TerminalOptions, command?: string): Promise<DebugProtocol.RunInTerminalResponse['body']> {
     const terminal = await this.terminalService.createTerminal(options) as Terminal;
     const processId = await terminal.processId;
     terminal.show();
+    if (command) {
+      terminal.sendText(command);
+    }
     return { processId };
   }
 
