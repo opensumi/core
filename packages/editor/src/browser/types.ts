@@ -204,16 +204,25 @@ export class EditorDecorationChangeEvent extends BasicEvent<{uri: URI, key: stri
 
 export interface IEditorActionRegistry {
   registerEditorAction(action: IEditorActionItem): IDisposable;
-  getActions(editorGroup: IEditorGroup): IEditorActionItem[];
+  getActions(editorGroup: IEditorGroup): IVisibleAction[];
   showMore(x: number, y: number, group: IEditorGroup);
 }
 
 export interface IEditorActionItem {
   title: string;
   iconClass: string;
+  tip?: string;
+  tipWhen?: string;
+  tipClass?: string;
   isVisible?: (resource: MaybeNull<IResource>, editorGroup: IEditorGroup) => boolean;
   onClick: (resource: MaybeNull<IResource>) => void;
   when?: string; // 使用contextkey
+}
+
+export interface IVisibleAction {
+  item: IEditorActionItem;
+  tipVisible: boolean;
+  closeTip(): void;
 }
 
 export const IEditorActionRegistry = Symbol('IEditorActionRegistry');

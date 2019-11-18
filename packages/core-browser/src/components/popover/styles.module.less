@@ -16,21 +16,39 @@
   color: var(--kt-tooltip-foreground);
   background: var(--kt-tooltip-background);
   border-color: var(--notifications-border);
+  border-radius: var(--kt-tooltip-borderRadius);
   box-shadow: 0 5px 15px 0 var(--widget-shadow);
   padding: 5px 10px;
   z-index: 10001;
   margin-top: -5px;
 
-  &::after {
-    position: absolute;
-    left: 50%;
-    margin-left: -5px;
-    top: 100%;
-    content: '';
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 7px 7px 0 7px;
-    border-color: var(--notifications-background) transparent transparent transparent;
+  &.top {
+    &::after {
+      position: absolute;
+      left: 50%;
+      margin-left: -5px;
+      top: 100%;
+      content: '';
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 7px 7px 0 7px;
+      border-color: var(--notifications-background) transparent transparent transparent;
+    }
   }
+  &.bottom {
+    &::after {
+      position: absolute;
+      left: 50%;
+      margin-left: -5px;
+      bottom: 100%;
+      content: '';
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 7px 7px 7px;
+      border-color:  transparent transparent var(--notifications-background) transparent;
+    }
+  }
+  
 }
