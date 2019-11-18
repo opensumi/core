@@ -104,6 +104,9 @@ import { IExtension } from '../../../common';
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtension) {
 
   return {
+    getLanguages(): Promise<string[]> {
+      return extHostLanguages.getLanguages();
+    },
     registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
       return extHostLanguages.registerHoverProvider(selector, provider);
     },
@@ -278,16 +281,17 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.proxy.$getLanguages();
   }
 
-  // NOTE vscode插件调用此api，会将回调函数绑定到一个回调id发到前台，前台处理时远程调用此回调id拿到处理结果
+  // ### Hover begin
   registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
     const callId = this.addNewAdapter(new HoverAdapter(provider, this.documents));
     this.proxy.$registerHoverProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
-  // TODO 提供main调用的回调函数
+
   $provideHover(handle: number, resource: any, position: Position, token: CancellationToken): Promise<Hover | undefined> {
     return this.withAdapter(handle, HoverAdapter, (adapter) => adapter.provideHover(resource, position, token));
   }
+  // ### Hover end
 
   // ### Completion begin
   $provideCompletionItems(handle: number, resource: URI, position: Position, context: CompletionContext, token: CancellationToken) {
