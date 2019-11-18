@@ -1,5 +1,5 @@
 import * as md5 from 'md5';
-import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService } from '@ali/ide-core-browser';
+import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService, CorePreferences, CommandService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { EOL, EndOfLineSequence, IDocPersistentCacheProvider, IDocCache, isDocContentCache, parseRangeFrom } from '../../common';
@@ -49,6 +49,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   @Autowired(ILogger)
   logger: ILogger;
+
+  @Autowired(CorePreferences)
+  private corePreferences: CorePreferences;
+
+  @Autowired(CommandService)
+  private commandService: CommandService;
 
   private monacoModel: monaco.editor.ITextModel;
 
@@ -226,6 +232,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   async save(force: boolean = false): Promise<boolean> {
+    await this.formatOnSave();
     if (!this.preferenceService.get<boolean>('editor.askIfDiff')) {
       force = true;
     }
@@ -397,5 +404,22 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       },
       encoding: this.encoding,
     });
+  }
+
+  protected async formatOnSave() {
+    const formatOnSave = this.corePreferences['editor.formatOnSave'];
+
+    if (formatOnSave) {
+      const formatOnSaveTimeout = this.corePreferences['editor.formatOnSaveTimeout'];
+      try {
+        await Promise.race([
+          new Promise((_, reject) => setTimeout(() => reject(formatLocalize('preference.editor.formatOnSaveTimeoutError', formatOnSaveTimeout)), formatOnSaveTimeout)),
+          this.commandService.executeCommand('monaco.editor.action.formatDocument'),
+        ]);
+      } catch (err) {
+        // 目前 command 没有读取到 contextkey，在不支持 format 的地方执行 format 命令会报错，先警告下，后续要接入 contextkey 来判断
+        this.logger.warn(`${EditorDocumentError.FORMAT_ERROR} ${err && err.message}`);
+      }
+    }
   }
 }

@@ -80,12 +80,14 @@ export class RPCServiceCenter {
 
   private connectionPromise: Promise<void>;
   private connectionPromiseResolve: () => void;
+  private logger;
 
-  constructor(private bench?: Ibench) {
+  constructor(private bench?: Ibench, logger?: any) {
     this.uid = 'RPCServiceCenter:' + process.pid;
     this.connectionPromise = new Promise((resolve) => {
       this.connectionPromiseResolve = resolve;
     });
+    this.logger = logger || console;
   }
   registerService(serviceName: string, type: ServiceType): void {
     if (type === ServiceType.Service) {
@@ -106,7 +108,7 @@ export class RPCServiceCenter {
     }
     this.connection.push(connection);
 
-    const rpcProxy = new RPCProxy(this.serviceMethodMap);
+    const rpcProxy = new RPCProxy(this.serviceMethodMap, this.logger);
     rpcProxy.listen(connection);
     this.rpcProxy.push(rpcProxy);
 

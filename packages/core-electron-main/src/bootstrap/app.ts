@@ -182,8 +182,10 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
     if (window) {
       const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
       if (codeWindow && codeWindow.isReloading) {
-        window.webContents.reload();
         codeWindow.isReloading = false;
+        codeWindow.startNode().then(() => {
+          window.webContents.reload();
+        });
       } else {
         window.close();
       }

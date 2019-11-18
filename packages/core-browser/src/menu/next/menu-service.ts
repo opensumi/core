@@ -17,17 +17,17 @@ export interface IMenu extends IDisposable {
   getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]>;
 }
 
-export abstract class MenuService {
+export abstract class AbstractMenuService {
   abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
-// 后续 MenuNode 要看齐 @ali/ide-core-common 的 ActionMenuNode
 export class SubmenuItemNode extends MenuNode {
+  static readonly ID = 'menu.item.node.submenu';
+
   readonly item: ISubmenuItem;
 
-  // todo: 需要再去看下 submenu 如何实现，我们这边目前没有看到
   constructor(item: ISubmenuItem) {
-    typeof item.title === 'string' ? super('', item.title, 'submenu') : super('', item.title.value, 'submenu');
+    super(SubmenuItemNode.ID, '', item.label);
     this.item = item;
   }
 }
@@ -69,6 +69,7 @@ export class MenuItemNode extends MenuNode {
     const shortcutDesc = this.getShortcut(item.id);
 
     this.keybinding = shortcutDesc && shortcutDesc.keybinding || '';
+    this.rawKeybinding = shortcutDesc && shortcutDesc.rawKeybinding;
     this.isKeyCombination = !!(shortcutDesc && shortcutDesc.isKeyCombination);
     this._options = options;
 
@@ -95,6 +96,7 @@ export class MenuItemNode extends MenuNode {
         }
         return {
           keybinding,
+          rawKeybinding: keybindings[0].keybinding,
           isKeyCombination,
         };
       }
@@ -104,7 +106,7 @@ export class MenuItemNode extends MenuNode {
 }
 
 @Injectable()
-export class MenuServiceImpl implements MenuService {
+export class MenuServiceImpl implements AbstractMenuService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -121,6 +123,9 @@ type MenuItemGroup = [string, Array<IMenuItem | ISubmenuItem>];
 @Injectable()
 class Menu extends Disposable implements IMenu {
   private readonly _onDidChange = new Emitter<IMenu | undefined>();
+  get onDidChange(): Event<IMenu | undefined> {
+    return this._onDidChange.event;
+  }
 
   private _menuGroups: MenuItemGroup[];
   private _contextKeys: Set<string>;
@@ -153,7 +158,6 @@ class Menu extends Disposable implements IMenu {
     // when context keys change we need to check if the menu also
     // has changed
     this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
-      // (listener) => this.eventBus.on(ContextKeyChangeEvent, listener),
       this.contextKeyService.onDidChangeContext,
       (last, event) => last || event.payload.affectsSome(this._contextKeys),
       50,
@@ -185,6 +189,11 @@ class Menu extends Disposable implements IMenu {
       // keep keys for eventing
       this.fillKeysInWhenExpr(this._contextKeys, item.when);
 
+      // 收集 toggledWhen
+      if (isIMenuItem(item)) {
+        this.fillKeysInWhenExpr(this._contextKeys, item.toggledWhen);
+      }
+
       // FIXME: 我们的 command 有 precondition(command)/toggled 属性吗？
       // keep precondition keys for event if applicable
       // if (isIMenuItem(item) && item.command.precondition) {
@@ -197,10 +206,6 @@ class Menu extends Disposable implements IMenu {
       // }
     }
     this._onDidChange.fire(this);
-  }
-
-  get onDidChange(): Event<IMenu | undefined> {
-    return this._onDidChange.event;
   }
 
   getMenuNodes(options: IMenuNodeOptions = {}): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
@@ -216,30 +221,37 @@ class Menu extends Disposable implements IMenu {
             const { args = [] } = options;
             const menuCommandDesc = this.menuRegistry.getMenuCommand(item.command);
             const command = this.commandRegistry.getCommand(menuCommandDesc.id);
-            if (!command) {
-              continue;
-            }
 
-            const menuCommand = {...command, ...menuCommandDesc };
+            const menuCommand = { ...(command || {}), ...menuCommandDesc };
             // 没有 desc 的 command 不展示在 menu 中
             if (!menuCommand.label) {
               continue;
             }
 
-            if (this.commandRegistry.isVisible(menuCommand.id, ...args)) {
-              // FIXME: Command.isVisible 待废弃
-              const disabled = !this.commandRegistry.isEnabled(menuCommand.id, ...args);
-              // toggledWhen 的优先级高于 isToggled
-              // 若设置了 toggledWhen 则忽略 Command 的 isVisible
-              const checked = 'toggledWhen' in item
-                ? this.contextKeyService.match(item.toggledWhen)
-                : this.commandRegistry.isToggled(menuCommand.id, ...args);
-              const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);
+            // FIXME: Command.isVisible 待废弃
+            // command 存在但是 isVisible 为 false 则跳过
+            if (command && !this.commandRegistry.isVisible(menuCommand.id, ...args)) {
+              continue;
+            }
+
+            // 默认为 true, command 存在则按照 command#isEnabled 的结果
+            const commandEnablement = command ? this.commandRegistry.isEnabled(menuCommand.id, ...args) : true;
+            const commandToggle = Boolean(command && this.commandRegistry.isToggled(menuCommand.id, ...args));
+
+            const disabled = !commandEnablement;
+            // toggledWhen 的优先级高于 isToggled
+            // 若设置了 toggledWhen 则忽略 Command 的 isVisible
+            const checked = 'toggledWhen' in item
+              ? this.contextKeyService.match(item.toggledWhen)
+              : commandToggle;
+            const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);
+            activeActions.push(action);
+          } else {
+            // 只有 label 存在值的时候才渲染
+            if (item.label) {
+              const action = new SubmenuItemNode(item);
               activeActions.push(action);
             }
-          } else {
-            const action = new SubmenuItemNode(item);
-            activeActions.push(action);
           }
         }
       }
@@ -259,7 +271,6 @@ class Menu extends Disposable implements IMenu {
   }
 }
 
-// 这里的 sort 还是有点问题的，因为 i18n 的获取是 getMenuNodes 里取的
 function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
   const aGroup = a.group;
   const bGroup = b.group;

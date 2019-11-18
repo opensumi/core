@@ -43,7 +43,6 @@ export const NavigationBar = observer(({ editorGroup }: { editorGroup: IEditorGr
     }
   </div></div>);
 });
-console.log();
 export const NavigationItem = ({part}: {part: IBreadCrumbPart}) => {
 
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;

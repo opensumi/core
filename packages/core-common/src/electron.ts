@@ -41,6 +41,18 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
    */
   openWorkspace(workspace: string, options: any);
 
+  /**
+   * 在资源管理器里打开文件
+   * @param path 文件路径（不带file协议头)
+   */
+  revealInFinder(path: string);
+
+  /**
+   * 在系统终端中打开文件路径
+   * @param path 文件路径（不带file协议头)
+   */
+  revealInSystemTerminal(path: string);
+
 }
 
 export const IElectronMainLifeCycleService = Symbol('IElectronMainLifeCycleService');

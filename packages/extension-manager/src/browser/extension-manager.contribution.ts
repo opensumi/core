@@ -49,7 +49,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
   mainLayoutService: IMainLayoutService;
 
   @Autowired(IExtensionManagerService)
-  etensionManagerService: IExtensionManagerService;
+  extensionManagerService: IExtensionManagerService;
 
   @Autowired()
   resourceProvider: ExtensionResourceProvider;
@@ -90,7 +90,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     commands.registerCommand(ExtensionCommands.ENABLE, {
       execute: (extension: RawExtension) => {
         if (extension) {
-          this.etensionManagerService.toggleActiveExtension(extension, true, EnableScope.GLOBAL);
+          this.extensionManagerService.toggleActiveExtension(extension, true, EnableScope.GLOBAL);
         }
       },
       isVisible: (extension: RawExtension) => {
@@ -100,7 +100,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     commands.registerCommand(ExtensionCommands.ENABLE_WORKSPACE, {
       execute: (extension: RawExtension) => {
         if (extension) {
-          this.etensionManagerService.toggleActiveExtension(extension, true, EnableScope.WORKSPACE);
+          this.extensionManagerService.toggleActiveExtension(extension, true, EnableScope.WORKSPACE);
         }
       },
       isVisible: (extension: RawExtension) => {
@@ -110,18 +110,18 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     commands.registerCommand(ExtensionCommands.DISABLE, {
       execute: (extension: RawExtension) => {
         if (extension) {
-          this.etensionManagerService.toggleActiveExtension(extension, false, EnableScope.GLOBAL);
+          this.extensionManagerService.toggleActiveExtension(extension, false, EnableScope.GLOBAL);
         }
       },
       isVisible: (extension: RawExtension) => {
         // https://yuque.antfin-inc.com/cloud-ide/za8zpk/kpwylo#RvfMV
-        return extension && (extension.enableScope === EnableScope.GLOBAL || (extension.enableScope === EnableScope.WORKSPACE && !extension.enable));
+        return extension && extension.enable && (extension.enableScope === EnableScope.GLOBAL || (extension.enableScope === EnableScope.WORKSPACE && !extension.enable));
       },
     });
     commands.registerCommand(ExtensionCommands.DISABLE_WORKSPACE, {
       execute: (extension: RawExtension) => {
         if (extension) {
-          this.etensionManagerService.toggleActiveExtension(extension, false, EnableScope.GLOBAL);
+          this.extensionManagerService.toggleActiveExtension(extension, false, EnableScope.GLOBAL);
         }
       },
       isVisible: (extension: RawExtension) => {
@@ -131,7 +131,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     commands.registerCommand(ExtensionCommands.UNINSTALL, {
       execute: (extension: RawExtension) => {
         if (extension) {
-          this.etensionManagerService.uninstallExtension(extension);
+          this.extensionManagerService.uninstallExtension(extension);
         }
       },
       isVisible: (extension: RawExtension) => {
@@ -173,7 +173,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     if (handler) {
       // 在激活的时候获取数据
       handler.onActivate(() => {
-        this.etensionManagerService.init();
+        this.extensionManagerService.init();
       });
     }
   }

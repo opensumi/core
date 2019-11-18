@@ -25,11 +25,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const { extensionId } = props.resource.uri.getParsedQuery();
   const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
-  const [isInstalling, setIsInstalling] = React.useState(false);
-  const [isUpdating, setIsUpdating] = React.useState(false);
-  const [isUnInstalling, setUnIsInstalling] = React.useState(false);
   const [updated, setUpdated] = React.useState(false);
-
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const messageService = useInjectable<IMessageService>(IMessageService);
@@ -37,6 +33,14 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const clientApp = useInjectable<IClientApp>(IClientApp);
   const delayUpdate = localize('marketplace.extension.update.delay');
   const nowUpdate = localize('marketplace.extension.update.now');
+  const rawExtension = extensionManagerService.getRawExtensionById(extensionId);
+  const extensionMomentState = extensionManagerService.extensionMomentState.get(extensionId);
+  const isInstalling = extensionMomentState?.isInstalling;
+  const isUpdating = extensionMomentState?.isUpdating;
+  const isUnInstalling = extensionMomentState?.isUnInstalling;
+
+  const extension = rawExtension || currentExtension;
+
   React.useEffect(() => {
     const fetchData = async () => {
       let remote;
@@ -70,47 +74,22 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
    * @param scope
    */
   async function toggleActive(scope: EnableScope) {
-    if (currentExtension) {
-      const enable = !currentExtension.enable;
-      await extensionManagerService.toggleActiveExtension(currentExtension, enable, scope);
-      const reloadRequire = await extensionManagerService.computeReloadState(currentExtension.path);
-      setCurrentExtension({
-        ...currentExtension,
-        enable,
-        enableScope: scope,
-        reloadRequire,
-      });
+    if (extension) {
+      const enable = !extension.enable;
+      await extensionManagerService.toggleActiveExtension(extension, enable, scope);
     }
   }
 
   async function install() {
-    if (currentExtension && !isInstalling) {
-      setIsInstalling(true);
-      const path = await extensionManagerService.installExtension(currentExtension);
-      setIsInstalling(false);
-      setCurrentExtension({
-        ...currentExtension,
-        path,
-        // 默认安装后就启用
-        enable: true,
-        installed: true,
-      });
+    if (extension) {
+      await extensionManagerService.installExtension(extension);
     }
   }
 
   async function uninstall() {
-    if (currentExtension && !isUnInstalling) {
-      setUnIsInstalling(true);
-      const res = await extensionManagerService.uninstallExtension(currentExtension);
-      const reloadRequire = await extensionManagerService.computeReloadState(currentExtension.path);
+    if (extension) {
+      const res = await extensionManagerService.uninstallExtension(extension);
       if (res) {
-        setUnIsInstalling(false);
-        setCurrentExtension({
-          ...currentExtension,
-          enable: false,
-          installed: false,
-          reloadRequire,
-        });
       } else {
         dialogService.info(localize('marketplace.extension.uninstall.failed'));
       }
@@ -118,18 +97,9 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }
 
   async function update() {
-    if (currentExtension && !isUpdating) {
-      setIsUpdating(true);
-      const oldExtensionPath = currentExtension.path;
-      const newExtensionPath = await extensionManagerService.updateExtension(currentExtension, latestExtension!.version);
-      setIsUpdating(false);
-      setCurrentExtension({
-        ...currentExtension,
-        path: newExtensionPath,
-        installed: true,
-        version: latestExtension!.version,
-        reloadRequire: await extensionManagerService.computeReloadState(oldExtensionPath),
-      });
+    if (extension) {
+      const oldExtensionPath = extension.path;
+      const newExtensionPath = await extensionManagerService.updateExtension(extension, latestExtension!.version);
       await extensionManagerService.onUpdateExtension(newExtensionPath, oldExtensionPath);
       setUpdated(true);
     }
@@ -164,7 +134,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
   // https://yuque.antfin-inc.com/cloud-ide/za8zpk/kpwylo#RvfMV
   const menu = (
-    currentExtension && (<Menu>
+    currentExtension && (<Menu className='kt-menu'>
       <Menu.Item onClick={() => toggleActive(EnableScope.GLOBAL)} disabled={currentExtension.enableScope === EnableScope.WORKSPACE && currentExtension.enable}>
       {currentExtension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}
       </Menu.Item>
@@ -175,45 +145,44 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   );
   return (
     <div className={styles.wrap}>
-      {currentExtension && (
-      <>
+        {extension && (
         <div className={styles.header}>
           <div>
-            <img className={styles.icon} src={currentExtension.icon}></img>
+            <img className={styles.icon} src={extension.icon}></img>
           </div>
           <div className={styles.details}>
             <div className={styles.title}>
-              <span className={styles.name}>{currentExtension.displayName}</span>
-              {currentExtension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
+              <span className={styles.name}>{extension.displayName}</span>
+              {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
               {canUpdate ? (<span className={clx(commonStyles.tag, styles.green)}>{localize('marketplace.extension.canupdate')}</span>) : null}
             </div>
             <div className={styles.subtitle}>
               {downloadCount > 0 ? (
               <span className={styles.subtitle_item}><i className={clx(commonStyles.icon, getIcon('download'))}></i>{downloadCount}</span>
               ) : null}
-              <span className={styles.subtitle_item}>{currentExtension.publisher}</span>
-              <span className={styles.subtitle_item}>V{currentExtension.version}</span>
+              <span className={styles.subtitle_item}>{extension.publisher}</span>
+              <span className={styles.subtitle_item}>V{extension.version}</span>
             </div>
-            <div className={styles.description}>{currentExtension.description}</div>
+            <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
               {canUpdate && !updated ? (
                 <Button className={styles.action} onClick={update} loading={isUpdating}>{isUpdating ? localize('marketplace.extension.updating') : localize('marketplace.extension.update')}</Button>
               ) : null}
-              {!currentExtension.installed ? (
+              {!extension.installed ? (
                 <Button className={styles.action} onClick={install} loading={isInstalling}>{isInstalling ? localize('marketplace.extension.installing') : localize('marketplace.extension.install')}</Button>
               ) : null}
-              {currentExtension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure')}</Button>}
-              {currentExtension.installed ? (
-                <Dropdown overlay={menu} trigger={['click']}>
-                  <Button ghost={true} className={styles.action}>{currentExtension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>
+              {extension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
+              {extension.installed ? (
+                <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']}>
+                  <Button ghost={true} className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>
                 </Dropdown>) : null}
-              {currentExtension.installed && !currentExtension.isBuiltin  && (
+              {extension.installed && !extension.isBuiltin  && (
                 <Button ghost={true} type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling') : localize('marketplace.extension.uninstall')}</Button>
               )}
             </div>
           </div>
-        </div>
-        <div className={styles.body}>
+        </div>)}
+        {currentExtension && (<div className={styles.body}>
           <Tabs tabBarStyle={{marginBottom: 0}}>
             <TabPane className={styles.content} tab={localize('marketplace.extension.readme')} key='readme'>
               <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`}/>
@@ -222,9 +191,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               <Markdown content={currentExtension.changelog ? currentExtension.changelog : 'no changelog'}/>
             </TabPane>
           </Tabs>
-        </div>
-      </>
-      )}
+        </div>)}
     </div>
   );
 });

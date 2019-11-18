@@ -15,7 +15,7 @@ import {
   memoize,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode } from '../common';
+import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode, FileTreeExpandedStatusUpdateEvent } from '../common';
 import { IFileServiceClient, FileChange, FileChangeType, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
@@ -25,7 +25,7 @@ import { IDialogService } from '@ali/ide-overlay';
 import { Directory, File } from './file-tree-item';
 import { ExplorerResourceCut } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
-import { MenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
+import { AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export type IFileTreeItemStatus = Map<string, {
@@ -102,8 +102,8 @@ export class FileTreeService extends WithEventBus {
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   private statusChangeEmitter = new Emitter<Uri[]>();
   private explorerResourceCut: IContextKey<boolean>;
@@ -734,6 +734,9 @@ export class FileTreeService extends WithEventBus {
     if (Directory.isDirectory(item)) {
       await item.getChildren();
       const children = item.children;
+      if (!Array.isArray(children)) {
+        return ;
+      }
       if (lowcost) {
         for (const child of children) {
           const childStatusKey = this.getStatutsKey(child);
@@ -777,7 +780,7 @@ export class FileTreeService extends WithEventBus {
       if (status && !status.expanded) {
         // 如果当前目录下的子文件为空，同时具备父节点，尝试调用fileservice加载文件
         // 如果当前目录具备父节点(即非根目录)，尝试调用fileservice加载文件
-        if (item.children.length === 0 && item.parent || status && status.needUpdated && item.parent) {
+        if (item.children && item.children.length === 0 && item.parent || status && status.needUpdated && item.parent) {
           await item.getChildren();
           this.updateFileStatus([item]);
         }
@@ -786,11 +789,13 @@ export class FileTreeService extends WithEventBus {
           expanded: true,
           needUpdated: false,
         });
+        this.eventBus.fire(new FileTreeExpandedStatusUpdateEvent({uri: file.uri, expanded: true}));
       } else {
         this.status.set(statusKey, {
           ...status!,
           expanded: false,
         });
+        this.eventBus.fire(new FileTreeExpandedStatusUpdateEvent({uri: file.uri, expanded: false}));
       }
     }
   }

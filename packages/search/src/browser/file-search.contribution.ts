@@ -154,7 +154,7 @@ export class FileSearchQuickCommandHandler {
         const alreadyCollected = new Set<string>();
         let findResults: QuickOpenGroupItem[] = [];
 
-        lookFor = lookFor.trim();
+        lookFor = lookFor = lookFor.trim().replace(/\s/g, '');
         this.currentLookFor = lookFor;
         const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, lookFor, token);
 
@@ -172,6 +172,7 @@ export class FileSearchQuickCommandHandler {
       fuzzyMatchLabel: {
         enableSeparateSubstringMatching: true,
       },
+      showItemsWithoutHighlight: true,
       fuzzyMatchDescription: {
         enableSeparateSubstringMatching: true,
       },

@@ -1,12 +1,9 @@
-import { IEventBus, BasicEvent } from '@ali/ide-core-common';
+import { IEventBus } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType  } from '../common';
 
 const maxChannelHistory = 1000;
-
-export class ContentChangePayload {}
-
-export class ContentChangeEvent extends BasicEvent<ContentChangePayload> {}
 
 @Injectable({multiple: true})
 export class OutputChannel {
@@ -24,7 +21,7 @@ export class OutputChannel {
     // readonly onVisibilityChange: Event<{visible: boolean}> = this.visibilityChangeEmitter.event;
     // readonly onContentChange: Event<OutputChannel> = this.contentChangeEmitter.event;
 
-    constructor(readonly name: string) {
+    constructor(public readonly name: string) {
         this.noVisiblePanel = !this.layoutService.getTabbarHandler('ide-output');
     }
 
@@ -37,8 +34,7 @@ export class OutputChannel {
         } else {
             this.currentLine += value;
         }
-        // this.contentChangeEmitter.fire(this);
-        this.eventBus.fire(new ContentChangeEvent(new ContentChangePayload()));
+        this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.append, value, this.getLines())));
         if (this.noVisiblePanel) {
             console.log(`%c[${this.name}]` + `%c ${value}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
         }
@@ -54,15 +50,13 @@ export class OutputChannel {
         if (this.lines.length > maxChannelHistory) {
             this.lines.splice(0, this.lines.length - maxChannelHistory);
         }
-        // this.contentChangeEmitter.fire(this);
-        this.eventBus.fire(new ContentChangeEvent(new ContentChangePayload()));
+        this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, line, this.getLines())));
     }
 
     clear(): void {
         this.lines.length = 0;
         this.currentLine = undefined;
-        // this.contentChangeEmitter.fire(this);
-        this.eventBus.fire(new ContentChangeEvent(new ContentChangePayload()));
+        this.eventBus.fire(new ContentChangeEvent(new ContentChangeEventPayload(this.name, ContentChangeType.appendLine, '', this.getLines())));
     }
 
     setVisibility(visible: boolean): void {
@@ -80,7 +74,7 @@ export class OutputChannel {
         }
     }
 
-    get getLines(): string[] {
+    getLines(): string[] {
         if (this.currentLine !== undefined) {
             return [...this.lines, this.currentLine];
         } else {

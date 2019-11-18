@@ -8,7 +8,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import { SIDE_MENU_PATH } from '../common';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
-import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -72,8 +72,8 @@ export class ActivityBarService extends WithEventBus {
   @Autowired(IMenuRegistry)
   menus: IMenuRegistry;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;

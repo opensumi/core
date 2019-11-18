@@ -74,6 +74,7 @@ export const defaultIconMap = {
   'unorderedlist': 'unorderedlist',
   'swap': 'swap',
   'up': 'up',
+  'down': 'down',
   'branches': 'branches',
   'file-exclamation': 'file-exclamation',
   'folder-fill': 'folder-fill',

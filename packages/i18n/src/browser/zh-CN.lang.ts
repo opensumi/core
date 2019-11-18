@@ -10,6 +10,7 @@ export const localizationBundle = {
     'file.folder.new': '新建文件夹',
 
     'file.save': '保存文件',
+    'file.saveAll': '保存全部',
     'file.open': '打开文件',
     'file.open.side': '侧边栏打开',
     'file.delete': '删除',
@@ -41,10 +42,16 @@ export const localizationBundle = {
     'file.empty.defaultMessage': '尚未打开文件夹',
     'file.empty.openFolder': '打开文件夹',
 
-    'menu-bar.file': '文件',
-    'menu-bar.edit': '编辑',
-    'menu-bar.view': '视图',
-    'menu-bar.help': '帮助',
+    'menu-bar.title.file': '文件',
+    'menu-bar.title.edit': '编辑',
+    'menu-bar.title.selection': '选择',
+    'menu-bar.title.view': '视图',
+    'menu-bar.title.go': '前往',
+    'menu-bar.title.debug': '调试',
+    'menu-bar.title.terminal': '终端',
+    'menu-bar.title.window': '视窗',
+    'menu-bar.title.help': '帮助',
+
     'menu-bar.file.open': '打开文件',
     'menu-bar.file.save-as': '另存为',
     'menu-bar.file.save-all': '全部保存',
@@ -79,6 +86,7 @@ export const localizationBundle = {
     'edit.cut': '剪切',
     'edit.copy': '复制',
     'edit.paste': '粘贴',
+    'edit.selectAll': '全选',
 
     'quickopen.command.placeholder': '请输入你要执行的命令',
     'quickopen.command.description': '执行 IDE 预设的命令',
@@ -86,6 +94,10 @@ export const localizationBundle = {
     'quickopen.quickinput.prompt': "请按 '回车(Enter)' 确认你的输入或者按 '取消(Esc)' 取消输入",
 
     'explorer.title': '资源管理器',
+
+    'explorer.electron.revealInFinder': '在文件系统中打开',
+    'explorer.electron.openInSystemTerminal': '在系统终端中打开',
+    'explorer.electron.openInSystemTerminal.error': '在系统终端中打开 {0} 失败: {1}',
 
     'search.title': '跨文件搜索',
     'search.input.placeholder': '输入搜索内容',
@@ -246,6 +258,9 @@ export const localizationBundle = {
     'preference.editor.wordWrapColumn': '自动换行长度',
     'preference.editor.askIfDiff': '保存文件冲突时提示',
     'preference.editor.readonlyFiles': '只读文件列表',
+    'preference.editor.formatOnSave': '在保存时格式化文件',
+    'preference.editor.formatOnSaveTimeout': '控制在保存文件时进行格式化的超时时间（毫秒）',
+    'preference.editor.formatOnSaveTimeoutError': '格式化时间超过 {0} 毫秒，终止格式化',
 
     'preference.array.additem': '添加',
 
@@ -295,7 +310,7 @@ export const localizationBundle = {
     'marketplace.extension.updating': '更新中',
     'marketplace.extension.update': '更新',
     'marketplace.extension.installing': '安装中',
-    'marketplace.extension.reloadrequure': '需要重启',
+    'marketplace.extension.reloadrequire': '需要重启',
     'marketplace.extension.uninstalling': '卸载中',
     'marketplace.extension.uninstall': '卸载',
     'marketplace.extension.readme': '简介',

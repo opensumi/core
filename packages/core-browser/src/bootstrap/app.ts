@@ -22,6 +22,7 @@ import {
   getLogger,
   isElectronRenderer,
   setLanguageId,
+  ILogger,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -37,9 +38,9 @@ import { renderClientApp } from './app.view';
 import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
-import { MenuRegistry, IMenuRegistry } from '../menu/next';
+import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 
-const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_e2ikewyk1kq.css';
+const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3jbeug1g5qd.css';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -105,7 +106,8 @@ export class ClientApp implements IClientApp {
 
   menuRegistry: MenuModelRegistry;
 
-  nextMenuRegistry: MenuRegistry;
+  // 这里将 onStart contribution 方法放到 MenuRegistryImpl 上了
+  nextMenuRegistry: MenuRegistryImpl;
 
   stateService: ClientAppStateService;
 
@@ -157,7 +159,6 @@ export class ClientApp implements IClientApp {
   public async start(container: HTMLElement, type?: string, connection?: RPCMessageConnection) {
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
-      console.log('extract connection');
     } else {
       if (type === 'electron') {
         const netConnection = await (window as any).createRPCNetConnection();
@@ -258,11 +259,11 @@ export class ClientApp implements IClientApp {
   }
 
   protected async startContributions() {
-    console.log('startContributions clientAppContributions', this.contributions);
+    this.logger.verbose('startContributions clientAppContributions', this.contributions);
     for (const contribution of this.contributions) {
       if (contribution.initialize) {
         try {
-          console.log((contribution.constructor as any).name + '.initialize');
+          this.logger.verbose((contribution.constructor as any).name + '.initialize');
           await this.measure(contribution.constructor.name + '.initialize',
             () => contribution.initialize!(this),
           );
@@ -272,7 +273,7 @@ export class ClientApp implements IClientApp {
       }
     }
 
-    console.log('contributions.initialize done');
+    this.logger.verbose('contributions.initialize done');
 
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
@@ -282,11 +283,11 @@ export class ClientApp implements IClientApp {
     for (const contribution of this.contributions) {
       if (contribution.onStart) {
         try {
-          console.log(contribution.constructor.name + '.onStart start');
+          this.logger.verbose(contribution.constructor.name + '.onStart start');
           await this.measure(contribution.constructor.name + '.onStart',
             () => contribution.onStart!(this),
           );
-          console.log(contribution.constructor.name + '.onStart done');
+          this.logger.verbose(contribution.constructor.name + '.onStart done');
         } catch (error) {
           this.logger.error('Could not start contribution', error);
         }
@@ -321,9 +322,9 @@ export class ClientApp implements IClientApp {
     performance.measure(name, startMark, endMark);
     for (const item of performance.getEntriesByName(name)) {
       if (item.duration > 100) {
-        console.warn(item.name + ' is slow, took: ' + item.duration + ' ms');
+        this.logger.verbose(item.name + ' is slow, took: ' + item.duration + ' ms');
       } else {
-        console.debug(item.name + ' took ' + item.duration + ' ms');
+        this.logger.verbose(item.name + ' took ' + item.duration + ' ms');
       }
     }
     performance.clearMeasures(name);
@@ -558,7 +559,7 @@ export class ClientApp implements IClientApp {
 
   protected updateIconMap(prefix: string, iconMap: IconMap) {
     if (prefix === 'kaitian-icon kticon-') {
-      console.warn('icon prefix与内置图标冲突，请检查图标配置！');
+      this.logger.verbose('icon prefix与内置图标冲突，请检查图标配置！');
     }
     updateIconMap(prefix, iconMap);
   }

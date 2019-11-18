@@ -13,7 +13,7 @@ export function createMockedMonaco(): Partial<typeof monaco> {
       // @ts-ignore
       SelectionRangeRegistry: {
         register(selector, provider) {
-          console.log('SelectionRangeRegistry noop');
+          // console.log('SelectionRangeRegistry noop');
           mockFeatureProviderRegistry.set('registerSelectionRangeProvider', provider);
         },
       },

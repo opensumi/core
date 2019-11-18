@@ -258,7 +258,8 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     const labelHighlights = fuzzyMatchLabel ? this.matchesFuzzy(lookFor, item.getLabel(), fuzzyMatchLabel) : item.getLabelHighlights();
     const descriptionHighlights = this.options.fuzzyMatchDescription ? this.matchesFuzzy(lookFor, item.getDescription(), fuzzyMatchDescription) : item.getDescriptionHighlights();
     const detailHighlights = this.options.fuzzyMatchDetail ? this.matchesFuzzy(lookFor, item.getDetail(), fuzzyMatchDetail) : item.getDetailHighlights();
-    if ((lookFor && !labelHighlights && !descriptionHighlights && (!detailHighlights || detailHighlights.length === 0))) {
+    if ((lookFor && !labelHighlights && !descriptionHighlights && (!detailHighlights || detailHighlights.length === 0))
+      && !this.options.showItemsWithoutHighlight) {
       return undefined;
     }
     const entry = item instanceof QuickOpenGroupItem ? new QuickOpenEntryGroup(item, this.keybindingRegistry) : new QuickOpenEntry(item, this.keybindingRegistry);

@@ -62,6 +62,7 @@ export class ExtensionsActivator {
   // private extenstionProcessService: IExtensionProcessService;
 
   constructor(
+    private logger: any = console,
     // extenstionProcessService: IExtensionProcessService,
   ) {
     // this.extenstionProcessService = extenstionProcessService;
@@ -94,8 +95,8 @@ export class ExtensionsActivator {
         try {
           disposable.dispose();
         } catch (e) {
-          console.log('deactivated error');
-          console.log(e);
+          this.logger.log('deactivated error');
+          this.logger.log(e);
         }
       });
     });

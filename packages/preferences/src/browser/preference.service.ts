@@ -195,6 +195,8 @@ export const defaultSettingSections: {
         {id: 'editor.insertSpace', localized: 'preference.editor.insertSpace'},
         {id: 'editor.wordWrap', localized: 'preference.editor.wordWrap'},
         {id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles'},
+        {id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave'},
+        {id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout'},
       ],
     },
   ],
