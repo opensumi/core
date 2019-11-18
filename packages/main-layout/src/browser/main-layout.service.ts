@@ -123,6 +123,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.mainHorizontalWidget = new BoxPanel({
       layout: this.createBoxLayout([this.mainAreaWidget, this.floatSlotWidget], [1, 0], {direction: 'left-to-right', spacing: 0}),
     });
+    this.mainAreaWidget.addClass('overflow-visible');
 
     // 设置id，配置样式
     this.topBarWidget.addClass('top-slot');
