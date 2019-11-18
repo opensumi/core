@@ -1,12 +1,20 @@
 import { enableJSDOM } from '@ali/ide-core-browser/lib/mocks/jsdom';
 const disableJSDOM = enableJSDOM();
-import { URI, Disposable, DisposableCollection } from '@ali/ide-core-browser';
+import { URI, Disposable, DisposableCollection, IFileServiceClient, IContextKeyService } from '@ali/ide-core-browser';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
-import { DebugModel } from '@ali/ide-debug/lib/browser/editor';
+import { DebugModel, DebugModelManager } from '@ali/ide-debug/lib/browser/editor';
+import { DebugModule, DebugStackFrame, DebugThread, DebugSession, DebugSessionConnection, BreakpointManager } from '@ali/ide-debug/lib/browser';
+import { DebugSessionOptions } from '@ali/ide-debug';
+import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
+import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
+import { ITerminalClient } from '@ali/ide-terminal2';
+import { WorkbenchEditorService } from '@ali/ide-editor';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { IMessageService } from '@ali/ide-overlay';
+import * as options from '@ali/ide-debug/lib/browser/editor/debug-styles.ts';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { DebugModule } from '@ali/ide-debug/lib/browser';
-import { IDebugModel } from '@ali/ide-debug';
+
 disableJSDOM();
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -15,18 +23,54 @@ process.on('unhandledRejection', (reason, promise) => {
 
 describe('Debug Model', () => {
 
-  let model: IDebugModel;
+  let model: DebugModel;
   let injector: MockInjector;
   let mockDebugEditor: any;
+  const testFile: URI = URI.file('/myfolder/myfile.js');
+
+  const enableMonaCo = () => {
+    (global as any).monaco = {
+      Range: class Range {},
+    };
+    const disableMonaco = () => {
+      delete (global as any).monaco;
+    };
+    return disableMonaco;
+  };
 
   const toTearDown = new DisposableCollection();
 
   const initializeInjector = async () => {
     toTearDown.push(Disposable.create(enableJSDOM()));
-    mockDebugEditor = createMockedMonaco().editor!;
+    toTearDown.push(Disposable.create(enableMonaCo()));
+
+    mockDebugEditor = {
+      ...createMockedMonaco().editor!,
+      getModel: () => {
+        return {
+          uri: testFile,
+        };
+      },
+      addContentWidget: () => {
+
+      },
+      onKeyDown: () => Disposable.create(() => {}),
+    };
     injector = createBrowserInjector([
       DebugModule,
     ]);
+    injector.addProviders({
+      token: IFileServiceClient,
+      useClass: MockFileServiceClient,
+    });
+    injector.addProviders({
+      token: IContextKeyService,
+      useClass: MockContextKeyService,
+    });
+    injector.addProviders({
+      token: IFileServiceClient,
+      useClass: MockFileServiceClient,
+    });
   };
 
   beforeEach(() => {
@@ -35,8 +79,57 @@ describe('Debug Model', () => {
 
   afterEach(() => toTearDown.dispose());
 
-  it('breakpoint simple', () => {
-    const modelUri = URI.file('/myfolder/myfile.js');
-    model = DebugModel.createModel(injector, mockDebugEditor);
+  it('debugModel render', () => {
+    const deltaDecorationsFn = jest.fn(() => []);
+    mockDebugEditor = {
+      ...mockDebugEditor,
+      deltaDecorations: deltaDecorationsFn,
+    };
+    model = DebugModel.createModel(injector, mockDebugEditor) as DebugModel;
+    model.render();
+    expect(deltaDecorationsFn).toBeCalled();
+  });
+
+  it('stackFrame focusing', () => {
+    const deltaDecorationsFn = jest.fn(() => []);
+    mockDebugEditor = {
+      ...mockDebugEditor,
+      deltaDecorations: deltaDecorationsFn,
+    };
+    model = DebugModel.createModel(injector, mockDebugEditor) as DebugModel;
+    const fakeSession = new DebugSession(
+      '0',
+      {} as DebugSessionOptions,
+      {
+        onRequest: (command: string, handler) => {},
+        on: (command: string, handler) => Disposable.create(() => {}),
+        dispose: () => {},
+      } as DebugSessionConnection,
+      {} as ITerminalClient,
+      {} as WorkbenchEditorService,
+      injector.get(BreakpointManager),
+      injector.get(DebugModelManager),
+      injector.get(LabelService),
+      {} as IMessageService,
+      injector.get(IFileServiceClient));
+    const thread = new DebugThread(fakeSession);
+    const frame = new DebugStackFrame(thread, fakeSession);
+    frame.update({
+      raw: {
+        id: 0,
+        name: 'fake',
+        line: 5,
+        column: 2,
+      },
+    });
+    model.focusStackFrame(frame);
+    expect(deltaDecorationsFn).toBeCalled();
+    expect(deltaDecorationsFn).toBeCalledWith([], [{
+      options: options.FOCUSED_STACK_FRAME_DECORATION,
+      range: {},
+    }, {
+      options: options.TOP_STACK_FRAME_MARGIN,
+      range: {},
+    }]);
   });
 });
