@@ -43,7 +43,7 @@ export interface GrammarDefinition {
 export class TextmateRegistry {
 
     readonly scopeToProvider = new Map<string, GrammarDefinitionProvider>();
-    readonly languageToConfig = new Map<string, TextmateGrammarConfiguration>();
+    readonly languageToConfig = new Map<string, () => TextmateGrammarConfiguration>();
     readonly languageIdToScope = new Map<string, string>();
 
     // 将语法定义描述绑定到某一个Scope：source.json.comments
@@ -81,14 +81,14 @@ export class TextmateRegistry {
         return undefined;
     }
 
-    registerGrammarConfiguration(languageId: string, config: TextmateGrammarConfiguration): void {
+    registerGrammarConfiguration(languageId: string, getConfig: () => TextmateGrammarConfiguration): void {
         if (this.languageToConfig.has(languageId)) {
             // console.warn(new Error(`a registered grammar configuration for '${languageId}' language is overridden`));
         }
-        this.languageToConfig.set(languageId, config);
+        this.languageToConfig.set(languageId, getConfig);
     }
 
-    getGrammarConfiguration(languageId: string): TextmateGrammarConfiguration {
-        return this.languageToConfig.get(languageId) || {};
+    getGrammarConfiguration(languageId: string): () => TextmateGrammarConfiguration {
+        return this.languageToConfig.get(languageId) || (() => ({}));
     }
 }

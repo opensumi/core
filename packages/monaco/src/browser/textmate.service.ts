@@ -391,10 +391,10 @@ export class TextmateService extends WithEventBus {
     });
     if (grammar.language) {
       this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName);
-      this.textmateRegistry.registerGrammarConfiguration(grammar.language, {
+      this.textmateRegistry.registerGrammarConfiguration(grammar.language, () => ({
         embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
         tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
-      });
+      }));
     }
   }
 
@@ -412,7 +412,7 @@ export class TextmateService extends WithEventBus {
       return;
     }
 
-    const configuration = this.textmateRegistry.getGrammarConfiguration(languageId);
+    const configuration = this.textmateRegistry.getGrammarConfiguration(languageId)();
     const initialLanguage = getEncodedLanguageId(languageId);
 
     try {
