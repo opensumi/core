@@ -47,7 +47,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
     registry.registerCommand({
       id: OUTLINE_FOLLOW_CURSOR,
       iconClass: getIcon('follow-cursor'),
-      toogleIconClass: getIcon('follow-cursor', ROTATE_TYPE.rotate_180),
+      toogleIconClass: getIcon('follow-cursor', { fill: true }),
     }, {
       execute: () => {
         this.outlineService.followCursor = !this.outlineService.followCursor;

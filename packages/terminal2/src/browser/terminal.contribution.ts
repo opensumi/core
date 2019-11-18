@@ -28,7 +28,7 @@ export const terminalExpand: Command = {
   id: 'terminal.expand',
   label: 'expand terminal',
   iconClass: getIcon('up'),
-  toogleIconClass: getIcon('up', ROTATE_TYPE.rotate_180),
+  toogleIconClass: getIcon('up', {rotate: ROTATE_TYPE.rotate_180}),
   category: 'terminal',
 };
 
