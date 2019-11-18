@@ -3,7 +3,7 @@ import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
-import { createContributionProvider, ContributionProvider, URI } from '@ali/ide-core-common';
+import { createContributionProvider, ContributionProvider, URI, uuid } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
 import { ElectronMainModule } from '../electron-main-module';
 
@@ -59,11 +59,11 @@ export class ElectronMainApp {
     }
   }
 
-  loadWorkspace(workspace: string, metadata: any = {}, options: BrowserWindowConstructorOptions = {}, openOptions: IWindowOpenOptions): CodeWindow {
+  loadWorkspace(workspace?: string, metadata: any = {}, options: BrowserWindowConstructorOptions = {}, openOptions?: IWindowOpenOptions): CodeWindow {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
-    if (openOptions.replace) {
+    if (openOptions && openOptions.replace) {
       let replaceWindow = this.codeWindows.get(openOptions.windowId);
       if (!replaceWindow && this.codeWindows.size > 0) {
         replaceWindow = Array.from(this.codeWindows.values())[0];
@@ -73,13 +73,14 @@ export class ElectronMainApp {
       }
     }
     const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
-    this.codeWindows.set(openOptions.windowId, window);
+    const windowId = openOptions ? openOptions.windowId : uuid();
+    this.codeWindows.set(windowId, window);
     window.start();
     if (options.show !== false) {
       window.getBrowserWindow().show();
     }
     window.onDispose(() => {
-      this.codeWindows.delete(openOptions.windowId!);
+      this.codeWindows.delete(windowId);
     });
 
     return window;
