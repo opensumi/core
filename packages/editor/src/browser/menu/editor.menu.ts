@@ -1,5 +1,5 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IEditorActionRegistry, IEditorActionItem } from '../types';
+import { IEditorActionRegistry, IEditorActionItem, IVisibleAction } from '../types';
 import { IDisposable, URI, BasicEvent, IEventBus, Disposable, IContextKeyService, Emitter, IContextKeyExpr } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup } from '../../common';
 import { observable, reaction, computed } from 'mobx';
@@ -36,6 +36,8 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
     const processed = {
       ...actionItem,
       contextKeyExpr: actionItem.when ? this.contextKeyService.parse(actionItem.when) : undefined,
+      tipContextKeyExpr: actionItem.tipWhen ? this.contextKeyService.parse(actionItem.tipWhen) : undefined,
+      tipClosed: false,
     };
     this.items.push(processed);
     const disposer = new Disposable();
@@ -82,7 +84,9 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
 }
 
 interface IEditorActionItemData extends IEditorActionItem {
+  tipClosed: boolean;
   contextKeyExpr?: IContextKeyExpr;
+  tipContextKeyExpr?: IContextKeyExpr;
 }
 
 @Injectable({multiple: true})
@@ -135,8 +139,8 @@ export class VisibleEditorActions extends Disposable {
   }
 
   @computed
-  get items(): IEditorActionItem[] {
-    return this.visibleEditorActions.filter((v) => v.visible).map((v) => v.item);
+  get items(): IVisibleAction[] {
+    return this.visibleEditorActions.filter((v) => v.visible);
   }
 
   dispose() {
@@ -148,14 +152,28 @@ export class VisibleEditorActions extends Disposable {
 
 }
 
-class VisibleAction extends Disposable {
+class VisibleAction extends Disposable implements IVisibleAction  {
 
   @observable visible = false;
 
+  @observable tipVisible = false;
+
   constructor(public readonly item: IEditorActionItemData, private editorGroup: IEditorGroup, private contextKeyService: IContextKeyService) {
     super();
+    const set = new Set();
     if (this.item.contextKeyExpr) {
-      const set = new Set(this.item.contextKeyExpr.keys());
+      this.item.contextKeyExpr.keys().forEach((key) => {
+        set.add(key);
+      });
+    }
+
+    if (this.item.tipContextKeyExpr) {
+      this.item.tipContextKeyExpr.keys().forEach((key) => {
+        set.add(key);
+      });
+    }
+
+    if (set.size > 0) {
       this.addDispose(contextKeyService.onDidChangeContext((e) => {
         if (e.payload.affectsSome(set)) {
           this.update();
@@ -187,5 +205,17 @@ class VisibleAction extends Disposable {
     } else {
       this.visible = true;
     }
+
+    if (!this.item.tipClosed) {
+      if (this.item.tipContextKeyExpr) {
+        const context = this.editorGroup.currentEditor ? this.editorGroup.currentEditor.monacoEditor.getDomNode() : undefined;
+        this.tipVisible = this.contextKeyService.match(item.tipContextKeyExpr, context);
+      }
+    }
+  }
+
+  closeTip() {
+    this.item.tipClosed = true;
+    this.tipVisible = false;
   }
 }
