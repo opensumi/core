@@ -40,7 +40,7 @@ import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 
-const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_e2ikewyk1kq.css';
+const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3jbeug1g5qd.css';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
