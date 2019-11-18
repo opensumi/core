@@ -9,7 +9,7 @@ import * as styles from './extension-detail.module.less';
 import * as commonStyles from './extension-manager.common.module.less';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-core-browser/lib/components';
 import Dropdown from 'antd/lib/dropdown';
 import Menu from 'antd/lib/menu';

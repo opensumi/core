@@ -12,7 +12,7 @@ import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/debug-watch.view';
 
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { DebugWatchService } from './view/debug-watch.service';
 import { DebugBreakpointsService } from './view/debug-breakpoints.service';

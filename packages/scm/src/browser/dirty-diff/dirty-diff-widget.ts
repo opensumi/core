@@ -1,7 +1,7 @@
 import { ZoneWidget } from '@ali/ide-monaco-enhance/lib/browser';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
-import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser/lib/icon';
+import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser';
 import { URI, CommandService } from '@ali/ide-core-common';
 import { ScmChangeTitleCallback } from '@ali/ide-core-browser/lib/menu/next';
 

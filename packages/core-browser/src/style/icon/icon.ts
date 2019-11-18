@@ -1,5 +1,7 @@
 import { SymbolKind } from '@ali/ide-core-common';
 
+export const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3jbeug1g5qd.css';
+
 const iconPrefixes = ['kaitian-icon kticon-'];
 
 export enum ROTATE_TYPE {
@@ -125,6 +127,7 @@ export const defaultIconMap = {
   'toggle-breakpoints': 'deactivate-breakpoints',
   'disconnect': 'disconnect',
   'download': 'download',
+  'follow-cursor': 'follow-cursor',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {

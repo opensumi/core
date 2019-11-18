@@ -6,7 +6,7 @@ import 'antd/lib/menu/style/index.less';
 
 import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator, SubmenuItemNode } from '../../menu/next';
 import Icon from '../icon';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 import { useInjectable } from '../../react-hooks';
 import { useMenus } from '../../utils';
 

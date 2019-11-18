@@ -32,7 +32,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME } from '../common';
 import { PreferenceView } from './preferences.view';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';

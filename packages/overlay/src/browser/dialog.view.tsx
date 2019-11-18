@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import * as styles from './dialog.module.less';
 import { useInjectable, localize } from '@ali/ide-core-browser';
 import { IDialogService } from '../common';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import clx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Overlay } from '@ali/ide-core-browser/lib/components/overlay';

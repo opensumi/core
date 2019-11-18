@@ -1,5 +1,5 @@
 import { Command, localize } from '..';
-import { getIcon } from '../icon';
+import { getIcon } from '../style/icon/icon';
 
 export namespace FILE_COMMANDS {
   const CATEGORY = '%file%';
