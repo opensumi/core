@@ -57,18 +57,25 @@ export const MenuActionList: React.FC<{
     return null;
   }
 
-  const handleClick = React.useCallback(({ key }: ClickParam) => {
+  const handleClick = React.useCallback((params: ClickParam) => {
+    const { key, item } = params;
     // do nothing when click separator node
     if ([SeparatorMenuItemNode.ID, SubmenuItemNode.ID].includes(key)) {
       return;
     }
 
-    const menuItem = data.find((n) => n.id === key);
-    if (menuItem && menuItem.execute) {
+    // hacky: read MenuNode from MenuItem.children.props
+    const menuItem = item.props.children.props.data as MenuNode;
+    if (!menuItem) {
+      return;
+    }
+
+    if (typeof menuItem.execute === 'function') {
       menuItem.execute(context);
-      if (typeof onClick === 'function') {
-        onClick(menuItem);
-      }
+    }
+
+    if (typeof onClick === 'function') {
+      onClick(menuItem);
     }
   }, [ data, context ]);
 
