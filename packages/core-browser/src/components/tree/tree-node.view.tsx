@@ -290,7 +290,7 @@ export const TreeContainerNode = (
 
   };
 
-  const renderIcon = (node: TreeNode) => {
+  const renderIcon = (node: TreeNode | ExpandableTreeNode) => {
     const treeNodeLeftActions: TreeViewAction[] = [];
     if (!ExpandableTreeNode.is(node)) {
       for (const action of actions) {
@@ -303,7 +303,7 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.kt_file_icon)} style={node.iconStyle}>
+    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={node.iconStyle}>
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
     </div>;
   };
