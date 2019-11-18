@@ -92,6 +92,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
       description: '%editor.configuration.askIfDiff%',
     },
+    'editor.showActionWhenGroupEmpty': {
+      type: 'boolean',
+      default: false,
+      description: '%editor.configuration.showActionWhenGroupEmpty%',
+    },
     'editor.preferredFormatter': {
       type: 'object',
       default: {},

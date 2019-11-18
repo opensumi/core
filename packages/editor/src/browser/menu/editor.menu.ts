@@ -169,6 +169,8 @@ class VisibleAction extends Disposable {
         (this as any).contextKeyService = null;
       },
     });
+
+    this.update();
   }
 
   update() {
@@ -179,10 +181,11 @@ class VisibleAction extends Disposable {
       } catch (e) {
         this.visible = false;
       }
-    }
-    if (item.contextKeyExpr) {
+    } else if (item.contextKeyExpr) {
       const context = this.editorGroup.currentEditor ? this.editorGroup.currentEditor.monacoEditor.getDomNode() : undefined;
       this.visible = this.contextKeyService.match(item.contextKeyExpr, context);
+    } else {
+      this.visible = true;
     }
   }
 }

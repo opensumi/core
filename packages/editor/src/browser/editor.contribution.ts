@@ -708,6 +708,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     registry.registerEditorAction({
       iconClass: getIcon('embed'),
       title: localize('editor.splitToRight'),
+      when: 'resource',
       onClick: () => {
         this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
       },

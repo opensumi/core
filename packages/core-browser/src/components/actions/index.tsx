@@ -88,6 +88,7 @@ export const MenuActionList: React.FC<{
       if (menuNode.id === SubmenuItemNode.ID) {
         return (
           <Menu.SubMenu
+            popupClassName='kt-menu'
             key={`${menuNode.id}-${index}`}
             title={<MenuAction hasSubmenu data={menuNode} />}>
             {recursiveRender(menuNode.children)}

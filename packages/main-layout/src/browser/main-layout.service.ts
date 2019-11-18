@@ -146,6 +146,14 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.floatSlotWidget.node.style.minWidth = size + 'px';
     this.floatSlotWidget.fit();
     this.mainHorizontalWidget.fit();
+    const prev = this.horizontalPanel.relativeSizes();
+    if (this.getTabbar('left').expanded) {
+      if (this.configContext.layoutConfig[SlotLocation.right] && this.configContext.layoutConfig[SlotLocation.right].size === 0) {
+        prev[2] = 0;
+      }
+      this.horizontalPanel.fit();
+      this.horizontalPanel.setRelativeSizes(prev);
+    }
   }
 
   // TODO 后续可以把配置和contribution整合起来
@@ -434,6 +442,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         this.middleWidget.fit();
         this.horizontalPanel.fit();
         const prev = this.horizontalPanel.relativeSizes();
+        if (this.configContext.layoutConfig[SlotLocation.right] && this.configContext.layoutConfig[SlotLocation.right].size === 0) {
+          prev[2] = 0;
+        }
         this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
         this.middleWidget.hide();
         tabbar.expanded = true;

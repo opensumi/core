@@ -7,7 +7,7 @@ import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
 import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode } from './types';
 import { Tabs } from './tab.view';
-import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry } from '@ali/ide-core-browser';
+import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry, PreferenceService } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
@@ -128,6 +128,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const contextMenuRenderer = useInjectable(ContextMenuRenderer) as ContextMenuRenderer;
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
+  const preferenceService = useInjectable(PreferenceService) as PreferenceService;
 
   const appConfig = useInjectable(AppConfig);
   const { editorBackgroudImage } = appConfig;
@@ -182,7 +183,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
       }}>
         {EmptyComponent ? <ErrorBoundary><EmptyComponent></EmptyComponent></ErrorBoundary> : undefined}
       </div>}
-      {group.resources.length > 0 &&
+      {(group.resources.length > 0 || !!preferenceService.get('editor.showActionWhenGroupEmpty')) &&
         <div className={styles.editorGroupHeader}>
           <Tabs resources={group.resources}
             onActivate={(resource: IResource) => group.open(resource.uri)}
