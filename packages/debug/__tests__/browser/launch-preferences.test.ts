@@ -18,6 +18,7 @@ import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-servic
 import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
 import { MockUserStorageResolver } from '@ali/ide-userstorage/lib/common/mocks';
 import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
+import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
 disableJSDOM();
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -447,6 +448,11 @@ describe('Launch Preferences', () => {
         injector.addProviders({
           token: IWorkspaceService,
           useClass: WorkspaceService,
+        }, {
+          token: WorkspacePreferences,
+          useValue: {
+            onPreferenceChanged: () => {},
+          },
         });
 
         // TODO: 为了mock实例提前获取
