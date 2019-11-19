@@ -443,8 +443,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         this.middleWidget.fit();
         this.horizontalPanel.fit();
         const prev = this.horizontalPanel.relativeSizes();
-        if (this.configContext.layoutConfig[SlotLocation.right] && this.configContext.layoutConfig[SlotLocation.right].size === 0) {
+        if (this.configContext.layoutConfig[SlotLocation.right] && this.configContext.layoutConfig[SlotLocation.rightBar].size === 0) {
           prev[2] = 0;
+          this.tabbarMap.get('right')!.widget.hide();
         }
         this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
         this.middleWidget.hide();
