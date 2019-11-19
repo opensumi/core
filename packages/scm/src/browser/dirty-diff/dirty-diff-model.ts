@@ -294,7 +294,10 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     this._originalModel = null;
 
     if (this.diffDelayer) {
-      this.diffDelayer.cancel();
+      try {
+        // 捕获 diffDelayer cancel reject 掉的 promise
+        this.diffDelayer.cancel();
+      } catch (e) {}
       this.diffDelayer = null;
     }
 

@@ -7,7 +7,7 @@ import { IExtensionMetaData, ExtraMetaData } from '../common';
 
 function resolvePath(path) {
   if (path[0] === '~') {
-      return path.join(os.homedir(), path.slice(1));
+    return path.join(os.homedir(), path.slice(1));
   }
   return path;
 }
@@ -57,6 +57,27 @@ export class ExtensionScanner {
     }
   }
 
+  static async getLocalizedExtraMetadataPath(prefix: string, extensionPath: string, localization: string, suffix: string): Promise<string | undefined> {
+    const lowerCasePrefix = prefix.toLowerCase();
+    const lowerCaseLocalization = localization.toLowerCase();
+    const maybeExist = [
+      `${prefix}.${localization}${suffix}`, // {prefix}.zh-CN{suffix}
+      `${lowerCasePrefix}.${localization}${suffix}`,
+      `${prefix}.${lowerCaseLocalization}${suffix}`, // {prefix}.zh-cn{suffix}
+      `${lowerCasePrefix}.${lowerCaseLocalization}${suffix}`,
+      `${prefix}.${localization.split('-')[0]}${suffix}`,       // {prefix}.zh{suffix}
+      `${lowerCasePrefix}.${localization.split('-')[0]}${suffix}`,
+    ];
+
+    for (const maybe of maybeExist) {
+      const filepath = path.join(extensionPath, maybe);
+      if (await fs.pathExists(filepath)) {
+        return filepath;
+      }
+    }
+    return undefined;
+  }
+
   static async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
     if (!await fs.pathExists(extensionPath)) {
@@ -65,11 +86,10 @@ export class ExtensionScanner {
 
     const pkgPath = path.join(extensionPath, 'package.json');
     const defaultPkgNlsPath = path.join(extensionPath, 'package.nls.json');
-    const pkgNlsPath = path.join(extensionPath, 'package.nls.' + (!localization || localization === 'en-US' ? '' : (localization + '.')) + 'json');
+    const pkgNlsPath = await ExtensionScanner.getLocalizedExtraMetadataPath('package.nls', extensionPath, localization, '.json');
     const extendPath = path.join(extensionPath, 'kaitian.js');
     const pkgExist = await fs.pathExists(pkgPath);
     const defaultPkgNlsPathExist = await fs.pathExists(defaultPkgNlsPath);
-    const pkgNlsExist = await fs.pathExists(pkgNlsPath);
     const extendExist = await fs.pathExists(extendPath);
 
     let pkgCheckResult = pkgExist;
@@ -87,8 +107,8 @@ export class ExtensionScanner {
       }
     }
 
-    let pkgNlsJSON: { [key: string]: string} | undefined;
-    if (pkgNlsExist) {
+    let pkgNlsJSON: { [key: string]: string} | undefined ;
+    if (pkgNlsPath) {
       pkgNlsJSON = await fs.readJSON(pkgNlsPath);
     }
 
@@ -107,8 +127,13 @@ export class ExtensionScanner {
       packageJSON = await fs.readJSON(pkgPath);
       if (extraMetaData) {
         for (const extraField of Object.keys(extraMetaData)) {
+          const basename = path.basename(extraMetaData[extraField]);
+          const suffix = path.extname(extraMetaData[extraField]);
+          const prefix = basename.substr(0, basename.length - suffix.length);
+
+          const extraFieldFilePath = await ExtensionScanner.getLocalizedExtraMetadataPath(prefix, extensionPath, localization, suffix);
           try {
-            extensionExtraMetaData[extraField] = await fs.readFile(path.join(extensionPath, extraMetaData[extraField]), 'utf-8');
+            extensionExtraMetaData[extraField] = await fs.readFile(extraFieldFilePath || path.join(extensionPath, extraMetaData[extraField]), 'utf-8');
           } catch (e) {
             extensionExtraMetaData[extraField] = null;
           }

@@ -120,6 +120,7 @@
       }
       div {
         white-space: nowrap;
+        height: 19px;
       }
       .subname{
         color:  @kt-ui-font-color3;
@@ -297,4 +298,20 @@
       color: var(--textLink-activeForeground);
     }
   }
+}
+
+
+.editor_action_tip{
+  display: flex;
+  .editor_action_tip.close{
+    height:24px;
+    width:24px;
+    cursor: pointer;
+  }
+}
+
+.editor_action_tip_wrapper {
+  background-color: var(--kt-editorActionToolTip-background) !important;
+  color: var(--kt-editorActionToolTip-foreground) !important;
+  z-index:10 !important;
 }

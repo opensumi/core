@@ -4,17 +4,16 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
 import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { BreakpointManager } from '../breakpoint';
-import { DebugEditor, IDebugSessionManager } from '../../common';
-import { DebugHoverWidget, ShowDebugHoverOptions } from './debug-hover-widght';
+import { DebugEditor } from '../../common/debug-editor';
+import { IDebugSessionManager } from '../../common/debug-session';
+import { DebugHoverWidget, ShowDebugHoverOptions } from './debug-hover-widget';
 import debounce = require('lodash.debounce');
 import * as options from './debug-styles';
 import { DebugBreakpoint, DebugStackFrame } from '../model';
-
-export const DebugModelFactory = Symbol('DebugModelFactory');
-export type DebugModelFactory = (editor: DebugEditor) => DebugModel;
+import { IDebugModel } from '../../common';
 
 @Injectable()
-export class DebugModel implements IDisposable {
+export class DebugModel implements IDebugModel {
   protected readonly toDispose = new DisposableCollection();
 
   @Autowired(DebugEditor)
@@ -57,14 +56,14 @@ export class DebugModel implements IDisposable {
         useClass: DebugBreakpointWidget,
       },
       {
-        token: DebugModel,
+        token: IDebugModel,
         useClass: DebugModel,
       },
     ]);
     return child;
   }
-  static createModel(injector: Injector, editor: DebugEditor): DebugModel {
-    return DebugModel.createContainer(injector, editor).get(DebugModel);
+  static createModel(injector: Injector, editor: DebugEditor): IDebugModel {
+    return DebugModel.createContainer(injector, editor).get(IDebugModel);
   }
 
   protected uri: URI;
