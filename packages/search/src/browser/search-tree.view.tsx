@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { ViewState } from '@ali/ide-activity-panel';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
 import { SearchTreeService } from './search-tree.service';
 import { ContentSearchClientService } from './search.service';

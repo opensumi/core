@@ -3,7 +3,7 @@ import { useInjectable, URI, DomListener, Disposable } from '@ali/ide-core-brows
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Path } from '@ali/ide-core-common/lib/path';
 import Icon from '@ali/ide-core-browser/lib/components/icon';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 
 import * as styles from './navigation.module.less';
 import { IResource, IEditorGroup } from '../common';

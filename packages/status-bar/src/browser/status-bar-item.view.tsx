@@ -3,7 +3,7 @@ import * as styles from './status-bar.module.less';
 import { StatusBarEntry } from '@ali/ide-core-browser/lib/services';
 import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import cls from 'classnames';
-import { getOctIcon } from '@ali/ide-core-browser/lib/icon';
+import { getOctIcon } from '@ali/ide-core-browser';
 
 // todo: 移除 fa 的相关代码
 export function StatusBarItem(props: StatusBarEntry) {

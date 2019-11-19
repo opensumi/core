@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { localize, IClientApp } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-core-browser/lib/components';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import * as clx from 'classnames';

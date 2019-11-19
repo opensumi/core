@@ -5,7 +5,7 @@ import { useInjectable, IEventBus, MaybeNull, isWindows, SlotRenderer, Component
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IWindowService } from '@ali/ide-window';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { observable } from 'mobx';
 
 const state = observable({

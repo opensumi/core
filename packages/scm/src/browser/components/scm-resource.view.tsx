@@ -9,7 +9,7 @@ import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
 import { ISCMRepository, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { isSCMResource } from '../scm-util';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { SCMMenus } from '../scm-menu';

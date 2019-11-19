@@ -4,7 +4,7 @@ import * as cls from 'classnames';
 import { TreeViewAction, isTreeViewActionComponent, isUndefined, isString } from '@ali/ide-core-common';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 import Icon from '../icon';
 import Badge from '../badge';
 import { ValidateInput, InputSelection } from '../input';
@@ -290,7 +290,7 @@ export const TreeContainerNode = (
 
   };
 
-  const renderIcon = (node: TreeNode) => {
+  const renderIcon = (node: TreeNode | ExpandableTreeNode) => {
     const treeNodeLeftActions: TreeViewAction[] = [];
     if (!ExpandableTreeNode.is(node)) {
       for (const action of actions) {
@@ -303,7 +303,7 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.kt_file_icon)} style={node.iconStyle}>
+    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={node.iconStyle}>
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
     </div>;
   };

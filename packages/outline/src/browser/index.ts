@@ -5,7 +5,7 @@ import { OutLineTree } from './outline.tree.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { OutLineService } from './outline.service';
-import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser/lib/icon';
+import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser';
 
 export const OUTLINE_COLLAPSE_ALL = 'outline.collapse.all';
 export const OUTLINE_FOLLOW_CURSOR = 'outline.follow.cursor';
@@ -47,7 +47,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
     registry.registerCommand({
       id: OUTLINE_FOLLOW_CURSOR,
       iconClass: getIcon('follow-cursor'),
-      toogleIconClass: getIcon('follow-cursor', ROTATE_TYPE.rotate_180),
+      toogleIconClass: getIcon('follow-cursor', { fill: true }),
     }, {
       execute: () => {
         this.outlineService.followCursor = !this.outlineService.followCursor;

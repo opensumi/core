@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { Input, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
 import { ViewState } from '@ali/ide-activity-panel';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
