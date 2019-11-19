@@ -144,9 +144,11 @@ export class DirtyDiffWidget extends ZoneWidget {
         break;
       case DirtyDiffWidgetActionType.save:
         this.commandService.executeCommand('git.stageChange', ...args);
+        this.dispose();
         break;
       case DirtyDiffWidgetActionType.reset:
         this.commandService.executeCommand('git.revertChange', ...args);
+        this.dispose();
         break;
       case DirtyDiffWidgetActionType.close:
         this.dispose();
