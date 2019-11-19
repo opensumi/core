@@ -102,7 +102,7 @@ export const Popover: React.FC<{
   return(
     <span {...Object.assign({}, restProps)} className={clx(styles.popover, insertClass)} >
       <span
-        className={clx(popoverClass || '', styles.content, styles[position])}
+        className={clx(popoverClass || '', styles.content, position)}
         ref={contentEl}
         id={id}
         onMouseEnter={onMouseEnter}

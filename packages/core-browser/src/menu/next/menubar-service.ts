@@ -128,7 +128,7 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
     this._menus.set(menubarId, menus);
     this._menusListener.set(
       menubarId,
-      menus.onDidChange(() => this._onDidMenuChange.fire(menubarId), this, this.disposables),
+      menus.onDidChange(() => this._onMenuChange.fire(menubarId), this, this.disposables),
     );
 
     const menubarMenu = [] as MenuNode[];
