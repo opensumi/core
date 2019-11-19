@@ -461,11 +461,11 @@ const SPECIAL_ALIASES: { [index: string]: string } = {
 };
 
 export namespace SpecialCases {
-  export const META = 'meta';
+  export const META = isOSX ? 'meta' : 'win';
   export const MACMETA = '⌘';
-  export const CTRL = '⌃';
-  export const ALT = '⌥';
-  export const SHIFT = '⇧';
+  export const CTRL = isOSX ? '⌃' : 'ctrl';
+  export const ALT = isOSX ? '⌥' : 'alt';
+  export const SHIFT = isOSX ? '⇧' : 'shift';
   export const CTRLCMD = 'ctrlcmd';
 }
 

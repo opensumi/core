@@ -1,4 +1,4 @@
-import { CommandRegistry, CommandService, Command } from '@ali/ide-core-common';
+import { CommandRegistry, CommandService, Command, isOSX } from '@ali/ide-core-common';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -90,7 +90,7 @@ export class MenuItemNode extends MenuNode {
       const keybindings = this.keybindings.getKeybindingsForCommand(commandId);
       if (keybindings.length > 0) {
         const isKeyCombination = Array.isArray(keybindings[0].resolved) && keybindings[0].resolved.length > 1;
-        let keybinding = this.keybindings.acceleratorFor(keybindings[0], '').join(' ');
+        let keybinding = this.keybindings.acceleratorFor(keybindings[0], isOSX ? '' : '+').join(' ');
         if (isKeyCombination) {
           keybinding = `[${keybinding}]`;
         }
