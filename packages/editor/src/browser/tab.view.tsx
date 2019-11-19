@@ -5,11 +5,10 @@ import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { IResource, ResourceService, IEditorGroup } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
-import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, localize, makeRandomHexString } from '@ali/ide-core-browser';
+import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, localize, makeRandomHexString } from '@ali/ide-core-browser';
 // TODO editor 不应该依赖main-layout
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent, IEditorActionRegistry } from './types';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { Popover, PopoverTriggerType, PopoverPosition } from '@ali/ide-core-browser/lib/components';
 
 const pkgName = require('../../package.json').name;
