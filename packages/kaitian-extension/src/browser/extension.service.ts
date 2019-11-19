@@ -52,7 +52,7 @@ import {
 } from '@ali/ide-core-browser';
 import {
   getIcon,
-} from '@ali/ide-core-browser/lib/icon';
+} from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';

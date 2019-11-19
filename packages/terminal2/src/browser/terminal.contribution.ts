@@ -7,7 +7,7 @@ import { HIDE_BOTTOM_PANEL_COMMAND } from '@ali/ide-main-layout/lib/browser/main
 import { CommandContribution, CommandRegistry } from '@ali/ide-core-common';
 import { TerminalView, TerminalToolbarView } from './terminal.view';
 import { ITerminalClient } from '../common';
-import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser/lib/icon';
+import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser';
 import { Command } from '@ali/ide-core-common';
 
 export const terminalAdd: Command = {
@@ -28,7 +28,7 @@ export const terminalExpand: Command = {
   id: 'terminal.expand',
   label: 'expand terminal',
   iconClass: getIcon('up'),
-  toogleIconClass: getIcon('up', ROTATE_TYPE.rotate_180),
+  toogleIconClass: getIcon('up', {rotate: ROTATE_TYPE.rotate_180}),
   category: 'terminal',
 };
 

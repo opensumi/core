@@ -12,7 +12,7 @@ import throttle = require('lodash.throttle');
 import debounce = require('lodash.debounce');
 import { IWorkspaceService } from '@ali/ide-workspace';
 import * as cls from 'classnames';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { Input, CheckBox } from '@ali/ide-core-browser/lib/components';
 import { Select } from '@ali/ide-core-browser/lib/components/select';
 import { toPreferenceReadableName, toNormalCase } from '../common';

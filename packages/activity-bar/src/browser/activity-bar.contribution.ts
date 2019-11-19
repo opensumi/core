@@ -5,7 +5,7 @@ import { ActivityBarRight } from './activity-bar.right.view';
 import { Autowired } from '@ali/common-di';
 import { ActivityBarService } from './activity-bar.service';
 import { ActivityBarBottom } from './activity-bar.bottom.view';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 // import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
 

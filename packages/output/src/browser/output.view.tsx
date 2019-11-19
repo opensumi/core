@@ -5,7 +5,7 @@ import { useInjectable, localize } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
 import * as cls from 'classnames';
 import * as styles from './output.module.less';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import Ansi from 'ansi-to-react';
 
 export const Output = observer(() => {

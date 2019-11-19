@@ -111,7 +111,7 @@ export class ActivityBarService extends WithEventBus {
   // append一个viewContainer，支持传入初始化views
   append(options: ViewContainerOptions, side: Side, views: View[], Fc?: React.FunctionComponent): string {
     const { iconClass, priority, containerId, title, initialProps, expanded } = options;
-    const label = (title || '').toUpperCase();
+    const label = title || '';
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;

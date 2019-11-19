@@ -29,3 +29,4 @@ export * from './dom';
 export * from './core-preferences';
 
 export * from './extension';
+export * from './style/icon/icon';

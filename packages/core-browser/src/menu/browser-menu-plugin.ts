@@ -25,7 +25,7 @@ import { Anchor } from './context-menu-renderer';
 import { IContextKeyService } from '../context-key';
 import * as strings from '@ali/ide-core-common/lib/utils/strings';
 import { KeybindingRegistry, ResolvedKeybinding } from '../keybinding';
-import { getIcon } from '../icon';
+import { getIcon } from '../style/icon/icon';
 
 @Injectable()
 export class BrowserMainMenuFactory {

@@ -11,7 +11,7 @@ import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
 import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { AppConfig, ConfigProvider } from '@ali/ide-core-browser';
-import { getOctIcon } from '@ali/ide-core-browser/lib/icon';
+import { getOctIcon } from '@ali/ide-core-browser';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { SCMService, ISCMRepository, scmResourceViewId, scmContainerId, scmProviderViewId } from '../common';

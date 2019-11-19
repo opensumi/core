@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as styles from './debug-action.module.less';
 import * as cls from 'classnames';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 
 export interface DebugActionProps {
   icon: string;

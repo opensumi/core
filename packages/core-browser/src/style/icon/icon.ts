@@ -1,5 +1,7 @@
 import { SymbolKind } from '@ali/ide-core-common';
 
+export const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3jbeug1g5qd.css';
+
 const iconPrefixes = ['kaitian-icon kticon-'];
 
 export enum ROTATE_TYPE {
@@ -19,7 +21,12 @@ export enum ANIM_TYPE {
 const ROTATE_CLASS_NAME = ['rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both'];
 const ANIM_CLASS_NAME = ['spin', 'pulse'];
 
-export function getIcon(iconKey: string, rotate?: ROTATE_TYPE, anim?: ANIM_TYPE) {
+export function getIcon(iconKey: string, options?: {
+  rotate?: ROTATE_TYPE;
+  anim?: ANIM_TYPE;
+  fill?: boolean;
+}) {
+  const {rotate, anim, fill} = options || {};
   let lastIndex = iconPrefixes.length;
   while (!iconMap[iconPrefixes[--lastIndex]][iconKey]) {
     if (lastIndex === 0) { break; }
@@ -35,6 +42,9 @@ export function getIcon(iconKey: string, rotate?: ROTATE_TYPE, anim?: ANIM_TYPE)
   }
   if (anim !== undefined) {
     iconClass += ` iconfont-anim-${ANIM_CLASS_NAME[anim]}`;
+  }
+  if (fill) {
+    iconClass += ' filled';
   }
   return iconClass;
 }
@@ -125,6 +135,7 @@ export const defaultIconMap = {
   'toggle-breakpoints': 'deactivate-breakpoints',
   'disconnect': 'disconnect',
   'download': 'download',
+  'follow-cursor': 'follow-cursor',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {

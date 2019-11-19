@@ -14,7 +14,7 @@ import { SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, IDirt
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 

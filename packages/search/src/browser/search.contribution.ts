@@ -9,7 +9,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { MenuId, NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { Search } from './search.view';
 import { ContentSearchClientService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';

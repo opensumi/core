@@ -55,6 +55,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 'vs-dark',
       description: '%preference.description.general.theme%',
     },
+    'general.askReloadOnLanguageChange': {
+      type: 'boolean',
+      default: true,
+      description: '%preference.description.general.askReloadOnLanguageChange%',
+    },
     'general.icon': {
       type: 'string',
       default: 'vs-minimal',

@@ -7,7 +7,7 @@ import { Output, ChannelSelector } from './output.view';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
 
 const OUTPUT_CLEAR: Command = {

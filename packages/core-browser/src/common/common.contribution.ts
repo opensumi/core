@@ -125,15 +125,6 @@ export class ClientCommonContribution implements CommandContribution, Preference
       group: '3_save',
     }]);
 
-    const aboutItem = {
-      command: {
-        id: COMMON_COMMANDS.ABOUT_COMMAND.id,
-        label: localize('common.about'),
-      },
-      nativeRole: 'about',
-      group: '9_help',
-    };
-
     // Edit 菜单
     if (isElectronRenderer()) {
       menus.registerMenuItems(MenuId.MenubarEditMenu, [{
@@ -179,7 +170,6 @@ export class ClientCommonContribution implements CommandContribution, Preference
         nativeRole: 'selectAll',
         group: '2_clipboard',
       }]);
-      menus.registerMenuItem(MenuId.MenubarAppMenu, aboutItem);
     } else {
       menus.registerMenuItems(MenuId.MenubarEditMenu, [{
         command: EDITOR_COMMANDS.REDO.id,
@@ -189,7 +179,14 @@ export class ClientCommonContribution implements CommandContribution, Preference
         group: '1_undo',
       }]);
       // 帮助菜单
-      menus.registerMenuItem(MenuId.MenubarHelpMenu, aboutItem);
+      menus.registerMenuItem(MenuId.MenubarHelpMenu, {
+        command: {
+          id: COMMON_COMMANDS.ABOUT_COMMAND.id,
+          label: localize('common.about'),
+        },
+        nativeRole: 'about',
+        group: '0_about',
+      });
     }
   }
 }

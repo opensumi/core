@@ -4,7 +4,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject } from '@ali/co
 import { Widget } from '@phosphor/widgets';
 import { Emitter, Disposable, Event, DisposableCollection } from '@ali/ide-core-common';
 import { View } from '..';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 import { ConfigProvider, SlotRenderer, AppConfig } from '../../react-providers';
 import { LoadingView } from './loading-view.view';
 import { ViewUiStateManager } from './view-container-state';

@@ -3,7 +3,7 @@ import { observable } from 'mobx';
 import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, IClientApp, localize, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { IDialogService } from '@ali/ide-overlay';
 import { toPreferenceReadableName } from '../common';
 
@@ -58,16 +58,17 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   private async onLocalizationLanguageChanged() {
-
-    const msg = await this.dialogService.info(
-      localize('preference.general.language.change.refresh.info', '更改语言后需重启后生效，是否立即刷新?'),
-      [
-        localize('preference.general.language.change.refresh.later', '稍后自己刷新'),
-        localize('preference.general.language.change.refresh.now', '立即刷新'),
-      ],
-    );
-    if (msg === localize('preference.general.language.change.refresh.now', '立即刷新')) {
-      this.clientApp.fireOnReload();
+    if (this.preferenceService.get('general.askReloadOnLanguageChange')) {
+      const msg = await this.dialogService.info(
+        localize('preference.general.language.change.refresh.info', '更改语言后需重启后生效，是否立即刷新?'),
+        [
+          localize('preference.general.language.change.refresh.later', '稍后自己刷新'),
+          localize('preference.general.language.change.refresh.now', '立即刷新'),
+        ],
+      );
+      if (msg === localize('preference.general.language.change.refresh.now', '立即刷新')) {
+        this.clientApp.fireOnReload();
+      }
     }
   }
 

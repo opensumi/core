@@ -13,7 +13,7 @@ import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } f
 import { WorkbenchEditorService, IEditor } from '../../common';
 import { DocumentSymbolChangedEvent, DocumentSymbol, DocumentSymbolStore, INormalizedDocumentSymbol } from './document-symbol';
 import debounce = require('lodash.debounce');
-import { getIcon, getSymbolIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon, getSymbolIcon } from '@ali/ide-core-browser';
 
 @Injectable()
 export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCrumbProvider {

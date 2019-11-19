@@ -35,12 +35,10 @@ import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp } from './app.view';
-import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
-
-const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3jbeug1g5qd.css';
+import { DEFAULT_CDN_ICON, updateIconMap } from '../style/icon/icon';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;

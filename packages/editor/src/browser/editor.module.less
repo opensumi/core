@@ -303,15 +303,28 @@
 
 .editor_action_tip{
   display: flex;
-  .editor_action_tip.close{
-    height:24px;
-    width:24px;
+  .editor_action_tip_close{
     cursor: pointer;
   }
 }
 
-.editor_action_tip_wrapper {
-  background-color: var(--kt-editorActionToolTip-background) !important;
-  color: var(--kt-editorActionToolTip-foreground) !important;
-  z-index:10 !important;
+:global{
+  :local(.editor_action_tip_wrapper) {
+    background-color: var(--kt-editorActionToolTip-background) !important;
+    color: var(--kt-editorActionToolTip-foreground) !important;
+    z-index:10 !important;
+
+      &.top {
+        &::after {
+          border-color: var(--kt-editorActionToolTip-background) transparent transparent transparent !important;
+        }
+      }
+      &.bottom {
+        &::after {
+          border-color:  transparent transparent var(--kt-editorActionToolTip-background) transparent !important;
+        }
+      }
+
+    
+  }
 }

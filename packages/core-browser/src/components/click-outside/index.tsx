@@ -2,7 +2,8 @@ import * as React from 'react';
 
 export const ClickOutside: React.FC<{
   onOutsideClick: (e: MouseEvent) => void;
-  mouseEvents: Array<keyof WindowEventMap>;
+  // 目前仅处理 click 和 context menu
+  mouseEvents?: ['click'] | ['contextmenu'] | ['click', 'contextmenu'];
 } & React.HTMLAttributes<HTMLDivElement>> = ({
   mouseEvents = ['click'],
   onOutsideClick,

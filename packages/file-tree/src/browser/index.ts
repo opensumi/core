@@ -7,7 +7,7 @@ import { FileTreeContribution } from './file-tree-contribution';
 import { FileTree } from './file-tree.view';
 import { BrowserModule, EffectDomain, ModuleDependencies } from '@ali/ide-core-browser';
 import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 
 const pkgJson = require('../../package.json');
 
