@@ -58,16 +58,17 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   private async onLocalizationLanguageChanged() {
-
-    const msg = await this.dialogService.info(
-      localize('preference.general.language.change.refresh.info', '更改语言后需重启后生效，是否立即刷新?'),
-      [
-        localize('preference.general.language.change.refresh.later', '稍后自己刷新'),
-        localize('preference.general.language.change.refresh.now', '立即刷新'),
-      ],
-    );
-    if (msg === localize('preference.general.language.change.refresh.now', '立即刷新')) {
-      this.clientApp.fireOnReload();
+    if (this.preferenceService.get('general.askReloadOnLanguageChange')) {
+      const msg = await this.dialogService.info(
+        localize('preference.general.language.change.refresh.info', '更改语言后需重启后生效，是否立即刷新?'),
+        [
+          localize('preference.general.language.change.refresh.later', '稍后自己刷新'),
+          localize('preference.general.language.change.refresh.now', '立即刷新'),
+        ],
+      );
+      if (msg === localize('preference.general.language.change.refresh.now', '立即刷新')) {
+        this.clientApp.fireOnReload();
+      }
     }
   }
 
