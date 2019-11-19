@@ -1,9 +1,47 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
 .terminalWrapper {
   height: 100%;
   width: 100%;
 }
 
+.terminalContainer {
+  height: 100%;
+  width: 100%;
+}
+
+.terminalCover {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background: var(--terminal-foreground);
+  opacity: 0.8;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
 .terminalContent {
   height: 100%;
   width: 100%;
+}
+
+.toolbarSelect {
+  select {
+    line-height: @kt-content-line-height;
+    font-size: @kt-content-font-size;
+    height: @kt-content-line-height;
+    margin-right: 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--dropdown-border);
+    padding: 0 5px;
+    box-sizing: border-box;
+    background-color: var(--dropdown-background);
+    color: var(--dropdown-foreground);
+    & > option {
+      background-color: var(--dropdown-listBackground)
+    }
+  }
 }

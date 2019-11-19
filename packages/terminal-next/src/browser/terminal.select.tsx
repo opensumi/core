@@ -3,6 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ITerminalController } from '../common';
 
+import * as styles from './terminal.module.less';
+
 export default observer(() => {
 
   const controller = useInjectable<ITerminalController>(ITerminalController);
@@ -15,7 +17,7 @@ export default observer(() => {
   const index = controller.state && controller.state.index;
 
   return (
-    <div>
+    <div className={styles.toolbarSelect}>
       <select value={ index || 0 } onChange={ onChange }>
         {
           (controller.groups || []).map((group, index) => {

@@ -77,8 +77,8 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     return this.widgets[this.length - 1];
   }
 
-  createWidget(id?: string) {
-    const widget = new Widget(id);
+  createWidget(idOrWidget?: string | Widget) {
+    const widget = (idOrWidget && typeof idOrWidget !== 'string') ? idOrWidget : new Widget(idOrWidget);
     this.widgets.push(widget);
     this.widgetsMap.set(widget.id, widget);
     this._averageLayout();

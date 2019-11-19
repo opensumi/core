@@ -4,7 +4,7 @@
   "files": [
     "lib"
   ],
-  "private": true,
+  "private": false,
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
@@ -18,20 +18,21 @@
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
+    "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.5.0",
-    "@ali/ide-core-node": "^1.5.0",
-    "@ali/ide-main-layout": "^1.5.0",
-    "@ali/ide-terminal2": "^1.5.0",
-    "@ali/ide-theme": "^1.5.0",
+    "@ali/ide-activity-bar": "1.5.0",
+    "@ali/ide-core-common": "1.5.0",
+    "@ali/ide-core-node": "1.5.0",
+    "@ali/ide-main-layout": "1.5.0",
+    "@ali/ide-terminal2": "1.5.0",
+    "@ali/ide-theme": "1.5.0",
     "xterm": "^4.2.0",
     "xterm-addon-attach": "^0.3.0",
     "xterm-addon-fit": "^0.3.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "^1.5.0",
+    "@ali/ide-core-browser": "1.5.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

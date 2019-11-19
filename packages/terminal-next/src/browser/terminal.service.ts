@@ -16,6 +16,7 @@ export interface WebSocketLike {
   readyState: number;
 }
 
+/*
 @Injectable()
 export class NodePtyTerminalService implements ITerminalExternalService {
   @Autowired(ILogger)
@@ -66,7 +67,7 @@ export class NodePtyTerminalService implements ITerminalExternalService {
     return {};
   }
 
-  async attach(term: Terminal, attachMethod: (s: WebSocket) => void) {
+  async attach(sessionId: string, term: Terminal, restore: boolean, attachMethod: (s: WebSocket) => void) {
     const uuid = this.makeId();
     const sock = this._createMockSocket(uuid);
 
@@ -87,3 +88,4 @@ export class NodePtyTerminalService implements ITerminalExternalService {
 
   }
 }
+*/

@@ -2,25 +2,28 @@ import { Disposable, ThrottledDelayer } from '@ali/ide-core-common';
 import { Terminal, ITerminalOptions } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { AttachAddon } from 'xterm-addon-attach';
-import { ITerminalExternalService } from '../common';
+import { ITerminalExternalService, IWidget } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 
 export class TerminalClient extends Disposable {
   private _container: HTMLDivElement;
   private _term: Terminal;
   private _uid: string;
+  private _widget: IWidget;
 
   // add on
   private _fitAddon: FitAddon;
   private _attachAddon: AttachAddon;
 
-  private _layer = new ThrottledDelayer(50);
+  private _layer = new ThrottledDelayer<void>(50);
+  private _pageHideDelay = new ThrottledDelayer<void>(200);
 
   private _attached: boolean;
   private _activated: boolean;
+  private _disposed: boolean;
 
-  private showPromiseResolve: (() => void) | null;
   private focusPromiseResolve: (() => void) | null;
+  private showPromiseResolve: (() => void) | null;
 
   static defaultOptions: ITerminalOptions = {
     macOptionIsMeta: false,
@@ -33,12 +36,16 @@ export class TerminalClient extends Disposable {
   constructor(
     protected readonly service: ITerminalExternalService,
     protected readonly theme: ITerminalTheme,
+    widget: IWidget,
+    restoreId?: string,
   ) {
     super();
 
     this._attached = false;
     this._activated = false;
-    this._uid = this.service.makeId();
+    this._disposed = false;
+    this._uid = restoreId || this.service.makeId();
+    this._widget = widget;
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...TerminalClient.defaultOptions,
@@ -69,6 +76,10 @@ export class TerminalClient extends Disposable {
     return this._activated;
   }
 
+  get widget() {
+    return this._widget;
+  }
+
   applyDomNode(dom: HTMLDivElement) {
     this._container = dom;
   }
@@ -76,28 +87,43 @@ export class TerminalClient extends Disposable {
   private _doAttach(socket: WebSocket) {
     this._attachAddon = new AttachAddon(socket);
     this._term.loadAddon(this._attachAddon);
+    this._attached = true;
+
+    if (this.showPromiseResolve) {
+      this.showPromiseResolve();
+      this.showPromiseResolve = null;
+    }
   }
 
-  async attach() {
-    if (!this._attached) {
-      return this.service.attach(this.term,
-        (socket: WebSocket) => this._doAttach(socket))
-        .then(() => {
-          if (this.showPromiseResolve) {
-            this.showPromiseResolve();
-            this.showPromiseResolve = null;
-          }
-          this._attached = true;
-        });
+  private _checkPageHide(callback: () => Promise<void>) {
+    if (document.hidden) {
+      return this._pageHideDelay.trigger(() => {
+        this._checkPageHide(callback);
+        return Promise.resolve();
+      });
+    } else {
+      return callback();
     }
-    return Promise.resolve();
+  }
+
+  async attach(restore: boolean = false, meta: string = '') {
+    if (this._disposed) {
+      return;
+    }
+
+    if (!this._attached) {
+      return this._checkPageHide(() => {
+        return this.service.attach(this.id, this.term, restore, meta,
+          (socket: WebSocket) => this._doAttach(socket));
+      });
+    } else {
+      return Promise.resolve();
+    }
   }
 
   private _doShow() {
     if (this._container) {
-      if (this._activated) {
-        this.container.style.display = 'block';
-      } else {
+      if (!this._activated) {
         this._term.open(this._container);
         this._fitAddon.fit();
         this._activated = true;
@@ -109,22 +135,27 @@ export class TerminalClient extends Disposable {
     }
   }
 
-  async show(): Promise<void> {
+  async show() {
+    if (this._disposed) {
+      return;
+    }
+
     if (this._attached) {
       this._doShow();
     } else {
-      if (!this.showPromiseResolve) {
-        return new Promise((resolve) => {
-          this.showPromiseResolve = resolve;
-        }).then(() => {
-          this._doShow();
-        });
-      }
+      return new Promise((resolve) => {
+        this.showPromiseResolve = resolve;
+      }).then(() => {
+        this._doShow();
+      });
     }
-    return Promise.resolve();
   }
 
   layout() {
+    if (this._disposed || !this._activated) {
+      return;
+    }
+
     this._layer.trigger(() => {
       this._fitAddon.fit();
       return Promise.resolve();
@@ -135,7 +166,11 @@ export class TerminalClient extends Disposable {
     this._term.focus();
   }
 
-  async focus(): Promise<void> {
+  async focus() {
+    if (this._disposed || !this._activated) {
+      return;
+    }
+
     if (this._activated) {
       this._doFocus();
     } else {
@@ -151,6 +186,10 @@ export class TerminalClient extends Disposable {
   }
 
   hide() {
+    if (this._disposed || !this._activated) {
+      return;
+    }
+
     if (this._container) {
       this._container.innerHTML = '';
     }
@@ -158,17 +197,35 @@ export class TerminalClient extends Disposable {
   }
 
   async sendText(message: string) {
+    if (this._disposed) {
+      return;
+    }
+
     return this.service.sendText(this.id, message);
   }
 
   private _events() {
-    this._term.onResize((event) => {
+    this.addDispose(this._term.onResize((event) => {
       const { cols, rows } = event;
-      this.service.resize(cols, rows);
-    });
+      this.service.resize(this.id, cols, rows);
+    }));
+  }
 
-    this._term.onTitleChange((title) => {
-      console.log(title);
-    });
+  dispose() {
+    super.dispose();
+
+    this._activated = false;
+    this._attached = false;
+    this.focusPromiseResolve = null;
+    this._layer && this._layer.dispose();
+    this._fitAddon && this._fitAddon.dispose();
+    this._attachAddon && this._attachAddon.dispose();
+    this._term && this._term.dispose();
+
+    if (this._container) {
+      this._container.innerHTML = '';
+    }
+
+    this._disposed = true;
   }
 }

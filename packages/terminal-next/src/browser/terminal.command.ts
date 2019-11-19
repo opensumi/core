@@ -33,7 +33,7 @@ export const terminalClear: Command = {
 export const terminalSplit: Command = {
   id: 'terminal.split',
   label: 'split terminal',
-  iconClass: getIcon('split'),
+  iconClass: getIcon('embed'),
   category: 'terminal',
 };
 

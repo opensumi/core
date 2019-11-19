@@ -7,22 +7,26 @@ import {
   CommandRegistry,
   TabBarToolbarContribution,
   TabBarToolbarRegistry,
+  ClientAppContribution,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
-import { ITerminalController } from '../common';
+import { ITerminalController, ITerminalRestore } from '../common';
 import { terminalAdd, terminalRemove, terminalExpand, terminalClear, terminalSplit, toggleBottomPanel } from './terminal.command';
 import TerminalView from './terminal.view';
 import TerminalSelect from './terminal.select';
 
-@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution)
-export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution {
+@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution, ClientAppContribution)
+export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution, ClientAppContribution {
 
   @Autowired(ITerminalController)
-  private _terminalController: ITerminalController;
+  terminalController: ITerminalController;
 
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
+
+  @Autowired(ITerminalRestore)
+  store: ITerminalRestore;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-terminal-next', {
@@ -39,7 +43,8 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
   registerCommands(registry: CommandRegistry) {
     registry.registerCommand(terminalAdd, {
       execute: (...args: any[]) => {
-        this._terminalController.createGroup();
+        this.terminalController.createGroup();
+        this.terminalController.addWidget();
       },
       isEnabled: () => {
         return true;
@@ -51,7 +56,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
     registry.registerCommand(terminalRemove, {
       execute: (...args: any[]) => {
-        this._terminalController.removeFocused();
+        this.terminalController.removeFocused();
       },
       isEnabled: () => {
         return true;
@@ -63,7 +68,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
     registry.registerCommand(terminalSplit, {
       execute: (...args: any[]) => {
-        this._terminalController.addWidget();
+        this.terminalController.addWidget();
       },
       isEnabled: () => {
         return true;
@@ -100,12 +105,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
         return true;
       },
     });
-
-    registry.afterExecuteCommand(toggleBottomPanel.id, () => {
-      if (this._terminalController.groups.length === 0) {
-        this._terminalController.firstInitialize();
-      }
-    });
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
@@ -136,5 +135,9 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     if (terminalTabbar) {
       terminalTabbar.setTitleComponent(TerminalSelect);
     }
+  }
+
+  onStop() {
+    this.store.save();
   }
 }
