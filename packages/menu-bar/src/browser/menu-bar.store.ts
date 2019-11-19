@@ -1,11 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, Event, Emitter } from '@ali/ide-core-browser';
-import { observable } from 'mobx';
-import { AbstractMenubarService, IExtendMenubarItem, IMenuRegistry, MenuNode, generateCtxMenu, IMenu, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { Disposable } from '@ali/ide-core-browser';
+import { observable, action } from 'mobx';
+import { AbstractMenubarService, IExtendMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
+import debounce = require('lodash.debounce');
 
 export abstract class AbstractMenubarStore extends Disposable {
   menubarItems: IExtendMenubarItem[];
-  abstract getMenubarItem(menuId: string): MenuNode[];
+  abstract handleMenubarClick(menuId: string): void;
 }
 
 @Injectable()
@@ -16,16 +17,34 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
   @observable
   public menubarItems = observable.array<IExtendMenubarItem>([]);
 
+  @observable
+  public menuItems = observable.map<string, MenuNode[]>();
+
   constructor() {
     super();
 
-    this.generateMenubarItems();
+    this.build();
     this.registerDispose(this.menubarService.onDidMenubarChange(this.handleMenubarChanged, this, this.disposables));
+    this.registerDispose(this.menubarService.onDidMenuChange(this.handleMenuChanged, this, this.disposables));
   }
 
-  private generateMenubarItems() {
+  @action.bound
+  private updateMenuNodes(menuId: string) {
+    this.menubarService.rebuildMenuNodes(menuId);
+    const menuItems = this.menubarService.getMenuNodes(menuId) || [];
+    this.menuItems.set(menuId, menuItems);
+  }
+
+  private build() {
     const menubarItems = this.menubarService.getMenubarItems();
     this.menubarItems.splice(0, this.menubarItems.length, ...menubarItems);
+    menubarItems.forEach(({ id: menuId }) => {
+      this.updateMenuNodes(menuId);
+    });
+  }
+
+  private handleMenuChanged(menuId: string) {
+    this.updateMenuNodes(menuId);
   }
 
   private handleMenubarChanged() {
@@ -33,8 +52,8 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
     this.menubarItems.replace(menubarItems);
   }
 
-  public getMenubarItem(menuId: string): MenuNode[] {
-    this.menubarService.rebuildMenuNodes(menuId);
-    return this.menubarService.getMenuNodes(menuId) || [];
-  }
+  @action.bound
+  public handleMenubarClick: (menuId: string) => void = debounce((menuId: string) => {
+    this.updateMenuNodes(menuId);
+  }, 500, { leading: true, trailing: true });
 }

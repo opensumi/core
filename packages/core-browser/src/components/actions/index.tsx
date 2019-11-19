@@ -10,6 +10,8 @@ import { getIcon } from '../../icon';
 import { useInjectable } from '../../react-hooks';
 import { useMenus } from '../../utils';
 
+import placements from './placements';
+
 import * as styles from './styles.module.less';
 
 const MenuAction: React.FC<{
@@ -88,8 +90,8 @@ export const MenuActionList: React.FC<{
       if (menuNode.id === SubmenuItemNode.ID) {
         return (
           <Menu.SubMenu
-            popupClassName='kt-menu'
             key={`${menuNode.id}-${index}`}
+            popupClassName='kt-menu'
             title={<MenuAction hasSubmenu data={menuNode} />}>
             {recursiveRender(menuNode.children)}
           </Menu.SubMenu>
@@ -109,6 +111,7 @@ export const MenuActionList: React.FC<{
       className='kt-menu'
       selectable={false}
       openTransitionName=''
+      {...{builtinPlacements: placements} as any}
       onClick={handleClick}>
       {recursiveRender(data)}
     </Menu>
