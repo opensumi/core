@@ -4,6 +4,7 @@ import { FileTree } from './file-tree.view';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { ViewState } from '@ali/ide-activity-panel';
 import { ThemeProvider, useInjectable } from '@ali/ide-core-browser';
+import { EmptyView } from './empty.view';
 
 export const ExplorerResourcePanel = observer(({
   viewState,
@@ -31,30 +32,34 @@ export const ExplorerResourcePanel = observer(({
     themeChangeEvent,
     validateFileName,
   }: ExplorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
-
-  return <FileTree
-    width={ viewState.width }
-    height={ viewState.height }
-    files={ getFiles() }
-    onSelect={ onSelect }
-    onTwistieClick={ onTwistieClick }
-    onDragStart={ onDragStart }
-    onDragOver={ onDragOver }
-    onDragEnter={ onDragEnter }
-    onDragLeave={ onDragLeave }
-    onChange = { onChange }
-    onDrop={ onDrop }
-    onBlur={ onBlur }
-    onFocus={ onFocus }
-    draggable={ draggable }
-    editable={ editable }
-    multiSelectable={ multiSelectable }
-    onContextMenu={ onContextMenu }
-    position = { position }
-    fileDecorationProvider = { overrideFileDecorationService }
-    themeProvider = { themeService as ThemeProvider }
-    notifyFileDecorationsChange = { decorationChangeEvent }
-    notifyThemeChange = { themeChangeEvent }
-    validate={ validateFileName }
-  ></FileTree>;
+  const files = getFiles();
+  if (files.length > 0) {
+    return <FileTree
+      width={ viewState.width }
+      height={ viewState.height }
+      files={ files }
+      onSelect={ onSelect }
+      onTwistieClick={ onTwistieClick }
+      onDragStart={ onDragStart }
+      onDragOver={ onDragOver }
+      onDragEnter={ onDragEnter }
+      onDragLeave={ onDragLeave }
+      onChange = { onChange }
+      onDrop={ onDrop }
+      onBlur={ onBlur }
+      onFocus={ onFocus }
+      draggable={ draggable }
+      editable={ editable }
+      multiSelectable={ multiSelectable }
+      onContextMenu={ onContextMenu }
+      position = { position }
+      fileDecorationProvider = { overrideFileDecorationService }
+      themeProvider = { themeService as ThemeProvider }
+      notifyFileDecorationsChange = { decorationChangeEvent }
+      notifyThemeChange = { themeChangeEvent }
+      validate={ validateFileName }
+    ></FileTree>;
+  } else {
+    return <EmptyView />;
+  }
 });

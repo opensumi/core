@@ -25,6 +25,9 @@
     "@ali/ide-core-node": "1.5.1",
     "@ali/ide-main-layout": "1.5.1",
     "@ali/ide-theme": "1.5.1",
+    "shell-path": "^2.1.0",
+    "os-locale": "^4.0.0",
+    "lodash.omit": "^4.1.1",
     "node-pty": "^0.8.1"
   },
   "devDependencies": {

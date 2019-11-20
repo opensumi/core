@@ -155,6 +155,8 @@ export class WorkspaceService implements IWorkspaceService {
     if (this.appConfig.workspaceDir) {
       // 默认读取传入配置路径
       return URI.file(this.appConfig.workspaceDir).toString();
+    } else {
+      return URI.file('undefined').toString();
     }
   }
 

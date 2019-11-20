@@ -187,12 +187,12 @@ export const corePreferenceSchema: PreferenceSchema = {
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,
-      description: '%preference.explorer.comfirm.move%',
+      description: '%preference.explorer.confirm.move%',
     },
     'explorer.confirmDelete': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmMove,
-      description: '%preference.explorer.comfirm.delete%',
+      description: '%preference.explorer.confirm.delete%',
     },
     'files.exclude': {
       type: 'object',

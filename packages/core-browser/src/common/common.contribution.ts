@@ -103,11 +103,14 @@ export class ClientCommonContribution implements CommandContribution, Preference
 
     // File 菜单
     menus.registerMenuItems(MenuId.MenubarFileMenu, [{
+      command: FILE_COMMANDS.OPEN_FOLDER.id,
+      group: '1_open',
+    }, {
       command: FILE_COMMANDS.NEW_FILE.id,
-      group: '1_new',
+      group: '2_new',
     }, {
       command: FILE_COMMANDS.NEW_FOLDER.id,
-      group: '1_new',
+      group: '2_new',
     }, {
       command: {
         id: EDITOR_COMMANDS.SAVE_CURRENT.id,

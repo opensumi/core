@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ILogger } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { CONTEXT_MENU } from './file-tree.view';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -13,6 +13,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as copy from 'copy-to-clipboard';
 import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService } from '@ali/ide-workspace';
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
+import { IWindowService } from '@ali/ide-window';
 
 export namespace FileTreeContextMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
@@ -57,7 +58,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   onStart() {
     const workspace = this.workspaceService.workspace;
-    let resourceTitle = 'UNDEFINE';
+    let resourceTitle = localize('file.empty.defaultTitle');
     if (workspace) {
       const uri = new URI(workspace.uri);
       resourceTitle = uri.displayName;
@@ -367,6 +368,26 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.hasPasteFile;
       },
     });
+    commands.registerCommand(FILE_COMMANDS.OPEN_FOLDER, {
+      execute: (options: {newWindow: boolean}) => {
+        const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
+        const windowService: IWindowService = this.injector.get(IWindowService);
+        dialogService.showOpenDialog({
+            title: localize('workspace.open-directory'),
+            properties: [
+              'openDirectory',
+            ],
+          }).then((paths) => {
+            if (paths && paths.length > 0) {
+              windowService.openWorkspace(URI.file(paths[0]), options || {newWindow: true});
+            }
+          });
+      },
+      isEnabled: () => {
+        return isElectronRenderer();
+      },
+    });
+
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {

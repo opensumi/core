@@ -51,7 +51,7 @@ export const DebubgConfigurationView = observer(() => {
         </select>
       </div>
       <DebugAction icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
-      <DebugAction icon={'codelibrary-fill'} label={localize('debug.action.deubg.console')} run={openDebugConsole}></DebugAction>
+      <DebugAction icon={'codelibrary-fill'} label={localize('debug.action.debug.console')} run={openDebugConsole}></DebugAction>
     </div>
     <DebubgToolbarView></DebubgToolbarView>
   </div>;
