@@ -244,23 +244,25 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
         }}
         ref={editorBodyRef as any}>
         <NavigationBar editorGroup={group} />
-        <div className={classnames({
-          [styles.kt_editor_component]: true,
-          [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'component',
-        })}>
-          {components}
-        </div>
-        <div className={classnames({
-          [styles.kt_editor_code_editor]: true,
-          [styles.kt_editor_component]: true,
-          [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'code',
-        })} ref={(ele) => codeEditorRef.current = ele}>
-        </div>
-        <div className={classnames({
-          [styles.kt_editor_diff_editor]: true,
-          [styles.kt_editor_component]: true,
-          [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'diff',
-        })} ref={(ele) => diffEditorRef.current = ele}>
+        <div className={styles.kt_editor_components}>
+          <div className={classnames({
+            [styles.kt_editor_component]: true,
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'component',
+          })}>
+            {components}
+          </div>
+          <div className={classnames({
+            [styles.kt_editor_code_editor]: true,
+            [styles.kt_editor_component]: true,
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'code',
+          })} ref={(ele) => codeEditorRef.current = ele}>
+          </div>
+          <div className={classnames({
+            [styles.kt_editor_diff_editor]: true,
+            [styles.kt_editor_component]: true,
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'diff',
+          })} ref={(ele) => diffEditorRef.current = ele}>
+          </div>
         </div>
         <OpenTypeSwitcher options={group.availableOpenTypes} current={group.currentOpenType} group={group} />
       </div>
