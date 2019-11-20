@@ -623,7 +623,8 @@ export class WorkspaceService implements IWorkspaceService {
    * @param uri
    */
   getWorkspaceRootUri(uri: URI | undefined): URI | undefined {
-    if (!uri) {
+    // 获取非file协议文件的根目录，默认返回第一个根目录或undefined
+    if (!uri || uri.scheme !== 'file') {
       const root = this.tryGetRoots()[0];
       if (root) {
         return new URI(root.uri);
