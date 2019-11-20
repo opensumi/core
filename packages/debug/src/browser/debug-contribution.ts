@@ -65,6 +65,9 @@ export namespace DEBUG_COMMANDS {
   export const CONTINUE = {
     id: 'debug.continue',
   };
+  export const RESTART = {
+    id: 'debug.restart',
+  };
 }
 
 @Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution)
@@ -275,7 +278,12 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
     commands.registerCommand(DEBUG_COMMANDS.OVER, {
       execute: (data) => {
-        this.debugToolbarService.doContinue();
+        this.debugToolbarService.doStepOver();
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.RESTART, {
+      execute: (data) => {
+        this.debugToolbarService.doRestart();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.TOGGLE_BREAKPOINTS, {
@@ -364,8 +372,8 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       when: 'inDebugMode',
     });
     keybindings.registerKeybinding({
-      command: DEBUG_COMMANDS.OVER.id,
-      keybinding: 'cmd+k cmd+',
+      command: DEBUG_COMMANDS.RESTART.id,
+      keybinding: 'shift+ctrlcmd+f5',
       when: 'inDebugMode',
     });
   }
