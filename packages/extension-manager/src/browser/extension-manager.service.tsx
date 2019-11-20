@@ -15,6 +15,7 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 type IExtension = Writeable<IExtensionProps> & {
   enableScope: EnableScope,
   reloadRequire?: boolean;
+  installed: boolean;
 };
 
 @Injectable()
@@ -160,15 +161,25 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @param version 指定版本
    */
   async installExtension(extension: BaseExtension, version?: string): Promise<string> {
-    this.extensionMomentState.set(extension.extensionId, {
+    const extensionId = extension.extensionId;
+    this.extensionMomentState.set(extensionId, {
       isInstalling: true,
     });
     // 1. 调用后台下载插件
     const path = await this.extensionManagerServer.installExtension(extension, version || extension.version);
     // 2. 更新插件进程信息
-    await this.onInstallExtension(extension.extensionId, path);
+    await this.onInstallExtension(extensionId, path);
+    const reloadRequire = await this.computeReloadState(path);
+    runInAction(() => {
+      // 可能出现先安装，后卸载时发现需要重启的情况
+      const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+      if (extension) {
+        extension.reloadRequire = reloadRequire;
+        extension.installed = false;
+      }
+    });
     // 3. 标记为已安装
-    await this.makeExtensionStatus(extension.extensionId, {
+    await this.makeExtensionStatus(extensionId, {
       installed: true,
       enable: true,
       enableScope: EnableScope.GLOBAL,
@@ -264,14 +275,14 @@ export class ExtensionManagerService implements IExtensionManagerService {
         // 添加到 extensions，下次获取 rawExtension
         runInAction(() => {
           this.extensions.push(extension);
-          this.extensionMomentState.set(extension.extensionId, {
-            isInstalling: false,
-            isUpdating: false,
-            isUnInstalling: false,
-          });
         });
       }
     }
+    this.extensionMomentState.set(extensionId, {
+      isInstalling: false,
+      isUpdating: false,
+      isUnInstalling: false,
+    });
   }
 
   /**
@@ -285,12 +296,14 @@ export class ExtensionManagerService implements IExtensionManagerService {
       return await Promise.all(extensionProps.map(async (extension) => {
         return {
           ...extension,
+          installed: true,
           enableScope: await this.getEnableScope(extension.extensionId),
         };
       }));
     } else {
       return {
         ...extensionProps,
+        installed: true,
         enableScope: await this.getEnableScope(extensionProps.extensionId),
       };
     }
@@ -366,7 +379,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         description,
         // 说明加载的是新规范的插件，则用插件市场 publisher，否则用 packageJSON 的 publisher
         publisher: name ? publisher : extension.packageJSON.publisher,
-        installed: true,
+        installed: extension.installed,
         icon: this.getIconFromExtension(extension),
         path: extension.realPath,
         enable: extension.isUseEnable,
@@ -511,6 +524,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @action
   async uninstallExtension(extension: BaseExtension): Promise<boolean> {
     const extensionPath = extension.path;
+    const extensionId = extension.extensionId;
     this.extensionMomentState.set(extension.extensionId, {
       isUnInstalling: true,
     });
@@ -526,9 +540,17 @@ export class ExtensionManagerService implements IExtensionManagerService {
         runInAction(() => {
           this.extensions = this.extensions.filter((extension) => extension.path !== extensionPath);
         });
+      } else {
+        runInAction(() => {
+          const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+          if (extension) {
+            extension.reloadRequire = reloadRequire;
+            extension.installed = false;
+          }
+        });
       }
       // 卸载的插件默认设置为启动
-      await this.toggleActiveExtension(extension, true, EnableScope.GLOBAL);
+      await this.setExtensionEnable(extension.extensionId, true, EnableScope.GLOBAL);
       // 修改插件状态
       await this.makeExtensionStatus(extension.extensionId, {
         installed: false,
