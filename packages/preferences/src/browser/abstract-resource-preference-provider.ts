@@ -138,6 +138,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     // tslint:disable-next-line:forin
     for (const preferenceName in jsonData) {
       const preferenceValue = jsonData[preferenceName];
+      // TODO：这里由于插件的schema注册较晚，在第一次获取配置时会校验不通过导致取不到值，读取暂时去掉校验逻辑
       if (this.schemaProvider.testOverrideValue(preferenceName, preferenceValue)) {
         // tslint:disable-next-line:forin
         for (const overriddenPreferenceName in preferenceValue) {
