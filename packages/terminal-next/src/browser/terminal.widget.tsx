@@ -1,16 +1,17 @@
 import * as React from 'react';
 import * as styles from './terminal.module.less';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, localize } from '@ali/ide-core-browser';
 import { ITerminalController, IWidget, ITerminalError } from '../common';
 
 export interface IProps {
   id: string;
   dynamic: number;
   widget: IWidget;
-  errors: Map<string, ITerminalError>;
+  show: boolean;
+  error: ITerminalError | undefined;
 }
 
-export default ({ id, dynamic, errors }: IProps) => {
+export default ({ id, dynamic, error, show }: IProps) => {
   const content = React.createRef<HTMLDivElement>();
   const controller = useInjectable<ITerminalController>(ITerminalController);
 
@@ -18,14 +19,14 @@ export default ({ id, dynamic, errors }: IProps) => {
     if (content.current) {
       controller.drawTerminalClient(content.current, id);
     }
-    return () => {
-      controller.eraseTerminalClient(id);
-    };
-  }, [id]);
+  }, []);
 
   React.useEffect(() => {
+    if (show) {
+      controller.showTerminalClient(id);
+    }
     controller.layoutTerminalClient(id);
-  }, [dynamic]);
+  }, [dynamic, show]);
 
   const onFocus = () => {
     controller.focusWidget(id);
@@ -36,20 +37,30 @@ export default ({ id, dynamic, errors }: IProps) => {
   };
 
   const onRetryClick = () => {
-    if (content.current) {
-      controller.drawTerminalClient(content.current, id, true);
-    }
+    controller.retryTerminalClient(id);
   };
 
   return (
     <div className={ styles.terminalContainer }>
-      <div data-term-id={ id } onFocus={ onFocus } className={ styles.terminalContent } ref={ content }></div>
       {
-        errors.has(id) ?
-          <div onClick={ onRemoveClick } className={ styles.terminalCover }>
-            终端已断开连接，是否<a onClick={ onRemoveClick }>删除终端</a>，或者<a onClick={ onRetryClick }>尝试重连</a>
+        error ?
+          <div className={ styles.terminalCover }>
+            <div>{ localize('terminal.disconnected') }</div>
+            <div>
+              <a onClick={ onRemoveClick }>{ localize('terminal.stop') }</a>
+              { localize('terminal.or') }
+              <a onClick={ onRetryClick }>{ localize('terminal.try.reconnect') }</a>
+            </div>
           </div> : null
       }
+      <div
+        data-term-id={ id }
+        style={ { display: error ? 'none' : 'block' } }
+        className={ styles.terminalContent }
+        onFocus={ onFocus }
+        ref={ content }
+      >
+      </div>
     </div>
   );
 };

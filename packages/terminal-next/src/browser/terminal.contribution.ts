@@ -112,21 +112,25 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       id: terminalExpand.id,
       command: terminalExpand.id,
       viewId: terminalExpand.category,
+      tooltip: localize('terminal.maximum'),
     });
     registry.registerItem({
       id: terminalSplit.id,
       command: terminalSplit.id,
       viewId: terminalSplit.category,
+      tooltip: localize('terminal.split'),
     });
     registry.registerItem({
       id: terminalRemove.id,
       command: terminalRemove.id,
       viewId: terminalRemove.category,
+      tooltip: localize('terminal.stop'),
     });
     registry.registerItem({
       id: terminalAdd.id,
       command: terminalAdd.id,
       viewId: terminalRemove.category,
+      tooltip: localize('terminal.new'),
     });
   }
 

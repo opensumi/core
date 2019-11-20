@@ -96,22 +96,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       const [[widgetId]] = Array.from(this._clientsMap.entries())
         .filter(([_, client]) => client.id === sessionId);
 
-      const last = this._clientsMap.get(widgetId);
-
-      if (!last) {
-        throw new Error('can not find stopped terminal client');
-      }
-
       // 进行一次重试
       try {
         if (reconnected) {
-          const widget = last.widget;
-          const dom = last.container;
-          const next = new TerminalClient(this.service, this.termTheme, widget, sessionId);
-          const meta = this.service.meta(widgetId);
-          last.dispose();
-          this._clientsMap.set(widgetId, next);
-          this.drawTerminalClient(dom, widgetId, true, meta);
+          this.retryTerminalClient(widgetId);
         } else {
           this.errors.set(widgetId, error);
         }
@@ -244,14 +232,53 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   /** terminal client operations */
 
-  drawTerminalClient(dom: HTMLDivElement, widgetId: string, restore: boolean = false, meta: string = '') {
+  drawTerminalClient(dom: HTMLDivElement, widgetId: string, restore: boolean = false) {
+    let meta: string;
     const client = this._clientsMap.get(widgetId);
 
     if (client) {
+      try {
+        meta = restore ? this.service.meta(widgetId) : '';
+      } catch {
+        meta = '';
+        restore = false;
+      }
       client.applyDomNode(dom);
-      client.attach(restore);
+      try {
+        client.attach(restore, meta);
+        this.errors.delete(widgetId);
+      } catch {
+        client.dispose();
+        this.errors.set(widgetId, {
+          id: client.id,
+          stopped: true,
+          reconnected: false,
+          message: 'terminal attached error',
+        });
+      }
+    }
+  }
+
+  showTerminalClient(widgetId: string) {
+    const client = this._clientsMap.get(widgetId);
+    if (client) {
       client.show();
     }
+  }
+
+  retryTerminalClient(widgetId: string) {
+    const last = this._clientsMap.get(widgetId);
+
+    if (!last) {
+      throw new Error('widget not found');
+    }
+
+    const widget = last.widget;
+    const dom = last.container;
+    const next = new TerminalClient(this.service, this.termTheme, widget, last.id);
+    last.dispose();
+    this._clientsMap.set(widgetId, next);
+    this.drawTerminalClient(dom, widgetId, true);
   }
 
   layoutTerminalClient(widgetId: string) {

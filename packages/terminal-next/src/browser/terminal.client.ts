@@ -4,6 +4,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { AttachAddon } from 'xterm-addon-attach';
 import { ITerminalExternalService, IWidget } from '../common';
 import { ITerminalTheme } from './terminal.theme';
+import * as styles from './terminal.module.less';
 
 export class TerminalClient extends Disposable {
   private _container: HTMLDivElement;
@@ -46,6 +47,8 @@ export class TerminalClient extends Disposable {
     this._disposed = false;
     this._uid = restoreId || this.service.makeId();
     this._widget = widget;
+    this._container = document.createElement('div');
+    this._container.className = styles.terminalContent;
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...TerminalClient.defaultOptions,
@@ -81,7 +84,7 @@ export class TerminalClient extends Disposable {
   }
 
   applyDomNode(dom: HTMLDivElement) {
-    this._container = dom;
+    dom.appendChild(this._container);
   }
 
   private _doAttach(socket: WebSocket) {
@@ -190,9 +193,8 @@ export class TerminalClient extends Disposable {
       return;
     }
 
-    if (this._container) {
-      this._container.innerHTML = '';
-    }
+    this._container.remove();
+    this._container.innerHTML = '';
     this._activated = false;
   }
 
@@ -214,18 +216,25 @@ export class TerminalClient extends Disposable {
   dispose() {
     super.dispose();
 
-    this._activated = false;
     this._attached = false;
-    this.focusPromiseResolve = null;
+
+    if (this.focusPromiseResolve) {
+      this.focusPromiseResolve();
+      this.focusPromiseResolve = null;
+    }
+
+    if (this.showPromiseResolve) {
+      this.showPromiseResolve();
+      this.showPromiseResolve = null;
+    }
+
     this._layer && this._layer.dispose();
     this._fitAddon && this._fitAddon.dispose();
     this._attachAddon && this._attachAddon.dispose();
     this._term && this._term.dispose();
 
-    if (this._container) {
-      this._container.innerHTML = '';
-    }
-
     this._disposed = true;
+
+    this.hide();
   }
 }

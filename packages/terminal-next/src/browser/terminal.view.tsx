@@ -11,11 +11,12 @@ import * as styles from './terminal.module.less';
 export default observer(() => {
   const controller = useInjectable<ITerminalController>(ITerminalController);
   const store = useInjectable<ITerminalRestore>(ITerminalRestore);
-  const { groups, state } = controller;
+  const { groups, state, errors } = controller;
 
-  const renderWidget = (widget: IWidget) => {
+  const renderWidget = (widget: IWidget, show: boolean) => {
+    const error = errors.get(widget.id);
     return (
-      <TerminalWidget errors={ controller.errors } dynamic={ widget.shadowDynamic } id={ widget.id } widget={ widget } />
+      <TerminalWidget error={ error } dynamic={ widget.shadowDynamic } show={ show } id={ widget.id } widget={ widget } />
     );
   };
 
@@ -30,16 +31,21 @@ export default observer(() => {
     <div className={ styles.terminalWrapper }>
       {
         groups
-          .filter((_, order) => order === state.index)
-          .map((group) => {
+          .map((group, index) => {
             return (
-              <ResizeView
-                shadow={ false }
-                useFlex={ false }
-                direction={ ResizeDirection.horizontal }
-                group={ group }
-                draw={ (widget: IWidget) => renderWidget(widget) }
-              />
+              <div
+                key={ `terminal-group-${group.length}-${index}` }
+                style={ { display: state.index === index ? 'block' : 'none' } }
+                className={ styles.group }
+              >
+                <ResizeView
+                  shadow={ false }
+                  useFlex={ false }
+                  direction={ ResizeDirection.horizontal }
+                  group={ group }
+                  draw={ (widget: IWidget) => renderWidget(widget, state.index === index) }
+                />
+              </div>
             );
           })
       }

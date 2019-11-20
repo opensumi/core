@@ -262,6 +262,13 @@ export const localizationBundle = {
     'open.editors.group.title': 'Group {0}',
 
     'terminal.name': 'Terminal',
+    'terminal.disconnected': 'Terminal already disconnected',
+    'terminal.top': 'Stop terminal',
+    'terminal.try.reconnect': 'Try to reconnect terminal',
+    'terminal.new': 'Create terminal',
+    'terminal.split': 'Split terminal',
+    'terminal.maximum': 'Maximum terminal panel',
+    'terminal.or': 'or',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
