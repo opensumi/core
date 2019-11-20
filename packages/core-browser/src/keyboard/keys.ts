@@ -1,4 +1,5 @@
 import { isOSX } from '@ali/ide-core-common';
+import { isWindows } from '@ali/ide-core-common/lib/platform';
 
 export type KeySequence = KeyCode[];
 
@@ -461,7 +462,7 @@ const SPECIAL_ALIASES: { [index: string]: string } = {
 };
 
 export namespace SpecialCases {
-  export const META = isOSX ? 'meta' : 'win';
+  export const META = isOSX ? 'meta' : isWindows ? 'win' : 'meta';
   export const MACMETA = '⌘';
   export const CTRL = isOSX ? '⌃' : 'ctrl';
   export const ALT = isOSX ? '⌥' : 'alt';

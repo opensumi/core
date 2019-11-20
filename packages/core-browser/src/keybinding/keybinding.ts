@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize } from '@ali/ide-core-common';
+import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, isWindows } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
@@ -425,8 +425,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
     if (keyCode.meta) {
       if (isOSX) {
         keyCodeResult.push('⌘');
-      } else {
+      } else if (isWindows) {
         keyCodeResult.push('Win');
+      } else {
+        keyCodeResult.push('Meta');
       }
     }
     if (keyCode.ctrl) {
