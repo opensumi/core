@@ -112,6 +112,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
       description: '%editor.configuration.preview%',
     },
+    'editor.minimap': {
+      type: 'boolean',
+      default: false,
+      description: '%editor.configuration.minimap%',
+    },
     'editor.fontFamily': {
       type: 'string',
       default: EDITOR_FONT_DEFAULTS.fontFamily,

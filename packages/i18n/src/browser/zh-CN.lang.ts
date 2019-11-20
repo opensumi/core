@@ -248,6 +248,7 @@ export const localizationBundle = {
 
     'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
+    'preference.editor.minimap': 'minimap',
     'preference.editor.fontWeight': '字体粗细',
     'preference.editor.fontSize': '字体大小',
     'preference.editor.tabSize': '缩进大小',
@@ -266,6 +267,7 @@ export const localizationBundle = {
 
     'editor.configuration.fontFamily': '',
     'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行报警',
+    'editor.configuration.minimap': '是否打开 minimap',
     'editor.action.accept': '接受更改（使用右边)',
     'editor.action.revert': '回退更改（使用左边)',
     'editor.format.chooseFormatter': '选择要使用的格式化扩展',

@@ -37,22 +37,43 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
       if (preferenceName.startsWith('editor.')) {
         const optionName = preferenceName.replace(/editor./, '');
         const optionValue = this.preferenceService.get(preferenceName);
-        editor.updateOptions({
-          [optionName]: optionValue,
-        }, {
-          [optionName]: optionValue,
-        });
+        if (optionName === 'minimap') {
+          editor.updateOptions(
+            {
+              minimap: {
+                enabled: optionValue as boolean,
+              },
+            }
+        , {});
+        } else {
+          editor.updateOptions({
+            [optionName]: optionValue,
+          }, {
+            [optionName]: optionValue,
+          });
+        }
+
       }
     }
     editor.addDispose(this.preferenceService.onPreferenceChanged((e) => {
       if (e.preferenceName.startsWith('editor.')) {
         const optionName = e.preferenceName.replace(/editor./, '');
 
-        editor.updateOptions({
-          [optionName]: e.newValue,
-        }, {
-          [optionName]: e.newValue,
-        });
+        if (optionName === 'minimap') {
+          editor.updateOptions(
+            {
+              minimap: {
+                enabled: e.newValue as boolean,
+              },
+            }
+        , {});
+        } else {
+          editor.updateOptions({
+            [optionName]: e.newValue,
+          }, {
+            [optionName]: e.newValue,
+          });
+        }
       }
     }));
 

@@ -265,8 +265,10 @@ export const localizationBundle = {
 
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
+    'preference.editor.minimap': 'minimap',
     'preference.editor.askIfDiff': 'Error If File On Disk is ewer',
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
+    'editor.configuration.minimap': 'If Open Minimap',
 
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
