@@ -189,6 +189,7 @@ export const defaultSettingSections: {
         {id: 'editor.askIfDiff', localized: 'preference.editor.askIfDiff' },
         {id: 'editor.fontFamily', localized: 'preference.editor.fontFamily'},
         {id: 'editor.minimap', localized: 'preference.editor.minimap'},
+        {id: 'editor.renderLineHighlight', localized: 'preference.editor.renderLineHighlight'},
         {id: 'editor.fontWeight', localized: 'preference.editor.fontWeight'},
         {id: 'editor.fontSize', localized: 'preference.editor.fontSize'},
         {id: 'editor.tabSize', localized: 'preference.editor.tabSize'},

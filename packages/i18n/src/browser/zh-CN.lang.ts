@@ -249,6 +249,7 @@ export const localizationBundle = {
     'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
     'preference.editor.minimap': 'minimap',
+    'preference.editor.renderLineHighlight': '控制编辑器的当前行进行高亮显示的方式。',
     'preference.editor.fontWeight': '字体粗细',
     'preference.editor.fontSize': '字体大小',
     'preference.editor.tabSize': '缩进大小',
