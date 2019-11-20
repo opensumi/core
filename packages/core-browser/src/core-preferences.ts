@@ -72,7 +72,7 @@ export const corePreferenceSchema: PreferenceSchema = {
         'ifRequired',
         'always',
       ],
-      default: 'ifRequired',
+      default: 'always',
       description: 'When to confirm before closing the application window.',
     },
     'application.preferMarkdownPreview': {
