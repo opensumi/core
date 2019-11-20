@@ -115,7 +115,7 @@ export class ActivityBarService extends WithEventBus {
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
-      const command = this.registerVisibleToggleCommand(containerId, label);
+      const command = this.registerVisibleToggleCommand(containerId);
       if (Fc) {
         panelContainer = this.injector.get(ReactPanelWidget, [Fc!, containerId, command]);
         panelContainer.title.label = label;
@@ -200,7 +200,6 @@ export class ActivityBarService extends WithEventBus {
     const commandId = `activity.bar.toggle.${side}`;
     this.commandRegistry.registerCommand({
       id: commandId,
-      label: localize('layout.tabbar.hide', '隐藏'),
     }, {
       execute: (x, y) => {
         const target = document.elementFromPoint(x, y);
@@ -217,17 +216,14 @@ export class ActivityBarService extends WithEventBus {
   }
 
   // 注册tab的隐藏显示功能
-  private registerVisibleToggleCommand(containerId: string, label: string): string {
+  private registerVisibleToggleCommand(containerId: string): string {
     const commandId = `activity.bar.toggle.${containerId}`;
     this.commandRegistry.registerCommand({
       id: commandId,
-      // TODO @伊北 label应该在一处注册就好了
-      label,
     }, {
       execute: (forceShow?: boolean) => {
         this.doToggleTab(containerId, forceShow);
       },
-      // TODO @伊北 menu上的图标实现
       isToggled: () => {
         const { container } = this.containersMap.get(containerId)!;
         return !container.inVisible;
@@ -364,6 +360,7 @@ export class ActivityBarService extends WithEventBus {
         command: this.registerGlobalToggleCommand(side as Side),
         order: 0,
         group: '0_global',
+        label: localize('layout.tabbar.hide', '隐藏'),
       });
     }
     this.listenCurrentChange();

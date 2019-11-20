@@ -87,6 +87,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
         command: sideWrap.command,
         group: '1_widgets',
         order: index,
+        label: title.label || '',
       }));
     }
     const menus = this.menuService.createMenu(`${SIDE_MENU_PATH}/${this.side}`);
