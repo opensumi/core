@@ -234,7 +234,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
-    const extensionMetadata = await this.extensionNodeService.getExtension(path, getPreferenceLanguageId());
+    const extensionMetadata = await this.extensionNodeService.getExtension(path, getPreferenceLanguageId(), {});
     if (extensionMetadata) {
       const extension = this.injector.get(Extension, [
         extensionMetadata,
