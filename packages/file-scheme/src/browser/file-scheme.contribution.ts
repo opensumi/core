@@ -1,12 +1,12 @@
 import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent, IEditorOpenType } from '@ali/ide-editor';
-import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType } from '@ali/ide-core-browser';
+import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType, LRUMap } from '@ali/ide-core-browser';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME, FILE_ON_DISK_SCHEME } from '../common';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IFileServiceClient, FileStat } from '@ali/ide-file-service/lib/common';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IDialogService } from '@ali/ide-overlay';
@@ -32,21 +32,31 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   @Autowired(IEditorDocumentModelService)
   documentModelService: IEditorDocumentModelService;
 
+  cachedFileStat = new LRUMap<string, FileStat | undefined>(200, 100);
+
   constructor() {
     super();
     this.fileServiceClient.onFilesChanged((e) => {
       e.forEach((change) => {
         if (change.type === FileChangeType.ADDED || change.type === FileChangeType.DELETED) {
+          this.cachedFileStat.delete(change.uri.toString());
           this.eventBus.fire(new ResourceNeedUpdateEvent(new URI(change.uri)));
         }
       });
     });
   }
 
+  async getFileStat(uri: string) {
+    if (!this.cachedFileStat.has(uri)) {
+      this.cachedFileStat.set(uri, await this.fileServiceClient.getFileStat(uri.toString()));
+    }
+    return this.cachedFileStat.get(uri);
+  }
+
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
     return Promise.all([
-      this.fileServiceClient.getFileStat(uri.toString()),
+      this.getFileStat(uri.toString()),
       this.labelService.getName(uri),
       this.labelService.getIcon(uri),
     ] as const).then(([stat, name, icon]) => {
@@ -180,6 +190,15 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   @Autowired(IFileServiceClient)
   fileServiceClient: IFileServiceClient;
 
+  cachedFileType = new LRUMap<string, string | undefined>(200, 100);
+
+  async getFileType(uri: string): Promise<string | undefined> {
+    if (!this.cachedFileType.has(uri)) {
+      this.cachedFileType.set(uri, await this.fileServiceClient.getFileType(uri));
+    }
+    return this.cachedFileType.get(uri);
+  }
+
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.fileSystemResourceProvider);
     resourceService.registerResourceProvider(this.debugSchemeResourceProvider);
@@ -210,7 +229,7 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
 
     // 图片文件
     editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, async (resource: IResource<any>, results: IEditorOpenType[]) => {
-      const type = await this.fileServiceClient.getFileType(resource.uri.toString()) as string | undefined;
+      const type = await this.getFileType(resource.uri.toString());
       if (type === 'image') {
         results.push({
           type: 'component',
