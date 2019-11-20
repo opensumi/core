@@ -22,6 +22,8 @@ const flexDirectionMap: { [index: string]: { direction: any; size: 'width' | 'he
 export namespace Layout {
   export type direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top');
 
+  export type alignment = 'horizontal' | 'vertical';
+
   export function getFlexDirection(direction: Layout.direction) {
     return flexDirectionMap[direction].direction;
   }

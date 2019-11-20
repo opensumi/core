@@ -8,6 +8,7 @@ import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-con
 import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
+import { AccordionService } from './accordion/accordion.service';
 
 @Injectable()
 export class LayoutService extends WithEventBus {
@@ -35,6 +36,8 @@ export class LayoutService extends WithEventBus {
   private handleMap: Map<string, TabBarHandler> = new Map();
 
   private services: Map<string, TabbarService> = new Map();
+
+  private accordionServices: Map<string, AccordionService> = new Map();
 
   private pendingViewsMap: Map<string, {view: View, props?: any}[]> = new Map();
 
@@ -115,6 +118,15 @@ export class LayoutService extends WithEventBus {
         this.storeState(service, currentId);
       });
       this.services.set(location, service);
+    }
+    return service;
+  }
+
+  getAccordionService(containerId: string) {
+    let service = this.accordionServices.get(containerId);
+    if (!service) {
+      service = this.injector.get(AccordionService, [containerId]);
+      this.accordionServices.set(containerId, service);
     }
     return service;
   }

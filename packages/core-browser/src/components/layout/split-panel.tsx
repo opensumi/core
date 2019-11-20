@@ -29,6 +29,7 @@ export const SplitPanel: React.FC<{
   const resizeDelegates: IResizeHandleDelegate[] = [];
   const eventBus = useInjectable<IEventBus>(IEventBus);
 
+  // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   const setSizeHandle = (index) => {
     return (size, side) => {
       const targetIndex = side === 'right' || side === 'bottom' ? index - 1 : index;

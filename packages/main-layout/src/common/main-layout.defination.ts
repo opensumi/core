@@ -1,6 +1,8 @@
 import { BasicEvent, SlotLocation } from '@ali/ide-core-browser';
 import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-browser/lib/layout';
 import { TabBarHandler } from '../browser/tabbar-handler';
+import { TabbarService } from '../browser/tabbar/tabbar.service';
+import { AccordionService } from '../browser/accordion/accordion.service';
 
 export interface ComponentCollection {
   views?: View[];
@@ -24,6 +26,8 @@ export interface IMainLayoutService {
   setFloatSize(size: number): void;
   bottomExpanded: boolean;
   handleSetting(event: React.MouseEvent<HTMLElement>): void;
+  getTabbarService(location: string): TabbarService;
+  getAccordionService(containerId: string): AccordionService;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');

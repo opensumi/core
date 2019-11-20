@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, View } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { AccordionManager } from '@ali/ide-core-browser/lib/layout/accordion/accordion.manager';
@@ -9,6 +9,8 @@ import { Widget } from '@phosphor/widgets';
 import { TabbarConfig } from './renderer.view';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { ActivityPanelToolbar } from '@ali/ide-core-browser/lib/layout/view-container-toolbar';
+import { AccordionContainer } from '../accordion/accordion.view';
+import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
 
 export const BaseTabPanelView: React.FC<{
   PanelView: React.FC<{ component: ComponentRegistryInfo, side: string }>;
@@ -40,14 +42,15 @@ const ContainerView: React.FC<{
 }> = (({ component, side }) => {
   const ref = React.useRef<HTMLElement | null>();
   const titleRef = React.useRef<HTMLElement | null>();
-  const accordionManager = useInjectable<AccordionManager>(AccordionManager);
   const configContext = useInjectable<AppConfig>(AppConfig);
   const { containerId, title, titleComponent, component: CustomComponent } = component.options!;
-  const accordion = accordionManager.getAccordion(containerId, component.views, side);
+  const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
+  const [views, setViews] = React.useState<View[]>([]);
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
   React.useEffect(() => {
     if (!CustomComponent && ref.current) {
-      Widget.attach(accordion, ref.current);
+      accordionService.initViews(component.views);
+      setViews(accordionService.views);
     }
   }, [ref]);
   React.useEffect(() => {
@@ -68,9 +71,9 @@ const ContainerView: React.FC<{
         </div>}
       </div>
       <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
-        {CustomComponent && <ConfigProvider value={configContext} >
+        {CustomComponent ? <ConfigProvider value={configContext} >
           <ComponentRenderer Component={CustomComponent} />
-        </ConfigProvider>}
+        </ConfigProvider> : <AccordionContainer state={accordionService.state} views={views} containerId={component.options!.containerId} />}
       </div>
     </div>
   );
