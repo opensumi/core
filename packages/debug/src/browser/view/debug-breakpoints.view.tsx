@@ -49,7 +49,7 @@ export const BreakpointItem = ({
 }: {
   data: BreakpointItem,
 }) => {
-  const [enabled, setEnabled] = React.useState<boolean>(data.breakpoint.enabled);
+  const [enabled, setEnabled] = React.useState<boolean>(data.breakpoint instanceof DebugBreakpoint ? data.breakpoint.verified : data.breakpoint.enabled);
   const changeHandler = () => {
     data.breakpoint.setEnabled(!enabled);
     setEnabled(!enabled);

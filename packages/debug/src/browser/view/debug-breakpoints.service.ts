@@ -9,6 +9,7 @@ import { BreakpointManager } from '../breakpoint';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ali/ide-workspace-edit';
 import { IDebugSessionManager } from '../../common/debug-session';
 import { DebugSessionManager } from '../debug-session-manager';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
 
 @Injectable()
 export class DebugBreakpointsService extends WithEventBus {
@@ -24,6 +25,9 @@ export class DebugBreakpointsService extends WithEventBus {
 
   @Autowired(IDebugSessionManager)
   protected readonly sessions: DebugSessionManager;
+
+  @Autowired(LabelService)
+  protected readonly labelProvider: LabelService;
 
   @observable
   nodes: BreakpointItem[] = [];
@@ -44,7 +48,7 @@ export class DebugBreakpointsService extends WithEventBus {
       await this.updateRoots();
     });
     this.updateBreakpoints();
-    this.breakpoints.onDidChangeBreakpoints(() => {
+    this.sessions.onDidChangeBreakpoints(() => {
       this.updateBreakpoints();
     });
     this.sessions.onDidChangeActiveDebugSession(() => {
@@ -67,6 +71,7 @@ export class DebugBreakpointsService extends WithEventBus {
     this.updateBreakpoints();
   }
 
+  @action
   async updateRoots() {
     const roots = await this.workspaceService.roots;
     this.roots = roots.map((file) => new URI(file.uri));
