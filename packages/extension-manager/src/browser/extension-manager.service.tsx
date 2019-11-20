@@ -175,7 +175,11 @@ export class ExtensionManagerService implements IExtensionManagerService {
       const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
       if (extension) {
         extension.reloadRequire = reloadRequire;
-        extension.installed = false;
+        if (reloadRequire) {
+          extension.installed = false;
+        } else {
+          extension.installed = true;
+        }
       }
     });
     // 3. 标记为已安装
@@ -401,20 +405,21 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @action
   async toggleActiveExtension(extension: BaseExtension, enable: boolean, scope: EnableScope) {
     const extensionId = extension.extensionId;
-    await this.setExtensionEnable(extensionId, enable, scope);
-    if (!enable) {
-      await this.onDisableExtension(extension.path);
-    } else {
-      await this.onEnableExtension(extension.path);
-    }
     const reloadRequire = await this.computeReloadState(extension.path);
+    await this.setExtensionEnable(extensionId, enable, scope);
+    // 如果需要重启，后续操作不进行启用、禁用
+    if (!reloadRequire) {
+      if (!enable) {
+        await this.onDisableExtension(extension.path);
+      } else {
+        await this.onEnableExtension(extension.path);
+      }
+    }
     // 更新插件状态
     runInAction(() => {
       const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
       if (extension) {
-        if (!reloadRequire) {
-          extension.isUseEnable = enable;
-        }
+        extension.isUseEnable = enable;
         extension.reloadRequire = reloadRequire;
         extension.enableScope = scope;
       }
