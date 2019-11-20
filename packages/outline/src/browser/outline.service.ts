@@ -148,8 +148,8 @@ export class OutLineService extends WithEventBus {
 
   protected revealRange(symbol: TreeSymbol) {
     const currentEditor = this.editorService.currentEditorGroup.codeEditor;
-    currentEditor.setSelection(symbol.selectionRange);
-    currentEditor.monacoEditor.revealRangeInCenter(symbol.range);
+    currentEditor.monacoEditor.revealLineInCenter(symbol.range.startLineNumber);
+    currentEditor.monacoEditor.setPosition(new monaco.Position(symbol.range.startLineNumber, 0));
   }
 
 }

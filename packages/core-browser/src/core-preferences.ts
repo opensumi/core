@@ -117,6 +117,17 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: '%editor.configuration.minimap%',
     },
+    'editor.renderLineHighlight': {
+      type: 'string',
+      enum: [
+        'none',
+        'gutter',
+        'line',
+        'all',
+      ],
+      default: 'all',
+      description: '%editor.configuration.renderLineHighlight%',
+    },
     'editor.fontFamily': {
       type: 'string',
       default: EDITOR_FONT_DEFAULTS.fontFamily,
