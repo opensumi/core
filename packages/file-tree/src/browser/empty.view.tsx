@@ -5,6 +5,7 @@ import { IElectronNativeDialogService, useInjectable, URI, isElectronRenderer, F
 import { IWindowService } from '@ali/ide-window';
 
 export const EmptyView = () => {
+  return <div></div>;
   const commandService: CommandService = useInjectable(CommandService);
 
   const openFolder = () => {
