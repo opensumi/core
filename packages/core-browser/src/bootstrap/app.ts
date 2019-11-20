@@ -376,7 +376,7 @@ export class ClientApp implements IClientApp {
         }
       }
     }
-    return confirmExit === 'always';
+    return false; // Electron暂时不问，结束stop行为后关闭
   }
 
   /**

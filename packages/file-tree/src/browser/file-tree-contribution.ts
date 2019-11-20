@@ -5,7 +5,7 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ExplorerResourcePanel } from './resource-panel.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { ExplorerResourceService } from './explorer-resource.service';
@@ -29,8 +29,8 @@ export interface FileUri {
 
 export const ExplorerResourceViewId = 'file-explorer';
 
-@Domain(NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution)
-export class FileTreeContribution implements NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution {
+@Domain(NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
+export class FileTreeContribution implements NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
@@ -148,17 +148,18 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(FILE_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
-        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-        if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
-          return;
-        }
         let locationUri = uri;
 
         if (!locationUri) {
           locationUri = this.filetreeService.selectedUris[0];
         }
         if (locationUri) {
-          this.explorerResourceService.location(locationUri);
+          const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+          if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
+            this.explorerResourceService.locationOnShow(locationUri);
+          } else {
+            this.explorerResourceService.location(locationUri);
+          }
         }
       },
     });
@@ -448,5 +449,14 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       command: FILE_COMMANDS.NEW_FILE.id,
       viewId: ExplorerResourceViewId,
     });
+  }
+
+  onDidUseConfig() {
+    const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+    if (handler) {
+      handler.onActivate(() => {
+        this.explorerResourceService.performLocationOnHandleShow();
+      });
+    }
   }
 }

@@ -127,13 +127,14 @@ export class ExtensionScanner {
       packageJSON = await fs.readJSON(pkgPath);
       if (extraMetaData) {
         for (const extraField of Object.keys(extraMetaData)) {
+          try {
           const basename = path.basename(extraMetaData[extraField]);
           const suffix = path.extname(extraMetaData[extraField]);
           const prefix = basename.substr(0, basename.length - suffix.length);
 
           const extraFieldFilePath = await ExtensionScanner.getLocalizedExtraMetadataPath(prefix, extensionPath, localization, suffix);
-          try {
-            extensionExtraMetaData[extraField] = await fs.readFile(extraFieldFilePath || path.join(extensionPath, extraMetaData[extraField]), 'utf-8');
+
+          extensionExtraMetaData[extraField] = await fs.readFile(extraFieldFilePath || path.join(extensionPath, extraMetaData[extraField]), 'utf-8');
           } catch (e) {
             extensionExtraMetaData[extraField] = null;
           }

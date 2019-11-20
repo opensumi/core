@@ -91,7 +91,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                     onContextMenu(e, resource);
                   }}
                   key={resource.uri.toString()}
-                  onClick={(e) => onActivate(resource)}
+                  onMouseDown={(e) => onActivate(resource)}
                   onDragOver={(e) => {
                     e.preventDefault();
                     if (ref) {
@@ -129,7 +129,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
               [styles.dirty]: true,
             })
           }></div>
-          <div className={styles.close_tab} onClick={(e) => {
+          <div className={styles.close_tab} onMouseDown={(e) => {
             e.stopPropagation();
             onClose(resource);
           }}>
