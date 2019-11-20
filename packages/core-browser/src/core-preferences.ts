@@ -2,8 +2,6 @@ import { Injector } from '@ali/common-di';
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
 
 import { isOSX, isLinux, localize, getAvailableLanguages } from '@ali/ide-core-common';
-import { allowStateChanges } from 'mobx/lib/internal';
-import { allowStateChanges } from 'mobx/lib/internal';
 
 const DEFAULT_WINDOWS_FONT_FAMILY = 'Consolas, \'Courier New\', monospace';
 const DEFAULT_MAC_FONT_FAMILY = 'Menlo, Monaco, \'Courier New\', monospace';
