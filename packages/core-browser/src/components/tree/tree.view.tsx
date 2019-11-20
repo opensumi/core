@@ -315,7 +315,9 @@ export const TreeContainer = (
   };
 
   const outerBlurHandler = (event) => {
-    onBlur(event);
+    if (onBlur) {
+      onBlur(event);
+    }
     setOuterFocused(false);
     setOuterDragOver(false);
   };
