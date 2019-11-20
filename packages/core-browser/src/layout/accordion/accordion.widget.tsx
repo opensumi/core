@@ -98,7 +98,6 @@ export class AccordionWidget extends Widget {
     const commandId = `view-container.hide.${this.containerId}`;
     this.commandRegistry.registerCommand({
       id: commandId,
-      label: localize('layout.view.hide', '隐藏'),
     }, {
       execute: (x, y) => {
         const section = this.findSectionForAnchor({x, y});
@@ -107,7 +106,10 @@ export class AccordionWidget extends Widget {
       },
     });
     this.menuRegistry.registerMenuItem(this.contextMenuPath, {
-      command: commandId,
+      command: {
+        id: commandId,
+        label: localize('layout.view.hide', '隐藏'),
+      },
       group: '0_global',
     });
   }
