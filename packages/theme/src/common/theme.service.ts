@@ -16,6 +16,8 @@ export interface IIconTheme {
 export const IIconService = Symbol('IIconTheme');
 
 export interface IIconService {
+  currentThemeId: string;
+  currentTheme: IIconTheme;
   applyTheme(themeId?: string): Promise<void>;
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
   fromIconUrl(iconUrl: string): string;
@@ -32,6 +34,7 @@ export interface IThemeData extends ThemeMix {
 }
 
 export interface IThemeService {
+  currentThemeId: string;
   onThemeChange: Event<ITheme>;
   registerThemes(themeContributions: ThemeContribution[], extPath: string): void;
   applyTheme(id?: string): Promise<void>;

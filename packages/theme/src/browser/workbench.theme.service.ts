@@ -19,7 +19,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private colorRegistry = getColorRegistry();
 
   // TODO 初始化时读取本地存储配置
-  private currentThemeId;
+  public currentThemeId: string;
   private currentTheme: Theme;
 
   private themes: Map<string, ThemeData> = new Map();
