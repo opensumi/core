@@ -489,9 +489,9 @@ export class ClientApp implements IClientApp {
     });
     // 设置默认配置
     if (opts.defaultPreferences) {
-      const preferenceService: PreferenceService = injector.get(PreferenceService);
+      const defaultPreference: PreferenceProvider = injector.get(PreferenceProvider, {tag: PreferenceScope.Default});
       for (const key of Object.keys(opts.defaultPreferences)) {
-        preferenceService.set(key, opts.defaultPreferences[key], PreferenceScope.Default);
+        defaultPreference.setPreference(key, opts.defaultPreferences[key]);
       }
     }
   }
