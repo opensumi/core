@@ -343,7 +343,6 @@ export class SearchTreeService {
         new URI(result.fileUri),
         {
           preview: isPreview,
-          disableNavigate: true,
           range: {
             startLineNumber: result.line,
             startColumn: result.matchStart,

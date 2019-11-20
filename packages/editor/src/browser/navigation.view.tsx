@@ -23,10 +23,10 @@ export const NavigationBar = observer(({ editorGroup }: { editorGroup: IEditorGr
   }
 
   let parts: IBreadCrumbPart[] | undefined;
-  if (editorGroup.currentEditor) {
+  if (editorGroup.currentEditor && editorGroup.currentEditor.currentDocumentModel) {
     parts = breadCrumbService.getBreadCrumbs(editorGroup.currentEditor.currentDocumentModel!.uri, editorGroup.currentEditor);
   } else {
-    parts = breadCrumbService.getBreadCrumbs(editorGroup.currentResource.uri, editorGroup.currentEditor);
+    parts = breadCrumbService.getBreadCrumbs(editorGroup.currentResource.uri, null);
   }
 
   if (!parts) {
