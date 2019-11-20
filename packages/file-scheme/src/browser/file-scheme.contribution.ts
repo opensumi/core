@@ -252,6 +252,12 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
         });
       }
     });
+
+    this.fileServiceClient.onFilesChanged((e) => {
+      e.forEach((change) => {
+        this.cachedFileType.delete(change.uri.toString());
+      });
+    });
   }
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
