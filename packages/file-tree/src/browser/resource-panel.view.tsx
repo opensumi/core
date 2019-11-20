@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { FileTree } from './file-tree.view';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { ViewState } from '@ali/ide-activity-panel';
-import { ThemeProvider, useInjectable, AppConfig } from '@ali/ide-core-browser';
+import { ThemeProvider, useInjectable } from '@ali/ide-core-browser';
 import { EmptyView } from './empty.view';
 
 export const ExplorerResourcePanel = observer(({
@@ -31,10 +31,10 @@ export const ExplorerResourcePanel = observer(({
     decorationChangeEvent,
     themeChangeEvent,
     validateFileName,
+    root,
   }: ExplorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
   const files = getFiles();
-  const appConfig: AppConfig = useInjectable(AppConfig);
-  if (files.length > 0) {
+  if (!!root) {
     return <FileTree
       width={ viewState.width }
       height={ viewState.height }
@@ -60,9 +60,7 @@ export const ExplorerResourcePanel = observer(({
       notifyThemeChange = { themeChangeEvent }
       validate={ validateFileName }
     ></FileTree>;
-  } else if (!appConfig.workspaceDir) {
-    return <EmptyView />;
   } else {
-    return <div></div>;
+    return <EmptyView />;
   }
 });
