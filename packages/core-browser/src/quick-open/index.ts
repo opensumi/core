@@ -233,6 +233,8 @@ export namespace QuickOpenOptions {
      * 如果没有高亮也显示 item
      */
     readonly showItemsWithoutHighlight: boolean;
+
+    selectIndex(lookFor: string): number;
   }
   export const defaultOptions: Resolved = Object.freeze({
     prefix: '',
@@ -246,6 +248,7 @@ export namespace QuickOpenOptions {
     ignoreFocusOut: false,
     password: false,
     showItemsWithoutHighlight: false,
+    selectIndex: () => -1,
   });
   export function resolve(options: QuickOpenOptions = {}, source: Resolved = defaultOptions): Resolved {
     return Object.assign({}, source, options);

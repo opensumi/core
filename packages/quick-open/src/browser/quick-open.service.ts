@@ -276,6 +276,14 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
   }
 
   getAutoFocus(lookFor: string): monaco.quickOpen.IAutoFocus {
+    if (this.options.selectIndex) {
+      const idx = this.options.selectIndex(lookFor);
+      if (idx >= 0) {
+          return {
+              autoFocusIndex: idx,
+          };
+      }
+    }
     return {
       autoFocusFirstEntry: true,
       autoFocusPrefixMatch: lookFor,
