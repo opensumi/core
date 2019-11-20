@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize } from '@ali/ide-core-common';
+import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, isWindows } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
@@ -422,17 +422,35 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    */
   acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
     const keyCodeResult: any[] = [];
-    if (keyCode.meta && isOSX) {
-      keyCodeResult.push('⌘');
+    if (keyCode.meta) {
+      if (isOSX) {
+        keyCodeResult.push('⌘');
+      } else if (isWindows) {
+        keyCodeResult.push('Win');
+      } else {
+        keyCodeResult.push('Meta');
+      }
     }
     if (keyCode.ctrl) {
-      keyCodeResult.push('⌃');
+      if (isOSX) {
+        keyCodeResult.push('⌃');
+      } else {
+        keyCodeResult.push('Ctrl');
+      }
     }
     if (keyCode.alt) {
-      keyCodeResult.push('⌥');
+      if (isOSX) {
+        keyCodeResult.push('⌥');
+      } else {
+        keyCodeResult.push('Alt');
+      }
     }
     if (keyCode.shift) {
-      keyCodeResult.push('⇧');
+      if (isOSX) {
+        keyCodeResult.push('⇧');
+      } else {
+        keyCodeResult.push('Shift');
+      }
     }
     if (keyCode.key) {
       keyCodeResult.push(this.acceleratorForKey(keyCode.key));
