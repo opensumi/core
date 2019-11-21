@@ -7,13 +7,14 @@ import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IResizeHandleDelegate } from '../resize/resize';
 import { IEventBus } from '@ali/ide-core-common';
 import { ResizeEvent } from '../../layout';
+import { SplitPanelManager } from './split-panel.service';
 
 export const PanelContext = React.createContext<{
-  setSize: (targetSize: number, side: string) => void,
-  getSize: (side: string) => number,
+  setSize: (targetSize: number, isLatter: boolean) => void,
+  getSize: (isLatter: boolean) => number,
 }>({
-  setSize: (targetSize: number, side: string) => {},
-  getSize: (side: string) => 0,
+  setSize: (targetSize: number, isLatter: boolean) => {},
+  getSize: (isLatter: boolean) => 0,
 });
 
 export const SplitPanel: React.FC<{
@@ -21,29 +22,36 @@ export const SplitPanel: React.FC<{
   className?: string;
   direction?: Layout.direction;
   flex?: number;
-}> = (({ className, children = [], direction = 'left-to-right', ...restProps }) => {
+  id: string;
+  // setAbsoluteSize 时保证相邻节点总宽度不变
+  resizeKeep?: boolean;
+}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
-  const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex || 1), 0);
+  const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
   const panels: {[panelId: string]: React.ReactElement<any>} = {};
   const elements: React.ReactNodeArray = [];
   const resizeDelegates: IResizeHandleDelegate[] = [];
   const eventBus = useInjectable<IEventBus>(IEventBus);
+  const rootRef = React.useRef<HTMLElement>();
+
+  const splitPanelService = useInjectable<SplitPanelManager>(SplitPanelManager).getService(id);
+  const refs = splitPanelService.panels;
 
   // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   const setSizeHandle = (index) => {
-    return (size, side) => {
-      const targetIndex = side === 'right' || side === 'bottom' ? index - 1 : index;
+    return (size: number, isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
       if (resizeDelegates[targetIndex]) {
-        resizeDelegates[targetIndex].setAbsoluteSize(size, side === 'right' || side === 'bottom' ? true : false);
+        resizeDelegates[targetIndex].setAbsoluteSize(size, isLatter, resizeKeep);
       }
     };
   };
 
   const getSizeHandle = (index) => {
-    return (side) => {
-      const targetIndex = side === 'right' || side === 'bottom' ? index - 1 : index;
+    return (isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
       if (resizeDelegates[targetIndex]) {
-        return resizeDelegates[targetIndex].getAbsoluteSize(side === 'right' || side === 'bottom' ? true : false);
+        return resizeDelegates[targetIndex].getAbsoluteSize(isLatter);
       }
       return 0;
     };
@@ -67,14 +75,28 @@ export const SplitPanel: React.FC<{
     }
     elements.push(
       <PanelContext.Provider value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index)}}>
-        <div key={panelId} style={{[Layout.getSizeProperty(direction)]: ((element.props.flex || 1) / totalFlexNum * 100) + '%'}}>
+        <div
+          ref={(ele) => {
+            if (ele && refs.indexOf(ele) === -1) {
+              refs.push(ele);
+            }
+          }}
+          key={panelId}
+          style={{[Layout.getSizeProperty(direction)]: ((element.props.flex !== undefined ? element.props.flex : 1) / totalFlexNum * 100) + '%'}}>
           {element}
         </div>
       </PanelContext.Provider>,
     );
   });
+
+  React.useEffect(() => {
+    if (rootRef.current) {
+      splitPanelService.rootNode = rootRef.current;
+    }
+  }, [rootRef.current]);
+
   return (
-    <div {...restProps} className={clsx(styles['split-panel'])} style={{flexDirection: Layout.getFlexDirection(direction)}}>
+    <div ref={(ele) => rootRef.current = ele!} {...restProps} className={clsx(styles['split-panel'])} style={{flexDirection: Layout.getFlexDirection(direction)}}>
       {elements}
     </div>
   );

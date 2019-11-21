@@ -14,7 +14,7 @@ export interface ResizeHandleProps {
 
 export interface IResizeHandleDelegate {
   setSize(prev: number, next: number): void;
-  setAbsoluteSize(size: number, isLatter?: boolean): void;
+  setAbsoluteSize(size: number, isLatter?: boolean, keep?: boolean): void;
   getAbsoluteSize(isLatter?: boolean): number;
 }
 
@@ -163,17 +163,22 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       }
   };
 
-  const setAbsoluteSize = (size: number, isLatter?: boolean) => {
+  // keep = true 左右侧面板使用，保证相邻节点的总宽度不变
+  const setAbsoluteSize = (size: number, isLatter?: boolean, keep?: boolean) => {
     const currentPrev = prevElement.current!.clientHeight;
     const currentNext = nextElement.current!.clientHeight;
     const totalSize = currentPrev + currentNext;
     const currentTotalHeight = +nextElement.current!.style.height!.replace('%', '') + +prevElement.current!.style.height!.replace('%', '');
     if (isLatter) {
       nextElement.current!.style.height = currentTotalHeight * (size / totalSize) + '%';
-      prevElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
+      if (keep) {
+        prevElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
+      }
     } else {
       prevElement.current!.style.height = currentTotalHeight * (size / totalSize) + '%';
-      nextElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
+      if (keep) {
+        nextElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
+      }
     }
     if (props.onResize) {
       props.onResize(prevElement.current!, nextElement.current!);

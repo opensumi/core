@@ -73,10 +73,9 @@ export const AccordionSection = (
 
   const { setSize, getSize } = React.useContext(PanelContext);
 
-  const side = alignment === 'vertical' ? (isLast ? 'bottom' : 'top') : (isLast ? 'right' : 'left');
   const clickHandler = () => {
-    const currentSize = getSize(side);
-    onItemClick((targetSize) => setSize(targetSize, side), currentSize);
+    const currentSize = getSize(false);
+    onItemClick((targetSize) => setSize(targetSize, false), currentSize);
   };
 
   const attrs = {

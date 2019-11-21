@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, TabBarToolbar, TabBarToolbarRegistry, OnEvent, ResizeEvent, RenderedEvent } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, TabBarToolbar, TabBarToolbarRegistry, OnEvent, ResizeEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe } from 'mobx';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
@@ -17,8 +17,8 @@ export class TabbarService extends WithEventBus {
   public prevSize?: number;
 
   resizeHandle: {
-    setSize: (targetSize: number, side: string) => void,
-    getSize: (side: string) => number,
+    setSize: (targetSize: number, isLatter: boolean) => void,
+    getSize: (isLatter: boolean) => number,
   };
 
   @Autowired()
@@ -88,14 +88,14 @@ export class TabbarService extends WithEventBus {
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === this.location) {
-      const size = this.resizeHandle.getSize(this.location);
+      const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
+      const size = this.resizeHandle.getSize(isLatter);
       if (size !== this.barSize) {
         this.prevSize = size;
       }
     }
   }
 
-  // TODO 将setSize挪到这
   protected listenCurrentChange() {
     const {getSize, setSize} = this.resizeHandle;
     observe(this, 'currentContainerId', (change) => {
@@ -104,6 +104,7 @@ export class TabbarService extends WithEventBus {
       this.previousContainerId = change.oldValue || '';
       const currentId = change.newValue;
       this.onCurrentChangeEmitter.fire({previousId: change.oldValue || '', currentId});
+      const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
       if (currentId) {
         const currentTitleBar = this.viewContainerRegistry.getTitleBar(currentId)!;
         const accordion = this.viewContainerRegistry.getAccordion(currentId)!;
@@ -122,12 +123,12 @@ export class TabbarService extends WithEventBus {
           }
         }
         if (this.prevSize === undefined) {
-          this.prevSize = getSize(this.location);
+          this.prevSize = getSize(isLatter);
         }
-        setSize(this.prevSize || 400, this.location);
+        setSize(this.prevSize || 400, isLatter);
       } else {
-        this.prevSize = getSize(this.location);
-        setSize(this.barSize, this.location);
+        this.prevSize = getSize(isLatter);
+        setSize(this.barSize, isLatter);
       }
     });
   }

@@ -15,18 +15,18 @@ export const AccordionContainer: React.FC<{
   containerId: string;
 }> = observer(({ alignment = 'vertical', views, containerId, state }) => {
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
-  return <SplitPanel direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
+  return <SplitPanel id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
     { views.map((view, index) => {
       const viewState: SectionState = state.get(view.id) || { collapsed: false, hidden: false };
       // TODO hidden支持
       const { collapsed, hidden } = viewState;
       return <AccordionSection
-        onItemClick={(setSize: (targetSize: number) => void, currentSize: number) => accordionService.handleSectionClick(view.id, !collapsed, index, currentSize, setSize)}
+        onItemClick={() => accordionService.handleSectionClick(view.id, !collapsed, index)}
         alignment={alignment as Layout.alignment}
         header={view.name || view.id}
         viewId={view.id}
         expanded={!collapsed}
-        key={view.id}
+        id={view.id}
         index={index}
         isLast={index === views.length - 1}
         flex={view.weight || 1}>
@@ -36,3 +36,11 @@ export const AccordionContainer: React.FC<{
     }
   </SplitPanel>;
 });
+
+export interface PanelProps extends React.PropsWithChildren<any> {
+  flex: number;
+}
+
+export const Panel: React.FC<PanelProps> = ({flex, children}) => {
+  return <div>{children}</div>;
+};

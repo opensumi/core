@@ -6,9 +6,9 @@ import { SplitPanel } from './split-panel';
 export function DefaultLayout() {
   return <BoxPanel direction='top-to-bottom'>
     <SlotRenderer slot='top' />
-    <SplitPanel flex={1}>
+    <SplitPanel id='main-horizontal' flex={1}>
       <SlotRenderer flex={1} slot='left' />
-      <SplitPanel flex={2} direction='top-to-bottom'>
+      <SplitPanel id='main-vertical' flex={2} direction='top-to-bottom'>
         <SlotRenderer flex={2} slot='main' />
         <SlotRenderer flex={1} slot='bottom' />
       </SplitPanel>
