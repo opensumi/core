@@ -26,7 +26,7 @@ import {
   AppConfig,
   IClientApp,
 } from '@ali/ide-core-browser';
-import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, isArray } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -320,10 +320,16 @@ export class WorkspaceService implements IWorkspaceService {
     return this.workspaceServer.setMostRecentlyUsedCommand(command);
   }
 
+  private async getRecentStorage() {
+    this.recentStorage = this.recentStorage || await this.storageProvider(STORAGE_NAMESPACE.RECENT_DATA);
+    return this.recentStorage;
+  }
+
   async setMostRecentlyOpenedFile(uriString: string) {
+    await this.getRecentStorage();
+
     let fileList: string[] = [];
     const oldFileList = await this.getMostRecentlyOpenedFiles();
-    this.recentStorage = this.recentStorage || await this.storageProvider(STORAGE_NAMESPACE.RECENT_DATA);
 
     fileList.push(uriString);
     if (oldFileList) {
@@ -340,8 +346,9 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   async getMostRecentlyOpenedFiles() {
+    await this.getRecentStorage();
+
     let fileList: string[] = [];
-    this.recentStorage = this.recentStorage || await this.storageProvider(STORAGE_NAMESPACE.RECENT_DATA);
     const data = await this.recentStorage.get('OPENED_FILE');
 
     if (data) {
@@ -354,11 +361,35 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   async getMostRecentlySearchWord() {
-    return this.workspaceServer.getMostRecentlySearchWord();
+    await this.getRecentStorage();
+
+    let list: string[] = [];
+    const data = await this.recentStorage.get('SEARCH_WORD');
+
+    if (data) {
+      try {
+        list = JSON.parse(data);
+      } catch (e) {}
+    }
+
+    return list;
   }
 
   async setMostRecentlySearchWord(word) {
-    return this.workspaceServer.setMostRecentlySearchWord(word);
+    let list: string[] = [];
+    const oldList = await this.getMostRecentlySearchWord() || [];
+
+    if (isArray(word)) {
+      list = list.concat(word);
+    } else {
+      list.push(word);
+    }
+
+    list = oldList.concat(list);
+    list = Array.from(new Set(list));
+    // 仅存储10个
+    list = list.slice(0, 10);
+    this.recentStorage.set('SEARCH_WORD', JSON.stringify(list));
   }
 
   /**

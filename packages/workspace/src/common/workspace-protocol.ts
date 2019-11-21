@@ -44,15 +44,4 @@ export interface IWorkspaceServer {
    * @memberof WorkspaceServer
    */
   getRecentCommands(): Promise<Command[]>;
-
-  /**
-   * 添加最近搜索关键字
-   * @param word
-   */
-  setMostRecentlySearchWord(word: string | string[]): Promise<void>;
-
-  /**
-   * 获取最近搜索关键字
-   */
-  getMostRecentlySearchWord(): Promise<string[] | undefined>;
 }

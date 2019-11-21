@@ -103,29 +103,6 @@ export class WorkspaceBackendServer implements IWorkspaceServer {
     return data && data.recentCommands || [];
   }
 
-  async getMostRecentlySearchWord(): Promise<string[] | undefined> {
-    const data = await this.readRecentDataFromUserHome();
-    return data && data.recentSearchWord || [];
-  }
-
-  async setMostRecentlySearchWord(word: string | string[]): Promise<void> {
-    let list: string[] = [];
-    const oldList = await this.getMostRecentlySearchWord() || [];
-    if (isArray(word)) {
-      list = list.concat(word);
-    } else {
-      list.push(word);
-    }
-
-    list = oldList.concat(list);
-    list = Array.from(new Set(list));
-    // 仅存储10个
-    list = list.slice(0, 10);
-    this.writeToUserHome({
-      recentSearchWord: list,
-    });
-  }
-
   protected workspaceStillExist(wspath: string): boolean {
     return fs.pathExistsSync(FileUri.fsPath(wspath));
   }
