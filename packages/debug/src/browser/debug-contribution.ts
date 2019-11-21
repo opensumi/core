@@ -155,6 +155,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         priority: 7,
         title: localize('debug.container.title'),
         containerId: DebugContribution.DEBUG_CONTAINER_ID,
+        activateKeyBinding: 'ctrlcmd+shift+d',
       });
   }
 

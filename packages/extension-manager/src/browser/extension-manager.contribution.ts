@@ -83,6 +83,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       priority: 5,
       containerId: enableExtensionsContainerId,
       component: ExtensionPanelView,
+      activateKeyBinding: 'ctrlcmd+shift+x',
     });
   }
 
