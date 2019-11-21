@@ -204,6 +204,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     console.log('extProcessPath', extProcessPath);
 
     console.time(`${clientId} fork ext process`);
+    const startForkTime = Date.now();
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.logger.debug('extProcess.pid', extProcess.pid);
 
@@ -230,6 +231,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       const initHandler = (msg) => {
         if (msg === 'ready') {
           console.timeEnd(`${clientId} fork ext process`);
+          this.logger.log(`extension,fork,${clientId},${Date.now() - startForkTime}ms`);
           extProcessInitDeferred.resolve();
           this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
           resolve();
