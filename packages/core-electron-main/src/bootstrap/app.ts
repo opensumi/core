@@ -5,6 +5,7 @@ import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
 import { createContributionProvider, ContributionProvider, URI, uuid } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
+import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
 
 export interface IWindowOpenOptions {
@@ -59,7 +60,7 @@ export class ElectronMainApp {
     }
   }
 
-  loadWorkspace(workspace?: string, metadata: any = {}, options: BrowserWindowConstructorOptions = {}, openOptions?: IWindowOpenOptions): CodeWindow {
+  loadWorkspace(workspace?: string, metadata: any = {}, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}, openOptions?: IWindowOpenOptions): CodeWindow {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
