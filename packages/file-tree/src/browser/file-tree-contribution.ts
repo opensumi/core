@@ -72,7 +72,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       name: resourceTitle,
       weight: 3,
       priority: 8,
-      collapsed: true,
+      collapsed: false,
       component: ExplorerResourcePanel,
     }, ExplorerContainerId);
   }

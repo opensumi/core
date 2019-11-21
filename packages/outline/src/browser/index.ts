@@ -30,6 +30,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
   onDidUseConfig() {
     this.mainLayoutService.collectViewComponent({
       component: OutLineTree,
+      collapsed: true,
       id: 'outline-view',
       name: localize('outline.title'),
     }, ExplorerContainerId);
