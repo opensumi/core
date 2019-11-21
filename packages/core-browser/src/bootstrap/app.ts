@@ -29,7 +29,7 @@ import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import { RPCMessageConnection } from '@ali/ide-connection';
 import {
-  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId,
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider, IExternalPreferenceProvider,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
@@ -491,6 +491,10 @@ export class ClientApp implements IClientApp {
     if (opts.defaultPreferences) {
       const defaultPreference: PreferenceProvider = injector.get(PreferenceProvider, {tag: PreferenceScope.Default});
       for (const key of Object.keys(opts.defaultPreferences)) {
+        const external = getExternalPreferenceProvider(key);
+        if (external) {
+          external.set(opts.defaultPreferences[key], PreferenceScope.Default);
+        }
         defaultPreference.setPreference(key, opts.defaultPreferences[key]);
       }
     }
