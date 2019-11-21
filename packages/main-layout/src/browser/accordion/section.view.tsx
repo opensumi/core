@@ -52,23 +52,8 @@ export const AccordionSection = (
     alignment = 'vertical',
   }: CollapsePanelProps,
 ) => {
+  // TODO resize监听
   const contentRef = React.useRef<HTMLDivElement | null>();
-  React.useEffect(() => {
-    if (contentRef.current) {
-      // TODO polyfill
-      const ResizeObserver = (window  as any).ResizeObserver;
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          console.log(entry);
-        }
-      });
-      resizeObserver.observe(contentRef.current);
-      return () => {
-        resizeObserver.unobserve(contentRef.current);
-      };
-    }
-  }, [contentRef]);
-
   const [headerFocused, setHeaderFocused] = React.useState(false);
 
   const { setSize, getSize } = React.useContext(PanelContext);

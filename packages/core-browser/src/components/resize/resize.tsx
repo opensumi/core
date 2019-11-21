@@ -10,6 +10,8 @@ export interface ResizeHandleProps {
   preserve?: number; // percentage
   className?: string;
   delegate?: (delegate: IResizeHandleDelegate) => void;
+  findPrevElement?: (direction?: boolean) => HTMLElement | undefined;
+  findNextElement?: (direction?: boolean) => HTMLElement | undefined;
 }
 
 export interface IResizeHandleDelegate {
@@ -51,10 +53,16 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   const requestFrame = React.useRef<number>();
 
   const setSize = (prev: number, next: number) => {
-    nextElement.current!.style.width = next * 100 + '%';
-    prevElement.current!.style.width = prev * 100 + '%';
-    if (props.onResize) {
-      props.onResize(prevElement.current!, nextElement.current!);
+    const prevEle = props.findPrevElement ? props.findPrevElement() : prevElement.current!;
+    const nextEle = props.findNextElement ? props.findNextElement() : nextElement.current!;
+    if (nextEle) {
+      nextEle.style.width = next * 100 + '%';
+    }
+    if (prevEle) {
+      prevEle.style.width = prev * 100 + '%';
+    }
+    if (props.onResize && nextEle && prevEle) {
+      props.onResize(prevEle, nextEle);
     }
   };
 
@@ -153,14 +161,31 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   const startNextHeight = React.useRef<number>(0);
   const prevElement = React.useRef<HTMLElement>();
   const nextElement = React.useRef<HTMLElement>();
-  const requestFrame = React.useRef<number>();
 
-  const setSize = (prev: number, next: number) => {
-      nextElement.current!.style.height = next * 100 + '%';
-      prevElement.current!.style.height = prev * 100 + '%';
-      if (props.onResize) {
-        props.onResize(prevElement.current!, nextElement.current!);
+  const cachedPrevElement = React.useRef<HTMLElement>();
+  const cachedNextElement = React.useRef<HTMLElement>();
+
+  const requestFrame = React.useRef<number>();
+  // direction: true为向下，false为向上
+  const setSize = (prev: number, next: number, direction?: boolean) => {
+      const prevEle = props.findPrevElement ? props.findPrevElement(direction) : prevElement.current!;
+      const nextEle = props.findNextElement ? props.findNextElement(direction) : nextElement.current!;
+      if (!nextEle || !prevEle) {
+        return;
       }
+      nextEle.style.height = next * 100 + '%';
+      prevEle.style.height = prev * 100 + '%';
+      if (props.onResize) {
+        props.onResize(prevEle, nextEle);
+      }
+  };
+
+  const setDomSize = (prev: number, next: number, prevEle: HTMLElement, nextEle: HTMLElement) => {
+    nextEle.style.height = next * 100 + '%';
+    prevEle.style.height = prev * 100 + '%';
+    if (props.onResize && nextEle && prevEle) {
+      props.onResize(prevEle, nextEle);
+    }
   };
 
   // keep = true 左右侧面板使用，保证相邻节点的总宽度不变
@@ -197,12 +222,33 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     startY.current = e.pageY;
+    cachedNextElement.current = nextElement.current;
+    cachedPrevElement.current = prevElement.current;
     startPrevHeight.current = prevElement.current!.offsetHeight;
     startNextHeight.current = nextElement.current!.offsetHeight;
     preventWebviewCatchMouseEvents();
   });
 
   const onMouseMove = ((e) => {
+    const direction = e.pageY > startY.current;
+    // 若上层未传入findNextElement，dynamicNext为null，否则找不到符合要求的panel时返回undefined
+    const dynamicNext = props.findNextElement ? props.findNextElement(direction) : null;
+    const dynamicPrev = props.findPrevElement ? props.findPrevElement(direction) : null;
+    // 作用元素变化重新初始化当前位置，传入findNextElement时默认已传入findPrevElement
+    if (
+      dynamicNext !== null && cachedNextElement.current !== dynamicNext ||
+        dynamicPrev !== null && cachedPrevElement.current !== dynamicPrev
+    ) {
+      if (!dynamicNext || !dynamicPrev) {
+        return;
+      }
+      cachedNextElement.current = dynamicNext!;
+      cachedPrevElement.current = dynamicPrev!;
+      startY.current = e.pageY;
+      startPrevHeight.current = cachedPrevElement.current!.offsetHeight;
+      startNextHeight.current = cachedNextElement.current!.offsetHeight;
+    }
+
     const prevHeight = startPrevHeight.current + e.pageY - startY.current;
     const nextHeight = startNextHeight.current - ( e.pageY - startY.current);
     const preserve = props.preserve || 0;
@@ -211,7 +257,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     }
     const parentHeight = ref.current!.parentElement!.offsetHeight;
     requestFrame.current = window.requestAnimationFrame(() => {
-      setSize((prevHeight / parentHeight), (nextHeight / parentHeight));
+      setDomSize(prevHeight / parentHeight, nextHeight / parentHeight, cachedPrevElement.current!, cachedNextElement.current!);
     });
   });
 

@@ -62,16 +62,23 @@ export const SplitPanel: React.FC<{
     panels[panelId] = element;
     if (index !== 0) {
       // FIXME window resize支持
-      elements.push(<ResizeHandle onResize={(prev, next) => {
-        const prevLocation = children[index - 1].props.slot;
-        const nextLocation = children[index].props.slot;
-        if (prevLocation) {
-          eventBus.fire(new ResizeEvent({slotLocation: prevLocation, width: prev.clientWidth, height: prev.clientHeight}));
-        }
-        if (nextLocation) {
-          eventBus.fire(new ResizeEvent({slotLocation: nextLocation, width: next.clientWidth, height: next.clientHeight}));
-        }
-      }} key={`split-handle-${index}`} delegate={(delegate) => { resizeDelegates.push(delegate); }} />);
+      elements.push(
+        <ResizeHandle
+          onResize={(prev, next) => {
+            const prevLocation = children[index - 1].props.slot;
+            const nextLocation = children[index].props.slot;
+            if (prevLocation) {
+              eventBus.fire(new ResizeEvent({slotLocation: prevLocation, width: prev.clientWidth, height: prev.clientHeight}));
+            }
+            if (nextLocation) {
+              eventBus.fire(new ResizeEvent({slotLocation: nextLocation, width: next.clientWidth, height: next.clientHeight}));
+            }
+          }}
+          findNextElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction)}
+          findPrevElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true)}
+          key={`split-handle-${index}`}
+          delegate={(delegate) => { resizeDelegates.push(delegate); }} />,
+      );
     }
     elements.push(
       <PanelContext.Provider value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index)}}>
