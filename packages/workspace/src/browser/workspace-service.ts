@@ -26,7 +26,7 @@ import {
   AppConfig,
   IClientApp,
 } from '@ali/ide-core-browser';
-import { URI } from '@ali/ide-core-common';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, isArray } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -66,6 +66,11 @@ export class WorkspaceService implements IWorkspaceService {
 
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
+
+  @Autowired(StorageProvider)
+  private storageProvider: StorageProvider;
+
+  private recentStorage: IStorage;
 
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
@@ -315,20 +320,76 @@ export class WorkspaceService implements IWorkspaceService {
     return this.workspaceServer.setMostRecentlyUsedCommand(command);
   }
 
-  async setMostRecentlyOpenedFile(uri: string) {
-    return this.workspaceServer.setMostRecentlyOpenedFile(uri);
+  private async getRecentStorage() {
+    this.recentStorage = this.recentStorage || await this.storageProvider(STORAGE_NAMESPACE.RECENT_DATA);
+    return this.recentStorage;
+  }
+
+  async setMostRecentlyOpenedFile(uriString: string) {
+    await this.getRecentStorage();
+
+    let fileList: string[] = [];
+    const oldFileList = await this.getMostRecentlyOpenedFiles();
+
+    fileList.push(uriString);
+    if (oldFileList) {
+      oldFileList.forEach((element: string) => {
+        if (element !== uriString) {
+          fileList.push(element);
+        }
+      });
+    }
+    // 仅存储50个最近文件
+    fileList = fileList.slice(0, 50);
+
+    this.recentStorage.set('OPENED_FILE', JSON.stringify(fileList));
   }
 
   async getMostRecentlyOpenedFiles() {
-    return this.workspaceServer.getMostRecentlyOpenedFiles();
+    await this.getRecentStorage();
+
+    let fileList: string[] = [];
+    const data = await this.recentStorage.get('OPENED_FILE');
+
+    if (data) {
+      try {
+        fileList = JSON.parse(data);
+      } catch (e) {}
+    }
+
+    return fileList;
   }
 
   async getMostRecentlySearchWord() {
-    return this.workspaceServer.getMostRecentlySearchWord();
+    await this.getRecentStorage();
+
+    let list: string[] = [];
+    const data = await this.recentStorage.get('SEARCH_WORD');
+
+    if (data) {
+      try {
+        list = JSON.parse(data);
+      } catch (e) {}
+    }
+
+    return list;
   }
 
   async setMostRecentlySearchWord(word) {
-    return this.workspaceServer.setMostRecentlySearchWord(word);
+    let list: string[] = [];
+    const oldList = await this.getMostRecentlySearchWord() || [];
+
+    if (isArray(word)) {
+      list = list.concat(word);
+    } else {
+      list.push(word);
+    }
+
+    list = oldList.concat(list);
+    list = Array.from(new Set(list));
+    // 仅存储10个
+    list = list.slice(0, 10);
+    this.recentStorage.set('SEARCH_WORD', JSON.stringify(list));
   }
 
   /**
