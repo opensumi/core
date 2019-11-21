@@ -818,7 +818,7 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
-  updateFileStatus(files: (Directory | File)[]) {
+  updateFileStatus(files: (Directory | File)[] = []) {
     const changeUri: Uri[] = [];
     files.forEach((file) => {
       const statusKey = this.getStatutsKey(file);
@@ -857,7 +857,9 @@ export class FileTreeService extends WithEventBus {
       }
       changeUri.push(Uri.parse(file.uri.toString()));
     });
-    this.statusChangeEmitter.fire(changeUri);
+    if (changeUri.length > 0) {
+      this.statusChangeEmitter.fire(changeUri);
+    }
   }
 
   private getDeletedUris(changes: FileChange[]): URI[] {
