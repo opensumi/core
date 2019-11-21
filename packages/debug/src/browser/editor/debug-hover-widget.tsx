@@ -36,7 +36,7 @@ export interface HideDebugHoverOptions {
 
 @Injectable()
 export class DebugHoverWidget implements monaco.editor.IContentWidget {
-  static ID = 'debug-varible-content-wdiget';
+  static ID = 'debug-hover-widget';
 
   protected readonly toDispose = new DisposableCollection();
 
@@ -126,7 +126,6 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     if (this.domNode.contains(document.activeElement)) {
       this.editor.focus();
     }
-    ReactDOM.unmountComponentAtNode(this.domNode);
     this.hoverSource.reset();
     this.options = undefined;
     this.editor.layoutContentWidget(this);
@@ -158,9 +157,8 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     }
     ReactDOM.render((<ConfigProvider value={this.configContext} >
       <DebugHoverView />
-    </ConfigProvider>), this.domNode);
-
-    this.editor.layoutContentWidget(this);
-
+    </ConfigProvider>), this.domNode, () => {
+      this.editor.layoutContentWidget(this);
+    });
   }
 }
