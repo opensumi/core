@@ -132,6 +132,7 @@ export const defaultIconMap = {
   'step-in': 'step-in',
   'start': 'start',
   'reload': 'reload',
+  'run-debug': 'rundebug',
   'toggle-breakpoints': 'deactivate-breakpoints',
   'disconnect': 'disconnect',
   'download': 'download',
