@@ -17,17 +17,22 @@ export interface IResizeViewProps {
   draw: (widget: IWidget) => JSX.Element;
 }
 
-// todo: 将这些变量放到一个实例中管理
-let wholeWidth: number = Infinity;
-
 export default observer((props: IResizeViewProps) => {
   const { group, shadow } = props;
   const [event, setEvent] = React.useState(false);
+  const [wholeWidth, setWholeWidth] = React.useState(Infinity);
+  const whole = React.createRef<HTMLDivElement>();
+
+  React.useEffect(() => {
+    if (whole.current && (whole.current.clientHeight !== wholeWidth)) {
+      setWholeWidth(whole.current.clientWidth);
+    }
+  });
 
   return (
     <div
       className={ styles.resizeWrapper }
-      ref={ (ref) => wholeWidth = (ref && ref.clientWidth) || Infinity }
+      ref={ whole }
     >
       <div
         style={ {

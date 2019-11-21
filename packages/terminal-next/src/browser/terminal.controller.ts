@@ -274,11 +274,16 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
 
     const widget = last.widget;
-    const dom = last.container;
+    const dom = last.container.parentNode;
+
+    if (!dom) {
+      throw new Error('widget is not rendered');
+    }
+
     const next = new TerminalClient(this.service, this.termTheme, widget, last.id);
     last.dispose();
     this._clientsMap.set(widgetId, next);
-    await this.drawTerminalClient(dom, widgetId, true);
+    await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true);
   }
 
   layoutTerminalClient(widgetId: string) {
