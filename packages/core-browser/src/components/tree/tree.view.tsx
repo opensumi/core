@@ -199,7 +199,9 @@ export const TreeContainer = (
       contexts = result;
     }
     setOuterFocused(false);
-    onContextMenu(contexts, event);
+    if (onContextMenu) {
+      onContextMenu(contexts, event);
+    }
   };
 
   const outerContextMenuHandler = (event: React.MouseEvent) => {
@@ -209,7 +211,9 @@ export const TreeContainer = (
       return;
     }
     setOuterFocused(true);
-    onContextMenu([], event);
+    if (onContextMenu) {
+      onContextMenu([], event);
+    }
   };
 
   const selectRange = (nodes: any = [], node: TreeNode) => {
@@ -283,14 +287,16 @@ export const TreeContainer = (
     } else {
       selectedNodes = selectNode(node);
     }
-    onSelect(selectedNodes, event);
+    if (onSelect) {
+      onSelect(selectedNodes, event);
+    }
     setOuterFocused(false);
   };
 
   const twistieClickHandler = (node, event) => {
     if (onTwistieClick) {
       onTwistieClick(node, event);
-    } else {
+    } else if (onSelect) {
       onSelect([node], event);
     }
   };
@@ -311,7 +317,9 @@ export const TreeContainer = (
   const outerClickHandler = (event) => {
     setOuterFocused(true);
     // 让选中状态的节点失去焦点，保留选中状态
-    onSelect([], event);
+    if (onSelect) {
+      onSelect([], event);
+    }
   };
 
   const outerBlurHandler = (event) => {
@@ -323,7 +331,9 @@ export const TreeContainer = (
   };
 
   const outerFocusHandler = (event) => {
-    onFocus(event);
+    if (onFocus) {
+      onFocus(event);
+    }
   };
 
   const getNodeTooltip = (node: TreeNode): string | undefined => {
@@ -340,7 +350,9 @@ export const TreeContainer = (
   };
 
   const outerDropHandler = (event) => {
-    onDrop('', event);
+    if (onDrop) {
+      onDrop('', event);
+    }
     setOuterDragOver(false);
   };
 

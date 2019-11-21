@@ -75,7 +75,6 @@ export class DebugModel implements IDebugModel {
   async init() {
     this.uri = new URI(this.editor.getModel()!.uri.toString());
     this.toDispose.pushAll([
-      this.debugHoverWidget,
       this.breakpointWidget,
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),

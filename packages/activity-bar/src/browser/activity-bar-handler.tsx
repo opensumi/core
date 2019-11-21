@@ -92,12 +92,33 @@ export class ActivityBarHandler {
     }
   }
 
-  activate() {
-    // 底部的显示隐藏为slot能力，不受Tabbar控制
+  activate(fromKeybinding?: boolean) {
+    // FIXME: @寻壑
     if (this.side === 'bottom') {
       this.commandService.executeCommand('main-layout.bottom-panel.show');
     }
+
     this.activityTabBar.currentWidget = this.widget;
+
+    // 底部的显示隐藏为slot能力，不受Tabbar控制
+    // if (this.side === 'bottom') {
+    //   if (fromKeybinding) {
+    //     this.commandService.executeCommand('main-layout.bottom-panel.is-visible').then((isVisible) => {
+    //       if (isVisible) {
+    //         if (this.isActivated()) {
+    //           this.commandService.executeCommand('main-layout.bottom-panel.hide');
+    //         }
+    //       } else {
+    //         this.commandService.executeCommand('main-layout.bottom-panel.show');
+    //       }
+    //       this.activityTabBar.currentWidget = this.widget;
+    //     });
+    //   } else {
+    //     this.commandService.executeCommand('main-layout.bottom-panel.show');
+    //   }
+    // } else {
+    //   this.activityTabBar.currentWidget = this.widget;
+    // }
   }
 
   isActivated() {

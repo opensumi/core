@@ -791,7 +791,7 @@ export class ExtensionServiceImpl implements ExtensionService {
             this.toolBarViewService.registerToolBarElement({
               type: 'component',
               component: component.panel as React.FunctionComponent | React.ComponentClass,
-              position: ToolBarPosition.LEFT,
+              position: browserExported[pos].position || ToolBarPosition.LEFT,
               initialProps: {
                 kaitianExtendService: extendService,
                 kaitianExtendSet: extendProtocol,

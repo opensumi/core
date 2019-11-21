@@ -101,3 +101,8 @@ export interface ICodeWindow {
 
   setWorkspace(workspace: string, fsPath?: boolean);
 }
+
+export interface ICodeWindowOptions {
+  extensionDir?: string;
+  extensionCandidate?: string[];
+}

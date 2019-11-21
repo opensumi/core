@@ -365,12 +365,14 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
           <ul className={styles.arr_list}>
             {items}
           </ul>
-          <Input
-            type='text'
-            className={styles.text_control}
-            ref={(el) => { editEl = el; }}
-          />
-          <Input className={styles.add_button} onClick={addItem} type='button' value={localize('preference.array.additem', '添加')} />
+          <div>
+            <Input
+              type='text'
+              className={styles.text_control}
+              ref={(el) => { editEl = el; }}
+            />
+            <Input className={styles.add_button} onClick={addItem} type='button' value={localize('preference.array.additem', '添加')} />
+          </div>
         </div>
       </div>
     );

@@ -50,6 +50,7 @@ export const STORAGE_NAMESPACE = {
   WORKBENCH: new URI('workbench').withScheme(STORAGE_SCHEMA.SCOPE),
   EXTENSIONS: new URI('extensions').withScheme(STORAGE_SCHEMA.SCOPE),
   LAYOUT: new URI('layout').withScheme(STORAGE_SCHEMA.SCOPE),
+  RECENT_DATA: new URI('recent').withScheme(STORAGE_SCHEMA.SCOPE),
   // global database
   GLOBAL_EXTENSIONS: new URI('extensions').withScheme(STORAGE_SCHEMA.GLOBAL),
 }
