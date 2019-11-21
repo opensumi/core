@@ -4,19 +4,19 @@
 .kt_debug_action_bar {
   display: flex;
   align-items: center;
-  padding-top: @kt-ui-padding * 2;
-  padding-left: @kt-ui-padding * 2;
-  padding-right: @kt-ui-padding * 2;
-  padding-bottom: @kt-ui-padding;
+  padding-top: 12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: 6px;
 
   .debug_selection {
     width: 100%;
-    margin: 0 10px;
+    margin-left: 10px;
 
     select {
-      line-height: @kt-content-line-height;
-      font-size: @kt-content-font-size;
-      height: @kt-content-line-height;
+      outline: 0;
+      line-height: 24px;
+      height: 24px;
       width: 100%;
       margin-right: 10px;
       border-width: 1px;
@@ -26,10 +26,24 @@
       box-sizing: border-box;
       background-color: var(--dropdown-background);
       color: var(--dropdown-foreground);
-
+      &.special_radius {
+        -webkit-appearance: none;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
       &>option {
         background-color: var(--dropdown-listBackground)
       }
     }
   }
+  .debug_run_action {
+    background: #167CDB;
+    border-radius: 0 4px 4px 0;
+    width: 24px;
+    height: 24px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-right: 6px;
+  }
 }
+
