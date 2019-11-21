@@ -118,7 +118,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       title: localize('scm.title'),
       priority: 8,
       containerId: scmContainerId,
-      activateKeyBinding: 'ctrl+shift+g',
+      activateKeyBinding: 'cmd+shift+g',
     });
   }
 }
