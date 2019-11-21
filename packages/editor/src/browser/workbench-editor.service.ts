@@ -326,6 +326,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @observable.shallow resources: IResource[] = [];
 
   @observable.ref _currentState: IEditorCurrentState | null = null;
+
+  /**
+   * 即将变成currentState的state
+   */
+  private _pendingState: IEditorCurrentState | null = null;
   /**
    * 当前resource的打开方式
    */
@@ -383,6 +388,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const oldResource = this.currentResource;
     const oldOpenType = this.currentOpenType;
     this._currentState = value;
+    this._pendingState = null;
     if (oldResource && this.resourceOpenHistory[this.resourceOpenHistory.length - 1] !== oldResource.uri) {
       this.resourceOpenHistory.push(oldResource.uri);
     }
@@ -393,6 +399,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       oldOpenType,
       oldResource,
     }));
+  }
+
+  get pendingResource() {
+    return this._pendingState && this._pendingState.currentResource;
   }
 
   get index(): number {
@@ -453,7 +463,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (this.currentOpenType && this.currentOpenType.type === 'code') {
         this.eventBus.fire(new EditorSelectionChangeEvent({
           group: this,
-          resource: this.currentResource!,
+          resource: this.pendingResource || this.currentResource!,
           selections: e.selections,
           source: e.source,
           editorUri: this.codeEditor.currentUri!,
@@ -464,7 +474,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (this.currentOpenType && this.currentOpenType.type === 'code') {
         this.eventBus.fire(new EditorVisibleChangeEvent({
           group: this,
-          resource: this.currentResource!,
+          resource: this.pendingResource || this.currentResource!,
           visibleRanges: e,
         }));
       }
@@ -473,7 +483,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (this.currentOpenType && this.currentOpenType.type === 'code') {
         this.eventBus.fire(new EditorConfigurationChangedEvent({
           group: this,
-          resource: this.currentResource!,
+          resource: this.pendingResource || this.currentResource!,
         }));
       }
     }));
@@ -487,7 +497,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (this.currentOpenType && this.currentOpenType.type === 'diff') {
         this.eventBus.fire(new EditorSelectionChangeEvent({
           group: this,
-          resource: this.currentResource!,
+          resource: this.pendingResource || this.currentResource!,
           selections: e.selections,
           source: e.source,
           editorUri: this.diffEditor.modifiedEditor.currentUri!,
@@ -498,7 +508,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (this.currentOpenType && this.currentOpenType.type === 'diff') {
         this.eventBus.fire(new EditorVisibleChangeEvent({
           group: this,
-          resource: this.currentResource!,
+          resource: this.pendingResource || this.currentResource!,
           visibleRanges: e,
         }));
       }
@@ -507,7 +517,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (this.currentOpenType && this.currentOpenType.type === 'diff') {
         this.eventBus.fire(new EditorConfigurationChangedEvent({
           group: this,
-          resource: this.currentResource!,
+          resource: this.pendingResource || this.currentResource!,
         }));
       }
     }));
@@ -642,6 +652,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const { activeOpenType, openTypes } = result;
 
       this.availableOpenTypes = openTypes;
+      this._pendingState = {
+        currentResource: resource,
+        currentOpenType: activeOpenType,
+      };
 
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
