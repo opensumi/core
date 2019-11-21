@@ -1,6 +1,5 @@
 import * as net from 'net';
 import * as vscode from 'vscode';
-import * as shellPath from 'shell-path';
 import { DebugStreamConnection, DebugAdapterForkExecutable } from '@ali/ide-debug';
 import { ChildProcess, spawn, fork, SpawnOptions } from 'child_process';
 import URI from 'vscode-uri';
@@ -13,10 +12,6 @@ export function startDebugAdapter(executable: vscode.DebugAdapterExecutable): De
 
   if (executable.options) {
     options.cwd = executable.options.cwd;
-
-    // The additional environment of the executed program or shell. If omitted
-    // the parent process' environment is used. If provided it is merged with
-    // the parent process' environment.
     options.env = Object.assign({}, process.env);
     Object.assign(options.env, executable.options.env);
   }
@@ -28,7 +23,6 @@ export function startDebugAdapter(executable: vscode.DebugAdapterExecutable): De
     env = {
       ...env,
       ...options.env,
-      PATH: shellPath.sync(),
     };
   }
 
