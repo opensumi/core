@@ -22,11 +22,12 @@ export const DebugBreakpointView = observer(({
   const {
     nodes,
     enable,
+    inDebugMode,
   }: DebugBreakpointsService = useInjectable(DebugBreakpointsService);
   const template = ({data}: {
     data: BreakpointItem,
   }) => {
-    return <BreakpointItem data={data}></BreakpointItem>;
+    return <BreakpointItem data={data} isDebugMode={inDebugMode}></BreakpointItem>;
   };
 
   const containerStyle =  {
@@ -46,10 +47,13 @@ export const DebugBreakpointView = observer(({
 
 export const BreakpointItem = ({
   data,
+  isDebugMode,
 }: {
   data: BreakpointItem,
+  isDebugMode: boolean,
 }) => {
-  const [enabled, setEnabled] = React.useState<boolean>(data.breakpoint instanceof DebugBreakpoint ? data.breakpoint.verified : data.breakpoint.enabled);
+  const [enabled, setEnabled] = React.useState<boolean>(data.breakpoint.enabled);
+
   const changeHandler = () => {
     data.breakpoint.setEnabled(!enabled);
     setEnabled(!enabled);
@@ -59,15 +63,19 @@ export const BreakpointItem = ({
     data.breakpoint.open({preview: true});
   };
 
-  return <div className={styles.debug_breakpoints_item}>
-    <div className={cls(data.breakpoint.uri ? enabled ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled' : '', styles.debug_breakpoints_icon)}></div>
+  const isDebugBreakpoint = data.breakpoint instanceof DebugBreakpoint;
+
+  const verified = !isDebugMode ? true : data.breakpoint instanceof DebugBreakpoint && data.breakpoint.verified;
+
+  return <div className={cls(styles.debug_breakpoints_item)}>
+    <div className={cls(isDebugBreakpoint ? !verified ? 'kaitian-debug-breakpoint-unverified' : enabled ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled' : '', styles.debug_breakpoints_icon)}></div>
     <CheckBox size={CheckBoxSize.SMALL} id={data.id} defaultChecked={enabled} onChange={changeHandler}></CheckBox>
     <div className={styles.debug_breakpoints_wrapper} onClick={clickHandler}>
       <span className={styles.debug_breakpoints_name}>{data.name}</span>
       <span className={styles.debug_breakpoints_description}>{data.description}</span>
     </div>
     {
-        data.breakpoint.line && <Badge>{data.breakpoint.line}:{data.breakpoint.column}</Badge>
+      data.breakpoint.line && <Badge>{data.breakpoint.line}</Badge>
     }
 
   </div>;
