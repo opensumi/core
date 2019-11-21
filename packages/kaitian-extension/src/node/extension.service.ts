@@ -6,6 +6,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService } from '../common';
 import { getLogger, Deferred, isDevelopment, INodeLogger, AppConfig, isWindows } from '@ali/ide-core-node';
+import * as shellPath from 'shell-path';
 import * as cp from 'child_process';
 import * as psTree from 'ps-tree';
 import * as isRunning from 'is-running';
@@ -38,7 +39,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private appConfig: AppConfig;
 
   private extProcess: cp.ChildProcess;
-  private extProcessClientId: string;
 
   private clientExtProcessMap: Map<string, cp.ChildProcess> = new Map();
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
@@ -176,7 +176,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     let preloadPath;
     const forkOptions: cp.ForkOptions = {
-      env: { ...process.env },
+      env: {
+        ...process.env,
+        PATH: shellPath.sync(),
+       },
     };
     const forkArgs: string[] = [];
     let extProcessPath: string = '';
@@ -200,8 +203,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (isDevelopment()) {
       forkOptions.execArgv.push('--inspect=9889');
     }
-
-    console.log('extProcessPath', extProcessPath);
 
     console.time(`${clientId} fork ext process`);
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
