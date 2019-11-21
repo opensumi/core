@@ -187,7 +187,7 @@ export class ActivityBarService extends WithEventBus {
       id: activateCommandId,
     }, {
       execute: () => {
-        handler!.activate();
+        handler!.activate(true);
       },
     });
     this.keybindingRegistry.registerKeybinding({
