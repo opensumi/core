@@ -50,6 +50,7 @@ export class AccordionService {
     });
   }
 
+  // TODO 影响到别的视图时，要保证每个视图都满足对应的最小宽度（好难啊！）
   @action.bound handleSectionClick(viewId: string, collapsed: boolean, index: number) {
     const viewState = this.getViewState(viewId);
     viewState.collapsed = collapsed;
@@ -60,18 +61,22 @@ export class AccordionService {
       // 仅有一个视图展开时独占
       sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || MIN_SECTION_HEIGHT);
     }
-    // 找到视图下方首个展开的视图减去对应的高度
+    let effected = false;
+    // 找到视图下方首个展开的视图增加对应的高度
     for (let i = this.views.length - 1; i > index; i--) {
       if ((this.state.get(this.views[i].id) || {}).collapsed !== true) {
         this.setSize(i, sizeIncrement, true);
+        effected = true;
         break;
       }
     }
-    // 找到视图上方首个展开的视图增加对应的高度
-    for (let i = index - 1; i >= 0; i--) {
-      if ((this.state.get(this.views[i].id) || {}).collapsed !== true) {
-        this.setSize(i, sizeIncrement, true);
-        break;
+    if (!effected) {
+      // 找到视图上方首个展开的视图增加对应的高度
+      for (let i = index - 1; i >= 0; i--) {
+        if ((this.state.get(this.views[i].id) || {}).collapsed !== true) {
+          this.setSize(i, sizeIncrement, true);
+          break;
+        }
       }
     }
   }
