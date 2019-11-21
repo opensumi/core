@@ -139,9 +139,18 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       if (command) {
         const raw = item.keybinding;
 
+        // monaco keybindingRegistry中取出的keybinding缺少了editorFocus的when,
+        // 当向开天的keybinding注册时需要加上editorFocus，避免焦点不在编辑器时响应到
+        let when = item.when;
+        const editorFocus = monaco.contextkey.EditorContextKeys.focus;
+        if (!when) {
+            when = editorFocus as any;
+        } else {
+            when = monaco.contextkey.ContextKeyExpr.and(editorFocus, when as any)!;
+        }
         // 转换 monaco 快捷键
         const keybindingStr = raw.parts.map((part) => this.keyCode(part)).join(' ');
-        const keybinding = { command, keybinding: keybindingStr, when: item.when as any};
+        const keybinding = { command, keybinding: keybindingStr, when};
 
         // 注册 keybinding
         keybindings.registerKeybinding(keybinding);
