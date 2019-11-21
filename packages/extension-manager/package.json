@@ -31,7 +31,6 @@
     "await-event": "^2.1.0",
     "compare-versions": "^3.5.1",
     "compressing": "^1.4.0",
-    "content-disposition": "^0.5.3",
     "fs-extra": "^8.1.0",
     "query-string": "^6.8.3",
     "urllib": "^2.34.1"

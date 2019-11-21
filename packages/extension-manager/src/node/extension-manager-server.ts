@@ -5,7 +5,6 @@ import * as path from 'path';
 import { IExtensionManagerServer, PREFIX, RequestHeaders, EXTENSION_DIR, BaseExtension, IExtensionManager, IExtensionManagerRequester } from '../common';
 import * as urllib from 'urllib';
 import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
-import * as contentDisposition from 'content-disposition';
 import * as awaitEvent from 'await-event';
 import { renameSync } from 'fs-extra';
 import * as pkg from '@ali/ide-core-node/package.json';
@@ -81,9 +80,7 @@ export class ExtensionManager implements IExtensionManager {
   async installExtension(extension: BaseExtension, version?: string | undefined): Promise<string> {
     const request = await this.requestExtension(extension.extensionId, version || extension.version);
 
-    // 获取插件文件名
-    const disposition = contentDisposition.parse(request.headers['content-disposition']);
-    const extensionDirName = path.basename(disposition.parameters.filename, '.zip');
+    const extensionDirName = `${extension.publisher}.${extension.name}-${extension.version}`;
 
     return await this.uncompressExtension(request.res, extensionDirName);
   }
