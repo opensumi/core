@@ -46,17 +46,6 @@ export interface IWorkspaceServer {
   getRecentCommands(): Promise<Command[]>;
 
   /**
-   * 添加最近打开文件
-   * @param uri
-   */
-  setMostRecentlyOpenedFile(uri: string): Promise<void>;
-
-  /**
-   * 获取最近打开文件列表
-   */
-  getMostRecentlyOpenedFiles(): Promise<string[] | undefined>;
-
-  /**
    * 添加最近搜索关键字
    * @param word
    */

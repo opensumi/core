@@ -26,7 +26,7 @@ import {
   AppConfig,
   IClientApp,
 } from '@ali/ide-core-browser';
-import { URI } from '@ali/ide-core-common';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -66,6 +66,11 @@ export class WorkspaceService implements IWorkspaceService {
 
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
+
+  @Autowired(StorageProvider)
+  private storageProvider: StorageProvider;
+
+  private recentStorage: IStorage;
 
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
@@ -315,12 +320,37 @@ export class WorkspaceService implements IWorkspaceService {
     return this.workspaceServer.setMostRecentlyUsedCommand(command);
   }
 
-  async setMostRecentlyOpenedFile(uri: string) {
-    return this.workspaceServer.setMostRecentlyOpenedFile(uri);
+  async setMostRecentlyOpenedFile(uriString: string) {
+    let fileList: string[] = [];
+    const oldFileList = await this.getMostRecentlyOpenedFiles();
+    this.recentStorage = this.recentStorage || await this.storageProvider(STORAGE_NAMESPACE.RECENT_DATA);
+
+    fileList.push(uriString);
+    if (oldFileList) {
+      oldFileList.forEach((element: string) => {
+        if (element !== uriString) {
+          fileList.push(element);
+        }
+      });
+    }
+    // 仅存储50个最近文件
+    fileList = fileList.slice(0, 50);
+
+    this.recentStorage.set('OPENED_FILE', JSON.stringify(fileList));
   }
 
   async getMostRecentlyOpenedFiles() {
-    return this.workspaceServer.getMostRecentlyOpenedFiles();
+    let fileList: string[] = [];
+    this.recentStorage = this.recentStorage || await this.storageProvider(STORAGE_NAMESPACE.RECENT_DATA);
+    const data = await this.recentStorage.get('OPENED_FILE');
+
+    if (data) {
+      try {
+        fileList = JSON.parse(data);
+      } catch (e) {}
+    }
+
+    return fileList;
   }
 
   async getMostRecentlySearchWord() {
