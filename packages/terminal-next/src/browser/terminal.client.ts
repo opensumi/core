@@ -2,6 +2,8 @@ import { Disposable, ThrottledDelayer } from '@ali/ide-core-common';
 import { Terminal, ITerminalOptions } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { AttachAddon } from 'xterm-addon-attach';
+import { SearchAddon } from 'xterm-addon-search';
+import { WebLinksAddon } from 'xterm-addon-web-links';
 import { ITerminalExternalService, IWidget } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import * as styles from './terminal.module.less';
@@ -17,7 +19,6 @@ export class TerminalClient extends Disposable {
   private _attachAddon: AttachAddon;
 
   private _layer = new ThrottledDelayer<void>(50);
-  private _pageHideDelay = new ThrottledDelayer<void>(200);
 
   private _attached: boolean;
   private _activated: boolean;
@@ -56,6 +57,13 @@ export class TerminalClient extends Disposable {
     });
     this._fitAddon = new FitAddon();
     this._term.loadAddon(this._fitAddon);
+
+    const searchAddon = new SearchAddon();
+    const weblinksAddon = new WebLinksAddon();
+
+    this._term.loadAddon(searchAddon);
+    this._term.loadAddon(weblinksAddon);
+
     this._events();
   }
 
@@ -98,27 +106,14 @@ export class TerminalClient extends Disposable {
     }
   }
 
-  private _checkPageHide(callback: () => Promise<void>) {
-    if (document.hidden) {
-      return this._pageHideDelay.trigger(() => {
-        this._checkPageHide(callback);
-        return Promise.resolve();
-      });
-    } else {
-      return callback();
-    }
-  }
-
   async attach(restore: boolean = false, meta: string = '') {
     if (this._disposed) {
       return;
     }
 
     if (!this._attached) {
-      return this._checkPageHide(() => {
-        return this.service.attach(this.id, this.term, restore, meta,
-          (socket: WebSocket) => this._doAttach(socket));
-      });
+      return this.service.attach(this.id, this.term, restore, meta,
+        (socket: WebSocket) => this._doAttach(socket));
     } else {
       return Promise.resolve();
     }
@@ -128,7 +123,6 @@ export class TerminalClient extends Disposable {
     if (this._container) {
       if (!this._activated) {
         this._term.open(this._container);
-        this._fitAddon.fit();
         this._activated = true;
         if (this.focusPromiseResolve) {
           this.focusPromiseResolve();
@@ -214,6 +208,10 @@ export class TerminalClient extends Disposable {
   }
 
   dispose() {
+    if (this._disposed) {
+      return;
+    }
+
     super.dispose();
 
     this._attached = false;
@@ -233,8 +231,10 @@ export class TerminalClient extends Disposable {
     this._attachAddon && this._attachAddon.dispose();
     this._term && this._term.dispose();
 
-    this._disposed = true;
-
     this.hide();
+
+    this.service.disposeById(this.id);
+
+    this._disposed = true;
   }
 }

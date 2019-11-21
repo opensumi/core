@@ -232,7 +232,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   /** terminal client operations */
 
-  drawTerminalClient(dom: HTMLDivElement, widgetId: string, restore: boolean = false) {
+  async drawTerminalClient(dom: HTMLDivElement, widgetId: string, restore: boolean = false) {
     let meta: string;
     const client = this._clientsMap.get(widgetId);
 
@@ -245,7 +245,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }
       client.applyDomNode(dom);
       try {
-        client.attach(restore, meta);
+        await client.attach(restore, meta);
         this.errors.delete(widgetId);
       } catch {
         client.dispose();
@@ -259,14 +259,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
-  showTerminalClient(widgetId: string) {
+  async showTerminalClient(widgetId: string) {
     const client = this._clientsMap.get(widgetId);
     if (client) {
-      client.show();
+      await client.show();
     }
   }
 
-  retryTerminalClient(widgetId: string) {
+  async retryTerminalClient(widgetId: string) {
     const last = this._clientsMap.get(widgetId);
 
     if (!last) {
@@ -278,7 +278,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const next = new TerminalClient(this.service, this.termTheme, widget, last.id);
     last.dispose();
     this._clientsMap.set(widgetId, next);
-    this.drawTerminalClient(dom, widgetId, true);
+    await this.drawTerminalClient(dom, widgetId, true);
   }
 
   layoutTerminalClient(widgetId: string) {

@@ -19,9 +19,9 @@ export interface ITerminalController {
   createGroup(selected?: boolean): number;
   selectGroup(index: number): void;
 
-  drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean): void;
-  showTerminalClient(widgetId: string): void;
-  retryTerminalClient(widgetId: string): void;
+  drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean): Promise<void>;
+  showTerminalClient(widgetId: string): Promise<void>;
+  retryTerminalClient(widgetId: string): Promise<void>;
   layoutTerminalClient(widgetId: string): void;
   eraseTerminalClient(termId: string): void;
   toJSON(): { groups: any[] };
