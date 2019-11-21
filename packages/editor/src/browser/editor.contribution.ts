@@ -130,7 +130,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_FORWARD.id,
-      keybinding: 'ctrl+=',
+      keybinding: 'ctrl+shift+-',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_BACK.id,
