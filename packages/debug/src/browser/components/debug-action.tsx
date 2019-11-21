@@ -9,6 +9,7 @@ export interface DebugActionProps {
   run?: () => any;
   enabled?: boolean;
   color?: string;
+  className?: string;
 }
 
 export const DebugAction = ({
@@ -17,10 +18,11 @@ export const DebugAction = ({
   run,
   enabled,
   color,
+  className,
 }: DebugActionProps) => {
   const noop = () => {};
   const style = {
     color,
   };
-  return <div className={cls(styles.debug_action, `${getIcon(icon)}`, typeof enabled === 'boolean' && !enabled && styles.mod_disabled)} style={style} title={ label } onClick={ run || noop }></div>;
+  return <div className={cls(styles.debug_action, `${getIcon(icon)}`, typeof enabled === 'boolean' && !enabled && styles.mod_disabled, className)} style={style} title={ label } onClick={ run || noop }></div>;
 };

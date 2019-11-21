@@ -10,8 +10,6 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Overlay } from '@ali/ide-core-browser/lib/components/overlay';
 import { Button } from '@ali/ide-core-browser/lib/components';
 
-const CONFIRM = localize('dialog.confirm');
-
 export const Dialog = observer(() => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const icon = dialogService.getIcon();
@@ -45,7 +43,7 @@ export const Dialog = observer(() => {
         {buttons.length ? buttons.map((button, index) => (
           <Button onClick={handlerClickButton(button)} key={button} type={index === buttons.length - 1 ? 'primary' : 'secondary'} className={styles.button}>{ mnemonicButtonLabel(button, true) }</Button>
         )) : (
-          <Button onClick={handleClose} type='primary' className={styles.button}>{CONFIRM}</Button>
+          <Button onClick={handleClose} type='primary' className={styles.button}>{localize('dialog.confirm')}</Button>
         )}
       </div>
     </Overlay>
