@@ -4,6 +4,8 @@ import * as styles from './styles.module.less';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { Layout, PanelContext } from '@ali/ide-core-browser/lib/components';
 import { useInjectable, ViewUiStateManager } from '@ali/ide-core-browser';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface IExplorerAction {
   iconClass: string;
@@ -36,6 +38,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   isLast: boolean;
   initialProps?: any;
   noHeader?: boolean;
+  titleMenu: IMenu;
 }
 
 export const AccordionSection = (
@@ -54,6 +57,7 @@ export const AccordionSection = (
     index,
     alignment = 'vertical',
     initialProps,
+    titleMenu,
   }: CollapsePanelProps,
 ) => {
   const viewStateManager = useInjectable<ViewUiStateManager>(ViewUiStateManager);
@@ -125,7 +129,6 @@ export const AccordionSection = (
     overflow : expanded ? 'visible' : 'hidden',
   } as React.CSSProperties;
   const Component: any = children;
-
   return  (
     <div className={ styles.kt_split_panel } >
       {!noHeader && <div
@@ -135,8 +138,13 @@ export const AccordionSection = (
       className={ cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
       onClick={clickHandler}
       >
-        <i className={cls(getIcon('right'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
-        <h1 className={styles.section_label}>{header}</h1>
+        <div className={styles.label_wrap}>
+          <i className={cls(getIcon('right'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
+          <h1 className={styles.section_label}>{header}</h1>
+        </div>
+        <InlineActionBar
+          menus={titleMenu}
+          seperator='navigation' />
       </div>}
       { getActionToolBar(actions) }
       <div

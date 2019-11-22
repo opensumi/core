@@ -6,7 +6,7 @@ import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, Comp
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
-import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
+import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { MenuId, NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
@@ -323,7 +323,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     // registry.registerItem({
     //   id: searchFold.id,
     //   command: searchFold.id,

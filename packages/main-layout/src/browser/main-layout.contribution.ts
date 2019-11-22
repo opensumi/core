@@ -1,9 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
-import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry } from '@ali/ide-core-browser';
-import { IMainLayoutService, MainLayoutContribution } from '../common';
-import { ComponentContribution, ComponentRegistry, VisibleChangedEvent, TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
+import { Domain, IEventBus, ContributionProvider, Event } from '@ali/ide-core-common';
+import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry } from '@ali/ide-core-browser';
+import { IMainLayoutService } from '../common';
+import { ComponentContribution, ComponentRegistry, VisibleChangedEvent, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
 import { IStatusBarService } from '@ali/ide-status-bar';
@@ -77,7 +77,7 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   protected readonly toolBarContributionProvider: ContributionProvider<TabBarToolbarContribution>;
 
   @Autowired()
-  private toolBarRegistry: TabBarToolbarRegistry;
+  private toolBarRegistry: ToolbarRegistry;
 
   async onStart() {
     this.statusBar.addElement('bottom-panel-handle', {

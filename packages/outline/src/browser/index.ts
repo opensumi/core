@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, ComponentContribution, Domain, ComponentRegistry, localize, TabBarToolbarContribution, TabBarToolbarRegistry, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
+import { BrowserModule, ComponentContribution, Domain, ComponentRegistry, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
 import { OutLineTree } from './outline.tree.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
@@ -56,7 +56,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
       id: 'outline.action.collapse.all',
       viewId: 'outline-view',

@@ -8,7 +8,7 @@ import { getIcon } from '../../icon';
 import { ConfigProvider, ComponentRenderer, AppConfig } from '../../react-providers';
 import { LoadingView } from './loading-view.view';
 import { ViewUiStateManager } from './view-container-state';
-import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
+import { TabBarToolbar } from './tab-bar-toolbar';
 import './section.view.less';
 
 export const SECTION_HEADER_HEIGHT = 22;
@@ -120,9 +120,6 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
     if (!this.toolBar || this.view.id.startsWith('scm')) {
       return;
     }
-    const tabBarToolbarRegistry = this.injector.get(TabBarToolbarRegistry);
-    const items = forceHide ? [] : tabBarToolbarRegistry.visibleItems(this.view.id);
-    this.toolBar.updateItems(items);
   }
 
   hideTitle(): void {

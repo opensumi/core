@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandService, localize, KeybindingContribution, KeybindingRegistry, ClientAppContribution, IContextKeyService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
+import { TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { HIDE_BOTTOM_PANEL_COMMAND } from '@ali/ide-main-layout/lib/browser/main-layout.contribution';
 import { CommandContribution, CommandRegistry } from '@ali/ide-core-common';
@@ -120,7 +120,7 @@ export class TerminalContribution implements ComponentContribution, KeybindingCo
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
       id: terminalRemove.id,
       command: terminalRemove.id,

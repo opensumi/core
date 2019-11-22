@@ -3,7 +3,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { ExplorerOpenEditorPanel } from './opened-editor-panel.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
-import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
+import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ClientAppContribution } from '@ali/ide-core-browser';
@@ -57,6 +57,7 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
       weight: 1,
       priority: 10,
       collapsed: true,
+      noResize: true,
       component: ExplorerOpenEditorPanel,
     }, ExplorerContainerId);
   }
@@ -87,7 +88,7 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
       id: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,
       command: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,

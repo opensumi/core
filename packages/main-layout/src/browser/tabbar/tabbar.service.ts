@@ -1,7 +1,8 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, TabBarToolbar, TabBarToolbarRegistry, OnEvent, ResizeEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, TabBarToolbar, ToolbarRegistry, OnEvent, ResizeEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe } from 'mobx';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
+import { MenuService } from '@ali/ide-core-browser/lib/menu/next';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 
@@ -31,7 +32,10 @@ export class TabbarService extends WithEventBus {
   private viewContainerRegistry: ViewContainerRegistry;
 
   @Autowired()
-  protected readonly tabBarToolbarRegistry: TabBarToolbarRegistry;
+  protected readonly ToolbarRegistry: ToolbarRegistry;
+
+  @Autowired(MenuService)
+  protected menuService: MenuService;
 
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
@@ -62,6 +66,11 @@ export class TabbarService extends WithEventBus {
   // TODO 底部控制，需要与侧边栏的形式统一
   registerToolbar(toolbar: TabBarToolbar) {
     this.toolbar = toolbar;
+  }
+
+  getTitleToolbarMenu(containerId: string) {
+    const menu = this.menuService.createMenu(`container/${containerId}`);
+    return menu;
   }
 
   @action.bound handleTabClick(
@@ -115,11 +124,6 @@ export class TabbarService extends WithEventBus {
           } else {
             currentTitleBar.updateToolbar();
             accordion.update();
-          }
-        } else {
-          if (this.toolbar) {
-            const containerItems = this.tabBarToolbarRegistry.visibleItems(currentId);
-            this.toolbar.updateItems(containerItems);
           }
         }
         if (this.prevSize === undefined) {

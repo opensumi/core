@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ILogger } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ILogger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { CONTEXT_MENU } from './file-tree.view';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -406,7 +406,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
       id: FILE_COMMANDS.COLLAPSE_ALL.id,
       command: FILE_COMMANDS.COLLAPSE_ALL.id,

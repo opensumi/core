@@ -11,6 +11,7 @@ import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { ActivityPanelToolbar } from '@ali/ide-core-browser/lib/layout/view-container-toolbar';
 import { AccordionContainer } from '../accordion/accordion.view';
 import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 export const BaseTabPanelView: React.FC<{
   PanelView: React.FC<{ component: ComponentRegistryInfo, side: string }>;
@@ -41,11 +42,11 @@ const ContainerView: React.FC<{
   side: string;
 }> = (({ component, side }) => {
   const ref = React.useRef<HTMLElement | null>();
-  const titleRef = React.useRef<HTMLElement | null>();
   const configContext = useInjectable<AppConfig>(AppConfig);
   const { containerId, title, titleComponent, component: CustomComponent } = component.options!;
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
-  const injector = useInjectable<Injector>(INJECTOR_TOKEN);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
   React.useEffect(() => {
     if (!CustomComponent && ref.current) {
       for (const view of component.views) {
@@ -58,6 +59,9 @@ const ContainerView: React.FC<{
       {!CustomComponent && <div className={styles.panel_titlebar}>
         <div className={styles.title_wrap}>
           <h1>{title}</h1>
+          <InlineActionBar
+            menus={titleMenu}
+            seperator='navigation' />
         </div>
         {titleComponent && <div className={styles.panel_component}>
           <ConfigProvider value={configContext} >
