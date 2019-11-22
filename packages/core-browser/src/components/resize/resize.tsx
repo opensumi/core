@@ -9,6 +9,7 @@ export interface ResizeHandleProps {
   min?: number;
   preserve?: number; // percentage
   className?: string;
+  noColor?: boolean;
   delegate?: (delegate: IResizeHandleDelegate) => void;
   findPrevElement?: (direction?: boolean) => HTMLElement | undefined;
   findNextElement?: (direction?: boolean) => HTMLElement | undefined;
@@ -148,6 +149,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   return (
     <div ref={(e) => {ref.current = e; } } className={classnames({
       [styles['resize-handle-horizontal']]: true,
+      [styles['with-color']]: !props.noColor,
     })}/>
   );
 };
@@ -293,6 +295,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   return (<div ref={(e) => e && (ref.current = e) } className={classnames({
     [styles['resize-handle-vertical']]: true,
     [props.className || '']: true,
+    [styles['with-color']]: !props.noColor,
   })}/>);
 
 };

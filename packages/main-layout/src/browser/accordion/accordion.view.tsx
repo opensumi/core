@@ -28,6 +28,7 @@ export const AccordionContainer: React.FC<{
         expanded={!collapsed}
         id={view.id}
         index={index}
+        initialProps={view.initialProps}
         isLast={index === views.length - 1}
         flex={view.weight || 1}>
         {view.component}

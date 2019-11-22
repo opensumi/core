@@ -3,6 +3,7 @@ import * as cls from 'classnames';
 import * as styles from './styles.module.less';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { Layout, PanelContext } from '@ali/ide-core-browser/lib/components';
+import { useInjectable, ViewUiStateManager } from '@ali/ide-core-browser';
 
 export interface IExplorerAction {
   iconClass: string;
@@ -33,6 +34,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   alignment?: Layout.alignment;
   index: number;
   isLast: boolean;
+  initialProps?: any;
 }
 
 export const AccordionSection = (
@@ -48,12 +50,29 @@ export const AccordionSection = (
     headerSize,
     viewId,
     index,
-    isLast,
     alignment = 'vertical',
+    initialProps,
   }: CollapsePanelProps,
 ) => {
-  // TODO resize监听
+  const viewStateManager = useInjectable<ViewUiStateManager>(ViewUiStateManager);
   const contentRef = React.useRef<HTMLDivElement | null>();
+  React.useEffect(() => {
+    if (contentRef.current) {
+      const ResizeObserver = (window  as any).ResizeObserver;
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          window.requestAnimationFrame(() => {
+            viewStateManager.updateSize(viewId, entry.contentRect.height, entry.contentRect.width);
+          });
+        }
+      });
+      resizeObserver.observe(contentRef.current);
+      return () => {
+        resizeObserver.unobserve(contentRef.current);
+      };
+    }
+  }, [contentRef]);
+
   const [headerFocused, setHeaderFocused] = React.useState(false);
 
   const { setSize, getSize } = React.useContext(PanelContext);
@@ -98,20 +117,24 @@ export const AccordionSection = (
     setHeaderFocused(false);
   };
 
+  const viewState = viewStateManager.getState(viewId);
+
   const bodyStyle = {
     overflow : expanded ? 'visible' : 'hidden',
   } as React.CSSProperties;
   const Component: any = children;
+
   return  (
     <div className={ styles.kt_split_panel } >
       <div
       onFocus={ headerFocusHandler }
       onBlur={ headerBlurHandler }
       {...attrs}
-      className={ cls(expanded ? '' : styles.kt_mod_collapsed, getIcon('right'), styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
+      className={ cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
       onClick={clickHandler}
       >
-        {header}
+        <i className={cls(getIcon('right'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
+        <h1 className={styles.section_label}>{header}</h1>
       </div>
       { getActionToolBar(actions) }
       <div
@@ -119,7 +142,7 @@ export const AccordionSection = (
         style={ bodyStyle }
         ref={(ele) =>  contentRef.current = ele}
       >
-        <Component viewState={{width: 100, height: 100}} />
+        <Component {...initialProps} viewState={viewState} />
       </div>
     </div>
   );

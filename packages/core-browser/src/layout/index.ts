@@ -62,6 +62,7 @@ export interface View {
   component?: React.FunctionComponent<any>;
   // 使用该参数时, view 的 toolbar 默认不渲染
   noToolbar?: boolean;
+  initialProps?: any;
 }
 
 export interface ViewContainerOptions extends ExtViewContainerOptions {

@@ -279,7 +279,7 @@ export class AccordionWidget extends Widget {
   private appendSection(view: View, props: any) {
     const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped());
     contextKeyService.createKey('view', view.id);
-    this.uiStateManager.initSize(view.id, this.side);
+    this.uiStateManager.updateSize(view.id);
     props.viewState = this.uiStateManager.getState(view.id)!;
     const section = this.injector.get(ViewContainerSection, [view, this.side, { props }]);
     this.sections.set(view.id, section);

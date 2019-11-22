@@ -6,23 +6,17 @@ import { ViewState } from '../';
 @Injectable()
 export class ViewUiStateManager extends Disposable {
   @observable viewStateMap: Map<string, ViewState> = new Map();
-  private sideViews: {[side: string]: string[]} = {
-    [SlotLocation.left]: [],
-    [SlotLocation.right]: [],
-    [SlotLocation.bottom]: [],
-  };
 
   constructor() {
     super();
   }
 
-  initSize(viewId: string, side) {
-    this.viewStateMap.set(viewId, {width: 0, height: 0});
-    this.sideViews[side].push(viewId);
-  }
-
-  updateSize(viewId: string, height?: number, width?: number) {
+  updateSize(viewId: string, height = 0, width = 0) {
     const viewState = this.viewStateMap.get(viewId)!;
+    if (!viewState) {
+      this.viewStateMap.set(viewId, {width, height});
+      return;
+    }
     if (height) {
       viewState.height = height;
     }
@@ -32,7 +26,12 @@ export class ViewUiStateManager extends Disposable {
   }
 
   getState(viewId: string) {
-    return this.viewStateMap.get(viewId);
+    const viewState = this.viewStateMap.get(viewId)!;
+    if (!viewState) {
+      this.viewStateMap.set(viewId, {width: 0, height: 0});
+      return this.viewStateMap.get(viewId)!;
+    }
+    return viewState;
   }
 
   removeState(viewId: string) {

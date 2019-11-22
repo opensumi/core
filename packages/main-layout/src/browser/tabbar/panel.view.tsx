@@ -45,12 +45,12 @@ const ContainerView: React.FC<{
   const configContext = useInjectable<AppConfig>(AppConfig);
   const { containerId, title, titleComponent, component: CustomComponent } = component.options!;
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
-  const [views, setViews] = React.useState<View[]>([]);
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
   React.useEffect(() => {
     if (!CustomComponent && ref.current) {
-      accordionService.initViews(component.views);
-      setViews(accordionService.views);
+      for (const view of component.views) {
+        accordionService.appendView(view);
+      }
     }
   }, [ref]);
   React.useEffect(() => {
@@ -73,7 +73,7 @@ const ContainerView: React.FC<{
       <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
         {CustomComponent ? <ConfigProvider value={configContext} >
           <ComponentRenderer Component={CustomComponent} />
-        </ConfigProvider> : <AccordionContainer state={accordionService.state} views={views} containerId={component.options!.containerId} />}
+        </ConfigProvider> : <AccordionContainer state={accordionService.state} views={accordionService.views} containerId={component.options!.containerId} />}
       </div>
     </div>
   );

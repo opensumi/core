@@ -19,7 +19,7 @@ export class AccordionService {
 
   splitPanelService: SplitPanelService;
 
-  views: View[];
+  @observable.shallow views: View[] = [];
 
   @observable state: Map<string, SectionState> = new Map();
 
@@ -27,13 +27,9 @@ export class AccordionService {
     this.splitPanelService = this.splitPanelManager.getService(containerId);
   }
 
-  initViews(views: View[]) {
-    this.views = views.sort((prev, next) => (prev.priority || 0) - (next.priority || 0));
-  }
-
   appendView(view: View) {
     const index = this.views.findIndex((value) => (value.priority || 0) <= (view.priority || 0));
-    this.views.splice(index, 0, view);
+    this.views.splice(index === -1 ? this.views.length : index, 0, view);
   }
 
   get visibleViews(): View[] {
@@ -96,6 +92,7 @@ export class AccordionService {
     }
     const fullHeight = this.splitPanelService.rootNode.clientHeight;
     const panel = this.splitPanelService.panels[index];
+    panel.classList.add('resize-ease');
     // clientHeight会被上次展开的元素挤掉
     const prevSize = (+panel.style.height!.replace('%', '')) / 100 * fullHeight;
     const viewState = this.getViewState(this.views[index].id);
@@ -107,6 +104,10 @@ export class AccordionService {
       viewState.size = prevSize;
     }
     panel.style.height = (isIncrement ? targetSize + prevSize : targetSize) / fullHeight * 100 + '%';
+    setTimeout(() => {
+      // 动画 0.1s，保证结束后移除
+      panel.classList.remove('resize-ease');
+    }, 200);
     return isIncrement ? targetSize : prevSize - targetSize;
   }
 

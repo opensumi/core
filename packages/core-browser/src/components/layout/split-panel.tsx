@@ -74,6 +74,7 @@ export const SplitPanel: React.FC<{
               eventBus.fire(new ResizeEvent({slotLocation: nextLocation, width: next.clientWidth, height: next.clientHeight}));
             }
           }}
+          noColor={true}
           findNextElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction)}
           findPrevElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true)}
           key={`split-handle-${index}`}

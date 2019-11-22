@@ -9,8 +9,8 @@ export class AccordionManager {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  getAccordion(containerId: string, views: View[], side: string) {
-    const accordion = this.accordions.get(containerId) || this.injector.get(AccordionWidget, [containerId, views, side as any]);
+  getAccordion(containerId: string, views?: View[], side?: string) {
+    const accordion = this.accordions.get(containerId) || this.injector.get(AccordionWidget, [containerId, views || [], side as any]);
     if (!this.accordions.get(containerId)) {
       this.accordions.set(containerId, accordion);
     }

@@ -8,7 +8,7 @@ import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-con
 import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
-import { AccordionService } from './accordion/accordion.service';
+import { AccordionService, AccordionServiceFactory } from './accordion/accordion.service';
 
 @Injectable()
 export class LayoutService extends WithEventBus {
@@ -158,13 +158,11 @@ export class LayoutService extends WithEventBus {
   }
 
   collectViewComponent(view: View, containerId: string, props?: any): string {
-    const accordion = this.viewContainerRegistry.getAccordion(containerId);
-    if (accordion) {
-      accordion.addWidget(view, props);
-    } else {
-      const items = this.pendingViewsMap.get(containerId);
-      items ? items.push({view, props}) : this.pendingViewsMap.set(containerId, [{view, props}]);
+    const accordionService: AccordionService = this.getAccordionService(containerId);
+    if (props) {
+      view.initialProps = props;
     }
+    accordionService.appendView(view);
     return containerId;
   }
 
