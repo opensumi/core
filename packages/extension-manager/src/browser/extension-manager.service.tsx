@@ -186,6 +186,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         if (extension) {
           extension.reloadRequire = reloadRequire;
           extension.installed = true;
+          extension.enabled = true;
         }
       });
     }
@@ -197,7 +198,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
       path,
     });
     // 安装插件后默认为全局启用、工作区间启用
-    await this.setExtensionEnable(extensionId, true, EnableScope.GLOBAL);
+    await this.enableExtensionToStorage(extensionId);
     return path;
   }
 
@@ -548,7 +549,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         });
       }
       // 卸载的插件默认设置为启动
-      await this.setExtensionEnable(extension.extensionId, true, EnableScope.GLOBAL);
+      await this.enableExtensionToStorage(extensionId);
       // 修改插件状态
       await this.makeExtensionStatus(extension.extensionId, {
         installed: false,
@@ -567,6 +568,17 @@ export class ExtensionManagerService implements IExtensionManagerService {
    */
   private get installedIds() {
     return this.extensions.map((extension) => extension.extensionId);
+  }
+
+  /**
+   * 设置插件开启
+   * @param extensionId
+   */
+  private async enableExtensionToStorage(extensionId: string) {
+    await Promise.all([
+      this.setExtensionEnable(extensionId, true, EnableScope.GLOBAL),
+      this.setExtensionEnable(extensionId, true, EnableScope.WORKSPACE),
+    ]);
   }
 
   /**
