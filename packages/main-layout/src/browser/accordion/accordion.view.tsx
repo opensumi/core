@@ -21,6 +21,7 @@ export const AccordionContainer: React.FC<{
       // TODO hidden支持
       const { collapsed, hidden } = viewState;
       return <AccordionSection
+        noHeader={views.length === 1}
         onItemClick={() => accordionService.handleSectionClick(view.id, !collapsed, index)}
         alignment={alignment as Layout.alignment}
         header={view.name || view.id}

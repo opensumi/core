@@ -35,6 +35,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   index: number;
   isLast: boolean;
   initialProps?: any;
+  noHeader?: boolean;
 }
 
 export const AccordionSection = (
@@ -42,6 +43,7 @@ export const AccordionSection = (
     header,
     headerClass,
     onItemClick,
+    noHeader,
     children,
     expanded,
     onResize,
@@ -126,7 +128,7 @@ export const AccordionSection = (
 
   return  (
     <div className={ styles.kt_split_panel } >
-      <div
+      {!noHeader && <div
       onFocus={ headerFocusHandler }
       onBlur={ headerBlurHandler }
       {...attrs}
@@ -135,7 +137,7 @@ export const AccordionSection = (
       >
         <i className={cls(getIcon('right'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
         <h1 className={styles.section_label}>{header}</h1>
-      </div>
+      </div>}
       { getActionToolBar(actions) }
       <div
         className={ styles.kt_split_panel_body }

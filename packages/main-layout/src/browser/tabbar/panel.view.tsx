@@ -53,23 +53,18 @@ const ContainerView: React.FC<{
       }
     }
   }, [ref]);
-  React.useEffect(() => {
-    if (!CustomComponent && titleRef.current) {
-      const titleBar = injector.get(ActivityPanelToolbar, [side as any, containerId]);
-      Widget.attach(titleBar, titleRef.current);
-      titleBar.toolbarTitle = title || '';
-    }
-  }, [titleRef]);
   return (
     <div className={styles.view_container}>
-      <div className={styles.panel_titlebar}>
-        <div className={styles.title_wrap} ref={(ele) => titleRef.current = ele}></div>
+      {!CustomComponent && <div className={styles.panel_titlebar}>
+        <div className={styles.title_wrap}>
+          <h1>{title}</h1>
+        </div>
         {titleComponent && <div className={styles.panel_component}>
           <ConfigProvider value={configContext} >
             <ComponentRenderer Component={titleComponent} />
           </ConfigProvider>
         </div>}
-      </div>
+      </div>}
       <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
         {CustomComponent ? <ConfigProvider value={configContext} >
           <ComponentRenderer Component={CustomComponent} />
