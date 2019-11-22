@@ -14,20 +14,22 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   readonly nodes: TreeNode<any>[];
   /**
    * 左侧缩进（单位 px）
-   * 默认缩进计算通过：leftPadding * depth
+   * 默认缩进计算通过：defaultLeftPadding + leftPadding * depth
    */
   readonly leftPadding?: number;
-
+  /**
+   * 默认左侧缩进（单位 px）
+   * 默认缩进计算通过：defaultLeftPadding + leftPadding * depth
+   */
+  readonly defaultLeftPadding?: number;
   /**
    * 如果树组件支持多选，为`true`, 否则为 `false`
    */
   readonly multiSelectable?: boolean;
-
   /**
    * 是否在视图激活时自动滚动
    */
   readonly scrollIfActive?: boolean;
-
   /**
    * 是否可折叠
    */
@@ -36,7 +38,6 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 是否支持拖拽
    */
   readonly draggable?: boolean;
-
   /**
    * 是否可搜索
    */
@@ -126,12 +127,14 @@ export interface TreeProps extends React.PropsWithChildren<any> {
 export const defaultTreeProps: TreeProps = {
   nodes: [],
   leftPadding: 8,
+  defaultLeftPadding: 10,
 };
 
 export const TreeContainer = (
   {
     nodes = defaultTreeProps.nodes,
     leftPadding = defaultTreeProps.leftPadding,
+    defaultLeftPadding = defaultTreeProps.defaultLeftPadding,
     multiSelectable,
     onSelect,
     onTwistieClick,
@@ -422,6 +425,7 @@ export const TreeContainer = (
         return <TreeContainerNode
           node={node}
           leftPadding={leftPadding}
+          defaultLeftPadding={defaultLeftPadding}
           key={`${node.id}-${index}`}
           onSelect={selectHandler}
           onTwistieClick={twistieClickHandler}

@@ -264,10 +264,6 @@ export class ExpressionItem extends ExpressionContainer {
     return this._value;
   }
 
-  get title(): string {
-    return this._title;
-  }
-
   get id(): string {
     return this._id;
   }
@@ -291,7 +287,6 @@ export class ExpressionItem extends ExpressionContainer {
         const { expression } = this;
         const body = await this.session.evaluate(expression, context);
         if (body) {
-          this._title = this.expression;
           this._value = body.result;
           this._available = true;
           this.variablesReference = body.variablesReference;
