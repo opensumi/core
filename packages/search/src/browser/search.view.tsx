@@ -102,7 +102,6 @@ export const Search = observer(({
                 <Input
                   id='search-input-field'
                   title={localize('search.input.placeholder')}
-                  autoFocus
                   type='text'
                   value={searchBrowserService.searchValue}
                   placeholder={localize('search.input.placeholder')}
