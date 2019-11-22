@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle, EditorDecorationChangeEvent } from './types';
+import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent } from './types';
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
 import { Disposable, URI, CancellationTokenSource, IEventBus } from '@ali/ide-core-common';
 import { IThemeService } from '@ali/ide-theme';
@@ -33,6 +33,9 @@ export class MonacoEditorDecorationApplier extends Disposable {
       if (currentUri && e.payload.uri.isEqual(currentUri) ) {
         this.applyDecorationFromProvider(e.payload.key);
       }
+    }));
+    this.addDispose(this.eventBus.on(EditorDecorationTypeRemovedEvent, (e) => {
+      this.deltaDecoration(e.payload, []);
     }));
   }
 
