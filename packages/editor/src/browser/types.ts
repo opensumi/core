@@ -202,6 +202,8 @@ export class EditorDecorationProviderRegistrationEvent extends BasicEvent<IEdito
 
 export class EditorDecorationChangeEvent extends BasicEvent<{uri: URI, key: string}> {}
 
+export class EditorDecorationTypeRemovedEvent extends BasicEvent<string> {}
+
 export interface IEditorActionRegistry {
   registerEditorAction(action: IEditorActionItem): IDisposable;
   getActions(editorGroup: IEditorGroup): IVisibleAction[];
