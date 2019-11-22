@@ -78,7 +78,7 @@ export const RecycleList = ({
   sliceThreshold = 30,
   header = [],
   headerClass = '',
-  scrollBottomIfActive,
+  scrollBottomIfActive = false,
   onLoad = () => { },
 }: RecycleListProp) => {
 
