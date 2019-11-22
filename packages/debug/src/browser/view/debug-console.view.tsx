@@ -13,7 +13,6 @@ export const DebugConsoleView = observer(({
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const {
     nodes,
-    onSelect,
     execute,
   }: DebugConsoleService = useInjectable(DebugConsoleService);
   // TODO：待Layout实现宽高注入后替换该逻辑
@@ -75,6 +74,7 @@ export const DebugConsoleView = observer(({
       template = {template}
       sliceSize = {15}
       style={scrollContainerStyle}
+      scrollBottomIfActive={true}
     />
     <div className={styles.variable_repl_bar}>
       <Input

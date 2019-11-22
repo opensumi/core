@@ -46,6 +46,8 @@ export interface InfinityListProp {
   sliceSize: number;
   // 渲染片段切换的边界条件（距离 containerEL ${sliceThreshold}px）
   sliceThreshold: number;
+  // 是否自动对齐到滚动条底部
+  scrollBottomIfActive: boolean;
 }
 
 interface InfinityListState {
@@ -128,7 +130,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   readonly state: InfinityListState = defaultInfinityListState;
 
   componentDidMount() {
-    const { isDrained } = this.props;
+    const { isDrained, scrollBottomIfActive } = this.props;
 
     this.bindScrollHandler();
 
@@ -145,9 +147,11 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
 
   componentDidUpdate(prevProps) {
     const { data: oldData, isDrained: wasDrained } = prevProps;
-    const { isLoading, isDrained, data } = this.props;
+    const { isLoading, isDrained, data, scrollBottomIfActive } = this.props;
 
-    if (oldData.length > data.length) {
+    if (scrollBottomIfActive) {
+      this.containerEl.scrollTop = this.containerEl.scrollHeight;
+    } else if (oldData.length > data.length) {
       this.containerEl.scrollTop = 0;
     }
 

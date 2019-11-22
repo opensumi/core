@@ -59,6 +59,10 @@ export interface RecycleListProp extends React.PropsWithChildren<any> {
    * 加载事件函数
    */
   onLoad?: any;
+  /**
+   * 是否在数据更新时滚动到底部
+   */
+  scrollBottomIfActive?: boolean;
 }
 
 export const RecycleList = ({
@@ -74,6 +78,7 @@ export const RecycleList = ({
   sliceThreshold = 30,
   header = [],
   headerClass = '',
+  scrollBottomIfActive,
   onLoad = () => { },
 }: RecycleListProp) => {
 
@@ -106,6 +111,7 @@ export const RecycleList = ({
       sliceSize={sliceSize}
       sliceThreshold={sliceThreshold}
       onLoad={onLoad}
+      scrollBottomIfActive={scrollBottomIfActive}
     />
   </div>;
 };
