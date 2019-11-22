@@ -108,19 +108,28 @@
 
 .kt_treenode_displayname {
   margin-right: 6px;
+  display: inline;
+}
+
+.kt_treenode_inputbox {
+  display: inline-block;
 }
 
 .kt_treenode_description {
-  margin-left: -2%;
+  display: inline;
   transform: scale(0.96);
   opacity: .7;
 }
 
-.kt_treenode_segment_grow {
-  flex-grow: 1 !important;
+.kt_treenode_overflow_wrap {
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.kt_treenode_segment_grow {
+  flex-grow: 1 !important;
   text-align: left;
   z-index: 10;
   padding-right: 5px;

@@ -321,11 +321,11 @@ export const TreeContainerNode = (
     };
 
     const blurHandler = (event) => {
-      if (actualValidate(value)) {
-        onChange(node, '');
-      } else {
-        onChange(node, value);
-      }
+      // if (actualValidate(value)) {
+      //   onChange(node, '');
+      // } else {
+      //   onChange(node, value);
+      // }
     };
 
     const keydownHandler = (event: React.KeyboardEvent) => {
@@ -364,7 +364,7 @@ export const TreeContainerNode = (
         };
       }
       return <div
-        className={cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, actualValidate(value) && styles.overflow_visible)}
+        className={cls(styles.kt_treenode_segment, styles.kt_treenode_inputbox, actualValidate(value) && styles.overflow_visible)}
       >
         <div className={styles.kt_input_wrapper}>
           <ValidateInput
@@ -386,7 +386,7 @@ export const TreeContainerNode = (
       return <Template />;
     } else {
       return <div
-        className={cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass)}
+        className={cls(styles.kt_treenode_segment, styles.kt_treenode_displayname, node.labelClass)}
       >
         {node.beforeLabel}
         {renderWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.name, replace)}
@@ -481,8 +481,10 @@ export const TreeContainerNode = (
         <div className={cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')} style={itemStyle}>
           {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
           {renderIcon(node)}
-          {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
-          {renderDescription(node, replace)}
+          <div className={styles.kt_treenode_overflow_wrap}>
+            {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
+            {renderDescription(node, replace)}
+          </div>
           {renderStatusTail(node, node.actions || actions, commandActuator)}
         </div>
       </div>
