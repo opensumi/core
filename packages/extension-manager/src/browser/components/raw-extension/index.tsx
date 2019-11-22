@@ -77,14 +77,15 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               <div className={styles.name}>{extension.displayName}</div>
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
             </div>
-            {extension.installed ? (
               <span style={{display: 'flex', flexShrink: 0}} onClick={(e) => e.stopPropagation()}>
                 {extension.reloadRequire && <Button ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
-                <InlineActionBar
+                {extension.installed ? (
+                  <InlineActionBar
                   menus={extensionManagerService.contextMenu}
                   context={[extension]} />
+                ) : null}
               </span>
-            ) : <Button loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button>}
+            {!extension.installed ? <Button loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button> : null}
           </div>
           <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i>{extension.downloadCount}</span>) : null}
