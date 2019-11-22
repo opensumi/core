@@ -15,6 +15,7 @@ export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
   leftPadding?: number;
+  defaultLeftPadding?: number;
   onSelect?: any;
   onTwistieClick?: any;
   onContextMenu?: any;
@@ -112,6 +113,7 @@ export const TreeContainerNode = (
   {
     node,
     leftPadding,
+    defaultLeftPadding,
     onSelect,
     onTwistieClick,
     onContextMenu,
@@ -134,6 +136,7 @@ export const TreeContainerNode = (
     validate,
   }: TreeNodeProps,
 ) => {
+  defaultLeftPadding = typeof defaultLeftPadding === 'number' ? defaultLeftPadding : 10;
   const selectHandler = (event: React.MouseEvent) => {
     event.stopPropagation();
     event.preventDefault();
@@ -237,7 +240,7 @@ export const TreeContainerNode = (
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: `${10 + (node.depth || 0) * (leftPadding || 0)}px`,
+    paddingLeft: `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px`,
     ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
@@ -438,7 +441,7 @@ export const TreeContainerNode = (
   const titleStyle = {
     height: itemLineHeight,
     lineHeight: `${itemLineHeight}px`,
-    paddingLeft: ExpandableTreeNode.is(node) ? `${10 + (leftPadding || 0)}px` : 0,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${defaultLeftPadding + 8 + (leftPadding || 0)}px` : 0,
   } as React.CSSProperties;
 
   const renderTitle = (node: TreeNode) => {

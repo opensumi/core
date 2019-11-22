@@ -1,10 +1,12 @@
 import * as React from 'react';
+import * as cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import * as styles from './debug-console.module.less';
 import { ViewState } from '@ali/ide-activity-panel';
-import { useInjectable, KeyCode, Key } from '@ali/ide-core-browser';
+import { useInjectable, KeyCode, Key, TreeNode, ExpandableTreeNode } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
-import { SourceTree, Input } from '@ali/ide-core-browser/lib/components';
+import { VariablesTree, Input, RecycleList } from '@ali/ide-core-browser/lib/components';
+import { ExpressionItem } from '../console/debug-console-items';
 
 export const DebugConsoleView = observer(({
   viewState,
@@ -39,13 +41,40 @@ export const DebugConsoleView = observer(({
       width: '100%',
     });
   }, [debugConsoleRef.current]);
+
+  const template = ({data}: {
+    data: TreeNode<any>,
+  }) => {
+    const renderContent = (data: TreeNode<any>) => {
+      const NameTemplate = data.name as React.JSXElementConstructor<any>;
+      const itemLineHeight = 20;
+
+      if (data instanceof ExpressionItem) {
+        return <div>
+          <VariablesTree
+            node={data}
+            leftPadding={8}
+            defaultLeftPadding={0}
+            itemLineHeight={itemLineHeight}
+          />
+        </div>;
+      } else {
+        return <NameTemplate />;
+      }
+    };
+    return <div className={styles.debug_console_item}>
+      <div className={cls(styles.debug_console_item_content, data.labelClass)}>
+        {renderContent(data)}
+      </div>
+    </div>;
+  };
+
   return <div className={styles.debug_console} ref={debugConsoleRef}>
-    <SourceTree
-      nodes={nodes}
-      onSelect={onSelect}
-      outline={false}
-      itemLineHeight={16}
-      scrollContainerStyle={scrollContainerStyle}
+    <RecycleList
+      data = {nodes}
+      template = {template}
+      sliceSize = {15}
+      style={scrollContainerStyle}
     />
     <div className={styles.variable_repl_bar}>
       <Input

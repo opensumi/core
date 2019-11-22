@@ -75,6 +75,7 @@ export class DebugConsoleSession implements IDebugConsoleSession {
   }
 
   async execute(value: string): Promise<void> {
+    this.nodes.push(new AnsiConsoleItem(value, MessageType.Info));
     const expression = new ExpressionItem(value, this.manager.currentSession);
     this.nodes.push(expression);
     await expression.evaluate();
