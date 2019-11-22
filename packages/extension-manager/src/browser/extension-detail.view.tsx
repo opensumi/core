@@ -165,13 +165,13 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
+            {extension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
               {canUpdate && !updated ? (
                 <Button className={styles.action} onClick={update} loading={isUpdating}>{isUpdating ? localize('marketplace.extension.updating') : localize('marketplace.extension.update')}</Button>
               ) : null}
               {!extension.installed ? (
                 <Button className={styles.action} onClick={install} loading={isInstalling}>{isInstalling ? localize('marketplace.extension.installing') : localize('marketplace.extension.install')}</Button>
               ) : null}
-              {extension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
               {extension.installed ? (
                 <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']}>
                   <Button ghost={true} className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>

@@ -167,21 +167,28 @@ export class ExtensionManagerService implements IExtensionManagerService {
     });
     // 1. 调用后台下载插件
     const path = await this.extensionManagerServer.installExtension(extension, version || extension.version);
-    // 2. 更新插件进程信息
-    await this.onInstallExtension(extensionId, path);
     const reloadRequire = await this.computeReloadState(path);
-    runInAction(() => {
-      // 可能出现先安装，后卸载时发现需要重启的情况
-      const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
-      if (extension) {
-        extension.reloadRequire = reloadRequire;
-        if (reloadRequire) {
-          extension.installed = false;
-        } else {
+
+    if (!reloadRequire) {
+      // 2. 更新插件进程信息
+      await this.onInstallExtension(extensionId, path);
+      const extensionProp = await this.extensionService.getExtensionProps(path);
+      if (extensionProp) {
+        const extension = await this.transformFromExtensionProp(extensionProp);
+        // 添加到 extensions，下次获取 rawExtension
+        runInAction(() => {
+          this.extensions.push(extension);
+        });
+      }
+    } else {
+      runInAction(() => {
+        const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+        if (extension) {
+          extension.reloadRequire = reloadRequire;
           extension.installed = true;
         }
-      }
-    });
+      });
+    }
     // 3. 标记为已安装
     await this.makeExtensionStatus(extensionId, {
       installed: true,
@@ -189,6 +196,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
       enableScope: EnableScope.GLOBAL,
       path,
     });
+    // 安装插件后默认为全局启用、工作区间启用
+    await this.setExtensionEnable(extensionId, true, EnableScope.GLOBAL);
     return path;
   }
 
@@ -200,8 +209,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
   async onInstallExtension(extensionId: string, path: string) {
     // 在后台去启用插件
     await this.extensionService.postChangedExtension(false, path);
-    // 安装插件后默认为全局启用、工作区间启用
-    this.setExtensionEnable(extensionId, true, EnableScope.GLOBAL);
   }
 
   /**
@@ -268,20 +275,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     this.searchMarketplaceResults = this.changeResultsState(this.searchMarketplaceResults, extensionId, state);
     this.hotExtensions = this.changeResultsState(this.hotExtensions, extensionId, state);
     this.searchInstalledResults = this.changeResultsState(this.searchInstalledResults, extensionId, state);
-    const rawExt = this.searchMarketplaceResults.find((r) => this.equalExtensionId(r, extensionId))
-      || this.hotExtensions.find((r) => this.equalExtensionId(r, extensionId))
-      || this.searchInstalledResults.find((r) => this.equalExtensionId(r, extensionId));
 
-    if (rawExt && state.installed && state.path) {
-      const extensionProp = await this.extensionService.getExtensionProps(state.path);
-      if (extensionProp) {
-        const extension = await this.transformFromExtensionProp(extensionProp);
-        // 添加到 extensions，下次获取 rawExtension
-        runInAction(() => {
-          this.extensions.push(extension);
-        });
-      }
-    }
     this.extensionMomentState.set(extensionId, {
       isInstalling: false,
       isUpdating: false,
@@ -535,7 +529,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
     });
     // 调用后台删除插件
     const res =  await this.extensionManagerServer.uninstallExtension(extension);
-
     if (res) {
 
       await this.removeExtensionConfig(extension.extensionId);
