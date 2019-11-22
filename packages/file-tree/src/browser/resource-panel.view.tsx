@@ -34,7 +34,7 @@ export const ExplorerResourcePanel = observer(({
     root,
   }: ExplorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
   const files = getFiles();
-  if (!!root) {
+  if (root.path.toString() !== '/') {
     return <FileTree
       width={ viewState.width }
       height={ viewState.height }
