@@ -18,6 +18,7 @@ export const AccordionContainer: React.FC<{
   return <SplitPanel id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
     { views.map((view, index) => {
       const viewState: SectionState = state.get(view.id) || { collapsed: false, hidden: false };
+      const titleMenu = accordionService.getSectionToolbarMenu(view.id);
       // TODO hidden支持
       const { collapsed, hidden } = viewState;
       return <AccordionSection
@@ -31,6 +32,9 @@ export const AccordionContainer: React.FC<{
         index={index}
         initialProps={view.initialProps}
         isLast={index === views.length - 1}
+        titleMenu={titleMenu}
+        minSize={120}
+        solid={view.noResize}
         flex={view.weight || 1}>
         {view.component}
       </AccordionSection>;
