@@ -538,7 +538,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
     }
     if (options && options.split) {
-      return this.split(options.split, uri, Object.assign({}, options, { split: undefined }));
+      return this.split(options.split, uri, Object.assign({}, options, { split: undefined, preview: false }));
     }
     if (!this.openingPromise.has(uri.toString())) {
       const promise = this.doOpen(uri, options);
@@ -920,20 +920,21 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @action.bound
   public async dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup, targetResource?: IResource) {
     if (position !== DragOverPosition.CENTER) {
-      await this.split(getSplitActionFromDragDrop(position), uri);
+      await this.split(getSplitActionFromDragDrop(position), uri, {preview: false});
     } else {
       // 扔在本体或者tab上
       if (!targetResource) {
-        await this.open(uri);
+        await this.open(uri, {preview: false});
       } else {
         const targetIndex = this.resources.indexOf(targetResource);
         if (targetIndex === -1) {
-          await this.open(uri);
+          await this.open(uri, {preview: false});
         } else {
           const sourceIndex = this.resources.findIndex((resource) => resource.uri.toString() === uri.toString());
           if (sourceIndex === -1) {
             await this.open(uri, {
               index: targetIndex,
+              preview: false,
             });
           } else {
             // just move
@@ -941,11 +942,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             if (sourceIndex > targetIndex) {
               this.resources.splice(sourceIndex, 1);
               this.resources.splice(targetIndex, 0, sourceResource);
-              await this.open(uri);
+              await this.open(uri, {preview: false});
             } else if (sourceIndex < targetIndex) {
               this.resources.splice(targetIndex + 1, 0, sourceResource);
               this.resources.splice(sourceIndex, 1);
-              await this.open(uri);
+              await this.open(uri, {preview: false});
             }
           }
         }
