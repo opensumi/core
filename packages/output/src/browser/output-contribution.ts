@@ -13,6 +13,7 @@ import { OutputService } from './output.service';
 const OUTPUT_CLEAR: Command = {
   id: 'output.channel.clear',
   iconClass: getIcon('clear'),
+  label: localize('output.channel.clear', '清理日志'),
 };
 const OUTPUT_CONTAINER_ID = 'ide-output';
 @Domain(CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution)

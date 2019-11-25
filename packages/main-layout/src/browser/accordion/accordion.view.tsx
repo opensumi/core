@@ -27,6 +27,7 @@ export const AccordionContainer: React.FC<{
         alignment={alignment as Layout.alignment}
         header={view.name || view.id}
         viewId={view.id}
+        key={view.id}
         expanded={!collapsed}
         id={view.id}
         index={index}

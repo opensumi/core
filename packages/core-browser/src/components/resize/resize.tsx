@@ -195,12 +195,15 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     const currentPrev = prevElement.current!.clientHeight;
     const currentNext = nextElement.current!.clientHeight;
     const totalSize = currentPrev + currentNext;
-    const currentTotalHeight = +nextElement.current!.style.height!.replace('%', '') + +prevElement.current!.style.height!.replace('%', '');
+    const nextH = +nextElement.current!.style.height!.replace(/\%|px/, '');
+    const prevH = +prevElement.current!.style.height!.replace(/\%|px/, '');
+    const currentTotalHeight = nextH + prevH;
     if (isLatter) {
-      nextElement.current!.style.height = currentTotalHeight * (size / totalSize) + '%';
       if (keep) {
         prevElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
       }
+      const targetSize = currentTotalHeight * (size / totalSize);
+      nextElement.current!.style.height = targetSize === 0 ? targetSize + 'px' : targetSize + '%';
     } else {
       prevElement.current!.style.height = currentTotalHeight * (size / totalSize) + '%';
       if (keep) {

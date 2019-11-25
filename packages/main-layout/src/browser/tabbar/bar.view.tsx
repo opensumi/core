@@ -11,6 +11,8 @@ import { TabbarConfig } from './renderer.view';
 import { Widget } from '@phosphor/widgets';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { IMainLayoutService } from '../../common';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { AccordionService, AccordionServiceFactory } from '../accordion/accordion.service';
 
 export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,
@@ -18,13 +20,6 @@ export const TabbarViewBase: React.FC<{
   hasToolBar?: boolean;
   barSize?: number;
 }> = observer(({ TabView, forbidCollapse, hasToolBar, barSize = 50 }) => {
-  const measureRef = React.useCallback((node) => {
-    if (node) {
-      const toolbar = injector.get(TabBarToolbar, [side]);
-      tabbarService.registerToolbar(toolbar);
-      Widget.attach(toolbar, node);
-    }
-  }, []);
   const { setSize, getSize } = React.useContext(PanelContext);
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -60,7 +55,6 @@ export const TabbarViewBase: React.FC<{
         <ConfigProvider value={configContext} >
           <ComponentRenderer Component={titleComponent} />
         </ConfigProvider>
-        <div className='tab-tool-bar' ref={measureRef}></div>
       </div>}
     </div>
   );
@@ -92,4 +86,20 @@ export const LeftTabbarRenderer: React.FC = () => {
   </div>);
 };
 
-export const BottomTabbarRenderer: React.FC = () => <TabbarViewBase hasToolBar={true} forbidCollapse={true} TabView={TextTabView} barSize={0} />;
+export const BottomTabbarRenderer: React.FC = observer(() => {
+  const { side } = React.useContext(TabbarConfig);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const { currentContainerId } = tabbarService;
+  const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(currentContainerId);
+  const titleMenu = currentContainerId ? accordionService.getSectionToolbarMenu(currentContainerId) : null;
+  return (
+    <div className={styles.bottom_bar_container}>
+      <TabbarViewBase hasToolBar={true} forbidCollapse={true} TabView={TextTabView} barSize={0} />
+      <div className='toolbar_container'>
+        {titleMenu && <InlineActionBar
+          menus={titleMenu}
+          seperator='navigation' />}
+      </div>
+    </div>
+  );
+});

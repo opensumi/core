@@ -18,13 +18,13 @@
     height: 100%;
     .tab-bar {
       background-color: var(--kt-panelTitle-background);
-      border-top: 1px solid var(--panel-border);
       height: 28px;
       color: var(--panelTitle-inactiveForeground);
       font-size: 12px;
       align-items: center;
       justify-content: space-between;
       z-index: 1;
+      flex: 1;
       li {
         padding: 0 10px;
         position: relative;
@@ -228,4 +228,10 @@
 }
 .bottom_tab_title {
   display: inline-block;
+}
+.bottom_bar_container {
+  display: flex;
+  flex-direction: row;
+  border-top: 1px solid var(--panel-border);
+  align-items: center;
 }

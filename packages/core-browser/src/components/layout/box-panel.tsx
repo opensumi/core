@@ -19,10 +19,10 @@ export const BoxPanel: React.FC<{
   }, []);
   return (
     <div {...restProps} className={clsx(styles['box-panel'], className)} style={{flexDirection: Layout.getFlexDirection(direction)}}>
-      {children && children.map((child) => {
+      {children && children.map((child, index) => {
         return(
           <div
-            key={child.props.id}
+            key={index}
             className={clsx(styles.wrapper)}
             style={child.props.flex ? {flex: child.props.flex} : {}}>
             {child}

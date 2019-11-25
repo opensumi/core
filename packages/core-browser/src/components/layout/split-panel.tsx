@@ -28,7 +28,6 @@ export const SplitPanel: React.FC<{
 }> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
-  const panels: {[panelId: string]: React.ReactElement<any>} = {};
   const elements: React.ReactNodeArray = [];
   const resizeDelegates: IResizeHandleDelegate[] = [];
   const eventBus = useInjectable<IEventBus>(IEventBus);
@@ -58,8 +57,6 @@ export const SplitPanel: React.FC<{
   };
 
   children.forEach((element, index) => {
-    const panelId = element.props.id;
-    panels[panelId] = element;
     if (index !== 0) {
       // FIXME window resize支持
       elements.push(
@@ -89,7 +86,7 @@ export const SplitPanel: React.FC<{
               refs.push(ele);
             }
           }}
-          key={panelId}
+          key={index}
           style={{[Layout.getSizeProperty(direction)]: ((element.props.flex !== undefined ? element.props.flex : 1) / totalFlexNum * 100) + '%'}}>
           {element}
         </div>
