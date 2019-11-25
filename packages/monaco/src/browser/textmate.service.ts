@@ -419,8 +419,8 @@ export class TextmateService extends WithEventBus {
     const initialLanguage = getEncodedLanguageId(languageId);
 
     try {
-      const grammar = await this.grammarRegistry.loadGrammarWithConfiguration(
-        scopeName, initialLanguage, configuration);
+      const grammar = (await this.grammarRegistry.loadGrammarWithConfiguration(
+        scopeName, initialLanguage, configuration))!;
       const options = configuration.tokenizerOption ? configuration.tokenizerOption : TokenizerOptionDEFAULT;
       // 要保证grammar把所有的languageID关联的语法都注册好了
       monaco.languages.setTokensProvider(languageId, createTextmateTokenizer(grammar, options));
