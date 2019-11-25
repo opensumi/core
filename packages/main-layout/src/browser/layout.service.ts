@@ -103,7 +103,7 @@ export class LayoutService extends WithEventBus {
     } else if (show === false) {
       tabbarService.currentContainerId = '';
     } else {
-      tabbarService.currentContainerId = tabbarService.currentContainerId ? '' : tabbarService.previousContainerId;
+      tabbarService.currentContainerId = tabbarService.currentContainerId ? '' : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
     }
   }
 
