@@ -13,9 +13,7 @@ export class CSSStyleService implements ICSSStyleService {
   }
 
   addClass(classname: string, style: CSSStyleDeclaration) {
-    const _style = document.createElement('div').style;
-    Object.assign(_style, style);
-    const ruleContent = [`.${classname} {`, _style.cssText, '}'].join(' ');
+    const ruleContent = [`.${classname} {`, createStyleCssText(style as any), '}'].join(' ');
     this.styleSheet.insertRule(ruleContent);
     return {
       dispose: () => {
@@ -31,4 +29,19 @@ export class CSSStyleService implements ICSSStyleService {
       }
     }
   }
+}
+
+function createStyleCssText(styles: {[key: string]: string | undefined}): string {
+  const texts: string[] = [];
+  Object.keys(styles).forEach((key) => {
+    if (styles[key]) {
+      texts.push(toDashSplitForm(key) + ':' + styles[key]);
+    }
+  });
+
+  return texts.join(';');
+}
+
+function toDashSplitForm(key: string) {
+  return key.trim().split(/(?=[A-Z])/).join('-').toLowerCase();
 }

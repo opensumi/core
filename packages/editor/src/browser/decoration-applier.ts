@@ -83,6 +83,9 @@ export class MonacoEditorDecorationApplier extends Disposable {
       this.decorations.get(key)!.dispose();
       this.decorations.delete(key);
     }
+    if (oldDecorations.length === 0 && decorations.length === 0) {
+      return;
+    }
     const newDecoration = this.editor.deltaDecorations(oldDecorations, decorations);
     this.decorations.set(key, {
       decorations: newDecoration,
@@ -170,6 +173,8 @@ function assignModelDecorationOptions(target: monaco.editor.IModelDecorationOpti
   if (property.rangeBehavior) {
     target.stickiness = property.rangeBehavior as number;
   }
+
+  target.inlineClassNameAffectsLetterSpacing = true;
 
 }
 
