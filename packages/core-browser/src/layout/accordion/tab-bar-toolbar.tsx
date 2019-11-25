@@ -8,7 +8,7 @@ import { Message } from '@phosphor/messaging';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { ContextMenuRenderer } from '../../menu';
 import { getIcon } from '../../icon';
-import { MenuRegistry } from '../../menu/next';
+import { IMenuRegistry } from '../../menu/next';
 
 @Injectable()
 class LabelParser {
@@ -277,14 +277,14 @@ export interface TabBarToolbarContribution {
 
 @Injectable()
 export class ToolbarRegistry {
-  @Autowired(MenuRegistry)
-  menuRegistry: MenuRegistry;
+  @Autowired(IMenuRegistry)
+  menuRegistry: IMenuRegistry;
 
   registerItem(item: TabBarToolbarItem): IDisposable {
     return this.menuRegistry.registerMenuItem(`container/${item.viewId}`, {
       command: item.command,
       when: item.when,
-      group: item.group,
+      group: item.group || 'navigation',
     });
   }
 }

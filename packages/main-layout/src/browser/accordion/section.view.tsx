@@ -142,9 +142,11 @@ export const AccordionSection = (
           <i className={cls(getIcon('right'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
           <h1 className={styles.section_label}>{header}</h1>
         </div>
-        <InlineActionBar
-          menus={titleMenu}
-          seperator='navigation' />
+        <div className={styles.actions_wrap}>
+          <InlineActionBar
+            menus={titleMenu}
+            seperator='navigation' />
+        </div>
       </div>}
       { getActionToolBar(actions) }
       <div

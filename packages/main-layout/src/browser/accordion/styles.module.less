@@ -19,10 +19,8 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  &:hover {
-    & > .kt_panel_toolbar {
-      display: block;
-    }
+  &:hover .actions_wrap {
+    display: block;
   }
 }
 
@@ -31,11 +29,11 @@
   line-height: 22px;
   background-color: var(--sideBarSectionHeader-background);
   font-size: 12px;
-  font-weight: 700;
   text-transform: uppercase;
   display: flex;
   cursor: pointer;
   color: var(--sideBarSectionHeader-foreground);
+  justify-content: space-between;
   &:focus {
     outline-color: rgba(14, 99, 156, 0.8);
     outline-width: 1px;
@@ -43,10 +41,11 @@
     outline-offset: -1px;
     opacity: 1!important;
   }
-  >div {
-    display: flex;
-    flex-direction: row;
-  }
+}
+
+.label_wrap {
+  display: flex;
+  flex-direction: row;
 }
 
 .kt_split_panel_body {
@@ -114,4 +113,9 @@ i.arrow_icon {
   &:not(.kt_mod_collapsed) {
     transform: rotate(90deg);
   }
+}
+
+.actions_wrap {
+  margin-right: 8px;
+  display: none;
 }

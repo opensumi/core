@@ -333,13 +333,13 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     registry.registerItem({
       id: searchClean.id,
       command: searchClean.id,
-      viewId: 'ide-search',
+      viewId: SEARCH_CONTAINER_ID,
       tooltip: localize('search.ClearSearchResultsAction.label'),
     });
     registry.registerItem({
       id: searchRefresh.id,
       command: searchRefresh.id,
-      viewId: 'ide-search',
+      viewId: SEARCH_CONTAINER_ID,
       tooltip: localize('search.RefreshAction.label'),
     });
   }
