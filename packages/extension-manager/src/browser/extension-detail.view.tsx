@@ -69,6 +69,16 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     fetchData();
   }, [extensionId]);
 
+  React.useEffect(() => {
+    // 说明被卸载了
+    if (!rawExtension && currentExtension) {
+      setCurrentExtension({
+        ...currentExtension,
+        installed: false,
+      });
+    }
+  }, [rawExtension, currentExtension]);
+
   /**
    * 禁用/启用工作区间
    * @param scope
