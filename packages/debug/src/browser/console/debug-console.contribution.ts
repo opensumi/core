@@ -31,7 +31,7 @@ export class DebugConsoleContribution implements ComponentContribution, MainLayo
   }
 
   onDidUseConfig() {
-    const handler = this.layoutService.getTabbarHandler('debug-console-container');
+    const handler = this.layoutService.getTabbarHandler(DebugContribution.DEBUG_CONSOLE_CONTAINER_ID);
     if (handler) {
       handler.setTitleComponent(DebugConsoleToolbarView);
     }
