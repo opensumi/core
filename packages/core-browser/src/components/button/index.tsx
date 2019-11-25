@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 
 import Icon from '../icon';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 
 import './styles.less';
 

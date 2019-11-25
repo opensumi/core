@@ -52,7 +52,7 @@ import {
 } from '@ali/ide-core-browser';
 import {
   getIcon,
-} from '@ali/ide-core-browser/lib/icon';
+} from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
@@ -234,7 +234,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
-    const extensionMetadata = await this.extensionNodeService.getExtension(path, getPreferenceLanguageId());
+    const extensionMetadata = await this.extensionNodeService.getExtension(path, getPreferenceLanguageId(), {});
     if (extensionMetadata) {
       const extension = this.injector.get(Extension, [
         extensionMetadata,
@@ -593,6 +593,10 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public setExtensionLogThread() {
     createExtensionLogFactory(this.protocol, this.injector);
+
+    if (this.workerProtocol) {
+      createExtensionLogFactory(this.workerProtocol, this.injector);
+    }
   }
 
   public async activeExtension(extension: IExtension) {
@@ -787,7 +791,7 @@ export class ExtensionServiceImpl implements ExtensionService {
             this.toolBarViewService.registerToolBarElement({
               type: 'component',
               component: component.panel as React.FunctionComponent | React.ComponentClass,
-              position: ToolBarPosition.LEFT,
+              position: browserExported[pos].position || ToolBarPosition.LEFT,
               initialProps: {
                 kaitianExtendService: extendService,
                 kaitianExtendSet: extendProtocol,

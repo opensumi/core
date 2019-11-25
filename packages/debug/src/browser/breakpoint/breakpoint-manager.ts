@@ -130,7 +130,7 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     for (const uri in data!.breakpoints) {
       this.setBreakpoints(new URI(uri), data!.breakpoints[uri]);
     }
-    this.exceptionFilterValue = data!.exceptionsBreakpoints;
+    this.exceptionFilterValue = data!.exceptionsBreakpoints || {};
   }
 
   save(): void {
@@ -154,9 +154,10 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
   setExceptionBreakpoints(filters: DebugProtocol.ExceptionBreakpointsFilter[]) {
     this.defaultExceptionFilter = filters;
     for (const item of filters) {
-      if (!isUndefined(this.exceptionFilterValue[item.filter])) {
+      if (!isUndefined(this.exceptionFilterValue)) {
         this.updateExceptionBreakpoints(item.filter, this.exceptionFilterValue[item.filter]);
-        break;
+      } else {
+        this.updateExceptionBreakpoints(item.filter, item.default || false);
       }
     }
   }

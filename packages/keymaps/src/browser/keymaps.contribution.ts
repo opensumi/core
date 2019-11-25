@@ -21,7 +21,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { KeymapsView } from './keymaps.view';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';

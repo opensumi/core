@@ -1,4 +1,4 @@
-import { CommandRegistry, CommandService, Command } from '@ali/ide-core-common';
+import { CommandRegistry, CommandService, Command, isOSX } from '@ali/ide-core-common';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -17,7 +17,7 @@ export interface IMenu extends IDisposable {
   getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]>;
 }
 
-export abstract class MenuService {
+export abstract class AbstractMenuService {
   abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
@@ -90,7 +90,7 @@ export class MenuItemNode extends MenuNode {
       const keybindings = this.keybindings.getKeybindingsForCommand(commandId);
       if (keybindings.length > 0) {
         const isKeyCombination = Array.isArray(keybindings[0].resolved) && keybindings[0].resolved.length > 1;
-        let keybinding = this.keybindings.acceleratorFor(keybindings[0], '').join(' ');
+        let keybinding = this.keybindings.acceleratorFor(keybindings[0], isOSX ? '' : '+').join(' ');
         if (isKeyCombination) {
           keybinding = `[${keybinding}]`;
         }
@@ -106,7 +106,7 @@ export class MenuItemNode extends MenuNode {
 }
 
 @Injectable()
-export class MenuServiceImpl implements MenuService {
+export class MenuServiceImpl implements AbstractMenuService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -234,7 +234,8 @@ class Menu extends Disposable implements IMenu {
               continue;
             }
 
-            const commandEnablement = Boolean(command && this.commandRegistry.isEnabled(menuCommand.id, ...args));
+            // 默认为 true, command 存在则按照 command#isEnabled 的结果
+            const commandEnablement = command ? this.commandRegistry.isEnabled(menuCommand.id, ...args) : true;
             const commandToggle = Boolean(command && this.commandRegistry.isToggled(menuCommand.id, ...args));
 
             const disabled = !commandEnablement;
@@ -270,7 +271,6 @@ class Menu extends Disposable implements IMenu {
   }
 }
 
-// 这里的 sort 还是有点问题的，因为 i18n 的获取是 getMenuNodes 里取的
 function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
   const aGroup = a.group;
   const bGroup = b.group;

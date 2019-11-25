@@ -15,7 +15,7 @@ import { ViewContainerLayout } from './accordion.layout';
 import { find } from '@phosphor/algorithm';
 import { Message } from '@phosphor/messaging';
 import { ViewContainerRegistry } from '../view-container.registry';
-import { IMenuRegistry, MenuService, ICtxMenuRenderer, IMenu, generateCtxMenu } from '../../menu/next';
+import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, IMenu, generateCtxMenu } from '../../menu/next';
 
 @Injectable({ multiple: true })
 export class AccordionWidget extends Widget {
@@ -43,8 +43,8 @@ export class AccordionWidget extends Widget {
   @Autowired(IMenuRegistry)
   menuRegistry: IMenuRegistry;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
@@ -98,7 +98,6 @@ export class AccordionWidget extends Widget {
     const commandId = `view-container.hide.${this.containerId}`;
     this.commandRegistry.registerCommand({
       id: commandId,
-      label: localize('layout.view.hide', '隐藏'),
     }, {
       execute: (x, y) => {
         const section = this.findSectionForAnchor({x, y});
@@ -107,7 +106,10 @@ export class AccordionWidget extends Widget {
       },
     });
     this.menuRegistry.registerMenuItem(this.contextMenuPath, {
-      command: commandId,
+      command: {
+        id: commandId,
+        label: localize('layout.view.hide', '隐藏'),
+      },
       group: '0_global',
     });
   }

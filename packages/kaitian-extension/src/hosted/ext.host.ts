@@ -73,7 +73,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return extension.packageJSON.name;
     }));
     */
-    this.extentionsActivator = new ExtensionsActivator();
+    this.extentionsActivator = new ExtensionsActivator(this.logger);
     this.defineAPI();
   }
 
@@ -212,13 +212,17 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     let extensionModule: any = {};
 
     if (extension.packageJSON.main) {
+      const startLoadTime = Date.now();
       extensionModule = getNodeRequire()(modulePath);
+      this.logger.log(`extension,load,${extension.extensionId},${Date.now() - startLoadTime}ms`);
 
       if (extensionModule.activate) {
         this.logger.debug(`try activate ${extension.name}`);
         // FIXME: 考虑在 Context 这里直接注入服务注册的能力
         try {
+          const startActivateTime = Date.now();
           const extensionExports = await extensionModule.activate(context) || extensionModule;
+          this.logger.log(`extension,activate,${extension.extensionId},${Date.now() - startActivateTime}ms`);
           exportsData = extensionExports;
 
         } catch (e) {
@@ -237,8 +241,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           const extendModuleExportsData = await extendModule.activate(context);
           extendExports = extendModuleExportsData;
         } catch (e) {
-          console.log('activateExtension extension.extendConfig error ');
-          console.log(e);
+          this.logger.log('activateExtension extension.extendConfig error ');
+          this.logger.log(e);
           getLogger().error(e);
         }
       }
@@ -306,7 +310,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     const extensionId = extension.id;
     const registerExtendFn = (exportsData) => {
-      console.log(exportsData);
       return this.registerExtendModuleService(exportsData, extension);
     };
 

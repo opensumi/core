@@ -228,6 +228,13 @@ export namespace QuickOpenOptions {
     * 如果为 true，则输入内容会隐藏
     */
     readonly password: boolean;
+
+    /**
+     * 如果没有高亮也显示 item
+     */
+    readonly showItemsWithoutHighlight: boolean;
+
+    selectIndex(lookFor: string): number;
   }
   export const defaultOptions: Resolved = Object.freeze({
     prefix: '',
@@ -240,6 +247,8 @@ export namespace QuickOpenOptions {
     skipPrefix: 0,
     ignoreFocusOut: false,
     password: false,
+    showItemsWithoutHighlight: false,
+    selectIndex: () => -1,
   });
   export function resolve(options: QuickOpenOptions = {}, source: Resolved = defaultOptions): Resolved {
     return Object.assign({}, source, options);

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './panel.module.less';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 
 export interface IExplorerAction {
   iconClass: string;

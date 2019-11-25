@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, MaybePromise, DataUri, addElement, IDisposable, LRUMap } from '@ali/ide-core-common';
 import classnames from 'classnames';
-import { getIcon } from '../icon';
+import { getIcon } from '../style/icon/icon';
 
 export interface ILabelProvider {
 

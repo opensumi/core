@@ -1,5 +1,5 @@
 // menu id 枚举值列表
-export const enum MenuId {
+export enum MenuId {
   ActivityBarContext = 'activity/bar/context',
   CommandPalette = 'command/palette',
   DebugBreakpointsContext = 'debug/breakpoints/context',

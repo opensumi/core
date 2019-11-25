@@ -14,7 +14,7 @@ import { SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, IDirt
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 
@@ -118,7 +118,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       title: localize('scm.title'),
       priority: 8,
       containerId: scmContainerId,
-      activateKeyBinding: 'ctrl+shift+g',
+      activateKeyBinding: 'cmd+shift+g',
     });
   }
 }

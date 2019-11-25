@@ -1,11 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, Event, Emitter } from '@ali/ide-core-browser';
-import { observable } from 'mobx';
-import { AbstractMenubarService, IMenubarItem, IMenuRegistry, MenuNode, generateCtxMenu, IMenu, MenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { Disposable } from '@ali/ide-core-browser';
+import { observable, action } from 'mobx';
+import { AbstractMenubarService, IExtendMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
+import debounce = require('lodash.debounce');
 
 export abstract class AbstractMenubarStore extends Disposable {
-  menubarItems: IMenubarItem[];
-  abstract getMenubarItem(menuId: string): MenuNode[];
+  menubarItems: IExtendMenubarItem[];
+  abstract handleMenubarClick(menuId: string): void;
 }
 
 @Injectable()
@@ -14,33 +15,45 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
   private readonly menubarService: AbstractMenubarService;
 
   @observable
-  public menubarItems = observable.array<IMenubarItem>([]);
+  public menubarItems = observable.array<IExtendMenubarItem>([]);
+
+  @observable
+  public menuItems = observable.map<string, MenuNode[]>();
 
   constructor() {
     super();
 
-    this.generateMenubarItems();
-    this.registerDispose(this.menubarService.onDidMenuBarChange(this.handleMenubarChanged, this, this.disposables));
+    this.build();
+    this.registerDispose(this.menubarService.onDidMenubarChange(this.handleMenubarChanged, this, this.disposables));
+    this.registerDispose(this.menubarService.onDidMenuChange(this.handleMenuChanged, this, this.disposables));
   }
 
-  private generateMenubarItems() {
+  @action.bound
+  private updateMenuNodes(menuId: string) {
+    this.menubarService.rebuildMenuNodes(menuId);
+    const menuItems = this.menubarService.getMenuNodes(menuId) || [];
+    this.menuItems.set(menuId, menuItems);
+  }
+
+  private build() {
     const menubarItems = this.menubarService.getMenubarItems();
     this.menubarItems.splice(0, this.menubarItems.length, ...menubarItems);
+    menubarItems.forEach(({ id: menuId }) => {
+      this.updateMenuNodes(menuId);
+    });
   }
 
-  private handleMenubarChanged(menuId: string) {
-    const newMenubarItem = this.menubarService.getMenubarItem(menuId);
-    if (newMenubarItem) {
-      const pos = this.menubarItems.findIndex((n) => n.id === menuId);
-      if (pos > -1) {
-        this.menubarItems.splice(pos, 1, newMenubarItem);
-      } else {
-        this.menubarItems.push(newMenubarItem);
-      }
-    }
+  private handleMenuChanged(menuId: string) {
+    this.updateMenuNodes(menuId);
   }
 
-  public getMenubarItem(menuId: string): MenuNode[] {
-    return this.menubarService.getNewMenuItem(menuId) || [];
+  private handleMenubarChanged() {
+    const menubarItems = this.menubarService.getMenubarItems();
+    this.menubarItems.replace(menubarItems);
   }
+
+  @action.bound
+  public handleMenubarClick: (menuId: string) => void = debounce((menuId: string) => {
+    this.updateMenuNodes(menuId);
+  }, 500, { leading: true, trailing: true });
 }

@@ -5,6 +5,7 @@ import {
 import { IExtension, IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
 import { createAPIFactory as createKaiTianAPIFactory } from './api/worker/worker.host.api.impl';
 import { MainThreadAPIIdentifier } from '../common/vscode';
+import { ExtensionLogger } from './extension-log';
 
 function initRPCProtocol() {
   const onMessageEmitter = new Emitter<string>();
@@ -35,12 +36,13 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   private kaitianAPIFactory: any;
   private kaitianExtAPIImpl: Map<string, any> = new Map();
+  private logger: ExtensionLogger;
 
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
 
     this.kaitianAPIFactory = createKaiTianAPIFactory(this.rpcProtocol, this, 'worker');
-
+    this.logger = new ExtensionLogger(rpcProtocol);
   }
 
   public init() {
@@ -52,7 +54,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.extensions.forEach((extension) => {
       extension.workerVarId = extension.id.replace(/\./g, '_').replace(/-/g, '_');
     });
-    console.log('worker $initExtensions', this.extensions.map((extension) => {
+    this.logger.verbose('worker $initExtensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
   }
@@ -100,7 +102,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
       }
     }
 
-    console.log('extension extend service worker', extension.id, 'service', service);
+    // console.log('extension extend service worker', extension.id, 'service', service);
     this.rpcProtocol.set({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`} as ProxyIdentifier<any>, service);
   }
 
@@ -124,11 +126,11 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     const extension = this.extensions.find((extension) => extension.id === id );
 
     if (!extension) {
-      console.error(`extension worker not found ${id} `);
+      this.logger.error(`extension worker not found ${id} `);
       return;
     }
 
-    console.log(`extension worker start activate ${id} ${extension.workerScriptPath}`);
+    this.logger.verbose(`extension worker start activate ${id} ${extension.workerScriptPath}`);
 
     const extendConfig = extension.extendConfig;
     if (extendConfig.worker && extendConfig.worker.main && extension.workerScriptPath) {
@@ -142,7 +144,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
         self[`kaitian_extend_browser_worker_${extension.workerVarId}`].activate(workerExtContext);
       }
     } else {
-      console.log('extension worker activate error', extension);
+      this.logger.log('extension worker activate error', extension);
     }
   }
 
@@ -166,8 +168,8 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
 
             this.kaitianExtAPIImpl.set(extensionId, kaitianAPIImpl);
           } catch (e) {
-            console.log('worker error');
-            console.log(e);
+            this.logger.log('worker error');
+            this.logger.log(e);
           }
         }
 

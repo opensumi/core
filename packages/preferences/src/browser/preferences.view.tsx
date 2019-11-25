@@ -12,7 +12,7 @@ import throttle = require('lodash.throttle');
 import debounce = require('lodash.debounce');
 import { IWorkspaceService } from '@ali/ide-workspace';
 import * as cls from 'classnames';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { Input, CheckBox } from '@ali/ide-core-browser/lib/components';
 import { Select } from '@ali/ide-core-browser/lib/components/select';
 import { toPreferenceReadableName, toNormalCase } from '../common';
@@ -365,12 +365,14 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
           <ul className={styles.arr_list}>
             {items}
           </ul>
-          <Input
-            type='text'
-            className={styles.text_control}
-            ref={(el) => { editEl = el; }}
-          />
-          <Input className={styles.add_button} onClick={addItem} type='button' value={localize('preference.array.additem', '添加')} />
+          <div>
+            <Input
+              type='text'
+              className={styles.text_control}
+              ref={(el) => { editEl = el; }}
+            />
+            <Input className={styles.add_button} onClick={addItem} type='button' value={localize('preference.array.additem', '添加')} />
+          </div>
         </div>
       </div>
     );

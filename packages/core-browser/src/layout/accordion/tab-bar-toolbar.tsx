@@ -7,7 +7,7 @@ import { Widget } from '@phosphor/widgets';
 import { Message } from '@phosphor/messaging';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { ContextMenuRenderer } from '../../menu';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 import { IMenuRegistry } from '../../menu/next';
 
 @Injectable()

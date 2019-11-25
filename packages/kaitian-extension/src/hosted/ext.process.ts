@@ -6,15 +6,15 @@ import {
   initRPCService,
   RPCProtocol,
 } from '@ali/ide-connection';
+import { ExtensionLogger } from './extension-log';
 
 const argv = require('yargs').argv;
+let logger: ExtensionLogger;
 
 async function initRPCProtocol(): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();
   const {getRPCService} = initRPCService(extCenter);
   const extConnection = net.createConnection(argv['kt-process-sockpath']);
-
-  console.log('process extConnection path', argv['kt-process-sockpath']);
 
   extCenter.setConnection(createSocketConnection(extConnection));
 
@@ -31,6 +31,9 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     send,
   });
 
+  logger = new ExtensionLogger(extProtocol);
+  logger.log('process extConnection path', argv['kt-process-sockpath']);
+
   return extProtocol;
 }
 
@@ -46,9 +49,9 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     }
 
     const preload = new Preload(protocol);
-    console.log('preload.init start');
+    logger!.log('preload.init start');
     await preload.init();
-    console.log('preload.init end');
+    logger!.log('preload.init end');
 
     if (process && process.send) {
       const send = process.send;
@@ -56,9 +59,9 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
 
       process.on('message', async (msg) => {
         if (msg === 'close') {
-          console.log('preload.close start');
+          logger!.log('preload.close start');
           await preload.close();
-          console.log('preload.close end');
+          logger!.log('preload.close end');
           if (process && process.send) {
             process.send('finish');
           }
@@ -68,7 +71,7 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     }
 
     } catch (e) {
-      console.error(e);
+      logger!.error(e);
     }
 })();
 

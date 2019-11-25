@@ -39,6 +39,9 @@ export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
 export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.toggle',
 };
+export const IS_VISIBLE_BOTTOM_PANEL_COMMAND: Command = {
+  id: 'main-layout.bottom-panel.is-visible',
+};
 export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
@@ -159,6 +162,11 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
       execute: (show?: boolean, size?: number) => {
         this.mainLayoutService.toggleSlot(SlotLocation.bottom, show, size);
+      },
+    });
+    commands.registerCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND, {
+      execute: () => {
+        return this.mainLayoutService.isVisible(SlotLocation.bottom);
       },
     });
     commands.registerCommand(SET_PANEL_SIZE_COMMAND, {

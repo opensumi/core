@@ -5,23 +5,21 @@
   align-items: center;
   padding: 0 10px;
   height: 100%;
+  border-bottom: 1px solid var(--kt-menubar-border)
 }
 
 .menubar {
-  padding: 0 8px;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 8px;
 
   &:hover {
     color: var(--menubar-selectionForeground);
     background-color: var(--menubar-selectionBackground);
     border-left: 1px solid var(--menubar-selectionBorder);
     border-right: 1px solid var(--menubar-selectionBorder);
-  }
-
-  &-title {
-    display: inline-block;
-    vertical-align: middle;
-    position: relative;
   }
 
   &-drop {

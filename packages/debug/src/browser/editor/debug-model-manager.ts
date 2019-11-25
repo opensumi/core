@@ -1,10 +1,9 @@
 import { Disposable, URI, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorCollectionService, ICodeEditor } from '@ali/ide-editor';
-import { DebugModel, DebugModelFactory } from './debug-model';
 import { DebugSessionManager } from '../debug-session-manager';
-import { IDebugSessionManager } from '../../common';
-import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
+import { IDebugSessionManager, DebugModelFactory, IDebugModel } from '../../common';
+import { BreakpointManager } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 
 export enum DebugModelSupportedEventType {
@@ -15,7 +14,7 @@ export enum DebugModelSupportedEventType {
 
 @Injectable()
 export class DebugModelManager extends Disposable {
-  private models: Map<string, DebugModel[]>;
+  private models: Map<string, IDebugModel[]>;
   protected readonly toDispose = new DisposableCollection();
 
   @Autowired(EditorCollectionService)

@@ -11,4 +11,5 @@ export * from './list';
 export * from './button';
 export * from './resize/resize';
 export * from './layout';
+export * from './variables-tree';
 export { default as Icon } from './icon';

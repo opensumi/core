@@ -6,9 +6,11 @@ import 'antd/lib/menu/style/index.less';
 
 import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator, SubmenuItemNode } from '../../menu/next';
 import Icon from '../icon';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 import { useInjectable } from '../../react-hooks';
 import { useMenus } from '../../utils';
+
+import placements from './placements';
 
 import * as styles from './styles.module.less';
 
@@ -57,18 +59,25 @@ export const MenuActionList: React.FC<{
     return null;
   }
 
-  const handleClick = React.useCallback(({ key }: ClickParam) => {
+  const handleClick = React.useCallback((params: ClickParam) => {
+    const { key, item } = params;
     // do nothing when click separator node
-    if (key === SeparatorMenuItemNode.ID) {
+    if ([SeparatorMenuItemNode.ID, SubmenuItemNode.ID].includes(key)) {
       return;
     }
 
-    const menuItem = data.find((n) => n.id === key);
-    if (menuItem && menuItem.execute) {
+    // hacky: read MenuNode from MenuItem.children.props
+    const menuItem = item.props.children.props.data as MenuNode;
+    if (!menuItem) {
+      return;
+    }
+
+    if (typeof menuItem.execute === 'function') {
       menuItem.execute(context);
-      if (typeof onClick === 'function') {
-        onClick(menuItem);
-      }
+    }
+
+    if (typeof onClick === 'function') {
+      onClick(menuItem);
     }
   }, [ data, context ]);
 
@@ -82,8 +91,9 @@ export const MenuActionList: React.FC<{
         return (
           <Menu.SubMenu
             key={`${menuNode.id}-${index}`}
+            popupClassName='kt-menu'
             title={<MenuAction hasSubmenu data={menuNode} />}>
-            {recursiveRender(menuNode.items)}
+            {recursiveRender(menuNode.children)}
           </Menu.SubMenu>
         );
       }
@@ -98,7 +108,10 @@ export const MenuActionList: React.FC<{
 
   return (
     <Menu
+      className='kt-menu'
+      selectable={false}
       openTransitionName=''
+      {...{builtinPlacements: placements} as any}
       onClick={handleClick}>
       {recursiveRender(data)}
     </Menu>

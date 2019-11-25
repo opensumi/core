@@ -4,7 +4,7 @@ import * as cls from 'classnames';
 import { TreeViewAction, isTreeViewActionComponent, isUndefined, isString } from '@ali/ide-core-common';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 import Icon from '../icon';
 import Badge from '../badge';
 import { ValidateInput, InputSelection } from '../input';
@@ -15,6 +15,7 @@ export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
   leftPadding?: number;
+  defaultLeftPadding?: number;
   onSelect?: any;
   onTwistieClick?: any;
   onContextMenu?: any;
@@ -112,6 +113,7 @@ export const TreeContainerNode = (
   {
     node,
     leftPadding,
+    defaultLeftPadding,
     onSelect,
     onTwistieClick,
     onContextMenu,
@@ -134,6 +136,7 @@ export const TreeContainerNode = (
     validate,
   }: TreeNodeProps,
 ) => {
+  defaultLeftPadding = typeof defaultLeftPadding === 'number' ? defaultLeftPadding : 10;
   const selectHandler = (event: React.MouseEvent) => {
     event.stopPropagation();
     event.preventDefault();
@@ -237,7 +240,7 @@ export const TreeContainerNode = (
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: `${10 + (node.depth || 0) * (leftPadding || 0)}px`,
+    paddingLeft: `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px`,
     ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
@@ -290,7 +293,7 @@ export const TreeContainerNode = (
 
   };
 
-  const renderIcon = (node: TreeNode) => {
+  const renderIcon = (node: TreeNode | ExpandableTreeNode) => {
     const treeNodeLeftActions: TreeViewAction[] = [];
     if (!ExpandableTreeNode.is(node)) {
       for (const action of actions) {
@@ -303,7 +306,7 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.kt_file_icon)} style={node.iconStyle}>
+    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight}}>
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
     </div>;
   };
@@ -361,7 +364,7 @@ export const TreeContainerNode = (
         };
       }
       return <div
-        className={cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, actualValidate(value) && styles.overflow_visible)}
+        className={cls(styles.kt_treenode_segment, styles.kt_treenode_inputbox, actualValidate(value) && styles.overflow_visible)}
       >
         <div className={styles.kt_input_wrapper}>
           <ValidateInput
@@ -383,7 +386,7 @@ export const TreeContainerNode = (
       return <Template />;
     } else {
       return <div
-        className={cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass)}
+        className={cls(styles.kt_treenode_segment, styles.kt_treenode_displayname, node.labelClass)}
       >
         {node.beforeLabel}
         {renderWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.name, replace)}
@@ -438,7 +441,7 @@ export const TreeContainerNode = (
   const titleStyle = {
     height: itemLineHeight,
     lineHeight: `${itemLineHeight}px`,
-    paddingLeft: ExpandableTreeNode.is(node) ? `${10 + (leftPadding || 0)}px` : 0,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${defaultLeftPadding + 8 + (leftPadding || 0)}px` : 0,
   } as React.CSSProperties;
 
   const renderTitle = (node: TreeNode) => {
@@ -478,8 +481,10 @@ export const TreeContainerNode = (
         <div className={cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')} style={itemStyle}>
           {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
           {renderIcon(node)}
-          {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
-          {renderDescription(node, replace)}
+          <div className={isString(node.name) ? styles.kt_treenode_overflow_wrap : styles.kt_treenode_flex_wrap}>
+            {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
+            {renderDescription(node, replace)}
+          </div>
           {renderStatusTail(node, node.actions || actions, commandActuator)}
         </div>
       </div>

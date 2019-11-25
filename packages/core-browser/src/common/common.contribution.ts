@@ -66,18 +66,18 @@ export class ClientCommonContribution implements CommandContribution, Preference
   registerNextMenus(menus: IMenuRegistry): void {
     // 注册 Menubar
     if (isElectronRenderer()) {
-      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'Kaitian Electron') });
+      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'Kaitian Electron'), order: 0});
     }
-    menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file') });
-    menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit') });
-    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection') });
-    menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view') });
-    menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help') });
+    menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file'), order: 1 });
+    menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit'), order: 2 });
+    menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection'), order: 3 });
+    menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view'), order: 4 });
+    menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
 
     /* ---- test for submenu ---- */
     // const testSubmenuId = 'greatmenu';
     // menus.registerMenuItem(MenuId.MenubarFileMenu, {
-    //   label: '屌炸了',
+    //   label: 'kaitian submenu',
     //   submenu: testSubmenuId,
     // });
 
@@ -89,15 +89,28 @@ export class ClientCommonContribution implements CommandContribution, Preference
     //   group: '1_new',
     // }]);
 
+    // menus.registerMenuItem(testSubmenuId, {
+    //   label: 'kaitian sub_submenu',
+    //   submenu: 'sub_submenu',
+    // });
+
+    // menus.registerMenuItem('sub_submenu', {
+    //   command: FILE_COMMANDS.NEW_FILE.id,
+    //   group: '1_new',
+    // });
+
     /* ---- end for submenu ---- */
 
     // File 菜单
     menus.registerMenuItems(MenuId.MenubarFileMenu, [{
+      command: FILE_COMMANDS.OPEN_FOLDER.id,
+      group: '1_open',
+    }, {
       command: FILE_COMMANDS.NEW_FILE.id,
-      group: '1_new',
+      group: '2_new',
     }, {
       command: FILE_COMMANDS.NEW_FOLDER.id,
-      group: '1_new',
+      group: '2_new',
     }, {
       command: {
         id: EDITOR_COMMANDS.SAVE_CURRENT.id,
@@ -111,15 +124,6 @@ export class ClientCommonContribution implements CommandContribution, Preference
       },
       group: '3_save',
     }]);
-
-    const aboutItem = {
-      command: {
-        id: COMMON_COMMANDS.ABOUT_COMMAND.id,
-        label: localize('common.about'),
-      },
-      nativeRole: 'about',
-      group: '9_help',
-    };
 
     // Edit 菜单
     if (isElectronRenderer()) {
@@ -166,7 +170,6 @@ export class ClientCommonContribution implements CommandContribution, Preference
         nativeRole: 'selectAll',
         group: '2_clipboard',
       }]);
-      menus.registerMenuItem(MenuId.MenubarAppMenu, aboutItem);
     } else {
       menus.registerMenuItems(MenuId.MenubarEditMenu, [{
         command: EDITOR_COMMANDS.REDO.id,
@@ -176,7 +179,14 @@ export class ClientCommonContribution implements CommandContribution, Preference
         group: '1_undo',
       }]);
       // 帮助菜单
-      menus.registerMenuItem(MenuId.MenubarHelpMenu, aboutItem);
+      menus.registerMenuItem(MenuId.MenubarHelpMenu, {
+        command: {
+          id: COMMON_COMMANDS.ABOUT_COMMAND.id,
+          label: localize('common.about'),
+        },
+        nativeRole: 'about',
+        group: '0_about',
+      });
     }
   }
 }

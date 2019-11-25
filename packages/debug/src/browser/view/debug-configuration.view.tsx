@@ -5,7 +5,7 @@ import { useInjectable, localize } from '@ali/ide-core-browser';
 import { DebugAction } from '../components/debug-action';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
-import { DebubgToolbarView } from './debug-toolbar.view';
+import { DebugToolbarView } from './debug-toolbar.view';
 export const DebubgConfigurationView = observer(() => {
   const {
     configurationOptions,
@@ -42,17 +42,19 @@ export const DebubgConfigurationView = observer(() => {
 
   return <div>
     <div className={styles.debug_configuration_toolbar}>
-      <DebugAction color={'#62D99D'} icon={'start'} label={localize('debug.action.start')} run={ start }></DebugAction>
       <div className={cls(styles.debug_selection)}>
-        <select value={ currentValue } onChange={ setCurrentConfiguration }>
+        <select value={ currentValue } onChange={ setCurrentConfiguration } className={styles.special_radius}>
           { renderConfigurationOptions(configurationOptions) }
           <option disabled>{ addConfigurationLabel.replace(/./g, '-') }</option>
           <option value='__ADD_CONF__'>{ addConfigurationLabel }</option>
         </select>
       </div>
+      <div className={cls(styles.debug_run_action)}>
+        <DebugAction color={'#ffffff'} icon={'run-debug'} label={localize('debug.action.start')} run={ start }></DebugAction>
+      </div>
       <DebugAction icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
-      <DebugAction icon={'codelibrary-fill'} label={localize('debug.action.deubg.console')} run={openDebugConsole}></DebugAction>
+      <DebugAction icon={'codelibrary-fill'} label={localize('debug.action.debug.console')} run={openDebugConsole}></DebugAction>
     </div>
-    <DebubgToolbarView></DebubgToolbarView>
+    <DebugToolbarView></DebugToolbarView>
   </div>;
 });

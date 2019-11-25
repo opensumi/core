@@ -1,7 +1,7 @@
 import { IMainThreadConnectionService, ExtensionConnection, IExtHostConnection, ExtHostAPIIdentifier, ExtensionMessageReader, ExtensionMessageWriter } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { IRPCProtocol, WSChanneHandler } from '@ali/ide-connection';
-import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace } from '@ali/ide-core-browser';
+import { IRPCProtocol } from '@ali/ide-connection';
+import { ILoggerManagerClient, ILogServiceClient, SupportLogNamespace } from '@ali/ide-core-browser';
 
 @Injectable({multiple: true})
 export class MainThreadConnection implements IMainThreadConnectionService {
@@ -32,7 +32,7 @@ export class MainThreadConnection implements IMainThreadConnectionService {
     if (this.connections.has(id)) {
       this.connections.get(id)!.reader.readMessage(message);
     } else {
-      this.logger.warn(`找不到对应链接 ${id}`);
+      this.logger.warn(`Do not found connection ${id}`);
     }
   }
 
@@ -42,6 +42,7 @@ export class MainThreadConnection implements IMainThreadConnectionService {
    * @param id
    */
   async $createConnection(id: string): Promise<void> {
+    this.logger.log(`create connection ${id}`);
     await this.doEnsureConnection(id);
   }
   /**
@@ -49,6 +50,7 @@ export class MainThreadConnection implements IMainThreadConnectionService {
    * @param id
    */
   async $deleteConnection(id: string): Promise<void> {
+    this.logger.log(`delete connection ${id}`);
     this.connections.delete(id);
   }
 

@@ -1,5 +1,5 @@
 import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '../common';
-import { URI, IEventBus } from '@ali/ide-core-browser';
+import { URI, IEventBus, isWindows } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
@@ -279,7 +279,8 @@ export class ResourceFileEdit implements IResourceFileEdit {
       if (await fileSystemService.exists(this.oldUri.toString())) {
         // 默认recursive
         await editorService.close(this.oldUri, true);
-        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: true });
+        // electron windows下moveToTrash大量文件会导致IDE卡死，如果检测到这个情况就不使用moveToTrash
+        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldUri}));
       } else if (!options.ignoreIfNotExists) {
         throw new Error(`${this.oldUri} 不存在`);

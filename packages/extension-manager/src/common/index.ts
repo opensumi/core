@@ -132,7 +132,7 @@ export interface IExtensionManagerService extends IExtensionManager  {
   computeReloadState(extensionPath: string): Promise<boolean>;
   onDisableExtension(extensionPath: string): Promise<void>;
   onEnableExtension(extensionPath: string): Promise<void>;
-  makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string): Promise<void>;
+  makeExtensionStatus(extensionId: string, state: Partial<RawExtension>): Promise<void>;
   setRequestHeaders(requestHeaders: RequestHeaders): Promise<void>;
 }
 

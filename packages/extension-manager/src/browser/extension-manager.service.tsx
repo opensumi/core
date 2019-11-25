@@ -6,7 +6,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize } from '@ali/ide-core-browser';
 import { memoize, IDisposable, dispose, getLanguageId } from '@ali/ide-core-common';
-import { IMenu, MenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
@@ -15,6 +15,7 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 type IExtension = Writeable<IExtensionProps> & {
   enableScope: EnableScope,
   reloadRequire?: boolean;
+  installed: boolean;
 };
 
 @Injectable()
@@ -35,8 +36,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
@@ -160,15 +161,43 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @param version 指定版本
    */
   async installExtension(extension: BaseExtension, version?: string): Promise<string> {
-    this.extensionMomentState.set(extension.extensionId, {
+    const extensionId = extension.extensionId;
+    this.extensionMomentState.set(extensionId, {
       isInstalling: true,
     });
     // 1. 调用后台下载插件
     const path = await this.extensionManagerServer.installExtension(extension, version || extension.version);
-    // 2. 更新插件进程信息
-    await this.onInstallExtension(extension.extensionId, path);
+    const reloadRequire = await this.computeReloadState(path);
+
+    if (!reloadRequire) {
+      // 2. 更新插件进程信息
+      await this.onInstallExtension(extensionId, path);
+      const extensionProp = await this.extensionService.getExtensionProps(path);
+      if (extensionProp) {
+        const extension = await this.transformFromExtensionProp(extensionProp);
+        // 添加到 extensions，下次获取 rawExtension
+        runInAction(() => {
+          this.extensions.push(extension);
+        });
+      }
+    } else {
+      runInAction(() => {
+        const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+        if (extension) {
+          extension.reloadRequire = reloadRequire;
+          extension.installed = true;
+        }
+      });
+    }
     // 3. 标记为已安装
-    await this.makeExtensionStatus(true, extension.extensionId, path);
+    await this.makeExtensionStatus(extensionId, {
+      installed: true,
+      enable: true,
+      enableScope: EnableScope.GLOBAL,
+      path,
+    });
+    // 安装插件后默认为全局启用、工作区间启用
+    await this.setExtensionEnable(extensionId, true, EnableScope.GLOBAL);
     return path;
   }
 
@@ -180,8 +209,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
   async onInstallExtension(extensionId: string, path: string) {
     // 在后台去启用插件
     await this.extensionService.postChangedExtension(false, path);
-    // 安装插件后默认为全局启用、工作区间启用
-    this.setExtensionEnable(extensionId, true, EnableScope.GLOBAL);
   }
 
   /**
@@ -205,7 +232,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   async updateExtension(extension: BaseExtension, version: string): Promise<string> {
     const extensionId = extension.extensionId;
     this.extensionMomentState.set(extensionId, {
-      isInstalling: true,
+      isUpdating: true,
     });
     const extensionPath =  await this.extensionManagerServer.updateExtension(extension, version);
     const reloadRequire = await this.computeReloadState(extension.path);
@@ -234,39 +261,26 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return extension.extensionId === extensionId || extension.id === extensionId;
   }
 
-  @action
-  async makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string) {
-    this.searchMarketplaceResults = this.searchMarketplaceResults.map((r) => this.equalExtensionId(r, extensionId) ? {
-      ...r,
-      installed,
-      enable: installed,
-      path: extensionPath,
-      } : r);
-    this.hotExtensions = this.hotExtensions.map((r) => this.equalExtensionId(r, extensionId) ? {
-      ...r,
-      installed,
-      enable: installed,
-      path: extensionPath,
-      } : r);
-    const rawExt = this.searchMarketplaceResults.find((r) => this.equalExtensionId(r, extensionId))
-      || this.hotExtensions.find((r) => this.equalExtensionId(r, extensionId))
-      || this.searchInstalledResults.find((r) => this.equalExtensionId(r, extensionId));
+  private changeResultsState(results: RawExtension[], extensionId: string, state: Partial<RawExtension>) {
+    return results.map((result) => {
+      return this.equalExtensionId(result, extensionId) ? {
+        ...result,
+        ...state,
+      } : result;
+    });
+  }
 
-    if (rawExt && installed) {
-      const extensionProp = await this.extensionService.getExtensionProps(extensionPath);
-      if (extensionProp) {
-        const extension = await this.transformFromExtensionProp(extensionProp);
-        // 添加到 extensions，下次获取 rawExtension
-        runInAction(() => {
-          this.extensions.push(extension);
-          this.extensionMomentState.set(extension.extensionId, {
-            isInstalling: false,
-            isUpdating: false,
-            isUnInstalling: false,
-          });
-        });
-      }
-    }
+  @action
+  async makeExtensionStatus(extensionId: string, state: Partial<RawExtension>) {
+    this.searchMarketplaceResults = this.changeResultsState(this.searchMarketplaceResults, extensionId, state);
+    this.hotExtensions = this.changeResultsState(this.hotExtensions, extensionId, state);
+    this.searchInstalledResults = this.changeResultsState(this.searchInstalledResults, extensionId, state);
+
+    this.extensionMomentState.set(extensionId, {
+      isInstalling: false,
+      isUpdating: false,
+      isUnInstalling: false,
+    });
   }
 
   /**
@@ -280,12 +294,14 @@ export class ExtensionManagerService implements IExtensionManagerService {
       return await Promise.all(extensionProps.map(async (extension) => {
         return {
           ...extension,
+          installed: true,
           enableScope: await this.getEnableScope(extension.extensionId),
         };
       }));
     } else {
       return {
         ...extensionProps,
+        installed: true,
         enableScope: await this.getEnableScope(extensionProps.extensionId),
       };
     }
@@ -361,7 +377,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         description,
         // 说明加载的是新规范的插件，则用插件市场 publisher，否则用 packageJSON 的 publisher
         publisher: name ? publisher : extension.packageJSON.publisher,
-        installed: true,
+        installed: extension.installed,
         icon: this.getIconFromExtension(extension),
         path: extension.realPath,
         enable: extension.isUseEnable,
@@ -383,23 +399,30 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @action
   async toggleActiveExtension(extension: BaseExtension, enable: boolean, scope: EnableScope) {
     const extensionId = extension.extensionId;
-    await this.setExtensionEnable(extensionId, enable, scope);
-    if (!enable) {
-      await this.onDisableExtension(extension.path);
-    } else {
-      await this.onEnableExtension(extension.path);
-    }
     const reloadRequire = await this.computeReloadState(extension.path);
+    await this.setExtensionEnable(extensionId, enable, scope);
+    // 如果需要重启，后续操作不进行启用、禁用
+    if (!reloadRequire) {
+      if (!enable) {
+        await this.onDisableExtension(extension.path);
+      } else {
+        await this.onEnableExtension(extension.path);
+      }
+    }
     // 更新插件状态
     runInAction(() => {
       const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
       if (extension) {
-        if (!reloadRequire) {
-          extension.isUseEnable = enable;
-        }
+        extension.isUseEnable = enable;
         extension.reloadRequire = reloadRequire;
         extension.enableScope = scope;
       }
+    });
+    // 在搜索结果面板也更新结果
+    await this.makeExtensionStatus(extension.extensionId, {
+      enable,
+      reloadRequire,
+      enableScope: scope,
     });
   }
 
@@ -500,12 +523,12 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @action
   async uninstallExtension(extension: BaseExtension): Promise<boolean> {
     const extensionPath = extension.path;
+    const extensionId = extension.extensionId;
     this.extensionMomentState.set(extension.extensionId, {
-      isInstalling: true,
+      isUnInstalling: true,
     });
     // 调用后台删除插件
     const res =  await this.extensionManagerServer.uninstallExtension(extension);
-
     if (res) {
 
       await this.removeExtensionConfig(extension.extensionId);
@@ -515,12 +538,24 @@ export class ExtensionManagerService implements IExtensionManagerService {
         runInAction(() => {
           this.extensions = this.extensions.filter((extension) => extension.path !== extensionPath);
         });
+      } else {
+        runInAction(() => {
+          const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+          if (extension) {
+            extension.reloadRequire = reloadRequire;
+            extension.installed = false;
+          }
+        });
       }
+      // 卸载的插件默认设置为启动
+      await this.setExtensionEnable(extension.extensionId, true, EnableScope.GLOBAL);
+      // 修改插件状态
+      await this.makeExtensionStatus(extension.extensionId, {
+        installed: false,
+        enable: false,
+        reloadRequire,
+      });
     }
-    // 卸载的插件默认设置为启动
-    await this.toggleActiveExtension(extension, true, EnableScope.GLOBAL);
-    // 修改插件状态
-    await this.makeExtensionStatus(false, extension.extensionId, '');
     return res;
   }
 

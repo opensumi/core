@@ -173,6 +173,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (this.currentSearchId) {
       this.contentSearchServer.cancel(this.currentSearchId);
       this.cleanOldSearch();
+      this.currentSearchId = this.currentSearchId + 1;
     }
     const rootDirs: string[] = [];
     this.workspaceService.tryGetRoots().forEach((stat) => {

@@ -29,18 +29,16 @@ import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import { RPCMessageConnection } from '@ali/ide-connection';
 import {
-  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId,
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider, IExternalPreferenceProvider,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp } from './app.view';
-import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
-import { MenuRegistry, IMenuRegistry } from '../menu/next';
-
-const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_e2ikewyk1kq.css';
+import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
+import { DEFAULT_CDN_ICON, updateIconMap } from '../style/icon/icon';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -106,7 +104,8 @@ export class ClientApp implements IClientApp {
 
   menuRegistry: MenuModelRegistry;
 
-  nextMenuRegistry: MenuRegistry;
+  // 这里将 onStart contribution 方法放到 MenuRegistryImpl 上了
+  nextMenuRegistry: MenuRegistryImpl;
 
   stateService: ClientAppStateService;
 
@@ -377,7 +376,7 @@ export class ClientApp implements IClientApp {
         }
       }
     }
-    return confirmExit === 'always';
+    return false; // Electron暂时不问，结束stop行为后关闭
   }
 
   /**
@@ -490,9 +489,13 @@ export class ClientApp implements IClientApp {
     });
     // 设置默认配置
     if (opts.defaultPreferences) {
-      const preferenceService: PreferenceService = injector.get(PreferenceService);
+      const defaultPreference: PreferenceProvider = injector.get(PreferenceProvider, {tag: PreferenceScope.Default});
       for (const key of Object.keys(opts.defaultPreferences)) {
-        preferenceService.set(key, opts.defaultPreferences[key], PreferenceScope.Default);
+        const external = getExternalPreferenceProvider(key);
+        if (external) {
+          external.set(opts.defaultPreferences[key], PreferenceScope.Default);
+        }
+        defaultPreference.setPreference(key, opts.defaultPreferences[key]);
       }
     }
   }

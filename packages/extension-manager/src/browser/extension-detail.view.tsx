@@ -9,7 +9,7 @@ import * as styles from './extension-detail.module.less';
 import * as commonStyles from './extension-manager.common.module.less';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-core-browser/lib/components';
 import Dropdown from 'antd/lib/dropdown';
 import Menu from 'antd/lib/menu';
@@ -38,6 +38,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const isInstalling = extensionMomentState?.isInstalling;
   const isUpdating = extensionMomentState?.isUpdating;
   const isUnInstalling = extensionMomentState?.isUnInstalling;
+
+  const extension = rawExtension || currentExtension;
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -72,43 +74,22 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
    * @param scope
    */
   async function toggleActive(scope: EnableScope) {
-    if (currentExtension) {
-      const enable = !currentExtension.enable;
-      await extensionManagerService.toggleActiveExtension(currentExtension, enable, scope);
-      const reloadRequire = await extensionManagerService.computeReloadState(currentExtension.path);
-      setCurrentExtension({
-        ...currentExtension,
-        enable,
-        enableScope: scope,
-        reloadRequire,
-      });
+    if (extension) {
+      const enable = !extension.enable;
+      await extensionManagerService.toggleActiveExtension(extension, enable, scope);
     }
   }
 
   async function install() {
-    if (currentExtension) {
-      const path = await extensionManagerService.installExtension(currentExtension);
-      setCurrentExtension({
-        ...currentExtension,
-        path,
-        // 默认安装后就启用
-        enable: true,
-        installed: true,
-      });
+    if (extension) {
+      await extensionManagerService.installExtension(extension);
     }
   }
 
   async function uninstall() {
-    if (currentExtension) {
-      const res = await extensionManagerService.uninstallExtension(currentExtension);
-      const reloadRequire = await extensionManagerService.computeReloadState(currentExtension.path);
+    if (extension) {
+      const res = await extensionManagerService.uninstallExtension(extension);
       if (res) {
-        setCurrentExtension({
-          ...currentExtension,
-          enable: false,
-          installed: false,
-          reloadRequire,
-        });
       } else {
         dialogService.info(localize('marketplace.extension.uninstall.failed'));
       }
@@ -116,16 +97,9 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }
 
   async function update() {
-    if (currentExtension) {
-      const oldExtensionPath = currentExtension.path;
-      const newExtensionPath = await extensionManagerService.updateExtension(currentExtension, latestExtension!.version);
-      setCurrentExtension({
-        ...currentExtension,
-        path: newExtensionPath,
-        installed: true,
-        version: latestExtension!.version,
-        reloadRequire: await extensionManagerService.computeReloadState(oldExtensionPath),
-      });
+    if (extension) {
+      const oldExtensionPath = extension.path;
+      const newExtensionPath = await extensionManagerService.updateExtension(extension, latestExtension!.version);
       await extensionManagerService.onUpdateExtension(newExtensionPath, oldExtensionPath);
       setUpdated(true);
     }
@@ -160,51 +134,49 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
   // https://yuque.antfin-inc.com/cloud-ide/za8zpk/kpwylo#RvfMV
   const menu = (
-    currentExtension && (<Menu>
-      <Menu.Item onClick={() => toggleActive(EnableScope.GLOBAL)} disabled={currentExtension.enableScope === EnableScope.WORKSPACE && currentExtension.enable}>
-      {currentExtension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}
+    extension && (<Menu className='kt-menu'>
+      <Menu.Item onClick={() => toggleActive(EnableScope.GLOBAL)} disabled={extension.enableScope === EnableScope.WORKSPACE && extension.enable}>
+      {extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}
       </Menu.Item>
       <Menu.Item onClick={() => toggleActive(EnableScope.WORKSPACE)}>
-      {currentExtension.enable ? localize('marketplace.extension.disable.workspace') : localize('marketplace.extension.enable.workspace')}
+      {extension.enable ? localize('marketplace.extension.disable.workspace') : localize('marketplace.extension.enable.workspace')}
       </Menu.Item>
     </Menu>)
   );
-
-  const headerExtension = rawExtension || currentExtension;
   return (
     <div className={styles.wrap}>
-        {headerExtension && (
+        {extension && (
         <div className={styles.header}>
           <div>
-            <img className={styles.icon} src={headerExtension.icon}></img>
+            <img className={styles.icon} src={extension.icon}></img>
           </div>
           <div className={styles.details}>
             <div className={styles.title}>
-              <span className={styles.name}>{headerExtension.displayName}</span>
-              {headerExtension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
+              <span className={styles.name}>{extension.displayName}</span>
+              {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
               {canUpdate ? (<span className={clx(commonStyles.tag, styles.green)}>{localize('marketplace.extension.canupdate')}</span>) : null}
             </div>
             <div className={styles.subtitle}>
               {downloadCount > 0 ? (
               <span className={styles.subtitle_item}><i className={clx(commonStyles.icon, getIcon('download'))}></i>{downloadCount}</span>
               ) : null}
-              <span className={styles.subtitle_item}>{headerExtension.publisher}</span>
-              <span className={styles.subtitle_item}>V{headerExtension.version}</span>
+              <span className={styles.subtitle_item}>{extension.publisher}</span>
+              <span className={styles.subtitle_item}>V{extension.version}</span>
             </div>
-            <div className={styles.description}>{headerExtension.description}</div>
+            <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
+            {extension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
               {canUpdate && !updated ? (
                 <Button className={styles.action} onClick={update} loading={isUpdating}>{isUpdating ? localize('marketplace.extension.updating') : localize('marketplace.extension.update')}</Button>
               ) : null}
-              {!headerExtension.installed ? (
+              {!extension.installed ? (
                 <Button className={styles.action} onClick={install} loading={isInstalling}>{isInstalling ? localize('marketplace.extension.installing') : localize('marketplace.extension.install')}</Button>
               ) : null}
-              {headerExtension.reloadRequire && <Button className={styles.action} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure')}</Button>}
-              {headerExtension.installed ? (
-                <Dropdown overlay={menu} trigger={['click']}>
-                  <Button ghost={true} className={styles.action}>{headerExtension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>
+              {extension.installed ? (
+                <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']}>
+                  <Button ghost={true} className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>
                 </Dropdown>) : null}
-              {headerExtension.installed && !headerExtension.isBuiltin  && (
+              {extension.installed && !extension.isBuiltin  && (
                 <Button ghost={true} type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling') : localize('marketplace.extension.uninstall')}</Button>
               )}
             </div>

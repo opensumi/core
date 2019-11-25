@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { ICompareService, CompareResult, BrowserEditorContribution, IEditorActionRegistry } from '../types';
 import { URI, Domain, localize, Deferred, CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 
 @Injectable()
 export class CompareService implements ICompareService {

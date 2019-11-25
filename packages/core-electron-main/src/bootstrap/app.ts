@@ -3,14 +3,19 @@ import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
-import { createContributionProvider, ContributionProvider, URI } from '@ali/ide-core-common';
+import { createContributionProvider, ContributionProvider, URI, uuid } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
+import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
-import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
+
+export interface IWindowOpenOptions {
+  windowId: string;
+  replace?: boolean;
+}
 
 export class ElectronMainApp {
 
-  private codeWindows: Set<CodeWindow> = new Set();
+  private codeWindows: Map<string, CodeWindow> = new Map();
 
   private injector = new Injector();
 
@@ -55,19 +60,30 @@ export class ElectronMainApp {
     }
   }
 
-  loadWorkspace(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions = {}): CodeWindow {
+  loadWorkspace(workspace?: string, metadata: any = {}, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}, openOptions?: IWindowOpenOptions): CodeWindow {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
+    if (openOptions && openOptions.replace) {
+      let replaceWindow = this.codeWindows.get(openOptions.windowId);
+      if (!replaceWindow && this.codeWindows.size > 0) {
+        replaceWindow = Array.from(this.codeWindows.values())[0];
+      }
+      if (replaceWindow) {
+        replaceWindow.close();
+      }
+    }
     const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
-    this.codeWindows.add(window);
+    const windowId = openOptions ? openOptions.windowId : uuid();
+    this.codeWindows.set(windowId, window);
     window.start();
     if (options.show !== false) {
       window.getBrowserWindow().show();
     }
     window.onDispose(() => {
-      this.codeWindows.delete(window);
+      this.codeWindows.delete(windowId);
     });
+
     return window;
   }
 
@@ -125,7 +141,7 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
 
   }
 
-  openWorkspace(workspace?: string | undefined, windowId?: number | undefined) {
+  openWorkspace(workspace: string, openOptions: IWindowOpenOptions) {
     if (workspace) {
       for (const window of this.app.getCodeWindows()) {
         if (window.workspace && window.workspace.toString() === workspace) {
@@ -134,11 +150,7 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
         }
       }
     }
-    if (!windowId) {
-      this.app.loadWorkspace(workspace);
-    } else {
-
-    }
+    this.app.loadWorkspace(workspace, {}, {}, openOptions);
   }
 
   minimizeWindow(windowId: number) {

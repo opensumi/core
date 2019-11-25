@@ -3,7 +3,7 @@ import { useInjectable, URI, DomListener, Disposable } from '@ali/ide-core-brows
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Path } from '@ali/ide-core-common/lib/path';
 import Icon from '@ali/ide-core-browser/lib/components/icon';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 
 import * as styles from './navigation.module.less';
 import { IResource, IEditorGroup } from '../common';
@@ -23,10 +23,10 @@ export const NavigationBar = observer(({ editorGroup }: { editorGroup: IEditorGr
   }
 
   let parts: IBreadCrumbPart[] | undefined;
-  if (editorGroup.currentEditor) {
+  if (editorGroup.currentEditor && editorGroup.currentEditor.currentDocumentModel) {
     parts = breadCrumbService.getBreadCrumbs(editorGroup.currentEditor.currentDocumentModel!.uri, editorGroup.currentEditor);
   } else {
-    parts = breadCrumbService.getBreadCrumbs(editorGroup.currentResource.uri, editorGroup.currentEditor);
+    parts = breadCrumbService.getBreadCrumbs(editorGroup.currentResource.uri, null);
   }
 
   if (!parts) {
@@ -35,7 +35,7 @@ export const NavigationBar = observer(({ editorGroup }: { editorGroup: IEditorGr
   return (parts.length === 0 ? null : <div className={styles.navigation_container}><div className={styles.navigation}>
     {
       parts.map((p, i) => {
-        return <React.Fragment key={p.name}>
+        return <React.Fragment key={i + '-crumb:' + p.name}>
           {i > 0 && <Icon icon={'right'} size='small' /> }
           <NavigationItem part={p} />
         </React.Fragment>;

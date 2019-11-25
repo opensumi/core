@@ -10,7 +10,7 @@ import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
 import { IEditorDocumentModelService } from './doc-model/types';
@@ -130,7 +130,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_FORWARD.id,
-      keybinding: 'ctrl+=',
+      keybinding: 'ctrl+shift+-',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_BACK.id,
@@ -154,7 +154,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.SAVE_ALL.id,
-      keybinding: 'alt+ctlcmd+s',
+      keybinding: 'alt+ctrlcmd+s',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
@@ -708,6 +708,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     registry.registerEditorAction({
       iconClass: getIcon('embed'),
       title: localize('editor.splitToRight'),
+      when: 'resource',
       onClick: () => {
         this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
       },

@@ -3,7 +3,7 @@ import { ICSSStyleService } from '@ali/ide-theme/lib/common/style';
 import { ITextEditorDecorationType, IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions, IMarkdownString, IHoverMessage, IDecorationApplyOptions } from '../common';
 import { makeRandomHexString, URI , IDisposable, Disposable, IRange, Event, IEventBus, Emitter} from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
-import { IEditorDecorationCollectionService, IBrowserTextEditorDecorationType, IDynamicModelDecorationProperty, IThemedCssStyle, IEditorDecorationProvider, EditorDecorationProviderRegistrationEvent, EditorDecorationChangeEvent} from './types';
+import { IEditorDecorationCollectionService, IBrowserTextEditorDecorationType, IDynamicModelDecorationProperty, IThemedCssStyle, IEditorDecorationProvider, EditorDecorationProviderRegistrationEvent, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent} from './types';
 import { IMonacoImplEditor } from './editor-collection.service';
 import { IThemeService } from '@ali/ide-theme';
 
@@ -44,6 +44,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       dispose: () => {
         if ( this.decorations.has(key!) ) {
           this.decorations.delete(key!);
+          this.eventBus.fire(new EditorDecorationTypeRemovedEvent(key!));
         }
       },
     };
@@ -170,6 +171,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       dispose: () => {
         if (this.decorationProviders.get(provider.key) === provider) {
           this.decorationProviders.delete(provider.key);
+          this.eventBus.fire(new EditorDecorationTypeRemovedEvent(provider.key));
         }
         disposer.dispose();
       },
