@@ -82,11 +82,14 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
   private addedThemeDecorationToCSSStyleSheet(key, options: IThemeDecorationRenderOptions): IThemedCssStyle {
 
     const className = key;
+    const inlineClassName = key + '-inline';
     const disposer = new Disposable();
     let afterContentClassName;
     let beforeContentClassName;
     const styles = this.resolveCSSStyle(options);
-    disposer.addDispose(this.cssManager.addClass(key, styles));
+    const inlineStyles = this.resolveInlineCSSStyle(options);
+    disposer.addDispose(this.cssManager.addClass(className, styles));
+    disposer.addDispose(this.cssManager.addClass(inlineClassName, inlineStyles));
     if (options.after) {
       const styles = this.resolveContentCSSStyle(options.after);
       disposer.addDispose(this.cssManager.addClass(key + '-after:after', styles));
@@ -100,6 +103,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
 
     return {
       className,
+      inlineClassName,
       afterContentClassName,
       beforeContentClassName,
       overviewRulerColor: options.overviewRulerColor,
@@ -128,6 +132,12 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       borderStyle: styles.borderStyle,
       borderWidth: styles.borderWidth,
 
+    } as CSSStyleDeclaration;
+  }
+
+  private resolveInlineCSSStyle(styles: IThemeDecorationRenderOptions ): CSSStyleDeclaration {
+
+    return {
       fontStyle: styles.fontStyle,
       fontWeight: styles.fontWeight,
       textDecoration: styles.textDecoration,
