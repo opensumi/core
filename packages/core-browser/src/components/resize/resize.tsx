@@ -92,6 +92,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   };
 
   const onMouseMove =  ((e) => {
+    e.preventDefault();
     const prevWidth = startPrevWidth.current + e.pageX - startX.current;
     const nextWidth = startNextWidth.current - ( e.pageX - startX.current);
     const preserve = props.preserve || 0;
@@ -234,7 +235,8 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     preventWebviewCatchMouseEvents();
   });
 
-  const onMouseMove = ((e) => {
+  const onMouseMove = ((e: MouseEvent) => {
+    e.preventDefault();
     const direction = e.pageY > startY.current;
     // 若上层未传入findNextElement，dynamicNext为null，否则找不到符合要求的panel时返回undefined
     const dynamicNext = props.findNextElement ? props.findNextElement(direction) : null;
