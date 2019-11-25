@@ -2,7 +2,7 @@ import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegi
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe } from 'mobx';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
-import { MenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 
@@ -34,8 +34,8 @@ export class TabbarService extends WithEventBus {
   @Autowired()
   protected readonly ToolbarRegistry: ToolbarRegistry;
 
-  @Autowired(MenuService)
-  protected menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  protected menuService: AbstractMenuService;
 
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;

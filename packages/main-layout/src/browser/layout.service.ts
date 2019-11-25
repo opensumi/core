@@ -5,7 +5,7 @@ import { IMainLayoutService, ComponentCollection, MainLayoutContribution } from 
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
-import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
 import { AccordionService, AccordionServiceFactory } from './accordion/accordion.service';
@@ -24,8 +24,8 @@ export class LayoutService extends WithEventBus {
   @Autowired(IMenuRegistry)
   menus: IMenuRegistry;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;

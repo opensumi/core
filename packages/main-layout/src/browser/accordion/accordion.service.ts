@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { View } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
-import { MenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface SectionState {
   collapsed: boolean;
@@ -18,8 +18,8 @@ export class AccordionService {
   @Autowired()
   splitPanelManager: SplitPanelManager;
 
-  @Autowired(MenuService)
-  protected menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  protected menuService: AbstractMenuService;
 
   splitPanelService: SplitPanelService;
 

@@ -92,94 +92,73 @@ module.exports =
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ide_core_common_1 = __webpack_require__(2);
-var net = __webpack_require__(100);
-var ide_connection_1 = __webpack_require__(101);
-var argv = __webpack_require__(152).argv;
+const tslib_1 = __webpack_require__(1);
+const ide_core_common_1 = __webpack_require__(2);
+const net = __webpack_require__(100);
+const ide_connection_1 = __webpack_require__(101);
+const extension_log_1 = __webpack_require__(152);
+const argv = __webpack_require__(154).argv;
+let logger;
 function initRPCProtocol() {
-    return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var extCenter, getRPCService, extConnection, service, onMessageEmitter, onMessage, send, extProtocol;
-        return tslib_1.__generator(this, function (_a) {
-            extCenter = new ide_connection_1.RPCServiceCenter();
-            getRPCService = ide_connection_1.initRPCService(extCenter).getRPCService;
-            extConnection = net.createConnection(argv['kt-process-sockpath']);
-            console.log('process extConnection path', argv['kt-process-sockpath']);
-            extCenter.setConnection(ide_connection_1.createSocketConnection(extConnection));
-            service = getRPCService('ExtProtocol');
-            onMessageEmitter = new ide_core_common_1.Emitter();
-            service.on('onMessage', function (msg) {
-                onMessageEmitter.fire(msg);
-            });
-            onMessage = onMessageEmitter.event;
-            send = service.onMessage;
-            extProtocol = new ide_connection_1.RPCProtocol({
-                onMessage: onMessage,
-                send: send,
-            });
-            return [2, extProtocol];
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        const extCenter = new ide_connection_1.RPCServiceCenter();
+        const { getRPCService } = ide_connection_1.initRPCService(extCenter);
+        const extConnection = net.createConnection(argv['kt-process-sockpath']);
+        extCenter.setConnection(ide_connection_1.createSocketConnection(extConnection));
+        const service = getRPCService('ExtProtocol');
+        const onMessageEmitter = new ide_core_common_1.Emitter();
+        service.on('onMessage', (msg) => {
+            onMessageEmitter.fire(msg);
         });
+        const onMessage = onMessageEmitter.event;
+        const send = service.onMessage;
+        const extProtocol = new ide_connection_1.RPCProtocol({
+            onMessage,
+            send,
+        });
+        logger = new extension_log_1.ExtensionLogger(extProtocol);
+        logger.log('process extConnection path', argv['kt-process-sockpath']);
+        return extProtocol;
     });
 }
-(function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-    var protocol, Preload, preload_1, send, e_1;
-    return tslib_1.__generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4, initRPCProtocol()];
-            case 1:
-                protocol = _a.sent();
-                _a.label = 2;
-            case 2:
-                _a.trys.push([2, 4, , 5]);
-                Preload = __webpack_require__(201);
-                if (Preload.default) {
-                    Preload = Preload.default;
-                }
-                preload_1 = new Preload(protocol);
-                console.log('preload.init start');
-                return [4, preload_1.init()];
-            case 3:
-                _a.sent();
-                console.log('preload.init end');
-                if (process && process.send) {
-                    send = process.send;
-                    process.send('ready');
-                    process.on('message', function (msg) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    if (!(msg === 'close')) return [3, 2];
-                                    console.log('preload.close start');
-                                    return [4, preload_1.close()];
-                                case 1:
-                                    _a.sent();
-                                    console.log('preload.close end');
-                                    if (process && process.send) {
-                                        process.send('finish');
-                                    }
-                                    _a.label = 2;
-                                case 2: return [2];
-                            }
-                        });
-                    }); });
-                }
-                return [3, 5];
-            case 4:
-                e_1 = _a.sent();
-                console.error(e_1);
-                return [3, 5];
-            case 5: return [2];
+(() => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
+    const protocol = yield initRPCProtocol();
+    try {
+        let Preload = __webpack_require__(203);
+        if (Preload.default) {
+            Preload = Preload.default;
         }
-    });
-}); })();
-process.on('uncaughtException', function (err) {
+        const preload = new Preload(protocol);
+        logger.log('preload.init start');
+        yield preload.init();
+        logger.log('preload.init end');
+        if (process && process.send) {
+            const send = process.send;
+            process.send('ready');
+            process.on('message', (msg) => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
+                if (msg === 'close') {
+                    logger.log('preload.close start');
+                    yield preload.close();
+                    logger.log('preload.close end');
+                    if (process && process.send) {
+                        process.send('finish');
+                    }
+                }
+            }));
+        }
+    }
+    catch (e) {
+        logger.error(e);
+    }
+}))();
+process.on('uncaughtException', (err) => {
     console.error('[Extension-Host][Uncaught Exception]', err);
 });
-process.on('unhandledRejection', function (reason, promise) {
+process.on('unhandledRejection', (reason, promise) => {
     console.error('[Extension-Host][Unhandle Rejection]', promise, 'reason:', reason);
 });
 if (ide_core_common_1.isDevelopment()) {
-    process.on('rejectionHandled', function (err) {
+    process.on('rejectionHandled', (err) => {
         console.error('[Extension-Host][Handled Rejection]', err);
     });
 }
@@ -429,21 +408,21 @@ tslib_1.__exportStar(__webpack_require__(42), exports);
 tslib_1.__exportStar(__webpack_require__(44), exports);
 tslib_1.__exportStar(__webpack_require__(43), exports);
 tslib_1.__exportStar(__webpack_require__(45), exports);
-tslib_1.__exportStar(__webpack_require__(46), exports);
-tslib_1.__exportStar(__webpack_require__(57), exports);
-tslib_1.__exportStar(__webpack_require__(71), exports);
-tslib_1.__exportStar(__webpack_require__(88), exports);
+tslib_1.__exportStar(__webpack_require__(47), exports);
+tslib_1.__exportStar(__webpack_require__(58), exports);
+tslib_1.__exportStar(__webpack_require__(72), exports);
 tslib_1.__exportStar(__webpack_require__(89), exports);
-tslib_1.__exportStar(__webpack_require__(71), exports);
-tslib_1.__exportStar(__webpack_require__(92), exports);
+tslib_1.__exportStar(__webpack_require__(90), exports);
+tslib_1.__exportStar(__webpack_require__(72), exports);
+tslib_1.__exportStar(__webpack_require__(93), exports);
 tslib_1.__exportStar(__webpack_require__(25), exports);
 tslib_1.__exportStar(__webpack_require__(27), exports);
-tslib_1.__exportStar(__webpack_require__(93), exports);
-tslib_1.__exportStar(__webpack_require__(96), exports);
+tslib_1.__exportStar(__webpack_require__(94), exports);
 tslib_1.__exportStar(__webpack_require__(97), exports);
-tslib_1.__exportStar(__webpack_require__(91), exports);
 tslib_1.__exportStar(__webpack_require__(98), exports);
+tslib_1.__exportStar(__webpack_require__(92), exports);
 tslib_1.__exportStar(__webpack_require__(99), exports);
+tslib_1.__exportStar(__webpack_require__(46), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -3625,22 +3604,32 @@ class Disposable {
             return disposables.map(disposable => this.addDispose(disposable));
         }
         else {
-            const disposables = this.disposables;
-            disposables.push(disposable);
-            const originalDispose = disposable.dispose.bind(disposable);
-            const toRemove = Disposable.create(() => {
-                const index = disposables.indexOf(disposable);
-                if (index !== -1) {
-                    disposables.splice(index, 1);
-                }
-                this.checkDisposed();
-            });
-            disposable.dispose = () => {
-                toRemove.dispose();
-                originalDispose();
-            };
-            return toRemove;
+            return this.add(disposable);
         }
+    }
+    registerDispose(disposable) {
+        if (disposable === this) {
+            throw new Error('Cannot register a disposable on itself!');
+        }
+        this.add(disposable);
+        return disposable;
+    }
+    add(disposable) {
+        const disposables = this.disposables;
+        disposables.push(disposable);
+        const originalDispose = disposable.dispose.bind(disposable);
+        const toRemove = Disposable.create(() => {
+            const index = disposables.indexOf(disposable);
+            if (index !== -1) {
+                disposables.splice(index, 1);
+            }
+            this.checkDisposed();
+        });
+        disposable.dispose = () => {
+            toRemove.dispose();
+            originalDispose();
+        };
+        return toRemove;
     }
 }
 exports.Disposable = Disposable;
@@ -8260,11 +8249,8 @@ class LocalizationRegistry {
         }
     }
     getLocalizeString(key, defaultLabel) {
-        let defaultMessage = defaultLabel;
-        if (defaultLabel === null) {
-            defaultMessage = this.getContents('en-US')[key];
-        }
-        return this.getContents(_currentLanguageId)[key] || defaultMessage || '';
+        const defaultMessage = this.getContents('default')[key];
+        return this.getContents(_currentLanguageId)[key] || defaultMessage || defaultLabel || '';
     }
     getContents(languageId) {
         languageId = languageId.toLowerCase();
@@ -8565,6 +8551,7 @@ exports.MenuUpdateEvent = MenuUpdateEvent;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const errors_1 = __webpack_require__(24);
+const log_1 = __webpack_require__(46);
 function hookCancellationToken(token, promise) {
     return new Promise((resolve, reject) => {
         const sub = token.onCancellationRequested(() => reject(new Error('This promise is cancelled')));
@@ -8645,6 +8632,8 @@ class Delayer {
                 const task = this.task;
                 this.task = null;
                 return task();
+            }).catch(err => {
+                log_1.getLogger().verbose('delayer cancelled:', err);
             });
         }
         this.timeout = setTimeout(() => {
@@ -8804,23 +8793,166 @@ exports.first = first;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var LogLevel;
+(function (LogLevel) {
+    LogLevel[LogLevel["Verbose"] = 0] = "Verbose";
+    LogLevel[LogLevel["Debug"] = 1] = "Debug";
+    LogLevel[LogLevel["Info"] = 2] = "Info";
+    LogLevel[LogLevel["Warning"] = 3] = "Warning";
+    LogLevel[LogLevel["Error"] = 4] = "Error";
+    LogLevel[LogLevel["Critical"] = 5] = "Critical";
+    LogLevel[LogLevel["Off"] = 6] = "Off";
+})(LogLevel = exports.LogLevel || (exports.LogLevel = {}));
+var SupportLogNamespace;
+(function (SupportLogNamespace) {
+    SupportLogNamespace["Main"] = "main";
+    SupportLogNamespace["Render"] = "render";
+    SupportLogNamespace["Node"] = "node";
+    SupportLogNamespace["Browser"] = "browser";
+    SupportLogNamespace["ExtensionHost"] = "extHost";
+    SupportLogNamespace["App"] = "app";
+    SupportLogNamespace["OTHER"] = "other";
+})(SupportLogNamespace = exports.SupportLogNamespace || (exports.SupportLogNamespace = {}));
+exports.ILogServiceManager = Symbol('ILogServiceManager');
+exports.LogServiceForClientPath = 'LogServiceForClientPath';
+exports.ILoggerManagerClient = Symbol(`ILoggerManagerClient`);
+const isNode = typeof process !== 'undefined' && process.release;
+const isChrome = !isNode && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+class DebugLog {
+    constructor(namespace) {
+        this.isEnable = false;
+        this.verbose = (...args) => {
+            if (!this.isEnable) {
+                return;
+            }
+            return console.debug(this.getPre('verbose', 'green'), ...args);
+        };
+        this.debug = (...args) => {
+            if (!this.isEnable) {
+                return;
+            }
+            return console.debug(this.getPre('debug', 'blue'), ...args);
+        };
+        this.log = (...args) => {
+            if (!this.isEnable) {
+                return;
+            }
+            return console.log(this.getPre('log', 'green'), ...args);
+        };
+        this.error = (...args) => {
+            return console.error(this.getPre('error', 'red'), ...args);
+        };
+        this.warn = (...args) => {
+            if (!this.isEnable) {
+                return;
+            }
+            return console.warn(this.getPre('warn', 'yellow'), ...args);
+        };
+        this.info = (...args) => {
+            if (!this.isEnable) {
+                return;
+            }
+            return console.info(this.getPre('log', 'green'), ...args);
+        };
+        if (typeof process !== 'undefined' &&
+            process.env &&
+            process.env.KTLOG_SHOW_DEBUG) {
+            this.isEnable = true;
+        }
+        this.namespace = namespace || '';
+    }
+    getPre(level, color) {
+        const text = this.namespace ? `[${this.namespace}:${level}]` : `[${level}]`;
+        return this.getColor(color, text);
+    }
+    getColor(color, message) {
+        if (!isNode && !isChrome) {
+            return message;
+        }
+        const colors = {
+            reset: '\x1b[0m',
+            black: '\x1b[30m',
+            red: '\x1b[31m',
+            green: '\x1b[32m',
+            yellow: '\x1b3[33m',
+            blue: '\x1b[34m',
+            magenta: '\x1b[35m',
+            cyan: '\x1b[36m',
+            white: '\x1b[37m',
+            blackBg: '\x1b[40m',
+            redBg: '\x1b[41m',
+            greenBg: '\x1b[42m',
+            yellowBg: '\x1b[43m',
+            blueBg: '\x1b[44m',
+            magentaBg: '\x1b[45m',
+            cyanBg: '\x1b[46m',
+            whiteBg: '\x1b[47m'
+        };
+        return (colors[color] || '') + message + colors.reset;
+    }
+    destroy() { }
+}
+exports.DebugLog = DebugLog;
+exports.ILogger = Symbol('ILogger');
+function getLogger(namespace) {
+    function showWarn() {
+    }
+    const debugLog = new DebugLog(namespace);
+    return {
+        get verbose() {
+            showWarn();
+            return debugLog.verbose;
+        },
+        get log() {
+            showWarn();
+            return debugLog.log;
+        },
+        get debug() {
+            showWarn();
+            return debugLog.debug;
+        },
+        get error() {
+            showWarn();
+            return debugLog.error;
+        },
+        get info() {
+            showWarn();
+            return debugLog.info;
+        },
+        get warn() {
+            showWarn();
+            return debugLog.warn;
+        },
+        destroy() { }
+    };
+}
+exports.getLogger = getLogger;
+//# sourceMappingURL=log.js.map
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(47), exports);
 tslib_1.__exportStar(__webpack_require__(48), exports);
-tslib_1.__exportStar(__webpack_require__(50), exports);
-tslib_1.__exportStar(__webpack_require__(52), exports);
-tslib_1.__exportStar(__webpack_require__(40), exports);
-tslib_1.__exportStar(__webpack_require__(41), exports);
+tslib_1.__exportStar(__webpack_require__(49), exports);
 tslib_1.__exportStar(__webpack_require__(51), exports);
 tslib_1.__exportStar(__webpack_require__(53), exports);
+tslib_1.__exportStar(__webpack_require__(40), exports);
+tslib_1.__exportStar(__webpack_require__(41), exports);
+tslib_1.__exportStar(__webpack_require__(52), exports);
 tslib_1.__exportStar(__webpack_require__(54), exports);
 tslib_1.__exportStar(__webpack_require__(55), exports);
 tslib_1.__exportStar(__webpack_require__(56), exports);
+tslib_1.__exportStar(__webpack_require__(57), exports);
 tslib_1.__exportStar(__webpack_require__(39), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8838,13 +8970,13 @@ exports.Deferred = Deferred;
 //# sourceMappingURL=promise-util.js.map
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const stripJsonComments = __webpack_require__(49);
+const stripJsonComments = __webpack_require__(50);
 var JSONUtils;
 (function (JSONUtils) {
     JSONUtils.emptyObject = Object.freeze({});
@@ -8991,7 +9123,7 @@ function isWhiteSpace(char) {
 //# sourceMappingURL=json.js.map
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9071,13 +9203,13 @@ module.exports = (jsonString, options = {}) => {
 
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const types_1 = __webpack_require__(51);
+const types_1 = __webpack_require__(52);
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 function deepFreeze(obj) {
     if (!obj || typeof obj !== 'object') {
@@ -9161,7 +9293,7 @@ exports.isPlainObject = isPlainObject;
 //# sourceMappingURL=objects.js.map
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9301,7 +9433,7 @@ exports.mixin = mixin;
 //# sourceMappingURL=types.js.map
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9503,7 +9635,7 @@ exports.LRUMap = LRUMap;
 //# sourceMappingURL=arrays.js.map
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9552,7 +9684,7 @@ exports.revive = revive;
 //# sourceMappingURL=marshalling.js.map
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9653,7 +9785,7 @@ exports.compareByPrefix = compareByPrefix;
 //# sourceMappingURL=comparers.js.map
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9730,10 +9862,18 @@ function debounce(delay, reducer, initialValueProvider) {
     });
 }
 exports.debounce = debounce;
+function es5ClassCompat(target) {
+    function _() { return Reflect.construct(target, arguments, this.constructor); }
+    Object.defineProperty(_, 'name', Object.getOwnPropertyDescriptor(target, 'name'));
+    Object.setPrototypeOf(_, target);
+    Object.setPrototypeOf(_.prototype, target.prototype);
+    return _;
+}
+exports.es5ClassCompat = es5ClassCompat;
 //# sourceMappingURL=decorators.js.map
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9769,13 +9909,13 @@ var FileUri;
 //# sourceMappingURL=file-uri.js.map
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const shortid = __webpack_require__(58);
+const shortid = __webpack_require__(59);
 function uuid() {
     return shortid.generate();
 }
@@ -9783,30 +9923,30 @@ exports.uuid = uuid;
 //# sourceMappingURL=uuid.js.map
 
 /***/ }),
-/* 58 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-module.exports = __webpack_require__(59);
-
-
-/***/ }),
 /* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+module.exports = __webpack_require__(60);
 
-var alphabet = __webpack_require__(60);
-var build = __webpack_require__(62);
-var isValid = __webpack_require__(68);
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var alphabet = __webpack_require__(61);
+var build = __webpack_require__(63);
+var isValid = __webpack_require__(69);
 
 // if you are using cluster or multiple servers use this to make each instance
 // has a unique value for worker
 // Note: I don't know if this is automatically set when using third
 // party cluster solutions such as pm2.
-var clusterWorkerId = __webpack_require__(69) || 0;
+var clusterWorkerId = __webpack_require__(70) || 0;
 
 /**
  * Set the seed.
@@ -9861,13 +10001,13 @@ module.exports.isValid = isValid;
 
 
 /***/ }),
-/* 60 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var randomFromSeed = __webpack_require__(61);
+var randomFromSeed = __webpack_require__(62);
 
 var ORIGINAL = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-';
 var alphabet;
@@ -9971,7 +10111,7 @@ module.exports = {
 
 
 /***/ }),
-/* 61 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10003,14 +10143,14 @@ module.exports = {
 
 
 /***/ }),
-/* 62 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var generate = __webpack_require__(63);
-var alphabet = __webpack_require__(60);
+var generate = __webpack_require__(64);
+var alphabet = __webpack_require__(61);
 
 // Ignore all milliseconds before a certain time to reduce the size of the date entropy without sacrificing uniqueness.
 // This number should be updated every year or so to keep the generated id short.
@@ -10056,15 +10196,15 @@ module.exports = build;
 
 
 /***/ }),
-/* 63 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var alphabet = __webpack_require__(60);
-var random = __webpack_require__(64);
-var format = __webpack_require__(67);
+var alphabet = __webpack_require__(61);
+var random = __webpack_require__(65);
+var format = __webpack_require__(68);
 
 function generate(number) {
     var loopCounter = 0;
@@ -10084,17 +10224,17 @@ module.exports = generate;
 
 
 /***/ }),
-/* 64 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(65);
-
-
-/***/ }),
 /* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var crypto = __webpack_require__(66)
+module.exports = __webpack_require__(66);
+
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var crypto = __webpack_require__(67)
 
 if (crypto.randomFillSync) {
   var buffers = { }
@@ -10112,13 +10252,13 @@ if (crypto.randomFillSync) {
 
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ (function(module, exports) {
 
 module.exports = require("crypto");
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ (function(module, exports) {
 
 /**
@@ -10176,12 +10316,12 @@ module.exports = function (random, alphabet, size) {
 
 
 /***/ }),
-/* 68 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var alphabet = __webpack_require__(60);
+var alphabet = __webpack_require__(61);
 
 function isShortId(id) {
     if (!id || typeof id !== 'string' || id.length < 6 ) {
@@ -10198,13 +10338,13 @@ module.exports = isShortId;
 
 
 /***/ }),
-/* 69 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var cluster = __webpack_require__(70);
+var cluster = __webpack_require__(71);
 
 var clusterId = 0;
 if (!cluster.isMaster && cluster.worker) {
@@ -10214,28 +10354,28 @@ module.exports = parseInt(process.env.NODE_UNIQUE_ID || clusterId, 10);
 
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ (function(module, exports) {
 
 module.exports = require("cluster");
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(72), exports);
 tslib_1.__exportStar(__webpack_require__(73), exports);
 tslib_1.__exportStar(__webpack_require__(74), exports);
-tslib_1.__exportStar(__webpack_require__(83), exports);
+tslib_1.__exportStar(__webpack_require__(75), exports);
 tslib_1.__exportStar(__webpack_require__(84), exports);
+tslib_1.__exportStar(__webpack_require__(85), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10351,7 +10491,7 @@ var SymbolKind;
 //# sourceMappingURL=editor.js.map
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10362,21 +10502,9 @@ var MessageType;
     MessageType[MessageType["Error"] = 0] = "Error";
     MessageType[MessageType["Warning"] = 1] = "Warning";
     MessageType[MessageType["Info"] = 2] = "Info";
+    MessageType[MessageType["Empty"] = 3] = "Empty";
 })(MessageType = exports.MessageType || (exports.MessageType = {}));
 //# sourceMappingURL=message.js.map
-
-/***/ }),
-/* 74 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(75), exports);
-tslib_1.__exportStar(__webpack_require__(82), exports);
-tslib_1.__exportStar(__webpack_require__(76), exports);
-//# sourceMappingURL=index.js.map
 
 /***/ }),
 /* 75 */
@@ -10385,7 +10513,20 @@ tslib_1.__exportStar(__webpack_require__(76), exports);
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const tree_1 = __webpack_require__(76);
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(76), exports);
+tslib_1.__exportStar(__webpack_require__(83), exports);
+tslib_1.__exportStar(__webpack_require__(77), exports);
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 76 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const tree_1 = __webpack_require__(77);
 var TreeSelection;
 (function (TreeSelection) {
     let SelectionType;
@@ -10445,13 +10586,13 @@ var SelectableTreeNode;
 //# sourceMappingURL=tree-selection.js.map
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const React = __webpack_require__(77);
+const React = __webpack_require__(78);
 var TreeNode;
 (function (TreeNode) {
     function equals(left, right) {
@@ -10558,19 +10699,19 @@ var TreeViewActionTypes;
 //# sourceMappingURL=tree.js.map
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 if (false) {} else {
-  module.exports = __webpack_require__(78);
+  module.exports = __webpack_require__(79);
 }
 
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10591,8 +10732,8 @@ if (true) {
   (function() {
 'use strict';
 
-var _assign = __webpack_require__(79);
-var checkPropTypes = __webpack_require__(80);
+var _assign = __webpack_require__(80);
+var checkPropTypes = __webpack_require__(81);
 
 // TODO: this is special because it gets imported during build.
 
@@ -12909,7 +13050,7 @@ module.exports = react;
 
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13006,7 +13147,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13022,7 +13163,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 var printWarning = function() {};
 
 if (true) {
-  var ReactPropTypesSecret = __webpack_require__(81);
+  var ReactPropTypesSecret = __webpack_require__(82);
   var loggedTypeFailures = {};
   var has = Function.call.bind(Object.prototype.hasOwnProperty);
 
@@ -13115,7 +13256,7 @@ module.exports = checkPropTypes;
 
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13134,13 +13275,13 @@ module.exports = ReactPropTypesSecret;
 
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const _1 = __webpack_require__(74);
+const _1 = __webpack_require__(75);
 var ExpandableTreeNode;
 (function (ExpandableTreeNode) {
     function is(node) {
@@ -13159,7 +13300,7 @@ var ExpandableTreeNode;
 //# sourceMappingURL=tree-expansion.js.map
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13169,25 +13310,25 @@ exports.IFileServiceClient = Symbol('IFileServiceClient');
 //# sourceMappingURL=file.js.map
 
 /***/ }),
-/* 84 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(85), exports);
-tslib_1.__exportStar(__webpack_require__(86), exports);
-//# sourceMappingURL=index.js.map
-
-/***/ }),
 /* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const types_1 = __webpack_require__(51);
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(86), exports);
+tslib_1.__exportStar(__webpack_require__(87), exports);
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 86 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const types_1 = __webpack_require__(52);
 var MapMap;
 (function (MapMap) {
     function get(map, key1, key2) {
@@ -13259,7 +13400,7 @@ var MarkerSeverity;
 //# sourceMappingURL=markers.js.map
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13267,9 +13408,9 @@ var MarkerSeverity;
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 const common_di_1 = __webpack_require__(5);
-const markers_1 = __webpack_require__(85);
+const markers_1 = __webpack_require__(86);
 const index_1 = __webpack_require__(2);
-const arrays_1 = __webpack_require__(87);
+const arrays_1 = __webpack_require__(88);
 class MarkerStats {
     constructor(manager) {
         this.errors = 0;
@@ -13516,7 +13657,7 @@ exports.MarkerManager = MarkerManager;
 //# sourceMappingURL=markers-manager.js.map
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13960,7 +14101,7 @@ exports.asArray = asArray;
 //# sourceMappingURL=arrays.js.map
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13970,12 +14111,12 @@ const tslib_1 = __webpack_require__(1);
 const common_di_1 = __webpack_require__(5);
 const contribution_provider_1 = __webpack_require__(30);
 const event_1 = __webpack_require__(23);
-const application_error_1 = __webpack_require__(89);
+const application_error_1 = __webpack_require__(90);
 const di_helper_1 = __webpack_require__(3);
 const glob_1 = __webpack_require__(38);
-const map_1 = __webpack_require__(90);
+const map_1 = __webpack_require__(91);
 const strings_1 = __webpack_require__(40);
-const network_1 = __webpack_require__(91);
+const network_1 = __webpack_require__(92);
 const paths = __webpack_require__(35);
 const extpath = __webpack_require__(39);
 const platform_1 = __webpack_require__(37);
@@ -14181,7 +14322,7 @@ exports.hasToIgnoreCase = hasToIgnoreCase;
 //# sourceMappingURL=resource.js.map
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14233,7 +14374,7 @@ var ApplicationError;
 //# sourceMappingURL=application-error.js.map
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14925,7 +15066,7 @@ exports.LRUCache = LRUCache;
 //# sourceMappingURL=map.js.map
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14951,7 +15092,7 @@ var Schemas;
 //# sourceMappingURL=network.js.map
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15056,25 +15197,25 @@ exports.CancellationTokenSource = CancellationTokenSource;
 //# sourceMappingURL=cancellation.js.map
 
 /***/ }),
-/* 93 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(94), exports);
-tslib_1.__exportStar(__webpack_require__(95), exports);
-//# sourceMappingURL=index.js.map
-
-/***/ }),
 /* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const preference_scope_1 = __webpack_require__(95);
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(95), exports);
+tslib_1.__exportStar(__webpack_require__(96), exports);
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 95 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const preference_scope_1 = __webpack_require__(96);
 var PreferenceSchema;
 (function (PreferenceSchema) {
     function is(obj) {
@@ -15116,7 +15257,7 @@ var PreferenceDataProperty;
 //# sourceMappingURL=preference-schema.js.map
 
 /***/ }),
-/* 95 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15173,7 +15314,7 @@ var PreferenceScope;
 //# sourceMappingURL=preference-scope.js.map
 
 /***/ }),
-/* 96 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15182,7 +15323,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //# sourceMappingURL=charCode.js.map
 
 /***/ }),
-/* 97 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15202,6 +15343,7 @@ exports.STORAGE_NAMESPACE = {
     WORKBENCH: new uri_1.URI('workbench').withScheme(exports.STORAGE_SCHEMA.SCOPE),
     EXTENSIONS: new uri_1.URI('extensions').withScheme(exports.STORAGE_SCHEMA.SCOPE),
     LAYOUT: new uri_1.URI('layout').withScheme(exports.STORAGE_SCHEMA.SCOPE),
+    RECENT_DATA: new uri_1.URI('recent').withScheme(exports.STORAGE_SCHEMA.SCOPE),
     GLOBAL_EXTENSIONS: new uri_1.URI('extensions').withScheme(exports.STORAGE_SCHEMA.GLOBAL),
 };
 let DefaultStorageProvider = class DefaultStorageProvider {
@@ -15234,7 +15376,7 @@ exports.DefaultStorageProvider = DefaultStorageProvider;
 //# sourceMappingURL=storage.js.map
 
 /***/ }),
-/* 98 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15253,139 +15395,6 @@ function toLocalISOString(date) {
 }
 exports.toLocalISOString = toLocalISOString;
 //# sourceMappingURL=date.js.map
-
-/***/ }),
-/* 99 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var LogLevel;
-(function (LogLevel) {
-    LogLevel[LogLevel["Verbose"] = 0] = "Verbose";
-    LogLevel[LogLevel["Debug"] = 1] = "Debug";
-    LogLevel[LogLevel["Info"] = 2] = "Info";
-    LogLevel[LogLevel["Warning"] = 3] = "Warning";
-    LogLevel[LogLevel["Error"] = 4] = "Error";
-    LogLevel[LogLevel["Critical"] = 5] = "Critical";
-    LogLevel[LogLevel["Off"] = 6] = "Off";
-})(LogLevel = exports.LogLevel || (exports.LogLevel = {}));
-var SupportLogNamespace;
-(function (SupportLogNamespace) {
-    SupportLogNamespace["Main"] = "main";
-    SupportLogNamespace["Render"] = "render";
-    SupportLogNamespace["Node"] = "node";
-    SupportLogNamespace["Browser"] = "browser";
-    SupportLogNamespace["ExtensionHost"] = "extHost";
-    SupportLogNamespace["App"] = "app";
-    SupportLogNamespace["OTHER"] = "other";
-})(SupportLogNamespace = exports.SupportLogNamespace || (exports.SupportLogNamespace = {}));
-exports.ILogServiceManager = Symbol('ILogServiceManager');
-exports.LogServiceForClientPath = 'LogServiceForClientPath';
-exports.ILoggerManagerClient = Symbol(`ILoggerManagerClient`);
-const isNode = typeof process !== 'undefined' && process.release;
-const isChrome = !isNode && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-class DebugLog {
-    constructor(namespace) {
-        this.isEnable = false;
-        this.log = (...args) => {
-            if (!this.isEnable) {
-                return;
-            }
-            return console.log(this.getPre('log', 'green'), ...args);
-        };
-        this.error = (...args) => {
-            return console.error(this.getPre('error', 'red'), ...args);
-        };
-        this.warn = (...args) => {
-            if (!this.isEnable) {
-                return;
-            }
-            return console.warn(this.getPre('warn', 'yellow'), ...args);
-        };
-        this.info = (...args) => {
-            if (!this.isEnable) {
-                return;
-            }
-            return console.info(this.getPre('log', 'green'), ...args);
-        };
-        this.debug = (...args) => {
-            if (!this.isEnable) {
-                return;
-            }
-            return console.debug(this.getPre('debug', 'blue'), ...args);
-        };
-        if (typeof process !== 'undefined' &&
-            process.env &&
-            process.env.KTLOG_SHOW_DEBUG) {
-            this.isEnable = true;
-        }
-        this.namespace = namespace || '';
-    }
-    getPre(level, color) {
-        const text = this.namespace ? `[${this.namespace}:${level}]` : `[${level}]`;
-        return this.getColor(color, text);
-    }
-    getColor(color, message) {
-        if (!isNode && !isChrome) {
-            return message;
-        }
-        const colors = {
-            reset: '\x1b[0m',
-            black: '\x1b[30m',
-            red: '\x1b[31m',
-            green: '\x1b[32m',
-            yellow: '\x1b3[33m',
-            blue: '\x1b[34m',
-            magenta: '\x1b[35m',
-            cyan: '\x1b[36m',
-            white: '\x1b[37m',
-            blackBg: '\x1b[40m',
-            redBg: '\x1b[41m',
-            greenBg: '\x1b[42m',
-            yellowBg: '\x1b[43m',
-            blueBg: '\x1b[44m',
-            magentaBg: '\x1b[45m',
-            cyanBg: '\x1b[46m',
-            whiteBg: '\x1b[47m'
-        };
-        return (colors[color] || '') + message + colors.reset;
-    }
-    destroy() { }
-}
-exports.DebugLog = DebugLog;
-exports.ILogger = Symbol('ILogger');
-function getLogger(namespace) {
-    function showWarn() {
-    }
-    const debugLog = new DebugLog(namespace);
-    return {
-        get log() {
-            showWarn();
-            return debugLog.log;
-        },
-        get debug() {
-            showWarn();
-            return debugLog.debug;
-        },
-        get error() {
-            showWarn();
-            return debugLog.error;
-        },
-        get info() {
-            showWarn();
-            return debugLog.info;
-        },
-        get warn() {
-            showWarn();
-            return debugLog.warn;
-        },
-        destroy() { }
-    };
-}
-exports.getLogger = getLogger;
-//# sourceMappingURL=log.js.map
 
 /***/ }),
 /* 100 */
@@ -15652,7 +15661,6 @@ class CommonChannelHandler extends ws_1.WebSocketHandler {
                         const clientId = msgObj.clientId;
                         connectionId = clientId;
                         this.connectionMap.set(clientId, connection);
-                        console.log('connectionMap', this.connectionMap.keys());
                         this.hearbeat(connectionId, connection);
                     }
                     else if (msgObj.kind === 'open') {
@@ -15699,7 +15707,7 @@ class CommonChannelHandler extends ws_1.WebSocketHandler {
                 if (this.heartbeatMap.has(connectionId)) {
                     clearTimeout(this.heartbeatMap.get(connectionId));
                     this.heartbeatMap.delete(connectionId);
-                    console.log(`clear heartbeat ${connectionId}`);
+                    this.logger.verbose(`clear heartbeat ${connectionId}`);
                 }
                 Array.from(this.channelMap.values())
                     .filter((channel) => {
@@ -15708,7 +15716,7 @@ class CommonChannelHandler extends ws_1.WebSocketHandler {
                     .forEach((channel) => {
                     channel.close(1, 'close');
                     this.channelMap.delete(channel.id);
-                    console.log(`remove channel ${channel.id}`);
+                    this.logger.verbose(`remove channel ${channel.id}`);
                 });
             });
         });
@@ -16517,7 +16525,7 @@ const https = __webpack_require__(118);
 const http = __webpack_require__(104);
 const net = __webpack_require__(100);
 const tls = __webpack_require__(119);
-const { randomBytes, createHash } = __webpack_require__(66);
+const { randomBytes, createHash } = __webpack_require__(67);
 const { URL } = __webpack_require__(105);
 
 const PerMessageDeflate = __webpack_require__(120);
@@ -18760,7 +18768,7 @@ exports.isValidStatusCode = (code) => {
 "use strict";
 
 
-const { randomFillSync } = __webpack_require__(66);
+const { randomFillSync } = __webpack_require__(67);
 
 const PerMessageDeflate = __webpack_require__(120);
 const { EMPTY_BUFFER } = __webpack_require__(124);
@@ -19692,7 +19700,7 @@ module.exports = createWebSocketStream;
 
 
 const EventEmitter = __webpack_require__(117);
-const { createHash } = __webpack_require__(66);
+const { createHash } = __webpack_require__(67);
 const { createServer, STATUS_CODES } = __webpack_require__(104);
 
 const PerMessageDeflate = __webpack_require__(120);
@@ -20207,7 +20215,7 @@ function getRPCService(name, center) {
 }
 exports.getRPCService = getRPCService;
 class RPCServiceCenter {
-    constructor(bench) {
+    constructor(bench, logger) {
         this.bench = bench;
         this.rpcProxy = [];
         this.serviceProxy = [];
@@ -20219,6 +20227,7 @@ class RPCServiceCenter {
         this.connectionPromise = new Promise((resolve) => {
             this.connectionPromiseResolve = resolve;
         });
+        this.logger = logger || console;
     }
     registerService(serviceName, type) {
         if (type === ServiceType.Service) {
@@ -20239,7 +20248,7 @@ class RPCServiceCenter {
             this.connectionPromiseResolve();
         }
         this.connection.push(connection);
-        const rpcProxy = new proxy_1.RPCProxy(this.serviceMethodMap);
+        const rpcProxy = new proxy_1.RPCProxy(this.serviceMethodMap, this.logger);
         rpcProxy.listen(connection);
         this.rpcProxy.push(rpcProxy);
         const serviceProxy = rpcProxy.createProxy();
@@ -22845,7 +22854,7 @@ exports.LinkedMap = LinkedMap;
 Object.defineProperty(exports, "__esModule", { value: true });
 var path_1 = __webpack_require__(144);
 var os_1 = __webpack_require__(145);
-var crypto_1 = __webpack_require__(66);
+var crypto_1 = __webpack_require__(67);
 var net_1 = __webpack_require__(100);
 var messageReader_1 = __webpack_require__(138);
 var messageWriter_1 = __webpack_require__(140);
@@ -22987,10 +22996,11 @@ class ProxyClient {
 }
 exports.ProxyClient = ProxyClient;
 class RPCProxy {
-    constructor(target) {
+    constructor(target, logger) {
         this.target = target;
         this.proxyService = {};
         this.waitForConnection();
+        this.logger = logger || console;
     }
     listenService(service) {
         if (this.connection) {
@@ -23143,7 +23153,7 @@ class RPCProxy {
             this.proxyService[prop](...args);
         }
         catch (e) {
-            console.log('notification', e);
+            this.logger.log('notification', e);
         }
     }
 }
@@ -23169,7 +23179,7 @@ tslib_1.__exportStar(__webpack_require__(147), exports);
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_channel_1 = __webpack_require__(133);
-const shorid = __webpack_require__(58);
+const shorid = __webpack_require__(59);
 let ReconnectingWebSocket = __webpack_require__(150);
 if (ReconnectingWebSocket.default) {
     ReconnectingWebSocket = ReconnectingWebSocket.default;
@@ -23885,7 +23895,7 @@ class MessageIO {
         });
         return `{"type": ${1}, "id": "${callId}", "proxyId": "${rpcId}", "method": "${method}", "args": ${JSON.stringify(args, ObjectTransfer.replacer)}}`;
     }
-    static serializeReplyOK(callId, res) {
+    static serializeReplyOK(callId, res, logger) {
         if (typeof res === 'undefined') {
             return `{"type": ${2}, "id": "${callId}"}`;
         }
@@ -23894,7 +23904,9 @@ class MessageIO {
                 return `{"type": ${2}, "id": "${callId}", "res": ${JSON.stringify(res, ObjectTransfer.replacer)}}`;
             }
             catch (e) {
-                console.log('res', res);
+                if (logger) {
+                    logger.log('res', res);
+                }
                 return `{"type": ${2}, "id": "${callId}", "res": {}}`;
             }
         }
@@ -23908,13 +23920,14 @@ function canceled() {
     return error;
 }
 class RPCProtocol {
-    constructor(connection) {
+    constructor(connection, logger) {
         this._protocol = connection;
         this._locals = new Map();
         this._proxies = new Map();
         this._pendingRPCReplies = new Map();
         this._cancellationTokenSources = new Map();
         this._lastMessageId = 0;
+        this.logger = logger || console;
         this._protocol.onMessage((msg) => this._receiveOneMessage(msg));
     }
     set(identifier, instance) {
@@ -24037,17 +24050,71 @@ exports.RPCProtocol = RPCProtocol;
 
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+const extension_log_1 = __webpack_require__(153);
+const ide_core_common_1 = __webpack_require__(2);
+class ExtensionLogger {
+    constructor(rpcProtocol) {
+        this.rpcProtocol = rpcProtocol;
+        this.logger = this.rpcProtocol.getProxy(extension_log_1.MainThreadExtensionLogIdentifier);
+        this.debugLog = new ide_core_common_1.DebugLog(ide_core_common_1.SupportLogNamespace.ExtensionHost);
+    }
+    verbose(...args) {
+        this.debugLog.info(...args);
+        return this.logger.$verbose(...args);
+    }
+    debug(...args) {
+        this.debugLog.debug(...args);
+        return this.logger.$debug(...args);
+    }
+    log(...args) {
+        this.debugLog.log(...args);
+        return this.logger.$log(...args);
+    }
+    warn(...args) {
+        this.debugLog.warn(...args);
+        return this.logger.$warn(...args);
+    }
+    error(...args) {
+        this.debugLog.error(...args);
+        return this.logger.$error(...args);
+    }
+    critical(...args) {
+        this.debugLog.error(...args);
+        return this.logger.$critical(...args);
+    }
+}
+exports.ExtensionLogger = ExtensionLogger;
+
+
+/***/ }),
+/* 153 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const ide_connection_1 = __webpack_require__(101);
+exports.MainThreadExtensionLogIdentifier = ide_connection_1.createMainContextProxyIdentifier('MainThreadExtensionLog');
+
+
+/***/ }),
+/* 154 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 // classic singleton yargs API, to use yargs
 // without running as a singleton do:
 // require('yargs/yargs')(process.argv.slice(2))
-const yargs = __webpack_require__(153)
+const yargs = __webpack_require__(155)
 
 Argv(process.argv.slice(2))
 
 module.exports = Argv
 
 function Argv (processArgs, cwd) {
-  const argv = yargs(processArgs, cwd, __webpack_require__(191))
+  const argv = yargs(processArgs, cwd, __webpack_require__(193))
   singletonify(argv)
   return argv
 }
@@ -24071,25 +24138,25 @@ function singletonify (inst) {
 
 
 /***/ }),
-/* 153 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(__dirname) {
-const argsert = __webpack_require__(154)
-const fs = __webpack_require__(164)
-const Command = __webpack_require__(155)
-const Completion = __webpack_require__(167)
-const Parser = __webpack_require__(158)
+const argsert = __webpack_require__(156)
+const fs = __webpack_require__(166)
+const Command = __webpack_require__(157)
+const Completion = __webpack_require__(169)
+const Parser = __webpack_require__(160)
 const path = __webpack_require__(144)
-const Usage = __webpack_require__(169)
-const Validation = __webpack_require__(186)
-const Y18n = __webpack_require__(188)
-const objFilter = __webpack_require__(176)
-const setBlocking = __webpack_require__(177)
-const applyExtends = __webpack_require__(189)
-const { globalMiddlewareFactory } = __webpack_require__(157)
-const YError = __webpack_require__(166)
+const Usage = __webpack_require__(171)
+const Validation = __webpack_require__(188)
+const Y18n = __webpack_require__(190)
+const objFilter = __webpack_require__(178)
+const setBlocking = __webpack_require__(179)
+const applyExtends = __webpack_require__(191)
+const { globalMiddlewareFactory } = __webpack_require__(159)
+const YError = __webpack_require__(168)
 
 exports = module.exports = Yargs
 function Yargs (processArgs, cwd, parentRequire) {
@@ -24437,8 +24504,8 @@ function Yargs (processArgs, cwd, parentRequire) {
 
   self.commandDir = function (dir, opts) {
     argsert('<string> [object]', [dir, opts], arguments.length)
-    const req = parentRequire || __webpack_require__(191)
-    command.addDirectory(dir, self.getContext(), req, __webpack_require__(192)(), opts)
+    const req = parentRequire || __webpack_require__(193)
+    command.addDirectory(dir, self.getContext(), req, __webpack_require__(194)(), opts)
     return self
   }
 
@@ -24588,11 +24655,11 @@ function Yargs (processArgs, cwd, parentRequire) {
   function pkgUp (rootPath) {
     const npath = rootPath || '*'
     if (pkgs[npath]) return pkgs[npath]
-    const findUp = __webpack_require__(193)
+    const findUp = __webpack_require__(195)
 
     let obj = {}
     try {
-      let startDir = rootPath || __webpack_require__(199)(parentRequire || __webpack_require__(191))
+      let startDir = rootPath || __webpack_require__(201)(parentRequire || __webpack_require__(193))
 
       // When called in an environment that lacks require.main.filename, such as a jest test runner,
       // startDir is already process.cwd(), and should not be shortened.
@@ -25285,7 +25352,7 @@ function rebase (base, dir) {
 /* WEBPACK VAR INJECTION */}.call(this, "/"))
 
 /***/ }),
-/* 154 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25293,8 +25360,8 @@ function rebase (base, dir) {
 
 // hoisted due to circular dependency on command.
 module.exports = argsert
-const command = __webpack_require__(155)()
-const YError = __webpack_require__(166)
+const command = __webpack_require__(157)()
+const YError = __webpack_require__(168)
 
 const positionName = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']
 function argsert (expected, callerArguments, length) {
@@ -25360,17 +25427,17 @@ function argumentTypeError (observedType, allowedTypes, position, optional) {
 
 
 /***/ }),
-/* 155 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const inspect = __webpack_require__(114).inspect
-const isPromise = __webpack_require__(156)
-const { applyMiddleware, commandMiddlewareFactory } = __webpack_require__(157)
+const isPromise = __webpack_require__(158)
+const { applyMiddleware, commandMiddlewareFactory } = __webpack_require__(159)
 const path = __webpack_require__(144)
-const Parser = __webpack_require__(158)
+const Parser = __webpack_require__(160)
 
 const DEFAULT_MARKER = /(^\*)|(^\$0)/
 
@@ -25475,13 +25542,13 @@ module.exports = function command (yargs, usage, validation, globalMiddleware) {
       }
       return visited
     }
-    __webpack_require__(163)({ require: req, filename: callerFile }, dir, opts)
+    __webpack_require__(165)({ require: req, filename: callerFile }, dir, opts)
   }
 
   // lookup module object from require()d command and derive name
   // if module was not require()d and no name given, throw error
   function moduleName (obj) {
-    const mod = __webpack_require__(165)(obj)
+    const mod = __webpack_require__(167)(obj)
     if (!mod) throw new Error(`No command name given for module: ${inspect(obj)}`)
     return commandFromFilename(mod.filename)
   }
@@ -25804,7 +25871,7 @@ module.exports = function command (yargs, usage, validation, globalMiddleware) {
 
 
 /***/ }),
-/* 156 */
+/* 158 */
 /***/ (function(module, exports) {
 
 module.exports = function isPromise (maybePromise) {
@@ -25813,7 +25880,7 @@ module.exports = function isPromise (maybePromise) {
 
 
 /***/ }),
-/* 157 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25825,8 +25892,8 @@ module.exports = {
   commandMiddlewareFactory,
   globalMiddlewareFactory
 }
-const isPromise = __webpack_require__(156)
-const argsert = __webpack_require__(154)
+const isPromise = __webpack_require__(158)
+const argsert = __webpack_require__(156)
 
 function globalMiddlewareFactory (globalMiddleware, context) {
   return function (callback, applyBeforeValidation = false) {
@@ -25885,13 +25952,13 @@ function applyMiddleware (argv, yargs, middlewares, beforeValidation) {
 
 
 /***/ }),
-/* 158 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var camelCase = __webpack_require__(159)
-var decamelize = __webpack_require__(160)
+var camelCase = __webpack_require__(161)
+var decamelize = __webpack_require__(162)
 var path = __webpack_require__(144)
-var tokenizeArgString = __webpack_require__(161)
+var tokenizeArgString = __webpack_require__(163)
 var util = __webpack_require__(114)
 
 function parse (args, opts) {
@@ -26423,7 +26490,7 @@ function parse (args, opts) {
               return
             }
           } else {
-            config = __webpack_require__(162)(resolvedConfigPath)
+            config = __webpack_require__(164)(resolvedConfigPath)
           }
 
           setConfigObject(config)
@@ -26794,7 +26861,7 @@ module.exports = Parser
 
 
 /***/ }),
-/* 159 */
+/* 161 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26877,7 +26944,7 @@ module.exports.default = camelCase;
 
 
 /***/ }),
-/* 160 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26897,7 +26964,7 @@ module.exports = function (str, sep) {
 
 
 /***/ }),
-/* 161 */
+/* 163 */
 /***/ (function(module, exports) {
 
 // take an un-split argv string and tokenize it.
@@ -26943,7 +27010,7 @@ module.exports = function (argString) {
 
 
 /***/ }),
-/* 162 */
+/* 164 */
 /***/ (function(module, exports) {
 
 function webpackEmptyContext(req) {
@@ -26954,16 +27021,16 @@ function webpackEmptyContext(req) {
 webpackEmptyContext.keys = function() { return []; };
 webpackEmptyContext.resolve = webpackEmptyContext;
 module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 162;
+webpackEmptyContext.id = 164;
 
 /***/ }),
-/* 163 */
+/* 165 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var fs = __webpack_require__(164),
+var fs = __webpack_require__(166),
   join = __webpack_require__(144).join,
   resolve = __webpack_require__(144).resolve,
   dirname = __webpack_require__(144).dirname,
@@ -27050,13 +27117,13 @@ module.exports.defaults = defaultOptions;
 
 
 /***/ }),
-/* 164 */
+/* 166 */
 /***/ (function(module, exports) {
 
 module.exports = require("fs");
 
 /***/ }),
-/* 165 */
+/* 167 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27072,7 +27139,7 @@ module.exports = function whichModule (exported) {
 
 
 /***/ }),
-/* 166 */
+/* 168 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27090,7 +27157,7 @@ module.exports = YError
 
 
 /***/ }),
-/* 167 */
+/* 169 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27187,7 +27254,7 @@ module.exports = function completion (yargs, usage, command) {
 
   // generate the completion script to add to your .bashrc.
   self.generateCompletionScript = function generateCompletionScript ($0, cmd) {
-    const templates = __webpack_require__(168)
+    const templates = __webpack_require__(170)
     let script = zshShell ? templates.completionZshTemplate : templates.completionShTemplate
     const name = path.basename($0)
 
@@ -27212,7 +27279,7 @@ module.exports = function completion (yargs, usage, command) {
 
 
 /***/ }),
-/* 168 */
+/* 170 */
 /***/ (function(module, exports) {
 
 exports.completionShTemplate =
@@ -27267,19 +27334,19 @@ compdef _{{app_name}}_yargs_completions {{app_name}}
 
 
 /***/ }),
-/* 169 */
+/* 171 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 // this file handles outputting usage instructions,
 // failures, etc. keeps logging in one place.
-const decamelize = __webpack_require__(170)
-const stringWidth = __webpack_require__(171)
-const objFilter = __webpack_require__(176)
+const decamelize = __webpack_require__(172)
+const stringWidth = __webpack_require__(173)
+const objFilter = __webpack_require__(178)
 const path = __webpack_require__(144)
-const setBlocking = __webpack_require__(177)
-const YError = __webpack_require__(166)
+const setBlocking = __webpack_require__(179)
+const YError = __webpack_require__(168)
 
 module.exports = function usage (yargs, y18n) {
   const __ = y18n.__
@@ -27442,7 +27509,7 @@ module.exports = function usage (yargs, y18n) {
     }, {}))
 
     const theWrap = getWrap()
-    const ui = __webpack_require__(178)({
+    const ui = __webpack_require__(180)({
       width: theWrap,
       wrap: !!theWrap
     })
@@ -27814,7 +27881,7 @@ module.exports = function usage (yargs, y18n) {
 
 
 /***/ }),
-/* 170 */
+/* 172 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27853,14 +27920,14 @@ module.exports = (text, separator) => {
 
 
 /***/ }),
-/* 171 */
+/* 173 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const stripAnsi = __webpack_require__(172);
-const isFullwidthCodePoint = __webpack_require__(174);
-const emojiRegex = __webpack_require__(175)();
+const stripAnsi = __webpack_require__(174);
+const isFullwidthCodePoint = __webpack_require__(176);
+const emojiRegex = __webpack_require__(177)();
 
 module.exports = input => {
 	input = input.replace(emojiRegex, '  ');
@@ -27899,12 +27966,12 @@ module.exports = input => {
 
 
 /***/ }),
-/* 172 */
+/* 174 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const ansiRegex = __webpack_require__(173);
+const ansiRegex = __webpack_require__(175);
 
 const stripAnsi = string => typeof string === 'string' ? string.replace(ansiRegex(), '') : string;
 
@@ -27913,7 +27980,7 @@ module.exports.default = stripAnsi;
 
 
 /***/ }),
-/* 173 */
+/* 175 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27934,7 +28001,7 @@ module.exports = options => {
 
 
 /***/ }),
-/* 174 */
+/* 176 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27987,7 +28054,7 @@ module.exports = x => {
 
 
 /***/ }),
-/* 175 */
+/* 177 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28000,7 +28067,7 @@ module.exports = function () {
 
 
 /***/ }),
-/* 176 */
+/* 178 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28018,7 +28085,7 @@ module.exports = function objFilter (original, filter) {
 
 
 /***/ }),
-/* 177 */
+/* 179 */
 /***/ (function(module, exports) {
 
 module.exports = function (blocking) {
@@ -28031,12 +28098,12 @@ module.exports = function (blocking) {
 
 
 /***/ }),
-/* 178 */
+/* 180 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var stringWidth = __webpack_require__(171)
-var stripAnsi = __webpack_require__(172)
-var wrap = __webpack_require__(179)
+var stringWidth = __webpack_require__(173)
+var stripAnsi = __webpack_require__(174)
+var wrap = __webpack_require__(181)
 var align = {
   right: alignRight,
   center: alignCenter
@@ -28361,14 +28428,14 @@ module.exports = function (opts) {
 
 
 /***/ }),
-/* 179 */
+/* 181 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const stringWidth = __webpack_require__(171);
-const stripAnsi = __webpack_require__(172);
-const ansiStyles = __webpack_require__(180);
+const stringWidth = __webpack_require__(173);
+const stripAnsi = __webpack_require__(174);
+const ansiStyles = __webpack_require__(182);
 
 const ESCAPES = new Set([
 	'\u001B',
@@ -28556,12 +28623,12 @@ module.exports = (string, columns, options) => {
 
 
 /***/ }),
-/* 180 */
+/* 182 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(module) {
-const colorConvert = __webpack_require__(182);
+const colorConvert = __webpack_require__(184);
 
 const wrapAnsi16 = (fn, offset) => function () {
 	const code = fn.apply(colorConvert, arguments);
@@ -28726,10 +28793,10 @@ Object.defineProperty(module, 'exports', {
 	get: assembleStyles
 });
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(181)(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(183)(module)))
 
 /***/ }),
-/* 181 */
+/* 183 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -28757,11 +28824,11 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 182 */
+/* 184 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var conversions = __webpack_require__(183);
-var route = __webpack_require__(185);
+var conversions = __webpack_require__(185);
+var route = __webpack_require__(187);
 
 var convert = {};
 
@@ -28841,11 +28908,11 @@ module.exports = convert;
 
 
 /***/ }),
-/* 183 */
+/* 185 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* MIT license */
-var cssKeywords = __webpack_require__(184);
+var cssKeywords = __webpack_require__(186);
 
 // NOTE: conversions should only return primitive values (i.e. arrays, or
 //       values that give correct `typeof` results).
@@ -29715,7 +29782,7 @@ convert.rgb.gray = function (rgb) {
 
 
 /***/ }),
-/* 184 */
+/* 186 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29874,10 +29941,10 @@ module.exports = {
 
 
 /***/ }),
-/* 185 */
+/* 187 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var conversions = __webpack_require__(183);
+var conversions = __webpack_require__(185);
 
 /*
 	this function routes a model to all other models.
@@ -29977,13 +30044,13 @@ module.exports = function (fromModel) {
 
 
 /***/ }),
-/* 186 */
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const argsert = __webpack_require__(154)
-const objFilter = __webpack_require__(176)
+const argsert = __webpack_require__(156)
+const objFilter = __webpack_require__(178)
 const specialKeys = ['$0', '--', '_']
 
 // validation-type-stuff, missing params,
@@ -30283,7 +30350,7 @@ module.exports = function validation (yargs, usage, y18n) {
   }
 
   self.recommendCommands = function recommendCommands (cmd, potentialCommands) {
-    const distance = __webpack_require__(187)
+    const distance = __webpack_require__(189)
     const threshold = 3 // if it takes more than three edits, let's move on.
     potentialCommands = potentialCommands.sort((a, b) => b.length - a.length)
 
@@ -30325,7 +30392,7 @@ module.exports = function validation (yargs, usage, y18n) {
 
 
 /***/ }),
-/* 187 */
+/* 189 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30390,10 +30457,10 @@ module.exports = function levenshtein (a, b) {
 
 
 /***/ }),
-/* 188 */
+/* 190 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var fs = __webpack_require__(164)
+var fs = __webpack_require__(166)
 var path = __webpack_require__(144)
 var util = __webpack_require__(114)
 
@@ -30584,15 +30651,15 @@ module.exports = function (opts) {
 
 
 /***/ }),
-/* 189 */
+/* 191 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(164)
+const fs = __webpack_require__(166)
 const path = __webpack_require__(144)
-const YError = __webpack_require__(166)
+const YError = __webpack_require__(168)
 
 let previouslyVisitedConfigs = []
 
@@ -30615,7 +30682,7 @@ function applyExtends (config, cwd) {
     let pathToDefault = null
     if (!isPath) {
       try {
-        pathToDefault = /*require.resolve*/(__webpack_require__(190).resolve(config.extends))
+        pathToDefault = /*require.resolve*/(__webpack_require__(192).resolve(config.extends))
       } catch (err) {
         // most likely this simply isn't a module.
       }
@@ -30630,7 +30697,7 @@ function applyExtends (config, cwd) {
 
     previouslyVisitedConfigs.push(pathToDefault)
 
-    defaultConfig = isPath ? JSON.parse(fs.readFileSync(pathToDefault, 'utf8')) : __webpack_require__(190)(config.extends)
+    defaultConfig = isPath ? JSON.parse(fs.readFileSync(pathToDefault, 'utf8')) : __webpack_require__(192)(config.extends)
     delete config.extends
     defaultConfig = applyExtends(defaultConfig, path.dirname(pathToDefault))
   }
@@ -30644,35 +30711,35 @@ module.exports = applyExtends
 
 
 /***/ }),
-/* 190 */
-/***/ (function(module, exports) {
-
-function webpackEmptyContext(req) {
-	var e = new Error("Cannot find module '" + req + "'");
-	e.code = 'MODULE_NOT_FOUND';
-	throw e;
-}
-webpackEmptyContext.keys = function() { return []; };
-webpackEmptyContext.resolve = webpackEmptyContext;
-module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 190;
-
-/***/ }),
-/* 191 */
-/***/ (function(module, exports) {
-
-function webpackEmptyContext(req) {
-	var e = new Error("Cannot find module '" + req + "'");
-	e.code = 'MODULE_NOT_FOUND';
-	throw e;
-}
-webpackEmptyContext.keys = function() { return []; };
-webpackEmptyContext.resolve = webpackEmptyContext;
-module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 191;
-
-/***/ }),
 /* 192 */
+/***/ (function(module, exports) {
+
+function webpackEmptyContext(req) {
+	var e = new Error("Cannot find module '" + req + "'");
+	e.code = 'MODULE_NOT_FOUND';
+	throw e;
+}
+webpackEmptyContext.keys = function() { return []; };
+webpackEmptyContext.resolve = webpackEmptyContext;
+module.exports = webpackEmptyContext;
+webpackEmptyContext.id = 192;
+
+/***/ }),
+/* 193 */
+/***/ (function(module, exports) {
+
+function webpackEmptyContext(req) {
+	var e = new Error("Cannot find module '" + req + "'");
+	e.code = 'MODULE_NOT_FOUND';
+	throw e;
+}
+webpackEmptyContext.keys = function() { return []; };
+webpackEmptyContext.resolve = webpackEmptyContext;
+module.exports = webpackEmptyContext;
+webpackEmptyContext.id = 193;
+
+/***/ }),
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30700,13 +30767,13 @@ module.exports = function getCallerFile(position) {
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 193 */
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const path = __webpack_require__(144);
-const locatePath = __webpack_require__(194);
+const locatePath = __webpack_require__(196);
 
 module.exports = (filename, opts = {}) => {
 	const startDir = path.resolve(opts.cwd || '');
@@ -30753,14 +30820,14 @@ module.exports.sync = (filename, opts = {}) => {
 
 
 /***/ }),
-/* 194 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const path = __webpack_require__(144);
-const pathExists = __webpack_require__(195);
-const pLocate = __webpack_require__(196);
+const pathExists = __webpack_require__(197);
+const pLocate = __webpack_require__(198);
 
 module.exports = (iterable, options) => {
 	options = Object.assign({
@@ -30784,12 +30851,12 @@ module.exports.sync = (iterable, options) => {
 
 
 /***/ }),
-/* 195 */
+/* 197 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const fs = __webpack_require__(164);
+const fs = __webpack_require__(166);
 
 module.exports = fp => new Promise(resolve => {
 	fs.access(fp, err => {
@@ -30808,12 +30875,12 @@ module.exports.sync = fp => {
 
 
 /***/ }),
-/* 196 */
+/* 198 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const pLimit = __webpack_require__(197);
+const pLimit = __webpack_require__(199);
 
 class EndError extends Error {
 	constructor(value) {
@@ -30849,12 +30916,12 @@ module.exports = (iterable, tester, opts) => {
 
 
 /***/ }),
-/* 197 */
+/* 199 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const pTry = __webpack_require__(198);
+const pTry = __webpack_require__(200);
 
 const pLimit = concurrency => {
 	if (!((Number.isInteger(concurrency) || concurrency === Infinity) && concurrency > 0)) {
@@ -30908,7 +30975,7 @@ module.exports.default = pLimit;
 
 
 /***/ }),
-/* 198 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30924,11 +30991,11 @@ module.exports.default = pTry;
 
 
 /***/ }),
-/* 199 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function (_require) {
-  _require = _require || __webpack_require__(200)
+  _require = _require || __webpack_require__(202)
   var main = _require.main
   if (main && isIISNode(main)) return handleIISNode(main)
   else return main ? main.filename : process.cwd()
@@ -30948,7 +31015,7 @@ function handleIISNode (main) {
 
 
 /***/ }),
-/* 200 */
+/* 202 */
 /***/ (function(module, exports) {
 
 function webpackEmptyContext(req) {
@@ -30959,34 +31026,34 @@ function webpackEmptyContext(req) {
 webpackEmptyContext.keys = function() { return []; };
 webpackEmptyContext.resolve = webpackEmptyContext;
 module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 200;
+webpackEmptyContext.id = 202;
 
 /***/ }),
-/* 201 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var fs = __webpack_require__(164);
-var path = __webpack_require__(144);
-var ide_core_common_1 = __webpack_require__(2);
-var common_1 = __webpack_require__(202);
-var ext_host_storage_1 = __webpack_require__(203);
-var ext_host_api_impl_1 = __webpack_require__(218);
-var ext_host_api_impl_2 = __webpack_require__(483);
-var vscode_1 = __webpack_require__(204);
-var ext_host_extensions_1 = __webpack_require__(412);
-var ext_host_activator_1 = __webpack_require__(486);
-var vscode_extension_1 = __webpack_require__(413);
-var extension_log_1 = __webpack_require__(487);
+const tslib_1 = __webpack_require__(1);
+const fs = __webpack_require__(166);
+const path = __webpack_require__(144);
+const ide_core_common_1 = __webpack_require__(2);
+const common_1 = __webpack_require__(204);
+const ext_host_storage_1 = __webpack_require__(205);
+const ext_host_api_impl_1 = __webpack_require__(220);
+const ext_host_api_impl_2 = __webpack_require__(485);
+const vscode_1 = __webpack_require__(206);
+const ext_host_extensions_1 = __webpack_require__(414);
+const ext_host_activator_1 = __webpack_require__(488);
+const vscode_extension_1 = __webpack_require__(415);
+const extension_log_1 = __webpack_require__(152);
 function getNodeRequire() {
     return  true ? require : undefined;
 }
 exports.getNodeRequire = getNodeRequire;
-var ExtensionHostServiceImpl = (function () {
-    function ExtensionHostServiceImpl(rpcProtocol) {
+class ExtensionHostServiceImpl {
+    constructor(rpcProtocol) {
         this.extensionsChangeEmitter = new ide_core_common_1.Emitter();
         this.rpcProtocol = rpcProtocol;
         this.storage = new ext_host_storage_1.ExtHostStorage(rpcProtocol);
@@ -30996,78 +31063,62 @@ var ExtensionHostServiceImpl = (function () {
         this.kaitianExtAPIImpl = new Map();
         this.logger = new extension_log_1.ExtensionLogger(rpcProtocol);
     }
-    ExtensionHostServiceImpl.prototype.$getExtensions = function () {
+    $getExtensions() {
         return this.getExtensions();
-    };
-    ExtensionHostServiceImpl.prototype.close = function () {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this.extentionsActivator.deactivated();
-                return [2];
-            });
+    }
+    close() {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.extentionsActivator.deactivated();
         });
-    };
-    ExtensionHostServiceImpl.prototype.init = function () {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this.extentionsActivator = new ext_host_activator_1.ExtensionsActivator();
-                this.defineAPI();
-                return [2];
-            });
+    }
+    init() {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.extentionsActivator = new ext_host_activator_1.ExtensionsActivator(this.logger);
+            this.defineAPI();
         });
-    };
-    ExtensionHostServiceImpl.prototype.getExtensions = function () {
+    }
+    getExtensions() {
         return this.extensions;
-    };
-    ExtensionHostServiceImpl.prototype.$initExtensions = function () {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _a;
-            return tslib_1.__generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _a = this;
-                        return [4, this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions()];
-                    case 1:
-                        _a.extensions = _b.sent();
-                        this.logger.debug('kaitian extensions', this.extensions.map(function (extension) {
-                            return extension.packageJSON.name;
-                        }));
-                        return [2];
-                }
-            });
+    }
+    $initExtensions() {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.extensions = yield this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
+            this.logger.debug('kaitian extensions', this.extensions.map((extension) => {
+                return extension.packageJSON.name;
+            }));
         });
-    };
-    ExtensionHostServiceImpl.prototype.getExtension = function (extensionId) {
-        var extension = this.extensions.find(function (extension) {
+    }
+    getExtension(extensionId) {
+        const extension = this.extensions.find((extension) => {
             return extensionId === extension.id;
         });
         if (extension) {
-            var activateExtension = this.extentionsActivator.get(extension.id);
+            const activateExtension = this.extentionsActivator.get(extension.id);
             return new vscode_extension_1.VSCExtension(extension, this, this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadExtensionServie), activateExtension && activateExtension.exports, activateExtension && activateExtension.extendExports);
         }
-    };
-    ExtensionHostServiceImpl.prototype.findExtension = function (filePath) {
-        return this.extensions.find(function (extension) { return filePath.startsWith(fs.realpathSync(extension.path)); });
-    };
-    ExtensionHostServiceImpl.prototype.defineAPI = function () {
-        var module = getNodeRequire()('module');
-        var originalLoad = module._load;
-        var findExtension = this.findExtension.bind(this);
-        var vscodeExtAPIImpl = this.vscodeExtAPIImpl;
-        var vscodeAPIFactory = this.vscodeAPIFactory.bind(this);
-        var kaitianExtAPIImpl = this.kaitianExtAPIImpl;
-        var kaitianAPIFactory = this.kaitianAPIFactory.bind(this);
-        var that = this;
+    }
+    findExtension(filePath) {
+        return this.extensions.find((extension) => filePath.startsWith(fs.realpathSync(extension.path)));
+    }
+    defineAPI() {
+        const module = getNodeRequire()('module');
+        const originalLoad = module._load;
+        const findExtension = this.findExtension.bind(this);
+        const vscodeExtAPIImpl = this.vscodeExtAPIImpl;
+        const vscodeAPIFactory = this.vscodeAPIFactory.bind(this);
+        const kaitianExtAPIImpl = this.kaitianExtAPIImpl;
+        const kaitianAPIFactory = this.kaitianAPIFactory.bind(this);
+        const that = this;
         module._load = function load(request, parent, isMain) {
             if (request !== 'vscode' && request !== 'kaitian') {
                 return originalLoad.apply(this, arguments);
             }
-            var extension = findExtension(parent.filename);
+            const extension = findExtension(parent.filename);
             if (!extension) {
                 return;
             }
             if (request === 'vscode') {
-                var vscodeAPIImpl = vscodeExtAPIImpl.get(extension.id);
+                let vscodeAPIImpl = vscodeExtAPIImpl.get(extension.id);
                 if (!vscodeAPIImpl) {
                     try {
                         vscodeAPIImpl = vscodeAPIFactory(extension);
@@ -31080,8 +31131,8 @@ var ExtensionHostServiceImpl = (function () {
                 return vscodeAPIImpl;
             }
             else if (request === 'kaitian') {
-                var kaitianAPIImpl = kaitianExtAPIImpl.get(extension.id);
-                var vscodeAPIImpl = vscodeExtAPIImpl.get(extension.id) || vscodeAPIFactory(extension);
+                let kaitianAPIImpl = kaitianExtAPIImpl.get(extension.id);
+                const vscodeAPIImpl = vscodeExtAPIImpl.get(extension.id) || vscodeAPIFactory(extension);
                 if (!kaitianAPIImpl) {
                     try {
                         kaitianAPIImpl = kaitianAPIFactory(extension);
@@ -31091,212 +31142,184 @@ var ExtensionHostServiceImpl = (function () {
                         that.logger.error(e);
                     }
                 }
-                return tslib_1.__assign(tslib_1.__assign({}, vscodeAPIImpl), kaitianAPIImpl);
+                return Object.assign(Object.assign({}, vscodeAPIImpl), kaitianAPIImpl);
             }
         };
-    };
-    ExtensionHostServiceImpl.prototype.getExtensionExports = function (extensionId) {
-        var activateExtension = this.extentionsActivator.get(extensionId);
+    }
+    getExtensionExports(extensionId) {
+        const activateExtension = this.extentionsActivator.get(extensionId);
         if (activateExtension) {
             return activateExtension.exports;
         }
-    };
-    ExtensionHostServiceImpl.prototype.getExtendExports = function (extensionId) {
-        var activatedExtension = this.extentionsActivator.get(extensionId);
+    }
+    getExtendExports(extensionId) {
+        const activatedExtension = this.extentionsActivator.get(extensionId);
         if (activatedExtension) {
             return activatedExtension.extendExports;
         }
-    };
-    ExtensionHostServiceImpl.prototype.isActivated = function (extensionId) {
+    }
+    isActivated(extensionId) {
         return this.extentionsActivator.has(extensionId);
-    };
-    ExtensionHostServiceImpl.prototype.activateExtension = function (id) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var extension, modulePath, extendProxy, context, activationFailed, activationFailedError, extendModule, exportsData, extendExports, extensionModule, extensionExports, e_1, extendModuleExportsData, e_2;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.logger.debug('kaitian exthost $activateExtension', id);
-                        extension = this.extensions.find(function (ext) {
-                            return ext.id === id;
-                        });
-                        if (!extension) {
-                            this.logger.error("extension " + id + "'s modulePath not found");
-                            return [2];
-                        }
-                        if (this.extentionsActivator.get(id)) {
-                            this.logger.warn("extension " + id + " is already activated.");
-                            return [2];
-                        }
-                        modulePath = extension.path;
-                        this.logger.debug(extension.name + " - " + modulePath);
-                        this.logger.debug('kaitian exthost $activateExtension path', modulePath);
-                        extendProxy = this.getExtendModuleProxy(extension);
-                        return [4, this.loadExtensionContext(extension, modulePath, this.storage, extendProxy)];
-                    case 1:
-                        context = _a.sent();
-                        activationFailed = false;
-                        activationFailedError = null;
-                        extensionModule = {};
-                        if (!extension.packageJSON.main) return [3, 5];
-                        extensionModule = getNodeRequire()(modulePath);
-                        if (!extensionModule.activate) return [3, 5];
-                        this.logger.debug("try activate " + extension.name);
-                        _a.label = 2;
-                    case 2:
-                        _a.trys.push([2, 4, , 5]);
-                        return [4, extensionModule.activate(context)];
-                    case 3:
-                        extensionExports = (_a.sent()) || extensionModule;
-                        exportsData = extensionExports;
-                        return [3, 5];
-                    case 4:
-                        e_1 = _a.sent();
-                        activationFailed = true;
-                        activationFailedError = e_1;
-                        this.logger.error(e_1);
-                        return [3, 5];
-                    case 5:
-                        if (!(extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main)) return [3, 9];
-                        extendModule = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
-                        if (!extendModule.activate) return [3, 9];
-                        _a.label = 6;
-                    case 6:
-                        _a.trys.push([6, 8, , 9]);
-                        return [4, extendModule.activate(context)];
-                    case 7:
-                        extendModuleExportsData = _a.sent();
-                        extendExports = extendModuleExportsData;
-                        return [3, 9];
-                    case 8:
-                        e_2 = _a.sent();
-                        console.log('activateExtension extension.extendConfig error ');
-                        console.log(e_2);
-                        ide_core_common_1.getLogger().error(e_2);
-                        return [3, 9];
-                    case 9:
-                        this.extentionsActivator.set(id, new ext_host_activator_1.ActivatedExtension(activationFailed, activationFailedError, extensionModule, exportsData, context.subscriptions, undefined, extendExports, extendModule));
-                        return [2];
-                }
+    }
+    activateExtension(id) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.logger.debug('kaitian exthost $activateExtension', id);
+            const extension = this.extensions.find((ext) => {
+                return ext.id === id;
             });
+            if (!extension) {
+                this.logger.error(`extension ${id}'s modulePath not found`);
+                return;
+            }
+            if (this.extentionsActivator.get(id)) {
+                this.logger.warn(`extension ${id} is already activated.`);
+                return;
+            }
+            const modulePath = extension.path;
+            this.logger.debug(`${extension.name} - ${modulePath}`);
+            this.logger.debug('kaitian exthost $activateExtension path', modulePath);
+            const extendProxy = this.getExtendModuleProxy(extension);
+            const context = yield this.loadExtensionContext(extension, modulePath, this.storage, extendProxy);
+            let activationFailed = false;
+            let activationFailedError = null;
+            let extendModule;
+            let exportsData;
+            let extendExports;
+            let extensionModule = {};
+            if (extension.packageJSON.main) {
+                const startLoadTime = Date.now();
+                extensionModule = getNodeRequire()(modulePath);
+                this.logger.log(`extension,load,${extension.extensionId},${Date.now() - startLoadTime}ms`);
+                if (extensionModule.activate) {
+                    this.logger.debug(`try activate ${extension.name}`);
+                    try {
+                        const startActivateTime = Date.now();
+                        const extensionExports = (yield extensionModule.activate(context)) || extensionModule;
+                        this.logger.log(`extension,activate,${extension.extensionId},${Date.now() - startActivateTime}ms`);
+                        exportsData = extensionExports;
+                    }
+                    catch (e) {
+                        activationFailed = true;
+                        activationFailedError = e;
+                        this.logger.error(e);
+                    }
+                }
+            }
+            if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
+                extendModule = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
+                if (extendModule.activate) {
+                    try {
+                        const extendModuleExportsData = yield extendModule.activate(context);
+                        extendExports = extendModuleExportsData;
+                    }
+                    catch (e) {
+                        this.logger.log('activateExtension extension.extendConfig error ');
+                        this.logger.log(e);
+                        ide_core_common_1.getLogger().error(e);
+                    }
+                }
+            }
+            this.extentionsActivator.set(id, new ext_host_activator_1.ActivatedExtension(activationFailed, activationFailedError, extensionModule, exportsData, context.subscriptions, undefined, extendExports, extendModule));
         });
-    };
-    ExtensionHostServiceImpl.prototype.getExtendModuleProxy = function (extension) {
-        var extendProxy = {};
+    }
+    getExtendModuleProxy(extension) {
+        const extendProxy = {};
         if (extension.extendConfig &&
             extension.extendConfig.browser &&
             extension.extendConfig.browser.componentId) {
-            var componentIdArr = extension.extendConfig.browser.componentId;
-            for (var i = 0, len = componentIdArr.length; i < len; i++) {
-                var id = componentIdArr[i];
+            const componentIdArr = extension.extendConfig.browser.componentId;
+            for (let i = 0, len = componentIdArr.length; i < len; i++) {
+                const id = componentIdArr[i];
                 extendProxy[id] = this.rpcProtocol.getProxy({
-                    serviceId: common_1.EXTENSION_EXTEND_SERVICE_PREFIX + ":" + extension.id + ":" + id,
+                    serviceId: `${common_1.EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}:${id}`,
                 });
                 extendProxy[id] = new Proxy(extendProxy[id], {
-                    get: function (obj, prop) {
+                    get: (obj, prop) => {
                         if (typeof prop === 'symbol') {
                             return obj[prop];
                         }
-                        return obj["$" + prop];
+                        return obj[`$${prop}`];
                     },
                 });
             }
         }
         return extendProxy;
-    };
-    ExtensionHostServiceImpl.prototype.registerExtendModuleService = function (exportsData, extension) {
-        var service = {};
-        for (var key in exportsData) {
+    }
+    registerExtendModuleService(exportsData, extension) {
+        const service = {};
+        for (const key in exportsData) {
             if (exportsData.hasOwnProperty(key)) {
                 if (typeof exportsData[key] === 'function') {
-                    service["$" + key] = exportsData[key];
+                    service[`$${key}`] = exportsData[key];
                 }
             }
         }
         this.logger.debug('extension extend service', extension.id, 'service', service);
-        this.rpcProtocol.set({ serviceId: common_1.EXTENSION_EXTEND_SERVICE_PREFIX + ":" + extension.id }, service);
-    };
-    ExtensionHostServiceImpl.prototype.$activateExtension = function (id) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2, this.activateExtension(id)];
+        this.rpcProtocol.set({ serviceId: `${common_1.EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}` }, service);
+    }
+    $activateExtension(id) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return this.activateExtension(id);
+        });
+    }
+    loadExtensionContext(extension, modulePath, storageProxy, extendProxy) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const extensionId = extension.id;
+            const registerExtendFn = (exportsData) => {
+                return this.registerExtendModuleService(exportsData, extension);
+            };
+            const context = new ext_host_extensions_1.ExtenstionContext({
+                extensionId,
+                extensionPath: modulePath,
+                storageProxy,
+                extendProxy,
+                registerExtendModuleService: registerExtendFn,
+            });
+            return Promise.all([
+                context.globalState.whenReady,
+                context.workspaceState.whenReady,
+            ]).then(() => {
+                return Object.freeze(context);
             });
         });
-    };
-    ExtensionHostServiceImpl.prototype.loadExtensionContext = function (extension, modulePath, storageProxy, extendProxy) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var extensionId, registerExtendFn, context;
-            var _this = this;
-            return tslib_1.__generator(this, function (_a) {
-                extensionId = extension.id;
-                registerExtendFn = function (exportsData) {
-                    console.log(exportsData);
-                    return _this.registerExtendModuleService(exportsData, extension);
-                };
-                context = new ext_host_extensions_1.ExtenstionContext({
-                    extensionId: extensionId,
-                    extensionPath: modulePath,
-                    storageProxy: storageProxy,
-                    extendProxy: extendProxy,
-                    registerExtendModuleService: registerExtendFn,
-                });
-                return [2, Promise.all([
-                        context.globalState.whenReady,
-                        context.workspaceState.whenReady,
-                    ]).then(function () {
-                        return Object.freeze(context);
-                    })];
-            });
-        });
-    };
-    return ExtensionHostServiceImpl;
-}());
+    }
+}
 exports.default = ExtensionHostServiceImpl;
 
 
 /***/ }),
-/* 202 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ide_core_common_1 = __webpack_require__(2);
-var ide_connection_1 = __webpack_require__(101);
+const ide_core_common_1 = __webpack_require__(2);
+const ide_connection_1 = __webpack_require__(101);
 exports.ExtensionNodeServiceServerPath = 'ExtensionNodeServiceServerPath';
 exports.IExtensionNodeService = Symbol('IExtensionNodeService');
 exports.IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
-var ExtensionService = (function () {
-    function ExtensionService() {
-    }
-    return ExtensionService;
-}());
+class ExtensionService {
+}
 exports.ExtensionService = ExtensionService;
-var ExtensionCapabilityRegistry = (function () {
-    function ExtensionCapabilityRegistry() {
-    }
-    return ExtensionCapabilityRegistry;
-}());
+class ExtensionCapabilityRegistry {
+}
 exports.ExtensionCapabilityRegistry = ExtensionCapabilityRegistry;
 exports.LANGUAGE_BUNDLE_FIELD = 'languageBundle';
-var VSCodeContributePoint = (function (_super) {
-    tslib_1.__extends(VSCodeContributePoint, _super);
-    function VSCodeContributePoint(json, contributes, extension, packageNlsJSON, deafaultPkgNlsJSON) {
-        var _this = _super.call(this) || this;
-        _this.json = json;
-        _this.contributes = contributes;
-        _this.extension = extension;
-        _this.packageNlsJSON = packageNlsJSON;
-        _this.deafaultPkgNlsJSON = deafaultPkgNlsJSON;
-        return _this;
+class VSCodeContributePoint extends ide_core_common_1.Disposable {
+    constructor(json, contributes, extension, packageNlsJSON, deafaultPkgNlsJSON) {
+        super();
+        this.json = json;
+        this.contributes = contributes;
+        this.extension = extension;
+        this.packageNlsJSON = packageNlsJSON;
+        this.deafaultPkgNlsJSON = deafaultPkgNlsJSON;
     }
-    return VSCodeContributePoint;
-}(ide_core_common_1.Disposable));
+}
 exports.VSCodeContributePoint = VSCodeContributePoint;
 exports.CONTRIBUTE_NAME_KEY = 'contribute_name';
 function Contributes(name) {
-    return function (target) {
+    return (target) => {
         Reflect.defineMetadata(exports.CONTRIBUTE_NAME_KEY, name, target);
     };
 }
@@ -31309,112 +31332,91 @@ exports.WorkerHostAPIIdentifier = {
 
 
 /***/ }),
-/* 203 */
+/* 205 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ide_core_common_1 = __webpack_require__(2);
-var vscode_1 = __webpack_require__(204);
-var ExtHostStorage = (function () {
-    function ExtHostStorage(rpc) {
+const tslib_1 = __webpack_require__(1);
+const ide_core_common_1 = __webpack_require__(2);
+const vscode_1 = __webpack_require__(206);
+class ExtHostStorage {
+    constructor(rpc) {
         this._onDidChangeStorage = new ide_core_common_1.Emitter();
         this.onDidChangeStorage = this._onDidChangeStorage.event;
         this.proxy = rpc.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadStorage);
     }
-    Object.defineProperty(ExtHostStorage.prototype, "storagePath", {
-        get: function () {
-            return this._storagePath;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostStorage.prototype.getValue = function (shared, key, defaultValue) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2, this.proxy.$getValue(shared, key).then(function (value) { return value || defaultValue; })];
-            });
+    get storagePath() {
+        return this._storagePath;
+    }
+    getValue(shared, key, defaultValue) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return this.proxy.$getValue(shared, key).then((value) => value || defaultValue);
         });
-    };
-    ExtHostStorage.prototype.setValue = function (shared, key, value) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2, this.proxy.$setValue(shared, key, value)];
-            });
+    }
+    setValue(shared, key, value) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return this.proxy.$setValue(shared, key, value);
         });
-    };
-    ExtHostStorage.prototype.$updateWorkspaceStorageData = function (data) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this._onDidChangeStorage.fire({ shared: false, data: data });
-                return [2];
-            });
+    }
+    $updateWorkspaceStorageData(data) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this._onDidChangeStorage.fire({ shared: false, data });
         });
-    };
-    ExtHostStorage.prototype.$acceptStoragePath = function (paths) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this._storagePath = paths;
-                return [2];
-            });
+    }
+    $acceptStoragePath(paths) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this._storagePath = paths;
         });
-    };
-    return ExtHostStorage;
-}());
+    }
+}
 exports.ExtHostStorage = ExtHostStorage;
-var ExtensionMemento = (function () {
-    function ExtensionMemento(id, global, storage) {
-        var _this = this;
+class ExtensionMemento {
+    constructor(id, global, storage) {
         this.id = id;
         this.global = global;
         this.storage = storage;
-        this._init = this.storage.getValue(this.global, this.id, Object.create(null)).then(function (value) {
-            _this.cache = value;
-            return _this;
+        this._init = this.storage.getValue(this.global, this.id, Object.create(null)).then((value) => {
+            this.cache = value;
+            return this;
         });
-        this.storageListener = this.storage.onDidChangeStorage(function (e) {
-            if (e.shared === _this.global) {
-                _this.cache = e.data[_this.id] || {};
+        this.storageListener = this.storage.onDidChangeStorage((e) => {
+            if (e.shared === this.global) {
+                this.cache = e.data[this.id] || {};
             }
         });
     }
-    Object.defineProperty(ExtensionMemento.prototype, "whenReady", {
-        get: function () {
-            return this._init;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtensionMemento.prototype.get = function (key, defaultValue) {
-        var value = this.cache[key];
+    get whenReady() {
+        return this._init;
+    }
+    get(key, defaultValue) {
+        let value = this.cache[key];
         if (typeof value === 'undefined') {
             value = defaultValue;
         }
         return value;
-    };
-    ExtensionMemento.prototype.update = function (key, value) {
+    }
+    update(key, value) {
         this.cache[key] = value;
         return this.storage.setValue(this.global, this.id, this.cache);
-    };
-    ExtensionMemento.prototype.dispose = function () {
+    }
+    dispose() {
         this.storageListener.dispose();
-    };
-    return ExtensionMemento;
-}());
+    }
+}
 exports.ExtensionMemento = ExtensionMemento;
 
 
 /***/ }),
-/* 204 */
+/* 206 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ide_connection_1 = __webpack_require__(101);
+const tslib_1 = __webpack_require__(1);
+const ide_connection_1 = __webpack_require__(101);
 exports.VSCodeExtensionService = Symbol('VSCodeExtensionService');
 exports.MainThreadAPIIdentifier = {
     MainThreadCommands: ide_connection_1.createMainContextProxyIdentifier('MainThreadCommands'),
@@ -31466,28 +31468,25 @@ exports.ExtHostAPIIdentifier = {
     ExtHostTerminal: ide_connection_1.createExtHostContextProxyIdentifier('ExtHostTerminal'),
     ExtHostWindow: ide_connection_1.createExtHostContextProxyIdentifier('ExtHostWindow'),
 };
-var VSCodeExtensionNodeService = (function () {
-    function VSCodeExtensionNodeService() {
-    }
-    return VSCodeExtensionNodeService;
-}());
+class VSCodeExtensionNodeService {
+}
 exports.VSCodeExtensionNodeService = VSCodeExtensionNodeService;
 exports.VSCodeExtensionNodeServiceServerPath = 'VSCodeExtensionNodeServiceServerPath';
-tslib_1.__exportStar(__webpack_require__(205), exports);
-tslib_1.__exportStar(__webpack_require__(206), exports);
 tslib_1.__exportStar(__webpack_require__(207), exports);
+tslib_1.__exportStar(__webpack_require__(208), exports);
 tslib_1.__exportStar(__webpack_require__(209), exports);
-tslib_1.__exportStar(__webpack_require__(210), exports);
+tslib_1.__exportStar(__webpack_require__(211), exports);
 tslib_1.__exportStar(__webpack_require__(212), exports);
-tslib_1.__exportStar(__webpack_require__(213), exports);
 tslib_1.__exportStar(__webpack_require__(214), exports);
 tslib_1.__exportStar(__webpack_require__(215), exports);
 tslib_1.__exportStar(__webpack_require__(216), exports);
 tslib_1.__exportStar(__webpack_require__(217), exports);
+tslib_1.__exportStar(__webpack_require__(218), exports);
+tslib_1.__exportStar(__webpack_require__(219), exports);
 
 
 /***/ }),
-/* 205 */
+/* 207 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31497,7 +31496,7 @@ exports.ExtensionDocumentManagerProxy = Symbol('ExtensionDocumentManagerProxy');
 
 
 /***/ }),
-/* 206 */
+/* 208 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31512,14 +31511,14 @@ var ConfigurationTarget;
 
 
 /***/ }),
-/* 207 */
+/* 209 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(208), exports);
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(210), exports);
 var TextEditorCursorStyle;
 (function (TextEditorCursorStyle) {
     TextEditorCursorStyle[TextEditorCursorStyle["Line"] = 1] = "Line";
@@ -31556,7 +31555,7 @@ var TextEditorRevealType;
 
 
 /***/ }),
-/* 208 */
+/* 210 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31579,7 +31578,7 @@ var ViewColumn;
 
 
 /***/ }),
-/* 209 */
+/* 211 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31592,7 +31591,7 @@ function startsWith(haystack, needle) {
     if (haystack === needle) {
         return true;
     }
-    for (var i = 0; i < needle.length; i++) {
+    for (let i = 0; i < needle.length; i++) {
         if (haystack[i] !== needle[i]) {
             return false;
         }
@@ -31601,7 +31600,7 @@ function startsWith(haystack, needle) {
 }
 exports.startsWith = startsWith;
 function endsWith(haystack, needle) {
-    var diff = haystack.length - needle.length;
+    const diff = haystack.length - needle.length;
     if (diff > 0) {
         return haystack.indexOf(needle, diff) === diff;
     }
@@ -31625,27 +31624,26 @@ function isAsciiLetter(code) {
     return isLowerAsciiLetter(code) || isUpperAsciiLetter(code);
 }
 function equalsIgnoreCase(a, b) {
-    var len1 = a ? a.length : 0;
-    var len2 = b ? b.length : 0;
+    const len1 = a ? a.length : 0;
+    const len2 = b ? b.length : 0;
     if (len1 !== len2) {
         return false;
     }
     return doEqualsIgnoreCase(a, b);
 }
 exports.equalsIgnoreCase = equalsIgnoreCase;
-function doEqualsIgnoreCase(a, b, stopAt) {
-    if (stopAt === void 0) { stopAt = a.length; }
+function doEqualsIgnoreCase(a, b, stopAt = a.length) {
     if (typeof a !== 'string' || typeof b !== 'string') {
         return false;
     }
-    for (var i = 0; i < stopAt; i++) {
-        var codeA = a.charCodeAt(i);
-        var codeB = b.charCodeAt(i);
+    for (let i = 0; i < stopAt; i++) {
+        const codeA = a.charCodeAt(i);
+        const codeB = b.charCodeAt(i);
         if (codeA === codeB) {
             continue;
         }
         if (isAsciiLetter(codeA) && isAsciiLetter(codeB)) {
-            var diff = Math.abs(codeA - codeB);
+            const diff = Math.abs(codeA - codeB);
             if (diff !== 0 && diff !== 32) {
                 return false;
             }
@@ -31663,7 +31661,7 @@ function escapeRegExpCharacters(value) {
 }
 exports.escapeRegExpCharacters = escapeRegExpCharacters;
 function startsWithIgnoreCase(str, candidate) {
-    var candidateLength = candidate.length;
+    const candidateLength = candidate.length;
     if (candidate.length > str.length) {
         return false;
     }
@@ -31673,15 +31671,15 @@ exports.startsWithIgnoreCase = startsWithIgnoreCase;
 
 
 /***/ }),
-/* 210 */
+/* 212 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var globToRegExp = __webpack_require__(211);
+const globToRegExp = __webpack_require__(213);
 function testGlob(pattern, value) {
-    var regExp = globToRegExp(pattern, {
+    const regExp = globToRegExp(pattern, {
         extended: true,
         globstar: true,
     });
@@ -31715,7 +31713,7 @@ var MonacoModelIdentifier;
 
 
 /***/ }),
-/* 211 */
+/* 213 */
 /***/ (function(module, exports) {
 
 module.exports = function (glob, opts) {
@@ -31851,28 +31849,25 @@ module.exports = function (glob, opts) {
 
 
 /***/ }),
-/* 212 */
+/* 214 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
+const tslib_1 = __webpack_require__(1);
 tslib_1.__exportStar(__webpack_require__(39), exports);
 
 
 /***/ }),
-/* 213 */
+/* 215 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var TreeViewItem = (function () {
-    function TreeViewItem() {
-    }
-    return TreeViewItem;
-}());
+class TreeViewItem {
+}
 exports.TreeViewItem = TreeViewItem;
 var TreeViewSelection;
 (function (TreeViewSelection) {
@@ -31884,22 +31879,22 @@ var TreeViewSelection;
 
 
 /***/ }),
-/* 214 */
+/* 216 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var ide_core_common_1 = __webpack_require__(2);
+const ide_core_common_1 = __webpack_require__(2);
 exports.MANIFEST_CACHE_FOLDER = 'CachedExtensions';
 exports.USER_MANIFEST_CACHE_FILE = 'user';
 exports.BUILTIN_MANIFEST_CACHE_FILE = 'builtin';
-var ExtensionIdentifier = (function () {
-    function ExtensionIdentifier(value) {
+class ExtensionIdentifier {
+    constructor(value) {
         this.value = value;
         this._lower = value.toLowerCase();
     }
-    ExtensionIdentifier.equals = function (a, b) {
+    static equals(a, b) {
         if (typeof a === 'undefined' || a === null) {
             return (typeof b === 'undefined' || b === null);
         }
@@ -31907,143 +31902,28 @@ var ExtensionIdentifier = (function () {
             return false;
         }
         if (typeof a === 'string' || typeof b === 'string') {
-            var aValue = (typeof a === 'string' ? a : a.value);
-            var bValue = (typeof b === 'string' ? b : b.value);
+            const aValue = (typeof a === 'string' ? a : a.value);
+            const bValue = (typeof b === 'string' ? b : b.value);
             return ide_core_common_1.equalsIgnoreCase(aValue, bValue);
         }
         return (a._lower === b._lower);
-    };
-    ExtensionIdentifier.toKey = function (id) {
+    }
+    static toKey(id) {
         if (typeof id === 'string') {
             return id.toLowerCase();
         }
         return id._lower;
-    };
-    return ExtensionIdentifier;
-}());
+    }
+}
 exports.ExtensionIdentifier = ExtensionIdentifier;
 function isLanguagePackExtension(manifest) {
     return manifest.contributes && manifest.contributes.localizations ? manifest.contributes.localizations.length > 0 : false;
 }
 exports.isLanguagePackExtension = isLanguagePackExtension;
 function throwProposedApiError(extension) {
-    throw new Error("[" + extension.name + "]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api " + extension.id);
+    throw new Error(`[${extension.name}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${extension.id}`);
 }
 exports.throwProposedApiError = throwProposedApiError;
-
-
-/***/ }),
-/* 215 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ExtensionConnection = (function () {
-    function ExtensionConnection(reader, writer, dispose) {
-        this.reader = reader;
-        this.writer = writer;
-        this.dispose = dispose;
-    }
-    ExtensionConnection.prototype.forward = function (to, map) {
-        if (map === void 0) { map = function (message) { return message; }; }
-        this.reader.listen(function (input) {
-            var output = map(input);
-            to.writer.write(output);
-        });
-    };
-    return ExtensionConnection;
-}());
-exports.ExtensionConnection = ExtensionConnection;
-exports.IMainThreadConnectionService = Symbol('MainThreadConnectionService');
-var ExtensionWSChannel = (function () {
-    function ExtensionWSChannel(connection) {
-        this.connection = connection;
-    }
-    ExtensionWSChannel.prototype.send = function (content) {
-        this.connection.writer.write(content);
-    };
-    ExtensionWSChannel.prototype.onMessage = function (cb) {
-        this.connection.reader.listen(cb);
-    };
-    ExtensionWSChannel.prototype.onError = function (cb) {
-        this.connection.reader.onError(function (e) { return cb(e); });
-    };
-    ExtensionWSChannel.prototype.onClose = function (cb) {
-        this.connection.reader.onClose(function () { return cb(-1, 'closed'); });
-    };
-    ExtensionWSChannel.prototype.close = function () {
-        this.connection.dispose();
-    };
-    return ExtensionWSChannel;
-}());
-exports.ExtensionWSChannel = ExtensionWSChannel;
-
-
-/***/ }),
-/* 216 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var messageReader_1 = __webpack_require__(138);
-var ExtensionMessageReader = (function (_super) {
-    tslib_1.__extends(ExtensionMessageReader, _super);
-    function ExtensionMessageReader() {
-        var _this = _super.call(this) || this;
-        _this.state = 'initial';
-        _this.events = [];
-        return _this;
-    }
-    ExtensionMessageReader.prototype.listen = function (callback) {
-        if (this.state === 'initial') {
-            this.state = 'listening';
-            this.callback = callback;
-            while (this.events.length !== 0) {
-                var event_1 = this.events.pop();
-                if (event_1.message) {
-                    this.readMessage(event_1.message);
-                }
-                else if (event_1.error) {
-                    this.fireError(event_1.error);
-                }
-                else {
-                    this.fireClose();
-                }
-            }
-        }
-    };
-    ExtensionMessageReader.prototype.readMessage = function (message) {
-        if (this.state === 'initial') {
-            this.events.splice(0, 0, { message: message });
-        }
-        else if (this.state === 'listening') {
-            var data = JSON.parse(message);
-            this.callback(data);
-        }
-    };
-    ExtensionMessageReader.prototype.fireError = function (error) {
-        if (this.state === 'initial') {
-            this.events.splice(0, 0, { error: error });
-        }
-        else if (this.state === 'listening') {
-            _super.prototype.fireError.call(this, error);
-        }
-    };
-    ExtensionMessageReader.prototype.fireClose = function () {
-        if (this.state === 'initial') {
-            this.events.splice(0, 0, {});
-        }
-        else if (this.state === 'listening') {
-            _super.prototype.fireClose.call(this);
-        }
-        this.state = 'closed';
-    };
-    return ExtensionMessageReader;
-}(messageReader_1.AbstractMessageReader));
-exports.ExtensionMessageReader = ExtensionMessageReader;
 
 
 /***/ }),
@@ -32053,23 +31933,42 @@ exports.ExtensionMessageReader = ExtensionMessageReader;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var messageWriter_1 = __webpack_require__(140);
-var ExtensionMessageWriter = (function (_super) {
-    tslib_1.__extends(ExtensionMessageWriter, _super);
-    function ExtensionMessageWriter(id, proxy) {
-        var _this = _super.call(this) || this;
-        _this.id = id;
-        _this.proxy = proxy;
-        return _this;
+class ExtensionConnection {
+    constructor(reader, writer, dispose) {
+        this.reader = reader;
+        this.writer = writer;
+        this.dispose = dispose;
     }
-    ExtensionMessageWriter.prototype.write = function (arg) {
-        var content = JSON.stringify(arg);
-        this.proxy.$sendMessage(this.id, content);
-    };
-    return ExtensionMessageWriter;
-}(messageWriter_1.AbstractMessageWriter));
-exports.ExtensionMessageWriter = ExtensionMessageWriter;
+    forward(to, map = (message) => message) {
+        this.reader.listen((input) => {
+            const output = map(input);
+            to.writer.write(output);
+        });
+    }
+}
+exports.ExtensionConnection = ExtensionConnection;
+exports.IMainThreadConnectionService = Symbol('MainThreadConnectionService');
+class ExtensionWSChannel {
+    constructor(connection) {
+        this.connection = connection;
+    }
+    send(content) {
+        this.connection.writer.write(content);
+    }
+    onMessage(cb) {
+        this.connection.reader.listen(cb);
+    }
+    onError(cb) {
+        this.connection.reader.onError((e) => cb(e));
+    }
+    onClose(cb) {
+        this.connection.reader.onClose(() => cb(-1, 'closed'));
+    }
+    close() {
+        this.connection.dispose();
+    }
+}
+exports.ExtensionWSChannel = ExtensionWSChannel;
 
 
 /***/ }),
@@ -32079,68 +31978,151 @@ exports.ExtensionMessageWriter = ExtensionMessageWriter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_1 = __webpack_require__(204);
-var ext_host_window_api_impl_1 = __webpack_require__(219);
-var ext_host_doc_1 = __webpack_require__(222);
-var doc_1 = __webpack_require__(223);
-var extTypes = __webpack_require__(220);
-var fileSystemTypes = __webpack_require__(232);
-var enums_1 = __webpack_require__(208);
-var ext_host_command_1 = __webpack_require__(233);
-var ext_host_workspace_1 = __webpack_require__(236);
-var editor_host_1 = __webpack_require__(406);
-var ext_types_1 = __webpack_require__(220);
-var ide_core_common_1 = __webpack_require__(2);
-var ext_host_preference_1 = __webpack_require__(408);
-var ext_host_extensions_1 = __webpack_require__(412);
-var ext_host_env_1 = __webpack_require__(414);
-var ext_host_language_1 = __webpack_require__(416);
-var ext_host_file_system_1 = __webpack_require__(237);
-var ide_editor_1 = __webpack_require__(437);
-var ext_host_message_1 = __webpack_require__(443);
-var ext_host_treeview_1 = __webpack_require__(444);
-var ext_host_api_webview_1 = __webpack_require__(445);
-var ext_host_scm_1 = __webpack_require__(446);
-var ext_host_window_state_1 = __webpack_require__(447);
-var ext_host_decoration_1 = __webpack_require__(448);
-var ext_host_quickopen_1 = __webpack_require__(449);
-var ext_host_output_1 = __webpack_require__(450);
-var ext_statusbar_host_1 = __webpack_require__(451);
-var debug_1 = __webpack_require__(452);
-var ext_host_connection_1 = __webpack_require__(481);
-var ext_host_terminal_1 = __webpack_require__(482);
+const messageReader_1 = __webpack_require__(138);
+class ExtensionMessageReader extends messageReader_1.AbstractMessageReader {
+    constructor() {
+        super();
+        this.state = 'initial';
+        this.events = [];
+    }
+    listen(callback) {
+        if (this.state === 'initial') {
+            this.state = 'listening';
+            this.callback = callback;
+            while (this.events.length !== 0) {
+                const event = this.events.pop();
+                if (event.message) {
+                    this.readMessage(event.message);
+                }
+                else if (event.error) {
+                    this.fireError(event.error);
+                }
+                else {
+                    this.fireClose();
+                }
+            }
+        }
+    }
+    readMessage(message) {
+        if (this.state === 'initial') {
+            this.events.splice(0, 0, { message });
+        }
+        else if (this.state === 'listening') {
+            const data = JSON.parse(message);
+            this.callback(data);
+        }
+    }
+    fireError(error) {
+        if (this.state === 'initial') {
+            this.events.splice(0, 0, { error });
+        }
+        else if (this.state === 'listening') {
+            super.fireError(error);
+        }
+    }
+    fireClose() {
+        if (this.state === 'initial') {
+            this.events.splice(0, 0, {});
+        }
+        else if (this.state === 'listening') {
+            super.fireClose();
+        }
+        this.state = 'closed';
+    }
+}
+exports.ExtensionMessageReader = ExtensionMessageReader;
+
+
+/***/ }),
+/* 219 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const messageWriter_1 = __webpack_require__(140);
+class ExtensionMessageWriter extends messageWriter_1.AbstractMessageWriter {
+    constructor(id, proxy) {
+        super();
+        this.id = id;
+        this.proxy = proxy;
+    }
+    write(arg) {
+        const content = JSON.stringify(arg);
+        this.proxy.$sendMessage(this.id, content);
+    }
+}
+exports.ExtensionMessageWriter = ExtensionMessageWriter;
+
+
+/***/ }),
+/* 220 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const vscode_1 = __webpack_require__(206);
+const ext_host_window_api_impl_1 = __webpack_require__(221);
+const ext_host_doc_1 = __webpack_require__(224);
+const doc_1 = __webpack_require__(225);
+const extTypes = __webpack_require__(222);
+const fileSystemTypes = __webpack_require__(234);
+const enums_1 = __webpack_require__(210);
+const ext_host_command_1 = __webpack_require__(235);
+const ext_host_workspace_1 = __webpack_require__(238);
+const editor_host_1 = __webpack_require__(408);
+const ext_types_1 = __webpack_require__(222);
+const ide_core_common_1 = __webpack_require__(2);
+const ext_host_preference_1 = __webpack_require__(410);
+const ext_host_extensions_1 = __webpack_require__(414);
+const ext_host_env_1 = __webpack_require__(416);
+const ext_host_language_1 = __webpack_require__(418);
+const ext_host_file_system_1 = __webpack_require__(239);
+const ide_editor_1 = __webpack_require__(439);
+const ext_host_message_1 = __webpack_require__(445);
+const ext_host_treeview_1 = __webpack_require__(446);
+const ext_host_api_webview_1 = __webpack_require__(447);
+const ext_host_scm_1 = __webpack_require__(448);
+const ext_host_window_state_1 = __webpack_require__(449);
+const ext_host_decoration_1 = __webpack_require__(450);
+const ext_host_quickopen_1 = __webpack_require__(451);
+const ext_host_output_1 = __webpack_require__(452);
+const ext_statusbar_host_1 = __webpack_require__(453);
+const debug_1 = __webpack_require__(454);
+const ext_host_connection_1 = __webpack_require__(483);
+const ext_host_terminal_1 = __webpack_require__(484);
 function createApiFactory(rpcProtocol, extensionService, mainThreadExtensionService) {
-    var extHostDocs = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostDocuments, new doc_1.ExtensionDocumentDataManagerImpl(rpcProtocol));
+    const extHostDocs = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostDocuments, new doc_1.ExtensionDocumentDataManagerImpl(rpcProtocol));
     rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostExtensionService, extensionService);
     ext_host_doc_1.createDocumentModelApiFactory(rpcProtocol);
-    var extHostCommands = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostCommands, new ext_host_command_1.ExtHostCommands(rpcProtocol));
-    var extHostEditors = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostEditors, new editor_host_1.ExtensionHostEditorService(rpcProtocol, extHostDocs));
-    var extHostEnv = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostEnv, new ext_host_env_1.ExtHostEnv(rpcProtocol));
-    var extHostLanguages = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostLanguages, new ext_host_language_1.ExtHostLanguages(rpcProtocol, extHostDocs, extHostCommands));
-    var extHostFileSystem = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostFileSystem, new ext_host_file_system_1.ExtHostFileSystem(rpcProtocol));
-    var extHostMessage = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostMessage, new ext_host_message_1.ExtHostMessage(rpcProtocol));
-    var extHostWorkspace = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostWorkspace, new ext_host_workspace_1.ExtHostWorkspace(rpcProtocol, extHostMessage, extHostDocs));
-    var extHostPreference = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostPreference, new ext_host_preference_1.ExtHostPreference(rpcProtocol, extHostWorkspace));
-    var extHostTreeView = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostTreeView, new ext_host_treeview_1.ExtHostTreeViews(rpcProtocol, extHostCommands));
-    var extHostWebview = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostWebivew, new ext_host_api_webview_1.ExtHostWebviewService(rpcProtocol));
-    var extHostSCM = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostSCM, new ext_host_scm_1.ExtHostSCM(rpcProtocol, extHostCommands));
-    var extHostWindowState = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostWindowState, new ext_host_window_state_1.ExtHostWindowState(rpcProtocol));
-    var extHostDecorations = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostDecorations, new ext_host_decoration_1.ExtHostDecorations(rpcProtocol));
-    var extHostStatusBar = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostStatusBar, new ext_statusbar_host_1.ExtHostStatusBar(rpcProtocol));
-    var extHostQuickOpen = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostQuickOpen, new ext_host_quickopen_1.ExtHostQuickOpen(rpcProtocol));
-    var extHostOutput = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostOutput, new ext_host_output_1.ExtHostOutput(rpcProtocol));
-    var extHostWindow = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostWindow, new ext_host_window_api_impl_1.ExtHostWindow(rpcProtocol));
-    var extHostConnection = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostConnection, new ext_host_connection_1.ExtHostConnection(rpcProtocol));
-    var extHostDebug = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostDebug, new debug_1.ExtHostDebug(rpcProtocol, extHostConnection, extHostCommands));
-    var extHostTerminal = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostTerminal, new ext_host_terminal_1.ExtHostTerminal(rpcProtocol));
+    const extHostCommands = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostCommands, new ext_host_command_1.ExtHostCommands(rpcProtocol));
+    const extHostEditors = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostEditors, new editor_host_1.ExtensionHostEditorService(rpcProtocol, extHostDocs));
+    const extHostEnv = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostEnv, new ext_host_env_1.ExtHostEnv(rpcProtocol));
+    const extHostLanguages = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostLanguages, new ext_host_language_1.ExtHostLanguages(rpcProtocol, extHostDocs, extHostCommands));
+    const extHostFileSystem = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostFileSystem, new ext_host_file_system_1.ExtHostFileSystem(rpcProtocol));
+    const extHostMessage = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostMessage, new ext_host_message_1.ExtHostMessage(rpcProtocol));
+    const extHostWorkspace = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostWorkspace, new ext_host_workspace_1.ExtHostWorkspace(rpcProtocol, extHostMessage, extHostDocs));
+    const extHostPreference = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostPreference, new ext_host_preference_1.ExtHostPreference(rpcProtocol, extHostWorkspace));
+    const extHostTreeView = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostTreeView, new ext_host_treeview_1.ExtHostTreeViews(rpcProtocol, extHostCommands));
+    const extHostWebview = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostWebivew, new ext_host_api_webview_1.ExtHostWebviewService(rpcProtocol));
+    const extHostSCM = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostSCM, new ext_host_scm_1.ExtHostSCM(rpcProtocol, extHostCommands));
+    const extHostWindowState = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostWindowState, new ext_host_window_state_1.ExtHostWindowState(rpcProtocol));
+    const extHostDecorations = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostDecorations, new ext_host_decoration_1.ExtHostDecorations(rpcProtocol));
+    const extHostStatusBar = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostStatusBar, new ext_statusbar_host_1.ExtHostStatusBar(rpcProtocol));
+    const extHostQuickOpen = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostQuickOpen, new ext_host_quickopen_1.ExtHostQuickOpen(rpcProtocol));
+    const extHostOutput = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostOutput, new ext_host_output_1.ExtHostOutput(rpcProtocol));
+    const extHostWindow = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostWindow, new ext_host_window_api_impl_1.ExtHostWindow(rpcProtocol));
+    const extHostConnection = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostConnection, new ext_host_connection_1.ExtHostConnection(rpcProtocol));
+    const extHostDebug = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostDebug, new debug_1.ExtHostDebug(rpcProtocol, extHostConnection, extHostCommands));
+    const extHostTerminal = rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostTerminal, new ext_host_terminal_1.ExtHostTerminal(rpcProtocol));
     rpcProtocol.set(vscode_1.ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
-    return function (extension) {
-        return tslib_1.__assign(tslib_1.__assign(tslib_1.__assign({ commands: ext_host_command_1.createCommandsApiFactory(extHostCommands, extHostEditors), window: ext_host_window_api_impl_1.createWindowApiFactory(extension, extHostEditors, extHostMessage, extHostWebview, extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar, extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow), languages: ext_host_language_1.createLanguagesApiFactory(extHostLanguages, extension), workspace: ext_host_workspace_1.createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem), env: ext_host_env_1.createEnvApiFactory(rpcProtocol, extensionService, extHostEnv), debug: debug_1.createDebugApiFactory(extHostDebug), version: '1.36.1', comment: {}, languageServer: {}, extensions: ext_host_extensions_1.createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService), tasks: {}, scm: {
+    return (extension) => {
+        return Object.assign(Object.assign(Object.assign({ commands: ext_host_command_1.createCommandsApiFactory(extHostCommands, extHostEditors), window: ext_host_window_api_impl_1.createWindowApiFactory(extension, extHostEditors, extHostMessage, extHostWebview, extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar, extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow), languages: ext_host_language_1.createLanguagesApiFactory(extHostLanguages, extension), workspace: ext_host_workspace_1.createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem), env: ext_host_env_1.createEnvApiFactory(rpcProtocol, extensionService, extHostEnv), debug: debug_1.createDebugApiFactory(extHostDebug), version: '1.36.1', comment: {}, languageServer: {}, extensions: ext_host_extensions_1.createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService), tasks: {}, scm: {
                 get inputBox() {
                     return extHostSCM.getLastInputBox(extension);
                 },
-                createSourceControl: function (id, label, rootUri) {
+                createSourceControl(id, label, rootUri) {
                     return extHostSCM.createSourceControl(extension, id, label, rootUri);
                 },
             } }, extTypes), fileSystemTypes), { Hover: ext_types_1.Hover,
@@ -32181,60 +32163,47 @@ exports.createApiFactory = createApiFactory;
 
 
 /***/ }),
-/* 219 */
+/* 221 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_1 = __webpack_require__(204);
-var ide_core_common_1 = __webpack_require__(2);
-var ext_types_1 = __webpack_require__(220);
-var extension_1 = __webpack_require__(214);
+const vscode_1 = __webpack_require__(206);
+const ide_core_common_1 = __webpack_require__(2);
+const ext_types_1 = __webpack_require__(222);
+const extension_1 = __webpack_require__(216);
 function createWindowApiFactory(extension, extHostEditors, extHostMessage, extHostWebviews, extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar, extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow) {
     return {
-        withProgress: function (options, task) {
+        withProgress(options, task) {
             return Promise.resolve(task({
-                report: function (value) {
+                report(value) {
                     console.log(options, value);
                 },
             }));
         },
-        createStatusBarItem: function (alignment, priority) {
+        createStatusBarItem(alignment, priority) {
             return extHostStatusBar.createStatusBarItem(alignment, priority);
         },
-        createOutputChannel: function (name) {
+        createOutputChannel(name) {
             return extHostOutput.createOutputChannel(name);
         },
-        setStatusBarMessage: function (text, arg) {
+        setStatusBarMessage(text, arg) {
             return extHostStatusBar.setStatusBarMessage(text, arg);
         },
-        showInformationMessage: function (message, first) {
-            var rest = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                rest[_i - 2] = arguments[_i];
-            }
-            return extHostMessage.showMessage.apply(extHostMessage, tslib_1.__spread([ide_core_common_1.MessageType.Info, message, first], rest));
+        showInformationMessage(message, first, ...rest) {
+            return extHostMessage.showMessage(ide_core_common_1.MessageType.Info, message, first, ...rest);
         },
-        showWarningMessage: function (message, first) {
-            var rest = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                rest[_i - 2] = arguments[_i];
-            }
-            return extHostMessage.showMessage.apply(extHostMessage, tslib_1.__spread([ide_core_common_1.MessageType.Warning, message, first], rest));
+        showWarningMessage(message, first, ...rest) {
+            return extHostMessage.showMessage(ide_core_common_1.MessageType.Warning, message, first, ...rest);
         },
-        showErrorMessage: function (message, first) {
-            var rest = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                rest[_i - 2] = arguments[_i];
-            }
-            return extHostMessage.showMessage.apply(extHostMessage, tslib_1.__spread([ide_core_common_1.MessageType.Error, message, first], rest));
+        showErrorMessage(message, first, ...rest) {
+            return extHostMessage.showMessage(ide_core_common_1.MessageType.Error, message, first, ...rest);
         },
-        registerTreeDataProvider: function (viewId, treeDataProvider) {
+        registerTreeDataProvider(viewId, treeDataProvider) {
             return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider);
         },
-        createTreeView: function (viewId, options) {
+        createTreeView(viewId, options) {
             return extHostTreeView.createTreeView(viewId, options);
         },
         get activeTextEditor() {
@@ -32249,40 +32218,40 @@ function createWindowApiFactory(extension, extHostEditors, extHostMessage, extHo
         onDidChangeTextEditorVisibleRanges: extHostEditors.onDidChangeTextEditorVisibleRanges,
         onDidChangeTextEditorOptions: extHostEditors.onDidChangeTextEditorOptions,
         onDidChangeTextEditorViewColumn: extHostEditors.onDidChangeTextEditorViewColumn,
-        showTextDocument: function (arg0, arg1, arg2) {
+        showTextDocument(arg0, arg1, arg2) {
             return extHostEditors.showTextDocument(arg0, arg1, arg2);
         },
-        createTextEditorDecorationType: function (options) {
+        createTextEditorDecorationType(options) {
             return extHostEditors.createTextEditorDecorationType(options);
         },
-        showQuickPick: function (items, options, token) {
+        showQuickPick(items, options, token) {
             return extHostQuickOpen.showQuickPick(items, options, token);
         },
-        createQuickPick: function () {
+        createQuickPick() {
             return extHostQuickOpen.createQuickPick();
         },
-        showInputBox: function (options, token) {
+        showInputBox(options, token) {
             return extHostQuickOpen.showInputBox(options, token);
         },
-        createInputBox: function () {
+        createInputBox() {
             return extHostQuickOpen.createInputBox();
         },
-        createWebviewPanel: function (viewType, title, showOptions, options) {
+        createWebviewPanel(viewType, title, showOptions, options) {
             return extHostWebviews.createWebview(ext_types_1.Uri.parse('not-implemented://'), viewType, title, showOptions, options);
         },
-        registerWebviewPanelSerializer: function (viewType, serializer) {
+        registerWebviewPanelSerializer(viewType, serializer) {
             return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
         },
-        registerDecorationProvider: proposedApiFunction(extension, function (provider) {
+        registerDecorationProvider: proposedApiFunction(extension, (provider) => {
             return extHostDecorations.registerDecorationProvider(provider, extension.id);
         }),
-        registerUriHandler: function () {
+        registerUriHandler() {
             console.log('registerUriHandler is not implemented');
             return {
-                dispose: function () { },
+                dispose: () => { },
             };
         },
-        showOpenDialog: function (options) {
+        showOpenDialog: (options) => {
             return extHostWindow.openDialog(options);
         },
         get onDidChangeWindowState() {
@@ -32312,71 +32281,44 @@ function proposedApiFunction(extension, fn) {
         return extension_1.throwProposedApiError.bind(null, extension);
     }
 }
-var ExtHostWindow = (function () {
-    function ExtHostWindow(rpcProtocol) {
+class ExtHostWindow {
+    constructor(rpcProtocol) {
         this.id = 0;
         this._onOpenedResult = new ide_core_common_1.Emitter();
         this.proxy = rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadWindow);
     }
-    ExtHostWindow.prototype.openDialog = function (options) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            var id = (_this.id++).toString();
-            _this.proxy.$showOpenDialog(id, options);
-            var disposer = _this._onOpenedResult.event(function (res) {
+    openDialog(options) {
+        return new Promise((resolve, reject) => {
+            const id = (this.id++).toString();
+            this.proxy.$showOpenDialog(id, options);
+            const disposer = this._onOpenedResult.event((res) => {
                 if (res.id === id) {
                     disposer.dispose();
-                    resolve(res.result ? res.result.map(function (r) { return ext_types_1.Uri.revive(r); }) : undefined);
+                    resolve(res.result ? res.result.map((r) => ext_types_1.Uri.revive(r)) : undefined);
                 }
             });
         });
-    };
-    ExtHostWindow.prototype.$onOpenDialogResult = function (id, result) {
-        this._onOpenedResult.fire({ id: id, result: result });
-    };
-    return ExtHostWindow;
-}());
+    }
+    $onOpenDialogResult(id, result) {
+        this._onOpenedResult.fire({ id, result });
+    }
+}
 exports.ExtHostWindow = ExtHostWindow;
 
 
 /***/ }),
-/* 220 */
+/* 222 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+var Position_1, Range_1, Location_1, Disposable_1, SnippetString_1, TextEdit_1, CodeActionKind_1, Selection_1, SymbolInformation_1, DocumentSymbol_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_uri_1 = __webpack_require__(34);
+const tslib_1 = __webpack_require__(1);
+const vscode_uri_1 = __webpack_require__(34);
 exports.Uri = vscode_uri_1.default;
-var utils_1 = __webpack_require__(221);
-var ide_core_common_1 = __webpack_require__(2);
-var DiagnosticRelatedInformation = (function () {
-    function DiagnosticRelatedInformation(location, message) {
-        this.location = location;
-        this.message = message;
-    }
-    return DiagnosticRelatedInformation;
-}());
-exports.DiagnosticRelatedInformation = DiagnosticRelatedInformation;
-var Diagnostic = (function () {
-    function Diagnostic(range, message, severity) {
-        if (severity === void 0) { severity = DiagnosticSeverity.Error; }
-        this.range = range;
-        this.message = message;
-        this.severity = severity;
-    }
-    return Diagnostic;
-}());
-exports.Diagnostic = Diagnostic;
-var CodeAction = (function () {
-    function CodeAction(title, kind) {
-        this.title = title;
-        this.kind = kind;
-    }
-    return CodeAction;
-}());
-exports.CodeAction = CodeAction;
+const utils_1 = __webpack_require__(223);
+const ide_core_common_1 = __webpack_require__(2);
 var ProgressLocation;
 (function (ProgressLocation) {
     ProgressLocation[ProgressLocation["SourceControl"] = 1] = "SourceControl";
@@ -32390,27 +32332,22 @@ var IndentAction;
     IndentAction[IndentAction["IndentOutdent"] = 2] = "IndentOutdent";
     IndentAction[IndentAction["Outdent"] = 3] = "Outdent";
 })(IndentAction = exports.IndentAction || (exports.IndentAction = {}));
-var CodeLens = (function () {
-    function CodeLens(range, command) {
+class CodeLens {
+    constructor(range, command) {
         this.range = range;
         this.command = command;
     }
-    Object.defineProperty(CodeLens.prototype, "isResolved", {
-        get: function () {
-            return !!this.command;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return CodeLens;
-}());
+    get isResolved() {
+        return !!this.command;
+    }
+}
 exports.CodeLens = CodeLens;
 var Schemas;
 (function (Schemas) {
     Schemas["untitled"] = "untitled";
 })(Schemas = exports.Schemas || (exports.Schemas = {}));
-var Position = (function () {
-    function Position(line, character) {
+let Position = Position_1 = class Position {
+    constructor(line, character) {
         if (line < 0) {
             throw new Error('illegal argument: line must be non-negative');
         }
@@ -32420,68 +32357,52 @@ var Position = (function () {
         this._line = line;
         this._character = character;
     }
-    Position.Min = function () {
-        var positions = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            positions[_i] = arguments[_i];
-        }
+    static Min(...positions) {
         if (positions.length === 0) {
             throw new TypeError();
         }
-        var result = positions[0];
-        for (var i = 1; i < positions.length; i++) {
-            var p = positions[i];
+        let result = positions[0];
+        for (let i = 1; i < positions.length; i++) {
+            const p = positions[i];
             if (p.isBefore(result)) {
                 result = p;
             }
         }
         return result;
-    };
-    Position.Max = function () {
-        var positions = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            positions[_i] = arguments[_i];
-        }
+    }
+    static Max(...positions) {
         if (positions.length === 0) {
             throw new TypeError();
         }
-        var result = positions[0];
-        for (var i = 1; i < positions.length; i++) {
-            var p = positions[i];
+        let result = positions[0];
+        for (let i = 1; i < positions.length; i++) {
+            const p = positions[i];
             if (p.isAfter(result)) {
                 result = p;
             }
         }
         return result;
-    };
-    Position.isPosition = function (other) {
+    }
+    static isPosition(other) {
         if (!other) {
             return false;
         }
-        if (other instanceof Position) {
+        if (other instanceof Position_1) {
             return true;
         }
-        var _a = other, line = _a.line, character = _a.character;
+        const { line, character } = other;
         if (typeof line === 'number' && typeof character === 'number') {
             return true;
         }
         return false;
-    };
-    Object.defineProperty(Position.prototype, "line", {
-        get: function () {
-            return this._line;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Position.prototype, "character", {
-        get: function () {
-            return this._character;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Position.prototype.isBefore = function (other) {
+    }
+    get line() {
+        return this._line;
+    }
+    get character() {
+        return this._character;
+    }
+    isBefore(other) {
         if (this._line < other._line) {
             return true;
         }
@@ -32489,8 +32410,8 @@ var Position = (function () {
             return false;
         }
         return this._character < other._character;
-    };
-    Position.prototype.isBeforeOrEqual = function (other) {
+    }
+    isBeforeOrEqual(other) {
         if (this._line < other._line) {
             return true;
         }
@@ -32498,17 +32419,17 @@ var Position = (function () {
             return false;
         }
         return this._character <= other._character;
-    };
-    Position.prototype.isAfter = function (other) {
+    }
+    isAfter(other) {
         return !this.isBeforeOrEqual(other);
-    };
-    Position.prototype.isAfterOrEqual = function (other) {
+    }
+    isAfterOrEqual(other) {
         return !this.isBefore(other);
-    };
-    Position.prototype.isEqual = function (other) {
+    }
+    isEqual(other) {
         return this._line === other._line && this._character === other._character;
-    };
-    Position.prototype.compareTo = function (other) {
+    }
+    compareTo(other) {
         if (this._line < other._line) {
             return -1;
         }
@@ -32526,13 +32447,12 @@ var Position = (function () {
                 return 0;
             }
         }
-    };
-    Position.prototype.translate = function (lineDeltaOrChange, characterDelta) {
-        if (characterDelta === void 0) { characterDelta = 0; }
+    }
+    translate(lineDeltaOrChange, characterDelta = 0) {
         if (lineDeltaOrChange === null || characterDelta === null) {
             throw new Error('illegal argument');
         }
-        var lineDelta;
+        let lineDelta;
         if (typeof lineDeltaOrChange === 'undefined') {
             lineDelta = 0;
         }
@@ -32546,14 +32466,13 @@ var Position = (function () {
         if (lineDelta === 0 && characterDelta === 0) {
             return this;
         }
-        return new Position(this.line + lineDelta, this.character + characterDelta);
-    };
-    Position.prototype.with = function (lineOrChange, character) {
-        if (character === void 0) { character = this.character; }
+        return new Position_1(this.line + lineDelta, this.character + characterDelta);
+    }
+    with(lineOrChange, character = this.character) {
         if (lineOrChange === null || character === null) {
             throw new Error('illegal argument');
         }
-        var line;
+        let line;
         if (typeof lineOrChange === 'undefined') {
             line = this.line;
         }
@@ -32567,18 +32486,21 @@ var Position = (function () {
         if (line === this.line && character === this.character) {
             return this;
         }
-        return new Position(line, character);
-    };
-    Position.prototype.toJSON = function () {
+        return new Position_1(line, character);
+    }
+    toJSON() {
         return { line: this.line, character: this.character };
-    };
-    return Position;
-}());
+    }
+};
+Position = Position_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Number, Number])
+], Position);
 exports.Position = Position;
-var Range = (function () {
-    function Range(startLineOrStart, startColumnOrEnd, endLine, endColumn) {
-        var start;
-        var end;
+let Range = Range_1 = class Range {
+    constructor(startLineOrStart, startColumnOrEnd, endLine, endColumn) {
+        let start;
+        let end;
         if (typeof startLineOrStart === 'number' && typeof startColumnOrEnd === 'number' && typeof endLine === 'number' && typeof endColumn === 'number') {
             start = new Position(startLineOrStart, startColumnOrEnd);
             end = new Position(endLine, endColumn);
@@ -32599,8 +32521,8 @@ var Range = (function () {
             this._end = start;
         }
     }
-    Range.isRange = function (thing) {
-        if (thing instanceof Range) {
+    static isRange(thing) {
+        if (thing instanceof Range_1) {
             return true;
         }
         if (!thing) {
@@ -32608,23 +32530,15 @@ var Range = (function () {
         }
         return Position.isPosition(thing.start)
             && Position.isPosition(thing.end);
-    };
-    Object.defineProperty(Range.prototype, "start", {
-        get: function () {
-            return this._start;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Range.prototype, "end", {
-        get: function () {
-            return this._end;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Range.prototype.contains = function (positionOrRange) {
-        if (positionOrRange instanceof Range) {
+    }
+    get start() {
+        return this._start;
+    }
+    get end() {
+        return this._end;
+    }
+    contains(positionOrRange) {
+        if (positionOrRange instanceof Range_1) {
             return this.contains(positionOrRange._start)
                 && this.contains(positionOrRange._end);
         }
@@ -32638,49 +32552,40 @@ var Range = (function () {
             return true;
         }
         return false;
-    };
-    Range.prototype.isEqual = function (other) {
+    }
+    isEqual(other) {
         return this._start.isEqual(other._start) && this._end.isEqual(other._end);
-    };
-    Range.prototype.intersection = function (other) {
-        var start = Position.Max(other.start, this._start);
-        var end = Position.Min(other.end, this._end);
+    }
+    intersection(other) {
+        const start = Position.Max(other.start, this._start);
+        const end = Position.Min(other.end, this._end);
         if (start.isAfter(end)) {
             return undefined;
         }
-        return new Range(start, end);
-    };
-    Range.prototype.union = function (other) {
+        return new Range_1(start, end);
+    }
+    union(other) {
         if (this.contains(other)) {
             return this;
         }
         else if (other.contains(this)) {
             return other;
         }
-        var start = Position.Min(other.start, this._start);
-        var end = Position.Max(other.end, this.end);
-        return new Range(start, end);
-    };
-    Object.defineProperty(Range.prototype, "isEmpty", {
-        get: function () {
-            return this._start.isEqual(this._end);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Range.prototype, "isSingleLine", {
-        get: function () {
-            return this._start.line === this._end.line;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Range.prototype.with = function (startOrChange, end) {
-        if (end === void 0) { end = this.end; }
+        const start = Position.Min(other.start, this._start);
+        const end = Position.Max(other.end, this.end);
+        return new Range_1(start, end);
+    }
+    get isEmpty() {
+        return this._start.isEqual(this._end);
+    }
+    get isSingleLine() {
+        return this._start.line === this._end.line;
+    }
+    with(startOrChange, end = this.end) {
         if (startOrChange === null || end === null) {
             throw new Error('illegal argument');
         }
-        var start;
+        let start;
         if (!startOrChange) {
             start = this.start;
         }
@@ -32694,21 +32599,36 @@ var Range = (function () {
         if (start.isEqual(this._start) && end.isEqual(this.end)) {
             return this;
         }
-        return new Range(start, end);
-    };
-    Range.prototype.toJSON = function () {
+        return new Range_1(start, end);
+    }
+    toJSON() {
         return [this.start, this.end];
-    };
-    return Range;
-}());
+    }
+};
+Range = Range_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Object, Object, Number, Number])
+], Range);
 exports.Range = Range;
+let Diagnostic = class Diagnostic {
+    constructor(range, message, severity = DiagnosticSeverity.Error) {
+        this.range = range;
+        this.message = message;
+        this.severity = severity;
+    }
+};
+Diagnostic = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Range, String, Number])
+], Diagnostic);
+exports.Diagnostic = Diagnostic;
 var EndOfLine;
 (function (EndOfLine) {
     EndOfLine[EndOfLine["LF"] = 1] = "LF";
     EndOfLine[EndOfLine["CRLF"] = 2] = "CRLF";
 })(EndOfLine = exports.EndOfLine || (exports.EndOfLine = {}));
-var RelativePattern = (function () {
-    function RelativePattern(base, pattern) {
+let RelativePattern = class RelativePattern {
+    constructor(base, pattern) {
         this.pattern = pattern;
         if (typeof base !== 'string') {
             if (!base || !vscode_uri_1.default.isUri(base.uri)) {
@@ -32720,14 +32640,17 @@ var RelativePattern = (function () {
         }
         this.base = typeof base === 'string' ? base : base.uri.fsPath;
     }
-    RelativePattern.prototype.pathToRelative = function (from, to) {
+    pathToRelative(from, to) {
         return 'not implement!';
-    };
-    return RelativePattern;
-}());
+    }
+};
+RelativePattern = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Object, String])
+], RelativePattern);
 exports.RelativePattern = RelativePattern;
-var Location = (function () {
-    function Location(uri, rangeOrPosition) {
+let Location = Location_1 = class Location {
+    constructor(uri, rangeOrPosition) {
         this.uri = uri;
         if (!rangeOrPosition) {
         }
@@ -32741,8 +32664,8 @@ var Location = (function () {
             throw new Error('Illegal argument');
         }
     }
-    Location.isLocation = function (thing) {
-        if (thing instanceof Location) {
+    static isLocation(thing) {
+        if (thing instanceof Location_1) {
             return true;
         }
         if (!thing) {
@@ -32750,60 +32673,62 @@ var Location = (function () {
         }
         return Range.isRange(thing.range)
             && vscode_uri_1.default.isUri(thing.uri);
-    };
-    Location.prototype.toJSON = function () {
+    }
+    toJSON() {
         return {
             uri: this.uri,
             range: this.range,
         };
-    };
-    return Location;
-}());
+    }
+};
+Location = Location_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [vscode_uri_1.default, Object])
+], Location);
 exports.Location = Location;
-var Disposable = (function () {
-    function Disposable(func) {
+let DiagnosticRelatedInformation = class DiagnosticRelatedInformation {
+    constructor(location, message) {
+        this.location = location;
+        this.message = message;
+    }
+};
+DiagnosticRelatedInformation = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Location, String])
+], DiagnosticRelatedInformation);
+exports.DiagnosticRelatedInformation = DiagnosticRelatedInformation;
+let Disposable = Disposable_1 = class Disposable {
+    constructor(func) {
         this.disposable = func;
     }
-    Disposable.from = function () {
-        var disposables = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            disposables[_i] = arguments[_i];
-        }
-        return new Disposable(function () {
-            var e_1, _a;
+    static from(...disposables) {
+        return new Disposable_1(() => {
             if (disposables) {
-                try {
-                    for (var disposables_1 = tslib_1.__values(disposables), disposables_1_1 = disposables_1.next(); !disposables_1_1.done; disposables_1_1 = disposables_1.next()) {
-                        var disposable = disposables_1_1.value;
-                        if (disposable && typeof disposable.dispose === 'function') {
-                            disposable.dispose();
-                        }
+                for (const disposable of disposables) {
+                    if (disposable && typeof disposable.dispose === 'function') {
+                        disposable.dispose();
                     }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (disposables_1_1 && !disposables_1_1.done && (_a = disposables_1.return)) _a.call(disposables_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
                 }
             }
         });
-    };
-    Disposable.prototype.dispose = function () {
+    }
+    dispose() {
         if (this.disposable) {
             this.disposable();
             this.disposable = undefined;
         }
-    };
-    Disposable.create = function (func) {
-        return new Disposable(func);
-    };
-    return Disposable;
-}());
+    }
+    static create(func) {
+        return new Disposable_1(func);
+    }
+};
+Disposable = Disposable_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Function])
+], Disposable);
 exports.Disposable = Disposable;
-var Hover = (function () {
-    function Hover(contents, range) {
+let Hover = class Hover {
+    constructor(contents, range) {
         if (!contents) {
             throw new Error('illegalArgument：contents must be defined');
         }
@@ -32818,32 +32743,37 @@ var Hover = (function () {
         }
         this.range = range;
     }
-    return Hover;
-}());
+};
+Hover = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Object, Range])
+], Hover);
 exports.Hover = Hover;
-var MarkdownString = (function () {
-    function MarkdownString(value) {
+let MarkdownString = class MarkdownString {
+    constructor(value) {
         this.value = value || '';
     }
-    MarkdownString.prototype.appendText = function (value) {
+    appendText(value) {
         this.value += value.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
         return this;
-    };
-    MarkdownString.prototype.appendMarkdown = function (value) {
+    }
+    appendMarkdown(value) {
         this.value += value;
         return this;
-    };
-    MarkdownString.prototype.appendCodeblock = function (code, language) {
-        if (language === void 0) { language = ''; }
+    }
+    appendCodeblock(code, language = '') {
         this.value += '\n```';
         this.value += language;
         this.value += '\n';
         this.value += code;
         this.value += '\n```\n';
         return this;
-    };
-    return MarkdownString;
-}());
+    }
+};
+MarkdownString = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String])
+], MarkdownString);
 exports.MarkdownString = MarkdownString;
 function isMarkdownString(thing) {
     if (thing instanceof MarkdownString) {
@@ -32856,44 +32786,42 @@ function isMarkdownString(thing) {
     return false;
 }
 exports.isMarkdownString = isMarkdownString;
-var SnippetString = (function () {
-    function SnippetString(value) {
+let SnippetString = SnippetString_1 = class SnippetString {
+    constructor(value) {
         this._tabstop = 1;
         this.value = value || '';
     }
-    SnippetString.isSnippetString = function (thing) {
-        if (thing instanceof SnippetString) {
+    static isSnippetString(thing) {
+        if (thing instanceof SnippetString_1) {
             return true;
         }
         if (!thing) {
             return false;
         }
         return typeof thing.value === 'string';
-    };
-    SnippetString._escape = function (value) {
+    }
+    static _escape(value) {
         return value.replace(/\$|}|\\/g, '\\$&');
-    };
-    SnippetString.prototype.appendText = function (str) {
-        this.value += SnippetString._escape(str);
+    }
+    appendText(str) {
+        this.value += SnippetString_1._escape(str);
         return this;
-    };
-    SnippetString.prototype.appendTabstop = function (num) {
-        if (num === void 0) { num = this._tabstop++; }
+    }
+    appendTabstop(num = this._tabstop++) {
         this.value += '$';
         this.value += num;
         return this;
-    };
-    SnippetString.prototype.appendPlaceholder = function (value, num) {
-        if (num === void 0) { num = this._tabstop++; }
+    }
+    appendPlaceholder(value, num = this._tabstop++) {
         if (typeof value === 'function') {
-            var nested = new SnippetString();
+            const nested = new SnippetString_1();
             nested._tabstop = this._tabstop;
             value(nested);
             this._tabstop = nested._tabstop;
             value = nested.value;
         }
         else {
-            value = SnippetString._escape(value);
+            value = SnippetString_1._escape(value);
         }
         this.value += '${';
         this.value += num;
@@ -32901,10 +32829,10 @@ var SnippetString = (function () {
         this.value += value;
         this.value += '}';
         return this;
-    };
-    SnippetString.prototype.appendVariable = function (name, defaultValue) {
+    }
+    appendVariable(name, defaultValue) {
         if (typeof defaultValue === 'function') {
-            var nested = new SnippetString();
+            const nested = new SnippetString_1();
             nested._tabstop = this._tabstop;
             defaultValue(nested);
             this._tabstop = nested._tabstop;
@@ -32921,56 +32849,47 @@ var SnippetString = (function () {
         }
         this.value += '}';
         return this;
-    };
-    return SnippetString;
-}());
+    }
+};
+SnippetString = SnippetString_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String])
+], SnippetString);
 exports.SnippetString = SnippetString;
-var TextEdit = (function () {
-    function TextEdit(range, newText) {
+let TextEdit = TextEdit_1 = class TextEdit {
+    constructor(range, newText) {
         this.range = range;
         this.newText = newText;
     }
-    Object.defineProperty(TextEdit.prototype, "range", {
-        get: function () {
-            return this._range;
-        },
-        set: function (value) {
-            if (value && !Range.isRange(value)) {
-                throw utils_1.illegalArgument('range');
-            }
-            this._range = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextEdit.prototype, "newText", {
-        get: function () {
-            return this._newText || '';
-        },
-        set: function (value) {
-            if (value && typeof value !== 'string') {
-                throw utils_1.illegalArgument('newText');
-            }
-            this._newText = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(TextEdit.prototype, "newEol", {
-        get: function () {
-            return this._newEol;
-        },
-        set: function (value) {
-            if (value && typeof value !== 'number') {
-                throw utils_1.illegalArgument('newEol');
-            }
-            this._newEol = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    TextEdit.isTextEdit = function (thing) {
-        if (thing instanceof TextEdit) {
+    get range() {
+        return this._range;
+    }
+    set range(value) {
+        if (value && !Range.isRange(value)) {
+            throw utils_1.illegalArgument('range');
+        }
+        this._range = value;
+    }
+    get newText() {
+        return this._newText || '';
+    }
+    set newText(value) {
+        if (value && typeof value !== 'string') {
+            throw utils_1.illegalArgument('newText');
+        }
+        this._newText = value;
+    }
+    get newEol() {
+        return this._newEol;
+    }
+    set newEol(value) {
+        if (value && typeof value !== 'number') {
+            throw utils_1.illegalArgument('newEol');
+        }
+        this._newEol = value;
+    }
+    static isTextEdit(thing) {
+        if (thing instanceof TextEdit_1) {
             return true;
         }
         if (!thing) {
@@ -32978,23 +32897,26 @@ var TextEdit = (function () {
         }
         return Range.isRange(thing.range)
             && typeof thing.newText === 'string';
-    };
-    TextEdit.replace = function (range, newText) {
-        return new TextEdit(range, newText);
-    };
-    TextEdit.insert = function (position, newText) {
-        return TextEdit.replace(new Range(position, position), newText);
-    };
-    TextEdit.delete = function (range) {
-        return TextEdit.replace(range, '');
-    };
-    TextEdit.setEndOfLine = function (eol) {
-        var ret = new TextEdit(undefined, undefined);
+    }
+    static replace(range, newText) {
+        return new TextEdit_1(range, newText);
+    }
+    static insert(position, newText) {
+        return TextEdit_1.replace(new Range(position, position), newText);
+    }
+    static delete(range) {
+        return TextEdit_1.replace(range, '');
+    }
+    static setEndOfLine(eol) {
+        const ret = new TextEdit_1(undefined, undefined);
         ret.newEol = eol;
         return ret;
-    };
-    return TextEdit;
-}());
+    }
+};
+TextEdit = TextEdit_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Object, Object])
+], TextEdit);
 exports.TextEdit = TextEdit;
 var CompletionTriggerKind;
 (function (CompletionTriggerKind) {
@@ -33030,12 +32952,12 @@ var CompletionItemKind;
     CompletionItemKind[CompletionItemKind["Operator"] = 23] = "Operator";
     CompletionItemKind[CompletionItemKind["TypeParameter"] = 24] = "TypeParameter";
 })(CompletionItemKind = exports.CompletionItemKind || (exports.CompletionItemKind = {}));
-var CompletionItem = (function () {
-    function CompletionItem(label, kind) {
+let CompletionItem = class CompletionItem {
+    constructor(label, kind) {
         this.label = label;
         this.kind = kind;
     }
-    CompletionItem.prototype.toJSON = function () {
+    toJSON() {
         return {
             label: this.label,
             kind: this.kind && CompletionItemKind[this.kind],
@@ -33047,19 +32969,23 @@ var CompletionItem = (function () {
             insertText: this.insertText,
             textEdit: this.textEdit,
         };
-    };
-    return CompletionItem;
-}());
+    }
+};
+CompletionItem = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String, Number])
+], CompletionItem);
 exports.CompletionItem = CompletionItem;
-var CompletionList = (function () {
-    function CompletionList(items, isIncomplete) {
-        if (items === void 0) { items = []; }
-        if (isIncomplete === void 0) { isIncomplete = false; }
+let CompletionList = class CompletionList {
+    constructor(items = [], isIncomplete = false) {
         this.items = items;
         this.isIncomplete = isIncomplete;
     }
-    return CompletionList;
-}());
+};
+CompletionList = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Array, Boolean])
+], CompletionList);
 exports.CompletionList = CompletionList;
 var ConfigurationTarget;
 (function (ConfigurationTarget) {
@@ -33073,12 +32999,15 @@ var TextEditorLineNumbersStyle;
     TextEditorLineNumbersStyle[TextEditorLineNumbersStyle["On"] = 1] = "On";
     TextEditorLineNumbersStyle[TextEditorLineNumbersStyle["Relative"] = 2] = "Relative";
 })(TextEditorLineNumbersStyle = exports.TextEditorLineNumbersStyle || (exports.TextEditorLineNumbersStyle = {}));
-var ThemeColor = (function () {
-    function ThemeColor(id) {
+let ThemeColor = class ThemeColor {
+    constructor(id) {
         this.id = id;
     }
-    return ThemeColor;
-}());
+};
+ThemeColor = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String])
+], ThemeColor);
 exports.ThemeColor = ThemeColor;
 var DecorationRangeBehavior;
 (function (DecorationRangeBehavior) {
@@ -33087,14 +33016,17 @@ var DecorationRangeBehavior;
     DecorationRangeBehavior[DecorationRangeBehavior["OpenClosed"] = 2] = "OpenClosed";
     DecorationRangeBehavior[DecorationRangeBehavior["ClosedOpen"] = 3] = "ClosedOpen";
 })(DecorationRangeBehavior = exports.DecorationRangeBehavior || (exports.DecorationRangeBehavior = {}));
-var FoldingRange = (function () {
-    function FoldingRange(start, end, kind) {
+let FoldingRange = class FoldingRange {
+    constructor(start, end, kind) {
         this.start = start;
         this.end = end;
         this.kind = kind;
     }
-    return FoldingRange;
-}());
+};
+FoldingRange = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Number, Number, Number])
+], FoldingRange);
 exports.FoldingRange = FoldingRange;
 var FoldingRangeKind;
 (function (FoldingRangeKind) {
@@ -33102,15 +33034,18 @@ var FoldingRangeKind;
     FoldingRangeKind[FoldingRangeKind["Imports"] = 2] = "Imports";
     FoldingRangeKind[FoldingRangeKind["Region"] = 3] = "Region";
 })(FoldingRangeKind = exports.FoldingRangeKind || (exports.FoldingRangeKind = {}));
-var Color = (function () {
-    function Color(red, green, blue, alpha) {
+let Color = class Color {
+    constructor(red, green, blue, alpha) {
         this.red = red;
         this.green = green;
         this.blue = blue;
         this.alpha = alpha;
     }
-    return Color;
-}());
+};
+Color = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Number, Number, Number, Number])
+], Color);
 exports.Color = Color;
 var DocumentHighlightKind;
 (function (DocumentHighlightKind) {
@@ -33118,24 +33053,29 @@ var DocumentHighlightKind;
     DocumentHighlightKind[DocumentHighlightKind["Read"] = 1] = "Read";
     DocumentHighlightKind[DocumentHighlightKind["Write"] = 2] = "Write";
 })(DocumentHighlightKind = exports.DocumentHighlightKind || (exports.DocumentHighlightKind = {}));
-var DocumentHighlight = (function () {
-    function DocumentHighlight(range, kind) {
-        if (kind === void 0) { kind = DocumentHighlightKind.Text; }
+let DocumentHighlight = class DocumentHighlight {
+    constructor(range, kind = DocumentHighlightKind.Text) {
         this.range = range;
         this.kind = kind;
     }
-    return DocumentHighlight;
-}());
+};
+DocumentHighlight = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Range, Number])
+], DocumentHighlight);
 exports.DocumentHighlight = DocumentHighlight;
-var ColorPresentation = (function () {
-    function ColorPresentation(label) {
+let ColorPresentation = class ColorPresentation {
+    constructor(label) {
         if (!label || typeof label !== 'string') {
             throw utils_1.illegalArgument('label');
         }
         this.label = label;
     }
-    return ColorPresentation;
-}());
+};
+ColorPresentation = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String])
+], ColorPresentation);
 exports.ColorPresentation = ColorPresentation;
 var DiagnosticSeverity;
 (function (DiagnosticSeverity) {
@@ -33149,32 +33089,46 @@ var DiagnosticTag;
     DiagnosticTag[DiagnosticTag["Unnecessary"] = 1] = "Unnecessary";
     DiagnosticTag[DiagnosticTag["Deprecated"] = 2] = "Deprecated";
 })(DiagnosticTag = exports.DiagnosticTag || (exports.DiagnosticTag = {}));
-var CodeActionKind = (function () {
-    function CodeActionKind(value) {
+let CodeActionKind = CodeActionKind_1 = class CodeActionKind {
+    constructor(value) {
         this.value = value;
     }
-    CodeActionKind.prototype.append = function (parts) {
-        return new CodeActionKind(this.value ? this.value + CodeActionKind.sep + parts : parts);
-    };
-    CodeActionKind.prototype.contains = function (other) {
-        return this.value === other.value || ide_core_common_1.startsWithIgnoreCase(other.value, this.value + CodeActionKind.sep);
-    };
-    CodeActionKind.prototype.intersects = function (other) {
+    append(parts) {
+        return new CodeActionKind_1(this.value ? this.value + CodeActionKind_1.sep + parts : parts);
+    }
+    contains(other) {
+        return this.value === other.value || ide_core_common_1.startsWithIgnoreCase(other.value, this.value + CodeActionKind_1.sep);
+    }
+    intersects(other) {
         return this.contains(other) || other.contains(this);
-    };
-    CodeActionKind.sep = '.';
-    CodeActionKind.Empty = new CodeActionKind('');
-    CodeActionKind.QuickFix = CodeActionKind.Empty.append('quickfix');
-    CodeActionKind.Refactor = CodeActionKind.Empty.append('refactor');
-    CodeActionKind.RefactorExtract = CodeActionKind.Refactor.append('extract');
-    CodeActionKind.RefactorInline = CodeActionKind.Refactor.append('inline');
-    CodeActionKind.RefactorRewrite = CodeActionKind.Refactor.append('rewrite');
-    CodeActionKind.Source = CodeActionKind.Empty.append('source');
-    CodeActionKind.SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
-    CodeActionKind.SourceFixAll = CodeActionKind.Source.append('sourceFixAll');
-    return CodeActionKind;
-}());
+    }
+};
+CodeActionKind.sep = '.';
+CodeActionKind.Empty = new CodeActionKind_1('');
+CodeActionKind.QuickFix = CodeActionKind_1.Empty.append('quickfix');
+CodeActionKind.Refactor = CodeActionKind_1.Empty.append('refactor');
+CodeActionKind.RefactorExtract = CodeActionKind_1.Refactor.append('extract');
+CodeActionKind.RefactorInline = CodeActionKind_1.Refactor.append('inline');
+CodeActionKind.RefactorRewrite = CodeActionKind_1.Refactor.append('rewrite');
+CodeActionKind.Source = CodeActionKind_1.Empty.append('source');
+CodeActionKind.SourceOrganizeImports = CodeActionKind_1.Source.append('organizeImports');
+CodeActionKind.SourceFixAll = CodeActionKind_1.Source.append('sourceFixAll');
+CodeActionKind = CodeActionKind_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String])
+], CodeActionKind);
 exports.CodeActionKind = CodeActionKind;
+let CodeAction = class CodeAction {
+    constructor(title, kind) {
+        this.title = title;
+        this.kind = kind;
+    }
+};
+CodeAction = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String, CodeActionKind])
+], CodeAction);
+exports.CodeAction = CodeAction;
 function isAsciiLetter(code) {
     return isLowerAsciiLetter(code) || isUpperAsciiLetter(code);
 }
@@ -33187,12 +33141,10 @@ function isLowerAsciiLetter(code) {
     return code >= 97 && code <= 122;
 }
 exports.isLowerAsciiLetter = isLowerAsciiLetter;
-var Selection = (function (_super) {
-    tslib_1.__extends(Selection, _super);
-    function Selection(anchorLineOrAnchor, anchorColumnOrActive, activeLine, activeColumn) {
-        var _this = this;
-        var anchor;
-        var active;
+let Selection = Selection_1 = class Selection extends Range {
+    constructor(anchorLineOrAnchor, anchorColumnOrActive, activeLine, activeColumn) {
+        let anchor;
+        let active;
         if (typeof anchorLineOrAnchor === 'number' && typeof anchorColumnOrActive === 'number' && typeof activeLine === 'number' && typeof activeColumn === 'number') {
             anchor = new Position(anchorLineOrAnchor, anchorColumnOrActive);
             active = new Position(activeLine, activeColumn);
@@ -33204,13 +33156,12 @@ var Selection = (function (_super) {
         if (!anchor || !active) {
             throw new Error('Invalid arguments');
         }
-        _this = _super.call(this, anchor, active) || this;
-        _this._anchor = anchor;
-        _this._active = active;
-        return _this;
+        super(anchor, active);
+        this._anchor = anchor;
+        this._active = active;
     }
-    Selection.isSelection = function (thing) {
-        if (thing instanceof Selection) {
+    static isSelection(thing) {
+        if (thing instanceof Selection_1) {
             return true;
         }
         if (!thing) {
@@ -33220,200 +33171,134 @@ var Selection = (function (_super) {
             && Position.isPosition(thing.anchor)
             && Position.isPosition(thing.active)
             && typeof thing.isReversed === 'boolean';
-    };
-    Object.defineProperty(Selection.prototype, "anchor", {
-        get: function () {
-            return this._anchor;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Selection.prototype, "active", {
-        get: function () {
-            return this._active;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Selection.prototype, "isReversed", {
-        get: function () {
-            return this._anchor === this._end;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Selection.prototype.toJSON = function () {
+    }
+    get anchor() {
+        return this._anchor;
+    }
+    get active() {
+        return this._active;
+    }
+    get isReversed() {
+        return this._anchor === this._end;
+    }
+    toJSON() {
         return {
             start: this.start,
             end: this.end,
             active: this.active,
             anchor: this.anchor,
         };
-    };
-    return Selection;
-}(Range));
+    }
+};
+Selection = Selection_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Object, Object, Number, Number])
+], Selection);
 exports.Selection = Selection;
-var WorkspaceEdit = (function () {
-    function WorkspaceEdit() {
+let WorkspaceEdit = class WorkspaceEdit {
+    constructor() {
         this._edits = new Array();
     }
-    WorkspaceEdit.prototype.renameFile = function (from, to, options) {
-        this._edits.push({ _type: 1, from: from, to: to, options: options });
-    };
-    WorkspaceEdit.prototype.createFile = function (uri, options) {
-        this._edits.push({ _type: 1, from: undefined, to: uri, options: options });
-    };
-    WorkspaceEdit.prototype.deleteFile = function (uri, options) {
-        this._edits.push({ _type: 1, from: uri, to: undefined, options: options });
-    };
-    WorkspaceEdit.prototype.replace = function (uri, range, newText) {
-        this._edits.push({ _type: 2, uri: uri, edit: new TextEdit(range, newText) });
-    };
-    WorkspaceEdit.prototype.insert = function (resource, position, newText) {
+    renameFile(from, to, options) {
+        this._edits.push({ _type: 1, from, to, options });
+    }
+    createFile(uri, options) {
+        this._edits.push({ _type: 1, from: undefined, to: uri, options });
+    }
+    deleteFile(uri, options) {
+        this._edits.push({ _type: 1, from: uri, to: undefined, options });
+    }
+    replace(uri, range, newText) {
+        this._edits.push({ _type: 2, uri, edit: new TextEdit(range, newText) });
+    }
+    insert(resource, position, newText) {
         this.replace(resource, new Range(position, position), newText);
-    };
-    WorkspaceEdit.prototype.delete = function (resource, range) {
+    }
+    delete(resource, range) {
         this.replace(resource, range, '');
-    };
-    WorkspaceEdit.prototype.has = function (uri) {
-        var e_2, _a;
-        try {
-            for (var _b = tslib_1.__values(this._edits), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var edit = _c.value;
-                if (edit && edit._type === 2 && edit.uri.toString() === uri.toString()) {
-                    return true;
-                }
+    }
+    has(uri) {
+        for (const edit of this._edits) {
+            if (edit && edit._type === 2 && edit.uri.toString() === uri.toString()) {
+                return true;
             }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_2) throw e_2.error; }
         }
         return false;
-    };
-    WorkspaceEdit.prototype.set = function (uri, edits) {
-        var e_3, _a;
+    }
+    set(uri, edits) {
         if (!edits) {
-            for (var i = 0; i < this._edits.length; i++) {
-                var element = this._edits[i];
+            for (let i = 0; i < this._edits.length; i++) {
+                const element = this._edits[i];
                 if (element && element._type === 2 && element.uri.toString() === uri.toString()) {
                     this._edits[i] = undefined;
                 }
             }
-            this._edits = this._edits.filter(function (e) { return !!e; });
+            this._edits = this._edits.filter((e) => !!e);
         }
         else {
-            try {
-                for (var edits_1 = tslib_1.__values(edits), edits_1_1 = edits_1.next(); !edits_1_1.done; edits_1_1 = edits_1.next()) {
-                    var edit = edits_1_1.value;
-                    if (edit) {
-                        this._edits.push({ _type: 2, uri: uri, edit: edit });
-                    }
-                }
-            }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
-            finally {
-                try {
-                    if (edits_1_1 && !edits_1_1.done && (_a = edits_1.return)) _a.call(edits_1);
-                }
-                finally { if (e_3) throw e_3.error; }
-            }
-        }
-    };
-    WorkspaceEdit.prototype.get = function (uri) {
-        var e_4, _a;
-        var res = [];
-        try {
-            for (var _b = tslib_1.__values(this._edits), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var candidate = _c.value;
-                if (candidate && candidate._type === 2 && candidate.uri.toString() === uri.toString()) {
-                    res.push(candidate.edit);
+            for (const edit of edits) {
+                if (edit) {
+                    this._edits.push({ _type: 2, uri, edit });
                 }
             }
         }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+    }
+    get(uri) {
+        const res = [];
+        for (const candidate of this._edits) {
+            if (candidate && candidate._type === 2 && candidate.uri.toString() === uri.toString()) {
+                res.push(candidate.edit);
             }
-            finally { if (e_4) throw e_4.error; }
         }
         if (res.length === 0) {
             return undefined;
         }
         return res;
-    };
-    WorkspaceEdit.prototype.entries = function () {
-        var e_5, _a;
-        var textEdits = new Map();
-        try {
-            for (var _b = tslib_1.__values(this._edits), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var candidate = _c.value;
-                if (candidate && candidate._type === 2) {
-                    var textEdit = textEdits.get(candidate.uri.toString());
-                    if (!textEdit) {
-                        textEdit = [candidate.uri, []];
-                        textEdits.set(candidate.uri.toString(), textEdit);
-                    }
-                    textEdit[1].push(candidate.edit);
+    }
+    entries() {
+        const textEdits = new Map();
+        for (const candidate of this._edits) {
+            if (candidate && candidate._type === 2) {
+                let textEdit = textEdits.get(candidate.uri.toString());
+                if (!textEdit) {
+                    textEdit = [candidate.uri, []];
+                    textEdits.set(candidate.uri.toString(), textEdit);
                 }
+                textEdit[1].push(candidate.edit);
             }
         }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_5) throw e_5.error; }
-        }
-        var result = [];
-        textEdits.forEach(function (v) { return result.push(v); });
+        const result = [];
+        textEdits.forEach((v) => result.push(v));
         return result;
-    };
-    WorkspaceEdit.prototype._allEntries = function () {
-        var e_6, _a;
-        var res = [];
-        try {
-            for (var _b = tslib_1.__values(this._edits), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var edit = _c.value;
-                if (!edit) {
-                    continue;
-                }
-                if (edit._type === 1) {
-                    res.push([edit.from, edit.to, edit.options]);
-                }
-                else {
-                    res.push([edit.uri, [edit.edit]]);
-                }
+    }
+    _allEntries() {
+        const res = [];
+        for (const edit of this._edits) {
+            if (!edit) {
+                continue;
             }
-        }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            if (edit._type === 1) {
+                res.push([edit.from, edit.to, edit.options]);
             }
-            finally { if (e_6) throw e_6.error; }
+            else {
+                res.push([edit.uri, [edit.edit]]);
+            }
         }
         return res;
-    };
-    Object.defineProperty(WorkspaceEdit.prototype, "size", {
-        get: function () {
-            return this.entries().length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    WorkspaceEdit.prototype.toJSON = function () {
+    }
+    get size() {
+        return this.entries().length;
+    }
+    toJSON() {
         return this.entries();
-    };
-    return WorkspaceEdit;
-}());
+    }
+};
+WorkspaceEdit = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat
+], WorkspaceEdit);
 exports.WorkspaceEdit = WorkspaceEdit;
-var DocumentLink = (function () {
-    function DocumentLink(range, target) {
+let DocumentLink = class DocumentLink {
+    constructor(range, target) {
         if (target && !(target instanceof vscode_uri_1.default)) {
             throw utils_1.illegalArgument('target');
         }
@@ -33423,16 +33308,19 @@ var DocumentLink = (function () {
         this.range = range;
         this.target = target;
     }
-    return DocumentLink;
-}());
+};
+DocumentLink = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Range, vscode_uri_1.default])
+], DocumentLink);
 exports.DocumentLink = DocumentLink;
 var StatusBarAlignment;
 (function (StatusBarAlignment) {
     StatusBarAlignment[StatusBarAlignment["Left"] = 1] = "Left";
     StatusBarAlignment[StatusBarAlignment["Right"] = 2] = "Right";
 })(StatusBarAlignment = exports.StatusBarAlignment || (exports.StatusBarAlignment = {}));
-var SymbolInformation = (function () {
-    function SymbolInformation(name, kind, rangeOrContainer, locationOrUri, containerName) {
+let SymbolInformation = SymbolInformation_1 = class SymbolInformation {
+    constructor(name, kind, rangeOrContainer, locationOrUri, containerName) {
         this.name = name;
         this.kind = kind;
         this.containerName = containerName;
@@ -33445,23 +33333,26 @@ var SymbolInformation = (function () {
         else if (rangeOrContainer instanceof Range) {
             this.location = new Location(locationOrUri, rangeOrContainer);
         }
-        SymbolInformation.validate(this);
+        SymbolInformation_1.validate(this);
     }
-    SymbolInformation.validate = function (candidate) {
+    static validate(candidate) {
         if (!candidate.name) {
             throw new Error('Should provide a name inside candidate field');
         }
-    };
-    SymbolInformation.prototype.toJSON = function () {
+    }
+    toJSON() {
         return {
             name: this.name,
             kind: SymbolKind[this.kind],
             location: this.location,
             containerName: this.containerName,
         };
-    };
-    return SymbolInformation;
-}());
+    }
+};
+SymbolInformation = SymbolInformation_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String, Number, Object, Object, String])
+], SymbolInformation);
 exports.SymbolInformation = SymbolInformation;
 var SymbolKind;
 (function (SymbolKind) {
@@ -33492,17 +33383,17 @@ var SymbolKind;
     SymbolKind[SymbolKind["Operator"] = 24] = "Operator";
     SymbolKind[SymbolKind["TypeParameter"] = 25] = "TypeParameter";
 })(SymbolKind = exports.SymbolKind || (exports.SymbolKind = {}));
-var DocumentSymbol = (function () {
-    function DocumentSymbol(name, detail, kind, range, selectionRange) {
+let DocumentSymbol = DocumentSymbol_1 = class DocumentSymbol {
+    constructor(name, detail, kind, range, selectionRange) {
         this.name = name;
         this.detail = detail;
         this.kind = kind;
         this.range = range;
         this.selectionRange = selectionRange;
         this.children = [];
-        DocumentSymbol.validate(this);
+        DocumentSymbol_1.validate(this);
     }
-    DocumentSymbol.validate = function (candidate) {
+    static validate(candidate) {
         if (!candidate.name) {
             throw new Error('Should provide a name inside candidate field');
         }
@@ -33510,11 +33401,14 @@ var DocumentSymbol = (function () {
             throw new Error('selectionRange must be contained in fullRange');
         }
         if (candidate.children) {
-            candidate.children.forEach(DocumentSymbol.validate);
+            candidate.children.forEach(DocumentSymbol_1.validate);
         }
-    };
-    return DocumentSymbol;
-}());
+    }
+};
+DocumentSymbol = DocumentSymbol_1 = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String, String, Number, Range, Range])
+], DocumentSymbol);
 exports.DocumentSymbol = DocumentSymbol;
 var SignatureHelpTriggerKind;
 (function (SignatureHelpTriggerKind) {
@@ -33522,28 +33416,34 @@ var SignatureHelpTriggerKind;
     SignatureHelpTriggerKind[SignatureHelpTriggerKind["TriggerCharacter"] = 2] = "TriggerCharacter";
     SignatureHelpTriggerKind[SignatureHelpTriggerKind["ContentChange"] = 3] = "ContentChange";
 })(SignatureHelpTriggerKind = exports.SignatureHelpTriggerKind || (exports.SignatureHelpTriggerKind = {}));
-var ParameterInformation = (function () {
-    function ParameterInformation(label, documentation) {
+let ParameterInformation = class ParameterInformation {
+    constructor(label, documentation) {
         this.label = label;
         this.documentation = documentation;
     }
-    return ParameterInformation;
-}());
+};
+ParameterInformation = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String, Object])
+], ParameterInformation);
 exports.ParameterInformation = ParameterInformation;
-var SignatureInformation = (function () {
-    function SignatureInformation(label, documentation) {
+let SignatureInformation = class SignatureInformation {
+    constructor(label, documentation) {
         this.label = label;
         this.documentation = documentation;
         this.parameters = [];
     }
-    return SignatureInformation;
-}());
+};
+SignatureInformation = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String, Object])
+], SignatureInformation);
 exports.SignatureInformation = SignatureInformation;
-var SignatureHelp = (function () {
-    function SignatureHelp() {
-    }
-    return SignatureHelp;
-}());
+let SignatureHelp = class SignatureHelp {
+};
+SignatureHelp = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat
+], SignatureHelp);
 exports.SignatureHelp = SignatureHelp;
 var TreeItemCollapsibleState;
 (function (TreeItemCollapsibleState) {
@@ -33551,15 +33451,16 @@ var TreeItemCollapsibleState;
     TreeItemCollapsibleState[TreeItemCollapsibleState["Collapsed"] = 1] = "Collapsed";
     TreeItemCollapsibleState[TreeItemCollapsibleState["Expanded"] = 2] = "Expanded";
 })(TreeItemCollapsibleState = exports.TreeItemCollapsibleState || (exports.TreeItemCollapsibleState = {}));
-var ThemeIcon = (function () {
-    function ThemeIcon(id) {
-    }
-    return ThemeIcon;
-}());
+let ThemeIcon = class ThemeIcon {
+    constructor(id) { }
+};
+ThemeIcon = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String])
+], ThemeIcon);
 exports.ThemeIcon = ThemeIcon;
-var TreeItem = (function () {
-    function TreeItem(arg1, collapsibleState) {
-        if (collapsibleState === void 0) { collapsibleState = TreeItemCollapsibleState.None; }
+class TreeItem {
+    constructor(arg1, collapsibleState = TreeItemCollapsibleState.None) {
         this.collapsibleState = collapsibleState;
         if (arg1 instanceof vscode_uri_1.default) {
             this.resourceUri = arg1;
@@ -33568,8 +33469,7 @@ var TreeItem = (function () {
             this.label = arg1;
         }
     }
-    return TreeItem;
-}());
+}
 exports.TreeItem = TreeItem;
 var LogLevel;
 (function (LogLevel) {
@@ -33587,8 +33487,8 @@ var SourceControlInputBoxValidationType;
     SourceControlInputBoxValidationType[SourceControlInputBoxValidationType["Warning"] = 1] = "Warning";
     SourceControlInputBoxValidationType[SourceControlInputBoxValidationType["Information"] = 2] = "Information";
 })(SourceControlInputBoxValidationType = exports.SourceControlInputBoxValidationType || (exports.SourceControlInputBoxValidationType = {}));
-var ColorInformation = (function () {
-    function ColorInformation(range, color) {
+let ColorInformation = class ColorInformation {
+    constructor(range, color) {
         if (color && !(color instanceof Color)) {
             throw utils_1.illegalArgument('color');
         }
@@ -33598,80 +33498,89 @@ var ColorInformation = (function () {
         this.range = range;
         this.color = color;
     }
-    return ColorInformation;
-}());
+};
+ColorInformation = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Range, Color])
+], ColorInformation);
 exports.ColorInformation = ColorInformation;
-var DebugAdapterServer = (function () {
-    function DebugAdapterServer(port, host) {
+let DebugAdapterServer = class DebugAdapterServer {
+    constructor(port, host) {
         this.port = port;
         this.host = host;
     }
-    return DebugAdapterServer;
-}());
+};
+DebugAdapterServer = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Number, String])
+], DebugAdapterServer);
 exports.DebugAdapterServer = DebugAdapterServer;
-var SelectionRange = (function () {
-    function SelectionRange(range, parent) {
+let SelectionRange = class SelectionRange {
+    constructor(range, parent) {
         this.range = range;
         this.parent = parent;
         if (parent && !parent.range.contains(this.range)) {
             throw new Error('Invalid argument: parent must contain this range');
         }
     }
-    return SelectionRange;
-}());
+};
+SelectionRange = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Range, SelectionRange])
+], SelectionRange);
 exports.SelectionRange = SelectionRange;
-var Breakpoint = (function () {
-    function Breakpoint(enabled, condition, hitCondition, logMessage) {
+let Breakpoint = class Breakpoint {
+    constructor(enabled, condition, hitCondition, logMessage) {
         this.enabled = enabled || false;
         this.condition = condition;
         this.hitCondition = hitCondition;
         this.logMessage = logMessage;
     }
-    Object.defineProperty(Breakpoint.prototype, "id", {
-        get: function () {
-            if (!this._id) {
-                this._id = ide_core_common_1.uuid();
-            }
-            return this._id;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return Breakpoint;
-}());
+    get id() {
+        if (!this._id) {
+            this._id = ide_core_common_1.uuid();
+        }
+        return this._id;
+    }
+};
+Breakpoint = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Boolean, String, String, String])
+], Breakpoint);
 exports.Breakpoint = Breakpoint;
-var SourceBreakpoint = (function (_super) {
-    tslib_1.__extends(SourceBreakpoint, _super);
-    function SourceBreakpoint(location, enabled, condition, hitCondition, logMessage) {
-        var _this = _super.call(this, enabled, condition, hitCondition, logMessage) || this;
-        _this.location = location;
-        return _this;
+let SourceBreakpoint = class SourceBreakpoint extends Breakpoint {
+    constructor(location, enabled, condition, hitCondition, logMessage) {
+        super(enabled, condition, hitCondition, logMessage);
+        this.location = location;
     }
-    return SourceBreakpoint;
-}(Breakpoint));
+};
+SourceBreakpoint = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [Location, Boolean, String, String, String])
+], SourceBreakpoint);
 exports.SourceBreakpoint = SourceBreakpoint;
-var FunctionBreakpoint = (function (_super) {
-    tslib_1.__extends(FunctionBreakpoint, _super);
-    function FunctionBreakpoint(functionName, enabled, condition, hitCondition, logMessage) {
-        var _this = _super.call(this, enabled, condition, hitCondition, logMessage) || this;
-        _this.functionName = functionName;
-        return _this;
+let FunctionBreakpoint = class FunctionBreakpoint extends Breakpoint {
+    constructor(functionName, enabled, condition, hitCondition, logMessage) {
+        super(enabled, condition, hitCondition, logMessage);
+        this.functionName = functionName;
     }
-    return FunctionBreakpoint;
-}(Breakpoint));
+};
+FunctionBreakpoint = tslib_1.__decorate([
+    ide_core_common_1.es5ClassCompat,
+    tslib_1.__metadata("design:paramtypes", [String, Boolean, String, String, String])
+], FunctionBreakpoint);
 exports.FunctionBreakpoint = FunctionBreakpoint;
 
 
 /***/ }),
-/* 221 */
+/* 223 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var types = __webpack_require__(220);
-var vscode_uri_1 = __webpack_require__(34);
+const types = __webpack_require__(222);
+const vscode_uri_1 = __webpack_require__(34);
 function isObject(obj) {
     return typeof obj === 'object'
         && obj !== null
@@ -33680,13 +33589,12 @@ function isObject(obj) {
         && !(obj instanceof Date);
 }
 exports.isObject = isObject;
-function mixin(destination, source, overwrite) {
-    if (overwrite === void 0) { overwrite = true; }
+function mixin(destination, source, overwrite = true) {
     if (!isObject(destination)) {
         return source;
     }
     if (isObject(source)) {
-        Object.keys(source).forEach(function (key) {
+        Object.keys(source).forEach((key) => {
             if (key in destination) {
                 if (overwrite) {
                     if (isObject(destination[key]) && isObject(source[key])) {
@@ -33707,7 +33615,7 @@ function mixin(destination, source, overwrite) {
 exports.mixin = mixin;
 function illegalArgument(message) {
     if (message) {
-        return new Error("Illegal argument: " + message);
+        return new Error(`Illegal argument: ${message}`);
     }
     else {
         return new Error('Illegal argument');
@@ -33757,26 +33665,15 @@ function reviveOnEnterRules(onEnterRules) {
 }
 exports.reviveOnEnterRules = reviveOnEnterRules;
 function reviveWorkspaceEditDto(data) {
-    var e_1, _a;
     if (data && data.edits) {
-        try {
-            for (var _b = tslib_1.__values(data.edits), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var edit = _c.value;
-                if (typeof edit.resource === 'object') {
-                    edit.resource = vscode_uri_1.default.revive(edit.resource);
-                }
-                else {
-                    edit.newUri = vscode_uri_1.default.revive(edit.newUri);
-                    edit.oldUri = vscode_uri_1.default.revive(edit.oldUri);
-                }
+        for (const edit of data.edits) {
+            if (typeof edit.resource === 'object') {
+                edit.resource = vscode_uri_1.default.revive(edit.resource);
             }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            else {
+                edit.newUri = vscode_uri_1.default.revive(edit.newUri);
+                edit.oldUri = vscode_uri_1.default.revive(edit.oldUri);
             }
-            finally { if (e_1) throw e_1.error; }
         }
     }
     return data;
@@ -33786,13 +33683,11 @@ function serializeEnterRules(rules) {
     if (typeof rules === 'undefined' || rules === null) {
         return undefined;
     }
-    return rules.map(function (r) {
-        return ({
-            action: r.action,
-            beforeText: serializeRegExp(r.beforeText),
-            afterText: serializeRegExp(r.afterText),
-        });
-    });
+    return rules.map((r) => ({
+        action: r.action,
+        beforeText: serializeRegExp(r.beforeText),
+        afterText: serializeRegExp(r.afterText),
+    }));
 }
 exports.serializeEnterRules = serializeEnterRules;
 function serializeRegExp(regexp) {
@@ -33820,7 +33715,7 @@ exports.serializeIndentation = serializeIndentation;
 
 
 /***/ }),
-/* 222 */
+/* 224 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33833,32 +33728,32 @@ exports.createDocumentModelApiFactory = createDocumentModelApiFactory;
 
 
 /***/ }),
-/* 223 */
+/* 225 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(224), exports);
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(226), exports);
 
 
 /***/ }),
-/* 224 */
+/* 226 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var convert = __webpack_require__(225);
-var ide_core_common_1 = __webpack_require__(2);
-var vscode_1 = __webpack_require__(204);
-var ext_data_host_1 = __webpack_require__(228);
-var ext_types_1 = __webpack_require__(220);
-var OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
-var ExtensionDocumentDataManagerImpl = (function () {
-    function ExtensionDocumentDataManagerImpl(rpcProtocol) {
+const tslib_1 = __webpack_require__(1);
+const convert = __webpack_require__(227);
+const ide_core_common_1 = __webpack_require__(2);
+const vscode_1 = __webpack_require__(206);
+const ext_data_host_1 = __webpack_require__(230);
+const ext_types_1 = __webpack_require__(222);
+const OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
+class ExtensionDocumentDataManagerImpl {
+    constructor(rpcProtocol) {
         this._documents = new Map();
         this._contentProviders = new Map();
         this._onDidOpenTextDocument = new ide_core_common_1.Emitter();
@@ -33874,192 +33769,162 @@ var ExtensionDocumentDataManagerImpl = (function () {
         this.rpcProtocol = rpcProtocol;
         this._proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadDocuments);
         this._logService = {
-            trace: function () {
+            trace() {
                 console.log.apply(console, arguments);
             },
         };
     }
-    Object.defineProperty(ExtensionDocumentDataManagerImpl.prototype, "allDocumentData", {
-        get: function () {
-            return Array.from(this._documents.values());
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtensionDocumentDataManagerImpl.prototype.getDocumentData = function (path) {
-        var uri = path.toString();
+    get allDocumentData() {
+        return Array.from(this._documents.values());
+    }
+    getDocumentData(path) {
+        const uri = path.toString();
         return this._documents.get(uri);
-    };
-    ExtensionDocumentDataManagerImpl.prototype.getAllDocument = function () {
-        return this.allDocumentData.map(function (data) {
+    }
+    getAllDocument() {
+        return this.allDocumentData.map((data) => {
             return data.document;
         });
-    };
-    ExtensionDocumentDataManagerImpl.prototype.getDocument = function (uri) {
-        var data = this.getDocumentData(uri);
+    }
+    getDocument(uri) {
+        const data = this.getDocumentData(uri);
         return data ? data.document : undefined;
-    };
-    ExtensionDocumentDataManagerImpl.prototype.openTextDocument = function (path) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var uri, doc, doc_1;
-            var _this = this;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (typeof path === 'string') {
-                            uri = ext_types_1.Uri.file(path);
-                        }
-                        else {
-                            uri = ext_types_1.Uri.parse(path.toString());
-                        }
-                        doc = this._documents.get(uri.toString());
-                        if (!doc) return [3, 1];
-                        return [2, doc.document];
-                    case 1: return [4, this._proxy.$tryOpenDocument(uri.toString())];
-                    case 2:
-                        _a.sent();
-                        doc_1 = this._documents.get(uri.toString());
-                        if (doc_1) {
-                            return [2, doc_1.document];
-                        }
-                        else {
-                            return [2, new Promise(function (resolve, reject) {
-                                    var resolved = false;
-                                    setTimeout(function () {
-                                        if (!resolved) {
-                                            reject('Open Text Document ' + uri.toString() + ' Timeout. Current Timeout is 5 seconds.');
-                                        }
-                                    }, OPEN_TEXT_DOCUMENT_TIMEOUT);
-                                    var disposer = _this.onDidOpenTextDocument(function (document) {
-                                        if (uri.toString() === document.uri.toString()) {
-                                            resolve(document);
-                                            disposer.dispose();
-                                            resolved = true;
-                                        }
-                                    });
-                                })];
-                        }
-                        _a.label = 3;
-                    case 3: return [2];
+    }
+    openTextDocument(path) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            let uri;
+            if (typeof path === 'string') {
+                uri = ext_types_1.Uri.file(path);
+            }
+            else {
+                uri = ext_types_1.Uri.parse(path.toString());
+            }
+            const doc = this._documents.get(uri.toString());
+            if (doc) {
+                return doc.document;
+            }
+            else {
+                yield this._proxy.$tryOpenDocument(uri.toString());
+                const doc = this._documents.get(uri.toString());
+                if (doc) {
+                    return doc.document;
                 }
-            });
+                else {
+                    return new Promise((resolve, reject) => {
+                        let resolved = false;
+                        setTimeout(() => {
+                            if (!resolved) {
+                                reject('Open Text Document ' + uri.toString() + ' Timeout. Current Timeout is 5 seconds.');
+                            }
+                        }, OPEN_TEXT_DOCUMENT_TIMEOUT);
+                        const disposer = this.onDidOpenTextDocument((document) => {
+                            if (uri.toString() === document.uri.toString()) {
+                                resolve(document);
+                                disposer.dispose();
+                                resolved = true;
+                            }
+                        });
+                    });
+                }
+            }
         });
-    };
-    ExtensionDocumentDataManagerImpl.prototype.registerTextDocumentContentProvider = function (scheme, provider) {
-        var _this = this;
-        var changeDispose;
-        var onDidChangeEvent = provider.onDidChange;
+    }
+    registerTextDocumentContentProvider(scheme, provider) {
+        let changeDispose;
+        const onDidChangeEvent = provider.onDidChange;
         this._contentProviders.set(scheme, provider);
         if (onDidChangeEvent) {
-            changeDispose = onDidChangeEvent(function (uri) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                var source, content;
-                return tslib_1.__generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            source = new ide_core_common_1.CancellationTokenSource();
-                            return [4, provider.provideTextDocumentContent(uri, source.token)];
-                        case 1:
-                            content = _a.sent();
-                            if (content) {
-                                this._proxy.$fireTextDocumentChangedEvent(uri.toString(), content);
-                            }
-                            return [2];
-                    }
-                });
-            }); });
+            changeDispose = onDidChangeEvent((uri) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                const source = new ide_core_common_1.CancellationTokenSource();
+                const content = yield provider.provideTextDocumentContent(uri, source.token);
+                if (content) {
+                    this._proxy.$fireTextDocumentChangedEvent(uri.toString(), content);
+                }
+            }));
         }
         this._proxy.$registerDocumentProviderWithScheme(scheme);
         return {
-            dispose: function () {
-                _this._proxy.$unregisterDocumentProviderWithScheme(scheme);
-                _this._contentProviders.delete(scheme);
+            dispose: () => {
+                this._proxy.$unregisterDocumentProviderWithScheme(scheme);
+                this._contentProviders.delete(scheme);
                 if (changeDispose) {
                     changeDispose.dispose();
                 }
             },
         };
-    };
-    ExtensionDocumentDataManagerImpl.prototype.$provideTextDocumentContent = function (path) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var uri, scheme, provider, content;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        uri = ext_types_1.Uri.parse(path);
-                        scheme = uri.scheme;
-                        provider = this._contentProviders.get(scheme);
-                        if (!provider) return [3, 2];
-                        return [4, provider.provideTextDocumentContent(uri, new ide_core_common_1.CancellationTokenSource().token)];
-                    case 1:
-                        content = _a.sent();
-                        return [2, content || ''];
-                    case 2: throw new Error('new document provider for ' + path);
-                }
-            });
+    }
+    $provideTextDocumentContent(path) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const uri = ext_types_1.Uri.parse(path);
+            const scheme = uri.scheme;
+            const provider = this._contentProviders.get(scheme);
+            if (provider) {
+                const content = yield provider.provideTextDocumentContent(uri, new ide_core_common_1.CancellationTokenSource().token);
+                return content || '';
+            }
+            throw new Error('new document provider for ' + path);
         });
-    };
-    ExtensionDocumentDataManagerImpl.prototype.$fireModelChangedEvent = function (e) {
-        var uri = e.uri, changes = e.changes, versionId = e.versionId, eol = e.eol, dirty = e.dirty;
-        var document = this._documents.get(uri);
+    }
+    $fireModelChangedEvent(e) {
+        const { uri, changes, versionId, eol, dirty } = e;
+        const document = this._documents.get(uri);
         if (document) {
             document.onEvents({
-                eol: eol,
-                versionId: versionId,
-                changes: changes,
+                eol,
+                versionId,
+                changes,
             });
             document._acceptIsDirty(dirty);
             this._onDidChangeTextDocument.fire({
                 document: document.document,
-                contentChanges: changes.map(function (change) {
-                    return tslib_1.__assign(tslib_1.__assign({}, change), { range: convert.toRange(change.range) });
+                contentChanges: changes.map((change) => {
+                    return Object.assign(Object.assign({}, change), { range: convert.toRange(change.range) });
                 }),
             });
         }
         else {
         }
-    };
-    ExtensionDocumentDataManagerImpl.prototype.$fireModelOpenedEvent = function (e) {
-        var uri = e.uri, eol = e.eol, languageId = e.languageId, versionId = e.versionId, lines = e.lines, dirty = e.dirty;
-        var document = new ext_data_host_1.ExtHostDocumentData(this._proxy, ext_types_1.Uri.parse(uri), lines, eol, languageId, versionId, dirty);
+    }
+    $fireModelOpenedEvent(e) {
+        const { uri, eol, languageId, versionId, lines, dirty } = e;
+        const document = new ext_data_host_1.ExtHostDocumentData(this._proxy, ext_types_1.Uri.parse(uri), lines, eol, languageId, versionId, dirty);
         this._documents.set(uri, document);
         this._onDidOpenTextDocument.fire(document.document);
-    };
-    ExtensionDocumentDataManagerImpl.prototype.$fireModelRemovedEvent = function (e) {
-        var uri = e.uri;
-        var document = this._documents.get(uri.toString());
+    }
+    $fireModelRemovedEvent(e) {
+        const { uri } = e;
+        const document = this._documents.get(uri.toString());
         if (document) {
             this._documents.delete(uri);
             this._onDidCloseTextDocument.fire(document.document);
         }
-    };
-    ExtensionDocumentDataManagerImpl.prototype.$fireModelSavedEvent = function (e) {
-        var uri = e.uri;
-        var document = this._documents.get(uri);
+    }
+    $fireModelSavedEvent(e) {
+        const { uri } = e;
+        const document = this._documents.get(uri);
         if (document) {
             document._acceptIsDirty(false);
             this._onDidSaveTextDocument.fire(document.document);
         }
-    };
-    ExtensionDocumentDataManagerImpl.prototype.setWordDefinitionFor = function (modeId, wordDefinition) {
+    }
+    setWordDefinitionFor(modeId, wordDefinition) {
         ext_data_host_1.setWordDefinitionFor(modeId, wordDefinition);
-    };
-    return ExtensionDocumentDataManagerImpl;
-}());
+    }
+}
 exports.ExtensionDocumentDataManagerImpl = ExtensionDocumentDataManagerImpl;
 
 
 /***/ }),
-/* 225 */
+/* 227 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var types = __webpack_require__(220);
-var model = __webpack_require__(226);
-var ide_core_common_1 = __webpack_require__(2);
-var vscode_languageserver_types_1 = __webpack_require__(227);
+const types = __webpack_require__(222);
+const model = __webpack_require__(228);
+const ide_core_common_1 = __webpack_require__(2);
+const vscode_languageserver_types_1 = __webpack_require__(229);
 function toPosition(position) {
     return new types.Position(position.lineNumber - 1, position.column - 1);
 }
@@ -34072,7 +33937,7 @@ function fromRange(range) {
     if (!range) {
         return undefined;
     }
-    var start = range.start, end = range.end;
+    const { start, end } = range;
     return {
         startLineNumber: start.line + 1,
         startColumn: start.character + 1,
@@ -34082,7 +33947,7 @@ function fromRange(range) {
 }
 exports.fromRange = fromRange;
 function toRange(range) {
-    var startLineNumber = range.startLineNumber, startColumn = range.startColumn, endLineNumber = range.endLineNumber, endColumn = range.endColumn;
+    const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
     return new types.Range(startLineNumber - 1, startColumn - 1, endLineNumber - 1, endColumn - 1);
 }
 exports.toRange = toRange;
@@ -34093,7 +33958,7 @@ function isCodeblock(thing) {
 }
 function fromMarkdown(markup) {
     if (isCodeblock(markup)) {
-        var language = markup.language, value = markup.value;
+        const { language, value } = markup;
         return { value: '```' + language + '\n' + value + '\n```\n' };
     }
     else if (types.isMarkdownString(markup)) {
@@ -34148,7 +34013,7 @@ function fromGlobPattern(pattern) {
 }
 exports.fromGlobPattern = fromGlobPattern;
 function isRelativePattern(obj) {
-    var rp = obj;
+    const rp = obj;
     return rp && typeof rp.base === 'string' && typeof rp.pattern === 'string';
 }
 function fromLocation(value) {
@@ -34189,7 +34054,7 @@ function fromInsertText(item) {
 }
 exports.fromInsertText = fromInsertText;
 function fromFoldingRange(foldingRange) {
-    var range = {
+    const range = {
         start: foldingRange.start + 1,
         end: foldingRange.end + 1,
     };
@@ -34229,7 +34094,7 @@ function fromColorPresentation(colorPresentation) {
     return {
         label: colorPresentation.label,
         textEdit: colorPresentation.textEdit ? fromTextEdit(colorPresentation.textEdit) : undefined,
-        additionalTextEdits: colorPresentation.additionalTextEdits ? colorPresentation.additionalTextEdits.map(function (value) { return fromTextEdit(value); }) : undefined,
+        additionalTextEdits: colorPresentation.additionalTextEdits ? colorPresentation.additionalTextEdits.map((value) => fromTextEdit(value)) : undefined,
     };
 }
 exports.fromColorPresentation = fromColorPresentation;
@@ -34281,65 +34146,43 @@ function convertSeverity(severity) {
     }
 }
 function convertRelatedInformation(diagnosticsRelatedInformation) {
-    var e_1, _a;
     if (!diagnosticsRelatedInformation) {
         return undefined;
     }
-    var relatedInformation = [];
-    try {
-        for (var diagnosticsRelatedInformation_1 = tslib_1.__values(diagnosticsRelatedInformation), diagnosticsRelatedInformation_1_1 = diagnosticsRelatedInformation_1.next(); !diagnosticsRelatedInformation_1_1.done; diagnosticsRelatedInformation_1_1 = diagnosticsRelatedInformation_1.next()) {
-            var item = diagnosticsRelatedInformation_1_1.value;
-            relatedInformation.push({
-                resource: item.location.uri.toString(),
-                message: item.message,
-                startLineNumber: item.location.range.start.line + 1,
-                startColumn: item.location.range.start.character + 1,
-                endLineNumber: item.location.range.end.line + 1,
-                endColumn: item.location.range.end.character + 1,
-            });
-        }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (diagnosticsRelatedInformation_1_1 && !diagnosticsRelatedInformation_1_1.done && (_a = diagnosticsRelatedInformation_1.return)) _a.call(diagnosticsRelatedInformation_1);
-        }
-        finally { if (e_1) throw e_1.error; }
+    const relatedInformation = [];
+    for (const item of diagnosticsRelatedInformation) {
+        relatedInformation.push({
+            resource: item.location.uri.toString(),
+            message: item.message,
+            startLineNumber: item.location.range.start.line + 1,
+            startColumn: item.location.range.start.character + 1,
+            endLineNumber: item.location.range.end.line + 1,
+            endColumn: item.location.range.end.character + 1,
+        });
     }
     return relatedInformation;
 }
 function convertTags(tags) {
-    var e_2, _a;
     if (!tags) {
         return undefined;
     }
-    var markerTags = [];
-    try {
-        for (var tags_1 = tslib_1.__values(tags), tags_1_1 = tags_1.next(); !tags_1_1.done; tags_1_1 = tags_1.next()) {
-            var tag = tags_1_1.value;
-            switch (tag) {
-                case types.DiagnosticTag.Unnecessary: markerTags.push(1);
-            }
+    const markerTags = [];
+    for (const tag of tags) {
+        switch (tag) {
+            case types.DiagnosticTag.Unnecessary: markerTags.push(1);
         }
-    }
-    catch (e_2_1) { e_2 = { error: e_2_1 }; }
-    finally {
-        try {
-            if (tags_1_1 && !tags_1_1.done && (_a = tags_1.return)) _a.call(tags_1);
-        }
-        finally { if (e_2) throw e_2.error; }
     }
     return markerTags;
 }
 function toSelection(selection) {
-    var selectionStartLineNumber = selection.selectionStartLineNumber, selectionStartColumn = selection.selectionStartColumn, positionLineNumber = selection.positionLineNumber, positionColumn = selection.positionColumn;
-    var start = new types.Position(selectionStartLineNumber - 1, selectionStartColumn - 1);
-    var end = new types.Position(positionLineNumber - 1, positionColumn - 1);
+    const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } = selection;
+    const start = new types.Position(selectionStartLineNumber - 1, selectionStartColumn - 1);
+    const end = new types.Position(positionLineNumber - 1, positionColumn - 1);
     return new types.Selection(start, end);
 }
 exports.toSelection = toSelection;
 function fromSelection(selection) {
-    var active = selection.active, anchor = selection.anchor;
+    const { active, anchor } = selection;
     return {
         selectionStartLineNumber: anchor.line + 1,
         selectionStartColumn: anchor.character + 1,
@@ -34349,29 +34192,18 @@ function fromSelection(selection) {
 }
 exports.fromSelection = fromSelection;
 function fromWorkspaceEdit(value, documents) {
-    var e_3, _a;
-    var result = {
+    const result = {
         edits: [],
     };
-    try {
-        for (var _b = tslib_1.__values(value._allEntries()), _c = _b.next(); !_c.done; _c = _b.next()) {
-            var entry = _c.value;
-            var _d = tslib_1.__read(entry, 2), uri = _d[0], uriOrEdits = _d[1];
-            if (Array.isArray(uriOrEdits)) {
-                var doc = documents ? documents.getDocument(uri.toString()) : undefined;
-                result.edits.push({ resource: uri, modelVersionId: doc && doc.version, edits: uriOrEdits.map(fromTextEdit) });
-            }
-            else {
-                result.edits.push({ oldUri: uri, newUri: uriOrEdits, options: entry[2] });
-            }
+    for (const entry of value._allEntries()) {
+        const [uri, uriOrEdits] = entry;
+        if (Array.isArray(uriOrEdits)) {
+            const doc = documents ? documents.getDocument(uri.toString()) : undefined;
+            result.edits.push({ resource: uri, modelVersionId: doc && doc.version, edits: uriOrEdits.map(fromTextEdit) });
         }
-    }
-    catch (e_3_1) { e_3 = { error: e_3_1 }; }
-    finally {
-        try {
-            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        else {
+            result.edits.push({ oldUri: uri, newUri: uriOrEdits, options: entry[2] });
         }
-        finally { if (e_3) throw e_3.error; }
     }
     return result;
 }
@@ -34386,17 +34218,17 @@ function fromDocumentLink(link) {
 exports.fromDocumentLink = fromDocumentLink;
 var TypeConverts;
 (function (TypeConverts) {
-    var Selection;
+    let Selection;
     (function (Selection) {
         function to(selection) {
-            var selectionStartLineNumber = selection.selectionStartLineNumber, selectionStartColumn = selection.selectionStartColumn, positionLineNumber = selection.positionLineNumber, positionColumn = selection.positionColumn;
-            var start = new types.Position(selectionStartLineNumber - 1, selectionStartColumn - 1);
-            var end = new types.Position(positionLineNumber - 1, positionColumn - 1);
+            const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } = selection;
+            const start = new types.Position(selectionStartLineNumber - 1, selectionStartColumn - 1);
+            const end = new types.Position(positionLineNumber - 1, positionColumn - 1);
             return new types.Selection(start, end);
         }
         Selection.to = to;
         function from(selection) {
-            var anchor = selection.anchor, active = selection.active;
+            const { anchor, active } = selection;
             return {
                 selectionStartLineNumber: anchor.line + 1,
                 selectionStartColumn: anchor.character + 1,
@@ -34406,7 +34238,7 @@ var TypeConverts;
         }
         Selection.from = from;
     })(Selection = TypeConverts.Selection || (TypeConverts.Selection = {}));
-    var TextEditorLineNumbersStyle;
+    let TextEditorLineNumbersStyle;
     (function (TextEditorLineNumbersStyle) {
         function from(style) {
             switch (style) {
@@ -34433,13 +34265,13 @@ var TypeConverts;
         }
         TextEditorLineNumbersStyle.to = to;
     })(TextEditorLineNumbersStyle = TypeConverts.TextEditorLineNumbersStyle || (TypeConverts.TextEditorLineNumbersStyle = {}));
-    var Range;
+    let Range;
     (function (Range) {
         function from(range) {
             if (!range) {
                 return undefined;
             }
-            var start = range.start, end = range.end;
+            const { start, end } = range;
             return {
                 startLineNumber: start.line + 1,
                 startColumn: start.character + 1,
@@ -34452,12 +34284,12 @@ var TypeConverts;
             if (!range) {
                 return undefined;
             }
-            var startLineNumber = range.startLineNumber, startColumn = range.startColumn, endLineNumber = range.endLineNumber, endColumn = range.endColumn;
+            const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
             return new types.Range(startLineNumber - 1, startColumn - 1, endLineNumber - 1, endColumn - 1);
         }
         Range.to = to;
     })(Range = TypeConverts.Range || (TypeConverts.Range = {}));
-    var EndOfLine;
+    let EndOfLine;
     (function (EndOfLine) {
         function from(eol) {
             if (eol === types.EndOfLine.CRLF) {
@@ -34480,7 +34312,7 @@ var TypeConverts;
         }
         EndOfLine.to = to;
     })(EndOfLine = TypeConverts.EndOfLine || (TypeConverts.EndOfLine = {}));
-    var DecorationRenderOptions;
+    let DecorationRenderOptions;
     (function (DecorationRenderOptions) {
         function from(options) {
             return {
@@ -34516,7 +34348,7 @@ var TypeConverts;
         }
         DecorationRenderOptions.from = from;
     })(DecorationRenderOptions = TypeConverts.DecorationRenderOptions || (TypeConverts.DecorationRenderOptions = {}));
-    var ThemableDecorationRenderOptions;
+    let ThemableDecorationRenderOptions;
     (function (ThemableDecorationRenderOptions) {
         function from(options) {
             if (typeof options === 'undefined') {
@@ -34550,7 +34382,7 @@ var TypeConverts;
         }
         ThemableDecorationRenderOptions.from = from;
     })(ThemableDecorationRenderOptions = TypeConverts.ThemableDecorationRenderOptions || (TypeConverts.ThemableDecorationRenderOptions = {}));
-    var ThemableDecorationAttachmentRenderOptions;
+    let ThemableDecorationAttachmentRenderOptions;
     (function (ThemableDecorationAttachmentRenderOptions) {
         function from(options) {
             if (typeof options === 'undefined') {
@@ -34573,7 +34405,7 @@ var TypeConverts;
         }
         ThemableDecorationAttachmentRenderOptions.from = from;
     })(ThemableDecorationAttachmentRenderOptions = TypeConverts.ThemableDecorationAttachmentRenderOptions || (TypeConverts.ThemableDecorationAttachmentRenderOptions = {}));
-    var DecorationRangeBehavior;
+    let DecorationRangeBehavior;
     (function (DecorationRangeBehavior) {
         function from(value) {
             if (typeof value === 'undefined') {
@@ -34592,7 +34424,7 @@ var TypeConverts;
         }
         DecorationRangeBehavior.from = from;
     })(DecorationRangeBehavior = TypeConverts.DecorationRangeBehavior || (TypeConverts.DecorationRangeBehavior = {}));
-    var TextEdit;
+    let TextEdit;
     (function (TextEdit) {
         function from(edit) {
             return {
@@ -34603,68 +34435,46 @@ var TypeConverts;
         }
         TextEdit.from = from;
         function to(edit) {
-            var result = new types.TextEdit(toRange(edit.range), edit.text);
+            const result = new types.TextEdit(toRange(edit.range), edit.text);
             result.newEol = (typeof edit.eol === 'undefined' ? undefined : EndOfLine.to(edit.eol));
             return result;
         }
         TextEdit.to = to;
     })(TextEdit = TypeConverts.TextEdit || (TypeConverts.TextEdit = {}));
-    var WorkspaceEdit;
+    let WorkspaceEdit;
     (function (WorkspaceEdit) {
         function from(value, documents) {
-            var e_4, _a;
-            var result = {
+            const result = {
                 edits: [],
             };
-            try {
-                for (var _b = tslib_1.__values(value._allEntries()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var entry = _c.value;
-                    var _d = tslib_1.__read(entry, 2), uri = _d[0], uriOrEdits = _d[1];
-                    if (Array.isArray(uriOrEdits)) {
-                        var doc = documents && uri ? documents.getDocument(uri) : undefined;
-                        result.edits.push({ resource: uri, modelVersionId: doc && doc.version, edits: uriOrEdits.map(TextEdit.from) });
-                    }
-                    else {
-                        result.edits.push({ oldUri: uri, newUri: uriOrEdits, options: entry[2] });
-                    }
+            for (const entry of value._allEntries()) {
+                const [uri, uriOrEdits] = entry;
+                if (Array.isArray(uriOrEdits)) {
+                    const doc = documents && uri ? documents.getDocument(uri) : undefined;
+                    result.edits.push({ resource: uri, modelVersionId: doc && doc.version, edits: uriOrEdits.map(TextEdit.from) });
                 }
-            }
-            catch (e_4_1) { e_4 = { error: e_4_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                else {
+                    result.edits.push({ oldUri: uri, newUri: uriOrEdits, options: entry[2] });
                 }
-                finally { if (e_4) throw e_4.error; }
             }
             return result;
         }
         WorkspaceEdit.from = from;
         function to(value) {
-            var e_5, _a;
-            var result = new types.WorkspaceEdit();
-            try {
-                for (var _b = tslib_1.__values(value.edits), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var edit = _c.value;
-                    if (Array.isArray(edit.edits)) {
-                        result.set(ide_core_common_1.URI.revive(edit.resource), edit.edits.map(TextEdit.to));
-                    }
-                    else {
-                        result.renameFile(ide_core_common_1.URI.revive(edit.oldUri), ide_core_common_1.URI.revive(edit.newUri), edit.options);
-                    }
+            const result = new types.WorkspaceEdit();
+            for (const edit of value.edits) {
+                if (Array.isArray(edit.edits)) {
+                    result.set(ide_core_common_1.URI.revive(edit.resource), edit.edits.map(TextEdit.to));
                 }
-            }
-            catch (e_5_1) { e_5 = { error: e_5_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                else {
+                    result.renameFile(ide_core_common_1.URI.revive(edit.oldUri), ide_core_common_1.URI.revive(edit.newUri), edit.options);
                 }
-                finally { if (e_5) throw e_5.error; }
             }
             return result;
         }
         WorkspaceEdit.to = to;
     })(WorkspaceEdit = TypeConverts.WorkspaceEdit || (TypeConverts.WorkspaceEdit = {}));
-    var GlobPattern;
+    let GlobPattern;
     (function (GlobPattern) {
         function from(pattern) {
             if (pattern instanceof types.RelativePattern) {
@@ -34680,7 +34490,7 @@ var TypeConverts;
         }
         GlobPattern.from = from;
         function isRelativePattern(obj) {
-            var rp = obj;
+            const rp = obj;
             return rp && typeof rp.base === 'string' && typeof rp.pattern === 'string';
         }
     })(GlobPattern = TypeConverts.GlobPattern || (TypeConverts.GlobPattern = {}));
@@ -34699,7 +34509,7 @@ function pathOrURIToURI(value) {
 exports.pathOrURIToURI = pathOrURIToURI;
 var SymbolKind;
 (function (SymbolKind) {
-    var fromMapping = Object.create(null);
+    const fromMapping = Object.create(null);
     fromMapping[types.SymbolKind.File] = types.SymbolKind.File;
     fromMapping[types.SymbolKind.Module] = types.SymbolKind.Module;
     fromMapping[types.SymbolKind.Namespace] = types.SymbolKind.Namespace;
@@ -34731,7 +34541,7 @@ var SymbolKind;
     }
     SymbolKind.fromSymbolKind = fromSymbolKind;
     function toSymbolKind(kind) {
-        for (var k in fromMapping) {
+        for (const k in fromMapping) {
             if (fromMapping[k] === kind) {
                 return Number(k);
             }
@@ -34741,7 +34551,7 @@ var SymbolKind;
     SymbolKind.toSymbolKind = toSymbolKind;
 })(SymbolKind = exports.SymbolKind || (exports.SymbolKind = {}));
 function fromDocumentSymbol(info) {
-    var result = {
+    const result = {
         name: info.name,
         detail: info.detail,
         range: fromRange(info.range),
@@ -34759,8 +34569,8 @@ function fromSymbolInformation(symbolInformation) {
         return undefined;
     }
     if (symbolInformation.location && symbolInformation.location.range) {
-        var p1 = vscode_languageserver_types_1.Position.create(symbolInformation.location.range.start.line, symbolInformation.location.range.start.character);
-        var p2 = vscode_languageserver_types_1.Position.create(symbolInformation.location.range.end.line, symbolInformation.location.range.end.character);
+        const p1 = vscode_languageserver_types_1.Position.create(symbolInformation.location.range.start.line, symbolInformation.location.range.start.character);
+        const p2 = vscode_languageserver_types_1.Position.create(symbolInformation.location.range.end.line, symbolInformation.location.range.end.character);
         return vscode_languageserver_types_1.SymbolInformation.create(symbolInformation.name, symbolInformation.kind++, vscode_languageserver_types_1.Range.create(p1, p2), symbolInformation.location.uri.toString(), symbolInformation.containerName);
     }
     return {
@@ -34853,7 +34663,7 @@ exports.toCompletionItemKind = toCompletionItemKind;
 
 
 /***/ }),
-/* 226 */
+/* 228 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34865,27 +34675,23 @@ var CompletionTriggerKind;
     CompletionTriggerKind[CompletionTriggerKind["TriggerCharacter"] = 1] = "TriggerCharacter";
     CompletionTriggerKind[CompletionTriggerKind["TriggerForIncompleteCompletions"] = 2] = "TriggerForIncompleteCompletions";
 })(CompletionTriggerKind = exports.CompletionTriggerKind || (exports.CompletionTriggerKind = {}));
-var IdObject = (function () {
-    function IdObject() {
-    }
-    return IdObject;
-}());
+class IdObject {
+}
 exports.IdObject = IdObject;
 var CompletionItemInsertTextRule;
 (function (CompletionItemInsertTextRule) {
     CompletionItemInsertTextRule[CompletionItemInsertTextRule["KeepWhitespace"] = 1] = "KeepWhitespace";
     CompletionItemInsertTextRule[CompletionItemInsertTextRule["InsertAsSnippet"] = 4] = "InsertAsSnippet";
 })(CompletionItemInsertTextRule = exports.CompletionItemInsertTextRule || (exports.CompletionItemInsertTextRule = {}));
-var FoldingRangeKind = (function () {
-    function FoldingRangeKind(value) {
+class FoldingRangeKind {
+    constructor(value) {
         this.value = value;
     }
-    FoldingRangeKind.Comment = new FoldingRangeKind('comment');
-    FoldingRangeKind.Imports = new FoldingRangeKind('imports');
-    FoldingRangeKind.Region = new FoldingRangeKind('region');
-    return FoldingRangeKind;
-}());
+}
 exports.FoldingRangeKind = FoldingRangeKind;
+FoldingRangeKind.Comment = new FoldingRangeKind('comment');
+FoldingRangeKind.Imports = new FoldingRangeKind('imports');
+FoldingRangeKind.Region = new FoldingRangeKind('region');
 var DocumentHighlightKind;
 (function (DocumentHighlightKind) {
     DocumentHighlightKind[DocumentHighlightKind["Text"] = 0] = "Text";
@@ -34930,7 +34736,7 @@ var CompletionItemKind;
 
 
 /***/ }),
-/* 227 */
+/* 229 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -36468,17 +36274,16 @@ var Is;
 
 
 /***/ }),
-/* 228 */
+/* 230 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var mirror_1 = __webpack_require__(229);
-var wordHelper_1 = __webpack_require__(231);
-var ext_types_1 = __webpack_require__(220);
-var _modeId2WordDefinition = new Map();
+const mirror_1 = __webpack_require__(231);
+const wordHelper_1 = __webpack_require__(233);
+const ext_types_1 = __webpack_require__(222);
+const _modeId2WordDefinition = new Map();
 function setWordDefinitionFor(modeId, wordDefinition) {
     _modeId2WordDefinition.set(modeId, wordDefinition);
 }
@@ -36491,96 +36296,90 @@ function regExpLeadsToEndlessLoop(regexp) {
     if (regexp.source === '^' || regexp.source === '^$' || regexp.source === '$' || regexp.source === '^\\s*$') {
         return false;
     }
-    var match = regexp.exec('');
+    const match = regexp.exec('');
     return !!(match && regexp.lastIndex === 0);
 }
 exports.regExpLeadsToEndlessLoop = regExpLeadsToEndlessLoop;
-var ExtHostDocumentData = (function (_super) {
-    tslib_1.__extends(ExtHostDocumentData, _super);
-    function ExtHostDocumentData(proxy, uri, lines, eol, languageId, versionId, isDirty) {
-        var _this = _super.call(this, uri, lines, eol, versionId) || this;
-        _this._textLines = [];
-        _this._isDisposed = false;
-        _this._proxy = proxy;
-        _this._languageId = languageId;
-        _this._isDirty = isDirty;
-        return _this;
+class ExtHostDocumentData extends mirror_1.MirrorTextModel {
+    constructor(proxy, uri, lines, eol, languageId, versionId, isDirty) {
+        super(uri, lines, eol, versionId);
+        this._textLines = [];
+        this._isDisposed = false;
+        this._proxy = proxy;
+        this._languageId = languageId;
+        this._isDirty = isDirty;
     }
-    ExtHostDocumentData.prototype.dispose = function () {
+    dispose() {
         this._isDisposed = true;
         this._isDirty = false;
-    };
-    ExtHostDocumentData.prototype.equalLines = function (lines) {
-        var len = lines.length;
+    }
+    equalLines(lines) {
+        const len = lines.length;
         if (len !== this._lines.length) {
             return false;
         }
-        for (var i = 0; i < len; i++) {
+        for (let i = 0; i < len; i++) {
             if (lines[i] !== this._lines[i]) {
                 return false;
             }
         }
         return true;
-    };
-    Object.defineProperty(ExtHostDocumentData.prototype, "document", {
-        get: function () {
-            if (!this._document) {
-                var data_1 = this;
-                this._document = {
-                    get uri() { return data_1._uri; },
-                    get fileName() { return data_1._uri.fsPath; },
-                    get isUntitled() { return data_1._uri.scheme === ext_types_1.Schemas.untitled; },
-                    get languageId() { return data_1._languageId; },
-                    get version() { return data_1._versionId; },
-                    get isClosed() { return data_1._isDisposed; },
-                    get isDirty() { return data_1._isDirty; },
-                    save: function () { return data_1._save(); },
-                    getText: function (range) { return range ? data_1._getTextInRange(range) : data_1.getText(); },
-                    get eol() { return data_1._eol === '\n' ? ext_types_1.EndOfLine.LF : ext_types_1.EndOfLine.CRLF; },
-                    get lineCount() { return data_1._lines.length; },
-                    lineAt: function (lineOrPos) { return data_1._lineAt(lineOrPos); },
-                    offsetAt: function (pos) { return data_1._offsetAt(pos); },
-                    positionAt: function (offset) { return data_1._positionAt(offset); },
-                    validateRange: function (ran) { return data_1._validateRange(ran); },
-                    validatePosition: function (pos) { return data_1._validatePosition(pos); },
-                    getWordRangeAtPosition: function (pos, regexp) { return data_1._getWordRangeAtPosition(pos, regexp); },
-                };
-            }
-            return Object.freeze(this._document);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostDocumentData.prototype._acceptLanguageId = function (newLanguageId) {
+    }
+    get document() {
+        if (!this._document) {
+            const data = this;
+            this._document = {
+                get uri() { return data._uri; },
+                get fileName() { return data._uri.fsPath; },
+                get isUntitled() { return data._uri.scheme === ext_types_1.Schemas.untitled; },
+                get languageId() { return data._languageId; },
+                get version() { return data._versionId; },
+                get isClosed() { return data._isDisposed; },
+                get isDirty() { return data._isDirty; },
+                save() { return data._save(); },
+                getText(range) { return range ? data._getTextInRange(range) : data.getText(); },
+                get eol() { return data._eol === '\n' ? ext_types_1.EndOfLine.LF : ext_types_1.EndOfLine.CRLF; },
+                get lineCount() { return data._lines.length; },
+                lineAt(lineOrPos) { return data._lineAt(lineOrPos); },
+                offsetAt(pos) { return data._offsetAt(pos); },
+                positionAt(offset) { return data._positionAt(offset); },
+                validateRange(ran) { return data._validateRange(ran); },
+                validatePosition(pos) { return data._validatePosition(pos); },
+                getWordRangeAtPosition(pos, regexp) { return data._getWordRangeAtPosition(pos, regexp); },
+            };
+        }
+        return Object.freeze(this._document);
+    }
+    _acceptLanguageId(newLanguageId) {
         this._languageId = newLanguageId;
-    };
-    ExtHostDocumentData.prototype._acceptIsDirty = function (isDirty) {
+    }
+    _acceptIsDirty(isDirty) {
         this._isDirty = isDirty;
-    };
-    ExtHostDocumentData.prototype._save = function () {
+    }
+    _save() {
         if (this._isDisposed) {
             return Promise.reject(new Error('Document has been closed'));
         }
         return this._proxy.$trySaveDocument(this._uri.toString());
-    };
-    ExtHostDocumentData.prototype._getTextInRange = function (_range) {
-        var range = this._validateRange(_range);
+    }
+    _getTextInRange(_range) {
+        const range = this._validateRange(_range);
         if (range.isEmpty) {
             return '';
         }
         if (range.isSingleLine) {
             return this._lines[range.start.line].substring(range.start.character, range.end.character);
         }
-        var lineEnding = this._eol, startLineIndex = range.start.line, endLineIndex = range.end.line, resultLines = [];
+        const lineEnding = this._eol, startLineIndex = range.start.line, endLineIndex = range.end.line, resultLines = [];
         resultLines.push(this._lines[startLineIndex].substring(range.start.character));
-        for (var i = startLineIndex + 1; i < endLineIndex; i++) {
+        for (let i = startLineIndex + 1; i < endLineIndex; i++) {
             resultLines.push(this._lines[i]);
         }
         resultLines.push(this._lines[endLineIndex].substring(0, range.end.character));
         return resultLines.join(lineEnding);
-    };
-    ExtHostDocumentData.prototype._lineAt = function (lineOrPosition) {
-        var line;
+    }
+    _lineAt(lineOrPosition) {
+        let line;
         if (lineOrPosition instanceof ext_types_1.Position) {
             line = lineOrPosition.line;
         }
@@ -36590,56 +36389,56 @@ var ExtHostDocumentData = (function (_super) {
         if (typeof line !== 'number' || line < 0 || line >= this._lines.length) {
             throw new Error('Illegal value for `line`');
         }
-        var result = this._textLines[line];
+        let result = this._textLines[line];
         if (!result || result.lineNumber !== line || result.text !== this._lines[line]) {
-            var text = this._lines[line];
-            var firstNonWhitespaceCharacterIndex = /^(\s*)/.exec(text)[1].length;
-            var range = new ext_types_1.Range(line, 0, line, text.length);
-            var rangeIncludingLineBreak = line < this._lines.length - 1
+            const text = this._lines[line];
+            const firstNonWhitespaceCharacterIndex = /^(\s*)/.exec(text)[1].length;
+            const range = new ext_types_1.Range(line, 0, line, text.length);
+            const rangeIncludingLineBreak = line < this._lines.length - 1
                 ? new ext_types_1.Range(line, 0, line + 1, 0)
                 : range;
             result = Object.freeze({
                 lineNumber: line,
-                range: range,
-                rangeIncludingLineBreak: rangeIncludingLineBreak,
-                text: text,
-                firstNonWhitespaceCharacterIndex: firstNonWhitespaceCharacterIndex,
+                range,
+                rangeIncludingLineBreak,
+                text,
+                firstNonWhitespaceCharacterIndex,
                 isEmptyOrWhitespace: firstNonWhitespaceCharacterIndex === text.length,
             });
             this._textLines[line] = result;
         }
         return result;
-    };
-    ExtHostDocumentData.prototype._offsetAt = function (position) {
+    }
+    _offsetAt(position) {
         position = this._validatePosition(position);
         this._ensureLineStarts();
         return this._lineStarts.getAccumulatedValue(position.line - 1) + position.character;
-    };
-    ExtHostDocumentData.prototype._positionAt = function (offset) {
+    }
+    _positionAt(offset) {
         offset = Math.floor(offset);
         offset = Math.max(0, offset);
         this._ensureLineStarts();
-        var out = this._lineStarts.getIndexOf(offset);
-        var lineLength = this._lines[out.index].length;
+        const out = this._lineStarts.getIndexOf(offset);
+        const lineLength = this._lines[out.index].length;
         return new ext_types_1.Position(out.index, Math.min(out.remainder, lineLength));
-    };
-    ExtHostDocumentData.prototype._validateRange = function (range) {
+    }
+    _validateRange(range) {
         if (!(range instanceof ext_types_1.Range)) {
             throw new Error('Invalid argument');
         }
-        var start = this._validatePosition(range.start);
-        var end = this._validatePosition(range.end);
+        const start = this._validatePosition(range.start);
+        const end = this._validatePosition(range.end);
         if (start === range.start && end === range.end) {
             return range;
         }
         return new ext_types_1.Range(start.line, start.character, end.line, end.character);
-    };
-    ExtHostDocumentData.prototype._validatePosition = function (position) {
+    }
+    _validatePosition(position) {
         if (!(position instanceof ext_types_1.Position)) {
             throw new Error('Invalid argument');
         }
-        var line = position.line, character = position.character;
-        var hasChanged = false;
+        let { line, character } = position;
+        let hasChanged = false;
         if (line < 0) {
             line = 0;
             character = 0;
@@ -36651,7 +36450,7 @@ var ExtHostDocumentData = (function (_super) {
             hasChanged = true;
         }
         else {
-            var maxCharacter = this._lines[line].length;
+            const maxCharacter = this._lines[line].length;
             if (character < 0) {
                 character = 0;
                 hasChanged = true;
@@ -36665,100 +36464,83 @@ var ExtHostDocumentData = (function (_super) {
             return position;
         }
         return new ext_types_1.Position(line, character);
-    };
-    ExtHostDocumentData.prototype._getWordRangeAtPosition = function (_position, regexp) {
-        var position = this._validatePosition(_position);
+    }
+    _getWordRangeAtPosition(_position, regexp) {
+        const position = this._validatePosition(_position);
         if (!regexp) {
             regexp = getWordDefinitionFor(this._languageId);
         }
         else if (regExpLeadsToEndlessLoop(regexp)) {
-            console.warn("[getWordRangeAtPosition]: ignoring custom regexp '" + regexp.source + "' because it matches the empty string.");
+            console.warn(`[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`);
             regexp = getWordDefinitionFor(this._languageId);
         }
-        var wordAtText = wordHelper_1.getWordAtText(position.character + 1, wordHelper_1.ensureValidWordDefinition(regexp), this._lines[position.line], 0);
+        const wordAtText = wordHelper_1.getWordAtText(position.character + 1, wordHelper_1.ensureValidWordDefinition(regexp), this._lines[position.line], 0);
         if (wordAtText) {
             return new ext_types_1.Range(position.line, wordAtText.startColumn - 1, position.line, wordAtText.endColumn - 1);
         }
         return undefined;
-    };
-    return ExtHostDocumentData;
-}(mirror_1.MirrorTextModel));
+    }
+}
 exports.ExtHostDocumentData = ExtHostDocumentData;
 
 
 /***/ }),
-/* 229 */
+/* 231 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ide_core_common_1 = __webpack_require__(2);
-var prefixSumComputer_1 = __webpack_require__(230);
-var ext_types_1 = __webpack_require__(220);
-var MirrorTextModel = (function () {
-    function MirrorTextModel(uri, lines, eol, versionId) {
+const ide_core_common_1 = __webpack_require__(2);
+const prefixSumComputer_1 = __webpack_require__(232);
+const ext_types_1 = __webpack_require__(222);
+class MirrorTextModel {
+    constructor(uri, lines, eol, versionId) {
         this._uri = ext_types_1.Uri.parse(uri.toString());
         this._lines = lines;
         this._eol = eol;
         this._versionId = versionId;
         this._lineStarts = null;
     }
-    MirrorTextModel.prototype.dispose = function () {
+    dispose() {
         this._lines.length = 0;
-    };
-    Object.defineProperty(MirrorTextModel.prototype, "version", {
-        get: function () {
-            return this._versionId;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    MirrorTextModel.prototype.getText = function () {
+    }
+    get version() {
+        return this._versionId;
+    }
+    getText() {
         return this._lines.join(this._eol);
-    };
-    MirrorTextModel.prototype.onEvents = function (e) {
-        var e_1, _a;
+    }
+    onEvents(e) {
         if (e.eol && e.eol !== this._eol) {
             this._eol = e.eol;
             this._lineStarts = null;
         }
-        var changes = e.changes;
-        try {
-            for (var changes_1 = tslib_1.__values(changes), changes_1_1 = changes_1.next(); !changes_1_1.done; changes_1_1 = changes_1.next()) {
-                var change = changes_1_1.value;
-                this._acceptDeleteRange(change.range);
-                this._acceptInsertText(new ide_core_common_1.Position(change.range.startLineNumber, change.range.startColumn), change.text);
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (changes_1_1 && !changes_1_1.done && (_a = changes_1.return)) _a.call(changes_1);
-            }
-            finally { if (e_1) throw e_1.error; }
+        const changes = e.changes;
+        for (const change of changes) {
+            this._acceptDeleteRange(change.range);
+            this._acceptInsertText(new ide_core_common_1.Position(change.range.startLineNumber, change.range.startColumn), change.text);
         }
         this._versionId = e.versionId;
-    };
-    MirrorTextModel.prototype._ensureLineStarts = function () {
+    }
+    _ensureLineStarts() {
         if (!this._lineStarts) {
-            var eolLength = this._eol.length;
-            var linesLength = this._lines.length;
-            var lineStartValues = new Uint32Array(linesLength);
-            for (var i = 0; i < linesLength; i++) {
+            const eolLength = this._eol.length;
+            const linesLength = this._lines.length;
+            const lineStartValues = new Uint32Array(linesLength);
+            for (let i = 0; i < linesLength; i++) {
                 lineStartValues[i] = this._lines[i].length + eolLength;
             }
             this._lineStarts = new prefixSumComputer_1.PrefixSumComputer(lineStartValues);
         }
-    };
-    MirrorTextModel.prototype._setLineText = function (lineIndex, newValue) {
+    }
+    _setLineText(lineIndex, newValue) {
         this._lines[lineIndex] = newValue;
         if (this._lineStarts) {
             this._lineStarts.changeValue(lineIndex, this._lines[lineIndex].length + this._eol.length);
         }
-    };
-    MirrorTextModel.prototype._acceptDeleteRange = function (range) {
+    }
+    _acceptDeleteRange(range) {
         if (range.startLineNumber === range.endLineNumber) {
             if (range.startColumn === range.endColumn) {
                 return;
@@ -36773,12 +36555,12 @@ var MirrorTextModel = (function () {
         if (this._lineStarts) {
             this._lineStarts.removeValues(range.startLineNumber, range.endLineNumber - range.startLineNumber);
         }
-    };
-    MirrorTextModel.prototype._acceptInsertText = function (position, insertText) {
+    }
+    _acceptInsertText(position, insertText) {
         if (insertText.length === 0) {
             return;
         }
-        var insertLines = insertText.split(/\r\n|\r|\n/);
+        const insertLines = insertText.split(/\r\n|\r|\n/);
         if (insertLines.length === 1) {
             this._setLineText(position.lineNumber - 1, this._lines[position.lineNumber - 1].substring(0, position.column - 1)
                 + insertLines[0]
@@ -36788,22 +36570,21 @@ var MirrorTextModel = (function () {
         insertLines[insertLines.length - 1] += this._lines[position.lineNumber - 1].substring(position.column - 1);
         this._setLineText(position.lineNumber - 1, this._lines[position.lineNumber - 1].substring(0, position.column - 1)
             + insertLines[0]);
-        var newLengths = new Uint32Array(insertLines.length - 1);
-        for (var i = 1; i < insertLines.length; i++) {
+        const newLengths = new Uint32Array(insertLines.length - 1);
+        for (let i = 1; i < insertLines.length; i++) {
             this._lines.splice(position.lineNumber + i - 1, 0, insertLines[i]);
             newLengths[i - 1] = insertLines[i].length + this._eol.length;
         }
         if (this._lineStarts) {
             this._lineStarts.insertValues(position.lineNumber, newLengths);
         }
-    };
-    return MirrorTextModel;
-}());
+    }
+}
 exports.MirrorTextModel = MirrorTextModel;
 
 
 /***/ }),
-/* 230 */
+/* 232 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -36819,29 +36600,28 @@ function toUint32(v) {
     return v | 0;
 }
 exports.toUint32 = toUint32;
-var PrefixSumIndexOfResult = (function () {
-    function PrefixSumIndexOfResult(index, remainder) {
+class PrefixSumIndexOfResult {
+    constructor(index, remainder) {
         this.index = index;
         this.remainder = remainder;
     }
-    return PrefixSumIndexOfResult;
-}());
+}
 exports.PrefixSumIndexOfResult = PrefixSumIndexOfResult;
-var PrefixSumComputer = (function () {
-    function PrefixSumComputer(values) {
+class PrefixSumComputer {
+    constructor(values) {
         this.values = values;
         this.prefixSum = new Uint32Array(values.length);
         this.prefixSumValidIndex = new Int32Array(1);
         this.prefixSumValidIndex[0] = -1;
     }
-    PrefixSumComputer.prototype.getCount = function () {
+    getCount() {
         return this.values.length;
-    };
-    PrefixSumComputer.prototype.insertValues = function (insertIndex, insertValues) {
+    }
+    insertValues(insertIndex, insertValues) {
         insertIndex = toUint32(insertIndex);
-        var oldValues = this.values;
-        var oldPrefixSum = this.prefixSum;
-        var insertValuesLen = insertValues.length;
+        const oldValues = this.values;
+        const oldPrefixSum = this.prefixSum;
+        const insertValuesLen = insertValues.length;
         if (insertValuesLen === 0) {
             return false;
         }
@@ -36857,8 +36637,8 @@ var PrefixSumComputer = (function () {
             this.prefixSum.set(oldPrefixSum.subarray(0, this.prefixSumValidIndex[0] + 1));
         }
         return true;
-    };
-    PrefixSumComputer.prototype.changeValue = function (index, value) {
+    }
+    changeValue(index, value) {
         index = toUint32(index);
         value = toUint32(value);
         if (this.values[index] === value) {
@@ -36869,16 +36649,16 @@ var PrefixSumComputer = (function () {
             this.prefixSumValidIndex[0] = index - 1;
         }
         return true;
-    };
-    PrefixSumComputer.prototype.removeValues = function (startIndex, cnt) {
+    }
+    removeValues(startIndex, cnt) {
         startIndex = toUint32(startIndex);
         cnt = toUint32(cnt);
-        var oldValues = this.values;
-        var oldPrefixSum = this.prefixSum;
+        const oldValues = this.values;
+        const oldPrefixSum = this.prefixSum;
         if (startIndex >= oldValues.length) {
             return false;
         }
-        var maxCnt = oldValues.length - startIndex;
+        const maxCnt = oldValues.length - startIndex;
         if (cnt >= maxCnt) {
             cnt = maxCnt;
         }
@@ -36896,25 +36676,25 @@ var PrefixSumComputer = (function () {
             this.prefixSum.set(oldPrefixSum.subarray(0, this.prefixSumValidIndex[0] + 1));
         }
         return true;
-    };
-    PrefixSumComputer.prototype.getTotalValue = function () {
+    }
+    getTotalValue() {
         if (this.values.length === 0) {
             return 0;
         }
         return this._getAccumulatedValue(this.values.length - 1);
-    };
-    PrefixSumComputer.prototype.getAccumulatedValue = function (index) {
+    }
+    getAccumulatedValue(index) {
         if (index < 0) {
             return 0;
         }
         index = toUint32(index);
         return this._getAccumulatedValue(index);
-    };
-    PrefixSumComputer.prototype._getAccumulatedValue = function (index) {
+    }
+    _getAccumulatedValue(index) {
         if (index <= this.prefixSumValidIndex[0]) {
             return this.prefixSum[index];
         }
-        var startIndex = this.prefixSumValidIndex[0] + 1;
+        let startIndex = this.prefixSumValidIndex[0] + 1;
         if (startIndex === 0) {
             this.prefixSum[0] = this.values[0];
             startIndex++;
@@ -36922,20 +36702,20 @@ var PrefixSumComputer = (function () {
         if (index >= this.values.length) {
             index = this.values.length - 1;
         }
-        for (var i = startIndex; i <= index; i++) {
+        for (let i = startIndex; i <= index; i++) {
             this.prefixSum[i] = this.prefixSum[i - 1] + this.values[i];
         }
         this.prefixSumValidIndex[0] = Math.max(this.prefixSumValidIndex[0], index);
         return this.prefixSum[index];
-    };
-    PrefixSumComputer.prototype.getIndexOf = function (accumulatedValue) {
+    }
+    getIndexOf(accumulatedValue) {
         accumulatedValue = Math.floor(accumulatedValue);
         this.getTotalValue();
-        var low = 0;
-        var high = this.values.length - 1;
-        var mid = 0;
-        var midStop = 0;
-        var midStart = 0;
+        let low = 0;
+        let high = this.values.length - 1;
+        let mid = 0;
+        let midStop = 0;
+        let midStart = 0;
         while (low <= high) {
             mid = low + ((high - low) / 2) | 0;
             midStop = this.prefixSum[mid];
@@ -36951,103 +36731,88 @@ var PrefixSumComputer = (function () {
             }
         }
         return new PrefixSumIndexOfResult(mid, accumulatedValue - midStart);
-    };
-    return PrefixSumComputer;
-}());
+    }
+}
 exports.PrefixSumComputer = PrefixSumComputer;
-var PrefixSumComputerWithCache = (function () {
-    function PrefixSumComputerWithCache(values) {
+class PrefixSumComputerWithCache {
+    constructor(values) {
         this._cacheAccumulatedValueStart = 0;
         this._cache = null;
         this._actual = new PrefixSumComputer(values);
         this._bustCache();
     }
-    PrefixSumComputerWithCache.prototype._bustCache = function () {
+    _bustCache() {
         this._cacheAccumulatedValueStart = 0;
         this._cache = null;
-    };
-    PrefixSumComputerWithCache.prototype.insertValues = function (insertIndex, insertValues) {
+    }
+    insertValues(insertIndex, insertValues) {
         if (this._actual.insertValues(insertIndex, insertValues)) {
             this._bustCache();
         }
-    };
-    PrefixSumComputerWithCache.prototype.changeValue = function (index, value) {
+    }
+    changeValue(index, value) {
         if (this._actual.changeValue(index, value)) {
             this._bustCache();
         }
-    };
-    PrefixSumComputerWithCache.prototype.removeValues = function (startIndex, cnt) {
+    }
+    removeValues(startIndex, cnt) {
         if (this._actual.removeValues(startIndex, cnt)) {
             this._bustCache();
         }
-    };
-    PrefixSumComputerWithCache.prototype.getTotalValue = function () {
+    }
+    getTotalValue() {
         return this._actual.getTotalValue();
-    };
-    PrefixSumComputerWithCache.prototype.getAccumulatedValue = function (index) {
+    }
+    getAccumulatedValue(index) {
         return this._actual.getAccumulatedValue(index);
-    };
-    PrefixSumComputerWithCache.prototype.getIndexOf = function (accumulatedValue) {
+    }
+    getIndexOf(accumulatedValue) {
         accumulatedValue = Math.floor(accumulatedValue);
         if (this._cache !== null) {
-            var cacheIndex = accumulatedValue - this._cacheAccumulatedValueStart;
+            const cacheIndex = accumulatedValue - this._cacheAccumulatedValueStart;
             if (cacheIndex >= 0 && cacheIndex < this._cache.length) {
                 return this._cache[cacheIndex];
             }
         }
         return this._actual.getIndexOf(accumulatedValue);
-    };
-    PrefixSumComputerWithCache.prototype.warmUpCache = function (accumulatedValueStart, accumulatedValueEnd) {
-        var newCache = [];
-        for (var accumulatedValue = accumulatedValueStart; accumulatedValue <= accumulatedValueEnd; accumulatedValue++) {
+    }
+    warmUpCache(accumulatedValueStart, accumulatedValueEnd) {
+        const newCache = [];
+        for (let accumulatedValue = accumulatedValueStart; accumulatedValue <= accumulatedValueEnd; accumulatedValue++) {
             newCache[accumulatedValue - accumulatedValueStart] = this.getIndexOf(accumulatedValue);
         }
         this._cache = newCache;
         this._cacheAccumulatedValueStart = accumulatedValueStart;
-    };
-    return PrefixSumComputerWithCache;
-}());
+    }
+}
 exports.PrefixSumComputerWithCache = PrefixSumComputerWithCache;
 
 
 /***/ }),
-/* 231 */
+/* 233 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
 exports.USUAL_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/?';
-function createWordRegExp(allowInWords) {
-    var e_1, _a;
-    if (allowInWords === void 0) { allowInWords = ''; }
-    var source = '(-?\\d*\\.\\d\\w*)|([^';
-    try {
-        for (var USUAL_WORD_SEPARATORS_1 = tslib_1.__values(exports.USUAL_WORD_SEPARATORS), USUAL_WORD_SEPARATORS_1_1 = USUAL_WORD_SEPARATORS_1.next(); !USUAL_WORD_SEPARATORS_1_1.done; USUAL_WORD_SEPARATORS_1_1 = USUAL_WORD_SEPARATORS_1.next()) {
-            var sep = USUAL_WORD_SEPARATORS_1_1.value;
-            if (allowInWords.indexOf(sep) >= 0) {
-                continue;
-            }
-            source += '\\' + sep;
+function createWordRegExp(allowInWords = '') {
+    let source = '(-?\\d*\\.\\d\\w*)|([^';
+    for (const sep of exports.USUAL_WORD_SEPARATORS) {
+        if (allowInWords.indexOf(sep) >= 0) {
+            continue;
         }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (USUAL_WORD_SEPARATORS_1_1 && !USUAL_WORD_SEPARATORS_1_1.done && (_a = USUAL_WORD_SEPARATORS_1.return)) _a.call(USUAL_WORD_SEPARATORS_1);
-        }
-        finally { if (e_1) throw e_1.error; }
+        source += '\\' + sep;
     }
     source += '\\s]+)';
     return new RegExp(source, 'g');
 }
 exports.DEFAULT_WORD_REGEXP = createWordRegExp();
 function ensureValidWordDefinition(wordDefinition) {
-    var result = exports.DEFAULT_WORD_REGEXP;
+    let result = exports.DEFAULT_WORD_REGEXP;
     if (wordDefinition && (wordDefinition instanceof RegExp)) {
         if (!wordDefinition.global) {
-            var flags = 'g';
+            let flags = 'g';
             if (wordDefinition.ignoreCase) {
                 flags += 'i';
             }
@@ -37068,12 +36833,12 @@ function ensureValidWordDefinition(wordDefinition) {
 }
 exports.ensureValidWordDefinition = ensureValidWordDefinition;
 function getWordAtPosFast(column, wordDefinition, text, textOffset) {
-    var pos = column - 1 - textOffset;
-    var start = text.lastIndexOf(' ', pos - 1) + 1;
+    const pos = column - 1 - textOffset;
+    const start = text.lastIndexOf(' ', pos - 1) + 1;
     wordDefinition.lastIndex = start;
-    var match;
+    let match;
     while (match = wordDefinition.exec(text)) {
-        var matchIndex = match.index || 0;
+        const matchIndex = match.index || 0;
         if (matchIndex <= pos && wordDefinition.lastIndex >= pos) {
             return {
                 word: match[0],
@@ -37085,11 +36850,11 @@ function getWordAtPosFast(column, wordDefinition, text, textOffset) {
     return null;
 }
 function getWordAtPosSlow(column, wordDefinition, text, textOffset) {
-    var pos = column - 1 - textOffset;
+    const pos = column - 1 - textOffset;
     wordDefinition.lastIndex = 0;
-    var match;
+    let match;
     while (match = wordDefinition.exec(text)) {
-        var matchIndex = match.index || 0;
+        const matchIndex = match.index || 0;
         if (matchIndex > pos) {
             return null;
         }
@@ -37105,11 +36870,11 @@ function getWordAtPosSlow(column, wordDefinition, text, textOffset) {
 }
 function getWordAtText(column, wordDefinition, text, textOffset) {
     wordDefinition.lastIndex = 0;
-    var match = wordDefinition.exec(text);
+    const match = wordDefinition.exec(text);
     if (!match) {
         return null;
     }
-    var ret = match[0].indexOf(' ') >= 0
+    const ret = match[0].indexOf(' ') >= 0
         ? getWordAtPosSlow(column, wordDefinition, text, textOffset)
         : getWordAtPosFast(column, wordDefinition, text, textOffset);
     wordDefinition.lastIndex = 0;
@@ -37119,21 +36884,15 @@ exports.getWordAtText = getWordAtText;
 
 
 /***/ }),
-/* 232 */
+/* 234 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ide_core_common_1 = __webpack_require__(2);
-var URI = (function (_super) {
-    tslib_1.__extends(URI, _super);
-    function URI() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return URI;
-}(ide_core_common_1.Uri));
+const ide_core_common_1 = __webpack_require__(2);
+class URI extends ide_core_common_1.Uri {
+}
 var FileChangeType;
 (function (FileChangeType) {
     FileChangeType[FileChangeType["Changed"] = 1] = "Changed";
@@ -37158,145 +36917,116 @@ var FileSystemProviderErrorCode;
     FileSystemProviderErrorCode["Unknown"] = "Unknown";
 })(FileSystemProviderErrorCode = exports.FileSystemProviderErrorCode || (exports.FileSystemProviderErrorCode = {}));
 function markAsFileSystemProviderError(error, code) {
-    error.name = code ? code + " (FileSystemError)" : "FileSystemError";
+    error.name = code ? `${code} (FileSystemError)` : `FileSystemError`;
     return error;
 }
 exports.markAsFileSystemProviderError = markAsFileSystemProviderError;
-var FileSystemError = (function (_super) {
-    tslib_1.__extends(FileSystemError, _super);
-    function FileSystemError(uriOrMessage, code, terminator) {
-        if (code === void 0) { code = FileSystemProviderErrorCode.Unknown; }
-        var _this = _super.call(this, URI.isUri(uriOrMessage) ? uriOrMessage.toString(true) : uriOrMessage) || this;
-        markAsFileSystemProviderError(_this, code);
+class FileSystemError extends Error {
+    static FileExists(messageOrUri) {
+        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileExists, FileSystemError.FileExists);
+    }
+    static FileNotFound(messageOrUri) {
+        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileNotFound, FileSystemError.FileNotFound);
+    }
+    static FileNotADirectory(messageOrUri) {
+        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileNotADirectory, FileSystemError.FileNotADirectory);
+    }
+    static FileIsADirectory(messageOrUri) {
+        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileIsADirectory, FileSystemError.FileIsADirectory);
+    }
+    static NoPermissions(messageOrUri) {
+        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.NoPermissions, FileSystemError.NoPermissions);
+    }
+    static Unavailable(messageOrUri) {
+        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.Unavailable, FileSystemError.Unavailable);
+    }
+    constructor(uriOrMessage, code = FileSystemProviderErrorCode.Unknown, terminator) {
+        super(URI.isUri(uriOrMessage) ? uriOrMessage.toString(true) : uriOrMessage);
+        markAsFileSystemProviderError(this, code);
         if (typeof Object.setPrototypeOf === 'function') {
-            Object.setPrototypeOf(_this, FileSystemError.prototype);
+            Object.setPrototypeOf(this, FileSystemError.prototype);
         }
         if (typeof Error.captureStackTrace === 'function' && typeof terminator === 'function') {
-            Error.captureStackTrace(_this, terminator);
+            Error.captureStackTrace(this, terminator);
         }
-        return _this;
     }
-    FileSystemError.FileExists = function (messageOrUri) {
-        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileExists, FileSystemError.FileExists);
-    };
-    FileSystemError.FileNotFound = function (messageOrUri) {
-        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileNotFound, FileSystemError.FileNotFound);
-    };
-    FileSystemError.FileNotADirectory = function (messageOrUri) {
-        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileNotADirectory, FileSystemError.FileNotADirectory);
-    };
-    FileSystemError.FileIsADirectory = function (messageOrUri) {
-        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.FileIsADirectory, FileSystemError.FileIsADirectory);
-    };
-    FileSystemError.NoPermissions = function (messageOrUri) {
-        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.NoPermissions, FileSystemError.NoPermissions);
-    };
-    FileSystemError.Unavailable = function (messageOrUri) {
-        return new FileSystemError(messageOrUri, FileSystemProviderErrorCode.Unavailable, FileSystemError.Unavailable);
-    };
-    return FileSystemError;
-}(Error));
+}
 exports.FileSystemError = FileSystemError;
 
 
 /***/ }),
-/* 233 */
+/* 235 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ext_types_1 = __webpack_require__(220);
-var extHostTypeConverter = __webpack_require__(225);
-var vscode_1 = __webpack_require__(204);
-var objects_1 = __webpack_require__(50);
-var types_1 = __webpack_require__(51);
-var ide_core_common_1 = __webpack_require__(2);
-var util_1 = __webpack_require__(234);
-var vscode_uri_1 = __webpack_require__(34);
+const tslib_1 = __webpack_require__(1);
+const ext_types_1 = __webpack_require__(222);
+const extHostTypeConverter = __webpack_require__(227);
+const vscode_1 = __webpack_require__(206);
+const objects_1 = __webpack_require__(51);
+const types_1 = __webpack_require__(52);
+const ide_core_common_1 = __webpack_require__(2);
+const util_1 = __webpack_require__(236);
+const vscode_uri_1 = __webpack_require__(34);
 function createCommandsApiFactory(extHostCommands, extHostEditors) {
-    var commands = {
-        registerCommand: function (id, command, thisArgs) {
+    const commands = {
+        registerCommand(id, command, thisArgs) {
             return extHostCommands.registerCommand(true, id, command, thisArgs);
         },
-        executeCommand: function (id) {
-            var args = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                args[_i - 1] = arguments[_i];
-            }
-            return extHostCommands.executeCommand.apply(extHostCommands, tslib_1.__spread([id], args));
+        executeCommand(id, ...args) {
+            return extHostCommands.executeCommand(id, ...args);
         },
-        getCommands: function (filterInternal) {
-            if (filterInternal === void 0) { filterInternal = false; }
+        getCommands(filterInternal = false) {
             return extHostCommands.getCommands(filterInternal);
         },
-        registerTextEditorCommand: function (id, callback, thisArg) {
-            return extHostCommands.registerCommand(true, id, function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                var activeTextEditor = extHostEditors.activeEditor;
+        registerTextEditorCommand(id, callback, thisArg) {
+            return extHostCommands.registerCommand(true, id, (...args) => {
+                const activeTextEditor = extHostEditors.activeEditor;
                 if (!activeTextEditor) {
                     console.warn('Cannot execute ' + id + ' because there is no active text editor.');
                     return undefined;
                 }
-                return activeTextEditor.edit(function (edit) {
+                return activeTextEditor.edit((edit) => {
                     args.unshift(activeTextEditor, edit);
                     callback.apply(thisArg, args);
-                }).then(function (result) {
+                }).then((result) => {
                     if (!result) {
                         console.warn('Edits from command ' + id + ' were not applied.');
                     }
-                }, function (err) {
+                }, (err) => {
                     console.warn('An error occurred while running command ' + id, err);
                 });
             });
         },
-        registerDiffInformationCommand: function (id, callback, thisArg) {
-            var _this = this;
-            return extHostCommands.registerCommand(true, id, function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
+        registerDiffInformationCommand(id, callback, thisArg) {
+            return extHostCommands.registerCommand(true, id, (...args) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                const activeTextEditor = extHostEditors.activeEditor;
+                if (!activeTextEditor) {
+                    console.warn('Cannot execute ' + id + ' because there is no active text editor.');
+                    return undefined;
                 }
-                return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                    var activeTextEditor, diff;
-                    return tslib_1.__generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0:
-                                activeTextEditor = extHostEditors.activeEditor;
-                                if (!activeTextEditor) {
-                                    console.warn('Cannot execute ' + id + ' because there is no active text editor.');
-                                    return [2, undefined];
-                                }
-                                return [4, extHostEditors.getDiffInformation(activeTextEditor.id)];
-                            case 1:
-                                diff = _a.sent();
-                                callback.apply(thisArg, tslib_1.__spread([diff], args));
-                                return [2];
-                        }
-                    });
-                });
-            });
+                const diff = yield extHostEditors.getDiffInformation(activeTextEditor.id);
+                callback.apply(thisArg, [diff, ...args]);
+            }));
         },
     };
     return commands;
 }
 exports.createCommandsApiFactory = createCommandsApiFactory;
-var ExtHostCommands = (function () {
-    function ExtHostCommands(rpcProtocol) {
+class ExtHostCommands {
+    constructor(rpcProtocol) {
         this.logger = ide_core_common_1.getLogger();
         this.commands = new Map();
         this.argumentProcessors = [];
         this.rpcProtocol = rpcProtocol;
         this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadCommands);
     }
-    ExtHostCommands.prototype.registerCommandConverter = function () {
+    registerCommandConverter() {
         this.converter = new CommandsConverter(this);
-    };
-    ExtHostCommands.prototype.$registerBuiltInCommands = function () {
+    }
+    $registerBuiltInCommands() {
         this.registerCommandConverter();
         this.register('vscode.executeReferenceProvider', this.executeReferenceProvider, {
             description: 'Execute reference provider.',
@@ -37318,209 +37048,184 @@ var ExtHostCommands = (function () {
             description: 'Execute CodeLens provider.',
             args: [
                 { name: 'uri', description: 'Uri of a text document', constraint: vscode_uri_1.default },
-                { name: 'itemResolveCount', description: '(optional) Number of lenses that should be resolved and returned. Will only return resolved lenses, will impact performance)', constraint: function (value) { return value === undefined || typeof value === 'number'; } },
+                { name: 'itemResolveCount', description: '(optional) Number of lenses that should be resolved and returned. Will only return resolved lenses, will impact performance)', constraint: (value) => value === undefined || typeof value === 'number' },
             ],
             returns: 'A promise that resolves to an array of CodeLens-instances.',
         });
-    };
-    ExtHostCommands.prototype.register = function (id, handler, description) {
+    }
+    register(id, handler, description) {
         return this.registerCommand(false, id, handler, this, description);
-    };
-    ExtHostCommands.prototype.registerCommand = function (global, id, handler, thisArg, description) {
-        var _this = this;
+    }
+    registerCommand(global, id, handler, thisArg, description) {
         this.logger.log('ExtHostCommands#registerCommand', id);
         if (!id.trim().length) {
             throw new Error('invalid id');
         }
         if (this.commands.has(id)) {
-            throw new Error("command '" + id + "' already exists");
+            throw new Error(`command '${id}' already exists`);
         }
-        this.commands.set(id, { handler: handler, thisArg: thisArg, description: description });
+        this.commands.set(id, { handler, thisArg, description });
         if (global) {
             this.proxy.$registerCommand(id);
         }
-        return ext_types_1.Disposable.create(function () {
-            if (_this.commands.delete(id)) {
+        return ext_types_1.Disposable.create(() => {
+            if (this.commands.delete(id)) {
                 if (global) {
-                    _this.proxy.$unregisterCommand(id);
+                    this.proxy.$unregisterCommand(id);
                 }
             }
         });
-    };
-    ExtHostCommands.prototype.$executeContributedCommand = function (id) {
-        var _this = this;
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
+    }
+    $executeContributedCommand(id, ...args) {
         this.logger.log('ExtHostCommands#$executeContributedCommand', id);
         if (!this.commands.has(id)) {
-            return Promise.reject(new Error("Contributed command '" + id + "' does not exist."));
+            return Promise.reject(new Error(`Contributed command '${id}' does not exist.`));
         }
         else {
-            args = args.map(function (arg) { return _this.argumentProcessors.reduce(function (r, p) { return p.processArgument(r); }, arg); });
+            args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
             return this.executeLocalCommand(id, args);
         }
-    };
-    ExtHostCommands.prototype.executeCommand = function (id) {
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _a;
-            return tslib_1.__generator(this, function (_b) {
-                this.logger.log('ExtHostCommands#executeCommand', id, args);
-                if (this.commands.has(id)) {
-                    return [2, this.executeLocalCommand(id, args)];
-                }
-                else {
-                    args = objects_1.cloneAndChange(args, function (value) {
-                        if (value instanceof ext_types_1.Position) {
-                            return extHostTypeConverter.fromPosition(value);
-                        }
-                        if (value instanceof ext_types_1.Range) {
-                            return extHostTypeConverter.fromRange(value);
-                        }
-                        if (value instanceof ext_types_1.Location) {
-                            return extHostTypeConverter.fromLocation(value);
-                        }
-                        if (!Array.isArray(value)) {
-                            return value;
-                        }
-                    });
-                    return [2, (_a = this.proxy).$executeCommand.apply(_a, tslib_1.__spread([id], args)).then(function (result) { return ide_core_common_1.revive(result, 0); })];
-                }
-                return [2];
-            });
+    }
+    executeCommand(id, ...args) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.logger.log('ExtHostCommands#executeCommand', id, args);
+            if (this.commands.has(id)) {
+                return this.executeLocalCommand(id, args);
+            }
+            else {
+                args = objects_1.cloneAndChange(args, (value) => {
+                    if (value instanceof ext_types_1.Position) {
+                        return extHostTypeConverter.fromPosition(value);
+                    }
+                    if (value instanceof ext_types_1.Range) {
+                        return extHostTypeConverter.fromRange(value);
+                    }
+                    if (value instanceof ext_types_1.Location) {
+                        return extHostTypeConverter.fromLocation(value);
+                    }
+                    if (!Array.isArray(value)) {
+                        return value;
+                    }
+                });
+                return this.proxy.$executeCommand(id, ...args)
+                    .then((result) => ide_core_common_1.revive(result, 0));
+            }
         });
-    };
-    ExtHostCommands.prototype.executeReferenceProvider = function (resource, position) {
-        var arg = {
-            resource: resource,
-            position: position,
+    }
+    executeReferenceProvider(resource, position) {
+        const arg = {
+            resource,
+            position,
         };
         return this.proxy.$executeReferenceProvider(arg)
-            .then(function (locations) {
+            .then((locations) => {
             return tryMapWith(extHostTypeConverter.toLocation)(locations);
         });
-    };
-    ExtHostCommands.prototype.executeImplementationProvider = function (resource, position) {
-        var arg = {
-            resource: resource,
-            position: position,
+    }
+    executeImplementationProvider(resource, position) {
+        const arg = {
+            resource,
+            position,
         };
         return this.proxy.$executeImplementationProvider(arg)
-            .then(function (locations) {
+            .then((locations) => {
             return tryMapWith(extHostTypeConverter.toLocation)(locations);
         });
-    };
-    ExtHostCommands.prototype.executeCodeLensProvider = function (resource, itemResolveCount) {
-        var _this = this;
-        var args = { resource: resource, itemResolveCount: itemResolveCount };
+    }
+    executeCodeLensProvider(resource, itemResolveCount) {
+        const args = { resource, itemResolveCount };
         return this.proxy.$executeCodeLensProvider(args)
-            .then(function (items) {
-            return items.map(function (item) {
-                return new ext_types_1.CodeLens(extHostTypeConverter.toRange(item.range), item.command ? _this.converter.fromInternal(item.command) : undefined);
+            .then((items) => {
+            return items.map((item) => {
+                return new ext_types_1.CodeLens(extHostTypeConverter.toRange(item.range), item.command ? this.converter.fromInternal(item.command) : undefined);
             });
         });
-    };
-    ExtHostCommands.prototype.executeLocalCommand = function (id, args) {
-        var _a = this.commands.get(id), handler = _a.handler, thisArg = _a.thisArg, description = _a.description;
+    }
+    executeLocalCommand(id, args) {
+        const { handler, thisArg, description } = this.commands.get(id);
         if (description && description.args) {
-            for (var i = 0; i < description.args.length; i++) {
+            for (let i = 0; i < description.args.length; i++) {
                 try {
                     types_1.validateConstraint(args[i], description.args[i].constraint);
                 }
                 catch (err) {
-                    return Promise.reject(new Error("Running the contributed command:'" + id + "' failed. Illegal argument '" + description.args[i].name + "' - " + description.args[i].description));
+                    return Promise.reject(new Error(`Running the contributed command:'${id}' failed. Illegal argument '${description.args[i].name}' - ${description.args[i].description}`));
                 }
             }
         }
         try {
-            var result = handler.apply(thisArg, this.processArguments(args));
+            const result = handler.apply(thisArg, this.processArguments(args));
             return Promise.resolve(result);
         }
         catch (err) {
             this.logger.error(err, id);
-            return Promise.reject(new Error("Running the contributed command:'" + id + "' failed."));
+            return Promise.reject(new Error(`Running the contributed command:'${id}' failed.`));
         }
-    };
-    ExtHostCommands.prototype.processArguments = function (arg) {
-        var tempArgs = arg[0];
+    }
+    processArguments(arg) {
+        let tempArgs = arg[0];
         if (Array.isArray(tempArgs) && tempArgs[0].length === 2) {
-            var postion = tempArgs[0];
+            const postion = tempArgs[0];
             if (ext_types_1.Position.isPosition(postion[0]) && ext_types_1.Position.isPosition(postion[1])) {
                 tempArgs = new ext_types_1.Range(new ext_types_1.Position(postion[0].line, postion[0].character), new ext_types_1.Position(postion[1].line, postion[1].character));
             }
         }
         arg[0] = tempArgs;
         return arg;
-    };
-    ExtHostCommands.prototype.getCommands = function (filterUnderscoreCommands) {
-        if (filterUnderscoreCommands === void 0) { filterUnderscoreCommands = false; }
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var result;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.logger.log('ExtHostCommands#getCommands', filterUnderscoreCommands);
-                        return [4, this.proxy.$getCommands()];
-                    case 1:
-                        result = _a.sent();
-                        if (filterUnderscoreCommands) {
-                            return [2, result.filter(function (command) { return command[0] !== '_'; })];
-                        }
-                        return [2, result];
-                }
-            });
+    }
+    getCommands(filterUnderscoreCommands = false) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.logger.log('ExtHostCommands#getCommands', filterUnderscoreCommands);
+            const result = yield this.proxy.$getCommands();
+            if (filterUnderscoreCommands) {
+                return result.filter((command) => command[0] !== '_');
+            }
+            return result;
         });
-    };
-    ExtHostCommands.prototype.registerArgumentProcessor = function (processor) {
+    }
+    registerArgumentProcessor(processor) {
         this.argumentProcessors.push(processor);
-    };
-    return ExtHostCommands;
-}());
+    }
+}
 exports.ExtHostCommands = ExtHostCommands;
 function tryMapWith(f) {
-    return function (value) {
+    return (value) => {
         if (Array.isArray(value)) {
             return value.map(f);
         }
         return undefined;
     };
 }
-var CommandsConverter = (function () {
-    function CommandsConverter(commands) {
+class CommandsConverter {
+    constructor(commands) {
         this._cache = new Map();
         this._cachIdPool = 0;
-        this._delegatingCommandId = "_vscode_delegate_cmd_" + Date.now().toString(36);
+        this._delegatingCommandId = `_vscode_delegate_cmd_${Date.now().toString(36)}`;
         this._commands = commands;
         this._commands.registerCommand(true, this._delegatingCommandId, this._executeConvertedCommand, this);
     }
-    CommandsConverter.prototype.toInternal = function (command, disposables) {
-        var _this = this;
+    toInternal(command, disposables) {
         if (!command) {
             return undefined;
         }
-        var result = {
+        const result = {
             $ident: undefined,
             id: command.command,
             title: command.title,
             tooltip: command.tooltip,
         };
         if (command.command && ide_core_common_1.isNonEmptyArray(command.arguments)) {
-            var id_1 = ++this._cachIdPool;
-            this._cache.set(id_1, command);
-            disposables.add(ide_core_common_1.toDisposable(function () { return _this._cache.delete(id_1); }));
-            result.$ident = id_1;
+            const id = ++this._cachIdPool;
+            this._cache.set(id, command);
+            disposables.add(ide_core_common_1.toDisposable(() => this._cache.delete(id)));
+            result.$ident = id;
             result.id = this._delegatingCommandId;
-            result.arguments = [id_1];
+            result.arguments = [id];
         }
         return result;
-    };
-    CommandsConverter.prototype.fromInternal = function (command) {
-        var id = util_1.ObjectIdentifier.of(command);
+    }
+    fromInternal(command) {
+        const id = util_1.ObjectIdentifier.of(command);
         if (typeof id === 'number') {
             return this._cache.get(id);
         }
@@ -37531,35 +37236,28 @@ var CommandsConverter = (function () {
                 arguments: command.arguments,
             };
         }
-    };
-    CommandsConverter.prototype._executeConvertedCommand = function () {
-        var _a;
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        var actualCmd = this._cache.get(args[0]);
+    }
+    _executeConvertedCommand(...args) {
+        const actualCmd = this._cache.get(args[0]);
         if (!actualCmd) {
             return Promise.reject('actual command NOT FOUND');
         }
-        return (_a = this._commands).executeCommand.apply(_a, tslib_1.__spread([actualCmd.command], (actualCmd.arguments || [])));
-    };
-    return CommandsConverter;
-}());
+        return this._commands.executeCommand(actualCmd.command, ...(actualCmd.arguments || []));
+    }
+}
 exports.CommandsConverter = CommandsConverter;
 
 
 /***/ }),
-/* 234 */
+/* 236 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var types = __webpack_require__(220);
-var ide_core_common_1 = __webpack_require__(2);
-var glob_1 = __webpack_require__(235);
+const types = __webpack_require__(222);
+const ide_core_common_1 = __webpack_require__(2);
+const glob_1 = __webpack_require__(237);
 function createToken() {
     return Object.freeze({
         isCancellationRequested: false,
@@ -37589,27 +37287,16 @@ function isDefinitionLinkArray(array) {
 }
 exports.isDefinitionLinkArray = isDefinitionLinkArray;
 function score(selector, candidateUri, candidateLanguage, candidateIsSynchronized) {
-    var e_1, _a;
     if (Array.isArray(selector)) {
-        var ret = 0;
-        try {
-            for (var selector_1 = tslib_1.__values(selector), selector_1_1 = selector_1.next(); !selector_1_1.done; selector_1_1 = selector_1.next()) {
-                var filter = selector_1_1.value;
-                var value = score(filter, candidateUri, candidateLanguage, candidateIsSynchronized);
-                if (value === 10) {
-                    return value;
-                }
-                if (value > ret) {
-                    ret = value;
-                }
+        let ret = 0;
+        for (const filter of selector) {
+            const value = score(filter, candidateUri, candidateLanguage, candidateIsSynchronized);
+            if (value === 10) {
+                return value;
             }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (selector_1_1 && !selector_1_1.done && (_a = selector_1.return)) _a.call(selector_1);
+            if (value > ret) {
+                ret = value;
             }
-            finally { if (e_1) throw e_1.error; }
         }
         return ret;
     }
@@ -37628,11 +37315,11 @@ function score(selector, candidateUri, candidateLanguage, candidateIsSynchronize
         }
     }
     else if (selector) {
-        var language = selector.language, pattern = selector.pattern, scheme = selector.scheme, hasAccessToAllModels = selector.hasAccessToAllModels;
+        const { language, pattern, scheme, hasAccessToAllModels } = selector;
         if (!candidateIsSynchronized && !hasAccessToAllModels) {
             return 0;
         }
-        var result = 0;
+        let result = 0;
         if (scheme) {
             if (scheme === candidateUri.scheme) {
                 result = 10;
@@ -37673,57 +37360,53 @@ exports.score = score;
 
 
 /***/ }),
-/* 235 */
+/* 237 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
+const tslib_1 = __webpack_require__(1);
 tslib_1.__exportStar(__webpack_require__(38), exports);
 
 
 /***/ }),
-/* 236 */
+/* 238 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var paths = __webpack_require__(144);
-var vscode_1 = __webpack_require__(204);
-var ext_types_1 = __webpack_require__(220);
-var vscode_2 = __webpack_require__(204);
-var ext_host_file_system_1 = __webpack_require__(237);
-var ide_core_common_1 = __webpack_require__(2);
-var path_1 = __webpack_require__(35);
-var converter_1 = __webpack_require__(225);
-var vscode_jsonrpc_1 = __webpack_require__(135);
-var glob = __webpack_require__(404);
+const tslib_1 = __webpack_require__(1);
+const paths = __webpack_require__(144);
+const vscode_1 = __webpack_require__(206);
+const ext_types_1 = __webpack_require__(222);
+const vscode_2 = __webpack_require__(206);
+const ext_host_file_system_1 = __webpack_require__(239);
+const ide_core_common_1 = __webpack_require__(2);
+const path_1 = __webpack_require__(35);
+const converter_1 = __webpack_require__(227);
+const vscode_jsonrpc_1 = __webpack_require__(135);
+const glob = __webpack_require__(406);
 function createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocument, extHostFileSystem) {
-    var fileSystemApi = ext_host_file_system_1.createFileSystemApiFactory(extHostFileSystem);
-    var workspace = tslib_1.__assign(tslib_1.__assign({ rootPath: extHostWorkspace.rootPath, name: extHostWorkspace.name, asRelativePath: function (pathOrUri, includeWorkspaceFolder) {
+    const fileSystemApi = ext_host_file_system_1.createFileSystemApiFactory(extHostFileSystem);
+    const workspace = Object.assign(Object.assign({ rootPath: extHostWorkspace.rootPath, name: extHostWorkspace.name, asRelativePath: (pathOrUri, includeWorkspaceFolder) => {
             return extHostWorkspace.getRelativePath(pathOrUri, includeWorkspaceFolder);
-        }, updateWorkspaceFolders: function (start, deleteCount) {
-            var workspaceFoldersToAdd = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                workspaceFoldersToAdd[_i - 2] = arguments[_i];
-            }
-            return extHostWorkspace.updateWorkspaceFolders.apply(extHostWorkspace, tslib_1.__spread([start, deleteCount || 0], workspaceFoldersToAdd));
-        }, onDidChangeWorkspaceFolders: extHostWorkspace.onDidChangeWorkspaceFolders, getWorkspaceFolder: function (uri, resolveParent) {
+        }, updateWorkspaceFolders: (start, deleteCount, ...workspaceFoldersToAdd) => {
+            return extHostWorkspace.updateWorkspaceFolders(start, deleteCount || 0, ...workspaceFoldersToAdd);
+        }, onDidChangeWorkspaceFolders: extHostWorkspace.onDidChangeWorkspaceFolders, getWorkspaceFolder: (uri, resolveParent) => {
             return extHostWorkspace.getWorkspaceFolder(uri, resolveParent);
-        }, workspaceFolders: extHostWorkspace.workspaceFolders, getConfiguration: function (section, resouce, extensionId) {
-            return extHostPreference.getConfiguration(section, resouce, extensionId);
-        }, onDidChangeConfiguration: function (listener, thisArgs, disposables) {
+        }, workspaceFolders: extHostWorkspace.workspaceFolders, getConfiguration: (section, resource, extensionId) => {
+            return extHostPreference.getConfiguration(section, resource, extensionId);
+        }, onDidChangeConfiguration: (listener, thisArgs, disposables) => {
             return extHostPreference.onDidChangeConfiguration(listener, thisArgs, disposables);
-        }, openTextDocument: extHostDocument.openTextDocument.bind(extHostDocument), onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument.bind(extHostDocument), onDidCloseTextDocument: extHostDocument.onDidCloseTextDocument.bind(extHostDocument), onDidChangeTextDocument: extHostDocument.onDidChangeTextDocument.bind(extHostDocument), onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument.bind(extHostDocument), onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument), registerTextDocumentContentProvider: extHostDocument.registerTextDocumentContentProvider.bind(extHostDocument), registerTaskProvider: function () {
+        }, openTextDocument: extHostDocument.openTextDocument.bind(extHostDocument), onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument.bind(extHostDocument), onDidCloseTextDocument: extHostDocument.onDidCloseTextDocument.bind(extHostDocument), onDidChangeTextDocument: extHostDocument.onDidChangeTextDocument.bind(extHostDocument), onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument.bind(extHostDocument), onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument), registerTextDocumentContentProvider: extHostDocument.registerTextDocumentContentProvider.bind(extHostDocument), registerTaskProvider: () => {
             return null;
-        }, applyEdit: function (edit) {
+        }, applyEdit: (edit) => {
             return extHostWorkspace.applyEdit(edit);
-        }, textDocuments: extHostDocument.getAllDocument() }, fileSystemApi), { onDidRenameFile: extHostWorkspace.onDidRenameFile, saveAll: function () {
+        }, textDocuments: extHostDocument.getAllDocument() }, fileSystemApi), { onDidRenameFile: extHostWorkspace.onDidRenameFile, saveAll: () => {
             return extHostWorkspace.saveAll();
-        }, findFiles: function (include, exclude, maxResults, token) {
+        }, findFiles: (include, exclude, maxResults, token) => {
             return extHostWorkspace.findFiles(converter_1.TypeConverts.GlobPattern.from(include), converter_1.TypeConverts.GlobPattern.from(exclude), maxResults, null, token);
         } });
     return workspace;
@@ -37737,8 +37420,8 @@ function toWorkspaceFolder(folder) {
     };
 }
 exports.toWorkspaceFolder = toWorkspaceFolder;
-var ExtHostWorkspace = (function () {
-    function ExtHostWorkspace(rpcProtocol, extHostMessage, extHostDoc) {
+class ExtHostWorkspace {
+    constructor(rpcProtocol, extHostMessage, extHostDoc) {
         this.extHostDoc = extHostDoc;
         this.workspaceFoldersChangedEmitter = new ide_core_common_1.Emitter();
         this.onDidChangeWorkspaceFolders = this.workspaceFoldersChangedEmitter.event;
@@ -37749,55 +37432,39 @@ var ExtHostWorkspace = (function () {
         this.rpcProtocol = rpcProtocol;
         this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadWorkspace);
     }
-    ExtHostWorkspace.prototype.toWorkspaceFolder = function (root, index) {
-        var uri = ext_types_1.Uri.parse(root.uri);
-        var path = new path_1.Path(uri.path);
+    toWorkspaceFolder(root, index) {
+        const uri = ext_types_1.Uri.parse(root.uri);
+        const path = new path_1.Path(uri.path);
         return {
-            uri: uri,
+            uri,
             name: path.base,
-            index: index,
+            index,
         };
-    };
-    ExtHostWorkspace.prototype.deltaFolders = function (currentFolders, newFolders) {
-        if (currentFolders === void 0) { currentFolders = []; }
-        if (newFolders === void 0) { newFolders = []; }
-        var added = this.foldersDiff(newFolders, currentFolders);
-        var removed = this.foldersDiff(currentFolders, newFolders);
-        return { added: added, removed: removed };
-    };
-    ExtHostWorkspace.prototype.foldersDiff = function (folder1, folder2) {
-        if (folder1 === void 0) { folder1 = []; }
-        if (folder2 === void 0) { folder2 = []; }
-        var map = new Map();
-        folder1.forEach(function (folder) { return map.set(folder.uri.toString(), folder); });
-        folder2.forEach(function (folder) { return map.delete(folder.uri.toString()); });
-        return folder1.filter(function (folder) { return map.has(folder.uri.toString()); });
-    };
-    Object.defineProperty(ExtHostWorkspace.prototype, "workspaceFolders", {
-        get: function () {
-            return this.folders;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostWorkspace.prototype, "rootPath", {
-        get: function () {
-            var folder = this.folders && this.folders[0];
-            return folder && folder.uri.fsPath;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostWorkspace.prototype, "name", {
-        get: function () {
-            var folder = this.folders && this.folders[0];
-            return folder && folder.name;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostWorkspace.prototype.getRelativePath = function (pathOrUri, includeWorkspaceFolder) {
-        var path;
+    }
+    deltaFolders(currentFolders = [], newFolders = []) {
+        const added = this.foldersDiff(newFolders, currentFolders);
+        const removed = this.foldersDiff(currentFolders, newFolders);
+        return { added, removed };
+    }
+    foldersDiff(folder1 = [], folder2 = []) {
+        const map = new Map();
+        folder1.forEach((folder) => map.set(folder.uri.toString(), folder));
+        folder2.forEach((folder) => map.delete(folder.uri.toString()));
+        return folder1.filter((folder) => map.has(folder.uri.toString()));
+    }
+    get workspaceFolders() {
+        return this.folders;
+    }
+    get rootPath() {
+        const folder = this.folders && this.folders[0];
+        return folder && folder.uri.fsPath;
+    }
+    get name() {
+        const folder = this.folders && this.folders[0];
+        return folder && folder.name;
+    }
+    getRelativePath(pathOrUri, includeWorkspaceFolder) {
+        let path;
         if (typeof pathOrUri === 'string') {
             path = pathOrUri;
         }
@@ -37807,77 +37474,62 @@ var ExtHostWorkspace = (function () {
         if (!path) {
             return path;
         }
-        var folder = this.getWorkspaceFolder(typeof pathOrUri === 'string' ? ext_types_1.Uri.file(pathOrUri) : pathOrUri, true);
+        const folder = this.getWorkspaceFolder(typeof pathOrUri === 'string' ? ext_types_1.Uri.file(pathOrUri) : pathOrUri, true);
         if (!folder) {
             return path;
         }
         if (typeof includeWorkspaceFolder === 'undefined') {
             includeWorkspaceFolder = this.folders.length > 1;
         }
-        var result = vscode_2.relative(folder.uri.fsPath, path);
+        let result = vscode_2.relative(folder.uri.fsPath, path);
         if (includeWorkspaceFolder) {
-            result = folder.name + "/" + result;
+            result = `${folder.name}/${result}`;
         }
         return vscode_2.normalize(result, true);
-    };
-    ExtHostWorkspace.prototype.updateWorkspaceFolders = function (start, deleteCount) {
-        var _a;
-        var _this = this;
-        var workspaceFoldersToAdd = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            workspaceFoldersToAdd[_i - 2] = arguments[_i];
-        }
-        var rootsToAdd = new Set();
+    }
+    updateWorkspaceFolders(start, deleteCount, ...workspaceFoldersToAdd) {
+        const rootsToAdd = new Set();
         if (Array.isArray(workspaceFoldersToAdd)) {
-            workspaceFoldersToAdd.forEach(function (folderToAdd) {
-                var uri = ext_types_1.Uri.isUri(folderToAdd.uri) && folderToAdd.uri.toString();
+            workspaceFoldersToAdd.forEach((folderToAdd) => {
+                const uri = ext_types_1.Uri.isUri(folderToAdd.uri) && folderToAdd.uri.toString();
                 if (uri && !rootsToAdd.has(uri)) {
                     rootsToAdd.add(uri);
                 }
             });
         }
-        if ([start, deleteCount].some(function (i) { return typeof i !== 'number' || i < 0; })) {
+        if ([start, deleteCount].some((i) => typeof i !== 'number' || i < 0)) {
             return false;
         }
         if (deleteCount === 0 && rootsToAdd.size === 0) {
             return false;
         }
-        var currentWorkspaceFolders = this.workspaceFolders || [];
+        const currentWorkspaceFolders = this.workspaceFolders || [];
         if (start + deleteCount > currentWorkspaceFolders.length) {
             return false;
         }
-        var newWorkspaceFolders = currentWorkspaceFolders.slice(0);
-        newWorkspaceFolders.splice.apply(newWorkspaceFolders, tslib_1.__spread([start, deleteCount], tslib_1.__spread(rootsToAdd).map(function (uri) { return ({ uri: ext_types_1.Uri.parse(uri), name: undefined, index: undefined }); })));
-        var _loop_1 = function (i) {
-            var folder = newWorkspaceFolders[i];
-            if (newWorkspaceFolders.some(function (otherFolder, index) { return index !== i && folder.uri.toString() === otherFolder.uri.toString(); })) {
-                return { value: false };
+        const newWorkspaceFolders = currentWorkspaceFolders.slice(0);
+        newWorkspaceFolders.splice(start, deleteCount, ...[...rootsToAdd].map((uri) => ({ uri: ext_types_1.Uri.parse(uri), name: undefined, index: undefined })));
+        for (let i = 0; i < newWorkspaceFolders.length; i++) {
+            const folder = newWorkspaceFolders[i];
+            if (newWorkspaceFolders.some((otherFolder, index) => index !== i && folder.uri.toString() === otherFolder.uri.toString())) {
+                return false;
             }
-        };
-        for (var i = 0; i < newWorkspaceFolders.length; i++) {
-            var state_1 = _loop_1(i);
-            if (typeof state_1 === "object")
-                return state_1.value;
         }
-        var _b = this.deltaFolders(currentWorkspaceFolders, newWorkspaceFolders), added = _b.added, removed = _b.removed;
+        const { added, removed } = this.deltaFolders(currentWorkspaceFolders, newWorkspaceFolders);
         if (added.length === 0 && removed.length === 0) {
             return false;
         }
-        (_a = this.proxy).$updateWorkspaceFolders.apply(_a, tslib_1.__spread([start, deleteCount], rootsToAdd)).then(undefined, function (error) {
-            return _this.messageService.showMessage(ide_core_common_1.MessageType.Error, "Failed to update workspace folders: " + error);
-        });
+        this.proxy.$updateWorkspaceFolders(start, deleteCount, ...rootsToAdd).then(undefined, (error) => this.messageService.showMessage(ide_core_common_1.MessageType.Error, `Failed to update workspace folders: ${error}`));
         return true;
-    };
-    ExtHostWorkspace.prototype.$onWorkspaceFoldersChanged = function (event) {
-        var _this = this;
-        var newRoots = event.roots || [];
-        var newFolders = newRoots.map(function (root, index) { return _this.toWorkspaceFolder(root, index); });
-        var delta = this.deltaFolders(this.folders, newFolders);
+    }
+    $onWorkspaceFoldersChanged(event) {
+        const newRoots = event.roots || [];
+        const newFolders = newRoots.map((root, index) => this.toWorkspaceFolder(root, index));
+        const delta = this.deltaFolders(this.folders, newFolders);
         this.folders = newFolders;
         this.workspaceFoldersChangedEmitter.fire(delta);
-    };
-    ExtHostWorkspace.prototype.getWorkspaceFolder = function (uri, resolveParent) {
-        var e_1, _a;
+    }
+    getWorkspaceFolder(uri, resolveParent) {
         if (!this.folders || !this.folders.length) {
             return undefined;
         }
@@ -37892,59 +37544,45 @@ var ExtHostWorkspace = (function () {
         if (resolveParent && this.hasFolder(uri)) {
             uri = dirname(uri);
         }
-        var resourcePath = uri.toString();
-        var workspaceFolder;
-        try {
-            for (var _b = tslib_1.__values(this.folders), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var folder = _c.value;
-                var folderPath = folder.uri.toString();
-                if (resourcePath === folderPath) {
-                    return toWorkspaceFolder(folder);
-                }
-                if (resourcePath.startsWith(folderPath)
-                    && resourcePath[folderPath.length] === '/'
-                    && (!workspaceFolder || folderPath.length > workspaceFolder.uri.toString().length)) {
-                    workspaceFolder = folder;
-                }
+        const resourcePath = uri.toString();
+        let workspaceFolder;
+        for (const folder of this.folders) {
+            const folderPath = folder.uri.toString();
+            if (resourcePath === folderPath) {
+                return toWorkspaceFolder(folder);
             }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            if (resourcePath.startsWith(folderPath)
+                && resourcePath[folderPath.length] === '/'
+                && (!workspaceFolder || folderPath.length > workspaceFolder.uri.toString().length)) {
+                workspaceFolder = folder;
             }
-            finally { if (e_1) throw e_1.error; }
         }
         return workspaceFolder;
-    };
-    ExtHostWorkspace.prototype.hasFolder = function (uri) {
+    }
+    hasFolder(uri) {
         if (!this.folders) {
             return false;
         }
-        return this.folders.some(function (folder) { return folder.uri.toString() === uri.toString(); });
-    };
-    ExtHostWorkspace.prototype.applyEdit = function (edit) {
-        var dto = converter_1.TypeConverts.WorkspaceEdit.from(edit, this.extHostDoc);
+        return this.folders.some((folder) => folder.uri.toString() === uri.toString());
+    }
+    applyEdit(edit) {
+        const dto = converter_1.TypeConverts.WorkspaceEdit.from(edit, this.extHostDoc);
         return this.proxy.$tryApplyWorkspaceEdit(dto);
-    };
-    ExtHostWorkspace.prototype.saveAll = function () {
+    }
+    saveAll() {
         return this.proxy.$saveAll();
-    };
-    ExtHostWorkspace.prototype.$didRenameFile = function (oldUri, newUri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this._onDidRenameFile.fire({
-                    oldUri: ext_types_1.Uri.revive(oldUri),
-                    newUri: ext_types_1.Uri.revive(newUri),
-                });
-                return [2];
+    }
+    $didRenameFile(oldUri, newUri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this._onDidRenameFile.fire({
+                oldUri: ext_types_1.Uri.revive(oldUri),
+                newUri: ext_types_1.Uri.revive(newUri),
             });
         });
-    };
-    ExtHostWorkspace.prototype.findFiles = function (include, exclude, maxResults, extensionId, token) {
-        if (token === void 0) { token = vscode_jsonrpc_1.CancellationToken.None; }
-        var includePattern;
-        var includeFolder;
+    }
+    findFiles(include, exclude, maxResults, extensionId, token = vscode_jsonrpc_1.CancellationToken.None) {
+        let includePattern;
+        let includeFolder;
         if (include) {
             if (typeof include === 'string') {
                 includePattern = include;
@@ -37954,7 +37592,7 @@ var ExtHostWorkspace = (function () {
                 includeFolder = ext_types_1.Uri.file(include.base);
             }
         }
-        var excludePatternOrDisregardExcludes;
+        let excludePatternOrDisregardExcludes;
         if (exclude === null) {
             excludePatternOrDisregardExcludes = false;
         }
@@ -37974,40 +37612,39 @@ var ExtHostWorkspace = (function () {
             absolute: true,
             ignore: excludePatternOrDisregardExcludes,
         })
-            .then(function (files) {
-            return files.map(function (file) { return ext_types_1.Uri.file(file); });
+            .then((files) => {
+            return files.map((file) => ext_types_1.Uri.file(file));
         })
-            .then(function (uris) {
+            .then((uris) => {
             if (maxResults) {
                 return uris.slice(0, maxResults);
             }
             return uris;
         });
-    };
-    return ExtHostWorkspace;
-}());
+    }
+}
 exports.ExtHostWorkspace = ExtHostWorkspace;
 
 
 /***/ }),
-/* 237 */
+/* 239 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ide_file_service_1 = __webpack_require__(238);
-var disk_file_system_provider_1 = __webpack_require__(244);
-var ide_core_common_1 = __webpack_require__(2);
-var vscode_1 = __webpack_require__(204);
-var ext_file_system_1 = __webpack_require__(242);
+const tslib_1 = __webpack_require__(1);
+const ide_file_service_1 = __webpack_require__(240);
+const disk_file_system_provider_1 = __webpack_require__(246);
+const ide_core_common_1 = __webpack_require__(2);
+const vscode_1 = __webpack_require__(206);
+const ext_file_system_1 = __webpack_require__(244);
 function createFileSystemApiFactory(extHostFileSystem) {
     return {
         fs: new VSCFileSystem(),
-        createFileSystemWatcher: function (globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents) {
+        createFileSystemWatcher(globPattern, ignoreCreateEvents, ignoreChangeEvents, ignoreDeleteEvents) {
             return new FileSystemWatcher({
-                globPattern: globPattern,
+                globPattern,
                 ignoreCreateEvents: !!ignoreCreateEvents,
                 ignoreChangeEvents: !!ignoreChangeEvents,
                 ignoreDeleteEvents: !!ignoreDeleteEvents,
@@ -38026,177 +37663,93 @@ function convertToVSCFileStat(stat) {
     };
 }
 exports.convertToVSCFileStat = convertToVSCFileStat;
-var VSCFileSystem = (function () {
-    function VSCFileSystem() {
+class VSCFileSystem {
+    constructor() {
         this.innerFs = new disk_file_system_provider_1.DiskFileSystemProviderWithoutWatcherForExtHost();
     }
-    VSCFileSystem.prototype.stat = function (uri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var state;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.innerFs.stat(uri)];
-                    case 1:
-                        state = _a.sent();
-                        return [2, convertToVSCFileStat(state)];
-                }
-            });
+    stat(uri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const state = yield this.innerFs.stat(uri);
+            return convertToVSCFileStat(state);
         });
-    };
-    VSCFileSystem.prototype.readDirectory = function (uri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var e_1;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4, this.innerFs.readDirectory(uri)];
-                    case 1: return [2, _a.sent()];
-                    case 2:
-                        e_1 = _a.sent();
-                        return [2, []];
-                    case 3: return [2];
-                }
-            });
+    }
+    readDirectory(uri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this.innerFs.readDirectory(uri);
+            }
+            catch (e) {
+                return [];
+            }
         });
-    };
-    VSCFileSystem.prototype.createDirectory = function (uri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var e_2;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4, this.innerFs.createDirectory(uri)];
-                    case 1:
-                        _a.sent();
-                        return [3, 3];
-                    case 2:
-                        e_2 = _a.sent();
-                        return [3, 3];
-                    case 3: return [2];
-                }
-            });
+    }
+    createDirectory(uri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.innerFs.createDirectory(uri);
+            }
+            catch (e) { }
         });
-    };
-    VSCFileSystem.prototype.readFile = function (uri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var e_3;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4, this.innerFs.readFile(uri)];
-                    case 1: return [2, _a.sent()];
-                    case 2:
-                        e_3 = _a.sent();
-                        return [2, new Uint8Array()];
-                    case 3: return [2];
-                }
-            });
+    }
+    readFile(uri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this.innerFs.readFile(uri);
+            }
+            catch (e) {
+                return new Uint8Array();
+            }
         });
-    };
-    VSCFileSystem.prototype.writeFile = function (uri, content, options) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var e_4;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        options = Object.assign({}, options, {
-                            create: true,
-                            overwrite: true,
-                        });
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, this.innerFs.writeFile(uri, Buffer.from(content), options)];
-                    case 2:
-                        _a.sent();
-                        return [3, 4];
-                    case 3:
-                        e_4 = _a.sent();
-                        return [3, 4];
-                    case 4: return [2];
-                }
+    }
+    writeFile(uri, content, options) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            options = Object.assign({}, options, {
+                create: true,
+                overwrite: true,
             });
+            try {
+                yield this.innerFs.writeFile(uri, Buffer.from(content), options);
+            }
+            catch (e) { }
         });
-    };
-    VSCFileSystem.prototype.delete = function (uri, options) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var e_5;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        options = Object.assign({}, options, {
-                            recursive: true,
-                        });
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, this.innerFs.delete(uri, options)];
-                    case 2: return [2, _a.sent()];
-                    case 3:
-                        e_5 = _a.sent();
-                        return [3, 4];
-                    case 4: return [2];
-                }
+    }
+    delete(uri, options) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            options = Object.assign({}, options, {
+                recursive: true,
             });
+            try {
+                return yield this.innerFs.delete(uri, options);
+            }
+            catch (e) { }
         });
-    };
-    VSCFileSystem.prototype.rename = function (source, target, options) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var e_6;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        options = Object.assign({}, options, {
-                            overwrite: true,
-                        });
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, this.innerFs.rename(source, target, options)];
-                    case 2:
-                        _a.sent();
-                        return [3, 4];
-                    case 3:
-                        e_6 = _a.sent();
-                        return [3, 4];
-                    case 4: return [2];
-                }
+    }
+    rename(source, target, options) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            options = Object.assign({}, options, {
+                overwrite: true,
             });
+            try {
+                yield this.innerFs.rename(source, target, options);
+            }
+            catch (e) { }
         });
-    };
-    VSCFileSystem.prototype.copy = function (source, target, options) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var e_7;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        options = Object.assign({}, options, {
-                            overwrite: true,
-                        });
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, this.innerFs.copy(source, target, options)];
-                    case 2:
-                        _a.sent();
-                        return [3, 4];
-                    case 3:
-                        e_7 = _a.sent();
-                        return [3, 4];
-                    case 4: return [2];
-                }
+    }
+    copy(source, target, options) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            options = Object.assign({}, options, {
+                overwrite: true,
             });
+            try {
+                yield this.innerFs.copy(source, target, options);
+            }
+            catch (e) { }
         });
-    };
-    return VSCFileSystem;
-}());
+    }
+}
 exports.VSCFileSystem = VSCFileSystem;
-var FileSystemWatcher = (function () {
-    function FileSystemWatcher(options, extFileSystem) {
-        var _this = this;
+class FileSystemWatcher {
+    constructor(options, extFileSystem) {
         this.toDispose = new ide_core_common_1.DisposableCollection();
         this.createEmitter = new ide_core_common_1.Emitter();
         this.changeEmitter = new ide_core_common_1.Emitter();
@@ -38205,52 +37758,39 @@ var FileSystemWatcher = (function () {
         this.ignoreCreateEvents = options.ignoreCreateEvents;
         this.ignoreChangeEvents = options.ignoreChangeEvents;
         this.ignoreDeleteEvents = options.ignoreDeleteEvents;
-        this.extFileSystem.subscribeWatcher(options).then(function (id) { return _this.id = id; });
-        this.toDispose.push(extFileSystem.onDidChange(function (info) {
-            if (info.id !== _this.id) {
+        this.extFileSystem.subscribeWatcher(options).then((id) => this.id = id);
+        this.toDispose.push(extFileSystem.onDidChange((info) => {
+            if (info.id !== this.id) {
                 return;
             }
             if (info.event.type === ide_file_service_1.FileChangeType.ADDED) {
-                _this.createEmitter.fire(new ide_core_common_1.URI(info.event.uri).codeUri);
+                this.createEmitter.fire(new ide_core_common_1.URI(info.event.uri).codeUri);
             }
             if (info.event.type === ide_file_service_1.FileChangeType.UPDATED) {
-                _this.changeEmitter.fire(new ide_core_common_1.URI(info.event.uri).codeUri);
+                this.changeEmitter.fire(new ide_core_common_1.URI(info.event.uri).codeUri);
             }
             if (info.event.type === ide_file_service_1.FileChangeType.DELETED) {
-                _this.deleteEmitter.fire(new ide_core_common_1.URI(info.event.uri).codeUri);
+                this.deleteEmitter.fire(new ide_core_common_1.URI(info.event.uri).codeUri);
             }
         }));
     }
-    Object.defineProperty(FileSystemWatcher.prototype, "onDidCreate", {
-        get: function () {
-            return this.createEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(FileSystemWatcher.prototype, "onDidChange", {
-        get: function () {
-            return this.changeEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(FileSystemWatcher.prototype, "onDidDelete", {
-        get: function () {
-            return this.deleteEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    FileSystemWatcher.prototype.dispose = function () {
+    get onDidCreate() {
+        return this.createEmitter.event;
+    }
+    get onDidChange() {
+        return this.changeEmitter.event;
+    }
+    get onDidDelete() {
+        return this.deleteEmitter.event;
+    }
+    dispose() {
         this.toDispose.dispose();
         this.extFileSystem.unsubscribeWatcher(this.id).then();
-    };
-    return FileSystemWatcher;
-}());
+    }
+}
 exports.FileSystemWatcher = FileSystemWatcher;
-var ExtHostFileSystem = (function () {
-    function ExtHostFileSystem(rpcProtocol) {
+class ExtHostFileSystem {
+    constructor(rpcProtocol) {
         this.watchEmitter = new ide_core_common_1.Emitter();
         this.fsProviders = new Map();
         this.usedSchemes = new Set();
@@ -38260,7 +37800,7 @@ var ExtHostFileSystem = (function () {
         this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadFileSystem);
         this.initUsedSchems();
     }
-    ExtHostFileSystem.prototype.initUsedSchems = function () {
+    initUsedSchems() {
         this.usedSchemes.add(ide_core_common_1.Schemas.file);
         this.usedSchemes.add(ide_core_common_1.Schemas.untitled);
         this.usedSchemes.add(ide_core_common_1.Schemas.vscode);
@@ -38271,221 +37811,135 @@ var ExtHostFileSystem = (function () {
         this.usedSchemes.add(ide_core_common_1.Schemas.mailto);
         this.usedSchemes.add(ide_core_common_1.Schemas.data);
         this.usedSchemes.add(ide_core_common_1.Schemas.command);
-    };
-    ExtHostFileSystem.prototype.$onFileEvent = function (options) {
+    }
+    $onFileEvent(options) {
         this.watchEmitter.fire(options);
-    };
-    Object.defineProperty(ExtHostFileSystem.prototype, "onDidChange", {
-        get: function () {
-            return this.watchEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostFileSystem.prototype.subscribeWatcher = function (options) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.proxy.$subscribeWatcher(options)];
-                    case 1: return [2, _a.sent()];
-                }
-            });
+    }
+    get onDidChange() {
+        return this.watchEmitter.event;
+    }
+    subscribeWatcher(options) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield this.proxy.$subscribeWatcher(options);
         });
-    };
-    ExtHostFileSystem.prototype.unsubscribeWatcher = function (id) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.proxy.$unsubscribeWatcher(id)];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
-            });
+    }
+    unsubscribeWatcher(id) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            yield this.proxy.$unsubscribeWatcher(id);
         });
-    };
-    ExtHostFileSystem.prototype.registerFileSystemProvider = function (scheme, provider, options) {
-        var _this = this;
-        if (options === void 0) { options = {}; }
+    }
+    registerFileSystemProvider(scheme, provider, options = {}) {
         if (this.usedSchemes.has(scheme)) {
-            throw new Error("a provider for the scheme '" + scheme + "' is already registered");
+            throw new Error(`a provider for the scheme '${scheme}' is already registered`);
         }
-        var toDisposable = new ide_core_common_1.DisposableCollection();
+        const toDisposable = new ide_core_common_1.DisposableCollection();
         this.fsProviders.set(scheme, provider);
         this.usedSchemes.add(scheme);
-        toDisposable.push(provider.onDidChangeFile(function (e) {
-            _this.fireProvidersFilesChange(_this.convertToKtFileChangeEvent(e));
+        toDisposable.push(provider.onDidChangeFile((e) => {
+            this.fireProvidersFilesChange(this.convertToKtFileChangeEvent(e));
         }));
         toDisposable.push({
-            dispose: function () {
-                _this.fsProviders.delete(scheme);
-                _this.usedSchemes.delete(scheme);
+            dispose: () => {
+                this.fsProviders.delete(scheme);
+                this.usedSchemes.delete(scheme);
             },
         });
         return toDisposable;
-    };
-    ExtHostFileSystem.prototype.haveProvider = function (scheme) {
+    }
+    haveProvider(scheme) {
         return this.fsProviders.has(scheme);
-    };
-    ExtHostFileSystem.prototype.$haveProvider = function (scheme) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.haveProvider(scheme)];
-                    case 1: return [2, _a.sent()];
-                }
-            });
+    }
+    $haveProvider(scheme) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield this.haveProvider(scheme);
         });
-    };
-    ExtHostFileSystem.prototype.$runProviderMethod = function (scheme, funName, args) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var provider, e_8;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        provider = this.fsProviders.get(scheme);
-                        if (!provider) {
-                            throw new Error("Not find " + scheme + " provider!");
-                        }
-                        if (!provider[funName]) {
-                            throw new Error("Not find menthod " + funName);
-                        }
-                        if (funName === 'rename' || funName === 'copy') {
-                            args[0] = ide_core_common_1.Uri.parse(args[0]);
-                            args[1] = ide_core_common_1.Uri.parse(args[1]);
-                        }
-                        else {
-                            args[0] = ide_core_common_1.Uri.parse(args[0]);
-                        }
-                        if (!(funName === 'stat')) return [3, 4];
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, this.getStat(provider, args[0])];
-                    case 2: return [2, _a.sent()];
-                    case 3:
-                        e_8 = _a.sent();
-                        return [2];
-                    case 4: return [4, provider[funName].apply(provider, args)];
-                    case 5: return [2, _a.sent()];
+    }
+    $runProviderMethod(scheme, funName, args) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const provider = this.fsProviders.get(scheme);
+            if (!provider) {
+                throw new Error(`Not find ${scheme} provider!`);
+            }
+            if (!provider[funName]) {
+                throw new Error(`Not find menthod ${funName}`);
+            }
+            if (funName === 'rename' || funName === 'copy') {
+                args[0] = ide_core_common_1.Uri.parse(args[0]);
+                args[1] = ide_core_common_1.Uri.parse(args[1]);
+            }
+            else {
+                args[0] = ide_core_common_1.Uri.parse(args[0]);
+            }
+            if (funName === 'stat') {
+                try {
+                    return yield this.getStat(provider, args[0]);
                 }
-            });
-        });
-    };
-    ExtHostFileSystem.prototype.getStat = function (provider, uri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.convertToKtStat(provider, uri)];
-                    case 1: return [2, _a.sent()];
+                catch (e) {
+                    return;
                 }
-            });
+            }
+            return yield provider[funName].apply(provider, args);
         });
-    };
-    ExtHostFileSystem.prototype.$watchFileWithProvider = function (uri, options) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _codeUri, scheme, provider, id;
-            return tslib_1.__generator(this, function (_a) {
-                _codeUri = ide_core_common_1.Uri.parse(uri);
-                scheme = _codeUri.scheme;
-                provider = this.fsProviders.get(scheme);
-                if (!provider) {
-                    throw new Error("Not find " + scheme + " provider!");
-                }
-                id = this.fsProvidersWatchId++;
-                this.fsProvidersWatcherDisposerMap.set(id, provider.watch(_codeUri, options));
-                return [2, id];
-            });
+    }
+    getStat(provider, uri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield this.convertToKtStat(provider, uri);
         });
-    };
-    ExtHostFileSystem.prototype.$unWatchFileWithProvider = function (id) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var disposable;
-            return tslib_1.__generator(this, function (_a) {
-                disposable = this.fsProvidersWatcherDisposerMap.get(id);
-                if (disposable && disposable.dispose) {
-                    disposable.dispose();
-                }
-                return [2];
-            });
+    }
+    $watchFileWithProvider(uri, options) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const _codeUri = ide_core_common_1.Uri.parse(uri);
+            const scheme = _codeUri.scheme;
+            const provider = this.fsProviders.get(scheme);
+            if (!provider) {
+                throw new Error(`Not find ${scheme} provider!`);
+            }
+            const id = this.fsProvidersWatchId++;
+            this.fsProvidersWatcherDisposerMap.set(id, provider.watch(_codeUri, options));
+            return id;
         });
-    };
-    ExtHostFileSystem.prototype.convertToKtStat = function (provider, uri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var stat, isSymbolicLink, isDirectory, result, _a;
-            return tslib_1.__generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0: return [4, provider.stat(uri)];
-                    case 1:
-                        stat = _b.sent();
-                        isSymbolicLink = stat.type.valueOf() === ext_file_system_1.VSCFileType.SymbolicLink.valueOf();
-                        isDirectory = stat.type.valueOf() === ext_file_system_1.VSCFileType.Directory.valueOf();
-                        result = {
-                            uri: uri.toString(),
-                            lastModification: stat.mtime,
-                            createTime: stat.ctime,
-                            isSymbolicLink: isSymbolicLink,
-                            isDirectory: isDirectory,
-                            size: stat.size,
-                        };
-                        if (!isDirectory) return [3, 3];
-                        _a = result;
-                        return [4, this.convertToKtDirectoryStat(provider, uri)];
-                    case 2:
-                        _a.children = _b.sent();
-                        _b.label = 3;
-                    case 3: return [2, result];
-                }
-            });
+    }
+    $unWatchFileWithProvider(id) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const disposable = this.fsProvidersWatcherDisposerMap.get(id);
+            if (disposable && disposable.dispose) {
+                disposable.dispose();
+            }
         });
-    };
-    ExtHostFileSystem.prototype.convertToKtDirectoryStat = function (provider, uri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var outChilen, childen, childen_1, childen_1_1, child, _a, _b, e_9_1;
-            var e_9, _c;
-            return tslib_1.__generator(this, function (_d) {
-                switch (_d.label) {
-                    case 0:
-                        outChilen = [];
-                        return [4, provider.readDirectory(uri)];
-                    case 1:
-                        childen = _d.sent();
-                        _d.label = 2;
-                    case 2:
-                        _d.trys.push([2, 7, 8, 9]);
-                        childen_1 = tslib_1.__values(childen), childen_1_1 = childen_1.next();
-                        _d.label = 3;
-                    case 3:
-                        if (!!childen_1_1.done) return [3, 6];
-                        child = childen_1_1.value;
-                        _b = (_a = outChilen).push;
-                        return [4, this.convertToKtStat(provider, ide_core_common_1.Uri.parse(uri.toString() + ("/" + child[0])))];
-                    case 4:
-                        _b.apply(_a, [_d.sent()]);
-                        _d.label = 5;
-                    case 5:
-                        childen_1_1 = childen_1.next();
-                        return [3, 3];
-                    case 6: return [3, 9];
-                    case 7:
-                        e_9_1 = _d.sent();
-                        e_9 = { error: e_9_1 };
-                        return [3, 9];
-                    case 8:
-                        try {
-                            if (childen_1_1 && !childen_1_1.done && (_c = childen_1.return)) _c.call(childen_1);
-                        }
-                        finally { if (e_9) throw e_9.error; }
-                        return [7];
-                    case 9: return [2, outChilen];
-                }
-            });
+    }
+    convertToKtStat(provider, uri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const stat = yield provider.stat(uri);
+            const isSymbolicLink = stat.type.valueOf() === ext_file_system_1.VSCFileType.SymbolicLink.valueOf();
+            const isDirectory = stat.type.valueOf() === ext_file_system_1.VSCFileType.Directory.valueOf();
+            const result = {
+                uri: uri.toString(),
+                lastModification: stat.mtime,
+                createTime: stat.ctime,
+                isSymbolicLink,
+                isDirectory,
+                size: stat.size,
+            };
+            if (isDirectory) {
+                result.children = yield this.convertToKtDirectoryStat(provider, uri);
+            }
+            return result;
         });
-    };
-    ExtHostFileSystem.prototype.convertToKtFileChangeEvent = function (events) {
-        var result = [];
-        events.forEach(function (event) {
-            var newEvent = {
+    }
+    convertToKtDirectoryStat(provider, uri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const outChilen = [];
+            const childen = yield provider.readDirectory(uri);
+            for (const child of childen) {
+                outChilen.push(yield this.convertToKtStat(provider, ide_core_common_1.Uri.parse(uri.toString() + `/${child[0]}`)));
+            }
+            return outChilen;
+        });
+    }
+    convertToKtFileChangeEvent(events) {
+        const result = [];
+        events.forEach((event) => {
+            const newEvent = {
                 uri: event.uri.toString(),
                 type: ide_file_service_1.FileChangeType.UPDATED,
             };
@@ -38498,45 +37952,44 @@ var ExtHostFileSystem = (function () {
             result.push(newEvent);
         });
         return result;
-    };
-    ExtHostFileSystem.prototype.fireProvidersFilesChange = function (e) {
+    }
+    fireProvidersFilesChange(e) {
         return this.proxy.$fireProvidersFilesChange(e);
-    };
-    return ExtHostFileSystem;
-}());
+    }
+}
 exports.ExtHostFileSystem = ExtHostFileSystem;
 
 
 /***/ }),
-/* 238 */
+/* 240 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(239), exports);
+tslib_1.__exportStar(__webpack_require__(241), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 239 */
+/* 241 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(240), exports);
-tslib_1.__exportStar(__webpack_require__(241), exports);
 tslib_1.__exportStar(__webpack_require__(242), exports);
 tslib_1.__exportStar(__webpack_require__(243), exports);
+tslib_1.__exportStar(__webpack_require__(244), exports);
+tslib_1.__exportStar(__webpack_require__(245), exports);
 exports.FileServicePath = 'FileService';
 exports.FileWatcherServicePath = 'FileWatcherService';
 exports.FileExtServicePath = 'FileExtServicePath';
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 240 */
+/* 242 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38603,7 +38056,7 @@ var FileType;
 //# sourceMappingURL=files.js.map
 
 /***/ }),
-/* 241 */
+/* 243 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38671,7 +38124,7 @@ var VSCFileChangeType;
 //# sourceMappingURL=file-service-watcher-protocol.js.map
 
 /***/ }),
-/* 242 */
+/* 244 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38687,7 +38140,7 @@ var VSCFileType;
 //# sourceMappingURL=ext-file-system.js.map
 
 /***/ }),
-/* 243 */
+/* 245 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -38699,23 +38152,23 @@ exports.IBrowserFileSystemRegistry = Symbol('IBrowserFileSystemRegistry');
 //# sourceMappingURL=file-service-client.js.map
 
 /***/ }),
-/* 244 */
+/* 246 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs = __webpack_require__(245);
-const trash = __webpack_require__(282);
+const fs = __webpack_require__(247);
+const trash = __webpack_require__(284);
 const paths = __webpack_require__(144);
 const os = __webpack_require__(145);
-const mv = __webpack_require__(381);
-const uuid_1 = __webpack_require__(340);
-const write_file_atomic_1 = __webpack_require__(388);
+const mv = __webpack_require__(383);
+const uuid_1 = __webpack_require__(342);
+const write_file_atomic_1 = __webpack_require__(390);
 const ide_core_common_1 = __webpack_require__(2);
-const ide_core_node_1 = __webpack_require__(392);
-const file_service_watcher_1 = __webpack_require__(399);
-const common_1 = __webpack_require__(239);
+const ide_core_node_1 = __webpack_require__(394);
+const file_service_watcher_1 = __webpack_require__(401);
+const common_1 = __webpack_require__(241);
 const debugLog = new ide_core_common_1.DebugLog();
 function notEmpty(value) {
     return value !== undefined;
@@ -39107,7 +38560,7 @@ exports.DiskFileSystemProviderWithoutWatcherForExtHost = DiskFileSystemProviderW
 //# sourceMappingURL=disk-file-system.provider.js.map
 
 /***/ }),
-/* 245 */
+/* 247 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39116,24 +38569,24 @@ exports.DiskFileSystemProviderWithoutWatcherForExtHost = DiskFileSystemProviderW
 module.exports = Object.assign(
   {},
   // Export promiseified graceful-fs:
-  __webpack_require__(246),
+  __webpack_require__(248),
   // Export extra methods:
-  __webpack_require__(254),
-  __webpack_require__(262),
-  __webpack_require__(265),
-  __webpack_require__(268),
-  __webpack_require__(274),
   __webpack_require__(256),
-  __webpack_require__(279),
-  __webpack_require__(280),
-  __webpack_require__(281),
   __webpack_require__(264),
-  __webpack_require__(266)
+  __webpack_require__(267),
+  __webpack_require__(270),
+  __webpack_require__(276),
+  __webpack_require__(258),
+  __webpack_require__(281),
+  __webpack_require__(282),
+  __webpack_require__(283),
+  __webpack_require__(266),
+  __webpack_require__(268)
 )
 
 // Export fs.promises as a getter property so that we don't trigger
 // ExperimentalWarning before fs.promises is actually accessed.
-const fs = __webpack_require__(164)
+const fs = __webpack_require__(166)
 if (Object.getOwnPropertyDescriptor(fs, 'promises')) {
   Object.defineProperty(module.exports, 'promises', {
     get () { return fs.promises }
@@ -39142,15 +38595,15 @@ if (Object.getOwnPropertyDescriptor(fs, 'promises')) {
 
 
 /***/ }),
-/* 246 */
+/* 248 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 // This is adapted from https://github.com/normalize/mz
 // Copyright (c) 2014-2016 Jonathan Ong me@jongleberry.com and Contributors
-const u = __webpack_require__(247).fromCallback
-const fs = __webpack_require__(248)
+const u = __webpack_require__(249).fromCallback
+const fs = __webpack_require__(250)
 
 const api = [
   'access',
@@ -39253,7 +38706,7 @@ exports.write = function (fd, buffer, ...args) {
 
 
 /***/ }),
-/* 247 */
+/* 249 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -39285,13 +38738,13 @@ exports.fromPromise = function (fn) {
 
 
 /***/ }),
-/* 248 */
+/* 250 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var fs = __webpack_require__(164)
-var polyfills = __webpack_require__(249)
-var legacy = __webpack_require__(251)
-var clone = __webpack_require__(252)
+var fs = __webpack_require__(166)
+var polyfills = __webpack_require__(251)
+var legacy = __webpack_require__(253)
+var clone = __webpack_require__(254)
 
 var util = __webpack_require__(114)
 
@@ -39370,7 +38823,7 @@ if (!global[gracefulQueue]) {
   if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || '')) {
     process.on('exit', function() {
       debug(global[gracefulQueue])
-      __webpack_require__(253).equal(global[gracefulQueue].length, 0)
+      __webpack_require__(255).equal(global[gracefulQueue].length, 0)
     })
   }
 }
@@ -39635,10 +39088,10 @@ function retry () {
 
 
 /***/ }),
-/* 249 */
+/* 251 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var constants = __webpack_require__(250)
+var constants = __webpack_require__(252)
 
 var origCwd = process.cwd
 var cwd = null
@@ -39983,13 +39436,13 @@ function patch (fs) {
 
 
 /***/ }),
-/* 250 */
+/* 252 */
 /***/ (function(module, exports) {
 
 module.exports = require("constants");
 
 /***/ }),
-/* 251 */
+/* 253 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Stream = __webpack_require__(126).Stream
@@ -40113,7 +39566,7 @@ function legacy (fs) {
 
 
 /***/ }),
-/* 252 */
+/* 254 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40139,34 +39592,34 @@ function clone (obj) {
 
 
 /***/ }),
-/* 253 */
+/* 255 */
 /***/ (function(module, exports) {
 
 module.exports = require("assert");
 
 /***/ }),
-/* 254 */
+/* 256 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 module.exports = {
-  copySync: __webpack_require__(255)
+  copySync: __webpack_require__(257)
 }
 
 
 /***/ }),
-/* 255 */
+/* 257 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(248)
+const fs = __webpack_require__(250)
 const path = __webpack_require__(144)
-const mkdirpSync = __webpack_require__(256).mkdirsSync
-const utimesSync = __webpack_require__(260).utimesMillisSync
+const mkdirpSync = __webpack_require__(258).mkdirsSync
+const utimesSync = __webpack_require__(262).utimesMillisSync
 
 const notExist = Symbol('notExist')
 
@@ -40238,7 +39691,7 @@ function copyFile (srcStat, src, dest, opts) {
 
 function copyFileFallback (srcStat, src, dest, opts) {
   const BUF_LENGTH = 64 * 1024
-  const _buff = __webpack_require__(261)(BUF_LENGTH)
+  const _buff = __webpack_require__(263)(BUF_LENGTH)
 
   const fdr = fs.openSync(src, 'r')
   const fdw = fs.openSync(dest, 'w', srcStat.mode)
@@ -40357,14 +39810,14 @@ module.exports = copySync
 
 
 /***/ }),
-/* 256 */
+/* 258 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const u = __webpack_require__(247).fromCallback
-const mkdirs = u(__webpack_require__(257))
-const mkdirsSync = __webpack_require__(259)
+const u = __webpack_require__(249).fromCallback
+const mkdirs = u(__webpack_require__(259))
+const mkdirsSync = __webpack_require__(261)
 
 module.exports = {
   mkdirs,
@@ -40378,15 +39831,15 @@ module.exports = {
 
 
 /***/ }),
-/* 257 */
+/* 259 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(248)
+const fs = __webpack_require__(250)
 const path = __webpack_require__(144)
-const invalidWin32Path = __webpack_require__(258).invalidWin32Path
+const invalidWin32Path = __webpack_require__(260).invalidWin32Path
 
 const o777 = parseInt('0777', 8)
 
@@ -40448,7 +39901,7 @@ module.exports = mkdirs
 
 
 /***/ }),
-/* 258 */
+/* 260 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40480,15 +39933,15 @@ module.exports = {
 
 
 /***/ }),
-/* 259 */
+/* 261 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(248)
+const fs = __webpack_require__(250)
 const path = __webpack_require__(144)
-const invalidWin32Path = __webpack_require__(258).invalidWin32Path
+const invalidWin32Path = __webpack_require__(260).invalidWin32Path
 
 const o777 = parseInt('0777', 8)
 
@@ -40541,13 +39994,13 @@ module.exports = mkdirsSync
 
 
 /***/ }),
-/* 260 */
+/* 262 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(248)
+const fs = __webpack_require__(250)
 const os = __webpack_require__(145)
 const path = __webpack_require__(144)
 
@@ -40627,7 +40080,7 @@ module.exports = {
 
 
 /***/ }),
-/* 261 */
+/* 263 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -40646,30 +40099,30 @@ module.exports = function (size) {
 
 
 /***/ }),
-/* 262 */
+/* 264 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
+const u = __webpack_require__(249).fromCallback
 module.exports = {
-  copy: u(__webpack_require__(263))
+  copy: u(__webpack_require__(265))
 }
 
 
 /***/ }),
-/* 263 */
+/* 265 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(248)
+const fs = __webpack_require__(250)
 const path = __webpack_require__(144)
-const mkdirp = __webpack_require__(256).mkdirs
-const pathExists = __webpack_require__(264).pathExists
-const utimes = __webpack_require__(260).utimesMillis
+const mkdirp = __webpack_require__(258).mkdirs
+const pathExists = __webpack_require__(266).pathExists
+const utimes = __webpack_require__(262).utimesMillis
 
 const notExist = Symbol('notExist')
 
@@ -40912,13 +40365,13 @@ module.exports = copy
 
 
 /***/ }),
-/* 264 */
+/* 266 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const u = __webpack_require__(247).fromPromise
-const fs = __webpack_require__(246)
+const u = __webpack_require__(249).fromPromise
+const fs = __webpack_require__(248)
 
 function pathExists (path) {
   return fs.access(path).then(() => true).catch(() => false)
@@ -40931,17 +40384,17 @@ module.exports = {
 
 
 /***/ }),
-/* 265 */
+/* 267 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
-const fs = __webpack_require__(164)
+const u = __webpack_require__(249).fromCallback
+const fs = __webpack_require__(166)
 const path = __webpack_require__(144)
-const mkdir = __webpack_require__(256)
-const remove = __webpack_require__(266)
+const mkdir = __webpack_require__(258)
+const remove = __webpack_require__(268)
 
 const emptyDir = u(function emptyDir (dir, callback) {
   callback = callback || function () {}
@@ -40986,14 +40439,14 @@ module.exports = {
 
 
 /***/ }),
-/* 266 */
+/* 268 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
-const rimraf = __webpack_require__(267)
+const u = __webpack_require__(249).fromCallback
+const rimraf = __webpack_require__(269)
 
 module.exports = {
   remove: u(rimraf),
@@ -41002,15 +40455,15 @@ module.exports = {
 
 
 /***/ }),
-/* 267 */
+/* 269 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(248)
+const fs = __webpack_require__(250)
 const path = __webpack_require__(144)
-const assert = __webpack_require__(253)
+const assert = __webpack_require__(255)
 
 const isWindows = (process.platform === 'win32')
 
@@ -41323,15 +40776,15 @@ rimraf.sync = rimrafSync
 
 
 /***/ }),
-/* 268 */
+/* 270 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const file = __webpack_require__(269)
-const link = __webpack_require__(270)
-const symlink = __webpack_require__(271)
+const file = __webpack_require__(271)
+const link = __webpack_require__(272)
+const symlink = __webpack_require__(273)
 
 module.exports = {
   // file
@@ -41353,17 +40806,17 @@ module.exports = {
 
 
 /***/ }),
-/* 269 */
+/* 271 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
+const u = __webpack_require__(249).fromCallback
 const path = __webpack_require__(144)
-const fs = __webpack_require__(248)
-const mkdir = __webpack_require__(256)
-const pathExists = __webpack_require__(264).pathExists
+const fs = __webpack_require__(250)
+const mkdir = __webpack_require__(258)
+const pathExists = __webpack_require__(266).pathExists
 
 function createFile (file, callback) {
   function makeFile () {
@@ -41409,17 +40862,17 @@ module.exports = {
 
 
 /***/ }),
-/* 270 */
+/* 272 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
+const u = __webpack_require__(249).fromCallback
 const path = __webpack_require__(144)
-const fs = __webpack_require__(248)
-const mkdir = __webpack_require__(256)
-const pathExists = __webpack_require__(264).pathExists
+const fs = __webpack_require__(250)
+const mkdir = __webpack_require__(258)
+const pathExists = __webpack_require__(266).pathExists
 
 function createLink (srcpath, dstpath, callback) {
   function makeLink (srcpath, dstpath) {
@@ -41477,28 +40930,28 @@ module.exports = {
 
 
 /***/ }),
-/* 271 */
+/* 273 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
+const u = __webpack_require__(249).fromCallback
 const path = __webpack_require__(144)
-const fs = __webpack_require__(248)
-const _mkdirs = __webpack_require__(256)
+const fs = __webpack_require__(250)
+const _mkdirs = __webpack_require__(258)
 const mkdirs = _mkdirs.mkdirs
 const mkdirsSync = _mkdirs.mkdirsSync
 
-const _symlinkPaths = __webpack_require__(272)
+const _symlinkPaths = __webpack_require__(274)
 const symlinkPaths = _symlinkPaths.symlinkPaths
 const symlinkPathsSync = _symlinkPaths.symlinkPathsSync
 
-const _symlinkType = __webpack_require__(273)
+const _symlinkType = __webpack_require__(275)
 const symlinkType = _symlinkType.symlinkType
 const symlinkTypeSync = _symlinkType.symlinkTypeSync
 
-const pathExists = __webpack_require__(264).pathExists
+const pathExists = __webpack_require__(266).pathExists
 
 function createSymlink (srcpath, dstpath, type, callback) {
   callback = (typeof type === 'function') ? type : callback
@@ -41547,15 +41000,15 @@ module.exports = {
 
 
 /***/ }),
-/* 272 */
+/* 274 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const path = __webpack_require__(144)
-const fs = __webpack_require__(248)
-const pathExists = __webpack_require__(264).pathExists
+const fs = __webpack_require__(250)
+const pathExists = __webpack_require__(266).pathExists
 
 /**
  * Function that returns two types of paths, one relative to symlink, and one
@@ -41653,13 +41106,13 @@ module.exports = {
 
 
 /***/ }),
-/* 273 */
+/* 275 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(248)
+const fs = __webpack_require__(250)
 
 function symlinkType (srcpath, type, callback) {
   callback = (typeof type === 'function') ? type : callback
@@ -41691,17 +41144,17 @@ module.exports = {
 
 
 /***/ }),
-/* 274 */
+/* 276 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
-const jsonFile = __webpack_require__(275)
+const u = __webpack_require__(249).fromCallback
+const jsonFile = __webpack_require__(277)
 
-jsonFile.outputJson = u(__webpack_require__(277))
-jsonFile.outputJsonSync = __webpack_require__(278)
+jsonFile.outputJson = u(__webpack_require__(279))
+jsonFile.outputJsonSync = __webpack_require__(280)
 // aliases
 jsonFile.outputJSON = jsonFile.outputJson
 jsonFile.outputJSONSync = jsonFile.outputJsonSync
@@ -41714,14 +41167,14 @@ module.exports = jsonFile
 
 
 /***/ }),
-/* 275 */
+/* 277 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
-const jsonFile = __webpack_require__(276)
+const u = __webpack_require__(249).fromCallback
+const jsonFile = __webpack_require__(278)
 
 module.exports = {
   // jsonfile exports
@@ -41733,14 +41186,14 @@ module.exports = {
 
 
 /***/ }),
-/* 276 */
+/* 278 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var _fs
 try {
-  _fs = __webpack_require__(248)
+  _fs = __webpack_require__(250)
 } catch (_) {
-  _fs = __webpack_require__(164)
+  _fs = __webpack_require__(166)
 }
 
 function readFile (file, options, callback) {
@@ -41873,16 +41326,16 @@ module.exports = jsonfile
 
 
 /***/ }),
-/* 277 */
+/* 279 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const path = __webpack_require__(144)
-const mkdir = __webpack_require__(256)
-const pathExists = __webpack_require__(264).pathExists
-const jsonFile = __webpack_require__(275)
+const mkdir = __webpack_require__(258)
+const pathExists = __webpack_require__(266).pathExists
+const jsonFile = __webpack_require__(277)
 
 function outputJson (file, data, options, callback) {
   if (typeof options === 'function') {
@@ -41907,16 +41360,16 @@ module.exports = outputJson
 
 
 /***/ }),
-/* 278 */
+/* 280 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(248)
+const fs = __webpack_require__(250)
 const path = __webpack_require__(144)
-const mkdir = __webpack_require__(256)
-const jsonFile = __webpack_require__(275)
+const mkdir = __webpack_require__(258)
+const jsonFile = __webpack_require__(277)
 
 function outputJsonSync (file, data, options) {
   const dir = path.dirname(file)
@@ -41932,18 +41385,18 @@ module.exports = outputJsonSync
 
 
 /***/ }),
-/* 279 */
+/* 281 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(248)
+const fs = __webpack_require__(250)
 const path = __webpack_require__(144)
-const copySync = __webpack_require__(254).copySync
-const removeSync = __webpack_require__(266).removeSync
-const mkdirpSync = __webpack_require__(256).mkdirsSync
-const buffer = __webpack_require__(261)
+const copySync = __webpack_require__(256).copySync
+const removeSync = __webpack_require__(268).removeSync
+const mkdirpSync = __webpack_require__(258).mkdirsSync
+const buffer = __webpack_require__(263)
 
 function moveSync (src, dest, options) {
   options = options || {}
@@ -42056,19 +41509,19 @@ module.exports = {
 
 
 /***/ }),
-/* 280 */
+/* 282 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
-const fs = __webpack_require__(248)
+const u = __webpack_require__(249).fromCallback
+const fs = __webpack_require__(250)
 const path = __webpack_require__(144)
-const copy = __webpack_require__(262).copy
-const remove = __webpack_require__(266).remove
-const mkdirp = __webpack_require__(256).mkdirp
-const pathExists = __webpack_require__(264).pathExists
+const copy = __webpack_require__(264).copy
+const remove = __webpack_require__(268).remove
+const mkdirp = __webpack_require__(258).mkdirp
+const pathExists = __webpack_require__(266).pathExists
 
 function move (src, dest, opts, cb) {
   if (typeof opts === 'function') {
@@ -42145,17 +41598,17 @@ module.exports = {
 
 
 /***/ }),
-/* 281 */
+/* 283 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const u = __webpack_require__(247).fromCallback
-const fs = __webpack_require__(248)
+const u = __webpack_require__(249).fromCallback
+const fs = __webpack_require__(250)
 const path = __webpack_require__(144)
-const mkdir = __webpack_require__(256)
-const pathExists = __webpack_require__(264).pathExists
+const mkdir = __webpack_require__(258)
+const pathExists = __webpack_require__(266).pathExists
 
 function outputFile (file, data, encoding, callback) {
   if (typeof encoding === 'function') {
@@ -42192,19 +41645,19 @@ module.exports = {
 
 
 /***/ }),
-/* 282 */
+/* 284 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const fs = __webpack_require__(164);
+const fs = __webpack_require__(166);
 const path = __webpack_require__(144);
-const globby = __webpack_require__(283);
-const pTry = __webpack_require__(198);
-const isPathInside = __webpack_require__(307);
-const macos = __webpack_require__(309);
-const linux = __webpack_require__(339);
-const windows = __webpack_require__(380);
+const globby = __webpack_require__(285);
+const pTry = __webpack_require__(200);
+const isPathInside = __webpack_require__(309);
+const macos = __webpack_require__(311);
+const linux = __webpack_require__(341);
+const windows = __webpack_require__(382);
 
 const trash = (paths, options) => pTry(() => {
 	paths = (typeof paths === 'string' ? [paths] : paths).map(String);
@@ -42260,16 +41713,16 @@ module.exports.default = trash;
 
 
 /***/ }),
-/* 283 */
+/* 285 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const arrayUnion = __webpack_require__(284);
-const glob = __webpack_require__(286);
-const pify = __webpack_require__(301);
-const dirGlob = __webpack_require__(302);
-const gitignore = __webpack_require__(304);
+const arrayUnion = __webpack_require__(286);
+const glob = __webpack_require__(288);
+const pify = __webpack_require__(303);
+const dirGlob = __webpack_require__(304);
+const gitignore = __webpack_require__(306);
 
 const globP = pify(glob);
 const DEFAULT_FILTER = () => false;
@@ -42401,12 +41854,12 @@ module.exports.gitignore = gitignore;
 
 
 /***/ }),
-/* 284 */
+/* 286 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var arrayUniq = __webpack_require__(285);
+var arrayUniq = __webpack_require__(287);
 
 module.exports = function () {
 	return arrayUniq([].concat.apply([], arguments));
@@ -42414,7 +41867,7 @@ module.exports = function () {
 
 
 /***/ }),
-/* 285 */
+/* 287 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -42483,7 +41936,7 @@ if ('Set' in global) {
 
 
 /***/ }),
-/* 286 */
+/* 288 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Approach:
@@ -42528,27 +41981,27 @@ if ('Set' in global) {
 
 module.exports = glob
 
-var fs = __webpack_require__(164)
-var rp = __webpack_require__(287)
-var minimatch = __webpack_require__(289)
+var fs = __webpack_require__(166)
+var rp = __webpack_require__(289)
+var minimatch = __webpack_require__(291)
 var Minimatch = minimatch.Minimatch
-var inherits = __webpack_require__(293)
+var inherits = __webpack_require__(295)
 var EE = __webpack_require__(117).EventEmitter
 var path = __webpack_require__(144)
-var assert = __webpack_require__(253)
-var isAbsolute = __webpack_require__(295)
-var globSync = __webpack_require__(296)
-var common = __webpack_require__(297)
+var assert = __webpack_require__(255)
+var isAbsolute = __webpack_require__(297)
+var globSync = __webpack_require__(298)
+var common = __webpack_require__(299)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
 var setopts = common.setopts
 var ownProp = common.ownProp
-var inflight = __webpack_require__(298)
+var inflight = __webpack_require__(300)
 var util = __webpack_require__(114)
 var childrenIgnored = common.childrenIgnored
 var isIgnored = common.isIgnored
 
-var once = __webpack_require__(300)
+var once = __webpack_require__(302)
 
 function glob (pattern, options, cb) {
   if (typeof options === 'function') cb = options, options = {}
@@ -43279,7 +42732,7 @@ Glob.prototype._stat2 = function (f, abs, er, stat, cb) {
 
 
 /***/ }),
-/* 287 */
+/* 289 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = realpath
@@ -43289,13 +42742,13 @@ realpath.realpathSync = realpathSync
 realpath.monkeypatch = monkeypatch
 realpath.unmonkeypatch = unmonkeypatch
 
-var fs = __webpack_require__(164)
+var fs = __webpack_require__(166)
 var origRealpath = fs.realpath
 var origRealpathSync = fs.realpathSync
 
 var version = process.version
 var ok = /^v[0-5]\./.test(version)
-var old = __webpack_require__(288)
+var old = __webpack_require__(290)
 
 function newError (er) {
   return er && er.syscall === 'realpath' && (
@@ -43351,7 +42804,7 @@ function unmonkeypatch () {
 
 
 /***/ }),
-/* 288 */
+/* 290 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Copyright Joyent, Inc. and other Node contributors.
@@ -43377,7 +42830,7 @@ function unmonkeypatch () {
 
 var pathModule = __webpack_require__(144);
 var isWindows = process.platform === 'win32';
-var fs = __webpack_require__(164);
+var fs = __webpack_require__(166);
 
 // JavaScript implementation of realpath, ported from node pre-v6
 
@@ -43660,7 +43113,7 @@ exports.realpath = function realpath(p, cache, cb) {
 
 
 /***/ }),
-/* 289 */
+/* 291 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = minimatch
@@ -43672,7 +43125,7 @@ try {
 } catch (er) {}
 
 var GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {}
-var expand = __webpack_require__(290)
+var expand = __webpack_require__(292)
 
 var plTypes = {
   '!': { open: '(?:(?!(?:', close: '))[^/]*?)'},
@@ -44589,11 +44042,11 @@ function regExpEscape (s) {
 
 
 /***/ }),
-/* 290 */
+/* 292 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var concatMap = __webpack_require__(291);
-var balanced = __webpack_require__(292);
+var concatMap = __webpack_require__(293);
+var balanced = __webpack_require__(294);
 
 module.exports = expandTop;
 
@@ -44796,7 +44249,7 @@ function expand(str, isTop) {
 
 
 /***/ }),
-/* 291 */
+/* 293 */
 /***/ (function(module, exports) {
 
 module.exports = function (xs, fn) {
@@ -44815,7 +44268,7 @@ var isArray = Array.isArray || function (xs) {
 
 
 /***/ }),
-/* 292 */
+/* 294 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -44881,7 +44334,7 @@ function range(a, b, str) {
 
 
 /***/ }),
-/* 293 */
+/* 295 */
 /***/ (function(module, exports, __webpack_require__) {
 
 try {
@@ -44891,12 +44344,12 @@ try {
   module.exports = util.inherits;
 } catch (e) {
   /* istanbul ignore next */
-  module.exports = __webpack_require__(294);
+  module.exports = __webpack_require__(296);
 }
 
 
 /***/ }),
-/* 294 */
+/* 296 */
 /***/ (function(module, exports) {
 
 if (typeof Object.create === 'function') {
@@ -44929,7 +44382,7 @@ if (typeof Object.create === 'function') {
 
 
 /***/ }),
-/* 295 */
+/* 297 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -44956,22 +44409,22 @@ module.exports.win32 = win32;
 
 
 /***/ }),
-/* 296 */
+/* 298 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = globSync
 globSync.GlobSync = GlobSync
 
-var fs = __webpack_require__(164)
-var rp = __webpack_require__(287)
-var minimatch = __webpack_require__(289)
+var fs = __webpack_require__(166)
+var rp = __webpack_require__(289)
+var minimatch = __webpack_require__(291)
 var Minimatch = minimatch.Minimatch
-var Glob = __webpack_require__(286).Glob
+var Glob = __webpack_require__(288).Glob
 var util = __webpack_require__(114)
 var path = __webpack_require__(144)
-var assert = __webpack_require__(253)
-var isAbsolute = __webpack_require__(295)
-var common = __webpack_require__(297)
+var assert = __webpack_require__(255)
+var isAbsolute = __webpack_require__(297)
+var common = __webpack_require__(299)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
 var setopts = common.setopts
@@ -45448,7 +44901,7 @@ GlobSync.prototype._makeAbs = function (f) {
 
 
 /***/ }),
-/* 297 */
+/* 299 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports.alphasort = alphasort
@@ -45466,8 +44919,8 @@ function ownProp (obj, field) {
 }
 
 var path = __webpack_require__(144)
-var minimatch = __webpack_require__(289)
-var isAbsolute = __webpack_require__(295)
+var minimatch = __webpack_require__(291)
+var isAbsolute = __webpack_require__(297)
 var Minimatch = minimatch.Minimatch
 
 function alphasorti (a, b) {
@@ -45694,12 +45147,12 @@ function childrenIgnored (self, path) {
 
 
 /***/ }),
-/* 298 */
+/* 300 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var wrappy = __webpack_require__(299)
+var wrappy = __webpack_require__(301)
 var reqs = Object.create(null)
-var once = __webpack_require__(300)
+var once = __webpack_require__(302)
 
 module.exports = wrappy(inflight)
 
@@ -45754,7 +45207,7 @@ function slice (args) {
 
 
 /***/ }),
-/* 299 */
+/* 301 */
 /***/ (function(module, exports) {
 
 // Returns a wrapper function that returns a wrapped callback
@@ -45793,10 +45246,10 @@ function wrappy (fn, cb) {
 
 
 /***/ }),
-/* 300 */
+/* 302 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var wrappy = __webpack_require__(299)
+var wrappy = __webpack_require__(301)
 module.exports = wrappy(once)
 module.exports.strict = wrappy(onceStrict)
 
@@ -45841,7 +45294,7 @@ function onceStrict (fn) {
 
 
 /***/ }),
-/* 301 */
+/* 303 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -45932,13 +45385,13 @@ module.exports = (obj, opts) => {
 
 
 /***/ }),
-/* 302 */
+/* 304 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const path = __webpack_require__(144);
-const pathType = __webpack_require__(303);
+const pathType = __webpack_require__(305);
 
 const getExtensions = extensions => extensions.length > 1 ? `{${extensions.join(',')}}` : extensions[0];
 
@@ -46004,13 +45457,13 @@ module.exports.sync = (input, opts) => {
 
 
 /***/ }),
-/* 303 */
+/* 305 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const fs = __webpack_require__(164);
-const pify = __webpack_require__(301);
+const fs = __webpack_require__(166);
+const pify = __webpack_require__(303);
 
 function type(fn, fn2, fp) {
 	if (typeof fp !== 'string') {
@@ -46053,17 +45506,17 @@ exports.symlinkSync = typeSync.bind(null, 'lstatSync', 'isSymbolicLink');
 
 
 /***/ }),
-/* 304 */
+/* 306 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const fs = __webpack_require__(164);
+const fs = __webpack_require__(166);
 const path = __webpack_require__(144);
-const glob = __webpack_require__(286);
-const gitIgnore = __webpack_require__(305);
-const pify = __webpack_require__(301);
-const slash = __webpack_require__(306);
+const glob = __webpack_require__(288);
+const gitIgnore = __webpack_require__(307);
+const pify = __webpack_require__(303);
+const slash = __webpack_require__(308);
 
 const globP = pify(glob);
 const readFileP = pify(fs.readFile);
@@ -46148,7 +45601,7 @@ module.exports.sync = o => {
 
 
 /***/ }),
-/* 305 */
+/* 307 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -46580,7 +46033,7 @@ typeof process !== 'undefined' && (process.env && process.env.IGNORE_TEST_WIN32 
 
 
 /***/ }),
-/* 306 */
+/* 308 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -46598,13 +46051,13 @@ module.exports = function (str) {
 
 
 /***/ }),
-/* 307 */
+/* 309 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const path = __webpack_require__(144);
-const pathIsInside = __webpack_require__(308);
+const pathIsInside = __webpack_require__(310);
 
 module.exports = (childPath, parentPath) => {
 	childPath = path.resolve(childPath);
@@ -46619,7 +46072,7 @@ module.exports = (childPath, parentPath) => {
 
 
 /***/ }),
-/* 308 */
+/* 310 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -46654,7 +46107,7 @@ function stripTrailingSep(thePath) {
 
 
 /***/ }),
-/* 309 */
+/* 311 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -46662,9 +46115,9 @@ function stripTrailingSep(thePath) {
 const {promisify} = __webpack_require__(114);
 const os = __webpack_require__(145);
 const path = __webpack_require__(144);
-const {execFile} = __webpack_require__(310);
-const escapeStringApplescript = __webpack_require__(311);
-const runApplescript = __webpack_require__(312);
+const {execFile} = __webpack_require__(312);
+const escapeStringApplescript = __webpack_require__(313);
+const runApplescript = __webpack_require__(314);
 
 const isOlderThanMountainLion = Number(os.release().split('.')[0]) < 12;
 const pExecFile = promisify(execFile);
@@ -46708,13 +46161,13 @@ module.exports = async paths => {
 /* WEBPACK VAR INJECTION */}.call(this, "/"))
 
 /***/ }),
-/* 310 */
+/* 312 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
-/* 311 */
+/* 313 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -46723,12 +46176,12 @@ module.exports = x => typeof x === 'string' ? x.replace(/[\\"]/g, '\\$&') : x;
 
 
 /***/ }),
-/* 312 */
+/* 314 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const execa = __webpack_require__(313);
+const execa = __webpack_require__(315);
 
 module.exports = script => {
 	if (process.platform !== 'darwin') {
@@ -46748,23 +46201,23 @@ module.exports.sync = script => {
 
 
 /***/ }),
-/* 313 */
+/* 315 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const path = __webpack_require__(144);
-const childProcess = __webpack_require__(310);
+const childProcess = __webpack_require__(312);
 const util = __webpack_require__(114);
-const crossSpawn = __webpack_require__(314);
-const stripEof = __webpack_require__(329);
-const npmRunPath = __webpack_require__(330);
-const isStream = __webpack_require__(331);
-const _getStream = __webpack_require__(332);
-const pFinally = __webpack_require__(334);
-const onExit = __webpack_require__(335);
-const errname = __webpack_require__(337);
-const stdio = __webpack_require__(338);
+const crossSpawn = __webpack_require__(316);
+const stripEof = __webpack_require__(331);
+const npmRunPath = __webpack_require__(332);
+const isStream = __webpack_require__(333);
+const _getStream = __webpack_require__(334);
+const pFinally = __webpack_require__(336);
+const onExit = __webpack_require__(337);
+const errname = __webpack_require__(339);
+const stdio = __webpack_require__(340);
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
 
@@ -47121,15 +46574,15 @@ module.exports.spawn = util.deprecate(module.exports, 'execa.spawn() is deprecat
 
 
 /***/ }),
-/* 314 */
+/* 316 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const cp = __webpack_require__(310);
-const parse = __webpack_require__(315);
-const enoent = __webpack_require__(328);
+const cp = __webpack_require__(312);
+const parse = __webpack_require__(317);
+const enoent = __webpack_require__(330);
 
 function spawn(command, args, options) {
     // Parse the arguments
@@ -47167,18 +46620,18 @@ module.exports._enoent = enoent;
 
 
 /***/ }),
-/* 315 */
+/* 317 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const path = __webpack_require__(144);
-const niceTry = __webpack_require__(316);
-const resolveCommand = __webpack_require__(317);
-const escape = __webpack_require__(323);
-const readShebang = __webpack_require__(324);
-const semver = __webpack_require__(327);
+const niceTry = __webpack_require__(318);
+const resolveCommand = __webpack_require__(319);
+const escape = __webpack_require__(325);
+const readShebang = __webpack_require__(326);
+const semver = __webpack_require__(329);
 
 const isWin = process.platform === 'win32';
 const isExecutableRegExp = /\.(?:com|exe)$/i;
@@ -47299,7 +46752,7 @@ module.exports = parse;
 
 
 /***/ }),
-/* 316 */
+/* 318 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -47317,15 +46770,15 @@ module.exports = function(fn) {
 }
 
 /***/ }),
-/* 317 */
+/* 319 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const path = __webpack_require__(144);
-const which = __webpack_require__(318);
-const pathKey = __webpack_require__(322)();
+const which = __webpack_require__(320);
+const pathKey = __webpack_require__(324)();
 
 function resolveCommandAttempt(parsed, withoutPathExt) {
     const cwd = process.cwd();
@@ -47371,7 +46824,7 @@ module.exports = resolveCommand;
 
 
 /***/ }),
-/* 318 */
+/* 320 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = which
@@ -47383,7 +46836,7 @@ var isWindows = process.platform === 'win32' ||
 
 var path = __webpack_require__(144)
 var COLON = isWindows ? ';' : ':'
-var isexe = __webpack_require__(319)
+var isexe = __webpack_require__(321)
 
 function getNotFoundError (cmd) {
   var er = new Error('not found: ' + cmd)
@@ -47512,15 +46965,15 @@ function whichSync (cmd, opt) {
 
 
 /***/ }),
-/* 319 */
+/* 321 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var fs = __webpack_require__(164)
+var fs = __webpack_require__(166)
 var core
 if (process.platform === 'win32' || global.TESTING_WINDOWS) {
-  core = __webpack_require__(320)
+  core = __webpack_require__(322)
 } else {
-  core = __webpack_require__(321)
+  core = __webpack_require__(323)
 }
 
 module.exports = isexe
@@ -47575,13 +47028,13 @@ function sync (path, options) {
 
 
 /***/ }),
-/* 320 */
+/* 322 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = isexe
 isexe.sync = sync
 
-var fs = __webpack_require__(164)
+var fs = __webpack_require__(166)
 
 function checkPathExt (path, options) {
   var pathext = options.pathExt !== undefined ?
@@ -47623,13 +47076,13 @@ function sync (path, options) {
 
 
 /***/ }),
-/* 321 */
+/* 323 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = isexe
 isexe.sync = sync
 
-var fs = __webpack_require__(164)
+var fs = __webpack_require__(166)
 
 function isexe (path, options, cb) {
   fs.stat(path, function (er, stat) {
@@ -47670,7 +47123,7 @@ function checkMode (stat, options) {
 
 
 /***/ }),
-/* 322 */
+/* 324 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -47690,7 +47143,7 @@ module.exports = opts => {
 
 
 /***/ }),
-/* 323 */
+/* 325 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -47742,14 +47195,14 @@ module.exports.argument = escapeArgument;
 
 
 /***/ }),
-/* 324 */
+/* 326 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fs = __webpack_require__(164);
-const shebangCommand = __webpack_require__(325);
+const fs = __webpack_require__(166);
+const shebangCommand = __webpack_require__(327);
 
 function readShebang(command) {
     // Read the first 150 bytes from the file
@@ -47781,12 +47234,12 @@ module.exports = readShebang;
 
 
 /***/ }),
-/* 325 */
+/* 327 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var shebangRegex = __webpack_require__(326);
+var shebangRegex = __webpack_require__(328);
 
 module.exports = function (str) {
 	var match = str.match(shebangRegex);
@@ -47807,7 +47260,7 @@ module.exports = function (str) {
 
 
 /***/ }),
-/* 326 */
+/* 328 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -47816,7 +47269,7 @@ module.exports = /^#!.*/;
 
 
 /***/ }),
-/* 327 */
+/* 329 */
 /***/ (function(module, exports) {
 
 exports = module.exports = SemVer
@@ -49305,7 +48758,7 @@ function coerce (version) {
 
 
 /***/ }),
-/* 328 */
+/* 330 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -49371,7 +48824,7 @@ module.exports = {
 
 
 /***/ }),
-/* 329 */
+/* 331 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -49393,13 +48846,13 @@ module.exports = function (x) {
 
 
 /***/ }),
-/* 330 */
+/* 332 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const path = __webpack_require__(144);
-const pathKey = __webpack_require__(322);
+const pathKey = __webpack_require__(324);
 
 module.exports = opts => {
 	opts = Object.assign({
@@ -49439,7 +48892,7 @@ module.exports.env = opts => {
 
 
 /***/ }),
-/* 331 */
+/* 333 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -49467,12 +48920,12 @@ isStream.transform = function (stream) {
 
 
 /***/ }),
-/* 332 */
+/* 334 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const bufferStream = __webpack_require__(333);
+const bufferStream = __webpack_require__(335);
 
 function getStream(inputStream, opts) {
 	if (!inputStream) {
@@ -49525,7 +48978,7 @@ module.exports.array = (stream, opts) => getStream(stream, Object.assign({}, opt
 
 
 /***/ }),
-/* 333 */
+/* 335 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -49583,7 +49036,7 @@ module.exports = opts => {
 
 
 /***/ }),
-/* 334 */
+/* 336 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -49605,14 +49058,14 @@ module.exports = (promise, onFinally) => {
 
 
 /***/ }),
-/* 335 */
+/* 337 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Note: since nyc uses this module to output coverage, any lines
 // that are in the direct sync flow of nyc's outputCoverage are
 // ignored, since we can never get coverage for them.
-var assert = __webpack_require__(253)
-var signals = __webpack_require__(336)
+var assert = __webpack_require__(255)
+var signals = __webpack_require__(338)
 
 var EE = __webpack_require__(117)
 /* istanbul ignore if */
@@ -49768,7 +49221,7 @@ function processEmit (ev, arg) {
 
 
 /***/ }),
-/* 336 */
+/* 338 */
 /***/ (function(module, exports) {
 
 // This is not the set of all possible signals.
@@ -49827,7 +49280,7 @@ if (process.platform === 'linux') {
 
 
 /***/ }),
-/* 337 */
+/* 339 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -49873,7 +49326,7 @@ function errname(uv, code) {
 
 
 /***/ }),
-/* 338 */
+/* 340 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -49921,7 +49374,7 @@ module.exports = opts => {
 
 
 /***/ }),
-/* 339 */
+/* 341 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -49929,12 +49382,12 @@ module.exports = opts => {
 const {promisify} = __webpack_require__(114);
 const os = __webpack_require__(145);
 const path = __webpack_require__(144);
-const fs = __webpack_require__(164);
-const uuid = __webpack_require__(340);
-const xdgTrashdir = __webpack_require__(345);
-const pMap = __webpack_require__(366);
-const makeDir = __webpack_require__(367);
-const moveFile = __webpack_require__(368);
+const fs = __webpack_require__(166);
+const uuid = __webpack_require__(342);
+const xdgTrashdir = __webpack_require__(347);
+const pMap = __webpack_require__(368);
+const makeDir = __webpack_require__(369);
+const moveFile = __webpack_require__(370);
 
 const pWriteFile = promisify(fs.writeFile);
 
@@ -49969,11 +49422,11 @@ module.exports = paths => pMap(paths, trash, {concurrency: os.cpus().length});
 
 
 /***/ }),
-/* 340 */
+/* 342 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var v1 = __webpack_require__(341);
-var v4 = __webpack_require__(344);
+var v1 = __webpack_require__(343);
+var v4 = __webpack_require__(346);
 
 var uuid = v4;
 uuid.v1 = v1;
@@ -49983,11 +49436,11 @@ module.exports = uuid;
 
 
 /***/ }),
-/* 341 */
+/* 343 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(342);
-var bytesToUuid = __webpack_require__(343);
+var rng = __webpack_require__(344);
+var bytesToUuid = __webpack_require__(345);
 
 // **`v1()` - Generate time-based UUID**
 //
@@ -50098,13 +49551,13 @@ module.exports = v1;
 
 
 /***/ }),
-/* 342 */
+/* 344 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Unique ID creation requires a high quality random # generator.  In node.js
 // this is pretty straight-forward - we use the crypto API.
 
-var crypto = __webpack_require__(66);
+var crypto = __webpack_require__(67);
 
 module.exports = function nodeRNG() {
   return crypto.randomBytes(16);
@@ -50112,7 +49565,7 @@ module.exports = function nodeRNG() {
 
 
 /***/ }),
-/* 343 */
+/* 345 */
 /***/ (function(module, exports) {
 
 /**
@@ -50142,11 +49595,11 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 344 */
+/* 346 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(342);
-var bytesToUuid = __webpack_require__(343);
+var rng = __webpack_require__(344);
+var bytesToUuid = __webpack_require__(345);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -50177,18 +49630,18 @@ module.exports = v4;
 
 
 /***/ }),
-/* 345 */
+/* 347 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const fs = __webpack_require__(164);
+const fs = __webpack_require__(166);
 const path = __webpack_require__(144);
-const df = __webpack_require__(346);
-const mountPoint = __webpack_require__(358);
-const userHome = __webpack_require__(363);
-const xdgBasedir = __webpack_require__(365);
-const pify = __webpack_require__(360);
+const df = __webpack_require__(348);
+const mountPoint = __webpack_require__(360);
+const userHome = __webpack_require__(365);
+const xdgBasedir = __webpack_require__(367);
+const pify = __webpack_require__(362);
 
 const check = file => {
 	const topuid = `${file}-${process.getuid()}`;
@@ -50251,12 +49704,12 @@ module.exports.all = () => {
 
 
 /***/ }),
-/* 346 */
+/* 348 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const execa = __webpack_require__(347);
+const execa = __webpack_require__(349);
 
 const run = args => execa('df', args).then(res =>
 	res.stdout.trim().split('\n').slice(1).map(x => {
@@ -50309,17 +49762,17 @@ df.file = file => {
 
 
 /***/ }),
-/* 347 */
+/* 349 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var childProcess = __webpack_require__(310);
-var crossSpawnAsync = __webpack_require__(348);
-var stripEof = __webpack_require__(329);
-var objectAssign = __webpack_require__(79);
-var npmRunPath = __webpack_require__(356);
-var pathKey = __webpack_require__(357)();
+var childProcess = __webpack_require__(312);
+var crossSpawnAsync = __webpack_require__(350);
+var stripEof = __webpack_require__(331);
+var objectAssign = __webpack_require__(80);
+var npmRunPath = __webpack_require__(358);
+var pathKey = __webpack_require__(359)();
 var TEN_MEBIBYTE = 1024 * 1024 * 10;
 
 module.exports = function (cmd, args, opts) {
@@ -50392,15 +49845,15 @@ module.exports.spawn = crossSpawnAsync;
 
 
 /***/ }),
-/* 348 */
+/* 350 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var cp = __webpack_require__(310);
-var parse = __webpack_require__(349);
-var enoent = __webpack_require__(355);
+var cp = __webpack_require__(312);
+var parse = __webpack_require__(351);
+var enoent = __webpack_require__(357);
 
 function spawn(command, args, options) {
     var parsed;
@@ -50426,15 +49879,15 @@ module.exports._enoent = enoent;
 
 
 /***/ }),
-/* 349 */
+/* 351 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var fs = __webpack_require__(164);
-var LRU = __webpack_require__(350);
-var resolveCommand = __webpack_require__(354);
+var fs = __webpack_require__(166);
+var LRU = __webpack_require__(352);
+var resolveCommand = __webpack_require__(356);
 
 var isWin = process.platform === 'win32';
 var shebangCache = new LRU({ max: 50, maxAge: 30 * 1000 });  // Cache just for 30sec
@@ -50561,7 +50014,7 @@ module.exports = parse;
 
 
 /***/ }),
-/* 350 */
+/* 352 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -50571,11 +50024,11 @@ module.exports = LRUCache
 
 // This will be a proper iterable 'Map' in engines that support it,
 // or a fakey-fake PseudoMap in older versions.
-var Map = __webpack_require__(351)
+var Map = __webpack_require__(353)
 var util = __webpack_require__(114)
 
 // A linked list to keep track of recently-used-ness
-var Yallist = __webpack_require__(353)
+var Yallist = __webpack_require__(355)
 
 // use symbols if possible, otherwise just _props
 var hasSymbol = typeof Symbol === 'function' && process.env._nodeLRUCacheForceNoSymbol !== '1'
@@ -51036,7 +50489,7 @@ function Entry (key, value, length, now, maxAge) {
 
 
 /***/ }),
-/* 351 */
+/* 353 */
 /***/ (function(module, exports, __webpack_require__) {
 
 if (process.env.npm_package_name === 'pseudomap' &&
@@ -51046,12 +50499,12 @@ if (process.env.npm_package_name === 'pseudomap' &&
 if (typeof Map === 'function' && !process.env.TEST_PSEUDOMAP) {
   module.exports = Map
 } else {
-  module.exports = __webpack_require__(352)
+  module.exports = __webpack_require__(354)
 }
 
 
 /***/ }),
-/* 352 */
+/* 354 */
 /***/ (function(module, exports) {
 
 var hasOwnProperty = Object.prototype.hasOwnProperty
@@ -51170,7 +50623,7 @@ function set (data, k, v) {
 
 
 /***/ }),
-/* 353 */
+/* 355 */
 /***/ (function(module, exports) {
 
 module.exports = Yallist
@@ -51546,15 +50999,15 @@ function Node (value, prev, next, list) {
 
 
 /***/ }),
-/* 354 */
+/* 356 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var path = __webpack_require__(144);
-var which = __webpack_require__(318);
-var LRU = __webpack_require__(350);
+var which = __webpack_require__(320);
+var LRU = __webpack_require__(352);
 
 var commandCache = new LRU({ max: 50, maxAge: 30 * 1000 });  // Cache just for 30sec
 var hasSepInPathRegExp = new RegExp(process.platform === 'win32' ? /[\/\\]/ : /\//);
@@ -51591,7 +51044,7 @@ module.exports = resolveCommand;
 
 
 /***/ }),
-/* 355 */
+/* 357 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51649,13 +51102,13 @@ module.exports.notFoundError = notFoundError;
 
 
 /***/ }),
-/* 356 */
+/* 358 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var path = __webpack_require__(144);
-var pathKey = __webpack_require__(357);
+var pathKey = __webpack_require__(359);
 
 module.exports = function (opts) {
 	opts = opts || {};
@@ -51679,7 +51132,7 @@ module.exports = function (opts) {
 
 
 /***/ }),
-/* 357 */
+/* 359 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51701,14 +51154,14 @@ module.exports = function (opts) {
 
 
 /***/ }),
-/* 358 */
+/* 360 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var df = __webpack_require__(359);
-var pify = __webpack_require__(360);
-var Promise = __webpack_require__(361);
+var df = __webpack_require__(361);
+var pify = __webpack_require__(362);
+var Promise = __webpack_require__(363);
 
 module.exports = function (file) {
 	return pify(df.file, Promise)(file).then(function (data) {
@@ -51718,12 +51171,12 @@ module.exports = function (file) {
 
 
 /***/ }),
-/* 359 */
+/* 361 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var childProcess = __webpack_require__(310);
+var childProcess = __webpack_require__(312);
 
 function run(args, cb) {
 	childProcess.execFile('df', args, function (err, stdout) {
@@ -51791,7 +51244,7 @@ df.file = function (file, cb) {
 
 
 /***/ }),
-/* 360 */
+/* 362 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -51866,17 +51319,17 @@ pify.all = pify;
 
 
 /***/ }),
-/* 361 */
+/* 363 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = typeof Promise === 'function' ? Promise : __webpack_require__(362);
+module.exports = typeof Promise === 'function' ? Promise : __webpack_require__(364);
 
 
 /***/ }),
-/* 362 */
+/* 364 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -52175,16 +51628,16 @@ module.exports = Promise;
 
 
 /***/ }),
-/* 363 */
+/* 365 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-module.exports = __webpack_require__(364)();
+module.exports = __webpack_require__(366)();
 
 
 /***/ }),
-/* 364 */
+/* 366 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -52215,13 +51668,13 @@ module.exports = typeof os.homedir === 'function' ? os.homedir : homedir;
 
 
 /***/ }),
-/* 365 */
+/* 367 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var path = __webpack_require__(144);
-var osHomedir = __webpack_require__(364);
+var osHomedir = __webpack_require__(366);
 var home = osHomedir();
 var env = process.env;
 
@@ -52249,7 +51702,7 @@ if (exports.config) {
 
 
 /***/ }),
-/* 366 */
+/* 368 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -52328,14 +51781,14 @@ module.exports.default = pMap;
 
 
 /***/ }),
-/* 367 */
+/* 369 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const fs = __webpack_require__(164);
+const fs = __webpack_require__(166);
 const path = __webpack_require__(144);
-const pify = __webpack_require__(301);
+const pify = __webpack_require__(303);
 
 const defaults = {
 	mode: 0o777 & (~process.umask()),
@@ -52420,17 +51873,17 @@ module.exports.sync = (input, opts) => {
 
 
 /***/ }),
-/* 368 */
+/* 370 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const util = __webpack_require__(114);
 const path = __webpack_require__(144);
-const fs = __webpack_require__(164);
-const cpFile = __webpack_require__(369);
-const pathExists = __webpack_require__(195);
-const makeDir = __webpack_require__(378);
+const fs = __webpack_require__(166);
+const cpFile = __webpack_require__(371);
+const pathExists = __webpack_require__(197);
+const makeDir = __webpack_require__(380);
 
 const moveFile = async (source, destination, options) => {
 	if (!source || !destination) {
@@ -52499,17 +51952,17 @@ module.exports.sync = (source, destination, options) => {
 
 
 /***/ }),
-/* 369 */
+/* 371 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const path = __webpack_require__(144);
-const {constants: fsConstants} = __webpack_require__(164);
-const {Buffer} = __webpack_require__(370);
-const CpFileError = __webpack_require__(372);
-const fs = __webpack_require__(374);
-const ProgressEmitter = __webpack_require__(377);
+const {constants: fsConstants} = __webpack_require__(166);
+const {Buffer} = __webpack_require__(372);
+const CpFileError = __webpack_require__(374);
+const fs = __webpack_require__(376);
+const ProgressEmitter = __webpack_require__(379);
 
 const cpFile = (source, destination, options) => {
 	if (!source || !destination) {
@@ -52663,11 +52116,11 @@ module.exports.sync = (source, destination, options) => {
 
 
 /***/ }),
-/* 370 */
+/* 372 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* eslint-disable node/no-deprecated-api */
-var buffer = __webpack_require__(371)
+var buffer = __webpack_require__(373)
 var Buffer = buffer.Buffer
 
 // alternative to using Object.keys for old browsers
@@ -52733,18 +52186,18 @@ SafeBuffer.allocUnsafeSlow = function (size) {
 
 
 /***/ }),
-/* 371 */
+/* 373 */
 /***/ (function(module, exports) {
 
 module.exports = require("buffer");
 
 /***/ }),
-/* 372 */
+/* 374 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const NestedError = __webpack_require__(373);
+const NestedError = __webpack_require__(375);
 
 class CpFileError extends NestedError {
 	constructor(message, nested) {
@@ -52758,7 +52211,7 @@ module.exports = CpFileError;
 
 
 /***/ }),
-/* 373 */
+/* 375 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var inherits = __webpack_require__(114).inherits;
@@ -52814,15 +52267,15 @@ module.exports = NestedError;
 
 
 /***/ }),
-/* 374 */
+/* 376 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const fs = __webpack_require__(248);
-const makeDir = __webpack_require__(375);
-const pify = __webpack_require__(376);
-const CpFileError = __webpack_require__(372);
+const fs = __webpack_require__(250);
+const makeDir = __webpack_require__(377);
+const pify = __webpack_require__(378);
+const CpFileError = __webpack_require__(374);
 
 const fsP = pify(fs);
 
@@ -52967,15 +52420,15 @@ if (fs.copyFileSync) {
 
 
 /***/ }),
-/* 375 */
+/* 377 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const fs = __webpack_require__(164);
+const fs = __webpack_require__(166);
 const path = __webpack_require__(144);
-const pify = __webpack_require__(376);
-const semver = __webpack_require__(327);
+const pify = __webpack_require__(378);
+const semver = __webpack_require__(329);
 
 const defaults = {
 	mode: 0o777 & (~process.umask()),
@@ -53113,7 +52566,7 @@ module.exports.sync = (input, options) => {
 
 
 /***/ }),
-/* 376 */
+/* 378 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -53188,7 +52641,7 @@ module.exports = (input, options) => {
 
 
 /***/ }),
-/* 377 */
+/* 379 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -53229,15 +52682,15 @@ module.exports = ProgressEmitter;
 
 
 /***/ }),
-/* 378 */
+/* 380 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const fs = __webpack_require__(164);
+const fs = __webpack_require__(166);
 const path = __webpack_require__(144);
 const {promisify} = __webpack_require__(114);
-const semver = __webpack_require__(379);
+const semver = __webpack_require__(381);
 
 const defaults = {
 	mode: 0o777 & (~process.umask()),
@@ -53386,7 +52839,7 @@ module.exports.sync = (input, options) => {
 
 
 /***/ }),
-/* 379 */
+/* 381 */
 /***/ (function(module, exports) {
 
 exports = module.exports = SemVer
@@ -54988,14 +54441,14 @@ function coerce (version, options) {
 
 
 /***/ }),
-/* 380 */
+/* 382 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(__dirname) {
 const {promisify} = __webpack_require__(114);
 const path = __webpack_require__(144);
-const {execFile} = __webpack_require__(310);
+const {execFile} = __webpack_require__(312);
 
 const pExecFile = promisify(execFile);
 
@@ -55009,14 +54462,14 @@ module.exports = async paths => {
 /* WEBPACK VAR INJECTION */}.call(this, "/"))
 
 /***/ }),
-/* 381 */
+/* 383 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var fs = __webpack_require__(164);
-var ncp = __webpack_require__(382).ncp;
+var fs = __webpack_require__(166);
+var ncp = __webpack_require__(384).ncp;
 var path = __webpack_require__(144);
-var rimraf = __webpack_require__(383);
-var mkdirp = __webpack_require__(387);
+var rimraf = __webpack_require__(385);
+var mkdirp = __webpack_require__(389);
 
 module.exports = mv;
 
@@ -55120,10 +54573,10 @@ function moveDirAcrossDevice(source, dest, clobber, limit, cb) {
 
 
 /***/ }),
-/* 382 */
+/* 384 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var fs = __webpack_require__(164),
+var fs = __webpack_require__(166),
     path = __webpack_require__(144);
 
 module.exports = ncp;
@@ -55387,16 +54840,16 @@ function ncp (source, dest, options, callback) {
 
 
 /***/ }),
-/* 383 */
+/* 385 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = rimraf
 rimraf.sync = rimrafSync
 
-var assert = __webpack_require__(253)
+var assert = __webpack_require__(255)
 var path = __webpack_require__(144)
-var fs = __webpack_require__(164)
-var glob = __webpack_require__(384)
+var fs = __webpack_require__(166)
+var glob = __webpack_require__(386)
 
 var globOpts = {
   nosort: true,
@@ -55726,7 +55179,7 @@ function rmkidsSync (p, options) {
 
 
 /***/ }),
-/* 384 */
+/* 386 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Approach:
@@ -55771,26 +55224,26 @@ function rmkidsSync (p, options) {
 
 module.exports = glob
 
-var fs = __webpack_require__(164)
-var minimatch = __webpack_require__(289)
+var fs = __webpack_require__(166)
+var minimatch = __webpack_require__(291)
 var Minimatch = minimatch.Minimatch
-var inherits = __webpack_require__(293)
+var inherits = __webpack_require__(295)
 var EE = __webpack_require__(117).EventEmitter
 var path = __webpack_require__(144)
-var assert = __webpack_require__(253)
-var isAbsolute = __webpack_require__(295)
-var globSync = __webpack_require__(385)
-var common = __webpack_require__(386)
+var assert = __webpack_require__(255)
+var isAbsolute = __webpack_require__(297)
+var globSync = __webpack_require__(387)
+var common = __webpack_require__(388)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
 var setopts = common.setopts
 var ownProp = common.ownProp
-var inflight = __webpack_require__(298)
+var inflight = __webpack_require__(300)
 var util = __webpack_require__(114)
 var childrenIgnored = common.childrenIgnored
 var isIgnored = common.isIgnored
 
-var once = __webpack_require__(300)
+var once = __webpack_require__(302)
 
 function glob (pattern, options, cb) {
   if (typeof options === 'function') cb = options, options = {}
@@ -56497,21 +55950,21 @@ Glob.prototype._stat2 = function (f, abs, er, stat, cb) {
 
 
 /***/ }),
-/* 385 */
+/* 387 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = globSync
 globSync.GlobSync = GlobSync
 
-var fs = __webpack_require__(164)
-var minimatch = __webpack_require__(289)
+var fs = __webpack_require__(166)
+var minimatch = __webpack_require__(291)
 var Minimatch = minimatch.Minimatch
-var Glob = __webpack_require__(384).Glob
+var Glob = __webpack_require__(386).Glob
 var util = __webpack_require__(114)
 var path = __webpack_require__(144)
-var assert = __webpack_require__(253)
-var isAbsolute = __webpack_require__(295)
-var common = __webpack_require__(386)
+var assert = __webpack_require__(255)
+var isAbsolute = __webpack_require__(297)
+var common = __webpack_require__(388)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
 var setopts = common.setopts
@@ -56963,7 +56416,7 @@ GlobSync.prototype._makeAbs = function (f) {
 
 
 /***/ }),
-/* 386 */
+/* 388 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports.alphasort = alphasort
@@ -56981,8 +56434,8 @@ function ownProp (obj, field) {
 }
 
 var path = __webpack_require__(144)
-var minimatch = __webpack_require__(289)
-var isAbsolute = __webpack_require__(295)
+var minimatch = __webpack_require__(291)
+var isAbsolute = __webpack_require__(297)
 var Minimatch = minimatch.Minimatch
 
 function alphasorti (a, b) {
@@ -57195,11 +56648,11 @@ function childrenIgnored (self, path) {
 
 
 /***/ }),
-/* 387 */
+/* 389 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var path = __webpack_require__(144);
-var fs = __webpack_require__(164);
+var fs = __webpack_require__(166);
 var _0777 = parseInt('0777', 8);
 
 module.exports = mkdirP.mkdirp = mkdirP.mkdirP = mkdirP;
@@ -57299,7 +56752,7 @@ mkdirP.sync = function sync (p, opts, made) {
 
 
 /***/ }),
-/* 388 */
+/* 390 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -57309,12 +56762,12 @@ module.exports.sync = writeFileSync
 module.exports._getTmpname = getTmpname // for testing
 module.exports._cleanupOnExit = cleanupOnExit
 
-const fs = __webpack_require__(164)
-const MurmurHash3 = __webpack_require__(389)
-const onExit = __webpack_require__(335)
+const fs = __webpack_require__(166)
+const MurmurHash3 = __webpack_require__(391)
+const onExit = __webpack_require__(337)
 const path = __webpack_require__(144)
-const isTypedArray = __webpack_require__(390)
-const typedArrayToBuffer = __webpack_require__(391)
+const isTypedArray = __webpack_require__(392)
+const typedArrayToBuffer = __webpack_require__(393)
 const { promisify } = __webpack_require__(114)
 const activeFiles = {}
 
@@ -57522,7 +56975,7 @@ function writeFileSync (filename, data, options) {
 /* WEBPACK VAR INJECTION */}.call(this, "/index.js"))
 
 /***/ }),
-/* 389 */
+/* 391 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -57664,7 +57117,7 @@ function writeFileSync (filename, data, options) {
 
 
 /***/ }),
-/* 390 */
+/* 392 */
 /***/ (function(module, exports) {
 
 module.exports      = isTypedArray
@@ -57711,7 +57164,7 @@ function isLooseTypedArray(arr) {
 
 
 /***/ }),
-/* 391 */
+/* 393 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -57723,7 +57176,7 @@ function isLooseTypedArray(arr) {
  * `npm install typedarray-to-buffer`
  */
 
-var isTypedArray = __webpack_require__(390).strict
+var isTypedArray = __webpack_require__(392).strict
 
 module.exports = function typedarrayToBuffer (arr) {
   if (isTypedArray(arr)) {
@@ -57742,7 +57195,7 @@ module.exports = function typedarrayToBuffer (arr) {
 
 
 /***/ }),
-/* 392 */
+/* 394 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -57750,15 +57203,15 @@ module.exports = function typedarrayToBuffer (arr) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 tslib_1.__exportStar(__webpack_require__(2), exports);
-tslib_1.__exportStar(__webpack_require__(393), exports);
-tslib_1.__exportStar(__webpack_require__(394), exports);
 tslib_1.__exportStar(__webpack_require__(395), exports);
-tslib_1.__exportStar(__webpack_require__(397), exports);
+tslib_1.__exportStar(__webpack_require__(396), exports);
 tslib_1.__exportStar(__webpack_require__(398), exports);
+tslib_1.__exportStar(__webpack_require__(397), exports);
+tslib_1.__exportStar(__webpack_require__(400), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 393 */
+/* 395 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -57771,24 +57224,24 @@ exports.NodeModule = NodeModule;
 //# sourceMappingURL=node-module.js.map
 
 /***/ }),
-/* 394 */
+/* 396 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const ide_connection_1 = __webpack_require__(101);
-const ide_core_common_1 = __webpack_require__(2);
 const ide_connection_2 = __webpack_require__(101);
 exports.RPCServiceCenter = ide_connection_2.RPCServiceCenter;
-const logger = ide_core_common_1.getLogger();
+const node_logger_1 = __webpack_require__(397);
 function createServerConnection2(server, injector, modulesInstances, handlerArr) {
+    const logger = injector.get(node_logger_1.INodeLogger);
     const socketRoute = new ide_connection_1.WebSocketServerRoute(server, logger);
     const channelHandler = new ide_connection_2.CommonChannelHandler('/service', logger);
     ide_connection_2.commonChannelPathHandler.register('RPCService', {
         handler: (connection, clientId) => {
             logger.log(`set rpc connection ${clientId}`);
-            const serviceCenter = new ide_connection_2.RPCServiceCenter();
+            const serviceCenter = new ide_connection_2.RPCServiceCenter(undefined, logger);
             const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
             const serverConnection = ide_connection_2.createWebSocketConnection(connection);
             connection.messageConnection = serverConnection;
@@ -57796,7 +57249,7 @@ function createServerConnection2(server, injector, modulesInstances, handlerArr)
             connection.onClose(() => {
                 serviceCenter.removeConnection(serverConnection);
                 serviceChildInjector.disposeAll();
-                console.log(`remove rpc connection ${clientId} `);
+                logger.log(`remove rpc connection ${clientId} `);
             });
         },
         dispose: (connection, connectionClientId) => {
@@ -57812,7 +57265,8 @@ function createServerConnection2(server, injector, modulesInstances, handlerArr)
 }
 exports.createServerConnection2 = createServerConnection2;
 function createNetServerConnection(server, injector, modulesInstances) {
-    const serviceCenter = new ide_connection_2.RPCServiceCenter();
+    const logger = injector.get(node_logger_1.INodeLogger);
+    const serviceCenter = new ide_connection_2.RPCServiceCenter(undefined, logger);
     const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, process.env.CODE_WINDOW_CLIENT_ID);
     server.on('connection', (connection) => {
         logger.log(`set net rpc connection`);
@@ -57828,6 +57282,7 @@ function createNetServerConnection(server, injector, modulesInstances) {
 }
 exports.createNetServerConnection = createNetServerConnection;
 function bindModuleBackService(injector, modules, serviceCenter, clientId) {
+    const logger = injector.get(node_logger_1.INodeLogger);
     const { createRPCService, } = ide_connection_2.initRPCService(serviceCenter);
     const childInjector = injector.createChild();
     for (const module of modules) {
@@ -57863,18 +57318,83 @@ exports.bindModuleBackService = bindModuleBackService;
 //# sourceMappingURL=connection.js.map
 
 /***/ }),
-/* 395 */
+/* 397 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(396), exports);
+const common_di_1 = __webpack_require__(5);
+const ide_core_common_1 = __webpack_require__(2);
+exports.INodeLogger = Symbol('INodeLogger');
+let NodeLogger = class NodeLogger {
+    constructor() {
+        this.logger = this.loggerManger.getLogger(ide_core_common_1.SupportLogNamespace.Node);
+    }
+    error(...args) {
+        return this.logger.error(...args);
+    }
+    warn(...args) {
+        return this.logger.warn(...args);
+    }
+    log(...args) {
+        return this.logger.log(...args);
+    }
+    debug(...args) {
+        return this.logger.debug(...args);
+    }
+    verbose(...args) {
+        return this.logger.verbose(...args);
+    }
+    critical(...args) {
+        return this.logger.critical(...args);
+    }
+    dispose() {
+        return this.logger.dispose();
+    }
+    setOptions(options) {
+        return this.logger.setOptions(options);
+    }
+    sendLog(level, message) {
+        return this.logger.sendLog(level, message);
+    }
+    drop() {
+        return this.logger.drop();
+    }
+    flush() {
+        return this.logger.flush();
+    }
+    getLevel() {
+        return this.logger.getLevel();
+    }
+    setLevel(level) {
+        return this.logger.setLevel(level);
+    }
+};
+tslib_1.__decorate([
+    common_di_1.Autowired(ide_core_common_1.ILogServiceManager),
+    tslib_1.__metadata("design:type", Object)
+], NodeLogger.prototype, "loggerManger", void 0);
+NodeLogger = tslib_1.__decorate([
+    common_di_1.Injectable()
+], NodeLogger);
+exports.NodeLogger = NodeLogger;
+//# sourceMappingURL=node-logger.js.map
+
+/***/ }),
+/* 398 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(399), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 396 */
+/* 399 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -57885,12 +57405,12 @@ const http = __webpack_require__(104);
 const https = __webpack_require__(118);
 const net = __webpack_require__(100);
 const ide_core_common_1 = __webpack_require__(2);
-const connection_1 = __webpack_require__(394);
+const connection_1 = __webpack_require__(396);
 const ide_core_common_2 = __webpack_require__(2);
 const node_logger_1 = __webpack_require__(397);
 const os = __webpack_require__(145);
 const path = __webpack_require__(144);
-const storage_1 = __webpack_require__(398);
+const storage_1 = __webpack_require__(400);
 exports.AppConfig = Symbol('AppConfig');
 exports.ServerAppContribution = Symbol('ServerAppContribution');
 class ServerApp {
@@ -57905,6 +57425,7 @@ class ServerApp {
             coreExtensionDir: opts.coreExtensionDir,
             logDir: opts.logDir,
             logLevel: opts.logLevel,
+            LogServiceClass: opts.LogServiceClass,
             marketplace: Object.assign({
                 endpoint: 'https://marketplace.antfin-inc.com',
                 extensionDir: path.join(os.homedir(), ...(ide_core_common_1.isWindows ? [storage_1.ExtensionPaths.WINDOWS_APP_DATA_DIR, storage_1.ExtensionPaths.WINDOWS_ROAMING_DIR] : ['']), storage_1.ExtensionPaths.KAITIAN_DIR, storage_1.ExtensionPaths.MARKETPLACE_DIR),
@@ -58051,72 +57572,7 @@ exports.ServerApp = ServerApp;
 //# sourceMappingURL=app.js.map
 
 /***/ }),
-/* 397 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = __webpack_require__(1);
-const common_di_1 = __webpack_require__(5);
-const ide_core_common_1 = __webpack_require__(2);
-exports.INodeLogger = Symbol('INodeLogger');
-let NodeLogger = class NodeLogger {
-    constructor() {
-        this.logger = this.loggerManger.getLogger(ide_core_common_1.SupportLogNamespace.Node);
-    }
-    error(...args) {
-        return this.logger.error(...args);
-    }
-    warn(...args) {
-        return this.logger.warn(...args);
-    }
-    log(...args) {
-        return this.logger.log(...args);
-    }
-    debug(...args) {
-        return this.logger.debug(...args);
-    }
-    verbose(...args) {
-        return this.logger.verbose(...args);
-    }
-    critical(...args) {
-        return this.logger.critical(...args);
-    }
-    dispose() {
-        return this.logger.dispose();
-    }
-    setOptions(options) {
-        return this.logger.setOptions(options);
-    }
-    sendLog(level, message) {
-        return this.logger.sendLog(level, message);
-    }
-    drop() {
-        return this.logger.drop();
-    }
-    flush() {
-        return this.logger.flush();
-    }
-    getLevel() {
-        return this.logger.getLevel();
-    }
-    setLevel(level) {
-        return this.logger.setLevel(level);
-    }
-};
-tslib_1.__decorate([
-    common_di_1.Autowired(ide_core_common_1.ILogServiceManager),
-    tslib_1.__metadata("design:type", Object)
-], NodeLogger.prototype, "loggerManger", void 0);
-NodeLogger = tslib_1.__decorate([
-    common_di_1.Injectable()
-], NodeLogger);
-exports.NodeLogger = NodeLogger;
-//# sourceMappingURL=node-logger.js.map
-
-/***/ }),
-/* 398 */
+/* 400 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -58135,22 +57591,22 @@ var ExtensionPaths;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 399 */
+/* 401 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs = __webpack_require__(164);
-const nsfw = __webpack_require__(400);
+const fs = __webpack_require__(166);
+const nsfw = __webpack_require__(402);
 const paths = __webpack_require__(144);
 const glob_1 = __webpack_require__(38);
 const ide_core_common_1 = __webpack_require__(2);
-const ide_core_node_1 = __webpack_require__(392);
-const file_service_watcher_protocol_1 = __webpack_require__(241);
-const file_change_collection_1 = __webpack_require__(401);
-const timers_1 = __webpack_require__(402);
-const debounce = __webpack_require__(403);
+const ide_core_node_1 = __webpack_require__(394);
+const file_service_watcher_protocol_1 = __webpack_require__(243);
+const file_change_collection_1 = __webpack_require__(403);
+const timers_1 = __webpack_require__(404);
+const debounce = __webpack_require__(405);
 class NsfwFileSystemWatcherServer {
     constructor(options) {
         this.watcherSequence = 1;
@@ -58317,17 +57773,7 @@ class NsfwFileSystemWatcherServer {
     }
     resolvePath(directory, file) {
         const path = paths.join(directory, file);
-        try {
-            return fs.realpathSync(path);
-        }
-        catch (e) {
-            try {
-                return paths.join(fs.realpathSync(directory), file);
-            }
-            catch (e) {
-                return path;
-            }
-        }
+        return path;
     }
     doFireDidFilesChanged() {
         const changes = this.changes.values();
@@ -58357,19 +57803,19 @@ exports.NsfwFileSystemWatcherServer = NsfwFileSystemWatcherServer;
 //# sourceMappingURL=file-service-watcher.js.map
 
 /***/ }),
-/* 400 */
+/* 402 */
 /***/ (function(module, exports) {
 
 module.exports = require("nsfw");
 
 /***/ }),
-/* 401 */
+/* 403 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const file_service_watcher_protocol_1 = __webpack_require__(241);
+const file_service_watcher_protocol_1 = __webpack_require__(243);
 class FileChangeCollection {
     constructor() {
         this.changes = new Map();
@@ -58409,13 +57855,13 @@ exports.FileChangeCollection = FileChangeCollection;
 //# sourceMappingURL=file-change-collection.js.map
 
 /***/ }),
-/* 402 */
+/* 404 */
 /***/ (function(module, exports) {
 
 module.exports = require("timers");
 
 /***/ }),
-/* 403 */
+/* 405 */
 /***/ (function(module, exports) {
 
 /**
@@ -58798,20 +58244,20 @@ module.exports = debounce;
 
 
 /***/ }),
-/* 404 */
+/* 406 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const glob = __webpack_require__(286);
-const wrap = __webpack_require__(405);
+const glob = __webpack_require__(288);
+const wrap = __webpack_require__(407);
 
 module.exports = wrap(glob);
 
 
 /***/ }),
-/* 405 */
+/* 407 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -58847,22 +58293,22 @@ module.exports = mod => {
 
 
 /***/ }),
-/* 406 */
+/* 408 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_1 = __webpack_require__(204);
-var ext_types_1 = __webpack_require__(220);
-var ide_core_common_1 = __webpack_require__(2);
-var converter_1 = __webpack_require__(225);
-var editor_1 = __webpack_require__(207);
-var edit_builder_1 = __webpack_require__(407);
-var debounce = __webpack_require__(403);
-var ExtensionHostEditorService = (function () {
-    function ExtensionHostEditorService(rpcProtocol, documents) {
+const tslib_1 = __webpack_require__(1);
+const vscode_1 = __webpack_require__(206);
+const ext_types_1 = __webpack_require__(222);
+const ide_core_common_1 = __webpack_require__(2);
+const converter_1 = __webpack_require__(227);
+const editor_1 = __webpack_require__(209);
+const edit_builder_1 = __webpack_require__(409);
+const debounce = __webpack_require__(405);
+class ExtensionHostEditorService {
+    constructor(rpcProtocol, documents) {
         this.documents = documents;
         this._editors = new Map();
         this.decorationIdCount = 0;
@@ -58882,17 +58328,16 @@ var ExtensionHostEditorService = (function () {
         this.onEditorCreated = this._onEditorCreated.event;
         this._proxy = rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadEditors);
     }
-    ExtensionHostEditorService.prototype.$acceptChange = function (change) {
-        var _this = this;
+    $acceptChange(change) {
         if (change.created) {
-            change.created.forEach(function (created) {
-                _this._editors.set(created.id, new TextEditorData(created, _this, _this.documents));
-                _this._onEditorCreated.fire(created.id);
+            change.created.forEach((created) => {
+                this._editors.set(created.id, new TextEditorData(created, this, this.documents));
+                this._onEditorCreated.fire(created.id);
             });
         }
         if (change.removed) {
-            change.removed.forEach(function (id) {
-                _this._editors.delete(id);
+            change.removed.forEach((id) => {
+                this._editors.delete(id);
             });
         }
         if (change.actived) {
@@ -58908,135 +58353,121 @@ var ExtensionHostEditorService = (function () {
         if (change.created || change.removed) {
             this._onDidChangeVisibleTextEditors.fire(this.visibleEditors);
         }
-    };
-    ExtensionHostEditorService.prototype.openResource = function (uri, options) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var id;
-            var _this = this;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this._proxy.$openResource(uri.toString(), options)];
-                    case 1:
-                        id = _a.sent();
-                        if (this.getEditor(id)) {
-                            return [2, this.getEditor(id).textEditor];
+    }
+    openResource(uri, options) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const id = yield this._proxy.$openResource(uri.toString(), options);
+            if (this.getEditor(id)) {
+                return this.getEditor(id).textEditor;
+            }
+            else {
+                return new Promise((resolve, reject) => {
+                    let resolved = false;
+                    const disposer = this.onEditorCreated((created) => {
+                        if (created === id && this.getEditor(id)) {
+                            resolve(this.getEditor(id).textEditor);
+                            resolved = true;
+                            disposer.dispose();
                         }
-                        else {
-                            return [2, new Promise(function (resolve, reject) {
-                                    var resolved = false;
-                                    var disposer = _this.onEditorCreated(function (created) {
-                                        if (created === id && _this.getEditor(id)) {
-                                            resolve(_this.getEditor(id).textEditor);
-                                            resolved = true;
-                                            disposer.dispose();
-                                        }
-                                    });
-                                    setTimeout(function () {
-                                        if (!resolved) {
-                                            reject(new Error("Timout opening textDocument uri " + uri.toString()));
-                                        }
-                                    }, 5000);
-                                })];
+                    });
+                    setTimeout(() => {
+                        if (!resolved) {
+                            reject(new Error(`Timout opening textDocument uri ${uri.toString()}`));
                         }
-                        return [2];
-                }
-            });
+                    }, 5000);
+                });
+            }
         });
-    };
-    ExtensionHostEditorService.prototype.showTextDocument = function (documentOrUri, columnOrOptions, preserveFocus) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var uri, options;
-            return tslib_1.__generator(this, function (_a) {
-                if (ext_types_1.Uri.isUri(documentOrUri)) {
-                    uri = documentOrUri;
-                }
-                else {
-                    uri = documentOrUri.uri;
-                }
-                if (typeof columnOrOptions === 'number') {
-                    options = {
-                        groupIndex: columnOrOptions,
-                        preserveFocus: preserveFocus,
-                    };
-                }
-                else if (typeof columnOrOptions === 'object') {
-                    options = {
-                        groupIndex: columnOrOptions.viewColumn,
-                        preserveFocus: columnOrOptions.preserveFocus,
-                        range: typeof columnOrOptions.selection === 'object' ? converter_1.TypeConverts.Range.from(columnOrOptions.selection) : undefined,
-                    };
-                }
-                else {
-                    options = {
-                        preserveFocus: false,
-                    };
-                }
-                return [2, this.openResource(uri, options)];
-            });
+    }
+    showTextDocument(documentOrUri, columnOrOptions, preserveFocus) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            let uri;
+            if (ext_types_1.Uri.isUri(documentOrUri)) {
+                uri = documentOrUri;
+            }
+            else {
+                uri = documentOrUri.uri;
+            }
+            let options;
+            if (typeof columnOrOptions === 'number') {
+                options = {
+                    groupIndex: columnOrOptions,
+                    preserveFocus,
+                };
+            }
+            else if (typeof columnOrOptions === 'object') {
+                options = {
+                    groupIndex: columnOrOptions.viewColumn,
+                    preserveFocus: columnOrOptions.preserveFocus,
+                    range: typeof columnOrOptions.selection === 'object' ? converter_1.TypeConverts.Range.from(columnOrOptions.selection) : undefined,
+                };
+            }
+            else {
+                options = {
+                    preserveFocus: false,
+                };
+            }
+            return this.openResource(uri, options);
         });
-    };
-    ExtensionHostEditorService.prototype.$acceptPropertiesChange = function (change) {
+    }
+    $acceptPropertiesChange(change) {
         if (this._editors.get(change.id)) {
             this._editors.get(change.id).acceptStatusChange(change);
         }
-    };
-    ExtensionHostEditorService.prototype.getEditor = function (id) {
+    }
+    getEditor(id) {
         return this._editors.get(id);
-    };
-    Object.defineProperty(ExtensionHostEditorService.prototype, "activeEditor", {
-        get: function () {
-            if (!this._activeEditorId) {
-                return undefined;
-            }
-            else {
-                return this._editors.get(this._activeEditorId);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtensionHostEditorService.prototype, "visibleEditors", {
-        get: function () {
-            return Array.from(this._editors.values()).map(function (e) { return e.textEditor; });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtensionHostEditorService.prototype.closeEditor = function (editor) {
+    }
+    get activeEditor() {
+        if (!this._activeEditorId) {
+            return undefined;
+        }
+        else {
+            return this._editors.get(this._activeEditorId);
+        }
+    }
+    get visibleEditors() {
+        return Array.from(this._editors.values()).map((e) => e.textEditor);
+    }
+    closeEditor(editor) {
         if (editor.id !== this._activeEditorId) {
             return;
         }
         this._proxy.$closeEditor(editor.id);
-    };
-    ExtensionHostEditorService.prototype.getNextId = function () {
+    }
+    getNextId() {
         this.decorationIdCount++;
         return 'textEditor-decoration-' + this.decorationIdCount;
-    };
-    ExtensionHostEditorService.prototype.createTextEditorDecorationType = function (options) {
-        var _this = this;
-        var resolved = converter_1.TypeConverts.DecorationRenderOptions.from(options);
-        var key = this.getNextId();
+    }
+    createTextEditorDecorationType(options) {
+        const resolved = converter_1.TypeConverts.DecorationRenderOptions.from(options);
+        const key = this.getNextId();
         this._proxy.$createTextEditorDecorationType(key, resolved);
-        return {
-            key: key,
-            dispose: function () {
-                _this._proxy.$deleteTextEditorDecorationType(key);
-            },
-        };
-    };
-    ExtensionHostEditorService.prototype.getDiffInformation = function (id) {
+        return new ExtHostTextEditorDecorationType(key, this._proxy);
+    }
+    getDiffInformation(id) {
         return Promise.resolve(this._proxy.$getDiffInformation(id));
-    };
-    return ExtensionHostEditorService;
-}());
+    }
+}
 exports.ExtensionHostEditorService = ExtensionHostEditorService;
-var TextEditorData = (function () {
-    function TextEditorData(created, editorService, documents) {
-        var _this = this;
+class ExtHostTextEditorDecorationType extends ide_core_common_1.Disposable {
+    constructor(key, _proxy) {
+        super();
+        this.key = key;
+        this.addDispose({
+            dispose: () => {
+                _proxy.$deleteTextEditorDecorationType(key);
+            },
+        });
+    }
+}
+exports.ExtHostTextEditorDecorationType = ExtHostTextEditorDecorationType;
+class TextEditorData {
+    constructor(created, editorService, documents) {
         this.editorService = editorService;
         this.documents = documents;
-        this.doSetSelection = debounce(function () {
-            _this.editorService._proxy.$setSelections(_this.id, _this.selections.map(function (selection) { return converter_1.fromSelection(selection); }));
+        this.doSetSelection = debounce(() => {
+            this.editorService._proxy.$setSelections(this.id, this.selections.map((selection) => converter_1.fromSelection(selection)));
         }, 50, { maxWait: 200, leading: true, trailing: true });
         this.uri = ext_types_1.Uri.parse(created.uri);
         this.id = created.id;
@@ -59045,23 +58476,22 @@ var TextEditorData = (function () {
         this._acceptViewColumn(created.viewColumn);
         this.options = new ExtHostTextEditorOptions(this.editorService._proxy, this.id, created.options);
     }
-    TextEditorData.prototype.edit = function (callback, options) {
-        if (options === void 0) { options = { undoStopBefore: true, undoStopAfter: true }; }
-        var document = this.documents.getDocument(this.uri);
+    edit(callback, options = { undoStopBefore: true, undoStopAfter: true }) {
+        const document = this.documents.getDocument(this.uri);
         if (!document) {
             throw new Error('document not found when editing');
         }
-        var edit = new edit_builder_1.TextEditorEdit(document, options);
+        const edit = new edit_builder_1.TextEditorEdit(document, options);
         callback(edit);
         return this._applyEdit(edit);
-    };
-    TextEditorData.prototype._applyEdit = function (editBuilder) {
-        var editData = editBuilder.finalize();
+    }
+    _applyEdit(editBuilder) {
+        const editData = editBuilder.finalize();
         if (editData.edits.length === 0 && !editData.setEndOfLine) {
             return Promise.resolve(true);
         }
-        var editRanges = editData.edits.map(function (edit) { return edit.range; });
-        editRanges.sort(function (a, b) {
+        const editRanges = editData.edits.map((edit) => edit.range);
+        editRanges.sort((a, b) => {
             if (a.end.line === b.end.line) {
                 if (a.end.character === b.end.character) {
                     if (a.start.line === b.start.line) {
@@ -59073,14 +58503,14 @@ var TextEditorData = (function () {
             }
             return a.end.line - b.end.line;
         });
-        for (var i = 0, count = editRanges.length - 1; i < count; i++) {
-            var rangeEnd = editRanges[i].end;
-            var nextRangeStart = editRanges[i + 1].start;
+        for (let i = 0, count = editRanges.length - 1; i < count; i++) {
+            const rangeEnd = editRanges[i].end;
+            const nextRangeStart = editRanges[i + 1].start;
             if (nextRangeStart.isBefore(rangeEnd)) {
                 return Promise.reject(new Error('Overlapping ranges are not allowed!'));
             }
         }
-        var edits = editData.edits.map(function (edit) {
+        const edits = editData.edits.map((edit) => {
             return {
                 range: converter_1.TypeConverts.Range.from(edit.range),
                 text: edit.text,
@@ -59092,45 +58522,45 @@ var TextEditorData = (function () {
             undoStopBefore: editData.undoStopBefore,
             undoStopAfter: editData.undoStopAfter,
         });
-    };
-    TextEditorData.prototype.insertSnippet = function (snippet, location, options) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _location, l;
-            return tslib_1.__generator(this, function (_a) {
-                try {
-                    _location = [];
-                    if (location) {
-                        if (location instanceof Array) {
-                            _location = location.map(function (l) { return toIRange(l); });
-                        }
-                        else {
-                            l = location;
-                            _location = [toIRange(l)];
-                        }
+    }
+    insertSnippet(snippet, location, options) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            try {
+                let _location = [];
+                if (location) {
+                    if (location instanceof Array) {
+                        _location = location.map((l) => toIRange(l));
                     }
-                    this.editorService._proxy.$insertSnippet(this.id, snippet.value, _location, options);
-                    return [2, true];
+                    else {
+                        const l = location;
+                        _location = [toIRange(l)];
+                    }
                 }
-                catch (e) {
-                    ide_core_common_1.getLogger().error(e);
-                    return [2, false];
-                }
-                return [2];
-            });
+                this.editorService._proxy.$insertSnippet(this.id, snippet.value, _location, options);
+                return true;
+            }
+            catch (e) {
+                ide_core_common_1.getLogger().error(e);
+                return false;
+            }
         });
-    };
-    TextEditorData.prototype.setDecorations = function (decorationType, rangesOrOptions) {
-        var resolved = [];
+    }
+    setDecorations(decorationType, rangesOrOptions) {
+        if (decorationType.disposed) {
+            console.warn(`decorationType with key ${decorationType.key} has been disposed!`);
+            return;
+        }
+        let resolved = [];
         if (rangesOrOptions.length !== 0) {
             if (ext_types_1.Range.isRange(rangesOrOptions[0])) {
-                resolved = rangesOrOptions.map(function (r) {
+                resolved = rangesOrOptions.map((r) => {
                     return {
                         range: converter_1.fromRange(r),
                     };
                 });
             }
             else if (ext_types_1.Range.isRange(rangesOrOptions[0].range)) {
-                resolved = rangesOrOptions.map(function (r) {
+                resolved = rangesOrOptions.map((r) => {
                     return {
                         range: converter_1.fromRange(r.range),
                         renderOptions: r.renderOptions ? converter_1.TypeConverts.DecorationRenderOptions.from(r.renderOptions) : undefined,
@@ -59140,30 +58570,29 @@ var TextEditorData = (function () {
             }
         }
         this.editorService._proxy.$applyDecoration(this.id, decorationType.key, resolved);
-    };
-    TextEditorData.prototype.revealRange = function (range, revealType) {
+    }
+    revealRange(range, revealType) {
         this.editorService._proxy.$revealRange(this.id, converter_1.TypeConverts.Range.from(range), revealType);
-    };
-    TextEditorData.prototype.show = function (column) {
+    }
+    show(column) {
         ide_core_common_1.getLogger().warn('TextEditor.show is Deprecated');
-    };
-    TextEditorData.prototype.hide = function () {
+    }
+    hide() {
         this.editorService.closeEditor(this);
-    };
-    TextEditorData.prototype._acceptSelections = function (selections) {
-        if (selections === void 0) { selections = []; }
-        this.selections = selections.map(function (selection) { return converter_1.TypeConverts.Selection.to(selection); });
-    };
-    TextEditorData.prototype._acceptOptions = function (options) {
+    }
+    _acceptSelections(selections = []) {
+        this.selections = selections.map((selection) => converter_1.TypeConverts.Selection.to(selection));
+    }
+    _acceptOptions(options) {
         this.options._accept(options);
-    };
-    TextEditorData.prototype._acceptVisibleRanges = function (value) {
-        this.visibleRanges = value.map(function (v) { return converter_1.TypeConverts.Range.to(v); }).filter(function (v) { return !!v; });
-    };
-    TextEditorData.prototype._acceptViewColumn = function (value) {
+    }
+    _acceptVisibleRanges(value) {
+        this.visibleRanges = value.map((v) => converter_1.TypeConverts.Range.to(v)).filter((v) => !!v);
+    }
+    _acceptViewColumn(value) {
         this.viewColumn = value;
-    };
-    TextEditorData.prototype.acceptStatusChange = function (change) {
+    }
+    acceptStatusChange(change) {
         if (change.selections) {
             this._acceptSelections(change.selections.selections);
             this.editorService._onDidChangeTextEditorSelection.fire({
@@ -59193,63 +58622,58 @@ var TextEditorData = (function () {
                 viewColumn: this.viewColumn,
             });
         }
-    };
-    Object.defineProperty(TextEditorData.prototype, "textEditor", {
-        get: function () {
-            if (!this._textEditor) {
-                var data_1 = this;
-                this._textEditor = {
-                    get document() {
-                        return data_1.documents.getDocument(data_1.uri);
-                    },
-                    set selection(val) {
-                        data_1.selections = [val];
-                        data_1.doSetSelection();
-                    },
-                    get selections() {
-                        return data_1.selections;
-                    },
-                    set selections(val) {
-                        data_1.selections = val;
-                        data_1.editorService._proxy.$setSelections(data_1.id, data_1.selections.map(function (selection) { return converter_1.fromSelection(selection); }));
-                    },
-                    get selection() {
-                        return data_1.selections && data_1.selections[0];
-                    },
-                    get options() {
-                        return data_1.options;
-                    },
-                    get visibleRanges() {
-                        return data_1.visibleRanges;
-                    },
-                    get viewColumn() {
-                        return data_1.viewColumn;
-                    },
-                    set options(value) {
-                        data_1.options.assign(value);
-                    },
-                    edit: data_1.edit.bind(data_1),
-                    insertSnippet: data_1.insertSnippet.bind(data_1),
-                    setDecorations: data_1.setDecorations.bind(data_1),
-                    revealRange: data_1.revealRange.bind(data_1),
-                    show: data_1.show.bind(data_1),
-                    hide: data_1.hide.bind(data_1),
-                };
-            }
-            return this._textEditor;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return TextEditorData;
-}());
+    }
+    get textEditor() {
+        if (!this._textEditor) {
+            const data = this;
+            this._textEditor = {
+                get document() {
+                    return data.documents.getDocument(data.uri);
+                },
+                set selection(val) {
+                    data.selections = [val];
+                    data.doSetSelection();
+                },
+                get selections() {
+                    return data.selections;
+                },
+                set selections(val) {
+                    data.selections = val;
+                    data.editorService._proxy.$setSelections(data.id, data.selections.map((selection) => converter_1.fromSelection(selection)));
+                },
+                get selection() {
+                    return data.selections && data.selections[0];
+                },
+                get options() {
+                    return data.options;
+                },
+                get visibleRanges() {
+                    return data.visibleRanges;
+                },
+                get viewColumn() {
+                    return data.viewColumn;
+                },
+                set options(value) {
+                    data.options.assign(value);
+                },
+                edit: data.edit.bind(data),
+                insertSnippet: data.insertSnippet.bind(data),
+                setDecorations: data.setDecorations.bind(data),
+                revealRange: data.revealRange.bind(data),
+                show: data.show.bind(data),
+                hide: data.hide.bind(data),
+            };
+        }
+        return this._textEditor;
+    }
+}
 exports.TextEditorData = TextEditorData;
 function toIRange(range) {
     if (ext_types_1.Range.isRange(range)) {
         return converter_1.fromRange(range);
     }
     else if (ext_types_1.Selection.isSelection(range)) {
-        var r = range;
+        const r = range;
         if (r.active.isBeforeOrEqual(r.anchor)) {
             return {
                 startLineNumber: r.active.line + 1,
@@ -59268,7 +58692,7 @@ function toIRange(range) {
         }
     }
     else if (ext_types_1.Position.isPosition(range)) {
-        var r = range;
+        const r = range;
         return {
             startLineNumber: r.line + 1,
             startColumn: r.character + 1,
@@ -59284,159 +58708,139 @@ function toIRange(range) {
     };
 }
 exports.toIRange = toIRange;
-var ExtHostTextEditorOptions = (function () {
-    function ExtHostTextEditorOptions(proxy, id, source) {
+class ExtHostTextEditorOptions {
+    constructor(proxy, id, source) {
         this._proxy = proxy;
         this._id = id;
         this._accept(source);
     }
-    ExtHostTextEditorOptions.prototype._accept = function (source) {
+    _accept(source) {
         this._tabSize = source.tabSize;
         this._indentSize = source.indentSize;
         this._insertSpaces = source.insertSpaces;
         this._cursorStyle = source.cursorStyle;
         this._lineNumbers = converter_1.TypeConverts.TextEditorLineNumbersStyle.to(source.lineNumbers);
-    };
-    Object.defineProperty(ExtHostTextEditorOptions.prototype, "tabSize", {
-        get: function () {
-            return this._tabSize;
-        },
-        set: function (value) {
-            var tabSize = this._validateTabSize(value);
-            if (tabSize === null) {
+    }
+    get tabSize() {
+        return this._tabSize;
+    }
+    set tabSize(value) {
+        const tabSize = this._validateTabSize(value);
+        if (tabSize === null) {
+            return;
+        }
+        if (typeof tabSize === 'number') {
+            if (this._tabSize === tabSize) {
                 return;
             }
-            if (typeof tabSize === 'number') {
-                if (this._tabSize === tabSize) {
-                    return;
-                }
-                this._tabSize = tabSize;
-            }
-            this._proxy.$updateOptions(this._id, {
-                tabSize: tabSize,
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostTextEditorOptions.prototype._validateTabSize = function (value) {
+            this._tabSize = tabSize;
+        }
+        this._proxy.$updateOptions(this._id, {
+            tabSize,
+        });
+    }
+    _validateTabSize(value) {
         if (value === 'auto') {
             return 'auto';
         }
         if (typeof value === 'number') {
-            var r = Math.floor(value);
+            const r = Math.floor(value);
             return (r > 0 ? r : null);
         }
         if (typeof value === 'string') {
-            var r = parseInt(value, 10);
+            const r = parseInt(value, 10);
             if (isNaN(r)) {
                 return null;
             }
             return (r > 0 ? r : null);
         }
         return null;
-    };
-    Object.defineProperty(ExtHostTextEditorOptions.prototype, "indentSize", {
-        get: function () {
-            return this._indentSize;
-        },
-        set: function (value) {
-            var indentSize = this._validateIndentSize(value);
-            if (indentSize === null) {
+    }
+    get indentSize() {
+        return this._indentSize;
+    }
+    set indentSize(value) {
+        const indentSize = this._validateIndentSize(value);
+        if (indentSize === null) {
+            return;
+        }
+        if (typeof indentSize === 'number') {
+            if (this._indentSize === indentSize) {
                 return;
             }
-            if (typeof indentSize === 'number') {
-                if (this._indentSize === indentSize) {
-                    return;
-                }
-                this._indentSize = indentSize;
-            }
-            this._proxy.$updateOptions(this._id, {
-                indentSize: indentSize,
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostTextEditorOptions.prototype._validateIndentSize = function (value) {
+            this._indentSize = indentSize;
+        }
+        this._proxy.$updateOptions(this._id, {
+            indentSize,
+        });
+    }
+    _validateIndentSize(value) {
         if (value === 'tabSize') {
             return 'tabSize';
         }
         if (typeof value === 'number') {
-            var r = Math.floor(value);
+            const r = Math.floor(value);
             return (r > 0 ? r : null);
         }
         if (typeof value === 'string') {
-            var r = parseInt(value, 10);
+            const r = parseInt(value, 10);
             if (isNaN(r)) {
                 return null;
             }
             return (r > 0 ? r : null);
         }
         return null;
-    };
-    Object.defineProperty(ExtHostTextEditorOptions.prototype, "insertSpaces", {
-        get: function () {
-            return this._insertSpaces;
-        },
-        set: function (value) {
-            var insertSpaces = this._validateInsertSpaces(value);
-            if (typeof insertSpaces === 'boolean') {
-                if (this._insertSpaces === insertSpaces) {
-                    return;
-                }
-                this._insertSpaces = insertSpaces;
+    }
+    get insertSpaces() {
+        return this._insertSpaces;
+    }
+    set insertSpaces(value) {
+        const insertSpaces = this._validateInsertSpaces(value);
+        if (typeof insertSpaces === 'boolean') {
+            if (this._insertSpaces === insertSpaces) {
+                return;
             }
-            this._proxy.$updateOptions(this._id, {
-                insertSpaces: insertSpaces,
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostTextEditorOptions.prototype._validateInsertSpaces = function (value) {
+            this._insertSpaces = insertSpaces;
+        }
+        this._proxy.$updateOptions(this._id, {
+            insertSpaces,
+        });
+    }
+    _validateInsertSpaces(value) {
         if (value === 'auto') {
             return 'auto';
         }
         return (value === 'false' ? false : Boolean(value));
-    };
-    Object.defineProperty(ExtHostTextEditorOptions.prototype, "cursorStyle", {
-        get: function () {
-            return this._cursorStyle;
-        },
-        set: function (value) {
-            if (this._cursorStyle === value) {
-                return;
-            }
-            this._cursorStyle = value;
-            this._proxy.$updateOptions(this._id, {
-                cursorStyle: value,
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostTextEditorOptions.prototype, "lineNumbers", {
-        get: function () {
-            return this._lineNumbers;
-        },
-        set: function (value) {
-            if (this._lineNumbers === value) {
-                return;
-            }
-            this._lineNumbers = value;
-            this._proxy.$updateOptions(this._id, {
-                lineNumbers: converter_1.TypeConverts.TextEditorLineNumbersStyle.from(value),
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostTextEditorOptions.prototype.assign = function (newOptions) {
-        var bulkConfigurationUpdate = {};
-        var hasUpdate = false;
+    }
+    get cursorStyle() {
+        return this._cursorStyle;
+    }
+    set cursorStyle(value) {
+        if (this._cursorStyle === value) {
+            return;
+        }
+        this._cursorStyle = value;
+        this._proxy.$updateOptions(this._id, {
+            cursorStyle: value,
+        });
+    }
+    get lineNumbers() {
+        return this._lineNumbers;
+    }
+    set lineNumbers(value) {
+        if (this._lineNumbers === value) {
+            return;
+        }
+        this._lineNumbers = value;
+        this._proxy.$updateOptions(this._id, {
+            lineNumbers: converter_1.TypeConverts.TextEditorLineNumbersStyle.from(value),
+        });
+    }
+    assign(newOptions) {
+        const bulkConfigurationUpdate = {};
+        let hasUpdate = false;
         if (typeof newOptions.tabSize !== 'undefined') {
-            var tabSize = this._validateTabSize(newOptions.tabSize);
+            const tabSize = this._validateTabSize(newOptions.tabSize);
             if (tabSize === 'auto') {
                 hasUpdate = true;
                 bulkConfigurationUpdate.tabSize = tabSize;
@@ -59448,7 +58852,7 @@ var ExtHostTextEditorOptions = (function () {
             }
         }
         if (typeof newOptions.insertSpaces !== 'undefined') {
-            var insertSpaces = this._validateInsertSpaces(newOptions.insertSpaces);
+            const insertSpaces = this._validateInsertSpaces(newOptions.insertSpaces);
             if (insertSpaces === 'auto') {
                 hasUpdate = true;
                 bulkConfigurationUpdate.insertSpaces = insertSpaces;
@@ -59476,22 +58880,21 @@ var ExtHostTextEditorOptions = (function () {
         if (hasUpdate) {
             this._proxy.$updateOptions(this._id, bulkConfigurationUpdate);
         }
-    };
-    return ExtHostTextEditorOptions;
-}());
+    }
+}
 exports.ExtHostTextEditorOptions = ExtHostTextEditorOptions;
 
 
 /***/ }),
-/* 407 */
+/* 409 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var ext_types_1 = __webpack_require__(220);
-var TextEditorEdit = (function () {
-    function TextEditorEdit(document, options) {
+const ext_types_1 = __webpack_require__(222);
+class TextEditorEdit {
+    constructor(document, options) {
         this._document = document;
         this._documentVersionId = document.version;
         this._collectedEdits = [];
@@ -59499,7 +58902,7 @@ var TextEditorEdit = (function () {
         this._undoStopBefore = options.undoStopBefore;
         this._undoStopAfter = options.undoStopAfter;
     }
-    TextEditorEdit.prototype.finalize = function () {
+    finalize() {
         return {
             documentVersionId: this._documentVersionId,
             edits: this._collectedEdits,
@@ -59507,9 +58910,9 @@ var TextEditorEdit = (function () {
             undoStopBefore: this._undoStopBefore,
             undoStopAfter: this._undoStopAfter,
         };
-    };
-    TextEditorEdit.prototype.replace = function (location, value) {
-        var range = null;
+    }
+    replace(location, value) {
+        let range = null;
         if (location instanceof ext_types_1.Position) {
             range = new ext_types_1.Range(location, location);
         }
@@ -59520,12 +58923,12 @@ var TextEditorEdit = (function () {
             throw new Error('Unrecognized location');
         }
         this._pushEdit(range, value, false);
-    };
-    TextEditorEdit.prototype.insert = function (location, value) {
+    }
+    insert(location, value) {
         this._pushEdit(new ext_types_1.Range(location, location), value, true);
-    };
-    TextEditorEdit.prototype.delete = function (location) {
-        var range = null;
+    }
+    delete(location) {
+        let range = null;
         if (location instanceof ext_types_1.Range) {
             range = location;
         }
@@ -59533,51 +58936,49 @@ var TextEditorEdit = (function () {
             throw new Error('Unrecognized location');
         }
         this._pushEdit(range, null, true);
-    };
-    TextEditorEdit.prototype._pushEdit = function (range, text, forceMoveMarkers) {
-        var validRange = this._document.validateRange(range);
+    }
+    _pushEdit(range, text, forceMoveMarkers) {
+        const validRange = this._document.validateRange(range);
         this._collectedEdits.push({
             range: validRange,
-            text: text,
-            forceMoveMarkers: forceMoveMarkers,
+            text,
+            forceMoveMarkers,
         });
-    };
-    TextEditorEdit.prototype.setEndOfLine = function (endOfLine) {
+    }
+    setEndOfLine(endOfLine) {
         if (endOfLine !== ext_types_1.EndOfLine.LF && endOfLine !== ext_types_1.EndOfLine.CRLF) {
             throw new Error('illegalArgument endOfLine');
         }
         this._setEndOfLine = endOfLine;
-    };
-    return TextEditorEdit;
-}());
+    }
+}
 exports.TextEditorEdit = TextEditorEdit;
 
 
 /***/ }),
-/* 408 */
+/* 410 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var preferences_1 = __webpack_require__(409);
-var vscode_1 = __webpack_require__(204);
-var ide_core_common_1 = __webpack_require__(2);
-var cloneDeep = __webpack_require__(411);
+const preferences_1 = __webpack_require__(411);
+const vscode_1 = __webpack_require__(206);
+const ide_core_common_1 = __webpack_require__(2);
+const cloneDeep = __webpack_require__(413);
 function lookUp(tree, key) {
     if (!key) {
         return;
     }
-    var parts = key.split('.');
-    var node = tree;
-    for (var i = 0; node && i < parts.length; i++) {
+    const parts = key.split('.');
+    let node = tree;
+    for (let i = 0; node && i < parts.length; i++) {
         node = node[parts[i]];
     }
     return node;
 }
-var ExtHostPreference = (function () {
-    function ExtHostPreference(rpcProtocol, workspace) {
+class ExtHostPreference {
+    constructor(rpcProtocol, workspace) {
         this.workspace = workspace;
         this._onDidChangeConfiguration = new ide_core_common_1.Emitter();
         this.onDidChangeConfiguration = this._onDidChangeConfiguration.event;
@@ -59586,39 +58987,37 @@ var ExtHostPreference = (function () {
         this.rpcProtocol = rpcProtocol;
         this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadPreference);
     }
-    ExtHostPreference.prototype.init = function (data) {
+    init(data) {
         this._preferences = this.parse(data);
-    };
-    ExtHostPreference.prototype.$initializeConfiguration = function (data) {
+    }
+    $initializeConfiguration(data) {
         this.init(data);
-    };
-    ExtHostPreference.prototype.$acceptConfigurationChanged = function (data, eventData) {
+    }
+    $acceptConfigurationChanged(data, eventData) {
         this.init(data);
         this._onDidChangeConfiguration.fire(this.toConfigurationChangeEvent(eventData));
-    };
-    ExtHostPreference.prototype.parse = function (data) {
-        var _this = this;
-        var defaultConfiguration = this.getConfigurationModel(data[ide_core_common_1.PreferenceScope.Default]);
-        var userConfiguration = this.getConfigurationModel(data[ide_core_common_1.PreferenceScope.User]);
-        var workspaceConfiguration = this.getConfigurationModel(data[ide_core_common_1.PreferenceScope.Workspace]);
-        var folderConfigurations = {};
-        Object.keys(data[ide_core_common_1.PreferenceScope.Folder]).forEach(function (resource) {
-            folderConfigurations[resource] = _this.getConfigurationModel(data[ide_core_common_1.PreferenceScope.Folder][resource]);
+    }
+    parse(data) {
+        const defaultConfiguration = this.getConfigurationModel(data[ide_core_common_1.PreferenceScope.Default]);
+        const userConfiguration = this.getConfigurationModel(data[ide_core_common_1.PreferenceScope.User]);
+        const workspaceConfiguration = this.getConfigurationModel(data[ide_core_common_1.PreferenceScope.Workspace]);
+        const folderConfigurations = {};
+        Object.keys(data[ide_core_common_1.PreferenceScope.Folder]).forEach((resource) => {
+            folderConfigurations[resource] = this.getConfigurationModel(data[ide_core_common_1.PreferenceScope.Folder][resource]);
         });
         return new preferences_1.Configuration(defaultConfiguration, userConfiguration, workspaceConfiguration, folderConfigurations);
-    };
-    ExtHostPreference.prototype.getConfigurationModel = function (data) {
+    }
+    getConfigurationModel(data) {
         if (!data) {
             return new preferences_1.ConfigurationModel();
         }
         return new preferences_1.ConfigurationModel(this.parseConfigurationData(data), Object.keys(data));
-    };
-    ExtHostPreference.prototype.parseConfigurationData = function (data) {
-        var _this = this;
-        return Object.keys(data).reduce(function (result, key) {
-            var parts = key.split('.');
-            var branch = result;
-            for (var i = 0; i < parts.length; i++) {
+    }
+    parseConfigurationData(data) {
+        return Object.keys(data).reduce((result, key) => {
+            const parts = key.split('.');
+            let branch = result;
+            for (let i = 0; i < parts.length; i++) {
                 if (i === parts.length - 1) {
                     branch[parts[i]] = data[key];
                     continue;
@@ -59627,122 +59026,107 @@ var ExtHostPreference = (function () {
                     branch[parts[i]] = {};
                 }
                 branch = branch[parts[i]];
-                if (i === 0 && _this.OVERRIDE_PROPERTY_PATTERN.test(parts[i])) {
+                if (i === 0 && this.OVERRIDE_PROPERTY_PATTERN.test(parts[i])) {
                     branch[key.substring(parts[0].length + 1)] = data[key];
                     break;
                 }
             }
             return result;
         }, {});
-    };
-    ExtHostPreference.prototype.toConfigurationChangeEvent = function (eventData) {
+    }
+    toConfigurationChangeEvent(eventData) {
         return Object.freeze({
-            affectsConfiguration: function (section, uri) {
-                var e_1, _a;
-                try {
-                    for (var eventData_1 = tslib_1.__values(eventData), eventData_1_1 = eventData_1.next(); !eventData_1_1.done; eventData_1_1 = eventData_1.next()) {
-                        var change = eventData_1_1.value;
-                        var tree = change.preferenceName
-                            .split('.')
-                            .reverse()
-                            .reduce(function (prevValue, curValue) {
-                            var _a;
-                            return (_a = {}, _a[curValue] = prevValue, _a);
-                        }, change.newValue);
-                        return typeof lookUp(tree, section) !== 'undefined';
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (eventData_1_1 && !eventData_1_1.done && (_a = eventData_1.return)) _a.call(eventData_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
+            affectsConfiguration: (section, uri) => {
+                for (const change of eventData) {
+                    const tree = change.preferenceName
+                        .split('.')
+                        .reverse()
+                        .reduce((prevValue, curValue) => ({ [curValue]: prevValue }), change.newValue);
+                    return typeof lookUp(tree, section) !== 'undefined';
                 }
                 return false;
             },
         });
-    };
-    ExtHostPreference.prototype.getConfiguration = function (section, resource, extensionId) {
-        var _this = this;
+    }
+    getConfiguration(section, resource, extensionId) {
         resource = resource === null ? undefined : resource;
-        var preferences = this.toReadonlyValue(section
+        const preferences = this.toReadonlyValue(section
             ? lookUp(this._preferences.getValue(undefined, this.workspace, resource), section)
             : this._preferences.getValue(undefined, this.workspace, resource));
-        var configuration = {
-            has: function (key) {
+        const configuration = {
+            has(key) {
                 return typeof lookUp(preferences, key) !== 'undefined';
             },
-            get: function (key, defaultValue) {
-                var result = lookUp(preferences, key);
+            get: (key, defaultValue) => {
+                const result = lookUp(preferences, key);
                 if (typeof result === 'undefined') {
                     return defaultValue;
                 }
                 else {
-                    var clonedConfig_1;
-                    var cloneOnWriteProxy_1 = function (target, accessor) {
-                        var clonedTarget;
-                        var cloneTarget = function () {
-                            clonedConfig_1 = clonedConfig_1 ? clonedConfig_1 : cloneDeep(preferences);
-                            clonedTarget = clonedTarget ? cloneTarget : lookUp(clonedConfig_1, accessor);
+                    let clonedConfig;
+                    const cloneOnWriteProxy = (target, accessor) => {
+                        let clonedTarget;
+                        const cloneTarget = () => {
+                            clonedConfig = clonedConfig ? clonedConfig : cloneDeep(preferences);
+                            clonedTarget = clonedTarget ? cloneTarget : lookUp(clonedConfig, accessor);
                         };
                         if (!ide_core_common_1.isObject(target)) {
                             return target;
                         }
                         return new Proxy(target, {
-                            get: function (targ, prop) {
+                            get: (targ, prop) => {
                                 if (typeof prop === 'string' && prop.toLowerCase() === 'tojson') {
                                     cloneTarget();
-                                    return function () { return clonedTarget; };
+                                    return () => clonedTarget;
                                 }
-                                if (clonedConfig_1) {
-                                    clonedTarget = cloneTarget ? cloneTarget : lookUp(clonedConfig_1, accessor);
+                                if (clonedConfig) {
+                                    clonedTarget = cloneTarget ? cloneTarget : lookUp(clonedConfig, accessor);
                                     return clonedTarget[prop];
                                 }
-                                var res = targ[prop];
+                                const res = targ[prop];
                                 if (typeof prop === 'string') {
-                                    return cloneOnWriteProxy_1(res, accessor + "." + prop);
+                                    return cloneOnWriteProxy(res, `${accessor}.${prop}`);
                                 }
                                 return res;
                             },
-                            set: function (targ, prop, val) {
+                            set: (targ, prop, val) => {
                                 cloneTarget();
                                 clonedTarget[prop] = val;
                                 return true;
                             },
-                            deleteProperty: function (targ, prop) {
+                            deleteProperty: (targ, prop) => {
                                 cloneTarget();
                                 delete clonedTarget[prop];
                                 return true;
                             },
-                            defineProperty: function (targ, prop, descr) {
+                            defineProperty: (targ, prop, descr) => {
                                 cloneTarget();
                                 Object.defineProperty(clonedTarget, prop, descr);
                                 return true;
                             },
                         });
                     };
-                    return cloneOnWriteProxy_1(result, key);
+                    return cloneOnWriteProxy(result, key);
                 }
             },
-            update: function (key, value, arg) {
-                key = section ? section + "." + key : key;
-                var resourceStr = resource ? resource.toString() : undefined;
+            update: (key, value, arg) => {
+                key = section ? `${section}.${key}` : key;
+                const resourceStr = resource ? resource.toString() : undefined;
                 if (typeof value !== 'undefined') {
-                    return _this.proxy.$updateConfigurationOption(arg, key, value, resourceStr);
+                    return this.proxy.$updateConfigurationOption(arg, key, value, resourceStr);
                 }
                 else {
-                    return _this.proxy.$removeConfigurationOption(arg, key, resourceStr);
+                    return this.proxy.$removeConfigurationOption(arg, key, resourceStr);
                 }
             },
-            inspect: function (key) {
-                key = section ? section + "." + key : key;
+            inspect: (key) => {
+                key = section ? `${section}.${key}` : key;
                 resource = resource === null ? undefined : resource;
-                var result = cloneDeep(_this._preferences.inspect(key, _this.workspace, resource));
+                const result = cloneDeep(this._preferences.inspect(key, this.workspace, resource));
                 if (!result) {
                     return undefined;
                 }
-                var configInspect = { key: key };
+                const configInspect = { key };
                 if (typeof result.default !== 'undefined') {
                     configInspect.defaultValue = result.default;
                 }
@@ -59762,71 +59146,67 @@ var ExtHostPreference = (function () {
             ide_core_common_1.mixin(configuration, preferences, false);
         }
         return Object.freeze(configuration);
-    };
-    ExtHostPreference.prototype.toReadonlyValue = function (data) {
-        var readonlyProxy = function (target) { return ide_core_common_1.isObject(target)
+    }
+    toReadonlyValue(data) {
+        const readonlyProxy = (target) => ide_core_common_1.isObject(target)
             ? new Proxy(target, {
-                get: function (targ, prop) { return readonlyProxy(targ[prop]); },
-                set: function (targ, prop, val) {
-                    throw new Error("TypeError: Cannot assign to read only property '" + prop + "' of object");
+                get: (targ, prop) => readonlyProxy(targ[prop]),
+                set: (targ, prop, val) => {
+                    throw new Error(`TypeError: Cannot assign to read only property '${prop}' of object`);
                 },
-                deleteProperty: function (targ, prop) {
-                    throw new Error("TypeError: Cannot delete read only property '" + prop + "' of object");
+                deleteProperty: (targ, prop) => {
+                    throw new Error(`TypeError: Cannot delete read only property '${prop}' of object`);
                 },
-                defineProperty: function (targ, prop) {
-                    throw new Error("TypeError: Cannot define property '" + prop + "' of a readonly object");
+                defineProperty: (targ, prop) => {
+                    throw new Error(`TypeError: Cannot define property '${prop}' of a readonly object`);
                 },
-                setPrototypeOf: function (targ) {
+                setPrototypeOf: (targ) => {
                     throw new Error('TypeError: Cannot set prototype for a readonly object');
                 },
-                isExtensible: function () { return false; },
-                preventExtensions: function () { return true; },
+                isExtensible: () => false,
+                preventExtensions: () => true,
             })
-            : target; };
+            : target;
         return readonlyProxy(data);
-    };
-    return ExtHostPreference;
-}());
+    }
+}
 exports.ExtHostPreference = ExtHostPreference;
 
 
 /***/ }),
-/* 409 */
+/* 411 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(410), exports);
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(412), exports);
 
 
 /***/ }),
-/* 410 */
+/* 412 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ide_core_common_1 = __webpack_require__(2);
-var cloneDeep = __webpack_require__(411);
-var Configuration = (function () {
-    function Configuration(defaultConfiguration, userConfiguration, workspaceConfiguration, folderConfigurations) {
-        if (workspaceConfiguration === void 0) { workspaceConfiguration = new ConfigurationModel(); }
-        if (folderConfigurations === void 0) { folderConfigurations = {}; }
+const ide_core_common_1 = __webpack_require__(2);
+const cloneDeep = __webpack_require__(413);
+class Configuration {
+    constructor(defaultConfiguration, userConfiguration, workspaceConfiguration = new ConfigurationModel(), folderConfigurations = {}) {
         this.defaultConfiguration = defaultConfiguration;
         this.userConfiguration = userConfiguration;
         this.workspaceConfiguration = workspaceConfiguration;
         this.folderConfigurations = folderConfigurations;
         this.folderCombinedConfigs = {};
     }
-    Configuration.prototype.getValue = function (section, workspace, resource) {
+    getValue(section, workspace, resource) {
         return this.getCombinedResourceConfig(workspace, resource).getValue(section);
-    };
-    Configuration.prototype.inspect = function (key, workspace, resource) {
-        var combinedConfiguration = this.getCombinedResourceConfig(workspace, resource);
-        var folderConfiguration = this.getFolderResourceConfig(workspace, resource);
+    }
+    inspect(key, workspace, resource) {
+        const combinedConfiguration = this.getCombinedResourceConfig(workspace, resource);
+        const folderConfiguration = this.getFolderResourceConfig(workspace, resource);
         return {
             default: this.defaultConfiguration.getValue(key),
             user: this.userConfiguration.getValue(key),
@@ -59834,153 +59214,101 @@ var Configuration = (function () {
             workspaceFolder: folderConfiguration ? folderConfiguration.getValue(key) : void 0,
             value: combinedConfiguration.getValue(key),
         };
-    };
-    Configuration.prototype.getCombinedResourceConfig = function (workspace, resource) {
-        var combinedConfig = this.getCombinedConfig();
+    }
+    getCombinedResourceConfig(workspace, resource) {
+        const combinedConfig = this.getCombinedConfig();
         if (!workspace || !resource) {
             return combinedConfig;
         }
-        var workspaceFolder = workspace.getWorkspaceFolder(resource);
+        const workspaceFolder = workspace.getWorkspaceFolder(resource);
         if (!workspaceFolder) {
             return combinedConfig;
         }
         return this.getFolderCombinedConfig(workspaceFolder.uri.toString()) || combinedConfig;
-    };
-    Configuration.prototype.getCombinedConfig = function () {
+    }
+    getCombinedConfig() {
         if (!this.combinedConfig) {
             this.combinedConfig = this.defaultConfiguration.merge(this.userConfiguration, this.workspaceConfiguration);
         }
         return this.combinedConfig;
-    };
-    Configuration.prototype.getFolderCombinedConfig = function (folder) {
+    }
+    getFolderCombinedConfig(folder) {
         if (this.folderCombinedConfigs[folder]) {
             return this.folderCombinedConfigs[folder];
         }
-        var combinedConfig = this.getCombinedConfig();
-        var folderConfig = this.folderConfigurations[folder];
+        const combinedConfig = this.getCombinedConfig();
+        const folderConfig = this.folderConfigurations[folder];
         if (!folderConfig) {
             return combinedConfig;
         }
-        var folderCombinedConfig = combinedConfig.merge(folderConfig);
+        const folderCombinedConfig = combinedConfig.merge(folderConfig);
         this.folderCombinedConfigs[folder] = folderCombinedConfig;
         return folderCombinedConfig;
-    };
-    Configuration.prototype.getFolderResourceConfig = function (workspace, resource) {
+    }
+    getFolderResourceConfig(workspace, resource) {
         if (!workspace || !resource) {
             return;
         }
-        var workspaceFolder = workspace.getWorkspaceFolder(resource);
+        const workspaceFolder = workspace.getWorkspaceFolder(resource);
         if (!workspaceFolder) {
             return;
         }
         return this.folderConfigurations[workspaceFolder.uri.toString()];
-    };
-    return Configuration;
-}());
+    }
+}
 exports.Configuration = Configuration;
-var ConfigurationModel = (function () {
-    function ConfigurationModel(contents, keys) {
-        if (contents === void 0) { contents = {}; }
-        if (keys === void 0) { keys = []; }
+class ConfigurationModel {
+    constructor(contents = {}, keys = []) {
         this.contents = contents;
         this.keys = keys;
     }
-    ConfigurationModel.prototype.getValue = function (section) {
-        var e_1, _a;
+    getValue(section) {
         if (!section) {
             return this.contents;
         }
-        var paths = section.split('.');
-        var current = this.contents;
-        try {
-            for (var paths_1 = tslib_1.__values(paths), paths_1_1 = paths_1.next(); !paths_1_1.done; paths_1_1 = paths_1.next()) {
-                var path = paths_1_1.value;
-                if (typeof current !== 'object' || current === null) {
-                    return undefined;
-                }
-                current = current[path];
+        const paths = section.split('.');
+        let current = this.contents;
+        for (const path of paths) {
+            if (typeof current !== 'object' || current === null) {
+                return undefined;
             }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (paths_1_1 && !paths_1_1.done && (_a = paths_1.return)) _a.call(paths_1);
-            }
-            finally { if (e_1) throw e_1.error; }
+            current = current[path];
         }
         return current;
-    };
-    ConfigurationModel.prototype.merge = function () {
-        var e_2, _a;
-        var others = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            others[_i] = arguments[_i];
-        }
-        var contents = cloneDeep(this.contents);
-        var allKeys = tslib_1.__spread(this.keys);
-        try {
-            for (var others_1 = tslib_1.__values(others), others_1_1 = others_1.next(); !others_1_1.done; others_1_1 = others_1.next()) {
-                var other = others_1_1.value;
-                this.mergeContents(contents, other.contents);
-                this.mergeKeys(allKeys, other.keys);
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (others_1_1 && !others_1_1.done && (_a = others_1.return)) _a.call(others_1);
-            }
-            finally { if (e_2) throw e_2.error; }
+    }
+    merge(...others) {
+        const contents = cloneDeep(this.contents);
+        const allKeys = [...this.keys];
+        for (const other of others) {
+            this.mergeContents(contents, other.contents);
+            this.mergeKeys(allKeys, other.keys);
         }
         return new ConfigurationModel(contents, allKeys);
-    };
-    ConfigurationModel.prototype.mergeContents = function (source, target) {
-        var e_3, _a;
-        try {
-            for (var _b = tslib_1.__values(Object.keys(target)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var key = _c.value;
-                if (key in source) {
-                    if (ide_core_common_1.isObject(source[key]) && ide_core_common_1.isObject(target[key])) {
-                        this.mergeContents(source[key], target[key]);
-                        continue;
-                    }
-                }
-                source[key] = cloneDeep(target[key]);
-            }
-        }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-    };
-    ConfigurationModel.prototype.mergeKeys = function (source, target) {
-        var e_4, _a;
-        try {
-            for (var target_1 = tslib_1.__values(target), target_1_1 = target_1.next(); !target_1_1.done; target_1_1 = target_1.next()) {
-                var key = target_1_1.value;
-                if (source.indexOf(key) === -1) {
-                    source.push(key);
+    }
+    mergeContents(source, target) {
+        for (const key of Object.keys(target)) {
+            if (key in source) {
+                if (ide_core_common_1.isObject(source[key]) && ide_core_common_1.isObject(target[key])) {
+                    this.mergeContents(source[key], target[key]);
+                    continue;
                 }
             }
+            source[key] = cloneDeep(target[key]);
         }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
-        finally {
-            try {
-                if (target_1_1 && !target_1_1.done && (_a = target_1.return)) _a.call(target_1);
+    }
+    mergeKeys(source, target) {
+        for (const key of target) {
+            if (source.indexOf(key) === -1) {
+                source.push(key);
             }
-            finally { if (e_4) throw e_4.error; }
         }
-    };
-    return ConfigurationModel;
-}());
+    }
+}
 exports.ConfigurationModel = ConfigurationModel;
 
 
 /***/ }),
-/* 411 */
+/* 413 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {/**
@@ -61732,22 +61060,22 @@ function stubFalse() {
 
 module.exports = cloneDeep;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(181)(module)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(183)(module)))
 
 /***/ }),
-/* 412 */
+/* 414 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var path = __webpack_require__(144);
-var vscode_extension_1 = __webpack_require__(413);
-var ext_host_storage_1 = __webpack_require__(203);
-var ExtenstionContext = (function () {
-    function ExtenstionContext(options) {
+const path = __webpack_require__(144);
+const vscode_extension_1 = __webpack_require__(415);
+const ext_host_storage_1 = __webpack_require__(205);
+class ExtenstionContext {
+    constructor(options) {
         this.subscriptions = [];
-        var extensionId = options.extensionId, extensionPath = options.extensionPath, storageProxy = options.storageProxy;
+        const { extensionId, extensionPath, storageProxy, } = options;
         this._storage = storageProxy;
         this.extensionPath = extensionPath;
         this.workspaceState = new ext_host_storage_1.ExtensionMemento(extensionId, false, storageProxy);
@@ -61755,45 +61083,32 @@ var ExtenstionContext = (function () {
         this.componentProxy = options.extendProxy;
         this.registerExtendModuleService = options.registerExtendModuleService;
     }
-    Object.defineProperty(ExtenstionContext.prototype, "storagePath", {
-        get: function () {
-            return this._storage.storagePath.storagePath;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtenstionContext.prototype, "logPath", {
-        get: function () {
-            return this._storage.storagePath.logPath;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtenstionContext.prototype, "globalStoragePath", {
-        get: function () {
-            return this._storage.storagePath.globalStoragePath;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtenstionContext.prototype.asAbsolutePath = function (relativePath) {
+    get storagePath() {
+        return this._storage.storagePath.storagePath;
+    }
+    get logPath() {
+        return this._storage.storagePath.logPath;
+    }
+    get globalStoragePath() {
+        return this._storage.storagePath.globalStoragePath;
+    }
+    asAbsolutePath(relativePath) {
         return path.join(this.extensionPath, relativePath);
-    };
-    return ExtenstionContext;
-}());
+    }
+}
 exports.ExtenstionContext = ExtenstionContext;
 function createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService) {
     return {
-        all: (function () {
-            var extensions = extensionService.getExtensions();
-            return extensions.map(function (ext) {
+        all: (() => {
+            const extensions = extensionService.getExtensions();
+            return extensions.map((ext) => {
                 return new vscode_extension_1.VSCExtension(ext, extensionService, mainThreadExtensionService, extensionService.extentionsActivator.get(ext.id) && extensionService.extentionsActivator.get(ext.id).exports, extensionService.extentionsActivator.get(ext.id) && extensionService.extentionsActivator.get(ext.id).extendExports);
             });
         })(),
         get onDidChange() {
             return extensionService.extensionsChangeEmitter.event;
         },
-        getExtension: function (extensionId) {
+        getExtension(extensionId) {
             return extensionService.getExtension(extensionId);
         },
     };
@@ -61802,17 +61117,17 @@ exports.createExtensionsApiFactory = createExtensionsApiFactory;
 
 
 /***/ }),
-/* 413 */
+/* 415 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var VSCExtension = (function () {
-    function VSCExtension(data, extensionService, mainThreadExtensionService, exportsData, extendExportsData) {
+const tslib_1 = __webpack_require__(1);
+class VSCExtension {
+    constructor(data, extensionService, mainThreadExtensionService, exportsData, extendExportsData) {
         this.mainThreadExtensionService = mainThreadExtensionService;
-        var packageJSON = data.packageJSON, path = data.path, id = data.id, activated = data.activated;
+        const { packageJSON, path, id, activated } = data;
         this.id = id;
         this.extensionPath = path;
         this.packageJSON = packageJSON;
@@ -61825,92 +61140,63 @@ var VSCExtension = (function () {
         }
         this.extensionService = extensionService;
     }
-    Object.defineProperty(VSCExtension.prototype, "isActive", {
-        get: function () {
-            return this.extensionService.isActivated(this.id);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(VSCExtension.prototype, "extendExports", {
-        get: function () {
-            return this._extendExportsData || this.extensionService.getExtendExports(this.id);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(VSCExtension.prototype, "exports", {
-        get: function () {
-            return this._exports || this.extensionService.getExtensionExports(this.id);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    VSCExtension.prototype.activate = function () {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var e_1;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4, this.mainThreadExtensionService.$activateExtension(this.extensionPath)];
-                    case 1:
-                        _a.sent();
-                        return [2, this.extensionService.getExtensionExports(this.id)];
-                    case 2:
-                        e_1 = _a.sent();
-                        return [3, 3];
-                    case 3: return [2];
-                }
-            });
+    get isActive() {
+        return this.extensionService.isActivated(this.id);
+    }
+    get extendExports() {
+        return this._extendExportsData || this.extensionService.getExtendExports(this.id);
+    }
+    get exports() {
+        return this._exports || this.extensionService.getExtensionExports(this.id);
+    }
+    activate() {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.mainThreadExtensionService.$activateExtension(this.extensionPath);
+                return this.extensionService.getExtensionExports(this.id);
+            }
+            catch (e) { }
         });
-    };
-    return VSCExtension;
-}());
+    }
+}
 exports.VSCExtension = VSCExtension;
 
 
 /***/ }),
-/* 414 */
+/* 416 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var crypto_1 = __webpack_require__(66);
-var uuid_1 = __webpack_require__(340);
-var address = __webpack_require__(415);
-var vscode_1 = __webpack_require__(204);
-var ext_types_1 = __webpack_require__(220);
-var ide_core_common_1 = __webpack_require__(2);
-var Env = (function () {
-    function Env() {
-        var _this = this;
-        address.mac(function (err, macAddress) {
+const crypto_1 = __webpack_require__(67);
+const uuid_1 = __webpack_require__(342);
+const address = __webpack_require__(417);
+const vscode_1 = __webpack_require__(206);
+const ext_types_1 = __webpack_require__(222);
+const ide_core_common_1 = __webpack_require__(2);
+class Env {
+    constructor() {
+        address.mac((err, macAddress) => {
             if (!err) {
-                _this.macMachineId = crypto_1.createHash('sha256').update(macAddress, 'utf8').digest('hex');
+                this.macMachineId = crypto_1.createHash('sha256').update(macAddress, 'utf8').digest('hex');
             }
             else {
-                _this.macMachineId = uuid_1.v4();
+                this.macMachineId = uuid_1.v4();
             }
         });
         this.sessionId = uuid_1.v4();
     }
-    Object.defineProperty(Env.prototype, "machineId", {
-        get: function () {
-            return this.macMachineId;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return Env;
-}());
+    get machineId() {
+        return this.macMachineId;
+    }
+}
 exports.Env = Env;
-var envValue = new Env();
+const envValue = new Env();
 function createEnvApiFactory(rpcProtocol, extensionService, envHost) {
-    var proxy = rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadEnv);
-    var values = envHost.getEnvValues();
-    var env = {
+    const proxy = rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadEnv);
+    const values = envHost.getEnvValues();
+    const env = {
         appName: values.appName,
         uriScheme: values.uriScheme,
         language: values.language,
@@ -61919,14 +61205,14 @@ function createEnvApiFactory(rpcProtocol, extensionService, envHost) {
         appRoot: 'appRoot',
         remoteName: 'remoteName',
         clipboard: {
-            readText: function () {
+            readText() {
                 return proxy.$clipboardReadText();
             },
-            writeText: function (value) {
+            writeText(value) {
                 return proxy.$clipboardWriteText(value);
             },
         },
-        openExternal: function (target) {
+        openExternal(target) {
             return proxy.$openExternal(target);
         },
         get logLevel() {
@@ -61939,30 +61225,30 @@ function createEnvApiFactory(rpcProtocol, extensionService, envHost) {
     return Object.freeze(env);
 }
 exports.createEnvApiFactory = createEnvApiFactory;
-var ExtHostEnv = (function () {
-    function ExtHostEnv(rpcProtocol) {
+class ExtHostEnv {
+    constructor(rpcProtocol) {
         this.values = {};
         this.logLevelChangeEmitter = new ide_core_common_1.Emitter();
         this.rpcProtocol = rpcProtocol;
         this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadEnv);
     }
-    ExtHostEnv.prototype.$setEnvValues = function (values) {
+    $setEnvValues(values) {
         return this.setEnvValues(values);
-    };
-    ExtHostEnv.prototype.setEnvValues = function (values) {
+    }
+    setEnvValues(values) {
         this.values = Object.assign({}, this.values, values);
-    };
-    ExtHostEnv.prototype.getEnvValues = function () {
+    }
+    getEnvValues() {
         return this.values;
-    };
-    ExtHostEnv.prototype.$fireChangeLogLevel = function (logLevel) {
+    }
+    $fireChangeLogLevel(logLevel) {
         this.$setLogLevel(logLevel);
         this.logLevelChangeEmitter.fire(this.logLevel);
-    };
-    ExtHostEnv.prototype.$setLogLevel = function (level) {
+    }
+    $setLogLevel(level) {
         this.logLevel = this.toVSCodeLogLevel(level);
-    };
-    ExtHostEnv.prototype.toVSCodeLogLevel = function (level) {
+    }
+    toVSCodeLogLevel(level) {
         if (level === ide_core_common_1.LogLevel.Verbose) {
             return ext_types_1.LogLevel.Trace;
         }
@@ -61985,22 +61271,21 @@ var ExtHostEnv = (function () {
             return ext_types_1.LogLevel.Off;
         }
         return ext_types_1.LogLevel.Info;
-    };
-    return ExtHostEnv;
-}());
+    }
+}
 exports.ExtHostEnv = ExtHostEnv;
 
 
 /***/ }),
-/* 415 */
+/* 417 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 var os = __webpack_require__(145);
-var fs = __webpack_require__(164);
-var child = __webpack_require__(310);
+var fs = __webpack_require__(166);
+var child = __webpack_require__(312);
 
 var DEFAULT_RESOLV_FILE = '/etc/resolv.conf';
 
@@ -62248,135 +61533,126 @@ module.exports = address;
 
 
 /***/ }),
-/* 416 */
+/* 418 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var converter_1 = __webpack_require__(225);
-var vscode_1 = __webpack_require__(204);
-var ext_types_1 = __webpack_require__(220);
-var completion_1 = __webpack_require__(417);
-var definition_1 = __webpack_require__(418);
-var type_definition_1 = __webpack_require__(419);
-var folding_1 = __webpack_require__(420);
-var color_1 = __webpack_require__(421);
-var document_highlight_1 = __webpack_require__(422);
-var hover_1 = __webpack_require__(423);
-var lens_1 = __webpack_require__(424);
-var range_formatting_1 = __webpack_require__(425);
-var on_type_formatting_1 = __webpack_require__(426);
-var code_action_1 = __webpack_require__(427);
-var diagnostics_1 = __webpack_require__(428);
-var implementation_1 = __webpack_require__(429);
-var link_provider_1 = __webpack_require__(430);
-var reference_1 = __webpack_require__(431);
-var util_1 = __webpack_require__(234);
-var utils_1 = __webpack_require__(221);
-var outline_1 = __webpack_require__(432);
-var workspace_symbol_1 = __webpack_require__(433);
-var signature_1 = __webpack_require__(434);
-var rename_1 = __webpack_require__(435);
-var selection_1 = __webpack_require__(436);
+const tslib_1 = __webpack_require__(1);
+const converter_1 = __webpack_require__(227);
+const vscode_1 = __webpack_require__(206);
+const ext_types_1 = __webpack_require__(222);
+const completion_1 = __webpack_require__(419);
+const definition_1 = __webpack_require__(420);
+const type_definition_1 = __webpack_require__(421);
+const folding_1 = __webpack_require__(422);
+const color_1 = __webpack_require__(423);
+const document_highlight_1 = __webpack_require__(424);
+const hover_1 = __webpack_require__(425);
+const lens_1 = __webpack_require__(426);
+const range_formatting_1 = __webpack_require__(427);
+const on_type_formatting_1 = __webpack_require__(428);
+const code_action_1 = __webpack_require__(429);
+const diagnostics_1 = __webpack_require__(430);
+const implementation_1 = __webpack_require__(431);
+const link_provider_1 = __webpack_require__(432);
+const reference_1 = __webpack_require__(433);
+const util_1 = __webpack_require__(236);
+const utils_1 = __webpack_require__(223);
+const outline_1 = __webpack_require__(434);
+const workspace_symbol_1 = __webpack_require__(435);
+const signature_1 = __webpack_require__(436);
+const rename_1 = __webpack_require__(437);
+const selection_1 = __webpack_require__(438);
 function createLanguagesApiFactory(extHostLanguages, extension) {
     return {
-        registerHoverProvider: function (selector, provider) {
+        getLanguages() {
+            return extHostLanguages.getLanguages();
+        },
+        registerHoverProvider(selector, provider) {
             return extHostLanguages.registerHoverProvider(selector, provider);
         },
-        registerCompletionItemProvider: function (selector, provider) {
-            var triggerCharacters = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                triggerCharacters[_i - 2] = arguments[_i];
-            }
+        registerCompletionItemProvider(selector, provider, ...triggerCharacters) {
             return extHostLanguages.registerCompletionItemProvider(selector, provider, triggerCharacters);
         },
-        registerDefinitionProvider: function (selector, provider) {
+        registerDefinitionProvider(selector, provider) {
             return extHostLanguages.registerDefinitionProvider(selector, provider);
         },
-        registerTypeDefinitionProvider: function (selector, provider) {
+        registerTypeDefinitionProvider(selector, provider) {
             return extHostLanguages.registerTypeDefinitionProvider(selector, provider);
         },
-        registerFoldingRangeProvider: function (selector, provider) {
+        registerFoldingRangeProvider(selector, provider) {
             return extHostLanguages.registerFoldingRangeProvider(selector, provider);
         },
-        registerColorProvider: function (selector, provider) {
+        registerColorProvider(selector, provider) {
             return extHostLanguages.registerColorProvider(selector, provider);
         },
-        registerDocumentHighlightProvider: function (selector, provider) {
+        registerDocumentHighlightProvider(selector, provider) {
             return extHostLanguages.registerDocumentHighlightProvider(selector, provider);
         },
-        registerDocumentLinkProvider: function (selector, provider) {
+        registerDocumentLinkProvider(selector, provider) {
             return extHostLanguages.registerDocumentLinkProvider(selector, provider);
         },
-        registerReferenceProvider: function (selector, provider) {
+        registerReferenceProvider(selector, provider) {
             return extHostLanguages.registerReferenceProvider(selector, provider);
         },
-        match: function (selector, document) {
+        match(selector, document) {
             return util_1.score(converter_1.fromLanguageSelector(selector), document.uri, document.languageId, true);
         },
-        setLanguageConfiguration: function (language, configuration) {
+        setLanguageConfiguration(language, configuration) {
             return extHostLanguages.setLanguageConfiguration(language, configuration);
         },
-        createDiagnosticCollection: function (name) {
+        createDiagnosticCollection(name) {
             return extHostLanguages.createDiagnosticCollection(name);
         },
         get onDidChangeDiagnostics() {
             return extHostLanguages.onDidChangeDiagnostics;
         },
-        getDiagnostics: function (resource) {
+        getDiagnostics(resource) {
             return extHostLanguages.getDiagnostics(resource);
         },
-        registerWorkspaceSymbolProvider: function (provider) {
+        registerWorkspaceSymbolProvider(provider) {
             return extHostLanguages.registerWorkspaceSymbolProvider(provider);
         },
-        registerDocumentSymbolProvider: function (selector, provider) {
+        registerDocumentSymbolProvider(selector, provider) {
             return extHostLanguages.registerDocumentSymbolProvider(selector, provider);
         },
-        registerImplementationProvider: function (selector, provider) {
+        registerImplementationProvider(selector, provider) {
             return extHostLanguages.registerImplementationProvider(selector, provider);
         },
-        registerCodeActionsProvider: function (selector, provider, metadata) {
+        registerCodeActionsProvider(selector, provider, metadata) {
             return extHostLanguages.registerCodeActionsProvider(selector, provider, metadata);
         },
-        registerRenameProvider: function (selector, provider) {
+        registerRenameProvider(selector, provider) {
             return extHostLanguages.registerRenameProvider(selector, provider);
         },
-        registerSignatureHelpProvider: function (selector, provider, firstItem) {
-            var remaining = [];
-            for (var _i = 3; _i < arguments.length; _i++) {
-                remaining[_i - 3] = arguments[_i];
-            }
+        registerSignatureHelpProvider(selector, provider, firstItem, ...remaining) {
             if (typeof firstItem === 'object') {
                 return extHostLanguages.registerSignatureHelpProvider(selector, provider, firstItem);
             }
-            return extHostLanguages.registerSignatureHelpProvider(selector, provider, typeof firstItem === 'undefined' ? [] : tslib_1.__spread([firstItem], remaining));
+            return extHostLanguages.registerSignatureHelpProvider(selector, provider, typeof firstItem === 'undefined' ? [] : [firstItem, ...remaining]);
         },
-        registerCodeLensProvider: function (selector, provider) {
+        registerCodeLensProvider(selector, provider) {
             return extHostLanguages.registerCodeLensProvider(selector, provider);
         },
-        registerOnTypeFormattingEditProvider: function (selector, provider, firstTriggerCharacter) {
-            var moreTriggerCharacter = [];
-            for (var _i = 3; _i < arguments.length; _i++) {
-                moreTriggerCharacter[_i - 3] = arguments[_i];
-            }
+        registerOnTypeFormattingEditProvider(selector, provider, firstTriggerCharacter, ...moreTriggerCharacter) {
             return extHostLanguages.registerOnTypeFormattingEditProvider(selector, provider, [firstTriggerCharacter].concat(moreTriggerCharacter));
         },
-        registerDocumentRangeFormattingEditProvider: function (selector, provider) {
+        registerDocumentRangeFormattingEditProvider(selector, provider) {
             return extHostLanguages.registerDocumentRangeFormattingEditProvider(extension.id, selector, provider);
         },
-        registerDocumentFormattingEditProvider: function (selector, provider) {
+        registerDocumentFormattingEditProvider(selector, provider) {
             return extHostLanguages.registerDocumentFormattingEditProvider(extension.id, selector, provider);
         },
-        registerSelectionRangeProvider: function (selector, provider) {
+        registerSelectionRangeProvider(selector, provider) {
             return extHostLanguages.registerSelectionRangeProvider(selector, provider);
         },
     };
 }
 exports.createLanguagesApiFactory = createLanguagesApiFactory;
-var ExtHostLanguages = (function () {
-    function ExtHostLanguages(rpcProtocol, documents, commands) {
+class ExtHostLanguages {
+    constructor(rpcProtocol, documents, commands) {
         this.documents = documents;
         this.commands = commands;
         this.callId = 0;
@@ -62385,36 +61661,34 @@ var ExtHostLanguages = (function () {
         this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadLanguages);
         this.diagnostics = new diagnostics_1.Diagnostics(this.proxy);
     }
-    ExtHostLanguages.prototype.nextCallId = function () {
+    nextCallId() {
         return this.callId++;
-    };
-    ExtHostLanguages.prototype.createDisposable = function (callId) {
-        var _this = this;
-        return new ext_types_1.Disposable(function () {
-            _this.adaptersMap.delete(callId);
-            _this.proxy.$unregister(callId);
+    }
+    createDisposable(callId) {
+        return new ext_types_1.Disposable(() => {
+            this.adaptersMap.delete(callId);
+            this.proxy.$unregister(callId);
         });
-    };
-    ExtHostLanguages.prototype.addNewAdapter = function (adapter) {
-        var callId = this.nextCallId();
+    }
+    addNewAdapter(adapter) {
+        const callId = this.nextCallId();
         this.adaptersMap.set(callId, adapter);
         return callId;
-    };
-    ExtHostLanguages.prototype.withAdapter = function (handle, constructor, callback) {
-        var adapter = this.adaptersMap.get(handle);
+    }
+    withAdapter(handle, constructor, callback) {
+        const adapter = this.adaptersMap.get(handle);
         if (!(adapter instanceof constructor)) {
             return Promise.reject(new Error('no adapter found'));
         }
         return callback(adapter);
-    };
-    ExtHostLanguages.prototype.transformDocumentSelector = function (selector) {
-        var _this = this;
+    }
+    transformDocumentSelector(selector) {
         if (Array.isArray(selector)) {
-            return selector.map(function (sel) { return _this.doTransformDocumentSelector(sel); });
+            return selector.map((sel) => this.doTransformDocumentSelector(sel));
         }
         return [this.doTransformDocumentSelector(selector)];
-    };
-    ExtHostLanguages.prototype.doTransformDocumentSelector = function (selector) {
+    }
+    doTransformDocumentSelector(selector) {
         if (typeof selector === 'string') {
             return {
                 $serialized: true,
@@ -62430,181 +61704,172 @@ var ExtHostLanguages = (function () {
             };
         }
         return undefined;
-    };
-    ExtHostLanguages.prototype.getLanguages = function () {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2, this.proxy.$getLanguages()];
-            });
+    }
+    getLanguages() {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return this.proxy.$getLanguages();
         });
-    };
-    ExtHostLanguages.prototype.registerHoverProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new hover_1.HoverAdapter(provider, this.documents));
+    }
+    registerHoverProvider(selector, provider) {
+        const callId = this.addNewAdapter(new hover_1.HoverAdapter(provider, this.documents));
         this.proxy.$registerHoverProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideHover = function (handle, resource, position, token) {
-        return this.withAdapter(handle, hover_1.HoverAdapter, function (adapter) { return adapter.provideHover(resource, position, token); });
-    };
-    ExtHostLanguages.prototype.$provideCompletionItems = function (handle, resource, position, context, token) {
-        var _this = this;
-        return this.withAdapter(handle, completion_1.CompletionAdapter, function (adapter) { return adapter.provideCompletionItems(resource, position, context, _this.commands.converter, token); });
-    };
-    ExtHostLanguages.prototype.$resolveCompletionItem = function (handle, resource, position, completion, token) {
-        return this.withAdapter(handle, completion_1.CompletionAdapter, function (adapter) { return adapter.resolveCompletionItem(resource, position, completion, token); });
-    };
-    ExtHostLanguages.prototype.$releaseCompletionItems = function (handle, id) {
-        this.withAdapter(handle, completion_1.CompletionAdapter, function (adapter) { return adapter.releaseCompletionItems(id); });
-    };
-    ExtHostLanguages.prototype.registerCompletionItemProvider = function (selector, provider, triggerCharacters) {
-        var callId = this.addNewAdapter(new completion_1.CompletionAdapter(provider, this.documents));
+    }
+    $provideHover(handle, resource, position, token) {
+        return this.withAdapter(handle, hover_1.HoverAdapter, (adapter) => adapter.provideHover(resource, position, token));
+    }
+    $provideCompletionItems(handle, resource, position, context, token) {
+        return this.withAdapter(handle, completion_1.CompletionAdapter, (adapter) => adapter.provideCompletionItems(resource, position, context, this.commands.converter, token));
+    }
+    $resolveCompletionItem(handle, resource, position, completion, token) {
+        return this.withAdapter(handle, completion_1.CompletionAdapter, (adapter) => adapter.resolveCompletionItem(resource, position, completion, token));
+    }
+    $releaseCompletionItems(handle, id) {
+        this.withAdapter(handle, completion_1.CompletionAdapter, (adapter) => adapter.releaseCompletionItems(id));
+    }
+    registerCompletionItemProvider(selector, provider, triggerCharacters) {
+        const callId = this.addNewAdapter(new completion_1.CompletionAdapter(provider, this.documents));
         this.proxy.$registerCompletionSupport(callId, this.transformDocumentSelector(selector), triggerCharacters, completion_1.CompletionAdapter.hasResolveSupport(provider));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideDefinition = function (handle, resource, position, token) {
-        return this.withAdapter(handle, definition_1.DefinitionAdapter, function (adapter) { return adapter.provideDefinition(resource, position, token); });
-    };
-    ExtHostLanguages.prototype.registerDefinitionProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new definition_1.DefinitionAdapter(provider, this.documents));
+    }
+    $provideDefinition(handle, resource, position, token) {
+        return this.withAdapter(handle, definition_1.DefinitionAdapter, (adapter) => adapter.provideDefinition(resource, position, token));
+    }
+    registerDefinitionProvider(selector, provider) {
+        const callId = this.addNewAdapter(new definition_1.DefinitionAdapter(provider, this.documents));
         this.proxy.$registerDefinitionProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideTypeDefinition = function (handle, resource, position, token) {
-        return this.withAdapter(handle, type_definition_1.TypeDefinitionAdapter, function (adapter) { return adapter.provideTypeDefinition(resource, position, token); });
-    };
-    ExtHostLanguages.prototype.registerTypeDefinitionProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new type_definition_1.TypeDefinitionAdapter(provider, this.documents));
+    }
+    $provideTypeDefinition(handle, resource, position, token) {
+        return this.withAdapter(handle, type_definition_1.TypeDefinitionAdapter, (adapter) => adapter.provideTypeDefinition(resource, position, token));
+    }
+    registerTypeDefinitionProvider(selector, provider) {
+        const callId = this.addNewAdapter(new type_definition_1.TypeDefinitionAdapter(provider, this.documents));
         this.proxy.$registerTypeDefinitionProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.registerFoldingRangeProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new folding_1.FoldingProviderAdapter(this.documents, provider));
+    }
+    registerFoldingRangeProvider(selector, provider) {
+        const callId = this.addNewAdapter(new folding_1.FoldingProviderAdapter(this.documents, provider));
         this.proxy.$registerFoldingRangeProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideFoldingRange = function (handle, resource, context, token) {
-        return this.withAdapter(handle, folding_1.FoldingProviderAdapter, function (adapter) { return adapter.provideFoldingRanges(resource, context, token); });
-    };
-    ExtHostLanguages.prototype.registerColorProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new color_1.ColorProviderAdapter(this.documents, provider));
+    }
+    $provideFoldingRange(handle, resource, context, token) {
+        return this.withAdapter(handle, folding_1.FoldingProviderAdapter, (adapter) => adapter.provideFoldingRanges(resource, context, token));
+    }
+    registerColorProvider(selector, provider) {
+        const callId = this.addNewAdapter(new color_1.ColorProviderAdapter(this.documents, provider));
         this.proxy.$registerDocumentColorProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideDocumentColors = function (handle, resource, token) {
-        return this.withAdapter(handle, color_1.ColorProviderAdapter, function (adapter) { return adapter.provideColors(resource, token); });
-    };
-    ExtHostLanguages.prototype.$provideColorPresentations = function (handle, resource, colorInfo, token) {
-        return this.withAdapter(handle, color_1.ColorProviderAdapter, function (adapter) { return adapter.provideColorPresentations(resource, colorInfo, token); });
-    };
-    ExtHostLanguages.prototype.registerDocumentHighlightProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new document_highlight_1.DocumentHighlightAdapter(provider, this.documents));
+    }
+    $provideDocumentColors(handle, resource, token) {
+        return this.withAdapter(handle, color_1.ColorProviderAdapter, (adapter) => adapter.provideColors(resource, token));
+    }
+    $provideColorPresentations(handle, resource, colorInfo, token) {
+        return this.withAdapter(handle, color_1.ColorProviderAdapter, (adapter) => adapter.provideColorPresentations(resource, colorInfo, token));
+    }
+    registerDocumentHighlightProvider(selector, provider) {
+        const callId = this.addNewAdapter(new document_highlight_1.DocumentHighlightAdapter(provider, this.documents));
         this.proxy.$registerDocumentHighlightProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideDocumentHighlights = function (handle, resource, position, token) {
-        return this.withAdapter(handle, document_highlight_1.DocumentHighlightAdapter, function (adapter) { return adapter.provideDocumentHighlights(resource, position, token); });
-    };
-    ExtHostLanguages.prototype.registerDocumentFormattingEditProvider = function (displayName, selector, provider) {
-        var callId = this.addNewAdapter(new range_formatting_1.FormattingAdapter(provider, this.documents));
+    }
+    $provideDocumentHighlights(handle, resource, position, token) {
+        return this.withAdapter(handle, document_highlight_1.DocumentHighlightAdapter, (adapter) => adapter.provideDocumentHighlights(resource, position, token));
+    }
+    registerDocumentFormattingEditProvider(displayName, selector, provider) {
+        const callId = this.addNewAdapter(new range_formatting_1.FormattingAdapter(provider, this.documents));
         this.proxy.$registerDocumentFormattingProvider(callId, displayName, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideDocumentFormattingEdits = function (handle, resource, options) {
-        return this.withAdapter(handle, range_formatting_1.FormattingAdapter, function (adapter) { return adapter.provideDocumentFormattingEdits(resource, options); });
-    };
-    ExtHostLanguages.prototype.registerDocumentRangeFormattingEditProvider = function (displayName, selector, provider) {
-        var callId = this.addNewAdapter(new range_formatting_1.RangeFormattingAdapter(provider, this.documents));
+    }
+    $provideDocumentFormattingEdits(handle, resource, options) {
+        return this.withAdapter(handle, range_formatting_1.FormattingAdapter, (adapter) => adapter.provideDocumentFormattingEdits(resource, options));
+    }
+    registerDocumentRangeFormattingEditProvider(displayName, selector, provider) {
+        const callId = this.addNewAdapter(new range_formatting_1.RangeFormattingAdapter(provider, this.documents));
         this.proxy.$registerRangeFormattingProvider(callId, displayName, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideDocumentRangeFormattingEdits = function (handle, resource, range, options) {
-        return this.withAdapter(handle, range_formatting_1.RangeFormattingAdapter, function (adapter) { return adapter.provideDocumentRangeFormattingEdits(resource, range, options); });
-    };
-    ExtHostLanguages.prototype.registerOnTypeFormattingEditProvider = function (selector, provider, triggerCharacters) {
-        var callId = this.addNewAdapter(new on_type_formatting_1.OnTypeFormattingAdapter(provider, this.documents));
+    }
+    $provideDocumentRangeFormattingEdits(handle, resource, range, options) {
+        return this.withAdapter(handle, range_formatting_1.RangeFormattingAdapter, (adapter) => adapter.provideDocumentRangeFormattingEdits(resource, range, options));
+    }
+    registerOnTypeFormattingEditProvider(selector, provider, triggerCharacters) {
+        const callId = this.addNewAdapter(new on_type_formatting_1.OnTypeFormattingAdapter(provider, this.documents));
         this.proxy.$registerOnTypeFormattingProvider(callId, this.transformDocumentSelector(selector), triggerCharacters);
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideOnTypeFormattingEdits = function (handle, resource, position, ch, options) {
-        return this.withAdapter(handle, on_type_formatting_1.OnTypeFormattingAdapter, function (adapter) { return adapter.provideOnTypeFormattingEdits(resource, position, ch, options); });
-    };
-    ExtHostLanguages.prototype.registerCodeLensProvider = function (selector, provider) {
-        var _this = this;
-        var callId = this.addNewAdapter(new lens_1.CodeLensAdapter(provider, this.documents, this.commands.converter));
-        var eventHandle = typeof provider.onDidChangeCodeLenses === 'function' ? this.nextCallId() : undefined;
+    }
+    $provideOnTypeFormattingEdits(handle, resource, position, ch, options) {
+        return this.withAdapter(handle, on_type_formatting_1.OnTypeFormattingAdapter, (adapter) => adapter.provideOnTypeFormattingEdits(resource, position, ch, options));
+    }
+    registerCodeLensProvider(selector, provider) {
+        const callId = this.addNewAdapter(new lens_1.CodeLensAdapter(provider, this.documents, this.commands.converter));
+        const eventHandle = typeof provider.onDidChangeCodeLenses === 'function' ? this.nextCallId() : undefined;
         this.proxy.$registerCodeLensSupport(callId, this.transformDocumentSelector(selector), eventHandle);
-        var result = this.createDisposable(callId);
+        let result = this.createDisposable(callId);
         if (eventHandle !== undefined && provider.onDidChangeCodeLenses) {
-            var subscription = provider.onDidChangeCodeLenses(function (e) { return _this.proxy.$emitCodeLensEvent(eventHandle); });
+            const subscription = provider.onDidChangeCodeLenses((e) => this.proxy.$emitCodeLensEvent(eventHandle));
             result = ext_types_1.Disposable.from(result, subscription);
         }
         return result;
-    };
-    ExtHostLanguages.prototype.$provideCodeLenses = function (handle, resource) {
-        return this.withAdapter(handle, lens_1.CodeLensAdapter, function (adapter) { return adapter.provideCodeLenses(resource); });
-    };
-    ExtHostLanguages.prototype.$resolveCodeLens = function (handle, resource, symbol) {
-        return this.withAdapter(handle, lens_1.CodeLensAdapter, function (adapter) { return adapter.resolveCodeLens(resource, symbol); });
-    };
-    ExtHostLanguages.prototype.registerCodeActionsProvider = function (selector, provider, metadata) {
-        var callId = this.addNewAdapter(new code_action_1.CodeActionAdapter(provider, this.documents, this.diagnostics));
-        this.proxy.$registerQuickFixProvider(callId, this.transformDocumentSelector(selector), metadata && metadata.providedCodeActionKinds ? metadata.providedCodeActionKinds.map(function (kind) { return kind.value; }) : undefined);
+    }
+    $provideCodeLenses(handle, resource) {
+        return this.withAdapter(handle, lens_1.CodeLensAdapter, (adapter) => adapter.provideCodeLenses(resource));
+    }
+    $resolveCodeLens(handle, resource, symbol) {
+        return this.withAdapter(handle, lens_1.CodeLensAdapter, (adapter) => adapter.resolveCodeLens(resource, symbol));
+    }
+    registerCodeActionsProvider(selector, provider, metadata) {
+        const callId = this.addNewAdapter(new code_action_1.CodeActionAdapter(provider, this.documents, this.diagnostics));
+        this.proxy.$registerQuickFixProvider(callId, this.transformDocumentSelector(selector), metadata && metadata.providedCodeActionKinds ? metadata.providedCodeActionKinds.map((kind) => kind.value) : undefined);
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideCodeActions = function (handle, resource, rangeOrSelection, context) {
-        var _this = this;
-        return this.withAdapter(handle, code_action_1.CodeActionAdapter, function (adapter) { return adapter.provideCodeAction(resource, rangeOrSelection, context, _this.commands.converter); });
-    };
-    ExtHostLanguages.prototype.$provideImplementation = function (handle, resource, position) {
-        return this.withAdapter(handle, implementation_1.ImplementationAdapter, function (adapter) { return adapter.provideImplementation(resource, position); });
-    };
-    ExtHostLanguages.prototype.registerImplementationProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new implementation_1.ImplementationAdapter(provider, this.documents));
+    }
+    $provideCodeActions(handle, resource, rangeOrSelection, context) {
+        return this.withAdapter(handle, code_action_1.CodeActionAdapter, (adapter) => adapter.provideCodeAction(resource, rangeOrSelection, context, this.commands.converter));
+    }
+    $provideImplementation(handle, resource, position) {
+        return this.withAdapter(handle, implementation_1.ImplementationAdapter, (adapter) => adapter.provideImplementation(resource, position));
+    }
+    registerImplementationProvider(selector, provider) {
+        const callId = this.addNewAdapter(new implementation_1.ImplementationAdapter(provider, this.documents));
         this.proxy.$registerImplementationProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    Object.defineProperty(ExtHostLanguages.prototype, "onDidChangeDiagnostics", {
-        get: function () {
-            return this.diagnostics.onDidChangeDiagnostics;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostLanguages.prototype.getDiagnostics = function (resource) {
+    }
+    get onDidChangeDiagnostics() {
+        return this.diagnostics.onDidChangeDiagnostics;
+    }
+    getDiagnostics(resource) {
         return this.diagnostics.getDiagnostics(resource);
-    };
-    ExtHostLanguages.prototype.createDiagnosticCollection = function (name) {
+    }
+    createDiagnosticCollection(name) {
         return this.diagnostics.createDiagnosticCollection(name);
-    };
-    ExtHostLanguages.prototype.$provideDocumentLinks = function (handle, resource, token) {
-        return this.withAdapter(handle, link_provider_1.LinkProviderAdapter, function (adapter) { return adapter.provideLinks(resource, token); });
-    };
-    ExtHostLanguages.prototype.$resolveDocumentLink = function (handle, link, token) {
-        return this.withAdapter(handle, link_provider_1.LinkProviderAdapter, function (adapter) { return adapter.resolveLink(link, token); });
-    };
-    ExtHostLanguages.prototype.registerDocumentLinkProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new link_provider_1.LinkProviderAdapter(provider, this.documents));
+    }
+    $provideDocumentLinks(handle, resource, token) {
+        return this.withAdapter(handle, link_provider_1.LinkProviderAdapter, (adapter) => adapter.provideLinks(resource, token));
+    }
+    $resolveDocumentLink(handle, link, token) {
+        return this.withAdapter(handle, link_provider_1.LinkProviderAdapter, (adapter) => adapter.resolveLink(link, token));
+    }
+    registerDocumentLinkProvider(selector, provider) {
+        const callId = this.addNewAdapter(new link_provider_1.LinkProviderAdapter(provider, this.documents));
         this.proxy.$registerDocumentLinkProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideReferences = function (handle, resource, position, context, token) {
-        return this.withAdapter(handle, reference_1.ReferenceAdapter, function (adapter) { return adapter.provideReferences(resource, position, context, token); });
-    };
-    ExtHostLanguages.prototype.registerReferenceProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new reference_1.ReferenceAdapter(provider, this.documents));
+    }
+    $provideReferences(handle, resource, position, context, token) {
+        return this.withAdapter(handle, reference_1.ReferenceAdapter, (adapter) => adapter.provideReferences(resource, position, context, token));
+    }
+    registerReferenceProvider(selector, provider) {
+        const callId = this.addNewAdapter(new reference_1.ReferenceAdapter(provider, this.documents));
         this.proxy.$registerReferenceProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.setLanguageConfiguration = function (language, configuration) {
-        var wordPattern = configuration.wordPattern;
+    }
+    setLanguageConfiguration(language, configuration) {
+        const { wordPattern } = configuration;
         if (wordPattern) {
             this.documents.setWordDefinitionFor(language, wordPattern);
         }
         else {
             this.documents.setWordDefinitionFor(language, undefined);
         }
-        var callId = this.nextCallId();
-        var config = {
+        const callId = this.nextCallId();
+        const config = {
             brackets: configuration.brackets,
             comments: configuration.comments,
             onEnterRules: utils_1.serializeEnterRules(configuration.onEnterRules),
@@ -62613,158 +61878,147 @@ var ExtHostLanguages = (function () {
         };
         this.proxy.$setLanguageConfiguration(callId, language, config);
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.registerDocumentSymbolProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new outline_1.OutlineAdapter(this.documents, provider));
+    }
+    registerDocumentSymbolProvider(selector, provider) {
+        const callId = this.addNewAdapter(new outline_1.OutlineAdapter(this.documents, provider));
         this.proxy.$registerOutlineSupport(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideDocumentSymbols = function (handle, resource, token) {
-        return this.withAdapter(handle, outline_1.OutlineAdapter, function (adapter) { return adapter.provideDocumentSymbols(resource, token); });
-    };
-    ExtHostLanguages.prototype.registerWorkspaceSymbolProvider = function (provider) {
-        var callId = this.addNewAdapter(new workspace_symbol_1.WorkspaceSymbolAdapter(provider));
+    }
+    $provideDocumentSymbols(handle, resource, token) {
+        return this.withAdapter(handle, outline_1.OutlineAdapter, (adapter) => adapter.provideDocumentSymbols(resource, token));
+    }
+    registerWorkspaceSymbolProvider(provider) {
+        const callId = this.addNewAdapter(new workspace_symbol_1.WorkspaceSymbolAdapter(provider));
         this.proxy.$registerWorkspaceSymbolProvider(callId);
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideWorkspaceSymbols = function (handle, query, token) {
-        return this.withAdapter(handle, workspace_symbol_1.WorkspaceSymbolAdapter, function (adapter) { return adapter.provideWorkspaceSymbols(query, token); });
-    };
-    ExtHostLanguages.prototype.$resolveWorkspaceSymbol = function (handle, symbol, token) {
-        return this.withAdapter(handle, workspace_symbol_1.WorkspaceSymbolAdapter, function (adapter) { return adapter.resolveWorkspaceSymbol(symbol, token); });
-    };
-    ExtHostLanguages.prototype.$provideSignatureHelp = function (handle, resource, position, context, token) {
-        return this.withAdapter(handle, signature_1.SignatureHelpAdapter, function (adapter) { return adapter.provideSignatureHelp(resource, position, token, context); });
-    };
-    ExtHostLanguages.prototype.registerSignatureHelpProvider = function (selector, provider, metadataOrTriggerChars) {
-        var metadata = Array.isArray(metadataOrTriggerChars)
+    }
+    $provideWorkspaceSymbols(handle, query, token) {
+        return this.withAdapter(handle, workspace_symbol_1.WorkspaceSymbolAdapter, (adapter) => adapter.provideWorkspaceSymbols(query, token));
+    }
+    $resolveWorkspaceSymbol(handle, symbol, token) {
+        return this.withAdapter(handle, workspace_symbol_1.WorkspaceSymbolAdapter, (adapter) => adapter.resolveWorkspaceSymbol(symbol, token));
+    }
+    $provideSignatureHelp(handle, resource, position, context, token) {
+        return this.withAdapter(handle, signature_1.SignatureHelpAdapter, (adapter) => adapter.provideSignatureHelp(resource, position, token, context));
+    }
+    registerSignatureHelpProvider(selector, provider, metadataOrTriggerChars) {
+        const metadata = Array.isArray(metadataOrTriggerChars)
             ? { triggerCharacters: metadataOrTriggerChars, retriggerCharacters: [] }
             : metadataOrTriggerChars;
-        var callId = this.addNewAdapter(new signature_1.SignatureHelpAdapter(provider, this.documents));
+        const callId = this.addNewAdapter(new signature_1.SignatureHelpAdapter(provider, this.documents));
         this.proxy.$registerSignatureHelpProvider(callId, this.transformDocumentSelector(selector), metadata);
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.registerRenameProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new rename_1.RenameAdapter(provider, this.documents));
+    }
+    registerRenameProvider(selector, provider) {
+        const callId = this.addNewAdapter(new rename_1.RenameAdapter(provider, this.documents));
         this.proxy.$registerRenameProvider(callId, this.transformDocumentSelector(selector), rename_1.RenameAdapter.supportsResolving(provider));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideRenameEdits = function (handle, resource, position, newName, token) {
-        return this.withAdapter(handle, rename_1.RenameAdapter, function (adapter) { return adapter.provideRenameEdits(resource, position, newName, token); });
-    };
-    ExtHostLanguages.prototype.$resolveRenameLocation = function (handle, resource, position, token) {
-        return this.withAdapter(handle, rename_1.RenameAdapter, function (adapter) { return adapter.resolveRenameLocation(resource, position, token); });
-    };
-    ExtHostLanguages.prototype.registerSelectionRangeProvider = function (selector, provider) {
-        var callId = this.addNewAdapter(new selection_1.SelectionRangeAdapter(this.documents, provider));
+    }
+    $provideRenameEdits(handle, resource, position, newName, token) {
+        return this.withAdapter(handle, rename_1.RenameAdapter, (adapter) => adapter.provideRenameEdits(resource, position, newName, token));
+    }
+    $resolveRenameLocation(handle, resource, position, token) {
+        return this.withAdapter(handle, rename_1.RenameAdapter, (adapter) => adapter.resolveRenameLocation(resource, position, token));
+    }
+    registerSelectionRangeProvider(selector, provider) {
+        const callId = this.addNewAdapter(new selection_1.SelectionRangeAdapter(this.documents, provider));
         this.proxy.$registerSelectionRangeProvider(callId, this.transformDocumentSelector(selector));
         return this.createDisposable(callId);
-    };
-    ExtHostLanguages.prototype.$provideSelectionRanges = function (handle, resource, positions, token) {
-        return this.withAdapter(handle, selection_1.SelectionRangeAdapter, function (adapter) { return adapter.provideSelectionRanges(resource, positions, token); });
-    };
-    return ExtHostLanguages;
-}());
+    }
+    $provideSelectionRanges(handle, resource, positions, token) {
+        return this.withAdapter(handle, selection_1.SelectionRangeAdapter, (adapter) => adapter.provideSelectionRanges(resource, positions, token));
+    }
+}
 exports.ExtHostLanguages = ExtHostLanguages;
 
 
 /***/ }),
-/* 417 */
+/* 419 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var Converter = __webpack_require__(225);
-var model_api_1 = __webpack_require__(226);
-var ext_types_1 = __webpack_require__(220);
-var utils_1 = __webpack_require__(221);
-var ide_core_common_1 = __webpack_require__(2);
-var CompletionAdapter = (function () {
-    function CompletionAdapter(delegate, documents) {
+const tslib_1 = __webpack_require__(1);
+const Converter = __webpack_require__(227);
+const model_api_1 = __webpack_require__(228);
+const ext_types_1 = __webpack_require__(222);
+const utils_1 = __webpack_require__(223);
+const ide_core_common_1 = __webpack_require__(2);
+class CompletionAdapter {
+    constructor(delegate, documents) {
         this.delegate = delegate;
         this.documents = documents;
         this.cacheId = 0;
         this.cache = new Map();
     }
-    CompletionAdapter.prototype.provideCompletionItems = function (resource, position, context, commandConverter, token) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var document, doc, pos, result, disposables, _id, itemId, originalItems, r;
-            var _this = this;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        document = this.documents.getDocumentData(resource);
-                        if (!document) {
-                            return [2, Promise.reject(new Error("There are no document for  " + resource))];
-                        }
-                        doc = document.document;
-                        pos = Converter.toPosition(position);
-                        return [4, this.delegate.provideCompletionItems(doc, pos, token, context)];
-                    case 1:
-                        result = _a.sent();
-                        if (!result) {
-                            return [2, { isIncomplete: false, items: [] }];
-                        }
-                        disposables = new ide_core_common_1.DisposableStore();
-                        _id = this.cacheId++;
-                        itemId = 0;
-                        originalItems = (Array.isArray(result) ? result : result.items);
-                        r = {
-                            _id: _id,
-                            isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
-                            items: originalItems.map(function (item) {
-                                return tslib_1.__assign(tslib_1.__assign({ pid: _id, id: itemId++ }, item), { insertText: Converter.fromInsertText(item), insertTextRules: (item.insertText instanceof ext_types_1.SnippetString) ? model_api_1.CompletionItemInsertTextRule.InsertAsSnippet : undefined, range: item.range ? Converter.fromRange(item.range) : null, command: item.command ? commandConverter.toInternal(item.command, disposables) : undefined });
-                            }),
-                        };
-                        this.cache.set(_id, {});
-                        r.items.forEach(function (item, i) {
-                            _this.cache.get(_id)[item.id] = originalItems[i];
-                        });
-                        return [2, r];
-                }
+    provideCompletionItems(resource, position, context, commandConverter, token) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const document = this.documents.getDocumentData(resource);
+            if (!document) {
+                return Promise.reject(new Error(`There are no document for  ${resource}`));
+            }
+            const doc = document.document;
+            const pos = Converter.toPosition(position);
+            const result = yield this.delegate.provideCompletionItems(doc, pos, token, context);
+            if (!result) {
+                return { isIncomplete: false, items: [] };
+            }
+            const disposables = new ide_core_common_1.DisposableStore();
+            const _id = this.cacheId++;
+            let itemId = 0;
+            const originalItems = (Array.isArray(result) ? result : result.items);
+            const r = {
+                _id,
+                isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
+                items: originalItems.map((item) => {
+                    return Object.assign(Object.assign({ pid: _id, id: itemId++ }, item), { insertText: Converter.fromInsertText(item), insertTextRules: (item.insertText instanceof ext_types_1.SnippetString) ? model_api_1.CompletionItemInsertTextRule.InsertAsSnippet : undefined, range: item.range ? Converter.fromRange(item.range) : null, command: item.command ? commandConverter.toInternal(item.command, disposables) : undefined });
+                }),
+            };
+            this.cache.set(_id, {});
+            r.items.forEach((item, i) => {
+                this.cache.get(_id)[item.id] = originalItems[i];
             });
+            return r;
         });
-    };
-    CompletionAdapter.prototype.resolveCompletionItem = function (resource, position, completion, token) {
-        var _this = this;
+    }
+    resolveCompletionItem(resource, position, completion, token) {
         if (typeof this.delegate.resolveCompletionItem !== 'function') {
             return Promise.resolve(completion);
         }
-        var parentId = completion.pid, id = completion.id;
-        var item = this.cache.has(parentId) && this.cache.get(parentId)[id];
+        const { pid: parentId, id } = completion;
+        const item = this.cache.has(parentId) && this.cache.get(parentId)[id];
         if (!item) {
             return Promise.resolve(completion);
         }
-        return Promise.resolve(this.delegate.resolveCompletionItem(item, token)).then(function (resolvedItem) {
+        return Promise.resolve(this.delegate.resolveCompletionItem(item, token)).then((resolvedItem) => {
             if (!resolvedItem) {
                 return completion;
             }
-            var doc = _this.documents.getDocumentData(resource).document;
-            var pos = Converter.toPosition(position);
-            var wordRangeBeforePos = (doc.getWordRangeAtPosition(pos) || new ext_types_1.Range(pos, pos)).with({ end: pos });
-            var newCompletion = _this.convertCompletionItem(resolvedItem, pos, wordRangeBeforePos, id, parentId);
+            const doc = this.documents.getDocumentData(resource).document;
+            const pos = Converter.toPosition(position);
+            const wordRangeBeforePos = (doc.getWordRangeAtPosition(pos) || new ext_types_1.Range(pos, pos)).with({ end: pos });
+            const newCompletion = this.convertCompletionItem(resolvedItem, pos, wordRangeBeforePos, id, parentId);
             if (newCompletion) {
                 utils_1.mixin(completion, newCompletion, true);
             }
             return completion;
         });
-    };
-    CompletionAdapter.prototype.releaseCompletionItems = function (id) {
+    }
+    releaseCompletionItems(id) {
         this.cache.delete(id);
         return Promise.resolve();
-    };
-    CompletionAdapter.prototype.convertCompletionItem = function (item, position, defaultRange, id, parentId) {
+    }
+    convertCompletionItem(item, position, defaultRange, id, parentId) {
         if (typeof item.label !== 'string' || item.label.length === 0) {
             console.warn('Invalid Completion Item -> must have at least a label');
             return undefined;
         }
-        var result = {
-            id: id,
+        const result = {
+            id,
             range: Converter.fromRange(item.range),
             kind: Converter.fromCompletionItemKind(item.kind),
-            parentId: parentId,
+            parentId,
             label: item.label,
             detail: item.detail,
             documentation: item.documentation,
@@ -62790,7 +62044,7 @@ var CompletionAdapter = (function () {
             result.insertText = item.label;
             result.snippetType = 'internal';
         }
-        var range;
+        let range;
         if (item.range) {
             range = item.range;
         }
@@ -62804,157 +62058,12 @@ var CompletionAdapter = (function () {
             return undefined;
         }
         return result;
-    };
-    CompletionAdapter.hasResolveSupport = function (provider) {
+    }
+    static hasResolveSupport(provider) {
         return typeof provider.resolveCompletionItem === 'function';
-    };
-    return CompletionAdapter;
-}());
+    }
+}
 exports.CompletionAdapter = CompletionAdapter;
-
-
-/***/ }),
-/* 418 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var utils_1 = __webpack_require__(221);
-var types = __webpack_require__(220);
-var Converter = __webpack_require__(225);
-var DefinitionAdapter = (function () {
-    function DefinitionAdapter(delegate, documents) {
-        this.delegate = delegate;
-        this.documents = documents;
-    }
-    DefinitionAdapter.prototype.provideDefinition = function (resource, position, token) {
-        var documentData = this.documents.getDocumentData(resource);
-        if (!documentData) {
-            return Promise.reject(new Error("There is no document for " + resource));
-        }
-        var document = documentData.document;
-        var zeroBasedPosition = Converter.toPosition(position);
-        return Promise.resolve(this.delegate.provideDefinition(document, zeroBasedPosition, token)).then(function (definition) {
-            var e_1, _a, e_2, _b;
-            if (!definition) {
-                return undefined;
-            }
-            if (definition instanceof types.Location) {
-                return Converter.fromLocation(definition);
-            }
-            if (utils_1.isLocationArray(definition)) {
-                var locations = [];
-                try {
-                    for (var definition_1 = tslib_1.__values(definition), definition_1_1 = definition_1.next(); !definition_1_1.done; definition_1_1 = definition_1.next()) {
-                        var location_1 = definition_1_1.value;
-                        locations.push(Converter.fromLocation(location_1));
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (definition_1_1 && !definition_1_1.done && (_a = definition_1.return)) _a.call(definition_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
-                return locations;
-            }
-            if (utils_1.isDefinitionLinkArray(definition)) {
-                var definitionLinks = [];
-                try {
-                    for (var definition_2 = tslib_1.__values(definition), definition_2_1 = definition_2.next(); !definition_2_1.done; definition_2_1 = definition_2.next()) {
-                        var definitionLink = definition_2_1.value;
-                        definitionLinks.push(Converter.fromDefinitionLink(definitionLink));
-                    }
-                }
-                catch (e_2_1) { e_2 = { error: e_2_1 }; }
-                finally {
-                    try {
-                        if (definition_2_1 && !definition_2_1.done && (_b = definition_2.return)) _b.call(definition_2);
-                    }
-                    finally { if (e_2) throw e_2.error; }
-                }
-                return definitionLinks;
-            }
-        });
-    };
-    return DefinitionAdapter;
-}());
-exports.DefinitionAdapter = DefinitionAdapter;
-
-
-/***/ }),
-/* 419 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var types = __webpack_require__(220);
-var Converter = __webpack_require__(225);
-var utils_1 = __webpack_require__(221);
-var TypeDefinitionAdapter = (function () {
-    function TypeDefinitionAdapter(provider, documents) {
-        this.provider = provider;
-        this.documents = documents;
-    }
-    TypeDefinitionAdapter.prototype.provideTypeDefinition = function (resource, position, token) {
-        var documentData = this.documents.getDocumentData(resource);
-        if (!documentData) {
-            return Promise.reject(new Error("There is no document for " + resource));
-        }
-        var document = documentData.document;
-        var zeroBasedPosition = Converter.toPosition(position);
-        return Promise.resolve(this.provider.provideTypeDefinition(document, zeroBasedPosition, token)).then(function (definition) {
-            var e_1, _a, e_2, _b;
-            if (!definition) {
-                return undefined;
-            }
-            if (definition instanceof types.Location) {
-                return Converter.fromLocation(definition);
-            }
-            if (utils_1.isLocationArray(definition)) {
-                var locations = [];
-                try {
-                    for (var definition_1 = tslib_1.__values(definition), definition_1_1 = definition_1.next(); !definition_1_1.done; definition_1_1 = definition_1.next()) {
-                        var location_1 = definition_1_1.value;
-                        locations.push(Converter.fromLocation(location_1));
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (definition_1_1 && !definition_1_1.done && (_a = definition_1.return)) _a.call(definition_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
-                return locations;
-            }
-            if (utils_1.isDefinitionLinkArray(definition)) {
-                var definitionLinks = [];
-                try {
-                    for (var definition_2 = tslib_1.__values(definition), definition_2_1 = definition_2.next(); !definition_2_1.done; definition_2_1 = definition_2.next()) {
-                        var definitionLink = definition_2_1.value;
-                        definitionLinks.push(Converter.fromDefinitionLink(definitionLink));
-                    }
-                }
-                catch (e_2_1) { e_2 = { error: e_2_1 }; }
-                finally {
-                    try {
-                        if (definition_2_1 && !definition_2_1.done && (_b = definition_2.return)) _b.call(definition_2);
-                    }
-                    finally { if (e_2) throw e_2.error; }
-                }
-                return definitionLinks;
-            }
-        });
-    };
-    return TypeDefinitionAdapter;
-}());
-exports.TypeDefinitionAdapter = TypeDefinitionAdapter;
 
 
 /***/ }),
@@ -62964,38 +62073,46 @@ exports.TypeDefinitionAdapter = TypeDefinitionAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var Converter = __webpack_require__(225);
-var FoldingProviderAdapter = (function () {
-    function FoldingProviderAdapter(documents, provider) {
+const utils_1 = __webpack_require__(223);
+const types = __webpack_require__(222);
+const Converter = __webpack_require__(227);
+class DefinitionAdapter {
+    constructor(delegate, documents) {
+        this.delegate = delegate;
         this.documents = documents;
-        this.provider = provider;
     }
-    FoldingProviderAdapter.prototype.provideFoldingRanges = function (resource, context, token) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var documentData, doc, ranges;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        documentData = this.documents.getDocumentData(resource);
-                        if (!documentData) {
-                            return [2, Promise.reject(new Error("There is no document for " + resource))];
-                        }
-                        doc = documentData.document;
-                        return [4, this.provider.provideFoldingRanges(doc, context, token)];
-                    case 1:
-                        ranges = _a.sent();
-                        if (!Array.isArray(ranges)) {
-                            return [2, undefined];
-                        }
-                        return [2, ranges.map(Converter.fromFoldingRange)];
+    provideDefinition(resource, position, token) {
+        const documentData = this.documents.getDocumentData(resource);
+        if (!documentData) {
+            return Promise.reject(new Error(`There is no document for ${resource}`));
+        }
+        const document = documentData.document;
+        const zeroBasedPosition = Converter.toPosition(position);
+        return Promise.resolve(this.delegate.provideDefinition(document, zeroBasedPosition, token)).then((definition) => {
+            if (!definition) {
+                return undefined;
+            }
+            if (definition instanceof types.Location) {
+                return Converter.fromLocation(definition);
+            }
+            if (utils_1.isLocationArray(definition)) {
+                const locations = [];
+                for (const location of definition) {
+                    locations.push(Converter.fromLocation(location));
                 }
-            });
+                return locations;
+            }
+            if (utils_1.isDefinitionLinkArray(definition)) {
+                const definitionLinks = [];
+                for (const definitionLink of definition) {
+                    definitionLinks.push(Converter.fromDefinitionLink(definitionLink));
+                }
+                return definitionLinks;
+            }
         });
-    };
-    return FoldingProviderAdapter;
-}());
-exports.FoldingProviderAdapter = FoldingProviderAdapter;
+    }
+}
+exports.DefinitionAdapter = DefinitionAdapter;
 
 
 /***/ }),
@@ -63005,47 +62122,46 @@ exports.FoldingProviderAdapter = FoldingProviderAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Converter = __webpack_require__(225);
-var ColorProviderAdapter = (function () {
-    function ColorProviderAdapter(documents, provider) {
-        this.documents = documents;
+const types = __webpack_require__(222);
+const Converter = __webpack_require__(227);
+const utils_1 = __webpack_require__(223);
+class TypeDefinitionAdapter {
+    constructor(provider, documents) {
         this.provider = provider;
+        this.documents = documents;
     }
-    ColorProviderAdapter.prototype.provideColors = function (resource, token) {
-        var document = this.documents.getDocumentData(resource);
-        if (!document) {
-            return Promise.reject(new Error("There are no document for " + resource));
+    provideTypeDefinition(resource, position, token) {
+        const documentData = this.documents.getDocumentData(resource);
+        if (!documentData) {
+            return Promise.reject(new Error(`There is no document for ${resource}`));
         }
-        var doc = document.document;
-        return Promise.resolve(this.provider.provideDocumentColors(doc, token)).then(function (colors) {
-            if (!Array.isArray(colors)) {
-                return [];
+        const document = documentData.document;
+        const zeroBasedPosition = Converter.toPosition(position);
+        return Promise.resolve(this.provider.provideTypeDefinition(document, zeroBasedPosition, token)).then((definition) => {
+            if (!definition) {
+                return undefined;
             }
-            var colorInfos = colors.map(function (colorInfo) { return ({
-                color: Converter.fromColor(colorInfo.color),
-                range: Converter.fromRange(colorInfo.range),
-            }); });
-            return colorInfos;
-        });
-    };
-    ColorProviderAdapter.prototype.provideColorPresentations = function (resource, raw, token) {
-        var document = this.documents.getDocumentData(resource);
-        if (!document) {
-            return Promise.reject(new Error("There are no document for " + resource));
-        }
-        var doc = document.document;
-        var range = Converter.toRange(raw.range);
-        var color = Converter.toColor(raw.color);
-        return Promise.resolve(this.provider.provideColorPresentations(color, { document: doc, range: range }, token)).then(function (value) {
-            if (!Array.isArray(value)) {
-                return [];
+            if (definition instanceof types.Location) {
+                return Converter.fromLocation(definition);
             }
-            return value.map(Converter.fromColorPresentation);
+            if (utils_1.isLocationArray(definition)) {
+                const locations = [];
+                for (const location of definition) {
+                    locations.push(Converter.fromLocation(location));
+                }
+                return locations;
+            }
+            if (utils_1.isDefinitionLinkArray(definition)) {
+                const definitionLinks = [];
+                for (const definitionLink of definition) {
+                    definitionLinks.push(Converter.fromDefinitionLink(definitionLink));
+                }
+                return definitionLinks;
+            }
         });
-    };
-    return ColorProviderAdapter;
-}());
-exports.ColorProviderAdapter = ColorProviderAdapter;
+    }
+}
+exports.TypeDefinitionAdapter = TypeDefinitionAdapter;
 
 
 /***/ }),
@@ -63055,51 +62171,29 @@ exports.ColorProviderAdapter = ColorProviderAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var Converter = __webpack_require__(225);
-var DocumentHighlightAdapter = (function () {
-    function DocumentHighlightAdapter(provider, documents) {
-        this.provider = provider;
+const tslib_1 = __webpack_require__(1);
+const Converter = __webpack_require__(227);
+class FoldingProviderAdapter {
+    constructor(documents, provider) {
         this.documents = documents;
+        this.provider = provider;
     }
-    DocumentHighlightAdapter.prototype.provideDocumentHighlights = function (resource, position, token) {
-        var _this = this;
-        var documentData = this.documents.getDocumentData(resource);
-        if (!documentData) {
-            return Promise.reject(new Error("There is no document for " + resource));
-        }
-        var document = documentData.document;
-        var zeroBasedPosition = Converter.toPosition(position);
-        return Promise.resolve(this.provider.provideDocumentHighlights(document, zeroBasedPosition, token)).then(function (documentHighlights) {
-            var e_1, _a;
-            if (!documentHighlights) {
+    provideFoldingRanges(resource, context, token) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const documentData = this.documents.getDocumentData(resource);
+            if (!documentData) {
+                return Promise.reject(new Error(`There is no document for ${resource}`));
+            }
+            const doc = documentData.document;
+            const ranges = yield this.provider.provideFoldingRanges(doc, context, token);
+            if (!Array.isArray(ranges)) {
                 return undefined;
             }
-            if (_this.isDocumentHighlightArray(documentHighlights)) {
-                var highlights = [];
-                try {
-                    for (var documentHighlights_1 = tslib_1.__values(documentHighlights), documentHighlights_1_1 = documentHighlights_1.next(); !documentHighlights_1_1.done; documentHighlights_1_1 = documentHighlights_1.next()) {
-                        var highlight = documentHighlights_1_1.value;
-                        highlights.push(Converter.fromDocumentHighlight(highlight));
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (documentHighlights_1_1 && !documentHighlights_1_1.done && (_a = documentHighlights_1.return)) _a.call(documentHighlights_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
-                return highlights;
-            }
+            return ranges.map(Converter.fromFoldingRange);
         });
-    };
-    DocumentHighlightAdapter.prototype.isDocumentHighlightArray = function (array) {
-        return Array.isArray(array) && array.length > 0 && array[0].range;
-    };
-    return DocumentHighlightAdapter;
-}());
-exports.DocumentHighlightAdapter = DocumentHighlightAdapter;
+    }
+}
+exports.FoldingProviderAdapter = FoldingProviderAdapter;
 
 
 /***/ }),
@@ -63109,21 +62203,110 @@ exports.DocumentHighlightAdapter = DocumentHighlightAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Converter = __webpack_require__(225);
-var ext_types_1 = __webpack_require__(220);
-var HoverAdapter = (function () {
-    function HoverAdapter(provider, documents) {
+const Converter = __webpack_require__(227);
+class ColorProviderAdapter {
+    constructor(documents, provider) {
+        this.documents = documents;
+        this.provider = provider;
+    }
+    provideColors(resource, token) {
+        const document = this.documents.getDocumentData(resource);
+        if (!document) {
+            return Promise.reject(new Error(`There are no document for ${resource}`));
+        }
+        const doc = document.document;
+        return Promise.resolve(this.provider.provideDocumentColors(doc, token)).then((colors) => {
+            if (!Array.isArray(colors)) {
+                return [];
+            }
+            const colorInfos = colors.map((colorInfo) => ({
+                color: Converter.fromColor(colorInfo.color),
+                range: Converter.fromRange(colorInfo.range),
+            }));
+            return colorInfos;
+        });
+    }
+    provideColorPresentations(resource, raw, token) {
+        const document = this.documents.getDocumentData(resource);
+        if (!document) {
+            return Promise.reject(new Error(`There are no document for ${resource}`));
+        }
+        const doc = document.document;
+        const range = Converter.toRange(raw.range);
+        const color = Converter.toColor(raw.color);
+        return Promise.resolve(this.provider.provideColorPresentations(color, { document: doc, range }, token)).then((value) => {
+            if (!Array.isArray(value)) {
+                return [];
+            }
+            return value.map(Converter.fromColorPresentation);
+        });
+    }
+}
+exports.ColorProviderAdapter = ColorProviderAdapter;
+
+
+/***/ }),
+/* 424 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const Converter = __webpack_require__(227);
+class DocumentHighlightAdapter {
+    constructor(provider, documents) {
         this.provider = provider;
         this.documents = documents;
     }
-    HoverAdapter.prototype.provideHover = function (resource, position, token) {
-        var documentData = this.documents.getDocumentData(resource.toString());
+    provideDocumentHighlights(resource, position, token) {
+        const documentData = this.documents.getDocumentData(resource);
         if (!documentData) {
-            return Promise.reject(new Error("There are no document for " + resource));
+            return Promise.reject(new Error(`There is no document for ${resource}`));
         }
-        var pos = Converter.toPosition(position);
-        var doc = documentData.document;
-        return Promise.resolve(this.provider.provideHover(doc, pos, token)).then(function (value) {
+        const document = documentData.document;
+        const zeroBasedPosition = Converter.toPosition(position);
+        return Promise.resolve(this.provider.provideDocumentHighlights(document, zeroBasedPosition, token)).then((documentHighlights) => {
+            if (!documentHighlights) {
+                return undefined;
+            }
+            if (this.isDocumentHighlightArray(documentHighlights)) {
+                const highlights = [];
+                for (const highlight of documentHighlights) {
+                    highlights.push(Converter.fromDocumentHighlight(highlight));
+                }
+                return highlights;
+            }
+        });
+    }
+    isDocumentHighlightArray(array) {
+        return Array.isArray(array) && array.length > 0 && array[0].range;
+    }
+}
+exports.DocumentHighlightAdapter = DocumentHighlightAdapter;
+
+
+/***/ }),
+/* 425 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const Converter = __webpack_require__(227);
+const ext_types_1 = __webpack_require__(222);
+class HoverAdapter {
+    constructor(provider, documents) {
+        this.provider = provider;
+        this.documents = documents;
+    }
+    provideHover(resource, position, token) {
+        const documentData = this.documents.getDocumentData(resource.toString());
+        if (!documentData) {
+            return Promise.reject(new Error(`There are no document for ${resource}`));
+        }
+        const pos = Converter.toPosition(position);
+        const doc = documentData.document;
+        return Promise.resolve(this.provider.provideHover(doc, pos, token)).then((value) => {
             if (!value || !Array.isArray(value.contents) || value.contents.length === 0) {
                 return undefined;
             }
@@ -63135,131 +62318,9 @@ var HoverAdapter = (function () {
             }
             return Converter.fromHover(value);
         });
-    };
-    return HoverAdapter;
-}());
+    }
+}
 exports.HoverAdapter = HoverAdapter;
-
-
-/***/ }),
-/* 424 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Converter = __webpack_require__(225);
-var util_1 = __webpack_require__(234);
-var ide_core_common_1 = __webpack_require__(2);
-var CodeLensAdapter = (function () {
-    function CodeLensAdapter(provider, documents, commandConverter) {
-        this.provider = provider;
-        this.documents = documents;
-        this.commandConverter = commandConverter;
-        this.cacheId = 0;
-        this.cache = new Map();
-    }
-    CodeLensAdapter.prototype.provideCodeLenses = function (resource) {
-        var _this = this;
-        var document = this.documents.getDocumentData(resource.toString());
-        if (!document) {
-            return Promise.reject(new Error("There is no document for " + resource));
-        }
-        var doc = document.document;
-        var disposables = new ide_core_common_1.DisposableStore();
-        return Promise.resolve(this.provider.provideCodeLenses(doc, util_1.createToken())).then(function (lenses) {
-            if (Array.isArray(lenses)) {
-                return lenses.map(function (lens) {
-                    var id = _this.cacheId++;
-                    var lensSymbol = util_1.ObjectIdentifier.mixin({
-                        range: Converter.fromRange(lens.range),
-                        command: lens.command ? _this.commandConverter.toInternal(lens.command, disposables) : undefined,
-                    }, id);
-                    _this.cache.set(id, lens);
-                    return lensSymbol;
-                });
-            }
-            return undefined;
-        });
-    };
-    CodeLensAdapter.prototype.resolveCodeLens = function (resource, symbol) {
-        var _this = this;
-        var lens = this.cache.get(util_1.ObjectIdentifier.of(symbol));
-        if (!lens) {
-            return Promise.resolve(undefined);
-        }
-        var resolve;
-        if (typeof this.provider.resolveCodeLens !== 'function' || lens.isResolved) {
-            resolve = Promise.resolve(lens);
-        }
-        else {
-            resolve = Promise.resolve(this.provider.resolveCodeLens(lens, util_1.createToken()));
-        }
-        var disposables = new ide_core_common_1.DisposableStore();
-        return resolve.then(function (newLens) {
-            newLens = newLens || lens;
-            symbol.command = _this.commandConverter.toInternal(newLens.command ? newLens.command : CodeLensAdapter.BAD_CMD, disposables);
-            return symbol;
-        });
-    };
-    CodeLensAdapter.BAD_CMD = { command: 'missing', title: '<<MISSING COMMAND>>' };
-    return CodeLensAdapter;
-}());
-exports.CodeLensAdapter = CodeLensAdapter;
-
-
-/***/ }),
-/* 425 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Converter = __webpack_require__(225);
-var util_1 = __webpack_require__(234);
-var RangeFormattingAdapter = (function () {
-    function RangeFormattingAdapter(provider, documents) {
-        this.provider = provider;
-        this.documents = documents;
-    }
-    RangeFormattingAdapter.prototype.provideDocumentRangeFormattingEdits = function (resource, range, options) {
-        var document = this.documents.getDocumentData(resource.toString());
-        if (!document) {
-            return Promise.reject(new Error("There are no document for " + resource));
-        }
-        var doc = document.document;
-        var ran = Converter.toRange(range);
-        return Promise.resolve(this.provider.provideDocumentRangeFormattingEdits(doc, ran, options, util_1.createToken())).then(function (value) {
-            if (Array.isArray(value)) {
-                return value.map(Converter.fromTextEdit);
-            }
-            return undefined;
-        });
-    };
-    return RangeFormattingAdapter;
-}());
-exports.RangeFormattingAdapter = RangeFormattingAdapter;
-var FormattingAdapter = (function () {
-    function FormattingAdapter(provider, documents) {
-        this.provider = provider;
-        this.documents = documents;
-    }
-    FormattingAdapter.prototype.provideDocumentFormattingEdits = function (resource, options) {
-        var document = this.documents.getDocumentData(resource.toString());
-        if (!document) {
-            return Promise.reject(new Error("There are no document for " + resource));
-        }
-        var doc = document.document;
-        return Promise.resolve(this.provider.provideDocumentFormattingEdits(doc, options, util_1.createToken())).then(function (value) {
-            if (Array.isArray(value)) {
-                return value.map(Converter.fromTextEdit);
-            }
-            return undefined;
-        });
-    };
-    return FormattingAdapter;
-}());
-exports.FormattingAdapter = FormattingAdapter;
 
 
 /***/ }),
@@ -63269,30 +62330,61 @@ exports.FormattingAdapter = FormattingAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Converter = __webpack_require__(225);
-var util_1 = __webpack_require__(234);
-var OnTypeFormattingAdapter = (function () {
-    function OnTypeFormattingAdapter(provider, documents) {
+const Converter = __webpack_require__(227);
+const util_1 = __webpack_require__(236);
+const ide_core_common_1 = __webpack_require__(2);
+class CodeLensAdapter {
+    constructor(provider, documents, commandConverter) {
         this.provider = provider;
         this.documents = documents;
+        this.commandConverter = commandConverter;
+        this.cacheId = 0;
+        this.cache = new Map();
     }
-    OnTypeFormattingAdapter.prototype.provideOnTypeFormattingEdits = function (resource, position, ch, options) {
-        var document = this.documents.getDocumentData(resource.toString());
+    provideCodeLenses(resource) {
+        const document = this.documents.getDocumentData(resource.toString());
         if (!document) {
-            return Promise.reject(new Error("There are no document for " + resource));
+            return Promise.reject(new Error(`There is no document for ${resource}`));
         }
-        var doc = document.document;
-        var pos = Converter.toPosition(position);
-        return Promise.resolve(this.provider.provideOnTypeFormattingEdits(doc, pos, ch, options, util_1.createToken())).then(function (value) {
-            if (Array.isArray(value)) {
-                return value.map(Converter.fromTextEdit);
+        const doc = document.document;
+        const disposables = new ide_core_common_1.DisposableStore();
+        return Promise.resolve(this.provider.provideCodeLenses(doc, util_1.createToken())).then((lenses) => {
+            if (Array.isArray(lenses)) {
+                return lenses.map((lens) => {
+                    const id = this.cacheId++;
+                    const lensSymbol = util_1.ObjectIdentifier.mixin({
+                        range: Converter.fromRange(lens.range),
+                        command: lens.command ? this.commandConverter.toInternal(lens.command, disposables) : undefined,
+                    }, id);
+                    this.cache.set(id, lens);
+                    return lensSymbol;
+                });
             }
             return undefined;
         });
-    };
-    return OnTypeFormattingAdapter;
-}());
-exports.OnTypeFormattingAdapter = OnTypeFormattingAdapter;
+    }
+    resolveCodeLens(resource, symbol) {
+        const lens = this.cache.get(util_1.ObjectIdentifier.of(symbol));
+        if (!lens) {
+            return Promise.resolve(undefined);
+        }
+        let resolve;
+        if (typeof this.provider.resolveCodeLens !== 'function' || lens.isResolved) {
+            resolve = Promise.resolve(lens);
+        }
+        else {
+            resolve = Promise.resolve(this.provider.resolveCodeLens(lens, util_1.createToken()));
+        }
+        const disposables = new ide_core_common_1.DisposableStore();
+        return resolve.then((newLens) => {
+            newLens = newLens || lens;
+            symbol.command = this.commandConverter.toInternal(newLens.command ? newLens.command : CodeLensAdapter.BAD_CMD, disposables);
+            return symbol;
+        });
+    }
+}
+exports.CodeLensAdapter = CodeLensAdapter;
+CodeLensAdapter.BAD_CMD = { command: 'missing', title: '<<MISSING COMMAND>>' };
 
 
 /***/ }),
@@ -63302,108 +62394,49 @@ exports.OnTypeFormattingAdapter = OnTypeFormattingAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ext_types_1 = __webpack_require__(220);
-var Converter = __webpack_require__(225);
-var util_1 = __webpack_require__(234);
-var ide_core_common_1 = __webpack_require__(2);
-var CodeActionAdapter = (function () {
-    function CodeActionAdapter(provider, document, diagnostics) {
+const Converter = __webpack_require__(227);
+const util_1 = __webpack_require__(236);
+class RangeFormattingAdapter {
+    constructor(provider, documents) {
         this.provider = provider;
-        this.document = document;
-        this.diagnostics = diagnostics;
+        this.documents = documents;
     }
-    CodeActionAdapter.prototype.provideCodeAction = function (resource, rangeOrSelection, context, commandConverter) {
-        var e_1, _a;
-        var document = this.document.getDocumentData(resource);
+    provideDocumentRangeFormattingEdits(resource, range, options) {
+        const document = this.documents.getDocumentData(resource.toString());
         if (!document) {
-            return Promise.reject(new Error("There are no document for " + resource));
+            return Promise.reject(new Error(`There are no document for ${resource}`));
         }
-        var doc = document.document;
-        var ran = CodeActionAdapter._isSelection(rangeOrSelection)
-            ? Converter.toSelection(rangeOrSelection)
-            : Converter.toRange(rangeOrSelection);
-        var allDiagnostics = [];
-        try {
-            for (var _b = tslib_1.__values(this.diagnostics.getDiagnostics(resource)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var diagnostic = _c.value;
-                if (ran.intersection(diagnostic.range)) {
-                    allDiagnostics.push(diagnostic);
-                }
+        const doc = document.document;
+        const ran = Converter.toRange(range);
+        return Promise.resolve(this.provider.provideDocumentRangeFormattingEdits(doc, ran, options, util_1.createToken())).then((value) => {
+            if (Array.isArray(value)) {
+                return value.map(Converter.fromTextEdit);
             }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        var codeActionContext = {
-            diagnostics: allDiagnostics,
-            only: context.only ? new ext_types_1.CodeActionKind(context.only) : undefined,
-        };
-        var disposables = new ide_core_common_1.DisposableStore();
-        return Promise.resolve(this.provider.provideCodeActions(doc, ran, codeActionContext, util_1.createToken())).then(function (commandsOrActions) {
-            var e_2, _a;
-            if (!Array.isArray(commandsOrActions) || commandsOrActions.length === 0) {
-                return undefined;
-            }
-            var result = [];
-            try {
-                for (var commandsOrActions_1 = tslib_1.__values(commandsOrActions), commandsOrActions_1_1 = commandsOrActions_1.next(); !commandsOrActions_1_1.done; commandsOrActions_1_1 = commandsOrActions_1.next()) {
-                    var candidate = commandsOrActions_1_1.value;
-                    if (!candidate) {
-                        continue;
-                    }
-                    if (CodeActionAdapter._isCommand(candidate)) {
-                        result.push({
-                            title: candidate.title || '',
-                            command: commandConverter.toInternal(candidate, disposables),
-                        });
-                    }
-                    else {
-                        if (codeActionContext.only) {
-                            if (!candidate.kind) {
-                                console.warn("Code actions of kind '" + codeActionContext.only.value + "' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.");
-                            }
-                            else if (!codeActionContext.only.contains(candidate.kind)) {
-                                console.warn("Code actions of kind '" + codeActionContext.only.value + "' requested but returned code action is of kind '" + candidate.kind.value + "'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.");
-                            }
-                        }
-                        result.push({
-                            title: candidate.title,
-                            command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
-                            diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData),
-                            edit: candidate.edit && Converter.fromWorkspaceEdit(candidate.edit),
-                            kind: candidate.kind && candidate.kind.value,
-                        });
-                    }
-                }
-            }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
-            finally {
-                try {
-                    if (commandsOrActions_1_1 && !commandsOrActions_1_1.done && (_a = commandsOrActions_1.return)) _a.call(commandsOrActions_1);
-                }
-                finally { if (e_2) throw e_2.error; }
-            }
-            return result;
+            return undefined;
         });
-    };
-    CodeActionAdapter._isCommand = function (smth) {
-        return typeof smth.command === 'string';
-    };
-    CodeActionAdapter._isSelection = function (obj) {
-        return (obj
-            && (typeof obj.selectionStartLineNumber === 'number')
-            && (typeof obj.selectionStartColumn === 'number')
-            && (typeof obj.positionLineNumber === 'number')
-            && (typeof obj.positionColumn === 'number'));
-    };
-    return CodeActionAdapter;
-}());
-exports.CodeActionAdapter = CodeActionAdapter;
+    }
+}
+exports.RangeFormattingAdapter = RangeFormattingAdapter;
+class FormattingAdapter {
+    constructor(provider, documents) {
+        this.provider = provider;
+        this.documents = documents;
+    }
+    provideDocumentFormattingEdits(resource, options) {
+        const document = this.documents.getDocumentData(resource.toString());
+        if (!document) {
+            return Promise.reject(new Error(`There are no document for ${resource}`));
+        }
+        const doc = document.document;
+        return Promise.resolve(this.provider.provideDocumentFormattingEdits(doc, options, util_1.createToken())).then((value) => {
+            if (Array.isArray(value)) {
+                return value.map(Converter.fromTextEdit);
+            }
+            return undefined;
+        });
+    }
+}
+exports.FormattingAdapter = FormattingAdapter;
 
 
 /***/ }),
@@ -63413,12 +62446,130 @@ exports.CodeActionAdapter = CodeActionAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ide_core_common_1 = __webpack_require__(2);
-var ext_types_1 = __webpack_require__(220);
-var converter_1 = __webpack_require__(225);
-var DiagnosticCollection = (function () {
-    function DiagnosticCollection(name, maxCountPerFile, proxy, onDidChangeDiagnosticsEmitter) {
+const Converter = __webpack_require__(227);
+const util_1 = __webpack_require__(236);
+class OnTypeFormattingAdapter {
+    constructor(provider, documents) {
+        this.provider = provider;
+        this.documents = documents;
+    }
+    provideOnTypeFormattingEdits(resource, position, ch, options) {
+        const document = this.documents.getDocumentData(resource.toString());
+        if (!document) {
+            return Promise.reject(new Error(`There are no document for ${resource}`));
+        }
+        const doc = document.document;
+        const pos = Converter.toPosition(position);
+        return Promise.resolve(this.provider.provideOnTypeFormattingEdits(doc, pos, ch, options, util_1.createToken())).then((value) => {
+            if (Array.isArray(value)) {
+                return value.map(Converter.fromTextEdit);
+            }
+            return undefined;
+        });
+    }
+}
+exports.OnTypeFormattingAdapter = OnTypeFormattingAdapter;
+
+
+/***/ }),
+/* 429 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const ext_types_1 = __webpack_require__(222);
+const Converter = __webpack_require__(227);
+const util_1 = __webpack_require__(236);
+const ide_core_common_1 = __webpack_require__(2);
+class CodeActionAdapter {
+    constructor(provider, document, diagnostics) {
+        this.provider = provider;
+        this.document = document;
+        this.diagnostics = diagnostics;
+    }
+    provideCodeAction(resource, rangeOrSelection, context, commandConverter) {
+        const document = this.document.getDocumentData(resource);
+        if (!document) {
+            return Promise.reject(new Error(`There are no document for ${resource}`));
+        }
+        const doc = document.document;
+        const ran = CodeActionAdapter._isSelection(rangeOrSelection)
+            ? Converter.toSelection(rangeOrSelection)
+            : Converter.toRange(rangeOrSelection);
+        const allDiagnostics = [];
+        for (const diagnostic of this.diagnostics.getDiagnostics(resource)) {
+            if (ran.intersection(diagnostic.range)) {
+                allDiagnostics.push(diagnostic);
+            }
+        }
+        const codeActionContext = {
+            diagnostics: allDiagnostics,
+            only: context.only ? new ext_types_1.CodeActionKind(context.only) : undefined,
+        };
+        const disposables = new ide_core_common_1.DisposableStore();
+        return Promise.resolve(this.provider.provideCodeActions(doc, ran, codeActionContext, util_1.createToken())).then((commandsOrActions) => {
+            if (!Array.isArray(commandsOrActions) || commandsOrActions.length === 0) {
+                return undefined;
+            }
+            const result = [];
+            for (const candidate of commandsOrActions) {
+                if (!candidate) {
+                    continue;
+                }
+                if (CodeActionAdapter._isCommand(candidate)) {
+                    result.push({
+                        title: candidate.title || '',
+                        command: commandConverter.toInternal(candidate, disposables),
+                    });
+                }
+                else {
+                    if (codeActionContext.only) {
+                        if (!candidate.kind) {
+                            console.warn(`Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`);
+                        }
+                        else if (!codeActionContext.only.contains(candidate.kind)) {
+                            console.warn(`Code actions of kind '${codeActionContext.only.value}' requested but returned code action is of kind '${candidate.kind.value}'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.`);
+                        }
+                    }
+                    result.push({
+                        title: candidate.title,
+                        command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
+                        diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData),
+                        edit: candidate.edit && Converter.fromWorkspaceEdit(candidate.edit),
+                        kind: candidate.kind && candidate.kind.value,
+                    });
+                }
+            }
+            return result;
+        });
+    }
+    static _isCommand(smth) {
+        return typeof smth.command === 'string';
+    }
+    static _isSelection(obj) {
+        return (obj
+            && (typeof obj.selectionStartLineNumber === 'number')
+            && (typeof obj.selectionStartColumn === 'number')
+            && (typeof obj.positionLineNumber === 'number')
+            && (typeof obj.positionColumn === 'number'));
+    }
+}
+exports.CodeActionAdapter = CodeActionAdapter;
+
+
+/***/ }),
+/* 430 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const ide_core_common_1 = __webpack_require__(2);
+const ext_types_1 = __webpack_require__(222);
+const converter_1 = __webpack_require__(227);
+class DiagnosticCollection {
+    constructor(name, maxCountPerFile, proxy, onDidChangeDiagnosticsEmitter) {
         this.collectionName = name;
         this.diagnosticsLimitPerResource = maxCountPerFile;
         this.proxy = proxy;
@@ -63427,14 +62578,10 @@ var DiagnosticCollection = (function () {
         this.isDisposed = false;
         this.onDisposeCallback = undefined;
     }
-    Object.defineProperty(DiagnosticCollection.prototype, "name", {
-        get: function () {
-            return this.collectionName;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    DiagnosticCollection.prototype.set = function (arg, diagnostics) {
+    get name() {
+        return this.collectionName;
+    }
+    set(arg, diagnostics) {
         this.ensureNotDisposed();
         if (arg instanceof ext_types_1.Uri) {
             this.setDiagnosticsForUri(arg, diagnostics);
@@ -63445,8 +62592,8 @@ var DiagnosticCollection = (function () {
         else if (arg instanceof Array) {
             this.setDiagnostics(arg);
         }
-    };
-    DiagnosticCollection.prototype.setDiagnosticsForUri = function (uri, diagnostics) {
+    }
+    setDiagnosticsForUri(uri, diagnostics) {
         if (!diagnostics) {
             this.diagnostics.delete(uri.toString());
         }
@@ -63455,85 +62602,63 @@ var DiagnosticCollection = (function () {
         }
         this.fireDiagnosticChangeEvent(uri);
         this.sendChangesToEditor([uri]);
-    };
-    DiagnosticCollection.prototype.setDiagnostics = function (entries) {
-        var e_1, _a, e_2, _b;
-        var delta = [];
-        try {
-            for (var entries_1 = tslib_1.__values(entries), entries_1_1 = entries_1.next(); !entries_1_1.done; entries_1_1 = entries_1.next()) {
-                var _c = tslib_1.__read(entries_1_1.value, 1), uri = _c[0];
-                this.diagnostics.delete(uri.toString());
-            }
+    }
+    setDiagnostics(entries) {
+        const delta = [];
+        for (const [uri] of entries) {
+            this.diagnostics.delete(uri.toString());
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (entries_1_1 && !entries_1_1.done && (_a = entries_1.return)) _a.call(entries_1);
+        for (const [uri, diagnostics] of entries) {
+            const uriString = uri.toString();
+            if (!diagnostics) {
+                this.diagnostics.delete(uriString);
+                delta.push(uri);
             }
-            finally { if (e_1) throw e_1.error; }
-        }
-        try {
-            for (var entries_2 = tslib_1.__values(entries), entries_2_1 = entries_2.next(); !entries_2_1.done; entries_2_1 = entries_2.next()) {
-                var _d = tslib_1.__read(entries_2_1.value, 2), uri = _d[0], diagnostics = _d[1];
-                var uriString = uri.toString();
-                if (!diagnostics) {
-                    this.diagnostics.delete(uriString);
-                    delta.push(uri);
+            else {
+                const existedDiagnostics = this.diagnostics.get(uriString);
+                if (existedDiagnostics) {
+                    existedDiagnostics.push(...diagnostics);
                 }
                 else {
-                    var existedDiagnostics = this.diagnostics.get(uriString);
-                    if (existedDiagnostics) {
-                        existedDiagnostics.push.apply(existedDiagnostics, tslib_1.__spread(diagnostics));
-                    }
-                    else {
-                        this.diagnostics.set(uriString, diagnostics);
-                    }
-                }
-                if (delta.indexOf(uri) === -1) {
-                    delta.push(uri);
+                    this.diagnostics.set(uriString, diagnostics);
                 }
             }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (entries_2_1 && !entries_2_1.done && (_b = entries_2.return)) _b.call(entries_2);
+            if (delta.indexOf(uri) === -1) {
+                delta.push(uri);
             }
-            finally { if (e_2) throw e_2.error; }
         }
         this.fireDiagnosticChangeEvent(delta);
         this.sendChangesToEditor(delta);
-    };
-    DiagnosticCollection.prototype.delete = function (uri) {
+    }
+    delete(uri) {
         if (this.has(uri)) {
             this.fireDiagnosticChangeEvent(uri);
             this.diagnostics.delete(uri.toString());
             this.proxy.$changeDiagnostics(this.name, [[uri.toString(), []]]);
         }
-    };
-    DiagnosticCollection.prototype.clear = function () {
+    }
+    clear() {
         this.ensureNotDisposed();
         this.fireDiagnosticChangeEvent(this.getAllResourcesUris());
         this.diagnostics.clear();
         this.proxy.$clearDiagnostics(this.name);
-    };
-    DiagnosticCollection.prototype.forEach = function (callback, thisArg) {
-        var _this = this;
+    }
+    forEach(callback, thisArg) {
         this.ensureNotDisposed();
-        this.diagnostics.forEach(function (diagnostics, uriString) {
-            var uri = ext_types_1.Uri.parse(uriString);
-            callback.apply(thisArg, [uri, _this.getDiagnosticsByUri(uri), _this]);
+        this.diagnostics.forEach((diagnostics, uriString) => {
+            const uri = ext_types_1.Uri.parse(uriString);
+            callback.apply(thisArg, [uri, this.getDiagnosticsByUri(uri), this]);
         });
-    };
-    DiagnosticCollection.prototype.get = function (uri) {
+    }
+    get(uri) {
         this.ensureNotDisposed();
         return this.getDiagnosticsByUri(uri);
-    };
-    DiagnosticCollection.prototype.has = function (uri) {
+    }
+    has(uri) {
         this.ensureNotDisposed();
         return (this.diagnostics.get(uri.toString()) instanceof Array);
-    };
-    DiagnosticCollection.prototype.dispose = function () {
+    }
+    dispose() {
         if (!this.isDisposed) {
             if (this.onDisposeCallback) {
                 this.onDisposeCallback();
@@ -63541,29 +62666,28 @@ var DiagnosticCollection = (function () {
             this.clear();
             this.isDisposed = true;
         }
-    };
-    DiagnosticCollection.prototype.setOnDisposeCallback = function (onDisposeCallback) {
+    }
+    setOnDisposeCallback(onDisposeCallback) {
         this.onDisposeCallback = onDisposeCallback;
-    };
-    DiagnosticCollection.prototype.ensureNotDisposed = function () {
+    }
+    ensureNotDisposed() {
         if (this.isDisposed) {
             throw new Error('Diagnostic collection with name "' + this.name + '" is already disposed.');
         }
-    };
-    DiagnosticCollection.prototype.getAllResourcesUris = function () {
-        var resourcesUris = [];
-        this.diagnostics.forEach(function (diagnostics, uri) { return resourcesUris.push(uri); });
+    }
+    getAllResourcesUris() {
+        const resourcesUris = [];
+        this.diagnostics.forEach((diagnostics, uri) => resourcesUris.push(uri));
         return resourcesUris;
-    };
-    DiagnosticCollection.prototype.getDiagnosticsByUri = function (uri) {
-        var diagnostics = this.diagnostics.get(uri.toString());
+    }
+    getDiagnosticsByUri(uri) {
+        const diagnostics = this.diagnostics.get(uri.toString());
         return (diagnostics instanceof Array) ? Object.freeze(diagnostics) : undefined;
-    };
-    DiagnosticCollection.prototype.fireDiagnosticChangeEvent = function (arg) {
+    }
+    fireDiagnosticChangeEvent(arg) {
         this.onDidChangeDiagnosticsEmitter.fire({ uris: this.toUrisArray(arg) });
-    };
-    DiagnosticCollection.prototype.toUrisArray = function (arg) {
-        var e_3, _a;
+    }
+    toUrisArray(arg) {
         if (arg instanceof Array) {
             if (arg.length === 0) {
                 return [];
@@ -63572,19 +62696,9 @@ var DiagnosticCollection = (function () {
                 return arg;
             }
             else {
-                var result = [];
-                try {
-                    for (var _b = tslib_1.__values(arg), _c = _b.next(); !_c.done; _c = _b.next()) {
-                        var uriString = _c.value;
-                        result.push(ext_types_1.Uri.parse(uriString));
-                    }
-                }
-                catch (e_3_1) { e_3 = { error: e_3_1 }; }
-                finally {
-                    try {
-                        if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                    }
-                    finally { if (e_3) throw e_3.error; }
+                const result = [];
+                for (const uriString of arg) {
+                    result.push(ext_types_1.Uri.parse(uriString));
                 }
                 return result;
             }
@@ -63597,304 +62711,116 @@ var DiagnosticCollection = (function () {
                 return [ext_types_1.Uri.parse(arg)];
             }
         }
-    };
-    DiagnosticCollection.prototype.sendChangesToEditor = function (uris) {
-        var e_4, _a;
-        var markers = [];
-        var _loop_1 = function (uri) {
-            var e_5, _a, e_6, _b;
-            var uriMarkers = [];
-            var uriDiagnostics = this_1.diagnostics.get(uri.toString());
+    }
+    sendChangesToEditor(uris) {
+        const markers = [];
+        nextUri: for (const uri of uris) {
+            const uriMarkers = [];
+            const uriDiagnostics = this.diagnostics.get(uri.toString());
             if (uriDiagnostics) {
-                if (uriDiagnostics.length > this_1.diagnosticsLimitPerResource) {
-                    try {
-                        for (var _c = (e_5 = void 0, tslib_1.__values(DiagnosticCollection.DIAGNOSTICS_PRIORITY)), _d = _c.next(); !_d.done; _d = _c.next()) {
-                            var severity = _d.value;
-                            try {
-                                for (var uriDiagnostics_1 = (e_6 = void 0, tslib_1.__values(uriDiagnostics)), uriDiagnostics_1_1 = uriDiagnostics_1.next(); !uriDiagnostics_1_1.done; uriDiagnostics_1_1 = uriDiagnostics_1.next()) {
-                                    var diagnostic = uriDiagnostics_1_1.value;
-                                    if (severity === diagnostic.severity) {
-                                        if (uriMarkers.push(converter_1.convertDiagnosticToMarkerData(diagnostic)) + 1 === this_1.diagnosticsLimitPerResource) {
-                                            var lastMarker = uriMarkers[uriMarkers.length - 1];
-                                            uriMarkers.push({
-                                                severity: ide_core_common_1.MarkerSeverity.Info,
-                                                message: 'Limit of diagnostics is reached. ' + (uriDiagnostics.length - this_1.diagnosticsLimitPerResource) + ' items are hidden',
-                                                startLineNumber: lastMarker.startLineNumber,
-                                                startColumn: lastMarker.startColumn,
-                                                endLineNumber: lastMarker.endLineNumber,
-                                                endColumn: lastMarker.endColumn,
-                                            });
-                                            markers.push([uri.toString(), uriMarkers]);
-                                            return "continue-nextUri";
-                                        }
-                                    }
+                if (uriDiagnostics.length > this.diagnosticsLimitPerResource) {
+                    for (const severity of DiagnosticCollection.DIAGNOSTICS_PRIORITY) {
+                        for (const diagnostic of uriDiagnostics) {
+                            if (severity === diagnostic.severity) {
+                                if (uriMarkers.push(converter_1.convertDiagnosticToMarkerData(diagnostic)) + 1 === this.diagnosticsLimitPerResource) {
+                                    const lastMarker = uriMarkers[uriMarkers.length - 1];
+                                    uriMarkers.push({
+                                        severity: ide_core_common_1.MarkerSeverity.Info,
+                                        message: 'Limit of diagnostics is reached. ' + (uriDiagnostics.length - this.diagnosticsLimitPerResource) + ' items are hidden',
+                                        startLineNumber: lastMarker.startLineNumber,
+                                        startColumn: lastMarker.startColumn,
+                                        endLineNumber: lastMarker.endLineNumber,
+                                        endColumn: lastMarker.endColumn,
+                                    });
+                                    markers.push([uri.toString(), uriMarkers]);
+                                    continue nextUri;
                                 }
                             }
-                            catch (e_6_1) { e_6 = { error: e_6_1 }; }
-                            finally {
-                                try {
-                                    if (uriDiagnostics_1_1 && !uriDiagnostics_1_1.done && (_b = uriDiagnostics_1.return)) _b.call(uriDiagnostics_1);
-                                }
-                                finally { if (e_6) throw e_6.error; }
-                            }
                         }
-                    }
-                    catch (e_5_1) { e_5 = { error: e_5_1 }; }
-                    finally {
-                        try {
-                            if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
-                        }
-                        finally { if (e_5) throw e_5.error; }
                     }
                 }
                 else {
-                    uriDiagnostics.forEach(function (diagnostic) { return uriMarkers.push(converter_1.convertDiagnosticToMarkerData(diagnostic)); });
+                    uriDiagnostics.forEach((diagnostic) => uriMarkers.push(converter_1.convertDiagnosticToMarkerData(diagnostic)));
                     markers.push([uri.toString(), uriMarkers]);
                 }
             }
             else {
                 markers.push([uri.toString(), []]);
             }
-        };
-        var this_1 = this;
-        try {
-            nextUri: for (var uris_1 = tslib_1.__values(uris), uris_1_1 = uris_1.next(); !uris_1_1.done; uris_1_1 = uris_1.next()) {
-                var uri = uris_1_1.value;
-                var state_1 = _loop_1(uri);
-                switch (state_1) {
-                    case "continue-nextUri": continue nextUri;
-                }
-            }
-        }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
-        finally {
-            try {
-                if (uris_1_1 && !uris_1_1.done && (_a = uris_1.return)) _a.call(uris_1);
-            }
-            finally { if (e_4) throw e_4.error; }
         }
         this.proxy.$changeDiagnostics(this.name, markers);
-    };
-    DiagnosticCollection.DIAGNOSTICS_PRIORITY = [
-        ext_types_1.DiagnosticSeverity.Error, ext_types_1.DiagnosticSeverity.Warning, ext_types_1.DiagnosticSeverity.Information, ext_types_1.DiagnosticSeverity.Hint,
-    ];
-    return DiagnosticCollection;
-}());
+    }
+}
 exports.DiagnosticCollection = DiagnosticCollection;
-var Diagnostics = (function () {
-    function Diagnostics(proxy) {
+DiagnosticCollection.DIAGNOSTICS_PRIORITY = [
+    ext_types_1.DiagnosticSeverity.Error, ext_types_1.DiagnosticSeverity.Warning, ext_types_1.DiagnosticSeverity.Information, ext_types_1.DiagnosticSeverity.Hint,
+];
+class Diagnostics {
+    constructor(proxy) {
         this.diagnosticsChangedEmitter = new ide_core_common_1.Emitter();
         this.onDidChangeDiagnostics = this.diagnosticsChangedEmitter.event;
         this.proxy = proxy;
         this.diagnosticCollections = new Map();
         this.nextId = 0;
     }
-    Diagnostics.prototype.getDiagnostics = function (resource) {
+    getDiagnostics(resource) {
         if (resource) {
             return this.getAllDiagnisticsForResource(resource);
         }
         else {
             return this.getAllDiagnostics();
         }
-    };
-    Diagnostics.prototype.createDiagnosticCollection = function (name) {
-        var _this = this;
+    }
+    createDiagnosticCollection(name) {
         if (!name) {
             do {
                 name = Diagnostics.GENERATED_DIAGNOSTIC_COLLECTION_NAME_PREFIX + this.getNextId();
             } while (this.diagnosticCollections.has(name));
         }
         else if (this.diagnosticCollections.has(name)) {
-            console.warn("Diagnostic collection with name '" + name + "' already exist.");
+            console.warn(`Diagnostic collection with name '${name}' already exist.`);
         }
-        var diagnosticCollection = new DiagnosticCollection(name, Diagnostics.MAX_DIAGNOSTICS_PER_FILE, this.proxy, this.diagnosticsChangedEmitter);
-        diagnosticCollection.setOnDisposeCallback(function () {
-            _this.diagnosticCollections.delete(name);
+        const diagnosticCollection = new DiagnosticCollection(name, Diagnostics.MAX_DIAGNOSTICS_PER_FILE, this.proxy, this.diagnosticsChangedEmitter);
+        diagnosticCollection.setOnDisposeCallback(() => {
+            this.diagnosticCollections.delete(name);
         });
         this.diagnosticCollections.set(name, diagnosticCollection);
         return diagnosticCollection;
-    };
-    Diagnostics.prototype.getNextId = function () {
+    }
+    getNextId() {
         return this.nextId++;
-    };
-    Diagnostics.prototype.getAllDiagnisticsForResource = function (uri) {
-        var result = [];
-        this.diagnosticCollections.forEach(function (diagnosticCollection) {
-            var diagnostics = diagnosticCollection.get(uri);
+    }
+    getAllDiagnisticsForResource(uri) {
+        let result = [];
+        this.diagnosticCollections.forEach((diagnosticCollection) => {
+            const diagnostics = diagnosticCollection.get(uri);
             if (diagnostics) {
-                result = result.concat.apply(result, tslib_1.__spread(diagnostics));
+                result = result.concat(...diagnostics);
             }
         });
         return result;
-    };
-    Diagnostics.prototype.getAllDiagnostics = function () {
-        var result = [];
-        var urisIndexes = new Map();
-        var nextIndex = 0;
-        this.diagnosticCollections.forEach(function (diagnosticsCollection) {
-            return diagnosticsCollection.forEach(function (uri, diagnostics) {
-                var _a;
-                var uriIndex = urisIndexes.get(uri.toString());
-                if (uriIndex === undefined) {
-                    uriIndex = nextIndex++;
-                    urisIndexes.set(uri.toString(), uriIndex);
-                    result.push([uri, tslib_1.__spread(diagnostics)]);
-                }
-                else {
-                    result[uriIndex][1] = (_a = result[uriIndex][1]).concat.apply(_a, tslib_1.__spread(diagnostics));
-                }
-            });
-        });
+    }
+    getAllDiagnostics() {
+        const result = [];
+        const urisIndexes = new Map();
+        let nextIndex = 0;
+        this.diagnosticCollections.forEach((diagnosticsCollection) => diagnosticsCollection.forEach((uri, diagnostics) => {
+            let uriIndex = urisIndexes.get(uri.toString());
+            if (uriIndex === undefined) {
+                uriIndex = nextIndex++;
+                urisIndexes.set(uri.toString(), uriIndex);
+                result.push([uri, [...diagnostics]]);
+            }
+            else {
+                result[uriIndex][1] = result[uriIndex][1].concat(...diagnostics);
+            }
+        }));
         return result;
-    };
-    Diagnostics.MAX_DIAGNOSTICS_PER_FILE = 1000;
-    Diagnostics.GENERATED_DIAGNOSTIC_COLLECTION_NAME_PREFIX = '_generated_diagnostic_collection_name_#';
-    return Diagnostics;
-}());
+    }
+}
 exports.Diagnostics = Diagnostics;
-
-
-/***/ }),
-/* 429 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var types = __webpack_require__(220);
-var Converter = __webpack_require__(225);
-var util_1 = __webpack_require__(234);
-var ImplementationAdapter = (function () {
-    function ImplementationAdapter(provider, documents) {
-        this.provider = provider;
-        this.documents = documents;
-    }
-    ImplementationAdapter.prototype.provideImplementation = function (resource, position) {
-        var documentData = this.documents.getDocumentData(resource);
-        if (!documentData) {
-            return Promise.reject(new Error("There is no document for " + resource));
-        }
-        var document = documentData.document;
-        var zeroBasedPosition = Converter.toPosition(position);
-        return Promise.resolve(this.provider.provideImplementation(document, zeroBasedPosition, util_1.createToken())).then(function (definition) {
-            var e_1, _a, e_2, _b;
-            if (!definition) {
-                return undefined;
-            }
-            if (definition instanceof types.Location) {
-                return Converter.fromLocation(definition);
-            }
-            if (util_1.isLocationArray(definition)) {
-                var locations = [];
-                try {
-                    for (var definition_1 = tslib_1.__values(definition), definition_1_1 = definition_1.next(); !definition_1_1.done; definition_1_1 = definition_1.next()) {
-                        var location_1 = definition_1_1.value;
-                        locations.push(Converter.fromLocation(location_1));
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (definition_1_1 && !definition_1_1.done && (_a = definition_1.return)) _a.call(definition_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
-                }
-                return locations;
-            }
-            if (util_1.isDefinitionLinkArray(definition)) {
-                var definitionLinks = [];
-                try {
-                    for (var definition_2 = tslib_1.__values(definition), definition_2_1 = definition_2.next(); !definition_2_1.done; definition_2_1 = definition_2.next()) {
-                        var definitionLink = definition_2_1.value;
-                        definitionLinks.push(Converter.fromDefinitionLink(definitionLink));
-                    }
-                }
-                catch (e_2_1) { e_2 = { error: e_2_1 }; }
-                finally {
-                    try {
-                        if (definition_2_1 && !definition_2_1.done && (_b = definition_2.return)) _b.call(definition_2);
-                    }
-                    finally { if (e_2) throw e_2.error; }
-                }
-                return definitionLinks;
-            }
-        });
-    };
-    return ImplementationAdapter;
-}());
-exports.ImplementationAdapter = ImplementationAdapter;
-
-
-/***/ }),
-/* 430 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var Converter = __webpack_require__(225);
-var util_1 = __webpack_require__(234);
-var LinkProviderAdapter = (function () {
-    function LinkProviderAdapter(provider, documents) {
-        this.provider = provider;
-        this.documents = documents;
-        this.cacheId = 0;
-        this.cache = new Map();
-    }
-    LinkProviderAdapter.prototype.provideLinks = function (resource, token) {
-        var _this = this;
-        var document = this.documents.getDocumentData(resource);
-        if (!document) {
-            return Promise.reject(new Error("There is no document for " + resource));
-        }
-        var doc = document.document;
-        return Promise.resolve(this.provider.provideDocumentLinks(doc, token)).then(function (links) {
-            var e_1, _a;
-            if (!Array.isArray(links)) {
-                return undefined;
-            }
-            var result = [];
-            try {
-                for (var links_1 = tslib_1.__values(links), links_1_1 = links_1.next(); !links_1_1.done; links_1_1 = links_1.next()) {
-                    var link = links_1_1.value;
-                    var data = Converter.fromDocumentLink(link);
-                    var id = _this.cacheId++;
-                    util_1.ObjectIdentifier.mixin(data, id);
-                    _this.cache.set(id, link);
-                    result.push(data);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (links_1_1 && !links_1_1.done && (_a = links_1.return)) _a.call(links_1);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-            return result;
-        });
-    };
-    LinkProviderAdapter.prototype.resolveLink = function (link, token) {
-        if (typeof this.provider.resolveDocumentLink !== 'function') {
-            return Promise.resolve(undefined);
-        }
-        var id = util_1.ObjectIdentifier.of(link);
-        var item = this.cache.get(id);
-        if (!item) {
-            return Promise.resolve(undefined);
-        }
-        return Promise.resolve(this.provider.resolveDocumentLink(item, token)).then(function (value) {
-            if (value) {
-                return Converter.fromDocumentLink(value);
-            }
-            return undefined;
-        });
-    };
-    return LinkProviderAdapter;
-}());
-exports.LinkProviderAdapter = LinkProviderAdapter;
+Diagnostics.MAX_DIAGNOSTICS_PER_FILE = 1000;
+Diagnostics.GENERATED_DIAGNOSTIC_COLLECTION_NAME_PREFIX = '_generated_diagnostic_collection_name_#';
 
 
 /***/ }),
@@ -63904,48 +62830,46 @@ exports.LinkProviderAdapter = LinkProviderAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var utils_1 = __webpack_require__(221);
-var Converter = __webpack_require__(225);
-var ReferenceAdapter = (function () {
-    function ReferenceAdapter(provider, documents) {
+const types = __webpack_require__(222);
+const Converter = __webpack_require__(227);
+const util_1 = __webpack_require__(236);
+class ImplementationAdapter {
+    constructor(provider, documents) {
         this.provider = provider;
         this.documents = documents;
     }
-    ReferenceAdapter.prototype.provideReferences = function (resource, position, context, token) {
-        var documentData = this.documents.getDocumentData(resource);
+    provideImplementation(resource, position) {
+        const documentData = this.documents.getDocumentData(resource);
         if (!documentData) {
-            return Promise.reject(new Error("There is no document for " + resource));
+            return Promise.reject(new Error(`There is no document for ${resource}`));
         }
-        var document = documentData.document;
-        var zeroBasedPosition = Converter.toPosition(position);
-        return Promise.resolve(this.provider.provideReferences(document, zeroBasedPosition, context, token)).then(function (reference) {
-            var e_1, _a;
-            if (!reference) {
+        const document = documentData.document;
+        const zeroBasedPosition = Converter.toPosition(position);
+        return Promise.resolve(this.provider.provideImplementation(document, zeroBasedPosition, util_1.createToken())).then((definition) => {
+            if (!definition) {
                 return undefined;
             }
-            if (utils_1.isLocationArray(reference)) {
-                var locations = [];
-                try {
-                    for (var reference_1 = tslib_1.__values(reference), reference_1_1 = reference_1.next(); !reference_1_1.done; reference_1_1 = reference_1.next()) {
-                        var location_1 = reference_1_1.value;
-                        locations.push(Converter.fromLocation(location_1));
-                    }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (reference_1_1 && !reference_1_1.done && (_a = reference_1.return)) _a.call(reference_1);
-                    }
-                    finally { if (e_1) throw e_1.error; }
+            if (definition instanceof types.Location) {
+                return Converter.fromLocation(definition);
+            }
+            if (util_1.isLocationArray(definition)) {
+                const locations = [];
+                for (const location of definition) {
+                    locations.push(Converter.fromLocation(location));
                 }
                 return locations;
             }
+            if (util_1.isDefinitionLinkArray(definition)) {
+                const definitionLinks = [];
+                for (const definitionLink of definition) {
+                    definitionLinks.push(Converter.fromDefinitionLink(definitionLink));
+                }
+                return definitionLinks;
+            }
         });
-    };
-    return ReferenceAdapter;
-}());
-exports.ReferenceAdapter = ReferenceAdapter;
+    }
+}
+exports.ImplementationAdapter = ImplementationAdapter;
 
 
 /***/ }),
@@ -63955,20 +62879,115 @@ exports.ReferenceAdapter = ReferenceAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var types = __webpack_require__(220);
-var Converter = __webpack_require__(225);
-var OutlineAdapter = (function () {
-    function OutlineAdapter(documents, provider) {
+const Converter = __webpack_require__(227);
+const util_1 = __webpack_require__(236);
+class LinkProviderAdapter {
+    constructor(provider, documents) {
+        this.provider = provider;
+        this.documents = documents;
+        this.cacheId = 0;
+        this.cache = new Map();
+    }
+    provideLinks(resource, token) {
+        const document = this.documents.getDocumentData(resource);
+        if (!document) {
+            return Promise.reject(new Error(`There is no document for ${resource}`));
+        }
+        const doc = document.document;
+        return Promise.resolve(this.provider.provideDocumentLinks(doc, token)).then((links) => {
+            if (!Array.isArray(links)) {
+                return undefined;
+            }
+            const result = [];
+            for (const link of links) {
+                const data = Converter.fromDocumentLink(link);
+                const id = this.cacheId++;
+                util_1.ObjectIdentifier.mixin(data, id);
+                this.cache.set(id, link);
+                result.push(data);
+            }
+            return result;
+        });
+    }
+    resolveLink(link, token) {
+        if (typeof this.provider.resolveDocumentLink !== 'function') {
+            return Promise.resolve(undefined);
+        }
+        const id = util_1.ObjectIdentifier.of(link);
+        const item = this.cache.get(id);
+        if (!item) {
+            return Promise.resolve(undefined);
+        }
+        return Promise.resolve(this.provider.resolveDocumentLink(item, token)).then((value) => {
+            if (value) {
+                return Converter.fromDocumentLink(value);
+            }
+            return undefined;
+        });
+    }
+}
+exports.LinkProviderAdapter = LinkProviderAdapter;
+
+
+/***/ }),
+/* 433 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = __webpack_require__(223);
+const Converter = __webpack_require__(227);
+class ReferenceAdapter {
+    constructor(provider, documents) {
+        this.provider = provider;
+        this.documents = documents;
+    }
+    provideReferences(resource, position, context, token) {
+        const documentData = this.documents.getDocumentData(resource);
+        if (!documentData) {
+            return Promise.reject(new Error(`There is no document for ${resource}`));
+        }
+        const document = documentData.document;
+        const zeroBasedPosition = Converter.toPosition(position);
+        return Promise.resolve(this.provider.provideReferences(document, zeroBasedPosition, context, token)).then((reference) => {
+            if (!reference) {
+                return undefined;
+            }
+            if (utils_1.isLocationArray(reference)) {
+                const locations = [];
+                for (const location of reference) {
+                    locations.push(Converter.fromLocation(location));
+                }
+                return locations;
+            }
+        });
+    }
+}
+exports.ReferenceAdapter = ReferenceAdapter;
+
+
+/***/ }),
+/* 434 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const types = __webpack_require__(222);
+const Converter = __webpack_require__(227);
+class OutlineAdapter {
+    constructor(documents, provider) {
         this.documents = documents;
         this.provider = provider;
     }
-    OutlineAdapter.prototype.provideDocumentSymbols = function (resource, token) {
-        var document = this.documents.getDocumentData(resource);
+    provideDocumentSymbols(resource, token) {
+        const document = this.documents.getDocumentData(resource);
         if (!document) {
-            return Promise.reject(new Error("There is no document for " + resource));
+            return Promise.reject(new Error(`There is no document for ${resource}`));
         }
-        var doc = document.document;
-        return Promise.resolve(this.provider.provideDocumentSymbols(doc, token)).then(function (value) {
+        const doc = document.document;
+        return Promise.resolve(this.provider.provideDocumentSymbols(doc, token)).then((value) => {
             if (!value || value.length === 0) {
                 return undefined;
             }
@@ -63979,19 +62998,19 @@ var OutlineAdapter = (function () {
                 return OutlineAdapter.asDocumentSymbolTree(resource, value);
             }
         });
-    };
-    OutlineAdapter.asDocumentSymbolTree = function (resource, info) {
-        info = info.slice(0).sort(function (a, b) {
-            var r = a.location.range.start.compareTo(b.location.range.start);
+    }
+    static asDocumentSymbolTree(resource, info) {
+        info = info.slice(0).sort((a, b) => {
+            let r = a.location.range.start.compareTo(b.location.range.start);
             if (r === 0) {
                 r = b.location.range.end.compareTo(a.location.range.end);
             }
             return r;
         });
-        var res = [];
-        var parentStack = [];
-        for (var i = 0; i < info.length; i++) {
-            var element = {
+        const res = [];
+        const parentStack = [];
+        for (let i = 0; i < info.length; i++) {
+            const element = {
                 name: info[i].name,
                 detail: '',
                 kind: Converter.SymbolKind.fromSymbolKind(info[i].kind),
@@ -64006,9 +63025,9 @@ var OutlineAdapter = (function () {
                     res.push(element);
                     break;
                 }
-                var parent_1 = parentStack[parentStack.length - 1];
-                if (OutlineAdapter.containsRange(parent_1.range, element.range) && !OutlineAdapter.equalsRange(parent_1.range, element.range)) {
-                    parent_1.children.push(element);
+                const parent = parentStack[parentStack.length - 1];
+                if (OutlineAdapter.containsRange(parent.range, element.range) && !OutlineAdapter.equalsRange(parent.range, element.range)) {
+                    parent.children.push(element);
                     parentStack.push(element);
                     break;
                 }
@@ -64016,8 +63035,8 @@ var OutlineAdapter = (function () {
             }
         }
         return res;
-    };
-    OutlineAdapter.containsRange = function (range, otherRange) {
+    }
+    static containsRange(range, otherRange) {
         if (otherRange.startLineNumber < range.startLineNumber || otherRange.endLineNumber < range.startLineNumber) {
             return false;
         }
@@ -64031,110 +63050,17 @@ var OutlineAdapter = (function () {
             return false;
         }
         return true;
-    };
-    OutlineAdapter.equalsRange = function (a, b) {
+    }
+    static equalsRange(a, b) {
         return (!!a &&
             !!b &&
             a.startLineNumber === b.startLineNumber &&
             a.startColumn === b.startColumn &&
             a.endLineNumber === b.endLineNumber &&
             a.endColumn === b.endColumn);
-    };
-    return OutlineAdapter;
-}());
+    }
+}
 exports.OutlineAdapter = OutlineAdapter;
-
-
-/***/ }),
-/* 433 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var Converter = __webpack_require__(225);
-var WorkspaceSymbolAdapter = (function () {
-    function WorkspaceSymbolAdapter(provider) {
-        this.provider = provider;
-    }
-    WorkspaceSymbolAdapter.prototype.provideWorkspaceSymbols = function (query, token) {
-        return Promise.resolve(this.provider.provideWorkspaceSymbols(query, token)).then(function (workspaceSymbols) {
-            var e_1, _a;
-            if (!workspaceSymbols) {
-                return [];
-            }
-            var newSymbols = [];
-            try {
-                for (var workspaceSymbols_1 = tslib_1.__values(workspaceSymbols), workspaceSymbols_1_1 = workspaceSymbols_1.next(); !workspaceSymbols_1_1.done; workspaceSymbols_1_1 = workspaceSymbols_1.next()) {
-                    var sym = workspaceSymbols_1_1.value;
-                    var convertedSymbol = Converter.fromSymbolInformation(sym);
-                    if (convertedSymbol) {
-                        newSymbols.push(convertedSymbol);
-                    }
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (workspaceSymbols_1_1 && !workspaceSymbols_1_1.done && (_a = workspaceSymbols_1.return)) _a.call(workspaceSymbols_1);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-            return newSymbols;
-        });
-    };
-    WorkspaceSymbolAdapter.prototype.resolveWorkspaceSymbol = function (symbol, token) {
-        if (this.provider.resolveWorkspaceSymbol && typeof this.provider.resolveWorkspaceSymbol === 'function') {
-            var vscodeSymbol = Converter.toSymbolInformation(symbol);
-            if (!vscodeSymbol) {
-                return Promise.resolve(symbol);
-            }
-            else {
-                return Promise.resolve(this.provider.resolveWorkspaceSymbol(vscodeSymbol, token)).then(function (workspaceSymbol) {
-                    if (!workspaceSymbol) {
-                        return symbol;
-                    }
-                    var converted = Converter.fromSymbolInformation(workspaceSymbol);
-                    if (converted) {
-                        return converted;
-                    }
-                    return symbol;
-                });
-            }
-        }
-        return Promise.resolve(symbol);
-    };
-    return WorkspaceSymbolAdapter;
-}());
-exports.WorkspaceSymbolAdapter = WorkspaceSymbolAdapter;
-
-
-/***/ }),
-/* 434 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Converter = __webpack_require__(225);
-var SignatureHelpAdapter = (function () {
-    function SignatureHelpAdapter(delegate, documents) {
-        this.delegate = delegate;
-        this.documents = documents;
-    }
-    SignatureHelpAdapter.prototype.provideSignatureHelp = function (resource, position, token, context) {
-        var documentData = this.documents.getDocumentData(resource);
-        if (!documentData) {
-            return Promise.reject(new Error("There are no document for  " + resource));
-        }
-        var document = documentData.document;
-        var zeroBasedPosition = Converter.toPosition(position);
-        return Promise.resolve(this.delegate.provideSignatureHelp(document, zeroBasedPosition, token, context));
-    };
-    return SignatureHelpAdapter;
-}());
-exports.SignatureHelpAdapter = SignatureHelpAdapter;
 
 
 /***/ }),
@@ -64144,34 +63070,112 @@ exports.SignatureHelpAdapter = SignatureHelpAdapter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var types = __webpack_require__(220);
-var Converter = __webpack_require__(225);
-var utils_1 = __webpack_require__(221);
-var RenameAdapter = (function () {
-    function RenameAdapter(provider, documents) {
+const Converter = __webpack_require__(227);
+class WorkspaceSymbolAdapter {
+    constructor(provider) {
+        this.provider = provider;
+    }
+    provideWorkspaceSymbols(query, token) {
+        return Promise.resolve(this.provider.provideWorkspaceSymbols(query, token)).then((workspaceSymbols) => {
+            if (!workspaceSymbols) {
+                return [];
+            }
+            const newSymbols = [];
+            for (const sym of workspaceSymbols) {
+                const convertedSymbol = Converter.fromSymbolInformation(sym);
+                if (convertedSymbol) {
+                    newSymbols.push(convertedSymbol);
+                }
+            }
+            return newSymbols;
+        });
+    }
+    resolveWorkspaceSymbol(symbol, token) {
+        if (this.provider.resolveWorkspaceSymbol && typeof this.provider.resolveWorkspaceSymbol === 'function') {
+            const vscodeSymbol = Converter.toSymbolInformation(symbol);
+            if (!vscodeSymbol) {
+                return Promise.resolve(symbol);
+            }
+            else {
+                return Promise.resolve(this.provider.resolveWorkspaceSymbol(vscodeSymbol, token)).then((workspaceSymbol) => {
+                    if (!workspaceSymbol) {
+                        return symbol;
+                    }
+                    const converted = Converter.fromSymbolInformation(workspaceSymbol);
+                    if (converted) {
+                        return converted;
+                    }
+                    return symbol;
+                });
+            }
+        }
+        return Promise.resolve(symbol);
+    }
+}
+exports.WorkspaceSymbolAdapter = WorkspaceSymbolAdapter;
+
+
+/***/ }),
+/* 436 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const Converter = __webpack_require__(227);
+class SignatureHelpAdapter {
+    constructor(delegate, documents) {
+        this.delegate = delegate;
+        this.documents = documents;
+    }
+    provideSignatureHelp(resource, position, token, context) {
+        const documentData = this.documents.getDocumentData(resource);
+        if (!documentData) {
+            return Promise.reject(new Error(`There are no document for  ${resource}`));
+        }
+        const document = documentData.document;
+        const zeroBasedPosition = Converter.toPosition(position);
+        return Promise.resolve(this.delegate.provideSignatureHelp(document, zeroBasedPosition, token, context));
+    }
+}
+exports.SignatureHelpAdapter = SignatureHelpAdapter;
+
+
+/***/ }),
+/* 437 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const types = __webpack_require__(222);
+const Converter = __webpack_require__(227);
+const utils_1 = __webpack_require__(223);
+class RenameAdapter {
+    constructor(provider, documents) {
         this.provider = provider;
         this.documents = documents;
     }
-    RenameAdapter.supportsResolving = function (provider) {
+    static supportsResolving(provider) {
         return typeof provider.prepareRename === 'function';
-    };
-    RenameAdapter.prototype.provideRenameEdits = function (resource, position, newName, token) {
-        var document = this.documents.getDocumentData(resource);
+    }
+    provideRenameEdits(resource, position, newName, token) {
+        const document = this.documents.getDocumentData(resource);
         if (!document) {
-            return Promise.reject(new Error("There is no document for " + resource));
+            return Promise.reject(new Error(`There is no document for ${resource}`));
         }
-        var doc = document.document;
-        var pos = Converter.toPosition(position);
-        return Promise.resolve(this.provider.provideRenameEdits(doc, pos, newName, token)).then(function (value) {
+        const doc = document.document;
+        const pos = Converter.toPosition(position);
+        return Promise.resolve(this.provider.provideRenameEdits(doc, pos, newName, token)).then((value) => {
             if (!value) {
                 return undefined;
             }
             return Converter.fromWorkspaceEdit(value);
-        }, function (error) {
-            var rejectReason = RenameAdapter.asMessage(error);
+        }, (error) => {
+            const rejectReason = RenameAdapter.asMessage(error);
             if (rejectReason) {
                 return {
-                    rejectReason: rejectReason,
+                    rejectReason,
                     edits: undefined,
                 };
             }
@@ -64179,20 +63183,20 @@ var RenameAdapter = (function () {
                 return Promise.reject(error);
             }
         });
-    };
-    RenameAdapter.prototype.resolveRenameLocation = function (resource, position, token) {
+    }
+    resolveRenameLocation(resource, position, token) {
         if (typeof this.provider.prepareRename !== 'function') {
             return Promise.resolve(undefined);
         }
-        var document = this.documents.getDocumentData(resource);
+        const document = this.documents.getDocumentData(resource);
         if (!document) {
-            return Promise.reject(new Error("There is no document for " + resource));
+            return Promise.reject(new Error(`There is no document for ${resource}`));
         }
-        var doc = document.document;
-        var pos = Converter.toPosition(position);
-        return Promise.resolve(this.provider.prepareRename(doc, pos, token)).then(function (rangeOrLocation) {
-            var range;
-            var text;
+        const doc = document.document;
+        const pos = Converter.toPosition(position);
+        return Promise.resolve(this.provider.prepareRename(doc, pos, token)).then((rangeOrLocation) => {
+            let range;
+            let text;
             if (rangeOrLocation && types.Range.isRange(rangeOrLocation)) {
                 range = rangeOrLocation;
                 text = doc.getText(rangeOrLocation);
@@ -64212,11 +63216,11 @@ var RenameAdapter = (function () {
                 range: Converter.fromRange(range),
                 text: text,
             };
-        }, function (error) {
-            var rejectReason = RenameAdapter.asMessage(error);
+        }, (error) => {
+            const rejectReason = RenameAdapter.asMessage(error);
             if (rejectReason) {
                 return Promise.resolve({
-                    rejectReason: rejectReason,
+                    rejectReason,
                     range: undefined,
                     text: undefined,
                 });
@@ -64225,8 +63229,8 @@ var RenameAdapter = (function () {
                 return Promise.reject(error);
             }
         });
-    };
-    RenameAdapter.asMessage = function (err) {
+    }
+    static asMessage(err) {
         if (typeof err === 'string') {
             return err;
         }
@@ -64236,87 +63240,10 @@ var RenameAdapter = (function () {
         else {
             return undefined;
         }
-    };
-    return RenameAdapter;
-}());
+    }
+}
 exports.RenameAdapter = RenameAdapter;
 
-
-/***/ }),
-/* 436 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var Converter = __webpack_require__(225);
-var ide_core_common_1 = __webpack_require__(2);
-var SelectionRangeAdapter = (function () {
-    function SelectionRangeAdapter(documents, _provider) {
-        this.documents = documents;
-        this._provider = _provider;
-    }
-    SelectionRangeAdapter.prototype.provideSelectionRanges = function (resource, pos, token) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var documentData, doc, zeroBasedPositions, allProviderRanges, allResults, i, oneResult, last, selectionRange;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        documentData = this.documents.getDocumentData(resource);
-                        if (!documentData) {
-                            return [2, Promise.reject(new Error("There is no document for " + resource))];
-                        }
-                        doc = documentData.document;
-                        zeroBasedPositions = pos.map(Converter.toPosition);
-                        return [4, this._provider.provideSelectionRanges(doc, zeroBasedPositions, token)];
-                    case 1:
-                        allProviderRanges = _a.sent();
-                        if (!ide_core_common_1.isNonEmptyArray(allProviderRanges)) {
-                            return [2, []];
-                        }
-                        if (allProviderRanges.length !== zeroBasedPositions.length) {
-                            console.warn('BAD selection ranges, provider must return ranges for each position');
-                            return [2, []];
-                        }
-                        allResults = [];
-                        for (i = 0; i < zeroBasedPositions.length; i++) {
-                            oneResult = [];
-                            allResults.push(oneResult);
-                            last = zeroBasedPositions[i];
-                            selectionRange = allProviderRanges[i];
-                            while (true) {
-                                if (!selectionRange.range.contains(last)) {
-                                    throw new Error('INVALID selection range, must contain the previous range');
-                                }
-                                oneResult.push(Converter.fromSelectionRange(selectionRange));
-                                if (!selectionRange.parent) {
-                                    break;
-                                }
-                                last = selectionRange.range;
-                                selectionRange = selectionRange.parent;
-                            }
-                        }
-                        return [2, allResults];
-                }
-            });
-        });
-    };
-    return SelectionRangeAdapter;
-}());
-exports.SelectionRangeAdapter = SelectionRangeAdapter;
-
-
-/***/ }),
-/* 437 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(438), exports);
-//# sourceMappingURL=index.js.map
 
 /***/ }),
 /* 438 */
@@ -64326,14 +63253,81 @@ tslib_1.__exportStar(__webpack_require__(438), exports);
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(439), exports);
-tslib_1.__exportStar(__webpack_require__(440), exports);
-tslib_1.__exportStar(__webpack_require__(441), exports);
-tslib_1.__exportStar(__webpack_require__(442), exports);
-//# sourceMappingURL=index.js.map
+const Converter = __webpack_require__(227);
+const ide_core_common_1 = __webpack_require__(2);
+class SelectionRangeAdapter {
+    constructor(documents, _provider) {
+        this.documents = documents;
+        this._provider = _provider;
+    }
+    provideSelectionRanges(resource, pos, token) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const documentData = this.documents.getDocumentData(resource);
+            if (!documentData) {
+                return Promise.reject(new Error(`There is no document for ${resource}`));
+            }
+            const doc = documentData.document;
+            const zeroBasedPositions = pos.map(Converter.toPosition);
+            const allProviderRanges = yield this._provider.provideSelectionRanges(doc, zeroBasedPositions, token);
+            if (!ide_core_common_1.isNonEmptyArray(allProviderRanges)) {
+                return [];
+            }
+            if (allProviderRanges.length !== zeroBasedPositions.length) {
+                console.warn('BAD selection ranges, provider must return ranges for each position');
+                return [];
+            }
+            const allResults = [];
+            for (let i = 0; i < zeroBasedPositions.length; i++) {
+                const oneResult = [];
+                allResults.push(oneResult);
+                let last = zeroBasedPositions[i];
+                let selectionRange = allProviderRanges[i];
+                while (true) {
+                    if (!selectionRange.range.contains(last)) {
+                        throw new Error('INVALID selection range, must contain the previous range');
+                    }
+                    oneResult.push(Converter.fromSelectionRange(selectionRange));
+                    if (!selectionRange.parent) {
+                        break;
+                    }
+                    last = selectionRange.range;
+                    selectionRange = selectionRange.parent;
+                }
+            }
+            return allResults;
+        });
+    }
+}
+exports.SelectionRangeAdapter = SelectionRangeAdapter;
+
 
 /***/ }),
 /* 439 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(440), exports);
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 440 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(441), exports);
+tslib_1.__exportStar(__webpack_require__(442), exports);
+tslib_1.__exportStar(__webpack_require__(443), exports);
+tslib_1.__exportStar(__webpack_require__(444), exports);
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 441 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -64376,7 +63370,7 @@ exports.parseRangeFrom = parseRangeFrom;
 //# sourceMappingURL=doc-cache.js.map
 
 /***/ }),
-/* 440 */
+/* 442 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -64424,7 +63418,7 @@ var Direction;
 //# sourceMappingURL=editor.js.map
 
 /***/ }),
-/* 441 */
+/* 443 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -64449,7 +63443,7 @@ exports.ResourceDecorationChangeEvent = ResourceDecorationChangeEvent;
 //# sourceMappingURL=resource.js.map
 
 /***/ }),
-/* 442 */
+/* 444 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -64519,118 +63513,91 @@ exports.asDiagnostic = asDiagnostic;
 //# sourceMappingURL=language.js.map
 
 /***/ }),
-/* 443 */
+/* 445 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_1 = __webpack_require__(204);
-var ExtHostMessage = (function () {
-    function ExtHostMessage(rpc) {
+const tslib_1 = __webpack_require__(1);
+const vscode_1 = __webpack_require__(206);
+class ExtHostMessage {
+    constructor(rpc) {
         this.proxy = rpc.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadMessages);
     }
-    ExtHostMessage.prototype.showMessage = function (type, message, optionsOrFirstItem) {
-        var rest = [];
-        for (var _i = 3; _i < arguments.length; _i++) {
-            rest[_i - 3] = arguments[_i];
-        }
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var options, actions, items, pushItem, rest_1, rest_1_1, item, actionHandle;
-            var e_1, _a;
-            return tslib_1.__generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        options = {};
-                        actions = [];
-                        items = [];
-                        pushItem = function (item) {
-                            items.push(item);
-                            if (typeof item === 'string') {
-                                actions.push(item);
-                            }
-                            else {
-                                actions.push(item.title);
-                            }
-                        };
-                        if (optionsOrFirstItem) {
-                            if (typeof optionsOrFirstItem === 'string' || 'title' in optionsOrFirstItem) {
-                                pushItem(optionsOrFirstItem);
-                            }
-                            else {
-                                if ('modal' in optionsOrFirstItem) {
-                                    options.modal = optionsOrFirstItem.modal;
-                                }
-                            }
-                        }
-                        try {
-                            for (rest_1 = tslib_1.__values(rest), rest_1_1 = rest_1.next(); !rest_1_1.done; rest_1_1 = rest_1.next()) {
-                                item = rest_1_1.value;
-                                pushItem(item);
-                            }
-                        }
-                        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                        finally {
-                            try {
-                                if (rest_1_1 && !rest_1_1.done && (_a = rest_1.return)) _a.call(rest_1);
-                            }
-                            finally { if (e_1) throw e_1.error; }
-                        }
-                        return [4, this.proxy.$showMessage(type, message, options, actions)];
-                    case 1:
-                        actionHandle = _b.sent();
-                        return [2, actionHandle !== undefined ? items[actionHandle] : undefined];
+    showMessage(type, message, optionsOrFirstItem, ...rest) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const options = {};
+            const actions = [];
+            const items = [];
+            const pushItem = (item) => {
+                items.push(item);
+                if (typeof item === 'string') {
+                    actions.push(item);
                 }
-            });
+                else {
+                    actions.push(item.title);
+                }
+            };
+            if (optionsOrFirstItem) {
+                if (typeof optionsOrFirstItem === 'string' || 'title' in optionsOrFirstItem) {
+                    pushItem(optionsOrFirstItem);
+                }
+                else {
+                    if ('modal' in optionsOrFirstItem) {
+                        options.modal = optionsOrFirstItem.modal;
+                    }
+                }
+            }
+            for (const item of rest) {
+                pushItem(item);
+            }
+            const actionHandle = yield this.proxy.$showMessage(type, message, options, actions);
+            return actionHandle !== undefined ? items[actionHandle] : undefined;
         });
-    };
-    return ExtHostMessage;
-}());
+    }
+}
 exports.ExtHostMessage = ExtHostMessage;
 
 
 /***/ }),
-/* 444 */
+/* 446 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_1 = __webpack_require__(204);
-var vscode_2 = __webpack_require__(204);
-var ide_core_common_1 = __webpack_require__(2);
-var ExtHostTreeViews = (function () {
-    function ExtHostTreeViews(rpc, extHostCommand) {
-        var _this = this;
+const tslib_1 = __webpack_require__(1);
+const vscode_1 = __webpack_require__(206);
+const vscode_2 = __webpack_require__(206);
+const ide_core_common_1 = __webpack_require__(2);
+class ExtHostTreeViews {
+    constructor(rpc, extHostCommand) {
         this.treeViews = new Map();
         this.proxy = rpc.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadTreeView);
         extHostCommand.registerArgumentProcessor({
-            processArgument: function (arg) {
+            processArgument: (arg) => {
                 if (!vscode_2.TreeViewSelection.is(arg)) {
                     return arg;
                 }
-                var treeViewId = arg.treeViewId, treeItemId = arg.treeItemId;
-                var treeView = _this.treeViews.get(treeViewId);
+                const { treeViewId, treeItemId } = arg;
+                const treeView = this.treeViews.get(treeViewId);
                 return treeView && treeView.getTreeItem(treeItemId);
             },
         });
     }
-    ExtHostTreeViews.prototype.registerTreeDataProvider = function (treeViewId, treeDataProvider) {
-        var _this = this;
-        var treeView = this.createTreeView(treeViewId, { treeDataProvider: treeDataProvider });
-        return ide_core_common_1.Disposable.create(function () {
-            _this.treeViews.delete(treeViewId);
+    registerTreeDataProvider(treeViewId, treeDataProvider) {
+        const treeView = this.createTreeView(treeViewId, { treeDataProvider });
+        return ide_core_common_1.Disposable.create(() => {
+            this.treeViews.delete(treeViewId);
             treeView.dispose();
         });
-    };
-    ExtHostTreeViews.prototype.createTreeView = function (treeViewId, options) {
-        var _this = this;
+    }
+    createTreeView(treeViewId, options) {
         if (!options || !options.treeDataProvider) {
             throw new Error('Options with treeDataProvider is mandatory');
         }
-        var treeView = new ExtHostTreeView(treeViewId, options.treeDataProvider, this.proxy);
+        const treeView = new ExtHostTreeView(treeViewId, options.treeDataProvider, this.proxy);
         this.treeViews.set(treeViewId, treeView);
         return {
             get onDidExpandElement() {
@@ -64642,50 +63609,40 @@ var ExtHostTreeViews = (function () {
             get selection() {
                 return treeView.selectedElements;
             },
-            reveal: function (element, selectionOptions) {
-                return treeView.reveal(element, selectionOptions);
-            },
-            dispose: function () {
-                _this.treeViews.delete(treeViewId);
+            reveal: (element, selectionOptions) => treeView.reveal(element, selectionOptions),
+            dispose: () => {
+                this.treeViews.delete(treeViewId);
                 treeView.dispose();
             },
         };
-    };
-    ExtHostTreeViews.prototype.$getChildren = function (treeViewId, treeItemId) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var treeView;
-            return tslib_1.__generator(this, function (_a) {
-                treeView = this.treeViews.get(treeViewId);
-                if (!treeView) {
-                    throw new Error('No tree view with id' + treeViewId);
-                }
-                return [2, treeView.getChildren(treeItemId)];
-            });
+    }
+    $getChildren(treeViewId, treeItemId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const treeView = this.treeViews.get(treeViewId);
+            if (!treeView) {
+                throw new Error('No tree view with id' + treeViewId);
+            }
+            return treeView.getChildren(treeItemId);
         });
-    };
-    ExtHostTreeViews.prototype.$setExpanded = function (treeViewId, treeItemId, expanded) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var treeView;
-            return tslib_1.__generator(this, function (_a) {
-                treeView = this.treeViews.get(treeViewId);
-                if (!treeView) {
-                    throw new Error('No tree view with id' + treeViewId);
-                }
-                if (expanded) {
-                    return [2, treeView.onExpanded(treeItemId)];
-                }
-                else {
-                    return [2, treeView.onCollapsed(treeItemId)];
-                }
-                return [2];
-            });
+    }
+    $setExpanded(treeViewId, treeItemId, expanded) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const treeView = this.treeViews.get(treeViewId);
+            if (!treeView) {
+                throw new Error('No tree view with id' + treeViewId);
+            }
+            if (expanded) {
+                return treeView.onExpanded(treeItemId);
+            }
+            else {
+                return treeView.onCollapsed(treeItemId);
+            }
         });
-    };
-    return ExtHostTreeViews;
-}());
+    }
+}
 exports.ExtHostTreeViews = ExtHostTreeViews;
-var ExtHostTreeView = (function () {
-    function ExtHostTreeView(treeViewId, treeDataProvider, proxy) {
+class ExtHostTreeView {
+    constructor(treeViewId, treeDataProvider, proxy) {
         this.treeViewId = treeViewId;
         this.treeDataProvider = treeDataProvider;
         this.proxy = proxy;
@@ -64698,147 +63655,115 @@ var ExtHostTreeView = (function () {
         this.idCounter = 0;
         proxy.$registerTreeDataProvider(treeViewId);
         if (treeDataProvider.onDidChangeTreeData) {
-            treeDataProvider.onDidChangeTreeData(function () {
+            treeDataProvider.onDidChangeTreeData(() => {
                 proxy.$refresh(treeViewId);
             });
         }
     }
-    Object.defineProperty(ExtHostTreeView.prototype, "selectedElements", {
-        get: function () { return this.selection; },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostTreeView.prototype.dispose = function () {
-    };
-    ExtHostTreeView.prototype.reveal = function (element, selectionOptions) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var elementId;
-            return tslib_1.__generator(this, function (_a) {
-                this.cache.forEach(function (el, id) {
-                    if (Object.is(el, element)) {
-                        elementId = id;
-                    }
-                });
-                if (elementId) {
-                    return [2, this.proxy.$reveal(this.treeViewId, elementId)];
+    get selectedElements() { return this.selection; }
+    dispose() {
+    }
+    reveal(element, selectionOptions) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            let elementId;
+            this.cache.forEach((el, id) => {
+                if (Object.is(el, element)) {
+                    elementId = id;
                 }
-                return [2];
             });
+            if (elementId) {
+                return this.proxy.$reveal(this.treeViewId, elementId);
+            }
         });
-    };
-    ExtHostTreeView.prototype.generateId = function () {
-        return "item-" + this.idCounter++;
-    };
-    ExtHostTreeView.prototype.getTreeItem = function (treeItemId) {
+    }
+    generateId() {
+        return `item-${this.idCounter++}`;
+    }
+    getTreeItem(treeItemId) {
         if (treeItemId) {
             return this.cache.get(treeItemId);
         }
-    };
-    ExtHostTreeView.prototype.getChildren = function (treeItemId) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var cachedElement, result, treeItems_1, promises;
-            var _this = this;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        cachedElement = this.getTreeItem(treeItemId);
-                        return [4, this.treeDataProvider.getChildren(cachedElement)];
-                    case 1:
-                        result = _a.sent();
-                        if (!result) return [3, 3];
-                        treeItems_1 = [];
-                        promises = result.map(function (value) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                            var treeItem, id, label, iconPath, treeViewItem;
-                            return tslib_1.__generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4, this.treeDataProvider.getTreeItem(value)];
-                                    case 1:
-                                        treeItem = _a.sent();
-                                        id = this.generateId();
-                                        this.cache.set(id, value);
-                                        label = treeItem.label;
-                                        if (!label && treeItem.resourceUri) {
-                                            label = treeItem.resourceUri.path.toString();
-                                            label = decodeURIComponent(label);
-                                            if (label.indexOf('/') >= 0) {
-                                                label = label.substring(label.lastIndexOf('/') + 1);
-                                            }
-                                        }
-                                        if (!label) {
-                                            label = id;
-                                        }
-                                        iconPath = treeItem.iconPath;
-                                        treeViewItem = {
-                                            id: id,
-                                            label: label,
-                                            icon: '',
-                                            iconUrl: iconPath,
-                                            themeIconId: 'file',
-                                            resourceUri: treeItem.resourceUri,
-                                            tooltip: treeItem.tooltip,
-                                            collapsibleState: treeItem.collapsibleState,
-                                            contextValue: treeItem.contextValue,
-                                            command: treeItem.command,
-                                        };
-                                        treeItems_1.push(treeViewItem);
-                                        return [2];
-                                }
-                            });
-                        }); });
-                        return [4, Promise.all(promises)];
-                    case 2:
-                        _a.sent();
-                        return [2, treeItems_1];
-                    case 3: return [2, undefined];
-                }
-            });
+    }
+    getChildren(treeItemId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const cachedElement = this.getTreeItem(treeItemId);
+            const result = yield this.treeDataProvider.getChildren(cachedElement);
+            if (result) {
+                const treeItems = [];
+                const promises = result.map((value) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                    const treeItem = yield this.treeDataProvider.getTreeItem(value);
+                    const id = this.generateId();
+                    this.cache.set(id, value);
+                    let label = treeItem.label;
+                    if (!label && treeItem.resourceUri) {
+                        label = treeItem.resourceUri.path.toString();
+                        label = decodeURIComponent(label);
+                        if (label.indexOf('/') >= 0) {
+                            label = label.substring(label.lastIndexOf('/') + 1);
+                        }
+                    }
+                    if (!label) {
+                        label = id;
+                    }
+                    const { iconPath } = treeItem;
+                    const treeViewItem = {
+                        id,
+                        label,
+                        icon: '',
+                        iconUrl: iconPath,
+                        themeIconId: 'file',
+                        resourceUri: treeItem.resourceUri,
+                        tooltip: treeItem.tooltip,
+                        collapsibleState: treeItem.collapsibleState,
+                        contextValue: treeItem.contextValue,
+                        command: treeItem.command,
+                    };
+                    treeItems.push(treeViewItem);
+                }));
+                yield Promise.all(promises);
+                return treeItems;
+            }
+            else {
+                return undefined;
+            }
         });
-    };
-    ExtHostTreeView.prototype.onExpanded = function (treeItemId) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var cachedElement;
-            return tslib_1.__generator(this, function (_a) {
-                cachedElement = this.getTreeItem(treeItemId);
-                if (cachedElement) {
-                    this.onDidExpandElementEmitter.fire({
-                        element: cachedElement,
-                    });
-                }
-                return [2];
-            });
+    }
+    onExpanded(treeItemId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const cachedElement = this.getTreeItem(treeItemId);
+            if (cachedElement) {
+                this.onDidExpandElementEmitter.fire({
+                    element: cachedElement,
+                });
+            }
         });
-    };
-    ExtHostTreeView.prototype.onCollapsed = function (treeItemId) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var cachedElement;
-            return tslib_1.__generator(this, function (_a) {
-                cachedElement = this.getTreeItem(treeItemId);
-                if (cachedElement) {
-                    this.onDidCollapseElementEmitter.fire({
-                        element: cachedElement,
-                    });
-                }
-                return [2];
-            });
+    }
+    onCollapsed(treeItemId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const cachedElement = this.getTreeItem(treeItemId);
+            if (cachedElement) {
+                this.onDidCollapseElementEmitter.fire({
+                    element: cachedElement,
+                });
+            }
         });
-    };
-    return ExtHostTreeView;
-}());
+    }
+}
 
 
 /***/ }),
-/* 445 */
+/* 447 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_1 = __webpack_require__(204);
-var ide_core_common_1 = __webpack_require__(2);
-var ext_types_1 = __webpack_require__(220);
-var ExtHostWebview = (function () {
-    function ExtHostWebview(handle, proxy, options) {
+const tslib_1 = __webpack_require__(1);
+const vscode_1 = __webpack_require__(206);
+const ide_core_common_1 = __webpack_require__(2);
+const ext_types_1 = __webpack_require__(222);
+class ExtHostWebview {
+    constructor(handle, proxy, options) {
         this._isDisposed = false;
         this._onMessageEmitter = new ide_core_common_1.Emitter();
         this.onDidReceiveMessage = this._onMessageEmitter.event;
@@ -64846,51 +63771,42 @@ var ExtHostWebview = (function () {
         this._proxy = proxy;
         this._options = options;
     }
-    ExtHostWebview.prototype.dispose = function () {
+    dispose() {
         this._onMessageEmitter.dispose();
-    };
-    Object.defineProperty(ExtHostWebview.prototype, "html", {
-        get: function () {
-            this.assertNotDisposed();
-            return this._html;
-        },
-        set: function (value) {
-            this.assertNotDisposed();
-            if (this._html !== value) {
-                this._html = value;
-                this._proxy.$setHtml(this._handle, value);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostWebview.prototype, "options", {
-        get: function () {
-            this.assertNotDisposed();
-            return this._options;
-        },
-        set: function (newOptions) {
-            this.assertNotDisposed();
-            this._proxy.$setOptions(this._handle, newOptions);
-            this._options = newOptions;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostWebview.prototype.postMessage = function (message) {
+    }
+    get html() {
+        this.assertNotDisposed();
+        return this._html;
+    }
+    set html(value) {
+        this.assertNotDisposed();
+        if (this._html !== value) {
+            this._html = value;
+            this._proxy.$setHtml(this._handle, value);
+        }
+    }
+    get options() {
+        this.assertNotDisposed();
+        return this._options;
+    }
+    set options(newOptions) {
+        this.assertNotDisposed();
+        this._proxy.$setOptions(this._handle, newOptions);
+        this._options = newOptions;
+    }
+    postMessage(message) {
         this.assertNotDisposed();
         return this._proxy.$postMessage(this._handle, message);
-    };
-    ExtHostWebview.prototype.assertNotDisposed = function () {
+    }
+    assertNotDisposed() {
         if (this._isDisposed) {
             throw new Error('Webview is disposed');
         }
-    };
-    return ExtHostWebview;
-}());
+    }
+}
 exports.ExtHostWebview = ExtHostWebview;
-var ExtHostWebviewPanel = (function () {
-    function ExtHostWebviewPanel(handle, proxy, viewType, title, viewColumn, editorOptions, webview) {
+class ExtHostWebviewPanel {
+    constructor(handle, proxy, viewType, title, viewColumn, editorOptions, webview) {
         this._isDisposed = false;
         this._visible = true;
         this._active = true;
@@ -64906,7 +63822,7 @@ var ExtHostWebviewPanel = (function () {
         this._title = title;
         this._webview = webview;
     }
-    ExtHostWebviewPanel.prototype.dispose = function () {
+    dispose() {
         if (this._isDisposed) {
             return;
         }
@@ -64916,162 +63832,127 @@ var ExtHostWebviewPanel = (function () {
         this._webview.dispose();
         this._onDisposeEmitter.dispose();
         this._onDidChangeViewStateEmitter.dispose();
-    };
-    Object.defineProperty(ExtHostWebviewPanel.prototype, "webview", {
-        get: function () {
-            this.assertNotDisposed();
-            return this._webview;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostWebviewPanel.prototype, "viewType", {
-        get: function () {
-            this.assertNotDisposed();
-            return this._viewType;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostWebviewPanel.prototype, "title", {
-        get: function () {
-            this.assertNotDisposed();
-            return this._title;
-        },
-        set: function (value) {
-            this.assertNotDisposed();
-            if (this._title !== value) {
-                this._title = value;
-                this._proxy.$setTitle(this._handle, value);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostWebviewPanel.prototype, "iconPath", {
-        get: function () {
-            this.assertNotDisposed();
-            return this._iconPath;
-        },
-        set: function (value) {
-            this.assertNotDisposed();
-            if (this._iconPath !== value) {
-                this._iconPath = value;
-                this._proxy.$setIconPath(this._handle, ext_types_1.Uri.isUri(value) ? { light: value, dark: value } : value);
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostWebviewPanel.prototype, "options", {
-        get: function () {
-            return this._options;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostWebviewPanel.prototype, "viewColumn", {
-        get: function () {
-            this.assertNotDisposed();
-            return this._viewColumn;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostWebviewPanel.prototype._setViewColumn = function (value) {
+    }
+    get webview() {
+        this.assertNotDisposed();
+        return this._webview;
+    }
+    get viewType() {
+        this.assertNotDisposed();
+        return this._viewType;
+    }
+    get title() {
+        this.assertNotDisposed();
+        return this._title;
+    }
+    set title(value) {
+        this.assertNotDisposed();
+        if (this._title !== value) {
+            this._title = value;
+            this._proxy.$setTitle(this._handle, value);
+        }
+    }
+    get iconPath() {
+        this.assertNotDisposed();
+        return this._iconPath;
+    }
+    set iconPath(value) {
+        this.assertNotDisposed();
+        if (this._iconPath !== value) {
+            this._iconPath = value;
+            this._proxy.$setIconPath(this._handle, ext_types_1.Uri.isUri(value) ? { light: value, dark: value } : value);
+        }
+    }
+    get options() {
+        return this._options;
+    }
+    get viewColumn() {
+        this.assertNotDisposed();
+        return this._viewColumn;
+    }
+    _setViewColumn(value) {
         this.assertNotDisposed();
         this._viewColumn = value;
-    };
-    Object.defineProperty(ExtHostWebviewPanel.prototype, "active", {
-        get: function () {
-            this.assertNotDisposed();
-            return this._active;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostWebviewPanel.prototype._setActive = function (value) {
+    }
+    get active() {
+        this.assertNotDisposed();
+        return this._active;
+    }
+    _setActive(value) {
         this.assertNotDisposed();
         this._active = value;
-    };
-    Object.defineProperty(ExtHostWebviewPanel.prototype, "visible", {
-        get: function () {
-            this.assertNotDisposed();
-            return this._visible;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostWebviewPanel.prototype._setVisible = function (value) {
+    }
+    get visible() {
+        this.assertNotDisposed();
+        return this._visible;
+    }
+    _setVisible(value) {
         this.assertNotDisposed();
         this._visible = value;
-    };
-    ExtHostWebviewPanel.prototype.postMessage = function (message) {
+    }
+    postMessage(message) {
         this.assertNotDisposed();
         return this._proxy.$postMessage(this._handle, message);
-    };
-    ExtHostWebviewPanel.prototype.reveal = function (viewColumn, preserveFocus) {
+    }
+    reveal(viewColumn, preserveFocus) {
         this.assertNotDisposed();
         this._proxy.$reveal(this._handle, {
-            viewColumn: viewColumn,
+            viewColumn,
             preserveFocus: !!preserveFocus,
         });
-    };
-    ExtHostWebviewPanel.prototype.assertNotDisposed = function () {
+    }
+    assertNotDisposed() {
         if (this._isDisposed) {
             throw new Error('Webview is disposed');
         }
-    };
-    return ExtHostWebviewPanel;
-}());
+    }
+}
 exports.ExtHostWebviewPanel = ExtHostWebviewPanel;
-var ExtHostWebviewService = (function () {
-    function ExtHostWebviewService(rpcProtocol) {
+class ExtHostWebviewService {
+    constructor(rpcProtocol) {
         this.rpcProtocol = rpcProtocol;
         this._webviewPanels = new Map();
         this._serializers = new Map();
         this.rpcProtocol = rpcProtocol;
         this._proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadWebview);
     }
-    ExtHostWebviewService.newHandle = function () {
+    static newHandle() {
         return ExtHostWebviewService.webviewHandlePool++ + '';
-    };
-    ExtHostWebviewService.prototype.createWebview = function (extensionLocation, viewType, title, showOptions, options) {
-        if (options === void 0) { options = {}; }
-        var viewColumn = typeof showOptions === 'object' ? showOptions.viewColumn : showOptions;
-        var webviewShowOptions = {
-            viewColumn: viewColumn,
+    }
+    createWebview(extensionLocation, viewType, title, showOptions, options = {}) {
+        const viewColumn = typeof showOptions === 'object' ? showOptions.viewColumn : showOptions;
+        const webviewShowOptions = {
+            viewColumn,
             preserveFocus: typeof showOptions === 'object' && !!showOptions.preserveFocus,
         };
-        var handle = ExtHostWebviewService.newHandle();
+        const handle = ExtHostWebviewService.newHandle();
         this._proxy.$createWebviewPanel(handle, viewType, title, webviewShowOptions, options);
-        var webview = new ExtHostWebview(handle, this._proxy, options);
-        var panel = new ExtHostWebviewPanel(handle, this._proxy, viewType, title, viewColumn, options, webview);
+        const webview = new ExtHostWebview(handle, this._proxy, options);
+        const panel = new ExtHostWebviewPanel(handle, this._proxy, viewType, title, viewColumn, options, webview);
         this._webviewPanels.set(handle, panel);
         return panel;
-    };
-    ExtHostWebviewService.prototype.registerWebviewPanelSerializer = function (viewType, serializer) {
-        var _this = this;
+    }
+    registerWebviewPanelSerializer(viewType, serializer) {
         if (this._serializers.has(viewType)) {
-            throw new Error("Serializer for '" + viewType + "' already registered");
+            throw new Error(`Serializer for '${viewType}' already registered`);
         }
         this._serializers.set(viewType, serializer);
         this._proxy.$registerSerializer(viewType);
-        return new ext_types_1.Disposable(function () {
-            _this._serializers.delete(viewType);
-            _this._proxy.$unregisterSerializer(viewType);
+        return new ext_types_1.Disposable(() => {
+            this._serializers.delete(viewType);
+            this._proxy.$unregisterSerializer(viewType);
         });
-    };
-    ExtHostWebviewService.prototype.$onMessage = function (handle, message) {
-        var panel = this.getWebviewPanel(handle);
+    }
+    $onMessage(handle, message) {
+        const panel = this.getWebviewPanel(handle);
         if (panel) {
             panel.webview._onMessageEmitter.fire(message);
         }
-    };
-    ExtHostWebviewService.prototype.$onDidChangeWebviewPanelViewState = function (handle, newState) {
-        var panel = this.getWebviewPanel(handle);
+    }
+    $onDidChangeWebviewPanelViewState(handle, newState) {
+        const panel = this.getWebviewPanel(handle);
         if (panel) {
-            var viewColumn = newState.position;
+            const viewColumn = newState.position;
             if (panel.active !== newState.active || panel.visible !== newState.visible || panel.viewColumn !== viewColumn) {
                 panel._setActive(newState.active);
                 panel._setVisible(newState.visible);
@@ -65079,55 +63960,47 @@ var ExtHostWebviewService = (function () {
                 panel._onDidChangeViewStateEmitter.fire({ webviewPanel: panel });
             }
         }
-    };
-    ExtHostWebviewService.prototype.$onDidDisposeWebviewPanel = function (handle) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var panel;
-            return tslib_1.__generator(this, function (_a) {
-                panel = this.getWebviewPanel(handle);
-                if (panel) {
-                    panel.dispose();
-                    this._webviewPanels.delete(handle);
-                }
-                return [2];
-            });
+    }
+    $onDidDisposeWebviewPanel(handle) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const panel = this.getWebviewPanel(handle);
+            if (panel) {
+                panel.dispose();
+                this._webviewPanels.delete(handle);
+            }
         });
-    };
-    ExtHostWebviewService.prototype.$deserializeWebviewPanel = function (webviewHandle, viewType, title, state, position, options) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var serializer, webview, revivedPanel;
-            return tslib_1.__generator(this, function (_a) {
-                serializer = this._serializers.get(viewType);
-                if (!serializer) {
-                    throw new Error("No serializer found for '" + viewType + "'");
-                }
-                webview = new ExtHostWebview(webviewHandle, this._proxy, options);
-                revivedPanel = new ExtHostWebviewPanel(webviewHandle, this._proxy, viewType, title, position, options, webview);
-                this._webviewPanels.set(webviewHandle, revivedPanel);
-                return [2, serializer.deserializeWebviewPanel(revivedPanel, state)];
-            });
+    }
+    $deserializeWebviewPanel(webviewHandle, viewType, title, state, position, options) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const serializer = this._serializers.get(viewType);
+            if (!serializer) {
+                throw new Error(`No serializer found for '${viewType}'`);
+            }
+            const webview = new ExtHostWebview(webviewHandle, this._proxy, options);
+            const revivedPanel = new ExtHostWebviewPanel(webviewHandle, this._proxy, viewType, title, position, options, webview);
+            this._webviewPanels.set(webviewHandle, revivedPanel);
+            return serializer.deserializeWebviewPanel(revivedPanel, state);
         });
-    };
-    ExtHostWebviewService.prototype.getWebviewPanel = function (handle) {
+    }
+    getWebviewPanel(handle) {
         return this._webviewPanels.get(handle);
-    };
-    ExtHostWebviewService.webviewHandlePool = 1;
-    return ExtHostWebviewService;
-}());
+    }
+}
 exports.ExtHostWebviewService = ExtHostWebviewService;
+ExtHostWebviewService.webviewHandlePool = 1;
 
 
 /***/ }),
-/* 446 */
+/* 448 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_uri_1 = __webpack_require__(34);
-var ide_core_common_1 = __webpack_require__(2);
-var vscode_1 = __webpack_require__(204);
+const tslib_1 = __webpack_require__(1);
+const vscode_uri_1 = __webpack_require__(34);
+const ide_core_common_1 = __webpack_require__(2);
+const vscode_1 = __webpack_require__(206);
 function getIconPath(decorations) {
     if (!decorations) {
         return undefined;
@@ -65136,7 +64009,7 @@ function getIconPath(decorations) {
         return vscode_uri_1.default.file(decorations.iconPath).toString();
     }
     else if (decorations.iconPath) {
-        return "" + decorations.iconPath;
+        return `${decorations.iconPath}`;
     }
     return undefined;
 }
@@ -65150,12 +64023,12 @@ function compareResourceThemableDecorations(a, b) {
     else if (!b.iconPath) {
         return 1;
     }
-    var aPath = typeof a.iconPath === 'string' ? a.iconPath : a.iconPath.fsPath;
-    var bPath = typeof b.iconPath === 'string' ? b.iconPath : b.iconPath.fsPath;
+    const aPath = typeof a.iconPath === 'string' ? a.iconPath : a.iconPath.fsPath;
+    const bPath = typeof b.iconPath === 'string' ? b.iconPath : b.iconPath.fsPath;
     return ide_core_common_1.comparePaths(aPath, bPath);
 }
 function compareResourceStatesDecorations(a, b) {
-    var result = 0;
+    let result = 0;
     if (a.strikeThrough !== b.strikeThrough) {
         return a.strikeThrough ? 1 : -1;
     }
@@ -65193,7 +64066,7 @@ function compareResourceStatesDecorations(a, b) {
     return result;
 }
 function compareResourceStates(a, b) {
-    var result = ide_core_common_1.comparePaths(a.resourceUri.fsPath, b.resourceUri.fsPath, true);
+    let result = ide_core_common_1.comparePaths(a.resourceUri.fsPath, b.resourceUri.fsPath, true);
     if (result !== 0) {
         return result;
     }
@@ -65209,7 +64082,7 @@ function compareResourceStates(a, b) {
     return result;
 }
 function compareArgs(a, b) {
-    for (var i = 0; i < a.length; i++) {
+    for (let i = 0; i < a.length; i++) {
         if (a[i] !== b[i]) {
             return false;
         }
@@ -65226,15 +64099,15 @@ function commandListEquals(a, b) {
     if (a.length !== b.length) {
         return false;
     }
-    for (var i = 0; i < a.length; i++) {
+    for (let i = 0; i < a.length; i++) {
         if (!commandEquals(a[i], b[i])) {
             return false;
         }
     }
     return true;
 }
-var ExtHostSCMInputBox = (function () {
-    function ExtHostSCMInputBox(_extension, _proxy, _sourceControlHandle) {
+class ExtHostSCMInputBox {
+    constructor(_extension, _proxy, _sourceControlHandle) {
         this._extension = _extension;
         this._proxy = _proxy;
         this._sourceControlHandle = _sourceControlHandle;
@@ -65243,80 +64116,59 @@ var ExtHostSCMInputBox = (function () {
         this._placeholder = '';
         this._visible = true;
     }
-    Object.defineProperty(ExtHostSCMInputBox.prototype, "value", {
-        get: function () {
-            return this._value;
-        },
-        set: function (value) {
-            this._proxy.$setInputBoxValue(this._sourceControlHandle, value);
-            this.updateValue(value);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSCMInputBox.prototype, "onDidChange", {
-        get: function () {
-            return this._onDidChange.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSCMInputBox.prototype, "placeholder", {
-        get: function () {
-            return this._placeholder;
-        },
-        set: function (placeholder) {
-            this._proxy.$setInputBoxPlaceholder(this._sourceControlHandle, placeholder);
-            this._placeholder = placeholder;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSCMInputBox.prototype, "validateInput", {
-        get: function () {
-            if (!this._extension.enableProposedApi) {
-                throw new Error("[" + this._extension.id + "]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api " + this._extension.id);
-            }
-            return this._validateInput;
-        },
-        set: function (fn) {
-            if (!this._extension.enableProposedApi) {
-                throw new Error("[" + this._extension.id + "]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api " + this._extension.id);
-            }
-            if (fn && typeof fn !== 'function') {
-                console.warn('Invalid SCM input box validation function');
-                return;
-            }
-            this._validateInput = fn;
-            this._proxy.$setValidationProviderIsEnabled(this._sourceControlHandle, !!fn);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSCMInputBox.prototype, "visible", {
-        get: function () {
-            return this._visible;
-        },
-        set: function (visible) {
-            visible = !!visible;
-            this._visible = visible;
-            this._proxy.$setInputBoxVisibility(this._sourceControlHandle, visible);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostSCMInputBox.prototype.$onInputBoxValueChange = function (value) {
+    get value() {
+        return this._value;
+    }
+    set value(value) {
+        this._proxy.$setInputBoxValue(this._sourceControlHandle, value);
         this.updateValue(value);
-    };
-    ExtHostSCMInputBox.prototype.updateValue = function (value) {
+    }
+    get onDidChange() {
+        return this._onDidChange.event;
+    }
+    get placeholder() {
+        return this._placeholder;
+    }
+    set placeholder(placeholder) {
+        this._proxy.$setInputBoxPlaceholder(this._sourceControlHandle, placeholder);
+        this._placeholder = placeholder;
+    }
+    get validateInput() {
+        if (!this._extension.enableProposedApi) {
+            throw new Error(`[${this._extension.id}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${this._extension.id}`);
+        }
+        return this._validateInput;
+    }
+    set validateInput(fn) {
+        if (!this._extension.enableProposedApi) {
+            throw new Error(`[${this._extension.id}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${this._extension.id}`);
+        }
+        if (fn && typeof fn !== 'function') {
+            console.warn('Invalid SCM input box validation function');
+            return;
+        }
+        this._validateInput = fn;
+        this._proxy.$setValidationProviderIsEnabled(this._sourceControlHandle, !!fn);
+    }
+    get visible() {
+        return this._visible;
+    }
+    set visible(visible) {
+        visible = !!visible;
+        this._visible = visible;
+        this._proxy.$setInputBoxVisibility(this._sourceControlHandle, visible);
+    }
+    $onInputBoxValueChange(value) {
+        this.updateValue(value);
+    }
+    updateValue(value) {
         this._value = value;
         this._onDidChange.fire(value);
-    };
-    return ExtHostSCMInputBox;
-}());
+    }
+}
 exports.ExtHostSCMInputBox = ExtHostSCMInputBox;
-var ExtHostSourceControlResourceGroup = (function () {
-    function ExtHostSourceControlResourceGroup(_proxy, _commands, _sourceControlHandle, _id, _label) {
+class ExtHostSourceControlResourceGroup {
+    constructor(_proxy, _commands, _sourceControlHandle, _id, _label) {
         this._proxy = _proxy;
         this._commands = _commands;
         this._sourceControlHandle = _sourceControlHandle;
@@ -65336,68 +64188,46 @@ var ExtHostSourceControlResourceGroup = (function () {
         this.handle = ExtHostSourceControlResourceGroup._handlePool++;
         this._proxy.$registerGroup(_sourceControlHandle, this.handle, _id, _label);
     }
-    Object.defineProperty(ExtHostSourceControlResourceGroup.prototype, "id", {
-        get: function () { return this._id; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControlResourceGroup.prototype, "label", {
-        get: function () { return this._label; },
-        set: function (label) {
-            this._label = label;
-            this._proxy.$updateGroupLabel(this._sourceControlHandle, this.handle, label);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControlResourceGroup.prototype, "hideWhenEmpty", {
-        get: function () { return this._hideWhenEmpty; },
-        set: function (hideWhenEmpty) {
-            this._hideWhenEmpty = hideWhenEmpty;
-            this._proxy.$updateGroup(this._sourceControlHandle, this.handle, { hideWhenEmpty: hideWhenEmpty });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControlResourceGroup.prototype, "resourceStates", {
-        get: function () { return tslib_1.__spread(this._resourceStates); },
-        set: function (resources) {
-            this._resourceStates = tslib_1.__spread(resources);
-            this._onDidUpdateResourceStates.fire();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostSourceControlResourceGroup.prototype.getResourceState = function (handle) {
+    get id() { return this._id; }
+    get label() { return this._label; }
+    set label(label) {
+        this._label = label;
+        this._proxy.$updateGroupLabel(this._sourceControlHandle, this.handle, label);
+    }
+    get hideWhenEmpty() { return this._hideWhenEmpty; }
+    set hideWhenEmpty(hideWhenEmpty) {
+        this._hideWhenEmpty = hideWhenEmpty;
+        this._proxy.$updateGroup(this._sourceControlHandle, this.handle, { hideWhenEmpty });
+    }
+    get resourceStates() { return [...this._resourceStates]; }
+    set resourceStates(resources) {
+        this._resourceStates = [...resources];
+        this._onDidUpdateResourceStates.fire();
+    }
+    getResourceState(handle) {
         return this._resourceStatesMap.get(handle);
-    };
-    ExtHostSourceControlResourceGroup.prototype.$executeResourceCommand = function (handle) {
-        var _this = this;
-        var command = this._resourceStatesCommandsMap.get(handle);
+    }
+    $executeResourceCommand(handle) {
+        const command = this._resourceStatesCommandsMap.get(handle);
         if (!command) {
             return Promise.resolve(undefined);
         }
-        return ide_core_common_1.asPromise(function () {
-            var _a;
-            return (_a = _this._commands).executeCommand.apply(_a, tslib_1.__spread([command.command], (command.arguments || [])));
-        });
-    };
-    ExtHostSourceControlResourceGroup.prototype._takeResourceStateSnapshot = function () {
-        var e_1, _a, _b, e_2, _c;
-        var _this = this;
-        var snapshot = tslib_1.__spread(this._resourceStates).sort(compareResourceStates);
-        var diffs = ide_core_common_1.sortedDiff(this._resourceSnapshot, snapshot, compareResourceStates);
-        var splices = diffs.map(function (diff) {
-            var toInsert = diff.toInsert.map(function (r) {
-                var handle = _this._resourceHandlePool++;
-                _this._resourceStatesMap.set(handle, r);
-                var sourceUri = r.resourceUri;
-                var iconPath = getIconPath(r.decorations);
-                var lightIconPath = r.decorations && getIconPath(r.decorations.light) || iconPath;
-                var darkIconPath = r.decorations && getIconPath(r.decorations.dark) || iconPath;
-                var icons = [];
+        return ide_core_common_1.asPromise(() => this._commands.executeCommand(command.command, ...(command.arguments || [])));
+    }
+    _takeResourceStateSnapshot() {
+        const snapshot = [...this._resourceStates].sort(compareResourceStates);
+        const diffs = ide_core_common_1.sortedDiff(this._resourceSnapshot, snapshot, compareResourceStates);
+        const splices = diffs.map((diff) => {
+            const toInsert = diff.toInsert.map((r) => {
+                const handle = this._resourceHandlePool++;
+                this._resourceStatesMap.set(handle, r);
+                const sourceUri = r.resourceUri;
+                const iconPath = getIconPath(r.decorations);
+                const lightIconPath = r.decorations && getIconPath(r.decorations.light) || iconPath;
+                const darkIconPath = r.decorations && getIconPath(r.decorations.dark) || iconPath;
+                const icons = [];
                 if (r.command) {
-                    _this._resourceStatesCommandsMap.set(handle, r.command);
+                    this._resourceStatesCommandsMap.set(handle, r.command);
                 }
                 if (lightIconPath) {
                     icons.push(lightIconPath);
@@ -65405,63 +64235,39 @@ var ExtHostSourceControlResourceGroup = (function () {
                 if (darkIconPath && (darkIconPath !== lightIconPath)) {
                     icons.push(darkIconPath);
                 }
-                var tooltip = (r.decorations && r.decorations.tooltip) || '';
-                var strikeThrough = r.decorations && !!r.decorations.strikeThrough;
-                var faded = r.decorations && !!r.decorations.faded;
-                var source = r.decorations && r.decorations.source || undefined;
-                var letter = r.decorations && r.decorations.letter || undefined;
-                var color = r.decorations && r.decorations.color || undefined;
-                var rawResource = [handle, sourceUri, icons, tooltip, strikeThrough, faded, source, letter, color];
-                return { rawResource: rawResource, handle: handle };
+                const tooltip = (r.decorations && r.decorations.tooltip) || '';
+                const strikeThrough = r.decorations && !!r.decorations.strikeThrough;
+                const faded = r.decorations && !!r.decorations.faded;
+                const source = r.decorations && r.decorations.source || undefined;
+                const letter = r.decorations && r.decorations.letter || undefined;
+                const color = r.decorations && r.decorations.color || undefined;
+                const rawResource = [handle, sourceUri, icons, tooltip, strikeThrough, faded, source, letter, color];
+                return { rawResource, handle };
             });
-            return { start: diff.start, deleteCount: diff.deleteCount, toInsert: toInsert };
+            return { start: diff.start, deleteCount: diff.deleteCount, toInsert };
         });
-        var rawResourceSplices = splices
-            .map(function (_a) {
-            var start = _a.start, deleteCount = _a.deleteCount, toInsert = _a.toInsert;
-            return [start, deleteCount, toInsert.map(function (i) { return i.rawResource; })];
-        });
-        var reverseSplices = splices.reverse();
-        try {
-            for (var reverseSplices_1 = tslib_1.__values(reverseSplices), reverseSplices_1_1 = reverseSplices_1.next(); !reverseSplices_1_1.done; reverseSplices_1_1 = reverseSplices_1.next()) {
-                var _d = reverseSplices_1_1.value, start = _d.start, deleteCount = _d.deleteCount, toInsert = _d.toInsert;
-                var handles = toInsert.map(function (i) { return i.handle; });
-                var handlesToDelete = (_b = this._handlesSnapshot).splice.apply(_b, tslib_1.__spread([start, deleteCount], handles));
-                try {
-                    for (var handlesToDelete_1 = (e_2 = void 0, tslib_1.__values(handlesToDelete)), handlesToDelete_1_1 = handlesToDelete_1.next(); !handlesToDelete_1_1.done; handlesToDelete_1_1 = handlesToDelete_1.next()) {
-                        var handle = handlesToDelete_1_1.value;
-                        this._resourceStatesMap.delete(handle);
-                        this._resourceStatesCommandsMap.delete(handle);
-                    }
-                }
-                catch (e_2_1) { e_2 = { error: e_2_1 }; }
-                finally {
-                    try {
-                        if (handlesToDelete_1_1 && !handlesToDelete_1_1.done && (_c = handlesToDelete_1.return)) _c.call(handlesToDelete_1);
-                    }
-                    finally { if (e_2) throw e_2.error; }
-                }
+        const rawResourceSplices = splices
+            .map(({ start, deleteCount, toInsert }) => [start, deleteCount, toInsert.map((i) => i.rawResource)]);
+        const reverseSplices = splices.reverse();
+        for (const { start, deleteCount, toInsert } of reverseSplices) {
+            const handles = toInsert.map((i) => i.handle);
+            const handlesToDelete = this._handlesSnapshot.splice(start, deleteCount, ...handles);
+            for (const handle of handlesToDelete) {
+                this._resourceStatesMap.delete(handle);
+                this._resourceStatesCommandsMap.delete(handle);
             }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (reverseSplices_1_1 && !reverseSplices_1_1.done && (_a = reverseSplices_1.return)) _a.call(reverseSplices_1);
-            }
-            finally { if (e_1) throw e_1.error; }
         }
         this._resourceSnapshot = snapshot;
         return rawResourceSplices;
-    };
-    ExtHostSourceControlResourceGroup.prototype.dispose = function () {
+    }
+    dispose() {
         this._proxy.$unregisterGroup(this._sourceControlHandle, this.handle);
         this._onDidDispose.fire();
-    };
-    ExtHostSourceControlResourceGroup._handlePool = 0;
-    return ExtHostSourceControlResourceGroup;
-}());
-var ExtHostSourceControl = (function () {
-    function ExtHostSourceControl(_extension, _proxy, _commands, _id, _label, _rootUri) {
+    }
+}
+ExtHostSourceControlResourceGroup._handlePool = 0;
+class ExtHostSourceControl {
+    constructor(_extension, _proxy, _commands, _id, _label, _rootUri) {
         this._proxy = _proxy;
         this._commands = _commands;
         this._id = _id;
@@ -65483,124 +64289,82 @@ var ExtHostSourceControl = (function () {
         this._inputBox = new ExtHostSCMInputBox(_extension, this._proxy, this.handle);
         this._proxy.$registerSourceControl(this.handle, _id, _label, _rootUri);
     }
-    Object.defineProperty(ExtHostSourceControl.prototype, "id", {
-        get: function () {
-            return this._id;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControl.prototype, "label", {
-        get: function () {
-            return this._label;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControl.prototype, "rootUri", {
-        get: function () {
-            return this._rootUri;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControl.prototype, "inputBox", {
-        get: function () { return this._inputBox; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControl.prototype, "count", {
-        get: function () {
-            return this._count;
-        },
-        set: function (count) {
-            if (this._count === count) {
-                return;
-            }
-            this._count = count;
-            this._proxy.$updateSourceControl(this.handle, { count: count });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControl.prototype, "quickDiffProvider", {
-        get: function () {
-            return this._quickDiffProvider;
-        },
-        set: function (quickDiffProvider) {
-            this._quickDiffProvider = quickDiffProvider;
-            this._proxy.$updateSourceControl(this.handle, { hasQuickDiffProvider: !!quickDiffProvider });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControl.prototype, "commitTemplate", {
-        get: function () {
-            return this._commitTemplate;
-        },
-        set: function (commitTemplate) {
-            this._commitTemplate = commitTemplate;
-            this._proxy.$updateSourceControl(this.handle, { commitTemplate: commitTemplate });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControl.prototype, "acceptInputCommand", {
-        get: function () {
-            return this._acceptInputCommand;
-        },
-        set: function (acceptInputCommand) {
-            this._acceptInputDisposables.value = new ide_core_common_1.DisposableStore();
-            this._acceptInputCommand = acceptInputCommand;
-            var internal = this._commands.converter.toInternal(acceptInputCommand, this._acceptInputDisposables.value);
-            this._proxy.$updateSourceControl(this.handle, { acceptInputCommand: internal });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControl.prototype, "statusBarCommands", {
-        get: function () {
-            return this._statusBarCommands;
-        },
-        set: function (statusBarCommands) {
-            var _this = this;
-            if (this._statusBarCommands && statusBarCommands && commandListEquals(this._statusBarCommands, statusBarCommands)) {
-                return;
-            }
-            this._statusBarDisposables.value = new ide_core_common_1.DisposableStore();
-            this._statusBarCommands = statusBarCommands;
-            var internal = (statusBarCommands || []).map(function (c) { return _this._commands.converter.toInternal(c, _this._statusBarDisposables.value); });
-            this._proxy.$updateSourceControl(this.handle, { statusBarCommands: internal });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostSourceControl.prototype, "selected", {
-        get: function () {
-            return this._selected;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostSourceControl.prototype.createResourceGroup = function (id, label) {
-        var _this = this;
-        var group = new ExtHostSourceControlResourceGroup(this._proxy, this._commands, this.handle, id, label);
-        var updateListener = group.onDidUpdateResourceStates(function () {
-            _this.updatedResourceGroups.add(group);
-            _this.eventuallyUpdateResourceStates();
+    get id() {
+        return this._id;
+    }
+    get label() {
+        return this._label;
+    }
+    get rootUri() {
+        return this._rootUri;
+    }
+    get inputBox() { return this._inputBox; }
+    get count() {
+        return this._count;
+    }
+    set count(count) {
+        if (this._count === count) {
+            return;
+        }
+        this._count = count;
+        this._proxy.$updateSourceControl(this.handle, { count });
+    }
+    get quickDiffProvider() {
+        return this._quickDiffProvider;
+    }
+    set quickDiffProvider(quickDiffProvider) {
+        this._quickDiffProvider = quickDiffProvider;
+        this._proxy.$updateSourceControl(this.handle, { hasQuickDiffProvider: !!quickDiffProvider });
+    }
+    get commitTemplate() {
+        return this._commitTemplate;
+    }
+    set commitTemplate(commitTemplate) {
+        this._commitTemplate = commitTemplate;
+        this._proxy.$updateSourceControl(this.handle, { commitTemplate });
+    }
+    get acceptInputCommand() {
+        return this._acceptInputCommand;
+    }
+    set acceptInputCommand(acceptInputCommand) {
+        this._acceptInputDisposables.value = new ide_core_common_1.DisposableStore();
+        this._acceptInputCommand = acceptInputCommand;
+        const internal = this._commands.converter.toInternal(acceptInputCommand, this._acceptInputDisposables.value);
+        this._proxy.$updateSourceControl(this.handle, { acceptInputCommand: internal });
+    }
+    get statusBarCommands() {
+        return this._statusBarCommands;
+    }
+    set statusBarCommands(statusBarCommands) {
+        if (this._statusBarCommands && statusBarCommands && commandListEquals(this._statusBarCommands, statusBarCommands)) {
+            return;
+        }
+        this._statusBarDisposables.value = new ide_core_common_1.DisposableStore();
+        this._statusBarCommands = statusBarCommands;
+        const internal = (statusBarCommands || []).map((c) => this._commands.converter.toInternal(c, this._statusBarDisposables.value));
+        this._proxy.$updateSourceControl(this.handle, { statusBarCommands: internal });
+    }
+    get selected() {
+        return this._selected;
+    }
+    createResourceGroup(id, label) {
+        const group = new ExtHostSourceControlResourceGroup(this._proxy, this._commands, this.handle, id, label);
+        const updateListener = group.onDidUpdateResourceStates(() => {
+            this.updatedResourceGroups.add(group);
+            this.eventuallyUpdateResourceStates();
         });
-        ide_core_common_1.Event.once(group.onDidDispose)(function () {
-            _this.updatedResourceGroups.delete(group);
+        ide_core_common_1.Event.once(group.onDidDispose)(() => {
+            this.updatedResourceGroups.delete(group);
             updateListener.dispose();
-            _this._groups.delete(group.handle);
+            this._groups.delete(group.handle);
         });
         this._groups.set(group.handle, group);
         return group;
-    };
-    ExtHostSourceControl.prototype.eventuallyUpdateResourceStates = function () {
-        var splices = [];
-        this.updatedResourceGroups.forEach(function (group) {
-            var snapshot = group._takeResourceStateSnapshot();
+    }
+    eventuallyUpdateResourceStates() {
+        const splices = [];
+        this.updatedResourceGroups.forEach((group) => {
+            const snapshot = group._takeResourceStateSnapshot();
             if (snapshot.length === 0) {
                 return;
             }
@@ -65610,32 +64374,30 @@ var ExtHostSourceControl = (function () {
             this._proxy.$spliceResourceStates(this.handle, splices);
         }
         this.updatedResourceGroups.clear();
-    };
-    ExtHostSourceControl.prototype.getResourceGroup = function (handle) {
+    }
+    getResourceGroup(handle) {
         return this._groups.get(handle);
-    };
-    ExtHostSourceControl.prototype.setSelectionState = function (selected) {
+    }
+    setSelectionState(selected) {
         this._selected = selected;
         this._onDidChangeSelection.fire(selected);
-    };
-    ExtHostSourceControl.prototype.dispose = function () {
+    }
+    dispose() {
         this._acceptInputDisposables.dispose();
         this._statusBarDisposables.dispose();
-        this._groups.forEach(function (group) { return group.dispose(); });
+        this._groups.forEach((group) => group.dispose());
         this._proxy.$unregisterSourceControl(this.handle);
-    };
-    ExtHostSourceControl._handlePool = 0;
-    tslib_1.__decorate([
-        ide_core_common_1.debounce(100),
-        tslib_1.__metadata("design:type", Function),
-        tslib_1.__metadata("design:paramtypes", []),
-        tslib_1.__metadata("design:returntype", void 0)
-    ], ExtHostSourceControl.prototype, "eventuallyUpdateResourceStates", null);
-    return ExtHostSourceControl;
-}());
-var ExtHostSCM = (function () {
-    function ExtHostSCM(rpc, _commands) {
-        var _this = this;
+    }
+}
+ExtHostSourceControl._handlePool = 0;
+tslib_1.__decorate([
+    ide_core_common_1.debounce(100),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", []),
+    tslib_1.__metadata("design:returntype", void 0)
+], ExtHostSourceControl.prototype, "eventuallyUpdateResourceStates", null);
+class ExtHostSCM {
+    constructor(rpc, _commands) {
         this._commands = _commands;
         this.logger = ide_core_common_1.getLogger();
         this._sourceControls = new Map();
@@ -65644,27 +64406,27 @@ var ExtHostSCM = (function () {
         this._selectedSourceControlHandles = new Set();
         this._proxy = rpc.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadSCM);
         _commands.registerArgumentProcessor({
-            processArgument: function (arg) {
+            processArgument: (arg) => {
                 if (arg && arg.$mid === 3) {
-                    var sourceControl = _this._sourceControls.get(arg.sourceControlHandle);
+                    const sourceControl = this._sourceControls.get(arg.sourceControlHandle);
                     if (!sourceControl) {
                         return arg;
                     }
-                    var group = sourceControl.getResourceGroup(arg.groupHandle);
+                    const group = sourceControl.getResourceGroup(arg.groupHandle);
                     if (!group) {
                         return arg;
                     }
                     return group.getResourceState(arg.handle);
                 }
                 else if (arg && arg.$mid === 4) {
-                    var sourceControl = _this._sourceControls.get(arg.sourceControlHandle);
+                    const sourceControl = this._sourceControls.get(arg.sourceControlHandle);
                     if (!sourceControl) {
                         return arg;
                     }
                     return sourceControl.getResourceGroup(arg.groupHandle);
                 }
                 else if (arg && arg.$mid === 5) {
-                    var sourceControl = _this._sourceControls.get(arg.handle);
+                    const sourceControl = this._sourceControls.get(arg.handle);
                     if (!sourceControl) {
                         return arg;
                     }
@@ -65674,104 +64436,88 @@ var ExtHostSCM = (function () {
             },
         });
     }
-    Object.defineProperty(ExtHostSCM.prototype, "onDidChangeActiveProvider", {
-        get: function () { return this._onDidChangeActiveProvider.event; },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostSCM.prototype.createSourceControl = function (extension, id, label, rootUri) {
+    get onDidChangeActiveProvider() { return this._onDidChangeActiveProvider.event; }
+    createSourceControl(extension, id, label, rootUri) {
         this.logger.log('ExtHostSCM#createSourceControl', extension.id, id, label, rootUri);
-        var handle = ExtHostSCM._handlePool++;
-        var sourceControl = new ExtHostSourceControl(extension, this._proxy, this._commands, id, label, rootUri);
+        const handle = ExtHostSCM._handlePool++;
+        const sourceControl = new ExtHostSourceControl(extension, this._proxy, this._commands, id, label, rootUri);
         this._sourceControls.set(handle, sourceControl);
-        var sourceControls = this._sourceControlsByExtension.get(extension.id) || [];
+        const sourceControls = this._sourceControlsByExtension.get(extension.id) || [];
         sourceControls.push(sourceControl);
         this._sourceControlsByExtension.set(extension.id, sourceControls);
         return sourceControl;
-    };
-    ExtHostSCM.prototype.getLastInputBox = function (extension) {
+    }
+    getLastInputBox(extension) {
         this.logger.log('ExtHostSCM#getLastInputBox', extension.id);
-        var sourceControls = this._sourceControlsByExtension.get(extension.id);
-        var sourceControl = sourceControls && sourceControls[sourceControls.length - 1];
+        const sourceControls = this._sourceControlsByExtension.get(extension.id);
+        const sourceControl = sourceControls && sourceControls[sourceControls.length - 1];
         return sourceControl && sourceControl.inputBox;
-    };
-    ExtHostSCM.prototype.$provideOriginalResource = function (sourceControlHandle, uriComponents, token) {
-        var uri = vscode_uri_1.default.revive(uriComponents);
+    }
+    $provideOriginalResource(sourceControlHandle, uriComponents, token) {
+        const uri = vscode_uri_1.default.revive(uriComponents);
         this.logger.log('ExtHostSCM#$provideOriginalResource', sourceControlHandle, uri.toString());
-        var sourceControl = this._sourceControls.get(sourceControlHandle);
+        const sourceControl = this._sourceControls.get(sourceControlHandle);
         if (!sourceControl || !sourceControl.quickDiffProvider || !sourceControl.quickDiffProvider.provideOriginalResource) {
             return Promise.resolve(null);
         }
-        return ide_core_common_1.asPromise(function () { return sourceControl.quickDiffProvider.provideOriginalResource(uri, token); })
-            .then(function (r) { return r || null; });
-    };
-    ExtHostSCM.prototype.$onInputBoxValueChange = function (sourceControlHandle, value) {
+        return ide_core_common_1.asPromise(() => sourceControl.quickDiffProvider.provideOriginalResource(uri, token))
+            .then((r) => r || null);
+    }
+    $onInputBoxValueChange(sourceControlHandle, value) {
         this.logger.log('ExtHostSCM#$onInputBoxValueChange', sourceControlHandle);
-        var sourceControl = this._sourceControls.get(sourceControlHandle);
+        const sourceControl = this._sourceControls.get(sourceControlHandle);
         if (!sourceControl) {
             return Promise.resolve(undefined);
         }
         sourceControl.inputBox.$onInputBoxValueChange(value);
         return Promise.resolve(undefined);
-    };
-    ExtHostSCM.prototype.$executeResourceCommand = function (sourceControlHandle, groupHandle, handle) {
+    }
+    $executeResourceCommand(sourceControlHandle, groupHandle, handle) {
         this.logger.log('ExtHostSCM#$executeResourceCommand', sourceControlHandle, groupHandle, handle);
-        var sourceControl = this._sourceControls.get(sourceControlHandle);
+        const sourceControl = this._sourceControls.get(sourceControlHandle);
         if (!sourceControl) {
             return Promise.resolve(undefined);
         }
-        var group = sourceControl.getResourceGroup(groupHandle);
+        const group = sourceControl.getResourceGroup(groupHandle);
         if (!group) {
             return Promise.resolve(undefined);
         }
         return group.$executeResourceCommand(handle);
-    };
-    ExtHostSCM.prototype.$validateInput = function (sourceControlHandle, value, cursorPosition) {
+    }
+    $validateInput(sourceControlHandle, value, cursorPosition) {
         this.logger.log('ExtHostSCM#$validateInput', sourceControlHandle);
-        var sourceControl = this._sourceControls.get(sourceControlHandle);
+        const sourceControl = this._sourceControls.get(sourceControlHandle);
         if (!sourceControl) {
             return Promise.resolve(undefined);
         }
         if (!sourceControl.inputBox.validateInput) {
             return Promise.resolve(undefined);
         }
-        return ide_core_common_1.asPromise(function () { return sourceControl.inputBox.validateInput(value, cursorPosition); }).then(function (result) {
+        return ide_core_common_1.asPromise(() => sourceControl.inputBox.validateInput(value, cursorPosition)).then((result) => {
             if (!result) {
                 return Promise.resolve(undefined);
             }
             return Promise.resolve([result.message, result.type]);
         });
-    };
-    ExtHostSCM.prototype.$setSelectedSourceControls = function (selectedSourceControlHandles) {
-        var e_3, _a;
-        var _this = this;
+    }
+    $setSelectedSourceControls(selectedSourceControlHandles) {
         this.logger.log('ExtHostSCM#$setSelectedSourceControls', selectedSourceControlHandles);
-        var set = new Set();
-        try {
-            for (var selectedSourceControlHandles_1 = tslib_1.__values(selectedSourceControlHandles), selectedSourceControlHandles_1_1 = selectedSourceControlHandles_1.next(); !selectedSourceControlHandles_1_1.done; selectedSourceControlHandles_1_1 = selectedSourceControlHandles_1.next()) {
-                var handle = selectedSourceControlHandles_1_1.value;
-                set.add(handle);
-            }
+        const set = new Set();
+        for (const handle of selectedSourceControlHandles) {
+            set.add(handle);
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (selectedSourceControlHandles_1_1 && !selectedSourceControlHandles_1_1.done && (_a = selectedSourceControlHandles_1.return)) _a.call(selectedSourceControlHandles_1);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-        set.forEach(function (handle) {
-            if (!_this._selectedSourceControlHandles.has(handle)) {
-                var sourceControl = _this._sourceControls.get(handle);
+        set.forEach((handle) => {
+            if (!this._selectedSourceControlHandles.has(handle)) {
+                const sourceControl = this._sourceControls.get(handle);
                 if (!sourceControl) {
                     return;
                 }
                 sourceControl.setSelectionState(true);
             }
         });
-        this._selectedSourceControlHandles.forEach(function (handle) {
+        this._selectedSourceControlHandles.forEach((handle) => {
             if (!set.has(handle)) {
-                var sourceControl = _this._sourceControls.get(handle);
+                const sourceControl = this._sourceControls.get(handle);
                 if (!sourceControl) {
                     return;
                 }
@@ -65780,92 +64526,87 @@ var ExtHostSCM = (function () {
         });
         this._selectedSourceControlHandles = set;
         return Promise.resolve(undefined);
-    };
-    ExtHostSCM._handlePool = 0;
-    return ExtHostSCM;
-}());
+    }
+}
 exports.ExtHostSCM = ExtHostSCM;
+ExtHostSCM._handlePool = 0;
 
 
 /***/ }),
-/* 447 */
+/* 449 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var ide_core_common_1 = __webpack_require__(2);
-var ExtHostWindowState = (function () {
-    function ExtHostWindowState(rpcProtocol) {
+const ide_core_common_1 = __webpack_require__(2);
+class ExtHostWindowState {
+    constructor(rpcProtocol) {
         this.rpcProtocol = rpcProtocol;
         this.state = new WindowStateImpl();
         this._onDidChangeWindowState = new ide_core_common_1.Emitter();
         this.onDidChangeWindowState = this._onDidChangeWindowState.event;
     }
-    ExtHostWindowState.prototype.$setWindowState = function (focused) {
+    $setWindowState(focused) {
         if (focused !== this.state.focused) {
             this.state.focused = focused;
             this._onDidChangeWindowState.fire(this.state);
         }
-    };
-    return ExtHostWindowState;
-}());
+    }
+}
 exports.ExtHostWindowState = ExtHostWindowState;
-var WindowStateImpl = (function () {
-    function WindowStateImpl() {
+class WindowStateImpl {
+    constructor() {
         this.focused = false;
     }
-    return WindowStateImpl;
-}());
+}
 exports.WindowStateImpl = WindowStateImpl;
 
 
 /***/ }),
-/* 448 */
+/* 450 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var vscode_uri_1 = __webpack_require__(34);
-var disposable_1 = __webpack_require__(26);
-var arrays_1 = __webpack_require__(52);
-var ide_core_common_1 = __webpack_require__(2);
-var vscode_1 = __webpack_require__(204);
-var ExtHostDecorations = (function () {
-    function ExtHostDecorations(rpcProtocol) {
+const vscode_uri_1 = __webpack_require__(34);
+const disposable_1 = __webpack_require__(26);
+const arrays_1 = __webpack_require__(53);
+const ide_core_common_1 = __webpack_require__(2);
+const vscode_1 = __webpack_require__(206);
+class ExtHostDecorations {
+    constructor(rpcProtocol) {
         this.logger = ide_core_common_1.getLogger();
         this._provider = new Map();
         this.proxy = rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadDecorations);
     }
-    ExtHostDecorations.prototype.registerDecorationProvider = function (provider, extensionId) {
-        var _this = this;
+    registerDecorationProvider(provider, extensionId) {
         this.logger.log('ExtHostDecoration#registerDecorationProvider', extensionId);
-        var handle = ExtHostDecorations._handlePool++;
-        this._provider.set(handle, { provider: provider, extensionId: extensionId });
+        const handle = ExtHostDecorations._handlePool++;
+        this._provider.set(handle, { provider, extensionId });
         this.proxy.$registerDecorationProvider(handle, extensionId);
-        var listener = provider.onDidChangeDecorations(function (e) {
-            _this.proxy.$onDidChange(handle, !e ? null : arrays_1.asArray(e));
+        const listener = provider.onDidChangeDecorations((e) => {
+            this.proxy.$onDidChange(handle, !e ? null : arrays_1.asArray(e));
         });
-        return new disposable_1.Disposable(disposable_1.toDisposable(function () {
+        return new disposable_1.Disposable(disposable_1.toDisposable(() => {
             listener.dispose();
-            _this.proxy.$unregisterDecorationProvider(handle);
-            _this._provider.delete(handle);
+            this.proxy.$unregisterDecorationProvider(handle);
+            this._provider.delete(handle);
         }));
-    };
-    ExtHostDecorations.prototype.$provideDecorations = function (requests, token) {
-        var _this = this;
-        var result = Object.create(null);
-        return Promise.all(requests.map(function (request) {
-            var handle = request.handle, uri = request.uri, id = request.id;
-            var entry = _this._provider.get(handle);
+    }
+    $provideDecorations(requests, token) {
+        const result = Object.create(null);
+        return Promise.all(requests.map((request) => {
+            const { handle, uri, id } = request;
+            const entry = this._provider.get(handle);
             if (!entry) {
                 return undefined;
             }
-            var provider = entry.provider, extensionId = entry.extensionId;
-            return Promise.resolve(provider.provideDecoration(vscode_uri_1.default.revive(uri), token)).then(function (data) {
+            const { provider, extensionId } = entry;
+            return Promise.resolve(provider.provideDecoration(vscode_uri_1.default.revive(uri), token)).then((data) => {
                 if (data && data.letter && data.letter.length !== 1) {
-                    console.warn("INVALID decoration from extension '" + extensionId + "'. The 'letter' must be set and be one character, not '" + data.letter + "'.");
+                    console.warn(`INVALID decoration from extension '${extensionId}'. The 'letter' must be set and be one character, not '${data.letter}'.`);
                 }
                 if (data) {
                     result[id] = [
@@ -65877,109 +64618,96 @@ var ExtHostDecorations = (function () {
                         data.source,
                     ];
                 }
-            }, function (err) {
+            }, (err) => {
                 console.error(err);
             });
-        })).then(function () {
+        })).then(() => {
             return result;
         });
-    };
-    ExtHostDecorations._handlePool = 0;
-    return ExtHostDecorations;
-}());
+    }
+}
 exports.ExtHostDecorations = ExtHostDecorations;
+ExtHostDecorations._handlePool = 0;
 
 
 /***/ }),
-/* 449 */
+/* 451 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_1 = __webpack_require__(204);
-var ide_core_common_1 = __webpack_require__(2);
-var ExtHostQuickOpen = (function () {
-    function ExtHostQuickOpen(rpc) {
+const tslib_1 = __webpack_require__(1);
+const vscode_1 = __webpack_require__(206);
+const ide_core_common_1 = __webpack_require__(2);
+class ExtHostQuickOpen {
+    constructor(rpc) {
         this.proxy = rpc.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadQuickOpen);
     }
-    ExtHostQuickOpen.prototype.showQuickPick = function (promiseOrItems, options, token) {
-        if (token === void 0) { token = ide_core_common_1.CancellationToken.None; }
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var items, pickItems, quickPickPromise, value, result;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, promiseOrItems];
-                    case 1:
-                        items = _a.sent();
-                        pickItems = items.map(function (item, index) {
-                            if (typeof item === 'string') {
-                                return {
-                                    label: item,
-                                    value: index,
-                                };
-                            }
-                            else {
-                                var quickPickItem = {
-                                    label: item.label,
-                                    description: item.description,
-                                    detail: item.detail,
-                                    value: index,
-                                };
-                                return quickPickItem;
-                            }
-                        });
-                        quickPickPromise = this.proxy.$showQuickPick(pickItems, options && {
-                            placeholder: options.placeHolder,
-                            fuzzyMatchDescription: options.matchOnDescription,
-                            fuzzyMatchDetail: options.matchOnDetail,
-                            ignoreFocusOut: options.ignoreFocusOut,
-                        });
-                        return [4, ide_core_common_1.hookCancellationToken(token, quickPickPromise)];
-                    case 2:
-                        value = _a.sent();
-                        if (typeof value === 'number') {
-                            result = items[value];
-                        }
-                        if (result && options && typeof options.onDidSelectItem === 'function') {
-                            options.onDidSelectItem(result);
-                        }
-                        return [2, result];
+    showQuickPick(promiseOrItems, options, token = ide_core_common_1.CancellationToken.None) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const items = yield promiseOrItems;
+            const pickItems = items.map((item, index) => {
+                if (typeof item === 'string') {
+                    return {
+                        label: item,
+                        value: index,
+                    };
+                }
+                else {
+                    const quickPickItem = {
+                        label: item.label,
+                        description: item.description,
+                        detail: item.detail,
+                        value: index,
+                    };
+                    return quickPickItem;
                 }
             });
+            const quickPickPromise = this.proxy.$showQuickPick(pickItems, options && {
+                placeholder: options.placeHolder,
+                fuzzyMatchDescription: options.matchOnDescription,
+                fuzzyMatchDetail: options.matchOnDetail,
+                ignoreFocusOut: options.ignoreFocusOut,
+            });
+            const value = yield ide_core_common_1.hookCancellationToken(token, quickPickPromise);
+            let result;
+            if (typeof value === 'number') {
+                result = items[value];
+            }
+            if (result && options && typeof options.onDidSelectItem === 'function') {
+                options.onDidSelectItem(result);
+            }
+            return result;
         });
-    };
-    ExtHostQuickOpen.prototype.hideQuickPick = function () {
+    }
+    hideQuickPick() {
         this.proxy.$hideQuickPick();
-    };
-    ExtHostQuickOpen.prototype.createQuickPick = function () {
+    }
+    createQuickPick() {
         return new QuickPickExt(this);
-    };
-    ExtHostQuickOpen.prototype.createInputBox = function () {
+    }
+    createInputBox() {
         return new QuickInputExt(this);
-    };
-    ExtHostQuickOpen.prototype.showInputBox = function (options, token) {
-        if (options === void 0) { options = {}; }
-        if (token === void 0) { token = ide_core_common_1.CancellationToken.None; }
+    }
+    showInputBox(options = {}, token = ide_core_common_1.CancellationToken.None) {
         this.validateInputHandler = options && options.validateInput;
-        var promise = this.proxy.$showQuickInput(options, typeof this.validateInputHandler === 'function');
+        const promise = this.proxy.$showQuickInput(options, typeof this.validateInputHandler === 'function');
         return ide_core_common_1.hookCancellationToken(token, promise);
-    };
-    ExtHostQuickOpen.prototype.$validateInput = function (input) {
+    }
+    $validateInput(input) {
         if (this.validateInputHandler) {
             return this.validateInputHandler(input);
         }
         return undefined;
-    };
-    ExtHostQuickOpen.prototype.hideInputBox = function () {
+    }
+    hideInputBox() {
         this.proxy.$hideQuickinput();
-    };
-    return ExtHostQuickOpen;
-}());
+    }
+}
 exports.ExtHostQuickOpen = ExtHostQuickOpen;
-var QuickPickExt = (function () {
-    function QuickPickExt(quickOpen) {
+class QuickPickExt {
+    constructor(quickOpen) {
         this.quickOpen = quickOpen;
         this._items = [];
         this._activeItems = [];
@@ -65997,108 +64725,70 @@ var QuickPickExt = (function () {
         this.disposableCollection.push(this.onDidChangeValueEmitter = new ide_core_common_1.Emitter());
         this.disposableCollection.push(this.onDidTriggerButtonEmitter = new ide_core_common_1.Emitter());
     }
-    Object.defineProperty(QuickPickExt.prototype, "items", {
-        get: function () {
-            return this._items;
-        },
-        set: function (activeItems) {
-            this._items = activeItems;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickPickExt.prototype, "activeItems", {
-        get: function () {
-            return this._activeItems;
-        },
-        set: function (activeItems) {
-            this._activeItems = activeItems;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickPickExt.prototype, "onDidAccept", {
-        get: function () {
-            return this.onDidAcceptEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickPickExt.prototype, "placeholder", {
-        get: function () {
-            return this._placeholder;
-        },
-        set: function (placeholder) {
-            this._placeholder = placeholder;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickPickExt.prototype, "onDidChangeActive", {
-        get: function () {
-            return this.onDidChangeActiveEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickPickExt.prototype, "onDidChangeSelection", {
-        get: function () {
-            return this.onDidChangeSelectionEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickPickExt.prototype, "onDidChangeValue", {
-        get: function () {
-            return this.onDidChangeValueEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickPickExt.prototype, "onDidTriggerButton", {
-        get: function () {
-            return this.onDidTriggerButtonEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickPickExt.prototype, "onDidHide", {
-        get: function () {
-            return this.onDidHideEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    QuickPickExt.prototype.dispose = function () {
+    get items() {
+        return this._items;
+    }
+    set items(activeItems) {
+        this._items = activeItems;
+    }
+    get activeItems() {
+        return this._activeItems;
+    }
+    set activeItems(activeItems) {
+        this._activeItems = activeItems;
+    }
+    get onDidAccept() {
+        return this.onDidAcceptEmitter.event;
+    }
+    get placeholder() {
+        return this._placeholder;
+    }
+    set placeholder(placeholder) {
+        this._placeholder = placeholder;
+    }
+    get onDidChangeActive() {
+        return this.onDidChangeActiveEmitter.event;
+    }
+    get onDidChangeSelection() {
+        return this.onDidChangeSelectionEmitter.event;
+    }
+    get onDidChangeValue() {
+        return this.onDidChangeValueEmitter.event;
+    }
+    get onDidTriggerButton() {
+        return this.onDidTriggerButtonEmitter.event;
+    }
+    get onDidHide() {
+        return this.onDidHideEmitter.event;
+    }
+    dispose() {
         this.disposableCollection.dispose();
-    };
-    QuickPickExt.prototype.hide = function () {
+    }
+    hide() {
         this.quickOpen.hideQuickPick();
         this.dispose();
-    };
-    QuickPickExt.prototype.show = function () {
-        var _this = this;
-        var hide = function () {
-            _this.onDidHideEmitter.fire(undefined);
+    }
+    show() {
+        const hide = () => {
+            this.onDidHideEmitter.fire(undefined);
         };
-        var selectItem = function (item) {
-            _this.activeItems = [item];
-            _this.onDidAcceptEmitter.fire(undefined);
-            _this.onDidChangeSelectionEmitter.fire([item]);
+        const selectItem = (item) => {
+            this.activeItems = [item];
+            this.onDidAcceptEmitter.fire(undefined);
+            this.onDidChangeSelectionEmitter.fire([item]);
         };
-        this.quickOpen.showQuickPick(this.items.map(function (item) { return item; }), {
-            onDidSelectItem: function (item) {
+        this.quickOpen.showQuickPick(this.items.map((item) => item), {
+            onDidSelectItem(item) {
                 if (typeof item !== 'string') {
                     selectItem(item);
                 }
                 hide();
             }, placeHolder: this.placeholder,
         });
-    };
-    return QuickPickExt;
-}());
-var QuickInputExt = (function () {
-    function QuickInputExt(quickOpen) {
+    }
+}
+class QuickInputExt {
+    constructor(quickOpen) {
         this.quickOpen = quickOpen;
         this.buttons = [];
         this.step = 0;
@@ -66115,35 +64805,19 @@ var QuickInputExt = (function () {
         this.disposableCollection.push(this.onDidTriggerButtonEmitter = new ide_core_common_1.Emitter());
         this.disposableCollection.push(this.onDidHideEmitter = new ide_core_common_1.Emitter());
     }
-    Object.defineProperty(QuickInputExt.prototype, "onDidChangeValue", {
-        get: function () {
-            return this.onDidChangeValueEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickInputExt.prototype, "onDidAccept", {
-        get: function () {
-            return this.onDidAcceptEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickInputExt.prototype, "onDidTriggerButton", {
-        get: function () {
-            return this.onDidTriggerButtonEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(QuickInputExt.prototype, "onDidHide", {
-        get: function () {
-            return this.onDidHideEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    QuickInputExt.prototype.show = function () {
+    get onDidChangeValue() {
+        return this.onDidChangeValueEmitter.event;
+    }
+    get onDidAccept() {
+        return this.onDidAcceptEmitter.event;
+    }
+    get onDidTriggerButton() {
+        return this.onDidTriggerButtonEmitter.event;
+    }
+    get onDidHide() {
+        return this.onDidHideEmitter.event;
+    }
+    show() {
         this.quickOpen.showInputBox({
             value: this.value,
             prompt: this.prompt,
@@ -66151,233 +64825,15 @@ var QuickInputExt = (function () {
             password: this.password,
             ignoreFocusOut: this.ignoreFocusOut,
         });
-    };
-    QuickInputExt.prototype.hide = function () {
+    }
+    hide() {
         this.quickOpen.hideInputBox();
         this.dispose();
-    };
-    QuickInputExt.prototype.dispose = function () {
+    }
+    dispose() {
         this.disposableCollection.dispose();
-    };
-    return QuickInputExt;
-}());
-
-
-/***/ }),
-/* 450 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var vscode_1 = __webpack_require__(204);
-var ExtHostOutput = (function () {
-    function ExtHostOutput(rpcProtocol) {
-        this.rpcProtocol = rpcProtocol;
     }
-    ExtHostOutput.prototype.createOutputChannel = function (name) {
-        return new OutputChannelImpl(name, this.rpcProtocol);
-    };
-    return ExtHostOutput;
-}());
-exports.ExtHostOutput = ExtHostOutput;
-var OutputChannelImpl = (function () {
-    function OutputChannelImpl(name, rpcProtocol) {
-        this.name = name;
-        this.rpcProtocol = rpcProtocol;
-        this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadOutput);
-    }
-    OutputChannelImpl.prototype.dispose = function () {
-        var _this = this;
-        if (!this.disposed) {
-            this.proxy.$dispose(this.name).then(function () {
-                _this.disposed = true;
-            });
-        }
-    };
-    OutputChannelImpl.prototype.append = function (value) {
-        this.validate();
-        this.proxy.$append(this.name, value);
-    };
-    OutputChannelImpl.prototype.appendLine = function (value) {
-        this.validate();
-        this.append(value + '\n');
-    };
-    OutputChannelImpl.prototype.clear = function () {
-        this.validate();
-        this.proxy.$clear(this.name);
-    };
-    OutputChannelImpl.prototype.show = function (preserveFocus) {
-        this.validate();
-        this.proxy.$reveal(this.name, !!preserveFocus);
-    };
-    OutputChannelImpl.prototype.hide = function () {
-        this.validate();
-        this.proxy.$close(this.name);
-    };
-    OutputChannelImpl.prototype.validate = function () {
-        if (this.disposed) {
-            throw new Error('Channel has been closed');
-        }
-    };
-    return OutputChannelImpl;
-}());
-exports.OutputChannelImpl = OutputChannelImpl;
-
-
-/***/ }),
-/* 451 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ext_types_1 = __webpack_require__(220);
-var vscode_1 = __webpack_require__(204);
-var ide_core_common_1 = __webpack_require__(2);
-var uuid_1 = __webpack_require__(340);
-var types = __webpack_require__(220);
-var ExtHostStatusBar = (function () {
-    function ExtHostStatusBar(rpcProtocol) {
-        this.logger = ide_core_common_1.getLogger();
-        this.argumentProcessors = [];
-        this.rpcProtocol = rpcProtocol;
-        this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadStatusBar);
-    }
-    ExtHostStatusBar.prototype.setStatusBarMessage = function (text, arg) {
-        var _this = this;
-        this.proxy.$setStatusBarMessage(text);
-        var handle;
-        if (typeof arg === 'number') {
-            handle = setTimeout(function () { return _this.proxy.$dispose(); }, arg);
-        }
-        else if (typeof arg !== 'undefined') {
-            arg.then(function () { return _this.proxy.$dispose(); }, function () { return _this.proxy.$dispose(); });
-        }
-        return ext_types_1.Disposable.create(function () {
-            _this.proxy.$dispose();
-            if (handle) {
-                clearTimeout(handle);
-            }
-        });
-    };
-    ExtHostStatusBar.prototype.createStatusBarItem = function (alignment, priority) {
-        var statusBarItem = new StatusBarItemImpl(this.rpcProtocol, alignment, priority);
-        this.proxy.$createStatusBarItem(statusBarItem.id, statusBarItem.alignment, statusBarItem.priority);
-        return statusBarItem;
-    };
-    return ExtHostStatusBar;
-}());
-exports.ExtHostStatusBar = ExtHostStatusBar;
-var StatusBarItemImpl = (function () {
-    function StatusBarItemImpl(rpcProtocol, alignment, priority) {
-        if (alignment === void 0) { alignment = types.StatusBarAlignment.Left; }
-        if (priority === void 0) { priority = 0; }
-        this.id = StatusBarItemImpl.nextId();
-        this._rpcProtocol = rpcProtocol;
-        this._proxy = this._rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadStatusBar);
-        this._alignment = alignment;
-        this._priority = priority;
-    }
-    Object.defineProperty(StatusBarItemImpl.prototype, "alignment", {
-        get: function () {
-            return this._alignment;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatusBarItemImpl.prototype, "priority", {
-        get: function () {
-            return this._priority;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatusBarItemImpl.prototype, "text", {
-        get: function () {
-            return this._text;
-        },
-        set: function (text) {
-            this._text = text;
-            this.update();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatusBarItemImpl.prototype, "tooltip", {
-        get: function () {
-            return this._tooltip;
-        },
-        set: function (tooltip) {
-            this._tooltip = tooltip;
-            this.update();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatusBarItemImpl.prototype, "color", {
-        get: function () {
-            return this._color;
-        },
-        set: function (color) {
-            this._color = color;
-            this.update();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatusBarItemImpl.prototype, "command", {
-        get: function () {
-            return this._command;
-        },
-        set: function (command) {
-            this._command = command;
-            this.update();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    StatusBarItemImpl.prototype.show = function () {
-        this._isVisible = true;
-        this.update();
-    };
-    StatusBarItemImpl.prototype.hide = function () {
-        if (this._timeoutHandle) {
-            clearTimeout(this._timeoutHandle);
-        }
-        this._proxy.$dispose(this.id);
-        this._isVisible = false;
-    };
-    StatusBarItemImpl.prototype.update = function () {
-        var _this = this;
-        if (!this._isVisible) {
-            return;
-        }
-        if (this._timeoutHandle) {
-            clearTimeout(this._timeoutHandle);
-        }
-        this._timeoutHandle = setTimeout(function () {
-            _this._timeoutHandle = undefined;
-            _this._proxy.$setMessage(_this.id, _this.text, _this.priority, _this.alignment, _this.getColor(), _this.tooltip, _this.command);
-        }, 0);
-    };
-    StatusBarItemImpl.prototype.getColor = function () {
-        if (typeof this.color !== 'string' && typeof this.color !== 'undefined') {
-            var colorId = this.color.id;
-            return colorId;
-        }
-        return this.color;
-    };
-    StatusBarItemImpl.prototype.dispose = function () {
-        this.hide();
-    };
-    StatusBarItemImpl.nextId = function () {
-        return StatusBarItemImpl.ID_PREFIX + ':' + uuid_1.v4();
-    };
-    StatusBarItemImpl.ID_PREFIX = 'plugin-status-bar-item';
-    return StatusBarItemImpl;
-}());
-exports.StatusBarItemImpl = StatusBarItemImpl;
+}
 
 
 /***/ }),
@@ -66387,12 +64843,56 @@ exports.StatusBarItemImpl = StatusBarItemImpl;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(453), exports);
-tslib_1.__exportStar(__webpack_require__(480), exports);
-tslib_1.__exportStar(__webpack_require__(454), exports);
-tslib_1.__exportStar(__webpack_require__(479), exports);
-tslib_1.__exportStar(__webpack_require__(478), exports);
+const vscode_1 = __webpack_require__(206);
+class ExtHostOutput {
+    constructor(rpcProtocol) {
+        this.rpcProtocol = rpcProtocol;
+    }
+    createOutputChannel(name) {
+        return new OutputChannelImpl(name, this.rpcProtocol);
+    }
+}
+exports.ExtHostOutput = ExtHostOutput;
+class OutputChannelImpl {
+    constructor(name, rpcProtocol) {
+        this.name = name;
+        this.rpcProtocol = rpcProtocol;
+        this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadOutput);
+    }
+    dispose() {
+        if (!this.disposed) {
+            this.proxy.$dispose(this.name).then(() => {
+                this.disposed = true;
+            });
+        }
+    }
+    append(value) {
+        this.validate();
+        this.proxy.$append(this.name, value);
+    }
+    appendLine(value) {
+        this.validate();
+        this.append(value + '\n');
+    }
+    clear() {
+        this.validate();
+        this.proxy.$clear(this.name);
+    }
+    show(preserveFocus) {
+        this.validate();
+        this.proxy.$reveal(this.name, !!preserveFocus);
+    }
+    hide() {
+        this.validate();
+        this.proxy.$close(this.name);
+    }
+    validate() {
+        if (this.disposed) {
+            throw new Error('Channel has been closed');
+        }
+    }
+}
+exports.OutputChannelImpl = OutputChannelImpl;
 
 
 /***/ }),
@@ -66402,18 +64902,158 @@ tslib_1.__exportStar(__webpack_require__(478), exports);
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_1 = __webpack_require__(204);
-var ide_core_common_1 = __webpack_require__(2);
-var ext_types_1 = __webpack_require__(220);
-var vscode_2 = __webpack_require__(204);
-var extension_debug_adapter_session_1 = __webpack_require__(454);
-var extension_debug_adapter_tracker_1 = __webpack_require__(478);
-var extension_debug_adapter_starter_1 = __webpack_require__(479);
-var extension_debug_adapter_excutable_resolver_1 = __webpack_require__(480);
-var path_1 = __webpack_require__(35);
+const ext_types_1 = __webpack_require__(222);
+const vscode_1 = __webpack_require__(206);
+const ide_core_common_1 = __webpack_require__(2);
+const uuid_1 = __webpack_require__(342);
+const types = __webpack_require__(222);
+class ExtHostStatusBar {
+    constructor(rpcProtocol) {
+        this.logger = ide_core_common_1.getLogger();
+        this.argumentProcessors = [];
+        this.rpcProtocol = rpcProtocol;
+        this.proxy = this.rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadStatusBar);
+    }
+    setStatusBarMessage(text, arg) {
+        this.proxy.$setStatusBarMessage(text);
+        let handle;
+        if (typeof arg === 'number') {
+            handle = setTimeout(() => this.proxy.$dispose(), arg);
+        }
+        else if (typeof arg !== 'undefined') {
+            arg.then(() => this.proxy.$dispose(), () => this.proxy.$dispose());
+        }
+        return ext_types_1.Disposable.create(() => {
+            this.proxy.$dispose();
+            if (handle) {
+                clearTimeout(handle);
+            }
+        });
+    }
+    createStatusBarItem(alignment, priority) {
+        const statusBarItem = new StatusBarItemImpl(this.rpcProtocol, alignment, priority);
+        this.proxy.$createStatusBarItem(statusBarItem.id, statusBarItem.alignment, statusBarItem.priority);
+        return statusBarItem;
+    }
+}
+exports.ExtHostStatusBar = ExtHostStatusBar;
+class StatusBarItemImpl {
+    constructor(rpcProtocol, alignment = types.StatusBarAlignment.Left, priority = 0) {
+        this.id = StatusBarItemImpl.nextId();
+        this._rpcProtocol = rpcProtocol;
+        this._proxy = this._rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadStatusBar);
+        this._alignment = alignment;
+        this._priority = priority;
+    }
+    get alignment() {
+        return this._alignment;
+    }
+    get priority() {
+        return this._priority;
+    }
+    get text() {
+        return this._text;
+    }
+    set text(text) {
+        this._text = text;
+        this.update();
+    }
+    get tooltip() {
+        return this._tooltip;
+    }
+    set tooltip(tooltip) {
+        this._tooltip = tooltip;
+        this.update();
+    }
+    get color() {
+        return this._color;
+    }
+    set color(color) {
+        this._color = color;
+        this.update();
+    }
+    get command() {
+        return this._command;
+    }
+    set command(command) {
+        this._command = command;
+        this.update();
+    }
+    show() {
+        this._isVisible = true;
+        this.update();
+    }
+    hide() {
+        if (this._timeoutHandle) {
+            clearTimeout(this._timeoutHandle);
+        }
+        this._proxy.$dispose(this.id);
+        this._isVisible = false;
+    }
+    update() {
+        if (!this._isVisible) {
+            return;
+        }
+        if (this._timeoutHandle) {
+            clearTimeout(this._timeoutHandle);
+        }
+        this._timeoutHandle = setTimeout(() => {
+            this._timeoutHandle = undefined;
+            this._proxy.$setMessage(this.id, this.text, this.priority, this.alignment, this.getColor(), this.tooltip, this.command);
+        }, 0);
+    }
+    getColor() {
+        if (typeof this.color !== 'string' && typeof this.color !== 'undefined') {
+            const colorId = this.color.id;
+            return colorId;
+        }
+        return this.color;
+    }
+    dispose() {
+        this.hide();
+    }
+    static nextId() {
+        return StatusBarItemImpl.ID_PREFIX + ':' + uuid_1.v4();
+    }
+}
+exports.StatusBarItemImpl = StatusBarItemImpl;
+StatusBarItemImpl.ID_PREFIX = 'plugin-status-bar-item';
+
+
+/***/ }),
+/* 454 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = __webpack_require__(1);
+tslib_1.__exportStar(__webpack_require__(455), exports);
+tslib_1.__exportStar(__webpack_require__(482), exports);
+tslib_1.__exportStar(__webpack_require__(456), exports);
+tslib_1.__exportStar(__webpack_require__(481), exports);
+tslib_1.__exportStar(__webpack_require__(480), exports);
+
+
+/***/ }),
+/* 455 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = __webpack_require__(1);
+const vscode_1 = __webpack_require__(206);
+const ide_core_common_1 = __webpack_require__(2);
+const ext_types_1 = __webpack_require__(222);
+const vscode_2 = __webpack_require__(206);
+const extension_debug_adapter_session_1 = __webpack_require__(456);
+const extension_debug_adapter_tracker_1 = __webpack_require__(480);
+const extension_debug_adapter_starter_1 = __webpack_require__(481);
+const extension_debug_adapter_excutable_resolver_1 = __webpack_require__(482);
+const path_1 = __webpack_require__(35);
 function createDebugApiFactory(extHostDebugService) {
-    var debug = {
+    const debug = {
         get activeDebugSession() {
             return extHostDebugService.activeDebugSession;
         },
@@ -66423,46 +65063,45 @@ function createDebugApiFactory(extHostDebugService) {
         get breakpoints() {
             return extHostDebugService.breakpoints;
         },
-        onDidStartDebugSession: function (listener, thisArg, disposables) {
+        onDidStartDebugSession(listener, thisArg, disposables) {
             return extHostDebugService.onDidStartDebugSession(listener, thisArg, disposables);
         },
-        onDidTerminateDebugSession: function (listener, thisArg, disposables) {
+        onDidTerminateDebugSession(listener, thisArg, disposables) {
             return extHostDebugService.onDidTerminateDebugSession(listener, thisArg, disposables);
         },
-        onDidChangeActiveDebugSession: function (listener, thisArg, disposables) {
+        onDidChangeActiveDebugSession(listener, thisArg, disposables) {
             return extHostDebugService.onDidChangeActiveDebugSession(listener, thisArg, disposables);
         },
-        onDidReceiveDebugSessionCustomEvent: function (listener, thisArg, disposables) {
+        onDidReceiveDebugSessionCustomEvent(listener, thisArg, disposables) {
             return extHostDebugService.onDidReceiveDebugSessionCustomEvent(listener, thisArg, disposables);
         },
-        onDidChangeBreakpoints: function (listener, thisArgs, disposables) {
+        onDidChangeBreakpoints(listener, thisArgs, disposables) {
             return extHostDebugService.onDidChangeBreakpoints(listener, thisArgs, disposables);
         },
-        registerDebugConfigurationProvider: function (debugType, provider) {
+        registerDebugConfigurationProvider(debugType, provider) {
             return extHostDebugService.registerDebugConfigurationProvider(debugType, provider);
         },
-        registerDebugAdapterDescriptorFactory: function (debugType, factory) {
+        registerDebugAdapterDescriptorFactory(debugType, factory) {
             return extHostDebugService.registerDebugAdapterDescriptorFactory(debugType, factory);
         },
-        registerDebugAdapterTrackerFactory: function (debugType, factory) {
+        registerDebugAdapterTrackerFactory(debugType, factory) {
             return extHostDebugService.registerDebugAdapterTrackerFactory(debugType, factory);
         },
-        startDebugging: function (folder, nameOrConfig, parentSession) {
+        startDebugging(folder, nameOrConfig, parentSession) {
             return extHostDebugService.startDebugging(folder, nameOrConfig, parentSession);
         },
-        addBreakpoints: function (breakpoints) {
+        addBreakpoints(breakpoints) {
             return extHostDebugService.addBreakpoints(breakpoints);
         },
-        removeBreakpoints: function (breakpoints) {
+        removeBreakpoints(breakpoints) {
             return extHostDebugService.removeBreakpoints(breakpoints);
         },
     };
     return debug;
 }
 exports.createDebugApiFactory = createDebugApiFactory;
-var ExtHostDebug = (function () {
-    function ExtHostDebug(rpc, extHostConnectionService, extHostCommand) {
-        var _this = this;
+class ExtHostDebug {
+    constructor(rpc, extHostConnectionService, extHostCommand) {
         this.extHostConnectionService = extHostConnectionService;
         this.extHostCommand = extHostCommand;
         this.onDidChangeBreakpointsEmitter = new ide_core_common_1.Emitter();
@@ -66478,576 +65117,372 @@ var ExtHostDebug = (function () {
         this.descriptorFactories = new Map();
         this.proxy = rpc.getProxy(vscode_2.MainThreadAPIIdentifier.MainThreadDebug);
         this.activeDebugConsole = {
-            append: function (value) { return _this.proxy.$appendToDebugConsole(value); },
-            appendLine: function (value) { return _this.proxy.$appendLineToDebugConsole(value); },
+            append: (value) => this.proxy.$appendToDebugConsole(value),
+            appendLine: (value) => this.proxy.$appendLineToDebugConsole(value),
         };
     }
-    Object.defineProperty(ExtHostDebug.prototype, "onDidChangeBreakpoints", {
-        get: function () {
-            return this.onDidChangeBreakpointsEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostDebug.prototype, "onDidReceiveDebugSessionCustomEvent", {
-        get: function () {
-            return this.onDidReceiveDebugSessionCustomEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostDebug.prototype, "onDidChangeActiveDebugSession", {
-        get: function () {
-            return this.onDidChangeActiveDebugSessionEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostDebug.prototype, "onDidTerminateDebugSession", {
-        get: function () {
-            return this.onDidTerminateDebugSessionEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(ExtHostDebug.prototype, "onDidStartDebugSession", {
-        get: function () {
-            return this.onDidStartDebugSessionEmitter.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostDebug.prototype.registerDebuggersContributions = function (extensionPath, contributions) {
-        var _this = this;
-        contributions.forEach(function (contribution) {
-            _this.contributionPaths.set(contribution.type, extensionPath);
-            _this.debuggersContributions.set(contribution.type, contribution);
-            _this.proxy.$registerDebuggerContribution({
+    get onDidChangeBreakpoints() {
+        return this.onDidChangeBreakpointsEmitter.event;
+    }
+    get onDidReceiveDebugSessionCustomEvent() {
+        return this.onDidReceiveDebugSessionCustomEmitter.event;
+    }
+    get onDidChangeActiveDebugSession() {
+        return this.onDidChangeActiveDebugSessionEmitter.event;
+    }
+    get onDidTerminateDebugSession() {
+        return this.onDidTerminateDebugSessionEmitter.event;
+    }
+    get onDidStartDebugSession() {
+        return this.onDidStartDebugSessionEmitter.event;
+    }
+    registerDebuggersContributions(extensionPath, contributions) {
+        contributions.forEach((contribution) => {
+            this.contributionPaths.set(contribution.type, extensionPath);
+            this.debuggersContributions.set(contribution.type, contribution);
+            this.proxy.$registerDebuggerContribution({
                 type: contribution.type,
                 label: contribution.label || contribution.type,
             });
-            console.log("Debugger contribution has been registered: " + contribution.type);
+            console.log(`Debugger contribution has been registered: ${contribution.type}`);
         });
-    };
-    ExtHostDebug.prototype.addBreakpoints = function (breakpoints) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this.proxy.$addBreakpoints(breakpoints);
-                return [2];
-            });
+    }
+    addBreakpoints(breakpoints) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.proxy.$addBreakpoints(breakpoints);
         });
-    };
-    ExtHostDebug.prototype.removeBreakpoints = function (breakpoints) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this.proxy.$removeBreakpoints(breakpoints);
-                return [2];
-            });
+    }
+    removeBreakpoints(breakpoints) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.proxy.$removeBreakpoints(breakpoints);
         });
-    };
-    ExtHostDebug.prototype.startDebugging = function (folder, nameOrConfig, parentSession) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2, this.proxy.$startDebugging(folder, nameOrConfig)];
-            });
+    }
+    startDebugging(folder, nameOrConfig, parentSession) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return this.proxy.$startDebugging(folder, nameOrConfig);
         });
-    };
-    ExtHostDebug.prototype.registerDebugConfigurationProvider = function (type, provider) {
-        var _this = this;
-        var providers = this.configurationProviders.get(type) || new Set();
+    }
+    registerDebugConfigurationProvider(type, provider) {
+        const providers = this.configurationProviders.get(type) || new Set();
         this.configurationProviders.set(type, providers);
         providers.add(provider);
-        return ext_types_1.Disposable.create(function () {
-            var providers = _this.configurationProviders.get(type);
+        return ext_types_1.Disposable.create(() => {
+            const providers = this.configurationProviders.get(type);
             if (providers) {
                 providers.delete(provider);
                 if (providers.size === 0) {
-                    _this.configurationProviders.delete(type);
+                    this.configurationProviders.delete(type);
                 }
             }
         });
-    };
-    ExtHostDebug.prototype.registerDebugAdapterDescriptorFactory = function (type, factory) {
-        var _this = this;
+    }
+    registerDebugAdapterDescriptorFactory(type, factory) {
         if (this.descriptorFactories.has(type)) {
-            throw new Error("Descriptor factory for " + type + " has been already registered");
+            throw new Error(`Descriptor factory for ${type} has been already registered`);
         }
         this.descriptorFactories.set(type, factory);
-        return ext_types_1.Disposable.create(function () { return _this.descriptorFactories.delete(type); });
-    };
-    ExtHostDebug.prototype.registerDebugAdapterTrackerFactory = function (type, factory) {
-        var _this = this;
+        return ext_types_1.Disposable.create(() => this.descriptorFactories.delete(type));
+    }
+    registerDebugAdapterTrackerFactory(type, factory) {
         if (!factory) {
-            return ext_types_1.Disposable.create(function () { });
+            return ext_types_1.Disposable.create(() => { });
         }
         this.trackerFactories.push([type, factory]);
-        return ext_types_1.Disposable.create(function () {
-            _this.trackerFactories = _this.trackerFactories.filter(function (tuple) { return tuple[1] !== factory; });
+        return ext_types_1.Disposable.create(() => {
+            this.trackerFactories = this.trackerFactories.filter((tuple) => tuple[1] !== factory);
         });
-    };
-    ExtHostDebug.prototype.$onSessionCustomEvent = function (sessionId, event, body) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var session;
-            return tslib_1.__generator(this, function (_a) {
-                session = this.sessions.get(sessionId);
-                if (session) {
-                    this.onDidReceiveDebugSessionCustomEmitter.fire({ event: event, body: body, session: session });
+    }
+    $onSessionCustomEvent(sessionId, event, body) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const session = this.sessions.get(sessionId);
+            if (session) {
+                this.onDidReceiveDebugSessionCustomEmitter.fire({ event, body, session });
+            }
+        });
+    }
+    $sessionDidStart(sessionId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const session = this.sessions.get(sessionId);
+            if (session) {
+                this.onDidStartDebugSessionEmitter.fire(session);
+            }
+        });
+    }
+    $sessionDidDestroy(sessionId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const session = this.sessions.get(sessionId);
+            if (session) {
+                this.onDidTerminateDebugSessionEmitter.fire(session);
+            }
+        });
+    }
+    $sessionDidChange(sessionId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.activeDebugSession = sessionId ? this.sessions.get(sessionId) : undefined;
+            this.onDidChangeActiveDebugSessionEmitter.fire(this.activeDebugSession);
+        });
+    }
+    $breakpointsDidChange(all, added, removed, changed) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.breakpoints = all;
+            this.onDidChangeBreakpointsEmitter.fire({ added, removed, changed });
+        });
+    }
+    $createDebugSession(debugConfiguration) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const sessionId = ide_core_common_1.uuid();
+            const debugSession = {
+                id: sessionId,
+                type: debugConfiguration.type,
+                name: debugConfiguration.name,
+                workspaceFolder: undefined,
+                configuration: debugConfiguration,
+                customRequest: (command, args) => this.proxy.$customRequest(sessionId, command, args),
+            };
+            const tracker = yield this.createDebugAdapterTracker(debugSession);
+            const communicationProvider = yield this.createCommunicationProvider(debugSession, debugConfiguration);
+            const debugAdapterSession = new extension_debug_adapter_session_1.ExtensionDebugAdapterSession(communicationProvider, tracker, debugSession);
+            this.sessions.set(sessionId, debugAdapterSession);
+            const connection = yield this.extHostConnectionService.ensureConnection(sessionId);
+            debugAdapterSession.start(new vscode_1.ExtensionWSChannel(connection));
+            return sessionId;
+        });
+    }
+    $terminateDebugSession(sessionId) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const debugAdapterSession = this.sessions.get(sessionId);
+            if (debugAdapterSession) {
+                yield debugAdapterSession.stop();
+                this.sessions.delete(sessionId);
+            }
+        });
+    }
+    $getSupportedLanguages(debugType) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const contribution = this.debuggersContributions.get(debugType);
+            return contribution && contribution.languages || [];
+        });
+    }
+    $getSchemaAttributes(debugType) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const contribution = this.debuggersContributions.get(debugType);
+            return contribution && contribution.configurationAttributes || [];
+        });
+    }
+    $getConfigurationSnippets(debugType) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const contribution = this.debuggersContributions.get(debugType);
+            return contribution && contribution.configurationSnippets || [];
+        });
+    }
+    $getTerminalCreationOptions(debugType) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return this.doGetTerminalCreationOptions(debugType);
+        });
+    }
+    doGetTerminalCreationOptions(debugType) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return undefined;
+        });
+    }
+    $provideDebugConfigurations(debugType, workspaceFolderUri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            let result = [];
+            const providers = this.configurationProviders.get(debugType);
+            if (providers) {
+                for (const provider of providers) {
+                    if (provider.provideDebugConfigurations) {
+                        result = result.concat((yield provider.provideDebugConfigurations(this.toWorkspaceFolder(workspaceFolderUri))) || []);
+                    }
                 }
-                return [2];
-            });
+            }
+            return result;
         });
-    };
-    ExtHostDebug.prototype.$sessionDidStart = function (sessionId) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var session;
-            return tslib_1.__generator(this, function (_a) {
-                session = this.sessions.get(sessionId);
-                if (session) {
-                    this.onDidStartDebugSessionEmitter.fire(session);
-                }
-                return [2];
-            });
-        });
-    };
-    ExtHostDebug.prototype.$sessionDidDestroy = function (sessionId) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var session;
-            return tslib_1.__generator(this, function (_a) {
-                session = this.sessions.get(sessionId);
-                if (session) {
-                    this.onDidTerminateDebugSessionEmitter.fire(session);
-                }
-                return [2];
-            });
-        });
-    };
-    ExtHostDebug.prototype.$sessionDidChange = function (sessionId) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this.activeDebugSession = sessionId ? this.sessions.get(sessionId) : undefined;
-                this.onDidChangeActiveDebugSessionEmitter.fire(this.activeDebugSession);
-                return [2];
-            });
-        });
-    };
-    ExtHostDebug.prototype.$breakpointsDidChange = function (all, added, removed, changed) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                this.breakpoints = all;
-                this.onDidChangeBreakpointsEmitter.fire({ added: added, removed: removed, changed: changed });
-                return [2];
-            });
-        });
-    };
-    ExtHostDebug.prototype.$createDebugSession = function (debugConfiguration) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var sessionId, debugSession, tracker, communicationProvider, debugAdapterSession, connection;
-            var _this = this;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        sessionId = ide_core_common_1.uuid();
-                        debugSession = {
-                            id: sessionId,
-                            type: debugConfiguration.type,
-                            name: debugConfiguration.name,
-                            workspaceFolder: undefined,
-                            configuration: debugConfiguration,
-                            customRequest: function (command, args) { return _this.proxy.$customRequest(sessionId, command, args); },
-                        };
-                        return [4, this.createDebugAdapterTracker(debugSession)];
-                    case 1:
-                        tracker = _a.sent();
-                        return [4, this.createCommunicationProvider(debugSession, debugConfiguration)];
-                    case 2:
-                        communicationProvider = _a.sent();
-                        debugAdapterSession = new extension_debug_adapter_session_1.ExtensionDebugAdapterSession(communicationProvider, tracker, debugSession);
-                        this.sessions.set(sessionId, debugAdapterSession);
-                        return [4, this.extHostConnectionService.ensureConnection(sessionId)];
-                    case 3:
-                        connection = _a.sent();
-                        debugAdapterSession.start(new vscode_1.ExtensionWSChannel(connection));
-                        return [2, sessionId];
-                }
-            });
-        });
-    };
-    ExtHostDebug.prototype.$terminateDebugSession = function (sessionId) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var debugAdapterSession;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        debugAdapterSession = this.sessions.get(sessionId);
-                        if (!debugAdapterSession) return [3, 2];
-                        return [4, debugAdapterSession.stop()];
-                    case 1:
-                        _a.sent();
-                        this.sessions.delete(sessionId);
-                        _a.label = 2;
-                    case 2: return [2];
-                }
-            });
-        });
-    };
-    ExtHostDebug.prototype.$getSupportedLanguages = function (debugType) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var contribution;
-            return tslib_1.__generator(this, function (_a) {
-                contribution = this.debuggersContributions.get(debugType);
-                return [2, contribution && contribution.languages || []];
-            });
-        });
-    };
-    ExtHostDebug.prototype.$getSchemaAttributes = function (debugType) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var contribution;
-            return tslib_1.__generator(this, function (_a) {
-                contribution = this.debuggersContributions.get(debugType);
-                return [2, contribution && contribution.configurationAttributes || []];
-            });
-        });
-    };
-    ExtHostDebug.prototype.$getConfigurationSnippets = function (debugType) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var contribution;
-            return tslib_1.__generator(this, function (_a) {
-                contribution = this.debuggersContributions.get(debugType);
-                return [2, contribution && contribution.configurationSnippets || []];
-            });
-        });
-    };
-    ExtHostDebug.prototype.$getTerminalCreationOptions = function (debugType) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2, this.doGetTerminalCreationOptions(debugType)];
-            });
-        });
-    };
-    ExtHostDebug.prototype.doGetTerminalCreationOptions = function (debugType) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2, undefined];
-            });
-        });
-    };
-    ExtHostDebug.prototype.$provideDebugConfigurations = function (debugType, workspaceFolderUri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var result, providers, providers_1, providers_1_1, provider, _a, _b, e_1_1;
-            var e_1, _c;
-            return tslib_1.__generator(this, function (_d) {
-                switch (_d.label) {
-                    case 0:
-                        result = [];
-                        providers = this.configurationProviders.get(debugType);
-                        if (!providers) return [3, 8];
-                        _d.label = 1;
-                    case 1:
-                        _d.trys.push([1, 6, 7, 8]);
-                        providers_1 = tslib_1.__values(providers), providers_1_1 = providers_1.next();
-                        _d.label = 2;
-                    case 2:
-                        if (!!providers_1_1.done) return [3, 5];
-                        provider = providers_1_1.value;
-                        if (!provider.provideDebugConfigurations) return [3, 4];
-                        _b = (_a = result).concat;
-                        return [4, provider.provideDebugConfigurations(this.toWorkspaceFolder(workspaceFolderUri))];
-                    case 3:
-                        result = _b.apply(_a, [(_d.sent()) || []]);
-                        _d.label = 4;
-                    case 4:
-                        providers_1_1 = providers_1.next();
-                        return [3, 2];
-                    case 5: return [3, 8];
-                    case 6:
-                        e_1_1 = _d.sent();
-                        e_1 = { error: e_1_1 };
-                        return [3, 8];
-                    case 7:
-                        try {
-                            if (providers_1_1 && !providers_1_1.done && (_c = providers_1.return)) _c.call(providers_1);
-                        }
-                        finally { if (e_1) throw e_1.error; }
-                        return [7];
-                    case 8: return [2, result];
-                }
-            });
-        });
-    };
-    ExtHostDebug.prototype.$resolveDebugConfigurations = function (debugConfiguration, workspaceFolderUri) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var current, _a, _b, providers, providers_2, providers_2_1, provider, next, e_2, e_3_1, e_4_1;
-            var e_4, _c, e_3, _d;
-            return tslib_1.__generator(this, function (_e) {
-                switch (_e.label) {
-                    case 0:
-                        current = debugConfiguration;
-                        _e.label = 1;
-                    case 1:
-                        _e.trys.push([1, 14, 15, 16]);
-                        _a = tslib_1.__values([this.configurationProviders.get(debugConfiguration.type), this.configurationProviders.get('*')]), _b = _a.next();
-                        _e.label = 2;
-                    case 2:
-                        if (!!_b.done) return [3, 13];
-                        providers = _b.value;
-                        if (!providers) return [3, 12];
-                        _e.label = 3;
-                    case 3:
-                        _e.trys.push([3, 10, 11, 12]);
-                        providers_2 = (e_3 = void 0, tslib_1.__values(providers)), providers_2_1 = providers_2.next();
-                        _e.label = 4;
-                    case 4:
-                        if (!!providers_2_1.done) return [3, 9];
-                        provider = providers_2_1.value;
-                        if (!provider.resolveDebugConfiguration) return [3, 8];
-                        _e.label = 5;
-                    case 5:
-                        _e.trys.push([5, 7, , 8]);
-                        return [4, provider.resolveDebugConfiguration(this.toWorkspaceFolder(workspaceFolderUri), current)];
-                    case 6:
-                        next = _e.sent();
-                        if (next) {
-                            current = next;
-                        }
-                        else {
-                            return [2, current];
-                        }
-                        return [3, 8];
-                    case 7:
-                        e_2 = _e.sent();
-                        console.error(e_2);
-                        return [3, 8];
-                    case 8:
-                        providers_2_1 = providers_2.next();
-                        return [3, 4];
-                    case 9: return [3, 12];
-                    case 10:
-                        e_3_1 = _e.sent();
-                        e_3 = { error: e_3_1 };
-                        return [3, 12];
-                    case 11:
-                        try {
-                            if (providers_2_1 && !providers_2_1.done && (_d = providers_2.return)) _d.call(providers_2);
-                        }
-                        finally { if (e_3) throw e_3.error; }
-                        return [7];
-                    case 12:
-                        _b = _a.next();
-                        return [3, 2];
-                    case 13: return [3, 16];
-                    case 14:
-                        e_4_1 = _e.sent();
-                        e_4 = { error: e_4_1 };
-                        return [3, 16];
-                    case 15:
-                        try {
-                            if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
-                        }
-                        finally { if (e_4) throw e_4.error; }
-                        return [7];
-                    case 16: return [2, current];
-                }
-            });
-        });
-    };
-    ExtHostDebug.prototype.$registerDebuggerContributions = function (extensionFolder, contributions) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return tslib_1.__generator(this, function (_a) {
-                contributions.forEach(function (contribution) {
-                    _this.contributionPaths.set(contribution.type, extensionFolder);
-                    _this.debuggersContributions.set(contribution.type, contribution);
-                    console.log("Debugger contribution has been registered: " + contribution.type);
-                });
-                return [2];
-            });
-        });
-    };
-    ExtHostDebug.prototype.createDebugAdapterTracker = function (session) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2, extension_debug_adapter_tracker_1.ExtensionDebugAdapterTracker.create(session, this.trackerFactories)];
-            });
-        });
-    };
-    ExtHostDebug.prototype.createCommunicationProvider = function (session, debugConfiguration) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var executable, descriptorFactory, descriptor;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.resolveDebugAdapterExecutable(debugConfiguration)];
-                    case 1:
-                        executable = _a.sent();
-                        descriptorFactory = this.descriptorFactories.get(session.type);
-                        if (!descriptorFactory) return [3, 3];
-                        return [4, descriptorFactory.createDebugAdapterDescriptor(session, executable)];
-                    case 2:
-                        descriptor = _a.sent();
-                        if (descriptor) {
-                            if ('port' in descriptor) {
-                                return [2, extension_debug_adapter_starter_1.connectDebugAdapter(descriptor)];
+    }
+    $resolveDebugConfigurations(debugConfiguration, workspaceFolderUri) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            let current = debugConfiguration;
+            for (const providers of [this.configurationProviders.get(debugConfiguration.type), this.configurationProviders.get('*')]) {
+                if (providers) {
+                    for (const provider of providers) {
+                        if (provider.resolveDebugConfiguration) {
+                            try {
+                                const next = yield provider.resolveDebugConfiguration(this.toWorkspaceFolder(workspaceFolderUri), current);
+                                if (next) {
+                                    current = next;
+                                }
+                                else {
+                                    return current;
+                                }
                             }
-                            else {
-                                return [2, extension_debug_adapter_starter_1.startDebugAdapter(descriptor)];
+                            catch (e) {
+                                console.error(e);
                             }
                         }
-                        _a.label = 3;
-                    case 3:
-                        if ('debugServer' in debugConfiguration) {
-                            return [2, extension_debug_adapter_starter_1.connectDebugAdapter({ port: debugConfiguration.debugServer })];
-                        }
-                        else {
-                            if (!executable) {
-                                throw new Error('It is not possible to provide debug adapter executable.');
-                            }
-                            return [2, extension_debug_adapter_starter_1.startDebugAdapter(executable)];
-                        }
-                        return [2];
+                    }
                 }
+            }
+            return current;
+        });
+    }
+    $registerDebuggerContributions(extensionFolder, contributions) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            contributions.forEach((contribution) => {
+                this.contributionPaths.set(contribution.type, extensionFolder);
+                this.debuggersContributions.set(contribution.type, contribution);
+                console.log(`Debugger contribution has been registered: ${contribution.type}`);
             });
         });
-    };
-    ExtHostDebug.prototype.resolveDebugAdapterExecutable = function (debugConfiguration) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var type, contribution, executable, contributionPath;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        type = debugConfiguration.type;
-                        contribution = this.debuggersContributions.get(type);
-                        if (!contribution) return [3, 3];
-                        if (!contribution.adapterExecutableCommand) return [3, 2];
-                        return [4, this.extHostCommand.executeCommand(contribution.adapterExecutableCommand)];
-                    case 1:
-                        executable = _a.sent();
-                        if (executable) {
-                            return [2, executable];
-                        }
-                        return [3, 3];
-                    case 2:
-                        contributionPath = this.contributionPaths.get(type);
-                        if (contributionPath) {
-                            return [2, extension_debug_adapter_excutable_resolver_1.resolveDebugAdapterExecutable(contributionPath, contribution)];
-                        }
-                        _a.label = 3;
-                    case 3: throw new Error("It is not possible to provide debug adapter executable for '" + debugConfiguration.type + "'.");
-                }
-            });
+    }
+    createDebugAdapterTracker(session) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return extension_debug_adapter_tracker_1.ExtensionDebugAdapterTracker.create(session, this.trackerFactories);
         });
-    };
-    ExtHostDebug.prototype.toWorkspaceFolder = function (folder) {
+    }
+    createCommunicationProvider(session, debugConfiguration) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const executable = yield this.resolveDebugAdapterExecutable(debugConfiguration);
+            const descriptorFactory = this.descriptorFactories.get(session.type);
+            if (descriptorFactory) {
+                const descriptor = yield descriptorFactory.createDebugAdapterDescriptor(session, executable);
+                if (descriptor) {
+                    if ('port' in descriptor) {
+                        return extension_debug_adapter_starter_1.connectDebugAdapter(descriptor);
+                    }
+                    else {
+                        return extension_debug_adapter_starter_1.startDebugAdapter(descriptor);
+                    }
+                }
+            }
+            if ('debugServer' in debugConfiguration) {
+                return extension_debug_adapter_starter_1.connectDebugAdapter({ port: debugConfiguration.debugServer });
+            }
+            else {
+                if (!executable) {
+                    throw new Error('It is not possible to provide debug adapter executable.');
+                }
+                return extension_debug_adapter_starter_1.startDebugAdapter(executable);
+            }
+        });
+    }
+    resolveDebugAdapterExecutable(debugConfiguration) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const { type } = debugConfiguration;
+            const contribution = this.debuggersContributions.get(type);
+            if (contribution) {
+                if (contribution.adapterExecutableCommand) {
+                    const executable = yield this.extHostCommand.executeCommand(contribution.adapterExecutableCommand);
+                    if (executable) {
+                        return executable;
+                    }
+                }
+                else {
+                    const contributionPath = this.contributionPaths.get(type);
+                    if (contributionPath) {
+                        return extension_debug_adapter_excutable_resolver_1.resolveDebugAdapterExecutable(contributionPath, contribution);
+                    }
+                }
+            }
+            throw new Error(`It is not possible to provide debug adapter executable for '${debugConfiguration.type}'.`);
+        });
+    }
+    toWorkspaceFolder(folder) {
         if (!folder) {
             return undefined;
         }
-        var uri = ext_types_1.Uri.parse(folder);
-        var path = new path_1.Path(uri.path);
+        const uri = ext_types_1.Uri.parse(folder);
+        const path = new path_1.Path(uri.path);
         return {
-            uri: uri,
+            uri,
             name: path.base,
             index: 0,
         };
-    };
-    return ExtHostDebug;
-}());
+    }
+}
 exports.ExtHostDebug = ExtHostDebug;
 
 
 /***/ }),
-/* 454 */
+/* 456 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var node_1 = __webpack_require__(455);
-var ExtensionDebugAdapterSession = (function (_super) {
-    tslib_1.__extends(ExtensionDebugAdapterSession, _super);
-    function ExtensionDebugAdapterSession(communicationProvider, tracker, debugSession) {
-        var _this = _super.call(this, debugSession.id, communicationProvider) || this;
-        _this.communicationProvider = communicationProvider;
-        _this.tracker = tracker;
-        _this.debugSession = debugSession;
-        _this.type = debugSession.type;
-        _this.name = debugSession.name;
-        _this.workspaceFolder = debugSession.workspaceFolder;
-        _this.configuration = debugSession.configuration;
-        return _this;
+const tslib_1 = __webpack_require__(1);
+const node_1 = __webpack_require__(457);
+class ExtensionDebugAdapterSession extends node_1.DebugAdapterSessionImpl {
+    constructor(communicationProvider, tracker, debugSession) {
+        super(debugSession.id, communicationProvider);
+        this.communicationProvider = communicationProvider;
+        this.tracker = tracker;
+        this.debugSession = debugSession;
+        this.type = debugSession.type;
+        this.name = debugSession.name;
+        this.workspaceFolder = debugSession.workspaceFolder;
+        this.configuration = debugSession.configuration;
     }
-    ExtensionDebugAdapterSession.prototype.start = function (channel) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (this.tracker.onWillStartSession) {
-                            this.tracker.onWillStartSession();
-                        }
-                        return [4, _super.prototype.start.call(this, channel)];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
-            });
+    start(channel) {
+        const _super = Object.create(null, {
+            start: { get: () => super.start }
         });
-    };
-    ExtensionDebugAdapterSession.prototype.stop = function () {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (this.tracker.onWillStopSession) {
-                            this.tracker.onWillStopSession();
-                        }
-                        return [4, _super.prototype.stop.call(this)];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
-            });
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            if (this.tracker.onWillStartSession) {
+                this.tracker.onWillStartSession();
+            }
+            yield _super.start.call(this, channel);
         });
-    };
-    ExtensionDebugAdapterSession.prototype.customRequest = function (command, args) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2, this.debugSession.customRequest(command, args)];
-            });
+    }
+    stop() {
+        const _super = Object.create(null, {
+            stop: { get: () => super.stop }
         });
-    };
-    ExtensionDebugAdapterSession.prototype.onDebugAdapterError = function (error) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            if (this.tracker.onWillStopSession) {
+                this.tracker.onWillStopSession();
+            }
+            yield _super.stop.call(this);
+        });
+    }
+    customRequest(command, args) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return this.debugSession.customRequest(command, args);
+        });
+    }
+    onDebugAdapterError(error) {
         if (this.tracker.onError) {
             this.tracker.onError(error);
         }
-        _super.prototype.onDebugAdapterError.call(this, error);
-    };
-    ExtensionDebugAdapterSession.prototype.send = function (message) {
+        super.onDebugAdapterError(error);
+    }
+    send(message) {
         try {
-            _super.prototype.send.call(this, message);
+            super.send(message);
         }
         finally {
             if (this.tracker.onDidSendMessage) {
                 this.tracker.onDidSendMessage(message);
             }
         }
-    };
-    ExtensionDebugAdapterSession.prototype.write = function (message) {
+    }
+    write(message) {
         if (this.tracker.onWillReceiveMessage) {
             this.tracker.onWillReceiveMessage(message);
         }
-        _super.prototype.write.call(this, message);
-    };
-    ExtensionDebugAdapterSession.prototype.onDebugAdapterExit = function (exitCode, signal) {
+        super.write(message);
+    }
+    onDebugAdapterExit(exitCode, signal) {
         if (this.tracker.onExit) {
             this.tracker.onExit(exitCode, signal);
         }
-        _super.prototype.onDebugAdapterExit.call(this, exitCode, signal);
-    };
-    return ExtensionDebugAdapterSession;
-}(node_1.DebugAdapterSessionImpl));
+        super.onDebugAdapterExit(exitCode, signal);
+    }
+}
 exports.ExtensionDebugAdapterSession = ExtensionDebugAdapterSession;
 
 
 /***/ }),
-/* 455 */
+/* 457 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67055,13 +65490,13 @@ exports.ExtensionDebugAdapterSession = ExtensionDebugAdapterSession;
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 const common_di_1 = __webpack_require__(5);
-const ide_core_node_1 = __webpack_require__(392);
-const debug_model_1 = __webpack_require__(456);
-const debug_adapter_session_manager_1 = __webpack_require__(457);
-const debug_adapter_factory_1 = __webpack_require__(458);
-const common_1 = __webpack_require__(466);
-const debug_service_1 = __webpack_require__(475);
-const debug_adapter_contribution_1 = __webpack_require__(477);
+const ide_core_node_1 = __webpack_require__(394);
+const debug_model_1 = __webpack_require__(458);
+const debug_adapter_session_manager_1 = __webpack_require__(459);
+const debug_adapter_factory_1 = __webpack_require__(460);
+const common_1 = __webpack_require__(468);
+const debug_service_1 = __webpack_require__(477);
+const debug_adapter_contribution_1 = __webpack_require__(479);
 let DebugModule = class DebugModule extends ide_core_node_1.NodeModule {
     constructor() {
         super(...arguments);
@@ -67097,16 +65532,16 @@ DebugModule = tslib_1.__decorate([
     common_di_1.Injectable()
 ], DebugModule);
 exports.DebugModule = DebugModule;
+tslib_1.__exportStar(__webpack_require__(479), exports);
+tslib_1.__exportStar(__webpack_require__(478), exports);
+tslib_1.__exportStar(__webpack_require__(460), exports);
+tslib_1.__exportStar(__webpack_require__(467), exports);
+tslib_1.__exportStar(__webpack_require__(459), exports);
 tslib_1.__exportStar(__webpack_require__(477), exports);
-tslib_1.__exportStar(__webpack_require__(476), exports);
-tslib_1.__exportStar(__webpack_require__(458), exports);
-tslib_1.__exportStar(__webpack_require__(465), exports);
-tslib_1.__exportStar(__webpack_require__(457), exports);
-tslib_1.__exportStar(__webpack_require__(475), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 456 */
+/* 458 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67116,10 +65551,12 @@ exports.DebugAdapterSession = Symbol('DebugAdapterSession');
 exports.DebugAdapterSessionFactory = Symbol('DebugAdapterSessionFactory');
 exports.DebugAdapterFactory = Symbol('DebugAdapterFactory');
 exports.DebugAdapterContribution = Symbol('DebugAdapterContribution');
+exports.DebugModelFactory = Symbol('DebugModelFactory');
+exports.IDebugModel = Symbol('IDebugModel');
 //# sourceMappingURL=debug-model.js.map
 
 /***/ }),
-/* 457 */
+/* 459 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67127,8 +65564,8 @@ exports.DebugAdapterContribution = Symbol('DebugAdapterContribution');
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 const common_di_1 = __webpack_require__(5);
-const debug_model_1 = __webpack_require__(456);
-const ide_core_node_1 = __webpack_require__(392);
+const debug_model_1 = __webpack_require__(458);
+const ide_core_node_1 = __webpack_require__(394);
 let DebugAdapterSessionManager = class DebugAdapterSessionManager {
     constructor() {
         this.sessions = new Map();
@@ -67173,7 +65610,7 @@ exports.DebugAdapterSessionManager = DebugAdapterSessionManager;
 //# sourceMappingURL=debug-adapter-session-manager.js.map
 
 /***/ }),
-/* 458 */
+/* 460 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67182,8 +65619,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 const net = __webpack_require__(100);
 const common_di_1 = __webpack_require__(5);
-const ide_process_1 = __webpack_require__(459);
-const debug_adapter_session_1 = __webpack_require__(465);
+const ide_process_1 = __webpack_require__(461);
+const debug_adapter_session_1 = __webpack_require__(467);
 let LaunchBasedDebugAdapterFactory = class LaunchBasedDebugAdapterFactory {
     start(executable) {
         const process = this.childProcess(executable);
@@ -67236,19 +65673,19 @@ exports.DebugAdapterSessionFactoryImpl = DebugAdapterSessionFactoryImpl;
 //# sourceMappingURL=debug-adapter-factory.js.map
 
 /***/ }),
-/* 459 */
+/* 461 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(460), exports);
-tslib_1.__exportStar(__webpack_require__(461), exports);
+tslib_1.__exportStar(__webpack_require__(462), exports);
+tslib_1.__exportStar(__webpack_require__(463), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 460 */
+/* 462 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67260,7 +65697,7 @@ exports.processManageServicePath = 'ProcessManageService';
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 461 */
+/* 463 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67268,10 +65705,10 @@ exports.processManageServicePath = 'ProcessManageService';
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 const common_di_1 = __webpack_require__(5);
-const ide_core_node_1 = __webpack_require__(392);
-const process_manager_1 = __webpack_require__(462);
-const process_1 = __webpack_require__(463);
-const common_1 = __webpack_require__(460);
+const ide_core_node_1 = __webpack_require__(394);
+const process_manager_1 = __webpack_require__(464);
+const process_1 = __webpack_require__(465);
+const common_1 = __webpack_require__(462);
 let ProcessModule = class ProcessModule extends ide_core_node_1.NodeModule {
     constructor() {
         super(...arguments);
@@ -67289,12 +65726,12 @@ ProcessModule = tslib_1.__decorate([
     common_di_1.Injectable()
 ], ProcessModule);
 exports.ProcessModule = ProcessModule;
-tslib_1.__exportStar(__webpack_require__(463), exports);
-tslib_1.__exportStar(__webpack_require__(462), exports);
+tslib_1.__exportStar(__webpack_require__(465), exports);
+tslib_1.__exportStar(__webpack_require__(464), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 462 */
+/* 464 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67358,7 +65795,7 @@ exports.ProcessManage = ProcessManage;
 //# sourceMappingURL=process-manager.js.map
 
 /***/ }),
-/* 463 */
+/* 465 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67366,11 +65803,11 @@ exports.ProcessManage = ProcessManage;
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 const common_di_1 = __webpack_require__(5);
-const child_process_1 = __webpack_require__(310);
+const child_process_1 = __webpack_require__(312);
 const ide_core_common_1 = __webpack_require__(2);
-const dev_null_stream_1 = __webpack_require__(464);
-const process_manager_1 = __webpack_require__(462);
-const index_1 = __webpack_require__(460);
+const dev_null_stream_1 = __webpack_require__(466);
+const process_manager_1 = __webpack_require__(464);
+const index_1 = __webpack_require__(462);
 let ProcessFactory = class ProcessFactory {
     constructor() { }
     create(options) {
@@ -67465,7 +65902,7 @@ exports.Process = Process;
 //# sourceMappingURL=process.js.map
 
 /***/ }),
-/* 464 */
+/* 466 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67484,13 +65921,13 @@ exports.DevNullStream = DevNullStream;
 //# sourceMappingURL=dev-null-stream.js.map
 
 /***/ }),
-/* 465 */
+/* 467 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const ide_core_node_1 = __webpack_require__(392);
+const ide_core_node_1 = __webpack_require__(394);
 class DebugAdapterSessionImpl {
     constructor(id, debugStreamConnection) {
         this.id = id;
@@ -67554,7 +65991,6 @@ class DebugAdapterSessionImpl {
                 let idx = this.buffer.indexOf(DebugAdapterSessionImpl.CONTENT_LENGTH);
                 if (idx > 0) {
                     const output = this.buffer.slice(0, idx);
-                    console.log(output.toString('utf-8'));
                     this.buffer = this.buffer.slice(idx);
                 }
                 idx = this.buffer.indexOf(DebugAdapterSessionImpl.TWO_CRLF);
@@ -67592,26 +66028,26 @@ DebugAdapterSessionImpl.CONTENT_LENGTH = 'Content-Length';
 //# sourceMappingURL=debug-adapter-session.js.map
 
 /***/ }),
-/* 466 */
+/* 468 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
-tslib_1.__exportStar(__webpack_require__(467), exports);
-tslib_1.__exportStar(__webpack_require__(468), exports);
 tslib_1.__exportStar(__webpack_require__(469), exports);
-tslib_1.__exportStar(__webpack_require__(456), exports);
 tslib_1.__exportStar(__webpack_require__(470), exports);
 tslib_1.__exportStar(__webpack_require__(471), exports);
+tslib_1.__exportStar(__webpack_require__(458), exports);
 tslib_1.__exportStar(__webpack_require__(472), exports);
 tslib_1.__exportStar(__webpack_require__(473), exports);
 tslib_1.__exportStar(__webpack_require__(474), exports);
+tslib_1.__exportStar(__webpack_require__(475), exports);
+tslib_1.__exportStar(__webpack_require__(476), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 467 */
+/* 469 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67627,7 +66063,7 @@ var DebugConfiguration;
 //# sourceMappingURL=debug-configuration.js.map
 
 /***/ }),
-/* 468 */
+/* 470 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67649,7 +66085,7 @@ var DebugError;
 //# sourceMappingURL=debug-service.js.map
 
 /***/ }),
-/* 469 */
+/* 471 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67662,7 +66098,7 @@ exports.DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT = {
 //# sourceMappingURL=debug-code.js.map
 
 /***/ }),
-/* 470 */
+/* 472 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67673,7 +66109,7 @@ exports.IDebugSessionManager = Symbol('DebugSessionManager');
 //# sourceMappingURL=debug-session.js.map
 
 /***/ }),
-/* 471 */
+/* 473 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67689,7 +66125,7 @@ var InternalDebugSessionOptions;
 //# sourceMappingURL=debug-session-options.js.map
 
 /***/ }),
-/* 472 */
+/* 474 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67699,7 +66135,7 @@ exports.DebugEditor = Symbol('DebugEditor');
 //# sourceMappingURL=debug-editor.js.map
 
 /***/ }),
-/* 473 */
+/* 475 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67709,7 +66145,7 @@ exports.IDebugConsoleSession = Symbol('DebugConsoleSession');
 //# sourceMappingURL=debug-console.js.map
 
 /***/ }),
-/* 474 */
+/* 476 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67719,7 +66155,7 @@ exports.launchSchemaUri = 'vscode://schemas/launch';
 //# sourceMappingURL=debug-schema-updater.js.map
 
 /***/ }),
-/* 475 */
+/* 477 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67727,8 +66163,8 @@ exports.launchSchemaUri = 'vscode://schemas/launch';
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 const common_di_1 = __webpack_require__(5);
-const debug_adapter_session_manager_1 = __webpack_require__(457);
-const debug_adapter_contribution_registry_1 = __webpack_require__(476);
+const debug_adapter_session_manager_1 = __webpack_require__(459);
+const debug_adapter_contribution_registry_1 = __webpack_require__(478);
 let DebugServerImpl = class DebugServerImpl {
     constructor() {
         this.sessions = new Set();
@@ -67804,7 +66240,7 @@ exports.DebugServerImpl = DebugServerImpl;
 //# sourceMappingURL=debug-service.js.map
 
 /***/ }),
-/* 476 */
+/* 478 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67812,9 +66248,9 @@ exports.DebugServerImpl = DebugServerImpl;
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 const common_di_1 = __webpack_require__(5);
-const ide_core_node_1 = __webpack_require__(392);
-const debug_service_1 = __webpack_require__(468);
-const debug_model_1 = __webpack_require__(456);
+const ide_core_node_1 = __webpack_require__(394);
+const debug_service_1 = __webpack_require__(470);
+const debug_model_1 = __webpack_require__(458);
 let DebugAdapterContributionRegistry = class DebugAdapterContributionRegistry {
     getContributions(debugType) {
         const contributions = [];
@@ -67953,7 +66389,7 @@ exports.DebugAdapterContributionRegistry = DebugAdapterContributionRegistry;
 //# sourceMappingURL=debug-adapter-contribution-registry.js.map
 
 /***/ }),
-/* 477 */
+/* 479 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -67962,9 +66398,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = __webpack_require__(1);
 const common_di_1 = __webpack_require__(5);
 const ide_connection_1 = __webpack_require__(101);
-const debug_service_1 = __webpack_require__(468);
-const ide_core_node_1 = __webpack_require__(392);
-const debug_adapter_session_manager_1 = __webpack_require__(457);
+const debug_service_1 = __webpack_require__(470);
+const ide_core_node_1 = __webpack_require__(394);
+const debug_adapter_session_manager_1 = __webpack_require__(459);
 let DebugAdapterSessionContribution = class DebugAdapterSessionContribution {
     onStart() {
         const serviceCenter = new ide_core_node_1.RPCServiceCenter();
@@ -67997,188 +66433,168 @@ exports.DebugAdapterSessionContribution = DebugAdapterSessionContribution;
 //# sourceMappingURL=debug-adapter-contribution.js.map
 
 /***/ }),
-/* 478 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var ExtensionDebugAdapterTracker = (function () {
-    function ExtensionDebugAdapterTracker(trackers) {
-        this.trackers = trackers;
-    }
-    ExtensionDebugAdapterTracker.create = function (session, trackerFactories) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var trackers, factories, factories_1, factories_1_1, factory, tracker, e_1_1;
-            var e_1, _a;
-            return tslib_1.__generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        trackers = [];
-                        factories = trackerFactories.filter(function (tuple) { return tuple[0] === '*' || tuple[0] === session.type; }).map(function (tuple) { return tuple[1]; });
-                        _b.label = 1;
-                    case 1:
-                        _b.trys.push([1, 6, 7, 8]);
-                        factories_1 = tslib_1.__values(factories), factories_1_1 = factories_1.next();
-                        _b.label = 2;
-                    case 2:
-                        if (!!factories_1_1.done) return [3, 5];
-                        factory = factories_1_1.value;
-                        return [4, factory.createDebugAdapterTracker(session)];
-                    case 3:
-                        tracker = _b.sent();
-                        if (tracker) {
-                            trackers.push(tracker);
-                        }
-                        _b.label = 4;
-                    case 4:
-                        factories_1_1 = factories_1.next();
-                        return [3, 2];
-                    case 5: return [3, 8];
-                    case 6:
-                        e_1_1 = _b.sent();
-                        e_1 = { error: e_1_1 };
-                        return [3, 8];
-                    case 7:
-                        try {
-                            if (factories_1_1 && !factories_1_1.done && (_a = factories_1.return)) _a.call(factories_1);
-                        }
-                        finally { if (e_1) throw e_1.error; }
-                        return [7];
-                    case 8: return [2, new ExtensionDebugAdapterTracker(trackers)];
-                }
-            });
-        });
-    };
-    ExtensionDebugAdapterTracker.prototype.onWillStartSession = function () {
-        this.trackers.forEach(function (tracker) {
-            if (tracker.onWillStartSession) {
-                tracker.onWillStartSession();
-            }
-        });
-    };
-    ExtensionDebugAdapterTracker.prototype.onWillReceiveMessage = function (message) {
-        this.trackers.forEach(function (tracker) {
-            if (tracker.onWillReceiveMessage) {
-                tracker.onWillReceiveMessage(message);
-            }
-        });
-    };
-    ExtensionDebugAdapterTracker.prototype.onDidSendMessage = function (message) {
-        this.trackers.forEach(function (tracker) {
-            if (tracker.onDidSendMessage) {
-                tracker.onDidSendMessage(message);
-            }
-        });
-    };
-    ExtensionDebugAdapterTracker.prototype.onWillStopSession = function () {
-        this.trackers.forEach(function (tracker) {
-            if (tracker.onWillStopSession) {
-                tracker.onWillStopSession();
-            }
-        });
-    };
-    ExtensionDebugAdapterTracker.prototype.onError = function (error) {
-        this.trackers.forEach(function (tracker) {
-            if (tracker.onError) {
-                tracker.onError(error);
-            }
-        });
-    };
-    ExtensionDebugAdapterTracker.prototype.onExit = function (code, signal) {
-        this.trackers.forEach(function (tracker) {
-            if (tracker.onExit) {
-                tracker.onExit(code, signal);
-            }
-        });
-    };
-    return ExtensionDebugAdapterTracker;
-}());
-exports.ExtensionDebugAdapterTracker = ExtensionDebugAdapterTracker;
-
-
-/***/ }),
-/* 479 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var net = __webpack_require__(100);
-var child_process_1 = __webpack_require__(310);
-function startDebugAdapter(executable) {
-    var options = { stdio: ['pipe', 'pipe', 2] };
-    if (executable.options) {
-        options.cwd = executable.options.cwd;
-        options.env = Object.assign({}, process.env);
-        Object.assign(options.env, executable.options.env);
-    }
-    var childProcess;
-    if ('command' in executable) {
-        var command = executable.command, args = executable.args;
-        childProcess = child_process_1.spawn(command, args, options);
-    }
-    else if ('modulePath' in executable) {
-        var forkExecutable = executable;
-        var modulePath = forkExecutable.modulePath, args = forkExecutable.args;
-        options.stdio.push('ipc');
-        childProcess = child_process_1.fork(modulePath, args, options);
-    }
-    else {
-        throw new Error("It is not possible to launch debug adapter with the command: " + JSON.stringify(executable));
-    }
-    return {
-        input: childProcess.stdin,
-        output: childProcess.stdout,
-        dispose: function () { return childProcess.kill(); },
-    };
-}
-exports.startDebugAdapter = startDebugAdapter;
-function connectDebugAdapter(server) {
-    var socket = net.createConnection(server.port, server.host);
-    return {
-        input: socket,
-        output: socket,
-        dispose: function () { return socket.end(); },
-    };
-}
-exports.connectDebugAdapter = connectDebugAdapter;
-
-
-/***/ }),
 /* 480 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var path = __webpack_require__(144);
-var ide_core_node_1 = __webpack_require__(392);
-function resolveDebugAdapterExecutable(pluginPath, debuggerContribution) {
-    return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var info, program, programArgs, runtime, runtimeArgs, command, args;
-        return tslib_1.__generator(this, function (_a) {
-            info = toPlatformInfo(debuggerContribution);
-            program = (info && info.program || debuggerContribution.program);
-            if (!program) {
-                return [2, undefined];
+const tslib_1 = __webpack_require__(1);
+class ExtensionDebugAdapterTracker {
+    constructor(trackers) {
+        this.trackers = trackers;
+    }
+    static create(session, trackerFactories) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const trackers = [];
+            const factories = trackerFactories.filter((tuple) => tuple[0] === '*' || tuple[0] === session.type).map((tuple) => tuple[1]);
+            for (const factory of factories) {
+                const tracker = yield factory.createDebugAdapterTracker(session);
+                if (tracker) {
+                    trackers.push(tracker);
+                }
             }
-            program = path.join(pluginPath, program);
-            programArgs = info && info.args || debuggerContribution.args || [];
-            runtime = info && info.runtime || debuggerContribution.runtime;
-            if (runtime && runtime.indexOf('./') === 0) {
-                runtime = path.join(pluginPath, runtime);
-            }
-            runtimeArgs = info && info.runtimeArgs || debuggerContribution.runtimeArgs || [];
-            command = runtime ? runtime : program;
-            args = runtime ? tslib_1.__spread(runtimeArgs, [program], programArgs) : programArgs;
-            return [2, {
-                    command: command,
-                    args: args,
-                }];
+            return new ExtensionDebugAdapterTracker(trackers);
         });
+    }
+    onWillStartSession() {
+        this.trackers.forEach((tracker) => {
+            if (tracker.onWillStartSession) {
+                tracker.onWillStartSession();
+            }
+        });
+    }
+    onWillReceiveMessage(message) {
+        this.trackers.forEach((tracker) => {
+            if (tracker.onWillReceiveMessage) {
+                tracker.onWillReceiveMessage(message);
+            }
+        });
+    }
+    onDidSendMessage(message) {
+        this.trackers.forEach((tracker) => {
+            if (tracker.onDidSendMessage) {
+                tracker.onDidSendMessage(message);
+            }
+        });
+    }
+    onWillStopSession() {
+        this.trackers.forEach((tracker) => {
+            if (tracker.onWillStopSession) {
+                tracker.onWillStopSession();
+            }
+        });
+    }
+    onError(error) {
+        this.trackers.forEach((tracker) => {
+            if (tracker.onError) {
+                tracker.onError(error);
+            }
+        });
+    }
+    onExit(code, signal) {
+        this.trackers.forEach((tracker) => {
+            if (tracker.onExit) {
+                tracker.onExit(code, signal);
+            }
+        });
+    }
+}
+exports.ExtensionDebugAdapterTracker = ExtensionDebugAdapterTracker;
+
+
+/***/ }),
+/* 481 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const net = __webpack_require__(100);
+const child_process_1 = __webpack_require__(312);
+const vscode_uri_1 = __webpack_require__(34);
+function startDebugAdapter(executable) {
+    const options = { stdio: ['pipe', 'pipe', 2] };
+    if (executable.options) {
+        options.cwd = executable.options.cwd;
+        options.env = Object.assign({}, process.env);
+        Object.assign(options.env, executable.options.env);
+    }
+    let env = Object.assign({}, process.env);
+    if (options.env) {
+        env = Object.assign(Object.assign({}, env), options.env);
+    }
+    let childProcess;
+    if ('command' in executable) {
+        const { command, args } = executable;
+        const spawnOptions = {
+            env,
+        };
+        if (options.cwd) {
+            spawnOptions.cwd = options.cwd;
+        }
+        if (!spawnOptions.cwd) {
+            spawnOptions.cwd = vscode_uri_1.default.parse(process.env.WORKSPACE_DIR).path;
+        }
+        childProcess = child_process_1.spawn(command, args, spawnOptions);
+    }
+    else if ('modulePath' in executable) {
+        const forkExecutable = executable;
+        const { modulePath, args } = forkExecutable;
+        options.stdio.push('ipc');
+        childProcess = child_process_1.fork(modulePath, args, options);
+    }
+    else {
+        throw new Error(`It is not possible to launch debug adapter with the command: ${JSON.stringify(executable)}`);
+    }
+    return {
+        input: childProcess.stdin,
+        output: childProcess.stdout,
+        dispose: () => childProcess.kill(),
+    };
+}
+exports.startDebugAdapter = startDebugAdapter;
+function connectDebugAdapter(server) {
+    const socket = net.createConnection(server.port, server.host);
+    return {
+        input: socket,
+        output: socket,
+        dispose: () => socket.end(),
+    };
+}
+exports.connectDebugAdapter = connectDebugAdapter;
+
+
+/***/ }),
+/* 482 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = __webpack_require__(1);
+const path = __webpack_require__(144);
+const ide_core_node_1 = __webpack_require__(394);
+function resolveDebugAdapterExecutable(pluginPath, debuggerContribution) {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        const info = toPlatformInfo(debuggerContribution);
+        let program = (info && info.program || debuggerContribution.program);
+        if (!program) {
+            return undefined;
+        }
+        program = path.join(pluginPath, program);
+        const programArgs = info && info.args || debuggerContribution.args || [];
+        let runtime = info && info.runtime || debuggerContribution.runtime;
+        if (runtime && runtime.indexOf('./') === 0) {
+            runtime = path.join(pluginPath, runtime);
+        }
+        const runtimeArgs = info && info.runtimeArgs || debuggerContribution.runtimeArgs || [];
+        const command = runtime ? runtime : program;
+        const args = runtime ? [...runtimeArgs, program, ...programArgs] : programArgs;
+        return {
+            command,
+            args,
+        };
     });
 }
 exports.resolveDebugAdapterExecutable = resolveDebugAdapterExecutable;
@@ -68197,125 +66613,86 @@ function toPlatformInfo(executable) {
 
 
 /***/ }),
-/* 481 */
+/* 483 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var vscode_1 = __webpack_require__(204);
-var ExtHostConnection = (function () {
-    function ExtHostConnection(rpcProtocol) {
+const tslib_1 = __webpack_require__(1);
+const vscode_1 = __webpack_require__(206);
+class ExtHostConnection {
+    constructor(rpcProtocol) {
         this.rpcProtocol = rpcProtocol;
         this.connections = new Map();
         this.proxy = rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadConnection);
     }
-    ExtHostConnection.prototype.$sendMessage = function (id, message) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                if (this.connections.has(id)) {
-                    this.connections.get(id).reader.readMessage(message);
-                }
-                else {
-                    console.warn("\u94FE\u63A5 " + id + " \u4E0D\u5B58\u5728");
-                }
-                return [2];
-            });
+    $sendMessage(id, message) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            if (this.connections.has(id)) {
+                this.connections.get(id).reader.readMessage(message);
+            }
+            else {
+                console.warn(`链接 ${id} 不存在`);
+            }
         });
-    };
-    ExtHostConnection.prototype.$createConnection = function (id) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.doEnsureConnection(id)];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
-            });
+    }
+    $createConnection(id) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            yield this.doEnsureConnection(id);
         });
-    };
-    ExtHostConnection.prototype.$deleteConnection = function (id) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
+    }
+    $deleteConnection(id) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.connections.delete(id);
+        });
+    }
+    ensureConnection(id) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const connection = yield this.doEnsureConnection(id);
+            this.proxy.$createConnection(id);
+            return connection;
+        });
+    }
+    doEnsureConnection(id) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const connection = this.connections.get(id) || (yield this.doCreateConnection(id));
+            this.connections.set(id, connection);
+            return connection;
+        });
+    }
+    doCreateConnection(id) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const reader = new vscode_1.ExtensionMessageReader();
+            const writer = new vscode_1.ExtensionMessageWriter(id, this.proxy);
+            return new vscode_1.ExtensionConnection(reader, writer, () => {
                 this.connections.delete(id);
-                return [2];
+                this.proxy.$deleteConnection(id);
             });
         });
-    };
-    ExtHostConnection.prototype.ensureConnection = function (id) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var connection;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.doEnsureConnection(id)];
-                    case 1:
-                        connection = _a.sent();
-                        this.proxy.$createConnection(id);
-                        return [2, connection];
-                }
-            });
-        });
-    };
-    ExtHostConnection.prototype.doEnsureConnection = function (id) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var connection, _a;
-            return tslib_1.__generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _a = this.connections.get(id);
-                        if (_a) return [3, 2];
-                        return [4, this.doCreateConnection(id)];
-                    case 1:
-                        _a = (_b.sent());
-                        _b.label = 2;
-                    case 2:
-                        connection = _a;
-                        this.connections.set(id, connection);
-                        return [2, connection];
-                }
-            });
-        });
-    };
-    ExtHostConnection.prototype.doCreateConnection = function (id) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var reader, writer;
-            var _this = this;
-            return tslib_1.__generator(this, function (_a) {
-                reader = new vscode_1.ExtensionMessageReader();
-                writer = new vscode_1.ExtensionMessageWriter(id, this.proxy);
-                return [2, new vscode_1.ExtensionConnection(reader, writer, function () {
-                        _this.connections.delete(id);
-                        _this.proxy.$deleteConnection(id);
-                    })];
-            });
-        });
-    };
-    return ExtHostConnection;
-}());
+    }
+}
 exports.ExtHostConnection = ExtHostConnection;
 
 
 /***/ }),
-/* 482 */
+/* 484 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var ide_core_common_1 = __webpack_require__(2);
-var vscode_1 = __webpack_require__(204);
-var debugLog = ide_core_common_1.getLogger();
-var ExtHostTerminal = (function () {
-    function ExtHostTerminal(rpcProtocol) {
-        var _this = this;
+const ide_core_common_1 = __webpack_require__(2);
+const vscode_1 = __webpack_require__(206);
+const debugLog = ide_core_common_1.getLogger();
+class ExtHostTerminal {
+    constructor(rpcProtocol) {
         this.changeActiveTerminalEvent = new ide_core_common_1.Emitter();
         this.closeTerminalEvent = new ide_core_common_1.Emitter();
         this.openTerminalEvent = new ide_core_common_1.Emitter();
         this.terminalsMap = new Map();
-        this.createTerminal = function (optionsOrName, shellPath, shellArgs) {
-            var options = {};
+        this.createTerminal = (optionsOrName, shellPath, shellArgs) => {
+            let options = {};
             if (ide_core_common_1.isObject(optionsOrName)) {
                 options = optionsOrName;
             }
@@ -68330,92 +66707,73 @@ var ExtHostTerminal = (function () {
                     options.shellArgs = shellArgs;
                 }
             }
-            var terminal = new Terminal(options.name || '', _this.proxy);
-            _this.proxy.$createTerminal(options).then(function (id) {
+            const terminal = new Terminal(options.name || '', this.proxy);
+            this.proxy.$createTerminal(options).then((id) => {
                 terminal.created(id);
             });
             return terminal;
         };
         this.proxy = rpcProtocol.getProxy(vscode_1.MainThreadAPIIdentifier.MainThreadTerminal);
     }
-    Object.defineProperty(ExtHostTerminal.prototype, "terminals", {
-        get: function () {
-            return Array.from(this.terminalsMap.values());
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostTerminal.prototype.$onDidChangeActiveTerminal = function (id) {
-        var terminal = this.terminalsMap.get(id);
+    get terminals() {
+        return Array.from(this.terminalsMap.values());
+    }
+    $onDidChangeActiveTerminal(id) {
+        const terminal = this.terminalsMap.get(id);
         this.activeTerminal = terminal;
         this.changeActiveTerminalEvent.fire(terminal);
-    };
-    Object.defineProperty(ExtHostTerminal.prototype, "onDidChangeActiveTerminal", {
-        get: function () {
-            return this.changeActiveTerminalEvent.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostTerminal.prototype.$onDidCloseTerminal = function (id) {
-        var terminal = this.terminalsMap.get(id);
+    }
+    get onDidChangeActiveTerminal() {
+        return this.changeActiveTerminalEvent.event;
+    }
+    $onDidCloseTerminal(id) {
+        const terminal = this.terminalsMap.get(id);
         if (!terminal) {
             return debugLog.error('没有找到终端');
         }
         this.terminalsMap.delete(id);
         this.closeTerminalEvent.fire(terminal);
-    };
-    Object.defineProperty(ExtHostTerminal.prototype, "onDidCloseTerminal", {
-        get: function () {
-            return this.closeTerminalEvent.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostTerminal.prototype.$onDidOpenTerminal = function (info) {
-        var terminal = this.terminalsMap.get(info.id);
+    }
+    get onDidCloseTerminal() {
+        return this.closeTerminalEvent.event;
+    }
+    $onDidOpenTerminal(info) {
+        let terminal = this.terminalsMap.get(info.id);
         if (!terminal) {
             terminal = new Terminal(info.name, this.proxy, info.id);
             this.terminalsMap.set(info.id, terminal);
         }
         this.openTerminalEvent.fire(terminal);
-    };
-    Object.defineProperty(ExtHostTerminal.prototype, "onDidOpenTerminal", {
-        get: function () {
-            return this.openTerminalEvent.event;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    ExtHostTerminal.prototype.$setTerminals = function (idList) {
-        var _this = this;
-        idList.forEach(function (info) {
-            if (_this.terminalsMap.get(info.id)) {
+    }
+    get onDidOpenTerminal() {
+        return this.openTerminalEvent.event;
+    }
+    $setTerminals(idList) {
+        idList.forEach((info) => {
+            if (this.terminalsMap.get(info.id)) {
                 return;
             }
-            var terminal = new Terminal(info.name, _this.proxy, info.id);
+            const terminal = new Terminal(info.name, this.proxy, info.id);
             if (info.isActive) {
-                _this.activeTerminal = terminal;
+                this.activeTerminal = terminal;
             }
-            if (_this.terminalsMap.get(info.id)) {
+            if (this.terminalsMap.get(info.id)) {
                 return;
             }
-            _this.terminalsMap.set(info.id, terminal);
+            this.terminalsMap.set(info.id, terminal);
         });
-    };
-    ExtHostTerminal.prototype.dispose = function () {
+    }
+    dispose() {
         this.changeActiveTerminalEvent.dispose();
         this.closeTerminalEvent.dispose();
         this.openTerminalEvent.dispose();
-    };
-    return ExtHostTerminal;
-}());
+    }
+}
 exports.ExtHostTerminal = ExtHostTerminal;
-var Terminal = (function () {
-    function Terminal(name, proxy, id) {
-        var _this = this;
-        this.when = new Promise(function (resolve) {
-            _this.createdPromiseResolve = resolve;
+class Terminal {
+    constructor(name, proxy, id) {
+        this.when = new Promise((resolve) => {
+            this.createdPromiseResolve = resolve;
         });
         this.proxy = proxy;
         this.name = name;
@@ -68423,63 +66781,54 @@ var Terminal = (function () {
             this.created(id);
         }
     }
-    Object.defineProperty(Terminal.prototype, "processId", {
-        get: function () {
-            var _this = this;
-            return this.when.then(function () {
-                return _this.proxy.$getProcessId(_this.id);
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Terminal.prototype.sendText = function (text, addNewLine) {
-        var _this = this;
-        this.when.then(function () {
-            _this.proxy.$sendText(_this.id, text, addNewLine);
+    get processId() {
+        return this.when.then(() => {
+            return this.proxy.$getProcessId(this.id);
         });
-    };
-    Terminal.prototype.show = function (preserveFocus) {
-        var _this = this;
-        this.when.then(function () {
-            _this.proxy.$show(_this.id, preserveFocus);
+    }
+    sendText(text, addNewLine) {
+        this.when.then(() => {
+            this.proxy.$sendText(this.id, text, addNewLine);
         });
-    };
-    Terminal.prototype.hide = function () {
-        var _this = this;
-        this.when.then(function () {
-            _this.proxy.$hide(_this.id);
+    }
+    show(preserveFocus) {
+        this.when.then(() => {
+            this.proxy.$show(this.id, preserveFocus);
         });
-    };
-    Terminal.prototype.created = function (id) {
+    }
+    hide() {
+        this.when.then(() => {
+            this.proxy.$hide(this.id);
+        });
+    }
+    created(id) {
         this.id = id;
         this.createdPromiseResolve();
-    };
-    Terminal.prototype.dispose = function () {
+    }
+    dispose() {
         this.proxy.$dispose(this.id);
-    };
-    return Terminal;
-}());
+    }
+}
 exports.Terminal = Terminal;
 
 
 /***/ }),
-/* 483 */
+/* 485 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var common_1 = __webpack_require__(202);
-var ext_host_layout_1 = __webpack_require__(484);
-var ext_host_window_1 = __webpack_require__(485);
-var vscode_1 = __webpack_require__(204);
+const common_1 = __webpack_require__(204);
+const ext_host_layout_1 = __webpack_require__(486);
+const ext_host_window_1 = __webpack_require__(487);
+const vscode_1 = __webpack_require__(206);
 function createAPIFactory(rpcProtocol, extensionService, type) {
     if (type === 'worker') {
         rpcProtocol.set(common_1.WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
     }
-    var extHostCommands = rpcProtocol.get(vscode_1.ExtHostAPIIdentifier.ExtHostCommands);
-    return function (extension) {
+    const extHostCommands = rpcProtocol.get(vscode_1.ExtHostAPIIdentifier.ExtHostCommands);
+    return (extension) => {
         return {
             layout: ext_host_layout_1.createLayoutAPIFactory(extHostCommands),
             ideWindow: ext_host_window_1.createWindowApiFactory(extHostCommands),
@@ -68490,113 +66839,75 @@ exports.createAPIFactory = createAPIFactory;
 
 
 /***/ }),
-/* 484 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-function createLayoutAPIFactory(extHostCommands) {
-    var _this = this;
-    return {
-        toggleBottomPanel: function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, extHostCommands.executeCommand('main-layout.bottom-panel.toggle')];
-                    case 1: return [2, _a.sent()];
-                }
-            });
-        }); },
-        toggleLeftPanel: function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, extHostCommands.executeCommand('activity-bar.left.toggle')];
-                    case 1: return [2, _a.sent()];
-                }
-            });
-        }); },
-        toggleRightPanel: function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, extHostCommands.executeCommand('activity-bar.right.toggle')];
-                    case 1: return [2, _a.sent()];
-                }
-            });
-        }); },
-        showRightPanel: function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, extHostCommands.executeCommand('activity-bar.right.toggle', true)];
-                    case 1: return [2, _a.sent()];
-                }
-            });
-        }); },
-        hideRightPanel: function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, extHostCommands.executeCommand('activity-bar.right.toggle', false)];
-                    case 1: return [2, _a.sent()];
-                }
-            });
-        }); },
-        activatePanel: function (id) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, extHostCommands.executeCommand("activity.panel.activate." + id)];
-                    case 1: return [2, _a.sent()];
-                }
-            });
-        }); },
-    };
-}
-exports.createLayoutAPIFactory = createLayoutAPIFactory;
-
-
-/***/ }),
-/* 485 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-function createWindowApiFactory(extHostCommands) {
-    var _this = this;
-    return {
-        reloadWindow: function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, extHostCommands.executeCommand('reload_window')];
-                    case 1: return [2, _a.sent()];
-                }
-            });
-        }); },
-    };
-}
-exports.createWindowApiFactory = createWindowApiFactory;
-
-
-/***/ }),
 /* 486 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var ExtensionActivationTimes = (function () {
-    function ExtensionActivationTimes(startup, codeLoadingTime, activateCallTime, activateResolvedTime) {
+const tslib_1 = __webpack_require__(1);
+function createLayoutAPIFactory(extHostCommands) {
+    return {
+        toggleBottomPanel: () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield extHostCommands.executeCommand('main-layout.bottom-panel.toggle');
+        }),
+        toggleLeftPanel: () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield extHostCommands.executeCommand('activity-bar.left.toggle');
+        }),
+        toggleRightPanel: () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield extHostCommands.executeCommand('activity-bar.right.toggle');
+        }),
+        showRightPanel: () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield extHostCommands.executeCommand('activity-bar.right.toggle', true);
+        }),
+        hideRightPanel: () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield extHostCommands.executeCommand('activity-bar.right.toggle', false);
+        }),
+        activatePanel: (id) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield extHostCommands.executeCommand(`activity.panel.activate.${id}`);
+        }),
+    };
+}
+exports.createLayoutAPIFactory = createLayoutAPIFactory;
+
+
+/***/ }),
+/* 487 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = __webpack_require__(1);
+function createWindowApiFactory(extHostCommands) {
+    return {
+        reloadWindow: () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return yield extHostCommands.executeCommand('reload_window');
+        }),
+    };
+}
+exports.createWindowApiFactory = createWindowApiFactory;
+
+
+/***/ }),
+/* 488 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class ExtensionActivationTimes {
+    constructor(startup, codeLoadingTime, activateCallTime, activateResolvedTime) {
         this.startup = startup;
         this.codeLoadingTime = codeLoadingTime;
         this.activateCallTime = activateCallTime;
         this.activateResolvedTime = activateResolvedTime;
     }
-    ExtensionActivationTimes.NONE = new ExtensionActivationTimes(false, -1, -1, -1);
-    return ExtensionActivationTimes;
-}());
+}
 exports.ExtensionActivationTimes = ExtensionActivationTimes;
-var ActivatedExtension = (function () {
-    function ActivatedExtension(activationFailed, activationFailedError, module, exports, subscriptions, activationTimes, extendExports, extendModule) {
+ExtensionActivationTimes.NONE = new ExtensionActivationTimes(false, -1, -1, -1);
+class ActivatedExtension {
+    constructor(activationFailed, activationFailedError, module, exports, subscriptions, activationTimes, extendExports, extendModule) {
         this.activationFailed = activationFailed;
         this.activationFailedError = activationFailedError;
         this.module = module;
@@ -68613,131 +66924,44 @@ var ActivatedExtension = (function () {
             this.activationTimes = activationTimes;
         }
     }
-    return ActivatedExtension;
-}());
+}
 exports.ActivatedExtension = ActivatedExtension;
-var ExtensionsActivator = (function () {
-    function ExtensionsActivator() {
+class ExtensionsActivator {
+    constructor(logger = console) {
+        this.logger = logger;
         this.activatedExtensions = new Map();
     }
-    ExtensionsActivator.prototype.has = function (id) {
+    has(id) {
         return this.activatedExtensions.has(id);
-    };
-    ExtensionsActivator.prototype.set = function (id, extension) {
+    }
+    set(id, extension) {
         return this.activatedExtensions.set(id, extension);
-    };
-    ExtensionsActivator.prototype.get = function (id) {
+    }
+    get(id) {
         return this.activatedExtensions.get(id);
-    };
-    ExtensionsActivator.prototype.delete = function (id) {
+    }
+    delete(id) {
         return this.activatedExtensions.delete(id);
-    };
-    ExtensionsActivator.prototype.deactivated = function () {
-        this.activatedExtensions.forEach(function (ext) {
-            var extModule = ext.module;
+    }
+    deactivated() {
+        this.activatedExtensions.forEach((ext) => {
+            const extModule = ext.module;
             if (extModule.deactivate) {
                 extModule.deactivate();
             }
-            ext.subscriptions.forEach(function (disposable) {
+            ext.subscriptions.forEach((disposable) => {
                 try {
                     disposable.dispose();
                 }
                 catch (e) {
-                    console.log('deactivated error');
-                    console.log(e);
+                    this.logger.log('deactivated error');
+                    this.logger.log(e);
                 }
             });
         });
-    };
-    return ExtensionsActivator;
-}());
-exports.ExtensionsActivator = ExtensionsActivator;
-
-
-/***/ }),
-/* 487 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(1);
-var extension_log_1 = __webpack_require__(488);
-var ide_core_common_1 = __webpack_require__(2);
-var ExtensionLogger = (function () {
-    function ExtensionLogger(rpcProtocol) {
-        this.rpcProtocol = rpcProtocol;
-        this.logger = this.rpcProtocol.getProxy(extension_log_1.MainThreadExtensionLogIdentifier);
-        this.debugLog = new ide_core_common_1.DebugLog(ide_core_common_1.SupportLogNamespace.ExtensionHost);
     }
-    ExtensionLogger.prototype.verbose = function () {
-        var _a, _b;
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        (_a = this.debugLog).info.apply(_a, tslib_1.__spread(args));
-        return (_b = this.logger).$verbose.apply(_b, tslib_1.__spread(args));
-    };
-    ExtensionLogger.prototype.debug = function () {
-        var _a, _b;
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        (_a = this.debugLog).debug.apply(_a, tslib_1.__spread(args));
-        return (_b = this.logger).$debug.apply(_b, tslib_1.__spread(args));
-    };
-    ExtensionLogger.prototype.log = function () {
-        var _a, _b;
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        (_a = this.debugLog).log.apply(_a, tslib_1.__spread(args));
-        return (_b = this.logger).$log.apply(_b, tslib_1.__spread(args));
-    };
-    ExtensionLogger.prototype.warn = function () {
-        var _a, _b;
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        (_a = this.debugLog).warn.apply(_a, tslib_1.__spread(args));
-        return (_b = this.logger).$warn.apply(_b, tslib_1.__spread(args));
-    };
-    ExtensionLogger.prototype.error = function () {
-        var _a, _b;
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        (_a = this.debugLog).error.apply(_a, tslib_1.__spread(args));
-        return (_b = this.logger).$error.apply(_b, tslib_1.__spread(args));
-    };
-    ExtensionLogger.prototype.critical = function () {
-        var _a, _b;
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        (_a = this.debugLog).error.apply(_a, tslib_1.__spread(args));
-        return (_b = this.logger).$critical.apply(_b, tslib_1.__spread(args));
-    };
-    return ExtensionLogger;
-}());
-exports.ExtensionLogger = ExtensionLogger;
-
-
-/***/ }),
-/* 488 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ide_connection_1 = __webpack_require__(101);
-exports.MainThreadExtensionLogIdentifier = ide_connection_1.createMainContextProxyIdentifier('MainThreadExtensionLog');
+}
+exports.ExtensionsActivator = ExtensionsActivator;
 
 
 /***/ })
