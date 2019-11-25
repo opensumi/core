@@ -439,8 +439,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     const menus = this.filetreeService.contributedContextMenu;
     const result = generateCtxMenu({ menus });
 
-    menus.dispose();
-
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       // 合并结果
