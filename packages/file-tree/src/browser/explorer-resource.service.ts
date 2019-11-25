@@ -116,6 +116,7 @@ const extractFileItemShouldBeRendered = (
       const isCuted = status.cuted;
       renderedFiles.push({
         ...file,
+        icon: file.getIcon(isExpanded!),
         filestat: {
           ...status.file.filestat,
         },
@@ -156,6 +157,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   @Autowired(ICtxMenuRenderer)
   ctxMenuRenderer: ICtxMenuRenderer;
+
+  private _locationTarget: URI | undefined = undefined;
+
+  private _nextLocationTarget: URI | undefined = undefined;
 
   private _currentRelativeUriContextKey: IContextKey<string>;
 
@@ -434,8 +439,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     const menus = this.filetreeService.contributedContextMenu;
     const result = generateCtxMenu({ menus });
 
-    menus.dispose();
-
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       // 合并结果
@@ -474,17 +477,33 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return ids.map((id) => getNodeById(files, id)).filter((node) => node !== undefined) as IFileTreeItemRendered[];
   }
 
+  public locationOnShow(uri: URI) {
+    this._nextLocationTarget = uri;
+  }
+
+  public performLocationOnHandleShow() {
+    if (this._nextLocationTarget) {
+      this.location(this._nextLocationTarget);
+      this._nextLocationTarget = undefined;
+    }
+  }
+
   /**
    * 文件树定位到对应文件下标
    * @param {URI} uri
    * @memberof FileTreeService
    */
   async location(uri: URI, disableSelect?: boolean) {
+    this._locationTarget = uri;
     // 确保先展开父节点
     const shouldBeLocated = await this.searchAndExpandFileParent(uri, this.root);
 
     if (!shouldBeLocated) {
       return;
+    }
+
+    if (this._locationTarget !== uri) {
+      return; // location目标已经改变
     }
 
     const statusKey = this.filetreeService.getStatutsKey(uri);

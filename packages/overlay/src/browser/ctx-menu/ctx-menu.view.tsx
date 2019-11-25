@@ -6,10 +6,9 @@ import { IBrowserCtxMenu } from '@ali/ide-core-browser/lib/menu/next/renderer/ct
 import { SeparatorMenuItemNode } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuNode } from '@ali/ide-core-browser/lib/menu/next/base';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
+import placements from '@ali/ide-core-browser/lib/components/actions/placements';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
 import 'react-ctxmenu-trigger/assets/index.css';
-
-import placements from './placements';
 
 export const CtxMenu = observer(() => {
   const ctxMenuService = useInjectable<IBrowserCtxMenu>(IBrowserCtxMenu);

@@ -3,42 +3,58 @@
 .overrideAntdMenu(@n, @i: 1) when (@i =< @n) {
   @clsx: extract(@antdMenuClx, @i);
 
-  .@{clsx} {
-    padding: 3px 0px !important;
-    color: var(--menu-foreground) !important;
-    font-size: 13px !important;
-    background-color: var(--menu-background) !important;
-    border: none !important;
-    box-shadow: 0px 2px 4px #000000 !important;
-    display: block !important;
-    border-radius: 0 !important;
+  .kt-menu {
+    &.@{clsx}, .@{clsx} {
+      padding: 3px 0px !important;
+      color: var(--menu-foreground) !important;
+      font-size: 13px !important;
+      background-color: var(--menu-background) !important;
+      border: none !important;
+      box-shadow: 0px 2px 4px #000000 !important;
+      // display: block !important;
+      border-radius: 0 !important;
 
-    .@{clsx}-item {
-      margin: 0 !important;
-      padding: 4px 8px 4px 4px !important;
-      height: 26px !important;
-      display: flex !important;
-      align-items: center !important;
-      color: inherit !important;
-    }
+      .@{clsx}-item,
+      .@{clsx}-submenu-title {
+        margin: 0 !important;
+        padding: 4px 8px 4px 4px !important;
+        height: 26px !important;
+        display: flex !important;
+        align-items: center !important;
+        color: inherit !important;
+      }
 
-    .@{clsx}-item:not(.@{clsx}-item-disabled) {
-      cursor: default !important;
-    }
+      .@{clsx}-submenu-title:hover {
+        color: inherit !important;
+      }
 
-    .@{clsx}-item-disabled {
-      opacity: 0.4;
-    }
+      .@{clsx}-item:not(.@{clsx}-item-disabled) {
+        cursor: default !important;
+      }
 
-    .@{clsx}-item-divider {
-      margin: 4px 0 !important;
-      pointer-events: none !important;
-      background-color: var(--menu-separatorBackground) !important;
-    }
+      .@{clsx}-item-disabled {
+        opacity: 0.4;
+      }
 
-    .@{clsx}-item-active {
-      background: var(--menu-selectionBackground) !important;
-      color: var(--menu-selectionForeground) !important;
+      .@{clsx}-item-divider {
+        margin: 4px 0 !important;
+        pointer-events: none !important;
+        background-color: var(--menu-separatorBackground) !important;
+      }
+
+      .@{clsx}-item-active,
+      .@{clsx}-item-open,
+      .@{clsx}-item-selected,
+      .@{clsx}-submenu-active,
+      .@{clsx}-submenu-open,
+      .@{clsx}-submenu-selected {
+        background: var(--menu-selectionBackground) !important;
+        color: var(--menu-selectionForeground) !important;
+      }
+
+      .@{clsx}-submenu-arrow {
+        display: none;
+      }
     }
   }
 

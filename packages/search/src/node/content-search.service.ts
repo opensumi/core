@@ -56,7 +56,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   @Autowired(IProcessFactory)
   protected processFactory: IProcessFactory;
 
-  private searchId: number = 0;
+  private searchId: number = (new Date().getTime());
   private processMap: Map<number, IProcess> = new Map();
 
   @Autowired(ILogServiceManager)

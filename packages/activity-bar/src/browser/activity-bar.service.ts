@@ -8,7 +8,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import { SIDE_MENU_PATH } from '../common';
 import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
 import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
-import { IMenuRegistry, MenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -72,8 +72,8 @@ export class ActivityBarService extends WithEventBus {
   @Autowired(IMenuRegistry)
   menus: IMenuRegistry;
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
@@ -111,11 +111,11 @@ export class ActivityBarService extends WithEventBus {
   // append一个viewContainer，支持传入初始化views
   append(options: ViewContainerOptions, side: Side, views: View[], Fc?: React.FunctionComponent): string {
     const { iconClass, priority, containerId, title, initialProps, expanded } = options;
-    const label = (title || '').toUpperCase();
+    const label = title || '';
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
-      const command = this.registerVisibleToggleCommand(containerId, label);
+      const command = this.registerVisibleToggleCommand(containerId);
       if (Fc) {
         panelContainer = this.injector.get(ReactPanelWidget, [Fc!, containerId, command]);
         panelContainer.title.label = label;
@@ -187,7 +187,7 @@ export class ActivityBarService extends WithEventBus {
       id: activateCommandId,
     }, {
       execute: () => {
-        handler!.activate();
+        handler!.activate(true);
       },
     });
     this.keybindingRegistry.registerKeybinding({
@@ -200,7 +200,6 @@ export class ActivityBarService extends WithEventBus {
     const commandId = `activity.bar.toggle.${side}`;
     this.commandRegistry.registerCommand({
       id: commandId,
-      label: localize('layout.tabbar.hide', '隐藏'),
     }, {
       execute: (x, y) => {
         const target = document.elementFromPoint(x, y);
@@ -217,17 +216,14 @@ export class ActivityBarService extends WithEventBus {
   }
 
   // 注册tab的隐藏显示功能
-  private registerVisibleToggleCommand(containerId: string, label: string): string {
+  private registerVisibleToggleCommand(containerId: string): string {
     const commandId = `activity.bar.toggle.${containerId}`;
     this.commandRegistry.registerCommand({
       id: commandId,
-      // TODO @伊北 label应该在一处注册就好了
-      label,
     }, {
       execute: (forceShow?: boolean) => {
         this.doToggleTab(containerId, forceShow);
       },
-      // TODO @伊北 menu上的图标实现
       isToggled: () => {
         const { container } = this.containersMap.get(containerId)!;
         return !container.inVisible;
@@ -361,7 +357,10 @@ export class ActivityBarService extends WithEventBus {
         this.commandService.executeCommand(`main-layout.${side}-panel.hide`);
       }
       this.menus.registerMenuItem(`${SIDE_MENU_PATH}/${side}`, {
-        command: this.registerGlobalToggleCommand(side as Side),
+        command: {
+          id: this.registerGlobalToggleCommand(side as Side),
+          label: localize('layout.tabbar.hide', '隐藏'),
+        },
         order: 0,
         group: '0_global',
       });

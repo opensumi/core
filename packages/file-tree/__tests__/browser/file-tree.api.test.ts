@@ -276,6 +276,7 @@ describe('FileTreeService should be work', () => {
         } as FileStat,
         '',
         '',
+        '',
         undefined,
         1,
       );
@@ -310,6 +311,7 @@ describe('FileTreeService should be work', () => {
         } as FileStat,
         '',
         '',
+        '',
         undefined,
         1,
       );
@@ -331,6 +333,7 @@ describe('FileTreeService should be work', () => {
           isSymbolicLink: false,
           uri: rootUri.toString(),
         } as FileStat,
+        '',
         '',
         '',
         undefined,
@@ -356,6 +359,7 @@ describe('FileTreeService should be work', () => {
         } as FileStat,
         '',
         '',
+        '',
         undefined,
         1,
       );
@@ -370,6 +374,7 @@ describe('FileTreeService should be work', () => {
           isSymbolicLink: false,
           uri: testOneDirectoryUri.toString(),
         } as FileStat,
+        '',
         '',
         '',
         undefined,

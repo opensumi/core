@@ -18,7 +18,10 @@ renderApp({
   ],
   layoutConfig: defaultConfig,
   useCdnIcon: false,
-  workspaceDir: '/Users/munong/Documents/IDE/editor',
+  defaultPreferences: {
+    'general.theme': 'ide-dark',
+    'general.icon': 'vscode-icons',
+  },
   // iconStyleSheets: [
   //   {
   //     iconMap: {

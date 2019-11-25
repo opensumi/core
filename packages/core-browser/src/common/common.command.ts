@@ -1,5 +1,5 @@
 import { Command, localize } from '..';
-import { getIcon } from '../icon';
+import { getIcon } from '../style/icon/icon';
 
 export namespace FILE_COMMANDS {
   const CATEGORY = '%file%';
@@ -96,6 +96,12 @@ export namespace FILE_COMMANDS {
     id: 'explorer.location',
     category: CATEGORY,
     label: '%file.location%',
+  };
+
+  export const OPEN_FOLDER: Command = {
+    id: 'explorer.open.folder',
+    category: CATEGORY,
+    label: '%file.open.folder%',
   };
 }
 
@@ -201,7 +207,7 @@ export namespace EDITOR_COMMANDS {
   export const SAVE_ALL: Command = {
     id: 'editor.saveAll',
     category: CATEGORY,
-    label: '%editor.save.all%',
+    label: '%editor.saveAll%',
   };
 
   export const CLOSE_TO_RIGHT: Command = {

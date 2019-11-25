@@ -152,12 +152,6 @@ export const EDITOR_GROUP_HEADER_TABS_BACKGROUND = registerColor('editorGroupHea
   hc: null,
 }, localize('tabsContainerBackground', 'Background color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.'));
 
-export const EDITOR_GROUP_HEADER_TABS_BORDER = registerColor('editorGroupHeader.tabsBorder', {
-  dark: null,
-  light: null,
-  hc: contrastBorder,
-}, localize('tabsContainerBorder', 'Border color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.'));
-
 export const EDITOR_GROUP_HEADER_NO_TABS_BACKGROUND = registerColor('editorGroupHeader.noTabsBackground', {
   dark: editorBackground,
   light: editorBackground,

@@ -47,7 +47,8 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
           label: replaceLocalizePlaceholder(themeInfo.name)!,
           value: themeInfo.themeId,
         }));
-        const themeId = await this.quickPickService.show(options);
+        const defaultSelected = options.findIndex((opt) => opt.value === this.themeService.currentThemeId);
+        const themeId = await this.quickPickService.show(options, {selectIndex: () => defaultSelected});
         if (themeId) {
           await this.preferenceService.set('general.theme', themeId, PreferenceScope.User);
         }
@@ -61,7 +62,8 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
           value: themeInfo.themeId,
           description: themeInfo.base,
         }));
-        const themeId = await this.quickPickService.show(options);
+        const defaultSelected = options.findIndex((opt) => opt.value === this.iconService.currentThemeId);
+        const themeId = await this.quickPickService.show(options, {selectIndex: () => defaultSelected});
         if (themeId) {
           await this.preferenceService.set('general.icon', themeId, PreferenceScope.User);
         }

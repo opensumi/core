@@ -319,7 +319,7 @@ export class PreferenceServiceImpl implements PreferenceService {
       const oldValue = externalProvider.get(resolvedScope);
       externalProvider.set(value, resolvedScope);
       // FIXME 使用reconcile函数
-      if (this.doResolve(preferenceName).scope === resolvedScope) {
+      if ((this.doResolve(preferenceName).scope || 0) <= resolvedScope) {
         this.onPreferenceChangedEmitter.fire({
           preferenceName,
           newValue: value,

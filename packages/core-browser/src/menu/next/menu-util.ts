@@ -42,11 +42,21 @@ interface MenuGeneratePayload {
   withAlt?: boolean;
 }
 
+export function generateMergedCtxMenu(payload: MenuGeneratePayload) {
+  const result = generateCtxMenu(payload);
+  return [...result[0], ...result[1]];
+}
+
 export function generateCtxMenu(payload: MenuGeneratePayload) {
   const { menus, options, separator = 'navigation' } = payload;
   const menuNodes = menus.getMenuNodes(options);
   const menuItems = splitMenuItems(menuNodes, separator);
   return menuItems;
+}
+
+export function generateMergedInlineActions(payload: MenuGeneratePayload) {
+  const result = generateInlineActions(payload);
+  return [...result[0], ...result[1]];
 }
 
 export function generateInlineActions(payload: Omit<MenuGeneratePayload, 'withAlt'>) {

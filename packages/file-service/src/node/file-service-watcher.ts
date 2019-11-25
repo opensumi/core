@@ -249,17 +249,18 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
   protected resolvePath(directory: string, file: string): string {
     const path = paths.join(directory, file);
-    try {
-      return fs.realpathSync(path);
-    } catch (e) {
-      try {
-        // file does not exist try to resolve directory
-        return paths.join(fs.realpathSync(directory), file);
-      } catch (e) {
-        // directory does not exist fall back to symlink
-        return path;
-      }
-    }
+    return path;
+    // try {
+    //   return fs.realpathSync(path);
+    // } catch (e) {
+    //   try {
+    //     // file does not exist try to resolve directory
+    //     return paths.join(fs.realpathSync(directory), file);
+    //   } catch (e) {
+    //     // directory does not exist fall back to symlink
+    //     return path;
+    //   }
+    // }
   }
 
   /**

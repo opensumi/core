@@ -114,6 +114,10 @@ export const FileTree = ({
       const locationIndex = position.y;
       let newRenderStart;
       let scrollTop;
+      // 当需要更新的数量为0时，直接返回
+      if (!shouldShowNumbers) {
+        return;
+      }
       // 保证定位元素在滚动区域正中或可视区域
       // location 功能下对应的Preload节点上下节点数为preRenderNumber/2
       if (locationIndex + Math.ceil(shouldShowNumbers / 2) <= files.length) {

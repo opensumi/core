@@ -53,7 +53,7 @@ export class TerminalImpl implements Terminal {
     }
     return new Promise(async (resolve) => {
       this._processId = await this.terminalService.getProcessId(this.id) || -1;
-      resolve(this.processId);
+      resolve(this._processId);
     });
   }
 

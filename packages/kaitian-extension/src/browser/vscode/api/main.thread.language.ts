@@ -32,6 +32,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $getLanguages(): string[] {
+    return monaco.languages.getLanguages().map((l) => l.id);
+  }
+
+  protected getUniqueLanguages(): string[] {
     const languages: string[] = [];
     // 会有重复
     const allLanguages = monaco.languages.getLanguages().map((l) => l.id);
@@ -47,7 +51,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const hoverProvider = this.createHoverProvider(handle, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerHoverProvider(language, hoverProvider));
       }
@@ -79,8 +83,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         return {
           suggestions: result.items,
           incomplete: result.isIncomplete,
-          // TODO dispose support
-          // tslint:disable-next-line:no-any
           dispose: () => this.proxy.$releaseCompletionItems(handle, (result as any)._id),
         } as monaco.languages.CompletionList;
       },
@@ -125,7 +127,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const definitionProvider = this.createDefinitionProvider(handle, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerDefinitionProvider(language, definitionProvider));
       }
@@ -164,7 +166,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const typeDefinitionProvider = this.createTypeDefinitionProvider(handle, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerTypeDefinitionProvider(language, typeDefinitionProvider));
       }
@@ -205,7 +207,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const provider = this.createFoldingRangeProvider(handle, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerFoldingRangeProvider(language, provider));
       }
@@ -230,7 +232,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const colorProvider = this.createColorProvider(handle, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerColorProvider(language, colorProvider));
       }
@@ -277,7 +279,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const documentHighlightProvider = this.createDocumentHighlightProvider(handle, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerDocumentHighlightProvider(language, documentHighlightProvider));
       }
@@ -318,7 +320,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const documentFormattingEditProvider = this.createDocumentFormattingEditProvider(handle, displayName, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerDocumentFormattingEditProvider(language, documentFormattingEditProvider));
       }
@@ -347,7 +349,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const documentHighlightProvider = this.createDocumentRangeFormattingEditProvider(handle, displayName, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerDocumentRangeFormattingEditProvider(language, documentHighlightProvider));
       }
@@ -376,7 +378,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const onTypeFormattingProvider = this.createOnTypeFormattingProvider(handle, languageSelector, autoFormatTriggerCharacters);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerOnTypeFormattingEditProvider(language, onTypeFormattingProvider));
       }
@@ -411,7 +413,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     }
 
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerCodeLensProvider(language, lensProvider));
       }
@@ -451,7 +453,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const implementationProvider = this.createImplementationProvider(handle, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerImplementationProvider(language, implementationProvider));
       }
@@ -463,7 +465,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const linkProvider = this.createLinkProvider(handle, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerLinkProvider(language, linkProvider));
       }
@@ -505,7 +507,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const quickFixProvider = this.createQuickFixProvider(handle, languageSelector, codeActionKinds);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerCodeActionProvider(language, quickFixProvider));
       }
@@ -577,7 +579,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const referenceProvider = this.createReferenceProvider(handle, languageSelector);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerReferenceProvider(language, referenceProvider));
       }
@@ -629,7 +631,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const symbolProvider = this.createDocumentSymbolProvider(handle, languageSelector);
 
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerDocumentSymbolProvider(language, symbolProvider));
       }
@@ -649,7 +651,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const signatureHelpProvider = this.createSignatureHelpProvider(handle, languageSelector, metadata);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerSignatureHelpProvider(language, signatureHelpProvider));
       }
@@ -673,7 +675,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const languageSelector = fromLanguageSelector(selector);
     const renameProvider = this.createRenameProvider(handle, languageSelector, supportsResolveLocation);
     const disposable = new DisposableCollection();
-    for (const language of this.$getLanguages()) {
+    for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
         disposable.push(monaco.languages.registerRenameProvider(language, renameProvider));
       }

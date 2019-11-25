@@ -55,6 +55,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 'vs-dark',
       description: '%preference.description.general.theme%',
     },
+    'general.askReloadOnLanguageChange': {
+      type: 'boolean',
+      default: true,
+      description: '%preference.description.general.askReloadOnLanguageChange%',
+    },
     'general.icon': {
       type: 'string',
       default: 'vs-minimal',
@@ -67,7 +72,7 @@ export const corePreferenceSchema: PreferenceSchema = {
         'ifRequired',
         'always',
       ],
-      default: 'ifRequired',
+      default: 'always',
       description: 'When to confirm before closing the application window.',
     },
     'application.preferMarkdownPreview': {
@@ -92,6 +97,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
       description: '%editor.configuration.askIfDiff%',
     },
+    'editor.showActionWhenGroupEmpty': {
+      type: 'boolean',
+      default: false,
+      description: '%editor.configuration.showActionWhenGroupEmpty%',
+    },
     'editor.preferredFormatter': {
       type: 'object',
       default: {},
@@ -101,6 +111,22 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: true,
       description: '%editor.configuration.preview%',
+    },
+    'editor.minimap': {
+      type: 'boolean',
+      default: false,
+      description: '%editor.configuration.minimap%',
+    },
+    'editor.renderLineHighlight': {
+      type: 'string',
+      enum: [
+        'none',
+        'gutter',
+        'line',
+        'all',
+      ],
+      default: 'all',
+      description: '%editor.configuration.renderLineHighlight%',
     },
     'editor.fontFamily': {
       type: 'string',
@@ -164,15 +190,25 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: [],
       description: '%editor.configuration.readonlyFiles%',
     },
+    'editor.formatOnSave': {
+      type: 'boolean',
+      default: false,
+      description: '%preference.editor.formatOnSave%',
+    },
+    'editor.formatOnSaveTimeout': {
+      type: 'number',
+      default: 750,
+      description: '%editor.configuration.readonlyFiles%',
+    },
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,
-      description: '%preference.explorer.comfirm.move%',
+      description: '%preference.explorer.confirm.move%',
     },
     'explorer.confirmDelete': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmMove,
-      description: '%preference.explorer.comfirm.delete%',
+      description: '%preference.explorer.confirm.delete%',
     },
     'files.exclude': {
       type: 'object',

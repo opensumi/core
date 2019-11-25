@@ -1,11 +1,11 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { CONTEXT_MENU } from './file-tree.view';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ExplorerResourcePanel } from './resource-panel.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { ExplorerResourceService } from './explorer-resource.service';
@@ -13,6 +13,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as copy from 'copy-to-clipboard';
 import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService } from '@ali/ide-workspace';
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
+import { IWindowService } from '@ali/ide-window';
 
 export namespace FileTreeContextMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
@@ -28,8 +29,8 @@ export interface FileUri {
 
 export const ExplorerResourceViewId = 'file-explorer';
 
-@Domain(NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution)
-export class FileTreeContribution implements NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution {
+@Domain(NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
+export class FileTreeContribution implements NextMenuContribution, CommandContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
@@ -52,9 +53,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   @Autowired(WorkbenchEditorService)
   private editorService: WorkbenchEditorService;
 
+  @Autowired(ILogger)
+  private logger;
+
   onStart() {
     const workspace = this.workspaceService.workspace;
-    let resourceTitle = 'UNDEFINE';
+    let resourceTitle = localize('file.empty.defaultTitle');
     if (workspace) {
       const uri = new URI(workspace.uri);
       resourceTitle = uri.displayName;
@@ -68,7 +72,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       name: resourceTitle,
       weight: 3,
       priority: 8,
-      collapsed: true,
+      collapsed: false,
       component: ExplorerResourcePanel,
     }, ExplorerContainerId);
   }
@@ -93,12 +97,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FILE.id,
-      order: 2,
+      order: 1,
       group: '1_open',
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FOLDER.id,
-      order: 1,
+      order: 2,
       group: '1_open',
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -144,17 +148,18 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(FILE_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
-        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-        if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
-          return;
-        }
         let locationUri = uri;
 
         if (!locationUri) {
           locationUri = this.filetreeService.selectedUris[0];
         }
         if (locationUri) {
-          this.explorerResourceService.location(locationUri);
+          const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+          if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
+            this.explorerResourceService.locationOnShow(locationUri);
+          } else {
+            this.explorerResourceService.location(locationUri);
+          }
         }
       },
     });
@@ -178,7 +183,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: (_, uris) => {
-        console.log('delete');
+        this.logger.verbose('delete');
         if (uris && uris.length) {
           this.filetreeService.deleteFiles(uris);
         } else {
@@ -214,7 +219,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
       execute: async (uri) => {
         // 默认获取焦点元素
-        const selectedFile = this.filetreeService.focusedUris;
+        const selectedFile = this.filetreeService.selectedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -235,7 +240,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (uri) => {
-        const selectedFile = this.filetreeService.focusedUris;
+        const selectedFile = this.filetreeService.selectedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -317,7 +322,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         } else {
           const seletedUris = this.filetreeService.selectedUris;
           if (seletedUris && seletedUris.length) {
-            this.filetreeService.cutFile(seletedUris);
+            this.filetreeService.copyFile(seletedUris);
           }
         }
       },
@@ -364,30 +369,46 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.filetreeService.hasPasteFile;
       },
     });
+    commands.registerCommand(FILE_COMMANDS.OPEN_FOLDER, {
+      execute: (options: {newWindow: boolean}) => {
+        const dialogService: IElectronNativeDialogService = this.injector.get(IElectronNativeDialogService);
+        const windowService: IWindowService = this.injector.get(IWindowService);
+        dialogService.showOpenDialog({
+            title: localize('workspace.open-directory'),
+            properties: [
+              'openDirectory',
+            ],
+          }).then((paths) => {
+            if (paths && paths.length > 0) {
+              windowService.openWorkspace(URI.file(paths[0]), options || {newWindow: true});
+            }
+          });
+      },
+      isVisible: () => {
+        return isElectronRenderer();
+      },
+    });
+
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.LOCATION.id,
-      keybinding: 'cmd+shift+e',
-    });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.COPY_FILE.id,
       keybinding: 'ctrlcmd+c',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.PASTE_FILE.id,
       keybinding: 'ctrlcmd+v',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
       keybinding: 'ctrlcmd+x',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
@@ -399,7 +420,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.DELETE_FILE.id,
       keybinding: 'ctrlcmd+backspace',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
   }
 
@@ -424,5 +445,14 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       command: FILE_COMMANDS.NEW_FILE.id,
       viewId: ExplorerResourceViewId,
     });
+  }
+
+  onDidUseConfig() {
+    const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+    if (handler) {
+      handler.onActivate(() => {
+        this.explorerResourceService.performLocationOnHandleShow();
+      });
+    }
   }
 }

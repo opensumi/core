@@ -6,6 +6,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService } from '../common';
 import { getLogger, Deferred, isDevelopment, INodeLogger, AppConfig, isWindows } from '@ali/ide-core-node';
+import * as shellPath from 'shell-path';
 import * as cp from 'child_process';
 import * as psTree from 'ps-tree';
 import * as isRunning from 'is-running';
@@ -38,7 +39,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private appConfig: AppConfig;
 
   private extProcess: cp.ChildProcess;
-  private extProcessClientId: string;
 
   private clientExtProcessMap: Map<string, cp.ChildProcess> = new Map();
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
@@ -176,7 +176,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     let preloadPath;
     const forkOptions: cp.ForkOptions = {
-      env: { ...process.env },
+      env: {
+        ...process.env,
+        PATH: shellPath.sync(),
+       },
     };
     const forkArgs: string[] = [];
     let extProcessPath: string = '';
@@ -201,9 +204,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       forkOptions.execArgv.push('--inspect=9889');
     }
 
-    console.log('extProcessPath', extProcessPath);
-
     console.time(`${clientId} fork ext process`);
+    const startForkTime = Date.now();
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.logger.debug('extProcess.pid', extProcess.pid);
 
@@ -230,12 +232,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       const initHandler = (msg) => {
         if (msg === 'ready') {
           console.timeEnd(`${clientId} fork ext process`);
+          this.logger.log(`extension,fork,${clientId},${Date.now() - startForkTime}ms`);
           extProcessInitDeferred.resolve();
           this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
           resolve();
         } else if (msg === 'finish') {
-          const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>;
-          finishDeferred.resolve();
+          const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId);
+          if (finishDeferred) {
+            finishDeferred.resolve();
+          }
         }
       };
       extProcess.on('message', initHandler);

@@ -22,6 +22,10 @@ export class AbstractFileTreeItem implements IFileTreeItem {
   ) {
   }
 
+  getIcon(expanded: boolean) {
+    return this.icon;
+  }
+
   updateFileStat(key: any, value: any) {
     this.filestat[key] = value;
     return this;
@@ -36,6 +40,7 @@ export class AbstractFileTreeItem implements IFileTreeItem {
 export class Directory extends AbstractFileTreeItem {
   @observable.shallow public children: (Directory | File)[] = [];
   public expanded: boolean = false;
+  private _openedIcon: string = '';
 
   constructor(
     fileApi: IFileTreeAPI,
@@ -44,12 +49,22 @@ export class Directory extends AbstractFileTreeItem {
     filestat: FileStat = { children: [], isDirectory: true, uri: '', lastModification: 0 },
     tooltip = '',
     icon = '',
+    openedIcon = '',
     parent: Directory | undefined,
     priority,
     isTemporary?: boolean,
   ) {
     super(fileApi, uri, name, filestat, tooltip, icon, parent, priority, isTemporary);
+    this._openedIcon = openedIcon;
     this.init();
+  }
+
+  getIcon(expanded: boolean) {
+    if (expanded) {
+      return this._openedIcon;
+    } else {
+      return this.icon;
+    }
   }
 
   init() {

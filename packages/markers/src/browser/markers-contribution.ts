@@ -40,6 +40,7 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
       title: Messages.markerTile(),
       priority: 11,
       containerId: MARKER_CONTAINER_ID,
+      activateKeyBinding: 'ctrlcmd+shift+m',
     });
   }
 

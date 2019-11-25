@@ -146,6 +146,7 @@ export class FileTreeAPI implements IFileTreeAPI {
         },
         this.getReadableTooltip(uri),
         icon,
+        this.labelService.getIcon(uri, { isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink, isOpenedDirectory: true }),
         parent,
         1,
       );
@@ -197,6 +198,7 @@ export class FileTreeAPI implements IFileTreeAPI {
         filestat,
         this.getReadableTooltip(uri),
         this.labelService.getIcon(uri, filestat),
+        this.labelService.getIcon(uri, {...filestat, isOpenedDirectory: true}),
         parent,
         1,
       );
@@ -228,6 +230,7 @@ export class FileTreeAPI implements IFileTreeAPI {
         filestat,
         '',
         this.labelService.getIcon(uri, filestat),
+        this.labelService.getIcon(uri, {...filestat, isOpenedDirectory: true}),
         parent,
         10,
         true,

@@ -10,7 +10,7 @@ import { IResource, IResourceDecorationChangeEventPayload, IEditorGroup } from '
 import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import * as styles from './index.module.less';

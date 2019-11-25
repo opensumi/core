@@ -1,9 +1,10 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry } from '@ali/ide-core-browser';
-import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
+import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
+import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
-import { MonacoMenus, SELECT_ALL_COMMAND } from './monaco-menu';
+import { MonacoMenus } from './monaco-menu';
 import { TextmateService } from './textmate.service';
 import { IThemeService } from '@ali/ide-theme';
 
@@ -113,16 +114,17 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     this.monacoActionRegistry.registerMonacoActions();
   }
 
-  registerMenus(menus: MenuModelRegistry) {
+  registerNextMenus(menuRegistry: IMenuRegistry) {
     // 注册 Monaco 的选择命令
-    menus.registerSubmenu(MonacoMenus.SELECTION, localize('mSelection'));
     for (const group of MonacoMenus.SELECTION_GROUPS) {
       group.actions.forEach((action, index) => {
         const commandId = this.monacoCommandRegistry.validate(action);
         if (commandId) {
-          const path = [...MonacoMenus.SELECTION, group.id];
-          const order = index.toString();
-          menus.registerMenuAction(path, { commandId, order });
+          menuRegistry.registerMenuItem(MenuId.MenubarSelectionMenu, {
+            command: commandId,
+            group: group.id,
+            order: index,
+          });
         }
       });
     }
@@ -137,9 +139,18 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       if (command) {
         const raw = item.keybinding;
 
+        // monaco keybindingRegistry中取出的keybinding缺少了editorFocus的when,
+        // 当向开天的keybinding注册时需要加上editorFocus，避免焦点不在编辑器时响应到
+        let when = item.when;
+        const editorFocus = monaco.contextkey.EditorContextKeys.focus;
+        if (!when) {
+            when = editorFocus as any;
+        } else {
+            when = monaco.contextkey.ContextKeyExpr.and(editorFocus, when as any)!;
+        }
         // 转换 monaco 快捷键
         const keybindingStr = raw.parts.map((part) => this.keyCode(part)).join(' ');
-        const keybinding = { command, keybinding: keybindingStr, when: item.when as any};
+        const keybinding = { command, keybinding: keybindingStr, when};
 
         // 注册 keybinding
         keybindings.registerKeybinding(keybinding);

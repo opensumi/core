@@ -4,13 +4,11 @@ import { observer } from 'mobx-react-lite';
 import * as styles from './dialog.module.less';
 import { useInjectable, localize } from '@ali/ide-core-browser';
 import { IDialogService } from '../common';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import clx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Overlay } from '@ali/ide-core-browser/lib/components/overlay';
 import { Button } from '@ali/ide-core-browser/lib/components';
-
-const CONFIRM = localize('dialog.confirm');
 
 export const Dialog = observer(() => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
@@ -45,7 +43,7 @@ export const Dialog = observer(() => {
         {buttons.length ? buttons.map((button, index) => (
           <Button onClick={handlerClickButton(button)} key={button} type={index === buttons.length - 1 ? 'primary' : 'secondary'} className={styles.button}>{ mnemonicButtonLabel(button, true) }</Button>
         )) : (
-          <Button onClick={handleClose} type='primary' className={styles.button}>{CONFIRM}</Button>
+          <Button onClick={handleClose} type='primary' className={styles.button}>{localize('dialog.confirm')}</Button>
         )}
       </div>
     </Overlay>

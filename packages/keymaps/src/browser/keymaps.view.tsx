@@ -7,7 +7,7 @@ import { Input, RecycleList } from '@ali/ide-core-browser/lib/components';
 import { localize, useInjectable, MessageType, KeybindingScope, noKeybidingInputName, KeyCode, Key } from '@ali/ide-core-browser';
 import { KeymapService } from './keymaps.service';
 import { IKeymapService, KeybindingItem } from '../common';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
 
 export const KeymapsView: ReactEditorComponent<null> = observer(() => {

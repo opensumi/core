@@ -138,10 +138,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     // tslint:disable-next-line:forin
     for (const preferenceName in jsonData) {
       const preferenceValue = jsonData[preferenceName];
-      if (!this.validate(preferenceName, preferenceValue)) {
-        console.warn(`Preference ${preferenceName} in ${uri} is invalid.`);
-        continue;
-      }
+      // TODO：这里由于插件的schema注册较晚，在第一次获取配置时会校验不通过导致取不到值，读取暂时去掉校验逻辑
       if (this.schemaProvider.testOverrideValue(preferenceName, preferenceValue)) {
         // tslint:disable-next-line:forin
         for (const overriddenPreferenceName in preferenceValue) {
@@ -156,7 +153,6 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   }
 
   protected validate(preferenceName: string, preferenceValue: any): boolean {
-    // 如果配置内容是从.vscode 目录下读取，即使无效也引入使用
     if (this.configurations.getPath(this.getUri()) !== this.configurations.getPaths()[0]) {
       return true;
     }

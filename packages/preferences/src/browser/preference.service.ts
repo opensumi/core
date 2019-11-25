@@ -3,7 +3,7 @@ import { observable } from 'mobx';
 import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, IClientApp, localize, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { IDialogService } from '@ali/ide-overlay';
 import { toPreferenceReadableName } from '../common';
 
@@ -58,16 +58,17 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   private async onLocalizationLanguageChanged() {
-
-    const msg = await this.dialogService.info(
-      localize('preference.general.language.change.refresh.info', '更改语言后需重启后生效，是否立即刷新?'),
-      [
-        localize('preference.general.language.change.refresh.later', '稍后自己刷新'),
-        localize('preference.general.language.change.refresh.now', '立即刷新'),
-      ],
-    );
-    if (msg === localize('preference.general.language.change.refresh.now', '立即刷新')) {
-      this.clientApp.fireOnReload();
+    if (this.preferenceService.get('general.askReloadOnLanguageChange')) {
+      const msg = await this.dialogService.info(
+        localize('preference.general.language.change.refresh.info', '更改语言后需重启后生效，是否立即刷新?'),
+        [
+          localize('preference.general.language.change.refresh.later', '稍后自己刷新'),
+          localize('preference.general.language.change.refresh.now', '立即刷新'),
+        ],
+      );
+      if (msg === localize('preference.general.language.change.refresh.now', '立即刷新')) {
+        this.clientApp.fireOnReload();
+      }
     }
   }
 
@@ -187,6 +188,8 @@ export const defaultSettingSections: {
         {id: 'editor.previewMode', localized: 'preference.editor.previewMode'},
         {id: 'editor.askIfDiff', localized: 'preference.editor.askIfDiff' },
         {id: 'editor.fontFamily', localized: 'preference.editor.fontFamily'},
+        {id: 'editor.minimap', localized: 'preference.editor.minimap'},
+        {id: 'editor.renderLineHighlight', localized: 'preference.editor.renderLineHighlight'},
         {id: 'editor.fontWeight', localized: 'preference.editor.fontWeight'},
         {id: 'editor.fontSize', localized: 'preference.editor.fontSize'},
         {id: 'editor.tabSize', localized: 'preference.editor.tabSize'},
@@ -195,6 +198,8 @@ export const defaultSettingSections: {
         {id: 'editor.insertSpace', localized: 'preference.editor.insertSpace'},
         {id: 'editor.wordWrap', localized: 'preference.editor.wordWrap'},
         {id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles'},
+        {id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave'},
+        {id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout'},
       ],
     },
   ],

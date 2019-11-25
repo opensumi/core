@@ -392,11 +392,7 @@ declare module monaco.keybindings {
             parts: SimpleKeybinding[]
         };
         command: string;
-        when?: ContextKeyExpr;
-    }
-
-    export interface ContextKeyExpr {
-        key: string;
+        when?: monaco.contextkey.ContextKeyExpr;
     }
 
     export enum ContextKeyExprType {
@@ -1206,6 +1202,11 @@ declare module monaco.contextKeyService {
 }
 
 declare module monaco.contextkey {
+
+    export namespace EditorContextKeys{
+        export const focus: RawContextKey<boolean>;
+    }
+
     export const enum ContextKeyExprType {
         Defined = 1,
         Not = 2,

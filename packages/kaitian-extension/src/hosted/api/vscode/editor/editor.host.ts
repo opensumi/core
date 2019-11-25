@@ -2,7 +2,7 @@ import { IExtensionHostEditorService, ExtensionDocumentDataManager, MainThreadAP
 import { IRPCProtocol } from '@ali/ide-connection';
 import * as vscode from 'vscode';
 import { Uri, Position, Range, Selection, EndOfLine, TextEditorLineNumbersStyle} from '../../../../common/vscode/ext-types';
-import { ISelection, Emitter, Event, IRange, getLogger } from '@ali/ide-core-common';
+import { ISelection, Emitter, Event, IRange, getLogger, Disposable } from '@ali/ide-core-common';
 import { TypeConverts, toPosition, fromPosition, fromRange, fromSelection } from '../../../../common/vscode/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../../common/vscode/editor';
 import { TextEditorEdit } from './edit.builder';
@@ -162,17 +162,25 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     const resolved = TypeConverts.DecorationRenderOptions.from(options);
     const key = this.getNextId();
     this._proxy.$createTextEditorDecorationType(key, resolved);
-    return {
-      key,
-      dispose: () => {
-        this._proxy.$deleteTextEditorDecorationType(key);
-      },
-    };
+    return new ExtHostTextEditorDecorationType(key, this._proxy);
   }
 
   getDiffInformation(id: string): Promise<vscode.LineChange[]> {
     return Promise.resolve(this._proxy.$getDiffInformation(id));
   }
+}
+
+export class ExtHostTextEditorDecorationType extends Disposable implements vscode.TextEditorDecorationType {
+
+  constructor(public readonly key: string, _proxy: IMainThreadEditorsService) {
+    super();
+    this.addDispose({
+      dispose: () => {
+        _proxy.$deleteTextEditorDecorationType(key);
+      },
+    });
+  }
+
 }
 
 export class TextEditorData {
@@ -285,7 +293,11 @@ export class TextEditorData {
       return false;
     }
   }
-  setDecorations(decorationType: vscode.TextEditorDecorationType, rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[]): void {
+  setDecorations(decorationType: ExtHostTextEditorDecorationType, rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[]): void {
+    if (decorationType.disposed) {
+      console.warn(`decorationType with key ${decorationType.key} has been disposed!`);
+      return;
+    }
     let resolved: IDecorationApplyOptions[] = [];
     if (rangesOrOptions.length !== 0) {
       if (Range.isRange(rangesOrOptions[0])) {

@@ -26,7 +26,7 @@ export class EditorHistoryService extends WithEventBus {
   @OnEvent(EditorSelectionChangeEvent)
   onEditorSelectionChangeEvent(e: EditorSelectionChangeEvent) {
     if (e.payload.selections[0]) {
-      this.onNewState(new EditorHistoryState(e.payload.resource.uri, {
+      this.onNewState(new EditorHistoryState(e.payload.editorUri, {
         lineNumber: e.payload.selections[0]!.selectionStartLineNumber,
         column: e.payload.selections[0]!.selectionStartColumn,
       }, e.payload.group.index));

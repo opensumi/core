@@ -1,7 +1,7 @@
 import { ZoneWidget } from '@ali/ide-monaco-enhance/lib/browser';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
-import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser/lib/icon';
+import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser';
 import { URI, CommandService } from '@ali/ide-core-common';
 import { ScmChangeTitleCallback } from '@ali/ide-core-browser/lib/menu/next';
 
@@ -97,9 +97,9 @@ export class DirtyDiffWidget extends ZoneWidget {
     }
   }
 
-  private _addAction(icon: string, type: DirtyDiffWidgetActionType, rotate?: ROTATE_TYPE) {
+  private _addAction(icon: string, type: DirtyDiffWidgetActionType) {
     const action = document.createElement('div');
-    action.className = getIcon(icon, rotate);
+    action.className = getIcon(icon);
     this._actions.appendChild(action);
     action.onclick = () => this.handleAction(type);
     return action;
@@ -108,9 +108,9 @@ export class DirtyDiffWidget extends ZoneWidget {
   private _renderActions() {
     if (this._actions.children.length === 0) {
       this._addAction('plus', DirtyDiffWidgetActionType.save);
-      this._addAction('refresh', DirtyDiffWidgetActionType.reset);
-      this._addAction('up', DirtyDiffWidgetActionType.next, ROTATE_TYPE.rotate_180);
-      this._addAction('up', DirtyDiffWidgetActionType.previous);
+      this._addAction('rollback', DirtyDiffWidgetActionType.reset);
+      this._addAction('up', DirtyDiffWidgetActionType.next);
+      this._addAction('down', DirtyDiffWidgetActionType.previous);
       this._addAction('close', DirtyDiffWidgetActionType.close);
     }
   }
@@ -144,9 +144,11 @@ export class DirtyDiffWidget extends ZoneWidget {
         break;
       case DirtyDiffWidgetActionType.save:
         this.commandService.executeCommand('git.stageChange', ...args);
+        this.dispose();
         break;
       case DirtyDiffWidgetActionType.reset:
         this.commandService.executeCommand('git.revertChange', ...args);
+        this.dispose();
         break;
       case DirtyDiffWidgetActionType.close:
         this.dispose();

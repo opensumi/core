@@ -65,6 +65,7 @@ describe('FileTreeService should be work', () => {
       } as FileStat,
       '',
       '',
+      '',
       undefined,
       1,
     );
@@ -188,6 +189,7 @@ describe('FileTreeService should be work', () => {
           isSymbolicLink: false,
           uri: parentUri.toString(),
         } as FileStat,
+        '',
         '',
         '',
         rootFile,
@@ -438,7 +440,7 @@ describe('FileTreeService should be work', () => {
       });
 
       const warning = jest.fn(() => {
-        return localize('file.comfirm.replace.ok');
+        return localize('file.confirm.replace.ok');
       });
       injector.mock(IDialogService, 'warning', warning);
       const moveFile = jest.fn();
@@ -479,7 +481,7 @@ describe('FileTreeService should be work', () => {
         useValue: {},
       });
       const warning = jest.fn(() => {
-        return localize('file.comfirm.delete.ok');
+        return localize('file.confirm.delete.ok');
       });
       injector.mock(IDialogService, 'warning', warning);
       const deleteFile = jest.fn();
@@ -578,6 +580,7 @@ describe('FileTreeService should be work', () => {
         } as FileStat,
         '',
         '',
+        '',
         rootFile,
         1,
       );
@@ -624,6 +627,7 @@ describe('FileTreeService should be work', () => {
           isSymbolicLink: false,
           uri: parentUri.toString(),
         } as FileStat,
+        '',
         '',
         '',
         rootFile,
@@ -684,6 +688,7 @@ describe('FileTreeService should be work', () => {
           isSymbolicLink: false,
           uri: parentUri.toString(),
         } as FileStat,
+        '',
         '',
         '',
         rootFile,

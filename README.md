@@ -129,7 +129,7 @@ npm run link:electron
 Electron的运行时每一个进程都会单独打包成js， 需要进行构建
 
 ````
-npm run prod:electron
+npm run build:electron
 ````
 
 启动electron

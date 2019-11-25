@@ -12,7 +12,7 @@ import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/debug-watch.view';
 
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { DebugWatchService } from './view/debug-watch.service';
 import { DebugBreakpointsService } from './view/debug-breakpoints.service';
@@ -64,6 +64,9 @@ export namespace DEBUG_COMMANDS {
   };
   export const CONTINUE = {
     id: 'debug.continue',
+  };
+  export const RESTART = {
+    id: 'debug.restart',
   };
 }
 
@@ -152,41 +155,40 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         priority: 7,
         title: localize('debug.container.title'),
         containerId: DebugContribution.DEBUG_CONTAINER_ID,
+        activateKeyBinding: 'ctrlcmd+shift+d',
       });
   }
 
   async onStart() {
-    if (!isElectronRenderer()) {
-      this.sessionManager.onDidCreateDebugSession((session: DebugSession) => {
+    this.sessionManager.onDidCreateDebugSession((session: DebugSession) => {
+      this.debugModel.init(session);
+    });
+    this.sessionManager.onDidStartDebugSession((session: DebugSession) => {
+      const { noDebug } = session.configuration;
+      const openDebug = session.configuration.openDebug || this.preferences['debug.openDebug'];
+      if (!noDebug && (openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart))) {
+        this.openView();
         this.debugModel.init(session);
-      });
-      this.sessionManager.onDidStartDebugSession((session: DebugSession) => {
-        const { noDebug } = session.configuration;
-        const openDebug = session.configuration.openDebug || this.preferences['debug.openDebug'];
-        if (!noDebug && (openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart))) {
-          this.openView();
-          this.debugModel.init(session);
-        }
-        this.firstSessionStart = false;
-        this.statusBar.setBackgroundColor('var(--statusBar-debuggingBackground)');
-        this.statusBar.setColor('var(--statusBar-debuggingForeground)');
-      });
-      this.sessionManager.onDidStopDebugSession((session) => {
-        const { openDebug } = session.configuration;
-        if (openDebug === 'openOnDebugBreak') {
-          this.openView();
-        }
-      });
-      this.sessionManager.onDidDestroyDebugSession((session) => {
-        if (this.sessionManager.sessions.length === 0) {
-          this.statusBar.setBackgroundColor('var(--statusBar-background)');
-          this.statusBar.setColor('var(--statusBar-foreground)');
-        }
-      });
-      this.debugEditorController.init();
-      this.configurations.load();
-      await this.breakpointManager.load();
-    }
+      }
+      this.firstSessionStart = false;
+      this.statusBar.setBackgroundColor('var(--statusBar-debuggingBackground)');
+      this.statusBar.setColor('var(--statusBar-debuggingForeground)');
+    });
+    this.sessionManager.onDidStopDebugSession((session) => {
+      const { openDebug } = session.configuration;
+      if (openDebug === 'openOnDebugBreak') {
+        this.openView();
+      }
+    });
+    this.sessionManager.onDidDestroyDebugSession((session) => {
+      if (this.sessionManager.sessions.length === 0) {
+        this.statusBar.setBackgroundColor('var(--statusBar-background)');
+        this.statusBar.setColor('var(--statusBar-foreground)');
+      }
+    });
+    this.debugEditorController.init();
+    this.configurations.load();
+    await this.breakpointManager.load();
   }
 
   openView() {
@@ -277,7 +279,12 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
     commands.registerCommand(DEBUG_COMMANDS.OVER, {
       execute: (data) => {
-        this.debugToolbarService.doContinue();
+        this.debugToolbarService.doStepOver();
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.RESTART, {
+      execute: (data) => {
+        this.debugToolbarService.doRestart();
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.TOGGLE_BREAKPOINTS, {
@@ -366,8 +373,8 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       when: 'inDebugMode',
     });
     keybindings.registerKeybinding({
-      command: DEBUG_COMMANDS.OVER.id,
-      keybinding: 'cmd+k cmd+',
+      command: DEBUG_COMMANDS.RESTART.id,
+      keybinding: 'shift+ctrlcmd+f5',
       when: 'inDebugMode',
     });
   }

@@ -59,11 +59,8 @@ class LocalizationRegistry implements ILocalizationRegistry {
   }
 
   getLocalizeString(key: ILocalizationKey, defaultLabel?: string | null): string {
-    let defaultMessage = defaultLabel;
-    if (defaultLabel === null) {
-      defaultMessage = this.getContents('en-US')[key as keyof ILocalizationContents]
-    }
-    return this.getContents(_currentLanguageId)[key as keyof ILocalizationContents] || defaultMessage || '';
+    const defaultMessage = this.getContents('default')[key as keyof ILocalizationContents]
+    return this.getContents(_currentLanguageId)[key as keyof ILocalizationContents] || defaultMessage || defaultLabel || '';
   }
 
   private getContents(languageId: string): ILocalizationContents {

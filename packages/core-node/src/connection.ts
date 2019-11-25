@@ -15,12 +15,14 @@ import {
   createWebSocketConnection,
   createSocketConnection,
 } from '@ali/ide-connection';
+import { INodeLogger } from './logger/node-logger';
 
 export {RPCServiceCenter};
 
-const logger = getLogger();
+// const logger = getLogger();
 
 export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[]) {
+  const logger = injector.get(INodeLogger);
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger);
 
@@ -29,7 +31,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
       handler: (connection: WSChannel, clientId: string) => {
         logger.log(`set rpc connection ${clientId}`);
 
-        const serviceCenter = new RPCServiceCenter();
+        const serviceCenter = new RPCServiceCenter(undefined, logger);
         const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
 
         const serverConnection = createWebSocketConnection(connection);
@@ -40,7 +42,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
           serviceCenter.removeConnection(serverConnection);
           serviceChildInjector.disposeAll();
 
-          console.log(`remove rpc connection ${clientId} `);
+          logger.log(`remove rpc connection ${clientId} `);
         });
       },
       dispose: (connection: ws, connectionClientId: string) => {
@@ -57,7 +59,8 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
 }
 
 export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
-  const serviceCenter = new RPCServiceCenter();
+  const logger = injector.get(INodeLogger);
+  const serviceCenter = new RPCServiceCenter(undefined, logger);
   const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, process.env.CODE_WINDOW_CLIENT_ID as string);
 
   server.on('connection', (connection) => {
@@ -78,7 +81,7 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
 }
 
 export function bindModuleBackService(injector: Injector, modules: NodeModule[], serviceCenter: RPCServiceCenter, clientId?: string) {
-
+  const logger = injector.get(INodeLogger);
   const {
     createRPCService,
   } = initRPCService(serviceCenter);

@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition } from '@ali/ide-core-browser';
 import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { observable, action } from 'mobx';
-import { getSymbolIcon } from '@ali/ide-core-browser/lib/icon';
+import { getSymbolIcon } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { EditorSelectionChangeEvent } from '@ali/ide-editor/lib/browser';
 import debounce = require('lodash.debounce');
@@ -148,8 +148,8 @@ export class OutLineService extends WithEventBus {
 
   protected revealRange(symbol: TreeSymbol) {
     const currentEditor = this.editorService.currentEditorGroup.codeEditor;
-    currentEditor.setSelection(symbol.selectionRange);
-    currentEditor.monacoEditor.revealRangeInCenter(symbol.range);
+    currentEditor.monacoEditor.revealLineInCenter(symbol.range.startLineNumber);
+    currentEditor.monacoEditor.setPosition(new monaco.Position(symbol.range.startLineNumber, 0));
   }
 
 }

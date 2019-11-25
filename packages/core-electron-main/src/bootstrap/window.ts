@@ -1,6 +1,6 @@
 import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri, Deferred } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ElectronAppConfig, ICodeWindow } from './types';
+import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
@@ -31,7 +31,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private rpcListenPath: string | undefined = undefined;
 
-  constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions = {}) {
+  constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
     super();
     this._workspace = new URI(workspace);
     this.metadata = metadata;
@@ -49,6 +49,17 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       width: DEFAULT_WINDOW_WIDTH,
       ...options,
     });
+    if (options) {
+      if (options.extensionDir) {
+        this.appConfig.extensionDir = options.extensionDir;
+        console.log(`electron: extension dir: ${this.appConfig.extensionDir}`);
+      }
+
+      if (options.extensionCandidate) {
+        this.appConfig.extenionCandidate = options.extensionCandidate;
+      }
+    }
+
     this.browser.on('closed', () => {
       this.dispose();
     });
@@ -98,7 +109,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.browser.loadURL(this.appConfig.browserUrl);
       this.browser.webContents.on('devtools-reload-page', () => {
         this.isReloading = true;
-        this.startNode();
       });
       this.bindEvents();
     } catch (e) {
@@ -187,7 +197,6 @@ export class KTNodeProcess {
           forkArgs.push('--listenPath', rpcListenPath);
           this._process = fork(this.forkPath, forkArgs, forkOptions);
           this._process.on('message', (message) => {
-            console.log(message);
             if (message === 'ready') {
               resolve();
             }

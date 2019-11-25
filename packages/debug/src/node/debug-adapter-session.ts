@@ -85,7 +85,7 @@ export class DebugAdapterSessionImpl implements DebugAdapterSession {
         if (idx > 0) {
           // log unrecognized output
           const output = this.buffer.slice(0, idx);
-          console.log(output.toString('utf-8'));
+          // console.log(output.toString('utf-8'));
 
           this.buffer = this.buffer.slice(idx);
         }

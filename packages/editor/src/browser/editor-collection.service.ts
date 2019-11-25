@@ -37,22 +37,43 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
       if (preferenceName.startsWith('editor.')) {
         const optionName = preferenceName.replace(/editor./, '');
         const optionValue = this.preferenceService.get(preferenceName);
-        editor.updateOptions({
-          [optionName]: optionValue,
-        }, {
-          [optionName]: optionValue,
-        });
+        if (optionName === 'minimap') {
+          editor.updateOptions(
+            {
+              minimap: {
+                enabled: optionValue as boolean,
+              },
+            }
+        , {});
+        } else {
+          editor.updateOptions({
+            [optionName]: optionValue,
+          }, {
+            [optionName]: optionValue,
+          });
+        }
+
       }
     }
     editor.addDispose(this.preferenceService.onPreferenceChanged((e) => {
       if (e.preferenceName.startsWith('editor.')) {
         const optionName = e.preferenceName.replace(/editor./, '');
 
-        editor.updateOptions({
-          [optionName]: e.newValue,
-        }, {
-          [optionName]: e.newValue,
-        });
+        if (optionName === 'minimap') {
+          editor.updateOptions(
+            {
+              minimap: {
+                enabled: e.newValue as boolean,
+              },
+            }
+        , {});
+        } else {
+          editor.updateOptions({
+            [optionName]: e.newValue,
+          }, {
+            [optionName]: e.newValue,
+          });
+        }
       }
     }));
 
@@ -183,7 +204,11 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
   public onRefOpen = this._onRefOpen.event;
 
   public get currentDocumentModel() {
-    return this._currentDocumentModelRef.instance;
+    if (this._currentDocumentModelRef && !this._currentDocumentModelRef.disposed) {
+      return this._currentDocumentModelRef.instance;
+    } else {
+      return null;
+    }
   }
 
   public getId() {
@@ -219,6 +244,9 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
       disposer.dispose();
     });
     this.toDispose.push(monacoEditor.onDidChangeCursorPosition(() => {
+      if (!this.currentDocumentModel) {
+        return;
+      }
       const selection = monacoEditor.getSelection();
       this._onCursorPositionChanged.fire({
         position: monacoEditor.getPosition(),
@@ -270,7 +298,7 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
   async open(documentModelRef: IEditorDocumentModelRef, range?: IRange): Promise<void> {
     this.saveCurrentState();
     this._currentDocumentModelRef = documentModelRef;
-    const model = this.currentDocumentModel.getMonacoModel();
+    const model = this.currentDocumentModel!.getMonacoModel();
     this.monacoEditor.updateOptions({
       readOnly: !!documentModelRef.instance.readonly,
     });
@@ -291,7 +319,9 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
   }
 
   public async save(): Promise<void> {
-    await this.currentDocumentModel.save();
+    if (this.currentDocumentModel) {
+      await this.currentDocumentModel.save();
+    }
   }
 
   applyDecoration(key, options) {
@@ -336,11 +366,17 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   private modifiedDocModelRef: IEditorDocumentModelRef | null;
 
   get originalDocModel() {
-    return this.originalDocModelRef && this.originalDocModelRef.instance;
+    if (this.originalDocModelRef && !this.originalDocModelRef.disposed) {
+      return this.originalDocModelRef.instance;
+    }
+    return null;
   }
 
   get modifiedDocModel() {
-    return this.modifiedDocModelRef && this.modifiedDocModelRef.instance;
+    if (this.modifiedDocModelRef && !this.modifiedDocModelRef.disposed) {
+      return this.modifiedDocModelRef.instance;
+    }
+    return null;
   }
 
   public originalEditor: IMonacoImplEditor;

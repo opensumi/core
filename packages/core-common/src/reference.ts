@@ -8,6 +8,7 @@ export interface IRef<T> {
   reason?: string;
   dispose(): void;
   hold(reason?: string): IRef<T>;
+  disposed: boolean;
 }
 
 export class ReferenceManager<T> {

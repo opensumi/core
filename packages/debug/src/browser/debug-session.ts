@@ -111,6 +111,9 @@ export class DebugSession implements IDisposable {
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
       // 断点更新时更新断点数据
       this.breakpoints.onDidChangeMarkers((uri) => this.updateBreakpoints({ uri, sourceModified: true })),
+      this.breakpoints.onDidChangeExceptionsBreakpoints((args) => {
+        this.sendExceptionBreakpoints(args);
+      }),
     ]);
   }
 
@@ -124,13 +127,17 @@ export class DebugSession implements IDisposable {
   }
 
   protected async runInTerminal({ arguments: { title, cwd, args, env } }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    return this.doRunInTerminal({ name: title, cwd, shellPath: args[0], shellArgs: args.slice(1), env });
+    // TODO: shellPath 参数解析
+    return this.doRunInTerminal({ name: title, cwd,  env }, args.join(' '));
   }
 
-  protected async doRunInTerminal(options: TerminalOptions): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+  protected async doRunInTerminal(options: TerminalOptions, command?: string): Promise<DebugProtocol.RunInTerminalResponse['body']> {
     const terminal = this.terminalService.createTerminal(options);
     await terminal.show();
     const processId = await this.terminalService.getProcessId(terminal.id);
+    if (command) {
+      this.terminalService.sendText(terminal.id, command);
+    }
     return { processId };
   }
 
@@ -165,12 +172,9 @@ export class DebugSession implements IDisposable {
   protected initialized = false;
 
   protected async configure(): Promise<void> {
-    // 默认为 All Exceptions
-    const exceptionBreakpointsOpts = await this.breakpoints.getExceptionBreakpointOptions();
-    if (exceptionBreakpointsOpts) {
-      await this.setExceptionBreakpoints(exceptionBreakpointsOpts);
-    }
     await this.updateBreakpoints({ sourceModified: false });
+    // 更新exceptionBreakpoint配置
+    this.breakpoints.setExceptionBreakpoints(this.capabilities.exceptionBreakpointFilters || []);
     if (this.capabilities.supportsConfigurationDoneRequest) {
       await this.sendRequest('configurationDone', {});
     }
@@ -178,20 +182,8 @@ export class DebugSession implements IDisposable {
     await this.updateThreads(undefined);
   }
 
-  protected async setExceptionBreakpoints(options: {
-    filters: string[],
-  }): Promise<void> {
-    if (!this.initialize) {
-      return;
-    }
-    try {
-      const response = await this.sendRequest('setExceptionBreakpoints', options);
-      if (!response.success) {
-        console.warn('not support exception breakpoints', response);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  protected async sendExceptionBreakpoints(args: DebugProtocol.SetExceptionBreakpointsArguments): Promise<DebugProtocol.SetExceptionBreakpointsResponse> {
+    return this.sendRequest('setExceptionBreakpoints', args);
   }
 
   protected readonly _breakpoints = new Map<string, DebugBreakpoint[]>();
@@ -241,6 +233,7 @@ export class DebugSession implements IDisposable {
       }
     }
   }
+
   protected setBreakpoints(uri: URI, breakpoints: DebugBreakpoint[]): void {
     const distinct = this.dedupBreakpoints(breakpoints);
     this._breakpoints.set(uri.toString(), distinct);
@@ -261,14 +254,16 @@ export class DebugSession implements IDisposable {
     }
     return [...lines.values()];
   }
-  protected *getAffectedUris(uri?: URI): IterableIterator<URI> {
+  protected getAffectedUris(uri?: URI): URI[] {
+    const uris: URI[] = [];
     if (uri) {
-      yield uri;
+      uris.push(uri);
     } else {
       for (const uriString of this.breakpoints.getUris()) {
-        yield new URI(uriString);
+        uris.push(new URI(uriString));
       }
     }
+    return uris;
   }
   get breakpointUris(): IterableIterator<string> {
     return this._breakpoints.keys();

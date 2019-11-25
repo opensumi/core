@@ -13,6 +13,12 @@ export enum TabActiveKey {
   INSTALLED = 'installed',
 }
 
+export interface ExtensionMomentState {
+  isInstalling?: boolean;
+  isUpdating?: boolean;
+  isUnInstalling?: boolean;
+}
+
 export const SearchFromMarketplaceCommandId = 'SearchFromMarketplaceCommand';
 
 export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_d8fa74/afts/img/A*LcaZT6AAG84AAAAAAAAAAABkARQnAQ';
@@ -113,10 +119,11 @@ export interface IExtensionManagerService extends IExtensionManager  {
   searchMarketplaceState: SearchState;
   searchMarketplaceResults: RawExtension[];
   contextMenu: IMenu;
+  extensionMomentState: Map<string, ExtensionMomentState>;
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined>;
-  getRawExtensionById(extensionId: string): Promise<RawExtension>;
+  getRawExtensionById(extensionId: string): RawExtension;
   toggleActiveExtension(extension: BaseExtension, active: boolean, scope: EnableScope): Promise<void>;
   searchFromMarketplace(query: string): void;
   searchFromInstalled(query: string): void;
@@ -125,7 +132,7 @@ export interface IExtensionManagerService extends IExtensionManager  {
   computeReloadState(extensionPath: string): Promise<boolean>;
   onDisableExtension(extensionPath: string): Promise<void>;
   onEnableExtension(extensionPath: string): Promise<void>;
-  makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string): Promise<void>;
+  makeExtensionStatus(extensionId: string, state: Partial<RawExtension>): Promise<void>;
   setRequestHeaders(requestHeaders: RequestHeaders): Promise<void>;
 }
 

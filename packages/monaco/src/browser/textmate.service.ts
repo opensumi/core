@@ -147,7 +147,6 @@ export class TextmateService extends WithEventBus {
     };
   }
 
-  // getEncodedLanguageId是用来干啥的？
   private convertEmbeddedLanguages(languages?: ScopeMap): IEmbeddedLanguagesMap | undefined {
     if (typeof languages === 'undefined' || languages === null) {
       return undefined;
@@ -161,6 +160,10 @@ export class TextmateService extends WithEventBus {
       const scope = scopes[i];
       const langId = languages[scope];
       result[scope] = getEncodedLanguageId(langId);
+      // TODO 后置到 tokenize 使用到对应的 scope 时激活（vscode逻辑），现在先激活一个 language 时激活所有 embed language
+      if (!this.activatedLanguage.has(langId)) {
+        this.activateLanguage(langId);
+      }
     }
     return result;
   }
@@ -391,10 +394,10 @@ export class TextmateService extends WithEventBus {
     });
     if (grammar.language) {
       this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName);
-      this.textmateRegistry.registerGrammarConfiguration(grammar.language, {
+      this.textmateRegistry.registerGrammarConfiguration(grammar.language, () => ({
         embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
         tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
-      });
+      }));
     }
   }
 
@@ -412,7 +415,7 @@ export class TextmateService extends WithEventBus {
       return;
     }
 
-    const configuration = this.textmateRegistry.getGrammarConfiguration(languageId);
+    const configuration = this.textmateRegistry.getGrammarConfiguration(languageId)();
     const initialLanguage = getEncodedLanguageId(languageId);
 
     try {

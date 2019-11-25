@@ -9,11 +9,11 @@ export interface IElectronMainApi<Events> {
 
 
 export interface IElectronMainUIService extends IElectronMainApi<void> {
-  
+
   openItem(path: string): void;
 
   openExternal(uri: string): void;
-  
+
   moveToTrash(path: string): Promise<void>;
 
   maximize(windowId: number): Promise<void>;
@@ -39,7 +39,19 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
    * @param workspace 工作区主Uri
    * @param windowId 指定的window
    */
-  openWorkspace(workspace?: string, windowId?: number);
+  openWorkspace(workspace: string, options: any);
+
+  /**
+   * 在资源管理器里打开文件
+   * @param path 文件路径（不带file协议头)
+   */
+  revealInFinder(path: string);
+
+  /**
+   * 在系统终端中打开文件路径
+   * @param path 文件路径（不带file协议头)
+   */
+  revealInSystemTerminal(path: string);
 
 }
 

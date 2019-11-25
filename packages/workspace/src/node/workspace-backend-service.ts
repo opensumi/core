@@ -103,58 +103,6 @@ export class WorkspaceBackendServer implements IWorkspaceServer {
     return data && data.recentCommands || [];
   }
 
-  async setMostRecentlyOpenedFile(uri: string): Promise<void> {
-    let fileList: string[] = [];
-    const oldFileList = await this.getMostRecentlyOpenedFiles();
-    fileList.push(uri);
-    if (oldFileList) {
-      oldFileList.forEach((element: string) => {
-        if (element !== uri) {
-          fileList.push(element);
-        }
-      });
-    }
-    // 仅存储50个最近文件
-    fileList = fileList.slice(0, 50);
-    this.writeToUserHome({
-      recentFiles: fileList,
-    });
-  }
-
-  async getMostRecentlyOpenedFiles(): Promise<string[] | undefined> {
-    const data = await this.readRecentDataFromUserHome();
-    const newRecentFiles = (data && data.recentFiles || []).filter((uri) => {
-      return fs.existsSync(FileUri.fsPath(uri));
-    });
-    this.writeToUserHome({
-      recentFiles: newRecentFiles,
-    });
-    return newRecentFiles;
-  }
-
-  async getMostRecentlySearchWord(): Promise<string[] | undefined> {
-    const data = await this.readRecentDataFromUserHome();
-    return data && data.recentSearchWord || [];
-  }
-
-  async setMostRecentlySearchWord(word: string | string[]): Promise<void> {
-    let list: string[] = [];
-    const oldList = await this.getMostRecentlySearchWord() || [];
-    if (isArray(word)) {
-      list = list.concat(word);
-    } else {
-      list.push(word);
-    }
-
-    list = oldList.concat(list);
-    list = Array.from(new Set(list));
-    // 仅存储10个
-    list = list.slice(0, 10);
-    this.writeToUserHome({
-      recentSearchWord: list,
-    });
-  }
-
   protected workspaceStillExist(wspath: string): boolean {
     return fs.pathExistsSync(FileUri.fsPath(wspath));
   }
