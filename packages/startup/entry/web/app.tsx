@@ -18,6 +18,7 @@ renderApp({
   ],
   layoutConfig: defaultConfig,
   useCdnIcon: false,
+  workspaceDir: '/Users/munong/Documents/IDE/editor',
   // iconStyleSheets: [
   //   {
   //     iconMap: {

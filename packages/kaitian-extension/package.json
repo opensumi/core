@@ -44,7 +44,7 @@
     "@ali/ide-search": "1.5.0",
     "@ali/ide-static-resource": "1.5.0",
     "@ali/ide-status-bar": "1.5.0",
-    "@ali/ide-terminal2": "1.5.0",
+    "@ali/ide-terminal-next": "1.5.0",
     "@ali/ide-theme": "1.5.0",
     "@ali/ide-webview": "1.5.0",
     "@ali/ide-workspace": "1.5.0",

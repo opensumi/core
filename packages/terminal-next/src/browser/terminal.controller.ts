@@ -1,12 +1,12 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { uuid, CommandService, OnEvent, WithEventBus } from '@ali/ide-core-common';
+import { uuid, CommandService, OnEvent, WithEventBus, Emitter } from '@ali/ide-core-common';
 import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
 import { TerminalClient } from './terminal.client';
 import { WidgetGroup, Widget } from './component/resize.control';
-import { ITerminalExternalService, ITerminalController, ITerminalError } from '../common';
+import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 
 @Injectable()
@@ -40,12 +40,26 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   private _clientsMap = new Map<string, TerminalClient>();
   private _focusedId: string;
 
+  private _onDidOpenTerminal = new Emitter<TerminalInfo>();
+  private _onDidCloseTerminal = new Emitter<string>();
+  private _onDidChangeActiveTerminal = new Emitter<string>();
+
   get currentGroup() {
     return this.groups[this.state.index];
   }
 
   get focusedTerm() {
     return this._clientsMap.get(this._focusedId);
+  }
+
+  private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}) {
+    const client = new TerminalClient(this.service, this.termTheme, this, widget, restoreId, options);
+    client.addDispose({
+      dispose: () => {
+        this._onDidCloseTerminal.fire(client.id);
+      },
+    });
+    return client;
   }
 
   async recovery(history: any) {
@@ -55,7 +69,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
       for (const item of (widgets as any[])) {
         const widget = new Widget();
-        const client = new TerminalClient(this.service, this.termTheme, widget, item.clientId);
+        const client = this._createTerminalClientInstance(widget, item.clientId);
         try {
           await client.attach(true, item.meta || '');
           this._addWidgetToGroup(index, client);
@@ -71,7 +85,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   private _checkIfNeedInitialize(): boolean {
     let needed = true;
     if (this.groups[0] && this.groups[0].length > 0) {
-        needed = false;
+      needed = false;
     }
     return needed;
   }
@@ -116,9 +130,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     });
   }
 
-  removeFocused() {
+  private _removeWidgetFromWidgetId(widgetId: string) {
     const group = this.currentGroup;
-    const widget = group.widgetsMap.get(this._focusedId);
+    const widget = group.widgetsMap.get(widgetId);
     const index = group.widgets.findIndex((w) => w === widget);
     const term = this.focusedTerm;
 
@@ -137,7 +151,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         }
       }
     }
+  }
 
+  removeFocused() {
+    this._removeWidgetFromWidgetId(this._focusedId);
     this.focusWidget(this.currentGroup.last.id);
   }
 
@@ -167,10 +184,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     group.removeWidgetByIndex(index);
   }
 
-  private _addWidgetToGroup(index: number, restoreClient?: TerminalClient) {
+  private _addWidgetToGroup(index: number, restoreClient?: TerminalClient, options?: TerminalOptions) {
     const group = this.groups[index];
     const widget = restoreClient ? (restoreClient.widget as Widget) : new Widget(uuid());
-    const client = restoreClient || new TerminalClient(this.service, this.termTheme, widget);
+    const client = restoreClient || this._createTerminalClientInstance(widget, undefined, options);
     this._clientsMap.set(widget.id, client);
     // 必须要延迟将 widget 添加到 group 的步骤
     group.createWidget(widget);
@@ -178,19 +195,22 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     if (this.currentGroup) {
       this.focusWidget(widget.id);
     }
+
+    return widget.id;
   }
 
-  addWidget(restoreClient?: TerminalClient) {
-    return this._addWidgetToGroup(this.state.index, restoreClient);
+  addWidget(restoreClient?: TerminalClient, options: TerminalOptions = {}) {
+    return this._addWidgetToGroup(this.state.index, restoreClient, options);
   }
 
   focusWidget(widgetId: string) {
     const widget = this.currentGroup.widgetsMap.get(widgetId);
-    const term = this._clientsMap.get(widgetId);
+    const client = this._clientsMap.get(widgetId);
 
-    if (term && widget) {
-      term.focus();
+    if (client && widget) {
+      client.focus();
       this._focusedId = widget.id;
+      this._onDidChangeActiveTerminal.fire(client.id);
     }
   }
 
@@ -263,6 +283,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const client = this._clientsMap.get(widgetId);
     if (client) {
       await client.show();
+      this._onDidOpenTerminal.fire({
+        id: client.id,
+        name: 'terminal',
+        isActive: true,
+      });
     }
   }
 
@@ -280,7 +305,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       throw new Error('widget is not rendered');
     }
 
-    const next = new TerminalClient(this.service, this.termTheme, widget, last.id);
+    const next = this._createTerminalClientInstance(widget, last.id);
     last.dispose();
     this._clientsMap.set(widgetId, next);
     await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true);
@@ -336,6 +361,77 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     });
 
     return { groups };
+  }
+
+  /** end */
+
+  /** terminal operation*/
+
+  get terminals() {
+    return Array.from(this._clientsMap.values());
+  }
+
+  createTerminal(options: TerminalOptions) {
+    const widgetId = this.addWidget(undefined, options);
+    const client = this._clientsMap.get(widgetId);
+
+    if (!client) {
+      throw new Error('session not find');
+    }
+
+    return client;
+  }
+
+  getProcessId(sessionId: string) {
+    return this.service.getProcessId(sessionId);
+  }
+
+  onDidOpenTerminal = this._onDidOpenTerminal.event;
+  onDidCloseTerminal = this._onDidCloseTerminal.event;
+  onDidChangeActiveTerminal = this._onDidChangeActiveTerminal.event;
+
+  showTerm(clientId: string, preserveFocus: boolean = true) {
+    let index: number = -1;
+
+    const [[widgetId]] = Array.from(this._clientsMap.entries())
+      .filter(([_, client]) => client.id === clientId);
+    const client = this._clientsMap.get(widgetId);
+
+    this.groups.forEach((group, i) => {
+      if (group.widgetsMap.has(widgetId)) {
+        index = i;
+      }
+    });
+
+    if (index > -1 && client) {
+      this.selectGroup(index);
+      this._focusedId = widgetId;
+
+      if (preserveFocus) {
+        client.focus();
+      }
+    }
+  }
+
+  isTermActive(clientId: string) {
+    const current = this._clientsMap.get(this._focusedId);
+
+    return !!(current && (current.id === clientId));
+  }
+
+  hideTerm(_: string) {
+    // TODO: why should do this,
+  }
+
+  removeTerm(clientId: string) {
+    const [[widgetId]] = Array.from(this._clientsMap.entries())
+      .filter(([_, client]) => client.id === clientId);
+
+    this._removeWidgetFromWidgetId(widgetId);
+  }
+
+  sendText(id: string, text: string, addNewLine = false) {
+    this.service.sendText(id, `${text}${addNewLine ? '\r\n' : ''}`);
   }
 
   /** end */

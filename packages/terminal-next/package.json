@@ -23,10 +23,12 @@
   "dependencies": {
     "@ali/ide-activity-bar": "1.5.0",
     "@ali/ide-core-common": "1.5.0",
+    "@ali/ide-connection": "1.5.0",
     "@ali/ide-core-node": "1.5.0",
     "@ali/ide-main-layout": "1.5.0",
-    "@ali/ide-terminal2": "1.5.0",
     "@ali/ide-theme": "1.5.0",
+    "event-kit": "^2.5.3",
+    "node-pty": "^0.8.1",
     "xterm": "^4.2.0",
     "xterm-addon-attach": "^0.3.0",
     "xterm-addon-fit": "^0.3.0",
@@ -35,6 +37,7 @@
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.5.0",
+    "@types/event-kit": "^2.4.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

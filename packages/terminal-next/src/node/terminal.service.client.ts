@@ -23,11 +23,12 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
 
   clientMessage(id: string, data: string) {
     if (this.rpcClient) {
-      this.rpcClient[0].onMessage(id, data);
+      this.rpcClient[0].onMessage(id, 'message', data);
     }
   }
 
   create(id: string, rows: number, cols: number, options: TerminalOptions ) {
+    this.terminalService.setClient(id, this);
     const pty = this.terminalService.create(id, rows, cols, options) as IPty;
     this.terminalMap.set(id, pty);
     return {

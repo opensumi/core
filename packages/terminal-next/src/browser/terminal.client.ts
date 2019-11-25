@@ -4,15 +4,16 @@ import { FitAddon } from 'xterm-addon-fit';
 import { AttachAddon } from 'xterm-addon-attach';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
-import { ITerminalExternalService, IWidget } from '../common';
+import { ITerminalExternalService, IWidget, TerminalOptions, ITerminalClient, ITerminalController } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import * as styles from './terminal.module.less';
 
-export class TerminalClient extends Disposable {
+export class TerminalClient extends Disposable implements ITerminalClient {
   private _container: HTMLDivElement;
   private _term: Terminal;
   private _uid: string;
   private _widget: IWidget;
+  private _options: TerminalOptions;
 
   // add on
   private _fitAddon: FitAddon;
@@ -38,8 +39,10 @@ export class TerminalClient extends Disposable {
   constructor(
     protected readonly service: ITerminalExternalService,
     protected readonly theme: ITerminalTheme,
+    protected readonly controller: ITerminalController,
     widget: IWidget,
     restoreId?: string,
+    options?: TerminalOptions,
   ) {
     super();
 
@@ -47,6 +50,7 @@ export class TerminalClient extends Disposable {
     this._activated = false;
     this._disposed = false;
     this._uid = restoreId || this.service.makeId();
+    this._options = options || {};
     this._widget = widget;
     this._container = document.createElement('div');
     this._container.className = styles.terminalContent;
@@ -69,6 +73,14 @@ export class TerminalClient extends Disposable {
 
   get term() {
     return this._term;
+  }
+
+  get name() {
+    return 'terminal';
+  }
+
+  get isActive() {
+    return this.controller.isTermActive(this.id);
   }
 
   get container() {
@@ -113,7 +125,7 @@ export class TerminalClient extends Disposable {
 
     if (!this._attached) {
       return this.service.attach(this.id, this.term, restore, meta,
-        (socket: WebSocket) => this._doAttach(socket));
+        (socket: WebSocket) => this._doAttach(socket), this._options);
     } else {
       return Promise.resolve();
     }

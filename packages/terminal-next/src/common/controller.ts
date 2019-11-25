@@ -1,5 +1,14 @@
+import { Event } from '@ali/ide-core-common';
 import { IWidgetGroup } from './resize';
 import { ITerminalError } from './error';
+import { TerminalOptions, TerminalInfo } from './pty';
+
+export interface ITerminalClient {
+  id: string;
+  name: string;
+  isActive: boolean;
+  show(): Promise<void>;
+}
 
 export const ITerminalController = Symbol('ITerminalController');
 export interface ITerminalController {
@@ -25,4 +34,18 @@ export interface ITerminalController {
   layoutTerminalClient(widgetId: string): void;
   eraseTerminalClient(termId: string): void;
   toJSON(): { groups: any[] };
+
+  createTerminal(options: TerminalOptions): ITerminalClient;
+  getProcessId(sessionId: string): Promise<number>;
+
+  terminals: ITerminalClient[];
+  isTermActive(clientId: string): boolean;
+  showTerm(id: string, preserveFocus?: boolean): void;
+  hideTerm(id: string): void;
+  removeTerm(id?: string): void;
+  sendText(id: string, text: string, addNewLine?: boolean): void;
+
+  onDidChangeActiveTerminal: Event<string>;
+  onDidCloseTerminal: Event<string>;
+  onDidOpenTerminal: Event<TerminalInfo>;
 }

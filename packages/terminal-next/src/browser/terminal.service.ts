@@ -1,57 +1,41 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { isElectronEnv, uuid, Emitter, ILogger } from '@ali/ide-core-common';
+import { Emitter as Dispatcher, Disposable as DispatcherDisposable } from 'event-kit';
 import { electronEnv } from '@ali/ide-core-browser';
-import { WSChanneHandler as IWSChanneHandler } from '@ali/ide-connection';
-import { ITerminalServiceClient, ITerminalServicePath } from '@ali/ide-terminal2/lib/common';
+import { WSChanneHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
 import { Terminal } from 'xterm';
-import { ITerminalExternalService } from '../common';
+import { ITerminalExternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath  } from '../common';
 
 export interface EventMessage {
   data: string;
 }
 
-export interface WebSocketLike {
-  addEventListener: (type: string, event: EventMessage) => void;
-  removeEventListener: (tyoe: string) => void;
-  readyState: number;
+function oneStringType(sessionId: string, type: string) {
+  return `${sessionId}/${type}`;
 }
 
-/*
 @Injectable()
-export class NodePtyTerminalService implements ITerminalExternalService {
-  @Autowired(ILogger)
-  logger: ILogger;
+export class NodePtyTerminalService extends RPCService implements ITerminalExternalService {
+
+  static countId = 1;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(ILogger)
+  logger: ILogger;
+
   @Autowired(ITerminalServicePath)
-  private terminalService: ITerminalServiceClient;
+  service: ITerminalServiceClient;
 
-  private eventMap: Map<string, Emitter<any>> = new Map();
+  private _onError = new Emitter<ITerminalError>();
+  public onError = this._onError.event;
 
-  private _send(id: string, message: string) {
-    this.terminalService.onMessage(id, message);
-  }
+  private _dispatcher = new Dispatcher();
+  private _info = new Map<string, { pid: number, name: string }>();
 
-  private _createMockSocket(id: string) {
-    const self = this;
-    return {
-      addEventListener: (type: string, handler: (e: any) => void) => {
-        this.logger.debug('terminal type:', type);
-        const emitter = new Emitter<any>();
-        emitter.event((event) => handler(event));
-        self.eventMap.set(id + type, emitter);
-      },
-      send: (message: string) => {
-        self._send(id, message);
-      },
-      readyState: 1,
-    };
-  }
-
-  onMessage() {
-
+  getOptions() {
+    return {};
   }
 
   makeId(createdId?: string) {
@@ -63,29 +47,81 @@ export class NodePtyTerminalService implements ITerminalExternalService {
     }
   }
 
-  getOptions() {
-    return {};
+  meta() {
+    return '';
   }
 
-  async attach(sessionId: string, term: Terminal, restore: boolean, attachMethod: (s: WebSocket) => void) {
-    const uuid = this.makeId();
-    const sock = this._createMockSocket(uuid);
-
-    (this.terminalService.create(uuid, 180, 45, {}) as Promise<{
-      pid: number,
-      name: string,
-    }>)
-      .then(() => {
-        attachMethod(sock as any);
-      });
+  restore() {
+    return 'KAITIAN.RESTORE';
   }
 
-  async sendText(id: string, text: string, addNewLine?: boolean) {
-    this._send(id, text + (!addNewLine ? `\r` : ''));
+  private _createCustomWebSocket(sessionId: string) {
+    const disposeMap = new Map<string, DispatcherDisposable>();
+    return {
+      addEventListener: (type: string, handler: (value: any) => void) => {
+        const dispose = this._dispatcher.on(oneStringType(sessionId, type), handler);
+        disposeMap.set(type, dispose);
+      },
+      removeEventListener: (type: string) => {
+        const dispose = disposeMap.get(type);
+        if (dispose && !dispose.disposed) {
+          dispose.dispose();
+        }
+      },
+      send: (message: string) => {
+        this.sendText(sessionId, message);
+      },
+      readyState: 1,
+    };
   }
 
-  async resize() {
+  async attach(sessionId: string, term: Terminal, _: boolean, __: string, attachMethod: (s: WebSocket) => void, options = {}) {
+    const handler = this._createCustomWebSocket(sessionId);
+    const info = await this.service.create(sessionId, term.rows, term.cols, options);
+    this._info.set(sessionId, info);
+    attachMethod(handler as any);
+  }
 
+  private _sendMessage(sessionId: string, json: any, requestId?: number) {
+    const id = requestId || NodePtyTerminalService.countId++;
+
+    this.service.onMessage(sessionId, JSON.stringify({
+      id,
+      ...json,
+    }));
+  }
+
+  async sendText(sessionId: string, message: string) {
+    this._sendMessage(sessionId, {
+      data: message,
+    });
+  }
+
+  async resize(sessionId: string, cols: number, rows: number) {
+    this._sendMessage(sessionId, {
+      method: 'resize',
+      params: { cols, rows },
+    });
+  }
+
+  async getProcessId(sessionId: string) {
+    return this.service.getProcessId(sessionId);
+  }
+
+  disposeById(sessionId: string) {
+    this.sendText(sessionId, '\u0004');
+  }
+
+  /**
+   * for pty node
+   *
+   * @param sessionId
+   * @param type
+   * @param message
+   */
+  onMessage(sessionId: string, type: string, message: string) {
+    this._dispatcher.emit(oneStringType(sessionId, type), {
+      data: message,
+    });
   }
 }
-*/
