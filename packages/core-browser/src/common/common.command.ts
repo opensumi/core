@@ -377,4 +377,9 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.reopenClosed',
     category: CATEGORY,
   };
+
+  export const FOCUS: Command = {
+    id: 'editor.focus',
+    category: CATEGORY,
+  };
 }
