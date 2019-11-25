@@ -129,6 +129,7 @@ export interface IDynamicModelDecorationProperty extends IDisposable {
 
 export interface IThemedCssStyle extends IDisposable {
   className?: string;
+  inlineClassName?: string;
   afterContentClassName?: string;
   beforeContentClassName?: string;
   overviewRulerColor?: string | IThemeColor;
