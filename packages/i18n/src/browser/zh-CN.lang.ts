@@ -41,6 +41,8 @@ export const localizationBundle = {
     'file.empty.defaultTitle': '无打开的文件夹',
     'file.empty.defaultMessage': '尚未打开文件夹',
     'file.empty.openFolder': '打开文件夹',
+    'file.collapse': '全部折叠',
+    'file.refresh': '刷新',
 
     'menu-bar.title.file': '文件',
     'menu-bar.title.edit': '编辑',

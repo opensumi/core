@@ -7,12 +7,6 @@ import { useInjectable, ViewUiStateManager } from '@ali/ide-core-browser';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 
-export interface IExplorerAction {
-  iconClass: string;
-  action: () => void;
-  title: string;
-}
-
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // panel 头部标题
   header: string;
@@ -29,8 +23,6 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
     width: number;
     height: number;
   };
-  // 工具栏
-  actions?: IExplorerAction[];
   headerSize?: number;
   viewId: string;
   alignment?: Layout.alignment;
@@ -50,7 +42,6 @@ export const AccordionSection = (
     children,
     expanded,
     onResize,
-    actions,
     size,
     headerSize,
     viewId,
@@ -98,23 +89,6 @@ export const AccordionSection = (
     }
   }, [size]);
 
-  const getActionItem = (actions: IExplorerAction[]) => {
-    return actions.map((action: IExplorerAction, index: number) => {
-      return <a key={index} title={action.title} className={cls(styles.kt_panel_toolbar_item, styles[action.iconClass] || action.iconClass)} onClick={action.action}></a>;
-    });
-  };
-
-  const getActionToolBar = (actions: IExplorerAction[] | undefined) => {
-    if (actions && actions.length > 0) {
-      return <div className={styles.kt_panel_toolbar}>
-        <div className={styles.kt_panel_toolbar_container}>
-          { getActionItem(actions) }
-        </div>
-      </div>;
-    }
-    return null;
-  };
-
   const headerFocusHandler = () => {
     setHeaderFocused(true);
   };
@@ -142,13 +116,12 @@ export const AccordionSection = (
           <i className={cls(getIcon('right'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
           <h1 className={styles.section_label}>{header}</h1>
         </div>
-        <div className={styles.actions_wrap}>
+        {expanded && <div className={styles.actions_wrap}>
           <InlineActionBar
             menus={titleMenu}
             seperator='navigation' />
-        </div>
+        </div>}
       </div>}
-      { getActionToolBar(actions) }
       <div
         className={ styles.kt_split_panel_body }
         style={ bodyStyle }

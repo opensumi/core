@@ -285,6 +285,7 @@ export class ToolbarRegistry {
       command: item.command,
       when: item.when,
       group: item.group || 'navigation',
+      label: item.label,
     });
   }
 }
@@ -305,6 +306,8 @@ export interface TabBarToolbarItem {
   readonly group?: string;
 
   readonly tooltip?: string;
+
+  readonly label?: string;
 
   when?: string;
 

@@ -40,6 +40,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
     registry.registerCommand({
       id: OUTLINE_COLLAPSE_ALL,
       iconClass: getIcon('collapse-all'),
+      label: localize('outline.collapse.all', '全部折叠'),
     }, {
       execute: () => {
         this.outlineService.collapseAll();
@@ -49,6 +50,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
       id: OUTLINE_FOLLOW_CURSOR,
       iconClass: getIcon('follow-cursor'),
       toogleIconClass: getIcon('follow-cursor', { fill: true }),
+      label: localize('outline.follow.cursor', '跟随光标'),
     }, {
       execute: () => {
         this.outlineService.followCursor = !this.outlineService.followCursor;
@@ -59,16 +61,16 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
 
   registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
-      id: 'outline.action.collapse.all',
-      viewId: 'outline-view',
-      command: OUTLINE_COLLAPSE_ALL,
-      tooltip: localize('outline.collapse.all', '全部折叠'),
-    });
-    registry.registerItem({
       id: 'outline.action.follow.cursor',
       viewId: 'outline-view',
       command: OUTLINE_FOLLOW_CURSOR,
       tooltip: localize('outline.follow.cursor', '跟随光标'),
+    });
+    registry.registerItem({
+      id: 'outline.action.collapse.all',
+      viewId: 'outline-view',
+      command: OUTLINE_COLLAPSE_ALL,
+      tooltip: localize('outline.collapse.all', '全部折叠'),
     });
   }
 

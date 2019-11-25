@@ -430,13 +430,8 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
-      id: FILE_COMMANDS.COLLAPSE_ALL.id,
-      command: FILE_COMMANDS.COLLAPSE_ALL.id,
-      viewId: ExplorerResourceViewId,
-    });
-    registry.registerItem({
-      id: FILE_COMMANDS.REFRESH_ALL.id,
-      command: FILE_COMMANDS.REFRESH_ALL.id,
+      id: FILE_COMMANDS.NEW_FILE.id,
+      command: FILE_COMMANDS.NEW_FILE.id,
       viewId: ExplorerResourceViewId,
     });
     registry.registerItem({
@@ -445,8 +440,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       viewId: ExplorerResourceViewId,
     });
     registry.registerItem({
-      id: FILE_COMMANDS.NEW_FILE.id,
-      command: FILE_COMMANDS.NEW_FILE.id,
+      id: FILE_COMMANDS.COLLAPSE_ALL.id,
+      command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.REFRESH_ALL.id,
+      command: FILE_COMMANDS.REFRESH_ALL.id,
       viewId: ExplorerResourceViewId,
     });
   }
