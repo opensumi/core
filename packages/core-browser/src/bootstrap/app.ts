@@ -456,7 +456,7 @@ export class ClientApp implements IClientApp {
     window.addEventListener('resize', () => {
       // 浏览器resize事件
     });
-    document.addEventListener('keydown', (event: any) => {
+    window.addEventListener('keydown', (event: any) => {
       if (event && event.target!.name !== noKeybidingInputName) {
         this.keybindingService.run(event);
       }

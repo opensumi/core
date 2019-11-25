@@ -392,27 +392,23 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.LOCATION.id,
-      keybinding: 'cmd+shift+e',
-    });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.COPY_FILE.id,
       keybinding: 'ctrlcmd+c',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.PASTE_FILE.id,
       keybinding: 'ctrlcmd+v',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
       keybinding: 'ctrlcmd+x',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
@@ -424,7 +420,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.DELETE_FILE.id,
       keybinding: 'ctrlcmd+backspace',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
   }
 
