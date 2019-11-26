@@ -1,5 +1,5 @@
 import { Command } from '@ali/ide-core-common';
-import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser/lib/style/icon/icon';
+import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser';
 
 export const terminalAdd: Command = {
   id: 'terminal.add',
