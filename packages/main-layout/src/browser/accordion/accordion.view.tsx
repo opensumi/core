@@ -34,7 +34,6 @@ export const AccordionContainer: React.FC<{
         initialProps={view.initialProps}
         isLast={index === views.length - 1}
         titleMenu={titleMenu}
-        minSize={120}
         flex={view.weight || 1}>
         {view.component}
       </AccordionSection>;

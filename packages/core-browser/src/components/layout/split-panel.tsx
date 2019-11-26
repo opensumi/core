@@ -58,7 +58,6 @@ export const SplitPanel: React.FC<{
 
   children.forEach((element, index) => {
     if (index !== 0) {
-      // FIXME window resize支持
       elements.push(
         <ResizeHandle
           onResize={(prev, next) => {
@@ -87,7 +86,10 @@ export const SplitPanel: React.FC<{
             }
           }}
           key={index}
-          style={{[Layout.getSizeProperty(direction)]: ((element.props.flex !== undefined ? element.props.flex : 1) / totalFlexNum * 100) + '%'}}>
+          style={{
+            [Layout.getSizeProperty(direction)]: ((element.props.flex !== undefined ? element.props.flex : 1) / totalFlexNum * 100) + '%',
+            [Layout.getMinSizeProperty(direction)]: element.props.minSize ? element.props.minSize + 'px' : '-1px',
+          }}>
           {element}
         </div>
       </PanelContext.Provider>,
@@ -98,10 +100,17 @@ export const SplitPanel: React.FC<{
     if (rootRef.current) {
       splitPanelService.rootNode = rootRef.current;
     }
-  }, [rootRef.current]);
+  }, []);
 
   return (
-    <div ref={(ele) => rootRef.current = ele!} {...restProps} className={clsx(styles['split-panel'])} style={{flexDirection: Layout.getFlexDirection(direction)}}>
+    <div
+      ref={(ele) => rootRef.current = ele!}
+      {...restProps}
+      className={clsx(styles['split-panel'])}
+      style={
+        {flexDirection: Layout.getFlexDirection(direction)}
+      }
+    >
       {elements}
     </div>
   );

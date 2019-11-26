@@ -1,21 +1,36 @@
 import { ResizeHandleVertical, ResizeHandleHorizontal } from '../resize/resize';
 
-const flexDirectionMap: { [index: string]: { direction: any; size: 'width' | 'height'; } } = {
+const flexDirectionMap: {
+  [index: string]: {
+    direction: any;
+    size: 'width' | 'height';
+    minSize: 'minWidth' | 'minHeight';
+    maxSize: 'maxWidth' | 'maxHeight';
+  },
+} = {
   'left-to-right': {
     direction: 'row',
     size: 'width',
+    minSize: 'minWidth',
+    maxSize: 'maxWidth',
   },
   'right-to-left': {
     direction: 'row-reverse',
     size: 'width',
+    minSize: 'minWidth',
+    maxSize: 'maxWidth',
   },
   'top-to-bottom': {
     direction: 'column',
     size: 'height',
+    minSize: 'minHeight',
+    maxSize: 'maxHeight',
   },
   'bottom-to-top': {
     direction: 'column-reverse',
     size: 'height',
+    minSize: 'minHeight',
+    maxSize: 'maxHeight',
   },
 };
 
@@ -30,6 +45,14 @@ export namespace Layout {
 
   export function getSizeProperty(direction: Layout.direction) {
     return flexDirectionMap[direction].size;
+  }
+
+  export function getMinSizeProperty(direction: Layout.direction) {
+    return flexDirectionMap[direction].minSize;
+  }
+
+  export function getMaxSizeProperty(direction: Layout.direction) {
+    return flexDirectionMap[direction].maxSize;
   }
 
   export function getResizeHandle(direction: Layout.direction) {

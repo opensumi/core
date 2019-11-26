@@ -151,7 +151,7 @@ export class LayoutService extends WithEventBus {
     return activityHandler!;
   }
 
-  colectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent<{}> | undefined): string {
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent<{}> | undefined): string {
     const tabbarService = this.getTabbarService(side);
     tabbarService.registerContainer(options.containerId, {views, options});
     return options.containerId;
