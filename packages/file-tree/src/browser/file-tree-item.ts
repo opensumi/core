@@ -139,7 +139,7 @@ export class Directory extends AbstractFileTreeItem {
         }
       }
     }
-    return false;
+    return [];
   }
 
   replaceChildren(item: Directory | File) {
