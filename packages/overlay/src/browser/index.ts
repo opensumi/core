@@ -6,8 +6,8 @@ import { IDialogService, IMessageService, IWindowDialogService } from '../common
 import { DialogService } from './dialog.service';
 import { MessageService } from './message.service';
 import { BrowserCtxMenuService } from './ctx-menu/ctx-menu.service';
-import { IBrowserCtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { WindowDialogServiceImpl } from './window-dialog.service';
+import { IBrowserCtxMenu } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 
 @Injectable()
 export class OverlayModule extends BrowserModule {
@@ -21,7 +21,7 @@ export class OverlayModule extends BrowserModule {
       useClass: MessageService,
     },
     {
-      token: IBrowserCtxMenuRenderer,
+      token: IBrowserCtxMenu,
       useClass: BrowserCtxMenuService,
     },
     {

@@ -46,3 +46,28 @@ export class RangeFormattingAdapter {
         });
     }
 }
+
+export class FormattingAdapter {
+
+    constructor(
+        private readonly provider: vscode.DocumentFormattingEditProvider,
+        private readonly documents: ExtensionDocumentDataManager,
+    ) { }
+
+    provideDocumentFormattingEdits(resource: URI, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
+        const document = this.documents.getDocumentData(resource.toString());
+        if (!document) {
+            return Promise.reject(new Error(`There are no document for ${resource}`));
+        }
+
+        const doc = document.document;
+
+        // tslint:disable-next-line:no-any
+        return Promise.resolve(this.provider.provideDocumentFormattingEdits(doc, options as any, createToken())).then((value) => {
+            if (Array.isArray(value)) {
+                return value.map(Converter.fromTextEdit);
+            }
+            return undefined;
+        });
+    }
+}

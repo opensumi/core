@@ -1,4 +1,5 @@
 import { isOSX } from '@ali/ide-core-common';
+import { isWindows } from '@ali/ide-core-common/lib/platform';
 
 export type KeySequence = KeyCode[];
 
@@ -256,6 +257,12 @@ export class KeyCode {
         } else {
           schema.ctrl = true;
         }
+      } else if (keyString === SpecialCases.CTRL) {
+        schema.ctrl = true;
+      } else if (keyString === SpecialCases.SHIFT) {
+        schema.shift = true;
+      } else if (keyString === SpecialCases.ALT) {
+        schema.alt = true;
       } else if (Key.isKey(key)) {
         if (Key.isModifier(key.code)) {
           if (key.code === Key.CONTROL_LEFT.code || key.code === Key.CONTROL_RIGHT.code) {
@@ -455,8 +462,11 @@ const SPECIAL_ALIASES: { [index: string]: string } = {
 };
 
 export namespace SpecialCases {
-  export const META = 'meta';
+  export const META = isOSX ? 'meta' : isWindows ? 'win' : 'meta';
   export const MACMETA = '⌘';
+  export const CTRL = isOSX ? '⌃' : 'ctrl';
+  export const ALT = isOSX ? '⌥' : 'alt';
+  export const SHIFT = isOSX ? '⇧' : 'shift';
   export const CTRLCMD = 'ctrlcmd';
 }
 

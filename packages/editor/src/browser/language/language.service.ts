@@ -1,26 +1,79 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { MarkerManager } from './marker-collection';
 import { MonacoDiagnosticCollection } from './diagnostic-collection';
-import { URI, IDisposable, Disposable } from '@ali/ide-core-common';
-import { Diagnostic, Language, WorkspaceSymbolProvider, ILanguageService } from '../../common';
+import { URI, IDisposable, Disposable, MarkerManager, IMarkerData, IRelatedInformation, MarkerSeverity } from '@ali/ide-core-common';
+import { DiagnosticSeverity, DiagnosticRelatedInformation, Diagnostic, Language, WorkspaceSymbolProvider, ILanguageService } from '../../common';
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] };
+
+function reviveSeverity(severity: MarkerSeverity): DiagnosticSeverity {
+  switch (severity) {
+    case MarkerSeverity.Error: return DiagnosticSeverity.Error;
+    case MarkerSeverity.Warning: return DiagnosticSeverity.Warning;
+    case MarkerSeverity.Info: return DiagnosticSeverity.Information;
+    case MarkerSeverity.Hint: return DiagnosticSeverity.Hint;
+  }
+}
+
+function reviveRange(startLine: number, startColumn: number, endLine: number, endColumn: number): any {
+  // note: language server range is 0-based, marker is 1-based, so need to deduct 1 here
+  return {
+    start: {
+      line: startLine - 1,
+      character: startColumn - 1,
+    },
+    end: {
+      line: endLine - 1,
+      character: endColumn - 1,
+    },
+  };
+}
+
+function reviveRelated(related: IRelatedInformation): DiagnosticRelatedInformation {
+  return {
+    message: related.message,
+    location: {
+      uri: related.resource,
+      range: reviveRange(related.startLineNumber, related.startColumn, related.endLineNumber, related.endColumn),
+    },
+  };
+}
+
+function reviveMarker(marker: IMarkerData): Diagnostic {
+  const monacoMarker: Diagnostic = {
+    code: marker.code,
+    severity: reviveSeverity(marker.severity) as any,
+    range: reviveRange(marker.startLineNumber, marker.startColumn, marker.endLineNumber, marker.endColumn),
+    message: marker.message,
+    source: marker.source,
+    relatedInformation: undefined,
+  };
+
+  if (marker.relatedInformation) {
+    monacoMarker.relatedInformation = marker.relatedInformation.map(reviveRelated);
+  }
+
+  return monacoMarker;
+}
 
 @Injectable()
 export class LanguageService implements ILanguageService {
 
   @Autowired()
-  markerManager: MarkerManager<any>;
+  private markerManager: MarkerManager;
 
   protected readonly markers = new Map<string, MonacoDiagnosticCollection>();
 
   readonly workspaceSymbolProviders: WorkspaceSymbolProvider[] = [];
 
   constructor() {
-    for (const uri of this.markerManager.getUris()) {
+    for (const uri of this.markerManager.getResources()) {
       this.updateMarkers(new URI(uri));
     }
-    this.markerManager.onDidChangeMarkers((uri) => this.updateMarkers(uri));
+    this.markerManager.onMarkerChanged((uris) => {
+      if (uris) {
+        uris.forEach((uri) => this.updateMarkers(new URI(uri)));
+      }
+    });
   }
 
   get languages(): Language[] {
@@ -76,10 +129,10 @@ export class LanguageService implements ILanguageService {
   protected updateMarkers(uri: URI): void {
     const uriString = uri.toString();
     const owners = new Map<string, Diagnostic[]>();
-    for (const marker of this.markerManager.findMarkers({ uri })) {
-      const diagnostics = owners.get(marker.owner) || [];
-      diagnostics.push(marker.data);
-      owners.set(marker.owner, diagnostics);
+    for (const marker of this.markerManager.getMarkers({ resource: uri.toString() })) {
+      const diagnostics = owners.get(marker.type) || [];
+      diagnostics.push(reviveMarker(marker));
+      owners.set(marker.type, diagnostics);
     }
     const toClean = new Set<string>(this.markers.keys());
     for (const [owner, diagnostics] of owners) {

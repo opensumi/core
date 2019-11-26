@@ -48,3 +48,4 @@ export interface IWorkspaceEditService {
 }
 
 export class WorkspaceEditDidRenameFileEvent extends BasicEvent<{oldUri: URI, newUri: URI}> {}
+export class WorkspaceEditDidDeleteFileEvent extends BasicEvent<{oldUri: URI}> {}

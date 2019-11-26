@@ -13,21 +13,19 @@ interface ExtensionListProps {
   loading?: boolean;
   empty?: React.ReactNode | string;
   list: RawExtension[];
-  showInstalled?: boolean;
 }
 
 export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   loading = false,
   list,
   empty,
-  showInstalled,
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const corePreferences = useInjectable<CorePreferences>(CorePreferences);
   function openExtensionDetail(extension: RawExtension, isDouble: boolean) {
-    const query = `extensionId=${extension.extensionId}&version=${extension.version}&name=${extension.displayName}&icon=${extension.icon}`;
+    const query = `extensionId=${extension.publisher}.${extension.name}&version=${extension.version}&name=${extension.displayName}&icon=${extension.icon}`;
     // 当打开模式为双击同时预览模式生效时，默认单击为预览
     const options = {
       preview: corePreferences['editor.previewMode'] && !isDouble,
@@ -45,11 +43,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   }
 
   async function install(extension: RawExtension) {
-    const path = await extensionManagerService.installExtension(extension);
-    // 更新插件进程信息
-    await extensionManagerService.onInstallExtension(extension.extensionId, path);
-    // 标记为已安装
-    await extensionManagerService.makeExtensionStatus(true, extension.extensionId, path);
+    await extensionManagerService.installExtension(extension);
   }
 
   return (
@@ -67,7 +61,6 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
           extension={rawExtension}
           select={select}
           install={install}
-          showInstalled={showInstalled}
           />);
         })}
       </PerfectScrollbar>

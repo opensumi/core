@@ -19,6 +19,7 @@ import { ThemeModule } from '@ali/ide-theme/lib/browser';
 
 import { ActivationEventModule } from '@ali/ide-activation-event';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/lib/browser';
+import { OutlineModule } from '@ali/ide-outline/lib/browser';
 import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
 import { UserstorageModule } from '@ali/ide-userstorage/lib/browser';
 import { ToolbarModule } from '@ali/ide-toolbar/lib/browser';
@@ -27,6 +28,8 @@ import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
 import { StorageModule } from '@ali/ide-storage/lib/browser';
 import { SCMModule } from '@ali/ide-scm/lib/browser';
+
+import { MarkersModule } from '@ali/ide-markers/lib/browser';
 
 import { WindowModule } from '@ali/ide-window/lib/browser';
 import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
@@ -41,6 +44,7 @@ import { DecorationModule } from '@ali/ide-decoration/lib/browser';
 import { DebugModule } from '@ali/ide-debug/lib/browser';
 import { VariableModule } from '@ali/ide-variable/lib/browser';
 import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
+import { MonacoEnhanceModule } from '@ali/ide-monaco-enhance/lib/browser/module';
 
 import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
 
@@ -63,6 +67,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     FileSchemeModule,
     OutputModule,
     QuickOpenModule,
+    MarkersModule,
 
     ThemeModule,
     ActivationEventModule,
@@ -70,6 +75,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     ExtensionStorageModule,
     StorageModule,
     OpenedEditorModule,
+    OutlineModule,
     UserstorageModule,
     PreferencesModule,
     ToolbarModule,
@@ -88,4 +94,5 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     KaitianExtensionModule,
     // FeatureExtensionModule,
     ExtensionManagerModule,
+    MonacoEnhanceModule,
 ];

@@ -1,19 +1,11 @@
 import { Injectable, Autowired, Optional } from '@ali/common-di';
-import { Event, Emitter } from '@ali/ide-core-common/lib/event';
-import { IDisposable, dispose, Disposable } from '@ali/ide-core-common/lib/disposable';
-import { equals } from '@ali/ide-core-common/lib/utils/arrays';
+import { IDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { MenuId, MenuNode } from '@ali/ide-core-browser/lib/menu/next/base';
-import { MenuService, IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
-import { splitMenuItems, TupleMenuNodeResult } from '@ali/ide-core-browser/lib/menu/next/menu-util';
+import { AbstractMenuService, IMenu, MenuId, MenuNode, TupleMenuNodeResult, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMProvider, ISCMResource, ISCMResourceGroup } from '../common';
 import { getSCMResourceContextKey } from './scm-util';
-
-function actionEquals(a: MenuNode, b: MenuNode): boolean {
-  return a.id === b.id;
-}
 
 interface ISCMResourceGroupMenuEntry extends IDisposable {
   readonly group: ISCMResourceGroup;
@@ -33,8 +25,8 @@ export class SCMMenus implements IDisposable {
 
   private readonly disposables: IDisposable[] = [];
 
-  @Autowired(MenuService)
-  private readonly menuService: MenuService;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
@@ -87,8 +79,10 @@ export class SCMMenus implements IDisposable {
     contextKeyService.createKey('scmResourceGroup', getSCMResourceContextKey(resource));
 
     const menu = this.menuService.createMenu(menuId, contextKeyService);
-    const groups = menu.getMenuNodes();
-    const result = splitMenuItems(groups, 'inline');
+    const result = generateCtxMenu({
+      menus: menu,
+      separator: 'inline',
+    });
 
     menu.dispose();
     contextKeyService.dispose();

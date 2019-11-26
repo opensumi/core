@@ -31,7 +31,7 @@ import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, Pr
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorGroupSplitAction } from '@ali/ide-editor';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { SearchPreferences } from './search-preferences';
 
 export const quickFileOpen: Command = {
@@ -154,7 +154,7 @@ export class FileSearchQuickCommandHandler {
         const alreadyCollected = new Set<string>();
         let findResults: QuickOpenGroupItem[] = [];
 
-        lookFor = lookFor.trim();
+        lookFor = lookFor = lookFor.trim().replace(/\s/g, '');
         this.currentLookFor = lookFor;
         const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, lookFor, token);
 
@@ -172,8 +172,12 @@ export class FileSearchQuickCommandHandler {
       fuzzyMatchLabel: {
         enableSeparateSubstringMatching: true,
       },
+      showItemsWithoutHighlight: true,
       fuzzyMatchDescription: {
         enableSeparateSubstringMatching: true,
+      },
+      onClose: () => {
+        this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
       },
     };
   }

@@ -35,7 +35,11 @@ function registerLocalStorageProvider(key: string) {
   registerExternalPreferenceProvider<string>(key, {
     set: (value, scope) => {
       if ((global as any).localStorage) {
-        localStorage.setItem(scope + `:${key}`, value);
+        if (value !== undefined) {
+          localStorage.setItem(scope + `:${key}`, value);
+        } else {
+          localStorage.removeItem(scope + `:${key}`);
+        }
       }
     },
     get: (scope) => {

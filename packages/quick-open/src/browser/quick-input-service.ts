@@ -5,8 +5,6 @@ import { Deferred, MessageType, localize } from '@ali/ide-core-common';
 @Injectable()
 export class QuickInputService implements IQuickInputService {
 
-  static defaultPrompt: string = localize('quickopen.quickinput.prompt');
-
   @Autowired(QuickOpenService)
   protected readonly quickOpenService: QuickOpenService;
 
@@ -53,7 +51,8 @@ export class QuickInputService implements IQuickInputService {
   }
 
   protected createPrompt(prompt?: string): string {
-    return prompt ? `${prompt} (${QuickInputService.defaultPrompt})` : QuickInputService.defaultPrompt;
+    const defaultPrompt = localize('quickopen.quickinput.prompt');
+    return prompt ? `${prompt} (${defaultPrompt})` : defaultPrompt;
   }
 
 }

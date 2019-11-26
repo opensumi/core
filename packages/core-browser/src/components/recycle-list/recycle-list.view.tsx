@@ -9,9 +9,13 @@ export interface RecycleListProp extends React.PropsWithChildren<any> {
    */
   template: any;
   /**
-   * 容器样式
+   * 容器样式名
    */
   className?: string;
+  /**
+   * 容器样式
+   */
+  style?: React.CSSProperties;
   /**
    * 渲染的列表数据
    */
@@ -55,11 +59,16 @@ export interface RecycleListProp extends React.PropsWithChildren<any> {
    * 加载事件函数
    */
   onLoad?: any;
+  /**
+   * 是否在数据更新时滚动到底部
+   */
+  scrollBottomIfActive?: boolean;
 }
 
 export const RecycleList = ({
   template,
   className = '',
+  style,
   data,
   keyProp = 'id',
   placeholders = {},
@@ -69,6 +78,7 @@ export const RecycleList = ({
   sliceThreshold = 30,
   header = [],
   headerClass = '',
+  scrollBottomIfActive = false,
   onLoad = () => { },
 }: RecycleListProp) => {
 
@@ -92,6 +102,7 @@ export const RecycleList = ({
       template={template}
       getContainer={getContainer}
       className={className}
+      style={style}
       data={data}
       keyProp={keyProp}
       placeholders={placeholders}
@@ -100,6 +111,7 @@ export const RecycleList = ({
       sliceSize={sliceSize}
       sliceThreshold={sliceThreshold}
       onLoad={onLoad}
+      scrollBottomIfActive={scrollBottomIfActive}
     />
   </div>;
 };

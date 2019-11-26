@@ -4,12 +4,12 @@ import { useInjectable, IContextKeyService, IContextKey, useDisposable } from '@
 import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { CommandService, DisposableStore, Event } from '@ali/ide-core-common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { CtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
+import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
 import { ISCMRepository, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { isSCMResource } from '../scm-util';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { SCMMenus } from '../scm-menu';
@@ -26,7 +26,7 @@ export const SCMResouceList: React.FC<{
 }> = observer(({ width, height, repository }) => {
   const commandService = useInjectable<CommandService>(CommandService);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
-  const ctxMenuRenderer = useInjectable<CtxMenuRenderer>(CtxMenuRenderer);
+  const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
 
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
@@ -124,7 +124,7 @@ export const SCMResouceList: React.FC<{
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes: ctxmenuActions,
-      context: isSCMResource(item) ? file.resourceState : repository.provider.toJSON(),
+      context: [ isSCMResource(item) ? file.resourceState : repository.provider.toJSON() ],
     });
   }, []);
 

@@ -2,17 +2,16 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
 import { useInjectable } from '@ali/ide-core-browser';
-import { IBrowserCtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
+import { IBrowserCtxMenu } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { SeparatorMenuItemNode } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuNode } from '@ali/ide-core-browser/lib/menu/next/base';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
+import placements from '@ali/ide-core-browser/lib/components/actions/placements';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
 import 'react-ctxmenu-trigger/assets/index.css';
 
-import placements from './placements';
-
 export const CtxMenu = observer(() => {
-  const ctxMenuService = useInjectable<IBrowserCtxMenuRenderer>(IBrowserCtxMenuRenderer);
+  const ctxMenuService = useInjectable<IBrowserCtxMenu>(IBrowserCtxMenu);
 
   const handleClick = React.useCallback((item: MenuNode) => {
     // do nothing when click separator node
@@ -26,7 +25,7 @@ export const CtxMenu = observer(() => {
   // todo: 缓存上一次点击 visible 完成 toggle 效果
   return (
     <CtxMenuTrigger
-      popupTransitionName='slide-up'
+      // popupTransitionName='slide-up'
       popupPlacement='bottomLeft'
       popupVisible={ctxMenuService.visible}
       action={['contextMenu']}

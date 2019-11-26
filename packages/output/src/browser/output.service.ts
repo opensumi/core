@@ -3,7 +3,8 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { OnEvent, EventBusImpl, IEventBus } from '@ali/ide-core-common';
 import { getSlotLocation, AppConfig, ResizeEvent } from '@ali/ide-core-browser';
-import { OutputChannel, ContentChangeEvent } from './output.channel';
+import { OutputChannel } from './output.channel';
+import { ContentChangeEvent } from '../common';
 const pkgName = require('../../package.json').name;
 
 @Injectable()

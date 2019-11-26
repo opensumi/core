@@ -1,6 +1,10 @@
-import { registerLocalizationBundle, localize } from "../src/localize";
+import { registerLocalizationBundle, localize, setLanguageId } from "../src/localize";
 
 describe('localize test', () => {
+
+  beforeEach(() => {
+    setLanguageId('zh-CN')
+  })
 
   it('localize with registration works', () => {
 

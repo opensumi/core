@@ -7,7 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { DebugToolbarService } from './debug-toolbar.service';
 import { DebugState, DebugSession } from '../debug-session';
 import { isExtensionHostDebugging } from '../debugUtils';
-export const DebubgToolbarView = observer(() => {
+export const DebugToolbarView = observer(() => {
   const {
     state,
     sessionCount,

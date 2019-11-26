@@ -2,7 +2,7 @@ import * as React from 'react';
 import clx from 'classnames';
 
 import * as styles from './styles.module.less';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 
 const Icon: React.FC<{
   title?: string;

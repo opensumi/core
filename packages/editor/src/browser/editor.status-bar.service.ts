@@ -77,7 +77,7 @@ export class EditorStatusBarService extends WithEventBus {
     });
     // TODO 语言的配置能力
     this.statusBar.addElement('editor-status-encoding', {
-      text: encoding,
+      text: encoding.toUpperCase(),
       alignment: StatusBarAlignment.RIGHT,
       priority: 2,
       command: EDITOR_COMMANDS.CHANGE_ENCODING.id,

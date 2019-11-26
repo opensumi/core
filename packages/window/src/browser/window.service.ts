@@ -18,13 +18,13 @@ export class WindowServiceImpl implements IWindowService {
     return newWindow;
   }
 
-  openWorkspace(workspace?: URI, options: IOpenWorkspaceOption = {}): void {
+  openWorkspace(workspace: URI, options: IOpenWorkspaceOption = {}): void {
     if (isElectronRenderer()) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       if (options.newWindow) {
-        electronMainLifecycle.openWorkspace(workspace ? workspace.toString() : undefined);
+        electronMainLifecycle.openWorkspace(workspace.toString(), { windowId: electronEnv.currentWindowId });
       } else {
-        electronMainLifecycle.openWorkspace(workspace ? workspace.toString() : undefined, electronEnv.currentWindowId);
+        electronMainLifecycle.openWorkspace(workspace.toString(), { windowId: electronEnv.currentWindowId, replace: true });
       }
     } else {
       throw new Error('Method not implemented.');

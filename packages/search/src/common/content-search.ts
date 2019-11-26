@@ -1,5 +1,6 @@
-import { endsWith, startsWith, URI } from '@ali/ide-core-common';
+import { endsWith, startsWith, Command, URI, isUndefined } from '@ali/ide-core-common';
 import { TreeNode, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
+import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 
@@ -144,8 +145,8 @@ export interface ResultTotal {
 /**
  * 辅助搜索，补全通配符
  */
-export function anchorGlob(glob: string): string {
-  const pre = '**/';
+export function anchorGlob(glob: string, isApplyPre?: boolean): string {
+  const pre = isApplyPre === false ? '' : '**/';
 
   if (startsWith(glob, './')) {
     // 相对路径转换
@@ -159,7 +160,10 @@ export function anchorGlob(glob: string): string {
     // 不包含 Glob 特殊字符的普通目录
     return `${pre}${glob}/**`;
   }
-  return `${pre}${glob}`;
+  if (!startsWith(glob, pre)) {
+    return `${pre}${glob}`;
+  }
+  return glob;
 }
 
 export function getRoot(rootUris ?: string[], uri ?: string): string {
@@ -183,12 +187,9 @@ export namespace SearchBindingContextIds {
   export const searchInputFocus = 'searchInputFocus';
 }
 
-export const SEARCH_CONTEXT_MENU = 'search-context-menu-path';
-
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
   badge?: number;
-  highLightRange?: TreeNodeHighlightRange;
   searchResult?: ContentSearchResult;
   [key: string]: any;
 }
@@ -230,6 +231,67 @@ export function cutShortSearchResult(insertResult: ContentSearchResult): Content
     );
     delete result.lineText;
     result.renderStart = matchStart - start;
+    return result;
+  }
+}
+
+export interface OpenSearchCmdOptions {
+  includeValue: string;
+}
+
+export const openSearchCmd: Command = {
+  id: 'content-search.openSearch',
+  category: 'search',
+  label: 'Open search sidebar',
+};
+
+/**
+ * 用于排除 通过贪婪匹配后的，相对路径的glob 匹配到的所有路径的结果
+ */
+export class FilterFileWithGlobRelativePath {
+  private matcherList: {relative: ParsedPattern, absolute: ParsedPattern}[] = [];
+
+  constructor(roots: string[],  globs: string[]) {
+    if (roots.length < 1 || globs.length < 1) {
+      return;
+    }
+
+    roots.forEach((root) => {
+      const rootUri = new URI(root);
+
+      globs.forEach((glob) => {
+        if (startsWith(glob, './')) {
+          // 处理相对路径
+          const relative = parse(anchorGlob(glob));
+          glob = glob.slice(2, glob.length);
+          const uriWithExclude = rootUri.resolve(anchorGlob(glob, false)).withoutScheme();
+          this.matcherList.push({
+            relative,
+            absolute: parse(uriWithExclude.toString(true)),
+          });
+        }
+      });
+    });
+  }
+
+  test(uriString: string) {
+    let result = true;
+
+    if (this.matcherList.length < 1) {
+      return result;
+    }
+    const uri = new URI(uriString).withoutScheme().toString(true);
+
+    this.matcherList.some((matchers) => {
+      if (!matchers.relative(uri)) {
+        return;
+      } else {
+        result = false;
+      }
+      result = matchers.absolute(uri);
+      return result;
+    });
+
     return result;
   }
 }

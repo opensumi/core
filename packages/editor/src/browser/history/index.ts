@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IPosition, URI, WithEventBus, OnEvent } from '@ali/ide-core-browser';
-import { EditorSelectionChangeEvent, EditorGroupChangeEvent } from '../types';
+import { EditorSelectionChangeEvent, EditorGroupChangeEvent, EditorGroupCloseEvent } from '../types';
 import { WorkbenchEditorService } from '../../common';
 
 const HistoryPositionLineThreshold = 7;
@@ -14,6 +14,8 @@ export class EditorHistoryService extends WithEventBus {
 
   private stack: EditorHistoryState[] = [];
 
+  private closedStack: URI[] = [];
+
   start() {
     // do nothing
   }
@@ -24,7 +26,7 @@ export class EditorHistoryService extends WithEventBus {
   @OnEvent(EditorSelectionChangeEvent)
   onEditorSelectionChangeEvent(e: EditorSelectionChangeEvent) {
     if (e.payload.selections[0]) {
-      this.onNewState(new EditorHistoryState(e.payload.resource.uri, {
+      this.onNewState(new EditorHistoryState(e.payload.editorUri, {
         lineNumber: e.payload.selections[0]!.selectionStartLineNumber,
         column: e.payload.selections[0]!.selectionStartColumn,
       }, e.payload.group.index));
@@ -44,8 +46,12 @@ export class EditorHistoryService extends WithEventBus {
     }
   }
 
+  @OnEvent(EditorGroupCloseEvent)
+  onEditorGroupCloseEvent(e: EditorGroupCloseEvent) {
+    this.pushClosed(e.payload.resource.uri);
+  }
+
   onNewState(state: EditorHistoryState) {
-    console.log(this.currentState, state);
     if (this.currentState) {
       if (this.currentState.isRelevant(state)) {
         return;
@@ -96,6 +102,24 @@ export class EditorHistoryService extends WithEventBus {
       focus: true,
     });
   }
+
+  pushClosed(uri: URI) {
+    this.closedStack.push(uri);
+    if (this.closedStack.length > HardMaxStateLength) {
+      this.closedStack.splice(0, this.closedStack.length - SoftMaxStateLength);
+    }
+  }
+
+  popClosed() {
+    const uri = this.closedStack.pop();
+    if (uri) {
+      this.editorService.open(uri, {
+        focus: true,
+      });
+      this.closedStack = this.closedStack.filter((u) => !uri.isEqual(u));
+    }
+  }
+
 }
 
 export class EditorHistoryState {

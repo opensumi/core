@@ -64,7 +64,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
 
   @Autowired(PreferenceContribution)
   protected readonly preferenceContributions: ContributionProvider<PreferenceContribution>;
-  protected validateFunction: Ajv.ValidateFunction;
+  private _validateFunction: Ajv.ValidateFunction | undefined;
 
   @Autowired(PreferenceConfigurations)
   protected readonly configurations: PreferenceConfigurations;
@@ -77,6 +77,13 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
 
   protected fireDidPreferenceSchemaChanged(): void {
     this.onDidPreferenceSchemaChangedEmitter.fire(undefined);
+  }
+
+  protected get validateFunction(): Ajv.ValidateFunction {
+    if (!this._validateFunction) {
+      this.doUpdateValidate();
+    }
+    return this._validateFunction!;
   }
 
   constructor() {
@@ -215,6 +222,10 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   protected updateValidate(): void {
+    this._validateFunction = undefined;
+  }
+
+  private doUpdateValidate(): void {
     const schema = {
       ...this.combinedSchema,
       properties: {
@@ -224,7 +235,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     for (const sectionName of this.configurations.getSectionNames()) {
       delete schema.properties[sectionName];
     }
-    this.validateFunction = new Ajv().compile(schema);
+    this._validateFunction = new Ajv().compile(schema);
   }
 
   protected readonly unsupportedPreferences = new Set<string>();

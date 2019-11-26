@@ -79,13 +79,13 @@ describe('template test', () => {
 
   describe('download extension', () => {
     it('download a extension', async (done) => {
-      const extensionId = uuid();
-      const { path: extensionPath } = await createExtension(extensionId);
+      const { extensionId, name, publisher, path: extensionPath } = await createExtension();
       await service.installExtension({
         extensionId,
-        name: '',
+        name,
         path: '',
         version: '',
+        publisher,
       });
       // 文件成功下载
       expect(await fs.pathExists(path.join(extensionPath, 'package.json')));
@@ -96,11 +96,10 @@ describe('template test', () => {
   describe('uninstall extension', () => {
     it('uninstall a extension', async (done) => {
       // 先下载一个插件
-      const extensionId = uuid();
-      const version = '1.0.0';
-      const extension = await createExtension(extensionId, version);
+      const extension = await createExtension();
+      const { path: extensionPath } = extension;
       await service.installExtension(extension);
-      const packageFile = path.join(extension.path, 'package.json');
+      const packageFile = path.join(extensionPath, 'package.json');
       // 文件应该存在
       expect(await fs.pathExists(packageFile));
       const res = await service.uninstallExtension(extension);
@@ -118,6 +117,7 @@ describe('template test', () => {
         version: '',
         path: '',
         name: '',
+        publisher: '',
       });
       // 结果返回 false
       expect(!res);
@@ -150,10 +150,10 @@ describe('template test', () => {
    * @param version 插件版本
    * @return 插件名称
    */
-  async function createExtension(extensionId = uuid(), version = '0.0.1'): Promise<BaseExtension> {
+  async function createExtension(publisher = uuid(), name = uuid(), version = '0.0.1'): Promise<BaseExtension> {
     await fs.mkdirp(extensionDir);
-    const extensionName = uuid();
-    const extensionDirName = `${extensionId}-${extensionName}-${version}`;
+    const extensionId = `${publisher}.${name}`;
+    const extensionDirName = `${extensionId}-${version}`;
     // mock 请求方法
     injector.mock(IExtensionManagerRequester, 'request', () => ({
       headers: {
@@ -163,7 +163,8 @@ describe('template test', () => {
     }));
     return {
       extensionId,
-      name: extensionName,
+      name,
+      publisher,
       version,
       path: path.join(extensionDir, extensionDirName),
     };

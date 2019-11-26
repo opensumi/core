@@ -1,13 +1,15 @@
 import { Autowired } from '@ali/common-di';
-import { Domain, URI } from '@ali/ide-core-node';
 import { IWorkspaceService } from '../common';
-import { VariableContribution, VariableRegistry } from '@ali/ide-core-browser';
+import { VariableContribution, VariableRegistry, Domain, URI, IContextKeyService } from '@ali/ide-core-browser';
 
 @Domain(VariableContribution)
 export class WorkspaceVariableContribution implements VariableContribution {
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
+
+  @Autowired(IContextKeyService)
+  protected readonly contextKeyService: IContextKeyService;
 
   registerVariables(variables: VariableRegistry): void {
     variables.registerVariable({
@@ -97,7 +99,7 @@ export class WorkspaceVariableContribution implements VariableContribution {
   }
 
   getResourceUri(): URI | undefined {
-    return;
+    return new URI(this.contextKeyService.getContextValue('resource'));
   }
 
   getWorkspaceRelativePath(uri: URI): string | undefined {

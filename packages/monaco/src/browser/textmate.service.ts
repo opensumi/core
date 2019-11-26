@@ -1,13 +1,12 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, isElectronEnv } from '@ali/ide-core-browser';
+import { WithEventBus, isElectronEnv, parseWithComments } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
 import { getNodeRequire } from './monaco-loader';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
-import * as JSON5 from 'json5';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { ActivationEventService } from '@ali/ide-activation-event';
@@ -108,7 +107,7 @@ export class TextmateService extends WithEventBus {
   private safeParseJSON(content) {
     let json;
     try {
-      json = JSON5.parse(content);
+      json = parseWithComments(content);
       return json;
     } catch (error) {
       return console.error('语言配置文件解析出错！', content);
@@ -148,7 +147,6 @@ export class TextmateService extends WithEventBus {
     };
   }
 
-  // getEncodedLanguageId是用来干啥的？
   private convertEmbeddedLanguages(languages?: ScopeMap): IEmbeddedLanguagesMap | undefined {
     if (typeof languages === 'undefined' || languages === null) {
       return undefined;
@@ -162,6 +160,10 @@ export class TextmateService extends WithEventBus {
       const scope = scopes[i];
       const langId = languages[scope];
       result[scope] = getEncodedLanguageId(langId);
+      // TODO 后置到 tokenize 使用到对应的 scope 时激活（vscode逻辑），现在先激活一个 language 时激活所有 embed language
+      if (!this.activatedLanguage.has(langId)) {
+        this.activateLanguage(langId);
+      }
     }
     return result;
   }
@@ -392,10 +394,10 @@ export class TextmateService extends WithEventBus {
     });
     if (grammar.language) {
       this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName);
-      this.textmateRegistry.registerGrammarConfiguration(grammar.language, {
+      this.textmateRegistry.registerGrammarConfiguration(grammar.language, () => ({
         embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
         tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
-      });
+      }));
     }
   }
 
@@ -413,7 +415,7 @@ export class TextmateService extends WithEventBus {
       return;
     }
 
-    const configuration = this.textmateRegistry.getGrammarConfiguration(languageId);
+    const configuration = this.textmateRegistry.getGrammarConfiguration(languageId)();
     const initialLanguage = getEncodedLanguageId(languageId);
 
     try {

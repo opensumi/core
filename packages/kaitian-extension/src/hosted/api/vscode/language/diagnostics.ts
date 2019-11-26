@@ -1,12 +1,8 @@
 import * as vscode from 'vscode';
-import { Emitter, Event } from '@ali/ide-core-common';
+import { Emitter, Event, IMarkerData, MarkerSeverity } from '@ali/ide-core-common';
 import { IMainThreadLanguages } from '../../../../common/vscode';
 import {
-  MarkerData,
-} from '../../../../common/vscode/model.api';
-import {
   DiagnosticSeverity,
-  MarkerSeverity,
   Uri as URI,
 } from '../../../../common/vscode/ext-types';
 import { convertDiagnosticToMarkerData } from '../../../../common/vscode/converter';
@@ -194,10 +190,10 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
   }
 
   private sendChangesToEditor(uris: URI[]): void {
-    const markers: [string, MarkerData[]][] = [];
+    const markers: [string, IMarkerData[]][] = [];
     nextUri:
     for (const uri of uris) {
-      const uriMarkers: MarkerData[] = [];
+      const uriMarkers: IMarkerData[] = [];
       const uriDiagnostics = this.diagnostics.get(uri.toString());
       if (uriDiagnostics) {
         if (uriDiagnostics.length > this.diagnosticsLimitPerResource) {

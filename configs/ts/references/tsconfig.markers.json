@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/markers/src",
+    "outDir": "../../../packages/markers/lib"
+  },
+  "include": [
+    "../../../packages/markers/src"
+  ]
+}

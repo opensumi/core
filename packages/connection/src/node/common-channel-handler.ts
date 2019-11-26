@@ -161,8 +161,6 @@ export class CommonChannelHandler extends WebSocketHandler {
             */
 
             this.connectionMap.set(clientId, connection);
-            console.log('connectionMap', this.connectionMap.keys());
-
             this.hearbeat(connectionId, connection);
           // channel 消息处理
           } else if (msgObj.kind === 'open') {
@@ -221,7 +219,7 @@ export class CommonChannelHandler extends WebSocketHandler {
           clearTimeout(this.heartbeatMap.get(connectionId) as NodeJS.Timeout);
           this.heartbeatMap.delete(connectionId);
 
-          console.log(`clear heartbeat ${connectionId}`);
+          this.logger.verbose(`clear heartbeat ${connectionId}`);
         }
 
         Array.from(this.channelMap.values())
@@ -231,7 +229,7 @@ export class CommonChannelHandler extends WebSocketHandler {
         .forEach((channel) => {
           channel.close(1, 'close');
           this.channelMap.delete(channel.id);
-          console.log(`remove channel ${channel.id}`);
+          this.logger.verbose(`remove channel ${channel.id}`);
         });
 
       });

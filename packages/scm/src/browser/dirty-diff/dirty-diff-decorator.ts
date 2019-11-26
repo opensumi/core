@@ -1,7 +1,8 @@
 import { IEditorDecorationCollectionService } from '@ali/ide-editor/lib/browser';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
-import { IChange, WorkbenchEditorService, OverviewRulerLane } from '@ali/ide-editor';
+import { WorkbenchEditorService, OverviewRulerLane } from '@ali/ide-editor';
 import { PreferenceService } from '@ali/ide-core-browser';
+import { IChange } from '@ali/ide-core-common';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { themeColorFromId } from '@ali/ide-theme';
 

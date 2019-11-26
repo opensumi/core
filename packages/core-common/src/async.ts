@@ -1,6 +1,7 @@
 import { CancellationToken } from './cancellation';
 import { IDisposable } from './disposable';
 import { canceled } from './errors';
+import { getLogger } from './log';
 
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
@@ -159,6 +160,9 @@ export class Delayer<T> implements IDisposable {
         this.task = null;
 
         return task();
+      }).catch(err => {
+        // 捕获 delayer cancel reject 掉的 promise
+        getLogger().verbose('delayer cancelled:', err);
       });
     }
 

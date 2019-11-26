@@ -31,6 +31,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
         enabled: true,
       },
       model: null,
+      wordBasedSuggestions: false,
       automaticLayout: true,
       renderLineHighlight: 'none',
       ...options,
@@ -48,6 +49,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       lightbulb: {
         enabled: true,
       },
+      wordBasedSuggestions: false,
       automaticLayout: true,
       renderLineHighlight: 'none',
       ignoreTrimWhitespace: false,

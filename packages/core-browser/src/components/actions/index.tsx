@@ -1,30 +1,48 @@
 import * as React from 'react';
-import { Dropdown, Menu } from 'antd';
+import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
-import { ClickParam } from 'antd/lib/menu';
+import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
-import 'antd/lib/dropdown/style/index.less';
 
-import { MenuNode } from '../../menu/next/base';
-import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
+import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator, SubmenuItemNode } from '../../menu/next';
 import Icon from '../icon';
+import { getIcon } from '../../style/icon/icon';
+import { useInjectable } from '../../react-hooks';
+import { useMenus } from '../../utils';
+
+import placements from './placements';
 
 import * as styles from './styles.module.less';
-import { getIcon } from '../../icon';
 
 const MenuAction: React.FC<{
   data: MenuNode;
-}> = ({ data }) => {
+  hasSubmenu?: boolean;
+}> = ({ data, hasSubmenu }) => {
+  // 这里遵循 native menu 的原则，保留一个 icon 位置
   return (
     <>
       <div className={styles.icon}>
-        { data.icon && <Icon iconClass={data.icon} /> }
+        {
+          data.checked
+           ? <Icon icon='check' />
+           : null
+        }
       </div>
-      {data.label}
-      <div className={styles.shortcut}>{data.shortcut}</div>
-      <div className={styles.submenuIcon}>
-        {/* need a arrow right here */}
+      <div className={styles.label}>
+        {data.label ? mnemonicButtonLabel(data.label, true) : ''}
       </div>
+      {
+        data.keybinding
+          ? <div className={styles.shortcut}>{data.keybinding}</div>
+          : null
+      }
+      {
+        hasSubmenu && (
+          <div className={styles.submenuIcon}>
+            <Icon iconClass={getIcon('right')} />
+          </div>
+        )
+      }
     </>
   );
 };
@@ -35,48 +53,75 @@ const MenuAction: React.FC<{
 export const MenuActionList: React.FC<{
   data: MenuNode[];
   onClick?: (item: MenuNode) => void;
-  context?: any;
-}> = ({ data = [], context, onClick }) => {
-  const handleClick = React.useCallback(({ key }: ClickParam) => {
+  context?: any[];
+}> = ({ data = [], context = [], onClick }) => {
+  if (!data.length) {
+    return null;
+  }
+
+  const handleClick = React.useCallback((params: ClickParam) => {
+    const { key, item } = params;
     // do nothing when click separator node
-    if (key === SeparatorMenuItemNode.ID) {
+    if ([SeparatorMenuItemNode.ID, SubmenuItemNode.ID].includes(key)) {
       return;
     }
 
-    const menuItem = data.find((n) => n.id === key);
-    if (menuItem && menuItem.execute) {
+    // hacky: read MenuNode from MenuItem.children.props
+    const menuItem = item.props.children.props.data as MenuNode;
+    if (!menuItem) {
+      return;
+    }
+
+    if (typeof menuItem.execute === 'function') {
       menuItem.execute(context);
-      if (typeof onClick === 'function') {
-        onClick(menuItem);
-      }
+    }
+
+    if (typeof onClick === 'function') {
+      onClick(menuItem);
     }
   }, [ data, context ]);
 
+  const recursiveRender = React.useCallback((dataSource: MenuNode[]) => {
+    return dataSource.map((menuNode, index) => {
+      if (menuNode.id === SeparatorMenuItemNode.ID) {
+        return <Menu.Divider key={`divider-${index}`} />;
+      }
+
+      if (menuNode.id === SubmenuItemNode.ID) {
+        return (
+          <Menu.SubMenu
+            key={`${menuNode.id}-${index}`}
+            popupClassName='kt-menu'
+            title={<MenuAction hasSubmenu data={menuNode} />}>
+            {recursiveRender(menuNode.children)}
+          </Menu.SubMenu>
+        );
+      }
+
+      return (
+        <Menu.Item key={menuNode.id} disabled={menuNode.disabled}>
+          <MenuAction data={menuNode} />
+        </Menu.Item>
+      );
+    });
+  }, []);
+
   return (
     <Menu
-      mode='inline'
+      className='kt-menu'
       selectable={false}
+      openTransitionName=''
+      {...{builtinPlacements: placements} as any}
       onClick={handleClick}>
-      {
-        data.map((menuNode, index) => {
-          if (menuNode.id === SeparatorMenuItemNode.ID) {
-            return <Menu.Divider key={`divider-${index}`} />;
-          }
-          return (
-            <Menu.Item key={menuNode.id}>
-              <MenuAction key={menuNode.id} data={menuNode} />
-            </Menu.Item>
-          );
-        })
-      }
+      {recursiveRender(data)}
     </Menu>
   );
 };
 
 const IconAction: React.FC<{
   data: MenuNode;
-  context?: any;
-} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context, ...restProps }) => {
+  context?: any[];
+} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context = [], ...restProps }) => {
   const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -98,11 +143,24 @@ const IconAction: React.FC<{
 /**
  * 用于 scm/title or view/title or inline actions
  */
-export const TitleActionList: React.FC<{
+const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
-  context?: any;
-}> = ({ nav: primary = [], more: secondary = [], context }) => {
+  context?: any[];
+}> = ({ nav: primary = [], more: secondary = [], context = [] }) => {
+  const ctxMenuRenderer = useInjectable(ICtxMenuRenderer);
+
+  const handleShowMore = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
+    if (secondary) {
+      ctxMenuRenderer.show({
+        anchor: { x: e.clientX, y: e.clientY },
+        // 合并结果
+        menuNodes: secondary,
+        context,
+      });
+    }
+  }, [ secondary, context ]);
+
   return (
     <div className={styles.titleActions}>
       {
@@ -116,13 +174,54 @@ export const TitleActionList: React.FC<{
       }
       {
         secondary.length > 0
+          ? <span
+            className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`}
+            onClick={handleShowMore} />
+          : null
+      }
+      {/* {
+        secondary.length > 0
           ? <Dropdown
+            transitionName=''
             trigger={['click']}
             overlay={<MenuActionList data={secondary} context={context} />}>
             <span className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`} />
           </Dropdown>
           : null
-      }
+      } */}
     </div>
   );
 };
+
+type TupleContext<T, U, K, M> = (
+  M extends undefined
+  ? K extends undefined
+    ? U extends undefined
+      ? T extends undefined
+        ? undefined
+        : [T]
+      : [T, U]
+    : [T, U, K]
+  : [T, U, K, M]
+);
+
+export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(props: {
+  context?: TupleContext<T, U, K, M>;
+  menus: IMenu;
+  seperator?: MenuSeparator;
+}): React.ReactElement<{
+  context?: TupleContext<T, U, K, M>;
+  menus: IMenu;
+  seperator?: MenuSeparator;
+}> {
+  const { menus, context, seperator } = props;
+  // todo: 从一致性考虑是否这里不用 context 的命名
+  const [navMenu, moreMenu] = useMenus(menus, seperator, context);
+
+  // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
+  return (
+    <TitleActionList
+      nav={navMenu}
+      more={seperator === 'inline' ? [] : moreMenu} />
+  );
+}

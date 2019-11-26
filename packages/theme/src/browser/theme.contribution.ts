@@ -1,6 +1,7 @@
-import { MenuContribution, Domain, MenuModelRegistry, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, SETTINGS_MENU_PATH, replaceLocalizePlaceholder, PreferenceScope } from '@ali/ide-core-browser';
+import { MenuContribution, Domain, MenuModelRegistry, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, replaceLocalizePlaceholder, PreferenceScope } from '@ali/ide-core-browser';
 import { IThemeService, IIconService } from '../common';
 import { Autowired } from '@ali/common-di';
+import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
@@ -12,8 +13,8 @@ export const ICON_THEME_TOGGLE_COMMAND: Command = {
   label: '%theme.icon.toggle%',
 };
 
-@Domain(MenuContribution, CommandContribution)
-export class ThemeContribution implements MenuContribution, CommandContribution {
+@Domain(NextMenuContribution, CommandContribution)
+export class ThemeContribution implements NextMenuContribution, CommandContribution {
 
   @Autowired(IThemeService)
   themeService: IThemeService;
@@ -27,12 +28,14 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
 
-  registerMenus(menus: MenuModelRegistry) {
-    menus.registerMenuAction([...SETTINGS_MENU_PATH, '4_theme'], {
-      commandId: THEME_TOGGLE_COMMAND.id,
+  registerNextMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(MenuId.SettingsIconMenu, {
+      command: THEME_TOGGLE_COMMAND.id,
+      group: '4_theme',
     });
-    menus.registerMenuAction([...SETTINGS_MENU_PATH, '4_theme'], {
-      commandId: ICON_THEME_TOGGLE_COMMAND.id,
+    menus.registerMenuItem(MenuId.SettingsIconMenu, {
+      command: ICON_THEME_TOGGLE_COMMAND.id,
+      group: '4_theme',
     });
   }
 
@@ -44,7 +47,8 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
           label: replaceLocalizePlaceholder(themeInfo.name)!,
           value: themeInfo.themeId,
         }));
-        const themeId = await this.quickPickService.show(options);
+        const defaultSelected = options.findIndex((opt) => opt.value === this.themeService.currentThemeId);
+        const themeId = await this.quickPickService.show(options, {selectIndex: () => defaultSelected});
         if (themeId) {
           await this.preferenceService.set('general.theme', themeId, PreferenceScope.User);
         }
@@ -58,7 +62,8 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
           value: themeInfo.themeId,
           description: themeInfo.base,
         }));
-        const themeId = await this.quickPickService.show(options);
+        const defaultSelected = options.findIndex((opt) => opt.value === this.iconService.currentThemeId);
+        const themeId = await this.quickPickService.show(options, {selectIndex: () => defaultSelected});
         if (themeId) {
           await this.preferenceService.set('general.icon', themeId, PreferenceScope.User);
         }

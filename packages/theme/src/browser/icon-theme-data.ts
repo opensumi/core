@@ -1,9 +1,8 @@
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { localize, getLogger, URI } from '@ali/ide-core-common';
+import { localize, getLogger, URI, parseWithComments } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IIconTheme } from '../common';
-import * as JSON5 from 'json5';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 @Injectable({multiple: true})
@@ -78,7 +77,7 @@ interface IconThemeDocument extends IconsAssociation {
 async function loadIconThemeDocument(fileService: IFileServiceClient, location: URI): Promise<IconThemeDocument> {
   try {
     const content = await fileService.resolveContent(location.toString());
-    const contentValue = JSON5.parse(content.content);
+    const contentValue = parseWithComments(content.content);
     return contentValue as IconThemeDocument;
   } catch (error) {
     getLogger().log(localize('error.cannotparseicontheme', 'Icon Theme parse出错！'));
@@ -128,17 +127,13 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
         qualifier = baseThemeClassName + ' ' + qualifier;
       }
 
-      const expanded = '.monaco-tree-row.expanded'; // workaround for #11453
-      const expanded2 = '.monaco-tl-twistie.collapsible:not(.collapsed) + .monaco-tl-contents'; // new tree
-
       if (associations.folder) {
         addSelector(`${qualifier} .folder-icon::before`, associations.folder);
         result.hasFolderIcons = true;
       }
 
       if (associations.folderExpanded) {
-        addSelector(`${qualifier} ${expanded} .folder-icon::before`, associations.folderExpanded);
-        addSelector(`${qualifier} ${expanded2} .folder-icon::before`, associations.folderExpanded);
+        addSelector(`${qualifier} .folder-icon.expanded::before`, associations.folderExpanded);
         result.hasFolderIcons = true;
       }
 
@@ -151,8 +146,7 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
       }
 
       if (rootFolderExpanded) {
-        addSelector(`${qualifier} ${expanded} .rootfolder-icon::before`, rootFolderExpanded);
-        addSelector(`${qualifier} ${expanded2} .rootfolder-icon::before`, rootFolderExpanded);
+        addSelector(`${qualifier} .rootfolder-icon.expanded::before`, rootFolderExpanded);
         result.hasFolderIcons = true;
       }
 
@@ -171,8 +165,7 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
       const folderNamesExpanded = associations.folderNamesExpanded;
       if (folderNamesExpanded) {
         for (const folderName in folderNamesExpanded) {
-          addSelector(`${qualifier} ${expanded} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon::before`, folderNamesExpanded[folderName]);
-          addSelector(`${qualifier} ${expanded2} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon::before`, folderNamesExpanded[folderName]);
+          addSelector(`${qualifier} .${escapeCSS(folderName.toLowerCase())}-name-folder-icon.folder-icon.expanded::before`, folderNamesExpanded[folderName]);
           result.hasFolderIcons = true;
         }
       }

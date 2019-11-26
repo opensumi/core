@@ -213,6 +213,11 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
         });
       }
     }));
+    this.addDispose({
+      dispose: () => {
+        this.workbenchEditorService.closeAll(this.webviewUri, true);
+      },
+    });
 
   }
 

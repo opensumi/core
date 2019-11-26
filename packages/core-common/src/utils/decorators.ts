@@ -19,6 +19,42 @@ export function createDecorator(mapFn: (fn: Function, key: string) => Function):
 	};
 }
 
+export function memoize(target: any, key: string, descriptor: any) {
+	let fnKey: string | null = null;
+	let fn: Function | null = null;
+
+	if (typeof descriptor.value === 'function') {
+		fnKey = 'value';
+		fn = descriptor.value;
+
+		if (fn!.length !== 0) {
+			console.warn('Memoize should only be used in functions with zero parameters');
+		}
+	} else if (typeof descriptor.get === 'function') {
+		fnKey = 'get';
+		fn = descriptor.get;
+	}
+
+	if (!fn) {
+		throw new Error('not supported');
+	}
+
+	const memoizeKey = `$memoize$${key}`;
+
+	descriptor[fnKey!] = function (...args: any[]) {
+		if (!this.hasOwnProperty(memoizeKey)) {
+			Object.defineProperty(this, memoizeKey, {
+				configurable: false,
+				enumerable: false,
+				writable: false,
+				value: fn!.apply(this, args)
+			});
+		}
+
+		return this[memoizeKey];
+	};
+}
+
 export interface IDebouceReducer<T> {
 	(previousValue: T, ...args: any[]): T;
 }
@@ -46,4 +82,16 @@ export function debounce<T>(delay: number, reducer?: IDebouceReducer<T>, initial
 			}, delay);
 		};
 	});
+}
+
+
+export function es5ClassCompat(target: any): any {
+	/// @ts-ignore
+	function _() { return Reflect.construct(target, arguments, this.constructor); }
+	Object.defineProperty(_, 'name', Object.getOwnPropertyDescriptor(target, 'name')!);
+	/// @ts-ignore
+	Object.setPrototypeOf(_, target);
+	/// @ts-ignore
+	Object.setPrototypeOf(_.prototype, target.prototype);
+	return _;
 }

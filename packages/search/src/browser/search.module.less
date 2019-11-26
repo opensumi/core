@@ -11,7 +11,7 @@
     display: block;
 
     input {
-      font-size: calc(@kt-ui-font-size0 * 0.923); //  搜索这里字号会小一号 12px
+      font-size: 12px; //  搜索这里字号会小一号 12px
     }
   }
 
@@ -39,7 +39,7 @@
     }
   }
 
-  .result_describe {
+  .result_describe, .result_error {
     margin-bottom: 0;
     padding: 0 10px 5px 10px;
 
@@ -61,6 +61,10 @@
     .result_fold_enabled {
       opacity: 1;
     }
+  }
+
+  .result_error {
+    color: var(--errorForeground);
   }
 
   input[type="text"] {
@@ -115,8 +119,21 @@
     .search_field {
       display: flex;
       align-items: center;
-      border: 1px solid transparent;
+      border: var(--input-border);
       background: var(--input-background);
+
+      &:hover {
+        border-color: var(--inputOption-activeBorder);
+      }
+
+      :global {
+          #search-input-field {
+          border-color: transparent;
+          &:hover {
+            border-color: transparent;
+          }
+        }
+      }
 
       .option_buttons {
         height: 23px;

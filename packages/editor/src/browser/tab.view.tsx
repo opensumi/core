@@ -5,12 +5,11 @@ import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { IResource, ResourceService, IEditorGroup } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
-import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, localize } from '@ali/ide-core-browser';
+import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI, localize, makeRandomHexString } from '@ali/ide-core-browser';
 // TODO editor 不应该依赖main-layout
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent, IEditorActionRegistry } from './types';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { Popover, PopoverTriggerType, PopoverPosition } from '@ali/ide-core-browser/lib/components';
 
 const pkgName = require('../../package.json').name;
 
@@ -92,7 +91,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                     onContextMenu(e, resource);
                   }}
                   key={resource.uri.toString()}
-                  onClick={(e) => onActivate(resource)}
+                  onMouseDown={(e) => onActivate(resource)}
                   onDragOver={(e) => {
                     e.preventDefault();
                     if (ref) {
@@ -130,7 +129,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
               [styles.dirty]: true,
             })
           }></div>
-          <div className={styles.close_tab} onClick={(e) => {
+          <div className={styles.close_tab} onMouseDown={(e) => {
             e.stopPropagation();
             onClose(resource);
           }}>
@@ -149,21 +148,35 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
 
 export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, group: IEditorGroup}) => {
   const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
-  const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
 
   return <div className={styles.editor_actions}>
     {
-      hasFocus ? editorActionRegistry.getActions(group).map((item) => {
-        return <div className={classnames(styles.editor_action, item.iconClass)} title={item.title}
+      hasFocus ? editorActionRegistry.getActions(group).map((visibleAction) => {
+        const item = visibleAction.item;
+        const icon = <div className={classnames(styles.editor_action, item.iconClass)} title={item.title} key={item.title}
                     onClick={() => item.onClick(group.currentResource)} />;
+        if (!item.tip || !visibleAction.tipVisible) {
+          return icon;
+        } else {
+          return <Popover
+            id={'editor_actions_tip_' + makeRandomHexString(5)}
+            content={<div className={styles.editor_action_tip}>
+                {item.tip} <div className={classnames(styles.editor_action_tip_close, getIcon('close'))} onClick={() => visibleAction.closeTip()}></div>
+              </div>}
+            trigger={PopoverTriggerType.program}
+            display={true}
+            popoverClass={classnames(styles.editor_action_tip_wrapper, item.tipClass)}
+            position = {PopoverPosition.bottom}
+          >
+            {icon}
+          </Popover>;
+        }
       }) : null
     }
     <div className={classnames(styles.editor_action, getIcon('ellipsis'))} title={localize('editor.moreActions')}
       onClick={(event) => {
         const { x, y } = event.nativeEvent;
-        contextMenuRenderer.render(['editor', 'title'], { x, y });
-        event.stopPropagation();
-        event.preventDefault();
+        editorActionRegistry.showMore(x, y, group);
       }}
     />
   </div>;

@@ -37,7 +37,7 @@ export class WelcomeContribution implements BrowserEditorContribution, ClientApp
     service.registerResourceProvider({
       scheme: 'welcome',
       provideResource: async (uri: URI): Promise<IResource<IWelcomeMetaData>> => {
-        return Promise.all([this.workspaceServer.getRecentWorkspacePaths(), this.workspaceServer.getMostRecentlyOpenedFiles()]).then(([workspaces, files]) => {
+        return Promise.all([this.workspaceServer.getRecentWorkspacePaths(), this.workspaceService.getMostRecentlyOpenedFiles()]).then(([workspaces, files]) => {
           return {
             uri,
             name: localize('welcome.title'),

@@ -23,7 +23,7 @@ import { Widget } from '@phosphor/widgets';
 import { Message } from '@phosphor/messaging';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { ContextMenuRenderer } from '../../menu';
-import { getIcon } from '../../icon';
+import { getIcon } from '../../style/icon/icon';
 
 @Injectable()
 class LabelParser {
@@ -170,6 +170,7 @@ export class TabBarToolbar extends Widget {
     if (TabBarToolbarItem.is(item)) {
       const command = this.commandRegistry.getCommand(item.command);
       this.commands.executeCommand(item.command);
+      // FIXME 这块还是用 react 重构成响应式的吧……
       if (command && command.toogleIconClass && command.iconClass) {
         const el = e.target as HTMLElement;
         if (!this.commandRegistry.isToggled(command.id)) {

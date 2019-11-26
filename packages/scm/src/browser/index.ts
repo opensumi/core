@@ -1,7 +1,7 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
 
-import { SCMService } from '../common';
+import { SCMService, IDirtyDiffWorkbenchController } from '../common';
 import { SCMContribution } from './scm.contribution';
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { bindSCMPreference } from './scm-preference';
@@ -16,8 +16,11 @@ export class SCMModule extends BrowserModule {
     SCMBadgeController,
     SCMStatusBarController,
     SCMViewController,
-    DirtyDiffWorkbenchController,
     SCMMenus,
+    {
+      token: IDirtyDiffWorkbenchController,
+      useClass: DirtyDiffWorkbenchController,
+    },
   ];
 
   preferences = bindSCMPreference;

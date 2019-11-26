@@ -34,6 +34,12 @@
     height: 16px;
     margin-top: 5px;
   }
+  &.filled {
+    height: 16px;
+    border-radius: 2px;
+    background-color: var(--inputOption-activeBorder);
+    line-height: 16px;
+  }
 }
 
 .kaitian-breakpoint-icon-size {
@@ -130,4 +136,8 @@
 
 .monaco-editor.vs-dark .view-overlays .kaitian-debug-focused-stack-frame-line {
   background: #7abd7a4d;
+}
+
+.monaco-editor.vs-dark .view-overlays .kaitian-debug-top-stack-frame-exception-line {
+  background-color: #6C2022;
 }

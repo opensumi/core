@@ -72,12 +72,12 @@ export namespace Command {
 /**
  * 命令处理函数接口
  */
-export interface CommandHandler {
+export interface CommandHandler<T = any> {
   /**
    * 命令执行函数
    * @param args 传递的参数
    */
-  execute(...args: any[]): any;
+  execute: T;
   /**
    * 命令是否启用
    * 若为否，则不会被执行到
@@ -129,19 +129,14 @@ export interface CommandService {
 /**
  * 命令注册和管理模块
  */
-export interface CommandRegistry {
+interface CoreCommandRegistry {
   /**
    * 注册命令
    * @param command 要注册的命令
    * @param handler 要绑定的执行函数，可延后添加
    * @returns 销毁命令的方法
    */
-  registerCommand(command: Command, handler?: CommandHandler): IDisposable;
-  /**
-   * 从 ContributionProvide 中拿到执行命令 Contributuon
-   * 执行注册操作
-   */
-  onStart(): void;
+  registerCommand<T = any>(command: Command, handler?: CommandHandler<T>): IDisposable;
   /**
    * 解绑命令
    * @param command 要解绑的命令
@@ -163,7 +158,7 @@ export interface CommandRegistry {
    * @param commandId 要添加的命令 id
    * @param handler 要添加的处理函数
    */
-  registerHandler(commandId: string, handler: CommandHandler): IDisposable;
+  registerHandler<T = any>(commandId: string, handler: CommandHandler<T>): IDisposable;
   /**
    * 通过命令 id 获取命令
    * @param commandId 命令 id
@@ -213,12 +208,17 @@ export interface CommandRegistry {
 
 }
 
+export interface CommandRegistry extends CoreCommandRegistry {
+  /**
+   * 从 ContributionProvide 中拿到执行命令 Contributuon
+   * 执行注册操作
+   */
+  onStart(): void;
+}
+
+// 不带 contribution 的 CommandRegistry
 @Injectable()
-export class CommandRegistryImpl implements CommandRegistry {
-
-  @Autowired(CommandContribution)
-  protected readonly contributionProvider: ContributionProvider<CommandContribution>
-
+export class CoreCommandRegistryImpl implements CoreCommandRegistry {
   protected readonly _commands: { [id: string]: Command } = {};
   protected readonly _handlers: { [id: string]: CommandHandler[] } = {};
 
@@ -270,22 +270,12 @@ export class CommandRegistryImpl implements CommandRegistry {
   }
 
   /**
-   * 执行 CommandContribution 的注册方法
-   */
-  onStart(): void {
-    const contributions = this.contributionProvider.getContributions();
-    for (const contrib of contributions) {
-      contrib.registerCommands(this);
-    }
-  }
-
-  /**
    * 注册命令，命令不能重复注册
    * @param command
    * @param handler
    * @returns 命令销毁函数
    */
-  registerCommand(command: Command, handler?: CommandHandler): IDisposable {
+  registerCommand<T>(command: Command, handler?: CommandHandler<T>): IDisposable {
     if (this._commands[command.id]) {
       console.warn(`A command ${command.id} is already registered.`);
       return Disposable.NULL;
@@ -328,7 +318,7 @@ export class CommandRegistryImpl implements CommandRegistry {
    * @param handler 要添加的处理函数
    * @returns 销毁函数
    */
-  registerHandler(commandId: string, handler: CommandHandler): IDisposable {
+  registerHandler<T>(commandId: string, handler: CommandHandler<T>): IDisposable {
     let handlers = this._handlers[commandId];
     if (!handlers) {
       this._handlers[commandId] = handlers = [];
@@ -519,6 +509,23 @@ export class CommandRegistryImpl implements CommandRegistry {
     }
     // 将这个命令添加到最近使用的列表的第一位
     this._recent.unshift(recent);
+  }
+}
+
+@Injectable()
+export class CommandRegistryImpl extends CoreCommandRegistryImpl implements CommandRegistry  {
+
+  @Autowired(CommandContribution)
+  protected readonly contributionProvider: ContributionProvider<CommandContribution>
+
+  /**
+   * 执行 CommandContribution 的注册方法
+   */
+  onStart(): void {
+    const contributions = this.contributionProvider.getContributions();
+    for (const contrib of contributions) {
+      contrib.registerCommands(this);
+    }
   }
 }
 

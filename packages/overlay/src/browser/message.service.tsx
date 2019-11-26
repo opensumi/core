@@ -4,14 +4,12 @@ import { IMessageService, AbstractMessageService } from '../common';
 import notification, { ArgsProps } from 'antd/lib/notification';
 import 'antd/lib/notification/style/index.css';
 import { Button } from '@ali/ide-core-browser/lib/components';
-import { Deferred, MessageType } from '@ali/ide-core-common';
+import { Deferred, MessageType, uuid } from '@ali/ide-core-common';
 import clx from 'classnames';
 
 import * as styles from './message.module.less';
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
-
-  protected deferred: Deferred<any> | null;
 
   // 上一个展示的文案
   private preMessage: string | React.ReactNode;
@@ -38,26 +36,30 @@ export class MessageService extends AbstractMessageService implements IMessageSe
 
   open(message: string | React.ReactNode, type: MessageType, buttons?: string[]): Promise<string | undefined> {
     // 如果两秒内提示信息相同，则直接返回上一个提示
-    if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message && this.deferred) {
-      return this.deferred.promise;
+    if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message) {
+      return Promise.resolve(undefined);
     }
-    // 永远只出现一个 message 组件
-    if (this.deferred) {
-      notification.destroy();
-      this.hide();
-    }
+
     this.preMessage = message;
     this.showTime = Date.now();
-    this.deferred = new Deferred<string>();
+    const key = uuid();
+    const deferred = new Deferred<string>();
     const args: ArgsProps = {
+      key,
       className: clx(styles.wrapper, {
         [styles.info]: type === MessageType.Info,
         [styles.error]: type === MessageType.Error,
         [styles.warning]: type === MessageType.Warning,
       }),
       duration: MessageService.DURATION[type] / 1000,
-      onClose: () => this.hide(),
-      btn: buttons ? buttons.map((button, index) => (<Button className={clx(styles.button)} onClick={this.handlerClickButton(button)} key={button}>{button}</Button>)) : null,
+      onClose: () => deferred.resolve(),
+      btn: buttons ? buttons.map((button, index) => (<Button
+        className={clx(styles.button)}
+        onClick={() => {
+          deferred.resolve(button);
+          notification.close(key);
+        }}
+        key={button}>{button}</Button>)) : null,
       message,
     };
 
@@ -75,20 +77,10 @@ export class MessageService extends AbstractMessageService implements IMessageSe
         notification.open(args);
         break;
     }
-    return this.deferred.promise;
+    return deferred.promise;
   }
 
-  protected handlerClickButton(value?: string) {
-    return () => {
-      notification.destroy();
-      this.hide(value);
-    };
-  }
-
-  hide(value?: string): void {
-    if (this.deferred) {
-      this.deferred.resolve(value);
-      this.deferred = null;
-    }
+  hide(): void {
+    notification.destroy();
   }
 }

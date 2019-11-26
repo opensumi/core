@@ -14,20 +14,22 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   readonly nodes: TreeNode<any>[];
   /**
    * 左侧缩进（单位 px）
-   * 默认缩进计算通过：leftPadding * depth
+   * 默认缩进计算通过：defaultLeftPadding + leftPadding * depth
    */
   readonly leftPadding?: number;
-
+  /**
+   * 默认左侧缩进（单位 px）
+   * 默认缩进计算通过：defaultLeftPadding + leftPadding * depth
+   */
+  readonly defaultLeftPadding?: number;
   /**
    * 如果树组件支持多选，为`true`, 否则为 `false`
    */
   readonly multiSelectable?: boolean;
-
   /**
    * 是否在视图激活时自动滚动
    */
   readonly scrollIfActive?: boolean;
-
   /**
    * 是否可折叠
    */
@@ -36,7 +38,6 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 是否支持拖拽
    */
   readonly draggable?: boolean;
-
   /**
    * 是否可搜索
    */
@@ -73,6 +74,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   onDrag?: any;
   onDrop?: any;
   onChange?: any;
+  onBlur?: any;
   /**
    * 节点中替换文本，需在node节点中存在hightlightRange时可用
    */
@@ -125,12 +127,14 @@ export interface TreeProps extends React.PropsWithChildren<any> {
 export const defaultTreeProps: TreeProps = {
   nodes: [],
   leftPadding: 8,
+  defaultLeftPadding: 10,
 };
 
 export const TreeContainer = (
   {
     nodes = defaultTreeProps.nodes,
     leftPadding = defaultTreeProps.leftPadding,
+    defaultLeftPadding = defaultTreeProps.defaultLeftPadding,
     multiSelectable,
     onSelect,
     onTwistieClick,
@@ -143,6 +147,8 @@ export const TreeContainer = (
     onDrag,
     onDrop,
     onChange,
+    onBlur,
+    onFocus,
     draggable,
     foldable = true,
     editable,
@@ -196,7 +202,9 @@ export const TreeContainer = (
       contexts = result;
     }
     setOuterFocused(false);
-    onContextMenu(contexts, event);
+    if (onContextMenu) {
+      onContextMenu(contexts, event);
+    }
   };
 
   const outerContextMenuHandler = (event: React.MouseEvent) => {
@@ -206,7 +214,9 @@ export const TreeContainer = (
       return;
     }
     setOuterFocused(true);
-    onContextMenu([], event);
+    if (onContextMenu) {
+      onContextMenu([], event);
+    }
   };
 
   const selectRange = (nodes: any = [], node: TreeNode) => {
@@ -280,14 +290,16 @@ export const TreeContainer = (
     } else {
       selectedNodes = selectNode(node);
     }
-    onSelect(selectedNodes, event);
+    if (onSelect) {
+      onSelect(selectedNodes, event);
+    }
     setOuterFocused(false);
   };
 
   const twistieClickHandler = (node, event) => {
     if (onTwistieClick) {
       onTwistieClick(node, event);
-    } else {
+    } else if (onSelect) {
       onSelect([node], event);
     }
   };
@@ -308,12 +320,23 @@ export const TreeContainer = (
   const outerClickHandler = (event) => {
     setOuterFocused(true);
     // 让选中状态的节点失去焦点，保留选中状态
-    onSelect([], event);
+    if (onSelect) {
+      onSelect([], event);
+    }
   };
 
   const outerBlurHandler = (event) => {
+    if (onBlur) {
+      onBlur(event);
+    }
     setOuterFocused(false);
     setOuterDragOver(false);
+  };
+
+  const outerFocusHandler = (event) => {
+    if (onFocus) {
+      onFocus(event);
+    }
   };
 
   const getNodeTooltip = (node: TreeNode): string | undefined => {
@@ -324,13 +347,15 @@ export const TreeContainer = (
       const uri = node.uri.toString();
       return uri ? uri : undefined;
     }
-    if (node.name) {
+    if (typeof node.name === 'string' ) {
       return node.name;
     }
   };
 
   const outerDropHandler = (event) => {
-    onDrop('', event);
+    if (onDrop) {
+      onDrop('', event);
+    }
     setOuterDragOver(false);
   };
 
@@ -374,6 +399,7 @@ export const TreeContainer = (
     className={cls(styles.kt_treenode_container, outerFocused && styles.kt_treenode_container_focused, outerDragOver && styles.kt_treenode_all_focused)}
     style={style}
     onBlur={outerBlurHandler}
+    onFocus={outerFocusHandler}
     onContextMenu={outerContextMenuHandler}
     onDrop={outerDropHandler}
     onDragStart={outerDragStartHandler}
@@ -386,7 +412,7 @@ export const TreeContainer = (
     {
       nodes!.map(<T extends TreeNode>(node: T, index: number) => {
         if (fileDecorationProvider && themeProvider) {
-          const deco: IFileDecoration = fileDecorationProvider.getDecoration(node.uri || node.name || node.id, ExpandableTreeNode.is(node));
+          const deco: IFileDecoration = fileDecorationProvider.getDecoration(node.uri || typeof node.name === 'string' && node.name || node.id, ExpandableTreeNode.is(node));
           if (deco) {
             node = {
               ...node,
@@ -399,6 +425,7 @@ export const TreeContainer = (
         return <TreeContainerNode
           node={node}
           leftPadding={leftPadding}
+          defaultLeftPadding={defaultLeftPadding}
           key={`${node.id}-${index}`}
           onSelect={selectHandler}
           onTwistieClick={twistieClickHandler}

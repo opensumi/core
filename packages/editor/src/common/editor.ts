@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection } from '@ali/ide-core-common';
+import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange } from '@ali/ide-core-common';
 import { IResource } from './resource';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
@@ -145,6 +145,8 @@ export abstract class WorkbenchEditorService {
 
   // TODO
   editorGroups: IEditorGroup[];
+
+  sortedEditorGroups: IEditorGroup[];
 
   currentEditor: IEditor | null;
 
@@ -407,35 +409,8 @@ export interface IEditorGroupState {
 }
 
 export enum Direction {
-  UP,
-  DOWN,
-  LEFT,
-  RIGHT,
-}
-
-/**
- * A change
- */
-export interface IChange {
-  readonly originalStartLineNumber: number;
-  readonly originalEndLineNumber: number;
-  readonly modifiedStartLineNumber: number;
-  readonly modifiedEndLineNumber: number;
-}
-
-/**
- * A character level change.
- */
-export interface ICharChange extends IChange {
-  readonly originalStartColumn: number;
-  readonly originalEndColumn: number;
-  readonly modifiedStartColumn: number;
-  readonly modifiedEndColumn: number;
-}
-
-/**
- * A line change
- */
-export interface ILineChange extends IChange {
-  readonly charChanges: ICharChange[] | undefined;
+  UP = 'up',
+  DOWN = 'down',
+  LEFT = 'left',
+  RIGHT = 'right',
 }

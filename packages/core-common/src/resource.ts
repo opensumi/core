@@ -8,6 +8,14 @@ import { MaybePromise } from './async';
 import { CancellationToken } from './cancellation';
 import { ApplicationError } from './application-error';
 import { Domain } from './di-helper'
+import { parse, IExpression, ParsedExpression } from './utils/glob';
+import { TernarySearchTree } from './map';
+import { equalsIgnoreCase } from './utils/strings';
+import { Schemas } from './network';
+import * as paths from './path';
+import * as extpath from './utils/paths';
+import { isLinux, isWindows } from './platform';
+
 
 export interface Resource extends IDisposable {
   readonly uri: URI;
@@ -167,23 +175,92 @@ export namespace DataUri {
   export function parseMetaData(dataUri: monaco.Uri): Map<string, string> {
     const metadata = new Map<string, string>();
     const uriPath = dataUri.path;
-    // Given a URI of:  data:image/png;size:2313;label:SomeLabel;description:SomeDescription;base64,77+9UE5...
-    // the metadata is: size:2313;label:SomeLabel;description:SomeDescription
-    const meta = uriPath.substring(uriPath.indexOf(';') + 1, uriPath.lastIndexOf(';'));
-    meta.split(';').forEach(property => {
-      const [key, value] = property.split(':');
-      if (key && value) {
-        metadata.set(key, value);
-      }
-    });
+		// Given a URI of:  data:image/png;size:2313;label:SomeLabel;description:SomeDescription;base64,77+9UE5...
+		// the metadata is: size:2313;label:SomeLabel;description:SomeDescription
+		const meta = uriPath.substring(uriPath.indexOf(';') + 1, uriPath.lastIndexOf(';'));
+		meta.split(';').forEach(property => {
+			const [key, value] = property.split(':');
+			if (key && value) {
+				metadata.set(key, value);
+			}
+		});
 
-    // Given a URI of:  data:image/png;size:2313;label:SomeLabel;description:SomeDescription;base64,77+9UE5...
-    // the mime is: image/png
-    const mime = uriPath.substring(0, uriPath.indexOf(';'));
-    if (mime) {
-      metadata.set(META_DATA_MIME, mime);
-    }
+		// Given a URI of:  data:image/png;size:2313;label:SomeLabel;description:SomeDescription;base64,77+9UE5...
+		// the mime is: image/png
+		const mime = uriPath.substring(0, uriPath.indexOf(';'));
+		if (mime) {
+			metadata.set(META_DATA_MIME, mime);
+		}
 
-    return metadata;
-  }
+		return metadata;
+	}
 }
+
+export class ResourceGlobMatcher {
+
+	private readonly globalExpression: ParsedExpression;
+	private readonly expressionsByRoot: TernarySearchTree<{ root: URI, expression: ParsedExpression }> = TernarySearchTree.forPaths<{ root: URI, expression: ParsedExpression }>();
+
+	constructor(
+		globalExpression: IExpression,
+		rootExpressions: { root: URI, expression: IExpression }[]
+	) {
+		this.globalExpression = parse(globalExpression);
+		for (const expression of rootExpressions) {
+			this.expressionsByRoot.set(expression.root.toString(), { root: expression.root, expression: parse(expression.expression) });
+		}
+	}
+
+	matches(resource: URI): boolean {
+		const rootExpression = this.expressionsByRoot.findSubstr(resource.toString());
+		if (rootExpression) {
+			const path = relativePath(rootExpression.root, resource);
+			if (path && !!rootExpression.expression(path)) {
+				return true;
+			}
+		}
+		return !!this.globalExpression(resource.codeUri.path);
+	}
+}
+
+/**
+ * Returns a relative path between two URIs. If the URIs don't have the same schema or authority, `undefined` is returned.
+ * The returned relative path always uses forward slashes.
+ */
+export function relativePath(from: URI, to: URI, ignoreCase = hasToIgnoreCase(from)): string | undefined {
+	if (from.scheme !== to.scheme || !isEqualAuthority(from.authority, to.authority)) {
+		return undefined;
+	}
+	if (from.scheme === Schemas.file) {
+		const relativePath = paths.relative(from.codeUri.path, to.codeUri.path);
+		return isWindows ? extpath.toSlashes(relativePath) : relativePath;
+	}
+	let fromPath = from.codeUri.path || '/', toPath = to.codeUri.path || '/';
+	if (ignoreCase) {
+		// make casing of fromPath match toPath
+		let i = 0;
+		for (const len = Math.min(fromPath.length, toPath.length); i < len; i++) {
+			if (fromPath.charCodeAt(i) !== toPath.charCodeAt(i)) {
+				if (fromPath.charAt(i).toLowerCase() !== toPath.charAt(i).toLowerCase()) {
+					break;
+				}
+			}
+		}
+		fromPath = toPath.substr(0, i) + fromPath.substr(i);
+	}
+	return paths.posix.relative(fromPath, toPath);
+}
+
+/**
+ * Tests wheter the two authorities are the same
+ */
+export function isEqualAuthority(a1: string, a2: string) {
+	return a1 === a2 || equalsIgnoreCase(a1, a2);
+}
+
+export function hasToIgnoreCase(resource: URI | undefined): boolean {
+	// A file scheme resource is in the same platform as code, so ignore case for non linux platforms
+	// Resource can be from another platform. Lowering the case as an hack. Should come from File system provider
+	return resource && resource.scheme === Schemas.file ? !isLinux : true;
+}
+

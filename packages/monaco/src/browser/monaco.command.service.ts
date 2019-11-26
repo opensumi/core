@@ -119,7 +119,7 @@ export class MonacoCommandRegistry {
    */
   validate(command: string): string | undefined {
     const monacoCommandId = this.prefix(command);
-    const monacoCommand = this.commands.getCommands().find((command) => command.id === monacoCommandId);
+    const monacoCommand = this.commands.getRawCommand(monacoCommandId);
     return monacoCommand ? monacoCommandId : undefined;
   }
 

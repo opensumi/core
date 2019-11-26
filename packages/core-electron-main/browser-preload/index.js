@@ -3,29 +3,15 @@ const browserWindow = require('electron').remote.getCurrentWindow();
 const net = require('net');
 const { dirname, join } = require('path');
 
-console.log('preload')
+const electronEnv = {};
 
-let listenPathDefferedResolve;
-const listenPathDeffered = new Promise((resolve)=> {
-  listenPathDefferedResolve = resolve;
-});
-
-ipcRenderer.on('preload:listenPath', (e, msg)=> {
-  console.log('msg', msg);
-  listenPathDefferedResolve(msg);
-});
-
-function createRPCNetConnection(){
-  return listenPathDeffered.then((listenPath) => {
-    return net.createConnection(listenPath);
-  });
+async function createRPCNetConnection(){
+  return net.createConnection(electronEnv.rpcListenPath);
 }
 
 function createNetConnection(connectPath) {
   return net.createConnection(connectPath);
 }
-
-const electronEnv = {};
 
 electronEnv.ElectronIpcRenderer = ipcRenderer;
 electronEnv.createNetConnection = createNetConnection;
@@ -43,6 +29,7 @@ electronEnv.appPath = require('electron').remote.app.getAppPath();
 
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
 electronEnv.metadata = metaData;
+electronEnv.rpcListenPath = metaData.rpcListenPath;
 process.env = Object.assign({}, process.env, metaData.env, {WORKSPACE_DIR: metaData.workspace});
 
 electronEnv.env = Object.assign({}, process.env);

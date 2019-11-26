@@ -100,14 +100,16 @@ export class MessageIO {
 
     return `{"type": ${MessageType.Request}, "id": "${callId}", "proxyId": "${rpcId}", "method": "${method}", "args": ${JSON.stringify(args, ObjectTransfer.replacer)}}`;
   }
-  public static serializeReplyOK(callId: string, res: any): string {
+  public static serializeReplyOK(callId: string, res: any, logger?: any): string {
     if (typeof res === 'undefined') {
       return `{"type": ${MessageType.Reply}, "id": "${callId}"}`;
     } else {
       try {
       return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": ${JSON.stringify(res, ObjectTransfer.replacer)}}`;
       } catch (e) {
-        console.log('res', res);
+        if (logger) {
+          logger.log('res', res);
+        }
         return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": {}}`;
       }
     }
@@ -134,8 +136,9 @@ export class RPCProtocol implements IRPCProtocol {
   private readonly _cancellationTokenSources: Map<string, CancellationTokenSource>;
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
+  private logger;
 
-  constructor(connection: IMessagePassingProtocol) {
+  constructor(connection: IMessagePassingProtocol, logger?: any) {
     this._protocol = connection;
     this._locals = new Map();
     this._proxies = new Map();
@@ -143,6 +146,7 @@ export class RPCProtocol implements IRPCProtocol {
     this._cancellationTokenSources = new Map();
 
     this._lastMessageId = 0;
+    this.logger = logger || console;
     this._protocol.onMessage( (msg) => this._receiveOneMessage(msg));
   }
 

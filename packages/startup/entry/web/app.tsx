@@ -18,6 +18,10 @@ renderApp({
   ],
   layoutConfig: defaultConfig,
   useCdnIcon: false,
+  defaultPreferences: {
+    'general.theme': 'ide-dark',
+    'general.icon': 'vscode-icons',
+  },
   // iconStyleSheets: [
   //   {
   //     iconMap: {

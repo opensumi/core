@@ -37,8 +37,8 @@ export function createWorkspaceApiFactory(
       return extHostWorkspace.getWorkspaceFolder(uri, resolveParent);
     },
     workspaceFolders: extHostWorkspace.workspaceFolders,
-    getConfiguration: (section, resouce, extensionId) => {
-      return extHostPreference.getConfiguration(section, resouce, extensionId);
+    getConfiguration: (section, resource, extensionId) => {
+      return extHostPreference.getConfiguration(section, resource, extensionId);
     },
     onDidChangeConfiguration: (listener, thisArgs?, disposables?) => {
       return extHostPreference.onDidChangeConfiguration(listener, thisArgs, disposables);

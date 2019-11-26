@@ -4,8 +4,8 @@ import { Widget, Title } from '@phosphor/widgets';
 import { Message } from '@phosphor/messaging';
 import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath, TabBarToolbarRegistry, TabBarToolbar } from '../';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewContainerRegistry } from './view-container.registry';
+import { ICtxMenuRenderer, IMenuRegistry, AbstractMenuService, generateCtxMenu } from '../menu/next';
 
 @Injectable({multiple: true})
 export class ActivityPanelToolbar extends Widget {
@@ -22,8 +22,14 @@ export class ActivityPanelToolbar extends Widget {
   @Autowired(AppConfig)
   protected readonly configContext: AppConfig;
 
-  @Autowired(ContextMenuRenderer)
-  contextMenuRenderer: ContextMenuRenderer;
+  @Autowired(ICtxMenuRenderer)
+  private readonly contextMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(IMenuRegistry)
+  menus: IMenuRegistry;
+
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
@@ -44,13 +50,22 @@ export class ActivityPanelToolbar extends Widget {
     this.node.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      this.contextMenuRenderer.render(this.contextMenuPath, { x: event.clientX, y: event.clientY });
+      const menus = this.menuService.createMenu(this.contextMenuPath);
+      // FIXME 需要支持自定义group的split吧? @伊北
+      const menuNodes = generateCtxMenu({ menus });
+      if (menuNodes[1].length > 3) {
+        this.contextMenuRenderer.show({
+          anchor: {x: event.clientX, y: event.clientY},
+          // 临时支持，去掉global的隐藏及separator
+          menuNodes: menuNodes[1].slice(2),
+        });
+      }
     });
     this.toolbar = this.injector.get(TabBarToolbar, [this.containerId, view && view.noToolbar]);
   }
 
-  protected get contextMenuPath(): MenuPath {
-    return [`${this.containerId}-context-menu`, '1_widgets'];
+  protected get contextMenuPath(): string {
+    return `${this.containerId}-context-menu`;
   }
 
   protected onAfterAttach(msg: Message): void {

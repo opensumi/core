@@ -5,9 +5,9 @@ import * as path from 'path';
 import { IExtensionManagerServer, PREFIX, RequestHeaders, EXTENSION_DIR, BaseExtension, IExtensionManager, IExtensionManagerRequester } from '../common';
 import * as urllib from 'urllib';
 import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
-import * as contentDisposition from 'content-disposition';
 import * as awaitEvent from 'await-event';
 import { renameSync } from 'fs-extra';
+import * as pkg from '@ali/ide-core-node/package.json';
 
 @Injectable()
 export class ExtensionManagerRequester implements IExtensionManagerRequester {
@@ -30,6 +30,7 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
     return await urllib.request<T>(url, {
       ...options,
       headers: {
+        'x-framework-version': pkg.version,
         'x-account-id': this.appConfig.marketplace.accountId,
         'x-master-key': this.appConfig.marketplace.masterKey,
         ...this.headers,
@@ -57,7 +58,10 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
   }
 
   setHeaders(headers: RequestHeaders): void {
-    this.headers = headers;
+    this.headers = {
+      ...this.headers,
+      ...headers,
+    };
   }
 }
 
@@ -76,9 +80,7 @@ export class ExtensionManager implements IExtensionManager {
   async installExtension(extension: BaseExtension, version?: string | undefined): Promise<string> {
     const request = await this.requestExtension(extension.extensionId, version || extension.version);
 
-    // 获取插件文件名
-    const disposition = contentDisposition.parse(request.headers['content-disposition']);
-    const extensionDirName = path.basename(disposition.parameters.filename, '.zip');
+    const extensionDirName = `${extension.publisher}.${extension.name}-${extension.version}`;
 
     return await this.uncompressExtension(request.res, extensionDirName);
   }

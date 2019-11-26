@@ -43,9 +43,9 @@ export const TAB_BORDER = registerColor('tab.border', {
 }, localize('tabBorder', 'Border to separate tabs from each other. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_ACTIVE_BORDER = registerColor('tab.activeBorder', {
-  dark: null,
-  light: null,
-  hc: null,
+  dark: editorBackground,
+  light: editorBackground,
+  hc: editorBackground,
 }, localize('tabActiveBorder', 'Border on the bottom of an active tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_UNFOCUSED_ACTIVE_BORDER = registerColor('tab.unfocusedActiveBorder', {
@@ -125,3 +125,9 @@ export const TAB_UNFOCUSED_INACTIVE_FOREGROUND = registerColor('tab.unfocusedIna
   light: transparent(TAB_INACTIVE_FOREGROUND, 0.5),
   hc: Color.white,
 }, localize('tabUnfocusedInactiveForeground', 'Inactive tab foreground color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
+
+export const EDITOR_GROUP_HEADER_TABS_BORDER = registerColor('editorGroupHeader.tabsBorder', {
+  dark: TAB_INACTIVE_BACKGROUND,
+  light: TAB_INACTIVE_BACKGROUND,
+  hc: TAB_INACTIVE_BACKGROUND,
+}, localize('tabsContainerBorder', 'Border color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.'));

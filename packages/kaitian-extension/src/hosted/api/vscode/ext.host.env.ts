@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';
-import { getMac } from 'getmac';
+import * as address from 'address';
 import { MainThreadAPIIdentifier, IMainThreadEnv } from '../../../common/vscode';
 import {
   // IExtensionProcessService,
@@ -18,11 +18,11 @@ export class Env {
   public sessionId: string;
 
   constructor() {
-    getMac((err, macAddress) => {
-      if (err) {
-        this.macMachineId = v4();
-      } else {
+    address.mac((err, macAddress) => {
+      if (!err) {
         this.macMachineId = createHash('sha256').update(macAddress, 'utf8').digest('hex');
+      } else {
+        this.macMachineId = v4();
       }
     });
 

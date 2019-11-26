@@ -392,11 +392,7 @@ declare module monaco.keybindings {
             parts: SimpleKeybinding[]
         };
         command: string;
-        when?: ContextKeyExpr;
-    }
-
-    export interface ContextKeyExpr {
-        key: string;
+        when?: monaco.contextkey.ContextKeyExpr;
     }
 
     export enum ContextKeyExprType {
@@ -1206,6 +1202,11 @@ declare module monaco.contextKeyService {
 }
 
 declare module monaco.contextkey {
+
+    export namespace EditorContextKeys{
+        export const focus: RawContextKey<boolean>;
+    }
+
     export const enum ContextKeyExprType {
         Defined = 1,
         Not = 2,
@@ -1395,4 +1396,18 @@ declare module monaco.contextkey {
         getContext(target: IContextKeyServiceTarget | null): IContext;
     }
     export const SET_CONTEXT_COMMAND_ID = "setContext";
+}
+
+declare module monaco.format {
+    export class FormattingConflicts {
+        static readonly _selectors : LinkedList<IFormattingEditProviderSelector>;
+    }
+
+    export interface IFormattingEditProviderSelector {
+        <T extends (monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider)>(formatter: T[], document: monaco.editor.ITextModel, mode: 1 | 2): Promise<T | undefined>;
+    }
+
+    export interface LinkedList<T> {
+        unshift:(e: T) => {remove: () => any};
+    }
 }

@@ -35,6 +35,7 @@ import {
   DiagnosticChangeEvent,
   Uri,
   SelectionRangeProvider,
+  DocumentFormattingEditProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -83,7 +84,7 @@ import { ColorProviderAdapter } from './language/color';
 import { DocumentHighlightAdapter } from './language/document-highlight';
 import { HoverAdapter } from './language/hover';
 import { CodeLensAdapter } from './language/lens';
-import { RangeFormattingAdapter } from './language/range-formatting';
+import { RangeFormattingAdapter, FormattingAdapter } from './language/range-formatting';
 import { OnTypeFormattingAdapter } from './language/on-type-formatting';
 import { CodeActionAdapter } from './language/code-action';
 import { Diagnostics } from './language/diagnostics';
@@ -98,10 +99,14 @@ import { SignatureHelpAdapter } from './language/signature';
 import { RenameAdapter } from './language/rename';
 import { SelectionRangeAdapter } from './language/selection';
 import { ExtHostCommands } from './ext.host.command';
+import { IExtension } from '../../../common';
 
-export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
+export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages, extension: IExtension) {
 
   return {
+    getLanguages(): Promise<string[]> {
+      return extHostLanguages.getLanguages();
+    },
     registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
       return extHostLanguages.registerHoverProvider(selector, provider);
     },
@@ -172,7 +177,10 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
       return extHostLanguages.registerOnTypeFormattingEditProvider(selector, provider, [firstTriggerCharacter].concat(moreTriggerCharacter));
     },
     registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
-      return extHostLanguages.registerDocumentRangeFormattingEditProvider(selector, provider);
+      return extHostLanguages.registerDocumentRangeFormattingEditProvider(extension.id, selector,  provider);
+    },
+    registerDocumentFormattingEditProvider(selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable {
+      return extHostLanguages.registerDocumentFormattingEditProvider(extension.id, selector, provider);
     },
     registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable {
       return extHostLanguages.registerSelectionRangeProvider(selector, provider);
@@ -199,6 +207,7 @@ export type Adapter =
   ReferenceAdapter |
   SignatureHelpAdapter |
   SelectionRangeAdapter |
+  FormattingAdapter |
   RenameAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
@@ -272,16 +281,17 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.proxy.$getLanguages();
   }
 
-  // NOTE vscode插件调用此api，会将回调函数绑定到一个回调id发到前台，前台处理时远程调用此回调id拿到处理结果
+  // ### Hover begin
   registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
     const callId = this.addNewAdapter(new HoverAdapter(provider, this.documents));
     this.proxy.$registerHoverProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
-  // TODO 提供main调用的回调函数
+
   $provideHover(handle: number, resource: any, position: Position, token: CancellationToken): Promise<Hover | undefined> {
     return this.withAdapter(handle, HoverAdapter, (adapter) => adapter.provideHover(resource, position, token));
   }
+  // ### Hover end
 
   // ### Completion begin
   $provideCompletionItems(handle: number, resource: URI, position: Position, context: CompletionContext, token: CancellationToken) {
@@ -365,10 +375,22 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
   // ### Document Highlight Provider end
 
+  // ### Document Formatting Provider begin
+  registerDocumentFormattingEditProvider(displayName: string, selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable {
+    const callId = this.addNewAdapter(new FormattingAdapter(provider, this.documents));
+    this.proxy.$registerDocumentFormattingProvider(callId, displayName, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $provideDocumentFormattingEdits(handle: number, resource: URI, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
+    return this.withAdapter(handle, FormattingAdapter, (adapter) => adapter.provideDocumentFormattingEdits(resource, options));
+  }
+  // ### Document Formatting Provider end
+
   // ### Document Range Formatting Provider begin
-  registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
+  registerDocumentRangeFormattingEditProvider(displayName: string, selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
     const callId = this.addNewAdapter(new RangeFormattingAdapter(provider, this.documents));
-    this.proxy.$registerRangeFormattingProvider(callId, this.transformDocumentSelector(selector));
+    this.proxy.$registerRangeFormattingProvider(callId, displayName, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
 

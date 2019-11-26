@@ -66,9 +66,9 @@ blockquote {
   border-color: var(--textBlockQuote-border);
 }
 
-code {
-  background-color: var(--textCodeBlock-background);
-}
+// code {
+//   background-color: var(--textCodeBlock-background);
+// }
 
 pre {
   background-color: var(--textPreformat-foreground);
@@ -96,11 +96,14 @@ pre {
   &:before {
     font-size: 18px;
     position: absolute;
-    top: -2px;
+    top: 0;
     right: 0;
+    width: 16px;
+    height: 16px;
   }
 }
-.monaco-tree .monaco-tree-row > .content.actions > .primary-action-bar .action-label {
+
+.quick-open-overlay .monaco-tree .monaco-tree-row > .content.actions > .primary-action-bar .action-label {
   margin-right: 4px;
   margin-left: 4px;
   margin-top: 0px;

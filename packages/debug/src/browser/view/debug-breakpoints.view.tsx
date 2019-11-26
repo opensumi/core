@@ -1,48 +1,82 @@
 import * as React from 'react';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, ViewState, URI } from '@ali/ide-core-browser';
 import * as styles from './debug-breakpoints.module.less';
 import * as cls from 'classnames';
 import { CheckBox, CheckBoxSize } from '@ali/ide-core-browser/lib/components/input';
 import { observer } from 'mobx-react-lite';
-import { DebugBreakpoint } from '../model';
+import { DebugBreakpoint, DebugExceptionBreakpoint } from '../model';
+import { RecycleList } from '@ali/ide-core-browser/lib/components';
+import Badge from '@ali/ide-core-browser/lib/components/badge';
 
 export interface BreakpointItem {
   name: string;
   id: string;
   description: string;
-  breakpoint: DebugBreakpoint;
+  breakpoint: DebugBreakpoint | DebugExceptionBreakpoint;
 }
 
-export const DebugBreakpointView = observer(() => {
+export const DebugBreakpointView = observer(({
+  viewState,
+}: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const {
     nodes,
     enable,
+    inDebugMode,
   }: DebugBreakpointsService = useInjectable(DebugBreakpointsService);
-  return <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
-    {
-      nodes && nodes.map((node) => {
-        return <BreakpointItem data={node} key={node.id} enable={enable}></BreakpointItem>;
-      })
-    }
+  const template = ({data}: {
+    data: BreakpointItem,
+  }) => {
+    return <BreakpointItem data={data} isDebugMode={inDebugMode}></BreakpointItem>;
+  };
 
+  const containerStyle =  {
+    height: viewState.height,
+    width: viewState.width,
+  } as React.CSSProperties;
+
+  return <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
+    <RecycleList
+      data = {nodes}
+      template = {template}
+      sliceSize = {15}
+      style={containerStyle}
+    />
   </div>;
 });
 
 export const BreakpointItem = ({
   data,
-  enable,
+  isDebugMode,
 }: {
   data: BreakpointItem,
-  enable: boolean,
+  isDebugMode: boolean,
 }) => {
-  const [value] = React.useState<boolean>(true);
-  const onChange = () => {
-    data.breakpoint.remove();
+  const [enabled, setEnabled] = React.useState<boolean>(data.breakpoint.enabled);
+
+  const changeHandler = () => {
+    data.breakpoint.setEnabled(!enabled);
+    setEnabled(!enabled);
   };
-  return <div className={styles.debug_breakpoints_item}>
-    <div className={cls(enable ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled', styles.debug_breakpoints_icon)}></div>
-    <CheckBox size={CheckBoxSize.SMALL} id={data.id} label={data.name} defaultChecked={value} onChange={onChange}></CheckBox>
-    <div className={styles.debug_breakpoints_description}>{data.description}</div>
+
+  const clickHandler = (event: React.MouseEvent) => {
+    data.breakpoint.open({preview: true});
+  };
+
+  const isDebugBreakpoint = data.breakpoint instanceof DebugBreakpoint;
+
+  const verified = !isDebugMode ? true : data.breakpoint instanceof DebugBreakpoint && data.breakpoint.verified;
+
+  return <div className={cls(styles.debug_breakpoints_item)}>
+    <div className={cls(isDebugBreakpoint ? !verified ? 'kaitian-debug-breakpoint-unverified' : enabled ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled' : '', styles.debug_breakpoints_icon)}></div>
+    <CheckBox size={CheckBoxSize.SMALL} id={data.id} defaultChecked={enabled} onChange={changeHandler}></CheckBox>
+    <div className={styles.debug_breakpoints_wrapper} onClick={clickHandler}>
+      <span className={styles.debug_breakpoints_name}>{data.name}</span>
+      <span className={styles.debug_breakpoints_description}>{data.description}</span>
+    </div>
+    {
+      data.breakpoint.line && <Badge>{data.breakpoint.line}</Badge>
+    }
+
   </div>;
 };

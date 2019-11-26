@@ -2,7 +2,7 @@
 const webpack = require('webpack');
 
 const compiler = webpack(require('../entry/electron/browser/webpack.config'));
- 
+
 let started = false;
 
 const { spawn } = require('child_process');
@@ -17,7 +17,7 @@ const watching = compiler.watch({
   // Example watchOptions
   aggregateTimeout: 300,
   poll: undefined
-}, (err, stats) => { 
+}, (err, stats) => {
   if (err) {
     console.error(err);
   } else  if (stats.hasErrors()) {

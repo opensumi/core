@@ -77,6 +77,7 @@ export class MockFileTreeAPIImpl implements IFileTreeAPI {
         },
         this.getReadableTooltip(uri),
         icon,
+        '',
         parent,
         1,
       );
@@ -128,6 +129,7 @@ export class MockFileTreeAPIImpl implements IFileTreeAPI {
         filestat,
         this.getReadableTooltip(uri),
         '',
+        '',
         parent,
         1,
       );
@@ -157,6 +159,7 @@ export class MockFileTreeAPIImpl implements IFileTreeAPI {
         uri,
         TEMP_FILE_NAME,
         filestat,
+        '',
         '',
         '',
         parent,
@@ -190,7 +193,11 @@ export class MockFileTreeAPIImpl implements IFileTreeAPI {
           return 1;
         }
         // numeric 参数确保数字为第一排序优先级
-        return a.name.localeCompare(b.name, 'kn', { numeric: true });
+        if (typeof a.name === 'string' && typeof b.name === 'string') {
+          return a.name.localeCompare(b.name, 'kn', { numeric: true });
+        } else {
+          return 1;
+        }
       } else if (a.filestat.isDirectory && !b.filestat.isDirectory) {
         return -1;
       } else if (!a.filestat.isDirectory && b.filestat.isDirectory) {

@@ -7,7 +7,7 @@ import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout
 import { IDebugServer } from '@ali/ide-debug';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
 import { DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 
 const RELOAD_WINDOW_COMMAND = {
   id: 'reload_window',

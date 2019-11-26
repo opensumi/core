@@ -1,5 +1,6 @@
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
+import { replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IJSONSchema, IJSONSchemaSnippet, deepClone, localize } from '@ali/ide-core-common';
 import { IDebugService, IDebuggerContribution } from '@ali/ide-debug';
 import { DebugConfigurationManager, DebugSchemaUpdater } from '@ali/ide-debug/lib/browser';
@@ -69,7 +70,7 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
   private doResolveDebuggers(debuggersContributionPoint: DebuggersContributionScheme): IDebuggerContribution {
     const result: IDebuggerContribution = {
       type: debuggersContributionPoint.type,
-      label: debuggersContributionPoint.label,
+      label: debuggersContributionPoint.label ? replaceLocalizePlaceholder(debuggersContributionPoint.label, this.extension.id) : '',
       languages: debuggersContributionPoint.languages,
       enableBreakpointsFor: debuggersContributionPoint.enableBreakpointsFor,
       variables: debuggersContributionPoint.variables,

@@ -1,8 +1,9 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IEditorActionRegistry, IEditorActionItem } from '../types';
+import { IEditorActionRegistry, IEditorActionItem, IVisibleAction } from '../types';
 import { IDisposable, URI, BasicEvent, IEventBus, Disposable, IContextKeyService, Emitter, IContextKeyExpr } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup } from '../../common';
 import { observable, reaction, computed } from 'mobx';
+import { AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class EditorActionRegistryImpl implements IEditorActionRegistry {
@@ -25,10 +26,18 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
+  @Autowired(AbstractMenuService)
+  menuService: AbstractMenuService;
+
+  @Autowired(ICtxMenuRenderer)
+  ctxMenuRenderer: ICtxMenuRenderer;
+
   registerEditorAction(actionItem: IEditorActionItem): IDisposable {
     const processed = {
       ...actionItem,
       contextKeyExpr: actionItem.when ? this.contextKeyService.parse(actionItem.when) : undefined,
+      tipContextKeyExpr: actionItem.tipWhen ? this.contextKeyService.parse(actionItem.tipWhen) : undefined,
+      tipClosed: false,
     };
     this.items.push(processed);
     const disposer = new Disposable();
@@ -59,10 +68,25 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
     return this.visibleActions.get(editorGroup)!.items;
   }
 
+  showMore(x: number, y: number, group: IEditorGroup) {
+    const menus = this.menuService.createMenu(MenuId.EditorTitle, this.contextKeyService);
+    const result = generateCtxMenu({ menus });
+    menus.dispose();
+
+    this.ctxMenuRenderer.show({
+      anchor: { x, y },
+      // 合并结果
+      menuNodes: [...result[0], ...result[1]],
+      context: [{group}],
+    });
+  }
+
 }
 
 interface IEditorActionItemData extends IEditorActionItem {
+  tipClosed: boolean;
   contextKeyExpr?: IContextKeyExpr;
+  tipContextKeyExpr?: IContextKeyExpr;
 }
 
 @Injectable({multiple: true})
@@ -115,8 +139,8 @@ export class VisibleEditorActions extends Disposable {
   }
 
   @computed
-  get items(): IEditorActionItem[] {
-    return this.visibleEditorActions.filter((v) => v.visible).map((v) => v.item);
+  get items(): IVisibleAction[] {
+    return this.visibleEditorActions.filter((v) => v.visible);
   }
 
   dispose() {
@@ -128,14 +152,28 @@ export class VisibleEditorActions extends Disposable {
 
 }
 
-class VisibleAction extends Disposable {
+class VisibleAction extends Disposable implements IVisibleAction  {
 
   @observable visible = false;
 
+  @observable tipVisible = false;
+
   constructor(public readonly item: IEditorActionItemData, private editorGroup: IEditorGroup, private contextKeyService: IContextKeyService) {
     super();
+    const set = new Set();
     if (this.item.contextKeyExpr) {
-      const set = new Set(this.item.contextKeyExpr.keys());
+      this.item.contextKeyExpr.keys().forEach((key) => {
+        set.add(key);
+      });
+    }
+
+    if (this.item.tipContextKeyExpr) {
+      this.item.tipContextKeyExpr.keys().forEach((key) => {
+        set.add(key);
+      });
+    }
+
+    if (set.size > 0) {
       this.addDispose(contextKeyService.onDidChangeContext((e) => {
         if (e.payload.affectsSome(set)) {
           this.update();
@@ -149,6 +187,8 @@ class VisibleAction extends Disposable {
         (this as any).contextKeyService = null;
       },
     });
+
+    this.update();
   }
 
   update() {
@@ -159,10 +199,23 @@ class VisibleAction extends Disposable {
       } catch (e) {
         this.visible = false;
       }
-    }
-    if (item.contextKeyExpr) {
+    } else if (item.contextKeyExpr) {
       const context = this.editorGroup.currentEditor ? this.editorGroup.currentEditor.monacoEditor.getDomNode() : undefined;
       this.visible = this.contextKeyService.match(item.contextKeyExpr, context);
+    } else {
+      this.visible = true;
     }
+
+    if (!this.item.tipClosed) {
+      if (this.item.tipContextKeyExpr) {
+        const context = this.editorGroup.currentEditor ? this.editorGroup.currentEditor.monacoEditor.getDomNode() : undefined;
+        this.tipVisible = this.contextKeyService.match(item.tipContextKeyExpr, context);
+      }
+    }
+  }
+
+  closeTip() {
+    this.item.tipClosed = true;
+    this.tipVisible = false;
   }
 }

@@ -1,5 +1,5 @@
 import { IEditorGroup, IEditorGroupState, Direction } from '../../common';
-import { observable } from 'mobx';
+import { observable, runInAction } from 'mobx';
 import { IDisposable, IEventBus, MaybeNull } from '@ali/ide-core-browser';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { Autowired } from '@ali/common-di';
@@ -176,6 +176,60 @@ export class EditorGrid implements IDisposable {
         return this.children[0].getFirstLeaf();
       } else {
         return null;
+      }
+    }
+  }
+
+  sortEditorGroups(results: IEditorGroup[]) {
+    if (this.editorGroup) {
+      results.push(this.editorGroup);
+    } else {
+      if (this.children.length > 0) {
+        this.children.forEach((children) => {
+          children.sortEditorGroups(results);
+        });
+      }
+    }
+  }
+
+  move(direction: Direction) {
+    if (this.parent) {
+      if (this.parent.splitDirection === SplitDirection.Horizontal) {
+        if (direction === Direction.LEFT) {
+          const index = this.parent.children.indexOf(this);
+          if (index > 0) {
+            runInAction(() => {
+              this.parent!.children.splice(index, 1);
+              this.parent!.children.splice(index - 1, 0, this);
+            });
+          }
+        } else if (direction === Direction.RIGHT) {
+          const index = this.parent.children.indexOf(this);
+          if (index < this.parent.children.length) {
+            runInAction(() => {
+              this.parent!.children.splice(index, 1);
+              this.parent!.children.splice(index + 1, 0, this);
+            });
+          }
+        }
+      } else if (this.parent.splitDirection === SplitDirection.Vertical) {
+        if (direction === Direction.UP) {
+          const index = this.parent.children.indexOf(this);
+          if (index > 0) {
+            runInAction(() => {
+              this.parent!.children.splice(index, 1);
+              this.parent!.children.splice(index - 1, 0, this);
+            });
+          }
+        } else if (direction === Direction.DOWN) {
+          const index = this.parent.children.indexOf(this);
+          if (index < this.parent.children.length) {
+            runInAction(() => {
+              this.parent!.children.splice(index, 1);
+              this.parent!.children.splice(index + 1, 0, this);
+            });
+          }
+        }
       }
     }
   }

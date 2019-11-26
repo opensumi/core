@@ -4,11 +4,10 @@ import { TreeViewActionTypes, SelectableTreeNode, URI } from '@ali/ide-core-comm
 import * as paths from '@ali/ide-core-common/lib/path';
 import { IThemeService } from '@ali/ide-theme';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
 import { ISCMResource, ISCMResourceGroup } from '../common';
 import { SCMMenus } from './scm-menu';
-import { SCMInlineActionBar } from './components/scm-actionbar.view';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 interface ISCMResourceTreeNode extends SelectableTreeNode {
   id: string;
@@ -55,7 +54,7 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
     const menus = this.scmMenuService.getResourceGroupInlineActions(this.item);
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <SCMInlineActionBar context={this.item} menus={menus} />,
+      component: <InlineActionBar<ISCMResourceGroup> context={[this.item]} menus={menus} seperator='inline' />,
     }];
   }
 }
@@ -115,7 +114,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
     const menus = this.scmMenuService.getResourceInlineActions(this.item.resourceGroup);
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <SCMInlineActionBar context={this.item} menus={menus} />,
+      component: <InlineActionBar<ISCMResource> context={[this.item]} menus={menus} seperator='inline' />,
     }];
   }
 }

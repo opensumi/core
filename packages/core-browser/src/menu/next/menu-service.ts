@@ -1,15 +1,15 @@
-import { CommandService, Command, replaceLocalizePlaceholder } from '@ali/ide-core-common';
+import { CommandRegistry, CommandService, Command, isOSX } from '@ali/ide-core-common';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
-import { Autowired, Injectable, Optional, Inject, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
-import { MenuId, IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
-import { i18nify } from './menu-util';
-import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
+import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
+import { MenuId } from './menu-id';
+import { KeybindingRegistry } from '../../keybinding';
 
 export interface IMenuNodeOptions {
-  arg?: any; // 固定参数从这里传入
+  args?: any[]; // 固定参数可从这里传入
 }
 
 export interface IMenu extends IDisposable {
@@ -17,17 +17,17 @@ export interface IMenu extends IDisposable {
   getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]>;
 }
 
-export abstract class MenuService {
-  abstract createMenu(id: MenuId, scopedKeybindingService: IContextKeyService): IMenu;
+export abstract class AbstractMenuService {
+  abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
 }
 
-// 后续 MenuNode 要看齐 @ali/ide-core-common 的 ActionMenuNode
 export class SubmenuItemNode extends MenuNode {
+  static readonly ID = 'menu.item.node.submenu';
+
   readonly item: ISubmenuItem;
 
-  // todo: 需要再去看下 submenu 如何实现，我们这边目前没有看到
   constructor(item: ISubmenuItem) {
-    typeof item.title === 'string' ? super('', item.title, 'submenu') : super('', item.title.value, 'submenu');
+    super(SubmenuItemNode.ID, '', item.label);
     this.item = item;
   }
 }
@@ -37,7 +37,7 @@ export class SeparatorMenuItemNode extends MenuNode {
   static readonly ID = 'menu.item.node.separator';
 
   constructor(label?: string) {
-    super(SeparatorMenuItemNode.ID, label, label ? 'separator text' : 'separator');
+    super(SeparatorMenuItemNode.ID, label, label || 'separator');
   }
 }
 
@@ -47,55 +47,74 @@ export class MenuItemNode extends MenuNode {
   private _options: IMenuNodeOptions;
 
   @Autowired(CommandService)
-  commandService: CommandService;
+  protected readonly commandService: CommandService;
 
   @Autowired(KeybindingRegistry)
-  keybindings: KeybindingRegistry;
+  protected readonly keybindings: KeybindingRegistry;
+
+  @Autowired(CommandRegistry)
+  protected readonly commandRegistry: CommandRegistry;
 
   constructor(
     @Optional() item: Command,
-    @Optional() options: IMenuNodeOptions,
+    @Optional() options: IMenuNodeOptions = {},
+    @Optional() disabled: boolean,
+    @Optional() checked: boolean,
+    @Optional() nativeRole?: string,
   ) {
-    // 后置获取 i18n 数据
-    const command = i18nify(item);
-    super(command.id, command.iconClass!, command.label!);
-    this.className = undefined;
-    this.shortcut = this.getShortcut(command.id);
-    this._options = options || {};
+    super(item.id, item.iconClass, item.label!, checked, disabled, nativeRole);
 
-    this.item = command;
+    this.className = undefined;
+
+    const shortcutDesc = this.getShortcut(item.id);
+
+    this.keybinding = shortcutDesc && shortcutDesc.keybinding || '';
+    this.rawKeybinding = shortcutDesc && shortcutDesc.rawKeybinding;
+    this.isKeyCombination = !!(shortcutDesc && shortcutDesc.isKeyCombination);
+    this._options = options;
+
+    this.item = item;
   }
 
-  execute(...args: any[]): Promise<any> {
-    let runArgs: any[] = [];
-
-    if (this._options.arg) {
-      runArgs = [...runArgs, this._options.arg];
-    }
-
-    runArgs = [...runArgs, ...args];
+  execute(args?: any[]): Promise<any> {
+    const runArgs = [
+      ...(this._options.args || []),
+      ...(args || []),
+    ];
 
     return this.commandService.executeCommand(this.item.id, ...runArgs);
   }
 
   private getShortcut(commandId: string) {
     if (commandId) {
-      const keybinding = this.keybindings.getKeybindingsForCommand(commandId) as ResolvedKeybinding[];
-      if (keybinding.length > 0) {
-        return keybinding[0]!.resolved![0].toString();
+      const keybindings = this.keybindings.getKeybindingsForCommand(commandId);
+      if (keybindings.length > 0) {
+        const isKeyCombination = Array.isArray(keybindings[0].resolved) && keybindings[0].resolved.length > 1;
+        let keybinding = this.keybindings.acceleratorFor(keybindings[0], isOSX ? '' : '+').join(' ');
+        if (isKeyCombination) {
+          keybinding = `[${keybinding}]`;
+        }
+        return {
+          keybinding,
+          rawKeybinding: keybindings[0].keybinding,
+          isKeyCombination,
+        };
       }
     }
-    return '';
+    return null;
   }
 }
 
 @Injectable()
-export class MenuServiceImpl implements MenuService {
+export class MenuServiceImpl implements AbstractMenuService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  createMenu(id: MenuId, contextKeyService: IContextKeyService): IMenu {
-    return this.injector.get(Menu, [id, contextKeyService]);
+  @Autowired(IContextKeyService)
+  globalCtxKeyService: IContextKeyService;
+
+  createMenu(id: MenuId, contextKeyService?: IContextKeyService): IMenu {
+    return this.injector.get(Menu, [id, contextKeyService || this.globalCtxKeyService]);
   }
 }
 
@@ -104,12 +123,18 @@ type MenuItemGroup = [string, Array<IMenuItem | ISubmenuItem>];
 @Injectable()
 class Menu extends Disposable implements IMenu {
   private readonly _onDidChange = new Emitter<IMenu | undefined>();
+  get onDidChange(): Event<IMenu | undefined> {
+    return this._onDidChange.event;
+  }
 
   private _menuGroups: MenuItemGroup[];
   private _contextKeys: Set<string>;
 
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;
+
+  @Autowired(CommandRegistry)
+  private readonly commandRegistry: CommandRegistry;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -133,7 +158,6 @@ class Menu extends Disposable implements IMenu {
     // when context keys change we need to check if the menu also
     // has changed
     this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
-      // (listener) => this.eventBus.on(ContextKeyChangeEvent, listener),
       this.contextKeyService.onDidChangeContext,
       (last, event) => last || event.payload.affectsSome(this._contextKeys),
       50,
@@ -165,7 +189,12 @@ class Menu extends Disposable implements IMenu {
       // keep keys for eventing
       this.fillKeysInWhenExpr(this._contextKeys, item.when);
 
-      // @fixme: 我们的 command 有 precondition(command)/toggled 属性吗？
+      // 收集 toggledWhen
+      if (isIMenuItem(item)) {
+        this.fillKeysInWhenExpr(this._contextKeys, item.toggledWhen);
+      }
+
+      // FIXME: 我们的 command 有 precondition(command)/toggled 属性吗？
       // keep precondition keys for event if applicable
       // if (isIMenuItem(item) && item.command.precondition) {
       //   Menu._fillInKbExprKeys(item.command.precondition, this._contextKeys);
@@ -179,29 +208,56 @@ class Menu extends Disposable implements IMenu {
     this._onDidChange.fire(this);
   }
 
-  get onDidChange(): Event<IMenu | undefined> {
-    return this._onDidChange.event;
-  }
-
-  /**
-   * 由于 i18n 语言包加载时序问题, 在插件注册时 command 的 label/category 不一定能获取到 i18n 文案
-   * 因此在 getMenuNodes 里后置进行语言获取替换及 menu 的排序
-   */
-  getMenuNodes(options: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
+  getMenuNodes(options: IMenuNodeOptions = {}): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
     const result: [string, Array<MenuItemNode | SubmenuItemNode>][] = [];
     for (const group of this._menuGroups) {
       const [id, items] = group;
       const activeActions: Array<MenuItemNode | SubmenuItemNode> = [];
       for (const item of items) {
-        if (this.contextKeyService.match(item.when)) {
-          const action = isIMenuItem(item)
-            ? this.injector.get(MenuItemNode, [item.command, options])
-            : new SubmenuItemNode(item);
-          activeActions.push(action);
+        // FIXME: 由于缺失比较多的 context key, 因此 CommandPalette 跳过 when 匹配
+        if (this.id === MenuId.CommandPalette || this.contextKeyService.match(item.when)) {
+          if (isIMenuItem(item)) {
+            // 兼容现有的 Command#isVisible
+            const { args = [] } = options;
+            const menuCommandDesc = this.menuRegistry.getMenuCommand(item.command);
+            const command = this.commandRegistry.getCommand(menuCommandDesc.id);
+
+            const menuCommand = { ...(command || {}), ...menuCommandDesc };
+            // 没有 desc 的 command 不展示在 menu 中
+            if (!menuCommand.label) {
+              continue;
+            }
+
+            // FIXME: Command.isVisible 待废弃
+            // command 存在但是 isVisible 为 false 则跳过
+            if (command && !this.commandRegistry.isVisible(menuCommand.id, ...args)) {
+              continue;
+            }
+
+            // 默认为 true, command 存在则按照 command#isEnabled 的结果
+            const commandEnablement = command ? this.commandRegistry.isEnabled(menuCommand.id, ...args) : true;
+            const commandToggle = Boolean(command && this.commandRegistry.isToggled(menuCommand.id, ...args));
+
+            const disabled = !commandEnablement;
+            // toggledWhen 的优先级高于 isToggled
+            // 若设置了 toggledWhen 则忽略 Command 的 isVisible
+            const checked = 'toggledWhen' in item
+              ? this.contextKeyService.match(item.toggledWhen)
+              : commandToggle;
+            const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);
+            activeActions.push(action);
+          } else {
+            // 只有 label 存在值的时候才渲染
+            if (item.label) {
+              const action = new SubmenuItemNode(item);
+              activeActions.push(action);
+            }
+          }
         }
       }
+
       if (activeActions.length > 0) {
-        result.push([id, activeActions.sort(menuItemsSorterByCmd)]);
+        result.push([id, activeActions]);
       }
     }
     return result;
@@ -251,11 +307,7 @@ function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
     return 1;
   }
 
-  // sort on label/category 目前 sort 不了，是因为注册的 command 的多语言依赖于插件语言包
-  // 但是目前 contribute 时 插件语言包加载不到，需要后续解决
   return 0;
-}
-
-function menuItemsSorterByCmd(a: MenuItemNode, b: MenuItemNode): number {
-  return Command.compareCommands(a.item, b.item);
+  // TODO: 临时先禁用掉这里的排序
+  // return Command.compareCommands(a.command, b.command);
 }

@@ -1,0 +1,30 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.menubars {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  height: 100%;
+  border-bottom: 1px solid var(--kt-menubar-border)
+}
+
+.menubar {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 8px;
+
+  &:hover {
+    color: var(--menubar-selectionForeground);
+    background-color: var(--menubar-selectionBackground);
+    border-left: 1px solid var(--menubar-selectionBorder);
+    border-right: 1px solid var(--menubar-selectionBorder);
+  }
+
+  &-drop {
+    position: absolute;
+    left: 0;
+    top: 100%;
+  }
+}

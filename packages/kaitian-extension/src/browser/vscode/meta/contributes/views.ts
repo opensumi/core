@@ -2,7 +2,7 @@ import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionTabbarView } from '../../components';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { DisposableCollection } from '@ali/ide-core-node';
+import { DisposableCollection } from '@ali/ide-core-browser';
 
 export interface ViewsContribution {
   [key: string]: ViewItem;

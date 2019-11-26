@@ -15,6 +15,7 @@ export class ReactPanelWidget extends Widget {
   constructor(
     private Component: React.FunctionComponent,
     public readonly containerId: string,
+    public readonly command: string,
     public inVisible?: boolean,
     options?: Widget.IOptions,
   ) {

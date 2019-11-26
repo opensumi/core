@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred, URI, ExtensionPaths } from '@ali/ide-core-node';
+import { Deferred, URI, ExtensionPaths, INodeLogger } from '@ali/ide-core-node';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue } from '../common/';
 
@@ -18,6 +18,9 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   @Autowired(IFileService)
   protected readonly fileSystem: IFileService;
 
+  @Autowired(INodeLogger)
+  protected readonly logger: INodeLogger;
+
   public async init(workspace: FileStat | undefined, roots: FileStat[]): Promise<ExtensionStoragePath> {
     return await this.setupDirectories(workspace, roots);
   }
@@ -27,8 +30,8 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     await this.fileSystem.createFolder(URI.file(workspaceDataDirPath).toString());
     this.workspaceDataDirPath = workspaceDataDirPath;
 
-    this.globalDataPath = path.join(this.workspaceDataDirPath, ExtensionPaths.EXTENSIONS_GLOBAL_STORAGE_DIR, 'global-state.json');
-    await this.fileSystem.createFolder(URI.file(path.dirname(this.globalDataPath)).toString());
+    this.globalDataPath = path.join(this.workspaceDataDirPath, ExtensionPaths.EXTENSIONS_GLOBAL_STORAGE_DIR);
+    await this.fileSystem.createFolder(URI.file(this.globalDataPath).toString());
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);
 
@@ -49,7 +52,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
       throw new Error('Cannot save data: no opened workspace');
     }
 
-    const data = this.readFromFile(dataPath);
+    const data = await this.readFromFile(dataPath);
 
     if (value === undefined || value === {}) {
       delete data[key];
@@ -57,7 +60,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
       data[key] = value;
     }
 
-    this.writeToFile(dataPath, data);
+    await this.writeToFile(dataPath, data);
     return true;
   }
 
@@ -66,7 +69,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     if (!dataPath) {
     return {};
     }
-    const data = this.readFromFile(dataPath);
+    const data = await this.readFromFile(dataPath);
     return data[key];
   }
 
@@ -76,7 +79,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
       return {};
     }
 
-    const data = this.readFromFile(dataPath);
+    const data = await this.readFromFile(dataPath);
     return data;
   }
 
@@ -87,33 +90,39 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     }
 
     if (isGlobal) {
-      return this.globalDataPath!;
+      return path.join(this.globalDataPath!, 'global-state.json');
     } else {
       const storagePath = await this.extensionStoragePathsServer.getLastStoragePath();
       return storagePath ? path.join(storagePath, 'workspace-state.json') : undefined;
     }
   }
 
-  private readFromFile(pathToFile: string): KeysToKeysToAnyValue {
-    if (!fs.existsSync(pathToFile)) {
+  private async readFromFile(pathToFile: string): Promise<KeysToKeysToAnyValue> {
+    const target = URI.file(pathToFile);
+    const existed = await this.fileSystem.exists(target.toString());
+    if (!existed) {
       return {};
     }
-
-    const rawData = fs.readFileSync(pathToFile, 'utf8');
     try {
-      return JSON.parse(rawData);
+      const { content } = await this.fileSystem.resolveContent(target.toString());
+      return JSON.parse(content);
     } catch (error) {
-      console.error('Failed to parse data from "', pathToFile, '". Reason:', error);
+      this.logger.error('Failed to parse data from "', target.toString(), '". Reason:', error);
       return {};
     }
   }
 
-  private writeToFile(pathToFile: string, data: KeysToKeysToAnyValue): void {
-    if (!fs.existsSync(path.dirname(pathToFile))) {
-      fs.mkdirSync(path.dirname(pathToFile));
+  private async writeToFile(pathToFile: string, data: KeysToKeysToAnyValue): Promise<void> {
+    const target = URI.file(pathToFile);
+    const existed = await this.fileSystem.exists(target.parent.toString());
+    if (!existed) {
+      await this.fileSystem.createFolder(target.parent.toString());
     }
-
     const rawData = JSON.stringify(data);
-    fs.writeFileSync(pathToFile, rawData, 'utf8');
+    let fileStat = await this.fileSystem.getFileStat(target.toString());
+    if (!fileStat) {
+      fileStat = await this.fileSystem.createFile(target.toString());
+    }
+    await this.fileSystem.setContent(fileStat, rawData);
   }
 }

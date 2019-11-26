@@ -54,6 +54,10 @@ interface Config {
    * 设置日志的目录，默认：~/.kaitian/logs
    */
   logDir?: string;
+  /**
+   * 外部设置的 ILogService，替换默认的 logService
+   */
+  LogServiceClass: ConstructorOf<ILogService>;
 }
 
 export interface AppConfig extends Partial<Config> {
@@ -125,6 +129,7 @@ export class ServerApp implements IServerApp {
       coreExtensionDir: opts.coreExtensionDir,
       logDir: opts.logDir,
       logLevel: opts.logLevel,
+      LogServiceClass: opts.LogServiceClass,
       marketplace: Object.assign({
         endpoint: 'https://marketplace.antfin-inc.com',
         extensionDir: path.join(
