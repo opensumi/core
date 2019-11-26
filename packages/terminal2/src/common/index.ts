@@ -118,7 +118,7 @@ export interface ITerminalService {
 
   resize(id: string, rows: number, cols: number);
 
-  getShellName(id: string): string | undefined;
+  getShellName(id: string): string;
 
   getProcessId(id: string): number;
 

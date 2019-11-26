@@ -5,6 +5,7 @@ import { TerminalOptions, TerminalInfo } from './pty';
 
 export interface ITerminalClient {
   id: string;
+  pid: number;
   name: string;
   isActive: boolean;
   show(): Promise<void>;
@@ -19,7 +20,7 @@ export interface ITerminalController {
   recovery(history: any): Promise<void>;
   firstInitialize(): void;
   removeFocused(): void;
-  snapshot(): string;
+  snapshot(index: number): string;
 
   addWidget(client?: any): void;
   focusWidget(widgetId: string): void;

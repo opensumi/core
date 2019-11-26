@@ -59,6 +59,10 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
     return this.terminalService.getProcessId(id);
   }
 
+  getShellName(id: string): string {
+    return this.terminalService.getShellName(id);
+  }
+
   dispose() {
     this.terminalMap.forEach((pty) => {
       pty.kill();

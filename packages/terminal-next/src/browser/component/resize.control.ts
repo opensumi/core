@@ -8,14 +8,27 @@ export class Widget extends Disposable implements IWidget {
   @observable
   state: { dynamic: number, shadowDynamic: number };
 
+  @observable
+  intro: { name: string };
+
   constructor(id?: string) {
     super();
     this._id = id || uuid();
     this.state = observable.object({ dynamic: 0, shadowDynamic: 0 });
+    this.intro = observable.object({ name: '' });
   }
 
   get id() {
     return this._id;
+  }
+
+  @computed
+  get name() {
+    return this.intro.name;
+  }
+
+  set name(name: string) {
+    this.intro.name = name;
   }
 
   @computed
@@ -75,6 +88,16 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 
   get last() {
     return this.widgets[this.length - 1];
+  }
+
+  @computed
+  get snapshot() {
+    let name = '';
+    const length = this.length;
+    this.widgets.forEach((widget, index) => {
+      name += `${widget.name}${index !== (length - 1) ? ', ' : ''}`;
+    });
+    return name;
   }
 
   createWidget(idOrWidget?: string | Widget) {

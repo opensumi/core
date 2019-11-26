@@ -8,6 +8,7 @@ export interface ITerminalExternalService {
   restore(): string;
   meta(sessionId: string): string;
   getOptions(): ITerminalOptions;
+  intro(sessionId: string): { pid: number, name: string } | undefined;
   sendText(id: string, message: string): Promise<void>;
   attach(sessionId: string, term: Terminal, restore: boolean, meta: string, attachMethod: (s: WebSocket) => void, options?: TerminalOptions): Promise<void>;
   resize(sessionId: string, cols: number, rows: number): Promise<void>;

@@ -118,7 +118,7 @@ export interface ITerminalService {
 
   resize(id: string, rows: number, cols: number);
 
-  getShellName(id: string): string | undefined;
+  getShellName(id: string): string;
 
   getProcessId(id: string): number;
 
@@ -144,6 +144,7 @@ export interface ITerminalServiceClient {
   clientMessage(id, data);
   setConnectionClientId(clientId: string);
   dispose();
+  getShellName(id: string): string;
 }
 
 export interface TerminalInfo {

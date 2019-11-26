@@ -12,7 +12,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _container: HTMLDivElement;
   private _term: Terminal;
   private _uid: string;
+  private _pid: number;
   private _widget: IWidget;
+  private _name: string;
   private _options: TerminalOptions;
 
   // add on
@@ -51,6 +53,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._disposed = false;
     this._uid = restoreId || this.service.makeId();
     this._options = options || {};
+    this._name = this._options.name || 'terminal';
     this._widget = widget;
     this._container = document.createElement('div');
     this._container.className = styles.terminalContent;
@@ -76,7 +79,15 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   get name() {
-    return 'terminal';
+    return this._name;
+  }
+
+  get pid() {
+    return this._pid;
+  }
+
+  get options() {
+    return this._options;
   }
 
   get isActive() {
@@ -108,9 +119,17 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   private _doAttach(socket: WebSocket) {
+    const info = this.service.intro(this.id);
+
     this._attachAddon = new AttachAddon(socket);
     this._term.loadAddon(this._attachAddon);
     this._attached = true;
+
+    if (info) {
+      this._name = info.name;
+      this._pid = info.pid;
+      this._widget.name = this._name;
+    }
 
     if (this.showPromiseResolve) {
       this.showPromiseResolve();

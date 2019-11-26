@@ -59,7 +59,6 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
 
   getShellName(id: string): string {
     const terminal = this.getTerminal(id);
-
     if (!terminal) {
       return '';
     }

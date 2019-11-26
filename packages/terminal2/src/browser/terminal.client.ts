@@ -4,11 +4,13 @@ import { Emitter, OnEvent, uuid, Event, isElectronEnv } from '@ali/ide-core-comm
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Terminal as XTerm } from 'xterm';
+/*
 import * as attach from 'xterm/lib/addons/attach/attach';
 import * as fit from 'xterm/lib/addons/fit/fit';
 import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
+*/
 import { AppConfig, getSlotLocation, ResizeEvent, ILogger, electronEnv } from '@ali/ide-core-browser';
 import { WSChanneHandler as IWSChanneHandler } from '@ali/ide-connection';
 import {
@@ -20,11 +22,13 @@ import {
 import { TerminalImpl } from './terminal';
 import * as TERMINAL_COLOR from './terminal-color';
 
+/*
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
 XTerm.applyAddon(fullscreen);
 XTerm.applyAddon(search);
 XTerm.applyAddon(webLinks);
+*/
 
 @Injectable()
 export class TerminalClient extends Themable implements ITerminalClient {
@@ -170,6 +174,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
 
     this.termMap.set(id, Terminal);
 
+    // @ts-ignore
     term.on('resize', (size) => {
       const { cols, rows } = size;
       this.cols = cols;

@@ -21,7 +21,7 @@ export default observer(() => {
       <select value={ index || 0 } onChange={ onChange }>
         {
           (controller.groups || []).map((group, index) => {
-            return <option key={ `${group}-${index}` } value={ index }>{ `${index + 1}: ${controller.snapshot()}` }</option>;
+            return <option key={ `${group}-${index}` } value={ index }>{ `${index + 1}: ${group.snapshot}` }</option>;
           })
         }
       </select>

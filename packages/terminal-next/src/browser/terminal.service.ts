@@ -38,6 +38,10 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
     return {};
   }
 
+  intro(id: string) {
+    return this._info.get(id);
+  }
+
   makeId(createdId?: string) {
     if (isElectronEnv()) {
       return electronEnv.metadata.windowClientId + '|' + (createdId || uuid());
@@ -75,7 +79,10 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
     };
   }
 
-  async attach(sessionId: string, term: Terminal, _: boolean, __: string, attachMethod: (s: WebSocket) => void, options = {}) {
+  async attach(sessionId: string, term: Terminal, restore: boolean, __: string, attachMethod: (s: WebSocket) => void, options = {}) {
+    if (restore) {
+      throw new Error('default terminal service not support restore');
+    }
     const handler = this._createCustomWebSocket(sessionId);
     const info = await this.service.create(sessionId, term.rows, term.cols, options);
     this._info.set(sessionId, info);

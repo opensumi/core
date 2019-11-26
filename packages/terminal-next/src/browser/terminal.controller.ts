@@ -158,8 +158,21 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.focusWidget(this.currentGroup.last.id);
   }
 
-  snapshot() {
-    return 'Terminal';
+  snapshot(index: number) {
+    let name = '';
+    const group = this.groups[index];
+
+    if (group) {
+      const length = group.length;
+      group.widgets.forEach((widget, index) => {
+        const client = this._clientsMap.get(widget.id);
+        if (client) {
+          name += `${client.name}${index !== (length - 1) ? ', ' : ''}`;
+        }
+      });
+    }
+
+    return name || 'Terminal';
   }
 
   /** resize widget operations */
@@ -305,7 +318,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       throw new Error('widget is not rendered');
     }
 
-    const next = this._createTerminalClientInstance(widget, last.id);
+    const next = this._createTerminalClientInstance(widget, last.id, last.options);
     last.dispose();
     this._clientsMap.set(widgetId, next);
     await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true);
@@ -372,6 +385,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   createTerminal(options: TerminalOptions) {
+    this.createGroup(true);
     const widgetId = this.addWidget(undefined, options);
     const client = this._clientsMap.get(widgetId);
 
