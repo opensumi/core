@@ -607,6 +607,23 @@ export class FileTreeService extends WithEventBus {
     }
   }
 
+  @action
+  updateItemMeta(uri: URI) {
+    const statusKey = this.getStatutsKey(uri);
+    const status = this.status.get(statusKey);
+    if (!status) {
+      return;
+    }
+    const file = status.file;
+    const newFileItem = this.fileAPI.fileStat2FileTreeItem(file.filestat, file.parent, file.filestat.isSymbolicLink);
+    (file as any).icon = newFileItem.icon;
+    (file as any)._openedIcon = (newFileItem as any)._openedIcon;
+    (file as any).name = newFileItem.name;
+    if (status.file.parent) {
+      status.file.parent.replaceChildren(status.file); // 触发mobx变更
+    }
+  }
+
   searchFileParent(uri: URI, check: any) {
     let parent = uri;
     // 超过两级找不到文件，默认为ignore规则下的文件夹变化
