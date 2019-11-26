@@ -443,6 +443,14 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       },
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.FOCUS, {
+      execute: async () => {
+        if (this.workbenchEditorService.currentEditor) {
+          this.workbenchEditorService.currentEditor.monacoEditor.focus();
+        }
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.NAVIGATE_NEXT, {
       execute: async () => {
         let i = this.workbenchEditorService.currentEditorGroup.index + 1;

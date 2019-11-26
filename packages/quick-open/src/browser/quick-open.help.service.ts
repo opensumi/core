@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { QuickOpenHandler, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickOpenItem, PrefixQuickOpenService, QuickOpenMode, QuickOpenModel, QuickOpenOptions } from './quick-open.model';
+import { CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 
 @Injectable()
 export class HelpQuickOpenHandler implements QuickOpenHandler {
@@ -14,6 +15,9 @@ export class HelpQuickOpenHandler implements QuickOpenHandler {
 
   @Autowired(PrefixQuickOpenService)
   protected readonly quickOpenService: PrefixQuickOpenService;
+
+  @Autowired(CommandService)
+  commandService: CommandService;
 
   init(): void {
     this.items = this.handlers.getHandlers()
@@ -41,7 +45,11 @@ export class HelpQuickOpenHandler implements QuickOpenHandler {
   }
 
   getOptions(): QuickOpenOptions {
-    return {};
+    return {
+      onClose: () => {
+        this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
+      },
+    };
   }
 
   protected comparePrefix(a: string, b: string): number {
