@@ -7,7 +7,7 @@ import { ComponentContribution, ComponentRegistry, VisibleChangedEvent, TabBarTo
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
 import { IStatusBarService } from '@ali/ide-status-bar';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { StatusBarAlignment } from '@ali/ide-core-browser/lib/services';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
@@ -166,7 +166,7 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     });
     commands.registerCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND, {
       execute: () => {
-        return this.mainLayoutService.isVisible(SlotLocation.bottom);
+        return this.mainLayoutService.getTabbarService('bottom').currentContainerId !== '';
       },
     });
     commands.registerCommand(SET_PANEL_SIZE_COMMAND, {

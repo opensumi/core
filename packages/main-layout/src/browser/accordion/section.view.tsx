@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './styles.module.less';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { Layout, PanelContext } from '@ali/ide-core-browser/lib/components';
 import { useInjectable, ViewUiStateManager } from '@ali/ide-core-browser';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';

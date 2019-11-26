@@ -1,22 +1,18 @@
 import * as React from 'react';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject, Domain } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
-import { IMainLayoutService, ComponentCollection, MainLayoutContribution } from '../common';
+import { MainLayoutContribution } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
-import { AccordionService, AccordionServiceFactory } from './accordion/accordion.service';
+import { AccordionService } from './accordion/accordion.service';
 
 @Injectable()
 export class LayoutService extends WithEventBus {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
-
-  @Autowired()
-  private viewContainerRegistry: ViewContainerRegistry;
 
   @Autowired(MainLayoutContribution)
   private readonly contributions: ContributionProvider<MainLayoutContribution>;
@@ -89,6 +85,10 @@ export class LayoutService extends WithEventBus {
         currentId: '',
         size: undefined,
       },
+      [SlotLocation.bottom]: {
+        currentId: undefined,
+        size: undefined,
+      },
     });
   }
 
@@ -105,10 +105,6 @@ export class LayoutService extends WithEventBus {
     } else {
       tabbarService.currentContainerId = tabbarService.currentContainerId ? '' : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
     }
-  }
-
-  isVisible(location: string): boolean {
-    return true;
   }
 
   getTabbarService(location: string) {

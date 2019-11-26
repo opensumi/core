@@ -5,7 +5,7 @@ import { DebugConsoleView } from '../view/debug-console.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { DebugConsoleToolbarView } from '../view/debug-console-toolbar.view';
 import { DebugContribution } from '../debug-contribution';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 

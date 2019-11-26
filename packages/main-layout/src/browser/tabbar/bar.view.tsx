@@ -9,7 +9,7 @@ import { PanelContext } from '@ali/ide-core-browser/lib/components/layout/split-
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TabbarConfig } from './renderer.view';
 import { Widget } from '@phosphor/widgets';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../../common';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { AccordionService, AccordionServiceFactory } from '../accordion/accordion.service';

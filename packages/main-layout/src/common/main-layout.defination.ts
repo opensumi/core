@@ -16,7 +16,6 @@ export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
   tabbarComponents: ComponentCollection[];
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
-  isVisible(location: SlotLocation): boolean;
   restoreState(): void;
   getTabbarHandler(handlerId: string): TabBarHandler;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;

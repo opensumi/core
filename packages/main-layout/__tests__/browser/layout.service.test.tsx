@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MainLayoutService } from '../../src/browser/main-layout.service';
 import { IMainLayoutService, MainLayoutContribution } from '../../src';
-import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient } from '@ali/ide-core-browser';
+import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, IEventBus, RenderedEvent } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
@@ -11,17 +10,15 @@ import { MainLayoutModuleContribution } from '../../src/browser/main-layout.cont
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { ActivationEventServiceImpl } from '@ali/ide-activation-event/lib/browser/activation.service';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { ActivityBarService } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
-import { ViewContainerWidget, BottomPanelWidget, ReactPanelWidget } from '@ali/ide-activity-panel/lib/browser';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
+import { LayoutService } from '../../src/browser/layout.service';
 
 const MockView = () => <div>Test view</div>;
 
 describe('main layout test', () => {
-  let service: MainLayoutService;
+  let service: LayoutService;
   let injector: MockInjector;
-  let activityBarService: ActivityBarService;
   const testToken = 'componentToken';
   const layoutNode = document.createElement('div');
   document.getElementById('main')!.appendChild(layoutNode);
@@ -100,7 +97,7 @@ describe('main layout test', () => {
     injector.addProviders(
       {
         token: IMainLayoutService,
-        useClass: MainLayoutService,
+        useClass: LayoutService,
       },
       {
         token: ComponentRegistry,
@@ -143,7 +140,7 @@ describe('main layout test', () => {
     }
   });
 
-  it('should be able to collect tabbar component before render', () => {
+  it('should be able to collect tabbar component at any time', () => {
     service.collectTabbarComponent([{
       component: MockView,
       id: 'test-view-id',
@@ -151,7 +148,7 @@ describe('main layout test', () => {
       containerId: 'container-before-render',
       title: 'test title',
     }, 'bottom');
-    expect(service.getTabbarHandler('container-before-render')).toBeUndefined();
+    expect(service.getTabbarHandler('container-before-render')).toBeDefined();
   });
 
   it('should be able to register component', () => {
@@ -170,16 +167,17 @@ describe('main layout test', () => {
       activateKeyBinding: 'cmd+1',
       hidden: false,
     });
+    const info = registry.getComponentRegistryInfo(testToken);
+    expect(info).toBeDefined();
+    expect(info!.options!.containerId).toEqual('containerId');
   });
 
-  it('should be able to restore state & init layout state storage & register toggle commands & create layout & apply layout config', async (done) => {
+  it('should be able to init layout state storage & restore state & register toggle commands', async (done) => {
     const layoutState = injector.get(LayoutState);
     await layoutState.initStorage();
-    await service.restoreState();
     const contribution: MainLayoutModuleContribution = injector.get(MainLayoutModuleContribution);
     const registry = injector.get(CommandRegistry);
     contribution.registerCommands(registry);
-    service.useConfig(layoutNode);
     done();
   });
 
@@ -203,39 +201,36 @@ describe('main layout test', () => {
     expect(handler).toBeDefined();
   });
 
-  it('should be able to register tabbar component into different containers', () => {
-    activityBarService = injector.get(ActivityBarService);
-    const viewContainer = activityBarService.getContainer('testContainerId');
-    expect(viewContainer instanceof ViewContainerWidget);
-    const bottomContainer = activityBarService.getContainer('container-before-render');
-    expect(bottomContainer instanceof BottomPanelWidget);
-  });
-
   it('should be able to register React components as container directly', () => {
-    activityBarService = injector.get(ActivityBarService);
     const handlerId = service.collectTabbarComponent([], {
       containerId: 'container-use-react',
       title: 'test title',
     }, 'bottom', MockView);
-    const ReactContainer = activityBarService.getContainer('container-use-react');
-    expect(ReactContainer instanceof ReactPanelWidget);
+    const accordionService = service.getAccordionService('container-use-react');
+    expect(accordionService.views.length).toEqual(0);
     const handler = service.getTabbarHandler(handlerId);
     expect(handler).toBeDefined();
   });
 
-  it('should be able to lock webview during resize', () => {
-    // TODO UI测试
-  });
+  // it('toggle slot should work', async (done) => {
+  //   const eventBus: IEventBus = injector.get(IEventBus);
+  //   eventBus.on(RenderedEvent, async () => {
+  //     const leftTabbarService = service.getTabbarService('left');
+  //     // currentContainerId undefined默认会使用第一个tab
+  //     expect(leftTabbarService.currentContainerId).toBeUndefined();
+  //     const bottomTabbarService = service.getTabbarService('bottom');
+  //     expect(bottomTabbarService.currentContainerId).toBeUndefined();
+  //     const rightTabbarService = service.getTabbarService('right');
+  //     // currentContainerId 空字符串表示当前未选中任何tab
+  //     expect(rightTabbarService.currentContainerId).toEqual('');
 
-  it('resize listeners should work for all slot', () => {
-    // TODO UI测试
-  });
-
-  // TODO jsdom获取到的节点宽高为0，展开折叠动画暂时无法测试
-  it('toggle slot should work', async (done) => {
-    const initVisibility = service.isVisible('left');
-    await service.toggleSlot('left');
-    expect(service.isVisible('left') !== initVisibility).toBeTruthy();
-    done();
-  });
+  //     await service.toggleSlot('left');
+  //     expect(leftTabbarService.currentContainerId).toBeFalsy();
+  //     await service.toggleSlot('bottom');
+  //     expect(bottomTabbarService.currentContainerId).toBeFalsy();
+  //     await service.toggleSlot('right');
+  //     expect(rightTabbarService.currentContainerId).toBeTruthy();
+  //     done();
+  //   });
+  // });
 });
