@@ -1,5 +1,5 @@
 import { Command } from '@ali/ide-core-common';
-import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser/lib/icon';
+import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser/lib/style/icon/icon';
 
 export const terminalAdd: Command = {
   id: 'terminal.add',
@@ -19,7 +19,7 @@ export const terminalExpand: Command = {
   id: 'terminal.expand',
   label: 'expand terminal',
   iconClass: getIcon('up'),
-  toogleIconClass: getIcon('up', ROTATE_TYPE.rotate_180),
+  toogleIconClass: getIcon('up', { rotate: ROTATE_TYPE.rotate_180 }),
   category: 'terminal',
 };
 
