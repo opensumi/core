@@ -53,7 +53,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._disposed = false;
     this._uid = restoreId || this.service.makeId();
     this._options = options || {};
-    this._name = this._options.name || 'terminal';
+    this._name = this._options.name || '';
     this._widget = widget;
     this._container = document.createElement('div');
     this._container.className = styles.terminalContent;
@@ -126,7 +126,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._attached = true;
 
     if (info) {
-      this._name = info.name;
+      this._name = (this._name || info.name) || 'terminal';
       this._pid = info.pid;
       this._widget.name = this._name;
     }
