@@ -770,6 +770,9 @@ export class FileTreeService extends WithEventBus {
         this.files = [].concat(item);
         this.updateFileStatus(this.files);
       } else if (file.parent) {
+        item.icon = file.icon;
+        item.name = file.name;
+        item._openedIcon = (file as any)._openedIcon;
         file.parent.replaceChildren(item);
         this.updateFileStatus([item]);
       }
