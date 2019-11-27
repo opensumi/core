@@ -176,6 +176,9 @@ export class FileSearchQuickCommandHandler {
       fuzzyMatchDescription: {
         enableSeparateSubstringMatching: true,
       },
+      onClose: () => {
+        this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
+      },
     };
   }
 

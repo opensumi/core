@@ -83,6 +83,9 @@ export class MonacoEditorDecorationApplier extends Disposable {
       this.decorations.get(key)!.dispose();
       this.decorations.delete(key);
     }
+    if (oldDecorations.length === 0 && decorations.length === 0) {
+      return;
+    }
     const newDecoration = this.editor.deltaDecorations(oldDecorations, decorations);
     this.decorations.set(key, {
       decorations: newDecoration,
@@ -98,6 +101,9 @@ export class MonacoEditorDecorationApplier extends Disposable {
     const oldResult = oldDecorations ? oldDecorations.decorations : [];
     const newDecorations: monaco.editor.IModelDeltaDecoration[] = [];
     const disposer = new Disposable();
+    if (oldResult.length === 0 && options.length === 0) {
+      return;
+    }
     options.forEach((option) => {
       const resolved = this.resolveDecorationRenderer(key, option.renderOptions);
       newDecorations.push({
@@ -168,11 +174,16 @@ function assignModelDecorationOptions(target: monaco.editor.IModelDecorationOpti
     target.stickiness = property.rangeBehavior as number;
   }
 
+  target.inlineClassNameAffectsLetterSpacing = true;
+
 }
 
 function assignModelDecorationStyle(target: monaco.editor.IModelDecorationOptions, style: IThemedCssStyle) {
   if (style.className) {
     target.className = clsx(target.className, style.className);
+  }
+  if (style.inlineClassName) {
+    target.inlineClassName = clsx(target.inlineClassName, style.inlineClassName);
   }
   if (style.afterContentClassName) {
     target.afterContentClassName = clsx(target.afterContentClassName, style.afterContentClassName);
