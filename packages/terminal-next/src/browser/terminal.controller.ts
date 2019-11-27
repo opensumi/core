@@ -413,6 +413,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       attach() {
         return target.attach();
       },
+      dispose() {
+        self._removeWidgetFromWidgetId(widgetId);
+      },
     };
   }
 

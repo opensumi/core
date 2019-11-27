@@ -10,6 +10,7 @@ export interface ITerminalClient {
   readonly isActive: boolean;
   show(): void;
   attach(): Promise<void>;
+  dispose(): void;
 }
 
 export const ITerminalController = Symbol('ITerminalController');
