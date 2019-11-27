@@ -24,8 +24,8 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   protected client: FileSystemWatcherClient | undefined;
 
   protected watcherSequence = 1;
+  protected watcherOptions = new Map<number, WatcherOptions>();
   protected readonly watchers = new Map<number, {path: string, disposable: IDisposable}>();
-  protected readonly watcherOptions = new Map<number, WatcherOptions>();
 
   protected readonly toDispose = new DisposableCollection(
     Disposable.create(() => this.setClient(undefined)),
@@ -219,6 +219,16 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       return;
     }
     this.client = client;
+  }
+
+  updateWatchFileExcludes(excludes: string[]) {
+    const options = new Map<number, WatcherOptions>();
+    this.watcherOptions.forEach((value, key) => {
+      options.set(key, {
+        excludes: excludes.map((pattern) => parse(pattern)),
+      });
+    });
+    this.watcherOptions = options;
   }
 
   protected pushAdded(watcherId: number, path: string): void {
