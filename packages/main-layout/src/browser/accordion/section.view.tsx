@@ -27,7 +27,6 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   viewId: string;
   alignment?: Layout.alignment;
   index: number;
-  isLast: boolean;
   initialProps?: any;
   noHeader?: boolean;
   titleMenu: IMenu;
@@ -100,7 +99,7 @@ export const AccordionSection = (
   const viewState = viewStateManager.getState(viewId);
 
   const bodyStyle = {
-    overflow : expanded ? 'visible' : 'hidden',
+    overflow : expanded ? 'auto' : 'hidden',
   } as React.CSSProperties;
   const Component: any = children;
   return  (

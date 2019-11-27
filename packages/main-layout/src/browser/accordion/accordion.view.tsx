@@ -21,17 +21,16 @@ export const AccordionContainer: React.FC<{
     }
   }, []);
   return <SplitPanel id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
-    { accordionService.views.map((view, index) => {
+    {accordionService.visibleViews.map((view, index) => {
       let viewState: SectionState | undefined = accordionService.state.get(view.id);
       if (!viewState) {
         accordionService.state.set(view.id, initState.get(view.id) || { collapsed: false, hidden: false });
         viewState = accordionService.state.get(view.id)!;
       }
       const titleMenu = accordionService.getSectionToolbarMenu(view.id);
-      // TODO hidden支持
-      const { collapsed, hidden } = viewState;
+      const { collapsed } = viewState;
       return <AccordionSection
-        noHeader={views.length === 1}
+        noHeader={accordionService.visibleViews.length === 1}
         onItemClick={() => accordionService.handleSectionClick(view.id, !collapsed, index)}
         alignment={alignment as Layout.alignment}
         header={view.name || view.id}
@@ -41,7 +40,6 @@ export const AccordionContainer: React.FC<{
         id={view.id}
         index={index}
         initialProps={view.initialProps}
-        isLast={index === views.length - 1}
         titleMenu={titleMenu}
         flex={view.weight || 1}>
         {view.component}
@@ -55,6 +53,6 @@ export interface PanelProps extends React.PropsWithChildren<any> {
   flex: number;
 }
 
-export const Panel: React.FC<PanelProps> = ({flex, children}) => {
+export const Panel: React.FC<PanelProps> = ({ flex, children }) => {
   return <div>{children}</div>;
 };

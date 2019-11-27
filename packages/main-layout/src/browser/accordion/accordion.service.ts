@@ -41,6 +41,15 @@ export class AccordionService {
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
   }
 
+  toggleViewVisibility(viewId: string, show?: boolean) {
+    const viewState = this.getViewState(viewId);
+    if (show === undefined) {
+      viewState.hidden = !viewState.hidden;
+    } else {
+      viewState.hidden = !show;
+    }
+  }
+
   get visibleViews(): View[] {
     return this.views.filter((view) => {
       const viewState = this.state.get(view.id);
@@ -55,6 +64,7 @@ export class AccordionService {
     });
   }
 
+  // FIXME 有隐藏视图的折叠展开还有bug
   // TODO 影响到别的视图时，要保证每个视图都满足对应的最小宽度（好难啊！）
   @action.bound handleSectionClick(viewId: string, collapsed: boolean, index: number) {
     const viewState = this.getViewState(viewId);
@@ -68,8 +78,8 @@ export class AccordionService {
     }
     let effected = false;
     // 找到视图下方首个展开的视图增加对应的高度
-    for (let i = this.views.length - 1; i > index; i--) {
-      if ((this.state.get(this.views[i].id) || {}).collapsed !== true) {
+    for (let i = this.visibleViews.length - 1; i > index; i--) {
+      if ((this.state.get(this.visibleViews[i].id) || {}).collapsed !== true) {
         this.setSize(i, sizeIncrement, true);
         effected = true;
         break;
@@ -78,7 +88,7 @@ export class AccordionService {
     if (!effected) {
       // 找到视图上方首个展开的视图增加对应的高度
       for (let i = index - 1; i >= 0; i--) {
-        if ((this.state.get(this.views[i].id) || {}).collapsed !== true) {
+        if ((this.state.get(this.visibleViews[i].id) || {}).collapsed !== true) {
           this.setSize(i, sizeIncrement, true);
           break;
         }
