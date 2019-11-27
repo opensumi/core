@@ -27,7 +27,7 @@ import {
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
-import { RPCMessageConnection } from '@ali/ide-connection';
+import { RPCMessageConnection, WSChanneHandler } from '@ali/ide-connection';
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider, IExternalPreferenceProvider,
 } from '../preferences';
@@ -169,6 +169,10 @@ export class ClientApp implements IClientApp {
       }
     }
     this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
+
+    // 回写需要用到打点的 Logger 的地方
+    this.injector.get(WSChanneHandler).setLogger(this.logger);
+
     this.stateService.state = 'client_connected';
     console.time('startContribution');
     await this.startContributions();
