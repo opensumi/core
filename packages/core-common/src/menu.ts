@@ -5,6 +5,7 @@ import { ContributionProvider } from './contribution-provider';
 import { IElectronMainApi } from './electron';
 import { IEventBus, BasicEvent } from './event-bus';
 import { Emitter, Event } from './event';
+import { warning } from './utils/warning';
 
 export interface MenuAction {
     // commandId 和 nativeRole 二选一
@@ -53,7 +54,12 @@ export class MenuModelRegistry {
     protected readonly contributions: ContributionProvider<MenuContribution>;
 
     onStart(): void {
-        for (const contrib of this.contributions.getContributions()) {
+      const contributions = this.contributions.getContributions();
+      warning(
+        contributions.length === 0,
+        '[kaitian] `MenuContribution` was deprecated, please use `NextMenuContribution` instead',
+      );
+      for (const contrib of contributions) {
             contrib.registerMenus(this);
         }
     }

@@ -511,6 +511,7 @@ export class FileTreeService extends WithEventBus {
       const cancel = localize('file.confirm.move.cancel');
       const comfirm = await this.dislogService.warning(formatLocalize('file.confirm.move', `[${froms.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
+        this.resetFilesSelectedStatus();
         return;
       }
     }

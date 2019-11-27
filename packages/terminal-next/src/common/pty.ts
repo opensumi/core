@@ -20,7 +20,7 @@ export interface Terminal {
   /**
    * The process ID of the shell process.
    */
-  readonly processId: Thenable<number>;
+  readonly processId: Promise<number>;
 
   /**
    * Send text to the terminal. The text is written to the stdin of the underlying pty process
@@ -118,7 +118,7 @@ export interface ITerminalService {
 
   resize(id: string, rows: number, cols: number);
 
-  getShellName(id: string): string | undefined;
+  getShellName(id: string): string;
 
   getProcessId(id: string): number;
 
@@ -144,47 +144,7 @@ export interface ITerminalServiceClient {
   clientMessage(id, data);
   setConnectionClientId(clientId: string);
   dispose();
-}
-
-export interface TerminalCreateOptions extends TerminalOptions {
-  terminalClient: ITerminalClient;
-  terminalService: IExternlTerminalService;
-  id: string;
-  xterm: XTerm;
-  el: HTMLElement;
-}
-
-export const ITerminalClient = Symbol('ITerminalClient');
-export interface ITerminalClient {
-  activeId: string;
-
-  onDidChangeActiveTerminal: Event<string>;
-
-  onDidCloseTerminal: Event<string>;
-
-  onDidOpenTerminal: Event<TerminalInfo>;
-
-  termMap: Map<string, Terminal>;
-
-  onSelectChange(e: React.ChangeEvent);
-
-  setWrapEl(el: HTMLElement);
-
-  sendText(id, text: string, addNewLine?: boolean);
-
-  createTerminal(options?: TerminalOptions, id?: string): Promise<Terminal | null>;
-
-  showTerm(id: string, preserveFocus?: boolean);
-
-  hideTerm(id: string);
-
-  removeTerm(id?: string);
-
-  getProcessId(id: string): Promise<number>;
-
-  getTerminal(id: string): Terminal | undefined;
-
-  onResize(e: any, force?: boolean);
+  getShellName(id: string): string;
 }
 
 export interface TerminalInfo {
