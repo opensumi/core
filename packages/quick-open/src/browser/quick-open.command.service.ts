@@ -140,13 +140,14 @@ export class QuickCommandHandler implements QuickOpenHandler {
       fuzzyMatchDetail: {
         enableSeparateSubstringMatching: true,
       },
-      onClose: () => {
-        this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
-      },
       // 关闭模糊排序，否则会按照 label 长度排序
       // 按照 CommandRegistry 默认排序
       fuzzySort: false,
     };
+  }
+
+  onClose() {
+    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
   }
 }
 
