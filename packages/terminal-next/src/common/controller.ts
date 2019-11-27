@@ -5,11 +5,10 @@ import { TerminalOptions, TerminalInfo } from './pty';
 
 export interface ITerminalClient {
   readonly id: string;
-  readonly pid: number;
+  readonly processId: number | undefined;
   readonly name: string;
-  readonly isActive: boolean;
   show(): void;
-  attach(): Promise<void>;
+  hide(): void;
   dispose(): void;
 }
 
@@ -38,10 +37,11 @@ export interface ITerminalController {
   eraseTerminalClient(termId: string): void;
   toJSON(): { groups: any[] };
 
+  terminals: TerminalInfo[];
+
   createTerminal(options: TerminalOptions): ITerminalClient;
   getProcessId(sessionId: string): Promise<number>;
 
-  terminals: ITerminalClient[];
   isTermActive(clientId: string): boolean;
   showTerm(id: string, preserveFocus?: boolean): void;
   hideTerm(id: string): void;

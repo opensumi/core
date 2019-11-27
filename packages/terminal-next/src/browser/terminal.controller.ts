@@ -385,7 +385,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   /** terminal operation*/
 
   get terminals() {
-    return Array.from(this._clientsMap.values());
+    const infos: TerminalInfo[] = [];
+    this._clientsMap.forEach((client) => {
+      infos.push({
+        id: client.id,
+        name: client.name,
+        isActive: client.widget.id === this._focusedId,
+      });
+    });
+    return infos;
   }
 
   createTerminal(options: TerminalOptions): ITerminalClient {
@@ -402,17 +410,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     return {
       get id() { return target.id; },
-      get pid() { return target.pid; },
+      get processId() { return target.pid; },
       get name() { return target.name; },
-      get isActive() { return target.isActive; },
       show() {
         self.tabbarHandler.activate();
         self.showTerm(client.id, true);
         self._focusedId = widgetId;
       },
-      attach() {
-        return target.attach();
-      },
+      hide() { /** do nothing */ },
       dispose() {
         self._removeWidgetFromWidgetId(widgetId);
       },
@@ -445,6 +450,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.selectGroup(index);
 
       if (preserveFocus) {
+        client.attach();
         client.focus();
       }
     }
