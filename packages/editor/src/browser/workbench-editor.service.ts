@@ -558,6 +558,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this.openingPromise.get(uri.toString())!;
   }
 
+  async pin(uri: URI) {
+    return this.pinPreviewed(uri);
+  }
+
   @action.bound
   async doOpen(uri: URI, options: IResourceOpenOptions = {}): Promise<{ group: IEditorGroup, resource: IResource } | false> {
     if (uri.scheme === 'http' || uri.scheme === 'https') {
