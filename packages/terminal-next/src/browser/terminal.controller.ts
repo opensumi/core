@@ -6,7 +6,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
 import { TerminalClient } from './terminal.client';
 import { WidgetGroup, Widget } from './component/resize.control';
-import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo } from '../common';
+import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 
 @Injectable()
@@ -58,6 +58,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       dispose: () => {
         this._onDidCloseTerminal.fire(client.id);
       },
+    });
+    this._onDidOpenTerminal.fire({
+      id: client.id,
+      name: client.name,
+      isActive: false,
     });
     return client;
   }
@@ -126,6 +131,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       if (!this.currentGroup) {
         this.createGroup(true);
         this.addWidget();
+      } else {
+        this.currentGroup.widgets.forEach((widget) => {
+          this.layoutTerminalClient(widget.id);
+        });
       }
     });
   }
@@ -296,11 +305,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const client = this._clientsMap.get(widgetId);
     if (client) {
       await client.show();
-      this._onDidOpenTerminal.fire({
-        id: client.id,
-        name: 'terminal',
-        isActive: true,
-      });
     }
   }
 
@@ -384,7 +388,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return Array.from(this._clientsMap.values());
   }
 
-  createTerminal(options: TerminalOptions) {
+  createTerminal(options: TerminalOptions): ITerminalClient {
     this.createGroup(true);
     const widgetId = this.addWidget(undefined, options);
     const client = this._clientsMap.get(widgetId);
@@ -393,7 +397,23 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       throw new Error('session not find');
     }
 
-    return client;
+    const target = client;
+    const self = this;
+
+    return {
+      get id() { return target.id; },
+      get pid() { return target.pid; },
+      get name() { return target.name; },
+      get isActive() { return target.isActive; },
+      show() {
+        self.tabbarHandler.activate();
+        self.showTerm(client.id, true);
+        self._focusedId = widgetId;
+      },
+      attach() {
+        return target.attach();
+      },
+    };
   }
 
   getProcessId(sessionId: string) {
@@ -418,8 +438,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     });
 
     if (index > -1 && client) {
-      this.selectGroup(index);
       this._focusedId = widgetId;
+      this.selectGroup(index);
 
       if (preserveFocus) {
         client.focus();
@@ -444,7 +464,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this._removeWidgetFromWidgetId(widgetId);
   }
 
-  sendText(id: string, text: string, addNewLine = false) {
+  sendText(id: string, text: string, addNewLine = true) {
     this.service.sendText(id, `${text}${addNewLine ? '\r\n' : ''}`);
   }
 

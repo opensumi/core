@@ -178,7 +178,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     const forkOptions: cp.ForkOptions = {
       env: {
         ...process.env,
-        PATH: shellPath.sync(),
+        // PATH: shellPath.sync(),
        },
     };
     const forkArgs: string[] = [];

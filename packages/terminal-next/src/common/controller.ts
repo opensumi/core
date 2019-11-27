@@ -4,11 +4,12 @@ import { ITerminalError } from './error';
 import { TerminalOptions, TerminalInfo } from './pty';
 
 export interface ITerminalClient {
-  id: string;
-  pid: number;
-  name: string;
-  isActive: boolean;
-  show(): Promise<void>;
+  readonly id: string;
+  readonly pid: number;
+  readonly name: string;
+  readonly isActive: boolean;
+  show(): void;
+  attach(): Promise<void>;
 }
 
 export const ITerminalController = Symbol('ITerminalController');

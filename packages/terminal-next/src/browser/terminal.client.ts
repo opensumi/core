@@ -4,11 +4,11 @@ import { FitAddon } from 'xterm-addon-fit';
 import { AttachAddon } from 'xterm-addon-attach';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
-import { ITerminalExternalService, IWidget, TerminalOptions, ITerminalClient, ITerminalController } from '../common';
+import { ITerminalExternalService, IWidget, TerminalOptions, ITerminalController } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import * as styles from './terminal.module.less';
 
-export class TerminalClient extends Disposable implements ITerminalClient {
+export class TerminalClient extends Disposable {
   private _container: HTMLDivElement;
   private _term: Terminal;
   private _uid: string;
@@ -29,6 +29,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private focusPromiseResolve: (() => void) | null;
   private showPromiseResolve: (() => void) | null;
+  private attachPromise: Promise<void> | null = null;
 
   static defaultOptions: ITerminalOptions = {
     macOptionIsMeta: false,
@@ -124,6 +125,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._attachAddon = new AttachAddon(socket);
     this._term.loadAddon(this._attachAddon);
     this._attached = true;
+    this.attachPromise = null;
 
     if (info) {
       this._name = (this._name || info.name) || 'terminal';
@@ -143,8 +145,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
 
     if (!this._attached) {
-      return this.service.attach(this.id, this.term, restore, meta,
-        (socket: WebSocket) => this._doAttach(socket), this._options);
+      if (!this.attachPromise) {
+        this.attachPromise = this.service.attach(this.id, this.term, restore, meta,
+          (socket: WebSocket) => this._doAttach(socket), this._options);
+      }
+      return this.attachPromise;
     } else {
       return Promise.resolve();
     }
