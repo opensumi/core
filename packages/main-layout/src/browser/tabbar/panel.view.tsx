@@ -44,16 +44,9 @@ const ContainerView: React.FC<{
   const ref = React.useRef<HTMLElement | null>();
   const configContext = useInjectable<AppConfig>(AppConfig);
   const { containerId, title, titleComponent, component: CustomComponent } = component.options!;
-  const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
-  React.useEffect(() => {
-    if (!CustomComponent && ref.current) {
-      for (const view of component.views) {
-        accordionService.appendView(view);
-      }
-    }
-  }, [ref]);
+
   return (
     <div className={styles.view_container}>
       {!CustomComponent && <div className={styles.panel_titlebar}>
@@ -72,7 +65,7 @@ const ContainerView: React.FC<{
       <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
         {CustomComponent ? <ConfigProvider value={configContext} >
           <ComponentRenderer Component={CustomComponent} />
-        </ConfigProvider> : <AccordionContainer state={accordionService.state} views={accordionService.views} containerId={component.options!.containerId} />}
+        </ConfigProvider> : <AccordionContainer views={component.views} containerId={component.options!.containerId} />}
       </div>
     </div>
   );

@@ -11,13 +11,22 @@ import { AccordionServiceFactory, AccordionService, SectionState } from './accor
 export const AccordionContainer: React.FC<{
   alignment?: Layout.alignment;
   views: View[];
-  state: Map<string, SectionState>;
+  initState?: Map<string, SectionState>;
   containerId: string;
-}> = observer(({ alignment = 'vertical', views, containerId, state }) => {
+}> = observer(({ alignment = 'vertical', views, containerId, initState = new Map() }) => {
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
+  React.useEffect(() => {
+    for (const view of views) {
+      accordionService.appendView(view);
+    }
+  }, []);
   return <SplitPanel id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
-    { views.map((view, index) => {
-      const viewState: SectionState = state.get(view.id) || { collapsed: false, hidden: false };
+    { accordionService.views.map((view, index) => {
+      let viewState: SectionState | undefined = accordionService.state.get(view.id);
+      if (!viewState) {
+        accordionService.state.set(view.id, initState.get(view.id) || { collapsed: false, hidden: false });
+        viewState = accordionService.state.get(view.id)!;
+      }
       const titleMenu = accordionService.getSectionToolbarMenu(view.id);
       // TODO hidden支持
       const { collapsed, hidden } = viewState;
