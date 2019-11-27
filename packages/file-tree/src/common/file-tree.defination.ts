@@ -52,6 +52,7 @@ export interface IParseStore {
 export const IFileTreeAPI = Symbol('IFileTreeAPI');
 
 export interface IFileTreeAPI {
+  userhomePath: URI;
   getFiles(path: string | FileStat, parent?: Directory | File | null): Promise<(Directory | File)[]>;
   getFileStat(path: string): Promise<any>;
   createFile(uri: URI): Promise<void>;

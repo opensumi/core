@@ -38,7 +38,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
         return undefined;
       }
     } else {
-      const res = await this.dialogService.open<string[]>(<FileDialog />, MessageType.Empty);
+      const res = await this.dialogService.open<string[]>(<FileDialog options={options}/>, MessageType.Empty);
       if (res && res.length > 0) {
         return res.map((r) => URI.file(r));
       } else {
@@ -47,8 +47,8 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
     }
   }
 
-  async showSaveDialog(options?: ISaveDialogOptions): Promise<URI | undefined> {
-    const res = await this.dialogService.open<string>(<FileDialog />, MessageType.Empty);
+  async showSaveDialog(options: ISaveDialogOptions = {}): Promise<URI | undefined> {
+    const res = await this.dialogService.open<string>(<FileDialog options={options}/>, MessageType.Empty);
     if (res) {
       return URI.file(res);
     } else {

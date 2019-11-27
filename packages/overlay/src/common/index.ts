@@ -68,3 +68,18 @@ export interface IOpenDialogOptions extends IDialogOptions {
   canSelectMany?: boolean;
   openLabel?: string;
 }
+
+export namespace ISaveDialogOptions {
+  export function is(option) {
+    return 'saveLabel' in option;
+  }
+}
+
+export namespace IOpenDialogOptions {
+  export function is(option) {
+    return 'canSelectFiles' in option
+    || 'canSelectFolders' in option
+    || 'canSelectMany' in option
+    || 'openLabel' in option;
+  }
+}
