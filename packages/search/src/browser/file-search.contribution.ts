@@ -176,10 +176,11 @@ export class FileSearchQuickCommandHandler {
       fuzzyMatchDescription: {
         enableSeparateSubstringMatching: true,
       },
-      onClose: () => {
-        this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
-      },
     };
+  }
+
+  onClose() {
+    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
   }
 
   private async getFindOutItems(alreadyCollected, lookFor, token) {
