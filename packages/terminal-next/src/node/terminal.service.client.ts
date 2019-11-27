@@ -21,13 +21,14 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
     this.terminalService.setClient(this.clientId, this);
   }
 
-  clientMessage(id, data) {
+  clientMessage(id: string, data: string) {
     if (this.rpcClient) {
-      this.rpcClient[0].onMessage(id, data);
+      this.rpcClient[0].onMessage(id, 'message', data);
     }
   }
 
   create(id: string, rows: number, cols: number, options: TerminalOptions ) {
+    this.terminalService.setClient(id, this);
     const pty = this.terminalService.create(id, rows, cols, options) as IPty;
     this.terminalMap.set(id, pty);
     return {
@@ -37,7 +38,13 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
   }
 
   onMessage(id: string, msg: string): void {
-    this.terminalService.onMessage(id, msg);
+    const { data, params, method } = JSON.parse(msg);
+
+    if (method === 'resize') {
+      this.resize(id, params.rows, params.cols);
+    } else {
+      this.terminalService.onMessage(id, data);
+    }
   }
 
   resize(id: string, rows: number, cols: number) {
@@ -50,6 +57,10 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
 
   getProcessId(id: string): number {
     return this.terminalService.getProcessId(id);
+  }
+
+  getShellName(id: string): string {
+    return this.terminalService.getShellName(id);
   }
 
   dispose() {

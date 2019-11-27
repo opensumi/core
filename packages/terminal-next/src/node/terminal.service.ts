@@ -24,7 +24,8 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
 
     const terminal = this.ptyService.create(rows, cols, options);
     terminal.on('data', (data) => {
-      const clientId = id.split('|')[0];
+      // const clientId = id.split('|')[0];
+      const clientId = id;
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.clientMessage(id, data);
@@ -32,7 +33,7 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
 
       // 兼容直接使用的模式
       if (this.rpcClient) {
-        this.rpcClient[0].onMessage(id, data);
+        this.rpcClient[0].onMessage(id, 'message', data);
       }
     });
     this.terminalMap.set(id , terminal);
@@ -58,7 +59,6 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
 
   getShellName(id: string): string {
     const terminal = this.getTerminal(id);
-
     if (!terminal) {
       return '';
     }

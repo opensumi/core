@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Event, isObject, uuid, Emitter, getLogger, isUndefined } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { TerminalInfo } from '@ali/ide-terminal2/lib/common';
+import { TerminalInfo } from '@ali/ide-terminal-next/lib/common';
 import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
 
 const debugLog = getLogger();

@@ -16,7 +16,7 @@ import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
 import { DebugConsoleSession } from '@ali/ide-debug/lib/browser/console/debug-console-session';
-import { ITerminalClient } from '@ali/ide-terminal2';
+import { ITerminalController } from '@ali/ide-terminal-next';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 
 @Injectable({ multiple: true })
@@ -73,8 +73,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   protected readonly LoggerManager: ILoggerManagerClient;
   protected readonly logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
 
-  @Autowired(ITerminalClient)
-  protected readonly terminalService: ITerminalClient;
+  @Autowired(ITerminalController)
+  protected readonly terminalService: ITerminalController;
 
   @Autowired(DebugConsoleSession)
   debugConsoleSession: DebugConsoleSession;
