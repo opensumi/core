@@ -8,6 +8,7 @@ import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS, URI, CommandService, localize } from '@ali/ide-core-browser';
 import { AbstractFileTreeItem, Directory, File } from './file-tree-item';
 import { IMessageService } from '@ali/ide-overlay';
+import * as paths from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class FileTreeAPI implements IFileTreeAPI {
@@ -114,7 +115,10 @@ export class FileTreeAPI implements IFileTreeAPI {
     let exists = await this.fileServiceClient.exists(to.toString());
     while (exists) {
       const name = to.displayName.replace(/\Wcopy\W\d+/, '');
-      to = to.parent.resolve(`${name} copy ${idx}`);
+      const extname = paths.extname(name);
+      const basename = paths.basename(name, extname);
+      const newFileName = `${basename} copy ${idx}${extname}`;
+      to = to.parent.resolve(newFileName);
       idx++;
       exists = await this.fileServiceClient.exists(to.toString());
     }

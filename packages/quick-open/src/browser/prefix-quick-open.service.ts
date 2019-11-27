@@ -32,6 +32,8 @@ export interface QuickOpenHandler {
    * 获取面板的参数，用于额外设置 QuickOpen
    */
   getOptions(): QuickOpenOptions;
+  /** quick-open 内部切换不会执行，最终关闭才会执行 */
+  onClose?: (canceled: boolean) => void;
 }
 
 @Injectable()
@@ -131,6 +133,15 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
       prefix: optionsPrefix,
       skipPrefix,
       ...handlerOptions,
+      onClose: (canceled: boolean) => {
+        if (handlerOptions.onClose) {
+          handlerOptions.onClose(canceled);
+        }
+        // 最后 prefix-quick 执行
+        if (handler.onClose) {
+          handler.onClose(canceled);
+        }
+      },
     });
   }
 
@@ -155,5 +166,5 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
         const searchValue = this.handlers.isDefaultHandler(handler) ? lookFor : lookFor.substr(handler.prefix.length);
         handlerModel.onType(searchValue, (items, actionProvider) => acceptor(items, actionProvider));
     }
-}
+  }
 }
