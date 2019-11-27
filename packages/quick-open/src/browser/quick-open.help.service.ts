@@ -44,12 +44,12 @@ export class HelpQuickOpenHandler implements QuickOpenHandler {
     };
   }
 
-  getOptions(): QuickOpenOptions {
-    return {
-      onClose: () => {
-        this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
-      },
-    };
+  getOptions() {
+    return {};
+  }
+
+  onClose() {
+    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
   }
 
   protected comparePrefix(a: string, b: string): number {
