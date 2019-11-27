@@ -565,7 +565,7 @@ export class ClientApp implements IClientApp {
 
   protected updateIconMap(prefix: string, iconMap: IconMap) {
     if (prefix === 'kaitian-icon kticon-') {
-      this.logger.verbose('icon prefix与内置图标冲突，请检查图标配置！');
+      this.logger.error('icon prefix与内置图标冲突，请检查图标配置！');
     }
     updateIconMap(prefix, iconMap);
   }
