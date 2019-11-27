@@ -98,11 +98,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   firstInitialize() {
     this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
 
-    if (this._checkIfNeedInitialize() && this.tabbarHandler.isActivated()) {
-      this.createGroup(true);
-      this.addWidget();
-    } else {
-      this.selectGroup(0);
+    if (this.tabbarHandler.isActivated()) {
+      if (this._checkIfNeedInitialize()) {
+        this.createGroup(true);
+        this.addWidget();
+      } else {
+        this.selectGroup(0);
+      }
     }
 
     this.service.onError((error: ITerminalError) => {
@@ -129,8 +131,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     this.tabbarHandler.onActivate(() => {
       if (!this.currentGroup) {
-        this.createGroup(true);
-        this.addWidget();
+        this.selectGroup(0);
+        // @ts-ignore
+        if (this.currentGroup && this.currentGroup.length === 0) {
+          this.createGroup(true);
+          this.addWidget();
+        }
       } else {
         this.currentGroup.widgets.forEach((widget) => {
           this.layoutTerminalClient(widget.id);
