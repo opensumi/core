@@ -76,15 +76,18 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
 })();
 
 process.on('uncaughtException', (err) => {
-  console.error('[Extension-Host][Uncaught Exception]', err);
+  const errorLog = logger && logger.error || console.error;
+  errorLog('[Extension-Host][Uncaught Exception]', err);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('[Extension-Host][Unhandle Rejection]', promise, 'reason:', reason);
+  const errorLog = logger && logger.error || console.error;
+  errorLog('[Extension-Host][Unhandle Rejection]', promise, 'reason:', reason);
 });
 
 if (isDevelopment()) {
   process.on('rejectionHandled', (err) => {
-    console.error('[Extension-Host][Handled Rejection]', err);
+    const errorLog = logger && logger.error || console.error;
+    errorLog('[Extension-Host][Handled Rejection]', err);
   });
 }

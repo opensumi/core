@@ -1,28 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from '@ali/ide-file-tree/lib/browser/file-tree.service';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { TEMP_FILE_NAME, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-core-browser/lib/components';
-import { observable, action } from 'mobx';
 import {
-  DisposableCollection,
-  Disposable,
-  Logger,
-  URI, Uri,
-  IContextKeyService,
-  IContextKey,
-  Emitter,
-  Event,
-  FileDecorationsProvider,
-  IFileDecoration,
-  CorePreferences,
-  formatLocalize,
-  localize,
-  rtrim,
-  coalesce,
-  isValidBasename,
-  trim,
+  URI,
 } from '@ali/ide-core-browser';
-import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
 import { IFileTreeAPI } from '@ali/ide-file-tree';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -47,8 +26,7 @@ export class FileDialogService {
 
   private root: IWorkspaceRoot;
 
-  @action.bound
-  async getFiles(uri?: URI) {
+  getFiles = async (uri?: URI) => {
     if (!uri) {
       this.root = (await this.workspaceService.roots)[0];
     } else {
@@ -63,7 +41,6 @@ export class FileDialogService {
 
   getDirectoryList = (): string[] => {
     const directorys: string[] = [];
-    const homePath = this.fileAPI.userhomePath;
     if (!this.root) {
       return directorys;
     }

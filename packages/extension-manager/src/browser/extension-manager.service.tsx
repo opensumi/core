@@ -161,7 +161,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @param version 指定版本
    */
   async installExtension(extension: BaseExtension, version?: string): Promise<string> {
-    const extensionId = extension.extensionId;
+    const extensionId = extension.extensionId || `${extension.publisher}.${extension.name}`;
     this.extensionMomentState.set(extensionId, {
       isInstalling: true,
     });
