@@ -354,7 +354,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.STOP.id,
-      keybinding: 'shfit+f5',
+      keybinding: 'shift+f5',
       when: 'inDebugMode',
     });
     keybindings.registerKeybinding({
@@ -364,7 +364,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
     keybindings.registerKeybinding({
       command: DEBUG_COMMANDS.PREV.id,
-      keybinding: 'shfit+f11',
+      keybinding: 'shift+f11',
       when: 'inDebugMode',
     });
     keybindings.registerKeybinding({
