@@ -7,8 +7,10 @@ import { Menu, MenuItemConstructorOptions, BrowserWindow, webContents } from 'el
 export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {
 
   showContextMenu(template: INativeMenuTemplate, webContentsId: number) {
-    this.buildMenu(template, webContentsId + '-context').popup({
+    let menu: Electron.Menu | undefined = this.buildMenu(template, webContentsId + '-context');
+    menu!.popup({
       callback: () => {
+        menu = undefined;
         this.eventEmitter.fire('menuClose', webContentsId + '-context', template.id);
       },
     });
