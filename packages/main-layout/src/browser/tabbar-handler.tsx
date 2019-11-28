@@ -1,20 +1,11 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Title, Widget, BoxPanel } from '@phosphor/widgets';
-import { AppConfig, ConfigProvider, ComponentRenderer, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
 import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
-import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload } from '@ali/ide-core-browser/lib/layout';
-import { AccordionWidget } from '@ali/ide-core-browser/lib/layout/accordion/accordion.widget';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ActivityPanelToolbar } from '@ali/ide-core-browser/lib/layout/view-container-toolbar';
-import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 import { TabbarService, TabbarServiceFactory } from './tabbar/tabbar.service';
 
 @Injectable({multiple: true})
 export class TabBarHandler {
-
-  private titleWidget?: ActivityPanelToolbar;
-  private accordion?: AccordionWidget;
 
   protected readonly onActivateEmitter = new Emitter<void>();
   readonly onActivate: Event<void> = this.onActivateEmitter.event;
@@ -27,21 +18,6 @@ export class TabBarHandler {
 
   public isVisible: boolean = false;
 
-  @Autowired(CommandService)
-  private commandService: CommandService;
-
-  @Autowired(AppConfig)
-  private configContext: AppConfig;
-
-  @Autowired(IEventBus)
-  private eventBus: IEventBus;
-
-  @Autowired(IContextKeyService)
-  private contextKeyService: IContextKeyService;
-
-  @Autowired()
-  private viewContainerRegistry: ViewContainerRegistry;
-
   // FIXME panel类型的tababr和侧边栏的tabbar需要一个标志来判断
   constructor(private containerId: string, private tabbarService: TabbarService) {
     this.tabbarService.onCurrentChange((e) => {
@@ -53,8 +29,6 @@ export class TabBarHandler {
         this.isVisible = false;
       }
     });
-    this.titleWidget = this.viewContainerRegistry.getTitleBar(this.containerId);
-    this.accordion = this.viewContainerRegistry.getAccordion(this.containerId);
   }
 
   dispose() {
@@ -62,10 +36,9 @@ export class TabBarHandler {
     this.tabbarService.containersMap.delete(this.containerId);
   }
 
+  // TODO
   disposeView(viewId: string) {
-    if (this.accordion) {
-      this.accordion.removeWidget(viewId);
-    }
+    console.warn(this.containerId + ':disposeView方法在handler中暂未实现');
   }
 
   activate() {
@@ -77,11 +50,11 @@ export class TabBarHandler {
   }
 
   show() {
-
+    console.warn(this.containerId + ':show方法在handler中暂未实现');
   }
 
   hide() {
-
+    console.warn(this.containerId + ':hide方法在handler中暂未实现');
   }
 
   // @deprecated 设定title自定义组件，应通过contribution声明
@@ -93,7 +66,7 @@ export class TabBarHandler {
   }
 
   setSize(size: number) {
-    // command
+    console.warn(this.containerId + ':setSize方法在handler中暂未实现');
   }
 
   setBadge(badge: string) {
@@ -101,72 +74,31 @@ export class TabBarHandler {
   }
 
   setIconClass(iconClass: string) {
-
+    console.warn(this.containerId + ':setIconClass方法在handler中暂未实现');
   }
 
   isCollapsed(viewId: string) {
-    if (!this.accordion) {
-      return;
-    }
-    const section = this.accordion.sections.get(viewId);
-    if (!section) {
-      console.error('没有找到对应的view!');
-    } else {
-      return section.collapsed;
-    }
+    console.warn(this.containerId + ':isCollapsed方法在handler中暂未实现');
+    return false;
   }
 
   // 有多个视图请一次性注册，否则会影响到视图展开状态！
   toggleViews(viewIds: string[], show: boolean) {
-    if (!this.accordion) {
-      return;
-    }
-    for (const viewId of viewIds) {
-      const section = this.accordion.sections.get(viewId);
-      if (!section) {
-        console.warn(`没有找到${viewId}对应的视图，跳过`);
-        continue;
-      }
-      section.setHidden(!show);
-    }
-    this.accordion.updateTitleVisibility();
+    console.warn(this.containerId + ':toggleViews方法在handler中暂未实现');
   }
 
+  // @deprecated
   updateViewTitle(viewId: string, title: string) {
-    if (!this.accordion) {
-      return;
-    }
-    const section = this.accordion.sections.get(viewId);
-    if (!section) {
-      console.warn(`没有找到${viewId}对应的视图，跳过`);
-      return;
-    }
-    section.titleLabel = title;
+    console.warn(this.containerId + ':updateViewTitle方法在handler中已被废弃');
   }
 
-  // 刷新 title
+  // @deprecated
   refreshTitle() {
-    if (this.titleWidget) {
-      let viewId: string | undefined;
-      if (this.accordion) {
-        const visibleViews = this.accordion.getVisibleSections();
-        if (visibleViews.length === 1) {
-          viewId = visibleViews[0].view.id;
-        }
-      }
-      this.titleWidget.updateToolbar(viewId);
-    }
-    if (this.accordion) {
-      this.accordion.sections.forEach((section) => {
-        section.update();
-      });
-    }
+    console.warn(this.containerId + ':refreshTitle方法在handler中已被废弃');
   }
 
   // @deprecated 更新 title
   updateTitle(label: string) {
-    if (this.accordion) {
-      this.accordion.update();
-    }
+    console.warn(this.containerId + ':updateTitle方法在handler中已被废弃');
   }
 }

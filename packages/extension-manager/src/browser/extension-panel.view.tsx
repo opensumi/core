@@ -1,15 +1,12 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { AccordionWidget } from '@ali/ide-core-browser/lib/layout/accordion/accordion.widget';
 import Tabs from 'antd/lib/tabs';
 import 'antd/lib/tabs/style/index.less';
 import { useInjectable, localize, CommandRegistry, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
-import { Widget } from '@phosphor/widgets';
 import { enableExtensionsContainerId, hotExtensionsContainerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromMarketplaceTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, IExtensionManagerService, hotExtensionsFromMarketplaceTarbarHandlerId, TabActiveKey, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionHotAccordion, ExtensionEnableAccordion, ExtensionDisableAccordion, ExtensionSearchInstalledAccordion, ExtensionSearchMarketplaceAccordion } from './extension-panel-accordion.view';
 import { ExtensionSearch } from './components/extension-search';
 import * as styles from './extension-panel.module.less';
-import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { AccordionContainer } from '@ali/ide-main-layout/lib/browser/accordion/accordion.view';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 
