@@ -25,6 +25,11 @@ export const scmPreferenceSchema: PreferenceSchema = {
       default: 'all',
       description: localize('diffDecorations', 'Controls diff decorations in the editor.'),
     },
+    'scm.alwaysShowDiffWidget': {
+      type: 'boolean',
+      description: localize('alwaysShowDiffWidget', 'Controls whether to always click to show the Dirty Diff Widget.'),
+      default: true,
+    },
     'scm.diffDecorationsGutterWidth': {
       type: 'number',
       enum: [1, 2, 3, 4, 5],
