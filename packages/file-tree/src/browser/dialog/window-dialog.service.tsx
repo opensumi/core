@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '../common';
+import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { isElectronRenderer, electronEnv, URI, MessageType } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';

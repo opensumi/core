@@ -1,16 +1,16 @@
 import * as React from 'react';
-import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '../common';
+import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
 import { Button } from '@ali/ide-core-browser/lib/components';
-import * as styles from './dialog.module.less';
+import * as styles from './file-dialog.module.less';
 import { useInjectable, localize, URI, TreeNode } from '@ali/ide-core-browser';
 import { FileDialogService } from './file-dialog.service';
 import { FileDialogTree } from './file-dialog.tree';
 import { Select } from '@ali/ide-core-browser/lib/components/select';
 
 export const FileDialog = (
-  { options }: {
+  { options }: React.PropsWithChildren<{
     options: ISaveDialogOptions | IOpenDialogOptions,
-  },
+  }>,
 ) => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const {
@@ -24,8 +24,6 @@ export const FileDialog = (
   function hide(value?: string[]) {
     dialogService.hide(value);
   }
-
-  const noop = () => {};
 
   React.useEffect(() => {
     getFiles(options.defaultUri).then((file) => {
@@ -117,7 +115,7 @@ export const FileDialog = (
           </div>
         </React.Fragment>
       );
-    } else if (isOpenDialog) {
+    } else {
       return (
         <React.Fragment>
           <div className={styles.file_dialog_directory_title}>{ (options as IOpenDialogOptions).openLabel || localize('dialog.file.openLabel')}</div>
