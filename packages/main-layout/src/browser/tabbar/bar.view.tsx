@@ -55,14 +55,14 @@ export const TabbarViewBase: React.FC<{
   );
 });
 
-const IconTabView: React.FC<{component: ComponentRegistryInfo}> = (({ component }) => {
+const IconTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ component }) => {
   return <div className='icon-tab'>
     <div className={clsx(component.options!.iconClass, 'activity-icon')} title={component.options!.title}></div>
     {component.options!.badge && <div className='tab-badge'>{component.options!.badge}</div>}
   </div>;
 });
 
-const TextTabView: React.FC<{component: ComponentRegistryInfo}> = (({ component }) => {
+const TextTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ component }) => {
   return <div className={styles.text_tab}>
     <div className={styles.bottom_tab_title}>{component.options!.title}</div>
     {component.options!.badge && <div className='tab-badge'>{component.options!.badge}</div>}
