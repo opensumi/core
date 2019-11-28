@@ -21,6 +21,7 @@ describe('template test', () => {
       useValue: {
         marketplace: {
           extensionDir,
+          ignoreId: [],
         },
       },
     }, {

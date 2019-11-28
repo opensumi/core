@@ -38,6 +38,8 @@ export interface MarketplaceConfig {
   masterKey: string;
   // 插件市场参数转换函数
   transformRequest?: (request: MarketplaceRequest) => MarketplaceRequest;
+  // 在热门插件、搜索插件时忽略的插件 id
+  ignoreId: string[];
 }
 
 interface Config {
@@ -141,6 +143,7 @@ export class ServerApp implements IServerApp {
         showBuiltinExtensions: false,
         accountId: '',
         masterKey: '',
+        ignoreId: [],
       }, opts.marketplace),
       processCloseExitThreshold: opts.processCloseExitThreshold,
       staticAllowOrigin: opts.staticAllowOrigin,
