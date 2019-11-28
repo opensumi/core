@@ -1,12 +1,10 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, TabBarToolbar, ToolbarRegistry, OnEvent, ResizeEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, OnEvent, ResizeEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe } from 'mobx';
-import { ViewContainerRegistry } from '@ali/ide-core-browser/lib/layout/view-container.registry';
 import { AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 
-// TODO 存尺寸，存状态
 @Injectable({multiple: true})
 export class TabbarService extends WithEventBus {
   @observable currentContainerId: string;
@@ -28,19 +26,11 @@ export class TabbarService extends WithEventBus {
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
-  @Autowired()
-  private viewContainerRegistry: ViewContainerRegistry;
-
-  @Autowired()
-  protected readonly ToolbarRegistry: ToolbarRegistry;
-
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
 
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
-
-  private toolbar: TabBarToolbar;
 
   private barSize: number;
 
@@ -63,11 +53,6 @@ export class TabbarService extends WithEventBus {
     return this.containersMap.get(containerId);
   }
 
-  // TODO 底部控制，需要与侧边栏的形式统一
-  registerToolbar(toolbar: TabBarToolbar) {
-    this.toolbar = toolbar;
-  }
-
   getTitleToolbarMenu(containerId: string) {
     const menu = this.menuService.createMenu(`container/${containerId}`);
     return menu;
@@ -86,12 +71,7 @@ export class TabbarService extends WithEventBus {
 
   @OnEvent(RenderedEvent)
   protected async onRendered() {
-    for (const component of this.containersMap.values()) {
-      const accordion = this.viewContainerRegistry.getAccordion(component.options!.containerId);
-      if (accordion) {
-        await accordion.restoreState();
-      }
-    }
+    // accordion panel状态恢复
   }
 
   @OnEvent(ResizeEvent)
@@ -115,17 +95,6 @@ export class TabbarService extends WithEventBus {
       this.onCurrentChangeEmitter.fire({previousId: change.oldValue || '', currentId});
       const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
       if (currentId) {
-        const currentTitleBar = this.viewContainerRegistry.getTitleBar(currentId)!;
-        const accordion = this.viewContainerRegistry.getAccordion(currentId)!;
-        if (currentTitleBar && accordion) {
-          const visibleViews = accordion.getVisibleSections().map((section) => section.view.id);
-          if (visibleViews.length === 1) {
-            currentTitleBar.updateToolbar(visibleViews[0]);
-          } else {
-            currentTitleBar.updateToolbar();
-            accordion.update();
-          }
-        }
         if (this.prevSize === undefined) {
           this.prevSize = getSize(isLatter);
         }
