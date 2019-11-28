@@ -15,6 +15,7 @@ export interface AppConfig {
   injector: Injector;
   wsPath: string;
   layoutConfig: LayoutConfig;
+  layoutComponent?: React.FC;
   /**
    * 用于挂载webview的iframe地址
    */
