@@ -23,7 +23,7 @@ export const FileDialog = observer((
   const [saveOrOpenValue, setSaveOrOpenValue] = React.useState<string[]>([]);
 
   function hide(value?: string[]) {
-    dialogService.hide('1');
+    dialogService.hide(value);
   }
 
   const noop = () => {};
@@ -43,7 +43,7 @@ export const FileDialog = observer((
 
   const onSelectHandler = (nodes: TreeNode<any>) => {
     const values = nodes.map((node) => {
-      return node.uri.toString();
+      return node.uri.withoutScheme().toString();
     });
     setSaveOrOpenValue(values);
   };
