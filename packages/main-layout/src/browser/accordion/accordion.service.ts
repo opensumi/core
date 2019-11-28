@@ -96,7 +96,7 @@ export class AccordionService {
     }
   }
 
-  protected getViewState(viewId: string) {
+  public getViewState(viewId: string) {
     let viewState = this.state.get(viewId);
     if (!viewState) {
       this.state.set(viewId, { collapsed: false, hidden: false });

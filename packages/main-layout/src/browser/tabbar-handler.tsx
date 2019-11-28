@@ -1,11 +1,14 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
+import { Event, Emitter } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { TabbarService, TabbarServiceFactory } from './tabbar/tabbar.service';
+import { TabbarService } from './tabbar/tabbar.service';
+import { IMainLayoutService } from '../common';
 
 @Injectable({multiple: true})
 export class TabBarHandler {
+  @Autowired(IMainLayoutService)
+  private layoutService: IMainLayoutService;
 
   protected readonly onActivateEmitter = new Emitter<void>();
   readonly onActivate: Event<void> = this.onActivateEmitter.event;
@@ -17,6 +20,7 @@ export class TabBarHandler {
   readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
 
   public isVisible: boolean = false;
+  public accordionService = this.layoutService.getAccordionService(this.containerId);
 
   // FIXME panel类型的tababr和侧边栏的tabbar需要一个标志来判断
   constructor(private containerId: string, private tabbarService: TabbarService) {
@@ -36,9 +40,9 @@ export class TabBarHandler {
     this.tabbarService.containersMap.delete(this.containerId);
   }
 
-  // TODO
   disposeView(viewId: string) {
-    console.warn(this.containerId + ':disposeView方法在handler中暂未实现');
+    const index = this.accordionService.views.findIndex((view) => view.id === viewId);
+    this.accordionService.views.splice(index, 1);
   }
 
   activate() {
@@ -82,9 +86,11 @@ export class TabBarHandler {
     return false;
   }
 
-  // 有多个视图请一次性注册，否则会影响到视图展开状态！
   toggleViews(viewIds: string[], show: boolean) {
-    console.warn(this.containerId + ':toggleViews方法在handler中暂未实现');
+    for (const viewId of viewIds) {
+      const viewState = this.accordionService.getViewState(viewId);
+      viewState.hidden = !show;
+    }
   }
 
   // @deprecated
