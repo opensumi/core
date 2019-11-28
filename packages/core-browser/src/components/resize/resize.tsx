@@ -2,6 +2,8 @@ import * as React from 'react';
 import * as styles from './resize.module.less';
 import classnames from 'classnames';
 
+export const RESIZE_LOCK = 'resize-lock';
+
 export interface ResizeHandleProps {
   onFinished?: () => void;
   onResize?: (prevElement: HTMLElement, nextElement: HTMLElement) => void;
@@ -56,6 +58,11 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   const setSize = (prev: number, next: number) => {
     const prevEle = props.findPrevElement ? props.findPrevElement() : prevElement.current!;
     const nextEle = props.findNextElement ? props.findNextElement() : nextElement.current!;
+    if (
+      (prevEle && prevEle.classList.contains(RESIZE_LOCK)) || (nextEle && nextEle.classList.contains(RESIZE_LOCK))
+    ) {
+      return;
+    }
     if (nextEle) {
       nextEle.style.width = next * 100 + '%';
     }
@@ -95,7 +102,6 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     e.preventDefault();
     const prevWidth = startPrevWidth.current + e.pageX - startX.current;
     const nextWidth = startNextWidth.current - ( e.pageX - startX.current);
-    const preserve = props.preserve || 0;
     if (requestFrame.current) {
       window.cancelAnimationFrame(requestFrame.current);
     }
@@ -176,6 +182,9 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       if (!nextEle || !prevEle) {
         return;
       }
+      if (prevEle.classList.contains(RESIZE_LOCK) || nextEle.classList.contains(RESIZE_LOCK)) {
+        return;
+      }
       nextEle.style.height = next * 100 + '%';
       prevEle.style.height = prev * 100 + '%';
       if (props.onResize) {
@@ -184,6 +193,9 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   };
 
   const setDomSize = (prev: number, next: number, prevEle: HTMLElement, nextEle: HTMLElement) => {
+    if (prevEle.classList.contains(RESIZE_LOCK) || nextEle.classList.contains(RESIZE_LOCK)) {
+      return;
+    }
     nextEle.style.height = next * 100 + '%';
     prevEle.style.height = prev * 100 + '%';
     if (props.onResize && nextEle && prevEle) {
@@ -243,8 +255,8 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     const dynamicPrev = props.findPrevElement ? props.findPrevElement(direction) : null;
     // 作用元素变化重新初始化当前位置，传入findNextElement时默认已传入findPrevElement
     if (
-      dynamicNext !== null && cachedNextElement.current !== dynamicNext ||
-        dynamicPrev !== null && cachedPrevElement.current !== dynamicPrev
+      (dynamicNext !== null && cachedNextElement.current !== dynamicNext) ||
+        (dynamicPrev !== null && cachedPrevElement.current !== dynamicPrev)
     ) {
       if (!dynamicNext || !dynamicPrev) {
         return;
@@ -258,7 +270,6 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
 
     const prevHeight = startPrevHeight.current + e.pageY - startY.current;
     const nextHeight = startNextHeight.current - ( e.pageY - startY.current);
-    const preserve = props.preserve || 0;
     if (requestFrame.current) {
       window.cancelAnimationFrame(requestFrame.current);
     }

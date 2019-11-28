@@ -3,6 +3,7 @@ import { View } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractMenuService, IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
 
 export interface SectionState {
   collapsed: boolean;
@@ -112,12 +113,15 @@ export class AccordionService {
   }
 
   protected setSize(index: number, targetSize: number, isIncrement?: boolean): number {
-    if (!targetSize) {
-      targetSize = this.headerSize;
-    }
     const fullHeight = this.splitPanelService.rootNode.clientHeight;
     const panel = this.splitPanelService.panels[index];
     panel.classList.add('resize-ease');
+    if (!targetSize) {
+      targetSize = this.headerSize;
+      panel.classList.add(RESIZE_LOCK);
+    } else {
+      panel.classList.remove(RESIZE_LOCK);
+    }
     // clientHeight会被上次展开的元素挤掉
     const prevSize = (+panel.style.height!.replace('%', '')) / 100 * fullHeight;
     const viewState = this.getViewState(this.visibleViews[index].id);
