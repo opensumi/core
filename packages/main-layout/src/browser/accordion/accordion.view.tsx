@@ -35,6 +35,7 @@ export const AccordionContainer: React.FC<{
       return <AccordionSection
         noHeader={accordionService.visibleViews.length === 1}
         onItemClick={() => accordionService.handleSectionClick(view.id, !collapsed, index)}
+        onContextMenuHandler={accordionService.handleContextMenu}
         alignment={alignment as Layout.alignment}
         header={view.name || view.id}
         viewId={view.id}

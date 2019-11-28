@@ -1,8 +1,8 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { View } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
-import { AbstractMenuService, IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
 
 export interface SectionState {
@@ -14,12 +14,27 @@ export interface SectionState {
 @Injectable({multiple: true})
 export class AccordionService {
   @Autowired()
-  splitPanelManager: SplitPanelManager;
+  protected splitPanelManager: SplitPanelManager;
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
 
-  splitPanelService: SplitPanelService;
+  @Autowired(IMenuRegistry)
+  protected menuRegistry: IMenuRegistry;
+
+  @Autowired(CommandRegistry)
+  private commandRegistry: CommandRegistry;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly contextMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired()
+  private viewContextKeyRegistry: ViewContextKeyRegistry;
+
+  @Autowired(IContextKeyService)
+  private contextKeyService: IContextKeyService;
+
+  protected splitPanelService: SplitPanelService;
 
   @observable.shallow views: View[] = [];
 
@@ -27,9 +42,17 @@ export class AccordionService {
 
   private headerSize: number;
   private minSize: number;
+  private menuId = `accordion/${this.containerId}`;
 
   constructor(public containerId: string) {
     this.splitPanelService = this.splitPanelManager.getService(containerId);
+    this.menuRegistry.registerMenuItem(this.menuId, {
+      command: {
+        id: this.registerGlobalToggleCommand(),
+        label: localize('layout.view.hide', '隐藏'),
+      },
+      group: '0_global',
+    });
   }
 
   initConfig(config: { headerSize: number; minSize: number; }) {
@@ -46,6 +69,55 @@ export class AccordionService {
   appendView(view: View) {
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
+    this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped()).createKey('view', view.id);
+    if (!view.name) {
+      console.warn(view.id + '视图未传入标题，请检查！');
+    }
+    this.menuRegistry.registerMenuItem(this.menuId, {
+      command: {
+        id: this.registerVisibleToggleCommand(view.id),
+        label: view.name || view.id,
+      },
+      group: '1_widgets',
+      // TODO order计算
+    });
+  }
+
+  private registerGlobalToggleCommand() {
+    const commandId = `view-container.hide.${this.containerId}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+    }, {
+      execute: ({viewId}: {viewId: string}) => {
+        this.doToggleView(viewId);
+      },
+    });
+    return commandId;
+  }
+
+  private registerVisibleToggleCommand(viewId: string): string {
+    const commandId = `view-container.hide.${viewId}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+    }, {
+      execute: ({forceShow}: {forceShow?: boolean}) => {
+        this.doToggleView(viewId, forceShow);
+      },
+      isToggled: () => {
+        const state = this.getViewState(viewId);
+        return !state.hidden;
+      },
+    });
+    return commandId;
+  }
+
+  protected doToggleView(viewId: string, forceShow?: boolean) {
+    const state = this.getViewState(viewId);
+    if (forceShow === undefined) {
+      state.hidden = !state.hidden;
+    } else {
+      state.hidden = !forceShow;
+    }
   }
 
   toggleViewVisibility(viewId: string, show?: boolean) {
@@ -102,6 +174,16 @@ export class AccordionService {
         }
       }
     }
+  }
+
+  @action.bound handleContextMenu(event: React.MouseEvent, viewId: string) {
+    event.preventDefault();
+    const menus = this.menuService.createMenu(this.menuId, this.viewContextKeyRegistry.getContextKeyService(viewId));
+    const menuNodes = generateCtxMenu({ menus, options: {args: [{viewId}]} });
+    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+      x: event.clientX,
+      y: event.clientY,
+    } });
   }
 
   public getViewState(viewId: string) {

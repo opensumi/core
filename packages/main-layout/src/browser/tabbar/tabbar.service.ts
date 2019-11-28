@@ -1,5 +1,5 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize } from '@ali/ide-core-browser';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe } from 'mobx';
 import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
@@ -23,12 +23,6 @@ export class TabbarService extends WithEventBus {
     setSize: (targetSize: number, isLatter: boolean) => void,
     getSize: (isLatter: boolean) => number,
   };
-
-  @Autowired()
-  private viewContextKeyRegistry: ViewContextKeyRegistry;
-
-  @Autowired(IContextKeyService)
-  private contextKeyService: IContextKeyService;
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
@@ -94,7 +88,6 @@ export class TabbarService extends WithEventBus {
       },
       group: '1_widgets',
     });
-    this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped()).createKey('view', containerId);
   }
 
   getContainer(containerId: string) {
@@ -119,8 +112,7 @@ export class TabbarService extends WithEventBus {
 
   @action.bound handleContextMenu(event: React.MouseEvent, containerId: string) {
     event.preventDefault();
-    console.log(containerId);
-    const menus = this.menuService.createMenu(this.menuId, this.viewContextKeyRegistry.getContextKeyService(containerId));
+    const menus = this.menuService.createMenu(this.menuId);
     const menuNodes = generateCtxMenu({ menus, options: {args: [{containerId}]} });
     this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
       x: event.clientX,
@@ -163,6 +155,11 @@ export class TabbarService extends WithEventBus {
       state.hidden = !state.hidden;
     } else {
       state.hidden = !forceShow;
+    }
+    if (state.hidden) {
+      if (this.currentContainerId === containerId) {
+        this.currentContainerId = this.visibleContainers[0].options!.containerId;
+      }
     }
   }
 

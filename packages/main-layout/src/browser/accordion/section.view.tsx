@@ -14,6 +14,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   headerClass?: string;
   // panel 点击事件监听
   onItemClick?: any;
+  onContextMenuHandler: any;
   // 计算宽度时的优先级
   weight?: number;
   // 排序优先级
@@ -48,6 +49,7 @@ export const AccordionSection = (
     alignment = 'vertical',
     initialProps,
     titleMenu,
+    onContextMenuHandler,
   }: CollapsePanelProps,
 ) => {
   const viewStateManager = useInjectable<ViewUiStateManager>(ViewUiStateManager);
@@ -110,6 +112,7 @@ export const AccordionSection = (
       {...attrs}
       className={ cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
       onClick={clickHandler}
+      onContextMenu={(e) => onContextMenuHandler(e, viewId)}
       style={{height: headerSize + 'px', lineHeight: headerSize + 'px'}}
       >
         <div className={styles.label_wrap}>
