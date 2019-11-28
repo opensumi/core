@@ -3,12 +3,11 @@ import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '../commo
 import { Button } from '@ali/ide-core-browser/lib/components';
 import * as styles from './dialog.module.less';
 import { useInjectable, localize, URI, TreeNode } from '@ali/ide-core-browser';
-import { observer } from 'mobx-react-lite';
 import { FileDialogService } from './file-dialog.service';
 import { FileDialogTree } from './file-dialog.tree';
 import { Select } from '@ali/ide-core-browser/lib/components/select';
 
-export const FileDialog = observer((
+export const FileDialog = (
   { options }: {
     options: ISaveDialogOptions | IOpenDialogOptions,
   },
@@ -150,4 +149,4 @@ export const FileDialog = observer((
       );
     }
   }
-});
+};
