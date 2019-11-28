@@ -43,7 +43,7 @@ export class AccordionService {
   }
 
   appendView(view: View) {
-    const index = this.views.findIndex((value) => (value.priority || 0) <= (view.priority || 0));
+    const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
   }
 
