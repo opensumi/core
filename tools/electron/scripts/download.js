@@ -48,15 +48,15 @@ const downloadVscodeExtensions = async () => {
   mkdirp.sync(targetDir);
 
   const promises = [];
-  const types = Object.keys(extensions);
-  for (const type of types) {
-    const items = extensions[type];
+  const publishers = Object.keys(extensions);
+  for (const publisher of publishers) {
+    const items = extensions[publisher];
 
     for (const item of items) {
-      const { name, id, version } = item;
+      const { name, version } = item;
       promises.push(async () => {
         log('开始安装：%s', name);
-        await install(name, id, version, targetDir);
+        await install(publisher, name, version, targetDir);
       });
     }
   }
