@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { CONTEXT_MENU } from './file-tree.view';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -320,6 +320,11 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       execute: (_, uris) => {
         if (uris && uris.length) {
           const copyUri: URI = uris[0];
+          let pathStr: string = decodeURIComponent(copyUri.withoutScheme().toString());
+          // windows下移除路径前的 /
+          if (isWindows) {
+            pathStr = pathStr.slice(1);
+          }
           copy(decodeURIComponent(copyUri.withoutScheme().toString()));
         }
       },
