@@ -5,7 +5,7 @@ import * as fs from 'fs-extra';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService } from '../common';
-import { getLogger, Deferred, isDevelopment, INodeLogger, AppConfig, isWindows } from '@ali/ide-core-node';
+import { getLogger, Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronRenderer } from '@ali/ide-core-node';
 import * as shellPath from 'shell-path';
 import * as cp from 'child_process';
 import * as psTree from 'ps-tree';
@@ -175,12 +175,22 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
 
     let preloadPath;
-    const forkOptions: cp.ForkOptions = {
-      env: {
-        ...process.env,
-        // PATH: shellPath.sync(),
-       },
-    };
+    let forkOptions: cp.ForkOptions;
+    // TODO: 软链模式下的路径兼容性存在问题
+    if (isElectronRenderer()) {
+      forkOptions = {
+        env: {
+          ...process.env,
+          PATH: shellPath.sync(),
+         },
+      };
+    } else {
+      forkOptions = {
+        env: {
+          ...process.env,
+         },
+      };
+    }
     const forkArgs: string[] = [];
     let extProcessPath: string = '';
     forkOptions.execArgv = [];
