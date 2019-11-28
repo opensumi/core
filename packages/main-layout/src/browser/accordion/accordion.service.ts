@@ -71,8 +71,6 @@ export class AccordionService {
     });
   }
 
-  // FIXME 有隐藏视图的折叠展开还有bug
-  // TODO 影响到别的视图时，要保证每个视图都满足对应的最小宽度（好难啊！）
   @action.bound handleSectionClick(viewId: string, collapsed: boolean, index: number) {
     const viewState = this.getViewState(viewId);
     viewState.collapsed = collapsed;
@@ -83,20 +81,23 @@ export class AccordionService {
       // 仅有一个视图展开时独占
       sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize);
     }
+    // 下方视图被影响的情况下，上方视图不会同时变化
     let effected = false;
-    // 找到视图下方首个展开的视图增加对应的高度
+    // 从视图下方最后一个展开的视图起依次减去对应的高度
     for (let i = this.visibleViews.length - 1; i > index; i--) {
-      if ((this.state.get(this.visibleViews[i].id) || {}).collapsed !== true) {
-        this.setSize(i, sizeIncrement, true);
+      if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
+        sizeIncrement = this.setSize(i, sizeIncrement, true);
         effected = true;
-        break;
+        if (sizeIncrement === 0) {
+          break;
+        }
       }
     }
     if (!effected) {
-      // 找到视图上方首个展开的视图增加对应的高度
+      // 找到视图上方首个展开的视图减去对应的高度
       for (let i = index - 1; i >= 0; i--) {
         if ((this.state.get(this.visibleViews[i].id) || {}).collapsed !== true) {
-          this.setSize(i, sizeIncrement, true);
+          sizeIncrement = this.setSize(i, sizeIncrement, true);
           break;
         }
       }
@@ -123,21 +124,25 @@ export class AccordionService {
       panel.classList.remove(RESIZE_LOCK);
     }
     // clientHeight会被上次展开的元素挤掉
-    const prevSize = (+panel.style.height!.replace('%', '')) / 100 * fullHeight;
+    const prevSize = panel.clientHeight;
     const viewState = this.getViewState(this.visibleViews[index].id);
-    if (isIncrement && this.expandedViews.length > 1) {
-      // 首其他视图展开/折叠影响的视图尺寸记录，仅有一个展开时不足记录
-      viewState.size = targetSize + prevSize;
+    let calcTargetSize: number = targetSize;
+    if (isIncrement) {
+      calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
+      if (this.expandedViews.length > 1) {
+        // 首其他视图展开/折叠影响的视图尺寸记录，仅有一个展开时不足记录
+        viewState.size = calcTargetSize;
+      }
     } else if (targetSize === this.headerSize && this.expandedViews.length > 0) {
       // 当前视图即将折叠且不是唯一展开的视图时，存储当前高度
       viewState.size = prevSize;
     }
-    panel.style.height = (isIncrement ? targetSize + prevSize : targetSize) / fullHeight * 100 + '%';
+    panel.style.height = calcTargetSize / fullHeight * 100 + '%';
     setTimeout(() => {
       // 动画 0.1s，保证结束后移除
       panel.classList.remove('resize-ease');
     }, 200);
-    return isIncrement ? targetSize : prevSize - targetSize;
+    return isIncrement ? calcTargetSize - (prevSize - targetSize) : targetSize - prevSize;
   }
 
   protected getAvailableSize() {
