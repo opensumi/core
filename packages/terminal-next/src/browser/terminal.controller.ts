@@ -131,12 +131,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     this.tabbarHandler.onActivate(() => {
       if (!this.currentGroup) {
-        this.selectGroup(0);
-        // @ts-ignore
-        if (this.currentGroup && this.currentGroup.length === 0) {
-          this.createGroup(true);
-          this.addWidget();
-        }
+        this.createGroup(true);
+        this.addWidget();
       } else {
         this.currentGroup.widgets.forEach((widget) => {
           this.layoutTerminalClient(widget.id);
@@ -170,7 +166,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   removeFocused() {
     this._removeWidgetFromWidgetId(this._focusedId);
-    this.focusWidget(this.currentGroup.last.id);
+
+    if (this.currentGroup &&
+      this.currentGroup.length > 0 &&
+      this.currentGroup.last) {
+      this.focusWidget(this.currentGroup.last.id);
+    }
   }
 
   snapshot(index: number) {

@@ -1,7 +1,7 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { isElectronEnv, uuid, Emitter, ILogger } from '@ali/ide-core-common';
 import { Emitter as Dispatcher, Disposable as DispatcherDisposable } from 'event-kit';
-import { electronEnv } from '@ali/ide-core-browser';
+import { electronEnv, AppConfig } from '@ali/ide-core-browser';
 import { WSChanneHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
 import { Terminal } from 'xterm';
 import { ITerminalExternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath  } from '../common';
@@ -24,6 +24,9 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
 
   @Autowired(ILogger)
   logger: ILogger;
+
+  @Autowired(AppConfig)
+  config: AppConfig;
 
   @Autowired(ITerminalServicePath)
   service: ITerminalServiceClient;
@@ -84,7 +87,10 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
       throw new Error('default terminal service not support restore');
     }
     const handler = this._createCustomWebSocket(sessionId);
-    const info = await this.service.create(sessionId, term.rows, term.cols, options);
+    const info = await this.service.create(sessionId, term.rows, term.cols, {
+      ...options,
+      cwd: this.config.workspaceDir,
+    });
     this._info.set(sessionId, info);
     attachMethod(handler as any);
   }
