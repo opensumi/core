@@ -166,12 +166,12 @@ export class ClientApp implements IClientApp {
         await createClientConnection2(this.injector, this.modules, this.connectionPath, () => {
           this.onReconnectContributions();
         }, this.connectionProtocols);
+
+         // 回写需要用到打点的 Logger 的地方
+        this.injector.get(WSChanneHandler).setLogger(this.logger);
       }
     }
     this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
-
-    // 回写需要用到打点的 Logger 的地方
-    this.injector.get(WSChanneHandler).setLogger(this.logger);
 
     this.stateService.state = 'client_connected';
     console.time('startContribution');
