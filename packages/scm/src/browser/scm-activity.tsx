@@ -230,7 +230,7 @@ export class SCMStatusBarController {
     });
 
     // 刷新 scm/title
-    const scmHandler = this.layoutService.getTabbarHandler(scmResourceViewId);
+    const scmHandler = this.layoutService.getTabbarHandler(scmContainerId);
     if (scmHandler) {
       scmHandler.refreshTitle();
     }

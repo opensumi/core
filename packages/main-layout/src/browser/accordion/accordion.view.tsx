@@ -13,12 +13,15 @@ export const AccordionContainer: React.FC<{
   views: View[];
   initState?: Map<string, SectionState>;
   containerId: string;
-}> = observer(({ alignment = 'vertical', views, containerId, initState = new Map() }) => {
+  headerSize?: number;
+  minSize?: number;
+}> = observer(({ alignment = 'vertical', views, containerId, initState = new Map(), headerSize = 22, minSize = 120 }) => {
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
   React.useEffect(() => {
     for (const view of views) {
       accordionService.appendView(view);
     }
+    accordionService.initConfig({headerSize, minSize});
   }, []);
   return <SplitPanel id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
     {accordionService.visibleViews.map((view, index) => {
@@ -39,6 +42,7 @@ export const AccordionContainer: React.FC<{
         expanded={!collapsed}
         id={view.id}
         index={index}
+        headerSize={headerSize}
         initialProps={view.initialProps}
         titleMenu={titleMenu}
         flex={view.weight || 1}>

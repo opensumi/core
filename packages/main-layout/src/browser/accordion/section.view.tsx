@@ -110,6 +110,7 @@ export const AccordionSection = (
       {...attrs}
       className={ cls(styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
       onClick={clickHandler}
+      style={{height: headerSize + 'px', lineHeight: headerSize + 'px'}}
       >
         <div className={styles.label_wrap}>
           <i className={cls(getIcon('right'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>

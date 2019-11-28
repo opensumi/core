@@ -10,9 +10,6 @@ export interface SectionState {
   size?: number;
 }
 
-const HEADER_SIZE = 22;
-const MIN_SECTION_HEIGHT = 120;
-
 @Injectable({multiple: true})
 export class AccordionService {
   @Autowired()
@@ -27,8 +24,17 @@ export class AccordionService {
 
   @observable state: Map<string, SectionState> = new Map();
 
+  private headerSize: number;
+  private minSize: number;
+
   constructor(public containerId: string) {
     this.splitPanelService = this.splitPanelManager.getService(containerId);
+  }
+
+  initConfig(config: { headerSize: number; minSize: number; }) {
+    const {headerSize, minSize} = config;
+    this.headerSize = headerSize;
+    this.minSize = minSize;
   }
 
   getSectionToolbarMenu(viewId: string): IMenu {
@@ -52,8 +58,8 @@ export class AccordionService {
 
   get visibleViews(): View[] {
     return this.views.filter((view) => {
-      const viewState = this.state.get(view.id);
-      return !viewState || viewState && !viewState.hidden;
+      const viewState = this.getViewState(view.id);
+      return !viewState.hidden;
     });
   }
 
@@ -74,7 +80,7 @@ export class AccordionService {
       sizeIncrement = this.setSize(index, 0);
     } else {
       // 仅有一个视图展开时独占
-      sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || MIN_SECTION_HEIGHT);
+      sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize);
     }
     let effected = false;
     // 找到视图下方首个展开的视图增加对应的高度
@@ -107,18 +113,18 @@ export class AccordionService {
 
   protected setSize(index: number, targetSize: number, isIncrement?: boolean): number {
     if (!targetSize) {
-      targetSize = HEADER_SIZE;
+      targetSize = this.headerSize;
     }
     const fullHeight = this.splitPanelService.rootNode.clientHeight;
     const panel = this.splitPanelService.panels[index];
     panel.classList.add('resize-ease');
     // clientHeight会被上次展开的元素挤掉
     const prevSize = (+panel.style.height!.replace('%', '')) / 100 * fullHeight;
-    const viewState = this.getViewState(this.views[index].id);
+    const viewState = this.getViewState(this.visibleViews[index].id);
     if (isIncrement && this.expandedViews.length > 1) {
       // 首其他视图展开/折叠影响的视图尺寸记录，仅有一个展开时不足记录
       viewState.size = targetSize + prevSize;
-    } else if (targetSize === HEADER_SIZE && this.expandedViews.length > 0) {
+    } else if (targetSize === this.headerSize && this.expandedViews.length > 0) {
       // 当前视图即将折叠且不是唯一展开的视图时，存储当前高度
       viewState.size = prevSize;
     }
@@ -132,7 +138,7 @@ export class AccordionService {
 
   protected getAvailableSize() {
     const fullHeight = this.splitPanelService.rootNode.clientHeight;
-    return fullHeight - (this.views.length - 1) * HEADER_SIZE;
+    return fullHeight - (this.visibleViews.length - 1) * this.headerSize;
   }
 
 }
