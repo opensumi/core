@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import {
   URI,
 } from '@ali/ide-core-browser';
-import { IFileTreeAPI } from '@ali/ide-file-tree';
+import { IFileTreeAPI } from '../../common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 
