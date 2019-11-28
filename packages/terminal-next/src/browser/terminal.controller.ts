@@ -130,6 +130,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     });
 
     this.tabbarHandler.onActivate(() => {
+      console.log('activate!');
       if (!this.currentGroup) {
         this.selectGroup(0);
         // @ts-ignore
