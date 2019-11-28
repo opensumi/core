@@ -130,10 +130,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     });
 
     this.tabbarHandler.onActivate(() => {
-      console.log('activate!');
       if (!this.currentGroup) {
-        this.createGroup(true);
-        this.addWidget();
+        if (!this.groups[0]) {
+          this.createGroup(true);
+          this.addWidget();
+        } else {
+          this.selectGroup(0);
+        }
       } else {
         this.currentGroup.widgets.forEach((widget) => {
           this.layoutTerminalClient(widget.id);
