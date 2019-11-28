@@ -17,13 +17,9 @@ export const BaseTabPanelView: React.FC<{
   const { currentContainerId } = tabbarService;
   const panelVisible = { zIndex: 1, display: 'block' };
   const panelInVisible = { zIndex: -1, display: 'none' };
-  const components: ComponentRegistryInfo[] = [];
-  tabbarService.containersMap.forEach((component) => {
-    components.push(component);
-  });
   return (
     <div className='tab-panel'>
-      {components.map((component) => {
+      {tabbarService.visibleContainers.map((component) => {
         const containerId = component.options!.containerId;
         return <div key={containerId} className={clsx(styles.panel_wrap)} style={currentContainerId === containerId ? panelVisible : panelInVisible}>
           <PanelView side={side} component={component} />

@@ -26,23 +26,19 @@ export const TabbarViewBase: React.FC<{
     tabbarService.registerResizeHandle(setSize, getSize, barSize);
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
-  const components: ComponentRegistryInfo[] = [];
   const configContext = useInjectable<AppConfig>(AppConfig);
-  const injector = useInjectable<Injector>(INJECTOR_TOKEN);
-  tabbarService.containersMap.forEach((component) => {
-    components.push(component);
-  });
   const currentComponent = tabbarService.getContainer(currentContainerId)!;
   const titleComponent = currentComponent && currentComponent.options && currentComponent.options.titleComponent;
   return (
     <div className='tab-bar'>
       <div className={styles.bar_content} style={{flexDirection: Layout.getTabbarDirection(direction)}}>
-        {components.map((component) => {
+        {tabbarService.visibleContainers.map((component) => {
           const containerId = component.options!.containerId;
           return (
             <li
               key={containerId}
               id={containerId}
+              onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
               onClick={(e) => handleTabClick(e, forbidCollapse)}
               className={clsx({active: currentContainerId === containerId})}>
               <TabView component={component} />

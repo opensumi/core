@@ -1,9 +1,12 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, OnEvent, ResizeEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, ViewContextKeyRegistry, IContextKeyService, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe } from 'mobx';
-import { AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
+export interface TabState {
+  hidden: boolean;
+}
 
 @Injectable({multiple: true})
 export class TabbarService extends WithEventBus {
@@ -12,6 +15,7 @@ export class TabbarService extends WithEventBus {
   previousContainerId: string = '';
 
   @observable.shallow containersMap: Map<string, ComponentRegistryInfo> = new Map();
+  @observable state: Map<string, TabState> = new Map();
 
   public prevSize?: number;
 
@@ -29,13 +33,50 @@ export class TabbarService extends WithEventBus {
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
 
+  @Autowired(IMenuRegistry)
+  protected menuRegistry: IMenuRegistry;
+
+  @Autowired(CommandRegistry)
+  private commandRegistry: CommandRegistry;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly contextMenuRenderer: ICtxMenuRenderer;
+
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
 
   private barSize: number;
+  private menuId = `tabbar/${this.location}`;
 
   constructor(public location: string) {
     super();
+    this.menuRegistry.registerMenuItem(this.menuId, {
+      command: {
+        id: this.registerGlobalToggleCommand(),
+        label: localize('layout.tabbar.hide', '隐藏'),
+      },
+      group: '0_global',
+    });
+  }
+
+  public getContainerState(containerId: string) {
+    let viewState = this.state.get(containerId);
+    if (!viewState) {
+      this.state.set(containerId, { hidden: false });
+      viewState = this.state.get(containerId)!;
+    }
+    return viewState;
+  }
+
+  get visibleContainers() {
+    const components: ComponentRegistryInfo[] = [];
+    this.containersMap.forEach((component) => {
+      const state = this.getContainerState(component.options!.containerId);
+      if (!state.hidden) {
+        components.push(component);
+      }
+    });
+    return components;
   }
 
   registerResizeHandle(setSize, getSize, barSize) {
@@ -46,6 +87,13 @@ export class TabbarService extends WithEventBus {
 
   registerContainer(containerId: string, componentInfo: ComponentRegistryInfo) {
     this.containersMap.set(containerId, componentInfo);
+    this.menuRegistry.registerMenuItem(this.menuId, {
+      command: {
+        id: this.registerVisibleToggleCommand(containerId),
+        label: componentInfo.options!.title || '',
+      },
+      group: '1_widgets',
+    });
     this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped()).createKey('view', containerId);
   }
 
@@ -66,6 +114,55 @@ export class TabbarService extends WithEventBus {
       this.currentContainerId = '';
     } else {
       this.currentContainerId = containerId;
+    }
+  }
+
+  @action.bound handleContextMenu(event: React.MouseEvent, containerId: string) {
+    event.preventDefault();
+    console.log(containerId);
+    const menus = this.menuService.createMenu(this.menuId, this.viewContextKeyRegistry.getContextKeyService(containerId));
+    const menuNodes = generateCtxMenu({ menus, options: {args: [{containerId}]} });
+    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+      x: event.clientX,
+      y: event.clientY,
+    } });
+  }
+
+  private registerGlobalToggleCommand() {
+    const commandId = `activity.bar.toggle.${this.location}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+    }, {
+      execute: ({containerId}: {containerId: string}) => {
+        this.doToggleTab(containerId);
+      },
+    });
+    return commandId;
+  }
+
+  // 注册tab的隐藏显示功能
+  private registerVisibleToggleCommand(containerId: string): string {
+    const commandId = `activity.bar.toggle.${containerId}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+    }, {
+      execute: ({forceShow}: {forceShow?: boolean}) => {
+        this.doToggleTab(containerId, forceShow);
+      },
+      isToggled: () => {
+        const state = this.getContainerState(containerId);
+        return !state.hidden;
+      },
+    });
+    return commandId;
+  }
+
+  protected doToggleTab(containerId: string, forceShow?: boolean) {
+    const state = this.getContainerState(containerId);
+    if (forceShow === undefined) {
+      state.hidden = !state.hidden;
+    } else {
+      state.hidden = !forceShow;
     }
   }
 
