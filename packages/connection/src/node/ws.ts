@@ -96,7 +96,7 @@ export class WebSocketServerRoute {
       }
 
       if (wsHandlerIndex === wsHandlerLength) {
-        this.logger.log(`request.url ${request.url} mismatch!`);
+        this.logger.error(`request.url ${request.url} mismatch!`);
       }
 
     });

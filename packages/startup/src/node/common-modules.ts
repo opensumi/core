@@ -8,7 +8,7 @@ import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/node';
 import { ProcessModule } from '@ali/ide-process';
 
 import { SearchModule } from '@ali/ide-search';
-import { Terminal2Module } from '@ali/ide-terminal2/lib/node';
+import { TerminalNodePtyModule } from '@ali/ide-terminal-next/lib/node';
 import { LogServiceModule } from '@ali/ide-logs/lib/node';
 import { KaitianExtensionModule } from '@ali/ide-kaitian-extension';
 import { DebugModule } from '@ali/ide-debug/lib/node';
@@ -23,7 +23,7 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   StorageModule,
   ProcessModule,
   SearchModule,
-  Terminal2Module,
+  TerminalNodePtyModule,
   DebugModule,
 
   KaitianExtensionModule,

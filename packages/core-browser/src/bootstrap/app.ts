@@ -27,7 +27,7 @@ import {
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
-import { RPCMessageConnection } from '@ali/ide-connection';
+import { RPCMessageConnection, WSChanneHandler } from '@ali/ide-connection';
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider, IExternalPreferenceProvider,
 } from '../preferences';
@@ -166,9 +166,13 @@ export class ClientApp implements IClientApp {
         await createClientConnection2(this.injector, this.modules, this.connectionPath, () => {
           this.onReconnectContributions();
         }, this.connectionProtocols);
+
+         // 回写需要用到打点的 Logger 的地方
+        this.injector.get(WSChanneHandler).setLogger(this.logger);
       }
     }
     this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
+
     this.stateService.state = 'client_connected';
     console.time('startContribution');
     await this.startContributions();
@@ -456,7 +460,7 @@ export class ClientApp implements IClientApp {
     window.addEventListener('resize', () => {
       // 浏览器resize事件
     });
-    document.addEventListener('keydown', (event: any) => {
+    window.addEventListener('keydown', (event: any) => {
       if (event && event.target!.name !== noKeybidingInputName) {
         this.keybindingService.run(event);
       }
@@ -561,7 +565,7 @@ export class ClientApp implements IClientApp {
 
   protected updateIconMap(prefix: string, iconMap: IconMap) {
     if (prefix === 'kaitian-icon kticon-') {
-      this.logger.verbose('icon prefix与内置图标冲突，请检查图标配置！');
+      this.logger.error('icon prefix与内置图标冲突，请检查图标配置！');
     }
     updateIconMap(prefix, iconMap);
   }

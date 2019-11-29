@@ -511,6 +511,7 @@ export class FileTreeService extends WithEventBus {
       const cancel = localize('file.confirm.move.cancel');
       const comfirm = await this.dislogService.warning(formatLocalize('file.confirm.move', `[${froms.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
+        this.resetFilesSelectedStatus();
         return;
       }
     }
@@ -519,7 +520,7 @@ export class FileTreeService extends WithEventBus {
     }
   }
 
-  async deleteFiles(uris: URI[]) {
+  async deleteFiles(uris: URI[] = []) {
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');
@@ -623,7 +624,7 @@ export class FileTreeService extends WithEventBus {
    * @param value
    */
   @action
-  updateFilesSelectedStatus(files: (Directory | File)[], value: boolean) {
+  updateFilesSelectedStatus(files: (Directory | File)[] = [], value: boolean) {
     if (files.length === 0) {
       this.resetFilesFocusedStatus();
     } else {
@@ -676,7 +677,7 @@ export class FileTreeService extends WithEventBus {
    * @param value
    */
   @action
-  updateFilesFocusedStatus(files: (Directory | File)[], value: boolean) {
+  updateFilesFocusedStatus(files: (Directory | File)[] = [], value: boolean) {
     this.resetFilesFocusedStatus();
     files.forEach((file: Directory | File) => {
       const statusKey = this.getStatutsKey(file);
@@ -912,12 +913,10 @@ export class FileTreeService extends WithEventBus {
         return;
       }
       const remove = parent.removeChildren(uri);
-      if (remove) {
-        remove.forEach((item) => {
-          const statusKey = this.getStatutsKey(item.uri);
-          this.status.delete(statusKey);
-        });
-      }
+      remove.forEach((item) => {
+        const statusKey = this.getStatutsKey(item.uri);
+        this.status.delete(statusKey);
+      });
     }
   }
 

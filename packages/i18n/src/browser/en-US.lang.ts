@@ -39,6 +39,7 @@ export const localizationBundle = {
     'file.empty.openFolder': 'Open Folder',
     'file.collapse': 'Collapse All',
     'file.refresh': 'Refresh',
+    'file.search.folder': 'Search on this folder',
 
     'menu-bar.title.file': 'File',
     'menu-bar.title.edit': 'Edit',
@@ -287,6 +288,13 @@ export const localizationBundle = {
     'open.editors.group.title': 'Group {0}',
 
     'terminal.name': 'Terminal',
+    'terminal.disconnected': 'Terminal already disconnected',
+    'terminal.top': 'Stop terminal',
+    'terminal.try.reconnect': 'Try to reconnect terminal',
+    'terminal.new': 'Create terminal',
+    'terminal.split': 'Split terminal',
+    'terminal.maximum': 'Maximum terminal panel',
+    'terminal.or': 'or',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',

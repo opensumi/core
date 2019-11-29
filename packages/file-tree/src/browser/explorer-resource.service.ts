@@ -61,7 +61,7 @@ const setTreeNodeAsData = (data: DataTransfer, node: IFileTreeItemRendered): voi
   data.setData('tree-node', node.id.toString());
 };
 
-const getNodesFromExpandedDir = (container: IFileTreeItemRendered[]) => {
+const getNodesFromExpandedDir = (container: IFileTreeItemRendered[] = []) => {
   let result: any = [];
   if (!container) {
     return result;
@@ -98,7 +98,7 @@ const getNodeById = (nodes: IFileTreeItemRendered[], id: number | string): IFile
 
 const extractFileItemShouldBeRendered = (
   filetreeService: FileTreeService,
-  files: (Directory | File)[],
+  files: (Directory | File)[] = [],
   statusMap: IFileTreeItemStatus,
   depth: number = 0,
 ): IFileTreeItemRendered[] => {
@@ -438,8 +438,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
     const menus = this.filetreeService.contributedContextMenu;
     const result = generateCtxMenu({ menus });
-
-    menus.dispose();
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },

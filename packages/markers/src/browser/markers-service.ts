@@ -49,7 +49,7 @@ export class MarkerService extends Themable implements IMarkerService {
   public readonly onResouceOpen: Event<string> = this.onResourceOpenEmitter.event;
 
   private readonly onResourceCloseEmitter = new Emitter<string>();
-  public readonly onResouceClose: Event<string> = this.onResourceCloseEmitter.event;
+  public readonly onResourceClose: Event<string> = this.onResourceCloseEmitter.event;
 
   private onViewResizeCaller = debounce((viewSize: ViewSize) => this.viewSize = viewSize, 20);
 

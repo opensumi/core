@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { CONTEXT_MENU } from './file-tree.view';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -18,9 +18,10 @@ import { IWindowService } from '@ali/ide-window';
 export namespace FileTreeContextMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
   export const OPEN = [...CONTEXT_MENU, '1_open'];
-  export const OPERATOR = [...CONTEXT_MENU, '2_operator'];
-  export const COPY = [...CONTEXT_MENU, '3_copy'];
-  export const PATH = [...CONTEXT_MENU, '4_path'];
+  export const SEARCH = [...CONTEXT_MENU, '2_search'];
+  export const OPERATOR = [...CONTEXT_MENU, '3_operator'];
+  export const COPY = [...CONTEXT_MENU, '4_copy'];
+  export const PATH = [...CONTEXT_MENU, '5_path'];
 }
 
 export interface FileUri {
@@ -52,6 +53,9 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   @Autowired(WorkbenchEditorService)
   private editorService: WorkbenchEditorService;
+
+  @Autowired(CommandService)
+  private commandService: CommandService;
 
   @Autowired(ILogger)
   private logger;
@@ -105,6 +109,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       order: 2,
       group: '1_open',
     });
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.SEARCH_ON_FOLDER.id,
+      order: 1,
+      group: '2_search',
+    });
+
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.DELETE_FILE.id,
       order: 1,
@@ -146,6 +157,20 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(FILE_COMMANDS.SEARCH_ON_FOLDER, {
+      execute: (uri?: URI) => {
+        let searchFolder = uri;
+
+        if (!searchFolder) {
+          searchFolder = this.filetreeService.selectedUris[0];
+        }
+        const searchPath = `./${this.filetreeService.root.relative(searchFolder)!.toString()}`;
+        this.commandService.executeCommand(SEARCH_COMMANDS.OPEN_SEARCH.id, {includeValue: searchPath});
+      },
+      isVisible: () => {
+        return (this.filetreeService.focusedFiles.length === 1 && this.filetreeService.focusedFiles[0].filestat.isDirectory) || this.filetreeService.focusedFiles.length === 0;
+      },
+    });
     commands.registerCommand(FILE_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
         let locationUri = uri;
@@ -219,7 +244,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
       execute: async (uri) => {
         // 默认获取焦点元素
-        const selectedFile = this.filetreeService.focusedUris;
+        const selectedFile = this.filetreeService.selectedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -240,7 +265,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (uri) => {
-        const selectedFile = this.filetreeService.focusedUris;
+        const selectedFile = this.filetreeService.selectedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -295,7 +320,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       execute: (_, uris) => {
         if (uris && uris.length) {
           const copyUri: URI = uris[0];
-          copy(decodeURIComponent(copyUri.withScheme('').toString()));
+          let pathStr: string = decodeURIComponent(copyUri.withoutScheme().toString());
+          // windows下移除路径前的 /
+          if (isWindows) {
+            pathStr = pathStr.slice(1);
+          }
+          copy(decodeURIComponent(copyUri.withoutScheme().toString()));
         }
       },
       isVisible: () => {
@@ -322,7 +352,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         } else {
           const seletedUris = this.filetreeService.selectedUris;
           if (seletedUris && seletedUris.length) {
-            this.filetreeService.cutFile(seletedUris);
+            this.filetreeService.copyFile(seletedUris);
           }
         }
       },
@@ -392,27 +422,23 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.LOCATION.id,
-      keybinding: 'cmd+shift+e',
-    });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.COPY_FILE.id,
       keybinding: 'ctrlcmd+c',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.PASTE_FILE.id,
       keybinding: 'ctrlcmd+v',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
       keybinding: 'ctrlcmd+x',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
 
     bindings.registerKeybinding({
@@ -424,7 +450,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.DELETE_FILE.id,
       keybinding: 'ctrlcmd+backspace',
-      when: 'filesExplorerFocus',
+      when: 'filesExplorerFocus && !inputFocus',
     });
   }
 

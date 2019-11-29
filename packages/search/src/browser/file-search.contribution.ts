@@ -179,6 +179,10 @@ export class FileSearchQuickCommandHandler {
     };
   }
 
+  onClose() {
+    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
+  }
+
   private async getFindOutItems(alreadyCollected, lookFor, token) {
     const roots = await this.workspaceService.roots;
     const rootUris: string[] = [];

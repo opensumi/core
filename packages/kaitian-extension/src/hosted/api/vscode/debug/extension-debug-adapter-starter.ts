@@ -36,9 +36,6 @@ export function startDebugAdapter(executable: vscode.DebugAdapterExecutable): De
     if (options.cwd) {
       spawnOptions.cwd = options.cwd;
     }
-    if (!spawnOptions.cwd) {
-      spawnOptions.cwd = URI.parse(process.env.WORKSPACE_DIR!).path;
-    }
     childProcess = spawn(command, args, spawnOptions);
   } else if ('modulePath' in executable) {
     const forkExecutable = executable as DebugAdapterForkExecutable;

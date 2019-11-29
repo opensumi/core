@@ -100,18 +100,18 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
 
   createNativeContextMenu(template: INativeMenuTemplate, onHide?: () => void) {
     this.electronMainMenuService.showContextMenu(template, electronEnv.currentWebContentsId);
-    if (onHide) {
-      const disposer = this.electronMainMenuService.on('menuClose', (targetId, contextMenuId) => {
-        if (targetId !== electronEnv.currentWebContentsId + '-context') {
-          return;
-        }
-        if (contextMenuId === template.id) {
-          disposer.dispose();
-          onHide();
-        }
-      });
-    }
-    const disposer = this.electronMainMenuService.on('menuClick', (targetId, menuId) => {
+    const disposer = new Disposable();
+    disposer.addDispose(this.electronMainMenuService.on('menuClose', (targetId, contextMenuId) => {
+      if (targetId !== electronEnv.currentWebContentsId + '-context') {
+        return;
+      }
+      disposer.dispose();
+      if (onHide) {
+        onHide();
+      }
+    }));
+
+    disposer.addDispose(this.electronMainMenuService.on('menuClick', (targetId, menuId) => {
       if (targetId !== electronEnv.currentWebContentsId + '-context') {
         return;
       }
@@ -120,7 +120,7 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
         action();
       }
       disposer.dispose();
-    });
+    }));
 
   }
 }

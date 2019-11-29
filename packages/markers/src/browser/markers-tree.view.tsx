@@ -3,7 +3,7 @@ import { observer, useComputed } from 'mobx-react-lite';
 import { IMatch } from '@ali/ide-core-common/lib/filters';
 import * as React from 'react';
 import { SeverityIconStyle } from './markers-seriverty-icon';
-import { MarkerService, ViewSize } from './markers-service';
+import { MarkerService } from './markers-service';
 import { MarkerViewModel } from './markers.model';
 import * as styles from './markers.module.less';
 import Messages from './messages';
@@ -123,13 +123,17 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
   const [folding, updateFolding] = React.useState(EMPTY_FOLDING);
 
   React.useEffect(() => {
-    markerService.getManager().onMarkerChanged(() => {
+    const markerChangedDispose = markerService.getManager().onMarkerChanged(() => {
       updateSelectTag(TAG_NONE);
     });
-    markerService.onResouceClose((res: string) => {
+    const resourceCloseDispose = markerService.onResourceClose((res: string) => {
       const groupId = buildItemGroupId(res);
       updateFolding(removeFolding(folding, groupId));
     });
+    return () => {
+      markerChangedDispose.dispose();
+      resourceCloseDispose.dispose();
+    };
   });
 
   const nodes = useComputed(() => {

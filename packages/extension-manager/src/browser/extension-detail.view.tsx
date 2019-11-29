@@ -40,6 +40,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const isUnInstalling = extensionMomentState?.isUnInstalling;
 
   const extension = rawExtension || currentExtension;
+  const installed = rawExtension && rawExtension.installed;
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -169,14 +170,14 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               {canUpdate && !updated ? (
                 <Button className={styles.action} onClick={update} loading={isUpdating}>{isUpdating ? localize('marketplace.extension.updating') : localize('marketplace.extension.update')}</Button>
               ) : null}
-              {!extension.installed ? (
+              {!installed ? (
                 <Button className={styles.action} onClick={install} loading={isInstalling}>{isInstalling ? localize('marketplace.extension.installing') : localize('marketplace.extension.install')}</Button>
               ) : null}
-              {extension.installed ? (
+              {installed ? (
                 <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']}>
                   <Button ghost={true} className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>
                 </Dropdown>) : null}
-              {extension.installed && !extension.isBuiltin  && (
+              {installed && !extension.isBuiltin  && (
                 <Button ghost={true} type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling') : localize('marketplace.extension.uninstall')}</Button>
               )}
             </div>

@@ -91,7 +91,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
     @Optional() private readonly scmMenuService: SCMMenus,
   ) {
     this.id = item.resourceGroup.id + item.sourceUri;
-    this.name = paths.basename(item.sourceUri.toString());
+    this.name = paths.basename(item.sourceUri.path);
     const filePath = paths.parse(item.sourceUri.path);
     this.description = paths.relative(item.resourceGroup.provider.rootUri!.path, filePath.dir),
     this.badge = item.decorations.letter || '';

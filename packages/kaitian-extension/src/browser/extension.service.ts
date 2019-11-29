@@ -199,7 +199,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     this.logger.verbose('ExtensionServiceImpl active');
     await this.workspaceService.whenReady;
     await this.extensionStorageService.whenReady;
-    this.logger.verbose('ExtensionServiceImpl active 2');
+    this.logger.verbose('ExtensionServiceImpl active ready done');
 
     await this.registerVSCodeDependencyService();
 
@@ -661,7 +661,7 @@ export class ExtensionServiceImpl implements ExtensionService {
               }
             }
 
-            this.logger.verbose('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
+            this.logger.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
 
             return obj.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
           };
@@ -723,7 +723,7 @@ export class ExtensionServiceImpl implements ExtensionService {
               }
             }
 
-            this.logger.verbose('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
+            this.logger.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
 
             if (workerProtocol) {
               workerProtocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);

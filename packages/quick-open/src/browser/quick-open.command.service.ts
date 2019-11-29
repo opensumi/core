@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { localize, IContextKeyService } from '@ali/ide-core-browser';
+import { localize, IContextKeyService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
 import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem } from './quick-open.model';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
@@ -125,6 +125,9 @@ export class QuickCommandHandler implements QuickOpenHandler {
   @Autowired()
   private quickCommandModel: QuickCommandModel;
 
+  @Autowired(CommandService)
+  commandService: CommandService;
+
   getModel(): QuickOpenModel {
     return this.quickCommandModel;
   }
@@ -141,6 +144,10 @@ export class QuickCommandHandler implements QuickOpenHandler {
       // 按照 CommandRegistry 默认排序
       fuzzySort: false,
     };
+  }
+
+  onClose() {
+    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
   }
 }
 

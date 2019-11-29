@@ -2,7 +2,7 @@ import { Command, localize } from '..';
 import { getIcon } from '../style/icon/icon';
 
 export namespace FILE_COMMANDS {
-  const CATEGORY = '%file%';
+  const CATEGORY = 'file';
 
   export const NEW_FILE: Command = {
     id: 'file.new',
@@ -93,15 +93,21 @@ export namespace FILE_COMMANDS {
   };
 
   export const LOCATION: Command = {
-    id: 'explorer.location',
+    id: 'filetree.location',
     category: CATEGORY,
     label: '%file.location%',
   };
 
   export const OPEN_FOLDER: Command = {
-    id: 'explorer.open.folder',
+    id: 'filetree.open.folder',
     category: CATEGORY,
     label: '%file.open.folder%',
+  };
+
+  export const SEARCH_ON_FOLDER: Command = {
+    id: 'filetree.search.folder',
+    category: CATEGORY,
+    label: '%file.search.folder%',
   };
 }
 
@@ -134,7 +140,7 @@ export namespace COMMON_COMMANDS {
 }
 
 export namespace EDITOR_COMMANDS {
-  const CATEGORY = '%editor%';
+  const CATEGORY = 'editor';
 
   export const UNDO: Command = {
     id: 'editor.undo',
@@ -376,5 +382,87 @@ export namespace EDITOR_COMMANDS {
   export const REOPEN_CLOSED: Command = {
     id: 'editor.reopenClosed',
     category: CATEGORY,
+  };
+
+  export const FOCUS: Command = {
+    id: 'editor.focus',
+    category: CATEGORY,
+  };
+}
+
+export namespace SEARCH_COMMANDS {
+  const CATEGORY = 'search';
+
+  export const OPEN_SEARCH: Command = {
+    id: 'content-search.openSearch',
+    category: CATEGORY,
+    label: 'Open search sidebar',
+  };
+
+  export const REFRESH: Command = {
+    id: 'file-search.refresh',
+    label: 'refresh search',
+    iconClass: getIcon('refresh'),
+    category: CATEGORY,
+  };
+
+  export const CLEAN: Command = {
+    id: 'file-search.clean',
+    label: 'clean search',
+    iconClass: getIcon('clear'),
+    category: CATEGORY,
+  };
+
+  export const FOLD: Command = {
+    id: 'file-search.fold',
+    label: 'fold search',
+    iconClass: getIcon('fold'),
+    category: CATEGORY,
+  };
+
+  export const GET_RECENT_SEARCH_WORD: Command = {
+    id: 'search.getRecentSearchWordCmd',
+    category: CATEGORY,
+  };
+
+  export const GET_BACK_RECENT_SEARCH_WORD: Command = {
+    id: 'search.getBackRecentSearchWordCmd',
+    category: CATEGORY,
+  };
+
+  export const MENU_REPLACE: Command = {
+    id: 'search.menu.replace',
+    category: CATEGORY,
+    label: '%search.replace.title%',
+  };
+
+  export const MENU_REPLACE_ALL: Command = {
+    id: 'search.menu.replaceAll',
+    category: CATEGORY,
+    label: '%search.replaceAll.label%',
+  };
+
+  export const MENU_HIDE: Command = {
+    id: 'search.menu.hide',
+    category: CATEGORY,
+    label: '%search.result.hide%',
+  };
+
+  export const MENU_COPY: Command = {
+    id: 'search.menu.copy',
+    category: CATEGORY,
+    label: '%file.copy.file%',
+  };
+
+  export const MENU_COPY_ALL: Command = {
+    id: 'search.menu.copyAll',
+    category: CATEGORY,
+    label: '%search.menu.copyAll%',
+  };
+
+  export const MENU_COPY_PATH: Command = {
+    id: 'search.menu.copyPath',
+    category: CATEGORY,
+    label: '%file.copy.path%',
   };
 }

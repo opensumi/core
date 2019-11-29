@@ -14,13 +14,16 @@ export const MarkerFilterPanel = observer(() => {
   const markerService = MarkerService.useInjectable();
 
   React.useEffect(() => {
-    markerService.onMarkerFilterChanged((opt) => {
+    const markerFilterChangedDispose = markerService.onMarkerFilterChanged((opt) => {
       if (opt === undefined) {
         if (ref.current) {
           ref.current.value = '';
         }
       }
     });
+    return () => {
+      markerFilterChangedDispose.dispose();
+    };
   });
 
   const onChangeCallback = debounce((value) => {

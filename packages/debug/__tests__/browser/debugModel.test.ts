@@ -7,13 +7,13 @@ import { DebugModule, DebugStackFrame, DebugThread, DebugSession, DebugSessionCo
 import { DebugSessionOptions } from '@ali/ide-debug';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
-import { ITerminalClient } from '@ali/ide-terminal2';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IMessageService } from '@ali/ide-overlay';
 import * as options from '@ali/ide-debug/lib/browser/editor/debug-styles.ts';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { ITerminalController } from '@ali/ide-terminal-next';
 
 disableJSDOM();
 
@@ -105,7 +105,7 @@ describe('Debug Model', () => {
         on: (command: string, handler) => Disposable.create(() => {}),
         dispose: () => {},
       } as DebugSessionConnection,
-      {} as ITerminalClient,
+      {} as ITerminalController,
       {} as WorkbenchEditorService,
       injector.get(BreakpointManager),
       injector.get(DebugModelManager),

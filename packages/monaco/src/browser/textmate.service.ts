@@ -423,7 +423,9 @@ export class TextmateService extends WithEventBus {
         scopeName, initialLanguage, configuration))!;
       const options = configuration.tokenizerOption ? configuration.tokenizerOption : TokenizerOptionDEFAULT;
       // 要保证grammar把所有的languageID关联的语法都注册好了
-      monaco.languages.setTokensProvider(languageId, createTextmateTokenizer(grammar, options));
+      if (grammar) {
+        monaco.languages.setTokensProvider(languageId, createTextmateTokenizer(grammar, options));
+      }
     } catch (error) {
       // console.warn('No grammar for this language id', languageId, error);
     }
