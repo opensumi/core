@@ -4,10 +4,9 @@ import {
   OpenedEditorTreeDataProvider,
   EditorGroupTreeItem,
   OpenedResourceTreeItem,
-  IOpenEditorStatus,
 } from './opened-editor.service';
-import { IResource, IResourceDecorationChangeEventPayload, IEditorGroup } from '@ali/ide-editor';
-import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig } from '@ali/ide-core-browser';
+import { IResource, IResourceDecorationChangeEventPayload, IEditorGroup, WorkbenchEditorService } from '@ali/ide-editor';
+import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig, isUndefined } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { getIcon } from '@ali/ide-core-browser';
@@ -15,6 +14,12 @@ import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import * as styles from './index.module.less';
 import { OPEN_EDITORS_COMMANDS } from './opened-editor.contribution';
+
+export interface IOpenEditorStatus {
+  focused?: boolean;
+  selected?: boolean;
+  dirty?: boolean;
+}
 
 @Injectable()
 export class ExplorerOpenedEditorService {
@@ -33,11 +38,14 @@ export class ExplorerOpenedEditorService {
   @Autowired(IThemeService)
   themeService: IThemeService;
 
+  @Autowired(WorkbenchEditorService)
+  private workbenchEditorService: WorkbenchEditorService;
+
   @observable.shallow
   nodes: any[] = [];
 
   @observable.shallow
-  status: IOpenEditorStatus = {};
+  status: Map<string, IOpenEditorStatus> = new Map();
 
   actions: TreeViewActionConfig[] = [
     {
@@ -69,6 +77,8 @@ export class ExplorerOpenedEditorService {
   private themeChangeEmitter = new Emitter<any>();
   themeChangeEvent: Event<any> = this.themeChangeEmitter.event;
 
+  private activeGroup: string;
+
   constructor() {
     this.init();
   }
@@ -81,6 +91,22 @@ export class ExplorerOpenedEditorService {
     this.openEditorTreeDataProvider.onDidDecorationChange(async (payload) => {
       if (payload) {
         await this.updateDecorations(payload);
+      }
+    });
+    this.openEditorTreeDataProvider.onDidActiveChange(async (payload) => {
+      if (payload) {
+        this.activeGroup = payload.group.name;
+        let uri: URI;
+        const currentEditor = this.workbenchEditorService.currentEditor;
+        console.log(currentEditor, this.activeGroup);
+        if (currentEditor) {
+          if (currentEditor.currentUri) {
+            uri = currentEditor.currentUri;
+            if (!isUndefined(uri)) {
+              this.updateSelected(uri, this.activeGroup);
+            }
+          }
+        }
       }
     });
     // 初始化
@@ -146,8 +172,9 @@ export class ExplorerOpenedEditorService {
             parent,
           };
           const statusKey = this.getStatusKey(node);
-          if (this.status[statusKey]) {
-            if (this.status[statusKey].dirty) {
+          if (this.status.has(statusKey)) {
+            const status = this.status.get(statusKey)!;
+            if (status.dirty) {
               node  = {
                 ...node,
                 headClass: styles.dirty_icon,
@@ -155,7 +182,7 @@ export class ExplorerOpenedEditorService {
             }
             treeData.push({
               ...node,
-              ...this.status[statusKey],
+              ...status,
             });
           } else {
             treeData.push(node);
@@ -177,10 +204,10 @@ export class ExplorerOpenedEditorService {
           parent: undefined,
         };
         const statusKey = this.getStatusKey(node);
-        if (this.status[statusKey]) {
+        if (this.status.has(statusKey)) {
           treeData.push({
             ...node,
-            ...this.status[statusKey],
+            ...this.status.get(statusKey),
           });
         } else {
           treeData.push(node);
@@ -195,10 +222,10 @@ export class ExplorerOpenedEditorService {
     this.nodes = this.nodes.map((node) => {
       const statusKey = this.getStatusKey(node);
       if (node.uri.toString() === payload.uri.toString()) {
-        this.status[statusKey] = {
-          ...this.status[statusKey],
+        this.status.set(statusKey, {
+          ...this.status.get(statusKey),
           dirty: payload.decoration.dirty,
-        };
+        });
         return {
           ...node,
           headClass: payload.decoration.dirty ? styles.dirty_icon : '',
@@ -212,10 +239,10 @@ export class ExplorerOpenedEditorService {
   resetFocused() {
     this.nodes = this.nodes.map((node) => {
       const statusKey = this.getStatusKey(node);
-      this.status[statusKey] = {
-        ...this.status[statusKey],
+      this.status.set(statusKey, {
+        ...this.status.get(statusKey),
         focused: false,
-      };
+      });
       return {
         ...node,
         focused: false,
@@ -225,24 +252,51 @@ export class ExplorerOpenedEditorService {
 
   @action
   resetStatus() {
-    for (const key of Object.keys(this.status)) {
-      this.status[key] = {
-        ... this.status[key],
+    for (const [key, value] of this.status) {
+      this.status.set(key, {
+        ...value,
         focused: false,
         selected: false,
-      };
+      });
     }
+  }
+
+  @action
+  updateSelected(uri: URI, group: string) {
+    let statusKey = uri.toString();
+    if (!this.status.has(statusKey)) {
+      if (group) {
+        statusKey = group + statusKey;
+      }
+    }
+    this.resetStatus();
+    this.status.set(statusKey, {
+      ... this.status.get(statusKey),
+      focused: true,
+      selected: true,
+    });
+    this.nodes = this.nodes.map((node) => {
+      const statusKey = this.getStatusKey(node);
+      if (this.status.has(statusKey)) {
+        return {
+          ...node,
+          ...this.status.get(statusKey),
+        };
+      } else {
+        return node;
+      }
+    });
   }
 
   @action
   updateStatus(node: TreeNode) {
     this.resetStatus();
-    const statuskey = this.getStatusKey(node);
-    this.status[statuskey] = {
-      ... this.status[statuskey],
+    const statusKey = this.getStatusKey(node);
+    this.status.set(statusKey, {
+      ... this.status.get(statusKey),
       focused: true,
       selected: true,
-    } ;
+    });
   }
 
   /**
@@ -257,23 +311,13 @@ export class ExplorerOpenedEditorService {
     }
     // 仅支持单选
     const node = nodes[0];
-    this.updateStatus(node);
-    this.nodes = this.nodes.map((node) => {
-      const statusKey = this.getStatusKey(node);
-      if (this.status[statusKey]) {
-        return {
-          ...node,
-          ...this.status[statusKey],
-        };
-      } else {
-        return node;
-      }
-    });
+    const group: string = node.parent ? node.parent.id as string : '';
+    this.updateSelected(node.uri!, group);
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri);
   }
 
   getStatusKey(node) {
-    return node.parent ? node.parent.name + node.uri.toString() : node.uri.toString();
+    return node.parent ? node.parent.id + node.uri.toString() : node.uri.toString();
   }
 
   /**
