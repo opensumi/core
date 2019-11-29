@@ -157,6 +157,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     };
 
     let watcher: nsfw.NSFW | undefined = await nsfw(fs.realpathSync(basePath), (events: nsfw.ChangeEvent[]) => {
+      console.log('events', events);
       events = this.trimChangeEvent(events);
       for (const event of events) {
         if (event.action === nsfw.actions.CREATED) {
