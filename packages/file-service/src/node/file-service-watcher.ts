@@ -157,7 +157,6 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     };
 
     let watcher: nsfw.NSFW | undefined = await nsfw(fs.realpathSync(basePath), (events: nsfw.ChangeEvent[]) => {
-      console.log('events', events);
       events = this.trimChangeEvent(events);
       for (const event of events) {
         if (event.action === nsfw.actions.CREATED) {
@@ -170,8 +169,13 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
           this.pushUpdated(watcherId, this.resolvePath(event.directory, event.file!));
         }
         if (event.action === nsfw.actions.RENAMED) {
-          this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
-          this.pushAdded(watcherId, this.resolvePath(event.directory, event.newFile!));
+          if (event.newDirectory) {
+            this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
+            this.pushAdded(watcherId, this.resolvePath(event.newDirectory, event.newFile!));
+          } else {
+            this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
+            this.pushAdded(watcherId, this.resolvePath(event.directory, event.newFile!));
+          }
         }
       }
     }, {
