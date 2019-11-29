@@ -50,6 +50,7 @@ export interface SCMConfiguration {
   'scm.diffDecorations': string;
   'scm.diffDecorationsGutterWidth': number;
   'scm.alwaysShowActions': boolean;
+  'scm.alwaysShowDiffWidget': boolean;
 }
 
 export const SCMPreferences = Symbol('SCMPreferences');
