@@ -6,19 +6,15 @@ import { ComponentRegistryInfo, useInjectable, ConfigProvider, ComponentRenderer
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { PanelContext } from '@ali/ide-core-browser/lib/components/layout/split-panel';
-import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TabbarConfig } from './renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../../common';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
-import { AccordionService, AccordionServiceFactory } from '../accordion/accordion.service';
 
 export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,
   forbidCollapse?: boolean;
-  hasToolBar?: boolean;
   barSize?: number;
-}> = observer(({ TabView, forbidCollapse, hasToolBar, barSize = 50 }) => {
+}> = observer(({ TabView, forbidCollapse, barSize = 50 }) => {
   const { setSize, getSize } = React.useContext(PanelContext);
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -26,9 +22,6 @@ export const TabbarViewBase: React.FC<{
     tabbarService.registerResizeHandle(setSize, getSize, barSize);
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
-  const configContext = useInjectable<AppConfig>(AppConfig);
-  const currentComponent = tabbarService.getContainer(currentContainerId)!;
-  const titleComponent = currentComponent && currentComponent.options && currentComponent.options.titleComponent;
   return (
     <div className='tab-bar'>
       <div className={styles.bar_content} style={{flexDirection: Layout.getTabbarDirection(direction)}}>
@@ -46,11 +39,6 @@ export const TabbarViewBase: React.FC<{
           );
         })}
       </div>
-      {hasToolBar && titleComponent && <div className={styles.toolbar_container}>
-        <ConfigProvider value={configContext} >
-          <ComponentRenderer Component={titleComponent} />
-        </ConfigProvider>
-      </div>}
     </div>
   );
 });
@@ -82,19 +70,9 @@ export const LeftTabbarRenderer: React.FC = () => {
 };
 
 export const BottomTabbarRenderer: React.FC = observer(() => {
-  const { side } = React.useContext(TabbarConfig);
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  const { currentContainerId } = tabbarService;
-  const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(currentContainerId);
-  const titleMenu = currentContainerId ? accordionService.getSectionToolbarMenu(currentContainerId) : null;
   return (
     <div className={styles.bottom_bar_container}>
-      <TabbarViewBase hasToolBar={true} forbidCollapse={true} TabView={TextTabView} barSize={0} />
-      <div className='toolbar_container'>
-        {titleMenu && <InlineActionBar
-          menus={titleMenu}
-          seperator='navigation' />}
-      </div>
+      <TabbarViewBase forbidCollapse={true} TabView={TextTabView} barSize={0} />
     </div>
   );
 });

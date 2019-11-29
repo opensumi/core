@@ -6,11 +6,11 @@ import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
 import { AccordionContainer } from '../accordion/accordion.view';
-import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 export const BaseTabPanelView: React.FC<{
-  PanelView: React.FC<{ component: ComponentRegistryInfo, side: string }>;
+  PanelView: React.FC<{ component: ComponentRegistryInfo, side: string, titleMenu: IMenu }>;
 }> = observer(({ PanelView }) => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -21,8 +21,9 @@ export const BaseTabPanelView: React.FC<{
     <div className='tab-panel'>
       {tabbarService.visibleContainers.map((component) => {
         const containerId = component.options!.containerId;
+        const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
         return <div key={containerId} className={clsx(styles.panel_wrap)} style={currentContainerId === containerId ? panelVisible : panelInVisible}>
-          <PanelView side={side} component={component} />
+          <PanelView titleMenu={titleMenu} side={side} component={component} />
         </div>;
       })}
     </div>
@@ -32,12 +33,11 @@ export const BaseTabPanelView: React.FC<{
 const ContainerView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
-}> = (({ component, side }) => {
+  titleMenu: IMenu;
+}> = (({ component, titleMenu }) => {
   const ref = React.useRef<HTMLElement | null>();
   const configContext = useInjectable<AppConfig>(AppConfig);
-  const { containerId, title, titleComponent, component: CustomComponent } = component.options!;
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
+  const { title, titleComponent, component: CustomComponent } = component.options!;
 
   return (
     <div className={styles.view_container}>
@@ -66,10 +66,22 @@ const ContainerView: React.FC<{
 const PanelView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
-}> = (({ component, side }) => {
+  titleMenu: IMenu;
+}> = (({ component, titleMenu }) => {
+  const titleComponent = component.options && component.options.titleComponent;
   // TODO 底部支持多个view
   return (
     <div className={styles.panel_container}>
+      <div className={styles.float_container}>
+        {titleComponent && <div className={styles.toolbar_container}>
+          <ComponentRenderer Component={titleComponent} />
+        </div>}
+        <div className='toolbar_container'>
+          {titleMenu && <InlineActionBar
+            menus={titleMenu}
+            seperator='navigation' />}
+        </div>
+      </div>
       <ComponentRenderer Component={component.views[0].component!} />
     </div>
   );
