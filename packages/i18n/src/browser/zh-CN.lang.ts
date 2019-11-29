@@ -41,6 +41,7 @@ export const localizationBundle = {
     'file.empty.defaultTitle': '无打开的文件夹',
     'file.empty.defaultMessage': '尚未打开文件夹',
     'file.empty.openFolder': '打开文件夹',
+    'file.search.folder': '在文件夹中查找',
 
     'menu-bar.title.file': '文件',
     'menu-bar.title.edit': '编辑',
@@ -339,6 +340,13 @@ export const localizationBundle = {
     'open.editors.group.title': '第{0}组',
 
     'terminal.name': '终端',
+    'terminal.disconnected': '终端断开连接',
+    'terminal.stop': '终止终端',
+    'terminal.try.reconnect': '重新连接终端',
+    'terminal.new': '新建终端',
+    'terminal.split': '拆分终端',
+    'terminal.maximum': '最大化面板大小',
+    'terminal.or': '或者',
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',

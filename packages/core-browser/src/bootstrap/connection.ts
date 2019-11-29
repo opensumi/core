@@ -8,15 +8,18 @@ import {
  } from '@ali/ide-connection';
 import { Injector, Provider, ConstructorOf } from '@ali/common-di';
 import { ModuleConstructor } from './app';
-import { getLogger } from '@ali/ide-core-common';
+import { getLogger, ILogger } from '@ali/ide-core-common';
 import { IStatusBarService } from '../services/';
 import * as net from 'net';
 
+// 建立连接之前，无法使用落盘的 logger
 const logger = getLogger();
 
 export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string, onReconnect: () => void, protocols?: string[]) {
   const statusBarService = injector.get(IStatusBarService);
-  const wsChannelHandler = new WSChanneHandler(wsPath, protocols);
+  // const logger = injector.get(ILogger)
+
+  const wsChannelHandler = new WSChanneHandler(wsPath, logger, protocols);
   wsChannelHandler.connection.addEventListener('open', () => {
     statusBarService.setBackgroundColor('var(--statusBar-background)');
   });

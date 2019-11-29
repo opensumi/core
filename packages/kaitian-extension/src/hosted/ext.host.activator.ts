@@ -96,7 +96,7 @@ export class ExtensionsActivator {
           disposable.dispose();
         } catch (e) {
           this.logger.log('deactivated error');
-          this.logger.log(e);
+          this.logger.warn(e);
         }
       });
     });

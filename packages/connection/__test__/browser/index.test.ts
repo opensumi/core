@@ -22,7 +22,7 @@ describe('connection browser', () => {
       });
     });
 
-    const wsChannelHandler = new WSChanneHandler(fakeWSURL);
+    const wsChannelHandler = new WSChanneHandler(fakeWSURL, console);
 
     await wsChannelHandler.initHandler();
     await new Promise((resolve) => {

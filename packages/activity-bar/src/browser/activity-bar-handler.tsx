@@ -122,7 +122,8 @@ export class ActivityBarHandler {
   }
 
   isActivated() {
-    return this.activityTabBar.currentWidget === this.widget;
+    const bottomFilter = this.side === 'bottom' ? this.contextKeyService.match('bottomPanelVisible') : true;
+    return bottomFilter && this.activityTabBar.currentWidget === this.widget;
   }
 
   show() {

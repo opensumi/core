@@ -202,12 +202,12 @@ export class CommonChannelHandler extends WebSocketHandler {
             if (channel) {
               channel.handleMessage(msgObj);
             } else {
-              this.logger.log(`channel ${id} not found`);
+              this.logger.warn(`channel ${id} not found`);
             }
 
           }
         } catch (e) {
-          this.logger.log(e);
+          this.logger.warn(e);
         }
 
       });
