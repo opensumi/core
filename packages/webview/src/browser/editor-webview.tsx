@@ -102,7 +102,7 @@ class WebviewMounter extends Disposable {
       const rect = this.container.getBoundingClientRect();
       if (rect.height === 0 || rect.width === 0) {
         this.webview.getDomNode()!.style.display = 'none';
-        if (isWebview(this.webview)) {
+        if (isWebview(this.webview) && !this.webview.options.longLive) {
           this.webview.setListenMessages(false);
         }
       } else {
