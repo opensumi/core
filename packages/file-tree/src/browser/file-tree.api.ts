@@ -28,28 +28,16 @@ export class FileTreeAPI implements IFileTreeAPI {
   @Autowired()
   private labelService: LabelService;
 
-  private _userhomePath: URI;
-
-  private whenReady: Promise<any>;
-
-  constructor() {
-    this.whenReady = this.init();
-  }
-
-  async init() {
-    const userhome = await this.fileServiceClient.getCurrentUserHome();
-    if (userhome) {
-      this._userhomePath = new URI(userhome.uri);
-    }
-  }
-
-  get userhomePath(): URI {
-    return this._userhomePath;
-  }
+  private userhomePath: URI;
 
   async getFiles(path: string | FileStat, parent?: Directory | undefined) {
     let file: FileStat | undefined;
-    await this.whenReady;
+    if (!this.userhomePath) {
+      const userhome = await this.fileServiceClient.getCurrentUserHome();
+      if (userhome) {
+        this.userhomePath = new URI(userhome.uri);
+      }
+    }
     if (typeof path === 'string') {
       file = await this.fileServiceClient.getFileStat(path);
     } else {
