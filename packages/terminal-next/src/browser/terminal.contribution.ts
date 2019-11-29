@@ -6,7 +6,7 @@ import {
   CommandContribution,
   CommandRegistry,
   TabBarToolbarContribution,
-  TabBarToolbarRegistry,
+  ToolbarRegistry,
   ClientAppContribution,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
@@ -107,7 +107,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
       id: terminalExpand.id,
       command: terminalExpand.id,

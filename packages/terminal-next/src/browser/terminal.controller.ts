@@ -3,11 +3,11 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { uuid, CommandService, OnEvent, WithEventBus, Emitter } from '@ali/ide-core-common';
 import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
 import { TerminalClient } from './terminal.client';
 import { WidgetGroup, Widget } from './component/resize.control';
 import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
 import { ITerminalTheme } from './terminal.theme';
+import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -35,7 +35,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
 
-  tabbarHandler: ActivityBarHandler;
+  tabbarHandler: TabBarHandler;
 
   private _clientsMap = new Map<string, TerminalClient>();
   private _focusedId: string;
