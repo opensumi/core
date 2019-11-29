@@ -1,5 +1,6 @@
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
+import * as mv from 'mv';
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
@@ -128,7 +129,16 @@ describe('nsfw-filesystem-watcher', () => {
       root.resolve('for_rename').toString(),
     ];
 
-    fs.moveSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')));
+    await new Promise((resolve) => {
+      mv(
+        FileUri.fsPath(root.resolve('for_rename')),
+        FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
+        { mkdirp: true, clobber: true },
+        () => {
+          resolve();
+        },
+      );
+    });
     await sleep(sleepTime);
 
     expect(expectedAddUris).toEqual([...addUris]);
