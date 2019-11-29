@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe } from 'mobx';
 import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
@@ -36,6 +36,9 @@ export class TabbarService extends WithEventBus {
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(KeybindingRegistry)
+  keybindingRegistry: KeybindingRegistry;
 
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
@@ -89,6 +92,7 @@ export class TabbarService extends WithEventBus {
       },
       group: '1_widgets',
     });
+    this.registerActivateKeyBinding(componentInfo);
   }
 
   getContainer(containerId: string) {
@@ -119,6 +123,32 @@ export class TabbarService extends WithEventBus {
       x: event.clientX,
       y: event.clientY,
     } });
+  }
+
+  // 注册Tab的激活快捷键，对于底部panel，为切换快捷键
+  private registerActivateKeyBinding(component: ComponentRegistryInfo) {
+    const options = component.options!;
+    const containerId = options.containerId;
+    if (!options.activateKeyBinding) {
+      return;
+    }
+    const activateCommandId = `activity.panel.activate.${containerId}`;
+    this.commandRegistry.registerCommand({
+      id: activateCommandId,
+    }, {
+      execute: () => {
+        // 支持toggle
+        if (this.location === 'bottom') {
+          this.currentContainerId = this.currentContainerId === containerId ? '' : containerId;
+        } else {
+          this.currentContainerId = containerId;
+        }
+      },
+    });
+    this.keybindingRegistry.registerKeybinding({
+      command: activateCommandId,
+      keybinding: options.activateKeyBinding,
+    });
   }
 
   private registerGlobalToggleCommand() {
