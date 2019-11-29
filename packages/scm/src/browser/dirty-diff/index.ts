@@ -1,6 +1,6 @@
 import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Event, IEventBus, CommandService } from '@ali/ide-core-common';
+import { Event, IEventBus, CommandService, Delayer } from '@ali/ide-core-common';
 import { Disposable, DisposableStore, DisposableCollection } from '@ali/ide-core-common/lib/disposable';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
@@ -32,6 +32,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   private models: monaco.editor.ITextModel[] = [];
   private widgets = new Map<string, DirtyDiffWidget>();
   private items: { [modelId: string]: DirtyDiffItem; } = Object.create(null);
+  private readonly delayer = new Delayer(200);
   private readonly transientDisposables = new DisposableStore();
 
   @Autowired(SCMPreferences)
@@ -186,15 +187,49 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     }
   }
 
+  private _doMouseDown(codeEditor: monaco.editor.ICodeEditor, event: monaco.editor.IEditorMouseEvent) {
+    if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS && event.target.element && event.target.element.className.indexOf('dirty-diff-glyph') > -1) {
+
+      const { target } = event;
+
+      if (target && target.position) {
+
+        const { position } = target;
+        const fodingController = codeEditor.getContribution('editor.contrib.folding');
+
+        // @ts-ignore
+        const oldRegion = fodingController.foldingModel.getRegionAtLine(target.position.lineNumber);
+        const oldIsCollapsed = oldRegion && oldRegion.isCollapsed;
+
+        this.delayer.trigger(async () => {
+          // @ts-ignore
+          const foldingRegion = await fodingController.foldingRegionPromise;
+          const index = foldingRegion.findRange(position.lineNumber);
+          const isCollapsed = foldingRegion.toRegion(index).isCollapsed;
+
+          if (index <= 0) {
+            this.openDirtyDiffWidget(codeEditor, position);
+          } else {
+            if (isCollapsed === oldIsCollapsed) {
+              this.openDirtyDiffWidget(codeEditor, position);
+            } else {
+              const widget = this.widgets.get(codeEditor.getId());
+              if (widget) {
+                widget.dispose();
+                this.widgets.delete(codeEditor.getId());
+              }
+            }
+          }
+        });
+      }
+    }
+  }
+
   private attachEvents(codeEditor: monaco.editor.ICodeEditor) {
     const disposeCollecton = new DisposableCollection();
 
     disposeCollecton.push(codeEditor.onMouseDown((event) => {
-      if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
-        if (event.target.position) {
-          this.openDirtyDiffWidget(codeEditor, event.target.position);
-        }
-      }
+      return this._doMouseDown(codeEditor, event);
     }));
 
     disposeCollecton.push(codeEditor.onDidChangeModel(({ oldModelUrl }) => {
