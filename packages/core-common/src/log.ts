@@ -110,7 +110,15 @@ export interface ILogServiceManager {
 }
 
 export interface IBaseLogService {
+
+  /**
+   * 获取当前的log level
+   */
   getLevel(): LogLevel;
+
+  /**
+   * 设置 log level
+   */
   setLevel(level: LogLevel): void;
 
   verbose(...args: any[]): void;
@@ -120,6 +128,12 @@ export interface IBaseLogService {
   error(...args: any[]): void;
   critical(...args: any[]): void;
 
+
+  /**
+   * 直接发送log 消息，在此函数内部分发到上面的 log、error方法
+   * @param level
+   * @param message
+   */
   sendLog(level: LogLevel, message: string): void;
 
   /**
@@ -132,10 +146,16 @@ export interface IBaseLogService {
    */
   flush(): Promise<void>;
 
+  /**
+   * 销毁当前实例
+   */
   dispose(): void;
 }
 
 export interface ILogService extends IBaseLogService {
+  /**
+   * 设置 logger 信息，用于初始化后，更新 logger 设置
+   */
   setOptions(options: BaseLogServiceOptions);
 }
 

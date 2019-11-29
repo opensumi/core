@@ -1,5 +1,5 @@
 import { Event } from 'vscode';
-import { TerminalInfo } from '@ali/ide-terminal2/lib/common';
+import { TerminalInfo } from '@ali/ide-terminal-next/lib/common';
 import * as vscode from 'vscode';
 
 export interface IMainThreadTerminal {

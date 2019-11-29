@@ -67,7 +67,6 @@ export class MainThreadCommands implements IMainThreadCommands {
   }
 
   $registerCommand(id: string): void {
-    // this.logger.log('$registerCommand id', id);
     const proxy = this.proxy;
     const command = this.commandRegistry.getCommand(id);
 

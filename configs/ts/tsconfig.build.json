@@ -133,7 +133,7 @@
       "path": "./references/tsconfig.navigation-bar.json"
     },
     {
-      "path": "./references/tsconfig.terminal2.json"
+      "path": "./references/tsconfig.terminal-next.json"
     },
     {
       "path": "./references/tsconfig.storage.json"
@@ -161,6 +161,6 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
-    }
+    },
   ]
 }

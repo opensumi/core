@@ -83,14 +83,14 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
       updateRightPanelVisible();
     });
 
-    const leftPanelVisible = this.contextKeyService.createKey<boolean>('leftPanelVisible', false);
+    const leftPanelVisible = this.contextKeyService.createKey<boolean>('leftPanelVisible', true);
     const updateLeftPanelVisible = () => {
       leftPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.left));
     };
     this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
       updateLeftPanelVisible();
     });
-    const bottomPanelVisible = this.contextKeyService.createKey<boolean>('bottomPanelVisible', false);
+    const bottomPanelVisible = this.contextKeyService.createKey<boolean>('bottomPanelVisible', true);
     this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
       bottomPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.bottom));
     });

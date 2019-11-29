@@ -116,7 +116,8 @@ export class FileService extends RPCService implements IFileService {
   }
 
   setWatchFileExcludes(excludes: string[]) {
-    this.watchFileExcludes = excludes
+    this.watchFileExcludes = excludes;
+    this.updateWatchFileExcludes(excludes);
   }
 
   getWatchFileExcludes(): string[] {
@@ -466,6 +467,15 @@ export class FileService extends RPCService implements IFileService {
   }
 
   // Protected or private
+
+  private async updateWatchFileExcludes(excludes: string[]) {
+    if (excludes.length < 1) {
+      return;
+    }
+    // 只更新diskFileSystemProvider
+    const diskFileSystemProvider = await this.getProvider(Schemas.file);
+    diskFileSystemProvider.updateWatchFileExcludes && diskFileSystemProvider.updateWatchFileExcludes(excludes);
+  }
 
   private updateExcludeMatcher() {
     this.filesExcludes.forEach((str) => {
