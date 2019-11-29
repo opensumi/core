@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as clsx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
 import Menu, { ClickParam } from 'antd/lib/menu';
@@ -166,7 +167,7 @@ const TitleActionList: React.FC<{
       {
         primary.map((item) => (
           <IconAction
-            className={styles.iconAction}
+            className={clsx(styles.iconAction, { filled: item.checked })}
             key={item.id}
             data={item}
             context={context} />

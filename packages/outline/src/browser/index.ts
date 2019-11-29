@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, ComponentContribution, Domain, ComponentRegistry, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
+import { BrowserModule, ComponentContribution, Domain, ComponentRegistry, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry, IContextKeyService } from '@ali/ide-core-browser';
 import { OutLineTree } from './outline.tree.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
@@ -26,6 +26,9 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
 
   @Autowired()
   outlineService: OutLineService;
+
+  @Autowired(IContextKeyService)
+  contextKey: IContextKeyService;
 
   onDidUseConfig() {
     this.mainLayoutService.collectViewComponent({
@@ -54,8 +57,8 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
     }, {
       execute: () => {
         this.outlineService.followCursor = !this.outlineService.followCursor;
+        this.contextKey.createKey('followCursor', this.outlineService.followCursor);
       },
-      isToggled: () => this.outlineService.followCursor,
     });
   }
 
@@ -65,6 +68,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
       viewId: 'outline-view',
       command: OUTLINE_FOLLOW_CURSOR,
       tooltip: localize('outline.follow.cursor', '跟随光标'),
+      toggleWhen: 'followCursor',
     });
     registry.registerItem({
       id: 'outline.action.collapse.all',

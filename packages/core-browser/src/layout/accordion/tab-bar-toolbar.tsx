@@ -18,6 +18,7 @@ export class ToolbarRegistry {
     return this.menuRegistry.registerMenuItem(`container/${item.viewId}`, {
       command: item.command,
       when: item.when,
+      toggledWhen: item.toggleWhen,
       group: item.group || 'navigation',
       label: item.label,
     });
@@ -41,6 +42,8 @@ export interface TabBarToolbarItem {
   readonly label?: string;
 
   when?: string;
+
+  toggleWhen?: string;
 
   viewId?: string;
 
