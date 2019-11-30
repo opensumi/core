@@ -72,6 +72,7 @@ export class EditorContextMenuController extends Disposable {
     this.contextMenuRenderer.show({
       anchor,
       menuNodes: [...menuNodes[0], ...menuNodes[1]],
+      context: [ this.editor.currentUri ],
     });
   }
 
