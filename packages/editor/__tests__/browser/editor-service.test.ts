@@ -3,7 +3,7 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor/lib/common';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
@@ -18,6 +18,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { reaction } from 'mobx';
 import { CorePreferences } from '@ali/ide-core-browser';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
+import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
 
 const injector = createBrowserInjector([]);
 
@@ -65,6 +66,10 @@ injector.addProviders(...[
   {
     token: IDocPersistentCacheProvider,
     useClass: EmptyDocCacheImpl,
+  },
+  {
+    token: IEditorFeatureRegistry,
+    useClass: EditorFeatureRegistryImpl,
   },
 ]);
 useMockStorage(injector);
