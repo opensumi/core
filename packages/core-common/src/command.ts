@@ -266,7 +266,12 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
       }
       return result;
     }
-    const argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
+    let argsMessage = '';
+    try {
+      argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
+    } catch(e) {
+      argsMessage = 'args cannot be convert to JSON';
+    }
     throw new Error(
       `The command '${commandId}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
     );
@@ -350,6 +355,11 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    * @param args 传递参数
    */
   isEnabled(command: string, ...args: any[]): boolean {
+    if (!this._handlers[command]) {
+      // 对于插件package.json中注册的command，会没有handler，
+      // 但是它应该可用，这样才能让插件在未启动的情况下点击菜单
+      return true; 
+    }
     return this.getActiveHandler(command, ...args) !== undefined;
   }
 
@@ -359,6 +369,11 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    * @param args 传递参数
    */
   isVisible(command: string, ...args: any[]): boolean {
+    if (!this._handlers[command]) {
+      // 对于插件package.json中注册的command，会没有handler，
+      // 但是它应该可见，这样才能让插件在未启动的情况下显示菜单
+      return true; 
+    }
     return this.getVisibleHandler(command, ...args) !== undefined;
   }
 
