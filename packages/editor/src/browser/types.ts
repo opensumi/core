@@ -64,6 +64,8 @@ export interface BrowserEditorContribution {
   registerEditorActions?(editorActionRegistry: IEditorActionRegistry): void;
 
   onDidRestoreState?(): void;
+
+  registerEditorFeature?(registry: IEditorFeatureRegistry);
 }
 
 export interface IGridResizeEventPayload {
@@ -281,5 +283,27 @@ export interface IBreadCrumbPart {
   getChildren?(): MaybePromise<IBreadCrumbPart[]>;
 
   onClick?(): void;
+
+}
+
+export const IEditorFeatureRegistry = Symbol('IEditorFeatureRegistry');
+
+export interface IEditorFeatureRegistry {
+
+  /**
+   * 注册一个用来加强编辑器能力的Contribution
+   * @param contribution
+   */
+  registerEditorFeatureContribution(contribution: IEditorFeatureContribution): IDisposable;
+
+}
+
+export interface IEditorFeatureContribution {
+
+  /**
+   * 当一个编辑器被创建时，会调用这个API，返回的Disposable会在编辑器被销毁时执行
+   * @param editor
+   */
+  contribute(editor: IEditor): IDisposable;
 
 }
