@@ -2,10 +2,11 @@ import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
 import { useInjectable, IContextKeyService, IContextKey, useDisposable } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
-import { CommandService, DisposableStore, Event } from '@ali/ide-core-common';
+import { URI, CommandService, DisposableStore, Event } from '@ali/ide-core-common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 import { ISCMRepository, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
@@ -27,10 +28,16 @@ export const SCMResouceList: React.FC<{
   const commandService = useInjectable<CommandService>(CommandService);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+
+  const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
+
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
 
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
   const [ selectedNodeId, setSelectedNodeId ] = React.useState<string | number>();
+
+  const _selectTimer = React.useRef<NodeJS.Timer>();
+  const _selectTimes = React.useRef<number>(0);
 
   const $that = React.useRef<{
     scmMenuService?: SCMMenus;
@@ -96,6 +103,9 @@ export const SCMResouceList: React.FC<{
       return;
     }
 
+    if (_selectTimes) {
+      _selectTimes.current = _selectTimes.current + 1;
+    }
     // 控制选中状态
     setSelectedNodeId(file.id);
 
@@ -105,7 +115,31 @@ export const SCMResouceList: React.FC<{
       return;
     }
 
-    return commandService.executeCommand(GitActionList.gitOpenResource, file.resourceState);
+    // 单击打开/双击 pin
+    if (_selectTimes && _selectTimes.current === 1) {
+      item.open();
+    }
+
+    if (_selectTimer && _selectTimer.current) {
+      clearTimeout(_selectTimer.current);
+    }
+
+    // FIXME: RecycleTree 支持双击事件
+    _selectTimer.current = setTimeout(() => {
+      // 单击事件
+      // 200ms内多次点击默认为双击事件
+      if (_selectTimes.current > 1) {
+        // 双击 pin 住当前文件对应的 editor
+        const { currentEditorGroup, currentEditor } = workbenchEditorService;
+        if (currentEditorGroup && currentEditor && currentEditor.currentUri) {
+          // uri 一致的情况下将当前 editor pin 住
+          if (URI.from(item.sourceUri).isEqual(currentEditor.currentUri)) {
+            currentEditorGroup.pin(currentEditor.currentUri);
+          }
+        }
+      }
+      _selectTimes.current = 0;
+    }, 200);
   }, []);
 
   const onContextMenu = React.useCallback((files, event: React.MouseEvent<HTMLElement>) => {

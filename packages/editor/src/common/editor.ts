@@ -126,6 +126,8 @@ export interface IEditorGroup {
 
   open(uri: URI, options: IResourceOpenOptions): Promise<IOpenResourceResult>;
 
+  pin(uri: URI): Promise<void>;
+
   close(uri: URI): Promise<void>;
 
   getState(): IEditorGroupState;
