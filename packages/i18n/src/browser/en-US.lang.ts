@@ -156,6 +156,11 @@ export const localizationBundle = {
     'selection.all': 'Select All',
 
     'dialog.confirm': 'confirm',
+    'dialog.file.title': 'Select Directory:',
+    'dialog.file.openLabel': 'Open File:',
+    'dialog.file.saveLabel': 'Save File:',
+    'dialog.file.close': 'Close',
+    'dialog.file.ok': 'OK',
     'menu-bar.file.pref': 'prefrence',
 
     'editorOpenType.code': 'Code',

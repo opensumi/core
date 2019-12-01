@@ -9,8 +9,8 @@ export interface IMessageService {
   info(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined>;
   warning(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined>;
   error(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined>;
-  open(message: string | React.ReactNode, type: MessageType, buttons?: string[]): Promise<string | undefined>;
-  hide(value?: string): void;
+  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[]): Promise<T | undefined>;
+  hide<T = string>(value?: T): void;
 }
 
 export interface Icon {
@@ -24,6 +24,7 @@ export interface IDialogService extends IMessageService {
   getMessage(): string | React.ReactNode;
   getIcon(): Icon | undefined;
   getButtons(): string[];
+  getType(): MessageType | undefined;
   reset(): void;
 }
 
@@ -39,23 +40,46 @@ export abstract class AbstractMessageService implements IMessageService {
   error(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined> {
     return this.open(message, MessageType.Error, buttons);
   }
-  abstract open(message: string | React.ReactNode, type: MessageType, buttons?: any[]): Promise<string | undefined>;
-  abstract hide(value?: string): void;
+  abstract open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: any[]): Promise<T | undefined>;
+  abstract hide<T = string>(value?: T): void;
 }
 
 export interface IWindowDialogService {
   showOpenDialog(options?: IOpenDialogOptions): Promise<URI[] | undefined>;
+  showSaveDialog(options?: ISaveDialogOptions): Promise<URI | undefined>;
 }
 
 export const IWindowDialogService = Symbol('IWindowDialogService');
 
-export interface IOpenDialogOptions {
-  canSelectFiles?: boolean;
-  canSelectFolders?: boolean;
-  canSelectMany?: boolean;
+export interface IDialogOptions {
   defaultUri?: URI;
   filters?: {
     [name: string]: string,
   };
+}
+
+export interface ISaveDialogOptions extends IDialogOptions {
+  saveLabel?: string;
+}
+
+export interface IOpenDialogOptions extends IDialogOptions {
+  canSelectFiles?: boolean;
+  canSelectFolders?: boolean;
+  canSelectMany?: boolean;
   openLabel?: string;
+}
+
+export namespace ISaveDialogOptions {
+  export function is(option) {
+    return 'saveLabel' in option;
+  }
+}
+
+export namespace IOpenDialogOptions {
+  export function is(option) {
+    return 'canSelectFiles' in option
+    || 'canSelectFolders' in option
+    || 'canSelectMany' in option
+    || 'openLabel' in option;
+  }
 }

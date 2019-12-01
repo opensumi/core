@@ -10,6 +10,7 @@
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings/vscode.theme.d.ts' />
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings/vscode.scm.d.ts' />
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings/vscode.debug.d.ts' />
+/// <reference path='../../packages/kaitian-extension/typings/vscode/typings/vscode.window.d.ts' />
 
 
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings-pending/vscode.d.ts' />

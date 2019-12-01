@@ -152,6 +152,11 @@ export const localizationBundle = {
     'selection.all': '选择全部',
 
     'dialog.confirm': '知道了',
+    'dialog.file.title': '存储目录：',
+    'dialog.file.openLabel': '打开文件：',
+    'dialog.file.saveLabel': '保存文件：',
+    'dialog.file.close': '关闭',
+    'dialog.file.ok': '确定',
     'menu-bar.file.pref': '设置',
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',

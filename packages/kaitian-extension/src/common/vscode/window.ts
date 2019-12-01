@@ -85,19 +85,28 @@ export interface IExtHostWindowState {
 
 export interface IExtHostWindow {
   $onOpenDialogResult(id: string, result: UriComponents[] | undefined): void;
+  $onSaveDialogResult(id: string, result: UriComponents | undefined): void;
 }
 
 export interface IMainThreadWindow {
-  $showOpenDialog(id: string, options: IExtOpenDialogOptions ): void;
+  $showOpenDialog(id: string, options: IExtOpenDialogOptions): void;
+  $showSaveDialog(id: string, options: IExtSaveDialogOptions): void;
 }
 
-export interface IExtOpenDialogOptions {
-  canSelectFiles?: boolean;
-  canSelectFolders?: boolean;
-  canSelectMany?: boolean;
+export interface IExtDialogOptions {
   defaultUri?: UriComponents;
   filters?: {
     [name: string]: string,
   };
+}
+
+export interface IExtSaveDialogOptions extends IExtDialogOptions {
+  saveLabel?: string;
+}
+
+export interface IExtOpenDialogOptions extends IExtDialogOptions {
+  canSelectFiles?: boolean;
+  canSelectFolders?: boolean;
+  canSelectMany?: boolean;
   openLabel?: string;
 }
