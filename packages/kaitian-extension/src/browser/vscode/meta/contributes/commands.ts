@@ -56,7 +56,13 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
         label: this.getLocalieFromNlsJSON(command.title),
         id: command.command,
         iconClass: this.iconService.fromIcon(this.extension.path, command.icon),
+      }, {
+        execute: (...args: any[]) => {
+          this.extensionService.executeExtensionCommand(command.command, args);
+        },
       }));
+      // TODO 支持定义worker中的command
+      this.addDispose(this.extensionService.declareExtensionCommand(command.command, 'node'));
     });
   }
 }

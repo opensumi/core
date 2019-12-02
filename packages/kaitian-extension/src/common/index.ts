@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { Disposable, IJSONSchema } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
@@ -54,7 +54,17 @@ export interface IExtensionNodeClientService {
   updateLanguagePack(languageId: string, languagePackPath: string): Promise<void>;
 }
 
+export type ExtensionHostType = 'node' | 'worker';
+
 export abstract class ExtensionService {
+  abstract async executeExtensionCommand(command: string, args: any[]): Promise<void>;
+  /**
+   *
+   * @param command command id
+   * @param targetHost 目标插件进程的位置，默认 'node' // TODO worker中的声明未支持，
+   */
+  abstract declareExtensionCommand(command: string, targetHost?: ExtensionHostType ): IDisposable;
+  abstract getExtensionCommand(command: string): ExtensionHostType | undefined;
   abstract async activate(): Promise<void>;
   abstract async activeExtension(extension: IExtension): Promise<void>;
   abstract async getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T>;

@@ -44,6 +44,8 @@ export interface IEditor {
   save(): Promise<void>;
 
   monacoEditor: monaco.editor.ICodeEditor;
+
+  onDispose: Event<void>;
 }
 
 export interface IUndoStopOptions {
