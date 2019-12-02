@@ -40,15 +40,15 @@ export type IFileTreeItemStatus = Map<string, {
 export interface IFileTreeServiceProps {
   onSelect: (files: (Directory | File)[]) => void;
   onTwistieClick?: (file: IFileTreeItemRendered) => void;
-  onDragStart: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
-  onDragOver: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
-  onDragEnter: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
-  onDragLeave: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
-  onDrop: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
-  onContextMenu: (nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) => void;
-  onChange: (node: IFileTreeItemRendered, value: string) => void;
-  onBlur: () => void;
-  onFocus: () => void;
+  onDragStart?: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onDragOver?: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onDragEnter?: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onDragLeave?: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onDrop?: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onContextMenu?: (nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) => void;
+  onChange?: (node: IFileTreeItemRendered, value: string) => void;
+  onBlur?: () => void;
+  onFocus?: () => void;
   draggable: boolean;
   editable: boolean;
 }

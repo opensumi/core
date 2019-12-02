@@ -1,16 +1,25 @@
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
+import * as mv from 'mv';
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common/file-service-watcher-protocol';
 // tslint:disable:no-unused-expression
 
-const track = temp.track();
-const sleepTime = 1500;
+function createNsfwFileSystemWatcherServer() {
+  return new NsfwFileSystemWatcherServer({
+    verbose: false,
+  });
+}
+
+function sleep(time: number) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
 
 describe('nsfw-filesystem-watcher', () => {
-
+  const track = temp.track();
+  const sleepTime = 1500;
   let root: URI;
   let watcherServer: NsfwFileSystemWatcherServer;
   let watcherId: number;
@@ -18,6 +27,7 @@ describe('nsfw-filesystem-watcher', () => {
 
   beforeEach(async () => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
+    fs.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fs.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     watcherServer = createNsfwFileSystemWatcherServer();
     watcherId = await watcherServer.watchFileChanges(root.toString());
@@ -129,15 +139,149 @@ describe('nsfw-filesystem-watcher', () => {
     expect(expectedDeleteUris).toEqual([...deleteUris]);
   });
 
-  function createNsfwFileSystemWatcherServer() {
-    return new NsfwFileSystemWatcherServer({
-      verbose: false,
-    });
-  }
+  it('移动文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
+    const addUris = new Set<string>();
+    const deleteUris = new Set<string>();
 
-  function sleep(time: number) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-  }
+    const watcherClient = {
+      onDidFilesChanged(event: DidFilesChangedParams) {
+        event.changes.forEach((c) => {
+          if (c.type === FileChangeType.ADDED) {
+            addUris.add(c.uri);
+          }
+          if (c.type === FileChangeType.DELETED) {
+            deleteUris.add(c.uri);
+          }
+        });
+      },
+    };
+
+    watcherServer.setClient(watcherClient);
+
+    const expectedAddUris = [
+      root.resolve('for_rename_folder').resolve('for_rename').toString(),
+    ];
+
+    const expectedDeleteUris = [
+      root.resolve('for_rename').toString(),
+    ];
+
+    await new Promise((resolve) => {
+      mv(
+        FileUri.fsPath(root.resolve('for_rename')),
+        FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
+        { mkdirp: true, clobber: true },
+        () => {
+          resolve();
+        },
+      );
+    });
+    await sleep(sleepTime);
+
+    expect(expectedAddUris).toEqual([...addUris]);
+    expect(expectedDeleteUris).toEqual([...deleteUris]);
+  });
+
+});
+
+describe('测试重命名、移动相关', () => {
+  const track = temp.track();
+  const sleepTime = 1500;
+  let root: URI;
+  let watcherServer: NsfwFileSystemWatcherServer;
+  let watcherId: number;
+  jest.setTimeout(10000);
+
+  beforeEach(async () => {
+    root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
+    fs.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
+    fs.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
+    watcherServer = createNsfwFileSystemWatcherServer();
+    watcherId = await watcherServer.watchFileChanges(root.toString());
+    await sleep(sleepTime);
+  });
+
+  afterEach(async () => {
+    track.cleanupSync();
+    watcherServer.dispose();
+  });
+
+  it('重命名文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
+    const addUris = new Set<string>();
+    const deleteUris = new Set<string>();
+
+    const watcherClient = {
+      onDidFilesChanged(event: DidFilesChangedParams) {
+        event.changes.forEach((c) => {
+          if (c.type === FileChangeType.ADDED) {
+            addUris.add(c.uri);
+          }
+          if (c.type === FileChangeType.DELETED) {
+            deleteUris.add(c.uri);
+          }
+        });
+      },
+    };
+
+    watcherServer.setClient(watcherClient);
+
+    const expectedAddUris = [
+      root.resolve('for_rename_renamed').toString(),
+    ];
+
+    const expectedDeleteUris = [
+      root.resolve('for_rename').toString(),
+    ];
+
+    fs.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
+    await sleep(sleepTime);
+
+    expect(expectedAddUris).toEqual([...addUris]);
+    expect(expectedDeleteUris).toEqual([...deleteUris]);
+  });
+
+  it('移动文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
+    const addUris = new Set<string>();
+    const deleteUris = new Set<string>();
+
+    const watcherClient = {
+      onDidFilesChanged(event: DidFilesChangedParams) {
+        event.changes.forEach((c) => {
+          if (c.type === FileChangeType.ADDED) {
+            addUris.add(c.uri);
+          }
+          if (c.type === FileChangeType.DELETED) {
+            deleteUris.add(c.uri);
+          }
+        });
+      },
+    };
+
+    watcherServer.setClient(watcherClient);
+
+    const expectedAddUris = [
+      root.resolve('for_rename_folder').resolve('for_rename').toString(),
+    ];
+
+    const expectedDeleteUris = [
+      root.resolve('for_rename').toString(),
+    ];
+
+    await new Promise((resolve) => {
+      mv(
+        FileUri.fsPath(root.resolve('for_rename')),
+        FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
+        { mkdirp: true, clobber: true },
+        () => {
+          resolve();
+        },
+      );
+    });
+    await sleep(sleepTime);
+
+    expect(expectedAddUris).toEqual([...addUris]);
+    expect(expectedDeleteUris).toEqual([...deleteUris]);
+  });
 
 });
 

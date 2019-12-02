@@ -1,7 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry } from '@ali/ide-core-browser';
+import { PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable, CommandRegistry } from '@ali/ide-core-browser';
 import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
-import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus } from './monaco-menu';
@@ -107,11 +107,28 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
         contribution.onContextKeyServiceReady(this.injector.get(IContextKeyService));
       }
     }
+
+    const menuRegistry = this.injector.get(IMenuRegistry) as IMenuRegistry;
+    const monacoMenuRegistry = monaco.actions.MenuRegistry;
+    monacoMenuRegistry.getMenuItems(7 /* EditorContext */).forEach((item) => {
+      menuRegistry.registerMenuItem(MenuId.EditorContext,  transformMonacoMenuItem(item));
+    });
+    const originalAppendItem = monacoMenuRegistry.appendMenuItem;
+    monacoMenuRegistry.appendMenuItem = (id, item) => {
+      const disposer = new Disposable();
+      disposer.addDispose(originalAppendItem.apply(monacoMenuRegistry, [id, item]));
+      disposer.addDispose(menuRegistry.registerMenuItem(MenuId.EditorContext, transformMonacoMenuItem(item)));
+      return disposer;
+    };
   }
 
-  registerCommands() {
+  registerCommands(commands: CommandRegistry) {
     // 注册 monaco 所有的 action
     this.monacoActionRegistry.registerMonacoActions();
+    commands.registerCommand({
+      id: 'monaco.editor.action.quickCommand',
+      delegate: 'editor.action.quickCommand',
+    });
   }
 
   registerNextMenus(menuRegistry: IMenuRegistry) {
@@ -211,4 +228,16 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     return -1;
   }
 
+}
+
+function transformMonacoMenuItem(item: monaco.actions.IMenuItem): IMenuItem {
+  return {
+    command: {
+      id: MonacoCommandRegistry.MONACO_COMMAND_PREFIX + item.command.id,
+      label: item.command.title,
+    },
+    group: item.group,
+    when: item.when,
+    order: item.order,
+  };
 }

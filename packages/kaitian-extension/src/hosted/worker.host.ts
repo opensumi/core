@@ -144,7 +144,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
         self[`kaitian_extend_browser_worker_${extension.workerVarId}`].activate(workerExtContext);
       }
     } else {
-      this.logger.log('extension worker activate error', extension);
+      this.logger.error('extension worker activate error', extension);
     }
   }
 
@@ -168,8 +168,8 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
 
             this.kaitianExtAPIImpl.set(extensionId, kaitianAPIImpl);
           } catch (e) {
-            this.logger.log('worker error');
-            this.logger.log(e);
+            this.logger.error('worker error');
+            this.logger.error(e);
           }
         }
 

@@ -95,7 +95,7 @@ export class MonacoCommandService implements ICommandService {
 @Injectable()
 export class MonacoCommandRegistry {
 
-  protected static MONACO_COMMAND_PREFIX = 'monaco.';
+  public static MONACO_COMMAND_PREFIX = 'monaco.';
 
   @Autowired(CommandRegistry)
   protected commands: CommandRegistry;

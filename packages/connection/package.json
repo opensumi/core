@@ -1,6 +1,10 @@
 {
   "name": "@ali/ide-connection",
+<<<<<<< HEAD
   "version": "1.5.5",
+=======
+  "version": "1.6.1",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
   "files": [
     "lib"
   ],
@@ -20,7 +24,11 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@ali/ide-core-common": "1.5.5",
+=======
+    "@ali/ide-core-common": "1.6.1",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
     "@ali/vscode-jsonrpc": "^4.0.1",
     "path-match": "^1.2.4",
     "shortid": "^2.2.14",

@@ -27,9 +27,13 @@ abstract class BaseContextKeyService implements IContextKeyService {
     return this.contextKeyService.getContextValuesContainer(this.contextKeyService._myContextId).getValue<T>(key);
   }
 
-  createScoped(domNode: monaco.contextkey.IContextKeyServiceTarget): IContextKeyService {
-    const scopedContextKeySerivce = this.contextKeyService.createScoped(domNode) as monaco.contextKeyService.ContextKeyService;
-    return new ScopedContextKeyService(scopedContextKeySerivce);
+  createScoped(target: monaco.contextkey.IContextKeyServiceTarget | monaco.contextKeyService.ContextKeyService): IContextKeyService {
+    if (target && (target as any)._myContextId ) {
+      return new ScopedContextKeyService(target as any);
+    } else {
+      const scopedContextKeySerivce = this.contextKeyService.createScoped(target as monaco.contextkey.IContextKeyServiceTarget) as monaco.contextKeyService.ContextKeyService;
+      return new ScopedContextKeyService(scopedContextKeySerivce);
+    }
   }
 
   // cache expressions

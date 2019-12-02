@@ -1,0 +1,67 @@
+{
+<<<<<<< HEAD:packages/terminal2/package.json
+  "name": "@ali/ide-terminal2",
+  "version": "1.5.5",
+=======
+  "name": "@ali/ide-terminal-next",
+  "version": "1.6.1",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623:packages/terminal-next/package.json
+  "files": [
+    "lib"
+  ],
+  "private": false,
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "start": "run-p start:client start:server",
+    "start:client": "webpack-dev-server --config ./webpack.config.js",
+    "start:server": "node --inspect -r ts-node/register ./entry/server.ts",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.terminal-next.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
+  },
+  "publishConfig": {
+    "registry": "http://registry.npm.alibaba-inc.com"
+  },
+  "dependencies": {
+<<<<<<< HEAD:packages/terminal2/package.json
+    "@ali/ide-activity-panel": "1.5.5",
+    "@ali/ide-connection": "1.5.5",
+    "@ali/ide-core-common": "1.5.5",
+    "@ali/ide-core-node": "1.5.5",
+    "@ali/ide-main-layout": "1.5.5",
+    "@ali/ide-theme": "1.5.5",
+=======
+    "@ali/ide-activity-bar": "1.6.1",
+    "@ali/ide-core-common": "1.6.1",
+    "@ali/ide-connection": "1.6.1",
+    "@ali/ide-core-node": "1.6.1",
+    "@ali/ide-main-layout": "1.6.1",
+    "@ali/ide-theme": "1.6.1",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623:packages/terminal-next/package.json
+    "shell-path": "^2.1.0",
+    "os-locale": "^4.0.0",
+    "lodash.omit": "^4.1.1",
+    "event-kit": "^2.5.3",
+    "node-pty": "^0.8.1",
+    "xterm": "^4.2.0",
+    "xterm-addon-attach": "^0.3.0",
+    "xterm-addon-fit": "^0.3.0",
+    "xterm-addon-search": "^0.3.0",
+    "xterm-addon-web-links": "^0.2.1"
+  },
+  "devDependencies": {
+<<<<<<< HEAD:packages/terminal2/package.json
+    "@ali/ide-core-browser": "1.5.5",
+    "@ali/ide-dev-tool": "^1.1.0",
+=======
+    "@ali/ide-core-browser": "1.6.1",
+    "@types/event-kit": "^2.4.0",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623:packages/terminal-next/package.json
+    "npm-run-all": "^4.1.5",
+    "ts-node": "8.0.2",
+    "webpack-dev-server": "^3.3.1"
+  }
+}

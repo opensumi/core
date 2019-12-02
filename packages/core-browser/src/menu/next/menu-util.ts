@@ -43,8 +43,13 @@ interface MenuGeneratePayload {
 }
 
 export function generateMergedCtxMenu(payload: MenuGeneratePayload) {
-  const result = generateCtxMenu(payload);
-  return [...result[0], ...result[1]];
+  const [ primary, secondary ] = generateCtxMenu(payload);
+  const result = [ ...primary ];
+  if (result.length > 0 && secondary.length > 0) {
+    result.push(new SeparatorMenuItemNode());
+  }
+
+  return result.concat(secondary);
 }
 
 export function generateCtxMenu(payload: MenuGeneratePayload) {

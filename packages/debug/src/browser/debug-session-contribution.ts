@@ -11,7 +11,7 @@ import { DebugAdapterPath, DebugSessionOptions } from '../common';
 import { BreakpointManager } from './breakpoint';
 import { IMessageService } from '@ali/ide-overlay';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ITerminalClient } from '@ali/ide-terminal2';
+import { ITerminalController } from '@ali/ide-terminal-next/lib/common';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 
@@ -85,8 +85,8 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
   protected readonly debugPreferences: DebugPreferences;
   @Autowired(IFileServiceClient)
   protected readonly fileSystem: IFileServiceClient;
-  @Autowired(ITerminalClient)
-  protected readonly terminalService: ITerminalClient;
+  @Autowired(ITerminalController)
+  protected readonly terminalService: ITerminalController;
   @Autowired(OutputService)
   protected readonly outputService: OutputService;
 

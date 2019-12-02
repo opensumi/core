@@ -1,8 +1,8 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadWindow, IExtHostWindow, IExtOpenDialogOptions } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IMainThreadWindow, IExtHostWindow, IExtOpenDialogOptions, IExtSaveDialogOptions, IExtDialogOptions } from '../../../common/vscode';
 import { Optional, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { isElectronRenderer, URI } from '@ali/ide-core-browser';
-import { IDialogService, IWindowDialogService, IOpenDialogOptions } from '@ali/ide-overlay';
+import { URI } from '@ali/ide-core-browser';
+import { IDialogService, IWindowDialogService, IOpenDialogOptions, ISaveDialogOptions, IDialogOptions } from '@ali/ide-overlay';
 
 @Injectable({multiple: true})
 export class MainThreadWindow implements IMainThreadWindow {
@@ -23,14 +23,23 @@ export class MainThreadWindow implements IMainThreadWindow {
 
   }
 
-  async $showOpenDialog(id: string, options: IExtOpenDialogOptions): Promise<void> {
-    // TODO 这段逻辑单独放一个服务里面
-    const op: IOpenDialogOptions = {
+  private getDefaultDialogOptions(options) {
+    return {
       ...options,
       defaultUri: options.defaultUri ? URI.from(options.defaultUri) : undefined,
     };
+  }
+
+  async $showOpenDialog(id: string, options: IExtOpenDialogOptions = {}): Promise<void> {
+    const op: IOpenDialogOptions = this.getDefaultDialogOptions(options);
     const res = await this.windowDialogService.showOpenDialog(op);
     this.proxy.$onOpenDialogResult(id, res ? res.map((r) => r.codeUri) : res);
+  }
+
+  async $showSaveDialog(id: string, options: IExtSaveDialogOptions = {}): Promise<void> {
+    const op: ISaveDialogOptions = this.getDefaultDialogOptions(options);
+    const res = await this.windowDialogService.showSaveDialog(op);
+    this.proxy.$onSaveDialogResult(id, res ? res.codeUri : res);
   }
 
   dispose() {

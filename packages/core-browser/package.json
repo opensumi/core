@@ -1,6 +1,10 @@
 {
   "name": "@ali/ide-core-browser",
+<<<<<<< HEAD
   "version": "1.5.5",
+=======
+  "version": "1.6.1",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -19,8 +23,13 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
+<<<<<<< HEAD
     "@ali/ide-connection": "1.5.5",
     "@ali/ide-core-common": "1.5.5",
+=======
+    "@ali/ide-connection": "1.6.1",
+    "@ali/ide-core-common": "1.6.1",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
     "@ant-design/dark-theme": "^0.2.2",
     "@phosphor/commands": "^1.6.1",
     "@phosphor/default-theme": "^0.1.0",
@@ -55,7 +64,6 @@
     "vscode-debugprotocol": "^1.35.0",
     "vscode-languageserver-protocol": "^3.14.1",
     "vscode-textmate": "4.3.0",
-    "xterm": "^3.13.2",
     "mock-socket": "^9.0.2"
   }
 }

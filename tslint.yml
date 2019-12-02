@@ -21,6 +21,7 @@ rules:
   array-type: false
   no-var-requires: false
   no-namespace: false
+  no-unused-expression: false
 
 linterOptions:
   exclude:

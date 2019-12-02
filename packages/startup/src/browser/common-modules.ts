@@ -23,7 +23,7 @@ import { OutlineModule } from '@ali/ide-outline/lib/browser';
 import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
 import { UserstorageModule } from '@ali/ide-userstorage/lib/browser';
 import { ToolbarModule } from '@ali/ide-toolbar/lib/browser';
-import { NavigationBarModule } from '@ali/ide-navigation-bar/lib/browser';
+// import { NavigationBarModule } from '@ali/ide-navigation-bar/lib/browser';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
 import { StorageModule } from '@ali/ide-storage/lib/browser';
@@ -32,7 +32,7 @@ import { SCMModule } from '@ali/ide-scm/lib/browser';
 import { MarkersModule } from '@ali/ide-markers/lib/browser';
 
 import { WindowModule } from '@ali/ide-window/lib/browser';
-import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
+// import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 
 import { WebviewModule } from '@ali/ide-webview';
 import { MarkdownModule } from '@ali/ide-markdown';
@@ -47,6 +47,7 @@ import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
 import { MonacoEnhanceModule } from '@ali/ide-monaco-enhance/lib/browser/module';
 
 import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
+import { TerminalNextModule } from '@ali/ide-terminal-next/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
@@ -80,7 +81,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     PreferencesModule,
     ToolbarModule,
     WindowModule,
-    Terminal2Module,
     WebviewModule,
     MarkdownModule,
     WorkspaceEditModule,
@@ -89,6 +89,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     DebugModule,
     VariableModule,
     KeymapsModule,
+    TerminalNextModule,
 
     // Extension Modules
     KaitianExtensionModule,

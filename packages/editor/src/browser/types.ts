@@ -22,9 +22,9 @@ export interface IEditorComponent<MetaData = any> {
 }
 
 export enum EditorComponentRenderMode {
-  ONE_PER_RESOURCE, // 每个resource渲染一个新的
-  ONE_PER_GROUP, // 每个Group最多存在一个新的
-  ONE_PER_WORKBENCH, // 整个IDE只有一个, 视图会被重用
+  ONE_PER_RESOURCE = 1, // 每个resource渲染一个新的
+  ONE_PER_GROUP = 2, // 每个Group最多存在一个新的
+  ONE_PER_WORKBENCH = 3, // 整个IDE只有一个, 视图会被重用
 }
 
 export abstract class EditorComponentRegistry {
@@ -64,6 +64,8 @@ export interface BrowserEditorContribution {
   registerEditorActions?(editorActionRegistry: IEditorActionRegistry): void;
 
   onDidRestoreState?(): void;
+
+  registerEditorFeature?(registry: IEditorFeatureRegistry);
 }
 
 export interface IGridResizeEventPayload {
@@ -281,5 +283,27 @@ export interface IBreadCrumbPart {
   getChildren?(): MaybePromise<IBreadCrumbPart[]>;
 
   onClick?(): void;
+
+}
+
+export const IEditorFeatureRegistry = Symbol('IEditorFeatureRegistry');
+
+export interface IEditorFeatureRegistry {
+
+  /**
+   * 注册一个用来加强编辑器能力的Contribution
+   * @param contribution
+   */
+  registerEditorFeatureContribution(contribution: IEditorFeatureContribution): IDisposable;
+
+}
+
+export interface IEditorFeatureContribution {
+
+  /**
+   * 当一个编辑器被创建时，会调用这个API，返回的Disposable会在编辑器被销毁时执行
+   * @param editor
+   */
+  contribute(editor: IEditor): IDisposable;
 
 }

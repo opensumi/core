@@ -328,6 +328,7 @@ declare module monaco.actions {
         command: ICommandAction;
         when?: any;
         group?: 'navigation' | string;
+        order?: number
     }
 
     export interface IMenuRegistry {
@@ -335,6 +336,8 @@ declare module monaco.actions {
          * Retrieves all the registered menu items for the given menu.
          */
         getMenuItems(menuId: MenuId | { id: string }): IMenuItem[];
+
+        appendMenuItem(id: MenuId, item: IMenuItem): IDisposable;
     }
 
     /**

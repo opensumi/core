@@ -5,6 +5,8 @@ import { IRange, MonacoService, PreferenceService, corePreferenceSchema } from '
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent } from './doc-model/types';
 import { Emitter } from '@ali/vscode-jsonrpc';
+import { IEditorFeatureRegistry } from './types';
+import { EditorFeatureRegistryImpl } from './feature';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
@@ -17,6 +19,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
+
+  @Autowired(IEditorFeatureRegistry)
+  editorFeatureRegistry: EditorFeatureRegistryImpl;
 
   private collection: Map<string, ICodeEditor> = new Map();
 
@@ -90,6 +95,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     editors.forEach((editor) => {
       if (!this._editors.has(editor)) {
         this._editors.add(editor);
+        this.editorFeatureRegistry.runContributions(editor);
       }
     });
     if (this._editors.size !== beforeSize) {
@@ -437,6 +443,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       async save() {
         // do nothing
       },
+      get onDispose() {
+        return diffEditor.monacoDiffEditor.getOriginalEditor().onDidDispose as Event<void>;
+      },
       onSelectionsChanged(listener) {
         return diffEditor.monacoDiffEditor.getOriginalEditor().onDidChangeCursorSelection((e) => {
           listener({
@@ -536,6 +545,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       setSelection(selection) {
         const monacoEditor = diffEditor.monacoDiffEditor.getModifiedEditor();
         return monacoEditor.setSelection(selection as any);
+      },
+      get onDispose() {
+        return diffEditor.monacoDiffEditor.getModifiedEditor().onDidDispose as Event<void>;
       },
       updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
         updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getOriginalEditor(), editorOptions, modelOptions);

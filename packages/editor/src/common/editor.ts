@@ -44,6 +44,8 @@ export interface IEditor {
   save(): Promise<void>;
 
   monacoEditor: monaco.editor.ICodeEditor;
+
+  onDispose: Event<void>;
 }
 
 export interface IUndoStopOptions {
@@ -125,6 +127,8 @@ export interface IEditorGroup {
   currentOpenType: MaybeNull<IEditorOpenType>;
 
   open(uri: URI, options: IResourceOpenOptions): Promise<IOpenResourceResult>;
+
+  pin(uri: URI): Promise<void>;
 
   close(uri: URI): Promise<void>;
 

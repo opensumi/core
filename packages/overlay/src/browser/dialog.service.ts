@@ -23,7 +23,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   protected buttons: string[] = [];
 
   @action
-  open(message: string | React.ReactNode, type: MessageType, buttons?: any[]): Promise<string | undefined> {
+  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: any[]): Promise<T | undefined> {
     this.deferred = new Deferred<string>();
     this.type = type;
     this.message = message;
@@ -35,7 +35,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   }
 
   @action
-  hide(value?: string): void {
+  hide<T = string>(value?: T): void {
     this.visible = false;
     this.deferred.resolve(value);
   }
@@ -53,6 +53,10 @@ export class DialogService extends AbstractMessageService implements IDialogServ
 
   getMessage(): string | React.ReactNode {
     return this.message;
+  }
+
+  getType(): MessageType | undefined {
+    return this.type;
   }
 
   getIcon(): Icon | undefined {

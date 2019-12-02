@@ -1,6 +1,10 @@
 {
   "name": "@ali/ide-monaco",
+<<<<<<< HEAD
   "version": "1.5.5",
+=======
+  "version": "1.6.1",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
   "files": [
     "lib"
   ],
@@ -19,6 +23,7 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@ali/ide-activation-event": "1.5.5",
     "@ali/ide-core-browser": "1.5.5",
     "@ali/ide-core-common": "1.5.5",
@@ -26,11 +31,24 @@
     "@ali/ide-editor": "1.5.5",
     "@ali/ide-file-service": "1.5.5",
     "@ali/ide-theme": "1.5.5",
+=======
+    "@ali/ide-activation-event": "1.6.1",
+    "@ali/ide-core-browser": "1.6.1",
+    "@ali/ide-core-common": "1.6.1",
+    "@ali/ide-core-node": "1.6.1",
+    "@ali/ide-editor": "1.6.1",
+    "@ali/ide-file-service": "1.6.1",
+    "@ali/ide-theme": "1.6.1",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
     "monaco-editor-core": "^0.17.0"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
+<<<<<<< HEAD
     "@ali/ide-main-layout": "1.5.5",
+=======
+    "@ali/ide-main-layout": "1.6.1",
+>>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

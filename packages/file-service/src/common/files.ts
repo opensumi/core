@@ -440,6 +440,11 @@ export interface FileSystemProvider {
    * @memberof FileSystemProvider
    */
   access?(uri: string, mode: number): Promise<boolean>;
+
+  /**
+   * @param excludes
+   */
+  updateWatchFileExcludes?(excludes: string[]);
 }
 
 /**
