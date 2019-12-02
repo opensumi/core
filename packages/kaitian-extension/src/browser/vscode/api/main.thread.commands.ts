@@ -93,7 +93,7 @@ export class MainThreadCommands implements IMainThreadCommands {
      */
     const command = this.commandRegistry.getCommand(id);
     if (!command) {
-      this.commandRegistry.registerCommand({ id }, { execute });
+      disposer.addDispose(this.commandRegistry.registerCommand({ id }, { execute }));
     }
 
     this.commands.set(id, extCommandHandler);
@@ -111,10 +111,19 @@ export class MainThreadCommands implements IMainThreadCommands {
     return Promise.resolve(this.commandRegistry.getCommands().map((command) => command.id));
   }
 
-  $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
+  /**
+   * 来自main -> extHost的command调用
+   */
+  $executeExtensionCommand(id: string, ...args: any[]): Promise<any> {
     if (this.commands.has(id)) {
       return this.commands.get(id)!.execute(...args);
+    } else {
+      args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
+      return this.proxy.$executeContributedCommand(id, ...args);
     }
+  }
+
+  $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
     try {
       // monaco 内置命令转换参数适配
       if (id === 'editor.action.showReferences') {

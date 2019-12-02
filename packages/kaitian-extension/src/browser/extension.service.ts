@@ -605,7 +605,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (!targetHost) {
       throw new Error('No Command with id "' + command + '" is declared by extensions');
     }
-    return this.mainThreadCommands.get(targetHost)!.$executeCommand(command, ...args);
+    return this.mainThreadCommands.get(targetHost)!.$executeExtensionCommand(command, ...args);
   }
   declareExtensionCommand(command: string, targetHost: 'node' | 'worker' = 'node'): IDisposable {
     this.extensionCommands.set(command, targetHost);
