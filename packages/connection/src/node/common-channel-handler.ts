@@ -1,7 +1,8 @@
-import {WebSocketHandler} from './ws';
+import { WebSocketHandler } from './ws';
 import * as pathMatch from 'path-match';
 import * as ws from 'ws';
-import {WSChannel, ChannelMessage} from '../common/ws-channel';
+import { stringify, parse } from '../common/utils';
+import { WSChannel, ChannelMessage } from '../common/ws-channel';
 const route = pathMatch();
 
 export interface IPathHander {
@@ -18,7 +19,7 @@ export class CommonChannelPathHandler {
   private paramsKey: Map<string, string> = new Map();
 
   register(channelPath: string, handler: IPathHander) {
-    const paramsIndex = channelPath.indexOf('\/:');
+    const paramsIndex = channelPath.indexOf('/:');
     const hasParams = paramsIndex >= 0;
     let channelToken = channelPath;
     if (hasParams) {
@@ -73,9 +74,7 @@ export class CommonChannelPathHandler {
     });
   }
 
-  reconnectConnectionClientId(connection: ws, clientId: string) {
-
-  }
+  reconnectConnectionClientId(connection: ws, clientId: string) {}
 
   // 待废弃
   disposeAll() {
@@ -109,7 +108,6 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.initWSServer();
   }
   private hearbeat(connectionId: string, connection: ws) {
-
     const timer = setTimeout(() => {
       connection.ping();
       // console.log(`connectionId ${connectionId} ping`);
@@ -121,19 +119,19 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new ws.Server({noServer: true});
+    this.wsServer = new ws.Server({ noServer: true });
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
 
       connection.on('message', (msg: string) => {
         let msgObj: ChannelMessage;
         try {
-          msgObj = JSON.parse(msg);
+          msgObj = parse(msg);
 
           // 心跳消息
           if (msgObj.kind === 'heartbeat') {
             // console.log(`heartbeat msg ${msgObj.clientId}`)
-            connection.send(JSON.stringify(`heartbeat ${msgObj.clientId}`));
+            connection.send(stringify(`heartbeat ${msgObj.clientId}`));
           } else if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
 
@@ -156,16 +154,16 @@ export class CommonChannelHandler extends WebSocketHandler {
               */
 
             connectionId = clientId;
-              /*
+            /*
             }
             */
 
             this.connectionMap.set(clientId, connection);
             this.hearbeat(connectionId, connection);
-          // channel 消息处理
+            // channel 消息处理
           } else if (msgObj.kind === 'open') {
             const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
-            const {path} = msgObj;
+            const { path } = msgObj;
 
             // 生成 channel 对象
             const connectionSend = this.channelConnectionSend(connection);
@@ -197,19 +195,17 @@ export class CommonChannelHandler extends WebSocketHandler {
           } else {
             // console.log('connection message', msgObj.id, msgObj.kind, this.channelMap.get(msgObj.id));
 
-            const {id} = msgObj;
+            const { id } = msgObj;
             const channel = this.channelMap.get(id);
             if (channel) {
               channel.handleMessage(msgObj);
             } else {
               this.logger.warn(`channel ${id} not found`);
             }
-
           }
         } catch (e) {
           this.logger.warn(e);
         }
-
       });
 
       connection.on('close', () => {
@@ -223,15 +219,14 @@ export class CommonChannelHandler extends WebSocketHandler {
         }
 
         Array.from(this.channelMap.values())
-        .filter((channel) => {
-           return channel.id.toString().indexOf(connectionId) !== -1;
-         })
-        .forEach((channel) => {
-          channel.close(1, 'close');
-          this.channelMap.delete(channel.id);
-          this.logger.verbose(`remove channel ${channel.id}`);
-        });
-
+          .filter((channel) => {
+            return channel.id.toString().indexOf(connectionId) !== -1;
+          })
+          .forEach((channel) => {
+            channel.close(1, 'close');
+            this.channelMap.delete(channel.id);
+            this.logger.verbose(`remove channel ${channel.id}`);
+          });
       });
     });
   }
@@ -263,5 +258,4 @@ export class CommonChannelHandler extends WebSocketHandler {
 
     return false;
   }
-
 }

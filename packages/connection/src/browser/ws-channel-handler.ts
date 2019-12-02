@@ -1,5 +1,6 @@
-import {WSChannel} from '../common/ws-channel';
+import { WSChannel } from '../common/ws-channel';
 import * as shorid from 'shortid';
+import { stringify, parse } from '../common/utils';
 let ReconnectingWebSocket = require('reconnecting-websocket');
 
 if (ReconnectingWebSocket.default) {
@@ -14,7 +15,7 @@ export class WSChanneHandler {
   static CLOSESTATUSCOLOR = '#ff0000';
 
   public connection: WebSocket;
-  private channelMap: Map<number|string, WSChannel> = new Map();
+  private channelMap: Map<number | string, WSChannel> = new Map();
   private logger = console;
   public clientId: string = `CLIENT_ID:${shorid.generate()}`;
   private heartbeatMessageTimer: NodeJS.Timeout;
@@ -27,15 +28,18 @@ export class WSChanneHandler {
     this.logger = logger;
   }
   private clientMessage() {
-    const clientMsg =  JSON.stringify({
+    const clientMsg = stringify({
       kind: 'client',
       clientId: this.clientId,
     });
     this.connection.send(clientMsg);
   }
   private heartbeatMessage() {
+    if (this.heartbeatMessageTimer) {
+      clearTimeout(this.heartbeatMessageTimer);
+    }
     this.heartbeatMessageTimer = setTimeout(() => {
-      const msg = JSON.stringify({
+      const msg = stringify({
         kind: 'heartbeat',
         clientId: this.clientId,
       });
@@ -46,7 +50,10 @@ export class WSChanneHandler {
 
   public async initHandler() {
     this.connection.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
+      // 一个心跳周期内如果有收到消息，则不需要再发送心跳
+      this.heartbeatMessage();
+
+      const msg = parse(e.data);
 
       if (msg.id) {
         const channel = this.channelMap.get(msg.id);
@@ -110,5 +117,4 @@ export class WSChanneHandler {
       clearTimeout(this.heartbeatMessageTimer);
     }
   }
-
 }
