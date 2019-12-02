@@ -1,6 +1,6 @@
 import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri, Deferred } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
+import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions, ExtensionCandiDate } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
@@ -99,6 +99,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     } else {
       this._workspace = new URI(workspace);
     }
+  }
+
+  setExtensionDir(extensionDir: string) {
+    this.appConfig.extensionDir = URI.file(extensionDir).toString();
+  }
+
+  setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]) {
+    this.appConfig.extenionCandidate = extensionCandidate;
   }
 
   async start() {

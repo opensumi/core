@@ -2,6 +2,12 @@ import { ConstructorOf } from '@ali/ide-core-common';
 import { ElectronMainModule } from '../electron-main-module';
 import { IDisposable } from '@ali/ide-core-common/lib/disposable';
 
+export class ExtensionCandiDate {
+  // 插件路径
+  path: string;
+  isBuiltin: boolean;
+}
+
 export interface ElectronAppConfig {
 
   /**
@@ -54,7 +60,7 @@ export interface ElectronAppConfig {
   /**
    * 额外插件目录
    */
-  extenionCandidate: string[];
+  extenionCandidate: ExtensionCandiDate[];
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');
@@ -100,9 +106,13 @@ export interface ICodeWindow {
   metadata: any;
 
   setWorkspace(workspace: string, fsPath?: boolean);
+
+  setExtensionDir(extensionDir: string);
+
+  setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]);
 }
 
 export interface ICodeWindowOptions {
   extensionDir?: string;
-  extensionCandidate?: string[];
+  extensionCandidate?: ExtensionCandiDate[];
 }

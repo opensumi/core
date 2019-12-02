@@ -419,7 +419,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       this.extensionScanDir.push(this.appConfig.extensionDir);
     }
     if (isElectronEnv() && electronEnv.metadata.extenionCandidate) {
-      this.extensionCandidate = this.extensionCandidate.concat(electronEnv.metadata.extenionCandidate);
+      this.extensionCandidate = this.extensionCandidate.concat(electronEnv.metadata.extenionCandidate.map((extension) => extension.path));
     }
     if (this.appConfig.extensionCandidate) {
       this.extensionCandidate = this.extensionCandidate.concat(this.appConfig.extensionCandidate.map((extension) => extension.path));
