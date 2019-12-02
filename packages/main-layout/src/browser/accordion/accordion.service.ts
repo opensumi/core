@@ -83,6 +83,10 @@ export class AccordionService {
     });
   }
 
+  disposeAll() {
+    this.views = [];
+  }
+
   private registerGlobalToggleCommand() {
     const commandId = `view-container.hide.${this.containerId}`;
     this.commandRegistry.registerCommand({

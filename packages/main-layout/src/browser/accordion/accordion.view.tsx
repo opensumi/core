@@ -18,7 +18,9 @@ export const AccordionContainer: React.FC<{
 }> = observer(({ alignment = 'vertical', views, containerId, initState = new Map(), headerSize = 22, minSize = 120 }) => {
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
   React.useEffect(() => {
-    accordionService.views = [];
+    // 解决视图在渲染前注册的问题
+    if (!views.length) { return; }
+    accordionService.disposeAll();
     for (const view of views) {
       accordionService.appendView(view);
     }
