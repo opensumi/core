@@ -9,13 +9,12 @@ import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-com
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
-import { SCMResourceView, SCMProviderList, SCMPanel } from './scm.view';
-import { SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET } from '../common';
-import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
+import { SCMPanel } from './scm.view';
+import { SCMService, scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET } from '../common';
+import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { getIcon } from '@ali/ide-core-browser';
-import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 
 export const SCM_ACCEPT_INPUT: Command = {
@@ -24,8 +23,8 @@ export const SCM_ACCEPT_INPUT: Command = {
 
 export const SCM_CONTEXT_MENU: MenuPath = ['scm-context-menu'];
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution)
-export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, PreferenceContribution)
+export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution, PreferenceContribution {
   @Autowired()
   protected readonly logger: Logger;
 
@@ -44,9 +43,6 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   @Autowired(SCMStatusBarController)
   protected readonly statusBarController: SCMStatusBarController;
 
-  @Autowired(SCMViewController)
-  protected readonly scmViewController: SCMViewController;
-
   @Autowired(WorkbenchEditorService)
   editorService: WorkbenchEditorService;
 
@@ -62,16 +58,10 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       this.statusUpdater,
       this.statusBarController,
       this.dirtyDiffWorkbenchController,
-      // this.scmViewController,
     ].forEach((controller) => {
       controller.start();
       this.toDispose.addDispose(controller);
     });
-  }
-
-  onDidUseConfig() {
-    // 初始化渲染
-    // this.scmViewController.initRender();
   }
 
   onStop() {
