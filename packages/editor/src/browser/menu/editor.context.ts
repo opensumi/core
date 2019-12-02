@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { Disposable, Domain, memoize, IContextKeyService } from '@ali/ide-core-browser';
 import { IEditor } from '../../common';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '../types';
-import { AbstractMenuService, IMenu, MenuId, generateCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenu, MenuId, generateMergedCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable({multiple: true})
 export class EditorContextMenuController extends Disposable {
@@ -66,12 +66,12 @@ export class EditorContextMenuController extends Disposable {
   }
 
   private showContextMenu(anchor: {x: number, y: number } = {x: 0, y: 0}) {
-    const menuNodes = generateCtxMenu({
+    const menuNodes = generateMergedCtxMenu({
       menus: this.contextMenu,
     });
     this.contextMenuRenderer.show({
       anchor,
-      menuNodes: [...menuNodes[0], ...menuNodes[1]],
+      menuNodes,
       context: [ this.editor.currentUri ],
     });
   }
