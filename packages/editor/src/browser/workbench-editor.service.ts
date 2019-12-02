@@ -97,7 +97,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
     this.editorGroups.push(editorGroup);
     const currentWatchDisposer = reaction(() => editorGroup.currentResource, () => {
-      this._onActiveResourceChange.fire(editorGroup.currentResource);
+      if (editorGroup === this.currentEditorGroup) {
+        this._onActiveResourceChange.fire(editorGroup.currentResource);
+      }
     });
     editorGroup.addDispose({
       dispose: () => {
