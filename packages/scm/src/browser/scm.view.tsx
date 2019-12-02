@@ -9,7 +9,7 @@ import { Button } from '@ali/ide-core-browser/lib/components';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { ISCMRepository, SCMService, scmProviderViewId, scmResourceViewId } from '../common';
-import { ViewModelContext } from './scm.store';
+import { ViewModelContext } from './scm-model';
 import { SCMHeader } from './components/scm-header.view';
 import { SCMResouceList } from './components/scm-resource.view';
 import { SCMRepoSelect } from './components/scm-select.view';
@@ -139,42 +139,56 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
   const hasMultiRepos = viewModel.repoList.length > 1;
   const selectedRepo = viewModel.selectedRepos[0];
 
-  // title for selected repo view
-  let repoViewTitle = '';
-  if (hasMultiRepos && selectedRepo) {
-    const { title, type } = getSCMRepositoryDesc(selectedRepo);
-    repoViewTitle = title + '-' + type;
-  }
+  // title for scm panel
+  const panelTitle = React.useMemo(() => {
+    return viewModel.repoList.length === 1 && selectedRepo
+      // 将当前 repo 信息写到 scm panel title 中去
+      ? `${localize('scm.title')}: ${selectedRepo.provider.label}`
+      // 使用默认 scm panel title
+      : localize('scm.title');
+  }, []);
 
-  const views: View[] = (
-    hasMultiRepos
-      ? [{
-        component: SCMProviderList,
-        id: scmProviderViewId,
-        name: localize('scm.provider.title'),
-        initialProps: { viewState: props.viewState },
-      }]
-      : []
-    )
-    .concat({
+  // title for selected repo view
+  const repoViewTitle = React.useMemo(() => {
+    let repoViewTitle = '';
+    if (hasMultiRepos && selectedRepo) {
+      const { title, type } = getSCMRepositoryDesc(selectedRepo);
+      repoViewTitle = title + '-' + type;
+    }
+    return repoViewTitle;
+  }, [ hasMultiRepos, selectedRepo ]);
+
+  const titleMenu = React.useMemo(() => {
+    const scmMenuService = viewModel.getSCMMenuService(selectedRepo);
+    if (scmMenuService) {
+      return scmMenuService.getTitleMenu();
+    }
+  }, [ selectedRepo ]);
+
+  // control views
+  const views: View[] = React.useMemo(() => {
+    const scmProviderViewConfig: View = {
+      component: SCMProviderList,
+      id: scmProviderViewId,
+      name: localize('scm.provider.title'),
+      initialProps: { viewState: props.viewState },
+    };
+
+    const scmRepoViewConfig: View = {
       component: SCMResourceView,
       id: scmResourceViewId,
       name: repoViewTitle,
-      titleMenu: hasMultiRepos ? viewModel.titleMenu : null,
-    } as any);
+      titleMenu: hasMultiRepos && titleMenu || undefined,
+    };
 
-  // title for scm panel
-  const panelDisplayName = viewModel.repoList.length === 1 && selectedRepo
-    // 将当前 repo 信息写到 scm panel title 中去
-    ? `${localize('scm.title')}: ${selectedRepo.provider.label}`
-    // 使用默认 scm panel title
-    : localize('scm.title');
+    return (hasMultiRepos ? [scmProviderViewConfig] : []).concat(scmRepoViewConfig);
+  }, [ hasMultiRepos, repoViewTitle ]);
 
   return (
     <div className={styles.view}>
-      <TitleBar title={panelDisplayName} menubar={
-        !hasMultiRepos && viewModel.titleMenu
-          ? <InlineActionBar menus={viewModel.titleMenu!} />
+      <TitleBar title={panelTitle} menubar={
+        !hasMultiRepos && titleMenu
+          ? <InlineActionBar menus={titleMenu} />
           : null
       } />
       <AccordionContainer

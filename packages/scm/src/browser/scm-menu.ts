@@ -93,9 +93,9 @@ export class SCMMenus implements IDisposable {
   /**
    * 获取 resource group 的 inline actions
    */
-  getResourceGroupInlineActions(group: ISCMResourceGroup): IMenu {
+  getResourceGroupInlineActions(group: ISCMResourceGroup): IMenu | undefined {
     if (!this.resourceGroupMenus.has(group)) {
-      throw new Error('SCM Resource Group menu not found');
+      return;
     }
 
     return this.resourceGroupMenus.get(group)!.resourceGroupMenu;
@@ -104,9 +104,9 @@ export class SCMMenus implements IDisposable {
   /**
    * 获取 resource 的 inline actions
    */
-  getResourceInlineActions(group: ISCMResourceGroup): IMenu {
+  getResourceInlineActions(group: ISCMResourceGroup): IMenu | undefined {
     if (!this.resourceGroupMenus.has(group)) {
-      throw new Error('SCM Resource Group menu not found');
+      return;
     }
 
     return this.resourceGroupMenus.get(group)!.resourceMenu;
