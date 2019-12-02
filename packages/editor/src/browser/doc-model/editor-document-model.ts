@@ -3,7 +3,7 @@ import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditor
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { EOL, EndOfLineSequence, IDocPersistentCacheProvider, IDocCache, isDocContentCache, parseRangeFrom } from '../../common';
-import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IEditorDocumentModelContentChange, EditorDocumentModelSavedEvent, ORIGINAL_DOC_SCHEME } from './types';
+import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IEditorDocumentModelContentChange, EditorDocumentModelSavedEvent, ORIGINAL_DOC_SCHEME, EditorDocumentModelRemovalEvent } from './types';
 import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
 import { EditorDocumentError } from './editor-document-error';
 import { IMessageService } from '@ali/ide-overlay';
@@ -80,6 +80,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {
     super();
+    this.onDispose(() => {
+      this.eventBus.fire(new EditorDocumentModelRemovalEvent(this.uri));
+    });
     if (options.encoding) {
       this._encoding = options.encoding;
     }
