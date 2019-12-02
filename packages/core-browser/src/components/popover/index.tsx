@@ -49,6 +49,9 @@ export const Popover: React.FC<{
     contentEl.current.style.display = 'block';
     contentEl.current.style.visibility = 'hidden';
     setTimeout(() => {
+      if (!childEl.current || !contentEl.current) {
+        return;
+      }
       if (position === PopoverPosition.top) {
         const { left, top, width } = (childEl.current as any).getBoundingClientRect() as ClientRect;
         const contentRect = (contentEl.current as any).getBoundingClientRect() as ClientRect;
