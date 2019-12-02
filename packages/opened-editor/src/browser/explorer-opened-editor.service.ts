@@ -13,7 +13,7 @@ import { getIcon } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import * as styles from './index.module.less';
-import { IMenu, AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenu, AbstractMenuService, MenuId, generateMergedCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface IOpenEditorStatus {
   focused?: boolean;
@@ -341,11 +341,11 @@ export class ExplorerOpenedEditorService {
     this.updateSelected(node.uri!, group);
 
     const menus = this.contributedContextMenu;
-    const result = generateCtxMenu({ menus });
+    const menuNodes = generateMergedCtxMenu({ menus });
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       // 合并结果
-      menuNodes: [...result[0], ...result[1]],
+      menuNodes,
       context: [ node.uri ],
     });
   }
