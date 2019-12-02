@@ -577,7 +577,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       const oldResource = this.currentResource;
       const oldOpenType = this.currentOpenType;
-      if (this.currentResource && this.currentResource.uri === uri) {
+      if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
         // 就是当前打开的resource
         if (options.focus && this.currentEditor) {
           this.currentEditor.monacoEditor.focus();
