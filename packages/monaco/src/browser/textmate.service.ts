@@ -361,6 +361,7 @@ export class TextmateService extends WithEventBus {
 
       monaco.languages.onLanguage(language.id, () => {
         this.activationEventService.fireEvent('onLanguage', language.id);
+        this.activateLanguage(language.id);
       });
     }
   }
