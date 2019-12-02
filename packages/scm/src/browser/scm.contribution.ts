@@ -9,7 +9,7 @@ import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-com
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
-import { SCMResourceView, SCMProviderList } from './scm.view';
+import { SCMResourceView, SCMProviderList, SCMPanel } from './scm.view';
 import { SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET } from '../common';
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
@@ -62,7 +62,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       this.statusUpdater,
       this.statusBarController,
       this.dirtyDiffWorkbenchController,
-      this.scmViewController,
+      // this.scmViewController,
     ].forEach((controller) => {
       controller.start();
       this.toDispose.addDispose(controller);
@@ -71,7 +71,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
 
   onDidUseConfig() {
     // 初始化渲染
-    this.scmViewController.initRender();
+    // this.scmViewController.initRender();
   }
 
   onStop() {
@@ -102,23 +102,13 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-scm', [{
-      component: SCMProviderList,
-      id: scmProviderViewId,
-      name: localize('scm.provider.title'),
-      hidden: true,
-      forceHidden: true,
-      noToolbar: true,
-    }, {
-      component: SCMResourceView,
-      id: scmResourceViewId,
-      name: '',
-    }], {
+    registry.register('@ali/ide-scm', [], {
       iconClass: getIcon('scm'),
       title: localize('scm.title'),
-      priority: 8,
+      priority: 5,
       containerId: scmContainerId,
-      activateKeyBinding: 'cmd+shift+g',
+      component: SCMPanel,
+      activateKeyBinding: 'ctrlcmd+shift+g',
     });
   }
 }

@@ -47,7 +47,7 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
     this.badge = item.elements.length;
     this.item = item;
     this.resourceGroupState = item.toJSON();
-    this.actions = this.getInlineActions();
+    // this.actions = this.getInlineActions();
   }
 
   private getInlineActions() {
@@ -101,7 +101,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
 
     this.badgeStyle = this.getBadgeStyle();
     this.icon = this.labelService.getIcon(URI.from(this.item.sourceUri));
-    this.actions = this.getInlineActions();
+    // this.actions = this.getInlineActions();
   }
 
   private getBadgeStyle(): React.CSSProperties | undefined {

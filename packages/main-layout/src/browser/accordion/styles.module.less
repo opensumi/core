@@ -98,7 +98,7 @@
   white-space: nowrap;
   font-weight: 400;
   color: var(--sideBarSectionHeader-foreground);
-  font-size: 80%;
+  // font-size: 80%;
   text-transform: uppercase;
   cursor: pointer;
   user-select: none;
@@ -116,4 +116,24 @@ i.arrow_icon {
 .actions_wrap {
   margin-right: 8px;
   display: none;
+}
+
+.titlebar {
+  background-color: var(--sideBar-background);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-right: 10px;
+  h1 {
+    color: var(--sideBarTitle-foreground);
+    font-weight: 500;
+    margin: 0;
+    margin-left: 10px;
+    text-transform: uppercase;
+    font-size: 12px;
+    line-height: 33px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }

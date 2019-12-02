@@ -1,6 +1,7 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, BasicEvent, MaybeNull } from '@ali/ide-core-common';
+import { IMenu } from '../menu/next';
 
 export class VisibleChangedPayload {
 
@@ -61,6 +62,7 @@ export interface View {
   // 使用该参数时, view 的 toolbar 默认不渲染
   noToolbar?: boolean;
   initialProps?: any;
+  titleMenu?: IMenu;
 }
 
 export interface ViewContainerOptions extends ExtViewContainerOptions {

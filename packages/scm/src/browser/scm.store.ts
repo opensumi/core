@@ -1,10 +1,12 @@
 import { IDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
-import { Emitter, Event, getLogger } from '@ali/ide-core-common';
+import { Disposable, Emitter, Event, getLogger } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
+import { observable, computed, action } from 'mobx';
+import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
+import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMRepository, ISCMResourceGroup, ISCMResource } from '../common';
-import { observable, computed, action } from 'mobx';
-import { Injectable } from '@ali/common-di';
+import { SCMMenus } from './scm-menu';
 
 export interface IGroupItem {
   readonly group: ISCMResourceGroup;
@@ -186,8 +188,15 @@ function isGroupVisible(group: ISCMResourceGroup) {
 }
 
 @Injectable()
-export class ViewModelContext {
+export class ViewModelContext extends Disposable {
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   private logger = getLogger();
+
+  constructor() {
+    super();
+  }
 
   @observable
   public repoList = observable.array<ISCMRepository>([]);
@@ -203,9 +212,19 @@ export class ViewModelContext {
   @observable
   public scmList = observable.array<ISCMDataItem>([]);
 
+  public titleMenu: IMenu | null;
+
   @action
   changeSelectedRepos(repos: ISCMRepository[]) {
     this.selectedRepos.replace(repos);
+    if (repos.length) {
+      const selectRepo = repos[0];
+      const scmMenuService = this.registerDispose(this.injector.get(SCMMenus, [selectRepo.provider]));
+      this.titleMenu = scmMenuService.getTitleMenu();
+      // scmMenuService.dispose();
+    } else {
+      this.titleMenu = null;
+    }
   }
 
   @action

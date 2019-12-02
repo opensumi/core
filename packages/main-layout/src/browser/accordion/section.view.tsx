@@ -117,7 +117,7 @@ export const AccordionSection = (
       >
         <div className={styles.label_wrap}>
           <i className={cls(getIcon('right'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
-          <h1 className={styles.section_label}>{header}</h1>
+          <div className={styles.section_label}>{header}</div>
         </div>
         {expanded && <div className={styles.actions_wrap}>
           <InlineActionBar

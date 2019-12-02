@@ -8,6 +8,7 @@ import { TabbarConfig } from './renderer.view';
 import { AccordionContainer } from '../accordion/accordion.view';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { TitleBar } from '../accordion/titlebar.view';
 
 export const BaseTabPanelView: React.FC<{
   PanelView: React.FC<{ component: ComponentRegistryInfo, side: string, titleMenu: IMenu }>;
@@ -42,12 +43,12 @@ const ContainerView: React.FC<{
   return (
     <div className={styles.view_container}>
       {!CustomComponent && <div className={styles.panel_titlebar}>
-        <div className={styles.title_wrap}>
-          <h1>{title}</h1>
-          <InlineActionBar
-            menus={titleMenu}
-            seperator='navigation' />
-        </div>
+        <TitleBar
+          title={title!}
+          menubar={(
+            <InlineActionBar menus={titleMenu} />
+          )}
+        />
         {titleComponent && <div className={styles.panel_component}>
           <ConfigProvider value={configContext} >
             <ComponentRenderer Component={titleComponent} />
