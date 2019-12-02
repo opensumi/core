@@ -155,11 +155,11 @@ export class EditorGroupTreeItem {
     public order: number,
     public depth: number,
   ) {
-    this.id = this.group.name;
+    this.id = this.group.index;
   }
 
   get label() {
-    return this.name;
+    return this.group.name;
   }
 
   get name() {

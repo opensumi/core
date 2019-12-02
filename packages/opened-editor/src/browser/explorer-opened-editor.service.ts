@@ -6,14 +6,14 @@ import {
   OpenedResourceTreeItem,
 } from './opened-editor.service';
 import { IResource, IResourceDecorationChangeEventPayload, IEditorGroup, WorkbenchEditorService } from '@ali/ide-editor';
-import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig, isUndefined } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig, isUndefined, memoize, IContextKeyService, OPEN_EDITORS_COMMANDS } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { getIcon } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import * as styles from './index.module.less';
-import { OPEN_EDITORS_COMMANDS } from './opened-editor.contribution';
+import { IMenu, AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface IOpenEditorStatus {
   focused?: boolean;
@@ -24,22 +24,31 @@ export interface IOpenEditorStatus {
 @Injectable()
 export class ExplorerOpenedEditorService {
   @Autowired(OpenedEditorTreeDataProvider)
-  openEditorTreeDataProvider: OpenedEditorTreeDataProvider;
+  private readonly openEditorTreeDataProvider: OpenedEditorTreeDataProvider;
 
   @Autowired(IWorkspaceService)
-  workspaceService: IWorkspaceService;
+  private readonly workspaceService: IWorkspaceService;
 
   @Autowired(CommandService)
-  commandService: CommandService;
-
-  @Autowired(IDecorationsService)
-  decorationsService: IDecorationsService;
-
-  @Autowired(IThemeService)
-  themeService: IThemeService;
+  private readonly commandService: CommandService;
 
   @Autowired(WorkbenchEditorService)
-  private workbenchEditorService: WorkbenchEditorService;
+  private readonly workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly ctxMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(IDecorationsService)
+  public decorationsService: IDecorationsService;
+
+  @Autowired(IThemeService)
+  public themeService: IThemeService;
 
   @observable.shallow
   nodes: any[] = [];
@@ -78,6 +87,7 @@ export class ExplorerOpenedEditorService {
   themeChangeEvent: Event<any> = this.themeChangeEmitter.event;
 
   private activeGroup: string;
+  private activeUri: URI;
 
   constructor() {
     this.init();
@@ -93,19 +103,19 @@ export class ExplorerOpenedEditorService {
         await this.updateDecorations(payload);
       }
     });
+    this.workbenchEditorService.onActiveResourceChange((payload) => {
+      if (payload) {
+        this.activeUri = payload.uri as URI;
+      }
+      if (this.activeUri) {
+        this.updateSelected(this.activeUri, this.activeGroup);
+      }
+      this.activeGroup = '';
+    });
     this.openEditorTreeDataProvider.onDidActiveChange(async (payload) => {
       if (payload) {
-        this.activeGroup = payload.group.name;
-        let uri: URI;
-        const currentEditor = this.workbenchEditorService.currentEditor;
-        console.log(currentEditor, this.activeGroup);
-        if (currentEditor) {
-          if (currentEditor.currentUri) {
-            uri = currentEditor.currentUri;
-            if (!isUndefined(uri)) {
-              this.updateSelected(uri, this.activeGroup);
-            }
-          }
+        if (!this.activeGroup) {
+          this.activeGroup = payload.group.name;
         }
       }
     });
@@ -311,13 +321,43 @@ export class ExplorerOpenedEditorService {
     }
     // 仅支持单选
     const node = nodes[0];
-    const group: string = node.parent ? node.parent.id as string : '';
+    const group: string = node.parent ? node.parent.label as string : '';
+    const groupIndex: string = node.parent ? node.parent.id as string : '';
+    this.activeGroup = group;
     this.updateSelected(node.uri!, group);
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex});
+  }
+
+  /**
+   * 右键菜单
+   * @param node
+   */
+  @action.bound
+  onContextMenu(nodes: TreeNode[], event: React.MouseEvent<HTMLElement>) {
+    console.log('onContextMenu', nodes);
+    const { x, y } = event.nativeEvent;
+    // 仅支持单选
+    const node = nodes[0];
+    const group: string = node.parent ? node.parent.label as string : '';
+    this.updateSelected(node.uri!, group);
+
+    const menus = this.contributedContextMenu;
+    const result = generateCtxMenu({ menus });
+    this.ctxMenuRenderer.show({
+      anchor: { x, y },
+      // 合并结果
+      menuNodes: [...result[0], ...result[1]],
+      context: [ node.uri ],
+    });
+  }
+
+  @memoize get contributedContextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(MenuId.OpenEditorsContext, this.contextKeyService);
+    return contributedContextMenu;
   }
 
   getStatusKey(node) {
-    return node.parent ? node.parent.id + node.uri.toString() : node.uri.toString();
+    return node.parent ? node.parent.label + node.uri.toString() : node.uri.toString();
   }
 
   /**

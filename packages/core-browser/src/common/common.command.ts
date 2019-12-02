@@ -111,6 +111,64 @@ export namespace FILE_COMMANDS {
   };
 }
 
+export namespace OPEN_EDITORS_COMMANDS {
+  const CATEGORY = 'openeditors';
+
+  export const SAVE_ALL: Command = {
+    id: 'open.editors.save.all',
+    category: CATEGORY,
+    label: '%open.editors.save.all%',
+    iconClass: getIcon('save-all'),
+  };
+
+  export const CLOSE_ALL: Command = {
+    id: 'open.editors.close.all',
+    category: CATEGORY,
+    label: '%open.editors.close.all%',
+    iconClass: getIcon('close-all'),
+  };
+
+  export const SAVE_BY_GROUP_ID: Command = {
+    id: 'open.editors.save.byID',
+    label: '%open.editors.save.byID%',
+  };
+
+  export const CLOSE_BY_GROUP_ID: Command = {
+    id: 'open.editors.close.byID',
+    label: '%open.editors.close.byID%',
+  };
+
+  export const OPEN: Command = {
+    id: 'openeditors.open',
+    category: CATEGORY,
+    label: '%openeditors.open%',
+  };
+
+  export const OPEN_TO_THE_SIDE: Command = {
+    id: 'openeditors.openToTheSide',
+    category: CATEGORY,
+    label: '%openeditors.openToTheSide%',
+  };
+
+  export const COMPARE_SELECTED: Command = {
+    id: 'openeditors.compare',
+    category: CATEGORY,
+    label: '%openeditors.compare%',
+  };
+
+  export const COPY_RELATIVE_PATH: Command = {
+    id: 'openeditors.copyRelativePath',
+    category: CATEGORY,
+    label: '%openeditors.copyRelativePath%',
+  };
+
+  export const COPY_PATH: Command = {
+    id: 'openeditors.copyPath',
+    category: CATEGORY,
+    label: '%openeditors.copyPath%',
+  };
+}
+
 export namespace COMMON_COMMANDS {
 
   export const FIND: Command = {
