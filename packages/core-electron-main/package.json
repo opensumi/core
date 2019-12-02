@@ -1,10 +1,6 @@
 {
   "name": "@ali/ide-core-electron-main",
-<<<<<<< HEAD
-  "version": "1.5.5",
-=======
   "version": "1.6.1",
->>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
   "files": [
     "lib",
     "browser-preload"
@@ -25,13 +21,8 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@ali/ide-connection": "1.5.5",
-    "@ali/ide-core-common": "1.5.5"
-=======
     "@ali/ide-connection": "1.6.1",
     "@ali/ide-core-common": "1.6.1"
->>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
   },
   "peerDependencies": {
     "electron": "*"

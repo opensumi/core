@@ -1,10 +1,6 @@
 {
   "name": "@ali/ide-core-node",
-<<<<<<< HEAD
-  "version": "1.5.5",
-=======
   "version": "1.6.1",
->>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
   "description": "@ali/ide-core-node",
   "files": [
     "lib"
@@ -23,13 +19,8 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-<<<<<<< HEAD
-    "@ali/ide-connection": "1.5.5",
-    "@ali/ide-core-common": "1.5.5",
-=======
     "@ali/ide-connection": "1.6.1",
     "@ali/ide-core-common": "1.6.1",
->>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
     "socket.io": "^2.2.0",
     "vscode-uri": "1.0.6"
   },

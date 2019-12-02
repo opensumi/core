@@ -1,10 +1,6 @@
 {
   "name": "@ali/ide-debug",
-<<<<<<< HEAD
-  "version": "1.5.5",
-=======
   "version": "1.6.1",
->>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
   "files": [
     "lib"
   ],
@@ -24,29 +20,6 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@ali/ide-connection": "1.5.5",
-    "@ali/ide-core-common": "1.5.5",
-    "@ali/ide-core-node": "1.5.5",
-    "@ali/ide-process": "1.5.5"
-  },
-  "devDependencies": {
-    "@ali/ide-activity-panel": "1.5.5",
-    "@ali/ide-core-browser": "1.5.5",
-    "@ali/ide-dev-tool": "^1.1.0",
-    "@ali/ide-workspace-edit": "1.5.5",
-    "@ali/ide-status-bar": "1.5.5",
-    "@ali/ide-editor": "1.5.5",
-    "@ali/ide-file-service": "1.5.5",
-    "@ali/ide-main-layout": "1.5.5",
-    "@ali/ide-output": "1.5.5",
-    "@ali/ide-overlay": "1.5.5",
-    "@ali/ide-preferences": "1.5.5",
-    "@ali/ide-quick-open": "1.5.5",
-    "@ali/ide-terminal2": "1.5.5",
-    "@ali/ide-variable": "1.5.5",
-    "@ali/ide-workspace": "1.5.5",
-=======
     "@ali/ide-connection": "1.6.1",
     "@ali/ide-core-common": "1.6.1",
     "@ali/ide-core-node": "1.6.1",
@@ -68,7 +41,6 @@
     "@ali/ide-terminal-next": "1.6.1",
     "@ali/ide-variable": "1.6.1",
     "@ali/ide-workspace": "1.6.1",
->>>>>>> 4e426c84d012fbbac61243c8fb55173edbd5c623
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
