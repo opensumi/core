@@ -139,33 +139,33 @@ export namespace OPEN_EDITORS_COMMANDS {
   };
 
   export const OPEN: Command = {
-    id: 'openeditors.open',
+    id: 'open.editors.open',
     category: CATEGORY,
-    label: '%openeditors.open%',
+    label: '%open.editors.open%',
   };
 
   export const OPEN_TO_THE_SIDE: Command = {
-    id: 'openeditors.openToTheSide',
+    id: 'open.editors.openToTheSide',
     category: CATEGORY,
-    label: '%openeditors.openToTheSide%',
+    label: '%open.editors.openToTheSide%',
   };
 
   export const COMPARE_SELECTED: Command = {
-    id: 'openeditors.compare',
+    id: 'open.editors.compare',
     category: CATEGORY,
-    label: '%openeditors.compare%',
+    label: '%open.editors.compare%',
   };
 
   export const COPY_RELATIVE_PATH: Command = {
-    id: 'openeditors.copyRelativePath',
+    id: 'open.editors.copyRelativePath',
     category: CATEGORY,
-    label: '%openeditors.copyRelativePath%',
+    label: '%open.editors.copyRelativePath%',
   };
 
   export const COPY_PATH: Command = {
-    id: 'openeditors.copyPath',
+    id: 'open.editors.copyPath',
     category: CATEGORY,
-    label: '%openeditors.copyPath%',
+    label: '%open.editors.copyPath%',
   };
 }
 

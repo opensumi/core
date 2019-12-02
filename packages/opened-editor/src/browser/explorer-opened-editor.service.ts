@@ -334,7 +334,6 @@ export class ExplorerOpenedEditorService {
    */
   @action.bound
   onContextMenu(nodes: TreeNode[], event: React.MouseEvent<HTMLElement>) {
-    console.log('onContextMenu', nodes);
     const { x, y } = event.nativeEvent;
     // 仅支持单选
     const node = nodes[0];

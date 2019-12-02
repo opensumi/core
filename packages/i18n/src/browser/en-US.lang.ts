@@ -284,6 +284,11 @@ export const localizationBundle = {
     'open.editors.save.byId': 'Save files in the group',
     'open.editors.empty': 'No file is open in the editor',
     'open.editors.group.title': 'Group {0}',
+    'open.editors.open': 'Open',
+    'open.editors.openToTheSide': 'Open To The Side',
+    'open.editors.compare': 'Compare With Current File',
+    'open.editors.copyRelativePath': 'Copy Relative Path',
+    'open.editors.copyPath': 'Copy Path',
 
     'terminal.name': 'Terminal',
     'terminal.disconnected': 'Terminal already disconnected',
