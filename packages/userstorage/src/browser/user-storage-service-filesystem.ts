@@ -25,7 +25,7 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
     this.userStorageFolder = this.fileSystem.getCurrentUserHome().then((home) => {
       if (home) {
         const userStorageFolderUri = new URI(home.uri).resolve(KAITIAN_USER_STORAGE_FOLDER);
-        this.fileSystem.watchFileChanges(userStorageFolderUri).then((disposable) =>
+        this.fileSystem.watchFileChanges(userStorageFolderUri, ['**/logs/**']).then((disposable) =>
           this.toDispose.push(disposable),
         );
         this.toDispose.push(this.fileSystem.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
