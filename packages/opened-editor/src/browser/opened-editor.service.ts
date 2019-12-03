@@ -1,32 +1,26 @@
 import { Emitter, WithEventBus, OnEvent, EDITOR_COMMANDS, formatLocalize, uuid } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup, WorkbenchEditorService, ResourceDecorationChangeEvent, IResourceDecorationChangeEventPayload } from '@ali/ide-editor';
 import { Injectable, Autowired } from '@ali/common-di';
-import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent } from '@ali/ide-editor/lib/browser';
+import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent, EditorGroupChangeEvent, IEditorGroupChangePayload } from '@ali/ide-editor/lib/browser';
 import { TreeNode } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 
 export type OpenedEditorData = IEditorGroup | IResource;
-
-export interface IOpenEditorStatus {
-  [key: string]: {
-    focused?: boolean;
-    selected?: boolean;
-    dirty?: boolean;
-  };
-}
 
 @Injectable()
 export class OpenedEditorTreeDataProvider extends WithEventBus {
 
   private _onDidChange: Emitter<OpenedEditorData | null> = new Emitter();
   private _onDidDecorationChange: Emitter<IResourceDecorationChangeEventPayload | null> = new Emitter();
+  private _onDidActiveChange: Emitter<IEditorGroupChangePayload | null> = new Emitter();
 
   public onDidChange = this._onDidChange.event;
   public onDidDecorationChange = this._onDidDecorationChange.event;
+  public onDidActiveChange = this._onDidActiveChange.event;
 
   private id = 0;
 
-  @Autowired()
+  @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorService;
 
   constructor() {
@@ -40,6 +34,11 @@ export class OpenedEditorTreeDataProvider extends WithEventBus {
     } else {
       this._onDidChange.fire(e.payload.group);
     }
+  }
+
+  @OnEvent(EditorGroupChangeEvent)
+  onEditorGroupChangeEvent(e: EditorGroupChangeEvent) {
+    this._onDidActiveChange.fire(e.payload);
   }
 
   @OnEvent(EditorGroupCloseEvent)
@@ -160,7 +159,7 @@ export class EditorGroupTreeItem {
   }
 
   get label() {
-    return this.name;
+    return this.group.name;
   }
 
   get name() {

@@ -108,7 +108,7 @@ export class MessageIO {
       return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": ${JSON.stringify(res, ObjectTransfer.replacer)}}`;
       } catch (e) {
         if (logger) {
-          logger.log('res', res);
+          logger.warn('res', res);
         }
         return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": {}}`;
       }

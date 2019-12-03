@@ -19,8 +19,12 @@ export class WSChanneHandler {
   public clientId: string = `CLIENT_ID:${shorid.generate()}`;
   private heartbeatMessageTimer: NodeJS.Timeout;
 
-  constructor(public wsPath: string, public protocols?: string[]) {
+  constructor(public wsPath: string, logger: any, public protocols?: string[]) {
+    this.logger = logger || this.logger;
     this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
+  }
+  setLogger(logger: any) {
+    this.logger = logger;
   }
   private clientMessage() {
     const clientMsg =  JSON.stringify({
@@ -49,7 +53,7 @@ export class WSChanneHandler {
         if (channel) {
           channel.handleMessage(msg);
         } else {
-          this.logger.log(`channel ${msg.id} not found`);
+          this.logger.warn(`channel ${msg.id} not found`);
         }
       }
     };
@@ -80,7 +84,7 @@ export class WSChanneHandler {
     return (content: string) => {
       connection.send(content, (err: Error) => {
         if (err) {
-          this.logger.log(err);
+          this.logger.warn(err);
         }
       });
     };

@@ -178,7 +178,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     const forkOptions: cp.ForkOptions = {
       env: {
         ...process.env,
-        PATH: shellPath.sync(),
+        // PATH: shellPath.sync(),
        },
     };
     const forkArgs: string[] = [];
@@ -207,7 +207,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     console.time(`${clientId} fork ext process`);
     const startForkTime = Date.now();
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
-    this.logger.debug('extProcess.pid', extProcess.pid);
+    this.logger.log('extProcess.pid', extProcess.pid);
 
     extProcess.on('exit', async (code, signal) => {
       console.log('extProcess.pid exit', extProcess.pid, 'code', code, 'signal', signal);

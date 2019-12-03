@@ -221,7 +221,7 @@ export class RPCProxy {
     try {
       this.proxyService[prop](...args);
     } catch (e) {
-      this.logger.log('notification', e);
+      this.logger.warn('notification', e);
     }
   }
 

@@ -256,7 +256,6 @@ export class SearchTreeService {
     const data: any = { id : file.id};
     const menus = this.contextMenu;
 
-    menus.dispose();
     data.file = file;
 
     if (!file.parent) {

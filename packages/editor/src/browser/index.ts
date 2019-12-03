@@ -7,7 +7,7 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { EditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
-import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry, ICompareService, IBreadCrumbService } from './types';
+import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry, ICompareService, IBreadCrumbService, IEditorFeatureRegistry } from './types';
 import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
@@ -19,6 +19,8 @@ import { IDocPersistentCacheProvider } from '../common/doc-cache';
 import { EmptyDocCacheImpl, LocalStorageDocCacheImpl } from './doc-cache';
 import { CompareService, CompareEditorContribution } from './diff/compare';
 import { BreadCrumbServiceImpl } from './breadcrumb';
+import { EditorContextMenuBrowserEditorContribution } from './menu/editor.context';
+import { EditorFeatureRegistryImpl } from './feature';
 export * from './types';
 export * from './doc-model/types';
 export * from './doc-cache';
@@ -75,10 +77,15 @@ export class EditorModule extends BrowserModule {
       token: IBreadCrumbService,
       useClass: BreadCrumbServiceImpl,
     },
+    {
+      token: IEditorFeatureRegistry,
+      useClass: EditorFeatureRegistryImpl,
+    },
     DefaultDiffEditorContribution,
     EditorClientAppContribution,
     EditorContribution,
     CompareEditorContribution,
+    EditorContextMenuBrowserEditorContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 
@@ -104,6 +111,9 @@ export class EditorClientAppContribution implements ClientAppContribution, Monac
   @Autowired(IEditorActionRegistry)
   editorActionRegistry: IEditorActionRegistry;
 
+  @Autowired(IEditorFeatureRegistry)
+  editorFeatureRegistry: IEditorFeatureRegistry;
+
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -123,6 +133,9 @@ export class EditorClientAppContribution implements ClientAppContribution, Monac
       }
       if (contribution.registerEditorActions) {
         contribution.registerEditorActions(this.editorActionRegistry);
+      }
+      if (contribution.registerEditorFeature) {
+        contribution.registerEditorFeature(this.editorFeatureRegistry);
       }
     }
     this.workbenchEditorService.contributionsReady.resolve();

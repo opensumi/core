@@ -14,7 +14,7 @@ import {
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
-import { Injector } from '@ali/common-di';
+import { Injector, Injectable } from '@ali/common-di';
 import { VSCodeExtensionService } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadLanguages } from './main.thread.language';

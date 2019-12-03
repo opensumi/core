@@ -17,7 +17,8 @@ export interface IContextKeyService {
   getKeysInWhen(when: string | IContextKeyExpr | undefined): string[];
   getContextValue<T>(key: string): T | undefined;
 
-  createScoped(domNode?: monaco.contextkey.IContextKeyServiceTarget): IContextKeyService;
+  createScoped(target?: monaco.contextkey.IContextKeyServiceTarget | monaco.contextKeyService.ContextKeyService): IContextKeyService;
+
   parse(when: string | undefined): IContextKeyExpr | undefined;
   dispose(): void;
 }

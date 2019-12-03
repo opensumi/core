@@ -9,7 +9,7 @@ import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 @Injectable()
 export class MockFileTreeAPIImpl implements IFileTreeAPI {
 
-  private userhomePath: URI = new URI('file://userhome');
+  public userhomePath: URI = new URI('file://userhome');
 
   async getFiles(path: string | FileStat, parent?: Directory | undefined) {
     let file: FileStat | undefined;

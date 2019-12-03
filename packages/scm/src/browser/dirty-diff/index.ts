@@ -68,6 +68,14 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     this.addDispose(monaco.editor.onDidCreateEditor((codeEditor) => {
       this.attachEvents(codeEditor);
     }));
+
+    this.addDispose(this.scmPreferences.onPreferenceChanged((event) => {
+      if (event.preferenceName === 'scm.alwaysShowDiffWidget' && event.newValue === false) {
+        this.widgets.forEach((widget) => {
+          widget.dispose();
+        });
+      }
+    }));
   }
 
   private onDidChangeConfiguration() {
@@ -220,7 +228,13 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     const disposeCollecton = new DisposableCollection();
 
     disposeCollecton.push(codeEditor.onMouseDown((event) => {
-      return this._doMouseDown(codeEditor, event);
+      if (this.scmPreferences['scm.alwaysShowDiffWidget']) {
+        if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
+          if (event.target.position) {
+            this.openDirtyDiffWidget(codeEditor, event.target.position);
+          }
+        }
+      }
     }));
 
     disposeCollecton.push(codeEditor.onDidChangeModel(({ oldModelUrl }) => {

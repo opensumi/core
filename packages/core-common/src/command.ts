@@ -4,6 +4,8 @@ import { ContributionProvider } from './contribution-provider';
 import { MaybePromise } from './async';
 import { replaceLocalizePlaceholder } from './localize';
 
+type InterceptorFunction = (result: any) => MaybePromise<any>;
+
 export interface Command {
   /**
    * 命令 id，全局唯一
@@ -204,7 +206,7 @@ interface CoreCommandRegistry {
 
   beforeExecuteCommand(interceptor: PreCommandInterceptor): IDisposable;
 
-  afterExecuteCommand(interceptor: PostCommandInterceptor): IDisposable;
+  afterExecuteCommand(interceptor: string | PostCommandInterceptor, result?: InterceptorFunction): IDisposable;
 
 }
 
@@ -230,6 +232,8 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
 
   public readonly postCommandInterceptors: PostCommandInterceptor[] = [];
 
+  private readonly postCommandInterceptor: Map<string, InterceptorFunction[]> = new Map<string, InterceptorFunction[]>();
+
   /**
    * 命令执行方法
    * @param commandId 命令执行方法
@@ -247,6 +251,12 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
         args = await preCommand(commandId, args);
       }
       let result = await handler.execute(...args);
+      const commandInterceptor = this.postCommandInterceptor.get(commandId);
+      if (commandInterceptor) {
+        for (const postInterceptor of commandInterceptor) {
+          result = await postInterceptor(result);
+        }
+      }
       for (const postCommand of this.postCommandInterceptors) {
         result = await postCommand(commandId, result);
       }
@@ -256,7 +266,12 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
       }
       return result;
     }
-    const argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
+    let argsMessage = '';
+    try {
+      argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
+    } catch(e) {
+      argsMessage = 'args cannot be convert to JSON';
+    }
     throw new Error(
       `The command '${commandId}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
     );
@@ -340,6 +355,11 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    * @param args 传递参数
    */
   isEnabled(command: string, ...args: any[]): boolean {
+    if (!this._handlers[command]) {
+      // 对于插件package.json中注册的command，会没有handler，
+      // 但是它应该可用，这样才能让插件在未启动的情况下点击菜单
+      return true; 
+    }
     return this.getActiveHandler(command, ...args) !== undefined;
   }
 
@@ -349,6 +369,11 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    * @param args 传递参数
    */
   isVisible(command: string, ...args: any[]): boolean {
+    if (!this._handlers[command]) {
+      // 对于插件package.json中注册的command，会没有handler，
+      // 但是它应该可见，这样才能让插件在未启动的情况下显示菜单
+      return true; 
+    }
     return this.getVisibleHandler(command, ...args) !== undefined;
   }
 
@@ -464,16 +489,38 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     }
   }
 
-  public afterExecuteCommand(interceptor: PostCommandInterceptor) {
-    this.postCommandInterceptors.push(interceptor);
-    return {
-      dispose: () => {
-        const index = this.postCommandInterceptors.indexOf(interceptor);
-        if (index !== -1) {
-          this.postCommandInterceptors.splice(index, 1);
+  public afterExecuteCommand(command: string, result: InterceptorFunction);
+  public afterExecuteCommand(interceptor: string | PostCommandInterceptor, result?: InterceptorFunction) {
+    if (typeof interceptor === 'string') {
+      const commandInterceptor = this.postCommandInterceptor.get(interceptor);
+      if (commandInterceptor) {
+        result && commandInterceptor.push(result);
+      } else {
+        result && this.postCommandInterceptor.set(interceptor, [result]);
+      }
+      return {
+        dispose: () => {
+          const commandInterceptor = this.postCommandInterceptor.get(interceptor);
+          if (commandInterceptor && result) {
+            const index = commandInterceptor.indexOf(result);
+            if (index !== -1) {
+              commandInterceptor.splice(index, 1);
+            }
+          }
+        }
+      }
+    } else {
+      this.postCommandInterceptors.push(interceptor);
+      return {
+        dispose: () => {
+          const index = this.postCommandInterceptors.indexOf(interceptor);
+          if (index !== -1) {
+            this.postCommandInterceptors.splice(index, 1);
+          }
         }
       }
     }
+
   }
 
   /**

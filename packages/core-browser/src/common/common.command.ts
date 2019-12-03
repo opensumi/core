@@ -2,7 +2,7 @@ import { Command, localize } from '..';
 import { getIcon } from '../style/icon/icon';
 
 export namespace FILE_COMMANDS {
-  const CATEGORY = '%file%';
+  const CATEGORY = 'file';
 
   export const NEW_FILE: Command = {
     id: 'file.new',
@@ -93,15 +93,79 @@ export namespace FILE_COMMANDS {
   };
 
   export const LOCATION: Command = {
-    id: 'explorer.location',
+    id: 'filetree.location',
     category: CATEGORY,
     label: '%file.location%',
   };
 
   export const OPEN_FOLDER: Command = {
-    id: 'explorer.open.folder',
+    id: 'filetree.open.folder',
     category: CATEGORY,
     label: '%file.open.folder%',
+  };
+
+  export const SEARCH_ON_FOLDER: Command = {
+    id: 'filetree.search.folder',
+    category: CATEGORY,
+    label: '%file.search.folder%',
+  };
+}
+
+export namespace OPEN_EDITORS_COMMANDS {
+  const CATEGORY = 'openeditors';
+
+  export const SAVE_ALL: Command = {
+    id: 'open.editors.save.all',
+    category: CATEGORY,
+    label: '%open.editors.save.all%',
+    iconClass: getIcon('save-all'),
+  };
+
+  export const CLOSE_ALL: Command = {
+    id: 'open.editors.close.all',
+    category: CATEGORY,
+    label: '%open.editors.close.all%',
+    iconClass: getIcon('close-all'),
+  };
+
+  export const SAVE_BY_GROUP_ID: Command = {
+    id: 'open.editors.save.byID',
+    label: '%open.editors.save.byID%',
+  };
+
+  export const CLOSE_BY_GROUP_ID: Command = {
+    id: 'open.editors.close.byID',
+    label: '%open.editors.close.byID%',
+  };
+
+  export const OPEN: Command = {
+    id: 'open.editors.open',
+    category: CATEGORY,
+    label: '%open.editors.open%',
+  };
+
+  export const OPEN_TO_THE_SIDE: Command = {
+    id: 'open.editors.openToTheSide',
+    category: CATEGORY,
+    label: '%open.editors.openToTheSide%',
+  };
+
+  export const COMPARE_SELECTED: Command = {
+    id: 'open.editors.compare',
+    category: CATEGORY,
+    label: '%open.editors.compare%',
+  };
+
+  export const COPY_RELATIVE_PATH: Command = {
+    id: 'open.editors.copyRelativePath',
+    category: CATEGORY,
+    label: '%open.editors.copyRelativePath%',
+  };
+
+  export const COPY_PATH: Command = {
+    id: 'open.editors.copyPath',
+    category: CATEGORY,
+    label: '%open.editors.copyPath%',
   };
 }
 
@@ -134,7 +198,7 @@ export namespace COMMON_COMMANDS {
 }
 
 export namespace EDITOR_COMMANDS {
-  const CATEGORY = '%editor%';
+  const CATEGORY = 'editor';
 
   export const UNDO: Command = {
     id: 'editor.undo',
@@ -381,5 +445,82 @@ export namespace EDITOR_COMMANDS {
   export const FOCUS: Command = {
     id: 'editor.focus',
     category: CATEGORY,
+  };
+}
+
+export namespace SEARCH_COMMANDS {
+  const CATEGORY = 'search';
+
+  export const OPEN_SEARCH: Command = {
+    id: 'content-search.openSearch',
+    category: CATEGORY,
+    label: 'Open search sidebar',
+  };
+
+  export const REFRESH: Command = {
+    id: 'file-search.refresh',
+    label: 'refresh search',
+    iconClass: getIcon('refresh'),
+    category: CATEGORY,
+  };
+
+  export const CLEAN: Command = {
+    id: 'file-search.clean',
+    label: 'clean search',
+    iconClass: getIcon('clear'),
+    category: CATEGORY,
+  };
+
+  export const FOLD: Command = {
+    id: 'file-search.fold',
+    label: 'fold search',
+    iconClass: getIcon('fold'),
+    category: CATEGORY,
+  };
+
+  export const GET_RECENT_SEARCH_WORD: Command = {
+    id: 'search.getRecentSearchWordCmd',
+    category: CATEGORY,
+  };
+
+  export const GET_BACK_RECENT_SEARCH_WORD: Command = {
+    id: 'search.getBackRecentSearchWordCmd',
+    category: CATEGORY,
+  };
+
+  export const MENU_REPLACE: Command = {
+    id: 'search.menu.replace',
+    category: CATEGORY,
+    label: '%search.replace.title%',
+  };
+
+  export const MENU_REPLACE_ALL: Command = {
+    id: 'search.menu.replaceAll',
+    category: CATEGORY,
+    label: '%search.replaceAll.label%',
+  };
+
+  export const MENU_HIDE: Command = {
+    id: 'search.menu.hide',
+    category: CATEGORY,
+    label: '%search.result.hide%',
+  };
+
+  export const MENU_COPY: Command = {
+    id: 'search.menu.copy',
+    category: CATEGORY,
+    label: '%file.copy.file%',
+  };
+
+  export const MENU_COPY_ALL: Command = {
+    id: 'search.menu.copyAll',
+    category: CATEGORY,
+    label: '%search.menu.copyAll%',
+  };
+
+  export const MENU_COPY_PATH: Command = {
+    id: 'search.menu.copyPath',
+    category: CATEGORY,
+    label: '%file.copy.path%',
   };
 }

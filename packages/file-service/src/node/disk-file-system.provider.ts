@@ -254,6 +254,10 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     }
   }
 
+  updateWatchFileExcludes(excludes: string[]) {
+    this.watcherServer.updateWatchFileExcludes(excludes);
+  }
+
   // Protected or private
 
   protected async createFile(uri: string | Uri, options: { content: Buffer }): Promise<FileStat> {

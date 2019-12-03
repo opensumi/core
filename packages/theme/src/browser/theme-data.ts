@@ -154,7 +154,18 @@ export class ThemeData implements IThemeData {
       // Converting numbers into a format that monaco understands
       const settings = Object.keys(tokenColor.settings).reduce((previous: { [key: string]: string }, current) => {
         let value: string = tokenColor.settings[current];
-        if (typeof value === typeof '') {
+        if (current !== 'fontStyle' && typeof value === typeof '') {
+          if (value.startsWith('#') && value.length === 4) {
+            // 兼容 #fff 类型色值
+            const color = Color.fromHex(value);
+            value = Color.Format.CSS.formatHex(color);
+            tokenColor.settings[current] = value;
+          } else if ( value.indexOf('#') === -1) {
+            // 兼容 white、red 类型色值
+            const color = Color[value];
+            value = Color.Format.CSS.formatHex(color);
+            tokenColor.settings[current] = value;
+          }
           value = value.replace(/^\#/, '').slice(0, 6);
         }
         previous[current] = value;

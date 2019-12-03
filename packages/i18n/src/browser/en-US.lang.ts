@@ -37,6 +37,7 @@ export const localizationBundle = {
     'file.empty.defaultTitle': 'No Open Folder',
     'file.empty.defaultMessage': 'The folder has not been opened yet',
     'file.empty.openFolder': 'Open Folder',
+    'file.search.folder': 'Search on this folder',
 
     'menu-bar.title.file': 'File',
     'menu-bar.title.edit': 'Edit',
@@ -155,6 +156,11 @@ export const localizationBundle = {
     'selection.all': 'Select All',
 
     'dialog.confirm': 'confirm',
+    'dialog.file.title': 'Select Directory:',
+    'dialog.file.openLabel': 'Open File:',
+    'dialog.file.saveLabel': 'Save File:',
+    'dialog.file.close': 'Close',
+    'dialog.file.ok': 'OK',
     'menu-bar.file.pref': 'prefrence',
 
     'editorOpenType.code': 'Code',
@@ -283,8 +289,20 @@ export const localizationBundle = {
     'open.editors.save.byId': 'Save files in the group',
     'open.editors.empty': 'No file is open in the editor',
     'open.editors.group.title': 'Group {0}',
+    'open.editors.open': 'Open',
+    'open.editors.openToTheSide': 'Open To The Side',
+    'open.editors.compare': 'Compare With Current File',
+    'open.editors.copyRelativePath': 'Copy Relative Path',
+    'open.editors.copyPath': 'Copy Path',
 
     'terminal.name': 'Terminal',
+    'terminal.disconnected': 'Terminal already disconnected',
+    'terminal.top': 'Stop terminal',
+    'terminal.try.reconnect': 'Try to reconnect terminal',
+    'terminal.new': 'Create terminal',
+    'terminal.split': 'Split terminal',
+    'terminal.maximum': 'Maximum terminal panel',
+    'terminal.or': 'or',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',

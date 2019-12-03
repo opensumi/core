@@ -69,15 +69,22 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
   }
 
   showMore(x: number, y: number, group: IEditorGroup) {
-    const menus = this.menuService.createMenu(MenuId.EditorTitle, this.contextKeyService);
+
+    const contextKeyService = group.currentEditor ? this.contextKeyService.createScoped((group.currentEditor.monacoEditor as any)._contextKeyService) : this.contextKeyService;
+    const menus = this.menuService.createMenu(MenuId.EditorTitle, contextKeyService);
     const result = generateCtxMenu({ menus });
     menus.dispose();
+
+    let currentUri: URI | undefined;
+    if (group.currentResource) {
+      currentUri = group.currentResource.uri;
+    }
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       // 合并结果
       menuNodes: [...result[0], ...result[1]],
-      context: [{group}],
+      context: [ currentUri ],
     });
   }
 

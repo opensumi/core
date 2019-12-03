@@ -180,9 +180,10 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   @Autowired(IExtensionManagerRequester)
   extensionManagerRequester: IExtensionManagerRequester;
 
-  async search(query: string, ignoreId?: string[]) {
+  async search(query: string, ignoreId: string[] = []) {
+    const ignoreIdList = [...ignoreId, ...this.appConfig.marketplace.ignoreId].map((id) => `&ignoreId=${id}`).join('');
     try {
-      const res = await this.extensionManagerRequester.request(`search?query=${query}${ignoreId ? ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
+      const res = await this.extensionManagerRequester.request(`search?query=${query}${ignoreIdList}`, {
         dataType: 'json',
         timeout: 5000,
       });
@@ -213,9 +214,10 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
     }
   }
 
-  async getHotExtensions(ignoreId?: string[]) {
+  async getHotExtensions(ignoreId: string[] = []) {
+    const ignoreIdList = [...ignoreId, ...this.appConfig.marketplace.ignoreId].map((id) => `&ignoreId=${id}`).join('');
     try {
-      const res = await this.extensionManagerRequester.request(`hot${ignoreId ? '?' + ignoreId.map((id) => `&ignoreId=${id}`).join('') : ''}`, {
+      const res = await this.extensionManagerRequester.request(`hot${ignoreIdList ? '?' + ignoreIdList : ''}`, {
         dataType: 'json',
         timeout: 5000,
       });
