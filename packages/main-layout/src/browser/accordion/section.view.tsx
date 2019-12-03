@@ -49,6 +49,7 @@ export const AccordionSection = (
     alignment = 'vertical',
     initialProps,
     titleMenu,
+    titleMenuContext,
     onContextMenuHandler,
   }: CollapsePanelProps,
 ) => {
@@ -56,7 +57,7 @@ export const AccordionSection = (
   const contentRef = React.useRef<HTMLDivElement | null>();
   React.useEffect(() => {
     if (contentRef.current) {
-      const ResizeObserver = (window  as any).ResizeObserver;
+      const ResizeObserver = (window as any).ResizeObserver;
       const resizeObserver = new ResizeObserver((entries) => {
         for (const entry of entries) {
           window.requestAnimationFrame(() => {
@@ -120,9 +121,7 @@ export const AccordionSection = (
           <div className={styles.section_label}>{header}</div>
         </div>
         {expanded && <div className={styles.actions_wrap}>
-          <InlineActionBar
-            menus={titleMenu}
-            seperator='navigation' />
+          <InlineActionBar menus={titleMenu} context={titleMenuContext} />
         </div>}
       </div>}
       <div

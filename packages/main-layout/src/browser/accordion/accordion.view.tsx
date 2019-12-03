@@ -47,6 +47,7 @@ export const AccordionContainer: React.FC<{
         headerSize={headerSize}
         initialProps={view.initialProps}
         titleMenu={titleMenu}
+        titleMenuContext={view.titleMenuContext}
         flex={view.weight || 1}>
         {view.component}
       </AccordionSection>;

@@ -1,12 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction, replaceLocalizePlaceholder, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
 import { ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
-import { SCMMenuId } from '@ali/ide-scm/lib/common';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
+import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
 
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
-import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
 
 export interface MenuActionFormat {
   when: string;
@@ -57,6 +56,7 @@ export const contributedMenuUtils = {
   },
 };
 
+// TODO: to be deprecated
 export function parseMenuPath(value: string): string[] | undefined {
   switch (value) {
     case 'commandPalette': return [];
@@ -73,9 +73,9 @@ export function parseMenuPath(value: string): string[] | undefined {
     case 'debug/toolBar': return [];
     case 'menuBar/file': return [];
     case 'scm/title': return [];
-    case 'scm/sourceControl': return [SCMMenuId.SCM_SOURCE_CONTROL];
-    case 'scm/resourceGroup/context': return [SCMMenuId.SCM_RESOURCE_GROUP_CTX];
-    case 'scm/resourceState/context': return [SCMMenuId.SCM_RESOURCE_STATE_CTX];
+    case 'scm/sourceControl': return [];
+    case 'scm/resourceGroup/context': return [];
+    case 'scm/resourceState/context': return [];
     case 'scm/change/title': return [];
     case 'statusBar/windowIndicator': return [];
 
@@ -243,7 +243,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       }
     }
 
-    // new registeration
+    // new menu registeration
     for (const menuPosition of Object.keys(this.json)) {
       const menuActions = this.json[menuPosition];
       if (!isValidMenuItems(menuActions, console)) {
