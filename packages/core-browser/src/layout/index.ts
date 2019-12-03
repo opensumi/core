@@ -63,6 +63,7 @@ export interface View {
   noToolbar?: boolean;
   initialProps?: any;
   titleMenu?: IMenu;
+  titleMenuContext?: any;
 }
 
 export interface ViewContainerOptions extends ExtViewContainerOptions {

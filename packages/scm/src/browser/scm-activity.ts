@@ -220,12 +220,6 @@ export class SCMStatusBarController {
         tooltip: `${label} - ${c.tooltip}`,
       });
     });
-
-    // 刷新 scm/title
-    const scmHandler = this.layoutService.getTabbarHandler(scmContainerId);
-    if (scmHandler) {
-      scmHandler.refreshTitle();
-    }
   }
 
   dispose(): void {

@@ -136,17 +136,18 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
     });
   }, []);
 
+  const repoList = viewModel.repoList;
   const hasMultiRepos = viewModel.repoList.length > 1;
-  const selectedRepo = viewModel.selectedRepos[0];
+  const selectedRepo: ISCMRepository | undefined = viewModel.selectedRepo;
 
   // title for scm panel
   const panelTitle = React.useMemo(() => {
-    return viewModel.repoList.length === 1 && selectedRepo
+    return repoList.length === 1 && selectedRepo
       // 将当前 repo 信息写到 scm panel title 中去
       ? `${localize('scm.title')}: ${selectedRepo.provider.label}`
       // 使用默认 scm panel title
       : localize('scm.title');
-  }, []);
+  }, [ repoList, selectedRepo ]);
 
   // title for selected repo view
   const repoViewTitle = React.useMemo(() => {
@@ -179,16 +180,19 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
       id: scmResourceViewId,
       name: repoViewTitle,
       titleMenu: hasMultiRepos && titleMenu || undefined,
+      titleMenuContext: selectedRepo && selectedRepo.provider && [selectedRepo.provider],
     };
 
     return (hasMultiRepos ? [scmProviderViewConfig] : []).concat(scmRepoViewConfig);
-  }, [ hasMultiRepos, repoViewTitle ]);
+  }, [ hasMultiRepos, repoViewTitle, selectedRepo ]);
 
   return (
     <div className={styles.view}>
       <TitleBar title={panelTitle} menubar={
         !hasMultiRepos && titleMenu
-          ? <InlineActionBar menus={titleMenu} />
+          ? <InlineActionBar
+            menus={titleMenu}
+            context={selectedRepo && selectedRepo.provider && [selectedRepo.provider]} />
           : null
       } />
       <AccordionContainer
