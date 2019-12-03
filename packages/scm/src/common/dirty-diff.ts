@@ -10,7 +10,7 @@ export interface IDirtyDiffModel {
 
 export const IDirtyDiffWorkbenchController = Symbol('DirtyDiffWorkbenchController');
 export interface IDirtyDiffWorkbenchController {
-  openDirtyDiffWidget(codeEditor: monaco.editor.ICodeEditor, position: monaco.IPosition): void;
+  toggleDirtyDiffWidget(codeEditor: monaco.editor.ICodeEditor, position: monaco.IPosition): void;
 }
 
 export const OPEN_DIRTY_DIFF_WIDGET: Command = {

@@ -167,7 +167,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     delete this.items[editorModel.id];
   }
 
-  public openDirtyDiffWidget(codeEditor: monaco.editor.ICodeEditor, position: monaco.IPosition) {
+  public toggleDirtyDiffWidget(codeEditor: monaco.editor.ICodeEditor, position: monaco.IPosition) {
     const model = codeEditor.getModel();
     if (model && position) {
       let widget = this.widgets.get(codeEditor.getId());
@@ -212,7 +212,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
          * 无法通过事件 target 来区分事件源，vscode 通过点击的 px 像素差来解决这个问题的。
          */
         if (gutterOffsetX < 5) {
-          this.openDirtyDiffWidget(codeEditor, position);
+          this.toggleDirtyDiffWidget(codeEditor, position);
         } else {
           const widget = this.widgets.get(codeEditor.getId());
           if (widget) {
@@ -231,7 +231,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       if (this.scmPreferences['scm.alwaysShowDiffWidget']) {
         if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
           if (event.target.position) {
-            this.openDirtyDiffWidget(codeEditor, event.target.position);
+            this.toggleDirtyDiffWidget(codeEditor, event.target.position);
           }
         }
       }
