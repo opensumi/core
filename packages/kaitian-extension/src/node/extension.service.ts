@@ -181,7 +181,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       forkOptions = {
         env: {
           ...process.env,
-          PATH: shellPath.sync(),
+          PATH: await shellPath(),
          },
       };
     } else {
