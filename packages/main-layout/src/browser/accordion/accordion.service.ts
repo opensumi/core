@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
@@ -43,6 +43,7 @@ export class AccordionService {
   private headerSize: number;
   private minSize: number;
   private menuId = `accordion/${this.containerId}`;
+  private toDispose = new DisposableCollection();
 
   constructor(public containerId: string) {
     this.splitPanelService = this.splitPanelManager.getService(containerId);
@@ -73,18 +74,19 @@ export class AccordionService {
     if (!view.name) {
       console.warn(view.id + '视图未传入标题，请检查！');
     }
-    this.menuRegistry.registerMenuItem(this.menuId, {
+    this.toDispose.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(view.id),
         label: view.name || view.id,
       },
       group: '1_widgets',
       // TODO order计算
-    });
+    }));
   }
 
   disposeAll() {
     this.views = [];
+    this.toDispose.dispose();
   }
 
   private registerGlobalToggleCommand() {
