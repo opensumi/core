@@ -226,7 +226,7 @@ export class ViewModelContext extends Disposable {
     this.scmProviderCtxKey.set(selectedRepo ? selectedRepo.provider.contextValue : undefined);
   }
 
-  public getSCMMenuService(repository: ISCMRepository) {
+  public getSCMMenuService(repository: ISCMRepository | undefined) {
     if (!repository) {
       return undefined;
     }
