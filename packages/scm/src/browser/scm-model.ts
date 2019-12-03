@@ -236,9 +236,10 @@ export class ViewModelContext extends Disposable {
   @action.bound
   public changeSelectedRepos(repos: ISCMRepository[]) {
     this.selectedRepos.replace(repos);
-    this.selectedRepo = repos[0];
+    const selectedRepo = repos[0];
+    this.selectedRepo = selectedRepo;
     // set context key
-    this.setContextKey(repos[0]);
+    this.setContextKey(selectedRepo);
   }
 
   @action.bound
