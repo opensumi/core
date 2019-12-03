@@ -229,11 +229,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
 
     disposeCollecton.push(codeEditor.onMouseDown((event) => {
       if (this.scmPreferences['scm.alwaysShowDiffWidget']) {
-        if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
-          if (event.target.position) {
-            this.toggleDirtyDiffWidget(codeEditor, event.target.position);
-          }
-        }
+        this._doMouseDown(codeEditor, event);
       }
     }));
 
