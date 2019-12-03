@@ -24,15 +24,13 @@ export const AccordionContainer: React.FC<{
     for (const view of views) {
       accordionService.appendView(view);
     }
-    accordionService.initConfig({headerSize, minSize});
   }, [views]);
+  React.useEffect(() => {
+    accordionService.initConfig({headerSize, minSize});
+  }, []);
   return <SplitPanel id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
     {accordionService.visibleViews.map((view, index) => {
-      let viewState: SectionState | undefined = accordionService.state.get(view.id);
-      if (!viewState) {
-        accordionService.state.set(view.id, initState.get(view.id) || { collapsed: false, hidden: false });
-        viewState = accordionService.state.get(view.id)!;
-      }
+      const viewState: SectionState = accordionService.getViewState(view.id);
       const titleMenu = view.titleMenu || accordionService.getSectionToolbarMenu(view.id);
       const { collapsed } = viewState;
       return <AccordionSection
