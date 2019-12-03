@@ -71,6 +71,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
   }
 
+  setFloatSize(size: number) {}
+
   // TODO
   registerTabbarViewToContainerMap() {}
 

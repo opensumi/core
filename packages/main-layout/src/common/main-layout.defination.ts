@@ -22,6 +22,8 @@ export interface IMainLayoutService {
   collectViewComponent(view: View, containerId: string, props?: any): string;
   expandBottom(expand: boolean): void;
   bottomExpanded: boolean;
+  // @deprecated
+  setFloatSize(size: number): void;
   handleSetting(event: React.MouseEvent<HTMLElement>): void;
   getTabbarService(location: string): TabbarService;
   getAccordionService(containerId: string): AccordionService;
