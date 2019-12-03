@@ -40,20 +40,31 @@
 }
 
 .debug_stack_frames_item_label {
-  width: 100%;
+  flex: 1;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  &.label {
+    text-align: center;
+    min-width: fit-content;
+    opacity: .7;
+  }
+  &.subtle {
+    opacity: .7;
+  }
 }
 .debug_stack_frames_item_description {
   white-space: nowrap;
+  opacity: .9;
 }
 
 .debug_stack_frames_item_badge {
+  display: inline-block;
   border-radius: 2px;
   padding: 0px 5px;
   background: var(--badge-background);
   color: var(--badge-foreground);
   font-size: 12px;
   margin-left: 5px;
+  display: inline-block;
 }

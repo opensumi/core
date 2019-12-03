@@ -21,7 +21,7 @@ export class DebugStackFramesService {
   commandService: CommandService;
 
   @observable
-  stackFrames: DebugStackFrame[];
+  stackFrames: DebugStackFrame[] = [];
 
   @observable
   isMultiSesssion: boolean;
