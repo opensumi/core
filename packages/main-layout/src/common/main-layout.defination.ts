@@ -14,15 +14,13 @@ export interface ViewToContainerMapData {
 
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
-  tabbarComponents: ComponentCollection[];
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   restoreState(): void;
   getTabbarHandler(handlerId: string): TabBarHandler;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent): string;
   collectViewComponent(view: View, containerId: string, props?: any): string;
-  expandBottom(expand?: boolean): void;
-  setFloatSize(size: number): void;
+  expandBottom(expand: boolean): void;
   bottomExpanded: boolean;
   handleSetting(event: React.MouseEvent<HTMLElement>): void;
   getTabbarService(location: string): TabbarService;

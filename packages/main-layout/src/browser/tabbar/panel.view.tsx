@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, View } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, View, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
@@ -68,11 +68,29 @@ const PanelView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
-}> = (({ component, titleMenu }) => {
+}> = (({ component, titleMenu, side }) => {
+  const contentRef = React.useRef<HTMLDivElement | null>();
+  const eventBus: IEventBus = useInjectable(IEventBus);
+  React.useEffect(() => {
+    if (contentRef.current) {
+      const ResizeObserver = (window  as any).ResizeObserver;
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          window.requestAnimationFrame(() => {
+            eventBus.fire(new ResizeEvent({slotLocation: side, width: entry.contentRect.width, height: entry.contentRect.height}));
+          });
+        }
+      });
+      resizeObserver.observe(contentRef.current);
+      return () => {
+        resizeObserver.unobserve(contentRef.current);
+      };
+    }
+  }, [contentRef]);
   const titleComponent = component.options && component.options.titleComponent;
   // TODO 底部支持多个view
   return (
-    <div className={styles.panel_container}>
+    <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
       <div className={styles.float_container}>
         {titleComponent && <div className={styles.toolbar_container}>
           <ComponentRenderer Component={titleComponent} />

@@ -44,7 +44,7 @@ export function getIcon(iconKey: string, options?: {
     iconClass += ` iconfont-anim-${ANIM_CLASS_NAME[anim]}`;
   }
   if (fill) {
-    iconClass += ' filled';
+    iconClass += ' toggled';
   }
   return iconClass;
 }

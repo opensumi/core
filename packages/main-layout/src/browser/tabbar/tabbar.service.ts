@@ -22,7 +22,9 @@ export class TabbarService extends WithEventBus {
 
   resizeHandle: {
     setSize: (targetSize: number, isLatter: boolean) => void,
+    setRelativeSize: (prev: number, next: number, isLatter: boolean) => void,
     getSize: (isLatter: boolean) => number,
+    getRelativeSize: (isLatter: boolean) => number[],
   };
 
   @Autowired(AbstractMenuService)
@@ -77,9 +79,9 @@ export class TabbarService extends WithEventBus {
     return components;
   }
 
-  registerResizeHandle(setSize, getSize, barSize) {
+  registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, barSize) {
     this.barSize = barSize;
-    this.resizeHandle = {setSize, getSize};
+    this.resizeHandle = {setSize, setRelativeSize, getSize, getRelativeSize};
     this.listenCurrentChange();
   }
 
@@ -102,6 +104,28 @@ export class TabbarService extends WithEventBus {
   getTitleToolbarMenu(containerId: string) {
     const menu = this.menuService.createMenu(`container/${containerId}`);
     return menu;
+  }
+
+  doExpand(expand: boolean) {
+    const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
+    const {setRelativeSize} = this.resizeHandle;
+    if (expand) {
+      if (!isLatter) {
+        setRelativeSize(1, 0, isLatter);
+      } else {
+        setRelativeSize(0, 1, isLatter);
+      }
+    } else {
+      // FIXME 底部需要额外的字段记录展开前的尺寸
+      setRelativeSize(2, 1, isLatter);
+    }
+  }
+
+  get isExpanded(): boolean {
+    const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
+    const {getRelativeSize} = this.resizeHandle;
+    const relativeSizes = getRelativeSize(isLatter).join(',');
+    return isLatter ? relativeSizes === '0,1' : relativeSizes === '1,0';
   }
 
   @action.bound handleTabClick(
@@ -199,12 +223,17 @@ export class TabbarService extends WithEventBus {
     // accordion panel状态恢复
   }
 
+  protected shouldExpand(containerId: string) {
+    const info = this.getContainer(containerId);
+    return info && info.options && info.options.expanded;
+  }
+
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === this.location) {
       const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
       const size = this.resizeHandle.getSize(isLatter);
-      if (size !== this.barSize) {
+      if (size !== this.barSize && !this.shouldExpand(this.currentContainerId)) {
         this.prevSize = size;
       }
     }
@@ -218,17 +247,40 @@ export class TabbarService extends WithEventBus {
       this.previousContainerId = change.oldValue || '';
       const currentId = change.newValue;
       this.onCurrentChangeEmitter.fire({previousId: change.oldValue || '', currentId});
-      const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
-      if (currentId) {
-        if (this.prevSize === undefined) {
-          this.prevSize = getSize(isLatter);
-        }
-        setSize(this.prevSize || 400, isLatter);
+      const isCurrentExpanded = this.shouldExpand(currentId);
+      if (this.shouldExpand(this.previousContainerId) || isCurrentExpanded) {
+        this.handleFullExpanded(currentId, isCurrentExpanded);
       } else {
-        this.prevSize = getSize(isLatter);
-        setSize(this.barSize, isLatter);
+        const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
+        if (currentId) {
+          if (this.prevSize === undefined) {
+            this.prevSize = getSize(isLatter);
+          }
+          setSize(this.prevSize || 400, isLatter);
+        } else {
+          this.prevSize = getSize(isLatter);
+          setSize(this.barSize, isLatter);
+        }
       }
     });
+  }
+
+  protected handleFullExpanded(currentId: string, isCurrentExpanded?: boolean) {
+    const { setRelativeSize, setSize } = this.resizeHandle;
+    const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
+    if (currentId) {
+      if (isCurrentExpanded) {
+        if (!isLatter) {
+          setRelativeSize(1, 0, isLatter);
+        } else {
+          setRelativeSize(0, 1, isLatter);
+        }
+      } else {
+        setSize(this.prevSize || 400, isLatter);
+      }
+    } else {
+      setSize(this.barSize, isLatter);
+    }
   }
 
 }

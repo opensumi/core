@@ -169,7 +169,7 @@ const TitleActionList: React.FC<{
       {
         primary.map((item) => (
           <IconAction
-            className={clsx(styles.iconAction, { filled: item.checked })}
+            className={clsx(styles.iconAction, { toggled: item.checked })}
             key={item.id}
             data={item}
             context={context} />

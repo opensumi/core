@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent, SlotLocation } from '@ali/ide-core-browser';
-import { MainLayoutContribution } from '../common';
+import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
+import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
 import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
@@ -10,7 +10,7 @@ import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 
 @Injectable()
-export class LayoutService extends WithEventBus {
+export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
@@ -27,7 +27,10 @@ export class LayoutService extends WithEventBus {
   private readonly contextMenuRenderer: ICtxMenuRenderer;
 
   @Autowired()
-  layoutState: LayoutState;
+  private layoutState: LayoutState;
+
+  @Autowired(IContextKeyService)
+  private ctxKeyService: IContextKeyService;
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 
@@ -66,6 +69,9 @@ export class LayoutService extends WithEventBus {
       service.currentContainerId = currentId !== undefined ? currentId : service.containersMap.keys().next().value;
     }
   }
+
+  // TODO
+  registerTabbarViewToContainerMap() {}
 
   storeState(service: TabbarService, currentId: string) {
     this.state[service.location] = {
@@ -171,10 +177,17 @@ export class LayoutService extends WithEventBus {
     } });
   }
 
-  expandBottom(expand?: boolean | undefined): void {
-
+  // TODO 这样很耦合，不能做到tab renderer自由拆分
+  expandBottom(expand: boolean): void {
+    const tabbarService = this.getTabbarService(SlotLocation.bottom);
+    tabbarService.doExpand(expand);
+    this.ctxKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
   }
 
-  bottomExpanded: boolean;
+  get bottomExpanded(): boolean {
+    const tabbarService = this.getTabbarService(SlotLocation.bottom);
+    this.ctxKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
+    return tabbarService.isExpanded;
+  }
 
 }

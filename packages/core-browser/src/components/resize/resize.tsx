@@ -19,6 +19,8 @@ export interface ResizeHandleProps {
 
 export interface IResizeHandleDelegate {
   setSize(prev: number, next: number): void;
+  setRelativeSize(prev: number, next: number): void;
+  getRelativeSize(): number[];
   setAbsoluteSize(size: number, isLatter?: boolean, keep?: boolean): void;
   getAbsoluteSize(isLatter?: boolean): number;
 }
@@ -72,6 +74,31 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     if (props.onResize && nextEle && prevEle) {
       props.onResize(prevEle, nextEle);
     }
+  };
+
+  const setRelativeSize = (prev: number, next: number) => {
+    const prevEle = prevElement.current!;
+    const nextEle = nextElement.current!;
+    const currentTotalWidth = +nextElement.current!.style.width!.replace('%', '') + +prevElement.current!.style.width!.replace('%', '');
+    if (nextEle) {
+      nextEle.style.width = next / (prev + next) * currentTotalWidth + '%';
+    }
+    if (prevEle) {
+      prevEle.style.width = prev / (prev + next) * currentTotalWidth + '%';
+    }
+    if (props.onResize && nextEle && prevEle) {
+      props.onResize(prevEle, nextEle);
+    }
+  };
+
+  const getRelativeSize = () => {
+    const currentPrev = prevElement.current!.clientWidth;
+    const currentNext = nextElement.current!.clientWidth;
+    const totalSize = currentPrev + currentNext;
+    const relativeSizes: number[] = [];
+    relativeSizes.push(currentPrev / totalSize);
+    relativeSizes.push(currentNext / totalSize);
+    return relativeSizes;
   };
 
   const setAbsoluteSize = (size: number, isLatter?: boolean) => {
@@ -150,6 +177,8 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       setSize,
       setAbsoluteSize,
       getAbsoluteSize,
+      setRelativeSize,
+      getRelativeSize,
     });
   }
 
@@ -190,6 +219,31 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       if (props.onResize) {
         props.onResize(prevEle, nextEle);
       }
+  };
+
+  const setRelativeSize = (prev: number, next: number) => {
+    const prevEle = prevElement.current!;
+    const nextEle = nextElement.current!;
+    const currentTotalHeight = +nextEle.style.height!.replace('%', '') + +prevEle.style.height!.replace('%', '');
+    if (nextEle) {
+      nextEle.style.height = next / (prev + next) * currentTotalHeight + '%';
+    }
+    if (prevEle) {
+      prevEle.style.height = prev / (prev + next) * currentTotalHeight + '%';
+    }
+    if (props.onResize && nextEle && prevEle) {
+      props.onResize(prevEle, nextEle);
+    }
+  };
+
+  const getRelativeSize = () => {
+    const currentPrev = prevElement.current!.clientHeight;
+    const currentNext = nextElement.current!.clientHeight;
+    const totalSize = currentPrev + currentNext;
+    const relativeSizes: number[] = [];
+    relativeSizes.push(currentPrev / totalSize);
+    relativeSizes.push(currentNext / totalSize);
+    return relativeSizes;
   };
 
   const setDomSize = (prev: number, next: number, prevEle: HTMLElement, nextEle: HTMLElement) => {
@@ -305,6 +359,8 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
       setSize,
       setAbsoluteSize,
       getAbsoluteSize,
+      setRelativeSize,
+      getRelativeSize,
     });
   }
 

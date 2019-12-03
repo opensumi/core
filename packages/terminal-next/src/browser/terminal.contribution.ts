@@ -113,6 +113,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       command: terminalExpand.id,
       viewId: terminalExpand.category,
       tooltip: localize('terminal.maximum'),
+      toggleWhen: 'bottomFullExpanded',
     });
     registry.registerItem({
       id: terminalSplit.id,

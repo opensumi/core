@@ -11,10 +11,14 @@ import { SplitPanelManager } from './split-panel.service';
 
 export const PanelContext = React.createContext<{
   setSize: (targetSize: number, isLatter: boolean) => void,
+  setRelativeSize: (prev: number, next: number, isLatter: boolean) => void,
   getSize: (isLatter: boolean) => number,
+  getRelativeSize: (isLatter: boolean) => number[],
 }>({
   setSize: (targetSize: number, isLatter: boolean) => {},
+  setRelativeSize: (prev, next, isLatter) => {},
   getSize: (isLatter: boolean) => 0,
+  getRelativeSize: (isLatter: boolean) => [0, 0],
 });
 
 export const SplitPanel: React.FC<{
@@ -46,6 +50,15 @@ export const SplitPanel: React.FC<{
     };
   };
 
+  const setRelativeSizeHandle = (index) => {
+    return (prev: number, next: number, isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
+      if (resizeDelegates[targetIndex]) {
+        resizeDelegates[targetIndex].setRelativeSize(prev, next);
+      }
+    };
+  };
+
   const getSizeHandle = (index) => {
     return (isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
@@ -53,6 +66,16 @@ export const SplitPanel: React.FC<{
         return resizeDelegates[targetIndex].getAbsoluteSize(isLatter);
       }
       return 0;
+    };
+  };
+
+  const getRelativeSizeHandle = (index) => {
+    return (isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
+      if (resizeDelegates[targetIndex]) {
+        return resizeDelegates[targetIndex].getRelativeSize();
+      }
+      return [0, 0];
     };
   };
 
@@ -78,7 +101,7 @@ export const SplitPanel: React.FC<{
       );
     }
     elements.push(
-      <PanelContext.Provider value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index)}}>
+      <PanelContext.Provider value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index), setRelativeSize: setRelativeSizeHandle(index), getRelativeSize: getRelativeSizeHandle(index)}}>
         <div
           ref={(ele) => {
             if (ele && refs.indexOf(ele) === -1) {
