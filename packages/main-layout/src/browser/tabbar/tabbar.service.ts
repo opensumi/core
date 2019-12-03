@@ -45,6 +45,9 @@ export class TabbarService extends WithEventBus {
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
 
+  private readonly onSizeChangeEmitter = new Emitter<{size: number}>();
+  readonly onSizeChange: Event<{size: number}> = this.onSizeChangeEmitter.event;
+
   private barSize: number;
   private menuId = `tabbar/${this.location}`;
 
@@ -235,6 +238,7 @@ export class TabbarService extends WithEventBus {
       const size = this.resizeHandle.getSize(isLatter);
       if (size !== this.barSize && !this.shouldExpand(this.currentContainerId)) {
         this.prevSize = size;
+        this.onSizeChangeEmitter.fire({size});
       }
     }
   }

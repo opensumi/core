@@ -8,6 +8,7 @@ import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, MenuId, generateC
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
+import debounce = require('lodash.debounce');
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -119,6 +120,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       service.onCurrentChange(({previousId, currentId}) => {
         this.storeState(service, currentId);
       });
+      service.onSizeChange(({size}) => debounce(() => this.storeState(service, service.currentContainerId), 200)());
       this.services.set(location, service);
     }
     return service;
