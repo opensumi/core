@@ -1,5 +1,6 @@
 import * as fuzzy from 'fuzzy';
 import * as readline from 'readline';
+import * as path from 'path';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CancellationToken, CancellationTokenSource, Schemas, replaceAsarInPath } from '@ali/ide-core-common';
@@ -64,7 +65,7 @@ export class FileSearchService implements IFileSearchService {
         const rootUri = new URI(root);
         const rootOptions = roots[root];
         await this.doFind(rootUri, rootOptions, (candidate) => {
-          const fileUri = rootUri.resolve(candidate).withScheme(Schemas.file).toString();
+          const fileUri = FileUri.create(path.join(rootUri.withoutScheme().toString(), candidate)).toString();
           if (exactMatches.has(fileUri) || fuzzyMatches.has(fileUri)) {
             return;
           }
