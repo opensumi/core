@@ -15,7 +15,7 @@ const electronApp = new ElectronMainApp({
   plainWebviewPreload: join(__dirname, '../webview/plain-preload.js'),
   browserPreload: join(__dirname, '../browser/preload.js'),
   extensionDir: join(__dirname, '../../../../extensions'), // 相对于app/dist的路径
-  extenionCandidate: [],
+  extensionCandidate: [],
 });
 
 electronApp.init().then(() => {

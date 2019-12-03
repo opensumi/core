@@ -85,6 +85,7 @@ import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
 import * as BrowserApi from './kaitian-browser';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { ExtensionCandiDate } from '@ali/ide-core-common';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -418,8 +419,8 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
     }
-    if (isElectronEnv() && electronEnv.metadata.extenionCandidate) {
-      this.extensionCandidate = this.extensionCandidate.concat(electronEnv.metadata.extenionCandidate);
+    if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
+      this.extensionCandidate = this.extensionCandidate.concat(electronEnv.metadata.extensionCandidate.map((extension) => extension.path));
     }
     if (this.appConfig.extensionCandidate) {
       this.extensionCandidate = this.extensionCandidate.concat(this.appConfig.extensionCandidate.map((extension) => extension.path));
@@ -427,9 +428,20 @@ export class ExtensionServiceImpl implements ExtensionService {
     this.extraMetadata[LANGUAGE_BUNDLE_FIELD] = './package.nls.json';
   }
 
+  /**
+   * electron 下 通过 electronEnv.metadata.extensionCandidate 获取 extensionCandidate 列表
+   * @param realPath extension path
+   */
+  private getExtensionCandidateByPath(realPath: string): ExtensionCandiDate | undefined {
+    if (isElectronEnv()) {
+      return electronEnv.metadata.extensionCandidate && electronEnv.metadata.extensionCandidate.find((extension: ExtensionCandiDate) => extension.path === realPath);
+    }
+    return this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === realPath);
+  }
+
   private async initExtension() {
     for (const extensionMetaData of this.extensionMetaDataArr) {
-      const extensionCandidate = this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === extensionMetaData.realPath);
+      const extensionCandidate = this.getExtensionCandidateByPath(extensionMetaData.realPath);
       // 1. 通过路径判决是否是内置插件
       // 2. candidate 是否有  isBuiltin 标识符
       const isBuiltin = (this.appConfig.extensionDir ? extensionMetaData.realPath.startsWith(this.appConfig.extensionDir) : false) || (extensionCandidate ? extensionCandidate.isBuiltin : false);
