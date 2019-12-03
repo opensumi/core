@@ -17,6 +17,7 @@ import {
   IExtensionProps,
   IExtensionNodeClientService,
   WorkerHostAPIIdentifier,
+  ExtensionHostType,
   /*Extension*/
 } from '../common';
 import {
@@ -49,6 +50,7 @@ import {
   getLanguageId,
   getPreferenceLanguageId,
   isElectronRenderer,
+  IDisposable,
 } from '@ali/ide-core-browser';
 import {
   getIcon,
@@ -104,6 +106,7 @@ function getAMDDefine(): any {
 
 @Injectable()
 export class ExtensionServiceImpl implements ExtensionService {
+
   private extensionScanDir: string[] = [];
   private extensionCandidate: string[] = [];
   private extraMetadata: IExtraMetaData = {};
@@ -171,9 +174,13 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired()
   editorComponentRegistry: EditorComponentRegistry;
 
+  private extensionCommands: Map<string, ExtensionHostType> = new Map();
+
   public extensionMap: Map<string, Extension> = new Map();
 
   public extensionComponentMap: Map<string, string[]> = new Map();
+
+  private mainThreadCommands = new Map<ExtensionHostType, IMainThreadCommands>();
 
   private ready: Deferred<any> = new Deferred();
 
@@ -583,12 +590,33 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public setVSCodeMainThreadAPI() {
     this.vscodeAPIFactoryDisposer = createVSCodeAPIFactory(this.protocol, this.injector, this);
+    this.mainThreadCommands.set('node', this.protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
 
     // 注册 worker 环境的响应 API
     if (this.workerProtocol) {
       this.workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
       this.workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [this.workerProtocol]));
+      this.mainThreadCommands.set('worker', this.workerProtocol.get(MainThreadAPIIdentifier.MainThreadCommands));
     }
+  }
+
+  async executeExtensionCommand(command: string, args: any[]): Promise<void> {
+    const targetHost = this.getExtensionCommand(command);
+    if (!targetHost) {
+      throw new Error('No Command with id "' + command + '" is declared by extensions');
+    }
+    return this.mainThreadCommands.get(targetHost)!.$executeExtensionCommand(command, ...args);
+  }
+  declareExtensionCommand(command: string, targetHost: 'node' | 'worker' = 'node'): IDisposable {
+    this.extensionCommands.set(command, targetHost);
+    return {
+      dispose: () => {
+        this.extensionCommands.delete(command);
+      },
+    };
+  }
+  getExtensionCommand(command: string): 'node' | 'worker' | undefined {
+    return this.extensionCommands.get(command);
   }
 
   public setExtensionLogThread() {

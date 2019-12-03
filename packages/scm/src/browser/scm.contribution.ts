@@ -74,7 +74,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
         const editor = this.editorService.currentEditor;
         if (editor) {
           const codeEditor = editor.monacoEditor;
-          this.dirtyDiffWorkbenchController.openDirtyDiffWidget(codeEditor, {
+          this.dirtyDiffWorkbenchController.toggleDirtyDiffWidget(codeEditor, {
             lineNumber, column: 1,
           });
           setTimeout(() => {

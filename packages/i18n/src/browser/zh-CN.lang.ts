@@ -154,6 +154,11 @@ export const localizationBundle = {
     'selection.all': '选择全部',
 
     'dialog.confirm': '知道了',
+    'dialog.file.title': '存储目录：',
+    'dialog.file.openLabel': '打开文件：',
+    'dialog.file.saveLabel': '保存文件：',
+    'dialog.file.close': '关闭',
+    'dialog.file.ok': '确定',
     'menu-bar.file.pref': '设置',
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',
@@ -335,6 +340,11 @@ export const localizationBundle = {
     'open.editors.save.byId': '保存组中未保存文件',
     'open.editors.empty': '编辑器中暂无打开文件',
     'open.editors.group.title': '第{0}组',
+    'open.editors.open': '打开文件',
+    'open.editors.openToTheSide': '侧边栏打开',
+    'open.editors.compare': '与当前文件比较',
+    'open.editors.copyRelativePath': '复制相对路径',
+    'open.editors.copyPath': '复制路径',
 
     'terminal.name': '终端',
     'terminal.disconnected': '终端断开连接',

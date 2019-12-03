@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {
   IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions,
   IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
-  IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions,
+  IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal, IExtHostWindow, IMainThreadWindow, MainThreadAPIIdentifier, IExtOpenDialogOptions, IExtSaveDialogOptions,
 } from '../../../common/vscode';
 import { MessageType, IDisposable, CancellationToken, Emitter } from '@ali/ide-core-common';
 
@@ -116,6 +116,10 @@ export function createWindowApiFactory(
       return extHostWindow.openDialog(options);
     },
 
+    showSaveDialog: (options) => {
+      return extHostWindow.showSaveDialog(options);
+    },
+
     get onDidChangeWindowState() {
       return extHostWindowState.onDidChangeWindowState;
     },
@@ -159,7 +163,7 @@ export class ExtHostWindow implements IExtHostWindow {
 
   private id = 0;
   private _onOpenedResult = new Emitter<{id: string, result: types.UriComponents[] | undefined}>();
-
+  private _onSavedResult = new Emitter<{id: string, result: types.UriComponents | undefined}>();
   constructor(rpcProtocol: IRPCProtocol) {
     this.proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWindow);
   }
@@ -177,8 +181,25 @@ export class ExtHostWindow implements IExtHostWindow {
     });
   }
 
+  showSaveDialog(options: IExtSaveDialogOptions): Promise<types.Uri | undefined> {
+    return new Promise<types.Uri | undefined> ((resolve, reject) => {
+      const id = (this.id ++).toString();
+      this.proxy.$showSaveDialog(id, options);
+      const disposer = this._onSavedResult.event((res) => {
+        if (res.id === id) {
+          disposer.dispose();
+          resolve(res.result ? Uri.revive(res.result) : undefined);
+        }
+      });
+    });
+  }
+
   $onOpenDialogResult(id: string, result: types.UriComponents[] | undefined): void {
     this._onOpenedResult.fire({id, result});
+  }
+
+  $onSaveDialogResult(id: string, result: types.UriComponents | undefined): void {
+    this._onSavedResult.fire({id, result});
   }
 
 }

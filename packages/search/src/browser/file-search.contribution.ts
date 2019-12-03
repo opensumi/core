@@ -191,7 +191,8 @@ export class FileSearchQuickCommandHandler {
       if (uri.scheme !== Schemas.file) {
         return;
       }
-      return rootUris.push(uri.codeUri.fsPath);
+      this.logger.debug('file-search.contribution rootUri', uri.toString());
+      return rootUris.push(uri.toString());
     });
     const result = await this.fileSearchService.find(lookFor, {
       rootUris,

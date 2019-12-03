@@ -30,11 +30,22 @@ export class OutLineService extends WithEventBus {
   private statusMap: Map<string, NodeStatus> = new Map();
 
   private currentSymbols: DocumentSymbol[] = [];
-  private currentUri: URI;
+  private currentUri: MaybeNull<URI>;
   private currentSelectedId: string;
 
   // 处理事件去重 + debounce
   private debouncedChangeEvent: Map<string, () => any> = new Map();
+
+  constructor() {
+    super();
+    this.editorService.onActiveResourceChange((e) => {
+      if (e && e.uri) {
+        this.notifyUpdate(e.uri);
+      } else {
+        this.doUpdate(e && e.uri);
+      }
+    });
+  }
 
   collapseAll() {
     this.treeNodes.forEach((symbol) => {
@@ -49,12 +60,12 @@ export class OutLineService extends WithEventBus {
 
   @OnEvent(EditorSelectionChangeEvent)
   onEditorSelectionChangeEvent(e: EditorSelectionChangeEvent) {
-    this.doUpdate(e.payload.editorUri);
+    this.notifyUpdate(e.payload.editorUri);
   }
 
   @OnEvent(DocumentSymbolChangedEvent)
   onDocumentSymbolChange(e: DocumentSymbolChangedEvent) {
-    this.doUpdate(e.payload);
+    this.notifyUpdate(e.payload);
   }
 
   @action.bound
@@ -62,7 +73,7 @@ export class OutLineService extends WithEventBus {
     const status = this.statusMap.get(node.id)!;
     status.expanded = !status.expanded;
     const nodes: TreeSymbol[] = [];
-    createTreeNodesFromSymbolTreeDeep({ children: this.currentSymbols } as TreeSymbol, -1, nodes, this.statusMap, this.currentUri);
+    createTreeNodesFromSymbolTreeDeep({ children: this.currentSymbols } as TreeSymbol, -1, nodes, this.statusMap, this.currentUri!);
     this.treeNodes = nodes;
   }
 
@@ -91,7 +102,7 @@ export class OutLineService extends WithEventBus {
     this.debouncedChangeEvent.get(uri.toString())!();
   }
 
-  protected getOrCreateStatus(uri: URI, node: INormalizedDocumentSymbol): NodeStatus {
+  protected getOrCreateStatus(uri: MaybeNull<URI>, node: INormalizedDocumentSymbol): NodeStatus {
     const symbolId = node.id;
     let status = this.statusMap.get(symbolId);
     if (!status) {
@@ -106,16 +117,16 @@ export class OutLineService extends WithEventBus {
     return status;
   }
 
-  protected doUpdate(uri: URI, ignoreCursor?: boolean) {
-    const symbols = this.documentSymbolStore.getDocumentSymbol(uri);
+  protected doUpdate(uri: MaybeNull<URI>, ignoreCursor?: boolean) {
+    const symbols = uri && this.documentSymbolStore.getDocumentSymbol(uri);
     this.currentSymbols = symbols || [];
     this.currentUri = uri;
     if (symbols) {
       if (!ignoreCursor && this.followCursor) {
-        this.selectCursorSymbol(uri, symbols);
+        this.selectCursorSymbol(uri!, symbols);
       }
       const nodes: TreeSymbol[] = [];
-      createTreeNodesFromSymbolTreeDeep({ children: symbols } as TreeSymbol, -1, nodes, this.statusMap, uri);
+      createTreeNodesFromSymbolTreeDeep({ children: symbols } as TreeSymbol, -1, nodes, this.statusMap, uri!);
       this.treeNodes = nodes.map((node) => {
         const status = this.getOrCreateStatus(uri, node);
         return {

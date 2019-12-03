@@ -4,13 +4,17 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@ali/ide-core-browser';
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { fromPosition } from '../../../common/vscode/converter';
-import { URI, isNonEmptyArray } from '@ali/ide-core-common';
+import { URI, isNonEmptyArray, Disposable } from '@ali/ide-core-common';
+import { ExtensionService } from '../../../common';
 
+export interface IExtCommandHandler extends IDisposable {
+  execute: (...args: any[]) => Promise<any>;
+}
 @Injectable({multiple: true})
 export class MainThreadCommands implements IMainThreadCommands {
   private readonly proxy: IExtHostCommands;
 
-  private readonly commands = new Map<string, IDisposable>();
+  private readonly commands = new Map<string, IExtCommandHandler >();
 
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
 
@@ -68,22 +72,31 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   $registerCommand(id: string): void {
     const proxy = this.proxy;
-    const command = this.commandRegistry.getCommand(id);
 
     const execute = (...args) => {
       args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
       return proxy.$executeContributedCommand(id, ...args);
     };
 
+    const disposer = new Disposable();
+
+    const extCommandHandler: IExtCommandHandler = {
+      execute,
+      dispose: () => {
+        return disposer.dispose();
+      },
+    };
+
     /**
      * command 可能在 contribute/commands 通过贡献点已经贡献了 command desc
-     * 这里只需要给其注册一个 handler 即可
+     * 此时不用再注册，会被extensionService转发到这里来
      */
-    const dispose = command
-      ? this.commandRegistry.registerHandler(id, { execute })
-      : this.commandRegistry.registerCommand({ id }, { execute });
+    const command = this.commandRegistry.getCommand(id);
+    if (!command) {
+      disposer.addDispose(this.commandRegistry.registerCommand({ id }, { execute }));
+    }
 
-    this.commands.set(id, dispose);
+    this.commands.set(id, extCommandHandler);
   }
 
   $unregisterCommand(id: string): void {
@@ -96,6 +109,18 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   $getCommands(): Promise<string[]> {
     return Promise.resolve(this.commandRegistry.getCommands().map((command) => command.id));
+  }
+
+  /**
+   * 来自main -> extHost的command调用
+   */
+  $executeExtensionCommand(id: string, ...args: any[]): Promise<any> {
+    if (this.commands.has(id)) {
+      return this.commands.get(id)!.execute(...args);
+    } else {
+      args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
+      return this.proxy.$executeContributedCommand(id, ...args);
+    }
   }
 
   $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {

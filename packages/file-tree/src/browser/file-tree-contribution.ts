@@ -260,7 +260,6 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (tempFileUri) {
           await this.explorerResourceService.location(tempFileUri, true);
         }
-
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {

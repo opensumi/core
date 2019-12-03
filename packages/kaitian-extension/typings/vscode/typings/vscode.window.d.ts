@@ -1,4 +1,77 @@
 declare module 'vscode' {
+  /**
+	 * Options to configure the behaviour of a file open dialog.
+	 *
+	 * * Note 1: A dialog can select files, folders, or both. This is not true for Windows
+	 * which enforces to open either files or folder, but *not both*.
+	 * * Note 2: Explicitly setting `canSelectFiles` and `canSelectFolders` to `false` is futile
+	 * and the editor then silently adjusts the options to select files.
+	 */
+	export interface OpenDialogOptions {
+		/**
+		 * The resource the dialog shows when opened.
+		 */
+		defaultUri?: Uri;
+
+		/**
+		 * A human-readable string for the open button.
+		 */
+		openLabel?: string;
+
+		/**
+		 * Allow to select files, defaults to `true`.
+		 */
+		canSelectFiles?: boolean;
+
+		/**
+		 * Allow to select folders, defaults to `false`.
+		 */
+		canSelectFolders?: boolean;
+
+		/**
+		 * Allow to select many files or folders.
+		 */
+		canSelectMany?: boolean;
+
+		/**
+		 * A set of file filters that are used by the dialog. Each entry is a human readable label,
+		 * like "TypeScript", and an array of extensions, e.g.
+		 * ```ts
+		 * {
+		 * 	'Images': ['png', 'jpg']
+		 * 	'TypeScript': ['ts', 'tsx']
+		 * }
+		 * ```
+		 */
+		filters?: { [name: string]: string[] };
+	}
+
+	/**
+	 * Options to configure the behaviour of a file save dialog.
+	 */
+	export interface SaveDialogOptions {
+		/**
+		 * The resource the dialog shows when opened.
+		 */
+		defaultUri?: Uri;
+
+		/**
+		 * A human-readable string for the save button.
+		 */
+		saveLabel?: string;
+
+		/**
+		 * A set of file filters that are used by the dialog. Each entry is a human readable label,
+		 * like "TypeScript", and an array of extensions, e.g.
+		 * ```ts
+		 * {
+		 * 	'Images': ['png', 'jpg']
+		 * 	'TypeScript': ['ts', 'tsx']
+		 * }
+		 * ```
+		 */
+		filters?: { [name: string]: string[] };
+  }
   export namespace window {
 
 		/**
@@ -30,7 +103,7 @@ declare module 'vscode' {
 		 */
 		export const onDidCloseTerminal: Event<Terminal>;
 
-	
+
 		/**
 		 * Represents the current window's state.
 		 */
@@ -84,7 +157,7 @@ declare module 'vscode' {
 		 * @returns a [TreeView](#TreeView).
 		 */
 		export function createTreeView<T>(viewId: string, options: TreeViewOptions<T>): TreeView<T>;
-		
+
 		/**
 		 * Options for creating a [TreeView](#TreeView)
 		 */
@@ -99,9 +172,26 @@ declare module 'vscode' {
 			 * Whether to show collapse all action or not.
 			 */
 			showCollapseAll?: boolean;
-		}
+    }
+    /**
+		 * Shows a file open dialog to the user which allows to select a file
+		 * for opening-purposes.
+		 *
+		 * @param options Options that control the dialog.
+		 * @returns A promise that resolves to the selected resources or `undefined`.
+		 */
+		export function showOpenDialog(options: OpenDialogOptions): Thenable<Uri[] | undefined>;
+
+		/**
+		 * Shows a file save dialog to the user which allows to select a file
+		 * for saving-purposes.
+		 *
+		 * @param options Options that control the dialog.
+		 * @returns A promise that resolves to the selected resource or `undefined`.
+		 */
+		export function showSaveDialog(options: SaveDialogOptions): Thenable<Uri | undefined>;
 	}
-	
+
 		/**
 	 * A panel that contains a webview.
 	 */

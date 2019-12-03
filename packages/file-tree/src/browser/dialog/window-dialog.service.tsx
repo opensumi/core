@@ -1,13 +1,18 @@
-import { IWindowDialogService, IOpenDialogOptions } from '../common';
+import * as React from 'react';
+import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
-import { isElectronRenderer, electronEnv, URI } from '@ali/ide-core-browser';
+import { isElectronRenderer, electronEnv, URI, MessageType } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { FileDialog } from './file-dialog.view';
 
 @Injectable()
 export class WindowDialogServiceImpl implements IWindowDialogService {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired(IDialogService)
+  dialogService: IDialogService;
 
   async showOpenDialog(options: IOpenDialogOptions | undefined = {}): Promise<URI[] | undefined> {
     if (isElectronRenderer()) {
@@ -33,7 +38,21 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
         return undefined;
       }
     } else {
-      throw new Error('not implemented');
+      const res = await this.dialogService.open<string[]>(<FileDialog options={options}/>, MessageType.Empty);
+      if (res && res.length > 0) {
+        return res.map((r) => URI.file(r));
+      } else {
+        return undefined;
+      }
+    }
+  }
+
+  async showSaveDialog(options: ISaveDialogOptions = {}): Promise<URI | undefined> {
+    const res = await this.dialogService.open<string[]>(<FileDialog options={options}/>, MessageType.Empty);
+    if (res && res.length > 0) {
+      return URI.file(res[0]);
+    } else {
+      return undefined;
     }
   }
 

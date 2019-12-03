@@ -34,6 +34,7 @@ declare module 'nsfw' {
       file?: string;
       oldFile?: string;
       newFile?: string;
+      newDirectory?: string;
     }
 
     export enum actions {

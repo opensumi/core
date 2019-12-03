@@ -8,6 +8,8 @@ import { FileTree } from './file-tree.view';
 import { BrowserModule, EffectDomain, ModuleDependencies } from '@ali/ide-core-browser';
 import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
 import { getIcon } from '@ali/ide-core-browser';
+import { IWindowDialogService } from '@ali/ide-overlay';
+import { WindowDialogServiceImpl } from './dialog/window-dialog.service';
 
 const pkgJson = require('../../package.json');
 
@@ -19,6 +21,10 @@ export class FileTreeModule extends BrowserModule {
     {
       token: IFileTreeAPI,
       useClass: FileTreeAPI,
+    },
+    {
+      token: IWindowDialogService,
+      useClass: WindowDialogServiceImpl,
     },
     FileTreeContribution,
   ];

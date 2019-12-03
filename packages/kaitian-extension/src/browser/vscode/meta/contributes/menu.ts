@@ -292,8 +292,8 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         if (menuId === MenuId.EditorTitle && command.iconClass) {
           this.addDispose(this.editorActionRegistry.registerEditorAction({
             title: replaceLocalizePlaceholder(command.label)!,
-            onClick: () => {
-              this.commandService.executeCommand(command.id);
+            onClick: (resource) => {
+              this.commandService.executeCommand(command.id, resource ? resource.uri : undefined);
             },
             iconClass: command.iconClass,
             when: item.when,

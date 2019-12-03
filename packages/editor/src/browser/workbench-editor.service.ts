@@ -97,7 +97,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
     this.editorGroups.push(editorGroup);
     const currentWatchDisposer = reaction(() => editorGroup.currentResource, () => {
-      this._onActiveResourceChange.fire(editorGroup.currentResource);
+      if (editorGroup === this.currentEditorGroup) {
+        this._onActiveResourceChange.fire(editorGroup.currentResource);
+      }
     });
     editorGroup.addDispose({
       dispose: () => {
@@ -558,6 +560,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this.openingPromise.get(uri.toString())!;
   }
 
+  async pin(uri: URI) {
+    return this.pinPreviewed(uri);
+  }
+
   @action.bound
   async doOpen(uri: URI, options: IResourceOpenOptions = {}): Promise<{ group: IEditorGroup, resource: IResource } | false> {
     if (uri.scheme === 'http' || uri.scheme === 'https') {
@@ -573,7 +579,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       const oldResource = this.currentResource;
       const oldOpenType = this.currentOpenType;
-      if (this.currentResource && this.currentResource.uri === uri) {
+      if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
         // 就是当前打开的resource
         if (options.focus && this.currentEditor) {
           this.currentEditor.monacoEditor.focus();

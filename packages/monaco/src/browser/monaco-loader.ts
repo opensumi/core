@@ -78,6 +78,9 @@ function doLoadMonaco(): Promise<void> {
       }
       exports.registerSingleton = registerSingleton;
     });
+    vsRequire.define('vs/editor/contrib/contextmenu/contextmenu', ['require', 'exports'], (require, exports) => {
+      // 覆盖monaco原本的contextMenu Contribution，不让它生效
+    });
     vsRequire(['vs/editor/editor.main'], () => {
       vsRequire([
         'vs/editor/standalone/browser/standaloneServices',
@@ -104,6 +107,7 @@ function doLoadMonaco(): Promise<void> {
         'vs/editor/common/model/textModel',
         'vs/editor/contrib/format/format',
         'vs/editor/common/editorContextKeys',
+        'vs/platform/actions/common/actions',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
           simpleServices: any, commands: any, editorExtensions: any, descriptors: any,
@@ -113,6 +117,7 @@ function doLoadMonaco(): Promise<void> {
           textModel: any,
           format: any,
           EditorContextKeys: any,
+          actions: any,
         ) => {
           const global = window as any;
           const original = standaloneServices.StaticServices.init;
@@ -142,6 +147,7 @@ function doLoadMonaco(): Promise<void> {
           global.monaco.modes = modes;
           global.monaco.textModel = textModel;
           global.monaco.format = format;
+          global.monaco.actions = actions;
           global.monaco.contextkey.EditorContextKeys = EditorContextKeys.EditorContextKeys;
           // codeActionsProvider需要支持额外属性
           global.monaco.languages.registerCodeActionProvider = (languageId, provider) => {

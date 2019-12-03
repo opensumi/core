@@ -34,7 +34,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     });
   }
 
-  open(message: string | React.ReactNode, type: MessageType, buttons?: string[]): Promise<string | undefined> {
+  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[]): Promise<T | undefined> {
     // 如果两秒内提示信息相同，则直接返回上一个提示
     if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message) {
       return Promise.resolve(undefined);
@@ -43,7 +43,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     this.preMessage = message;
     this.showTime = Date.now();
     const key = uuid();
-    const deferred = new Deferred<string>();
+    const deferred = new Deferred<T>();
     const args: ArgsProps = {
       key,
       className: clx(styles.wrapper, {
@@ -56,7 +56,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
       btn: buttons ? buttons.map((button, index) => (<Button
         className={clx(styles.button)}
         onClick={() => {
-          deferred.resolve(button);
+          deferred.resolve(button as any);
           notification.close(key);
         }}
         key={button}>{button}</Button>)) : null,

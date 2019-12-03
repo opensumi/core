@@ -6,6 +6,13 @@ export interface IMainThreadCommands {
   $registerCommand(id: string): void;
   $unregisterCommand(id: string): void;
   $getCommands(): Promise<string[]>;
+  /**
+   * 来自main -> extHost的command调用
+   */
+  $executeExtensionCommand(id: string, ...args: any[]): Promise<any>;
+  /**
+   * 来自ext -> main的command调用
+   */
   $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
   $executeReferenceProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
   $executeImplementationProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
