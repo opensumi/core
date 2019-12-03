@@ -65,7 +65,7 @@ export class FileSearchService implements IFileSearchService {
         const rootUri = new URI(root);
         const rootOptions = roots[root];
         await this.doFind(rootUri, rootOptions, (candidate) => {
-          const fileUri = FileUri.create(path.join(rootUri.withoutScheme().toString(), candidate)).toString();
+          const fileUri = FileUri.create(path.join(rootUri.codeUri.fsPath, candidate)).toString();
           if (exactMatches.has(fileUri) || fuzzyMatches.has(fileUri)) {
             return;
           }
