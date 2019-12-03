@@ -167,7 +167,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     delete this.items[editorModel.id];
   }
 
-  public openDirtyDiffWidget(codeEditor: monaco.editor.ICodeEditor, position: monaco.IPosition) {
+  public toggleDirtyDiffWidget(codeEditor: monaco.editor.ICodeEditor, position: monaco.IPosition) {
     const model = codeEditor.getModel();
     if (model && position) {
       let widget = this.widgets.get(codeEditor.getId());
@@ -194,16 +194,42 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     }
   }
 
+  private _doMouseDown(codeEditor: monaco.editor.ICodeEditor, event: monaco.editor.IEditorMouseEvent) {
+    if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS && event.target.element && event.target.element.className.indexOf('dirty-diff-glyph') > -1) {
+
+      const { target } = event;
+
+      if (target && target.position) {
+        const { position } = target;
+
+        const data = event.target.detail;
+        const offsetLeftInGutter = (event.target.element as HTMLElement).offsetLeft;
+        const gutterOffsetX = data.offsetX - offsetLeftInGutter;
+
+        /**
+         * 这段逻辑来自于 vscode 的源代码，由于 folding 的 icon 和 decorations 是父子关系，
+         * 而且 folding 的事件是通过 decorations 的 dom 事件转发过去的，
+         * 无法通过事件 target 来区分事件源，vscode 通过点击的 px 像素差来解决这个问题的。
+         */
+        if (gutterOffsetX < 5) {
+          this.toggleDirtyDiffWidget(codeEditor, position);
+        } else {
+          const widget = this.widgets.get(codeEditor.getId());
+          if (widget) {
+            widget.dispose();
+            this.widgets.delete(codeEditor.getId());
+          }
+        }
+      }
+    }
+  }
+
   private attachEvents(codeEditor: monaco.editor.ICodeEditor) {
     const disposeCollecton = new DisposableCollection();
 
     disposeCollecton.push(codeEditor.onMouseDown((event) => {
       if (this.scmPreferences['scm.alwaysShowDiffWidget']) {
-        if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS) {
-          if (event.target.position) {
-            this.openDirtyDiffWidget(codeEditor, event.target.position);
-          }
-        }
+        this._doMouseDown(codeEditor, event);
       }
     }));
 
