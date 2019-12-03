@@ -32,20 +32,22 @@
     "antd": "^3.20.3",
     "classnames": "^2.2.6",
     "clsx": "^1.0.4",
+    "copy-to-clipboard": "^3.2.0",
     "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",
     "jsonc-parser": "^2.1.0",
     "keycode": "^2.2.0",
     "lodash.throttle": "^4.1.1",
     "lodash.uniqby": "^4.1.1",
+    "lzutf8": "^0.5.5",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",
+    "mock-socket": "^9.0.2",
     "native-keymap": "^1.2.5",
     "onigasm": "2.2.2",
     "rc-menu": "^7.4.30",
     "react": "^16.8.6",
     "react-autosize-textarea": "^7.0.0",
-    "copy-to-clipboard": "^3.2.0",
     "react-ctxmenu-trigger": "^1.0.0",
     "react-perfect-scrollbar": "^1.5.2",
     "react-sticky": "^6.0.3",
@@ -54,7 +56,6 @@
     "static-resource": "^0.1.0",
     "vscode-debugprotocol": "^1.35.0",
     "vscode-languageserver-protocol": "^3.14.1",
-    "vscode-textmate": "4.3.0",
-    "mock-socket": "^9.0.2"
+    "vscode-textmate": "4.3.0"
   }
 }

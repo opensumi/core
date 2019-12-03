@@ -13,14 +13,11 @@ import {
   createMainContextProxyIdentifier,
   createExtHostContextProxyIdentifier,
 } from '../../src/common/rpcProtocol';
-import {
-  RPCService,
-} from '../../src';
-import {
-  WSChannel,
-} from '../../src/common/ws-channel';
+import { RPCService } from '../../src';
+import { WSChannel } from '../../src/common/ws-channel';
+import { stringify, parse } from '../../src/common/utils';
 
-import {Emitter, Uri} from '@ali/ide-core-common';
+import { Emitter, Uri } from '@ali/ide-core-common';
 
 import * as ws from 'ws';
 import * as http from 'http';
@@ -75,7 +72,7 @@ describe('connection', () => {
     };
     const channel = new WSChannel(channelSend, 'TEST_CHANNEL_ID');
     connection.on('message', (msg) => {
-      const msgObj = JSON.parse(msg as string);
+      const msgObj = parse(msg as string);
       if (msgObj.kind === 'ready') {
         if (msgObj.id === 'TEST_CHANNEL_ID') {
           channel.handleMessage(msgObj);
@@ -104,10 +101,8 @@ describe('connection', () => {
     let clientConnection;
 
     await Promise.all([
-
       new Promise((resolve) => {
         wss.on('connection', (connection) => {
-
           serviceCenter = new RPCServiceCenter();
           const serverConnection = createWebSocketConnection(connection);
           serviceCenter.setConnection(serverConnection);
@@ -122,12 +117,9 @@ describe('connection', () => {
           resolve();
         });
       }),
-
     ]);
 
-    const {
-      createRPCService,
-    } = initRPCService(serviceCenter);
+    const { createRPCService } = initRPCService(serviceCenter);
     createRPCService('MockFileServicePath', mockFileService);
 
     createRPCService('MockNotificationService', {
@@ -139,13 +131,14 @@ describe('connection', () => {
     const clientCenter = new RPCServiceCenter();
     clientCenter.setConnection(createWebSocketConnection(clientConnection) as RPCMessageConnection);
 
-    const {
-      getRPCService,
-    } = initRPCService(clientCenter);
+    const { getRPCService } = initRPCService(clientCenter);
 
     const remoteService = getRPCService('MockFileServicePath');
     const remoteResult = await remoteService.getContent('1');
-    const remoteDirsResult = await remoteService.fileDirs(['/a.txt', '/b.txt']);
+    const remoteDirsResult = await remoteService.fileDirs([
+      '/a.txt',
+      '/b.txt',
+    ]);
 
     try {
       await remoteService.throwError();
@@ -154,10 +147,18 @@ describe('connection', () => {
     }
 
     expect(remoteResult).toBe('file content 1');
-    expect(remoteDirsResult).toBe(['/a.txt', '/b.txt'].join(','));
+    expect(remoteDirsResult).toBe(
+      [
+        '/a.txt',
+        '/b.txt',
+      ].join(','),
+    );
 
     const remoteNotificationService = getRPCService('MockNotificationService');
-    await remoteNotificationService.onFileChange(['add', '/a.txt']);
+    await remoteNotificationService.onFileChange([
+      'add',
+      '/a.txt',
+    ]);
     await remoteNotificationService.onFileChange('deleteall');
 
     await new Promise((resolve) => {
@@ -193,8 +194,8 @@ describe('connection', () => {
     const mockUriTestFn = jest.fn((uri) => uri);
 
     aProtocol.set(testMainIdentifier, {
-        '$test': mockMainIndetifierMethod,
-        '$getUri': mockUriTestFn,
+      $test: mockMainIndetifierMethod,
+      $getUri: mockUriTestFn,
     });
 
     const testUri = Uri.file('/Users/franklife/work/ide/ac4/ide-framework/README.md');
@@ -206,5 +207,4 @@ describe('connection', () => {
 
     done();
   });
-
 });
