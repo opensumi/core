@@ -1,12 +1,7 @@
 import { ConstructorOf } from '@ali/ide-core-common';
 import { ElectronMainModule } from '../electron-main-module';
 import { IDisposable } from '@ali/ide-core-common/lib/disposable';
-
-export class ExtensionCandiDate {
-  // 插件路径
-  path: string;
-  isBuiltin: boolean;
-}
+import { ExtensionCandiDate } from '@ali/ide-core-common';
 
 export interface ElectronAppConfig {
 
@@ -60,7 +55,7 @@ export interface ElectronAppConfig {
   /**
    * 额外插件目录
    */
-  extenionCandidate: ExtensionCandiDate[];
+  extensionCandidate: ExtensionCandiDate[];
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');

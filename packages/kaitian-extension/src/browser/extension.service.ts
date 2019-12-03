@@ -51,7 +51,6 @@ import {
   getPreferenceLanguageId,
   isElectronRenderer,
   IDisposable,
-  ExtensionCandiDate,
 } from '@ali/ide-core-browser';
 import {
   getIcon,
@@ -86,6 +85,7 @@ import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
 import * as BrowserApi from './kaitian-browser';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { ExtensionCandiDate } from '@ali/ide-core-common';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -419,8 +419,8 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
     }
-    if (isElectronEnv() && electronEnv.metadata.extenionCandidate) {
-      this.extensionCandidate = this.extensionCandidate.concat(electronEnv.metadata.extenionCandidate.map((extension) => extension.path));
+    if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
+      this.extensionCandidate = this.extensionCandidate.concat(electronEnv.metadata.extensionCandidate.map((extension) => extension.path));
     }
     if (this.appConfig.extensionCandidate) {
       this.extensionCandidate = this.extensionCandidate.concat(this.appConfig.extensionCandidate.map((extension) => extension.path));
@@ -429,12 +429,12 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   /**
-   * electron 下 通过 electronEnv.metadata.extenionCandidate 获取 extenionCandidate 列表
+   * electron 下 通过 electronEnv.metadata.extensionCandidate 获取 extensionCandidate 列表
    * @param realPath extension path
    */
   private getExtensionCandidateByPath(realPath: string): ExtensionCandiDate | undefined {
     if (isElectronEnv()) {
-      return electronEnv.metadata.extenionCandidate && electronEnv.metadata.extenionCandidate.find((extension: ExtensionCandiDate) => extension.path === realPath);
+      return electronEnv.metadata.extensionCandidate && electronEnv.metadata.extensionCandidate.find((extension: ExtensionCandiDate) => extension.path === realPath);
     }
     return this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === realPath);
   }
