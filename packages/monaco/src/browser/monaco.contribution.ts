@@ -78,6 +78,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     const currentTheme = this.themeService.getCurrentThemeSync();
     const themeData = currentTheme.themeData;
     this.textmateService.setTheme(themeData);
+    this.textmateService.initialized = true;
   }
 
   onMonacoLoaded(monacoService: MonacoService) {
