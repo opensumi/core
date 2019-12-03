@@ -24,15 +24,14 @@ export class PtyService {
         Object.assign({},
           omit(process.env, ['KTELECTRON', 'EXTENSION_HOST_ENTRY', 'EXTENSION_DIR', 'WORKSPACE_DIR', 'CODE_WINDOW_CLIENT_ID', 'VSCODE_NLS_CONFIG', 'ELECTRON_RUN_AS_NODE']),
           {
-            LC_CTYPE: `${locale.replace('-', '_')}.UTF-8`,
+            LC_ALL: `${locale.replace('-', '_')}.UTF-8`,
+            LANG: `${locale.replace('-', '_')}.UTF-8`,
             PATH: shellPath.sync(),
-            LANG: `${locale}.UTF-8`,
           },
           options.env,
         )) as { [key: string]: string };
     }
     const ptyProcess = pty.spawn(bin, [], {
-      encoding: 'utf-8',
       name: 'xterm-color',
       cols: cols || 100,
       rows: rows || 30,
