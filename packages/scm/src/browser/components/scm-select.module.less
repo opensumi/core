@@ -1,4 +1,5 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
+@import '~@ali/ide-core-browser/lib/style/mixins.less';
 
 .scmSelect {
   width: 100%;
@@ -23,13 +24,23 @@
     background: var(--list-activeSelectionBackground);
   }
 
+  .info {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .title {
+    .text-ellipsis();
+  }
+
   .info,
   .toolbar {
     display: flex;
     align-items: center;
   }
 
-  .toolbar {
+  .toolbar,
+  .status {
     height: 100%;
   }
 

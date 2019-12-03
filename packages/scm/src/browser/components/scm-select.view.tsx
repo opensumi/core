@@ -48,7 +48,12 @@ const SCMProvider: React.FC<{
       </div>
       <div className={styles.toolbar}>
         {
-          statusConfig.map((config) => <StatusBarItem key={config.id} {...config} />)
+          statusConfig.map((config) => (
+            <StatusBarItem
+              key={config.id}
+              className={styles.status}
+              {...config} />
+          ))
         }
       </div>
     </div>
