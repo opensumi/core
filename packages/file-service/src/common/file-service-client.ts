@@ -42,7 +42,7 @@ export interface IFileServiceClient {
 
   onDidFilesChanged(event: DidFilesChangedParams): void;
 
-  watchFileChanges(uri: URI): Promise<IFileServiceWatcher>;
+  watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher>;
 
   unwatchFileChanges(watchId: number): Promise<void>;
 

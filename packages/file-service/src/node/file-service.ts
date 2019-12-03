@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@ali/common-di';
+import { Injectable, Inject, Autowired } from '@ali/common-di';
 import * as drivelist from 'drivelist';
 import * as paths from 'path';
 import * as fs from 'fs-extra';
@@ -17,7 +17,7 @@ import {
   isArray,
   isEmptyObject,
 } from '@ali/ide-core-common';
-import { FileUri } from '@ali/ide-core-node';
+import { FileUri, INodeLogger } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection'
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import { FileChangeEvent, WatchOptions } from '../common/file-service-watcher-protocol';
@@ -67,9 +67,13 @@ export class FileService extends RPCService implements IFileService {
   readonly onFilesChanged: Event<DidFilesChangedParams> = this.onFileChangedEmitter.event;
   protected toDisposable = new DisposableCollection();
   protected watchFileExcludes: string[] = [];
+  protected watchFileExcludesMatcherList: ParsedPattern[] = [];
   protected filesExcludes: string[] = [];
   protected filesExcludesMatcherList: ParsedPattern[] = [];
   protected workspaceRoots: string[] = [];
+
+  @Autowired(INodeLogger)
+  logger: INodeLogger;
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
@@ -89,7 +93,7 @@ export class FileService extends RPCService implements IFileService {
     return this.toDisposable;
   }
 
-  async watchFileChanges(uri: string): Promise<number> {
+  async watchFileChanges(uri: string, options?: { excludes: string []}): Promise<number> {
     const id = this.watcherId++;
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
@@ -97,7 +101,7 @@ export class FileService extends RPCService implements IFileService {
 
     this.watcherDisposerMap.set(id, provider.watch(_uri.codeUri, {
       recursive: true,
-      excludes: this.watchFileExcludes
+      excludes: (options && options.excludes) || []
     }))
     schemaWatchIdList.push(id);
     this.watcherWithSchemaMap.set(
@@ -117,7 +121,7 @@ export class FileService extends RPCService implements IFileService {
 
   setWatchFileExcludes(excludes: string[]) {
     this.watchFileExcludes = excludes;
-    this.updateWatchFileExcludes(excludes);
+    this.watchFileExcludesMatcherList = excludes.map((pattern) => parse(pattern));
   }
 
   getWatchFileExcludes(): string[] {
@@ -450,6 +454,19 @@ export class FileService extends RPCService implements IFileService {
    * Current policy: sends * all * Provider onDidChangeFile events to * all * clients and listeners
    */
   fireFilesChange(e: FileChangeEvent) {
+    e = (e || []).filter(file => {
+      const uri = new URI(file.uri);
+      const uriString = uri.withoutScheme().toString();
+
+      return !this.watchFileExcludesMatcherList.some((match) => {
+        const result = match(uriString);
+        return result;
+      });
+    });
+    if (e.length < 1) {
+      return false;
+    }
+    this.logger.debug('FileChangeEvent:', e);
     this.onFileChangedEmitter.fire({
       changes: e,
     });
@@ -467,15 +484,6 @@ export class FileService extends RPCService implements IFileService {
   }
 
   // Protected or private
-
-  private async updateWatchFileExcludes(excludes: string[]) {
-    if (excludes.length < 1) {
-      return;
-    }
-    // 只更新diskFileSystemProvider
-    const diskFileSystemProvider = await this.getProvider(Schemas.file);
-    diskFileSystemProvider.updateWatchFileExcludes && diskFileSystemProvider.updateWatchFileExcludes(excludes);
-  }
 
   private updateExcludeMatcher() {
     this.filesExcludes.forEach((str) => {

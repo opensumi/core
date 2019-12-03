@@ -116,8 +116,8 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   // 添加监听文件
-  async watchFileChanges(uri: URI): Promise<IFileServiceWatcher> {
-    const watchId = await this.fileService.watchFileChanges(uri.toString());
+  async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
+    const watchId = await this.fileService.watchFileChanges(uri.toString(), { excludes: excludes || []});
     return new FileSystemWatcher({
       fileServiceClient: this,
       watchId,
