@@ -1,6 +1,6 @@
 import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Event, IEventBus, CommandService, Delayer } from '@ali/ide-core-common';
+import { Event, IEventBus, CommandService } from '@ali/ide-core-common';
 import { Disposable, DisposableStore, DisposableCollection } from '@ali/ide-core-common/lib/disposable';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
@@ -32,7 +32,6 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   private models: monaco.editor.ITextModel[] = [];
   private widgets = new Map<string, DirtyDiffWidget>();
   private items: { [modelId: string]: DirtyDiffItem; } = Object.create(null);
-  private readonly delayer = new Delayer(200);
   private readonly transientDisposables = new DisposableStore();
 
   @Autowired(SCMPreferences)
@@ -193,34 +192,26 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       const { target } = event;
 
       if (target && target.position) {
-
         const { position } = target;
-        const fodingController = codeEditor.getContribution('editor.contrib.folding');
 
-        // @ts-ignore
-        const oldRegion = fodingController.foldingModel.getRegionAtLine(target.position.lineNumber);
-        const oldIsCollapsed = oldRegion && oldRegion.isCollapsed;
+        const data = event.target.detail;
+        const offsetLeftInGutter = (event.target.element as HTMLElement).offsetLeft;
+        const gutterOffsetX = data.offsetX - offsetLeftInGutter;
 
-        this.delayer.trigger(async () => {
-          // @ts-ignore
-          const foldingRegion = await fodingController.foldingRegionPromise;
-          const index = foldingRegion.findRange(position.lineNumber);
-          const isCollapsed = foldingRegion.toRegion(index).isCollapsed;
-
-          if (index <= 0) {
-            this.openDirtyDiffWidget(codeEditor, position);
-          } else {
-            if (isCollapsed === oldIsCollapsed) {
-              this.openDirtyDiffWidget(codeEditor, position);
-            } else {
-              const widget = this.widgets.get(codeEditor.getId());
-              if (widget) {
-                widget.dispose();
-                this.widgets.delete(codeEditor.getId());
-              }
-            }
+        /**
+         * 这段逻辑来自于 vscode 的源代码，由于 folding 的 icon 和 decorations 是父子关系，
+         * 而且 folding 的事件是通过 decorations 的 dom 事件转发过去的，
+         * 无法通过事件 target 来区分事件源，vscode 通过点击的 px 像素差来解决这个问题的。
+         */
+        if (gutterOffsetX < 5) {
+          this.openDirtyDiffWidget(codeEditor, position);
+        } else {
+          const widget = this.widgets.get(codeEditor.getId());
+          if (widget) {
+            widget.dispose();
+            this.widgets.delete(codeEditor.getId());
           }
-        });
+        }
       }
     }
   }
