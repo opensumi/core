@@ -40,7 +40,6 @@ describe('LogService', () => {
     const logger = loggerManager.getLogger(SupportLogNamespace.Browser);
 
     doAllLog(logger);
-    await logger.flush();
     logger.error(new Error('error!'));
     await logger.flush();
 
@@ -55,6 +54,6 @@ describe('LogService', () => {
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Warning]) > 0).toBe(true);
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Error]) > 0).toBe(true);
     expect(text.indexOf(LogLevelMessageMap[LogLevel.Critical]) > 0).toBe(true);
-    expect(text.indexOf('at Object.test') > -1).toBe(true);
+    expect(text.indexOf('Error') > -1).toBe(true);
   });
 });
