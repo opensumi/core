@@ -11,6 +11,12 @@ import {
   CommandRegistry,
   IElectronMainMenuService,
   isElectronRenderer,
+  ReporterMetadata,
+  IReporter,
+  IReporterService,
+  DefaultReporter,
+  ReporterService,
+  REPORT_HOST,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from '../common';
 import { ClientAppStateService } from '../application/application-state-service';
@@ -116,6 +122,20 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: AbstractMenubarService,
       useClass: MenubarServiceImpl,
+    },
+    {
+      token: IReporter,
+      useClass: DefaultReporter,
+    },
+    {
+      token: IReporterService,
+      useClass: ReporterService,
+    },
+    {
+      token: ReporterMetadata,
+      useValue: {
+        host: REPORT_HOST.BROWSER,
+      },
     },
   ];
   injector.addProviders(...providers);

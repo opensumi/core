@@ -59,6 +59,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
 import { createExtensionLogFactory } from './extension-log';
+import { createReporterFactory } from './extension-reporter';
 
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ActivationEventService } from '@ali/ide-activation-event';
@@ -537,6 +538,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     // await this.extensionNodeService.resolveConnection();
     this.setExtensionLogThread();
+    this.setReporterThread();
     // await this.extensionNodeService.resolveProcessInit(clientId);
 
   }
@@ -636,6 +638,14 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     if (this.workerProtocol) {
       createExtensionLogFactory(this.workerProtocol, this.injector);
+    }
+  }
+
+  private setReporterThread() {
+    createReporterFactory(this.protocol, this.injector);
+
+    if (this.workerProtocol) {
+      createReporterFactory(this.workerProtocol, this.injector);
     }
   }
 

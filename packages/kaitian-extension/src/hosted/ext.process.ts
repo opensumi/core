@@ -1,4 +1,4 @@
-import { Emitter, isDevelopment } from '@ali/ide-core-common';
+import { Emitter, isDevelopment, ReporterProcessMessage } from '@ali/ide-core-common';
 import * as net from 'net';
 import {
   createSocketConnection,
@@ -7,6 +7,7 @@ import {
   RPCProtocol,
 } from '@ali/ide-connection';
 import { ExtensionLogger } from './extension-log';
+import { ProcessMessageType } from '../common';
 
 const argv = require('yargs').argv;
 let logger: ExtensionLogger;
@@ -49,6 +50,16 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     }
 
     const preload = new Preload(protocol);
+
+    preload.onFireReporter((reportMessage: ReporterProcessMessage) => {
+      if (process && process.send) {
+        process.send({
+          type: ProcessMessageType.REPORTER,
+          data: reportMessage,
+        });
+      }
+    });
+
     logger!.log('preload.init start');
     await preload.init();
     logger!.log('preload.init end');

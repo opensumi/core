@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
-import { getLogger, Emitter } from '@ali/ide-core-common';
+import { getLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, DefaultReporter } from '@ali/ide-core-common';
 import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -12,6 +12,7 @@ import { ExtenstionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 import { VSCExtension } from './vscode.extension';
 import { ExtensionLogger } from './extension-log';
+import { ExtensionReporterService } from './extension-reporter';
 
 /**
  * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
@@ -40,6 +41,12 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   readonly extensionsChangeEmitter: Emitter<string> = new Emitter<string>();
 
+  private reporterService: IReporterService;
+
+  readonly reporterEmitter: Emitter<ReporterProcessMessage> = new Emitter<ReporterProcessMessage>();
+
+  readonly onFireReporter = this.reporterEmitter.event;
+
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
@@ -52,11 +59,15 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       this.rpcProtocol,
       this,
       'node',
+      this.reporterEmitter,
     );
 
     this.vscodeExtAPIImpl = new Map();
     this.kaitianExtAPIImpl = new Map();
     this.logger = new ExtensionLogger(rpcProtocol);
+    this.reporterService = new ExtensionReporterService(rpcProtocol, this.reporterEmitter, {
+      host: REPORT_HOST.NODE,
+    });
   }
 
   public $getExtensions(): IExtension[] {
@@ -73,8 +84,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return extension.packageJSON.name;
     }));
     */
-    this.extentionsActivator = new ExtensionsActivator(this.logger);
-    this.defineAPI();
+  this.extentionsActivator = new ExtensionsActivator(this.logger);
+  this.defineAPI();
   }
 
   public getExtensions(): IExtension[] {
@@ -212,17 +223,17 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     let extensionModule: any = {};
 
     if (extension.packageJSON.main) {
-      const startLoadTime = Date.now();
+      this.reporterService.time('loadExtensionMain');
       extensionModule = getNodeRequire()(modulePath);
-      this.logger.log(`extension,load,${extension.extensionId},${Date.now() - startLoadTime}ms`);
+      this.reporterService.timeEnd('loadExtensionMain', extension.extensionId);
 
       if (extensionModule.activate) {
         this.logger.debug(`try activate ${extension.name}`);
         // FIXME: 考虑在 Context 这里直接注入服务注册的能力
         try {
-          const startActivateTime = Date.now();
+          this.reporterService.time('activateExtension');
           const extensionExports = await extensionModule.activate(context) || extensionModule;
-          this.logger.log(`extension,activate,${extension.extensionId},${Date.now() - startActivateTime}ms`);
+          this.reporterService.timeEnd('activateExtension', extension.extensionId);
           exportsData = extensionExports;
 
         } catch (e) {
