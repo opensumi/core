@@ -164,8 +164,6 @@ export const WorkerHostAPIIdentifier = {
   ExtWorkerHostExtensionService: createExtHostContextProxyIdentifier<IExtensionWorkerHost>('ExtWorkerHostExtensionService'),
 };
 
-export * from './reporter';
-
 export enum ProcessMessageType {
   REPORTER,
 }

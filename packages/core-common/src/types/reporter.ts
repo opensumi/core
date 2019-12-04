@@ -23,7 +23,7 @@ export interface PointData {
 }
 
 export interface PerformanceData extends PointData {
-  time: number;
+  duration: number;
 }
 
 // ide-framework 调用

@@ -22,7 +22,7 @@ describe('packages/core-common/__tests__/reporter.test.ts', () => {
     // name 为 test
     expect(reporter.performance.mock.calls[0][0]).toBe('test');
     // 延时不应该相差 100 毫秒
-    expect(reporter.performance.mock.calls[0][1].time - 3000).toBeLessThan(100);
+    expect(reporter.performance.mock.calls[0][1].duration - 3000).toBeLessThan(100);
   });
   it('use point func ', async () => {
     reporterService.point('active_extension', 'vscode.vim');

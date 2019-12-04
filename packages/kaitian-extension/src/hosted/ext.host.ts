@@ -65,7 +65,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.vscodeExtAPIImpl = new Map();
     this.kaitianExtAPIImpl = new Map();
     this.logger = new ExtensionLogger(rpcProtocol);
-    this.reporterService = new ExtensionReporterService(rpcProtocol, this.reporterEmitter, {
+    this.reporterService = new ExtensionReporterService(this.reporterEmitter, {
       host: REPORT_HOST.EXTENSION,
     });
   }

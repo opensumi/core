@@ -20,7 +20,7 @@ export function createAPIFactory(
   const extHostCommands = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostCommands);
 
   return (extension: IExtension) => {
-    const reporter = new ExtensionReporterService(rpcProtocol, reporterEmitter, {
+    const reporter = new ExtensionReporterService(reporterEmitter, {
       extensionId: extension.extensionId,
       extensionVersion: extension.packageJSON.version,
       host: REPORT_HOST.EXTENSION,

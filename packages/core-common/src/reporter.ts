@@ -28,7 +28,7 @@ export class ReporterService implements IReporterService, IDisposable {
     const startTime = this.timeMap.get(name);
     if (startTime) {
       this.reporter.performance(name, {
-        time: Date.now() - startTime,
+        duration: Date.now() - startTime,
         metadata: this.metadata,
         msg,
       });
