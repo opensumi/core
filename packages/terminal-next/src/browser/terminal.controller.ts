@@ -68,7 +68,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async recovery(history: any) {
-    const { groups } = history;
+    let currentWdigetId: string = '';
+    const { groups, current } = history;
     for (const widgets of (groups as any[])) {
       const index = this.createGroup(false);
 
@@ -78,12 +79,24 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         try {
           await client.attach(true, item.meta || '');
           this._addWidgetToGroup(index, client);
+
+          if (current === client.id) {
+            currentWdigetId = widget.id;
+          }
         } catch { /** do nothing */ }
       }
 
       if (this.groups[index] && this.groups[index].length === 0) {
         this._removeGroupByIndex(index);
       }
+    }
+
+    let selectedIndex = -1;
+    this.groups.forEach((group, index) => group.widgetsMap.has(currentWdigetId) && (selectedIndex = index));
+
+    if (selectedIndex > -1 && currentWdigetId) {
+      this.selectGroup(selectedIndex);
+      this._focusedId = currentWdigetId;
     }
   }
 
@@ -400,7 +413,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       });
     });
 
-    return { groups };
+    return {
+      groups,
+      current: this._focusedId,
+    };
   }
 
   /** end */
