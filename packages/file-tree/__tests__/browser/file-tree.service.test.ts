@@ -737,7 +737,7 @@ describe('FileTreeService should be work', () => {
     const openUri = new URI(`${root}/child.js`);
     injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openResouceMock);
     treeService.openAndFixedFile(openUri);
-    expect(openResouceMock).toBeCalledWith(openUri, { disableNavigate: false, preview: false });
+    expect(openResouceMock).toBeCalledWith(openUri, { disableNavigate: true, preview: false });
   });
 
   it('open file to the side should be work', () => {
@@ -745,7 +745,7 @@ describe('FileTreeService should be work', () => {
     const openUri = new URI(`${root}/child.js`);
     injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openResouceMock);
     treeService.openToTheSide(openUri);
-    expect(openResouceMock).toBeCalledWith(openUri, { disableNavigate: false, split: 4 /** right */ });
+    expect(openResouceMock).toBeCalledWith(openUri, { disableNavigate: true, split: 4 /** right */ });
   });
 
   it('comare file should be work', () => {
