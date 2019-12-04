@@ -61,6 +61,8 @@ export interface IEditorDocumentModel {
 
   updateContent(content: string, eol?: EOL): void;
 
+  updateEncoding(encoding: string): void;
+
 }
 
 export interface IEditorDocumentModelContentProvider {
@@ -104,6 +106,12 @@ export interface IEditorDocumentModelContentProvider {
   provideEOL?(uri: URI): MaybePromise<EOL>;
 
   /**
+   * 为一个uri提供encoding信息, 如果不实现，则默认UTF-8
+   * @param uri;
+   */
+  provideEncoding?(uri: URI): MaybePromise<string>;
+
+  /**
    * 提供这个文件当前内容的md5值，如果不实现这个函数，会使用content再执行计算
    * @param uri
    */
@@ -134,6 +142,13 @@ export interface IEditorDocumentModelService {
     * 获得全部model
   */
   getAllModels(): IEditorDocumentModel[];
+
+  /**
+   * 修改某个uri的encoding （会存储在偏好内）
+   * @param uri
+   * @param encoding
+   */
+  changeModelEncoding(uri: URI, encoding: string);
 
 }
 

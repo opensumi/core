@@ -17,6 +17,7 @@ import { IEditorDocumentModelService } from './doc-model/types';
 import * as copy from 'copy-to-clipboard';
 import { FormattingSelector } from './format/formatterSelect';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { SUPPORTED_ENCODINGS } from './doc-model/encoding';
 
 interface ResourceArgs {
   group: EditorGroup;
@@ -438,6 +439,25 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
               monaco.editor.setModelLanguage(currentDocModel.getMonacoModel(), targetLanguageId);
               currentDocModel.languageId = targetLanguageId;
             }
+          }
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.CHANGE_ENCODING, {
+      execute: async () => {
+        const resource = this.workbenchEditorService.currentResource;
+        if (resource) {
+          const encodingItems = Object.keys(SUPPORTED_ENCODINGS).map((encoding) => ({
+            label: SUPPORTED_ENCODINGS[encoding].labelLong,
+            value: encoding,
+            description: SUPPORTED_ENCODINGS[encoding].labelShort,
+          }));
+          const res = await this.quickPickService.show(encodingItems, {
+            placeholder: localize('editor.chooseEncoding'),
+          });
+          if (res) {
+            this.editorDocumentModelService.changeModelEncoding(resource.uri, res);
           }
         }
       },
