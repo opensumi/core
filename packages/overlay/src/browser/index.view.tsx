@@ -23,7 +23,7 @@ export const Overlay = observer(() => {
   }
 
   return (
-    <div className={'ide-overlay'}>
+    <div className={'ide-overlay'} style={{zIndex: 999}}>
       <Dialog />
       <CtxMenu />
       <ComponentRenderer Component={extraComponents} />
