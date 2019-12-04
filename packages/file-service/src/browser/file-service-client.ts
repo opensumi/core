@@ -17,6 +17,7 @@ import {
 } from '../common';
 import { FileSystemWatcher } from './watcher';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { EncodingInfo } from '../common/encoding';
 
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
@@ -161,5 +162,13 @@ export class FileServiceClient implements IFileServiceClient {
 
   async fireFilesChange(e: FileChangeEvent) {
     this.fileService.fireFilesChange(e);
+  }
+
+  async getEncoding(uri: string): Promise<string> {
+    return await this.fileService.getEncoding(uri);
+  }
+
+  async getEncodingInfo(encoding: string): Promise<EncodingInfo | null> {
+    return await this.fileService.getEncodingInfo(encoding);
   }
 }
