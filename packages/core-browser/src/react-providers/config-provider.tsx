@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Injector } from '@ali/common-di';
+import { ExtensionCandiDate } from '@ali/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
-import { ExtensionCandiDate } from '../extension';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {

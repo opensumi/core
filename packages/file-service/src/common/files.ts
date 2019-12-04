@@ -134,7 +134,7 @@ export interface IFileService extends FileSystemWatcherServer {
 
   fireFilesChange(e: FileChangeEvent);
 
-  watchFileChanges(uri: string): Promise<number>;
+  watchFileChanges(uri: string, options?: WatchOptions): Promise<number>;
 
   setWatchFileExcludes(excludes: string[]);
 
@@ -440,11 +440,6 @@ export interface FileSystemProvider {
    * @memberof FileSystemProvider
    */
   access?(uri: string, mode: number): Promise<boolean>;
-
-  /**
-   * @param excludes
-   */
-  updateWatchFileExcludes?(excludes: string[]);
 }
 
 /**

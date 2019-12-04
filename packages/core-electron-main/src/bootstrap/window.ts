@@ -4,6 +4,7 @@ import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
+import { ExtensionCandiDate } from '@ali/ide-core-common';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
@@ -52,11 +53,10 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     if (options) {
       if (options.extensionDir) {
         this.appConfig.extensionDir = options.extensionDir;
-        console.log(`electron: extension dir: ${this.appConfig.extensionDir}`);
       }
 
       if (options.extensionCandidate) {
-        this.appConfig.extenionCandidate = options.extensionCandidate;
+        this.appConfig.extensionCandidate = options.extensionCandidate;
       }
     }
 
@@ -73,7 +73,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
             plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
           },
           extensionDir: this.appConfig.extensionDir,
-          extenionCandidate: this.appConfig.extenionCandidate,
+          extensionCandidate: this.appConfig.extensionCandidate,
           ...this.metadata,
           windowClientId: this.windowClientId,
           rpcListenPath: this.rpcListenPath,
@@ -99,6 +99,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     } else {
       this._workspace = new URI(workspace);
     }
+  }
+
+  setExtensionDir(extensionDir: string) {
+    this.appConfig.extensionDir = URI.file(extensionDir).toString();
+  }
+
+  setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]) {
+    this.appConfig.extensionCandidate = extensionCandidate;
   }
 
   async start() {

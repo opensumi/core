@@ -32,7 +32,7 @@ export interface IBaseMarkerManager {
   /**
   * 获取markers
   */
-  getMarkers(filter: { type?: string; resource?: string; severities?: number, take?: number; }): IMarker[];
+  getMarkers(filter: { type?: string; resource?: string; severities?: number, take?: number; opened?: boolean}): IMarker[];
 
   /**
    * marker变更事件
@@ -53,7 +53,7 @@ export interface IBaseMarkerManager {
 }
 
 
-export class MarkerStats implements MarkerStatistics {
+export class MarkerStats implements MarkerStatistics, IDisposable {
 
   public errors: number = 0;
   public infos: number = 0;
@@ -94,7 +94,7 @@ export class MarkerStats implements MarkerStatistics {
   private _resourceStats(resource: string): MarkerStatistics {
     const result: MarkerStatistics = { errors: 0, warnings: 0, infos: 0, unknowns: 0 };
 
-    const markers = this._manager.getMarkers({ resource });
+    const markers = this._manager.getMarkers({ resource, opened: true });
     for (const { severity } of markers) {
       if (severity === MarkerSeverity.Error) {
         result.errors += 1;
@@ -134,6 +134,8 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
 
   private readonly _byResourceCloseCache: MapMap<IMarker[]> = Object.create(null);
 
+  private readonly _openedResource: Set<string> = new Set();
+
   // marker 当前状态
   private _stats: MarkerStats;
 
@@ -143,7 +145,10 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
 
   constructor() {
     super();
-    this._stats = new MarkerStats(this);
+    this.addDispose([
+      this._stats = new MarkerStats(this),
+      this.onMarkerChangedEmitter,
+    ])
   }
 
   /**
@@ -271,10 +276,11 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
    * - resource 资源URI
    * - severities 安全等级
    * - take 提取个数
+   * - opened 是否过滤打开的
    * @param filter 过滤条件
    */
-  public getMarkers(filter: { type?: string; resource?: string; severities?: number, take?: number; } = Object.create(null)): IMarker[] {
-    const { type, resource, severities } = filter;
+  public getMarkers(filter: { type?: string; resource?: string; severities?: number, take?: number; opened?: boolean} = Object.create(null)): IMarker[] {
+    const { type, resource, severities, opened } = filter;
     let { take } = filter;
 
     if (!take || take < 0) {
@@ -289,7 +295,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
       } else {
         const result: IMarker[] = [];
         for (const marker of data) {
-          if (this.isTargetServerity(marker, severities)) {
+          if (this.isTargetMarker(marker, severities, opened)) {
             const newLen = result.push(marker);
             if (take > 0 && newLen === take) {
               break;
@@ -307,7 +313,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
         // tslint:disable-next-line: forin
         for (const key2 in this._byResource[key1]) {
           for (const data of this._byResource[key1][key2]) {
-            if (this.isTargetServerity(data, severities)) {
+            if (this.isTargetMarker(data, severities, opened)) {
               const newLen = result.push(data);
               if (take > 0 && newLen === take) {
                 return result;
@@ -330,7 +336,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
       // tslint:disable-next-line: forin
       for (const key in map) {
         for (const data of map[key]) {
-          if (this.isTargetServerity(data, severities)) {
+          if (this.isTargetMarker(data, severities, opened)) {
             const newLen = result.push(data);
             if (take > 0 && newLen === take) {
               return result;
@@ -342,9 +348,11 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
     }
   }
 
-  private isTargetServerity(marker: IMarker, severities?: number): boolean {
+  private isTargetMarker(marker: IMarker, severities?: number, visible?: boolean): boolean {
     // tslint:disable-next-line: no-bitwise
-    return severities === undefined || (severities & marker.severity) === marker.severity;
+    const isTargetSeverity = severities === undefined || (severities & marker.severity) === marker.severity;
+    const isTargetVisible = visible ? this._openedResource.has(marker.resource) : true;
+    return isTargetSeverity && isTargetVisible;
   }
 
   public getResources(): string[] {
@@ -356,17 +364,19 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
   }
 
   public onEditorGroupOpen(resource: string) {
+    this._openedResource.add(resource);
     const cacheMap = MapMap.removeMap(this._byResourceCloseCache, resource);
     if (cacheMap) {
       MapMap.setMap(this._byResource, resource, cacheMap);
       Object.keys(cacheMap).forEach((type) => {
         MapMap.set(this._byType, type, resource, cacheMap[type]);
       });
-      this.onMarkerChangedEmitter.fire([resource]);
     }
+    this.onMarkerChangedEmitter.fire([resource]);
   }
 
   public onEditorGroupClose(resource: string) {
+    this._openedResource.delete(resource);
     const resourceToCache = MapMap.getMap(this._byResource, resource);
     if (resourceToCache) {
       MapMap.setMap(this._byResourceCloseCache, resource, resourceToCache);

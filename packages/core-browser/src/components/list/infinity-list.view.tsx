@@ -349,7 +349,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   }
 
   render() {
-    const { className, style, placeholders, isDrained } = this.props;
+    const { className, style, placeholders, isDrained, isLoading } = this.props;
     const { topSpaces, bottomSpaces } = this.state;
     return (
       <PerfectScrollbar className={cls(styles.infinity_container, className)} style={style} containerRef={(el) => (this.rootEl = el)}>
@@ -368,7 +368,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
         >
           {this.visibleData && this.visibleData.map(this.renderItem)}
         </div>
-        {!isDrained && (
+        {!isDrained && isLoading && (
           <div ref={(el) => (this.placeholderEl = el)}>
             {placeholders.loading}
           </div>

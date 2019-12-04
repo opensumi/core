@@ -1,4 +1,5 @@
 import * as ws from 'ws';
+import { stringify } from './utils';
 import { IDisposable } from '@ali/ide-core-common';
 
 export interface IWebSocket {
@@ -40,7 +41,7 @@ export interface CloseMessage {
 export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
 
 export class WSChannel implements IWebSocket {
-  public id: number|string;
+  public id: number | string;
   public channelPath: string;
 
   private connectionSend: (content: string) => void;
@@ -52,14 +53,14 @@ export class WSChannel implements IWebSocket {
 
   public messageConnection: any;
 
-  constructor(connectionSend: (content: string) => void, id?: number|string) {
+  constructor(connectionSend: (content: string) => void, id?: number | string) {
     this.connectionSend = connectionSend;
     if (id) {
       this.id = id;
     }
   }
 
-  public setConnectionSend( connectionSend: (content: string) => void ) {
+  public setConnectionSend(connectionSend: (content: string) => void) {
     this.connectionSend = connectionSend;
   }
 
@@ -74,10 +75,12 @@ export class WSChannel implements IWebSocket {
     this.fireReOpen = cb;
   }
   ready() {
-    this.connectionSend(JSON.stringify({
-      kind: 'ready',
-      id: this.id,
-    }));
+    this.connectionSend(
+      stringify({
+        kind: 'ready',
+        id: this.id,
+      }),
+    );
   }
   handleMessage(msg: ChannelMessage) {
     if (msg.kind === 'ready') {
@@ -89,21 +92,23 @@ export class WSChannel implements IWebSocket {
 
   // client
   open(path: string) {
-
     this.channelPath = path;
-    this.connectionSend(JSON.stringify({
-      kind: 'open',
-      id: this.id,
-      path,
-    }));
-
+    this.connectionSend(
+      stringify({
+        kind: 'open',
+        id: this.id,
+        path,
+      }),
+    );
   }
   send(content: string) {
-    this.connectionSend(JSON.stringify({
-      kind: 'data',
-      id: this.id,
-      content,
-    }));
+    this.connectionSend(
+      stringify({
+        kind: 'data',
+        id: this.id,
+        content,
+      }),
+    );
   }
   onError() {}
   close(code: number, reason: string) {
@@ -112,6 +117,6 @@ export class WSChannel implements IWebSocket {
     }
   }
   onClose(cb: (code: number, reason: string) => void) {
-    this.fireClose = cb ;
+    this.fireClose = cb;
   }
 }

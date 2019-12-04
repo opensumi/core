@@ -24,7 +24,7 @@ export class ElectronMainApp {
   constructor(private config: ElectronAppConfig) {
 
     config.extensionDir = config.extensionDir || '';
-    config.extenionCandidate = config.extenionCandidate || [];
+    config.extensionCandidate = config.extensionCandidate || [];
 
     this.injector.addProviders({
       token: ElectronAppConfig,

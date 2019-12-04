@@ -16,7 +16,8 @@ import { setInterval, clearInterval } from 'timers';
 import debounce = require('lodash.debounce');
 
 export interface WatcherOptions {
-  excludes: ParsedPattern[];
+  excludesPattern: ParsedPattern[];
+  excludes: string[];
 }
 
 export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
@@ -206,7 +207,8 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       }
     }));
     this.watcherOptions.set(watcherId, {
-      excludes: options.excludes.map((pattern) => parse(pattern)),
+      excludesPattern: options.excludes.map((pattern) => parse(pattern)),
+      excludes: options.excludes,
     });
   }
 
@@ -224,16 +226,6 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       return;
     }
     this.client = client;
-  }
-
-  updateWatchFileExcludes(excludes: string[]) {
-    const options = new Map<number, WatcherOptions>();
-    this.watcherOptions.forEach((value, key) => {
-      options.set(key, {
-        excludes: excludes.map((pattern) => parse(pattern)),
-      });
-    });
-    this.watcherOptions = options;
   }
 
   protected pushAdded(watcherId: number, path: string): void {
@@ -287,7 +279,6 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     const changes = this.changes.values();
     this.changes = new FileChangeCollection();
     const event = { changes };
-    this.debug('Fire Change event:', changes);
     if (this.client) {
       this.client.onDidFilesChanged(event);
     }
@@ -299,7 +290,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     if (!options || !options.excludes || options.excludes.length < 1) {
       return false;
     }
-    return options.excludes.some((match) => {
+    return options.excludesPattern.some((match) => {
       return match(path);
     });
   }
