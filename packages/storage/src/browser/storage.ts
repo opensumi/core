@@ -1,4 +1,4 @@
-import { IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, DisposableCollection, isObject, isArray } from '@ali/ide-core-common';
+import { getLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, DisposableCollection, isObject, isArray } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IStorageServer, IUpdateRequest } from '../common';
 
@@ -28,6 +28,8 @@ export class Storage implements IStorage {
   private storageName: string;
 
   private _init: Promise<any>;
+
+  private readonly logger = getLogger();
 
   constructor(private readonly database: IStorageServer, private readonly workspace: IWorkspaceService, storageName: string) {
     this.storageName = storageName;
@@ -89,6 +91,7 @@ export class Storage implements IStorage {
     try {
       value = JSON.parse(value);
     } catch (e) {
+      this.logger.error('Could not parse value: ', value, e);
     }
     return value;
   }
