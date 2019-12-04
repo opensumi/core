@@ -1,5 +1,5 @@
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { IMarker, MarkerSeverity, URI } from '@ali/ide-core-common';
+import { IMarker, MarkerSeverity, URI, Disposable } from '@ali/ide-core-common';
 import { isFalsyOrEmpty, mergeSort } from '@ali/ide-core-common/lib/arrays';
 import { observable } from 'mobx';
 import { IMarkerService, IRenderableMarkerModel, MarkerModelBuilder } from '../common';
@@ -41,7 +41,7 @@ function compareRangesUsingStarts(a: IMarker, b: IMarker): number {
 /**
  * marker view model for display
  */
-export class MarkerViewModel {
+export class MarkerViewModel extends Disposable {
 
   // view data
   @observable
@@ -51,15 +51,18 @@ export class MarkerViewModel {
   private filter: Filter | undefined;
 
   constructor(private _service: IMarkerService, private labelService: LabelService) {
-    this._service.getManager().onMarkerChanged(this._onMarkerChanged, this);
-    this._service.onMarkerFilterChanged(this._onMarkerFilterChanged, this);
+    super();
+    this.addDispose([
+      this._service.getManager().onMarkerChanged(this._onMarkerChanged, this),
+      this._service.onMarkerFilterChanged(this._onMarkerFilterChanged, this),
+    ]);
   }
 
   private _onMarkerChanged(resources: string[]) {
     if (resources) {
       resources.forEach((resource) => {
         // tslint:disable-next-line: no-bitwise
-        this.updateMarker(resource, this._service.getManager().getMarkers({ resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info }));
+        this.updateMarker(resource, this._service.getManager().getMarkers({ resource, severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info, opened: true }));
       });
     }
   }
