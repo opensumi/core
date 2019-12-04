@@ -17,7 +17,10 @@ export default ({ id, dynamic, error, show }: IProps) => {
 
   React.useEffect(() => {
     if (content.current) {
-      controller.drawTerminalClient(content.current, id);
+      controller.drawTerminalClient(content.current, id)
+        .then(() => {
+          controller.layoutTerminalClient(id);
+        });
     }
   }, []);
 

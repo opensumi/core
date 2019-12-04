@@ -68,7 +68,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async recovery(history: any) {
-    let currentWdigetId: string = '';
+    let currentWidgetId: string = '';
     const { groups, current } = history;
     for (const widgets of (groups as any[])) {
       const index = this.createGroup(false);
@@ -81,7 +81,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           this._addWidgetToGroup(index, client);
 
           if (current === client.id) {
-            currentWdigetId = widget.id;
+            currentWidgetId = widget.id;
           }
         } catch { /** do nothing */ }
       }
@@ -92,11 +92,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
 
     let selectedIndex = -1;
-    this.groups.forEach((group, index) => group.widgetsMap.has(currentWdigetId) && (selectedIndex = index));
+    this.groups.forEach((group, index) =>
+      Array.from(group.widgetsMap.keys()).find((v) => v === currentWidgetId)
+      && (selectedIndex = index));
 
-    if (selectedIndex > -1 && currentWdigetId) {
+    if (selectedIndex > -1 && currentWidgetId) {
       this.selectGroup(selectedIndex);
-      this._focusedId = currentWdigetId;
+      this._focusedId = currentWidgetId;
     }
   }
 
@@ -116,7 +118,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         this.createGroup(true);
         this.addWidget();
       } else {
-        this.selectGroup(0);
+        this.selectGroup(this.state.index > -1 ? this.state.index : 0);
       }
     }
 
@@ -397,6 +399,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   /** save widget ids and client ids */
 
   toJSON() {
+    const cClient = this._clientsMap.get(this._focusedId);
     const groups = this.groups.map((group) => {
       return group.widgets.map((widget, index) => {
         const client = this._clientsMap.get(widget.id);
@@ -415,7 +418,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     return {
       groups,
-      current: this._focusedId,
+      current: cClient && cClient.id,
     };
   }
 
