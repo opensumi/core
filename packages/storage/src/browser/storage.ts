@@ -128,12 +128,7 @@ export class Storage implements IStorage {
     }
 
     // 否则，转化为string并存储
-    let valueStr: string;
-    if (isObject(value) || isArray(value)) {
-      valueStr = JSON.stringify(value);
-    } else {
-      valueStr = String(value);
-    }
+    const valueStr = JSON.stringify(value);
 
     // 当值不发生改变是，提前结束
     const currentValue = this.cache.get(key);
