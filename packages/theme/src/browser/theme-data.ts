@@ -154,6 +154,10 @@ export class ThemeData implements IThemeData {
       // Converting numbers into a format that monaco understands
       const settings = Object.keys(tokenColor.settings).reduce((previous: { [key: string]: string }, current) => {
         let value: string = tokenColor.settings[current];
+        if (current !== 'foreground' && current !== 'background' && current !== 'fontStyle') {
+          delete tokenColor.settings[current];
+          return previous;
+        }
         if (current !== 'fontStyle' && typeof value === typeof '') {
           if (value.startsWith('#') && value.length === 4) {
             // 兼容 #fff 类型色值
