@@ -17,10 +17,7 @@ export default ({ id, dynamic, error, show }: IProps) => {
 
   React.useEffect(() => {
     if (content.current) {
-      controller.drawTerminalClient(content.current, id)
-        .then(() => {
-          controller.layoutTerminalClient(id);
-        });
+      controller.drawTerminalClient(content.current, id);
     }
   }, []);
 
@@ -29,13 +26,7 @@ export default ({ id, dynamic, error, show }: IProps) => {
       controller.showTerminalClient(id);
     }
     controller.layoutTerminalClient(id);
-  }, [dynamic, show]);
-
-  React.useEffect(() => {
-    if (show) {
-      controller.showTerminalClient(id);
-    }
-  }, [error]);
+  }, [dynamic, show, error]);
 
   const onFocus = () => {
     controller.focusWidget(id);

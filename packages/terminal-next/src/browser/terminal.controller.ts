@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { uuid, CommandService, OnEvent, WithEventBus, Emitter } from '@ali/ide-core-common';
+import { uuid, CommandService, OnEvent, WithEventBus, Emitter, Event } from '@ali/ide-core-common';
 import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
@@ -285,13 +285,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   /** terminal client operations */
 
-  async drawTerminalClient(dom: HTMLDivElement, widgetId: string, restore: boolean = false) {
-    let meta: string;
+  async drawTerminalClient(dom: HTMLDivElement, widgetId: string, restore: boolean = false, extra: string = '') {
+    let meta: string = extra;
     const client = this._clientsMap.get(widgetId);
 
     if (client) {
       try {
-        meta = restore ? this.service.meta(widgetId) : '';
+        meta = restore ? (meta || this.service.meta(widgetId)) : '';
       } catch {
         meta = '';
         restore = false;
@@ -299,9 +299,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       client.applyDomNode(dom);
       try {
         await client.attach(restore, meta);
-        this.errors.delete(widgetId);
       } catch {
-        client.dispose();
         this.errors.set(widgetId, {
           id: client.id,
           stopped: true,
@@ -320,6 +318,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async retryTerminalClient(widgetId: string) {
+    let meta = '';
     const last = this._clientsMap.get(widgetId);
 
     if (!last) {
@@ -334,9 +333,22 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
 
     const next = this._createTerminalClientInstance(widget, last.id, last.options);
+
+    try {
+      meta = this.service.meta(last.id);
+    } catch { /** do nothing */ }
+
     last.dispose();
     this._clientsMap.set(widgetId, next);
-    await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true);
+
+    /**
+     * 注意，这里先删除 widgetId 的原因是保证在后续渲染的时候，
+     * 这个 widget 不会是 display none 的状态，
+     * 繁殖 terminal fit 会出现错误。
+     */
+    this.errors.delete(widgetId);
+    await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true, meta);
+    this.layoutTerminalClient(widgetId);
   }
 
   layoutTerminalClient(widgetId: string) {
@@ -439,9 +451,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this.service.getProcessId(sessionId);
   }
 
-  onDidOpenTerminal = this._onDidOpenTerminal.event;
-  onDidCloseTerminal = this._onDidCloseTerminal.event;
-  onDidChangeActiveTerminal = this._onDidChangeActiveTerminal.event;
+  readonly onDidOpenTerminal: Event<TerminalInfo> = this._onDidOpenTerminal.event;
+  readonly onDidCloseTerminal: Event<string> = this._onDidCloseTerminal.event;
+  readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
 
   showTerm(clientId: string, preserveFocus: boolean = true) {
     let index: number = -1;
