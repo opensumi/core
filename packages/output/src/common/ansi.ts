@@ -1,10 +1,10 @@
-import { AnserJsonEntry, ansiToJson } from 'anser';
-import { escapeCarriageReturn } from 'escape-carriage';
 import * as React from 'react';
+import { AnserJsonEntry } from 'anser';
 import { isAbsolute } from '@ali/ide-core-common/lib/path';
+import { escapeCarriageReturn } from 'escape-carriage';
+const Anser = require('anser');
 
 const LINK_REGEX = /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/;
-const PATH_REGEX = /(\\\\?([^\\/]*[\\/])*)([^\\/]+)$/;
 
 /**
  * Converts ANSI strings into JSON output.
@@ -15,10 +15,10 @@ const PATH_REGEX = /(\\\\?([^\\/]*[\\/])*)([^\\/]+)$/;
  */
 function ansiToJSON(input: string, useClasses = false) {
   input = escapeCarriageReturn(input);
-  return ansiToJson(input, {
+  return Anser.ansiToJson(input, {
     json: true,
     remove_empty: true,
-    useClasses,
+    use_classes: useClasses,
   });
 }
 
