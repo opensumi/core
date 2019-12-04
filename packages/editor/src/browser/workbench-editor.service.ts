@@ -221,18 +221,13 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       return;
     }
     const state: IEditorGridState = this.topGrid.serialize()!;
-    await this.openedResourceState.set('grid', JSON.stringify(state));
+    await this.openedResourceState.set('grid', state);
 
   }
 
   public async restoreState() {
     let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
-    try {
-      state = JSON.parse(this.openedResourceState.get('grid', JSON.stringify(state)));
-    } catch (e) {
-      getLogger().error(e);
-    }
-
+    state = this.openedResourceState.get<IEditorGridState>('grid', state);
     this.topGrid = new EditorGrid();
     this.topGrid.deserialize(state, () => {
       return this.createEditorGroup();

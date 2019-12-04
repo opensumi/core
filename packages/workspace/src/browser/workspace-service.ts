@@ -341,37 +341,18 @@ export class WorkspaceService implements IWorkspaceService {
     }
     // 仅存储50个最近文件
     fileList = fileList.slice(0, 50);
-
-    this.recentStorage.set('OPENED_FILE', JSON.stringify(fileList));
+    this.recentStorage.set('OPENED_FILE', fileList);
   }
 
   async getMostRecentlyOpenedFiles() {
     await this.getRecentStorage();
-
-    let fileList: string[] = [];
-    const data = await this.recentStorage.get('OPENED_FILE');
-
-    if (data) {
-      try {
-        fileList = JSON.parse(data);
-      } catch (e) {}
-    }
-
+    const fileList: string[] = await this.recentStorage.get<string[]>('OPENED_FILE') || [];
     return fileList;
   }
 
   async getMostRecentlySearchWord() {
     await this.getRecentStorage();
-
-    let list: string[] = [];
-    const data = await this.recentStorage.get('SEARCH_WORD');
-
-    if (data) {
-      try {
-        list = JSON.parse(data);
-      } catch (e) {}
-    }
-
+    const list: string[] = await this.recentStorage.get<string[]>('SEARCH_WORD') || [];
     return list;
   }
 
@@ -389,7 +370,7 @@ export class WorkspaceService implements IWorkspaceService {
     list = Array.from(new Set(list));
     // 仅存储10个
     list = list.slice(0, 10);
-    this.recentStorage.set('SEARCH_WORD', JSON.stringify(list));
+    this.recentStorage.set('SEARCH_WORD', list);
   }
 
   /**
