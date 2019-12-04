@@ -344,7 +344,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     /**
      * 注意，这里先删除 widgetId 的原因是保证在后续渲染的时候，
      * 这个 widget 不会是 display none 的状态，
-     * 繁殖 terminal fit 会出现错误。
+     * 防止 terminal fit 会出现错误。
      */
     this.errors.delete(widgetId);
     await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true, meta);
