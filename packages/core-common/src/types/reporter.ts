@@ -2,6 +2,7 @@ export enum REPORT_HOST {
   BROWSER = 'browser',
   NODE = 'node',
   WORKER = 'worker',
+  EXTENSION = 'extension',
 }
 
 export enum REPORT_TYPE {

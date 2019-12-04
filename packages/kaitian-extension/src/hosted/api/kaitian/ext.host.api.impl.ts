@@ -4,7 +4,7 @@ import { createLayoutAPIFactory } from './ext.host.layout';
 import { createWindowApiFactory } from './ext.host.window';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { ExtensionReporterService } from '../../extension-reporter';
-import { Emitter, ReporterProcessMessage } from '@ali/ide-core-common';
+import { Emitter, ReporterProcessMessage, REPORT_HOST } from '@ali/ide-core-common';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -23,6 +23,7 @@ export function createAPIFactory(
     const reporter = new ExtensionReporterService(rpcProtocol, reporterEmitter, {
       extensionId: extension.extensionId,
       extensionVersion: extension.packageJSON.version,
+      host: REPORT_HOST.EXTENSION,
     });
     return {
       layout: createLayoutAPIFactory(extHostCommands),
