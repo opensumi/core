@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, Event, URI, isUndefined } from '@ali/ide-core-browser';
+import { Emitter, Event, URI, isUndefined, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
 import { IWorkspaceStorageService } from '@ali/ide-workspace';
 import { SourceBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
@@ -27,6 +27,9 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
   private exceptionFilterValue: {[key: string]: boolean} = {};
   @Autowired(IWorkspaceStorageService)
   protected readonly storage: IWorkspaceStorageService;
+
+  @Autowired(StorageProvider)
+  private readonly storageProvider: StorageProvider;
 
   getKind(): string {
     return BREAKPOINT_KIND;
@@ -120,7 +123,8 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
   }
 
   async load(): Promise<void> {
-    const data = await this.storage.getData<BreakpointManager.Data>('breakpoints', {
+    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
+    const data = storage.get<BreakpointManager.Data>('breakpoints', {
       breakpointsEnabled: true,
       breakpoints: {},
       exceptionsBreakpoints: {},
@@ -133,7 +137,7 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     this.exceptionFilterValue = data!.exceptionsBreakpoints || {};
   }
 
-  save(): void {
+  async save(): Promise<void> {
     const data: BreakpointManager.Data = {
       breakpointsEnabled: this._breakpointsEnabled,
       breakpoints: {},
@@ -143,7 +147,8 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
     for (const uri of uris) {
       data.breakpoints[uri] = this.findMarkers({ uri: new URI(uri) }).map((marker) => marker.data);
     }
-    this.storage.setData('breakpoints', data);
+    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
+    storage.set('breakpoints', data);
   }
 
   /**

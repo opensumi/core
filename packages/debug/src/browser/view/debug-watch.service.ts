@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { TreeNode } from '@ali/ide-core-browser';
+import { TreeNode, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@ali/ide-core-browser';
 import { DebugViewModel } from './debug-view-model';
 import { DebugWatch } from '../model';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
@@ -15,8 +15,8 @@ export class DebugWatchService {
   @Autowired(DebugWatch)
   protected readonly debugWatch: DebugWatch;
 
-  @Autowired(WorkspaceStorageService)
-  protected readonly storage: WorkspaceStorageService;
+  @Autowired(StorageProvider)
+  private readonly storageProvider: StorageProvider;
 
   @observable.shallow
   status: Map<string | number, {
@@ -180,8 +180,9 @@ export class DebugWatchService {
     this.clearStorage();
   }
 
-  clearStorage() {
-    this.storage.setData('debug.watchers.list', []);
+  async clearStorage() {
+    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
+    await storage.set('watchers', []);
   }
 
   @action
@@ -196,7 +197,8 @@ export class DebugWatchService {
   }
 
   async load() {
-    const data = await this.storage.getData<string[]>('debug.watchers.list', []);
+    const storage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
+    const data = await storage.get<string[]>('watchers', []);
     if (data) {
       for (const value of data) {
         this.execute(value);
@@ -204,7 +206,8 @@ export class DebugWatchService {
     }
   }
 
-  save(): void {
+  async save() {
+    const storage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
     const data: string[] = [];
     for (const node of this.nodes) {
       // 只保留父节点
@@ -212,6 +215,6 @@ export class DebugWatchService {
         data.push(node.name as string);
       }
     }
-    this.storage.setData('debug.watchers.list', data);
+    await storage.set('watchers', data);
   }
 }

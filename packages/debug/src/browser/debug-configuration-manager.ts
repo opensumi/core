@@ -14,6 +14,9 @@ import {
   IContextKeyService,
   CommandService,
   localize,
+  StorageProvider,
+  STORAGE_NAMESPACE,
+  IStorage,
 } from '@ali/ide-core-browser';
 import { visit } from 'jsonc-parser';
 import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
@@ -63,8 +66,8 @@ export class DebugConfigurationManager {
   @Autowired(WorkspaceVariableContribution)
   protected readonly workspaceVariables: WorkspaceVariableContribution;
 
-  @Autowired(WorkspaceStorageService)
-  protected readonly storage: WorkspaceStorageService;
+  @Autowired(StorageProvider)
+  private readonly storageProvider: StorageProvider;
 
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
@@ -362,22 +365,24 @@ export class DebugConfigurationManager {
 
   async load(): Promise<void> {
     await this.initialized;
-    const data = await this.storage.getData<DebugConfigurationManager.Data>('debug.configurations', {});
+    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
+    const data = storage.get<DebugConfigurationManager.Data>('configurations');
     if (data && data.current) {
       this.current = this.find(data.current.name, data.current.workspaceFolderUri);
     }
   }
 
-  save(): void {
+  async save(): Promise<void> {
     const data: DebugConfigurationManager.Data = {};
     const { current } = this;
+    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
     if (current) {
       data.current = {
         name: current.configuration.name,
         workspaceFolderUri: current.workspaceFolderUri,
       };
     }
-    this.storage.setData('debug.configurations', data);
+    storage.set('configurations', data);
   }
 
   /**

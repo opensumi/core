@@ -9,6 +9,7 @@ import { FileStat,
 } from './files';
 import { IFileServiceWatcher } from './watcher';
 import { DidFilesChangedParams, FileChangeEvent } from './file-service-watcher-protocol';
+import { EncodingInfo } from '../common/encoding';
 
 export const IFileServiceClient = IFileServiceClientToken;
 
@@ -61,6 +62,10 @@ export interface IFileServiceClient {
   getFsPath(uri: string): Promise<string | undefined>;
 
   setWorkspaceRoots(roots: string[]): Promise<void>;
+
+  getEncoding(uri: string): Promise<string>;
+
+  getEncodingInfo(encoding: string): Promise<EncodingInfo | null>;
 }
 
 export interface IBrowserFileSystemRegistry {

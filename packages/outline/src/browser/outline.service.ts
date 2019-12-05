@@ -39,10 +39,10 @@ export class OutLineService extends WithEventBus {
   constructor() {
     super();
     this.editorService.onActiveResourceChange((e) => {
-      if (e && e.uri) {
+      if (e && e.uri && e.uri.scheme === 'file') {
         this.notifyUpdate(e.uri);
       } else {
-        this.doUpdate(e && e.uri);
+        this.doUpdate(null);
       }
     });
   }
