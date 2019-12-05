@@ -592,9 +592,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
     const workspaceStorage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
     if (scope === EnableScope.GLOBAL) {
       const globalStorage = await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS);
-      globalStorage.set(extensionId, enable ? '1' : '0');
+      globalStorage.set(extensionId, enable ? 1 : 0);
     }
-    workspaceStorage.set(extensionId, enable ? '1' : '0');
+    workspaceStorage.set(extensionId, enable ? 1 : 0);
   }
 
   /**
