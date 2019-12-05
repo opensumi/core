@@ -2,7 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, IEditorGroup } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
@@ -760,6 +760,9 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
   @Autowired(IEditorDocumentModelService)
   editorDocumentService: IEditorDocumentModelService;
 
+  @Autowired(IPreferenceSettingsService)
+  preferenceSettings: IPreferenceSettingsService;
+
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution({
       contribute: (editor: IEditor) => {
@@ -790,6 +793,12 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
       if (this.preferenceService.get('editor.autoSave') === 'windowLostFocus') {
         this.commandService.executeCommand(EDITOR_COMMANDS.SAVE_ALL.id);
       }
+    });
+    this.preferenceSettings.setEnumLabels('editor.autoSave', {
+      'off': localize('editor.autoSave.enum.off'),
+      'afterDelay': localize('editor.autoSave.enum.afterDelay'),
+      'editorFocusChange': localize('editor.autoSave.enum.editorFocusChange'),
+      'windowLostFocus': localize('editor.autoSave.enum.windowLostFocus'),
     });
   }
 
