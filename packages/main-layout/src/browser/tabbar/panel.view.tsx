@@ -77,7 +77,9 @@ const PanelView: React.FC<{
       const resizeObserver = new ResizeObserver((entries) => {
         // TODO resize事件统一优化
         for (const entry of entries) {
-          eventBus.fire(new ResizeEvent({slotLocation: side, width: entry.contentRect.width, height: entry.contentRect.height}));
+          if (entry.contentRect.width && entry.contentRect.height) {
+            eventBus.fire(new ResizeEvent({slotLocation: side, width: entry.contentRect.width, height: entry.contentRect.height}));
+          }
         }
       });
       resizeObserver.observe(contentRef.current);
