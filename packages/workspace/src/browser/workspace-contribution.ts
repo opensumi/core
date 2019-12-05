@@ -40,7 +40,6 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
 
   // 关闭前存储工作区
   async onStop() {
-    console.log(this.workspaceService.workspace, 'onStop==>');
     if (this.workspaceService.workspace) {
       await this.workspaceService.setMostRecentlyUsedWorkspace(this.workspaceService.workspace.uri);
     }
