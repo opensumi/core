@@ -1,6 +1,6 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState } from '../common';
-import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/lib/common';
+import { ExtensionService, IExtensionProps, EXTENSION_ENABLE } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
@@ -592,9 +592,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
     const workspaceStorage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
     if (scope === EnableScope.GLOBAL) {
       const globalStorage = await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS);
-      globalStorage.set(extensionId, enable ? 1 : 0);
+      globalStorage.set(extensionId, enable ? EXTENSION_ENABLE.ENABLE : EXTENSION_ENABLE.DISABLE);
     }
-    workspaceStorage.set(extensionId, enable ? 1 : 0);
+    workspaceStorage.set(extensionId, enable ? EXTENSION_ENABLE.ENABLE : EXTENSION_ENABLE.DISABLE);
   }
 
   /**

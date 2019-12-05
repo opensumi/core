@@ -18,6 +18,7 @@ import {
   IExtensionNodeClientService,
   WorkerHostAPIIdentifier,
   ExtensionHostType,
+  EXTENSION_ENABLE,
   /*Extension*/
 } from '../common';
 import {
@@ -399,9 +400,9 @@ export class ExtensionServiceImpl implements ExtensionService {
       this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
     ]);
     // 全局默认为启用
-    const globalEnableFlag = globalStorage.get<number>(extension.extensionId, 1);
+    const globalEnableFlag = globalStorage.get<number>(extension.extensionId, EXTENSION_ENABLE.ENABLE);
     // 如果 workspace 未设置则读取全局配置
-    return workspaceStorage.get<number>(extension.extensionId, globalEnableFlag) === 1;
+    return workspaceStorage.get<number>(extension.extensionId, globalEnableFlag) === EXTENSION_ENABLE.ENABLE;
   }
 
   private async initBrowserDependency() {

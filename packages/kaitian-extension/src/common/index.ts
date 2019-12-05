@@ -167,3 +167,8 @@ export const WorkerHostAPIIdentifier = {
 export enum ProcessMessageType {
   REPORTER,
 }
+
+export enum EXTENSION_ENABLE {
+  ENABLE = 1,
+  DISABLE = 0,
+}
