@@ -8,6 +8,9 @@ import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
 import { EditorDocumentError } from './editor-document-error';
 import { IMessageService } from '@ali/ide-overlay';
 import { ICompareService, CompareResult } from '../types';
+import debounce = require('lodash.debounce');
+
+const AUTO_SAVE_DELAY = 1000;
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
@@ -378,7 +381,14 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this._baseContentMd5;
   }
 
+  tryAutoSaveAfterDelay = debounce(() => {
+    this.save();
+  }, AUTO_SAVE_DELAY);
+
   private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
+    if (this.savable && this.corePreferences['editor.autoSave'] === 'afterDelay') {
+      this.tryAutoSaveAfterDelay();
+    }
     // 发出内容变化的事件
     this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
       uri: this.uri,

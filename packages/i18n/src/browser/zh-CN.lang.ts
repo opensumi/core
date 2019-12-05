@@ -269,12 +269,18 @@ export const localizationBundle = {
     'preference.editor.formatOnSave': '在保存时格式化文件',
     'preference.editor.formatOnSaveTimeout': '控制在保存文件时进行格式化的超时时间（毫秒）',
     'preference.editor.formatOnSaveTimeoutError': '格式化时间超过 {0} 毫秒，终止格式化',
+    'preference.editor.autoSave': '自动保存文件',
 
     'preference.array.additem': '添加',
 
     'editor.configuration.fontFamily': '',
+    'editor.configuration.autoSave': '控制如何自动保存文件。',
     'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行报警',
     'editor.configuration.minimap': '是否打开 minimap',
+    'editor.autoSave.enum.off': '不启用',
+    'editor.autoSave.enum.editorFocusChange': '编辑器失去焦点',
+    'editor.autoSave.enum.afterDelay': '定时保存(1s)',
+    'editor.autoSave.enum.windowLostFocus': '窗口失去焦点',
     'editor.action.accept': '接受更改（使用右边)',
     'editor.action.revert': '回退更改（使用左边)',
     'editor.format.chooseFormatter': '选择要使用的格式化扩展',
