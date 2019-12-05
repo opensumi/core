@@ -27,6 +27,7 @@ export interface IMainLayoutService {
   handleSetting(event: React.MouseEvent<HTMLElement>): void;
   getTabbarService(location: string): TabbarService;
   getAccordionService(containerId: string): AccordionService;
+  isVisible(location: string): boolean;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');

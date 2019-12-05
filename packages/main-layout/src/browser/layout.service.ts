@@ -101,6 +101,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     });
   }
 
+  isVisible(location: string) {
+    const tabbarService = this.getTabbarService(location);
+    return !!tabbarService.currentContainerId;
+  }
+
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
     const tabbarService = this.getTabbarService(location);
     if (!tabbarService) {
