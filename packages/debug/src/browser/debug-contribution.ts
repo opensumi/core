@@ -362,13 +362,9 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
     commands.registerCommand(DEBUG_COMMANDS.DELETE_BREAKPOINT, {
         execute: () => {
-            // const { selectedLogpoint } = this;
-            // if (selectedLogpoint) {
-            //     selectedLogpoint.remove();
-            // }
+
         },
-        // isEnabled: () => !!this.selectedLogpoint,
-        // isVisible: () => !!this.selectedLogpoint,
+
     });
   }
 

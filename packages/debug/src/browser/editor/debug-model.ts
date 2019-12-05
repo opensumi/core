@@ -1,4 +1,4 @@
-import { URI, IDisposable, DisposableCollection, isOSX, memoize } from '@ali/ide-core-common';
+import { URI, DisposableCollection, isOSX, memoize } from '@ali/ide-core-common';
 import { Injector, Injectable, Autowired } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
@@ -408,17 +408,21 @@ export class DebugModel implements IDebugModel {
         // 缓存断点位置
         const menus = this.contributedContextMenu;
         const menuNodes = generateMergedCtxMenu({ menus });
-        this.ctxMenuRenderer.show({
-          anchor: event.event.browserEvent,
-          menuNodes,
-          context: [ event.target.position! ],
-        });
-        // TODO: 处理右键菜单
+        // this.ctxMenuRenderer.show({
+        //   anchor: event.event.browserEvent,
+        //   menuNodes,
+        //   context: [ event.target.position! ],
+        // });
+        this.editBreakpoint(event.target.position!);
       } else {
         this.doToggleBreakpoint(event.target.position!);
       }
     }
     this.hintBreakpoint(event);
+  }
+
+  editBreakpoint(position: monaco.Position) {
+    this.breakpointWidget.show(position, this);
   }
 
   protected onMouseMove(event: monaco.editor.IEditorMouseEvent): void {
