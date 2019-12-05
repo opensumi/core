@@ -40,6 +40,10 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
     return scheme === FILE_SCHEME;
   }
 
+  async provideEncoding(uri: URI) {
+    return await this.fileServiceClient.getEncoding(uri.toString());
+  }
+
   async provideEditorDocumentModelContent(uri: URI, encoding) {
     const res = await this.fileServiceClient.resolveContent(uri.toString(), {
       encoding,
