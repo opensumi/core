@@ -1,8 +1,13 @@
 import { Event } from '@ali/ide-core-common';
+import { Injector } from '@ali/common-di';
+import { IContextKeyService } from '@ali/ide-core-browser';
+import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+
+import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource, ISCMRepository } from '../../src/common';
-import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
-
 import { ViewModelContext, ResourceGroupSplicer } from '../../src/browser/scm-model';
 
 describe('test for scm.store.ts', () => {
@@ -12,15 +17,28 @@ describe('test for scm.store.ts', () => {
     let repo1: ISCMRepository;
     let repo2: ISCMRepository;
     let store: ViewModelContext;
+    let scmService: SCMService;
+
+    let injector: MockInjector;
     beforeEach(() => {
-      const scmService = new SCMService();
+      injector = createBrowserInjector([], new Injector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
+        SCMService,
+      ]));
+
+      injector.addProviders(ViewModelContext);
+
       provider1 = new MockSCMProvider(1);
       provider2 = new MockSCMProvider(2);
 
+      scmService = injector.get(SCMService);
       repo1 = scmService.registerSCMProvider(provider1);
       repo2 = scmService.registerSCMProvider(provider2);
 
-      store = new ViewModelContext();
+      store = injector.get(ViewModelContext);
     });
 
     it('addRepo/deleteRepo', () => {
