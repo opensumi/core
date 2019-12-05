@@ -43,9 +43,6 @@ export class PreferenceChangeImpl implements PreferenceChange {
 export interface PreferenceChanges {
   [preferenceName: string]: PreferenceChange;
 }
-/**
- * @deprecated
- */
 export const PreferenceService = Symbol('PreferenceService');
 
 export interface PreferenceService extends IDisposable {

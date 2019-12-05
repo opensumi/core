@@ -10,8 +10,6 @@ import { IMessageService } from '@ali/ide-overlay';
 import { ICompareService, CompareResult } from '../types';
 import debounce = require('lodash.debounce');
 
-const AUTO_SAVE_DELAY = 1000;
-
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
   encoding?: string;
@@ -81,6 +79,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private _previousVersionId: number;
 
+  private _tryAutoSaveAfterDelay: (() => any) | undefined;
+
   constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {
     super();
     this.onDispose(() => {
@@ -112,6 +112,13 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
     this.listenTo(this.monacoModel);
     this.readCacheToApply();
+    this.addDispose(this.corePreferences.onPreferenceChanged((change) => {
+      if (this.corePreferences['editor.autoSave']) {
+        if (change.affects('editor.autoSaveDelay')) {
+          this._tryAutoSaveAfterDelay = undefined;
+        }
+      }
+    }));
   }
 
   private listenTo(monacoModel: monaco.editor.ITextModel) {
@@ -381,9 +388,14 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this._baseContentMd5;
   }
 
-  tryAutoSaveAfterDelay = debounce(() => {
-    this.save();
-  }, AUTO_SAVE_DELAY);
+  get tryAutoSaveAfterDelay() {
+    if (!this._tryAutoSaveAfterDelay) {
+      this._tryAutoSaveAfterDelay = debounce(() => {
+        this.save();
+      }, this.corePreferences['editor.autoSaveDelay'] || 1000);
+    }
+    return this._tryAutoSaveAfterDelay;
+  }
 
   private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
     if (this.savable && this.corePreferences['editor.autoSave'] === 'afterDelay') {
