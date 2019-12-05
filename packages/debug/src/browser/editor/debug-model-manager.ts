@@ -10,6 +10,7 @@ export enum DebugModelSupportedEventType {
   down = 'Down',
   move = 'Move',
   leave = 'Leave',
+  contextMenu = 'contextMenu',
 }
 
 @Injectable()
@@ -80,6 +81,7 @@ export class DebugModelManager extends Disposable {
 
   protected push(codeEditor: ICodeEditor): void {
     const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
+    console.log(codeEditor, 'codeEditor ==>');
     codeEditor.onRefOpen((ref) => {
       const uriString = ref.instance.uri.toString();
       const debugModel = this.models.get(uriString) || [];
@@ -114,13 +116,14 @@ export class DebugModelManager extends Disposable {
       this.handleMouseEvent(new URI(model.uri.toString()),
         type, event as monaco.editor.IEditorMouseEvent, monacoEditor);
     };
-
     this.toDispose.push(
       monacoEditor.onMouseMove((event) => handleMonacoModelEvent(DebugModelSupportedEventType.move, event)));
     this.toDispose.push(
       monacoEditor.onMouseDown((event) => handleMonacoModelEvent(DebugModelSupportedEventType.down, event)));
     this.toDispose.push(
       monacoEditor.onMouseLeave((event) => handleMonacoModelEvent(DebugModelSupportedEventType.leave, event)));
+    this.toDispose.push(
+      monacoEditor.onContextMenu((event) => handleMonacoModelEvent(DebugModelSupportedEventType.contextMenu, event)));
   }
 
   resolve(uri: URI) {
@@ -129,22 +132,6 @@ export class DebugModelManager extends Disposable {
       return undefined;
     }
     return model;
-  }
-
-  getCurrent(monacoEditor: monaco.editor.ICodeEditor) {
-    const model = monacoEditor.getModel();
-
-    if (!model) {
-      return null;
-    }
-
-    const debugModel = this.models.get(model.uri.toString());
-
-    if (!debugModel) {
-      return null;
-    }
-
-    return debugModel;
   }
 
   handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: monaco.editor.ICodeEditor) {
@@ -158,7 +145,9 @@ export class DebugModelManager extends Disposable {
       return;
     }
     for (const model of debugModel) {
-      if ((model.editor as any)._id === (monacoEditor as any)._id) {
+      if (type === DebugModelSupportedEventType.contextMenu) {
+        model[`onContextMenu`](event);
+      } else if ((model.editor as any)._id === (monacoEditor as any)._id) {
         model[`onMouse${type}`](event);
         break;
       }

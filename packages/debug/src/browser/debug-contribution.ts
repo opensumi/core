@@ -1,4 +1,4 @@
-import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, IContextKeyService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
 import { DebugStackFrameView } from './view/debug-stack-frames.view';
@@ -26,8 +26,6 @@ import { DebugConsoleService } from './view/debug-console.service';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import { DebugToolbarService } from './view/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { DebugBreakpoint } from './model';
-import { DebugBreakpointWidget } from './editor';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -127,7 +125,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   protected readonly preferences: DebugPreferences;
 
   @Autowired(DebugConsoleService)
-  debugConsole: DebugConsoleService;
+  protected readonly debugConsole: DebugConsoleService;
 
   @Autowired(DebugConfigurationService)
   protected readonly debugConfigurationService: DebugConfigurationService;
@@ -331,7 +329,8 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT, {
-      execute: async () => {
+      execute: async (position: monaco.Position) => {
+        // this.debugEditorController = ;
           // const { selectedBreakpoint } = this;
           // if (selectedBreakpoint) {
           //     await this.editors.editBreakpoint(selectedBreakpoint);

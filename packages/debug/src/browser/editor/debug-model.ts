@@ -402,27 +402,29 @@ export class DebugModel implements IDebugModel {
     return contributedContextMenu;
   }
 
+  editBreakpoint(position: monaco.Position) {
+    this.breakpointWidget.show(position, this);
+  }
+
+  protected onContextMenu(event: monaco.editor.IEditorMouseEvent) {
+    const menus = this.contributedContextMenu;
+    const menuNodes = generateMergedCtxMenu({ menus });
+    event.event.browserEvent.stopPropagation();
+    event.event.browserEvent.preventDefault();
+    this.ctxMenuRenderer.show({
+      anchor: event.event.browserEvent,
+      menuNodes,
+        context: [ event.target.position! ],
+    });
+  }
+
   protected onMouseDown(event: monaco.editor.IEditorMouseEvent): void {
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
-      if (event.event.rightButton) {
-        // 缓存断点位置
-        const menus = this.contributedContextMenu;
-        const menuNodes = generateMergedCtxMenu({ menus });
-        // this.ctxMenuRenderer.show({
-        //   anchor: event.event.browserEvent,
-        //   menuNodes,
-        //   context: [ event.target.position! ],
-        // });
-        this.editBreakpoint(event.target.position!);
-      } else {
+      if (!event.event.rightButton) {
         this.doToggleBreakpoint(event.target.position!);
       }
     }
     this.hintBreakpoint(event);
-  }
-
-  editBreakpoint(position: monaco.Position) {
-    this.breakpointWidget.show(position, this);
   }
 
   protected onMouseMove(event: monaco.editor.IEditorMouseEvent): void {
