@@ -6,13 +6,14 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { Output, ChannelSelector } from './output.view';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
-import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
+import { TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { getIcon } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
 
 const OUTPUT_CLEAR: Command = {
   id: 'output.channel.clear',
   iconClass: getIcon('clear'),
+  label: localize('output.channel.clear', '清理日志'),
 };
 const OUTPUT_CONTAINER_ID = 'ide-output';
 @Domain(CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution)
@@ -34,7 +35,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
     }
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
       id: 'output.clear.action',
       command: OUTPUT_CLEAR.id,
@@ -63,6 +64,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
       component: Output,
     }, {
       title: localize('output.tabbar.title', '输出'),
+      iconClass: getIcon('output'),
       priority: 9,
       containerId: OUTPUT_CONTAINER_ID,
       activateKeyBinding: 'ctrlcmd+shift+u',

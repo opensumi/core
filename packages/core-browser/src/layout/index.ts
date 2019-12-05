@@ -1,8 +1,7 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, BasicEvent, MaybeNull } from '@ali/ide-core-common';
-import { TabBar, Widget, Title } from '@phosphor/widgets';
-import { Signal } from '@phosphor/signaling';
+import { IMenu } from '../menu/next';
 
 export class VisibleChangedPayload {
 
@@ -62,6 +61,9 @@ export interface View {
   component?: React.FunctionComponent<any>;
   // 使用该参数时, view 的 toolbar 默认不渲染
   noToolbar?: boolean;
+  initialProps?: any;
+  titleMenu?: IMenu;
+  titleMenuContext?: any;
 }
 
 export interface ViewContainerOptions extends ExtViewContainerOptions {
@@ -78,8 +80,10 @@ export interface ExtViewContainerOptions {
   initialProps?: object;
   activateKeyBinding?: string;
   hidden?: boolean;
+  badge?: string;
   // 直接使用自定义的React组件，会失去一些对面板的控制能力
   component?: React.FunctionComponent;
+  titleComponent?: React.FunctionComponent;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
@@ -150,102 +154,13 @@ export class ResizeEvent extends BasicEvent<ResizePayload> {}
 
 export class RenderedEvent extends BasicEvent<void> {}
 
-export interface ITabbarWidget extends Widget {
-  tabBar: TabBar<Widget>;
-  currentChanged: Signal<this, TabBarWidget.ICurrentChangedArgs>;
-  onCollapse: Signal<this, Title<Widget>>;
-  showPanel(size?: number): void;
-  getWidget(index: number): Widget;
-  addWidget(widget: Widget, side: Side, index?: number): void;
-  currentWidget: Widget | null;
-}
-
 export type Side = 'left' | 'right' | 'bottom';
-
-export namespace TabBarWidget {
-  /**
-   * A type alias for tab placement in a tab bar.
-   */
-  export type TabPlacement = (
-    /**
-     * The tabs are placed as a row above the content.
-     */
-    'top' |
-
-    /**
-     * The tabs are placed as a column to the left of the content.
-     */
-    'left' |
-
-    /**
-     * The tabs are placed as a column to the right of the content.
-     */
-    'right' |
-
-    /**
-     * The tabs are placed as a row below the content.
-     */
-    'bottom'
-  );
-
-  /**
-   * An options object for initializing a tab panel.
-   */
-  export interface IOptions {
-    /**
-     * Whether the tabs are movable by the user.
-     *
-     * The default is `false`.
-     */
-    tabsMovable?: boolean;
-
-    /**
-     * The placement of the tab bar relative to the content.
-     *
-     * The default is `'top'`.
-     */
-    tabPlacement?: TabPlacement;
-
-    /**
-     * The renderer for the panel's tab bar.
-     *
-     * The default is a shared renderer instance.
-     */
-    renderer?: TabBar.IRenderer<Widget>;
-  }
-
-  /**
-   * The arguments object for the `currentChanged` signal.
-   */
-  export interface ICurrentChangedArgs {
-    /**
-     * The previously selected index.
-     */
-    previousIndex: number;
-
-    /**
-     * The previously selected widget.
-     */
-    previousWidget: Widget | null;
-
-    /**
-     * The currently selected index.
-     */
-    currentIndex: number;
-
-    /**
-     * The currently selected widget.
-     */
-    currentWidget: Widget | null;
-  }
-}
 
 export interface ViewState {
   width: number;
   height: number;
 }
 
-export * from './accordion/accordion.widget';
-export * from './accordion/tab-bar-toolbar';
 export * from './accordion/view-context-key.registry';
 export * from './accordion/view-container-state';
+export * from './accordion/tab-bar-toolbar';

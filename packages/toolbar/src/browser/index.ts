@@ -37,7 +37,6 @@ export class ToolBarModuleContribution implements ComponentContribution, ClientA
     }, {
       size: 27,
     });
-    this.config.layoutConfig.top.modules.push('toolbar');
   }
 
   onStart() {

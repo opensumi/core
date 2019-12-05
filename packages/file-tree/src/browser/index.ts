@@ -35,5 +35,4 @@ export class FileTreeModule extends BrowserModule {
   }];
 
   component = FileTree;
-  iconClass = getIcon('explorer');
 }

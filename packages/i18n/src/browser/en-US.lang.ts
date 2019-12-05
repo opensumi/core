@@ -37,6 +37,8 @@ export const localizationBundle = {
     'file.empty.defaultTitle': 'No Open Folder',
     'file.empty.defaultMessage': 'The folder has not been opened yet',
     'file.empty.openFolder': 'Open Folder',
+    'file.collapse': 'Collapse All',
+    'file.refresh': 'Refresh',
     'file.search.folder': 'Search on this folder',
 
     'menu-bar.title.file': 'File',

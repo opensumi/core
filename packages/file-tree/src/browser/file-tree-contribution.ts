@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { CONTEXT_MENU } from './file-tree.view';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -453,15 +453,10 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
-      id: FILE_COMMANDS.COLLAPSE_ALL.id,
-      command: FILE_COMMANDS.COLLAPSE_ALL.id,
-      viewId: ExplorerResourceViewId,
-    });
-    registry.registerItem({
-      id: FILE_COMMANDS.REFRESH_ALL.id,
-      command: FILE_COMMANDS.REFRESH_ALL.id,
+      id: FILE_COMMANDS.NEW_FILE.id,
+      command: FILE_COMMANDS.NEW_FILE.id,
       viewId: ExplorerResourceViewId,
     });
     registry.registerItem({
@@ -470,8 +465,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       viewId: ExplorerResourceViewId,
     });
     registry.registerItem({
-      id: FILE_COMMANDS.NEW_FILE.id,
-      command: FILE_COMMANDS.NEW_FILE.id,
+      id: FILE_COMMANDS.COLLAPSE_ALL.id,
+      command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.REFRESH_ALL.id,
+      command: FILE_COMMANDS.REFRESH_ALL.id,
       viewId: ExplorerResourceViewId,
     });
   }
