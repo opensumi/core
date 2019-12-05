@@ -3,7 +3,7 @@ import { Event } from '@ali/ide-core-common';
 import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource, ISCMRepository } from '../../src/common';
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
-import { ViewModelContext, ResourceGroupSplicer } from '../../src/browser/scm.store';
+import { ViewModelContext, ResourceGroupSplicer } from '../../src/browser/scm-model';
 
 describe('test for scm.store.ts', () => {
   describe('ViewModelContext', () => {
