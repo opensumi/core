@@ -1,6 +1,6 @@
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ExtensionTabbarView } from '../../components';
+import { ExtensionLoadingView } from '../../components';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { DisposableCollection } from '@ali/ide-core-browser';
 
@@ -30,7 +30,7 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
       const views = this.json[location].map((view) => {
         return {
           ...view,
-          component: ExtensionTabbarView,
+          component: ExtensionLoadingView,
         };
       });
       for (const view of views) {

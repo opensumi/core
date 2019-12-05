@@ -3,11 +3,12 @@ import * as styles from './extension-view.module.less';
 import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
 import { TreeNode, CommandService, MenuPath } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
-import { Injector } from '@ali/common-di';
+import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewState } from '@ali/ide-activity-panel';
 import { ExtensionTreeViewModel, IExtensionTreeNodeModel } from './extension-tree-view.model';
+import { useInjectable } from '@ali/ide-core-browser';
 
 export interface ExtensionTabbarTreeViewProps {
   injector: Injector;
@@ -55,7 +56,6 @@ const removeTreeDatas = (oldNodes: TreeNode<any>[], deleteNodes: TreeNode<any>[]
 };
 
 export const ExtensionTabbarTreeView = observer(({
-  injector,
   dataProvider,
   viewState,
   contextMenuPath,
@@ -63,6 +63,7 @@ export const ExtensionTabbarTreeView = observer(({
   const [nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
   const { width, height } = viewState;
   const scrollContainerStyle = { width, height };
+  const injector = useInjectable(INJECTOR_TOKEN);
   const extensionTreeViewModel = injector.get(ExtensionTreeViewModel);
   const cache = extensionTreeViewModel.cache;
   const model = extensionTreeViewModel.model;

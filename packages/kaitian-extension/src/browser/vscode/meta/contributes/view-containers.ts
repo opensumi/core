@@ -39,7 +39,6 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
   contribute() {
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
-        this.mainlayoutService.registerTabbarViewToContainerMap(this.getViewsMap(this.contributes));
         for (const container of this.json[location]) {
           const handlerId = this.mainlayoutService.collectTabbarComponent([], {
             iconClass: this.iconService.fromIcon(this.extension.path, container.icon),
@@ -63,7 +62,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
 
   getViewsMap(contributes: any) {
     const views = contributes.views;
-    const map = {};
+    const map: {[containerId: string]: string[]} = {};
     if (views) {
       for (const containerId of Object.keys(views)) {
         if (views[containerId] && Array.isArray(views[containerId])) {
@@ -73,6 +72,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
         }
       }
     }
+    console.log(map, '>>>>>');
     return map;
   }
 }

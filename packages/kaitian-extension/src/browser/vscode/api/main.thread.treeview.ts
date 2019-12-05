@@ -37,11 +37,11 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   $registerTreeDataProvider(treeViewId: string): void {
     const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
     this.dataProviders.set(treeViewId, dataProvider);
-    this.mainLayoutService.collectViewComponent({
+    this.mainLayoutService.replaceViewComponent({
       id: treeViewId,
       name: treeViewId,
       component: ExtensionTabbarTreeView,
-    }, treeViewId, {
+    }, {
       dataProvider: this.dataProviders.get(treeViewId),
       inlineMenuPath: VIEW_ITEM_INLINE_MNUE,
       contextMenuPath: VIEW_ITEM_CONTEXT_MENU,

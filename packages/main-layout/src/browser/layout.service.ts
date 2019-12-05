@@ -41,6 +41,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   private pendingViewsMap: Map<string, {view: View, props?: any}[]> = new Map();
 
+  private viewToContainerMap: Map<string, string> = new Map();
+
   private state: {[location: string]: {
     currentId?: string;
     size?: number;
@@ -72,9 +74,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   setFloatSize(size: number) {}
-
-  // TODO
-  registerTabbarViewToContainerMap() {}
 
   storeState(service: TabbarService, currentId: string) {
     this.state[service.location] = {
@@ -160,6 +159,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent<{}> | undefined): string {
     const tabbarService = this.getTabbarService(side);
     tabbarService.registerContainer(options.containerId, {views, options});
+    views.forEach((view) => {
+      this.viewToContainerMap.set(view.id, options.containerId);
+    });
     return options.containerId;
   }
 
@@ -169,7 +171,16 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       view.initialProps = props;
     }
     accordionService.appendView(view);
+    this.viewToContainerMap.set(view.id, containerId);
     return containerId;
+  }
+
+  replaceViewComponent(view: View, props?: any) {
+    const containerId = this.viewToContainerMap.get(view.id);
+    if (!containerId) {
+      console.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
+    }
+    this.collectViewComponent(view, containerId!, props);
   }
 
   handleSetting = (event: React.MouseEvent<HTMLElement>) => {

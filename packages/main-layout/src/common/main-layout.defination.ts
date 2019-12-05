@@ -8,18 +8,15 @@ export interface ComponentCollection {
   views?: View[];
   options: ViewContainerOptions;
 }
-export interface ViewToContainerMapData {
-  [key: string ]: string | number;
-}
 
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   restoreState(): void;
   getTabbarHandler(handlerId: string): TabBarHandler;
-  registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent): string;
-  collectViewComponent(view: View, containerId: string, props?: any): string;
+  collectViewComponent(view: View, viewOrContainerId: string, props?: any): string;
+  replaceViewComponent(view: View, props?: any): void;
   expandBottom(expand: boolean): void;
   bottomExpanded: boolean;
   // @deprecated

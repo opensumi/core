@@ -68,6 +68,12 @@ export class AccordionService {
   }
 
   appendView(view: View) {
+    // 已存在的viewId直接替换
+    const existIndex = this.views.findIndex((item) => item.id === view.id);
+    if (existIndex !== -1) {
+      this.views[existIndex] = view;
+      return;
+    }
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
     this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped()).createKey('view', view.id);
