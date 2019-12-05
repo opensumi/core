@@ -18,6 +18,7 @@ import { DebugHoverSource } from './editor/debug-hover-source';
 import { DebugConsoleContribution } from './console/debug-console.contribution';
 import { DebugConsoleSession } from './console/debug-console-session';
 import { BreakpointManager } from './breakpoint';
+import './debug-style.less';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
