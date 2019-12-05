@@ -42,6 +42,12 @@ export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
 export const IS_VISIBLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.is-visible',
 };
+export const IS_VISIBLE_LEFT_PANEL_COMMAND: Command = {
+  id: 'main-layout.left-panel.is-visible',
+};
+export const IS_VISIBLE_RIGHT_PANEL_COMMAND: Command = {
+  id: 'main-layout.right-panel.is-visible',
+};
 export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
@@ -167,6 +173,16 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     commands.registerCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND, {
       execute: () => {
         return this.mainLayoutService.getTabbarService('bottom').currentContainerId !== '';
+      },
+    });
+    commands.registerCommand(IS_VISIBLE_LEFT_PANEL_COMMAND, {
+      execute: () => {
+        return this.mainLayoutService.isVisible(SlotLocation.left);
+      },
+    });
+    commands.registerCommand(IS_VISIBLE_RIGHT_PANEL_COMMAND, {
+      execute: () => {
+        return this.mainLayoutService.isVisible(SlotLocation.left);
       },
     });
     commands.registerCommand(SET_PANEL_SIZE_COMMAND, {

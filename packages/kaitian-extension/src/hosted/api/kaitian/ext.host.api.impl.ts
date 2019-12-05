@@ -3,11 +3,14 @@ import { IExtensionHostService, IExtensionWorkerHost, IExtension, WorkerHostAPII
 import { createLayoutAPIFactory } from './ext.host.layout';
 import { createWindowApiFactory } from './ext.host.window';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import { ExtensionReporterService } from '../../extension-reporter';
+import { Emitter, ReporterProcessMessage, REPORT_HOST } from '@ali/ide-core-common';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService | IExtensionWorkerHost,
   type: string,
+  reporterEmitter: Emitter<ReporterProcessMessage>,
 ) {
 
   if (type === 'worker') {
@@ -17,9 +20,15 @@ export function createAPIFactory(
   const extHostCommands = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostCommands);
 
   return (extension: IExtension) => {
+    const reporter = new ExtensionReporterService(reporterEmitter, {
+      extensionId: extension.extensionId,
+      extensionVersion: extension.packageJSON.version,
+      host: REPORT_HOST.EXTENSION,
+    });
     return {
       layout: createLayoutAPIFactory(extHostCommands),
       ideWindow: createWindowApiFactory(extHostCommands),
+      reporter,
     };
   };
 }

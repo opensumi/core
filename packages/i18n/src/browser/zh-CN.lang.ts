@@ -281,6 +281,7 @@ export const localizationBundle = {
     'editor.action.revert': '回退更改（使用左边)',
     'editor.format.chooseFormatter': '选择要使用的格式化扩展',
     'editor.configuration.preferredFormatter': '优先使用的格式化器配置',
+    'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
