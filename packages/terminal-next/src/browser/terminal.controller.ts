@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { uuid, CommandService, OnEvent, WithEventBus, Emitter } from '@ali/ide-core-common';
 import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
@@ -19,6 +19,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @observable
   errors: Map<string, ITerminalError> = new Map();
+
+  @computed
+  get themeBackground() {
+    return this.termTheme.terminalTheme.background || '';
+  }
 
   @Autowired(ITerminalExternalService)
   service: ITerminalExternalService;

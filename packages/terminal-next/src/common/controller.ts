@@ -22,6 +22,7 @@ export interface ITerminalController {
   firstInitialize(): void;
   removeFocused(): void;
   snapshot(index: number): string;
+  themeBackground: string;
 
   addWidget(client?: any): void;
   focusWidget(widgetId: string): void;
