@@ -112,13 +112,6 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
     this.listenTo(this.monacoModel);
     this.readCacheToApply();
-    this.addDispose(this.corePreferences.onPreferenceChanged((change) => {
-      if (this.corePreferences['editor.autoSave']) {
-        if (change.affects('editor.autoSaveDelay')) {
-          this._tryAutoSaveAfterDelay = undefined;
-        }
-      }
-    }));
   }
 
   private listenTo(monacoModel: monaco.editor.ITextModel) {
@@ -393,6 +386,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this._tryAutoSaveAfterDelay = debounce(() => {
         this.save();
       }, this.corePreferences['editor.autoSaveDelay'] || 1000);
+      this.addDispose(this.corePreferences.onPreferenceChanged((change) => {
+        this._tryAutoSaveAfterDelay = debounce(() => {
+          this.save();
+        }, this.corePreferences['editor.autoSaveDelay'] || 1000);
+      }));
     }
     return this._tryAutoSaveAfterDelay;
   }
