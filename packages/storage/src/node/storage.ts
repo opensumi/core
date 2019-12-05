@@ -126,6 +126,8 @@ export class WorkspaceStorageServer implements IStorageServer {
       });
     }
 
+    this._cache[storageName] = raw;
+
     const storagePath = await this.getStoragePath(storageName);
 
     if (storagePath) {
@@ -246,6 +248,8 @@ export class GlobalStorageServer implements IStorageServer {
         }
       });
     }
+
+    this._cache[storageName] = raw;
 
     const storagePath = await this.getStoragePath(storageName);
 
