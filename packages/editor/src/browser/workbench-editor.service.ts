@@ -811,10 +811,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.currentState = null;
     const closed = this.resources.splice(0, this.resources.length);
     closed.forEach((resource) => {
-      this.eventBus.fire(new EditorGroupCloseEvent({
-        group: this,
-        resource,
-      }));
+      this.clearResourceOnClose(resource);
     });
     this.activeComponents.clear();
     if (this.workbenchEditorService.editorGroups.length > 1) {
@@ -859,14 +856,22 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       this.resources.splice(index + 1);
       for (const resource of resourcesToClose) {
-        for (const resources of this.activeComponents.values()) {
-          const i = resources.indexOf(resource);
-          if (i !== -1) {
-            resources.splice(i, 1);
-          }
-        }
+        this.clearResourceOnClose(resource);
       }
       this.open(uri);
+    }
+  }
+
+  clearResourceOnClose(resource: IResource) {
+    this.eventBus.fire(new EditorGroupCloseEvent({
+      group: this,
+      resource,
+    }));
+    for (const resources of this.activeComponents.values()) {
+      const i = resources.indexOf(resource);
+      if (i !== -1) {
+        resources.splice(i, 1);
+      }
     }
   }
 
@@ -882,12 +887,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       this.resources = [this.resources[index]];
       for (const resource of resourcesToClose) {
-        for (const resources of this.activeComponents.values()) {
-          const i = resources.indexOf(resource);
-          if (i !== -1) {
-            resources.splice(i, 1);
-          }
-        }
+        this.clearResourceOnClose(resource);
       }
       this.open(uri);
     }
