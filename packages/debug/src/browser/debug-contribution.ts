@@ -25,6 +25,9 @@ import { IDebugSessionManager, launchSchemaUri } from '../common';
 import { DebugConsoleService } from './view/debug-console.service';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import { DebugToolbarService } from './view/debug-toolbar.service';
+import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { DebugBreakpoint } from './model';
+import { DebugBreakpointWidget } from './editor';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -68,10 +71,26 @@ export namespace DEBUG_COMMANDS {
   export const RESTART = {
     id: 'debug.restart',
   };
+  export const DELETE_BREAKPOINT = {
+    id: 'debug.delete.breakpoint',
+    label: '删除断点',
+  };
+  export const EDIT_BREAKPOINT = {
+    id: 'debug.edit.breakpoint',
+    label: '编辑断点',
+  };
+  export const DISABLE_BREAKPOINT = {
+    id: 'debug.disable.breakpoint',
+    label: '禁用断点',
+  };
+  export const ENABLE_BREAKPOINT = {
+    id: 'debug.enable.breakpoint',
+    label: '启用断点',
+  };
 }
 
-@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution)
-export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution {
+@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution)
+export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution {
 
   static DEBUG_THREAD_ID: string = 'debug-thread';
   static DEBUG_WATCH_ID: string = 'debug-watch';
@@ -123,6 +142,21 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   protected readonly debugToolbarService: DebugToolbarService;
 
   firstSessionStart: boolean = true;
+
+  // get breakpoints(): DebugBreakpointWidget | undefined {
+  //   const { currentWidget } = this.shell;
+  //   return currentWidget instanceof DebugBreakpointWidget && currentWidget || undefined;
+  // }
+
+  // get selectedAnyBreakpoint(): DebugBreakpoint | undefined {
+  //   const { breakpoints } = this;
+  //   return breakpoints && breakpoints.selectedElement instanceof DebugBreakpoint && breakpoints.selectedElement || undefined;
+  // }
+
+  // get selectedBreakpoint(): DebugBreakpoint | undefined {
+  //   const breakpoint = this.selectedAnyBreakpoint;
+  //   return breakpoint && !breakpoint.logMessage ? breakpoint : undefined;
+  // }
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-debug', [
@@ -296,6 +330,46 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         return handler && handler.isVisible;
       },
     });
+    commands.registerCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT, {
+      execute: async () => {
+          // const { selectedBreakpoint } = this;
+          // if (selectedBreakpoint) {
+          //     await this.editors.editBreakpoint(selectedBreakpoint);
+          // }
+      },
+      // isEnabled: () => !!this.selectedBreakpoint,
+      // isVisible: () => !!this.selectedBreakpoint,
+    });
+    commands.registerCommand(DEBUG_COMMANDS.DISABLE_BREAKPOINT, {
+        execute: async () => {
+            // const { selectedLogpoint } = this;
+            // if (selectedLogpoint) {
+            //     await this.editors.editBreakpoint(selectedLogpoint);
+            // }
+        },
+        // isEnabled: () => !!this.selectedLogpoint,
+        // isVisible: () => !!this.selectedLogpoint,
+    });
+    commands.registerCommand(DEBUG_COMMANDS.ENABLE_BREAKPOINT, {
+        execute: () => {
+            // const { selectedBreakpoint } = this;
+            // if (selectedBreakpoint) {
+            //     selectedBreakpoint.remove();
+            // }
+        },
+        // isEnabled: () => !!this.selectedBreakpoint,
+        // isVisible: () => !!this.selectedBreakpoint,
+    });
+    commands.registerCommand(DEBUG_COMMANDS.DELETE_BREAKPOINT, {
+        execute: () => {
+            // const { selectedLogpoint } = this;
+            // if (selectedLogpoint) {
+            //     selectedLogpoint.remove();
+            // }
+        },
+        // isEnabled: () => !!this.selectedLogpoint,
+        // isVisible: () => !!this.selectedLogpoint,
+    });
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
@@ -378,4 +452,23 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       when: 'inDebugMode',
     });
   }
+
+  registerNextMenus(menuRegistry: IMenuRegistry): void {
+    menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
+      command: DEBUG_COMMANDS.DELETE_BREAKPOINT.id,
+      order: 1,
+      group: '1_open',
+    });
+    menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
+      command: DEBUG_COMMANDS.EDIT_BREAKPOINT.id,
+      order: 1,
+      group: '1_open',
+    });
+    menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
+      command: DEBUG_COMMANDS.DISABLE_BREAKPOINT.id,
+      order: 1,
+      group: '1_open',
+    });
+  }
+
 }

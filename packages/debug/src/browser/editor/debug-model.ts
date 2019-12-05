@@ -1,4 +1,4 @@
-import { URI, IDisposable, DisposableCollection, isOSX } from '@ali/ide-core-common';
+import { URI, IDisposable, DisposableCollection, isOSX, memoize } from '@ali/ide-core-common';
 import { Injector, Injectable, Autowired } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
@@ -11,6 +11,8 @@ import debounce = require('lodash.debounce');
 import * as options from './debug-styles';
 import { DebugBreakpoint, DebugStackFrame } from '../model';
 import { IDebugModel } from '../../common';
+import { ICtxMenuRenderer, generateMergedCtxMenu, IMenu, MenuId, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { IContextKeyService } from '@ali/ide-core-browser';
 
 @Injectable()
 export class DebugModel implements IDebugModel {
@@ -30,6 +32,15 @@ export class DebugModel implements IDebugModel {
 
   @Autowired(BreakpointManager)
   private breakpointManager: BreakpointManager;
+
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly ctxMenuRenderer: ICtxMenuRenderer;
 
   protected frameDecorations: string[] = [];
   protected topFrameRange: monaco.Range | undefined;
@@ -386,11 +397,22 @@ export class DebugModel implements IDebugModel {
     }
   }
 
+  @memoize get contributedContextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(MenuId.DebugBreakpointsContext, this.contextKeyService);
+    return contributedContextMenu;
+  }
+
   protected onMouseDown(event: monaco.editor.IEditorMouseEvent): void {
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       if (event.event.rightButton) {
         // 缓存断点位置
-        this._position = event.target.position!;
+        const menus = this.contributedContextMenu;
+        const menuNodes = generateMergedCtxMenu({ menus });
+        this.ctxMenuRenderer.show({
+          anchor: event.event.browserEvent,
+          menuNodes,
+          context: [ event.target.position! ],
+        });
         // TODO: 处理右键菜单
       } else {
         this.doToggleBreakpoint(event.target.position!);
