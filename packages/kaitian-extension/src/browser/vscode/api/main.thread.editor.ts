@@ -168,9 +168,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       }
     }));
 
-    this.addDispose(
-      this.eventBus.on(EditorSelectionChangeEvent, debounce((e) => {
-
+    const selectionChange = (e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);
       this.proxy.$acceptPropertiesChange({
         id: editorId,
@@ -179,7 +177,20 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           source: e.payload.source,
         },
       });
-    }, 50, {maxWait: 200, leading: true, trailing: true})));
+    };
+
+    const debouncedSelectionChange = debounce((e) => {
+      return selectionChange(e);
+    }, 50, {maxWait: 200, leading: true, trailing: true});
+
+    this.addDispose(
+      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+        if (e.payload.source === 'mouse') {
+          debouncedSelectionChange(e);
+        } else {
+          selectionChange(e);
+        }
+      }));
 
     this.addDispose(this.eventBus.on(EditorVisibleChangeEvent, debounce((e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);
