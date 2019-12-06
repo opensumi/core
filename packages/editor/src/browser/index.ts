@@ -143,7 +143,7 @@ export class EditorClientAppContribution implements ClientAppContribution, Monac
     await this.workbenchEditorService.initialize();
   }
 
-  async onDidUseConfig() {
+  async onDidRender() {
 
   }
 

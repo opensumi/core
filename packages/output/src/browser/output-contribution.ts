@@ -28,7 +28,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
   @Autowired()
   private outputService: OutputService;
 
-  onDidUseConfig() {
+  onDidRender() {
     const handler = this.layoutService.getTabbarHandler(OUTPUT_CONTAINER_ID);
     if (handler) {
       handler.setTitleComponent(ChannelSelector);

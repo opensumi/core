@@ -478,7 +478,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
   }
 
-  onDidUseConfig() {
+  onDidRender() {
     this.rendered = true;
     const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
     if (handler) {

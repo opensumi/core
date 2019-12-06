@@ -207,7 +207,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     await this.debugWatchService.save();
   }
 
-  onDidUseConfig() {
+  onDidRender() {
     const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
     if (handler) {
       handler!.setTitleComponent(DebubgConfigurationView);
