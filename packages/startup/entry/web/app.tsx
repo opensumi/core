@@ -31,4 +31,5 @@ renderApp({
   //     cssPath: '//at.alicdn.com/t/font_403404_1qiu0eed62f.css',
   //   },
   // ],
+},
 });

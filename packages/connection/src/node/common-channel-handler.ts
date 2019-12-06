@@ -134,6 +134,7 @@ export class CommonChannelHandler extends WebSocketHandler {
             connection.send(stringify(`heartbeat ${msgObj.clientId}`));
           } else if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
+            this.logger.log('new connection clientId', clientId);
 
             /*
             // 避免内存泄露，这个 map 是需要删除掉关系的，那么则无法判断
@@ -164,6 +165,7 @@ export class CommonChannelHandler extends WebSocketHandler {
           } else if (msgObj.kind === 'open') {
             const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
             const { path } = msgObj;
+            this.logger.log('new open channelId', channelId, 'channelPath', path);
 
             // 生成 channel 对象
             const connectionSend = this.channelConnectionSend(connection);
