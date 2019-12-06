@@ -13,8 +13,6 @@ export class OutputService extends Themable {
   @Autowired(AppConfig)
   private config: AppConfig;
 
-  windowOutputResizeId: NodeJS.Timeout;
-
   @observable
   protected readonly channels = new Map<string, OutputChannel>();
 
@@ -23,11 +21,6 @@ export class OutputService extends Themable {
 
   @observable
   public keys: string = '' + Math.random();
-
-  // private readonly channelDeleteEmitter = new Emitter<{channelName: string}>();
-  // private readonly channelAddedEmitter = new Emitter<OutputChannel>();
-  // readonly onChannelDelete = this.channelDeleteEmitter.event;
-  // readonly onChannelAdded = this.channelAddedEmitter.event;
 
   constructor() {
     super();
@@ -51,15 +44,6 @@ export class OutputService extends Themable {
 
   getChannels(): OutputChannel[] {
       return Array.from(this.channels.values());
-  }
-
-  @OnEvent(ResizeEvent)
-  onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === getSlotLocation(pkgName, this.config.layoutConfig)) {
-      clearTimeout(this.windowOutputResizeId);
-      this.windowOutputResizeId = setTimeout(() => {
-      }, 20);
-    }
   }
 
   @OnEvent(ContentChangeEvent)
