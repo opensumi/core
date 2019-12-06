@@ -72,16 +72,16 @@ export class ErrorBoundary extends React.Component {
   }
 }
 
+export const allSlot: {slot: string, dom: HTMLElement}[] = [];
+
 export const SlotDecorator: React.FC<{slot: string}> = ({slot, ...props}) => {
-  const children: any = props.children;
-  if (children) {
-    if (children.length) {
-      console.log('slot:', slot, children.map((child) => child.props));
-    } else {
-      console.log('slot:', slot, children.props);
+  const ref = React.useRef<HTMLElement>();
+  React.useEffect(() => {
+    if (ref.current) {
+      allSlot.push({slot, dom: ref.current});
     }
-  }
-  return <>{props.children}</>;
+  }, [ref]);
+  return <div ref={(ele) => ref.current = ele!} className='resize-wrapper'>{props.children}</div>;
 };
 
 export interface RendererProps { components: ComponentRegistryInfo[]; }
