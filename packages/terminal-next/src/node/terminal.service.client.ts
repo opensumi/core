@@ -2,6 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
 import { ITerminalService, ITerminalServiceClient, TerminalOptions } from '../common';
 import { IPty } from './pty';
+import { INodeLogger } from '@ali/ide-core-node';
 
 /**
  * 标准的后端服务，供前端调用
@@ -15,6 +16,9 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
   private terminalService: ITerminalService;
   private clientId: string;
 
+  @Autowired(INodeLogger)
+  private logger: INodeLogger;
+
   setConnectionClientId(clientId: string) {
     this.clientId = clientId;
 
@@ -24,11 +28,16 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
   clientMessage(id: string, data: string) {
     if (this.rpcClient) {
       this.rpcClient[0].onMessage(id, 'message', data);
+    } else {
+      this.logger.warn(`clientMessage ${id} rpcClient not found`);
     }
   }
 
   create(id: string, rows: number, cols: number, options: TerminalOptions ) {
-    this.terminalService.setClient(id, this);
+    const clientId = this.clientId;
+
+    this.terminalService.setClient(clientId, this);
+    this.logger.log('create pty id', id);
     const pty = this.terminalService.create(id, rows, cols, options) as IPty;
     this.terminalMap.set(id, pty);
     return {
@@ -64,8 +73,11 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
   }
 
   dispose() {
+    /*
     this.terminalMap.forEach((pty) => {
       pty.kill();
     });
+    */
   }
+
 }

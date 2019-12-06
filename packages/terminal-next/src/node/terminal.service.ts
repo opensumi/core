@@ -1,7 +1,8 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
 import { PtyService, IPty } from './pty';
 import { ITerminalService, TerminalOptions, ITerminalServiceClient } from '../common';
+import { INodeLogger } from '@ali/ide-core-node';
 
 /**
  * terminal service 的具体实现
@@ -12,6 +13,9 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
   private ptyService = new PtyService();
 
   private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
+
+  @Autowired(INodeLogger)
+  private logger: INodeLogger;
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
     this.serviceClientMap.set(clientId, client);
@@ -24,17 +28,19 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
 
     const terminal = this.ptyService.create(rows, cols, options);
     terminal.on('data', (data) => {
-      // const clientId = id.split('|')[0];
-      const clientId = id;
+      const clientId = id.split('|')[0];
+      // const clientId = id;
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.clientMessage(id, data);
+      } else {
+        this.logger.warn(`terminal pty ${clientId} on data not found`);
       }
 
       // 兼容直接使用的模式
-      if (this.rpcClient) {
-        this.rpcClient[0].onMessage(id, 'message', data);
-      }
+      // if (this.rpcClient) {
+      //   this.rpcClient[0].onMessage(id, 'message', data);
+      // }
     });
     this.terminalMap.set(id , terminal);
     return terminal;
@@ -43,6 +49,7 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
   public onMessage(id, msg) {
     const terminal = this.getTerminal(id);
     if (!terminal) {
+      this.logger.warn(`terminal ${id} onMessage not found`, terminal);
       return;
     }
     terminal.write(msg);
