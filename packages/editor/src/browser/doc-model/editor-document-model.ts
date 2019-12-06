@@ -185,6 +185,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this._persistVersionId = this.monacoModel.getVersionId();
     this.savingTasks = [];
     this.notifyChangeEvent();
+    this.baseContent = content;
   }
 
   async updateEncoding(encoding: string) {
