@@ -105,7 +105,7 @@ export const FileTree = ({
   } as React.CSSProperties;
 
   const scrollContainerStyle = {
-    width: containerWidth,
+    width: '100%',
     height: containerHeight,
   };
 

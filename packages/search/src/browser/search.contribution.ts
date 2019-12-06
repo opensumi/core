@@ -270,7 +270,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     });
   }
 
-  onDidUseConfig() {
+  onDidRender() {
     const handler = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
     if (handler) {
       handler.onActivate(() => {

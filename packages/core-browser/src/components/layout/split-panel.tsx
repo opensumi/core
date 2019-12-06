@@ -21,8 +21,10 @@ export const PanelContext = React.createContext<{
   getRelativeSize: (isLatter: boolean) => [0, 0],
 });
 
+interface SplitChildProps { id: string; minSize?: number; maxSize?: number; flex?: number; slot: string; children?: Array<React.ReactElement<SplitChildProps>>; }
+
 export const SplitPanel: React.FC<{
-  children?: Array<React.ReactElement<{ id: string; minSize?: number; maxSize?: number; flex?: number; slot: string; }>>;
+  children?: Array<React.ReactElement<SplitChildProps>>;
   className?: string;
   direction?: Layout.direction;
   flex?: number;
@@ -33,7 +35,7 @@ export const SplitPanel: React.FC<{
   const ResizeHandle = Layout.getResizeHandle(direction);
   const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
   const elements: React.ReactNodeArray = [];
-  const resizeDelegates: IResizeHandleDelegate[] = [];
+  const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const rootRef = React.useRef<HTMLElement>();
 
@@ -44,8 +46,9 @@ export const SplitPanel: React.FC<{
   const setSizeHandle = (index) => {
     return (size: number, isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
-      if (resizeDelegates[targetIndex]) {
-        resizeDelegates[targetIndex].setAbsoluteSize(size, isLatter, resizeKeep);
+      const delegete = resizeDelegates.current[targetIndex];
+      if (delegete) {
+        delegete.setAbsoluteSize(size, isLatter, resizeKeep);
       }
     };
   };
@@ -53,8 +56,9 @@ export const SplitPanel: React.FC<{
   const setRelativeSizeHandle = (index) => {
     return (prev: number, next: number, isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
-      if (resizeDelegates[targetIndex]) {
-        resizeDelegates[targetIndex].setRelativeSize(prev, next);
+      const delegete = resizeDelegates.current[targetIndex];
+      if (delegete) {
+        delegete.setRelativeSize(prev, next);
       }
     };
   };
@@ -62,8 +66,9 @@ export const SplitPanel: React.FC<{
   const getSizeHandle = (index) => {
     return (isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
-      if (resizeDelegates[targetIndex]) {
-        return resizeDelegates[targetIndex].getAbsoluteSize(isLatter);
+      const delegete = resizeDelegates.current[targetIndex];
+      if (delegete) {
+        return delegete.getAbsoluteSize(isLatter);
       }
       return 0;
     };
@@ -72,11 +77,30 @@ export const SplitPanel: React.FC<{
   const getRelativeSizeHandle = (index) => {
     return (isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
-      if (resizeDelegates[targetIndex]) {
-        return resizeDelegates[targetIndex].getRelativeSize();
+      const delegete = resizeDelegates.current[targetIndex];
+      if (delegete) {
+        return delegete.getRelativeSize();
       }
       return [0, 0];
     };
+  };
+
+  const fireResizeEvent = (location: string, srcElement: HTMLElement, index: number) => {
+    if (location) {
+      eventBus.fire(new ResizeEvent({slotLocation: location, width: srcElement.clientWidth, height: srcElement.clientHeight}));
+    } else {
+      const subChildren = children[index].props.children;
+      if (subChildren && subChildren.length) {
+        // TODO 多级嵌套
+        subChildren!.forEach((child) => {
+          if (direction === 'bottom-to-top' || direction === 'top-to-bottom') {
+            eventBus.fire(new ResizeEvent({slotLocation: child.props.slot, height: srcElement.clientHeight}));
+          } else {
+            eventBus.fire(new ResizeEvent({slotLocation: child.props.slot, width: srcElement.clientWidth}));
+          }
+        });
+      }
+    }
   };
 
   children.forEach((element, index) => {
@@ -86,29 +110,24 @@ export const SplitPanel: React.FC<{
           onResize={(prev, next) => {
             const prevLocation = children[index - 1].props.slot;
             const nextLocation = children[index].props.slot;
-            if (prevLocation) {
-              eventBus.fire(new ResizeEvent({slotLocation: prevLocation, width: prev.clientWidth, height: prev.clientHeight}));
-            }
-            if (nextLocation) {
-              eventBus.fire(new ResizeEvent({slotLocation: nextLocation, width: next.clientWidth, height: next.clientHeight}));
-            }
+            fireResizeEvent(prevLocation, prev, index - 1);
+            fireResizeEvent(nextLocation, next, index);
           }}
           noColor={true}
           findNextElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction)}
           findPrevElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true)}
           key={`split-handle-${index}`}
-          delegate={(delegate) => { resizeDelegates.push(delegate); }} />,
+          delegate={(delegate) => { resizeDelegates.current.push(delegate); }} />,
       );
     }
     elements.push(
-      <PanelContext.Provider value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index), setRelativeSize: setRelativeSizeHandle(index), getRelativeSize: getRelativeSizeHandle(index)}}>
+      <PanelContext.Provider key={index} value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index), setRelativeSize: setRelativeSizeHandle(index), getRelativeSize: getRelativeSizeHandle(index)}}>
         <div
           ref={(ele) => {
             if (ele && refs.indexOf(ele) === -1) {
               refs.push(ele);
             }
           }}
-          key={index}
           style={{
             [Layout.getSizeProperty(direction)]: ((element.props.flex !== undefined ? element.props.flex : 1) / totalFlexNum * 100) + '%',
             [Layout.getMinSizeProperty(direction)]: element.props.minSize ? element.props.minSize + 'px' : '-1px',

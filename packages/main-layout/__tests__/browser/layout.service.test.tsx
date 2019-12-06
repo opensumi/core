@@ -24,7 +24,7 @@ describe('main layout test', () => {
   document.getElementById('main')!.appendChild(layoutNode);
 
   const mockLayoutContribution: MainLayoutContribution = {
-    onDidUseConfig() {
+    onDidRender() {
       console.log('layout contribution');
     },
   };

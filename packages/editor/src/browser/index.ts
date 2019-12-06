@@ -21,6 +21,7 @@ import { CompareService, CompareEditorContribution } from './diff/compare';
 import { BreadCrumbServiceImpl } from './breadcrumb';
 import { EditorContextMenuBrowserEditorContribution } from './menu/editor.context';
 import { EditorFeatureRegistryImpl } from './feature';
+import { MainLayoutContribution } from '@ali/ide-main-layout';
 export * from './types';
 export * from './doc-model/types';
 export * from './doc-cache';
@@ -94,8 +95,8 @@ export class EditorModule extends BrowserModule {
 
 }
 
-@Domain(ClientAppContribution, MonacoContribution)
-export class EditorClientAppContribution implements ClientAppContribution, MonacoContribution {
+@Domain(ClientAppContribution, MonacoContribution, MainLayoutContribution)
+export class EditorClientAppContribution implements ClientAppContribution, MonacoContribution, MainLayoutContribution {
 
   @Autowired()
   resourceService!: ResourceService;
@@ -141,6 +142,10 @@ export class EditorClientAppContribution implements ClientAppContribution, Monac
     }
     this.workbenchEditorService.contributionsReady.resolve();
     await this.workbenchEditorService.initialize();
+  }
+
+  async onDidRender() {
+
   }
 
   onContextKeyServiceReady(contextKeyService: IContextKeyService) {

@@ -1,8 +1,10 @@
 import * as React from 'react';
-import { ConfigProvider } from '../react-providers';
+import { ConfigProvider, allSlot } from '../react-providers';
 import { IClientApp } from '../browser-module';
 import * as ReactDom from 'react-dom';
 import { DefaultLayout } from '../components/layout/default-layout';
+import { IEventBus } from '@ali/ide-core-common';
+import { ResizeEvent } from '../layout';
 
 export interface AppProps {
   app: IClientApp;
@@ -11,6 +13,24 @@ export interface AppProps {
 }
 
 export function App(props: AppProps) {
+  const injector = props.app.injector;
+  const eventBus: IEventBus = injector.get(IEventBus);
+  React.useEffect(() => {
+    let lastFrame: number | null;
+    const handle = () => {
+      if (lastFrame) {
+        window.cancelAnimationFrame(lastFrame);
+      }
+      lastFrame = window.requestAnimationFrame(() => {
+        lastFrame = null;
+        allSlot.forEach((item) => {
+          eventBus.fire(new ResizeEvent({slotLocation: item.slot, width: item.dom.clientWidth, height: item.dom.clientHeight}));
+        });
+      });
+    };
+    window.addEventListener('resize', handle);
+    return () => { window.removeEventListener('resize', handle); };
+  }, []);
   return (
     <ConfigProvider value={ props.app.config }>
       {<props.main />}
