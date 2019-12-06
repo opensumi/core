@@ -21,7 +21,7 @@ export function App(props: AppProps) {
         eventBus.fire(new ResizeEvent({slotLocation: item.slot, width: item.dom.clientWidth, height: item.dom.clientHeight}));
       });
     };
-    window.addEventListener('resize', handle);
+    window.addEventListener('resize', () => window.requestAnimationFrame(handle));
     return () => { window.removeEventListener('resize', handle); };
   });
   return (
