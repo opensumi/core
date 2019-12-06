@@ -364,7 +364,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     super();
     this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
       if (e.payload.slotLocation === getSlotLocation('@ali/ide-editor', this.config.layoutConfig)) {
-        window.requestAnimationFrame(() => this.layoutEditors());
+        // window.requestAnimationFrame(() => this.layoutEditors());
+        this.layoutEditors();
       }
     });
   }
