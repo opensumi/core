@@ -51,7 +51,7 @@ export class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.errorInfo) {
-      if (isDevelopment) {
+      if (isDevelopment()) {
         return (
           <div>
             <h2>模块渲染异常</h2>
