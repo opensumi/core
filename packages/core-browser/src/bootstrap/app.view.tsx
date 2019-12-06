@@ -16,21 +16,19 @@ export function App(props: AppProps) {
   const injector = props.app.injector;
   const eventBus: IEventBus = injector.get(IEventBus);
   React.useEffect(() => {
-    const handle = () => {
-      allSlot.forEach((item) => {
-        eventBus.fire(new ResizeEvent({slotLocation: item.slot, width: item.dom.clientWidth, height: item.dom.clientHeight}));
-      });
-    };
     let lastFrame: number | null;
-    window.addEventListener('resize', () => {
+    const handle = () => {
       if (lastFrame) {
         window.cancelAnimationFrame(lastFrame);
       }
       lastFrame = window.requestAnimationFrame(() => {
         lastFrame = null;
-        handle();
+        allSlot.forEach((item) => {
+          eventBus.fire(new ResizeEvent({slotLocation: item.slot, width: item.dom.clientWidth, height: item.dom.clientHeight}));
+        });
       });
-    });
+    };
+    window.addEventListener('resize', handle);
     return () => { window.removeEventListener('resize', handle); };
   }, []);
   return (
