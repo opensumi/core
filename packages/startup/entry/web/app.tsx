@@ -22,6 +22,7 @@ renderApp({
     'general.theme': 'ide-dark',
     'general.icon': 'vscode-icons',
     'application.confirmExit': 'never',
+  },
   // iconStyleSheets: [
   //   {
   //     iconMap: {
