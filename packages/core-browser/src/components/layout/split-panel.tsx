@@ -121,14 +121,13 @@ export const SplitPanel: React.FC<{
       );
     }
     elements.push(
-      <PanelContext.Provider value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index), setRelativeSize: setRelativeSizeHandle(index), getRelativeSize: getRelativeSizeHandle(index)}}>
+      <PanelContext.Provider key={index} value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index), setRelativeSize: setRelativeSizeHandle(index), getRelativeSize: getRelativeSizeHandle(index)}}>
         <div
           ref={(ele) => {
             if (ele && refs.indexOf(ele) === -1) {
               refs.push(ele);
             }
           }}
-          key={index}
           style={{
             [Layout.getSizeProperty(direction)]: ((element.props.flex !== undefined ? element.props.flex : 1) / totalFlexNum * 100) + '%',
             [Layout.getMinSizeProperty(direction)]: element.props.minSize ? element.props.minSize + 'px' : '-1px',

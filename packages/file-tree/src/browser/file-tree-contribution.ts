@@ -60,6 +60,8 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   @Autowired(ILogger)
   private logger;
 
+  private rendered = false;
+
   onStart() {
     const workspace = this.workspaceService.workspace;
     let resourceTitle = localize('file.empty.defaultTitle');
@@ -178,7 +180,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (!locationUri) {
           locationUri = this.filetreeService.selectedUris[0];
         }
-        if (locationUri) {
+        if (locationUri && this.rendered) {
           const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
           if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
             this.explorerResourceService.locationOnShow(locationUri);
@@ -477,6 +479,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   onDidUseConfig() {
+    this.rendered = true;
     const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
     if (handler) {
       handler.onActivate(() => {

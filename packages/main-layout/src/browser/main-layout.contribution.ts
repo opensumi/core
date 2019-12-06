@@ -88,12 +88,7 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   @Autowired()
   private toolBarRegistry: ToolbarRegistry;
 
-  async onStart() {
-    this.statusBar.addElement('bottom-panel-handle', {
-      iconClass: getIcon('window-maximize'),
-      alignment: StatusBarAlignment.RIGHT,
-      command: 'main-layout.bottom-panel.toggle',
-    });
+  async initialize() {
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
       contribution.registerComponent(this.componentRegistry);
@@ -106,6 +101,14 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     for (const contribution of contributions) {
       contribution.registerToolbarItems(this.toolBarRegistry);
     }
+  }
+
+  async onStart() {
+    this.statusBar.addElement('bottom-panel-handle', {
+      iconClass: getIcon('window-maximize'),
+      alignment: StatusBarAlignment.RIGHT,
+      command: 'main-layout.bottom-panel.toggle',
+    });
     // 全局只要初始化一次
     await this.layoutState.initStorage();
   }
