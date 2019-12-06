@@ -79,9 +79,11 @@ export class WSChanneHandler {
               console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);
-            // if (channel.fireReOpen) {
-            //   channel.fireReOpen();
-            // }
+
+            // 针对前端需要重新设置下后台状态的情况
+            if (channel.fireReOpen) {
+              channel.fireReOpen();
+            }
           });
         }
       });
