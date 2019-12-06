@@ -1,0 +1,140 @@
+:global {
+  .resize-ease {
+    transition: height .1s ease-out;
+  }
+}
+
+.kt_split_panel_container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  white-space: nowrap;
+  flex-direction: column;
+}
+
+.kt_split_panel {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  &:hover .actions_wrap {
+    display: block;
+  }
+}
+
+.kt_split_panel_header {
+  background-color: var(--sideBarSectionHeader-background);
+  font-size: 12px;
+  text-transform: uppercase;
+  display: flex;
+  cursor: pointer;
+  color: var(--sideBarSectionHeader-foreground);
+  justify-content: space-between;
+  &:focus {
+    outline-color: rgba(14, 99, 156, 0.8);
+    outline-width: 1px;
+    outline-style: solid;
+    outline-offset: -1px;
+    opacity: 1!important;
+  }
+}
+
+.label_wrap {
+  display: flex;
+  flex-direction: row;
+}
+
+.kt_split_panel_body {
+  overflow: hidden;
+  flex: 1;
+  font-size: 12px;
+  position: relative;
+}
+
+.kt_split_overlay {
+  width: 100%;
+  white-space: normal;
+  flex: none;
+  position: relative;
+  transition: height .2s ease;
+}
+
+.kt_panel_toolbar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 22px;
+  display: none;
+  .kt_panel_toolbar_container {
+    margin: 0 auto;
+    padding: 0;
+    width: 100%;
+    height: 22px;
+  }
+  .kt_panel_toolbar_item {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    width: 28px;
+    height: 22px;
+    background-size: 16px;
+    background-position: 50%;
+    background-repeat: no-repeat;
+    margin-right: 0;
+    &:active {
+      transform: scale(1.2);
+    }
+  }
+}
+
+.kt_panel_focused {
+  outline-color: rgba(14, 99, 156, 0.8);
+}
+
+.section_label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  color: var(--sideBarSectionHeader-foreground);
+  // font-size: 80%;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  line-height: 22px;
+}
+
+i.arrow_icon {
+  font-size: 12px;
+  margin: 0 4px;
+  &:not(.kt_mod_collapsed) {
+    transform: rotate(90deg);
+  }
+}
+
+.actions_wrap {
+  margin-right: 8px;
+  display: none;
+}
+
+.titlebar {
+  background-color: var(--sideBar-background);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-right: 10px;
+  h1 {
+    color: var(--sideBarTitle-foreground);
+    font-weight: 500;
+    margin: 0;
+    margin-left: 10px;
+    text-transform: uppercase;
+    font-size: 12px;
+    line-height: 33px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

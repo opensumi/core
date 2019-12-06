@@ -1,5 +1,5 @@
 import * as md5 from 'md5';
-import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, STORAGE_SCHEMA } from '@ali/ide-core-browser';
+import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, STORAGE_SCHEMA, ILogger } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent } from './types';
@@ -19,6 +19,9 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
+
+  @Autowired(ILogger)
+  logger: ILogger;
 
   private storage: IStorage;
 
@@ -87,7 +90,11 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       this._ready = new Promise(async (resolve) => {
         this.storage = await this.getStorage(EDITOR_DOCUMENT_MODEL_STORAGE);
         if (this.storage.get(EDITOR_DOC_ENCODING_PREF_KEY)) {
-          this.preferredModelEncodings = serializableToMap(JSON.parse(this.storage.get(EDITOR_DOC_ENCODING_PREF_KEY)!));
+          try {
+            this.preferredModelEncodings = serializableToMap(JSON.parse(this.storage.get(EDITOR_DOC_ENCODING_PREF_KEY)!));
+          } catch (e) {
+            this.logger.error(e);
+          }
         }
         resolve();
       });

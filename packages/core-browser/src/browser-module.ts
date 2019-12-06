@@ -17,6 +17,6 @@ export abstract class BrowserModule<T = any> extends BasicModule {
   protected app: IClientApp;
   component?: React.FunctionComponent<T>;
   preferences?: (inject: Injector) => void;
-  iconClass?: string;
-  title?: string;
+  // 脱离于layout渲染的模块
+  isOverlay?: boolean;
 }

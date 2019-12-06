@@ -241,7 +241,7 @@ class Menu extends Disposable implements IMenu {
             const disabled = !commandEnablement;
             // toggledWhen 的优先级高于 isToggled
             // 若设置了 toggledWhen 则忽略 Command 的 isVisible
-            const checked = 'toggledWhen' in item
+            const checked = item.toggledWhen !== undefined
               ? this.contextKeyService.match(item.toggledWhen)
               : commandToggle;
             const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);

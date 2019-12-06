@@ -25,5 +25,6 @@ export class OverlayModule extends BrowserModule {
     },
   ];
 
+  isOverlay = true;
   component = Overlay;
 }

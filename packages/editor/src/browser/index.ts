@@ -5,7 +5,7 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { EditorContribution } from './editor.contribution';
+import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry, ICompareService, IBreadCrumbService, IEditorFeatureRegistry } from './types';
 import { EditorComponentRegistryImpl } from './component';
@@ -86,6 +86,7 @@ export class EditorModule extends BrowserModule {
     EditorContribution,
     CompareEditorContribution,
     EditorContextMenuBrowserEditorContribution,
+    EditorAutoSaveEditorContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 

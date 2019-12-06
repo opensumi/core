@@ -2,7 +2,7 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, RenderLineNumbersType, TextEditorCursorStyle } from '../../../common/vscode';
 import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
-import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@ali/ide-core-common';
+import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection, Delayer } from '@ali/ide-core-common';
 import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
@@ -168,9 +168,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       }
     }));
 
-    this.addDispose(
-      this.eventBus.on(EditorSelectionChangeEvent, debounce((e) => {
-
+    const selectionChange = (e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);
       this.proxy.$acceptPropertiesChange({
         id: editorId,
@@ -179,7 +177,21 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           source: e.payload.source,
         },
       });
-    }, 50, {maxWait: 200, leading: true, trailing: true})));
+    };
+
+    const debouncedSelectionChange = debounce((e) => {
+      return selectionChange(e);
+    }, 50, {maxWait: 200, leading: true, trailing: true});
+
+    this.addDispose(
+      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+        if (e.payload.source === 'mouse') {
+          debouncedSelectionChange(e);
+        } else {
+          debouncedSelectionChange.cancel();
+          selectionChange(e);
+        }
+      }));
 
     this.addDispose(this.eventBus.on(EditorVisibleChangeEvent, debounce((e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);

@@ -185,6 +185,8 @@ export const defaultSettingSections: {
   editor: [
     {
       preferences: [
+        {id: 'editor.autoSave', localized: 'preference.editor.autoSave'},
+        {id: 'editor.autoSaveDelay', localized: 'preference.editor.autoSaveDelay'},
         {id: 'editor.previewMode', localized: 'preference.editor.previewMode'},
         {id: 'editor.askIfDiff', localized: 'preference.editor.askIfDiff' },
         {id: 'editor.fontFamily', localized: 'preference.editor.fontFamily'},

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, ComponentContribution, Domain, ComponentRegistry, localize, TabBarToolbarContribution, TabBarToolbarRegistry, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
+import { BrowserModule, ComponentContribution, Domain, ComponentRegistry, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry, IContextKeyService } from '@ali/ide-core-browser';
 import { OutLineTree } from './outline.tree.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
@@ -27,6 +27,9 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
   @Autowired()
   outlineService: OutLineService;
 
+  @Autowired(IContextKeyService)
+  contextKey: IContextKeyService;
+
   onDidUseConfig() {
     this.mainLayoutService.collectViewComponent({
       component: OutLineTree,
@@ -40,6 +43,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
     registry.registerCommand({
       id: OUTLINE_COLLAPSE_ALL,
       iconClass: getIcon('collapse-all'),
+      label: localize('outline.collapse.all', '全部折叠'),
     }, {
       execute: () => {
         this.outlineService.collapseAll();
@@ -49,26 +53,28 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
       id: OUTLINE_FOLLOW_CURSOR,
       iconClass: getIcon('follow-cursor'),
       toogleIconClass: getIcon('follow-cursor', { fill: true }),
+      label: localize('outline.follow.cursor', '跟随光标'),
     }, {
       execute: () => {
         this.outlineService.followCursor = !this.outlineService.followCursor;
+        this.contextKey.createKey('followCursor', this.outlineService.followCursor);
       },
-      isToggled: () => this.outlineService.followCursor,
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
-    registry.registerItem({
-      id: 'outline.action.collapse.all',
-      viewId: 'outline-view',
-      command: OUTLINE_COLLAPSE_ALL,
-      tooltip: localize('outline.collapse.all', '全部折叠'),
-    });
+  registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
       id: 'outline.action.follow.cursor',
       viewId: 'outline-view',
       command: OUTLINE_FOLLOW_CURSOR,
       tooltip: localize('outline.follow.cursor', '跟随光标'),
+      toggleWhen: 'followCursor',
+    });
+    registry.registerItem({
+      id: 'outline.action.collapse.all',
+      viewId: 'outline-view',
+      command: OUTLINE_COLLAPSE_ALL,
+      tooltip: localize('outline.collapse.all', '全部折叠'),
     });
   }
 

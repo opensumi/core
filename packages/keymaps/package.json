@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.6.3",
-    "@ali/ide-activity-bar": "1.6.3",
     "@ali/ide-overlay": "1.6.3",
     "@ali/ide-userstorage": "1.6.3",
     "@ali/ide-dev-tool": "1.2.1",

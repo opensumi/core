@@ -43,6 +43,7 @@ import { AbstractMenuService, MenuServiceImpl, AbstractMenubarService, MenubarSe
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
 import { ElectronCtxMenuRenderer, ElectronMenuBarService, IElectronMenuFactory, IElectronMenuBarService, ElectronMenuFactory } from '../menu/next/renderer/ctxmenu/electron';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
+import { SlotRendererContribution } from '../react-providers';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -53,6 +54,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, KeybindingContext);
   createContributionProvider(injector, ComponentContribution);
+  createContributionProvider(injector, SlotRendererContribution);
   createContributionProvider(injector, PreferenceContribution);
   createContributionProvider(injector, VariableContribution);
   createContributionProvider(injector, TabBarToolbarContribution);

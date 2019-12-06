@@ -34,11 +34,15 @@
     height: 16px;
     margin-top: 5px;
   }
-  &.filled {
+  &.toggled {
     height: 16px;
     border-radius: 2px;
     background-color: var(--inputOption-activeBorder);
     line-height: 16px;
+  }
+  &.kticon-up.toggled {
+    background-color: unset;
+    transform: rotate(180deg);
   }
 }
 

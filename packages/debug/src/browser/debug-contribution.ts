@@ -13,7 +13,7 @@ import { launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/debug-watch.view';
 
 import { getIcon } from '@ali/ide-core-browser';
-import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
+import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { DebugWatchService } from './view/debug-watch.service';
 import { DebugBreakpointsService } from './view/debug-breakpoints.service';
 import { DebugConfigurationService } from './view/debug-configuration.service';
@@ -210,7 +210,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   onDidUseConfig() {
     const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
     if (handler) {
-      handler!.setTitleComponent(DebubgConfigurationView, 85);
+      handler!.setTitleComponent(DebubgConfigurationView);
     }
   }
 
@@ -298,7 +298,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     // Watch 面板菜单
     registry.registerItem({
       id: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,

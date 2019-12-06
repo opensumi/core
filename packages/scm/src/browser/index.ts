@@ -3,7 +3,7 @@ import { BrowserModule } from '@ali/ide-core-browser';
 
 import { SCMService, IDirtyDiffWorkbenchController } from '../common';
 import { SCMContribution } from './scm.contribution';
-import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
+import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { bindSCMPreference } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { SCMMenus } from './scm-menu';
@@ -15,7 +15,6 @@ export class SCMModule extends BrowserModule {
     SCMService,
     SCMBadgeController,
     SCMStatusBarController,
-    SCMViewController,
     SCMMenus,
     {
       token: IDirtyDiffWorkbenchController,
