@@ -21,9 +21,18 @@ export function App(props: AppProps) {
         eventBus.fire(new ResizeEvent({slotLocation: item.slot, width: item.dom.clientWidth, height: item.dom.clientHeight}));
       });
     };
-    window.addEventListener('resize', () => window.requestAnimationFrame(handle));
+    let lastFrame: number | null;
+    window.addEventListener('resize', () => {
+      if (lastFrame) {
+        window.cancelAnimationFrame(lastFrame);
+      }
+      lastFrame = window.requestAnimationFrame(() => {
+        lastFrame = null;
+        handle();
+      });
+    });
     return () => { window.removeEventListener('resize', handle); };
-  });
+  }, []);
   return (
     <ConfigProvider value={ props.app.config }>
       {<props.main />}

@@ -89,14 +89,17 @@ export const SplitPanel: React.FC<{
     if (location) {
       eventBus.fire(new ResizeEvent({slotLocation: location, width: srcElement.clientWidth, height: srcElement.clientHeight}));
     } else {
-      // TODO 多级嵌套
-      children[index].props.children!.forEach((child) => {
-        if (direction === 'bottom-to-top' || direction === 'top-to-bottom') {
-          eventBus.fire(new ResizeEvent({slotLocation: child.props.slot, height: srcElement.clientHeight}));
-        } else {
-          eventBus.fire(new ResizeEvent({slotLocation: child.props.slot, width: srcElement.clientWidth}));
-        }
-      });
+      const subChildren = children[index].props.children;
+      if (subChildren && subChildren.length) {
+        // TODO 多级嵌套
+        subChildren!.forEach((child) => {
+          if (direction === 'bottom-to-top' || direction === 'top-to-bottom') {
+            eventBus.fire(new ResizeEvent({slotLocation: child.props.slot, height: srcElement.clientHeight}));
+          } else {
+            eventBus.fire(new ResizeEvent({slotLocation: child.props.slot, width: srcElement.clientWidth}));
+          }
+        });
+      }
     }
   };
 

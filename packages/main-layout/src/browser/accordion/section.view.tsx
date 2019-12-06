@@ -58,12 +58,14 @@ export const AccordionSection = (
   React.useEffect(() => {
     if (contentRef.current) {
       const ResizeObserver = (window as any).ResizeObserver;
+      let lastFrame: number | null;
       const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          window.requestAnimationFrame(() => {
-            viewStateManager.updateSize(viewId, entry.contentRect.height, entry.contentRect.width);
-          });
+        if (lastFrame) {
+          window.cancelAnimationFrame(lastFrame);
         }
+        lastFrame = window.requestAnimationFrame(() => {
+          viewStateManager.updateSize(viewId, entries[0].contentRect.height, entries[0].contentRect.width);
+        });
       });
       resizeObserver.observe(contentRef.current);
       return () => {
