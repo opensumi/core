@@ -28,6 +28,11 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
   @Autowired(ITerminalRestore)
   store: ITerminalRestore;
 
+  onReconnect() {
+    console.log('already terminals', this.terminalController.terminals);
+    this.terminalController.ensureTerminals();
+  }
+
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-terminal-next', {
       component: TerminalView,

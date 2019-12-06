@@ -33,6 +33,12 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
     }
   }
 
+  // 完成创建之后，前端进行状态同步
+  ensureTerminal(terminalIdArr: string[]): boolean {
+    console.log('syncTerminal terminalIdArr', terminalIdArr);
+    return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
+  }
+
   create(id: string, rows: number, cols: number, options: TerminalOptions ) {
     const clientId = this.clientId;
 
@@ -73,6 +79,8 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
   }
 
   dispose() {
+    this.terminalService.closeClient(this.clientId);
+
     /*
     this.terminalMap.forEach((pty) => {
       pty.kill();

@@ -4,6 +4,7 @@ import { TerminalOptions } from '../common';
 
 export const ITerminalExternalService = Symbol('ITerminalExternalService');
 export interface ITerminalExternalService {
+  ensureTerminals(terminalIdArr: string[]): Promise<boolean>;
   /**
    * 集成方自定义会话唯一标识的函数
    */

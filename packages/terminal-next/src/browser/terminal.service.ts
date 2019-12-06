@@ -37,6 +37,11 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
   private _dispatcher = new Dispatcher();
   private _info = new Map<string, { pid: number, name: string }>();
 
+  async ensureTerminals(terminalIdArr: string[]) {
+    const ensureResult = await this.service.ensureTerminal(terminalIdArr);
+    return ensureResult;
+  }
+
   getOptions() {
     return {};
   }

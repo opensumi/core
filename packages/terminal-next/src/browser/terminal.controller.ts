@@ -52,6 +52,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this._clientsMap.get(this._focusedId);
   }
 
+  // TODO: 重置流程，当后端 pty 销毁时，进入初始化第一个流程
+  public async ensureTerminals() {
+    const reuslt = await this.service.ensureTerminals(this.terminals.map((term) => term.id));
+
+    console.log('terminal ensure result', reuslt);
+  }
+
   private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}) {
     const client = new TerminalClient(this.service, this.termTheme, this, widget, restoreId, options);
     client.addDispose({
