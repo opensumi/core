@@ -1,4 +1,4 @@
-import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData } from './types';
+import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle } from './types';
 import { isElectronRenderer, getLogger, localize, URI, IEventBus, Disposable, MaybeNull } from '@ali/ide-core-browser';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
@@ -19,6 +19,8 @@ export class WebviewServiceImpl implements IWebviewService {
   private editorWebviewIdCount = 0;
 
   public readonly editorWebviewComponents = new Map<string, EditorWebviewComponent<IWebview | IPlainWebview>>();
+
+  public readonly plainWebviewsComponents = new Map<string, IPlainWebviewComponentHandle>();
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
@@ -64,8 +66,11 @@ export class WebviewServiceImpl implements IWebviewService {
     return component;
   }
 
-  createEditorPlainWebviewComponent(options?: IPlainWebviewConstructionOptions): IEditorWebviewComponent<IPlainWebview> {
-    const id = (this.editorWebviewIdCount++).toString();
+  createEditorPlainWebviewComponent(options: IPlainWebviewConstructionOptions = {}, id: string): IEditorWebviewComponent<IPlainWebview> {
+    id = id || (this.editorWebviewIdCount++).toString();
+    if (this.editorWebviewComponents.has(id)) {
+      return this.editorWebviewComponents.get(id) as IEditorWebviewComponent<IPlainWebview>;
+    }
     const component = this.injector.get(EditorWebviewComponent, [id, () => this.createPlainWebview(options)]) as EditorWebviewComponent<IPlainWebview>;
     this.editorWebviewComponents.set(id, component);
     return component;
@@ -98,6 +103,27 @@ export class WebviewServiceImpl implements IWebviewService {
     return { styles, activeTheme };
   }
 
+  getOrCreatePlainWebviewComponent(id: string, options?: IPlainWebviewConstructionOptions | undefined): IPlainWebviewComponentHandle {
+    if (!this.plainWebviewsComponents.has(id)) {
+      const webview = this.createPlainWebview(options);
+      const component = this.injector.get(PlainWebviewComponent, [id, webview]);
+      this.plainWebviewsComponents.set(id, component);
+      component.onDispose(() => {
+        this.plainWebviewsComponents.delete(id);
+      });
+    }
+    return this.plainWebviewsComponents.get(id)!;
+  }
+
+  getEditorPlainWebviewComponent(id: string): IEditorWebviewComponent<IPlainWebview> | undefined {
+    const component = this.editorWebviewComponents.get(id);
+    if (component && (component.webview as IPlainWebview).loadURL) {
+      return component as IEditorWebviewComponent<IPlainWebview>;
+    }
+  }
+  getPlainWebviewComponent(id: string): IPlainWebviewComponentHandle | undefined {
+    return this.plainWebviewsComponents.get(id);
+  }
 }
 
 enum ApiThemeClassName {
@@ -238,6 +264,16 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
     const componentId = EDITOR_WEBVIEW_SCHEME + '_' + this.id;
     this.editorComponentRegistry.clearPerWorkbenchComponentCache(componentId);
     this.webview.remove();
+  }
+
+}
+
+@Injectable({multiple: true})
+export class PlainWebviewComponent extends Disposable implements IPlainWebviewComponentHandle {
+
+  constructor(public readonly id: string, public readonly webview) {
+    super();
+    this.addDispose(this.webview);
   }
 
 }

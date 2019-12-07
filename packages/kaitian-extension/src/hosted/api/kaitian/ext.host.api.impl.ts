@@ -5,6 +5,7 @@ import { createWindowApiFactory } from './ext.host.window';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { ExtensionReporterService } from '../../extension-reporter';
 import { Emitter, ReporterProcessMessage, REPORT_HOST } from '@ali/ide-core-common';
+import { KaitianExtHostWebview, createKaitianWebviewApi } from './ext.host.webview';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -18,6 +19,7 @@ export function createAPIFactory(
   }
 
   const extHostCommands = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostCommands);
+  const kaitianExtHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.KaitianExtHostWebview, new KaitianExtHostWebview(rpcProtocol)) as  KaitianExtHostWebview;
 
   return (extension: IExtension) => {
     const reporter = new ExtensionReporterService(reporterEmitter, {
@@ -28,6 +30,7 @@ export function createAPIFactory(
     return {
       layout: createLayoutAPIFactory(extHostCommands),
       ideWindow: createWindowApiFactory(extHostCommands),
+      webview: createKaitianWebviewApi(extension, kaitianExtHostWebview),
       reporter,
     };
   };

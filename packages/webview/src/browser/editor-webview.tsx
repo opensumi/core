@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { IWebview, IPlainWebview, IEditorWebviewComponent, IEditorWebviewMetaData } from './types';
-import { IDisposable, Disposable, DomListener } from '@ali/ide-core-browser';
+import { IWebview, IPlainWebview, IEditorWebviewComponent, IEditorWebviewMetaData, IWebviewService } from './types';
+import { IDisposable, Disposable, DomListener, useInjectable } from '@ali/ide-core-browser';
 
 declare const ResizeObserver: any;
 declare const MutationObserver: any;
@@ -27,6 +27,31 @@ export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMeta
 
   return <div style={{height: '100%'}} ref = {(el) => container = el}></div>;
 
+};
+
+/**
+ * 同一个ID创建的webview会保存在内存以便重复使用，不要使用这个组件进行大量不同webview的创建
+ * @param param0
+ */
+export const PlainWebview: React.FunctionComponent<{id: string}> = ({id}) => {
+
+  let container: HTMLDivElement | null = null;
+  const webviewService = useInjectable(IWebviewService) as IWebviewService;
+
+  React.useEffect(() => {
+    const component = webviewService.getOrCreatePlainWebviewComponent(id);
+    if (component && container) {
+      const mounter = new WebviewMounter(component.webview, container, document.getElementById('workbench-editor')!);
+      component.webview.onRemove(() => {
+        mounter.dispose();
+      });
+      return () => {
+        component.webview.remove();
+      };
+    }
+  });
+
+  return <div style={{height: '100%'}} ref = {(el) => container = el}></div>;
 };
 
 // 将iframe挂载在一个固定的位置，以overlay的形式覆盖在container中，
@@ -126,6 +151,7 @@ class WebviewMounter extends Disposable {
     if (!document.getElementById(WEBVIEW_OVERLAY_CONTAINER_ID)) {
       const container = document.createElement('div');
       container.id = WEBVIEW_OVERLAY_CONTAINER_ID;
+      container.style.zIndex = '2';
       document.body.appendChild(container);
     }
     this._container = document.createElement('div');

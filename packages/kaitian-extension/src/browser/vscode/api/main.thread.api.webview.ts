@@ -1,11 +1,13 @@
 import { IMainThreadWebview, WebviewPanelShowOptions, IWebviewPanelOptions, IWebviewOptions, ExtHostAPIIdentifier, IExtHostWebview, IWebviewPanelViewState } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { UriComponents } from '../../../common/vscode/ext-types';
-import { IWebviewService, IEditorWebviewComponent, IWebview, EDITOR_WEBVIEW_SCHEME } from '@ali/ide-webview';
+import { IWebviewService, IEditorWebviewComponent, IWebview, EDITOR_WEBVIEW_SCHEME, IPlainWebview, IPlainWebviewComponentHandle } from '@ali/ide-webview';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
-import { IDisposable, Disposable, URI, MaybeNull, IEventBus } from '@ali/ide-core-browser';
+import { IDisposable, Disposable, URI, MaybeNull, IEventBus, ILogger } from '@ali/ide-core-browser';
 import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
+import { IKaitianExtHostWebviews } from '../../../common/kaitian/webview';
+import { IIconService } from '@ali/ide-theme';
 
 @Injectable({multiple: true})
 export class MainThreadWebview extends Disposable implements IMainThreadWebview {
@@ -15,6 +17,8 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
   private webivewPanels: Map<string, IWebviewPanel> = new Map();
 
+  private plainWebviews: Map<string, IEditorWebviewComponent<IPlainWebview> |  IPlainWebviewComponentHandle > = new Map();
+
   private activeWebivewPanel: string;
 
   private readonly _revivers = new Set<string>();
@@ -23,15 +27,24 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
   private proxy: IExtHostWebview;
 
+  private kaitianProxy: IKaitianExtHostWebviews;
+
   @Autowired()
   editorService: WorkbenchEditorService;
+
+  @Autowired(IIconService)
+  iconService: IIconService;
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
+  @Autowired(ILogger)
+  logger: ILogger;
+
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWebivew);
+    this.kaitianProxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.KaitianExtHostWebview);
     this.initEvents();
   }
 
@@ -180,7 +193,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   async $postMessage(id: string, value: any): Promise<boolean> {
     try {
       const webviewPanel = this.getWebivewPanel(id);
-      webviewPanel.editorWebview.webview.postMessage(value);
+      await webviewPanel.editorWebview.webview.postMessage(value);
       return true;
     } catch (e) {
       return false;
@@ -193,6 +206,64 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
   $unregisterSerializer(viewType: string): void {
    // TODO
+  }
+
+  $connectPlainWebview(id: string) {
+    if (!this.plainWebviews.has(id)) {
+      const handle = this.webviewService.getEditorPlainWebviewComponent(id) || this.webviewService.getOrCreatePlainWebviewComponent(id);
+      if (handle) {
+        this.plainWebviews.set(id, handle);
+        handle.webview.onMessage((message) => {
+          this.kaitianProxy.$acceptMessage(id, message);
+        });
+        handle.webview.onDispose(() => {
+          this.plainWebviews.delete(id);
+        });
+      }
+    }
+  }
+  async $postMessageToPlainWebview(id: string, value: any): Promise<boolean> {
+    if (this.plainWebviews.has(id)) {
+      try {
+        await this.plainWebviews.get(id)!.webview.postMessage(value);
+        return true;
+      } catch (e) {
+        this.logger.error(e);
+        return false;
+      }
+    }
+    return false;
+  }
+  async $createPlainWebview(id: string, title: string, iconPath?: string | undefined): Promise<void> {
+    const webviewComponent = this.webviewService.createEditorPlainWebviewComponent({}, id);
+    webviewComponent.title = title;
+    if (iconPath) {
+      webviewComponent.icon = this.iconService.fromIcon('', iconPath) || '';
+    }
+    this.$connectPlainWebview(id);
+  }
+  async $plainWebviewLoadUrl(id: string, uri: string): Promise<void> {
+    if (!this.plainWebviews.has(id)) {
+      throw new Error('No Plain Webview With id ' + id);
+    }
+    await this.plainWebviews.get(id)!.webview.loadURL(uri);
+  }
+
+  async $disposePlainWebview(id: string): Promise<void> {
+    if (this.plainWebviews.has(id)) {
+      this.plainWebviews.get(id)?.dispose();
+    }
+  }
+
+  async $revealPlainWebview(id: string, groupIndex: number): Promise<void> {
+    if (!this.plainWebviews.has(id)) {
+      throw new Error('No Plain Webview With id ' + id);
+    }
+    const handle = this.plainWebviews.get(id);
+    if (!(handle as IEditorWebviewComponent<IPlainWebview>).open) {
+      throw new Error('not able to open plain webview id:' + id);
+    }
+    await (handle as IEditorWebviewComponent<IPlainWebview>).open(groupIndex);
   }
 
 }
