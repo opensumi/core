@@ -32,6 +32,7 @@ export class TerminalClient extends Disposable {
   private attachPromise: Promise<void> | null = null;
 
   static defaultOptions: ITerminalOptions = {
+    allowTransparency: true,
     macOptionIsMeta: false,
     cursorBlink: false,
     scrollback: 2500,
