@@ -147,7 +147,7 @@ export interface ComponentContribution {
 export const ComponentContribution = Symbol('ComponentContribution');
 
 export class ResizePayload {
-  constructor(public width: number, public height: number, public slotLocation: SlotLocation) {
+  constructor(public slotLocation: SlotLocation, public width?: number, public height?: number) {
   }
 }
 export class ResizeEvent extends BasicEvent<ResizePayload> {}

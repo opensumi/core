@@ -1,8 +1,9 @@
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { uuid, CommandService, OnEvent, WithEventBus, Emitter, ILogger } from '@ali/ide-core-common';
 import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IThemeService } from '@ali/ide-theme/lib/common';
 import { TerminalClient } from './terminal.client';
 import { WidgetGroup, Widget } from './component/resize.control';
 import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
@@ -19,6 +20,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @observable
   errors: Map<string, ITerminalError> = new Map();
+
+  @observable
+  themeBackground: string;
 
   @Autowired(ITerminalExternalService)
   service: ITerminalExternalService;
@@ -37,6 +41,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(ILogger)
   logger: ILogger;
+  @Autowired(IThemeService)
+  themeService: IThemeService;
 
   tabbarHandler: TabBarHandler;
 
@@ -161,6 +167,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           this.layoutTerminalClient(widget.id);
         });
       }
+    });
+
+    this.themeBackground = this.termTheme.terminalTheme.background || '';
+    this.themeService.onThemeChange((theme) => {
+      this._clientsMap.forEach((client) => {
+        client.updateTheme();
+        this.themeBackground = this.termTheme.terminalTheme.background || '';
+      });
     });
   }
 

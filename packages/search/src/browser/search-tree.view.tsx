@@ -45,7 +45,7 @@ function getRenderTree(nodes: ISearchTreeItem[]) {
 
 function getScrollContainerStyle(viewState: ViewState, searchPanelLayout: any): ISearchLayoutProp {
   return {
-    width: viewState.width || 0,
+    width: viewState.width || '100%',
     height: viewState.height - searchPanelLayout.height - 50 || 0,
   } as ISearchLayoutProp;
 }

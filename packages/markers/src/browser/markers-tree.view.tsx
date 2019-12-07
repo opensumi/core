@@ -182,8 +182,8 @@ const MarkerList: React.FC<{ viewModel: MarkerViewModel }> = observer(({ viewMod
     <RecycleTree
       nodes={nodes}
       outline={false}
-      scrollContainerStyle={{ width: markerService.viewSize.w, height: markerService.viewSize.h, key: 'marker-list' }}
-      containerHeight={markerService.viewSize.h}
+      scrollContainerStyle={{ width: '100%', height: '100%', key: 'marker-list' }}
+      containerHeight={markerService.viewSize.h!}
       onSelect={(items) => {
         const item = items && items[0];
         if (!item) { return; }

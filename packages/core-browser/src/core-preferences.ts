@@ -102,6 +102,22 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: '%editor.configuration.showActionWhenGroupEmpty%',
     },
+    'editor.autoSave': {
+      type: 'string',
+      enum: [
+        'off',
+        'afterDelay',
+        'editorFocusChange',
+        'windowLostFocus',
+      ],
+      default: 'off',
+      description: '%editor.configuration.autoSave%',
+    },
+    'editor.autoSaveDelay': {
+      type: 'number',
+      default: 1000,
+      description: '%editor.configuration.autoSaveDelay%',
+    },
     'editor.preferredFormatter': {
       type: 'object',
       default: {},

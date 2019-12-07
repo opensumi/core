@@ -139,7 +139,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     });
   }
 
-  onDidUseConfig() {
+  onDidRender() {
     const terminalTabbar = this.layoutService.getTabbarHandler('terminal');
     if (terminalTabbar) {
       terminalTabbar.setTitleComponent(TerminalSelect);

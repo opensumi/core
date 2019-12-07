@@ -35,7 +35,7 @@ export const MainLayoutContribution = Symbol('MainLayoutContribution');
 export interface MainLayoutContribution {
 
   // 将LayoutConfig渲染到各Slot后调用
-  onDidUseConfig?(): void;
+  onDidRender?(): void;
 
   provideDefaultState?(): SideStateManager;
 
