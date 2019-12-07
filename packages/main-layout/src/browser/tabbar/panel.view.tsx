@@ -57,7 +57,7 @@ const ContainerView: React.FC<{
       </div>}
       <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
         {CustomComponent ? <ConfigProvider value={configContext} >
-          <ComponentRenderer Component={CustomComponent} />
+          <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={CustomComponent} />
         </ConfigProvider> : <AccordionContainer views={component.views} containerId={component.options!.containerId} />}
       </div>
     </div>
@@ -84,7 +84,7 @@ const PanelView: React.FC<{
             seperator='navigation' />}
         </div>
       </div>
-      <ComponentRenderer Component={component.views[0].component!} />
+      <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component!} />
     </div>
   );
 });
