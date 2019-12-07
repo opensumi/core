@@ -149,7 +149,7 @@ const TitleActionList: React.FC<{
   more?: MenuNode[];
   context?: any[];
 }> = ({ nav: primary = [], more: secondary = [], context = [] }) => {
-  const ctxMenuRenderer = useInjectable(ICtxMenuRenderer);
+  const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
   const handleShowMore = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
