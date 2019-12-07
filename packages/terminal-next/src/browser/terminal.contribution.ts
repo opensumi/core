@@ -29,7 +29,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
   store: ITerminalRestore;
 
   onReconnect() {
-    console.log('already terminals', this.terminalController.terminals);
     this.terminalController.ensureTerminals();
   }
 
