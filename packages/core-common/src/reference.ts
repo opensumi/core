@@ -19,7 +19,13 @@ export class ReferenceManager<T> {
 
   protected _onReferenceAllDisposed = new Emitter<string>();
 
+  protected _onInstanceCreated = new Emitter<T>();
+
   public onReferenceAllDisposed: Event<string> = this._onReferenceAllDisposed.event;
+
+  public onInstanceCreated: Event<T> = this._onInstanceCreated.event;
+
+  public _creating: Map<string, Promise<void>> = new Map();
 
   constructor(private factory: (key: string) => MaybePromise<T>) {
 
@@ -27,9 +33,24 @@ export class ReferenceManager<T> {
 
   async getReference(key: string, reason?: string): Promise<IRef<T>> {
     if (!this.instances.has(key)) {
-      this.instances.set(key, await this.factory(key));
+      if (!this._creating.has(key)) {
+        const promise = ((async (resolve) => {
+          const instance = await this.factory(key);
+          this.instances.set(key, instance);
+          this._onInstanceCreated.fire(instance);
+        })());
+        this._creating.set(key, promise);
+      }
+      await this._creating.get(key)!;
     }
-    return this.createRef(key, reason);
+    const ref =  this.createRef(key, reason);
+    if (this._creating.get(key)) {
+      this._creating.get(key)!.then(() => {
+        this._creating.delete(key);
+        this.removeRef(key, undefined);
+      })
+    }
+    return ref;
   }
 
   getReferenceIfHasInstance(key: string, reason?: string): IRef<T> | null {
@@ -62,13 +83,18 @@ export class ReferenceManager<T> {
     this.refs.get(key)!.push(ref);
   }
 
-  private removeRef(key: string, ref: Ref<T>) {
+  private removeRef(key: string, ref: Ref<T> | undefined) {
     if (this.refs.get(key)){
-      const index = this.refs.get(key)!.indexOf(ref);
-      if (index !== -1) {
-        this.refs.get(key)!.splice(index,1);
+      if (ref) {
+        const index = this.refs.get(key)!.indexOf(ref);
+        if (index !== -1) {
+          this.refs.get(key)!.splice(index,1);
+        }
       }
       if (this.refs.get(key)!.length === 0) {
+        if (this._creating.has(key)) {
+          return; // 正在被创建
+        }
         this.refs.delete(key);
         this.instances.delete(key);
         this._onReferenceAllDisposed.fire(key);

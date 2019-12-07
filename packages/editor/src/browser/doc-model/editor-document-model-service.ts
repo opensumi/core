@@ -2,7 +2,7 @@ import * as md5 from 'md5';
 import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, STORAGE_SCHEMA, ILogger } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
-import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent } from './types';
+import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent } from './types';
 import { EditorDocumentModel } from './editor-document-model';
 import { mapToSerializable, serializableToMap } from '@ali/ide-core-common/lib/map';
 
@@ -47,6 +47,17 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     });
     this._modelReferenceManager.onReferenceAllDisposed((key: string) => {
       this._delete(key);
+    });
+    this._modelReferenceManager.onInstanceCreated((model) => {
+      this.eventBus.fire(new EditorDocumentModelCreationEvent({
+        uri: model.uri,
+        languageId: model.languageId,
+        eol: model.eol,
+        encoding: model.encoding,
+        content: model.getText(),
+        readonly: model.readonly,
+        versionId: model.getMonacoModel().getVersionId(),
+      }));
     });
   }
 
