@@ -23,6 +23,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
       masterKey: '-nzxLbuqvrKh8arE0grj2f1H',
     },
     processCloseExitThreshold: 5 * 60 * 1000,
+    terminalPtyCloseThreshold: 5 * 60 * 1000,
     staticAllowOrigin: 'http://0.0.0.0:8080',
     staticAllowPath: [
       path.join(__dirname, '../../../packages/kaitian-extension'),

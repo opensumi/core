@@ -2,13 +2,16 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
 import { PtyService, IPty } from './pty';
 import { ITerminalService, TerminalOptions, ITerminalServiceClient } from '../common';
-import { INodeLogger } from '@ali/ide-core-node';
+import { INodeLogger, AppConfig, isDevelopment } from '@ali/ide-core-node';
 
 /**
  * terminal service 的具体实现
  */
 @Injectable()
 export class TerminalServiceImpl extends RPCService implements ITerminalService {
+
+  static TerminalPtyCloseThreshold = 10 * 1000;
+
   private terminalMap: Map<string, IPty> = new Map();
   private clientTerminalMap: Map<string, Map<string, IPty>> = new Map();
   private clientTerminalThresholdMap: Map<string, NodeJS.Timeout> = new Map();
@@ -18,6 +21,9 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
 
   @Autowired(INodeLogger)
   private logger: INodeLogger;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
     this.serviceClientMap.set(clientId, client);
@@ -47,7 +53,7 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
       this.disposeClient(clientId);
       this.logger.debug(`删除 clientId ${clientId} 窗口的 pty 进程`);
       this.clientTerminalThresholdMap.delete(clientId );
-    }, 10 * 1000);
+    }, isDevelopment() ? 0 : (this.appConfig.terminalPtyCloseThreshold || TerminalServiceImpl.TerminalPtyCloseThreshold));
 
     this.clientTerminalThresholdMap.set(clientId, closeTimer);
   }

@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { uuid, CommandService, OnEvent, WithEventBus, Emitter } from '@ali/ide-core-common';
+import { uuid, CommandService, OnEvent, WithEventBus, Emitter, ILogger } from '@ali/ide-core-common';
 import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TerminalClient } from './terminal.client';
@@ -35,6 +35,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
 
+  @Autowired(ILogger)
+  logger: ILogger;
+
   tabbarHandler: TabBarHandler;
 
   private _clientsMap = new Map<string, TerminalClient>();
@@ -54,9 +57,18 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   // TODO: 重置流程，当后端 pty 销毁时，进入初始化第一个流程
   public async ensureTerminals() {
-    const reuslt = await this.service.ensureTerminals(this.terminals.map((term) => term.id));
+    const result = await this.service.ensureTerminals(this.terminals.map((term) => term.id));
+    this.logger.log('ensureTerminals result', result);
 
-    console.log('terminal ensure result', reuslt);
+    if (!result) {
+      this.groups.forEach((group, index) => {
+        this._removeGroupByIndex(index);
+      });
+
+      this.groups = [];
+      this.createGroup(true);
+      this.addWidget();
+    }
   }
 
   private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}) {
