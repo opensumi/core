@@ -60,7 +60,7 @@ export class TerminalClient extends Disposable {
     this._container = document.createElement('div');
     this._container.className = styles.terminalContent;
     this._term = new Terminal({
-      // theme: this.theme.terminalTheme,
+      theme: this.theme.terminalTheme,
       ...TerminalClient.defaultOptions,
       ...this.service.getOptions(),
     });

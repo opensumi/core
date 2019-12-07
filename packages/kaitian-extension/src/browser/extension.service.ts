@@ -801,13 +801,17 @@ export class ExtensionServiceImpl implements ExtensionService {
               [{
                 component: component.panel,
                 id: `${extension.id}:${component.id}`,
-              }],
-              {
-                iconClass: component.icon ? getIcon(component.icon) : component.iconPath ? this.iconService.fromIcon(extension.path, component.iconPath) : '',
                 initialProps: {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,
                 },
+              }],
+              {
+                iconClass: component.icon ? getIcon(component.icon) : component.iconPath ? this.iconService.fromIcon(extension.path, component.iconPath) : '',
+                // initialProps: {
+                //   kaitianExtendService: extendService,
+                //   kaitianExtendSet: extendProtocol,
+                // },
                 containerId: `${extension.id}:${component.id}`,
                 activateKeyBinding: component.keyBinding,
                 title: component.title,
