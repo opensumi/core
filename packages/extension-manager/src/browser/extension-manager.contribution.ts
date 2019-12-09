@@ -7,10 +7,12 @@ import { Autowired } from '@ali/common-di';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ResourceService } from '@ali/ide-editor';
 import { ExtensionResourceProvider } from './extension-resource-provider';
-import { getIcon } from '@ali/ide-core-browser';
+import { getIcon, IQuickInputService } from '@ali/ide-core-browser';
 import { MenuId, NextMenuContribution as MenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 
 import ExtensionPanelView from './extension-panel.view';
+import { IMessageService } from '@ali/ide-overlay';
+import { IStatusBarService, StatusBarAlignment } from '@ali/ide-core-browser/lib/services';
 
 const category = '%extension%';
 
@@ -40,6 +42,11 @@ namespace ExtensionCommands {
     category,
     label: '%marketplace.extension.uninstall%',
   };
+  export const INSTALL_EXTENSION_BY_ID: Command = {
+    id: 'extension.install.id',
+    category,
+    label: '%marketplace.quickopen.install%',
+  };
 }
 
 @Domain(ComponentContribution, MainLayoutContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
@@ -53,6 +60,15 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
 
   @Autowired()
   resourceProvider: ExtensionResourceProvider;
+
+  @Autowired(IQuickInputService)
+  quickInputService: IQuickInputService;
+
+  @Autowired(IMessageService)
+  messageService: IMessageService;
+
+  @Autowired(IStatusBarService)
+  statusBarService: IStatusBarService;
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.resourceProvider);
@@ -137,6 +153,48 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       },
       isVisible: (extension: RawExtension) => {
         return extension && extension.installed && !extension.isBuiltin;
+      },
+    });
+    commands.registerCommand(ExtensionCommands.INSTALL_EXTENSION_BY_ID, {
+      execute: async () => {
+        const extensionId = await this.quickInputService.open({
+          prompt: localize('marketplace.quickopen.install.id'),
+          placeHolder: 'group.name',
+        });
+        if (!extensionId) {
+          this.messageService.info(localize('marketplace.quickopen.install.id.required'));
+          return;
+        }
+        const version = await this.quickInputService.open({
+          placeHolder: localize('marketplace.quickopen.install.version.placeholder'),
+        });
+        try {
+          const [publisher, name] = extensionId.split('.');
+          this.statusBarService.addElement(ExtensionCommands.INSTALL_EXTENSION_BY_ID.id, {
+            text: `$(sync~spin) ${localize('marketplace.extension.installing')}`,
+            alignment: StatusBarAlignment.RIGHT,
+            priority: 10000,
+          });
+          await this.extensionManagerService.installExtension({
+            extensionId,
+            name,
+            publisher,
+            path: '',
+            version: version || '',
+          });
+          // 下载成功打开插件面板
+          this.extensionManagerService.openExtensionDetail({
+            publisher,
+            name,
+            version,
+            preview: false,
+            remote: false,
+          });
+        } catch (e) {
+          this.messageService.error(`${localize('marketplace.quickopen.install.error')} : ${e.message}`);
+        } finally {
+          this.statusBarService.removeElement(ExtensionCommands.INSTALL_EXTENSION_BY_ID.id);
+        }
       },
     });
   }
