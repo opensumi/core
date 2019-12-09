@@ -793,26 +793,53 @@ export class ExtensionServiceImpl implements ExtensionService {
     for (const pos in browserExported) {
       if (browserExported.hasOwnProperty(pos)) {
         const posComponent = browserExported[pos].component;
-        if (pos === 'left' || pos === 'right' || pos === 'bottom') {
+        if (pos === 'left' || pos === 'right') {
           for (let i = 0, len = posComponent.length; i < len; i++) {
             const component = posComponent[i];
             const { extendProtocol, extendService } = this.getExtensionExtendService(extension, component.id);
             const componentId = this.layoutService.collectTabbarComponent(
               [{
-                component: component.panel,
                 id: `${extension.id}:${component.id}`,
+              }],
+              {
+                iconClass: component.icon ? getIcon(component.icon) : component.iconPath ? this.iconService.fromIcon(extension.path, component.iconPath) : '',
+                containerId: `${extension.id}:${component.id}`,
+                component: component.panel,
                 initialProps: {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,
                 },
+                activateKeyBinding: component.keyBinding,
+                title: component.title,
+                priority: component.priority,
+              },
+              pos,
+            );
+
+            if (!this.extensionComponentMap.has(extension.id)) {
+              this.extensionComponentMap.set(extension.id, []);
+            }
+
+            const extensionComponentArr = this.extensionComponentMap.get(extension.id) as string[];
+            extensionComponentArr.push(componentId);
+            this.extensionComponentMap.set(extension.id, extensionComponentArr);
+          }
+        } else if (pos === 'bottom') {
+          for (let i = 0, len = posComponent.length; i < len; i++) {
+            const component = posComponent[i];
+            const { extendProtocol, extendService } = this.getExtensionExtendService(extension, component.id);
+            const componentId = this.layoutService.collectTabbarComponent(
+              [{
+                id: `${extension.id}:${component.id}`,
+                component: component.panel,
               }],
               {
                 iconClass: component.icon ? getIcon(component.icon) : component.iconPath ? this.iconService.fromIcon(extension.path, component.iconPath) : '',
-                // initialProps: {
-                //   kaitianExtendService: extendService,
-                //   kaitianExtendSet: extendProtocol,
-                // },
                 containerId: `${extension.id}:${component.id}`,
+                initialProps: {
+                  kaitianExtendService: extendService,
+                  kaitianExtendSet: extendProtocol,
+                },
                 activateKeyBinding: component.keyBinding,
                 title: component.title,
                 priority: component.priority,
