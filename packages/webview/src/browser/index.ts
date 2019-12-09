@@ -4,6 +4,7 @@ import { IWebviewService } from './types';
 import { WebviewServiceImpl } from './webview.service';
 import { WebviewModuleContribution } from './contribution';
 export * from './types';
+export { PlainWebview } from './editor-webview';
 
 @Injectable()
 export class WebviewModule extends BrowserModule {

@@ -124,9 +124,15 @@ export interface IWebviewService {
 
   createEditorWebviewComponent(options?: IWebviewContentOptions): IEditorWebviewComponent<IWebview>;
 
-  createEditorPlainWebviewComponent(options?: IPlainWebviewConstructionOptions): IEditorWebviewComponent<IPlainWebview>;
+  createEditorPlainWebviewComponent(options?: IPlainWebviewConstructionOptions, id?: string): IEditorWebviewComponent<IPlainWebview>;
 
   getWebviewThemeData(theme: ITheme): IWebviewThemeData;
+
+  getOrCreatePlainWebviewComponent(id: string, options?: IPlainWebviewConstructionOptions): IPlainWebviewComponentHandle;
+
+  getEditorPlainWebviewComponent(id: string): IEditorWebviewComponent<IPlainWebview> | undefined;
+
+  getPlainWebviewComponent(id: string): IPlainWebviewComponentHandle | undefined;
 }
 
 export interface IPlainWebviewConstructionOptions {
@@ -162,6 +168,15 @@ export interface IEditorWebviewComponent<T extends IWebview | IPlainWebview> ext
   close();
 
   webviewUri: URI;
+
+}
+
+export interface IPlainWebviewComponentHandle extends IDisposable {
+
+  // 唯一id
+  id: string;
+
+  webview: IPlainWebview;
 
 }
 

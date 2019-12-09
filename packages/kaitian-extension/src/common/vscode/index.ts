@@ -26,6 +26,7 @@ import { IExtensionHostService } from '../';
 import { IExtHostDebug, IMainThreadDebug } from './debug';
 import { IExtHostConnection, IMainThreadConnection } from './connection';
 import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
+import { IKaitianExtHostWebviews } from '../kaitian/webview';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -88,6 +89,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostConnection: createExtHostContextProxyIdentifier<IExtHostConnection>('ExtHostConnection'),
   ExtHostTerminal: createExtHostContextProxyIdentifier<IExtHostTerminal>('ExtHostTerminal'),
   ExtHostWindow: createExtHostContextProxyIdentifier<IExtHostWindow>('ExtHostWindow'),
+  KaitianExtHostWebview: createExtHostContextProxyIdentifier<IKaitianExtHostWebviews>('KaitianExtHostWebview'),
 };
 
 export abstract class VSCodeExtensionNodeService {
