@@ -7,6 +7,7 @@ import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelec
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import debounce = require('lodash.debounce');
+import { MainThreadExtensionDocumentData } from './main.thread.doc';
 
 @Injectable({multiple: true})
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -21,7 +22,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   private readonly proxy: IExtensionHostEditorService;
 
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol, private documents: MainThreadExtensionDocumentData) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEditors);
     this.$getInitialState().then((change) => {
@@ -34,9 +35,15 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const editors = this.editorService.editorGroups.map((group) => {
       if (group.currentOpenType && isEditor(group.currentOpenType)) {
         const editor = group.currentEditor as IMonacoImplEditor;
+        if (!editor.currentDocumentModel) {
+          return undefined;
+        }
+        if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
+          return undefined;
+        }
         return {
           id: getTextEditorId(group, group.currentResource!),
-          uri: editor.currentDocumentModel!.uri.toString(),
+          uri: editor.currentDocumentModel.uri.toString(),
           selections: editor!.getSelections() || [],
           options: getEditorOption(editor.monacoEditor),
           viewColumn: getViewColumn(group),
@@ -47,7 +54,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const activedEditor =  this.editorService.currentResource && editors.find((e) => e!.uri === this.editorService.currentResource!.uri.toString());
     return {
       created: editors,
-      actived: activedEditor && activedEditor.id,
+      actived: activedEditor && this.documents.isDocSyncEnabled(activedEditor.uri) && activedEditor.id,
     } as IEditorChangeDTO;
 
   }
@@ -134,16 +141,22 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         const change: IEditorChangeDTO = {};
         if (payload.newOpenType && (payload.newOpenType.type === 'code' || payload.newOpenType.type === 'diff')) {
           const editor = payload.group.currentEditor as IMonacoImplEditor;
-          change.created = [
-            {
-              id: getTextEditorId(payload.group, payload.newResource!),
-              uri: editor.currentDocumentModel!.uri.toString(),
-              selections: editor!.getSelections() || [],
-              options: getEditorOption(editor.monacoEditor),
-              viewColumn: getViewColumn(payload.group),
-              visibleRanges: editor.monacoEditor.getVisibleRanges(),
-            },
-          ];
+          if (!editor.currentDocumentModel) {
+            // noop
+          } else if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
+            // noop
+          } else {
+            change.created = [
+              {
+                id: getTextEditorId(payload.group, payload.newResource!),
+                uri: editor.currentDocumentModel!.uri.toString(),
+                selections: editor!.getSelections() || [],
+                options: getEditorOption(editor.monacoEditor),
+                viewColumn: getViewColumn(payload.group),
+                visibleRanges: editor.monacoEditor.getVisibleRanges(),
+              },
+            ];
+          }
           // 来自切换打开类型
           if (resourceEquals(payload.newResource, payload.oldResource) && !openTypeEquals(payload.newOpenType, payload.oldOpenType) && payload.newResource === this.editorService.currentResource) {
             change.actived = getTextEditorId(payload.group, payload.newResource!);

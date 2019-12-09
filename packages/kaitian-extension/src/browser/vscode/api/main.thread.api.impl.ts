@@ -47,7 +47,7 @@ export function createApiFactory(
   const MainThreadLanguagesAPI = injector.get(MainThreadLanguages, [rpcProtocol]);
   const MainThreadCommandsAPI = injector.get(MainThreadCommands, [rpcProtocol]);
   const MainThreadExtensionDocumentDataAPI = injector.get(MainThreadExtensionDocumentData, [rpcProtocol]);
-  const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [rpcProtocol]);
+  const MainThreadEditorServiceAPI = injector.get(MainThreadEditorService, [rpcProtocol, MainThreadExtensionDocumentDataAPI]);
   const MainThreadStatusBarAPI = injector.get(MainThreadStatusBar, [rpcProtocol]);
   const MainThreadMessageAPI = injector.get(MainThreadMessage, [rpcProtocol]);
   const MainThreadWorkspaceAPI = injector.get(MainThreadWorkspace, [rpcProtocol]);

@@ -97,15 +97,6 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this.eol = options.eol;
     }
     this._originalEncoding = this._encoding;
-    this.eventBus.fire(new EditorDocumentModelCreationEvent({
-      uri: this.uri,
-      languageId: this.languageId,
-      eol: this.eol,
-      encoding: this.encoding,
-      content,
-      readonly: this.readonly,
-      versionId: this.monacoModel.getVersionId(),
-    }));
     this._previousVersionId = this.monacoModel.getVersionId(),
     this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     this.baseContent = content;
