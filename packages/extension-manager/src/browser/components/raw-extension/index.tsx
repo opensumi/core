@@ -74,7 +74,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
         <div className={styles.info_wrap}>
           <div className={styles.info_header}>
             <div className={styles.name_wrapper}>
-              <div className={styles.name}>{extension.displayName}</div>
+              <div className={styles.name}>{extension.displayName || extension.name}</div>
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
             </div>
               <span style={{display: 'flex', flexShrink: 0}} onClick={(e) => e.stopPropagation()}>
