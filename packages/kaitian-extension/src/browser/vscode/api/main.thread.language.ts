@@ -2,11 +2,13 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { DisposableCollection, Emitter, URI, IMarkerData, MarkerManager } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, URI, IMarkerData, MarkerManager, LRUMap } from '@ali/ide-core-common';
 import { SerializedDocumentFilter, LanguageSelector, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../../common/vscode/model.api';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { PreferenceService } from '@ali/ide-core-browser';
 
 @Injectable({multiple: true})
 export class MainThreadLanguages implements IMainThreadLanguages {
@@ -15,6 +17,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired(MarkerManager)
   readonly markerManager: MarkerManager;
+
+  @Autowired(PreferenceService)
+  preference: PreferenceService;
+
+  private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
@@ -33,6 +40,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   $getLanguages(): string[] {
     return monaco.languages.getLanguages().map((l) => l.id);
+  }
+
+  isLanguageFeatureEnabled(model: monaco.editor.ITextModel) {
+    const uriString = model.uri.toString();
+    if (!this.languageFeatureEnabled.has(uriString)) {
+      this.languageFeatureEnabled.set(uriString, model.getValueLength() < ( this.preference.get<number>('editor.languageFeatureEnabledMaxSize') || 2 * 1024 * 1024));
+    }
+    return this.languageFeatureEnabled.get(uriString);
   }
 
   protected getUniqueLanguages(): string[] {
@@ -66,6 +81,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         return this.proxy.$provideHover(handle, model.uri, position, token).then((v) => v!);
       },
     };
@@ -76,6 +94,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, monaco.languages.registerCompletionItemProvider(fromLanguageSelector(selector)! as any, {
       triggerCharacters,
       provideCompletionItems: async (model: monaco.editor.ITextModel, position: monaco.Position, context, token: monaco.CancellationToken) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, context, token);
         if (!result) {
           return undefined!;
@@ -87,7 +108,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         } as monaco.languages.CompletionList;
       },
       resolveCompletionItem: supportsResolveDetails
-        ? (model, position, suggestion, token) => Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token))
+        ? (model, position, suggestion, token) => {
+          if (!this.isLanguageFeatureEnabled(model)) {
+            return undefined!;
+          }
+          return Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token));
+        }
         : undefined,
     }));
   }
@@ -141,6 +167,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         const result = await this.proxy.$provideDefinition(handle, model.uri, position, token);
         if (!result) {
           return undefined!;
@@ -177,6 +206,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected createTypeDefinitionProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.TypeDefinitionProvider {
     return {
       provideTypeDefinition: (model, position, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -218,6 +250,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   createFoldingRangeProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.FoldingRangeProvider {
     return {
       provideFoldingRanges: (model, context, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -243,6 +278,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   createColorProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentColorProvider {
     return {
       provideDocumentColors: (model, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -262,8 +300,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           }),
         );
       },
-      provideColorPresentations: (model, colorInfo, token) =>
-        this.proxy.$provideColorPresentations(handle, model.uri, {
+      provideColorPresentations: (model, colorInfo, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
+        return this.proxy.$provideColorPresentations(handle, model.uri, {
           color: [
             colorInfo.color.red,
             colorInfo.color.green,
@@ -271,7 +312,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             colorInfo.color.alpha,
           ],
           range: colorInfo.range,
-        }, token),
+        }, token);
+      },
     };
   }
 
@@ -290,6 +332,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected createDocumentHighlightProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentHighlightProvider {
     return {
       provideDocumentHighlights: (model, position, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -332,6 +377,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       displayName,
       provideDocumentFormattingEdits: async (model, options) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -361,6 +409,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       displayName,
       provideDocumentRangeFormattingEdits: async (model, range, options) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -394,6 +445,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     return {
       autoFormatTriggerCharacters,
       provideOnTypeFormattingEdits: async (model, position, ch, options) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -423,11 +477,18 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   createCodeLensProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.CodeLensProvider {
     return {
-      provideCodeLenses: (model, token) =>
-        this.proxy.$provideCodeLenses(handle, model.uri).then((v) => v!)
-      ,
-      resolveCodeLens: (model, codeLens, token) =>
-        this.proxy.$resolveCodeLens(handle, model.uri, codeLens).then((v) => v!),
+      provideCodeLenses: (model, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
+        return this.proxy.$provideCodeLenses(handle, model.uri).then((v) => v!);
+      },
+      resolveCodeLens: (model, codeLens, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
+        return this.proxy.$resolveCodeLens(handle, model.uri, codeLens).then((v) => v!);
+      },
     };
   }
 
@@ -476,6 +537,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected createImplementationProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.ImplementationProvider {
     return {
       provideImplementation: (model, position, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -518,6 +582,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected createQuickFixProvider(handle: number, selector: LanguageSelector | undefined, providedCodeActionKinds?: string[]): monaco.languages.CodeActionProvider {
     return {
       provideCodeActions: (model, rangeOrSelection, monacoContext) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -530,6 +597,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected createLinkProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.LinkProvider {
     return {
       provideLinks: (model, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -546,13 +616,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           };
         });
       },
-      resolveLink: (link: monaco.languages.ILink, token) =>
-        this.proxy.$resolveDocumentLink(handle, link, token).then((v) => {
+      resolveLink: (link: monaco.languages.ILink, token) => {
+        return this.proxy.$resolveDocumentLink(handle, link, token).then((v) => {
           if (!v) {
             return undefined;
           }
           return this.reviveLink(v);
-        }),
+        });
+      },
     };
   }
 
@@ -590,6 +661,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected createReferenceProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.ReferenceProvider {
     return {
       provideReferences: (model, position, context, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -642,6 +716,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected createDocumentSymbolProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentSymbolProvider {
     return {
       provideDocumentSymbols: (model, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         return this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => v!);
       },
     };
@@ -664,6 +741,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       signatureHelpTriggerCharacters: metadata.triggerCharacters,
       signatureHelpRetriggerCharacters: metadata.retriggerCharacters,
       provideSignatureHelp: (model, position, token, context) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -686,6 +766,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected createRenameProvider(handle: number, selector: LanguageSelector | undefined, supportsResolveLocation: boolean): monaco.languages.RenameProvider {
     return {
       provideRenameEdits: (model, position, newName, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
@@ -694,6 +777,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       },
       resolveRenameLocation: supportsResolveLocation
         ? (model, position, token) => {
+          if (!this.isLanguageFeatureEnabled(model)) {
+            return undefined!;
+          }
           if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
             return undefined!;
           }
@@ -709,6 +795,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     // @ts-ignore
     this.disposables.set(handle, monaco.modes.SelectionRangeRegistry.register(selector, {
       provideSelectionRanges: (model, positions, token) => {
+        if (!this.isLanguageFeatureEnabled(model)) {
+          return undefined!;
+        }
         return this.proxy.$provideSelectionRanges(handle, model.uri, positions, token);
       },
     }));

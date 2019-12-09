@@ -1,4 +1,4 @@
-import { Emitter as EventEmitter, WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter, LRUMap } from '@ali/ide-core-common';
 import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -6,6 +6,7 @@ import { Schemas } from '../../../common/vscode/ext-types';
 import { ResourceService } from '@ali/ide-editor';
 import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { PreferenceService } from '@ali/ide-core-browser';
 
 const DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE = 1000 * 60 * 3; // 插件进程openDocument持有的最长时间
 const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument持有的最短时间，防止bounce
@@ -71,11 +72,28 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(PreferenceService)
+  preference: PreferenceService;
+
   provider: ExtensionEditorDocumentProvider;
 
   private editorDisposers: Map<string, IDisposable> = new Map();
 
   private extHoldDocuments = new LimitedMainThreadDocumentCollection();
+
+  private docSyncEnabled = new LRUMap<string, boolean>(200, 100);
+
+  public isDocSyncEnabled(uri: URI | string): boolean {
+    const uriString = uri.toString();
+    if (!this.docSyncEnabled.has(uriString)) {
+      const docRef =  this.docManager.getModelReference(new URI(uriString), 'mainthread doc size');
+      if (docRef) {
+        this.docSyncEnabled.set(uriString, docRef.instance.getMonacoModel().getValueLength() < ( this.preference.get<number>('editor.docExtHostSyncMaxSize') || 2 * 1024 * 1024) );
+        docRef.dispose();
+      }
+    }
+    return this.docSyncEnabled.get(uriString)!;
+  }
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
@@ -86,6 +104,9 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     // sync
     this.docManager.getAllModels()
       .map((doc) => {
+        if (!this.isDocSyncEnabled(doc.uri)) {
+          return;
+        }
         this.proxy.$fireModelOpenedEvent({
           uri: doc.uri.toString(),
           lines: doc.getText().split(doc.eol),
@@ -99,6 +120,9 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelContentChangedEvent)
   onEditorDocumentModelContentChangeEvent(e: EditorDocumentModelContentChangedEvent) {
+    if (!this.isDocSyncEnabled(e.payload.uri)) {
+      return;
+    }
     this.proxy.$fireModelChangedEvent({
       changes: e.payload.changes,
       uri: e.payload.uri.toString(),
@@ -110,6 +134,9 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelCreationEvent)
   onEditorDocumentModelContentCreationEvent(e: EditorDocumentModelCreationEvent) {
+    if (!this.isDocSyncEnabled(e.payload.uri)) {
+      return;
+    }
     this.proxy.$fireModelOpenedEvent({
       uri: e.payload.uri.toString(),
       lines: e.payload.content.split(e.payload.eol),
@@ -122,6 +149,9 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelRemovalEvent)
   onEditorDocumentModelRemovedEvent(e: EditorDocumentModelRemovalEvent) {
+    if (!this.isDocSyncEnabled(e.payload)) {
+      return;
+    }
     this.proxy.$fireModelRemovedEvent({
       uri: e.payload.toString(),
     });
@@ -129,6 +159,9 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   @OnEvent(EditorDocumentModelSavedEvent)
   onEditorDocumentModelSavingEvent(e: EditorDocumentModelSavedEvent) {
+    if (!this.isDocSyncEnabled(e.payload)) {
+      return;
+    }
     this.proxy.$fireModelSavedEvent({
       uri: e.payload.toString(),
     });
