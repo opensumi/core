@@ -9,6 +9,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
+import { ActivationEventService } from '@ali/ide-activation-event';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -32,6 +33,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   @Autowired(IContextKeyService)
   private ctxKeyService: IContextKeyService;
+
+  @Autowired(ActivationEventService)
+  private activationEventService: ActivationEventService;
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 
@@ -121,11 +125,17 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
   }
 
-  getTabbarService(location: string) {
-    const service = this.services.get(location) || this.injector.get(TabbarService, [location]);
+  getTabbarService(location: string, noAccordion?: boolean) {
+    const service = this.services.get(location) || this.injector.get(TabbarService, [location, noAccordion]);
     if (!this.services.get(location)) {
       service.onCurrentChange(({previousId, currentId}) => {
         this.storeState(service, currentId);
+        if (currentId && !service.noAccordion) {
+          const accordionService = this.getAccordionService(currentId);
+          accordionService.expandedViews.forEach((view) => {
+            this.activationEventService.fireEvent(`onView:${view.id}`);
+          });
+        }
       });
       service.onSizeChange(({size}) => debounce(() => this.storeState(service, service.currentContainerId), 200)());
       this.services.set(location, service);

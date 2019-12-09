@@ -25,7 +25,7 @@ export interface IMainLayoutService {
   // @deprecated
   setFloatSize(size: number): void;
   handleSetting(event: React.MouseEvent<HTMLElement>): void;
-  getTabbarService(location: string): TabbarService;
+  getTabbarService(location: string, noAccordion?: boolean): TabbarService;
   getAccordionService(containerId: string): AccordionService;
   isVisible(location: string): boolean;
 }
