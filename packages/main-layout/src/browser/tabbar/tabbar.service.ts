@@ -15,7 +15,7 @@ export class TabbarService extends WithEventBus {
   previousContainerId: string = '';
 
   // FIXME ComponentRegistryInfo中的views属性实际上不关心，怎么优化一下？
-  @observable.shallow containersMap: Map<string, ComponentRegistryInfo> = new Map();
+  @observable containersMap: Map<string, ComponentRegistryInfo> = new Map();
   @observable state: Map<string, TabState> = new Map();
 
   public prevSize?: number;
