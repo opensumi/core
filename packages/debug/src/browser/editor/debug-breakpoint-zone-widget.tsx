@@ -43,7 +43,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   get values() {
     return {
       ...this._values,
-      [this.context]: this.textInput ? this.textInput.value : '',
+      [this.context]: this.textInput ? this.textInput.value || undefined : undefined,
     };
   }
 
@@ -79,7 +79,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
 
   protected readonly updateInput = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (!!this.textInput) {
-      this._values[this.context] = this.textInput.value;
+      this._values[this.context] = this.textInput.value || undefined;
     }
     this.context = e.currentTarget.value as DebugBreakpointZoneWidget.Context;
     this.render();
