@@ -1,14 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
 import { Domain, IEventBus, ContributionProvider, Event } from '@ali/ide-core-common';
-import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry } from '@ali/ide-core-browser';
+import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, ROTATE_TYPE } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../common';
-import { ComponentContribution, ComponentRegistry, VisibleChangedEvent, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
-import { IStatusBarService } from '@ali/ide-status-bar';
+import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
-import { StatusBarAlignment } from '@ali/ide-core-browser/lib/services';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -38,6 +36,7 @@ export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
 };
 export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.toggle',
+  iconClass: getIcon('minus'),
 };
 export const IS_VISIBLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.is-visible',
@@ -50,6 +49,10 @@ export const IS_VISIBLE_RIGHT_PANEL_COMMAND: Command = {
 };
 export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
+};
+export const TOGGLE_EXBAND_BOTTOM_PANEL: Command = {
+  id: 'main-layout.bottom-panel.expand',
+  iconClass: getIcon('up'),
 };
 
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution)
@@ -72,9 +75,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
 
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
-
-  @Autowired(IStatusBarService)
-  statusBar: IStatusBarService;
 
   @Autowired(CommandService)
   private commandService!: CommandService;
@@ -104,11 +104,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   }
 
   async onStart() {
-    this.statusBar.addElement('bottom-panel-handle', {
-      iconClass: getIcon('window-maximize'),
-      alignment: StatusBarAlignment.RIGHT,
-      command: 'main-layout.bottom-panel.toggle',
-    });
     // 全局只要初始化一次
     await this.layoutState.initStorage();
   }
@@ -194,6 +189,21 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     commands.registerCommand(SET_PANEL_SIZE_COMMAND, {
       execute: (size: number) => {
         this.mainLayoutService.setFloatSize(size);
+      },
+    });
+    commands.registerCommand(TOGGLE_EXBAND_BOTTOM_PANEL, {
+      execute: (...args: any[]) => {
+        this.mainLayoutService.expandBottom(!this.mainLayoutService.bottomExpanded);
+      },
+      isEnabled: () => {
+        return true;
+      },
+      isToggled: () => {
+        if (this.mainLayoutService.bottomExpanded) {
+          return true;
+        } else {
+          return false;
+        }
       },
     });
   }

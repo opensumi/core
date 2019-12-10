@@ -96,7 +96,7 @@ const NextPanelView: React.FC<{
 }> = (({ component, titleMenu, side }) => {
   const contentRef = React.useRef<HTMLDivElement | null>();
   const titleComponent = component.options && component.options.titleComponent;
-
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   return (
     <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
       <div className={styles.panel_title_bar}>
@@ -108,6 +108,10 @@ const NextPanelView: React.FC<{
           {titleMenu && <InlineActionBar
             menus={titleMenu}
             seperator='navigation' />}
+          <span className={styles.split_line}></span>
+          <InlineActionBar
+            menus={tabbarService.commonTitleMenu}
+            seperator='navigation' />
         </div>
       </div>
       <div className={styles.panel_wrapper}>

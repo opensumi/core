@@ -16,8 +16,8 @@ import { terminalAdd, terminalRemove, terminalExpand, terminalClear, terminalSpl
 import TerminalView from './terminal.view';
 import TerminalSelect from './terminal.select';
 
-@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution, ClientAppContribution)
-export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, MainLayoutContribution, ClientAppContribution {
+@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution)
+export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution {
 
   @Autowired(ITerminalController)
   terminalController: ITerminalController;
@@ -41,6 +41,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       priority: 10,
       activateKeyBinding: 'ctrl+`',
       containerId: 'terminal',
+      titleComponent: TerminalSelect,
     });
   }
 
@@ -82,22 +83,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       },
     });
 
-    registry.registerCommand(terminalExpand, {
-      execute: (...args: any[]) => {
-        this.layoutService.expandBottom(!this.layoutService.bottomExpanded);
-      },
-      isEnabled: () => {
-        return true;
-      },
-      isToggled: () => {
-        if (this.layoutService.bottomExpanded) {
-          return true;
-        } else {
-          return false;
-        }
-      },
-    });
-
     registry.registerCommand(terminalClear, {
       execute: (...args: any[]) => {
         // TODO
@@ -112,13 +97,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
-    registry.registerItem({
-      id: terminalExpand.id,
-      command: terminalExpand.id,
-      viewId: terminalExpand.category,
-      tooltip: localize('terminal.maximum'),
-      toggleWhen: 'bottomFullExpanded',
-    });
     registry.registerItem({
       id: terminalSplit.id,
       command: terminalSplit.id,
@@ -137,13 +115,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       viewId: terminalRemove.category,
       tooltip: localize('terminal.new'),
     });
-  }
-
-  onDidRender() {
-    const terminalTabbar = this.layoutService.getTabbarHandler('terminal');
-    if (terminalTabbar) {
-      terminalTabbar.setTitleComponent(TerminalSelect);
-    }
   }
 
   onStop() {
