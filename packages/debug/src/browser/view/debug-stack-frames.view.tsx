@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useInjectable, URI, localize, isUndefined } from '@ali/ide-core-browser';
 import * as styles from './debug-stack-frames.module.less';
 import { DebugStackFramesService } from './debug-stack-frames.service';
-import { ViewState } from '@ali/ide-activity-panel';
+import { ViewState } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
 import { RecycleList } from '@ali/ide-core-browser/lib/components';
 import { DebugStackFrame } from '../model';
