@@ -27,7 +27,7 @@
       flex: 1;
       user-select: none;
       li {
-        padding: 0 10px;
+        margin: 0 12px;
         position: relative;
         height: 28px;
         line-height: 28px;
@@ -67,9 +67,6 @@
     }
 
     .next_bottom_bar {
-      li.active {
-        background-color: var(--panel-background);
-      }
       .tab-badge {
         margin-left: 2px;
       }
@@ -177,6 +174,8 @@
   .tab-panel {
     position: relative;
     flex: 1;
+    border: 1px solid var(--panel-border);
+    border-bottom: 0;
   }
 
   .tab-tool-bar {
@@ -259,7 +258,6 @@
 .bottom_bar_container {
   display: flex;
   flex-direction: row;
-  border-top: 1px solid var(--panel-border);
   align-items: center;
   z-index: 99;
 }
