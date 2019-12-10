@@ -1,5 +1,3 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import { Event, Emitter } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { TabbarService } from './tabbar/tabbar.service';
@@ -53,15 +51,15 @@ export class TabBarHandler {
   }
 
   show() {
-    console.warn(this.containerId + ':show方法在handler中暂未实现');
+    this.tabbarService.getContainerState(this.containerId).hidden = false;
   }
 
   hide() {
-    console.warn(this.containerId + ':hide方法在handler中暂未实现');
+    this.tabbarService.getContainerState(this.containerId).hidden = true;
   }
 
-  // @deprecated 设定title自定义组件，应通过contribution声明
   setTitleComponent(Fc: React.FunctionComponent) {
+    console.warn(`method setTitleComponent of TabBarHandler is deprecated!`);
     const componentInfo = this.tabbarService.getContainer(this.containerId);
     if (componentInfo) {
       componentInfo.options!.titleComponent = Fc;
@@ -77,12 +75,11 @@ export class TabBarHandler {
   }
 
   setIconClass(iconClass: string) {
-    console.warn(this.containerId + ':setIconClass方法在handler中暂未实现');
+    this.tabbarService.getContainer(this.containerId)!.options!.iconClass = iconClass;
   }
 
   isCollapsed(viewId: string) {
-    console.warn(this.containerId + ':isCollapsed方法在handler中暂未实现');
-    return false;
+    return this.accordionService.getViewState(viewId).collapsed;
   }
 
   toggleViews(viewIds: string[], show: boolean) {
@@ -92,18 +89,20 @@ export class TabBarHandler {
     }
   }
 
-  // @deprecated
   updateViewTitle(viewId: string, title: string) {
-    console.warn(this.containerId + ':updateViewTitle方法在handler中已被废弃');
+    const targetView = this.accordionService.views.find((view) => view.id === viewId);
+    if (targetView) {
+      targetView.name = title;
+    } else {
+      console.error('没有找到目标视图，无法更新手风琴标题!');
+    }
   }
 
-  // @deprecated
   refreshTitle() {
-    console.warn(this.containerId + ':refreshTitle方法在handler中已被废弃');
+    console.warn(`method refreshTitle of TabBarHandler is deprecated!`);
   }
 
-  // @deprecated 更新 title
   updateTitle(label: string) {
-    console.warn(this.containerId + ':updateTitle方法在handler中已被废弃');
+    this.tabbarService.getContainer(this.containerId)!.options!.title = label;
   }
 }

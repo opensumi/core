@@ -13,7 +13,9 @@
     "start:server": "node --inspect -r ts-node/register ./entry/server.ts",
     "build": "tsc --build ../../configs/ts/references/tsconfig.kaitian-extension.json",
     "compile:worker": "webpack --config webpack.config.worker.js --progress",
-    "compile:ext-host": "webpack --config webpack.config.ext-host.js --progress"
+    "compile:ext-host": "webpack --config webpack.config.ext-host.js --progress",
+    "watch:worker": "webpack -w --config webpack.config.worker.js --progress",
+    "watch:ext-host": "webpack -w --config webpack.config.ext-host.js --progress"
   },
   "repository": {
     "type": "git",

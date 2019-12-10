@@ -67,9 +67,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       });
     }
     this.restoreState();
-    // TODO 暂不记录状态，激活首个
     for (const service of this.services.values()) {
-      const {currentId, size} = this.state[service.location];
+      const {currentId, size} = this.state[service.location] || {};
       service.prevSize = size;
       service.currentContainerId = currentId !== undefined ? currentId : service.containersMap.keys().next().value;
     }
