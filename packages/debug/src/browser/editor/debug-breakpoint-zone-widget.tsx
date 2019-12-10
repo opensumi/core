@@ -62,15 +62,12 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
 
     ReactDOM.render(<Input
       placeholder={this.placeholder}
+      autoFocus={true}
       defaultValue={this._values[this.context]}
       ref={(input) => {this.textInput = input; }}
       onFocus={this.inputFocusHandler}
       onBlur={this.inputBlurHandler}
-    />, this._input, () => {
-      if (!!this.textInput) {
-        this.textInput.focus();
-      }
-    });
+    />, this._input);
   }
 
   protected renderOption(context: DebugBreakpointZoneWidget.Context, label: string): JSX.Element {
@@ -103,6 +100,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     if (this.textInput) {
       this.textInput.value = this._values[this.context] || '';
       this.textInput.setAttribute('placeholder', this.placeholder);
+      this.textInput.focus();
     }
     ReactDOM.render(<Select value={this.context} onChange={this.updateInput}>
       {this.renderOption('condition', localize('debug.expression.condition'))}
