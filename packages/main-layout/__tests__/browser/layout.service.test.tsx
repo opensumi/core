@@ -3,7 +3,6 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IMainLayoutService, MainLayoutContribution } from '../../src';
 import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, IEventBus, RenderedEvent, ViewContainerOptions } from '@ali/ide-core-browser';
-import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { MainLayoutModuleContribution } from '../../src/browser/main-layout.contribution';
@@ -14,6 +13,7 @@ import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { LayoutService } from '../../src/browser/layout.service';
 import { autorun } from 'mobx';
+import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 
 const MockView = () => <div>Test view</div>;
 
