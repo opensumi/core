@@ -9,7 +9,7 @@ export class StatusBarContribution implements ComponentContribution {
       component: StatusBarView,
       id: 'ide-status-bar',
     }, {
-      size: 28,
+      size: 24,
     });
   }
 }

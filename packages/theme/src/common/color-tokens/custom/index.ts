@@ -69,6 +69,14 @@ export const ktEditorActionToolTipForeground = registerColor('kt.editorActionToo
   hc: ktTooltipForeground,
 }, localize('editorActionTooltipForeground', 'Tooltip Foreground color for Editor Actions Tip'));
 
+// 断网是状态栏用的颜色
+// 没有很好的 backup token，先写死这个色值
+export const ktStatusBarOfflineBackground = registerColor('kt.statusbar.offline.background', {
+  dark: '#D21F28',
+  light: '#D21F28',
+  hc: '#D21F28',
+}, localize('statusBarOfflineBackground', 'StatusBar background color when app is offline'));
+
 /* ---  menu --- */
 export const menuDescriptionForeground = registerColor('kt.menu.descriptionForeground', { dark: menuForeground, light: menuForeground, hc: menuForeground }, localize('menuDescriptionForeground', 'Description foreground color of menu items.'));
 
