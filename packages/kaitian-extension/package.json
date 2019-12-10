@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@ali/ide-activation-event": "1.6.3",
-    "@ali/ide-activity-panel": "1.6.3",
     "@ali/ide-connection": "1.6.3",
     "@ali/ide-core-common": "1.6.3",
     "@ali/ide-core-node": "1.6.3",
