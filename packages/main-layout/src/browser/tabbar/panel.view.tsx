@@ -89,8 +89,38 @@ const PanelView: React.FC<{
   );
 });
 
+const NextPanelView: React.FC<{
+  component: ComponentRegistryInfo;
+  side: string;
+  titleMenu: IMenu;
+}> = (({ component, titleMenu, side }) => {
+  const contentRef = React.useRef<HTMLDivElement | null>();
+  const titleComponent = component.options && component.options.titleComponent;
+
+  return (
+    <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
+      <div className={styles.panel_title_bar}>
+        <h1>{component.options!.title}</h1>
+        <div className={styles.title_component_container}>
+          {titleComponent && <ComponentRenderer Component={titleComponent} />}
+        </div>
+        <div className={styles.panel_toolbar_container}>
+          {titleMenu && <InlineActionBar
+            menus={titleMenu}
+            seperator='navigation' />}
+        </div>
+      </div>
+      <div className={styles.panel_wrapper}>
+        <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component!} />
+      </div>
+    </div>
+  );
+});
+
 export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 
 export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 
 export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;
+
+export const NextBottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={NextPanelView} />;
