@@ -27,6 +27,7 @@
     "@ali/ide-theme": "1.6.3"
   },
   "devDependencies": {
+    "@ali/ide-activation-event": "1.6.3",
     "@ali/ide-core-browser": "1.6.3",
     "@ali/ide-dev-tool": "^1.1.0",
     "@ali/ide-opened-editor": "1.6.3",
