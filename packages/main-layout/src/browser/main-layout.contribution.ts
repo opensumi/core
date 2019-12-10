@@ -5,7 +5,7 @@ import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererCo
 import { IMainLayoutService } from '../common';
 import { ComponentContribution, ComponentRegistry, VisibleChangedEvent, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
+import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import { getIcon } from '@ali/ide-core-browser';
 import { StatusBarAlignment } from '@ali/ide-core-browser/lib/services';
@@ -116,7 +116,9 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   registerRenderer(registry: SlotRendererRegistry) {
     registry.registerSlotRenderer('right', RightTabRenderer);
     registry.registerSlotRenderer('left', LeftTabRenderer);
-    registry.registerSlotRenderer('bottom', BottomTabRenderer);
+    // TODO 支持配置切换
+    // registry.registerSlotRenderer('bottom', BottomTabRenderer);
+    registry.registerSlotRenderer('bottom', NextBottomTabRenderer);
   }
 
   registerCommands(commands: CommandRegistry): void {

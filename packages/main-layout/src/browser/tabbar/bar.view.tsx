@@ -76,3 +76,11 @@ export const BottomTabbarRenderer: React.FC = () => {
     </div>
   );
 };
+
+export const NextBottomTabbarRenderer: React.FC = () => {
+  return (
+    <div className={clsx(styles.bottom_bar_container, 'next_bottom_bar')}>
+      <TabbarViewBase TabView={TextTabView} barSize={28} />
+    </div>
+  );
+};
