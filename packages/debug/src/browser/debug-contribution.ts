@@ -356,22 +356,43 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
     commands.registerCommand(DEBUG_COMMANDS.DISABLE_BREAKPOINT, {
-      execute: async () => {
-        console.log('DISABLE_BREAKPOINT');
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { uri } = selectedBreakpoint.model;
+          const breakpoint = this.sessionManager.getBreakpoint(uri, position.lineNumber);
+          if (breakpoint) {
+            breakpoint.setEnabled(false);
+          }
+        }
       },
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && this.selectedBreakpoint.breakpoint.enabled,
       isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && this.selectedBreakpoint.breakpoint.enabled,
     });
     commands.registerCommand(DEBUG_COMMANDS.ENABLE_BREAKPOINT, {
-      execute: () => {
-        console.log('ENABLE_BREAKPOINT');
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { uri } = selectedBreakpoint.model;
+          const breakpoint = this.sessionManager.getBreakpoint(uri, position.lineNumber);
+          if (breakpoint) {
+            breakpoint.setEnabled(true);
+          }
+        }
       },
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && !this.selectedBreakpoint.breakpoint.enabled,
       isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && !this.selectedBreakpoint.breakpoint.enabled,
     });
     commands.registerCommand(DEBUG_COMMANDS.DELETE_BREAKPOINT, {
-      execute: () => {
-        console.log(DEBUG_COMMANDS.DELETE_BREAKPOINT);
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { uri } = selectedBreakpoint.model;
+          const breakpoint = this.sessionManager.getBreakpoint(uri, position.lineNumber);
+          if (breakpoint) {
+            breakpoint.remove();
+          }
+        }
       },
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
       isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,

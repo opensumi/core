@@ -78,7 +78,7 @@ export class DebugModel implements IDebugModel {
     return DebugModel.createContainer(injector, editor).get(IDebugModel);
   }
 
-  protected uri: URI;
+  public uri: URI;
 
   constructor() {
     this.init();
