@@ -50,7 +50,7 @@ export class TabbarService extends WithEventBus {
   private barSize: number;
   private menuId = `tabbar/${this.location}`;
 
-  constructor(public location: string) {
+  constructor(public location: string, public noAccordion?: boolean) {
     super();
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
