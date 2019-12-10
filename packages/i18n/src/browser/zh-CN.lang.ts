@@ -235,6 +235,8 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': '控制调试视图的位置。',
     'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
     'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
+    'preference.files.associations.title': '文件关联',
+    'preference.files.associations': '配置语言的文件关联 (如: "*.extension": "html")。这些关联的优先级高于已安装语言的默认关联。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',

@@ -248,6 +248,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       default:  FILES_DEFAULTS.filesWatcherExclude,
       description: '%preference.files.watcherExclude%',
     },
+    'files.associations': {
+      type: 'object',
+      description: '%preference.files.associations%',
+    },
   },
 };
 
@@ -259,6 +263,7 @@ export interface CoreConfiguration {
   'explorer.confirmMove': boolean;
   'files.watcherExclude': { [key: string]: boolean };
   'files.exclude': { [key: string]: boolean };
+  'files.associations': { [key: string]: string };
   'general.language': string;
   'general.theme': string;
 }
