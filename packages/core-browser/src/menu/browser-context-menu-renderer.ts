@@ -19,6 +19,10 @@ import { MenuPath } from '@ali/ide-core-common';
 import { ContextMenuRenderer, Anchor } from './context-menu-renderer';
 import { BrowserMainMenuFactory } from './browser-menu-plugin';
 
+/**
+ * @deprecated
+ */
+
 @Injectable()
 export class BrowserContextMenuRenderer implements ContextMenuRenderer {
 

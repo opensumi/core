@@ -8,4 +8,7 @@ export interface IElectronMenuFactory {
 
 }
 
+/**
+ * @deprecated
+ */
 export const IElectronMenuFactory = Symbol('ElectronMenuFactory');

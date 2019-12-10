@@ -1,10 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService, CommandRegistry} from '@ali/ide-core-common';
-import * as omit from 'lodash.omit';
 
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
-import { MenuNode, IExtendMenubarItem, IMenuRegistry } from '../../base';
+import { MenuNode, IExtendMenubarItem } from '../../base';
 import { SeparatorMenuItemNode, SubmenuItemNode, AbstractMenuService } from '../../menu-service';
 import { electronEnv } from '../../../../utils';
 import { AbstractMenubarService } from '../../menubar-service';
