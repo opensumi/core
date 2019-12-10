@@ -5,16 +5,26 @@ import { DebugEditor, IDebugModel } from '../../common';
 import * as styles from './debug-breakpoint.module.less';
 import { Select } from '@ali/ide-core-browser/lib/components/select';
 import { DebugProtocol } from 'vscode-debugprotocol';
+import { Input } from '@ali/ide-core-browser/lib/components';
+import { localize } from '@ali/ide-core-node';
+import { KeyCode, Key, Emitter } from '@ali/ide-core-browser';
+
+export interface BreakpointChangeData {
+  context: DebugBreakpointZoneWidget.Context;
+  value: string;
+}
 
 export class DebugBreakpointZoneWidget extends ZoneWidget {
 
   private _wrapper: HTMLDivElement;
   private _selection: HTMLDivElement;
-  private _input: HTMLInputElement;
+  private _input: HTMLDivElement;
 
-  private _model: IDebugModel;
+  protected readonly _onDidChangeBreakpoint = new Emitter<BreakpointChangeData>();
+  readonly onDidChangeBreakpoint = this._onDidChangeBreakpoint.event;
 
   protected context: DebugBreakpointZoneWidget.Context = 'condition';
+
   // 存储不同context下的input值
   protected _values: {
     [context in DebugBreakpointZoneWidget.Context]?: string
@@ -26,7 +36,7 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     this._model = model;
     this._wrapper = document.createElement('div');
     this._selection = document.createElement('div');
-    this._input = document.createElement('input');
+    this._input = document.createElement('div');
     this._container.appendChild(this._wrapper);
     this._wrapper.appendChild(this._selection);
     this._wrapper.appendChild(this._input);
@@ -37,13 +47,28 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   }
 
   protected readonly updateInput = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (this._input) {
-        this._values[this.context] = this._input.value;
-    }
     this.context = e.currentTarget.value as DebugBreakpointZoneWidget.Context;
     this.render();
-    if (this._input) {
-      this._input.focus();
+  }
+
+  protected readonly inputChangeHandler = (e) => {
+    this._values[this.context] = e.target!.value;
+  }
+
+  protected readonly inputKeyDownHandler = (event) => {
+    const { key } = KeyCode.createKeyCode(event.nativeEvent);
+    if (key && Key.ENTER.keyCode === key.keyCode) {
+      event.stopPropagation();
+      event.preventDefault();
+      this._onDidChangeBreakpoint.fire({
+        context: this.context,
+        value: this._values[this.context] || '',
+      });
+      this.dispose();
+    } else if (key && Key.ESCAPE.keyCode === key.keyCode) {
+      event.stopPropagation();
+      event.preventDefault();
+      this.dispose();
     }
   }
 
@@ -54,14 +79,11 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   }
 
   applyStyle() {
-    if (this._input) {
-      this._input.setAttribute('placeholder', '在表达式结果为真时中断。按 \"Enter\" 键确认，\"Esc\" 键取消。');
-      this._input.value = this._values[this.context] || '';
-    }
+    ReactDOM.render(<Input autoFocus={true} placeholder={localize('debug.expression.placeholder')} value={this._values[this.context]} onChange={this.inputChangeHandler} onKeyDown={this.inputKeyDownHandler}/>, this._input);
     ReactDOM.render(<Select value={this.context} onChange={this.updateInput}>
-      {this.renderOption('condition', 'Expression')}
-      {this.renderOption('hitCondition', 'Hit Count')}
-      {this.renderOption('logMessage', 'Log Message')}
+      {this.renderOption('condition', localize('debug.expression.condition'))}
+      {this.renderOption('hitCondition', localize('debug.expression.hitCondition'))}
+      {this.renderOption('logMessage', localize('debug.expression.logMessage'))}
     </Select>, this._selection);
   }
 

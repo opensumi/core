@@ -1,10 +1,12 @@
 import { Disposable, URI, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { EditorCollectionService, ICodeEditor } from '@ali/ide-editor';
+import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugSessionManager } from '../debug-session-manager';
 import { IDebugSessionManager, DebugModelFactory, IDebugModel } from '../../common';
-import { BreakpointManager } from '../breakpoint';
+import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
+import { DebugBreakpoint } from '../model';
+import { DebugModel } from './debug-model';
 
 export enum DebugModelSupportedEventType {
   down = 'Down',
@@ -17,6 +19,9 @@ export enum DebugModelSupportedEventType {
 export class DebugModelManager extends Disposable {
   private models: Map<string, IDebugModel[]>;
   protected readonly toDispose = new DisposableCollection();
+
+  @Autowired(WorkbenchEditorService)
+  private editorService: WorkbenchEditorService;
 
   @Autowired(EditorCollectionService)
   private editorColletion: EditorCollectionService;
@@ -66,7 +71,35 @@ export class DebugModelManager extends Disposable {
     });
     this.breakpointManager.onDidChangeBreakpoints((event) => {
       // 移除breakpointWidget
+      this.closeBreakpointIfAffected(event);
     });
+  }
+
+  get model(): IDebugModel | undefined {
+    const { currentEditor } = this.editorService;
+    const uri = currentEditor && currentEditor.currentUri;
+    if (uri) {
+      const models = this.models.get(uri.toString());
+      return models && models[0];
+    }
+  }
+
+  protected closeBreakpointIfAffected({ uri, removed }: BreakpointsChangeEvent): void {
+    const models = this.models.get(uri.toString());
+    if (!models) {
+        return;
+    }
+    for (const model of models) {
+      const position = model.breakpointWidget.position;
+      if (!position) {
+          return;
+      }
+      for (const breakpoint of removed) {
+        if (breakpoint.raw.line === position.lineNumber) {
+          model.breakpointWidget.dispose();
+        }
+      }
+    }
   }
 
   protected render(uri: URI): void {
@@ -81,7 +114,6 @@ export class DebugModelManager extends Disposable {
 
   protected push(codeEditor: ICodeEditor): void {
     const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
-    console.log(codeEditor, 'codeEditor ==>');
     codeEditor.onRefOpen((ref) => {
       const uriString = ref.instance.uri.toString();
       const debugModel = this.models.get(uriString) || [];
@@ -145,13 +177,37 @@ export class DebugModelManager extends Disposable {
       return;
     }
     for (const model of debugModel) {
-      if (type === DebugModelSupportedEventType.contextMenu) {
-        model[`onContextMenu`](event);
-      } else if ((model.editor as any)._id === (monacoEditor as any)._id) {
-        model[`onMouse${type}`](event);
+      if ((model.editor as any)._id === (monacoEditor as any)._id) {
+        if (type === DebugModelSupportedEventType.contextMenu) {
+          model[`onContextMenu`](event);
+        } else {
+          model[`onMouse${type}`](event);
+        }
         break;
       }
     }
   }
 
+  getLogpoint(position: monaco.Position): DebugBreakpoint | undefined {
+    const logpoint = this.anyBreakpoint(position);
+    return logpoint && logpoint.logMessage ? logpoint : undefined;
+  }
+  getLogpointEnabled(position: monaco.Position): boolean | undefined {
+    const logpoint = this.getLogpoint(position);
+    return logpoint && logpoint.enabled;
+  }
+
+  getBreakpoint(position: monaco.Position): DebugBreakpoint | undefined {
+    const breakpoint = this.anyBreakpoint(position);
+    return breakpoint && breakpoint.logMessage ? undefined : breakpoint;
+  }
+
+  getBreakpointEnabled(position: monaco.Position): boolean | undefined {
+    const breakpoint = this.getBreakpoint(position);
+    return breakpoint && breakpoint.enabled;
+  }
+
+  anyBreakpoint(position?: monaco.Position): DebugBreakpoint | undefined {
+    return this.model && this.model.getBreakpoint(position);
+  }
 }

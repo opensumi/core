@@ -402,15 +402,22 @@ export class DebugModel implements IDebugModel {
     return contributedContextMenu;
   }
 
-  editBreakpoint(position: monaco.Position) {
-    this.breakpointWidget.show(position, this);
+  openEditBreakpointView = (position: monaco.Position) => {
+    this.breakpointWidget.show(position, this.editor, this);
   }
 
   protected onContextMenu(event: monaco.editor.IEditorMouseEvent) {
-    const menus = this.contributedContextMenu;
-    const menuNodes = generateMergedCtxMenu({ menus });
     event.event.browserEvent.stopPropagation();
     event.event.browserEvent.preventDefault();
+    // 设置当前右键选中的断点
+    const breakpoint = this.breakpointManager.getBreakpoint(this.uri, event.target.position!.lineNumber);
+    this.breakpointManager.selectedBreakpoint = {
+      breakpoint,
+      model: this,
+    };
+    // 获取右键菜单
+    const menus = this.contributedContextMenu;
+    const menuNodes = generateMergedCtxMenu({ menus });
     this.ctxMenuRenderer.show({
       anchor: event.event.browserEvent,
       menuNodes,

@@ -6,6 +6,7 @@ import { MarkerManager, Marker } from '../markers';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugSession } from '../debug-session';
 import { DebugExceptionBreakpoint } from '../model';
+import { DebugModel } from '../editor';
 
 export interface BreakpointsChangeEvent {
   uri: URI;
@@ -18,10 +19,16 @@ export interface ExceptionBreakpointsChangeEvent {
   filters: string[];
 }
 
+export interface SelectedBreakpoint {
+  breakpoint?: SourceBreakpoint;
+  model: DebugModel;
+}
+
 @Injectable()
 export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
 
   protected readonly owner = 'breakpoint';
+  private _selectedBreakpoint: SelectedBreakpoint;
 
   private defaultExceptionFilter: DebugProtocol.ExceptionBreakpointsFilter[] = [];
   private exceptionFilterValue: {[key: string]: boolean} = {};
@@ -33,6 +40,14 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
 
   getKind(): string {
     return BREAKPOINT_KIND;
+  }
+
+  get selectedBreakpoint() {
+    return this._selectedBreakpoint;
+  }
+
+  set selectedBreakpoint(value: SelectedBreakpoint) {
+    this._selectedBreakpoint = value;
   }
 
   protected readonly onDidChangeBreakpointsEmitter = new Emitter<BreakpointsChangeEvent>();
