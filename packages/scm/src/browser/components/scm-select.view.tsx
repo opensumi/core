@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ViewState } from '@ali/ide-activity-panel';
+import { ViewState } from '@ali/ide-core-browser';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import clx from 'classnames';
 import Badge from '@ali/ide-core-browser/lib/components/badge';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { StatusBarItem } from '@ali/ide-status-bar/lib/browser/status-bar-item.view';
+import { AbstractMenuService, ICtxMenuRenderer, generateMergedCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
-import { ISCMRepository, scmItemLineHeight, SCMMenuId } from '../../common';
+import { ISCMRepository } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';
 
 import * as styles from './scm-select.module.less';
@@ -69,7 +69,8 @@ export const SCMRepoSelect: React.FC<{
     return null;
   }
 
-  const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
+  const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+  const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
 
   const handleRepositorySelect = React.useCallback((selectedRepo: ISCMRepository) => {
     selectedRepo.setSelected(true);
@@ -81,10 +82,19 @@ export const SCMRepoSelect: React.FC<{
     e.stopPropagation();
     const { x, y } = e.nativeEvent;
 
-    contextMenuRenderer.render(
-      [ SCMMenuId.SCM_SOURCE_CONTROL ],
-      { x, y, ...selectedRepo.provider.toJSON() },
-    );
+    const menus = menuService.createMenu(MenuId.SCMSourceControl);
+
+    const menuNodes = generateMergedCtxMenu({
+      menus,
+      options: { args: [ selectedRepo.provider.toJSON() ] },
+    });
+
+    menus.dispose();
+
+    ctxMenuRenderer.show({
+      anchor: { x, y },
+      menuNodes,
+    });
   }, []);
 
   return (

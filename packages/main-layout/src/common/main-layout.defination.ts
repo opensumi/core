@@ -1,6 +1,8 @@
 import { BasicEvent, SlotLocation } from '@ali/ide-core-browser';
-import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
 import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-browser/lib/layout';
+import { TabBarHandler } from '../browser/tabbar-handler';
+import { TabbarService } from '../browser/tabbar/tabbar.service';
+import { AccordionService } from '../browser/accordion/accordion.service';
 
 export interface ComponentCollection {
   views?: View[];
@@ -12,17 +14,20 @@ export interface ViewToContainerMapData {
 
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
-  tabbarComponents: ComponentCollection[];
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
-  isVisible(location: SlotLocation): boolean;
   restoreState(): void;
-  getTabbarHandler(handlerId: string): ActivityBarHandler;
+  getTabbarHandler(handlerId: string): TabBarHandler;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent): string;
   collectViewComponent(view: View, containerId: string, props?: any): string;
-  expandBottom(expand?: boolean): void;
-  setFloatSize(size: number): void;
+  expandBottom(expand: boolean): void;
   bottomExpanded: boolean;
+  // @deprecated
+  setFloatSize(size: number): void;
+  handleSetting(event: React.MouseEvent<HTMLElement>): void;
+  getTabbarService(location: string, noAccordion?: boolean): TabbarService;
+  getAccordionService(containerId: string): AccordionService;
+  isVisible(location: string): boolean;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');
@@ -30,7 +35,7 @@ export const MainLayoutContribution = Symbol('MainLayoutContribution');
 export interface MainLayoutContribution {
 
   // 将LayoutConfig渲染到各Slot后调用
-  onDidUseConfig?(): void;
+  onDidRender?(): void;
 
   provideDefaultState?(): SideStateManager;
 

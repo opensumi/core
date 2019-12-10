@@ -11,9 +11,9 @@
   padding-right: 6px;
   width: 16px;
   height: 22px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   -webkit-font-smoothing: antialiased;
-  vertical-align: top;
   flex-shrink: 0;
 }
 .action-icon {
@@ -34,10 +34,14 @@
     height: 16px;
     margin-top: 5px;
   }
-  &.filled {
+  &.toggled {
     height: 16px;
     border-radius: 2px;
     background-color: var(--inputOption-activeBorder);
     line-height: 16px;
+  }
+  &.kticon-up.toggled {
+    background-color: unset;
+    transform: rotate(180deg);
   }
 }

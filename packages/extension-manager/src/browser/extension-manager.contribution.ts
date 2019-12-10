@@ -169,7 +169,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     });
   }
 
-  onDidUseConfig() {
+  onDidRender() {
     const handler = this.mainLayoutService.getTabbarHandler(enableExtensionsContainerId);
     if (handler) {
       // 在激活的时候获取数据

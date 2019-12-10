@@ -6,7 +6,7 @@ import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { EOL, IDocPersistentCacheProvider } from '../../../lib/common';
 import { EditorDocumentModel, EditorDocumentModelConstructionOptions } from '../../../lib/browser/doc-model/main';
-import { EditorDocumentModelCreationEvent, EditorDocumentModelOptionChangedEvent, EditorDocumentModelContentChangedEvent } from '../../../lib/browser/doc-model/types';
+import { EditorDocumentModelOptionChangedEvent, EditorDocumentModelContentChangedEvent } from '../../../lib/browser/doc-model/types';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
 
@@ -32,7 +32,6 @@ describe('EditorDocumentModel', () => {
     let uri: URI;
     let content: string;
     let eventBus: IEventBus;
-    let creationFn: jest.Mock;
     let optionChangeFn: jest.Mock;
     let chagneFn: jest.Mock;
 
@@ -40,9 +39,6 @@ describe('EditorDocumentModel', () => {
       uri = new URI('test://testUri1');
       content = uniqueId('content');
       eventBus = injector.get(IEventBus);
-
-      creationFn = jest.fn();
-      eventBus.on(EditorDocumentModelCreationEvent, creationFn);
 
       optionChangeFn = jest.fn();
       eventBus.on(EditorDocumentModelOptionChangedEvent, optionChangeFn);
@@ -61,7 +57,6 @@ describe('EditorDocumentModel', () => {
       expect(docModel.eol).toBe(EOL.LF);
       expect(docModel.languageId).toBeUndefined();
 
-      expect(creationFn).toBeCalledTimes(1);
       expect(optionChangeFn).toBeCalledTimes(0);
       expect(chagneFn).toBeCalledTimes(0);
     });
@@ -83,7 +78,6 @@ describe('EditorDocumentModel', () => {
       expect(docModel.eol).toBe(opts.eol);
       expect(docModel.languageId).toBe(opts.languageId);
 
-      expect(creationFn).toBeCalledTimes(1);
       expect(optionChangeFn).toBeCalledTimes(0);
       expect(chagneFn).toBeCalledTimes(0);
     });
@@ -97,7 +91,6 @@ describe('EditorDocumentModel', () => {
       expect(docModel.baseContent).toBe(content);
       expect(docModel.dirty).toBeFalsy();
 
-      expect(creationFn).toBeCalledTimes(1);
       expect(chagneFn).toBeCalledTimes(0);
     });
 
@@ -117,7 +110,6 @@ describe('EditorDocumentModel', () => {
       expect(docModel.getMonacoModel().getValue()).toBe(newContent);
       expect(docModel.dirty).toBeTruthy();
 
-      expect(creationFn).toBeCalledTimes(1);
       expect(chagneFn).toBeCalledTimes(1);
     });
 
@@ -140,7 +132,6 @@ describe('EditorDocumentModel', () => {
       expect(docModel.getMonacoModel().getValue()).toBe('a' + content);
       expect(docModel.dirty).toBeTruthy();
 
-      expect(creationFn).toBeCalledTimes(1);
       expect(chagneFn).toBeCalledTimes(1);
     });
 
@@ -161,7 +152,6 @@ describe('EditorDocumentModel', () => {
       const docModel = injector.get(EditorDocumentModel, [ uri, content, { savable: true }]);
       expect(docModel.getMonacoModel().getValue()).toBe(content);
       expect(docModel.dirty).toBeFalsy();
-      expect(creationFn).toBeCalledTimes(1);
       expect(chagneFn).toBeCalledTimes(0);
 
       await Promise.resolve();

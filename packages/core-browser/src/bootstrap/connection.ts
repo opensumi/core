@@ -24,7 +24,7 @@ export async function createClientConnection2(injector: Injector, modules: Modul
     statusBarService.setBackgroundColor('var(--statusBar-background)');
   });
   wsChannelHandler.connection.addEventListener('close', () => {
-    statusBarService.setBackgroundColor('#ff0000');
+    statusBarService.setBackgroundColor('var(--kt-statusbar-offline-background)');
   });
   await wsChannelHandler.initHandler();
 

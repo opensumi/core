@@ -5,7 +5,7 @@ import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEm
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { FILE_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, CorePreferences, ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { Schemas } from '@ali/ide-core-common';
@@ -306,6 +306,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
+  @Autowired(AppConfig)
+  config: AppConfig;
+
   codeEditor!: ICodeEditor;
 
   diffEditor!: IDiffEditor;
@@ -359,12 +362,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string) {
     super();
-    this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
-      if (e.payload.gridId === this.grid.uid) {
+    this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
+      if (e.payload.slotLocation === getSlotLocation('@ali/ide-editor', this.config.layoutConfig)) {
+        // window.requestAnimationFrame(() => this.layoutEditors());
         this.layoutEditors();
       }
     });
-    // TODO listen Main layout resize Event
   }
 
   layoutEditors() {

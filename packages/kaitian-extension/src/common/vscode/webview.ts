@@ -38,6 +38,14 @@ export interface IMainThreadWebview {
 
   $registerSerializer(viewType: string): void;
   $unregisterSerializer(viewType: string): void;
+
+  $connectPlainWebview(id: string);
+  $postMessageToPlainWebview(id: string, value: any): Promise<boolean>;
+  $createPlainWebview(id: string, title: string, iconPath?: string): Promise<void>;
+  $plainWebviewLoadUrl(id: string, uri: string): Promise<void>;
+  $disposePlainWebview(id: string): Promise<void>;
+  $revealPlainWebview(id: string, groupIndex: number): Promise<void>;
+
 }
 
 export interface IExtHostWebview {

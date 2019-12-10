@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as clsx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
 import Menu, { ClickParam } from 'antd/lib/menu';
@@ -148,9 +149,11 @@ const TitleActionList: React.FC<{
   more?: MenuNode[];
   context?: any[];
 }> = ({ nav: primary = [], more: secondary = [], context = [] }) => {
-  const ctxMenuRenderer = useInjectable(ICtxMenuRenderer);
+  const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
   const handleShowMore = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (secondary) {
       ctxMenuRenderer.show({
         anchor: { x: e.clientX, y: e.clientY },
@@ -166,7 +169,7 @@ const TitleActionList: React.FC<{
       {
         primary.map((item) => (
           <IconAction
-            className={styles.iconAction}
+            className={clsx(styles.iconAction, { toggled: item.checked })}
             key={item.id}
             data={item}
             context={context} />
@@ -214,7 +217,7 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
   menus: IMenu;
   seperator?: MenuSeparator;
 }> {
-  const { menus, context, seperator } = props;
+  const { menus, context, seperator = 'navigation' } = props;
   // todo: 从一致性考虑是否这里不用 context 的命名
   const [navMenu, moreMenu] = useMenus(menus, seperator, context);
 

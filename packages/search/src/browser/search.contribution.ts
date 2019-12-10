@@ -5,7 +5,7 @@ import { localize, PreferenceSchema, SEARCH_COMMANDS } from '@ali/ide-core-brows
 import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
-import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
+import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { MenuId, NextMenuContribution, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 import { getIcon } from '@ali/ide-core-browser';
@@ -255,22 +255,22 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
       id: SEARCH_COMMANDS.CLEAN.id,
       command: SEARCH_COMMANDS.CLEAN.id,
-      viewId: 'ide-search',
+      viewId: SEARCH_CONTAINER_ID,
       tooltip: localize('search.ClearSearchResultsAction.label'),
     });
     registry.registerItem({
       id: SEARCH_COMMANDS.REFRESH.id,
       command: SEARCH_COMMANDS.REFRESH.id,
-      viewId: 'ide-search',
+      viewId: SEARCH_CONTAINER_ID,
       tooltip: localize('search.RefreshAction.label'),
     });
   }
 
-  onDidUseConfig() {
+  onDidRender() {
     const handler = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
     if (handler) {
       handler.onActivate(() => {

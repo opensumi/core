@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { Disposable, IJSONSchema, IDisposable } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
@@ -140,6 +140,7 @@ export const EXTENSION_EXTEND_SERVICE_PREFIX = 'extension_extend_service';
 export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyIdentifier('mock_extension_extend_proxy_identifier');
 
 export interface IExtensionHostService {
+  reporterEmitter: Emitter<ReporterProcessMessage>;
   getExtensions(): IExtension[];
   getExtension(extensionId: string): VSCExtension<any> | undefined;
   storage: ExtHostStorage;
@@ -162,3 +163,12 @@ export interface IExtendProxy {
 export const WorkerHostAPIIdentifier = {
   ExtWorkerHostExtensionService: createExtHostContextProxyIdentifier<IExtensionWorkerHost>('ExtWorkerHostExtensionService'),
 };
+
+export enum ProcessMessageType {
+  REPORTER,
+}
+
+export enum EXTENSION_ENABLE {
+  ENABLE = 1,
+  DISABLE = 0,
+}

@@ -4,10 +4,11 @@ import { TreeViewActionTypes, SelectableTreeNode, URI } from '@ali/ide-core-comm
 import * as paths from '@ali/ide-core-common/lib/path';
 import { IThemeService } from '@ali/ide-theme';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMResource, ISCMResourceGroup } from '../common';
 import { SCMMenus } from './scm-menu';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 interface ISCMResourceTreeNode extends SelectableTreeNode {
   id: string;
@@ -40,21 +41,20 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
 
   constructor(
     @Optional() item: ISCMResourceGroup,
-    @Optional() private readonly scmMenuService: SCMMenus,
+    @Optional() private readonly scmMenu?: IMenu,
   ) {
     this.id = item.id;
     this.name = item.label;
     this.badge = item.elements.length;
     this.item = item;
     this.resourceGroupState = item.toJSON();
-    this.actions = this.getInlineActions();
+    this.actions = scmMenu ? this.getInlineActions(scmMenu) : null;
   }
 
-  private getInlineActions() {
-    const menus = this.scmMenuService.getResourceGroupInlineActions(this.item);
+  private getInlineActions(scmMenu: IMenu) {
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <InlineActionBar<ISCMResourceGroup> context={[this.item]} menus={menus} seperator='inline' />,
+      component: <InlineActionBar<ISCMResourceGroup> context={[this.item]} menus={scmMenu} seperator='inline' />,
     }];
   }
 }
@@ -88,7 +88,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
 
   constructor(
     @Optional() item: ISCMResource,
-    @Optional() private readonly scmMenuService: SCMMenus,
+    @Optional() private readonly scmMenu?: IMenu,
   ) {
     this.id = item.resourceGroup.id + item.sourceUri;
     this.name = paths.basename(item.sourceUri.path);
@@ -101,7 +101,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
 
     this.badgeStyle = this.getBadgeStyle();
     this.icon = this.labelService.getIcon(URI.from(this.item.sourceUri));
-    this.actions = this.getInlineActions();
+    this.actions = scmMenu ? this.getInlineActions(scmMenu) : null;
   }
 
   private getBadgeStyle(): React.CSSProperties | undefined {
@@ -110,11 +110,10 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
     return color ? { color } : undefined;
   }
 
-  private getInlineActions() {
-    const menus = this.scmMenuService.getResourceInlineActions(this.item.resourceGroup);
+  private getInlineActions(scmMenu: IMenu) {
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <InlineActionBar<ISCMResource> context={[this.item]} menus={menus} seperator='inline' />,
+      component: <InlineActionBar<ISCMResource> context={[this.item]} menus={scmMenu} seperator='inline' />,
     }];
   }
 }

@@ -6,7 +6,7 @@ import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { ViewState } from '@ali/ide-activity-panel';
+import { ViewState } from '@ali/ide-core-browser';
 import { ExtensionTreeViewModel, IExtensionTreeNodeModel } from './extension-tree-view.model';
 
 export interface ExtensionTabbarTreeViewProps {

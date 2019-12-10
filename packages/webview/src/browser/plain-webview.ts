@@ -33,6 +33,7 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
     this.wrapper.style.display = 'block';
     this.wrapper.style.position = 'absolute';
     this.wrapper.style.border = 'none';
+    this.wrapper.style.zIndex = '2';
     const disposer = this.addDispose(new DomListener(this.wrapper, 'load', () => {
       this.addDispose(new DomListener(this.wrapper!.contentWindow!, 'message', (e) => {
         this._onMessage.fire(e.data);

@@ -1,13 +1,14 @@
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { uuid, CommandService, OnEvent, WithEventBus, Emitter } from '@ali/ide-core-common';
 import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
+import { IThemeService } from '@ali/ide-theme/lib/common';
 import { TerminalClient } from './terminal.client';
 import { WidgetGroup, Widget } from './component/resize.control';
 import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
 import { ITerminalTheme } from './terminal.theme';
+import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -19,6 +20,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @observable
   errors: Map<string, ITerminalError> = new Map();
+
+  @observable
+  themeBackground: string;
 
   @Autowired(ITerminalExternalService)
   service: ITerminalExternalService;
@@ -35,7 +39,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
 
-  tabbarHandler: ActivityBarHandler;
+  @Autowired(IThemeService)
+  themeService: IThemeService;
+
+  tabbarHandler: TabBarHandler;
 
   private _clientsMap = new Map<string, TerminalClient>();
   private _focusedId: string;
@@ -142,6 +149,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           this.layoutTerminalClient(widget.id);
         });
       }
+    });
+
+    this.themeBackground = this.termTheme.terminalTheme.background || '';
+    this.themeService.onThemeChange((theme) => {
+      this._clientsMap.forEach((client) => {
+        client.updateTheme();
+        this.themeBackground = this.termTheme.terminalTheme.background || '';
+      });
     });
   }
 
