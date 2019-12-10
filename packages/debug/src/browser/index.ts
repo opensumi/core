@@ -11,7 +11,7 @@ import { DebugSessionManager } from './debug-session-manager';
 import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
 import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
-import { DebugCallStackItemTypeKey } from './contextkeys/debug-call-stack-item-type-key';
+import { DebugCallStackItemTypeKey, BreakpointWidgetInputFocus } from './contextkeys';
 import { DebugService } from './debug-service';
 import { DebugModel, DebugModelManager, DebugExpressionProvider } from './editor';
 import { DebugHoverSource } from './editor/debug-hover-source';
@@ -91,6 +91,12 @@ export class DebugModule extends BrowserModule {
       token: DebugCallStackItemTypeKey,
       useFactory: (injector: Injector) => {
         return injector.get(IContextKeyService).createKey('callStackItemType');
+      },
+    },
+    {
+      token: BreakpointWidgetInputFocus,
+      useFactory: (injector: Injector) => {
+        return injector.get(IContextKeyService).createKey('breakpointWidgetInputFocus', false);
       },
     },
   ];

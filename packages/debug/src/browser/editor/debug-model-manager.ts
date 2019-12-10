@@ -187,27 +187,4 @@ export class DebugModelManager extends Disposable {
       }
     }
   }
-
-  getLogpoint(position: monaco.Position): DebugBreakpoint | undefined {
-    const logpoint = this.anyBreakpoint(position);
-    return logpoint && logpoint.logMessage ? logpoint : undefined;
-  }
-  getLogpointEnabled(position: monaco.Position): boolean | undefined {
-    const logpoint = this.getLogpoint(position);
-    return logpoint && logpoint.enabled;
-  }
-
-  getBreakpoint(position: monaco.Position): DebugBreakpoint | undefined {
-    const breakpoint = this.anyBreakpoint(position);
-    return breakpoint && breakpoint.logMessage ? undefined : breakpoint;
-  }
-
-  getBreakpointEnabled(position: monaco.Position): boolean | undefined {
-    const breakpoint = this.getBreakpoint(position);
-    return breakpoint && breakpoint.enabled;
-  }
-
-  anyBreakpoint(position?: monaco.Position): DebugBreakpoint | undefined {
-    return this.model && this.model.getBreakpoint(position);
-  }
 }

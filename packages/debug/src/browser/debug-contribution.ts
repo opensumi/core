@@ -104,6 +104,15 @@ export namespace DEBUG_COMMANDS {
   };
 }
 
+export namespace DebugBreakpointWidgetCommands {
+  export const ACCEPT = {
+    id: 'debug.breakpointWidget.accept',
+  };
+  export const CLOSE = {
+    id: 'debug.breakpointWidget.close',
+  };
+}
+
 @Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution)
 export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution {
 
@@ -190,12 +199,12 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         collapsed: false,
       },
     ], {
-        iconClass: getIcon('debug'),
-        priority: 7,
-        title: localize('debug.container.title'),
-        containerId: DebugContribution.DEBUG_CONTAINER_ID,
-        activateKeyBinding: 'ctrlcmd+shift+d',
-      });
+      iconClass: getIcon('debug'),
+      priority: 7,
+      title: localize('debug.container.title'),
+      containerId: DebugContribution.DEBUG_CONTAINER_ID,
+      activateKeyBinding: 'ctrlcmd+shift+d',
+    });
   }
 
   async onStart() {
@@ -339,8 +348,8 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       execute: async (position: monaco.Position) => {
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
-          const { openEditBreakpointView } = selectedBreakpoint.model;
-          openEditBreakpointView(position);
+          const { openBreakpointView } = selectedBreakpoint.model;
+          openBreakpointView(position, selectedBreakpoint.breakpoint && selectedBreakpoint.breakpoint.raw);
         }
       },
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
@@ -354,18 +363,18 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && this.selectedBreakpoint.breakpoint.enabled,
     });
     commands.registerCommand(DEBUG_COMMANDS.ENABLE_BREAKPOINT, {
-        execute: () => {
-          console.log('ENABLE_BREAKPOINT');
-        },
-        isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && !this.selectedBreakpoint.breakpoint.enabled,
-        isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && !this.selectedBreakpoint.breakpoint.enabled,
+      execute: () => {
+        console.log('ENABLE_BREAKPOINT');
+      },
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && !this.selectedBreakpoint.breakpoint.enabled,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && !this.selectedBreakpoint.breakpoint.enabled,
     });
     commands.registerCommand(DEBUG_COMMANDS.DELETE_BREAKPOINT, {
-        execute: () => {
-          console.log(DEBUG_COMMANDS.DELETE_BREAKPOINT);
-        },
-        isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
-        isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+      execute: () => {
+        console.log(DEBUG_COMMANDS.DELETE_BREAKPOINT);
+      },
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
 
     commands.registerCommand(DEBUG_COMMANDS.ADD_CONDITIONAL_BREAKPOINT, {
@@ -388,6 +397,32 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
       isVisible: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
       isEnabled: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
+    });
+
+    commands.registerCommand(DebugBreakpointWidgetCommands.ACCEPT, {
+      execute: () => {
+        console.log('dosomething');
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { acceptBreakpoint } = selectedBreakpoint.model;
+          acceptBreakpoint();
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+    });
+    commands.registerCommand(DebugBreakpointWidgetCommands.CLOSE, {
+      execute: () => {
+        console.log('CLOSE');
+
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { closeBreakpointView } = selectedBreakpoint.model;
+          closeBreakpointView();
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
   }
 
@@ -469,6 +504,17 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       command: DEBUG_COMMANDS.RESTART.id,
       keybinding: 'shift+ctrlcmd+f5',
       when: 'inDebugMode',
+    });
+
+    keybindings.registerKeybinding({
+      command: DebugBreakpointWidgetCommands.ACCEPT.id,
+      keybinding: 'enter',
+      when: 'breakpointWidgetInputFocus',
+    });
+    keybindings.registerKeybinding({
+      command: DebugBreakpointWidgetCommands.CLOSE.id,
+      keybinding: 'esc',
+      when: 'breakpointWidgetInputFocus',
     });
   }
 

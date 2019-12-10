@@ -13,6 +13,7 @@ import { DebugBreakpoint, DebugStackFrame } from '../model';
 import { IDebugModel } from '../../common';
 import { ICtxMenuRenderer, generateMergedCtxMenu, IMenu, MenuId, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
+import { DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
 
 @Injectable()
 export class DebugModel implements IDebugModel {
@@ -307,8 +308,8 @@ export class DebugModel implements IDebugModel {
   protected createCurrentBreakpointDecorations(): monaco.editor.IModelDeltaDecoration[] {
     const breakpoints = this.debugSessionManager.getBreakpoints(this.uri);
     return breakpoints
-    .filter((breakpoint) => breakpoint instanceof DebugBreakpoint)
-    .map((breakpoint) => this.createCurrentBreakpointDecoration(breakpoint));
+      .filter((breakpoint) => breakpoint instanceof DebugBreakpoint)
+      .map((breakpoint) => this.createCurrentBreakpointDecoration(breakpoint));
   }
 
   /**
@@ -402,8 +403,29 @@ export class DebugModel implements IDebugModel {
     return contributedContextMenu;
   }
 
-  openEditBreakpointView = (position: monaco.Position) => {
-    this.breakpointWidget.show(position, this.editor, this);
+  openBreakpointView = (position: monaco.Position, context?: DebugBreakpointWidgetContext) => {
+    this.breakpointWidget.show(position, context);
+  }
+
+  closeBreakpointView = () => {
+    this.breakpointWidget.hide();
+  }
+
+  acceptBreakpoint = () => {
+    const { position, values } = this.breakpointWidget;
+    if (position && values) {
+      const breakpoint = this.getBreakpoint(position);
+      if (breakpoint) {
+        breakpoint.updateOrigins(values);
+      } else {
+        this.breakpointManager.addBreakpoint(SourceBreakpoint.create(this.uri, {
+          line: position.lineNumber,
+          column: 1,
+          ...values,
+        }));
+      }
+      this.breakpointWidget.hide();
+    }
   }
 
   protected onContextMenu(event: monaco.editor.IEditorMouseEvent) {
@@ -421,7 +443,7 @@ export class DebugModel implements IDebugModel {
     this.ctxMenuRenderer.show({
       anchor: event.event.browserEvent,
       menuNodes,
-        context: [ event.target.position! ],
+      context: [event.target.position!],
     });
   }
 
