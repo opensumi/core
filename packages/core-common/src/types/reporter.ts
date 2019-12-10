@@ -28,9 +28,13 @@ export interface PerformanceData extends PointData {
 
 // ide-framework 调用
 export const IReporterService = Symbol('IReporterService');
-export interface IReporterService {
-  time(name: string): void;
+
+export interface IReporterTimer {
   timeEnd(name: string, msg?: string): void;
+}
+
+export interface IReporterService {
+  time(name: string): IReporterTimer;
   point(name: string, msg?: string): void;
 }
 

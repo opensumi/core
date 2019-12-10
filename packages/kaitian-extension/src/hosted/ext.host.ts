@@ -223,17 +223,17 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     let extensionModule: any = {};
 
     if (extension.packageJSON.main) {
-      this.reporterService.time('loadExtensionMain');
+      const reportTimer = this.reporterService.time('loadExtensionMain');
       extensionModule = getNodeRequire()(modulePath);
-      this.reporterService.timeEnd('loadExtensionMain', extension.extensionId);
+      reportTimer.timeEnd('loadExtensionMain', extension.extensionId);
 
       if (extensionModule.activate) {
         this.logger.debug(`try activate ${extension.name}`);
         // FIXME: 考虑在 Context 这里直接注入服务注册的能力
         try {
-          this.reporterService.time('activateExtension');
+          const reportTimer = this.reporterService.time('activateExtension');
           const extensionExports = await extensionModule.activate(context) || extensionModule;
-          this.reporterService.timeEnd('activateExtension', extension.extensionId);
+          reportTimer.timeEnd('activateExtension', extension.extensionId);
           exportsData = extensionExports;
 
         } catch (e) {

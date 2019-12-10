@@ -1,7 +1,22 @@
-import { IReporterService, ReporterMetadata, IReporter, PerformanceData, PointData } from './types/reporter';
+import { IReporterService, ReporterMetadata, IReporter, PerformanceData, PointData, IReporterTimer } from './types/reporter';
 import { ILogger, getLogger } from './log';
 import { Injectable, Inject } from '@ali/common-di';
 import { IDisposable } from './disposable';
+
+class ReporterTimer implements IReporterTimer {
+  private now: number;
+  constructor(private name: string, private reporter: IReporter, private metadata?: ReporterMetadata) {
+    this.now = Date.now();
+  }
+
+  timeEnd(msg?: string) {
+    this.reporter.performance(this.name, {
+      duration: Date.now() - this.now,
+      metadata: this.metadata,
+      msg,
+    });
+  }
+}
 
 @Injectable()
 export class DefaultReporter implements IReporter {
@@ -17,23 +32,10 @@ export class DefaultReporter implements IReporter {
 @Injectable()
 export class ReporterService implements IReporterService, IDisposable {
 
-  private timeMap = new Map<string, number>();
-
   constructor(@Inject(IReporter) private reporter: IReporter, @Inject(ReporterMetadata) private metadata?: ReporterMetadata) {}
 
-  time(name: string): void {
-    this.timeMap.set(name, Date.now());
-  }
-  timeEnd(name: string, msg?: string): void {
-    const startTime = this.timeMap.get(name);
-    if (startTime) {
-      this.reporter.performance(name, {
-        duration: Date.now() - startTime,
-        metadata: this.metadata,
-        msg,
-      });
-      this.timeMap.delete(name);
-    }
+  time(name: string): IReporterTimer {
+    return new ReporterTimer(name, this.reporter, this.metadata);
   }
 
   point(name: string, msg?: string): void {
@@ -44,6 +46,6 @@ export class ReporterService implements IReporterService, IDisposable {
   }
 
   dispose() {
-    this.timeMap.clear();
+
   }
 }
