@@ -5,7 +5,7 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 
-import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator, SubmenuItemNode } from '../../menu/next';
+import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator, SubmenuItemNode, IMenuAction } from '../../menu/next';
 import Icon from '../icon';
 import { getIcon } from '../../style/icon/icon';
 import { useInjectable } from '../../react-hooks';
@@ -119,10 +119,10 @@ export const MenuActionList: React.FC<{
   );
 };
 
-const IconAction: React.FC<{
-  data: MenuNode;
+export const IconAction: React.FC<{
+  data: IMenuAction;
   context?: any[];
-} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context = [], ...restProps }) => {
+} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context = [], className, ...restProps }) => {
   const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -133,13 +133,17 @@ const IconAction: React.FC<{
 
   return (
     <Icon
+      className={clsx(styles.iconAction, className)}
       title={data.label}
       iconClass={data.icon}
       onClick={handleClick}
+      tooltip={data.tooltip || data.label}
       {...restProps}
     />
   );
 };
+
+IconAction.displayName = 'IconAction';
 
 /**
  * 用于 scm/title or view/title or inline actions
@@ -148,7 +152,8 @@ const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
   context?: any[];
-}> = ({ nav: primary = [], more: secondary = [], context = [] }) => {
+  extraActions?: React.ReactNode[];
+}> = ({ nav: primary = [], more: secondary = [], context = [], extraActions }) => {
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
   const handleShowMore = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
@@ -169,11 +174,20 @@ const TitleActionList: React.FC<{
       {
         primary.map((item) => (
           <IconAction
-            className={clsx(styles.iconAction, { toggled: item.checked })}
+            className={clsx({ toggled: item.checked })}
             key={item.id}
             data={item}
             context={context} />
         ))
+      }
+      {
+        primary.length &&  Array.isArray(extraActions) && extraActions.length
+          && <span className={styles.divider} />
+      }
+      {
+        Array.isArray(extraActions)
+          && extraActions.length
+          && extraActions
       }
       {
         secondary.length > 0
@@ -182,16 +196,6 @@ const TitleActionList: React.FC<{
             onClick={handleShowMore} />
           : null
       }
-      {/* {
-        secondary.length > 0
-          ? <Dropdown
-            transitionName=''
-            trigger={['click']}
-            overlay={<MenuActionList data={secondary} context={context} />}>
-            <span className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`} />
-          </Dropdown>
-          : null
-      } */}
     </div>
   );
 };
@@ -208,16 +212,17 @@ type TupleContext<T, U, K, M> = (
   : [T, U, K, M]
 );
 
-export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(props: {
+interface InlineActionBarProps<T, U, K, M> {
   context?: TupleContext<T, U, K, M>;
   menus: IMenu;
   seperator?: MenuSeparator;
-}): React.ReactElement<{
-  context?: TupleContext<T, U, K, M>;
-  menus: IMenu;
-  seperator?: MenuSeparator;
-}> {
-  const { menus, context, seperator = 'navigation' } = props;
+  extraActions?: React.ReactNode[];
+}
+
+export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(
+  props: InlineActionBarProps<T, U, K, M>,
+): React.ReactElement<InlineActionBarProps<T, U, K, M>> {
+  const { menus, context, seperator = 'navigation', extraActions } = props;
   // todo: 从一致性考虑是否这里不用 context 的命名
   const [navMenu, moreMenu] = useMenus(menus, seperator, context);
 
@@ -225,6 +230,7 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
   return (
     <TitleActionList
       nav={navMenu}
+      extraActions={extraActions}
       more={seperator === 'inline' ? [] : moreMenu} />
   );
 }
