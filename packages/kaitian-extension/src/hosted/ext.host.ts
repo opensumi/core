@@ -225,7 +225,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     if (extension.packageJSON.main) {
       const reportTimer = this.reporterService.time('loadExtensionMain');
       extensionModule = getNodeRequire()(modulePath);
-      reportTimer.timeEnd('loadExtensionMain', extension.extensionId);
+      reportTimer.timeEnd(extension.extensionId);
 
       if (extensionModule.activate) {
         this.logger.debug(`try activate ${extension.name}`);
@@ -233,7 +233,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         try {
           const reportTimer = this.reporterService.time('activateExtension');
           const extensionExports = await extensionModule.activate(context) || extensionModule;
-          reportTimer.timeEnd('activateExtension', extension.extensionId);
+          reportTimer.timeEnd(extension.extensionId);
           exportsData = extensionExports;
 
         } catch (e) {
