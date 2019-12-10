@@ -33,12 +33,12 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   protected readonly _onBlur = new Emitter<void>();
   readonly onBlur = this._onBlur.event;
 
-  protected context: DebugBreakpointZoneWidget.Context = 'condition';
+  protected context: DebugBreakpointZoneWidget.Context;
 
   private textInput: HTMLInputElement | null;
 
   // 存储不同context下的input值
-  protected _values: DebugBreakpointWidgetContext = {};
+  protected _values: DebugBreakpointWidgetContext;
 
   get values() {
     return {
@@ -47,12 +47,12 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     };
   }
 
-  constructor(editor: DebugEditor, defaultContext?: DebugBreakpointWidgetContext) {
+  constructor(editor: DebugEditor, contexts: DebugBreakpointWidgetContext = {}, defaultContext: DebugBreakpointZoneWidget.Context = 'condition') {
     super(editor);
 
-    if (defaultContext) {
-      this._values = defaultContext;
-    }
+    this._values = contexts;
+    this.context = defaultContext;
+
     this._wrapper = document.createElement('div');
     this._selection = document.createElement('div');
     this._input = document.createElement('div');

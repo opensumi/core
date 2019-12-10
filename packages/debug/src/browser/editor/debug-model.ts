@@ -13,7 +13,7 @@ import { DebugBreakpoint, DebugStackFrame } from '../model';
 import { IDebugModel } from '../../common';
 import { ICtxMenuRenderer, generateMergedCtxMenu, IMenu, MenuId, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
+import { DebugBreakpointWidgetContext, DebugBreakpointZoneWidget } from './debug-breakpoint-zone-widget';
 
 @Injectable()
 export class DebugModel implements IDebugModel {
@@ -382,8 +382,8 @@ export class DebugModel implements IDebugModel {
    * 断点开关函数
    * @memberof DebugModel
    */
-  toggleBreakpoint(): void {
-    this.doToggleBreakpoint();
+  toggleBreakpoint = (position: monaco.Position = this.position) => {
+    this.doToggleBreakpoint(position);
   }
 
   protected doToggleBreakpoint(position: monaco.Position = this.position) {
@@ -403,8 +403,8 @@ export class DebugModel implements IDebugModel {
     return contributedContextMenu;
   }
 
-  openBreakpointView = (position: monaco.Position, context?: DebugBreakpointWidgetContext) => {
-    this.breakpointWidget.show(position, context);
+  openBreakpointView = (position: monaco.Position, context?: DebugBreakpointWidgetContext, defaultContext?: DebugBreakpointZoneWidget.Context) => {
+    this.breakpointWidget.show(position, context, defaultContext);
   }
 
   closeBreakpointView = () => {
@@ -450,7 +450,7 @@ export class DebugModel implements IDebugModel {
   protected onMouseDown(event: monaco.editor.IEditorMouseEvent): void {
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       if (!event.event.rightButton) {
-        this.doToggleBreakpoint(event.target.position!);
+        this.toggleBreakpoint(event.target.position!);
       }
     }
     this.hintBreakpoint(event);

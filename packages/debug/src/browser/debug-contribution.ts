@@ -399,22 +399,52 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
 
     commands.registerCommand(DEBUG_COMMANDS.ADD_CONDITIONAL_BREAKPOINT, {
-      execute: () => {
-        console.log(DEBUG_COMMANDS.ADD_CONDITIONAL_BREAKPOINT);
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { uri, openBreakpointView, toggleBreakpoint } = selectedBreakpoint.model;
+          toggleBreakpoint(position);
+          const breakpoint = this.breakpointManager.getBreakpoint(uri, position!.lineNumber);
+          // 更新当前右键选中的断点
+          if (breakpoint) {
+            this.breakpointManager.selectedBreakpoint = {
+              breakpoint,
+              model: selectedBreakpoint.model,
+            };
+          }
+          openBreakpointView(position, selectedBreakpoint.breakpoint && selectedBreakpoint.breakpoint.raw, 'condition');
+        }
       },
       isVisible: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
       isEnabled: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
     });
     commands.registerCommand(DEBUG_COMMANDS.ADD_LOGPOINT, {
-      execute: () => {
-        console.log(DEBUG_COMMANDS.ADD_LOGPOINT);
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { openBreakpointView, toggleBreakpoint, uri } = selectedBreakpoint.model;
+          toggleBreakpoint(position);
+          const breakpoint = this.breakpointManager.getBreakpoint(uri, position!.lineNumber);
+          // 更新当前右键选中的断点
+          if (breakpoint) {
+            this.breakpointManager.selectedBreakpoint = {
+              breakpoint,
+              model: selectedBreakpoint.model,
+            };
+          }
+          openBreakpointView(position, selectedBreakpoint.breakpoint && selectedBreakpoint.breakpoint.raw, 'logMessage');
+        }
       },
       isVisible: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
       isEnabled: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
     });
     commands.registerCommand(DEBUG_COMMANDS.ADD_BREAKPOINT, {
-      execute: () => {
-        console.log(DEBUG_COMMANDS.ADD_BREAKPOINT);
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { toggleBreakpoint } = selectedBreakpoint.model;
+          toggleBreakpoint(position);
+        }
       },
       isVisible: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
       isEnabled: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
@@ -422,7 +452,6 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
     commands.registerCommand(DebugBreakpointWidgetCommands.ACCEPT, {
       execute: () => {
-        console.log('dosomething');
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
           const { acceptBreakpoint } = selectedBreakpoint.model;
@@ -434,8 +463,6 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
     commands.registerCommand(DebugBreakpointWidgetCommands.CLOSE, {
       execute: () => {
-        console.log('CLOSE');
-
         const { selectedBreakpoint } = this;
         if (selectedBreakpoint) {
           const { closeBreakpointView } = selectedBreakpoint.model;

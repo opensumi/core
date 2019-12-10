@@ -58,10 +58,10 @@ export class DebugBreakpointWidget extends Disposable {
     return this.zone.values;
   }
 
-  show(position: monaco.Position, context?: DebugBreakpointWidgetContext) {
+  show(position: monaco.Position, contexts?: DebugBreakpointWidgetContext, defaultContext?: DebugBreakpointZoneWidget.Context) {
     this.dispose();
     this._position = position;
-    this.addDispose(this.zone = new DebugBreakpointZoneWidget(this.editor, context));
+    this.addDispose(this.zone = new DebugBreakpointZoneWidget(this.editor, contexts, defaultContext));
     this.addDispose(this.zone.onDidChangeBreakpoint((data) => {
       this._onDidChangeBreakpoint.fire(data);
     }));
