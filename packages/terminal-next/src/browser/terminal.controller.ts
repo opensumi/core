@@ -131,6 +131,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   firstInitialize() {
     this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
+    this.themeBackground = this.termTheme.terminalTheme.background || '';
 
     if (this.tabbarHandler.isActivated()) {
       if (this._checkIfNeedInitialize()) {
@@ -141,7 +142,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }
     }
 
-    this.service.onError((error: ITerminalError) => {
+    this.addDispose(this.service.onError((error: ITerminalError) => {
       const { id: sessionId, stopped, reconnected = true } = error;
 
       this.logger.log('TermError: ', error);
@@ -163,9 +164,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       } catch {
         this.errors.set(widgetId, error);
       }
-    });
+    }));
 
-    this.tabbarHandler.onActivate(() => {
+    this.addDispose(this.tabbarHandler.onActivate(() => {
       if (!this.currentGroup) {
         if (!this.groups[0]) {
           this.createGroup(true);
@@ -178,15 +179,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           this.layoutTerminalClient(widget.id);
         });
       }
-    });
+    }));
 
-    this.themeBackground = this.termTheme.terminalTheme.background || '';
-    this.themeService.onThemeChange((theme) => {
+    this.addDispose(this.themeService.onThemeChange((theme) => {
       this._clientsMap.forEach((client) => {
         client.updateTheme();
         this.themeBackground = this.termTheme.terminalTheme.background || '';
       });
-    });
+    }));
   }
 
   private _removeWidgetFromWidgetId(widgetId: string) {
