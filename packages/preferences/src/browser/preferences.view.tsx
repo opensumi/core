@@ -22,7 +22,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
   const appConfig: AppConfig = useInjectable(AppConfig);
 
-  const [currentScope, setCurrentScope] = React.useState(PreferenceScope.Workspace);
+  const [currentScope, setCurrentScope] = React.useState(PreferenceScope.User);
   const [currentSearch, setCurrentSearch] = React.useState('');
 
   const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
@@ -39,8 +39,8 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
   const headers = <div className = {styles.preferences_header}>
     <div className = {styles.preferences_scopes}>
-      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
       <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
+      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
     </div>
     <div className = {styles.search_pref}>
       <Input placeholder={localize('preference.searchPlaceholder')} onChange={(e) => {
