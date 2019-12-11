@@ -118,6 +118,7 @@ export class TreeViewDataProviderMain {
   }
 
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
+    console.log(item);
     if (item.iconUrl || item.icon) {
       return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background);
     } else {

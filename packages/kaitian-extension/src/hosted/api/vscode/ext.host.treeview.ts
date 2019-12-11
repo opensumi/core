@@ -190,10 +190,12 @@ class ExtHostTreeView<T> implements IDisposable {
         } else {
           const light = this.getLightIconPath(treeItem);
           const dark = this.getDarkIconPath(treeItem) || light;
-          iconUrl = {
-            dark,
-            light,
-          };
+          if (light) {
+            iconUrl = {
+              dark,
+              light,
+            };
+          }
         }
 
         const treeViewItem = {

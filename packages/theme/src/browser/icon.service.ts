@@ -90,7 +90,6 @@ export class IconService implements IIconService {
     if (!icon) {
       return;
     }
-    console.log(basePath, icon, type);
     const randomClass = this.getRandomIconClass();
     if (typeof icon === 'string') {
       const targetPath = this.getPath(basePath, icon);
@@ -111,7 +110,6 @@ export class IconService implements IIconService {
         }
       }
     }
-    console.log(randomClass + ' ' + (type === IconType.Mask ? 'mask-mode' : 'background-mode'));
     return randomClass + ' ' + (type === IconType.Mask ? 'mask-mode' : 'background-mode');
   }
 
