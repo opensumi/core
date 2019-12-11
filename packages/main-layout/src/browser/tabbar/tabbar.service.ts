@@ -90,12 +90,6 @@ export class TabbarService extends WithEventBus {
           group: 'navigation',
           order: 2,
         },
-        {
-          command: {
-            id: TOGGLE_BOTTOM_PANEL_COMMAND.id,
-            label: localize('layout.tabbar.hide', '收起面板'),
-          },
-        },
       ]);
       this.commonTitleMenu = this.menuService.createMenu(`tabbar/${this.location}/common`);
     }
