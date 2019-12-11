@@ -1,5 +1,5 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { isElectronEnv, uuid, Emitter, ILogger } from '@ali/ide-core-common';
+import { isElectronEnv, uuid, Emitter, ILogger, Event } from '@ali/ide-core-common';
 import { Emitter as Dispatcher, Disposable as DispatcherDisposable } from 'event-kit';
 import { electronEnv, AppConfig } from '@ali/ide-core-browser';
 import { WSChanneHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
@@ -32,7 +32,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
   service: ITerminalServiceClient;
 
   private _onError = new Emitter<ITerminalError>();
-  public onError = this._onError.event;
+  public onError: Event<ITerminalError> = this._onError.event;
 
   private _dispatcher = new Dispatcher();
   private _info = new Map<string, { pid: number, name: string }>();
