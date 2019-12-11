@@ -8,7 +8,7 @@ import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const app = new Koa();
   const deferred = new Deferred<http.Server>();
-  const port = process.env.IDE_SERVER_PORT || 8000;
+  const port = process.env.IDE_SERVER_PORT || 8001;
   let opts: IServerAppOpts = {
     workspaceDir: path.join(__dirname, '../../workspace'),
     extensionDir: path.join(__dirname, '../../extensions'),
@@ -22,7 +22,8 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
       accountId: 'nGJBcqs1D-ma32P3mBftgsfq',
       masterKey: '-nzxLbuqvrKh8arE0grj2f1H',
     },
-    processCloseExitThreshold: 3 * 1000,
+    processCloseExitThreshold: 5 * 60 * 1000,
+    terminalPtyCloseThreshold: 5 * 60 * 1000,
     staticAllowOrigin: 'http://0.0.0.0:8080',
     staticAllowPath: [
       path.join(__dirname, '../../../packages/kaitian-extension'),

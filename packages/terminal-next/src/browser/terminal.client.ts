@@ -49,7 +49,7 @@ export class TerminalClient extends Disposable {
     options?: TerminalOptions,
   ) {
     super();
-
+    console.log('this.theme.terminalTheme', this.theme.terminalTheme);
     this._attached = false;
     this._activated = false;
     this._disposed = false;

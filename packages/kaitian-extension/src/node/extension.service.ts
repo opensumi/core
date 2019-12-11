@@ -115,7 +115,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   public async setExtProcessConnectionForward() {
-    console.log('setExtProcessConnectionForward', this.instanceId);
+    getLogger().log('setExtProcessConnectionForward', this.instanceId);
     const self = this;
     this._setMainThreadConnection((connectionResult) => {
       const { connection: mainThreadConnection, clientId } = connectionResult;

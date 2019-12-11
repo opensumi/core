@@ -1,3 +1,4 @@
+import { IDisposable } from '@ali/ide-core-common';
 import { Terminal, ITerminalOptions } from 'xterm';
 import { ITerminalError } from './error';
 import { TerminalOptions } from '../common';
@@ -37,6 +38,12 @@ export interface ITerminalExternalService {
    */
   sendText(id: string, message: string): Promise<void>;
   /**
+   * 检测还在会话重的终端后台是否还处于保活状态
+   *
+   * @param sessionIds
+   */
+  check?(sessionIds: string[]): Promise<boolean>;
+  /**
    *
    * @param sessionId 会话唯一标识
    * @param term 返回的 Xterm 终端实例
@@ -71,5 +78,5 @@ export interface ITerminalExternalService {
    *
    * @param handler
    */
-  onError(handler: (error: ITerminalError) => void): void;
+  onError(handler: (error: ITerminalError) => void): IDisposable;
 }
