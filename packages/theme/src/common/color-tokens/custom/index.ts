@@ -10,6 +10,11 @@ import { menuForeground } from '../menu';
 import { SIDE_BAR_TITLE_FOREGROUND } from '../sidebar';
 import { listHoverBackground, listInactiveSelectionBackground } from '../list-tree';
 
+export * from './button';
+export * from './input';
+export * from './checkbox';
+export * from './select';
+
 // 自定义颜色
 
 /* --- button --- */

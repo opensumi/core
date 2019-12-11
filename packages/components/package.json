@@ -1,0 +1,15 @@
+{
+  "name": "@ali/ide-components",
+  "version": "1.6.6",
+  "description": "@ali/ide-components",
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "tsc --build ../../configs/ts/references/tsconfig.components.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
