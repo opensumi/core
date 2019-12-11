@@ -1,7 +1,7 @@
+import { IDisposable } from '@ali/ide-core-common';
 import { Terminal, ITerminalOptions } from 'xterm';
 import { ITerminalError } from './error';
 import { TerminalOptions } from '../common';
-import { IDisposable } from '@ali/ide-monaco/lib/__mocks__/monaco/langauge';
 
 export const ITerminalExternalService = Symbol('ITerminalExternalService');
 export interface ITerminalExternalService {
