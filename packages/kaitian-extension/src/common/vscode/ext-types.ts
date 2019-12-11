@@ -1531,18 +1531,18 @@ export enum TreeItemCollapsibleState {
 */
 @es5ClassCompat
 export class ThemeIcon {
-  /**
-   * Reference to a icon representing a file. The icon is taken from the current file icon theme or a placeholder icon.
-   */
-  static readonly File: ThemeIcon;
 
-  /**
-   * Reference to a icon representing a folder. The icon is taken from the current file icon theme or a placeholder icon.
-   */
-  static readonly Folder: ThemeIcon;
+  static File: ThemeIcon;
+  static Folder: ThemeIcon;
 
-  private constructor(id: string) { }
+  readonly id: string;
+
+  constructor(id: string) {
+    this.id = id;
+  }
 }
+ThemeIcon.File = new ThemeIcon('file');
+ThemeIcon.Folder = new ThemeIcon('folder');
 
 export class TreeItem {
   label?: string | vscode.TreeItemLabel;

@@ -5,6 +5,7 @@ import {
 } from './models';
 import { Event, IDisposable, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from '@ali/ide-core-common';
 import { TreeItemCollapsibleState } from './ext-types';
+import { ThemeType } from '@ali/ide-theme';
 
 export interface IMainThreadTreeView {
   $registerTreeDataProvider(treeViewId: string): void;
@@ -29,7 +30,7 @@ export interface IExtHostTreeView {
 
 // TreeView API Interface dependencies
 
-export type IconUrl = string | { light: string; dark: string; };
+export type IconUrl = string | { [index in ThemeType]: string };
 
 export class TreeViewItem {
 
@@ -38,6 +39,7 @@ export class TreeViewItem {
   label: string;
 
   icon?: string;
+
   iconUrl?: IconUrl;
 
   themeIconId?: 'folder' | 'file';

@@ -7,6 +7,7 @@ import { TreeNode, MenuPath, URI, Emitter, ViewUiStateManager } from '@ali/ide-c
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ExtensionTabbarTreeView } from '../components';
+import { IIconService, IconType } from '@ali/ide-theme';
 
 export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];
 export const VIEW_ITEM_INLINE_MNUE: MenuPath = ['view-item-inline-menu'];
@@ -16,13 +17,16 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   private readonly proxy: IExtHostTreeView;
 
   @Autowired(IMainLayoutService)
-  mainLayoutService: IMainLayoutService;
+  private readonly mainLayoutService: IMainLayoutService;
 
   @Autowired(StaticResourceService)
-  staticResourceService: StaticResourceService;
+  private readonly staticResourceService: StaticResourceService;
 
-  @Autowired()
-  viewStateManager: ViewUiStateManager;
+  @Autowired(ViewUiStateManager)
+  private readonly viewStateManager: ViewUiStateManager;
+
+  @Autowired(IIconService)
+  private readonly iconService: IIconService;
 
   readonly dataProviders: Map<string, TreeViewDataProviderMain> = new Map<string, TreeViewDataProviderMain>();
 
@@ -35,7 +39,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   }
 
   $registerTreeDataProvider(treeViewId: string): void {
-    const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
+    const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService, this.iconService);
     this.dataProviders.set(treeViewId, dataProvider);
     this.mainLayoutService.replaceViewComponent({
       id: treeViewId,
@@ -73,6 +77,7 @@ export class TreeViewDataProviderMain {
     private treeViewId: string,
     private proxy: IExtHostTreeView,
     private staticResourceService: StaticResourceService,
+    private iconService: IIconService,
   ) { }
 
   async createFolderNode(item: TreeViewItem): Promise<CompositeTreeViewNode> {
@@ -113,18 +118,10 @@ export class TreeViewDataProviderMain {
   }
 
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
-    if (item.iconUrl && typeof item.iconUrl !== 'string' && item.iconUrl.dark) {
-      const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
-      const iconUrl = (await this.staticResourceService.resolveStaticResource(URI.file(item.iconUrl.dark))).toString();
-      const cssRule = `.${randomIconClass} {background-image: url(${iconUrl});background-size: 16px;background-position: 0;background-repeat: no-repeat;padding-right: 22px;width: 0;height: 22px;-webkit-font-smoothing: antialiased;box-sizing: border-box;}`;
-      let iconStyleNode = document.getElementById('plugin-icons');
-      if (!iconStyleNode) {
-        iconStyleNode = document.createElement('style');
-        iconStyleNode.id = 'plugin-icons';
-        document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
-      }
-      iconStyleNode.append(cssRule);
-      return randomIconClass;
+    if (item.iconUrl || item.icon) {
+      return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background);
+    } else {
+      return '';
     }
   }
 

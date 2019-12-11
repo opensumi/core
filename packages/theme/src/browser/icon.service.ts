@@ -1,7 +1,7 @@
 import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType, getThemeTypeSelector } from '../common';
+import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType, getThemeTypeSelector, IconType } from '../common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
 
@@ -34,7 +34,13 @@ export class IconService implements IIconService {
   public currentTheme: IIconTheme;
 
   private getPath(basePath: string, relativePath: string): URI {
-    return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
+    if (relativePath.startsWith('./')) {
+      return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
+    } else if (basePath) {
+      return URI.file(new Path(basePath).join(relativePath).toString());
+    } else {
+      return URI.file(relativePath);
+    }
   }
 
   constructor() {
@@ -63,9 +69,15 @@ export class IconService implements IIconService {
     return `icon-${Math.random().toString(36).slice(-8)}`;
   }
 
-  protected getStyleSheet(path: URI, className: string, baseTheme?: string): string {
+  protected getMaskStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
     const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
+    return cssRule;
+  }
+
+  protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
+    const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
+    const cssRule = `${baseTheme || ''} .${className} {background: url(${iconUrl}) no-repeat 50% 50%;background-size:contain;}`;
     return cssRule;
   }
 
@@ -74,23 +86,33 @@ export class IconService implements IIconService {
     return cssRule;
   }
 
-  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined {
+  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask): string | undefined {
     if (!icon) {
       return;
     }
+    console.log(basePath, icon, type);
     const randomClass = this.getRandomIconClass();
     if (typeof icon === 'string') {
       const targetPath = this.getPath(basePath, icon);
-      this.appendStyleSheet(this.getStyleSheet(targetPath, randomClass));
+      if (type === IconType.Mask) {
+        this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass));
+      } else {
+        this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass));
+      }
     } else {
       // tslint:disable-next-line: forin
       for (const themeType in icon) {
         const themeSelector = getThemeTypeSelector(themeType as ThemeType);
         const targetPath = this.getPath(basePath, icon[themeType]);
-        this.appendStyleSheet(this.getStyleSheet(targetPath, randomClass, `.${themeSelector}`));
+        if (type === IconType.Mask) {
+          this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`));
+        } else {
+          this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`));
+        }
       }
     }
-    return randomClass + ' ' + 'mask-mode';
+    console.log(randomClass + ' ' + (type === IconType.Mask ? 'mask-mode' : 'background-mode'));
+    return randomClass + ' ' + (type === IconType.Mask ? 'mask-mode' : 'background-mode');
   }
 
   fromIconUrl(iconUrl: string): string {

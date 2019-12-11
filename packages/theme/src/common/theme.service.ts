@@ -15,11 +15,16 @@ export interface IIconTheme {
 
 export const IIconService = Symbol('IIconTheme');
 
+export enum IconType {
+  Mask = 'mask',
+  Background = 'background',
+}
+
 export interface IIconService {
   currentThemeId: string;
   currentTheme: IIconTheme;
   applyTheme(themeId?: string): Promise<void>;
-  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
+  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType): string | undefined;
   fromIconUrl(iconUrl: string): string;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
