@@ -214,7 +214,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (uris && uris.length) {
           this.filetreeService.deleteFiles(uris);
         } else {
-          const seletedUris = this.filetreeService.selectedUris;
+          const seletedUris = this.filetreeService.focusedUris;
           if (seletedUris && seletedUris.length) {
             this.filetreeService.deleteFiles(seletedUris);
           }
@@ -230,7 +230,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (uris && uris.length) {
           this.filetreeService.renameTempFile(uris[0]);
         } else {
-          const selectedFiles = this.filetreeService.selectedFiles;
+          const selectedFiles = this.filetreeService.focusedFiles;
           if (selectedFiles && selectedFiles.length) {
             const selected = selectedFiles[0];
             if (!selected.isTemporary) {
@@ -246,7 +246,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
       execute: async (uri) => {
         // 默认获取焦点元素
-        const selectedFile = this.filetreeService.selectedUris;
+        const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -266,7 +266,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (uri) => {
-        const selectedFile = this.filetreeService.selectedUris;
+        const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
