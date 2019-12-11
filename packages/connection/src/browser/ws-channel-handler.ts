@@ -1,12 +1,7 @@
 import { WSChannel } from '../common/ws-channel';
 import * as shorid from 'shortid';
 import { stringify, parse } from '../common/utils';
-let ReconnectingWebSocket = require('reconnecting-websocket');
-
-if (ReconnectingWebSocket.default) {
-  /* istanbul ignore next */
-  ReconnectingWebSocket = ReconnectingWebSocket.default;
-}
+import { MultiWs } from './multi-ws';
 // import ReconnectingWebSocket from 'reconnecting-websocket';
 // import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
@@ -22,7 +17,7 @@ export class WSChanneHandler {
 
   constructor(public wsPath: string, logger: any, public protocols?: string[]) {
     this.logger = logger || this.logger;
-    this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
+    this.connection = new MultiWs(wsPath, protocols) as any; // new WebSocket(wsPath, protocols);
   }
   setLogger(logger: any) {
     this.logger = logger;
@@ -35,17 +30,17 @@ export class WSChanneHandler {
     this.connection.send(clientMsg);
   }
   private heartbeatMessage() {
-    if (this.heartbeatMessageTimer) {
-      clearTimeout(this.heartbeatMessageTimer);
-    }
-    this.heartbeatMessageTimer = setTimeout(() => {
-      const msg = stringify({
-        kind: 'heartbeat',
-        clientId: this.clientId,
-      });
-      this.connection.send(msg);
-      this.heartbeatMessage();
-    }, 5000);
+    // if (this.heartbeatMessageTimer) {
+    //   clearTimeout(this.heartbeatMessageTimer);
+    // }
+    // this.heartbeatMessageTimer = setTimeout(() => {
+    //   const msg = stringify({
+    //     kind: 'heartbeat',
+    //     clientId: this.clientId,
+    //   });
+    //   this.connection.send(msg);
+    //   this.heartbeatMessage();
+    // }, 5000);
   }
 
   public async initHandler() {

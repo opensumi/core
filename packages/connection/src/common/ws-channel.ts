@@ -44,7 +44,7 @@ export class WSChannel implements IWebSocket {
   public id: number | string;
   public channelPath: string;
 
-  private connectionSend: (content: string) => void;
+  private connectionSend: (content: string, original?: any) => void;
   private connection: ws;
   private fireMessage: (data: any) => void;
   private fireOpen: (id: number) => void;
@@ -60,7 +60,7 @@ export class WSChannel implements IWebSocket {
     }
   }
 
-  public setConnectionSend(connectionSend: (content: string) => void) {
+  public setConnectionSend(connectionSend: (content: string, original?: any) => void) {
     this.connectionSend = connectionSend;
   }
 
@@ -108,6 +108,7 @@ export class WSChannel implements IWebSocket {
         id: this.id,
         content,
       }),
+      content,
     );
   }
   onError() {}

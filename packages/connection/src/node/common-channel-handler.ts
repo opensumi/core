@@ -3,6 +3,7 @@ import * as pathMatch from 'path-match';
 import * as ws from 'ws';
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
+import { MultiWsServer } from './multi-ws-server';
 const route = pathMatch();
 
 export interface IPathHander {
@@ -96,7 +97,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   static channelId = 0;
 
   public handlerId = 'common-channel';
-  private wsServer: ws.Server;
+  private wsServer: MultiWsServer;
   private handlerRoute: (wsPathname: string) => any;
   private channelMap: Map<string | number, WSChannel> = new Map();
   private connectionMap: Map<string, ws> = new Map();
@@ -104,7 +105,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   constructor(routePath: string, private logger: any = console) {
     super();
-    this.handlerRoute = route(routePath);
+    this.handlerRoute = route(`${routePath}/:channel`);
     this.initWSServer();
   }
   private hearbeat(connectionId: string, connection: ws) {
@@ -119,10 +120,9 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new ws.Server({ noServer: true });
+    this.wsServer = new MultiWsServer();
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
-
       connection.on('message', (msg: string) => {
         let msgObj: ChannelMessage;
         try {
@@ -246,13 +246,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
     if (routeResult) {
       const wsServer = this.wsServer;
-      wsServer.handleUpgrade(request, socket, head, (connection: any) => {
-        connection.routeParam = {
-          pathname: wsPathname,
-        };
-
-        wsServer.emit('connection', connection);
-      });
+      wsServer.handleUpgrade(wsPathname, request, socket, head);
       return true;
     }
 
