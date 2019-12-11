@@ -36,19 +36,20 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     setCurrentSearch(value);
   }, 100, {maxWait: 1000});
 
+  const headers = <div className = {styles.preferences_header}>
+    <div className = {styles.preferences_scopes}>
+      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
+      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
+    </div>
+    <div className = {styles.search_pref}>
+      <Input placeholder={localize('preference.searchPlaceholder')} onChange={(e) => {
+          debouncedSearch((e.target as HTMLInputElement).value);
+      }}/>
+    </div>
+  </div>;
+
   return (
     <div className = {styles.preferences}>
-      <div className = {styles.preferences_header}>
-        <div className = {styles.preferences_scopes}>
-          <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
-          <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
-        </div>
-        <div className = {styles.search_pref}>
-          <Input placeholder={localize('preference.searchPlaceholder')} onChange={(e) => {
-              debouncedSearch((e.target as HTMLInputElement).value);
-          }}/>
-        </div>
-      </div>
       { groups.length > 0 ?
       <div className = {styles.preferences_body}>
         <PreferencesIndexes groups={groups} currentGroupId={currentGroup} setCurrentGroup={setCurrentGroup} scope={currentScope} search={currentSearch}></PreferencesIndexes>
