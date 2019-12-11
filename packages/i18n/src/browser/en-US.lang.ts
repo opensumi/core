@@ -3,6 +3,7 @@ export const localizationBundle = {
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
+    'extension': 'Extension',
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
     'file.save': 'Save File',
@@ -371,6 +372,11 @@ export const localizationBundle = {
     'marketplace.extension.readme': 'Readme',
     'marketplace.extension.changelog': 'Changelog',
     'marketplace.extension.installed': 'Installed',
+    'marketplace.quickopen.install': 'Install Extension',
+    'marketplace.quickopen.install.id': 'Extension ID',
+    'marketplace.quickopen.install.id.required': 'Extension ID is required',
+    'marketplace.quickopen.install.version.placeholder': 'Extension version (Optional)',
+    'marketplace.quickopen.install.error': 'Install Extension has error',
 
     'saveChangesMessage': 'Do you want to save the changes you made to {0}?',
     'file.prompt.dontSave': 'Don\'t Save',
