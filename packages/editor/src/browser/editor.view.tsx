@@ -10,7 +10,6 @@ import { Tabs } from './tab.view';
 import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry, PreferenceService } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { Scroll } from './component/scroll/scroll';
 import { EditorComponentRegistryImpl } from './component';
 import { NavigationBar } from './navigation.view';
@@ -125,7 +124,6 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const codeEditorRef = React.useRef<HTMLElement | null>();
   const diffEditorRef = React.useRef<HTMLElement | null>();
   const editorBodyRef = React.useRef<HTMLElement | null>();
-  const contextMenuRenderer = useInjectable(ContextMenuRenderer) as ContextMenuRenderer;
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
   const preferenceService = useInjectable(PreferenceService) as PreferenceService;

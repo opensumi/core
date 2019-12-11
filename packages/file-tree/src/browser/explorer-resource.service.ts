@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import * as styles from './index.module.less';
 import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
 import {
@@ -142,9 +141,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   @Autowired(IDecorationsService)
   protected decorationsService: IDecorationsService;
-
-  @Autowired(ContextMenuRenderer)
-  protected contextMenuRenderer: ContextMenuRenderer;
 
   @Autowired(IContextKeyService)
   protected contextKeyService: IContextKeyService;

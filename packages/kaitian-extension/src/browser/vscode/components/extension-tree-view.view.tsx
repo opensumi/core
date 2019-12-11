@@ -202,6 +202,7 @@ export const ExtensionTabbarTreeView = observer(({
   };
 
   const onContextMenuHandler = (nodes: TreeNode<any>[], event: React.MouseEvent<HTMLElement>) => {
+    // FIXME: old ContextMenuRenderer is deprecated
     const contextMenuRenderer: ContextMenuRenderer = injector.get(ContextMenuRenderer);
     const { x, y } = event.nativeEvent;
     const data = {
