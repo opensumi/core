@@ -8,7 +8,7 @@ import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { PreferenceService } from '@ali/ide-core-browser';
+import { PreferenceService, IReporterService } from '@ali/ide-core-browser';
 
 @Injectable({multiple: true})
 export class MainThreadLanguages implements IMainThreadLanguages {
@@ -20,6 +20,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired(PreferenceService)
   preference: PreferenceService;
+
+  @Autowired(IReporterService)
+  reporter: IReporterService;
 
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 
@@ -97,9 +100,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
+
+        const timer = this.reporter.time('provideCompletionItems');
         const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, context, token);
         if (!result) {
           return undefined!;
+        }
+        if (result.items.length) {
+          timer.timeEnd(`receive ${result.items.length} completion items on ${model.uri.toString()}`);
         }
         return {
           suggestions: result.items,
