@@ -3,6 +3,7 @@ import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILi
 import { IResource } from './resource';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
+import { IContextKeyService } from '@ali/ide-core-browser';
 
 export interface CursorStatus {
   position: MaybeNull<monaco.Position>;
@@ -90,8 +91,8 @@ export interface IDiffEditor extends IDisposable {
 
 @Injectable()
 export abstract class EditorCollectionService {
-  public abstract async createCodeEditor(dom: HTMLElement, options?: any): Promise<ICodeEditor>;
-  public abstract async createDiffEditor(dom: HTMLElement, options?: any): Promise<IDiffEditor>;
+  public abstract async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor>;
+  public abstract async createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<IDiffEditor>;
   public abstract listEditors(): IEditor[];
   public abstract listDiffEditors(): IDiffEditor[];
 

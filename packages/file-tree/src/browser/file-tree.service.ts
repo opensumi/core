@@ -93,6 +93,8 @@ export class FileTreeService extends WithEventBus {
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
 
+  private _contextMenuContextKeyService: IContextKeyService;
+
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;
 
@@ -144,8 +146,15 @@ export class FileTreeService extends WithEventBus {
     }
   }
 
+  get contextMenuContextKeyService() {
+    if (!this._contextMenuContextKeyService) {
+      this._contextMenuContextKeyService = this.contextKeyService.createScoped();
+    }
+    return this._contextMenuContextKeyService;
+  }
+
   @memoize get contributedContextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.ExplorerContext, this.contextKeyService);
+    const contributedContextMenu = this.menuService.createMenu(MenuId.ExplorerContext, this.contextMenuContextKeyService);
     this.addDispose(contributedContextMenu);
     return contributedContextMenu;
   }

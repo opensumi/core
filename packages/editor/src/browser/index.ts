@@ -149,38 +149,7 @@ export class EditorClientAppContribution implements ClientAppContribution, Monac
   }
 
   onContextKeyServiceReady(contextKeyService: IContextKeyService) {
-    // contextKeys
-    const resourceScheme = contextKeyService.createKey<string>('resourceScheme', '');
-    const resourceFilename = contextKeyService.createKey<string>('resourceFilename', '');
-    const resourceExtname = contextKeyService.createKey<string>('resourceExtname', '');
-    const resourceLangId = contextKeyService.createKey<string>('resourceLangId', '');
-    const resourceKey = contextKeyService.createKey<string>('resource', '');
-    const isFileSystemResource = contextKeyService.createKey<boolean>('isFileSystemResource', false);
-
-    const setKeys = (resource) => {
-      if (resource) {
-        resourceScheme.set(resource.uri.scheme);
-        resourceFilename.set(resource.uri.path.name);
-        resourceExtname.set(resource.uri.path.ext);
-        const langId = this.workbenchEditorService.currentEditor ? this.workbenchEditorService.currentEditor.currentDocumentModel!.languageId : '';
-        resourceLangId.set(langId);
-        resourceKey.set(resource.uri.toString());
-        isFileSystemResource.set(resource.uri.scheme === 'file'); // TOOD FileSystemClient.canHandle
-      } else {
-        resourceScheme.set('');
-        resourceFilename.set('');
-        resourceExtname.set('');
-        resourceLangId.set('');
-        resourceKey.set('');
-        isFileSystemResource.set(false); // TOOD FileSystemClient.canHandle
-      }
-    };
-
-    this.workbenchEditorService.onActiveResourceChange((resource) => {
-      setKeys(resource);
-    });
-
-    setKeys(this.workbenchEditorService.currentResource);
+    this.workbenchEditorService.prepareContextKeyService(contextKeyService);
   }
 
 }

@@ -1,8 +1,9 @@
 import {
   IContextKey, IContextKeyService, Event, IEventBus,
-  ContextKeyChangeEvent, getLogger, Emitter,
+  ContextKeyChangeEvent, getLogger, Emitter, IScopedContextKeyService,
 } from '@ali/ide-core-browser';
 
+const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';
 abstract class BaseContextKeyService implements IContextKeyService {
   protected _onDidChangeContext = new Emitter<ContextKeyChangeEvent>();
   readonly onDidChangeContext: Event<ContextKeyChangeEvent> = this._onDidChangeContext.event;
@@ -27,7 +28,7 @@ abstract class BaseContextKeyService implements IContextKeyService {
     return this.contextKeyService.getContextValuesContainer(this.contextKeyService._myContextId).getValue<T>(key);
   }
 
-  createScoped(target: monaco.contextkey.IContextKeyServiceTarget | monaco.contextKeyService.ContextKeyService): IContextKeyService {
+  createScoped(target: monaco.contextkey.IContextKeyServiceTarget | monaco.contextKeyService.ContextKeyService): IScopedContextKeyService {
     if (target && (target as any)._myContextId ) {
       return new ScopedContextKeyService(target as any);
     } else {
@@ -108,7 +109,7 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
   }
 }
 
-class ScopedContextKeyService extends BaseContextKeyService implements IContextKeyService {
+class ScopedContextKeyService extends BaseContextKeyService implements IScopedContextKeyService {
   constructor(protected contextKeyService: monaco.contextKeyService.ContextKeyService) {
     super(contextKeyService);
     this.contextKeyService.onDidChangeContext((payload) => {
@@ -130,6 +131,14 @@ class ScopedContextKeyService extends BaseContextKeyService implements IContextK
       getLogger().error(e);
       return false;
     }
+  }
+
+  attachToDomNode(domNode: HTMLElement) {
+    if (this.contextKeyService._domNode) {
+      this.contextKeyService._domNode.removeAttribute(KEYBINDING_CONTEXT_ATTR);
+    }
+    this.contextKeyService._domNode = domNode;
+    this.contextKeyService._domNode.setAttribute(KEYBINDING_CONTEXT_ATTR, String(this.contextKeyService._myContextId));
   }
 
   dispose() {

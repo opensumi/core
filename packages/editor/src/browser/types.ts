@@ -220,7 +220,7 @@ export interface IEditorActionItem {
   tipWhen?: string;
   tipClass?: string;
   isVisible?: (resource: MaybeNull<IResource>, editorGroup: IEditorGroup) => boolean;
-  onClick: (resource: MaybeNull<IResource>) => void;
+  onClick: (resource: MaybeNull<IResource>, editorGroup: IEditorGroup) => void;
   when?: string; // 使用contextkey
 }
 
