@@ -16,9 +16,10 @@ import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider,
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { reaction } from 'mobx';
-import { CorePreferences } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKeyService } from '@ali/ide-core-browser';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
+import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 
 const injector = createBrowserInjector([]);
 
@@ -71,6 +72,10 @@ injector.addProviders(...[
     token: IEditorFeatureRegistry,
     useClass: EditorFeatureRegistryImpl,
   },
+  {
+    token: IContextKeyService,
+    useClass: MockContextKeyService,
+  },
 ]);
 useMockStorage(injector);
 injector.overrideProviders({
@@ -119,6 +124,7 @@ describe('workbench editor service tests', () => {
   const disposer = new Disposable();
   beforeAll(() => {
     injector.mockCommand('explorer.location');
+    (editorService as WorkbenchEditorServiceImpl).prepareContextKeyService(injector.get(IContextKeyService));
     disposer.addDispose(resourceService.registerResourceProvider(TestResourceProvider));
     disposer.addDispose(editorComponentRegistry.registerEditorComponent(TestResourceComponent));
     disposer.addDispose(editorComponentRegistry.registerEditorComponentResolver('test', TestResourceResolver));
