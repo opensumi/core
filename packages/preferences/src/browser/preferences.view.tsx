@@ -174,7 +174,10 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   }, [scope, preferenceName]);
 
   const doChangeValue = throttle((value) => {
-    preferenceService.setPreference(key, value, scope).then(() => {
+    preferenceService.setPreference(key, value, PreferenceScope.Workspace).then(() => {
+      forceUpdate();
+    });
+    preferenceService.setPreference(key, value, PreferenceScope.User).then(() => {
       forceUpdate();
     });
   }, 500, {trailing: true});
