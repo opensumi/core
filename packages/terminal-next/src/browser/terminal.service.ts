@@ -42,6 +42,11 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
     return ensureResult;
   }
 
+  async check(ids: string[]) {
+    const ensureResult = await this.service.ensureTerminal(ids);
+    return ensureResult;
+  }
+
   getOptions() {
     return {};
   }

@@ -18,7 +18,7 @@ export interface ITerminalController {
   groups: IWidgetGroup[];
   state: { index: number };
   errors: Map<string, ITerminalError>;
-  ensureTerminals(): Promise<void>;
+  reconnect(): Promise<void>;
   recovery(history: any): Promise<void>;
   firstInitialize(): void;
   removeFocused(): void;

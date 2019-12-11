@@ -61,19 +61,28 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this._clientsMap.get(this._focusedId);
   }
 
-  // TODO: 重置流程，当后端 pty 销毁时，进入初始化第一个流程
-  public async ensureTerminals() {
-    const result = await this.service.ensureTerminals(this.terminals.map((term) => term.id));
-    this.logger.log('ensureTerminals result', result);
+  public async reconnect() {
+    let canReconnected = true;
 
-    if (!result) {
-      this.groups.forEach((group, index) => {
+    if (this.service.check) {
+      canReconnected = await this.service.check(this.terminals.map((term) => term.id));
+    }
+
+    if (!canReconnected) {
+      this.groups.forEach((_, index) => {
         this._removeGroupByIndex(index);
       });
 
       this.groups = [];
       this.createGroup(true);
       this.addWidget();
+    } else {
+      this.terminals.map((term) => {
+        const client = this._clientsMap.get(term.id);
+        if (client) {
+          this.retryTerminalClient(client.widget.id);
+        }
+      });
     }
   }
 
@@ -134,6 +143,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     this.service.onError((error: ITerminalError) => {
       const { id: sessionId, stopped, reconnected = true } = error;
+
+      this.logger.log('TermError: ', error);
 
       if (!stopped) {
         return;

@@ -29,7 +29,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
   store: ITerminalRestore;
 
   onReconnect() {
-    this.terminalController.ensureTerminals();
+    this.terminalController.reconnect();
   }
 
   registerComponent(registry: ComponentRegistry) {

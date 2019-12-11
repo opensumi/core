@@ -4,7 +4,6 @@ import { TerminalOptions } from '../common';
 
 export const ITerminalExternalService = Symbol('ITerminalExternalService');
 export interface ITerminalExternalService {
-  ensureTerminals(terminalIdArr: string[]): Promise<boolean>;
   /**
    * 集成方自定义会话唯一标识的函数
    */
@@ -37,6 +36,12 @@ export interface ITerminalExternalService {
    * @param message 发送的字符串信息
    */
   sendText(id: string, message: string): Promise<void>;
+  /**
+   * 检测还在会话重的终端后台是否还处于保活状态
+   *
+   * @param sessionIds
+   */
+  check?(sessionIds: string[]): Promise<boolean>;
   /**
    *
    * @param sessionId 会话唯一标识
