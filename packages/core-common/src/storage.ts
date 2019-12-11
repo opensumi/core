@@ -26,6 +26,7 @@ export interface IStorage extends IDisposable {
 
   get(key: string, fallbackValue: string): string;
   get(key: string, fallbackValue?: string): string | undefined;
+  get<T>(key: string, fallbackValue?: T): T;
 
   getBoolean(key: string, fallbackValue: boolean): boolean;
   getBoolean(key: string, fallbackValue?: boolean): boolean | undefined;
@@ -33,7 +34,7 @@ export interface IStorage extends IDisposable {
   getNumber(key: string, fallbackValue: number): number;
   getNumber(key: string, fallbackValue?: number): number | undefined;
 
-  set(key: string, value: string | boolean | number | undefined | null): Promise<void>;
+  set(key: string, value: object | string | boolean | number | undefined | null): Promise<void>;
   delete(key: string): Promise<void>;
 
   close(): Promise<void>;
@@ -51,8 +52,10 @@ export const STORAGE_NAMESPACE = {
   EXTENSIONS: new URI('extensions').withScheme(STORAGE_SCHEMA.SCOPE),
   LAYOUT: new URI('layout').withScheme(STORAGE_SCHEMA.SCOPE),
   RECENT_DATA: new URI('recent').withScheme(STORAGE_SCHEMA.SCOPE),
+  DEBUG: new URI('debug').withScheme(STORAGE_SCHEMA.SCOPE),
   // global database
   GLOBAL_EXTENSIONS: new URI('extensions').withScheme(STORAGE_SCHEMA.GLOBAL),
+  GLOBAL_RECENT_DATA: new URI('recent').withScheme(STORAGE_SCHEMA.GLOBAL),
 }
 
 @Injectable()

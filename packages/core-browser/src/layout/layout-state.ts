@@ -15,7 +15,7 @@ export class LayoutState {
   getState<T>(key: string, defaultState: T): T {
     let storedState: T;
     try {
-      storedState = JSON.parse(this.layoutStorage.get(key, JSON.stringify(defaultState)));
+      storedState = this.layoutStorage.get<any>(key, defaultState);
     } catch (err) {
       console.warn('Layout state parse出错，使用默认state');
       storedState = defaultState;
@@ -24,7 +24,7 @@ export class LayoutState {
   }
 
   setState(key: string, state: object) {
-    this.layoutStorage.set(key, JSON.stringify(state));
+    this.layoutStorage.set(key, state);
   }
 }
 

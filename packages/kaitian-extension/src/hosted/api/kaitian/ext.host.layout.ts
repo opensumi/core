@@ -22,5 +22,14 @@ export function createLayoutAPIFactory(
     activatePanel: async (id) => {
       return await extHostCommands.executeCommand(`activity.panel.activate.${id}`);
     },
+    isBottomPanelVisible: async () => {
+      return await extHostCommands.executeCommand('main-layout.bottom-panel.is-visible');
+    },
+    isLeftPanelVisible: async () => {
+      return await extHostCommands.executeCommand('main-layout.left-panel.is-visible');
+    },
+    isRightPanelVisible: async () => {
+      return await extHostCommands.executeCommand('main-layout.right-panel.is-visible');
+    },
   };
 }

@@ -3,14 +3,11 @@ import { BrowserEditorContribution, EditorComponentRegistry, EditorComponentRend
 import { ResourceService, IResource, WorkbenchEditorService } from '@ali/ide-editor';
 import { EditorWelcomeComponent } from './welcome';
 import { Autowired } from '@ali/common-di';
-import { IWorkspaceService, WorkspaceServerPath, IWorkspaceServer } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { IWelcomeMetaData } from './common';
 
 @Domain(BrowserEditorContribution, ClientAppContribution)
 export class WelcomeContribution implements BrowserEditorContribution, ClientAppContribution {
-
-  @Autowired(WorkspaceServerPath)
-  workspaceServer: IWorkspaceServer;
 
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;
@@ -37,7 +34,7 @@ export class WelcomeContribution implements BrowserEditorContribution, ClientApp
     service.registerResourceProvider({
       scheme: 'welcome',
       provideResource: async (uri: URI): Promise<IResource<IWelcomeMetaData>> => {
-        return Promise.all([this.workspaceServer.getRecentWorkspacePaths(), this.workspaceService.getMostRecentlyOpenedFiles()]).then(([workspaces, files]) => {
+        return Promise.all([this.workspaceService.getMostRecentlyUsedWorkspaces(), this.workspaceService.getMostRecentlyOpenedFiles()]).then(([workspaces, files]) => {
           return {
             uri,
             name: localize('welcome.title'),

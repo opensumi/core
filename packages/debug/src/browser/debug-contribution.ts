@@ -187,7 +187,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       }
     });
     this.debugEditorController.init();
-    this.configurations.load();
+    await this.configurations.load();
     await this.breakpointManager.load();
   }
 
@@ -201,13 +201,13 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     }
   }
 
-  onStop(): void {
-    this.configurations.save();
-    this.breakpointManager.save();
-    this.debugWatchService.save();
+  async onWillStop() {
+    await this.configurations.save();
+    await this.breakpointManager.save();
+    await this.debugWatchService.save();
   }
 
-  onDidUseConfig() {
+  onDidRender() {
     const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
     if (handler) {
       handler!.setTitleComponent(DebubgConfigurationView);

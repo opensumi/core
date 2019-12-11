@@ -8,10 +8,10 @@ import { bindModuleBackService, createServerConnection2, createNetServerConnecti
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
 import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace } from '@ali/ide-core-common';
-import { INodeLogger, NodeLogger } from '../logger/node-logger';
 import * as os from 'os';
 import * as path from 'path';
 import { ExtensionPaths } from '../storage';
+import { injectInnerProviders } from './inner-providers';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
 export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
@@ -181,10 +181,8 @@ export class ServerApp implements IServerApp {
     this.injector.addProviders({
       token: AppConfig,
       useValue: this.config,
-    }, {
-      token: INodeLogger,
-      useClass: NodeLogger,
     });
+    injectInnerProviders(this.injector);
   }
 
   private async initializeContribution() {

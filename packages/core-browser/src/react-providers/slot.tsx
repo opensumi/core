@@ -3,7 +3,7 @@
  */
 
 import * as React from 'react';
-import { getLogger } from '@ali/ide-core-common';
+import { getLogger, isDevelopment } from '@ali/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
 import { useInjectable } from '../react-hooks';
 import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
@@ -51,20 +51,38 @@ export class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.errorInfo) {
-      return (
-        <div>
-          <h2>模块渲染异常</h2>
-          <details style={{ whiteSpace: 'pre-wrap' }}>
-            {this.state.error && (this.state.error as any).toString()}
-            <br />
-            {(this.state.errorInfo as any).componentStack}
-          </details>
-        </div>
-      );
+      if (isDevelopment()) {
+        return (
+          <div>
+            <h2>模块渲染异常</h2>
+            <details style={{ whiteSpace: 'pre-wrap' }}>
+              {this.state.error && (this.state.error as any).toString()}
+              <br />
+              {(this.state.errorInfo as any).componentStack}
+            </details>
+          </div>
+        );
+      } else {
+        return (
+          <div>模块渲染异常</div>
+        );
+      }
     }
     return this.props.children;
   }
 }
+
+export const allSlot: {slot: string, dom: HTMLElement}[] = [];
+
+export const SlotDecorator: React.FC<{slot: string}> = ({slot, ...props}) => {
+  const ref = React.useRef<HTMLElement>();
+  React.useEffect(() => {
+    if (ref.current) {
+      allSlot.push({slot, dom: ref.current});
+    }
+  }, [ref]);
+  return <div ref={(ele) => ref.current = ele!} className='resize-wrapper'>{props.children}</div>;
+};
 
 export interface RendererProps { components: ComponentRegistryInfo[]; }
 export type Renderer = React.FunctionComponent<RendererProps>;
@@ -113,7 +131,9 @@ export function SlotRenderer({ slot, ...props }: any) {
   });
   const Renderer = slotRendererRegistry.getSlotRenderer(slot);
   return <ErrorBoundary>
-    <Renderer components={componentInfos} {...props} />
+    <SlotDecorator slot={slot}>
+      <Renderer components={componentInfos} {...props} />
+    </SlotDecorator>
   </ErrorBoundary>;
 }
 

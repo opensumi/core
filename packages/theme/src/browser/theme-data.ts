@@ -167,8 +167,14 @@ export class ThemeData implements IThemeData {
           } else if ( value.indexOf('#') === -1) {
             // 兼容 white、red 类型色值
             const color = Color[value];
-            value = Color.Format.CSS.formatHex(color);
-            tokenColor.settings[current] = value;
+            if (color) {
+              value = Color.Format.CSS.formatHex(color);
+              tokenColor.settings[current] = value;
+            } else {
+              // 去掉主题瞎写的值
+              delete tokenColor.settings[current];
+              return previous;
+            }
           }
           value = value.replace(/^\#/, '').slice(0, 6);
         }

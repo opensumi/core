@@ -153,7 +153,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           </div>
           <div className={styles.details}>
             <div className={styles.title}>
-              <span className={styles.name}>{extension.displayName}</span>
+              <span className={styles.name}>{extension.displayName || extension.name}</span>
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
               {canUpdate ? (<span className={clx(commonStyles.tag, styles.green)}>{localize('marketplace.extension.canupdate')}</span>) : null}
             </div>

@@ -1,4 +1,4 @@
-import { IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, DisposableCollection } from '@ali/ide-core-common';
+import { getLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, DisposableCollection, isObject, isArray } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IStorageServer, IUpdateRequest } from '../common';
 
@@ -28,6 +28,8 @@ export class Storage implements IStorage {
   private storageName: string;
 
   private _init: Promise<any>;
+
+  private readonly logger = getLogger();
 
   constructor(private readonly database: IStorageServer, private readonly workspace: IWorkspaceService, storageName: string) {
     this.storageName = storageName;
@@ -82,9 +84,14 @@ export class Storage implements IStorage {
   get(key: string, fallbackValue: string): string;
   get(key: string, fallbackValue?: string): string | undefined;
   get(key: string, fallbackValue?: string): string | undefined {
-    const value = this.cache.get(key);
+    let value = this.cache.get(key);
     if (isUndefinedOrNull(value)) {
       return fallbackValue;
+    }
+    try {
+      value = JSON.parse(value);
+    } catch (e) {
+      this.logger.error('Could not parse value: ', value, e);
     }
     return value;
   }
@@ -113,7 +120,7 @@ export class Storage implements IStorage {
     return parseInt(value, 10);
   }
 
-  set(key: string, value: string | boolean | number | null | undefined): Promise<void> {
+  set(key: string, value: object | string | boolean | number | null | undefined): Promise<void> {
     if (this.state === StorageState.Closed) {
       return Promise.resolve();
     }
@@ -124,7 +131,7 @@ export class Storage implements IStorage {
     }
 
     // 否则，转化为string并存储
-    const valueStr = String(value);
+    const valueStr = JSON.stringify(value);
 
     // 当值不发生改变是，提前结束
     const currentValue = this.cache.get(key);

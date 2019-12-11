@@ -309,9 +309,12 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   }
 
   mayLoadMore = () => {
+    if (!this.placeholderEl || !this.containerEl) {
+      return ;
+    }
     const { top: containerY } = this.containerEl.getBoundingClientRect();
     const containerHeight = this.containerEl.clientHeight;
-    const { top: placeholderY } = this.placeholderEl.getBoundingClientRect();
+    const { top: placeholderY } =  this.placeholderEl.getBoundingClientRect();
     if (placeholderY <= containerHeight + containerY) {
       const { onLoad } = this.props;
       onLoad();

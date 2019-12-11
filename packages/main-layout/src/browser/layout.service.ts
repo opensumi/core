@@ -9,6 +9,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
+import { ActivationEventService } from '@ali/ide-activation-event';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -33,6 +34,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(IContextKeyService)
   private ctxKeyService: IContextKeyService;
 
+  @Autowired(ActivationEventService)
+  private activationEventService: ActivationEventService;
+
   private handleMap: Map<string, TabBarHandler> = new Map();
 
   private services: Map<string, TabbarService> = new Map();
@@ -55,8 +59,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @OnEvent(RenderedEvent)
   didMount() {
     for (const contribution of this.contributions.getContributions()) {
-      if (contribution.onDidUseConfig) {
-        contribution.onDidUseConfig();
+      if (contribution.onDidRender) {
+        contribution.onDidRender();
       }
     }
     for (const [containerId, views] of this.pendingViewsMap.entries()) {
@@ -65,9 +69,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       });
     }
     this.restoreState();
-    // TODO 暂不记录状态，激活首个
     for (const service of this.services.values()) {
-      const {currentId, size} = this.state[service.location];
+      const {currentId, size} = this.state[service.location] || {};
       service.prevSize = size;
       service.currentContainerId = currentId !== undefined ? currentId : service.containersMap.keys().next().value;
     }
@@ -100,6 +103,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     });
   }
 
+  isVisible(location: string) {
+    const tabbarService = this.getTabbarService(location);
+    return !!tabbarService.currentContainerId;
+  }
+
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
     const tabbarService = this.getTabbarService(location);
     if (!tabbarService) {
@@ -115,11 +123,17 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
   }
 
-  getTabbarService(location: string) {
-    const service = this.services.get(location) || this.injector.get(TabbarService, [location]);
+  getTabbarService(location: string, noAccordion?: boolean) {
+    const service = this.services.get(location) || this.injector.get(TabbarService, [location, noAccordion]);
     if (!this.services.get(location)) {
       service.onCurrentChange(({previousId, currentId}) => {
         this.storeState(service, currentId);
+        if (currentId && !service.noAccordion) {
+          const accordionService = this.getAccordionService(currentId);
+          accordionService.expandedViews.forEach((view) => {
+            this.activationEventService.fireEvent(`onView:${view.id}`);
+          });
+        }
       });
       service.onSizeChange(({size}) => debounce(() => this.storeState(service, service.currentContainerId), 200)());
       this.services.set(location, service);

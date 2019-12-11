@@ -22,6 +22,7 @@ export interface ITerminalController {
   firstInitialize(): void;
   removeFocused(): void;
   snapshot(index: number): string;
+  themeBackground: string;
 
   addWidget(client?: any): void;
   focusWidget(widgetId: string): void;
@@ -30,7 +31,7 @@ export interface ITerminalController {
   createGroup(selected?: boolean): number;
   selectGroup(index: number): void;
 
-  drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean): Promise<void>;
+  drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean, meta?: string): Promise<void>;
   showTerminalClient(widgetId: string): Promise<void>;
   retryTerminalClient(widgetId: string): Promise<void>;
   layoutTerminalClient(widgetId: string): void;

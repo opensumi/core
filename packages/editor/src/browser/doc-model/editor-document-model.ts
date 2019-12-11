@@ -8,6 +8,7 @@ import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
 import { EditorDocumentError } from './editor-document-error';
 import { IMessageService } from '@ali/ide-overlay';
 import { ICompareService, CompareResult } from '../types';
+import debounce = require('lodash.debounce');
 
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
@@ -78,6 +79,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private _previousVersionId: number;
 
+  private _tryAutoSaveAfterDelay: (() => any) | undefined;
+
   constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {
     super();
     this.onDispose(() => {
@@ -94,15 +97,6 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this.eol = options.eol;
     }
     this._originalEncoding = this._encoding;
-    this.eventBus.fire(new EditorDocumentModelCreationEvent({
-      uri: this.uri,
-      languageId: this.languageId,
-      eol: this.eol,
-      encoding: this.encoding,
-      content,
-      readonly: this.readonly,
-      versionId: this.monacoModel.getVersionId(),
-    }));
     this._previousVersionId = this.monacoModel.getVersionId(),
     this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     this.baseContent = content;
@@ -182,6 +176,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this._persistVersionId = this.monacoModel.getVersionId();
     this.savingTasks = [];
     this.notifyChangeEvent();
+    this.baseContent = content;
   }
 
   async updateEncoding(encoding: string) {
@@ -378,7 +373,24 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this._baseContentMd5;
   }
 
+  get tryAutoSaveAfterDelay() {
+    if (!this._tryAutoSaveAfterDelay) {
+      this._tryAutoSaveAfterDelay = debounce(() => {
+        this.save();
+      }, this.corePreferences['editor.autoSaveDelay'] || 1000);
+      this.addDispose(this.corePreferences.onPreferenceChanged((change) => {
+        this._tryAutoSaveAfterDelay = debounce(() => {
+          this.save();
+        }, this.corePreferences['editor.autoSaveDelay'] || 1000);
+      }));
+    }
+    return this._tryAutoSaveAfterDelay;
+  }
+
   private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
+    if (this.savable && this.corePreferences['editor.autoSave'] === 'afterDelay') {
+      this.tryAutoSaveAfterDelay();
+    }
     // 发出内容变化的事件
     this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
       uri: this.uri,

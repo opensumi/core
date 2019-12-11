@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
-import { ViewState } from '@ali/ide-activity-panel';
+import { ViewState } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
 import { SearchTreeService } from './search-tree.service';
@@ -45,7 +45,7 @@ function getRenderTree(nodes: ISearchTreeItem[]) {
 
 function getScrollContainerStyle(viewState: ViewState, searchPanelLayout: any): ISearchLayoutProp {
   return {
-    width: viewState.width || 0,
+    width: viewState.width || '100%',
     height: viewState.height - searchPanelLayout.height - 50 || 0,
   } as ISearchLayoutProp;
 }

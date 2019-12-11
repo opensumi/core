@@ -34,7 +34,10 @@ export class QuickCommandModel implements QuickOpenModel {
   }
 
   async init() {
-    const recentCommands = await this.workspaceService.recentCommands();
+    const recentCommandIds = await this.workspaceService.getMostRecentlyUsedCommands();
+    const recentCommands: Command[] = recentCommandIds.map((commandId) => {
+      return this.commandRegistry.getCommand(commandId);
+    }).filter((command) => !!command) as Command[];
     this.commandRegistry.setRecentCommands(recentCommands);
   }
 
@@ -199,7 +202,7 @@ export class CommandQuickOpenItem extends QuickOpenGroupItem {
     setTimeout(() => {
       this.commandService.executeCommand(this.command.id);
       // 执行的同时写入Workspace存储文件中
-      this.workspaceService.setRecentCommand(this.command);
+      this.workspaceService.setMostRecentlyUsedCommand(this.command.id);
     }, 50);
     return true;
   }

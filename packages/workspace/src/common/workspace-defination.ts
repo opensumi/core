@@ -127,14 +127,16 @@ export interface IWorkspaceService {
    * 如：用户添加目录到当前workspace中触发
    */
   onWorkspaceLocationChanged: Event<FileStat | undefined>;
-  // 设置最近使用的工作区
-  setMostRecentlyUsedWorkspace(): Promise<void>;
-  // 获取最近的工作区
-  recentWorkspaces(): Promise<string[]>;
   // 获取最近使用的命令
-  recentCommands(): Promise<Command[]>;
+  getMostRecentlyUsedCommands(): Promise<string[]>;
   // 设置最近使用的command
-  setRecentCommand(command: Command): Promise<void>;
+  setMostRecentlyUsedCommand(commandId: string): Promise<void>;
+  // 获取最近的多个工作区
+  getMostRecentlyUsedWorkspaces(): Promise<string[]>;
+  // 获取最近的一个工作区
+  getMostRecentlyUsedWorkspace(): Promise<string | undefined>;
+  // 设置最近使用的工作区
+  setMostRecentlyUsedWorkspace(uri: string): Promise<void>;
   // 设置最近打开的文件
   setMostRecentlyOpenedFile(uri: string): Promise<void>;
   // 获取最近打开的文件

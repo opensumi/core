@@ -68,3 +68,16 @@ export interface ISchemaStore {
 }
 
 export const ISchemaStore = Symbol('ISchemaStore');
+
+export interface MimeAssociation {
+  readonly id: string;
+  readonly filePattern: string;
+}
+
+export const IMimeService = Symbol('IMimeService');
+export interface IMimeService {
+  /**
+   * 更新 mime
+   */
+  updateMime(): void;
+}

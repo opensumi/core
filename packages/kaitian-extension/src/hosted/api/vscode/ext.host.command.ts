@@ -105,6 +105,13 @@ export class ExtHostCommands implements IExtHostCommands {
       ],
       returns: 'A promise that resolves to an array of CodeLens-instances.',
     });
+    this.register('vscode.executeDocumentSymbolProvider', this.executeDocumentSymbolProvider, {
+      description: 'Execute document symbol provider.',
+      args: [
+        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
+      ],
+      returns: 'A promise that resolves to an array of SymbolInformation and DocumentSymbol instances.',
+    });
   }
 
   private register(id: string, handler: (...args: any[]) => any, description?: ICommandHandlerDescription): Disposable {
@@ -206,6 +213,16 @@ export class ExtHostCommands implements IExtHostCommands {
             item.command ? this.converter.fromInternal(item.command) : undefined,
           );
         });
+      });
+  }
+
+  private executeDocumentSymbolProvider(resource: Uri): Promise<vscode.SymbolInformation[] | undefined> {
+    const args = {
+      resource,
+    };
+    return this.proxy.$executeDocumentSymbolProvider(args)
+      .then((items) => {
+        return items.map((item) => extHostTypeConverter.toSymbolInformation(item));
       });
   }
 

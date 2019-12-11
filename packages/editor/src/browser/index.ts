@@ -5,7 +5,7 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { EditorContribution } from './editor.contribution';
+import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry, ICompareService, IBreadCrumbService, IEditorFeatureRegistry } from './types';
 import { EditorComponentRegistryImpl } from './component';
@@ -21,6 +21,7 @@ import { CompareService, CompareEditorContribution } from './diff/compare';
 import { BreadCrumbServiceImpl } from './breadcrumb';
 import { EditorContextMenuBrowserEditorContribution } from './menu/editor.context';
 import { EditorFeatureRegistryImpl } from './feature';
+import { MainLayoutContribution } from '@ali/ide-main-layout';
 export * from './types';
 export * from './doc-model/types';
 export * from './doc-cache';
@@ -86,6 +87,7 @@ export class EditorModule extends BrowserModule {
     EditorContribution,
     CompareEditorContribution,
     EditorContextMenuBrowserEditorContribution,
+    EditorAutoSaveEditorContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 
@@ -93,8 +95,8 @@ export class EditorModule extends BrowserModule {
 
 }
 
-@Domain(ClientAppContribution, MonacoContribution)
-export class EditorClientAppContribution implements ClientAppContribution, MonacoContribution {
+@Domain(ClientAppContribution, MonacoContribution, MainLayoutContribution)
+export class EditorClientAppContribution implements ClientAppContribution, MonacoContribution, MainLayoutContribution {
 
   @Autowired()
   resourceService!: ResourceService;
@@ -140,6 +142,10 @@ export class EditorClientAppContribution implements ClientAppContribution, Monac
     }
     this.workbenchEditorService.contributionsReady.resolve();
     await this.workbenchEditorService.initialize();
+  }
+
+  async onDidRender() {
+
   }
 
   onContextKeyServiceReady(contextKeyService: IContextKeyService) {

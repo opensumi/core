@@ -48,6 +48,7 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
     commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE_ALL, {
       execute: () => {
         this.workbenchEditorService.closeAll();
+        this.openEditorService.clearStatus();
       },
     });
 

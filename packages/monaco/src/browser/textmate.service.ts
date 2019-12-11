@@ -73,7 +73,7 @@ export class TextmateService extends WithEventBus {
   @Autowired(IFileServiceClient)
   private fileServiceClient: IFileServiceClient;
 
-  @Autowired()
+  @Autowired(ActivationEventService)
   private activationEventService: ActivationEventService;
 
   @Autowired(WorkbenchEditorService)
