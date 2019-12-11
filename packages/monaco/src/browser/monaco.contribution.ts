@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable, CommandRegistry } from '@ali/ide-core-browser';
+import { PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable, CommandRegistry, IMimeService, CorePreferences } from '@ali/ide-core-browser';
 import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
 import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 
@@ -46,6 +46,12 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(CorePreferences)
+  corePreferences: CorePreferences;
+
+  @Autowired(IMimeService)
+  mimeService: IMimeService;
+
   private KEY_CODE_MAP = [];
 
   async initialize() {
@@ -74,6 +80,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   }
 
   onStart() {
+    this.mimeService.updateMime();
     this.textmateService.init();
     const currentTheme = this.themeService.getCurrentThemeSync();
     const themeData = currentTheme.themeData;
@@ -121,6 +128,12 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       disposer.addDispose(menuRegistry.registerMenuItem(MenuId.EditorContext, transformMonacoMenuItem(item)));
       return disposer;
     };
+    this.corePreferences.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'files.associations') {
+        // 暂时无效，0.17 版本没有暴露出 mime clearTextMimes 方法
+        this.mimeService.updateMime();
+      }
+    });
   }
 
   registerCommands(commands: CommandRegistry) {
