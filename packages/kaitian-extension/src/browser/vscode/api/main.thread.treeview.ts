@@ -47,8 +47,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       component: ExtensionTabbarTreeView,
     }, {
       dataProvider: this.dataProviders.get(treeViewId),
-      inlineMenuPath: VIEW_ITEM_INLINE_MNUE,
-      contextMenuPath: VIEW_ITEM_CONTEXT_MENU,
+      viewId: treeViewId,
     });
   }
 
@@ -118,7 +117,6 @@ export class TreeViewDataProviderMain {
   }
 
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
-    console.log(item);
     if (item.iconUrl || item.icon) {
       return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background);
     } else {
