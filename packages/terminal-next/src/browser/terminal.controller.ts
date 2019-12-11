@@ -363,7 +363,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
      */
     this.errors.delete(widgetId);
     await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true, meta);
-    this.layoutTerminalClient(widgetId);
+
+    if (this.tabbarHandler.isActivated()) {
+      this.layoutTerminalClient(widgetId);
+    }
   }
 
   layoutTerminalClient(widgetId: string) {
