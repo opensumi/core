@@ -20,7 +20,7 @@ export interface IIconService {
   currentTheme: IIconTheme;
   applyTheme(themeId?: string): Promise<void>;
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
-  fromIconUrl(iconUrl: string): string;
+  fromIconUrl(iconUrl: string | { [index in ThemeType]: string }, maskMode?: boolean): string;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
   getAvailableThemeInfos(): ThemeInfo[];

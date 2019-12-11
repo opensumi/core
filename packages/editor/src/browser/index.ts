@@ -25,6 +25,7 @@ import { MainLayoutContribution } from '@ali/ide-main-layout';
 export * from './types';
 export * from './doc-model/types';
 export * from './doc-cache';
+export * from './editor.less';
 
 @Injectable()
 export class EditorModule extends BrowserModule {
