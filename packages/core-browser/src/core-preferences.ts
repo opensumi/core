@@ -102,6 +102,22 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: '%editor.configuration.showActionWhenGroupEmpty%',
     },
+    'editor.autoSave': {
+      type: 'string',
+      enum: [
+        'off',
+        'afterDelay',
+        'editorFocusChange',
+        'windowLostFocus',
+      ],
+      default: 'off',
+      description: '%editor.configuration.autoSave%',
+    },
+    'editor.autoSaveDelay': {
+      type: 'number',
+      default: 1000,
+      description: '%editor.configuration.autoSaveDelay%',
+    },
     'editor.preferredFormatter': {
       type: 'object',
       default: {},
@@ -116,6 +132,18 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
       description: '%editor.configuration.minimap%',
+    },
+    // 会启用languageFeature的最大文件尺寸
+    'editor.languageFeatureEnabledMaxSize': {
+      type: 'number',
+      default: 2 * 1024 * 1024, // 2M
+      description: '%editor.configuration.languageFeatureEnabledMaxSize%',
+    },
+    // 会同步到extHost的最大文件尺寸, 必须大于等于 languageFeatureEnabledMaxSize
+    'editor.docExtHostSyncMaxSize': {
+      type: 'number',
+      default: 2 * 1024 * 1024, // 2M
+      description: '%editor.configuration.docExtHostSyncMaxSize%',
     },
     'editor.renderLineHighlight': {
       type: 'string',

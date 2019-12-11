@@ -148,6 +148,8 @@ export class ExtensionScanner {
     let extendConfig = {};
     if (await fs.pathExists(extendPath)) {
       try {
+        // 这里必须clear cache, 不然每次都一样
+        delete getNodeRequire().cache[extendPath];
         extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
         console.error(extendPath, e);

@@ -2,13 +2,13 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, IEditorGroup } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry } from './types';
+import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry, IEditorFeatureRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import { EditorHistoryService } from './history';
@@ -17,6 +17,7 @@ import { IEditorDocumentModelService } from './doc-model/types';
 import * as copy from 'copy-to-clipboard';
 import { FormattingSelector } from './format/formatterSelect';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { SUPPORTED_ENCODINGS } from './doc-model/encoding';
 
 interface ResourceArgs {
   group: EditorGroup;
@@ -443,6 +444,25 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       },
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.CHANGE_ENCODING, {
+      execute: async () => {
+        const resource = this.workbenchEditorService.currentResource;
+        if (resource) {
+          const encodingItems = Object.keys(SUPPORTED_ENCODINGS).map((encoding) => ({
+            label: SUPPORTED_ENCODINGS[encoding].labelLong,
+            value: encoding,
+            description: SUPPORTED_ENCODINGS[encoding].labelShort,
+          }));
+          const res = await this.quickPickService.show(encodingItems, {
+            placeholder: localize('editor.chooseEncoding'),
+          });
+          if (res) {
+            this.editorDocumentModelService.changeModelEncoding(resource.uri, res);
+          }
+        }
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.FOCUS, {
       execute: async () => {
         if (this.workbenchEditorService.currentEditor) {
@@ -720,6 +740,65 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       onClick: () => {
         this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
       },
+    });
+  }
+
+}
+
+@Domain(BrowserEditorContribution)
+export class EditorAutoSaveEditorContribution implements BrowserEditorContribution {
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
+
+  @Autowired(CommandService)
+  commandService: CommandService;
+
+  @Autowired(IEditorDocumentModelService)
+  editorDocumentService: IEditorDocumentModelService;
+
+  @Autowired(IPreferenceSettingsService)
+  preferenceSettings: IPreferenceSettingsService;
+
+  registerEditorFeature(registry: IEditorFeatureRegistry) {
+    registry.registerEditorFeatureContribution({
+      contribute: (editor: IEditor) => {
+        const disposable = new Disposable();
+        disposable.addDispose(editor.monacoEditor.onDidBlurEditorWidget(() => {
+          if (this.preferenceService.get('editor.autoSave') === 'editorFocusChange') {
+            if (editor.currentDocumentModel && editor.currentDocumentModel.dirty && editor.currentDocumentModel.savable) {
+              editor.currentDocumentModel.save();
+            }
+          }
+        }));
+        disposable.addDispose(editor.monacoEditor.onDidChangeModel((e) => {
+          if (this.preferenceService.get('editor.autoSave') === 'editorFocusChange') {
+            if (e.oldModelUrl) {
+              const oldUri = new URI(e.oldModelUrl.toString());
+              const docRef = this.editorDocumentService.getModelReference(oldUri, 'editor-focus-autosave');
+              if (docRef && docRef.instance.dirty && docRef.instance.savable) {
+                docRef.instance.save();
+                docRef.dispose();
+              }
+            }
+          }
+        }));
+        return disposable;
+      },
+    });
+    window.addEventListener('blur', () => {
+      if (this.preferenceService.get('editor.autoSave') === 'windowLostFocus') {
+        this.commandService.executeCommand(EDITOR_COMMANDS.SAVE_ALL.id);
+      }
+    });
+    this.preferenceSettings.setEnumLabels('editor.autoSave', {
+      'off': localize('editor.autoSave.enum.off'),
+      'afterDelay': localize('editor.autoSave.enum.afterDelay'),
+      'editorFocusChange': localize('editor.autoSave.enum.editorFocusChange'),
+      'windowLostFocus': localize('editor.autoSave.enum.windowLostFocus'),
     });
   }
 

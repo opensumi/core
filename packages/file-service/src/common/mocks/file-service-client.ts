@@ -159,4 +159,16 @@ export class MockFileServiceClient implements IFileServiceClient {
   async fireFilesChange(e: FileChangeEvent) {
     return;
   }
+
+  async getEncoding(uri: string) {
+    return 'utf8';
+  }
+
+  async getEncodingInfo(encoding: string) {
+    return {
+      labelLong: 'UTF-8',
+      labelShort: 'UTF-8',
+      id: 'utf8',
+    };
+  }
 }

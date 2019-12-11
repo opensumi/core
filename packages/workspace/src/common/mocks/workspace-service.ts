@@ -69,13 +69,16 @@ export class MockWorkspaceService implements IWorkspaceService {
   async setMostRecentlyUsedWorkspace(): Promise<void> {
     return;
   }
-  recentWorkspaces(): Promise<string[]> {
+  getMostRecentlyUsedWorkspace(): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  recentCommands(): Promise<Command[]> {
+  getMostRecentlyUsedWorkspaces(): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
-  setRecentCommand(command: Command): Promise<void> {
+  getMostRecentlyUsedCommands(): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
+  setMostRecentlyUsedCommand(commandId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
   async setMostRecentlyOpenedFile(uri: string): Promise<void> {

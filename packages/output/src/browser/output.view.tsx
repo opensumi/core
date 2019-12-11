@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { OutputChannel } from './output.channel';
-import { useInjectable, localize } from '@ali/ide-core-browser';
+import { useInjectable, localize, CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
 import * as cls from 'classnames';
 import * as styles from './output.module.less';
 import { getIcon } from '@ali/ide-core-browser';
-import Ansi from 'ansi-to-react';
-
+import Ansi from '../common/ansi';
 export const Output = observer(() => {
   const outputService = useInjectable<OutputService>(OutputService);
+  const commandService = useInjectable<CommandService>(CommandService);
 
   const renderLines = (): React.ReactNode[] => {
 
@@ -19,12 +19,17 @@ export const Output = observer(() => {
         whiteSpace: 'normal',
         fontFamily: 'monospace',
     };
+    const onPath = (path) => {
+      commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, path, { disableNavigate: false, preview: false });
+    };
 
     if (outputService.selectedChannel) {
         for (const text of outputService.selectedChannel.getLines()) {
             const lines = text.split(/[\n\r]+/);
             lines.map((line, idx) => {
-              result.push(<div style={style} key={`${idx}-${line}`}><Ansi linkify={false}>{line}</Ansi></div>);
+              if (line) {
+                result.push(<div style={style} key={`${idx}-${line}`}><Ansi linkify={true} onPath={onPath}>{line}</Ansi></div>);
+              }
             });
         }
     } else {

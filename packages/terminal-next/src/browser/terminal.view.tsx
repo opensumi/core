@@ -11,7 +11,7 @@ import * as styles from './terminal.module.less';
 export default observer(() => {
   const controller = useInjectable<ITerminalController>(ITerminalController);
   const store = useInjectable<ITerminalRestore>(ITerminalRestore);
-  const { groups, state, errors } = controller;
+  const { groups, state, errors, themeBackground } = controller;
 
   const renderWidget = (widget: IWidget, show: boolean) => {
     const error = errors.get(widget.id);
@@ -28,7 +28,7 @@ export default observer(() => {
   }, []);
 
   return (
-    <div className={ styles.terminalWrapper }>
+    <div className={ styles.terminalWrapper } style={{backgroundColor: themeBackground}}>
       {
         groups
           .map((group, index) => {

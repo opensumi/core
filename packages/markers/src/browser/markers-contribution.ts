@@ -20,7 +20,7 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
   @Autowired(MarkerService)
   protected readonly markerService: MarkerService;
 
-  onDidUseConfig() {
+  onDidRender() {
     const handler = this.mainlayoutService.getTabbarHandler(MARKER_CONTAINER_ID);
     if (handler) {
       handler.setTitleComponent(MarkerFilterPanel);

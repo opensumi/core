@@ -22,8 +22,9 @@ export interface IMainLayoutService {
   // @deprecated
   setFloatSize(size: number): void;
   handleSetting(event: React.MouseEvent<HTMLElement>): void;
-  getTabbarService(location: string): TabbarService;
+  getTabbarService(location: string, noAccordion?: boolean): TabbarService;
   getAccordionService(containerId: string): AccordionService;
+  isVisible(location: string): boolean;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');
@@ -31,7 +32,7 @@ export const MainLayoutContribution = Symbol('MainLayoutContribution');
 export interface MainLayoutContribution {
 
   // 将LayoutConfig渲染到各Slot后调用
-  onDidUseConfig?(): void;
+  onDidRender?(): void;
 
   provideDefaultState?(): SideStateManager;
 

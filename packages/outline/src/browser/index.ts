@@ -30,7 +30,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
   @Autowired(IContextKeyService)
   contextKey: IContextKeyService;
 
-  onDidUseConfig() {
+  onDidRender() {
     this.mainLayoutService.collectViewComponent({
       component: OutLineTree,
       collapsed: true,

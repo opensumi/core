@@ -8,7 +8,6 @@ import {
   Deferred,
 } from '@ali/ide-core-browser';
 import { IWebSocket } from '@ali/ide-connection';
-import { DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT } from '../common';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 
 export interface DebugExitEvent {

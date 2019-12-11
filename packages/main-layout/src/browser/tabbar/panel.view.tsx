@@ -57,7 +57,7 @@ const ContainerView: React.FC<{
       </div>}
       <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
         {CustomComponent ? <ConfigProvider value={configContext} >
-          <ComponentRenderer Component={CustomComponent} />
+          <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={CustomComponent} />
         </ConfigProvider> : <AccordionContainer views={component.views} containerId={component.options!.containerId} />}
       </div>
     </div>
@@ -70,24 +70,8 @@ const PanelView: React.FC<{
   titleMenu: IMenu;
 }> = (({ component, titleMenu, side }) => {
   const contentRef = React.useRef<HTMLDivElement | null>();
-  const eventBus: IEventBus = useInjectable(IEventBus);
-  React.useEffect(() => {
-    if (contentRef.current) {
-      const ResizeObserver = (window  as any).ResizeObserver;
-      const resizeObserver = new ResizeObserver((entries) => {
-        // TODO resize事件统一优化
-        for (const entry of entries) {
-          eventBus.fire(new ResizeEvent({slotLocation: side, width: entry.contentRect.width, height: entry.contentRect.height}));
-        }
-      });
-      resizeObserver.observe(contentRef.current);
-      return () => {
-        resizeObserver.unobserve(contentRef.current);
-      };
-    }
-  }, [contentRef]);
   const titleComponent = component.options && component.options.titleComponent;
-  // TODO 底部支持多个view
+
   return (
     <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
       <div className={styles.float_container}>
@@ -100,7 +84,7 @@ const PanelView: React.FC<{
             seperator='navigation' />}
         </div>
       </div>
-      <ComponentRenderer Component={component.views[0].component!} />
+      <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component || component.options!.component!} />
     </div>
   );
 });

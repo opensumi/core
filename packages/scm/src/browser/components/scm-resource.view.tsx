@@ -12,10 +12,6 @@ import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm-mod
 import { SCMResourceGroupTreeNode, SCMResourceTreeNode } from '../scm-resource';
 import { isSCMResource } from '../scm-util';
 
-enum GitActionList {
-  gitOpenResource = 'git.openResource',
-}
-
 export const SCMResouceList: React.FC<{
   width: number;
   height: number;

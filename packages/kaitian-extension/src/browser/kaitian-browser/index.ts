@@ -8,3 +8,5 @@ export { getIcon } from '@ali/ide-core-browser';
 
 export { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 export { ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
+
+export { PlainWebview } from '@ali/ide-webview';

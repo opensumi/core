@@ -32,6 +32,7 @@ export class TerminalClient extends Disposable {
   private attachPromise: Promise<void> | null = null;
 
   static defaultOptions: ITerminalOptions = {
+    allowTransparency: true,
     macOptionIsMeta: false,
     cursorBlink: false,
     scrollback: 2500,
@@ -41,7 +42,7 @@ export class TerminalClient extends Disposable {
 
   constructor(
     protected readonly service: ITerminalExternalService,
-    protected readonly theme: ITerminalTheme,
+    protected theme: ITerminalTheme,
     protected readonly controller: ITerminalController,
     widget: IWidget,
     restoreId?: string,
@@ -241,6 +242,10 @@ export class TerminalClient extends Disposable {
       const { cols, rows } = event;
       this.service.resize(this.id, cols, rows);
     }));
+  }
+
+  updateTheme() {
+    this._term.setOption('theme', this.theme.terminalTheme);
   }
 
   dispose() {

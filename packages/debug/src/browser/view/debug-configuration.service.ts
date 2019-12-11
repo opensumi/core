@@ -3,7 +3,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 import { observable, action } from 'mobx';
 import { DebugSessionOptions } from '../../common';
-import { URI } from '@ali/ide-core-browser';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugViewModel } from './debug-view-model';
 import { IDebugSessionManager } from '../../common/debug-session';
@@ -29,10 +29,11 @@ export class DebugConfigurationService {
   @Autowired(DebugConsoleService)
   protected debugConsoleService: DebugConsoleService;
 
+  @Autowired(StorageProvider)
+  private readonly storageProvider: StorageProvider;
+
   constructor() {
-    this.debugConfigurationManager.onDidChange(() => {
-      this.updateConfigurationOptions();
-    });
+    this.init();
   }
 
   @observable
@@ -41,11 +42,24 @@ export class DebugConfigurationService {
   @observable.shallow
   configurationOptions: DebugSessionOptions[] = this.debugConfigurationManager.all || [];
 
+  async init() {
+    this.debugConfigurationManager.onDidChange(() => {
+      this.updateConfigurationOptions();
+    });
+    this.currentValue = await this.getCurrentConfiguration() || '__NO_CONF__';
+  }
+
   @action
   updateConfigurationOptions() {
     const { current } = this.debugConfigurationManager;
     this.configurationOptions = this.debugConfigurationManager.all;
-    this.currentValue = current ? this.toValue(current) : '__NO_CONF__';
+    if (current) {
+      const currentValue = this.toValue(current);
+      this.setCurrentConfiguration(currentValue);
+      this.currentValue = currentValue;
+    } else {
+      this.currentValue = '__NO_CONF__';
+    }
   }
 
   start = async () => {
@@ -85,5 +99,16 @@ export class DebugConfigurationService {
       return configuration.name;
     }
     return configuration.name + ' (' + new URI(workspaceFolderUri).path.base + ')';
+  }
+
+  async getCurrentConfiguration() {
+    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
+    const currentConfiguration = await storage.get<string>('currentConfiguration');
+    return currentConfiguration;
+  }
+
+  async setCurrentConfiguration(value: string) {
+    const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
+    await storage.set('currentConfiguration', value);
   }
 }

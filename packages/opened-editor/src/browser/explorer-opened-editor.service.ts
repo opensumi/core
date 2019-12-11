@@ -110,13 +110,10 @@ export class ExplorerOpenedEditorService {
       if (this.activeUri) {
         this.updateSelected(this.activeUri, this.activeGroup);
       }
-      this.activeGroup = '';
     });
     this.openEditorTreeDataProvider.onDidActiveChange(async (payload) => {
       if (payload) {
-        if (!this.activeGroup) {
-          this.activeGroup = payload.group.name;
-        }
+        this.activeGroup = payload.group.name;
       }
     });
     // 初始化
@@ -147,9 +144,9 @@ export class ExplorerOpenedEditorService {
     const treeData: TreeNode[] = [];
     const roots = await this.workspaceService.roots;
     allTreeData.forEach((element) => {
-      const treeitem = this.openEditorTreeDataProvider.getTreeItem(element, roots);
-      if (treeitem instanceof EditorGroupTreeItem) {
-        const editorGroupTreeItem = treeitem as EditorGroupTreeItem;
+      const treeItem = this.openEditorTreeDataProvider.getTreeItem(element, roots);
+      if (treeItem instanceof EditorGroupTreeItem) {
+        const editorGroupTreeItem = treeItem as EditorGroupTreeItem;
         const children = editorGroupTreeItem.group.resources.map((resource: IResource) => {
           return this.openEditorTreeDataProvider.getTreeItem(resource, roots);
         });
@@ -198,8 +195,8 @@ export class ExplorerOpenedEditorService {
             treeData.push(node);
           }
         });
-      } else if (treeitem instanceof OpenedResourceTreeItem) {
-        const openedResourceTreeItem = treeitem as OpenedResourceTreeItem;
+      } else if (treeItem instanceof OpenedResourceTreeItem) {
+        const openedResourceTreeItem = treeItem as OpenedResourceTreeItem;
         const node: TreeNode = {
           id: openedResourceTreeItem.id,
           label: openedResourceTreeItem.label,
@@ -273,12 +270,7 @@ export class ExplorerOpenedEditorService {
 
   @action
   updateSelected(uri: URI, group: string) {
-    let statusKey = uri.toString();
-    if (!this.status.has(statusKey)) {
-      if (group) {
-        statusKey = group + statusKey;
-      }
-    }
+    const statusKey = group + uri.toString();
     this.resetStatus();
     this.status.set(statusKey, {
       ... this.status.get(statusKey),
@@ -325,7 +317,7 @@ export class ExplorerOpenedEditorService {
     const groupIndex: string = node.parent ? node.parent.id as string : '';
     this.activeGroup = group;
     this.updateSelected(node.uri!, group);
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex});
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, { groupIndex });
   }
 
   /**
@@ -356,7 +348,7 @@ export class ExplorerOpenedEditorService {
   }
 
   getStatusKey(node) {
-    return node.parent ? node.parent.label + node.uri.toString() : node.uri.toString();
+    return node.parent ? node.parent.label + node.uri.toString() : this.activeGroup + node.uri.toString();
   }
 
   /**
@@ -372,6 +364,10 @@ export class ExplorerOpenedEditorService {
       uri = node.uri;
     }
     this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id, uri);
+  }
+
+  clearStatus() {
+    this.status.clear();
   }
 
   commandActuator = (commandId: string, params: any) => {

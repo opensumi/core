@@ -5,7 +5,7 @@ import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEm
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { FILE_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, CorePreferences, ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { Schemas } from '@ali/ide-core-common';
@@ -221,18 +221,13 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       return;
     }
     const state: IEditorGridState = this.topGrid.serialize()!;
-    await this.openedResourceState.set('grid', JSON.stringify(state));
+    await this.openedResourceState.set('grid', state);
 
   }
 
   public async restoreState() {
     let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
-    try {
-      state = JSON.parse(this.openedResourceState.get('grid', JSON.stringify(state)));
-    } catch (e) {
-      getLogger().error(e);
-    }
-
+    state = this.openedResourceState.get<IEditorGridState>('grid', state);
     this.topGrid = new EditorGrid();
     this.topGrid.deserialize(state, () => {
       return this.createEditorGroup();
@@ -311,6 +306,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
+  @Autowired(AppConfig)
+  config: AppConfig;
+
   codeEditor!: ICodeEditor;
 
   diffEditor!: IDiffEditor;
@@ -364,12 +362,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string) {
     super();
-    this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
-      if (e.payload.gridId === this.grid.uid) {
+    this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
+      if (e.payload.slotLocation === getSlotLocation('@ali/ide-editor', this.config.layoutConfig)) {
+        // window.requestAnimationFrame(() => this.layoutEditors());
         this.layoutEditors();
       }
     });
-    // TODO listen Main layout resize Event
   }
 
   layoutEditors() {
@@ -816,10 +814,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.currentState = null;
     const closed = this.resources.splice(0, this.resources.length);
     closed.forEach((resource) => {
-      this.eventBus.fire(new EditorGroupCloseEvent({
-        group: this,
-        resource,
-      }));
+      this.clearResourceOnClose(resource);
     });
     this.activeComponents.clear();
     if (this.workbenchEditorService.editorGroups.length > 1) {
@@ -864,14 +859,22 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       this.resources.splice(index + 1);
       for (const resource of resourcesToClose) {
-        for (const resources of this.activeComponents.values()) {
-          const i = resources.indexOf(resource);
-          if (i !== -1) {
-            resources.splice(i, 1);
-          }
-        }
+        this.clearResourceOnClose(resource);
       }
       this.open(uri);
+    }
+  }
+
+  clearResourceOnClose(resource: IResource) {
+    this.eventBus.fire(new EditorGroupCloseEvent({
+      group: this,
+      resource,
+    }));
+    for (const resources of this.activeComponents.values()) {
+      const i = resources.indexOf(resource);
+      if (i !== -1) {
+        resources.splice(i, 1);
+      }
     }
   }
 
@@ -887,12 +890,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       this.resources = [this.resources[index]];
       for (const resource of resourcesToClose) {
-        for (const resources of this.activeComponents.values()) {
-          const i = resources.indexOf(resource);
-          if (i !== -1) {
-            resources.splice(i, 1);
-          }
-        }
+        this.clearResourceOnClose(resource);
       }
       this.open(uri);
     }

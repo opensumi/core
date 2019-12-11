@@ -1,10 +1,8 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
 import {
-  WorkspaceServerPath,
   KAITIAN_MUTI_WORKSPACE_EXT,
   getTemporaryWorkspaceFileUri,
-  IWorkspaceServer,
   IWorkspaceService,
   WorkspaceData,
   WorkspaceInput,
@@ -16,7 +14,6 @@ import {
   PreferenceService,
   PreferenceSchemaProvider,
   Event,
-  MaybePromise,
   Emitter,
   DisposableCollection,
   PreferenceScope,
@@ -32,8 +29,8 @@ import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-w
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { WorkspacePreferences } from './workspace-preferences';
-import * as jsoncparser from 'jsonc-parser';
 import { IWindowService } from '@ali/ide-window';
+import * as jsoncparser from 'jsonc-parser';
 
 @Injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -42,9 +39,6 @@ export class WorkspaceService implements IWorkspaceService {
 
   private _roots: FileStat[] = [];
   private deferredRoots = new Deferred<FileStat[]>();
-
-  @Autowired(WorkspaceServerPath)
-  protected readonly workspaceServer: IWorkspaceServer;
 
   @Autowired(IFileServiceClient)
   protected readonly fileSystem: IFileServiceClient;
@@ -71,6 +65,7 @@ export class WorkspaceService implements IWorkspaceService {
   private storageProvider: StorageProvider;
 
   private recentStorage: IStorage;
+  private recentGlobalStorage: IStorage;
 
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
@@ -300,33 +295,55 @@ export class WorkspaceService implements IWorkspaceService {
     document.title = this.formatTitle(title);
   }
 
-  async setMostRecentlyUsedWorkspace() {
-    await this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
+  async getMostRecentlyUsedWorkspace(): Promise<string | undefined> {
+    await this.getGlobalRecentStorage();
+    const recentWorkspaces: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_WORKSPACES') || [];
+    return recentWorkspaces[0];
   }
 
-  async recentWorkspaces(): Promise<string[]> {
-    return this.workspaceServer.getRecentWorkspacePaths();
+  async setMostRecentlyUsedWorkspace(path: string) {
+    await this.getGlobalRecentStorage();
+    const recentWorkspaces: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_WORKSPACES') || [];
+    recentWorkspaces.unshift(path);
+    await this.recentGlobalStorage.set('RECENT_WORKSPACES', Array.from(new Set(recentWorkspaces)));
   }
 
-  async recentCommands(): Promise<Command[]> {
-    return this.workspaceServer.getRecentCommands();
+  async getMostRecentlyUsedWorkspaces(): Promise<string[]> {
+    await this.getGlobalRecentStorage();
+    const recentWorkspaces: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_WORKSPACES') || [];
+    return recentWorkspaces;
   }
 
-  async  setRecentWorkspace() {
-    return this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
+  async getMostRecentlyUsedCommands(): Promise<string[]> {
+    await this.getGlobalRecentStorage();
+    const recentCommands: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_COMMANDS') || [];
+    return recentCommands;
   }
 
-  async  setRecentCommand(command: Command) {
-    return this.workspaceServer.setMostRecentlyUsedCommand(command);
+  async setMostRecentlyUsedCommand(commandId: string) {
+    await this.getGlobalRecentStorage();
+    const recentCommands: string[] = await this.recentGlobalStorage.get<string[]>('RECENT_COMMANDS') || [];
+    const commandIndex = recentCommands.indexOf(commandId);
+    // 重新排到队列顶部
+    if (commandIndex > 0) {
+      recentCommands.splice(commandIndex, 1);
+    }
+    recentCommands.unshift(commandId);
+    await this.recentGlobalStorage.set('RECENT_COMMANDS', recentCommands);
   }
 
-  private async getRecentStorage() {
+  private async getScopeRecentStorage() {
     this.recentStorage = this.recentStorage || await this.storageProvider(STORAGE_NAMESPACE.RECENT_DATA);
     return this.recentStorage;
   }
 
+  private async getGlobalRecentStorage() {
+    this.recentGlobalStorage = this.recentGlobalStorage || await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_RECENT_DATA);
+    return this.recentGlobalStorage;
+  }
+
   async setMostRecentlyOpenedFile(uriString: string) {
-    await this.getRecentStorage();
+    await this.getScopeRecentStorage();
 
     let fileList: string[] = [];
     const oldFileList = await this.getMostRecentlyOpenedFiles();
@@ -341,37 +358,18 @@ export class WorkspaceService implements IWorkspaceService {
     }
     // 仅存储50个最近文件
     fileList = fileList.slice(0, 50);
-
-    this.recentStorage.set('OPENED_FILE', JSON.stringify(fileList));
+    this.recentStorage.set('OPENED_FILE', fileList);
   }
 
   async getMostRecentlyOpenedFiles() {
-    await this.getRecentStorage();
-
-    let fileList: string[] = [];
-    const data = await this.recentStorage.get('OPENED_FILE');
-
-    if (data) {
-      try {
-        fileList = JSON.parse(data);
-      } catch (e) {}
-    }
-
+    await this.getScopeRecentStorage();
+    const fileList: string[] = await this.recentStorage.get<string[]>('OPENED_FILE') || [];
     return fileList;
   }
 
   async getMostRecentlySearchWord() {
-    await this.getRecentStorage();
-
-    let list: string[] = [];
-    const data = await this.recentStorage.get('SEARCH_WORD');
-
-    if (data) {
-      try {
-        list = JSON.parse(data);
-      } catch (e) {}
-    }
-
+    await this.getScopeRecentStorage();
+    const list: string[] = await this.recentStorage.get<string[]>('SEARCH_WORD') || [];
     return list;
   }
 
@@ -389,7 +387,7 @@ export class WorkspaceService implements IWorkspaceService {
     list = Array.from(new Set(list));
     // 仅存储10个
     list = list.slice(0, 10);
-    this.recentStorage.set('SEARCH_WORD', JSON.stringify(list));
+    this.recentStorage.set('SEARCH_WORD', list);
   }
 
   /**
@@ -444,7 +442,6 @@ export class WorkspaceService implements IWorkspaceService {
         preserveWindow: this.preferences['workspace.preserveWindow'] || !this.opened,
         ...options,
       };
-      await this.workspaceServer.setMostRecentlyUsedWorkspace(rootUri);
       if (preserveWindow) {
         this._workspace = stat;
       }
@@ -531,8 +528,6 @@ export class WorkspaceService implements IWorkspaceService {
   async close(): Promise<void> {
     this._workspace = undefined;
     this._roots.length = 0;
-
-    await this.workspaceServer.setMostRecentlyUsedWorkspace('');
     this.reloadWindow();
   }
 
@@ -647,7 +642,6 @@ export class WorkspaceService implements IWorkspaceService {
     let stat = await this.toFileStat(uriStr);
     Object.assign(workspaceData, await this.getWorkspaceDataFromFile());
     stat = await this.writeWorkspaceFile(stat, WorkspaceData.buildWorkspaceData(this._roots, workspaceData ? workspaceData.settings : undefined));
-    await this.workspaceServer.setMostRecentlyUsedWorkspace(uriStr);
     await this.setWorkspace(stat);
     this.onWorkspaceLocationChangedEmitter.fire(stat);
   }

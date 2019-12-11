@@ -16,7 +16,6 @@ import { observable } from 'mobx';
 const MAX_DIAGNOSTICS_BADGE = 1000;
 
 export interface ViewSize {
-  w: number;
   h: number;
 }
 
@@ -94,9 +93,10 @@ export class MarkerService extends Themable implements IMarkerService {
   @OnEvent(ResizeEvent)
   onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-markers', this.config.layoutConfig)) {
-      const width = e.payload.width;
       const height = e.payload.height;
-      this.onViewResizeCaller({ w: width, h: height });
+      if (height) {
+        this.onViewResizeCaller({ h: height - 28});
+      }
     }
   }
 
