@@ -50,9 +50,13 @@ export const IS_VISIBLE_RIGHT_PANEL_COMMAND: Command = {
 export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
-export const TOGGLE_EXBAND_BOTTOM_PANEL: Command = {
+export const EXPAND_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.expand',
   iconClass: getIcon('up'),
+};
+export const RETRACT_BOTTOM_PANEL: Command = {
+  id: 'main-layout.bottom-panel.retract',
+  iconClass: getIcon('down'),
 };
 
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution)
@@ -191,19 +195,14 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
         this.mainLayoutService.setFloatSize(size);
       },
     });
-    commands.registerCommand(TOGGLE_EXBAND_BOTTOM_PANEL, {
-      execute: (...args: any[]) => {
-        this.mainLayoutService.expandBottom(!this.mainLayoutService.bottomExpanded);
+    commands.registerCommand(EXPAND_BOTTOM_PANEL, {
+      execute: () => {
+        this.mainLayoutService.expandBottom(true);
       },
-      isEnabled: () => {
-        return true;
-      },
-      isToggled: () => {
-        if (this.mainLayoutService.bottomExpanded) {
-          return true;
-        } else {
-          return false;
-        }
+    });
+    commands.registerCommand(RETRACT_BOTTOM_PANEL, {
+      execute: () => {
+        this.mainLayoutService.expandBottom(false);
       },
     });
   }

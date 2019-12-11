@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, View, IEventBus, ResizeEvent, getIcon } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, localize, getIcon, CommandService } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
@@ -93,6 +93,7 @@ const NextPanelView: React.FC<{
   const contentRef = React.useRef<HTMLDivElement | null>();
   const titleComponent = component.options && component.options.titleComponent;
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+
   return (
     <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
       <div className={styles.panel_title_bar}>
@@ -101,30 +102,8 @@ const NextPanelView: React.FC<{
           {titleComponent && <ComponentRenderer Component={titleComponent} />}
         </div>
         <div className={styles.panel_toolbar_container}>
-          {titleMenu && <InlineActionBar
-            menus={titleMenu}
-            extraActions={[
-              <IconAction key='expand' data={{
-                icon: getIcon('up'),
-                execute: async () => {
-                  console.log('up');
-                },
-                id: 'up',
-                label: 'hahah',
-              }} />,
-              <IconAction key='hide' data={{
-                icon: getIcon('minus'),
-                execute: async () => {
-                  console.log('minus');
-                },
-                id: 'minus',
-                label: 'hahah2',
-              }} />,
-            ]} />}
-          {/* <span className={styles.split_line}></span>
-          <InlineActionBar
-            menus={tabbarService.commonTitleMenu}
-            seperator='navigation' /> */}
+          { titleMenu && <InlineActionBar menus={titleMenu} /> }
+          <InlineActionBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>
       </div>
       <div className={styles.panel_wrapper}>

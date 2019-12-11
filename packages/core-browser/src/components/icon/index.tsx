@@ -1,12 +1,12 @@
 import * as React from 'react';
 import clx from 'classnames';
 
+import { getIcon, defaultIconMap } from '../../style/icon/icon';
 import * as styles from './styles.module.less';
-import { getIcon } from '../../style/icon/icon';
 
 const Icon: React.FC<{
   title?: string;
-  icon?: string;
+  icon?: keyof typeof defaultIconMap;
   iconClass?: string;
   tooltip?: string;
   size?: 'small' | 'large';

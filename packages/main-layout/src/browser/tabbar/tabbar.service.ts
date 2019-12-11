@@ -2,7 +2,7 @@ import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEve
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { TOGGLE_BOTTOM_PANEL_COMMAND, TOGGLE_EXBAND_BOTTOM_PANEL } from '../main-layout.contribution';
+import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
@@ -66,11 +66,21 @@ export class TabbarService extends WithEventBus {
       this.menuRegistry.registerMenuItems(`tabbar/${this.location}/common`, [
         {
           command: {
-            id: TOGGLE_EXBAND_BOTTOM_PANEL.id,
-            label: localize('layout.tabbar.expand', '最大化/恢复面板'),
+            id: EXPAND_BOTTOM_PANEL.id,
+            label: localize('layout.tabbar.expand', '最大化面板'),
           },
           group: 'navigation',
-          toggledWhen: 'bottomFullExpanded',
+          when: '!bottomFullExpanded',
+          order: 1,
+        },
+        {
+          command: {
+            id: RETRACT_BOTTOM_PANEL.id,
+            label: localize('layout.tabbar.retract', '恢复面板'),
+          },
+          group: 'navigation',
+          when: 'bottomFullExpanded',
+          order: 1,
         },
         {
           command: {
@@ -78,6 +88,13 @@ export class TabbarService extends WithEventBus {
             label: localize('layout.tabbar.hide', '收起面板'),
           },
           group: 'navigation',
+          order: 2,
+        },
+        {
+          command: {
+            id: TOGGLE_BOTTOM_PANEL_COMMAND.id,
+            label: localize('layout.tabbar.hide', '收起面板'),
+          },
         },
       ]);
       this.commonTitleMenu = this.menuService.createMenu(`tabbar/${this.location}/common`);

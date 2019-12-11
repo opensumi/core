@@ -37,9 +37,16 @@
   margin-left: 8px;
 }
 
+.titleActions + .titleActions::before {
+  content: ' ';
+  display: block;
+  margin: 0 6px;
+}
+
+// divider 存在于两个 InlineActionBar 组件之间，也存在与 group 之间
+.titleActions + .titleActions::before,
 .divider {
-  // FIXME: need update
-  background-color: #fff;
+  background-color: var(--kt-actionbar-separatorBackground);
   width: 1px;
   height: 14px;
 }
