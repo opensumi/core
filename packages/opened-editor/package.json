@@ -25,7 +25,6 @@
     "@ali/ide-file-service": "1.6.3"
   },
   "devDependencies": {
-    "@ali/ide-activity-panel": "1.6.3",
     "@ali/ide-theme": "1.6.3",
     "@ali/ide-decoration": "1.6.3",
     "@ali/ide-workspace": "1.6.3",

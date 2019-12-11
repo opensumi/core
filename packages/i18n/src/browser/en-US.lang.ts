@@ -3,6 +3,7 @@ export const localizationBundle = {
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
+    'extension': 'Extension',
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
     'file.save': 'Save File',
@@ -231,6 +232,8 @@ export const localizationBundle = {
     'preference.search.useReplacePreview': 'Controls whether to open Replace Preview when selecting or replacing a match.',
     'preference.files.exclude.title': 'Exclude file display `files.exclude`',
     'preference.array.additem': 'Add',
+    'preference.files.associations.title': 'File Association',
+    'preference.files.associations': 'Configure file associations to languages (e.g. "*.extension": "html"). These have precedence over the default associations of the languages installed.',
 
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
@@ -369,6 +372,11 @@ export const localizationBundle = {
     'marketplace.extension.readme': 'Readme',
     'marketplace.extension.changelog': 'Changelog',
     'marketplace.extension.installed': 'Installed',
+    'marketplace.quickopen.install': 'Install Extension',
+    'marketplace.quickopen.install.id': 'Extension ID',
+    'marketplace.quickopen.install.id.required': 'Extension ID is required',
+    'marketplace.quickopen.install.version.placeholder': 'Extension version (Optional)',
+    'marketplace.quickopen.install.error': 'Install Extension has error',
 
     'saveChangesMessage': 'Do you want to save the changes you made to {0}?',
     'file.prompt.dontSave': 'Don\'t Save',

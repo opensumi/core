@@ -5,6 +5,7 @@ export const localizationBundle = {
   contents: {
     'ButtonOK': '确定',
     'ButtonCancel': '取消',
+    'extension': '插件',
 
     'file.new': '新建文件',
     'file.folder.new': '新建文件夹',
@@ -235,6 +236,8 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': '控制调试视图的位置。',
     'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
     'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
+    'preference.files.associations.title': '文件关联',
+    'preference.files.associations': '配置语言的文件关联 (如: "*.extension": "html")。这些关联的优先级高于已安装语言的默认关联。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
@@ -336,6 +339,11 @@ export const localizationBundle = {
     'marketplace.extension.readme': '简介',
     'marketplace.extension.changelog': '更改日志',
     'marketplace.extension.installed': '已安装',
+    'marketplace.quickopen.install': '安装插件',
+    'marketplace.quickopen.install.id': '扩展 ID',
+    'marketplace.quickopen.install.id.required': '扩展 ID 必填',
+    'marketplace.quickopen.install.version.placeholder': '扩展版本 (可选)',
+    'marketplace.quickopen.install.error': '安装插件报错',
 
     'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
     'validate.tree.fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',

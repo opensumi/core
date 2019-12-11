@@ -26,7 +26,6 @@
     "@ali/ide-process": "1.6.3"
   },
   "devDependencies": {
-    "@ali/ide-activity-panel": "1.6.3",
     "@ali/ide-core-browser": "1.6.3",
     "@ali/ide-dev-tool": "^1.1.0",
     "@ali/ide-workspace-edit": "1.6.3",

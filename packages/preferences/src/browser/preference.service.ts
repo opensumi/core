@@ -210,6 +210,7 @@ export const defaultSettingSections: {
       preferences: [
         {id: 'files.exclude', localized: 'preference.files.exclude.title'},
         {id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title'},
+        {id: 'files.associations', localized: 'preference.files.associations.title'},
         {id: 'search.exclude', localized: 'preference.search.exclude.title'},
       ],
     },

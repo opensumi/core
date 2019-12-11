@@ -7,7 +7,7 @@ import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injecto
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { EditorDocumentModelServiceImpl, EditorDocumentModelContentRegistryImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
-import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser';
+import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EmptyDocCacheImpl, EditorDocumentModelCreationEvent } from '@ali/ide-editor/lib/browser';
 import { TestEditorDocumentProvider } from '../test-providers';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';
 
@@ -32,16 +32,17 @@ describe('EditorDocumentModelService', () => {
     );
     (global as any).monaco = createMockedMonaco() as any;
     useMockStorage(injector);
+    const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
+    editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
   });
 
-  afterEach(() => {
+  afterAll(() => {
     delete (global as any).monaco;
   });
 
   it('chooseEncoding', async (done) => {
-    const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
+
     const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
-    editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
 
     const testCodeUri = new URI('test://testUri1');
     const testDoc1 = await editorDocModelService.createModelReference(testCodeUri);
@@ -49,6 +50,21 @@ describe('EditorDocumentModelService', () => {
     await editorDocModelService.changeModelEncoding(testCodeUri, 'gbk');
     expect(testDoc1.instance.encoding).toBe('gbk');
 
+    done();
+  });
+
+  it('create doc', async (done) => {
+
+    const createFn = jest.fn();
+    const disposer = injector.get<IEventBus>(IEventBus).on(EditorDocumentModelCreationEvent, createFn);
+
+    const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
+
+    const testCodeUri = new URI('test://testUri2');
+    const testDoc2 = await editorDocModelService.createModelReference(testCodeUri);
+    expect(createFn).toBeCalledTimes(1);
+
+    disposer.dispose();
     done();
   });
 });

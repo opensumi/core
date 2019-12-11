@@ -24,6 +24,10 @@ export class BrowserCtxMenuService implements IBrowserCtxMenu {
   @action
   public show(payload: CtxMenuRenderParams): void {
     const { anchor, onHide, context, menuNodes } = payload;
+    // 上层调用前已经将 menunodes 处理为数组了
+    if (!Array.isArray(menuNodes) || !menuNodes.length) {
+      return;
+    }
 
     this.context = context;
     this.menuNodes.splice(0, this.menuNodes.length, ...menuNodes);

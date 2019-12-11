@@ -1,13 +1,14 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState } from '../common';
-import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/lib/common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions } from '../common';
+import { ExtensionService, IExtensionProps, EXTENSION_ENABLE } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize } from '@ali/ide-core-browser';
+import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, CorePreferences } from '@ali/ide-core-browser';
 import { memoize, IDisposable, dispose, getLanguageId } from '@ali/ide-core-common';
 import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -41,6 +42,12 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(WorkbenchEditorService)
+  workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(CorePreferences)
+  corePreferences: CorePreferences;
 
   private readonly disposables: IDisposable[] = [];
 
@@ -592,9 +599,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
     const workspaceStorage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
     if (scope === EnableScope.GLOBAL) {
       const globalStorage = await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS);
-      globalStorage.set(extensionId, enable ? 1 : 0);
+      globalStorage.set(extensionId, enable ? EXTENSION_ENABLE.ENABLE : EXTENSION_ENABLE.DISABLE);
     }
-    workspaceStorage.set(extensionId, enable ? 1 : 0);
+    workspaceStorage.set(extensionId, enable ? EXTENSION_ENABLE.ENABLE : EXTENSION_ENABLE.DISABLE);
   }
 
   /**
@@ -672,5 +679,18 @@ export class ExtensionManagerService implements IExtensionManagerService {
    */
   async setRequestHeaders(requestHeaders: RequestHeaders) {
     await this.extensionManagerServer.setHeaders(requestHeaders);
+  }
+
+  openExtensionDetail(options: OpenExtensionOptions) {
+    const query = `extensionId=${options.publisher}.${options.name}&version=${options.version}&name=${options.displayName || options.name}&icon=${options.icon}`;
+    // 当打开模式为双击同时预览模式生效时，默认单击为预览
+    const editorOptions = {
+      preview: this.corePreferences['editor.previewMode'] && options.preview,
+    };
+    if (options.remote) {
+      this.workbenchEditorService.open(new URI(`extension://remote?${query}`), editorOptions);
+    } else {
+      this.workbenchEditorService.open(new URI(`extension://local?${query}`), editorOptions);
+    }
   }
 }

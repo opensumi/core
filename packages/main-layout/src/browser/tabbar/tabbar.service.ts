@@ -1,6 +1,6 @@
 import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
-import { observable, action, observe } from 'mobx';
+import { observable, action, observe, computed } from 'mobx';
 import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
@@ -14,8 +14,7 @@ export class TabbarService extends WithEventBus {
 
   previousContainerId: string = '';
 
-  // FIXME ComponentRegistryInfo中的views属性实际上不关心，怎么优化一下？
-  @observable.shallow containersMap: Map<string, ComponentRegistryInfo> = new Map();
+  containersMap: Map<string, ComponentRegistryInfo> = new Map();
   @observable state: Map<string, TabState> = new Map();
 
   public prevSize?: number;
@@ -51,7 +50,7 @@ export class TabbarService extends WithEventBus {
   private barSize: number;
   private menuId = `tabbar/${this.location}`;
 
-  constructor(public location: string) {
+  constructor(public location: string, public noAccordion?: boolean) {
     super();
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
@@ -71,6 +70,7 @@ export class TabbarService extends WithEventBus {
     return viewState;
   }
 
+  @computed({equals: (a: ComponentRegistryInfo[], b: ComponentRegistryInfo[]) => a.length === b.length})
   get visibleContainers() {
     const components: ComponentRegistryInfo[] = [];
     this.containersMap.forEach((component) => {
@@ -89,7 +89,17 @@ export class TabbarService extends WithEventBus {
   }
 
   registerContainer(containerId: string, componentInfo: ComponentRegistryInfo) {
-    this.containersMap.set(containerId, componentInfo);
+    let options = componentInfo.options;
+    if (!options) {
+      options = {
+        containerId,
+      };
+      componentInfo.options = options;
+    }
+    this.containersMap.set(containerId, {
+      views: componentInfo.views,
+      options: observable.object(options, undefined, {deep: false}),
+    });
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(containerId),

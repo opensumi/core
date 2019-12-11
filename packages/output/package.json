@@ -23,7 +23,6 @@
     "@ali/ide-core-common": "1.6.3",
     "@ali/ide-core-node": "1.6.3",
     "@ali/ide-main-layout": "1.6.3",
-    "@ali/ide-activity-panel": "1.6.3",
     "@ali/ide-theme": "1.6.3"
   },
   "devDependencies": {
