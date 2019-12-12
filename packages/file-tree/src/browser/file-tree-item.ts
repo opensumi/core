@@ -12,10 +12,10 @@ export class AbstractFileTreeItem implements IFileTreeItem {
   constructor(
     protected readonly fileApi: IFileTreeAPI,
     public readonly uri: URI,
-    public readonly name: string,
+    public name: string,
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public readonly tooltip: string,
-    public readonly icon: string,
+    public icon: string,
     public readonly parent: Directory | undefined,
     public readonly priority = 1,
     public isTemporary = false,
@@ -35,6 +35,7 @@ export class AbstractFileTreeItem implements IFileTreeItem {
     this.isTemporary = value;
     return this;
   }
+
 }
 
 export class Directory extends AbstractFileTreeItem {
@@ -65,6 +66,12 @@ export class Directory extends AbstractFileTreeItem {
     } else {
       return this.icon;
     }
+  }
+
+  updateMeta(directory: Directory) {
+    this.icon = directory.icon;
+    this.name = directory.name;
+    this._openedIcon = directory.getIcon(true);
   }
 
   init() {
@@ -170,6 +177,11 @@ export class File extends AbstractFileTreeItem {
     isTemporary?: boolean,
   ) {
     super(fileApi, uri, name, filestat, tooltip, icon, parent, priority, isTemporary);
+  }
+
+  updateMeta(file: File) {
+    this.icon = file.icon;
+    this.name = file.name;
   }
 }
 

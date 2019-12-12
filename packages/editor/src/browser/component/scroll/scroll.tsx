@@ -201,13 +201,17 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
       });
     }
     if (this.ref) {
-      this.ref.addEventListener('mouseenter', this.update);
+      this.ref.addEventListener('mouseenter', this.onMouseEnter);
     }
+  }
+
+  onMouseEnter = () => {
+    this.update();
   }
 
   componentWillUnmount() {
     if (this.ref) {
-      this.ref.removeEventListener('mouseenter', this.update);
+      this.ref.removeEventListener('mouseenter', this.onMouseEnter);
     }
     window.removeEventListener('resize', this.handleWindowResize);
     if (this.requestFrame) {

@@ -626,9 +626,11 @@ export class FileTreeService extends WithEventBus {
     }
     const file = status.file;
     const newFileItem = this.fileAPI.fileStat2FileTreeItem(file.filestat, file.parent, file.filestat.isSymbolicLink);
-    (file as any).icon = newFileItem.icon;
-    (file as any)._openedIcon = (newFileItem as any)._openedIcon;
-    (file as any).name = newFileItem.name;
+    if (file instanceof Directory) {
+      file.updateMeta(newFileItem as Directory);
+    } else {
+      file.updateMeta(newFileItem as File);
+    }
     if (status.file.parent) {
       status.file.parent.replaceChildren(status.file); // 触发mobx变更
     }
@@ -797,9 +799,7 @@ export class FileTreeService extends WithEventBus {
         this.files = [].concat(item);
         this.updateFileStatus(this.files);
       } else if (file.parent) {
-        item.icon = file.icon;
-        item.name = file.name;
-        item._openedIcon = (file as any)._openedIcon;
+        item.updateMeta(file);
         file.parent.replaceChildren(item);
         this.updateFileStatus([item]);
       }
