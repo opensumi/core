@@ -13,6 +13,7 @@ import {
   localize,
   IContextKey,
   memoize,
+  OnEvent,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode, FileTreeExpandedStatusUpdateEvent } from '../common';
@@ -27,6 +28,7 @@ import { ExplorerResourceCut } from '@ali/ide-core-browser/lib/contextkey/explor
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { ResourceLabelOrIconChangedEvent } from '@ali/ide-core-browser/lib/services';
 
 export type IFileTreeItemStatus = Map<string, {
   selected?: boolean;
@@ -138,9 +140,11 @@ export class FileTreeService extends WithEventBus {
       this.dispose();
       await this.getFiles(workspace);
     });
+
   }
 
   dispose() {
+    super.dispose();
     for (const watcher of Object.keys(this.fileServiceWatchers)) {
       this.fileServiceWatchers[watcher].dispose();
     }
@@ -605,6 +609,12 @@ export class FileTreeService extends WithEventBus {
         this.refreshAffectedNode(status.file, lowcost);
       }
     }
+  }
+
+  @OnEvent(ResourceLabelOrIconChangedEvent)
+  onResourceLabelOrIconChangedEvent(e: ResourceLabelOrIconChangedEvent) {
+    // labelService发生改变时，更新icon和名称
+    this.updateItemMeta(e.payload);
   }
 
   @action
