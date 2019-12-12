@@ -36,6 +36,10 @@ export class AbstractFileTreeItem implements IFileTreeItem {
     return this;
   }
 
+  updateMeta(file: any) {
+
+  }
+
 }
 
 export class Directory extends AbstractFileTreeItem {
