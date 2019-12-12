@@ -98,7 +98,9 @@ export class ExtensionScanner {
     if (pkgExist) {
       try {
         const packageJSON = await fs.readJSON(pkgPath);
-        if ( !(packageJSON.engines || packageJSON.engines.vscode || packageJSON.engines.kaitian) ) {
+        if (!packageJSON.engines) {
+          pkgCheckResult = false;
+        } else if (!(packageJSON.engines.vscode || packageJSON.engines.kaitian)) {
           pkgCheckResult = false;
         }
       } catch (e) {
