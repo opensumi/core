@@ -152,6 +152,7 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
     this.wrapper.style.display = 'block';
     this.wrapper.style.position = 'absolute';
     this.wrapper.style.border = 'none';
+    this.wrapper.style.zIndex = '2';
     this.addDispose(this._onMessage);
   }
 
@@ -174,6 +175,7 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
       this.webview.style.width = '100%';
       this.webview.style.height = '100%';
       this.webview.style.border = 'none';
+      this.webview.style.zIndex = '2';
       this.webview.src = url;
       this.webview.preload = electronEnv.plainWebviewPreload;
       this.webview.addEventListener('ipc-message', (event) => {
