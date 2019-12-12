@@ -291,15 +291,40 @@ export class PreferenceServiceImpl implements PreferenceService {
     return this.resolve<T>(preferenceName, defaultValue, resourceUri).value;
   }
 
+  lookUp<T>(key: string): PreferenceResolveResult<T> {
+    let value;
+    let reset;
+    if (!key) {
+      return {
+        value,
+      };
+    }
+    const parts = key.split('.');
+    for (let i = parts.length - 1; i < parts.length; i++) {
+      value = this.doResolve(parts.slice(0, i).join('.')).value;
+      if (value) {
+        reset = parts.slice(i);
+        break;
+      }
+    }
+    while (reset.length > 0) {
+      value = value[reset.shift()];
+    }
+    return { value };
+  }
+
   resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): {
     configUri?: URI,
     value?: T,
   } {
     const { value, configUri } = this.doResolve(preferenceName, defaultValue, resourceUri);
+    console.log('preferenceName', value);
     if (typeof value === 'undefined') {
       const overridden = this.overriddenPreferenceName(preferenceName);
       if (overridden) {
         return this.doResolve(overridden.preferenceName, defaultValue, resourceUri);
+      } else {
+        return this.lookUp(preferenceName);
       }
     }
     return { value, configUri };
@@ -472,6 +497,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   getValue<T>(preferenceName: string): T | undefined {
+    console.log('getValue ==>', preferenceName);
     return this.resolve<T>(preferenceName).value;
   }
 
