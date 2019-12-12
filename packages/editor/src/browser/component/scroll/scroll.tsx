@@ -200,9 +200,15 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
         scrollTo: this.scrollTo.bind(this),
       });
     }
+    if (this.ref) {
+      this.ref.addEventListener('mouseenter', this.update);
+    }
   }
 
   componentWillUnmount() {
+    if (this.ref) {
+      this.ref.removeEventListener('mouseenter', this.update);
+    }
     window.removeEventListener('resize', this.handleWindowResize);
     if (this.requestFrame) {
       window.cancelAnimationFrame(this.requestFrame);
@@ -219,11 +225,18 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
       && size1.scrollWidth === size2.scrollWidth;
   }
 
-  update(callback?) {
+  update = (callback?) => {
     if (this.requestFrame) {
       window.cancelAnimationFrame(this.requestFrame);
     }
+    let stack: any;
+    try {
+      throw new Error('scroll update');
+    } catch (e) {
+      stack = e.stack;
+    }
     this.requestFrame = window.requestAnimationFrame(() => {
+      console.log('scroll update', stack, this.ref);
       this._update();
       if (callback) {
         callback();
@@ -306,7 +319,6 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
           className={classnames(this.props.className)}
           onScroll={this.onScroll.bind(this)}
           ref={(e) => e && (this.ref = e)}
-          onMouseEnter={() => this.update()}
           onMouseDown={() => this.update()}
           onMouseUp={() => this.update()}
         >
