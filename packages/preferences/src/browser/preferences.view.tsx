@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceSchemaProperty, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceSchemaProperty, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference.service';
 import './index.less';
 import * as styles from './preferences.module.less';
@@ -20,8 +20,9 @@ import { toPreferenceReadableName, toNormalCase } from '../common';
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
+  const appConfig: AppConfig = useInjectable(AppConfig);
 
-  const [currentScope, setCurrentScope] = React.useState(PreferenceScope.Workspace);
+  const [currentScope, setCurrentScope] = React.useState(PreferenceScope.User);
   const [currentSearch, setCurrentSearch] = React.useState('');
 
   const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
@@ -36,19 +37,21 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     setCurrentSearch(value);
   }, 100, {maxWait: 1000});
 
+  const headers = <div className = {styles.preferences_header}>
+    <div className = {styles.preferences_scopes}>
+      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
+      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
+    </div>
+    <div className = {styles.search_pref}>
+      <Input placeholder={localize('preference.searchPlaceholder')} onChange={(e) => {
+          debouncedSearch((e.target as HTMLInputElement).value);
+      }}/>
+    </div>
+  </div>;
+
   return (
     <div className = {styles.preferences}>
-      <div className = {styles.preferences_header}>
-        <div className = {styles.preferences_scopes}>
-          <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
-          <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
-        </div>
-        <div className = {styles.search_pref}>
-          <Input placeholder={localize('preference.searchPlaceholder')} onChange={(e) => {
-              debouncedSearch((e.target as HTMLInputElement).value);
-          }}/>
-        </div>
-      </div>
+      {appConfig.isSyncPreference ? <div /> : headers}
       { groups.length > 0 ?
       <div className = {styles.preferences_body}>
         <PreferencesIndexes groups={groups} currentGroupId={currentGroup} setCurrentGroup={setCurrentGroup} scope={currentScope} search={currentSearch}></PreferencesIndexes>
@@ -141,6 +144,7 @@ export const PreferenceSection = ({section, scope}: {section: ISettingSection, s
 };
 
 export const PreferenceItemView = ({preferenceName, localizedName, scope}: {preferenceName: string, localizedName?: string, scope: PreferenceScope}) => {
+  const appConfig: AppConfig = useInjectable(AppConfig);
 
   const logger = useInjectable(ILogger);
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
@@ -173,9 +177,18 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   }, [scope, preferenceName]);
 
   const doChangeValue = throttle((value) => {
-    preferenceService.setPreference(key, value, scope).then(() => {
-      forceUpdate();
-    });
+    if (appConfig.isSyncPreference) {
+      preferenceService.setPreference(key, value, PreferenceScope.Workspace).then(() => {
+        forceUpdate();
+      });
+      preferenceService.setPreference(key, value, PreferenceScope.User).then(() => {
+        forceUpdate();
+      });
+    } else {
+      preferenceService.setPreference(key, value, scope).then(() => {
+        forceUpdate();
+      });
+    }
   }, 500, {trailing: true});
 
   const status = <span className={styles.preference_status}>

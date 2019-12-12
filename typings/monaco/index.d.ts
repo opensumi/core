@@ -1185,6 +1185,7 @@ declare module monaco.contextKeyService {
       private _lastContextId;
       private readonly _contexts;
       private readonly _toDispose;
+      public _domNode: HTMLElement;
       constructor(configurationService: monaco.services.IConfigurationService);
       dispose(): void;
       getContextValuesContainer(contextId: number): Context;
