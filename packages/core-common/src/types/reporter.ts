@@ -30,7 +30,7 @@ export interface PerformanceData extends PointData {
 export const IReporterService = Symbol('IReporterService');
 
 export interface IReporterTimer {
-  timeEnd(name: string, msg?: string): void;
+  timeEnd(msg?: string): void;
 }
 
 export interface IReporterService {
