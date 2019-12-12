@@ -796,6 +796,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         if (options.focus || options.preserveFocus) {
           this.codeEditor.focus();
         }
+        // 可能在diff Editor中修改导致为脏
+        if (this.codeEditor.currentDocumentModel!.dirty) {
+          this.pinPreviewed(resource.uri);
+        }
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;
         await this.diffEditorReady.promise;
