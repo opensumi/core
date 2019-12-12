@@ -18,6 +18,7 @@ renderApp({
   ],
   layoutConfig: defaultConfig,
   useCdnIcon: false,
+  isSyncPreference: true,
   defaultPreferences: {
     'general.theme': 'ide-dark',
     'general.icon': 'vscode-icons',
