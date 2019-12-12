@@ -229,14 +229,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     if (this.requestFrame) {
       window.cancelAnimationFrame(this.requestFrame);
     }
-    let stack: any;
-    try {
-      throw new Error('scroll update');
-    } catch (e) {
-      stack = e.stack;
-    }
     this.requestFrame = window.requestAnimationFrame(() => {
-      console.log('scroll update', stack, this.ref);
       this._update();
       if (callback) {
         callback();
@@ -319,6 +312,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
           className={classnames(this.props.className)}
           onScroll={this.onScroll.bind(this)}
           ref={(e) => e && (this.ref = e)}
+
           onMouseDown={() => this.update()}
           onMouseUp={() => this.update()}
         >
