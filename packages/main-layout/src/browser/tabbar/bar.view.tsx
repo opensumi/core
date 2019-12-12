@@ -69,10 +69,10 @@ export const LeftTabbarRenderer: React.FC = () => {
   </div>);
 };
 
-export const BottomTabbarRenderer: React.FC = observer(() => {
+export const BottomTabbarRenderer: React.FC = () => {
   return (
     <div className={styles.bottom_bar_container}>
       <TabbarViewBase forbidCollapse={true} TabView={TextTabView} barSize={0} />
     </div>
   );
-});
+};

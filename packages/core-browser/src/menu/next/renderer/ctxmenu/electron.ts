@@ -1,13 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService, CommandRegistry} from '@ali/ide-core-common';
-import { Event } from '@ali/ide-core-common/lib/event';
+
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
-import { MenuNode, IExtendMenubarItem, IMenuRegistry } from '../../base';
+import { MenuNode, IExtendMenubarItem } from '../../base';
 import { SeparatorMenuItemNode, SubmenuItemNode, AbstractMenuService } from '../../menu-service';
 import { electronEnv } from '../../../../utils';
 import { AbstractMenubarService } from '../../menubar-service';
-import { generateCtxMenu } from '../../menu-util';
+import { generateCtxMenu, generateMergedCtxMenu } from '../../menu-util';
 
 export abstract class IElectronCtxMenuRenderer extends ICtxMenuRenderer {
 }
@@ -89,8 +89,20 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
   @Autowired(IElectronMenuFactory)
   factory: ElectronMenuFactory;
 
-  public show(params: CtxMenuRenderParams) {
-    const { menuNodes, onHide, context } = params;
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
+
+  public show(payload: CtxMenuRenderParams) {
+    const { onHide, context } = payload;
+
+    let menuNodes: MenuNode[];
+    if (typeof payload.menuNodes === 'string') {
+      const menus = this.menuService.createMenu(payload.menuNodes, payload.contextKeyService);
+      menuNodes = generateMergedCtxMenu({ menus });
+      menus.dispose();
+    } else {
+      menuNodes = payload.menuNodes;
+    }
 
     // bind actions in this context
     this.contextMenuActions.clear();

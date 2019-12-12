@@ -2,7 +2,7 @@ import * as React from 'react';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IMainLayoutService, MainLayoutContribution } from '../../src';
-import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, IEventBus, RenderedEvent } from '@ali/ide-core-browser';
+import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, IEventBus, RenderedEvent, ViewContainerOptions } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
@@ -13,6 +13,7 @@ import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { LayoutService } from '../../src/browser/layout.service';
+import { autorun } from 'mobx';
 
 const MockView = () => <div>Test view</div>;
 
@@ -181,24 +182,37 @@ describe('main layout test', () => {
     done();
   });
 
-  it('should be able to collect component as side container & get handler', () => {
+  it('should be able to collect component as side container & get handler', async (done) => {
     expect(service.getTabbarHandler('container-before-render')).toBeDefined();
-    const handlerId = service.collectTabbarComponent([{
-      component: MockView,
-      id: 'test-view-id',
-    }], {
+    const options: ViewContainerOptions = {
       containerId: 'testContainerId',
       iconClass: 'testicon iconfont',
       priority: 10,
       title: 'test title',
       expanded: false,
       size: 300,
-      initialProps: {},
+      badge: '9',
+      initialProps: {hello: 'world'},
       activateKeyBinding: 'cmd+1',
       hidden: false,
-    }, 'left');
+    };
+    const handlerId = service.collectTabbarComponent([{
+      component: MockView,
+      id: 'test-view-id',
+    }], options, 'left');
     const handler = service.getTabbarHandler(handlerId);
     expect(handler).toBeDefined();
+    const disposer = autorun(() => {
+      const info = service.getTabbarService('left');
+      const opt = info.getContainer('testContainerId')!.options!;
+      console.log('autorun:', opt.badge, opt.title, opt.initialProps);
+      if (opt.title === 'gggggggg') {
+        done();
+      }
+    });
+    handler.setBadge('20');
+    handler.updateTitle('gggggggg');
+    disposer();
   });
 
   it('should be able to register React components as container directly', () => {

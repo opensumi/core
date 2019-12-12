@@ -12,4 +12,5 @@ export const ALLOW_MIME = {
   woff: 'font/woff',
   woff2 : 'font/woff2',
   js: 'application/javascript',
+  css: 'text/css',
 };

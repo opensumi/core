@@ -66,19 +66,21 @@ export class WSChanneHandler {
         resolve();
 
         // 重连 channel
-        /* FIXME: 暂时不需要，直接通过重新生成实例
+        // FIXME: 暂时不需要，直接通过重新生成实例
+
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
             channel.onOpen(() => {
               console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);
+
+            // 针对前端需要重新设置下后台状态的情况
             if (channel.fireReOpen) {
               channel.fireReOpen();
             }
           });
         }
-        */
       });
     });
   }
@@ -93,7 +95,7 @@ export class WSChanneHandler {
   }
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
-    const channelId = `${this.clientId}:CHANNEL_ID:${channelPath}_${shorid.generate()}`;
+    const channelId = `${this.clientId}:${channelPath}`;
     const channel = new WSChannel(channelSend, channelId);
     this.channelMap.set(channel.id, channel);
 

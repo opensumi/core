@@ -9,7 +9,7 @@ export async function renderApp(opts: IClientAppOpts) {
 
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
   opts.injector = injector;
-  opts.wsPath =  process.env.WS_PATH || 'ws://127.0.0.1:8000'; // 代理测试地址: ws://127.0.0.1:8001
+  opts.wsPath =  process.env.WS_PATH || 'ws://127.0.0.1:8000';  // 代理测试地址: ws://127.0.0.1:8001
 
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST; // `http://127.0.0.1:8080/kaitian/ext/worker-host.js`; // 访问 Host
   // 使用不一样的host名称

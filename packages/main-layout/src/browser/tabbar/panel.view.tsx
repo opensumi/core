@@ -84,7 +84,7 @@ const PanelView: React.FC<{
             seperator='navigation' />}
         </div>
       </div>
-      <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component!} />
+      <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component || component.options!.component!} />
     </div>
   );
 });

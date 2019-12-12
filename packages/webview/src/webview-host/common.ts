@@ -69,7 +69,7 @@ export function getVsCodeApiScript(state) {
       const targetOrigin = '*';
       let acquired = false;
 
-      let state = ${state ? `JSON.parse(${JSON.stringify(state)})` : undefined};
+      let state = ${state ? `JSON.parse('${JSON.stringify(state)}')` : undefined};
 
       return () => {
         if (acquired) {
@@ -94,5 +94,6 @@ export function getVsCodeApiScript(state) {
     delete window.parent;
     delete window.top;
     delete window.frameElement;
+    window.acquireVsCodeApi = acquireVsCodeApi;
   `;
 }

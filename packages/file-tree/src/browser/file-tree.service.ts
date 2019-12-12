@@ -927,6 +927,15 @@ export class FileTreeService extends WithEventBus {
     this.deleteAffectedNodes(this.getDeletedUris(changes));
   }
 
+  public async reWatch() {
+    for (const uri in this.fileServiceWatchers) {
+      if (this.fileServiceWatchers.hasOwnProperty(uri)) {
+        const watcher = await this.fileServiceClient.watchFileChanges(new URI(uri));
+        this.fileServiceWatchers[uri] = watcher;
+      }
+    }
+  }
+
   @action
   private async getFiles(roots: IWorkspaceRoots): Promise<(Directory | File)[]> {
     let result = [];

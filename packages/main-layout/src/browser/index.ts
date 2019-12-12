@@ -17,9 +17,9 @@ export class MainLayoutModule extends BrowserModule {
     {
       token: TabbarServiceFactory,
       useFactory: (injector: Injector) => {
-        return (location: string) => {
+        return (location: string, noAccordion?: boolean) => {
           const manager: IMainLayoutService = injector.get(IMainLayoutService);
-          return manager.getTabbarService(location);
+          return manager.getTabbarService(location, noAccordion);
         };
       },
     },

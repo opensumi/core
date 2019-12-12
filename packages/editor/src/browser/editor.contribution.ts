@@ -6,8 +6,6 @@ import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDIT
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
-import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry, IEditorFeatureRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
@@ -47,9 +45,6 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
   @Autowired(CommandService)
   private commandService: CommandService;
-
-  @Autowired(ContextMenuRenderer)
-  private contextMenuRenderer: ContextMenuRenderer;
 
   @Autowired(IEditorDocumentModelService)
   private editorDocumentModelService: IEditorDocumentModelService;

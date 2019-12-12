@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ViewState } from '@ali/ide-activity-panel';
+import { ViewState } from '@ali/ide-core-browser';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import clx from 'classnames';
 import Badge from '@ali/ide-core-browser/lib/components/badge';

@@ -77,12 +77,13 @@ export interface ExtViewContainerOptions {
   title?: string;
   expanded?: boolean;
   size?: number;
-  initialProps?: object;
   activateKeyBinding?: string;
   hidden?: boolean;
   badge?: string;
   // 直接使用自定义的React组件，会失去一些对面板的控制能力
   component?: React.FunctionComponent;
+  // 使用自定义组件时可以传入，否则请作为View的一部分传入
+  initialProps?: object;
   titleComponent?: React.FunctionComponent;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');

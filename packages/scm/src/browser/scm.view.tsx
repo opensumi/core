@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@ali/ide-activity-panel';
+import { ViewState } from '@ali/ide-core-browser';
 import { CommandService, localize } from '@ali/ide-core-common';
 import { IContextKeyService, View, useInjectable  } from '@ali/ide-core-browser';
 import { AccordionContainer } from '@ali/ide-main-layout/lib/browser/accordion/accordion.view';
