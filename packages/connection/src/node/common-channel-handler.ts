@@ -124,6 +124,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
       connection.on('message', (msg: string) => {
+        console.log('msg', msg);
         let msgObj: ChannelMessage;
         try {
           msgObj = parse(msg);
@@ -234,6 +235,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   }
   private channelConnectionSend = (connection: ws) => {
     return (content: string) => {
+      console.log(connection.readyState, connection.OPEN);
       if (connection.readyState === connection.OPEN) {
         connection.send(content, (err: any) => {
           if (err) {

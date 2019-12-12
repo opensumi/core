@@ -1,4 +1,4 @@
-import { WSChannel } from '../common/ws-channel';
+import { WSChannel, MessageString } from '../common/ws-channel';
 import * as shorid from 'shortid';
 import { stringify, parse } from '../common/utils';
 import { MultiWs } from './multi-ws';
@@ -17,13 +17,13 @@ export class WSChanneHandler {
 
   constructor(public wsPath: string, logger: any, public protocols?: string[]) {
     this.logger = logger || this.logger;
-    this.connection = new MultiWs(wsPath, protocols) as any; // new WebSocket(wsPath, protocols);
+    this.connection = new MultiWs(wsPath, protocols, this.clientId) as any; // new WebSocket(wsPath, protocols);
   }
   setLogger(logger: any) {
     this.logger = logger;
   }
   private clientMessage() {
-    const clientMsg = stringify({
+    const clientMsg: MessageString = stringify({
       kind: 'client',
       clientId: this.clientId,
     });
