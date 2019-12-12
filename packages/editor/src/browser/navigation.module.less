@@ -3,38 +3,38 @@
   align-items: center;
   overflow: auto;
   height: 23px;
+  padding-left: 6px;
 
   &::-webkit-scrollbar{
     display:none !important;
     background: rgb(50, 50, 50);
   }
-  .navigation {
-    padding-left: 6px;
-    white-space: nowrap;
-    .navigation-part{
-      color: var(--breadcrumb-foreground);
-      font-size:12px;
-      padding: 0 4px;
-      position:relative;
-      line-height:22px;
-      cursor: pointer;
-      user-select: none;
-      display: flex;
-      > span:first-child {
-        font-size: 14px;
-        vertical-align: middle;
-        padding-right: 5px;
+
+  .navigation-part{
+    color: var(--breadcrumb-foreground);
+    font-size:12px;
+    padding: 0 4px;
+    position:relative;
+    line-height:22px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+
+    > span:first-child {
+      font-size: 14px;
+      vertical-align: middle;
+      padding-right: 5px;
+    }
+    &:hover{
+      color: var(--breadcrumb-focusForeground);
+    }
+    &:first-child{
+      &::before {
+        content: none;
       }
-      &:hover{
-        color: var(--breadcrumb-focusForeground);
-      }
-      &:first-child{
-        &::before {
-          content: none;
-        }
-        &::after {
-          content: none;
-        }
+      &::after {
+        content: none;
       }
     }
   }
