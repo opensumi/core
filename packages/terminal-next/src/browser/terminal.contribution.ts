@@ -15,6 +15,7 @@ import { ITerminalController, ITerminalRestore } from '../common';
 import { terminalAdd, terminalRemove, terminalExpand, terminalClear, terminalSplit, toggleBottomPanel } from './terminal.command';
 import TerminalView from './terminal.view';
 import TerminalSelect from './terminal.select';
+import TerminalTabs from './component/tab/view';
 
 @Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution)
 export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution {
@@ -41,7 +42,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       priority: 10,
       activateKeyBinding: 'ctrl+`',
       containerId: 'terminal',
-      titleComponent: TerminalSelect,
+      titleComponent: TerminalTabs,
     });
   }
 

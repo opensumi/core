@@ -9,6 +9,7 @@ import { WidgetGroup, Widget } from './component/resize.control';
 import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
+import { TabManager } from './component/tab/manager';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -43,6 +44,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   logger: ILogger;
   @Autowired(IThemeService)
   themeService: IThemeService;
+
+  @Autowired()
+  tabManager: TabManager;
 
   tabbarHandler: TabBarHandler;
 
@@ -156,6 +160,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         this.selectGroup(this.state.index > -1 ? this.state.index : 0);
       }
     }
+    this.tabManager.select(this.state.index);
 
     this.addDispose(this.service.onError((error: ITerminalError) => {
       const { id: sessionId, stopped, reconnected = true } = error;
@@ -202,6 +207,25 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         this.themeBackground = this.termTheme.terminalTheme.background || '';
       });
     }));
+
+    this.tabManager.onSelect(({ index }) => {
+      this.state.index = index;
+      this.focusWidget(this.currentGroup.widgets[0].id);
+    });
+
+    this.tabManager.onOpen(({ index }) => {
+      this.createGroup(true);
+      this.addWidget();
+      this.tabManager.select(index);
+    });
+
+    this.tabManager.onClose(({ index }) => {
+      this.groups[index].widgets.forEach((widget) => {
+        this.removeWidget(widget.id);
+      });
+      this._removeGroupByIndex(index);
+      this.tabManager.select(this.groups.length - 1);
+    });
   }
 
   private _removeWidgetFromWidgetId(widgetId: string) {
@@ -283,11 +307,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this._clientsMap.set(widget.id, client);
     // 必须要延迟将 widget 添加到 group 的步骤
     group.createWidget(widget);
-
-    if (this.currentGroup) {
-      this.focusWidget(widget.id);
-    }
-
     return widget.id;
   }
 

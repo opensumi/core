@@ -1,0 +1,36 @@
+.view_container {
+  display: flex;
+}
+
+.item_container {
+  padding: 4px 12px 4px 12px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+
+  :last-child {
+    transition: opacity 0.2s ease-in-out;
+    opacity: 0;
+  }
+}
+
+.item_container:hover {
+  :last-child {
+    opacity: 1;
+  }
+}
+
+.item_info_name {
+  margin-right: 4px;
+}
+
+.item_selected {
+  background: #242526;
+}
+
+.item_add {
+  padding: 1px;
+  font-size: 18px !important;
+  cursor: pointer;
+  user-select: none;
+}
