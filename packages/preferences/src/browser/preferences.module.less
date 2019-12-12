@@ -56,12 +56,13 @@
 
   .preferences_body {
     height:calc(100% - 40px);
-    display: flex;
+    position: relative;
+    padding-left: 150px;
     .preferences_indexes {
-      flex-shrink:0;
       border-right:1px solid var(--editorGroupHeader-tabsBorder);
-      flex-grow: 0;
+      position: absolute;
       width: 150px;
+      height: 100%;
       .index_item {
         padding: 7px 45px 7px 15px;
         cursor: pointer;
@@ -96,7 +97,7 @@
       }
     }
     .preferences_items{
-      flex-grow: 1;
+      height:100%;
     }
     .preference_section{
       padding:15px 20px 0 5px;
