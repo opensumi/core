@@ -131,6 +131,7 @@ export class ClientApp implements IClientApp {
       staticServicePath: opts.staticServicePath,
       editorBackgroudImage: opts.editorBackgroudImage,
       extensionCandidate: opts.extensionCandidate,
+      layoutComponent: opts.layoutComponent,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
