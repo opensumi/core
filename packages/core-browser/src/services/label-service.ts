@@ -214,3 +214,9 @@ export function detectModeId(modelService, modeService, resource: monaco.Uri): s
   // otherwise fallback to path based detection
   return modeService.getModeIdByFilepathOrFirstLine(resource.toString());
 }
+
+export function getLanguageIdFromMonaco(uri: URI) {
+  modeService = monaco.services.StaticServices.modeService.get();
+  modelService = monaco.services.StaticServices.modelService.get();
+  return detectModeId(modelService, modeService, monaco.Uri.parse(uri.toString()));
+}

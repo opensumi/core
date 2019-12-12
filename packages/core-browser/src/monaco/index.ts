@@ -15,12 +15,13 @@ export abstract class MonacoService {
   public abstract async createCodeEditor(
     monacoContainer: HTMLElement,
     options?: monaco.editor.IEditorConstructionOptions,
+    overrides?: {[key: string]: any},
   ): Promise<monaco.editor.IStandaloneCodeEditor>;
 
   public abstract async loadMonaco(): Promise<void>;
 
   public abstract async createDiffEditor(monacoContainer: HTMLElement,
-                                         options?: monaco.editor.IDiffEditorConstructionOptions): Promise<monaco.editor.IDiffEditor>;
+                                         options?: monaco.editor.IDiffEditorConstructionOptions, overrides?: {[key: string]: any}): Promise<monaco.editor.IDiffEditor>;
 
   public abstract registerOverride(serviceName: ServiceNames, service: any): void;
 }

@@ -34,8 +34,8 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   public onCodeEditorCreate = this._onCodeEditorCreate.event;
   public onDiffEditorCreate = this._onDiffEditorCreate.event;
 
-  async createCodeEditor(dom: HTMLElement, options?: any): Promise<ICodeEditor> {
-    const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, options);
+  async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor> {
+    const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, options, overrides);
     const editor = this.injector.get(BrowserCodeEditor, [monacoCodeEditor]);
 
     for (const preferenceName in corePreferenceSchema.properties) {
@@ -113,8 +113,8 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     }
   }
 
-  public async createDiffEditor(dom: HTMLElement, options?: any): Promise<IDiffEditor> {
-    const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, options);
+  public async createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<IDiffEditor> {
+    const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, options, overrides);
     const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor]);
     this._onDiffEditorCreate.fire(editor);
     return editor;
