@@ -191,15 +191,15 @@ export class GlobalStorageServer implements IStorageServer {
       const storagePaths = storageName.split('/');
       storageName = storagePaths[storagePaths.length - 1];
       const subDirPaths = storagePaths.slice(0, -1);
-      const subDir = path.join(storagePath || '', ...subDirPaths);
-      const uriString = new URI(storagePath).withScheme('file').toString();
+      const subDir = path.join(...subDirPaths);
+      const uriString = new URI(storagePath).resolve(subDir).withScheme('file').toString();
       if (!await this.fileSystem.exists(uriString)) {
         await this.fileSystem.createFolder(uriString);
       }
-      return storagePath ? path.join(subDir, `${storageName}.json`) : undefined;
+      return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
     }
 
-    return storagePath ? path.join(storagePath, `${storageName}.json`) : undefined;
+    return storagePath ? new URI(storagePath).resolve(`${storageName}.json`).toString() : undefined;
   }
 
   async getItems(storageName: string) {
@@ -250,14 +250,12 @@ export class GlobalStorageServer implements IStorageServer {
     }
 
     this._cache[storageName] = raw;
-
     const storagePath = await this.getStoragePath(storageName);
 
     if (storagePath) {
-      const uriString = new URI(storagePath).withScheme('file').toString();
-      let storageFile = await this.fileSystem.getFileStat(uriString);
+      let storageFile = await this.fileSystem.getFileStat(storagePath);
       if (!storageFile) {
-        storageFile = await this.fileSystem.createFile(uriString);
+        storageFile = await this.fileSystem.createFile(storagePath, {content: ''});
       }
       await this.fileSystem.setContent(storageFile, JSON.stringify(raw));
       const change: StorageChange = {
