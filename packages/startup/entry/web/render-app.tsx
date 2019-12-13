@@ -13,7 +13,7 @@ function DefaultLayout() {
         <SlotRenderer flex={1} slot='bottom' />
       </SplitPanel>
       {/* 若不需要右侧tabbar，直接去掉该slot */}
-      <SlotRenderer noResize={true} flex={1} slot='right' minSize={50} />
+      <SlotRenderer flex={1} slot='right' minSize={50} />
     </SplitPanel>
     <SlotRenderer slot='statusBar' />
   </BoxPanel>;

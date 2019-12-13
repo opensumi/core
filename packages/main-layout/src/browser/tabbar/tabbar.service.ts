@@ -25,6 +25,7 @@ export class TabbarService extends WithEventBus {
     setRelativeSize: (prev: number, next: number) => void,
     getSize: () => number,
     getRelativeSize: () => number[],
+    lockSize: (lock: boolean) => void,
   };
 
   @Autowired(AbstractMenuService)
@@ -85,13 +86,14 @@ export class TabbarService extends WithEventBus {
     return components.sort((pre, next) => (next.options!.priority || 1) - (pre.options!.priority || 1));
   }
 
-  registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, barSize) {
+  registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, lockSize, barSize) {
     this.barSize = barSize;
     this.resizeHandle = {
       setSize: (size) => setSize(size, this.isLatter),
       setRelativeSize: (prev: number, next: number) => setRelativeSize(prev, next, this.isLatter),
       getSize: () => getSize(this.isLatter),
       getRelativeSize: () => getRelativeSize(this.isLatter),
+      lockSize: (lock: boolean) => lockSize(lock, this.isLatter),
     };
     this.listenCurrentChange();
   }
@@ -267,7 +269,7 @@ export class TabbarService extends WithEventBus {
   }
 
   protected listenCurrentChange() {
-    const {getSize, setSize} = this.resizeHandle;
+    const {getSize, setSize, lockSize} = this.resizeHandle;
     observe(this, 'currentContainerId', (change) => {
       if (this.prevSize === undefined) {
       }
@@ -283,9 +285,11 @@ export class TabbarService extends WithEventBus {
             this.prevSize = getSize();
           }
           setSize(this.prevSize || 400);
+          lockSize(false);
         } else {
           this.prevSize = getSize();
           setSize(this.barSize);
+          lockSize(true);
         }
       }
     });
