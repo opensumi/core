@@ -83,6 +83,10 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     }, ExplorerContainerId);
   }
 
+  onReconnect() {
+    this.filetreeService.reWatch();
+  }
+
   onDidStart() {
     const symlinkDecorationsProvider = this.injector.get(SymlinkDecorationsProvider, [this.explorerResourceService]);
     this.decorationsService.registerDecorationsProvider(symlinkDecorationsProvider);

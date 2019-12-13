@@ -1,5 +1,5 @@
-import { IResourceProvider, IDiffResource, ResourceService } from '../../common';
-import { URI, MaybePromise, Domain } from '@ali/ide-core-browser';
+import { IResourceProvider, IDiffResource, ResourceService, ResourceDecorationChangeEvent } from '../../common';
+import { URI, MaybePromise, Domain, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import * as url from 'url';
 import { Injectable, Autowired } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -11,18 +11,34 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '../types';
 // diff://?name=a.ts(on disk)<=>a.ts&original=file://path/to/a.ts&modified=fileOnDisk://path/to/a.ts
 
 @Injectable()
-export class DiffResourceProvider implements IResourceProvider {
+export class DiffResourceProvider extends WithEventBus implements IResourceProvider {
 
   @Autowired()
   labelService: LabelService;
 
+  @Autowired(ResourceService)
+  resourceService: ResourceService;
+
   scheme: string = 'diff';
+
+  private modifiedToResource = new Map<string, URI>();
+
+  @OnEvent(ResourceDecorationChangeEvent)
+  onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
+    if (e.payload.uri && this.modifiedToResource.has(e.payload.uri.toString())) {
+      this.eventBus.fire(new ResourceDecorationChangeEvent({
+        uri: this.modifiedToResource.get(e.payload.uri.toString())!,
+        decoration: e.payload.decoration,
+      }));
+    }
+  }
 
   async provideResource(uri: URI): Promise<IDiffResource> {
     const { original, modified, name } = uri.getParsedQuery();
     const originalUri = new URI(original);
     const modifiedUri = new URI(modified);
     const icon = await this.labelService.getIcon(originalUri);
+    this.modifiedToResource.set(modifiedUri.toString(), uri);
     return {
       name,
       icon,
@@ -32,6 +48,16 @@ export class DiffResourceProvider implements IResourceProvider {
         modified: modifiedUri,
       },
     };
+  }
+
+  async shouldCloseResource(resource, openedResources): Promise<boolean> {
+    const { original, modified, name } = resource.uri.getParsedQuery();
+    const modifiedUri = new URI(modified);
+    const modifiedResource = await this.resourceService.getResource(modifiedUri);
+    if (modifiedResource) {
+      return await this.resourceService.shouldCloseResource(modifiedResource, openedResources);
+    }
+    return true;
   }
 
 }

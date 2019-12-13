@@ -4,6 +4,7 @@ import { IDisposable, URI, BasicEvent, IEventBus, Disposable, IContextKeyService
 import { IResource, IEditorGroup } from '../../common';
 import { observable, reaction, computed } from 'mobx';
 import { AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { EditorGroup } from '../workbench-editor.service';
 
 @Injectable()
 export class EditorActionRegistryImpl implements IEditorActionRegistry {
@@ -70,7 +71,7 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
 
   showMore(x: number, y: number, group: IEditorGroup) {
 
-    const contextKeyService = group.currentEditor ? this.contextKeyService.createScoped((group.currentEditor.monacoEditor as any)._contextKeyService) : this.contextKeyService;
+    const contextKeyService = group.currentEditor ? this.contextKeyService.createScoped((group.currentEditor.monacoEditor as any)._contextKeyService) : (group as EditorGroup).contextKeyService;
     const menus = this.menuService.createMenu(MenuId.EditorTitle, contextKeyService);
     const result = generateCtxMenu({ menus });
     menus.dispose();
@@ -99,7 +100,6 @@ interface IEditorActionItemData extends IEditorActionItem {
 @Injectable({multiple: true})
 export class VisibleEditorActions extends Disposable {
 
-  @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
   @observable.shallow private visibleEditorActions: VisibleAction[] = [];
@@ -108,6 +108,7 @@ export class VisibleEditorActions extends Disposable {
 
   constructor(private group: IEditorGroup, registry: EditorActionRegistryImpl) {
     super();
+    this.contextKeyService = (group as EditorGroup).contextKeyService;
     const disposer = reaction(() => group.currentResource, () => {
       this.update();
     });

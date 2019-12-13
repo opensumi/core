@@ -6,6 +6,7 @@ import { Domain, isWindows } from '@ali/ide-core-common';
 import { stat } from 'fs-extra';
 import { dirname } from 'path';
 import { spawn } from 'child_process';
+import * as semver from 'semver';
 
 @Injectable()
 export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {
@@ -43,9 +44,19 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' |
     // TODO electron 6.0好像api有变动, 目前适应5.0.10
     return new Promise((resolve, reject) => {
       try {
-        dialog.showOpenDialog(BrowserWindow.fromId(windowId), options, (paths) => {
-          resolve(paths);
-        });
+        if (semver.lt(process.versions.electron, '6.0.0')) {
+          (dialog as any).showOpenDialog(BrowserWindow.fromId(windowId), options, (paths) => {
+            resolve(paths);
+          });
+        } else {
+          dialog.showOpenDialog(BrowserWindow.fromId(windowId), options).then((value) => {
+            if (value.canceled) {
+              resolve(undefined);
+            } else {
+              resolve(value.filePaths);
+            }
+          }, reject);
+        }
       } catch (e) {
         reject(e);
       }
@@ -54,9 +65,19 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' |
   async showSaveDialog(windowId: number, options: Electron.SaveDialogOptions): Promise<string | undefined> {
     return new Promise((resolve, reject) => {
       try {
-        dialog.showSaveDialog(BrowserWindow.fromId(windowId), options, (path) => {
-          resolve(path);
-        });
+        if (semver.lt(process.versions.electron, '6.0.0')) {
+          (dialog as any).showSaveDialog(BrowserWindow.fromId(windowId), options, (path) => {
+            resolve(path);
+          });
+        } else {
+          dialog.showSaveDialog(BrowserWindow.fromId(windowId), options).then((value) => {
+            if (value.canceled) {
+              resolve(undefined);
+            } else {
+              resolve(value.filePath);
+            }
+          }, reject);
+        }
       } catch (e) {
         reject(e);
       }

@@ -108,8 +108,6 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       useValue: new MonacoContextKeyService(contextKeyService, this.injector.get(IEventBus)),
     });
 
-    monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService);
-
     for (const contribution of this.monacoContributionProvider.getContributions()) {
       if (contribution.onContextKeyServiceReady) {
         contribution.onContextKeyServiceReady(this.injector.get(IContextKeyService));

@@ -19,6 +19,7 @@ export class ExtHostWebview implements Webview {
     handle: string,
     proxy: IMainThreadWebview,
     options: IWebviewOptions,
+    private cspResourceRoots: string[],
   ) {
     this._handle = handle;
     this._proxy = proxy;
@@ -61,6 +62,32 @@ export class ExtHostWebview implements Webview {
   private assertNotDisposed() {
     if (this._isDisposed) {
       throw new Error('Webview is disposed');
+    }
+  }
+
+  public get resourceRoot() {
+    return 'vscode-resource:';
+  }
+
+  public get cspSource() {
+    return this.cspResourceRoots.join(' ');
+  }
+
+  public toWebviewResource(resource: Uri): Uri {
+    return this.asWebviewUri(resource);
+  }
+
+  public asWebviewUri(localResource: Uri): Uri {
+    if (localResource.scheme === 'file') {
+      return Uri.from({
+        scheme: 'vscode-resource',
+        path: localResource.path,
+        authority: localResource.authority,
+        query: localResource.query,
+        fragment: localResource.fragment,
+      });
+    } else {
+      return localResource;
     }
   }
 }
@@ -152,8 +179,14 @@ export class ExtHostWebviewPanel implements WebviewPanel {
     this.assertNotDisposed();
     if (this._iconPath !== value) {
       this._iconPath = value;
-
-      this._proxy.$setIconPath(this._handle, Uri.isUri(value) ? { light: value, dark: value } : value);
+      let param: {light: string, dark: string, hc: string} = {light: '', dark: '', hc: ''};
+      if (Uri.isUri(value)) {
+        param = { light: value.toString(), dark: value.toString(), hc: value.toString()};
+      } else {
+        const v = value as { light: Uri, dark: Uri };
+        param = { light: v.light.toString(), dark: v.dark.toString(), hc: '' };
+      }
+      this._proxy.$setIconPath(this._handle, param);
     }
   }
 
@@ -209,6 +242,7 @@ export class ExtHostWebviewPanel implements WebviewPanel {
       throw new Error('Webview is disposed');
     }
   }
+
 }
 
 export class ExtHostWebviewService implements IExtHostWebview {
@@ -221,10 +255,16 @@ export class ExtHostWebviewService implements IExtHostWebview {
   private readonly _proxy: IMainThreadWebview;
   private readonly _webviewPanels = new Map<string, ExtHostWebviewPanel>();
   private readonly _serializers = new Map<string, WebviewPanelSerializer>();
+  private resourceRoots: string[] = [];
 
   constructor(private rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWebview);
+    this.init();
+  }
+
+  async init() {
+    this.resourceRoots = await this._proxy.$getWebviewResourceRoots();
   }
 
   public createWebview(
@@ -243,7 +283,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
     const handle = ExtHostWebviewService.newHandle();
     this._proxy.$createWebviewPanel(handle, viewType, title, webviewShowOptions, options);
 
-    const webview = new ExtHostWebview(handle, this._proxy, options);
+    const webview = new ExtHostWebview(handle, this._proxy, options, this.resourceRoots);
     const panel = new ExtHostWebviewPanel(handle, this._proxy, viewType, title, viewColumn, options, webview);
     this._webviewPanels.set(handle, panel);
     return panel;
@@ -313,7 +353,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
       throw new Error(`No serializer found for '${viewType}'`);
     }
 
-    const webview = new ExtHostWebview(webviewHandle, this._proxy, options);
+    const webview = new ExtHostWebview(webviewHandle, this._proxy, options, this.resourceRoots);
     const revivedPanel = new ExtHostWebviewPanel(webviewHandle, this._proxy, viewType, title, position, options, webview);
     this._webviewPanels.set(webviewHandle, revivedPanel);
     return serializer.deserializeWebviewPanel(revivedPanel, state);

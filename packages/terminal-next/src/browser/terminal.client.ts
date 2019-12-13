@@ -49,7 +49,6 @@ export class TerminalClient extends Disposable {
     options?: TerminalOptions,
   ) {
     super();
-
     this._attached = false;
     this._activated = false;
     this._disposed = false;

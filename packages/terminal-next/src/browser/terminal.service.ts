@@ -37,6 +37,11 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
   private _dispatcher = new Dispatcher();
   private _info = new Map<string, { pid: number, name: string }>();
 
+  async check(ids: string[]) {
+    const ensureResult = await this.service.ensureTerminal(ids);
+    return ensureResult;
+  }
+
   getOptions() {
     return {};
   }
@@ -135,6 +140,17 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
   onMessage(sessionId: string, type: string, message: string) {
     this._dispatcher.emit(oneStringType(sessionId, type), {
       data: message,
+    });
+  }
+
+  dispose() {
+    Array.from(this._info.keys()).forEach((sessionId) => {
+      this._onError.fire({
+        id: sessionId,
+        reconnected: false,
+        stopped: true,
+        message: 'disconnected',
+      });
     });
   }
 }

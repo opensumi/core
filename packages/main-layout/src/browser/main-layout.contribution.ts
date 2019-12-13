@@ -170,6 +170,7 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     });
     commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
       execute: (show?: boolean, size?: number) => {
+        console.log('run TOGGLE_BOTTOM_PANEL_COMMAND');
         this.mainLayoutService.toggleSlot(SlotLocation.bottom, show, size);
       },
     });

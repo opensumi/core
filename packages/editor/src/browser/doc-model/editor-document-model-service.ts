@@ -228,4 +228,5 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     const result = await provider.saveDocumentModel(uri, content, baseContent, changes, encoding, ignoreDiff);
     return result;
   }
+
 }

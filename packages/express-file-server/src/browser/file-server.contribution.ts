@@ -20,6 +20,7 @@ export class ExpressFileServerContribution implements StaticResourceContribution
           path: uri.withoutScheme().toString(),
         })));
       },
+      roots: [this.appConfig.staticServicePath || EXPRESS_SERVER_PATH],
     });
   }
 

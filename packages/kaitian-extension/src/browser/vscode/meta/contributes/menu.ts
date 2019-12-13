@@ -6,6 +6,7 @@ import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
 
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
+import { IEditorGroup } from '@ali/ide-editor';
 
 export interface MenuActionFormat {
   when: string;
@@ -292,8 +293,12 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         if (menuId === MenuId.EditorTitle && command.iconClass) {
           this.addDispose(this.editorActionRegistry.registerEditorAction({
             title: replaceLocalizePlaceholder(command.label)!,
-            onClick: (resource) => {
-              this.commandService.executeCommand(command.id, resource ? resource.uri : undefined);
+            onClick: (resource, group: IEditorGroup) => {
+              if (group.currentEditor) {
+                this.commandService.executeCommand(command.id, group.currentEditor.currentUri);
+              } else {
+                this.commandService.executeCommand(command.id, resource ? resource.uri : undefined);
+              }
             },
             iconClass: command.iconClass,
             when: item.when,

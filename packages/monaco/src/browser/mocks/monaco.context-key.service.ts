@@ -1,4 +1,4 @@
-import { ContextKeyChangeEvent, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
+import { ContextKeyChangeEvent, IContextKeyService, IScopedContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { Event } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
 
@@ -25,7 +25,7 @@ class MockKeybindingContextKey<T> implements IContextKey<T> {
 }
 
 @Injectable()
-export class MockContextKeyService implements IContextKeyService {
+export class MockContextKeyService implements IScopedContextKeyService {
   private _keys = new Map<string, IContextKey<any>>();
 
   public dispose(): void {
@@ -42,7 +42,7 @@ export class MockContextKeyService implements IContextKeyService {
     return Event.None;
   }
 
-  public createScoped(domNode: HTMLElement): IContextKeyService {
+  public createScoped(domNode: HTMLElement): IScopedContextKeyService {
     return this;
   }
 
@@ -67,5 +67,9 @@ export class MockContextKeyService implements IContextKeyService {
 
   parse(when: string | undefined): monaco.contextkey.ContextKeyExpr | undefined {
     return undefined;
+  }
+
+  attachToDomNode(domNode) {
+    return;
   }
 }
