@@ -21,7 +21,15 @@ export const PanelContext = React.createContext<{
   getRelativeSize: (isLatter: boolean) => [0, 0],
 });
 
-interface SplitChildProps { id: string; minSize?: number; maxSize?: number; flex?: number; slot: string; children?: Array<React.ReactElement<SplitChildProps>>; }
+interface SplitChildProps {
+  id: string;
+  minSize?: number;
+  maxSize?: number;
+  flex?: number;
+  slot: string;
+  noResize?: boolean;
+  children?: Array<React.ReactElement<SplitChildProps>>;
+}
 
 export const SplitPanel: React.FC<{
   children?: Array<React.ReactElement<SplitChildProps>>;
@@ -105,8 +113,10 @@ export const SplitPanel: React.FC<{
 
   children.forEach((element, index) => {
     if (index !== 0) {
+      const targetElement = index === 1 ? children[index - 1] : children[index];
       elements.push(
         <ResizeHandle
+          className={targetElement.props.noResize ? 'no-resize' : ''}
           onResize={(prev, next) => {
             const prevLocation = children[index - 1].props.slot;
             const nextLocation = children[index].props.slot;
