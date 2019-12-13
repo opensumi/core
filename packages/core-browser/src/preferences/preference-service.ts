@@ -300,6 +300,11 @@ export class PreferenceServiceImpl implements PreferenceService {
       };
     }
     const parts = key.split('.');
+    if (!parts || parts.length === 0) {
+      return {
+        value,
+      };
+    }
     for (let i = parts.length - 1; i < parts.length; i++) {
       value = this.doResolve(parts.slice(0, i).join('.')).value;
       if (value) {
@@ -307,7 +312,7 @@ export class PreferenceServiceImpl implements PreferenceService {
         break;
       }
     }
-    while (reset.length > 0) {
+    while (reset && reset.length > 0) {
       value = value[reset.shift()];
     }
     return { value };
@@ -318,7 +323,6 @@ export class PreferenceServiceImpl implements PreferenceService {
     value?: T,
   } {
     const { value, configUri } = this.doResolve(preferenceName, defaultValue, resourceUri);
-    console.log('preferenceName', value);
     if (typeof value === 'undefined') {
       const overridden = this.overriddenPreferenceName(preferenceName);
       if (overridden) {
@@ -497,7 +501,6 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   getValue<T>(preferenceName: string): T | undefined {
-    console.log('getValue ==>', preferenceName);
     return this.resolve<T>(preferenceName).value;
   }
 
