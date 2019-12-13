@@ -250,6 +250,10 @@ export class TabbarService extends WithEventBus {
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === this.location) {
+      if (!this.currentContainerId) {
+        // 折叠时不监听变化
+        return;
+      }
       const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
       const size = this.resizeHandle.getSize(isLatter);
       if (size !== this.barSize && !this.shouldExpand(this.currentContainerId)) {
