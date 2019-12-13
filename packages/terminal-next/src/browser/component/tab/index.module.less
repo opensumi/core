@@ -3,7 +3,7 @@
 }
 
 .item_container {
-  padding: 4px 12px 4px 12px;
+  padding: 0px 12px 0px 12px;
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -11,6 +11,7 @@
   :last-child {
     transition: opacity 0.2s ease-in-out;
     opacity: 0;
+    line-height: 28px;
   }
 }
 
@@ -22,6 +23,11 @@
 
 .item_info_name {
   margin-right: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60px;
+  line-height: 28px;
 }
 
 .item_selected {

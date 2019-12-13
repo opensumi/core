@@ -4,18 +4,9 @@ import { Emitter, Event, uuid } from '@ali/ide-core-common';
 
 export class TabItemInfo {
   private _id = uuid();
-  private _name: string;
-
-  constructor(name: string) {
-    this._name = name;
-  }
 
   get id() {
     return this._id;
-  }
-
-  get name() {
-    return this._name;
   }
 }
 
@@ -46,13 +37,9 @@ export class TabManager {
     return this.items[this.state.current];
   }
 
-  firstInitialize() {
-    this.create('first');
-  }
+  create(selected: boolean = false): TabItemInfo {
 
-  create(name: string, selected: boolean = false): TabItemInfo {
-
-    const item = new TabItemInfo(name);
+    const item = new TabItemInfo();
     const length = this.items.push(item);
 
     if (selected) {
@@ -79,6 +66,10 @@ export class TabManager {
     this._onSelect.fire({ item, index });
 
     return item;
+  }
+
+  setName(index: number, name: string) {
+    this.items.splice(index, 1, new TabItemInfo());
   }
 
   private _onOpen = new Emitter<TabEvent>();

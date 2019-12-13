@@ -126,6 +126,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
       if (this.groups[index] && this.groups[index].length === 0) {
         this._removeGroupByIndex(index);
+      } else {
+        this.tabManager.create();
       }
     }
 
@@ -156,6 +158,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       if (this._checkIfNeedInitialize()) {
         this.createGroup(true);
         this.addWidget();
+        this.tabManager.create();
       } else {
         this.selectGroup(this.state.index > -1 ? this.state.index : 0);
       }

@@ -27,11 +27,11 @@ export function renderInfoItem(props: ItemProps) {
       }) }
       onClick={ () => props.onClick && props.onClick() }
     >
-      <div className={ styles.item_info_name }>{ props.name }</div>
+      <div className={ styles.item_info_name } title={ props.name }>{ props.name }</div>
       <div
-        className={clx({
+        className={ clx({
           [getIcon('close')]: true,
-        })}
+        }) }
         onClick={ (event) => props.onClose && props.onClose(event) }
       ></div>
     </div>
