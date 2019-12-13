@@ -39,7 +39,8 @@ export const SplitPanel: React.FC<{
   id: string;
   // setAbsoluteSize 时保证相邻节点总宽度不变
   resizeKeep?: boolean;
-}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, ...restProps }) => {
+  dynamicTarget?: boolean;
+}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, dynamicTarget, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
   const elements: React.ReactNodeArray = [];
@@ -124,8 +125,8 @@ export const SplitPanel: React.FC<{
             fireResizeEvent(nextLocation, next, index);
           }}
           noColor={true}
-          findNextElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction)}
-          findPrevElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true)}
+          findNextElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction) : undefined}
+          findPrevElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true) : undefined}
           key={`split-handle-${index}`}
           delegate={(delegate) => { resizeDelegates.current.push(delegate); }} />,
       );
