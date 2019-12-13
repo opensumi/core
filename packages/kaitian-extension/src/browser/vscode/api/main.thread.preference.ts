@@ -91,7 +91,7 @@ export class MainThreadPreference implements IMainThreadPreference {
   }
 
   /**
-   * 装欢VSCode ConfigurationTaregt到PreferenceService中的Scope
+   * 装换VSCode ConfigurationTaregt到PreferenceService中的Scope
    * @param target
    */
   private parseConfigurationTarget(target?: boolean | ConfigurationTarget): PreferenceScope | undefined {
