@@ -50,6 +50,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     size?: number;
   }} = {};
 
+  // TODO 使用IconAction完成左侧activityBar上展示的额外图标注册能力
+  // private extraIconActions: IconAction
+
   constructor() {
     super();
   }

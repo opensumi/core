@@ -46,3 +46,10 @@ export const ACTIVITY_BAR_BADGE_FOREGROUND = registerColor('activityBarBadge.for
   light: Color.white,
   hc: Color.white,
 }, localize('activityBarBadgeForeground', 'Activity notification badge foreground color. The activity bar is showing on the far left or right and allows to switch between views of the side bar.'));
+
+// extend tokens
+export const ACTIVITY_BAR_ACTIVE_BORDER = registerColor('activityBar.activeBorder', {
+  dark: '#167CDB',
+  light: '#167CDB',
+  hc: '#167CDB',
+}, localize('activityBar.activeBorder', 'Active icon left/right border color'));

@@ -1,17 +1,155 @@
 :global {
+  .tab-bar {
+    background-color: var(--activityBar-background);
+    height: 100%;
+    display: flex;
+    border-top: 1px solid var(--activityBar-border);
+    li {
+      list-style: none;
+      &.active {
+        background-color: transparent;
+        transform: translateY(0);
+        .activity-icon {
+          color: var(--activityBar-foreground);
+          &.mask-mode {
+            background-color: var(--activityBar-foreground);
+          }
+        }
+      }
+    }
+    .icon-tab {
+      flex: 1;
+    }
+    .activity-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: var(--activityBar-inactiveForeground);
+      &.mask-mode {
+        background-color: var(--activityBar-inactiveForeground);
+      }
+    }
+    .tab-badge {
+      background-color: var(--activityBarBadge-background);
+      color: var(--activityBarBadge-foreground);
+      position: absolute;
+      top: 26px;
+      right: 8px;
+      font-size: 11px;
+      min-width: 8px;
+      height: 18px;
+      line-height: 18px;
+      padding: 0 5px;
+      border-radius: 20px;
+      text-align: center;
+    }
+    .tabbar-content{
+      border: none;
+      align-items: center;
+    }
+    .icon-tab {
+      padding: 0 0;
+      position: relative;
+      height: 40px;
+      background-color: transparent;
+      border: none;
+      line-height: normal;
+      display:flex;
+      justify-content: center;
+      align-items: center;
+      width: 48px;
+      margin-top: 8px;
+    }
+    .icon-tab:hover {
+      cursor: pointer;
+      .activity-icon {
+        color: var(--activityBar-foreground);
+        &.mask-mode {
+          background-color: var(--activityBar-foreground);
+        }
+      }
+    }
+    .icon-tab:hover:not(.active){
+      background-color: transparent;
+    }
+  }
 
-  @tabWidth: 48px;
+  .left-tab-bar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--activityBar-background);
+    .tab-bar {
+      height: auto;
+    }
+    .bottom-icon-container {
+      width: 48px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      &:last-child {
+        margin-bottom: 8px;
+      }
+      .activity-icon {
+        font-size: 20px;
+        margin-top: 6px;
+        &:hover {
+          color: var(--activityBar-foreground);
+          cursor: pointer;
+        }
+      }
+    }
+  }
 
+  .tab-panel {
+    position: relative;
+    flex: 1;
+  }
+
+  .tab-tool-bar {
+    .p-TabBar-toolbar {
+      display: flex;
+      flex-direction: row;
+      padding-right: 10px;
+    }
+  }
   .left-slot {
     height: 100%;
     .tab-bar {
       border-right: 1px solid var(--activityBar-border);
+      li.active {
+        .icon-tab::before {
+          content: '';
+          display: block;
+          position: absolute;
+          left: 0;
+          height: 100%;
+          border-left: 3px solid var(--activityBar-activeBorder);
+        }
+      }
     }
   }
   .right-slot {
     height: 100%;
     .tab-bar {
       border-left: 1px solid var(--activityBar-border);
+      .icon-tab {
+        width: 40px;
+        height: 44px;
+        margin: 0;
+      }
+      .activity-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+      li.active {
+        .icon-tab {
+          background-color: var(--sideBar-background);
+        }
+      }
     }
   }
   .bottom-slot {
@@ -63,117 +201,6 @@
         box-sizing: border-box;
         transform: scale(0.85);
       }
-    }
-  }
-  .tab-bar {
-    background-color: var(--activityBar-background);
-    height: 100%;
-    display: flex;
-    border-top: 1px solid var(--activityBar-border);
-    li {
-      list-style: none;
-      &.active {
-        background-color: transparent;
-        transform: translateY(0);
-        .activity-icon {
-          color: var(--activityBar-foreground);
-          &.mask-mode {
-            background-color: var(--activityBar-foreground);
-          }
-        }
-      }
-    }
-    .icon-tab {
-      flex: 1;
-    }
-    .activity-icon {
-      font-size: 24px;
-      width: 24px;
-      color: var(--activityBar-inactiveForeground);
-      line-height:@tabWidth;
-      height: @tabWidth;
-      &.mask-mode {
-        background-color: var(--activityBar-inactiveForeground);
-      }
-    }
-    .tab-badge {
-      background-color: var(--activityBarBadge-background);
-      color: var(--activityBarBadge-foreground);
-      position: absolute;
-      top: 26px;
-      right: 8px;
-      font-size: 11px;
-      min-width: 8px;
-      height: 18px;
-      line-height: 18px;
-      padding: 0 5px;
-      border-radius: 20px;
-      text-align: center;
-    }
-    .tabbar-content{
-      border: none;
-      align-items: center;
-    }
-    .icon-tab {
-      padding: 0 0;
-      position: relative;
-      min-height: @tabWidth;
-      max-height: @tabWidth;
-      background-color: transparent;
-      border: none;
-      line-height: normal;
-      display:flex;
-      justify-content: center;
-      align-items: center;
-      width: @tabWidth;
-    }
-    .icon-tab:hover {
-      cursor: pointer;
-      .activity-icon {
-        color: var(--activityBar-foreground);
-      }
-    }
-    .icon-tab:hover:not(.active){
-      background-color: transparent;
-    }
-  }
-
-  .left-tab-bar {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: var(--activityBar-background);
-    .tab-bar {
-      height: auto;
-    }
-    .bottom-icon-container {
-      width: 48px;
-      height: 48px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      .activity-icon {
-        font-size: 24px;
-        margin-top: 6px;
-        &:hover {
-          color: var(--activityBar-foreground);
-          cursor: pointer;
-        }
-      }
-    }
-  }
-
-  .tab-panel {
-    position: relative;
-    flex: 1;
-  }
-
-  .tab-tool-bar {
-    .p-TabBar-toolbar {
-      display: flex;
-      flex-direction: row;
-      padding-right: 10px;
     }
   }
 }
