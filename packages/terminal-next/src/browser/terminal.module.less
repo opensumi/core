@@ -8,6 +8,7 @@
 .terminalContainer {
   height: 100%;
   width: 100%;
+  position: relative;
 }
 
 .terminalInstance {
@@ -26,7 +27,7 @@
   width: 100%;
   background: var(--terminal-background);
   opacity: 0.8;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -36,6 +37,22 @@
 .terminalContent {
   height: 100%;
   width: 100%;
+}
+
+.terimnalClose {
+  position: absolute;
+  opacity: 0;
+  z-index: 1;
+  right: 0;
+  top: 0;
+  padding: 0px 4px;
+  background: var(--terminal-background);
+  transition: opacity 0.2s ease-in-out;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .toolbarSelect {

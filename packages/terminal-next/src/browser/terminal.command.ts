@@ -23,6 +23,13 @@ export const terminalExpand: Command = {
   category: 'terminal',
 };
 
+export const terminalIndepend: Command = {
+  id: 'terminal.independ',
+  label: 'independ terminal',
+  iconClass: getIcon('undock'),
+  category: 'terminal',
+};
+
 export const terminalClear: Command = {
   id: 'terminal.clear',
   label: 'clear terminal',

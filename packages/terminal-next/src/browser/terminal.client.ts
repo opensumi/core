@@ -218,6 +218,10 @@ export class TerminalClient extends Disposable {
     return Promise.resolve();
   }
 
+  clear() {
+    this._term.clear();
+  }
+
   hide() {
     if (this._disposed) {
       return;

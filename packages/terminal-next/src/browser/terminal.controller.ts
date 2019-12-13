@@ -362,6 +362,18 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this.groups.length - 1;
   }
 
+  clearGroup(index: number) {
+    const group = this.groups[index];
+    if (group && group.widgets && group.length > 0) {
+      group.widgets.forEach((widget) => {
+        const client = this._clientsMap.get(widget.id);
+        if (client) {
+          client.clear();
+        }
+      });
+    }
+  }
+
   /** end */
 
   /** terminal client operations */

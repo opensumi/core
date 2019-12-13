@@ -1,7 +1,9 @@
 import * as React from 'react';
-import * as styles from './terminal.module.less';
-import { useInjectable, localize } from '@ali/ide-core-browser';
+import * as clx from 'classnames';
+import { useInjectable, localize, getIcon } from '@ali/ide-core-browser';
 import { ITerminalController, IWidget, ITerminalError } from '../common';
+
+import * as styles from './terminal.module.less';
 
 export interface IProps {
   id: string;
@@ -56,6 +58,16 @@ export default ({ id, dynamic, error, show }: IProps) => {
             </div>
           </div> : null
       }
+      <div
+        className={ clx({
+          [getIcon('close')]: true,
+          [styles.terimnalClose]: true,
+        }) }
+        onClick={ () => {
+          controller.focusWidget(id);
+          controller.removeFocused();
+        } }
+      ></div>
       <div
         data-term-id={ id }
         style={ { display: error ? 'none' : 'block' } }
