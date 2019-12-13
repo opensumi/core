@@ -127,7 +127,7 @@ export type MessageString = string & {
 };
 
 /**
- * 路径信息 ${pre}-${index}-${clientId}
+ * 路径信息 ${pre}-${index}
  */
 export class ChildConnectPath {
   public pathPre = 'child_connect-';

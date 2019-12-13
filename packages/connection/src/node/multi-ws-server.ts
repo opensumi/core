@@ -72,8 +72,6 @@ class MessageMarkList {
     willClearKeyList.forEach((key) => {
       this.listMap.delete(key);
     });
-
-    console.log('this.listMap.size', this.listMap.size);
   }
 }
 
@@ -123,10 +121,8 @@ class MultiConnect {
       connection.recentSendMessageMark = connection.recentSendMessageMark || new MessageMarkList();
       connection.recentSendMessageMark.push(content.method);
     }
-    // console.log('send start', (connection as any).routeParam);
     connection.sending = true;
     connection.send(data, (error) => {
-      // console.log('send end', (connection as any).routeParam);
       connection.sending = false;
       errorCallback();
     });
@@ -181,7 +177,6 @@ export class MultiWsServer {
     let wsServer = this.wsServerMap.get(wsPathname);
 
     if (!this.clientMap.get(clientId)) {
-      console.log('create new MultiConnect', clientId);
       this.clientMap.set(clientId, new MultiConnect());
     }
     const clientMultiConnect: MultiConnect = this.clientMap.get(clientId)!;
@@ -218,7 +213,6 @@ export class MultiWsServer {
   }
 
   private onConnection = (connection: MultiConnect) => {
-    console.log('connection1');
     this.onConnectionCallback(connection);
   }
 }
