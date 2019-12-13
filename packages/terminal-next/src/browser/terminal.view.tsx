@@ -34,7 +34,7 @@ export default observer(() => {
           .map((group, index) => {
             return (
               <div
-                key={ `terminal-group-${group.length}-${index}` }
+                key={ `terminal-group-${groups.length}-${index}` }
                 style={ { display: state.index === index ? 'block' : 'none' } }
                 className={ styles.group }
               >

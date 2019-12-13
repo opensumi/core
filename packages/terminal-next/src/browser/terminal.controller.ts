@@ -192,8 +192,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.addDispose(this.tabbarHandler.onActivate(() => {
       if (!this.currentGroup) {
         if (!this.groups[0]) {
-          this.createGroup(true);
-          this.addWidget();
+          this.tabManager.create();
         } else {
           this.selectGroup(0);
         }
@@ -212,7 +211,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }));
 
     this.tabManager.onSelect(({ index }) => {
-      this.state.index = index;
+      this.selectGroup(index);
       this.focusWidget(this.currentGroup.widgets[0].id);
     });
 
@@ -223,11 +222,16 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     });
 
     this.tabManager.onClose(({ index }) => {
-      this.groups[index].widgets.forEach((widget) => {
-        this.removeWidget(widget.id);
+      this.groups[index].widgets.forEach((_, index) => {
+        this._delWidgetByIndex(index);
       });
       this._removeGroupByIndex(index);
-      this.tabManager.select(this.groups.length - 1);
+      if (this.groups.length - 1 > -1) {
+        this.tabManager.select(this.groups.length - 1);
+      } else {
+        this.state.index = -1;
+        this.layoutService.toggleSlot(SlotLocation.bottom);
+      }
     });
   }
 
@@ -242,14 +246,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this._delWidgetByIndex(index);
 
       if (this.currentGroup.length === 0) {
-        this._removeGroupByIndex(this.state.index);
-        this.selectGroup(Math.max(0, this.state.index - 1));
-
-        if (this.groups.length === 0) {
-          this.state.index = -1;
-          this.layoutService.toggleSlot(SlotLocation.bottom);
-          return;
-        }
+        this.tabManager.remove(this.state.index);
       }
     }
   }

@@ -22,10 +22,7 @@ export default observer(() => {
               key={ `tab-item-${index}` }
               selected={ manager.state.current === index }
               onClick={ () => manager.select(index) }
-              onClose={ (e) => {
-                e.stopPropagation();
-                manager.remove(index);
-              } }
+              onClose={ () => manager.remove(index) }
             ></TabItem>
           );
         })
