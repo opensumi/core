@@ -20,7 +20,7 @@ export class ExtensionResourceProvider extends WithEventBus implements IResource
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     const { name, icon } = uri.getParsedQuery();
-    const iconClass = this.iconService.fromIconUrl(icon);
+    const iconClass = this.iconService.fromIcon('', icon);
     return {
       name: `${localize('marketplace.extension.container')}: ${name}`,
       icon: `${iconClass} ${styles.tab_icon}`,

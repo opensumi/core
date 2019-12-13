@@ -25,7 +25,6 @@ export interface IIconService {
   currentTheme: IIconTheme;
   applyTheme(themeId?: string): Promise<void>;
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType): string | undefined;
-  fromIconUrl(iconUrl: string): string;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
   getAvailableThemeInfos(): ThemeInfo[];

@@ -81,12 +81,6 @@ export class IconService implements IIconService {
     return cssRule;
   }
 
-  protected getBackgroundStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
-    iconUrl = this.staticResourceService.resolveStaticResource(new URI(iconUrl)).toString();
-    const cssRule = `${baseTheme || ''} .${className} {background: url(${iconUrl}) no-repeat 50% 50%;background-size:contain;}`;
-    return cssRule;
-  }
-
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask): string | undefined {
     if (!icon) {
       return;
@@ -112,29 +106,6 @@ export class IconService implements IIconService {
       }
     }
     return randomClass + ' ' + (type === IconType.Mask ? 'mask-mode' : 'background-mode');
-  }
-
-  fromIconUrl(iconUrl: string | { [index in ThemeType]: string }, maskMode: boolean = false): string {
-    // 和fromIcon保持一致
-    const randomClass = this.getRandomIconClass();
-    if (typeof iconUrl === 'string') {
-      if (maskMode) {
-        this.appendStyleSheet(this.getStyleSheet(new URI(iconUrl), randomClass));
-      } else {
-        this.appendStyleSheet(this.getBackgroundStyleSheet(iconUrl, randomClass));
-      }
-    } else {
-      // tslint:disable-next-line: forin
-      for (const themeType in iconUrl) {
-        const themeSelector = getThemeTypeSelector(themeType as ThemeType);
-        if (maskMode) {
-          this.appendStyleSheet(this.getStyleSheet(new URI(iconUrl[themeType]), randomClass, `.${themeSelector}`));
-        } else {
-          this.appendStyleSheet(this.getBackgroundStyleSheet(iconUrl[themeType], randomClass, `.${themeSelector}`));
-        }
-      }
-    }
-    return randomClass + (maskMode ? ' mask-mode' : '');
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {

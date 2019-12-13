@@ -185,7 +185,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     if (!value) {
       webviewPanel.editorWebview.icon = '';
     } else {
-      webviewPanel.editorWebview.icon = this.iconService.fromIconUrl(value)! + ' background-tab-icon';
+      webviewPanel.editorWebview.icon = this.iconService.fromIcon('', value)! + ' background-tab-icon';
     }
   }
 
