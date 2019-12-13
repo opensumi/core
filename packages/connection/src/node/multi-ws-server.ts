@@ -181,13 +181,15 @@ export class MultiWsServer {
     let wsServer = this.wsServerMap.get(wsPathname);
 
     if (!this.clientMap.get(clientId)) {
+      console.log('create new MultiConnect', clientId);
       this.clientMap.set(clientId, new MultiConnect());
     }
     const clientMultiConnect: MultiConnect = this.clientMap.get(clientId)!;
 
     if (!wsServer) {
       wsServer = new ws.Server({ noServer: true });
-      wsServer.on('connection', () => {
+      wsServer.on('connection', (ws) => {
+        const clientMultiConnect: MultiConnect = this.clientMap.get(ws.protocol)!;
         if (clientMultiConnect.readyState !== 1) {
           clientMultiConnect.readyState = 1;
           this.onConnection(clientMultiConnect);
