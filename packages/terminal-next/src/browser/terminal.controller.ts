@@ -444,9 +444,18 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
+  /**
+   * 对 layout terminal 的 canvas 高宽做更多的保护，
+   * 当这个终端不在视野重的时候，不做任何的 fit 操作，
+   * 避免当 dom 节点的高宽影响 xterm 的 fit 函数，
+   * 导致 canvas 渲染异常且无法恢复
+   *
+   * @param widgetId
+   */
   layoutTerminalClient(widgetId: string) {
     const client = this._clientsMap.get(widgetId);
-    if (client) {
+    if (client && this.tabbarHandler.isActivated() &&
+      this.currentGroup && this.currentGroup.widgetsMap.has(widgetId)) {
       client.layout();
     }
   }
