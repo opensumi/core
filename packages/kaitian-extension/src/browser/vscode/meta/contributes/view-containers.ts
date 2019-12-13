@@ -45,6 +45,8 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
             iconClass: this.iconService.fromIcon(this.extension.path, container.icon),
             title: container.title,
             containerId: container.id,
+            // 插件注册的视图默认在最后
+            priority: 0,
           }, 'left');
           this.disposableCollection.push({
             dispose: () => {
