@@ -56,6 +56,7 @@
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
     "lodash.clonedeep": "^4.5.0",
+    "shell-path": "^2.1.0",
     "mz-modules": "^2.1.0",
     "ps-tree": "^1.2.0"
   },
