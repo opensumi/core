@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-scm",
-  "version": "1.6.5",
+  "version": "1.6.6",
   "files": [
     "lib"
   ],
@@ -19,13 +19,13 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-browser": "1.6.5",
-    "@ali/ide-core-common": "1.6.5",
-    "@ali/ide-editor": "1.6.5",
-    "@ali/ide-main-layout": "1.6.5",
-    "@ali/ide-monaco-enhance": "1.6.5",
-    "@ali/ide-status-bar": "1.6.5",
-    "@ali/ide-theme": "1.6.5"
+    "@ali/ide-core-browser": "1.6.6",
+    "@ali/ide-core-common": "1.6.6",
+    "@ali/ide-editor": "1.6.6",
+    "@ali/ide-main-layout": "1.6.6",
+    "@ali/ide-monaco-enhance": "1.6.6",
+    "@ali/ide-status-bar": "1.6.6",
+    "@ali/ide-theme": "1.6.6"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
