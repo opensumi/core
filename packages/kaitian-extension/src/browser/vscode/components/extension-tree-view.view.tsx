@@ -1,13 +1,16 @@
 import * as React from 'react';
 import * as styles from './extension-view.module.less';
 import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
-import { TreeNode, CommandService, MenuPath, memoize, ExpandableTreeNode } from '@ali/ide-core-common';
+import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
-import { ViewState, ViewContextKeyRegistry, IContextKeyService } from '@ali/ide-core-browser';
+import { ViewState } from '@ali/ide-core-browser';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ICtxMenuRenderer, generateCtxMenu, MenuId, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+
+import { ExtensionViewService } from './extension-view.service';
 
 export interface IExtensionTreeNodeModel {
   selected?: boolean;
@@ -70,10 +73,7 @@ export const ExtensionTabbarTreeView = observer(({
   const { width, height } = viewState;
   const scrollContainerStyle = { width, height };
   const injector = useInjectable(INJECTOR_TOKEN);
-  const menuService: AbstractMenuService = injector.get(AbstractMenuService);
-  const viewContextKeyRegistry: ViewContextKeyRegistry = injector.get(ViewContextKeyRegistry);
-  const contextKeyService = viewContextKeyRegistry.getContextKeyService(viewId) || injector.get(IContextKeyService);
-  const viewItemContextKey = contextKeyService.createKey('viewItem', '');
+  const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId]);
 
   const initTreeData = () => {
     dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
@@ -102,16 +102,13 @@ export const ExtensionTabbarTreeView = observer(({
     const { x, y } = event.nativeEvent;
     // TreeViewAPI只处理单选操作
     const node = nodes[0];
-    // 设置viewItem
-    viewItemContextKey.set(node.contextValue);
-    const menus = menuService.createMenu(MenuId.ViewItemContext, contextKeyService);
-    const result = generateCtxMenu({ menus, separator: 'inline'  });
+
+    const [, menuNodes] = extensionViewService.getMenuNodes(node.contextValue);
     const ctxMenuRenderer: ICtxMenuRenderer = injector.get(ICtxMenuRenderer);
 
     ctxMenuRenderer.show({
       anchor: { x, y },
-      // 合并结果
-      menuNodes: [...result[1]],
+      menuNodes,
       context: [node],
     });
   };
@@ -171,17 +168,22 @@ export const ExtensionTabbarTreeView = observer(({
   };
 
   const setInlineMenu = (nodes: TreeNode<any>[]) => {
-    const menus = menuService.createMenu(MenuId.ViewItemContext, contextKeyService);
-    const result = generateCtxMenu({ menus, separator: 'inline'  });
-    if (result[0].length > 0) {
-      return nodes.map((node) => {
-        return {
-          ...node,
-        };
-      });
-    } else {
+    if (!nodes.length) {
       return nodes;
     }
+
+    const contextValue = nodes[0].contextValue;
+    const menus = extensionViewService.getInlineMenus(contextValue);
+
+    return nodes.map((node) => {
+      return {
+        ...node,
+        actions: [{
+          location: TreeViewActionTypes.TreeNode_Right,
+          component: <InlineActionBar context={[node]} menus={menus} seperator='inline' />,
+        }],
+      };
+    });
   };
 
   const checkIfNeedExpandChildren = (nodes: TreeNode<any>[], copyModel: Map<any, IExtensionTreeNodeModel> = copyMap(model)) => {
@@ -217,8 +219,8 @@ export const ExtensionTabbarTreeView = observer(({
       }
     }
     if (promises.length === 0) {
-      const newNodes = checkList;
-      // newNodes = setInlineMenu(newNodes);
+      let newNodes = checkList;
+      newNodes = setInlineMenu(newNodes);
       setModel(copyModel);
       setNodes(newNodes);
       return nodes;
