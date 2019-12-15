@@ -17,11 +17,12 @@ import * as styles from './styles.module.less';
 
 const MenuAction: React.FC<{
   data: MenuNode;
+  disabled?: boolean;
   hasSubmenu?: boolean;
-}> = ({ data, hasSubmenu }) => {
+}> = ({ data, hasSubmenu, disabled }) => {
   // 这里遵循 native menu 的原则，保留一个 icon 位置
   return (
-    <>
+    <div className={clsx(styles.menuAction, { [styles.disabled]: disabled })}>
       <div className={styles.icon}>
         {
           data.checked
@@ -44,7 +45,7 @@ const MenuAction: React.FC<{
           </div>
         )
       }
-    </>
+    </div>
   );
 };
 
@@ -101,7 +102,7 @@ export const MenuActionList: React.FC<{
 
       return (
         <Menu.Item key={menuNode.id} disabled={menuNode.disabled}>
-          <MenuAction data={menuNode} />
+          <MenuAction data={menuNode} disabled={menuNode.disabled} />
         </Menu.Item>
       );
     });
