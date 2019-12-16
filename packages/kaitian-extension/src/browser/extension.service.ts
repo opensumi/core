@@ -89,11 +89,15 @@ import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExtensionCandiDate } from '@ali/ide-core-common';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
+const LOAD_FAILED_CODE = 'load';
 
 function getAMDRequire() {
   if (isElectronEnv()) {
     return (global as any).amdLoader.require;
   } else {
+    (global as any).amdLoader.require.config({ onError: (err) => {
+      throw err;
+    }});
     return (global as any).amdLoader.require;
   }
 }
@@ -656,9 +660,14 @@ export class ExtensionServiceImpl implements ExtensionService {
     // TODO: 存储插件与 component 的关系，用于 dispose
     if (extendConfig.browser && extendConfig.browser.main) {
       const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
-      const browserExported = await this.loadBrowser(browserScriptURI.toString());
-
-      this.registerBrowserComponent(browserExported, extension);
+      try {
+        const browserExported = await this.loadBrowser(browserScriptURI.toString());
+        this.registerBrowserComponent(browserExported, extension);
+      } catch (err) {
+        if (err.errorCode === LOAD_FAILED_CODE) {
+          this.logger.error(`[Extensio-Host] failed to load ${extension.name} - browser module, path: \n\n ${err.moduleId}`);
+        }
+      }
     }
 
   }
@@ -906,7 +915,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   private async loadBrowser(browserPath: string): Promise<any> {
-    return await new Promise((resolve) => {
+    return await new Promise((resolve, reject) => {
       this.logger.verbose('extend browser load', browserPath);
       if (isElectronRenderer()) {
         browserPath = decodeURIComponent(browserPath);
@@ -914,6 +923,8 @@ export class ExtensionServiceImpl implements ExtensionService {
       getAMDRequire()([browserPath], (exported) => {
         this.logger.verbose('extend browser exported', exported);
         resolve(exported);
+      }, (err) => {
+        reject(err);
       });
     });
   }
