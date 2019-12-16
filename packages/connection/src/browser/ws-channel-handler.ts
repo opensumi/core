@@ -1,6 +1,7 @@
 import { WSChannel } from '../common/ws-channel';
 import * as shorid from 'shortid';
 import { stringify, parse } from '../common/utils';
+import { IReporterService } from '@ali/ide-core-common';
 let ReconnectingWebSocket = require('reconnecting-websocket');
 
 if (ReconnectingWebSocket.default) {
@@ -20,7 +21,7 @@ export class WSChanneHandler {
   public clientId: string = `CLIENT_ID:${shorid.generate()}`;
   private heartbeatMessageTimer: NodeJS.Timeout;
 
-  constructor(public wsPath: string, logger: any, public protocols?: string[]) {
+  constructor(public wsPath: string, logger: any, private reporterService: IReporterService, public protocols?: string[]) {
     this.logger = logger || this.logger;
     this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
@@ -76,6 +77,7 @@ export class WSChanneHandler {
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
             channel.onOpen(() => {
+              this.reporterService.point('channel reconnect');
               console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);

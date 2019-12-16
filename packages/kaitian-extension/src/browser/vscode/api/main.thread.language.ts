@@ -107,7 +107,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         if (result.items.length) {
-          timer.timeEnd(`receive ${result.items.length} completion items on ${model.uri.toString()}`);
+          timer.timeEnd(model.uri.toString());
         }
         return {
           suggestions: result.items,
