@@ -131,15 +131,19 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     const extension = this.extensions.find((extension) => extension.id === id );
 
     if (!extension) {
-      this.logger.error(`extension worker not found ${id} `);
+      this.logger.error(`[Worker-Host] extension worker not found ${id} `);
       return;
     }
 
-    this.logger.verbose(`extension worker start activate ${id} ${extension.workerScriptPath}`);
+    this.logger.verbose(`[Worker-Host] extension worker start activate ${id} ${extension.workerScriptPath}`);
 
     const extendConfig = extension.extendConfig;
     if (extendConfig.worker && extendConfig.worker.main && extension.workerScriptPath) {
-      importScripts(extension.workerScriptPath);
+      try {
+        importScripts(extension.workerScriptPath);
+      } catch (err) {
+        this.logger.error(`[Worker-Host] failed to load extension script, reason: \n\n ${err.message}`);
+      }
 
       if (
         self[`kaitian_extend_browser_worker_${extension.workerVarId}`] &&
@@ -149,7 +153,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
         self[`kaitian_extend_browser_worker_${extension.workerVarId}`].activate(workerExtContext);
       }
     } else {
-      this.logger.error('extension worker activate error', extension);
+      this.logger.error('[Worker-Host] extension worker activate error', extension);
     }
   }
 
@@ -173,7 +177,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
 
             this.kaitianExtAPIImpl.set(extensionId, kaitianAPIImpl);
           } catch (e) {
-            this.logger.error('worker error');
+            this.logger.error('[Worker-Host] worker error');
             this.logger.error(e);
           }
         }
