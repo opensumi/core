@@ -27,9 +27,6 @@ export default ({ id, dynamic, error, show }: IProps) => {
   }, []);
 
   React.useEffect(() => {
-    if (show) {
-      controller.showTerminalClient(id);
-    }
     controller.layoutTerminalClient(id);
   }, [dynamic, show, error]);
 

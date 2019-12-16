@@ -57,6 +57,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   private _onDidCloseTerminal = new Emitter<string>();
   private _onDidChangeActiveTerminal = new Emitter<string>();
 
+  constructor() {
+    super();
+    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
+    this.themeBackground = this.termTheme.terminalTheme.background || '';
+  }
+
   get currentGroup() {
     return this.groups[this.state.index];
   }
@@ -151,9 +157,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   firstInitialize() {
-    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
-    this.themeBackground = this.termTheme.terminalTheme.background || '';
-
     if (this.tabbarHandler.isActivated()) {
       if (this._checkIfNeedInitialize()) {
         this.createGroup(true);
@@ -400,13 +403,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
-  async showTerminalClient(widgetId: string) {
-    const client = this._clientsMap.get(widgetId);
-    if (client) {
-      await client.show();
-    }
-  }
-
   async retryTerminalClient(widgetId: string) {
     let meta = '';
     const last = this._clientsMap.get(widgetId);
@@ -454,9 +450,23 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    */
   layoutTerminalClient(widgetId: string) {
     const client = this._clientsMap.get(widgetId);
+
     if (client && this.tabbarHandler.isActivated() &&
       this.currentGroup && this.currentGroup.widgetsMap.has(widgetId)) {
-      client.layout();
+      if (client.notReadyToShow) {
+        /**
+         * 这个 settimeout 的目的是等待 dom 被正常渲染，
+         * 由于 xterm 的高宽 fit 强烈依赖父节点的渲染，
+         * 所以在这个等待 50ms
+         */
+        setTimeout(async () => {
+          client.hide();
+          await client.show();
+          client.layout();
+        }, 50);
+      } else {
+        client.layout();
+      }
     }
   }
 

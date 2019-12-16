@@ -155,6 +155,15 @@ export class TerminalClient extends Disposable {
     }
   }
 
+  /**
+   * 当 container 下面没有子节点或者子节点的高为 0 时候，
+   * 这个时候不能直接渲染，需要重新 open element 才能解决渲染问题
+   */
+  get notReadyToShow() {
+    return (this.container.children.length === 0) ||
+      this.container.children[0] && (this.container.children[0].clientHeight === 0);
+  }
+
   private _doShow() {
     if (this._container) {
       if (!this._activated) {
@@ -227,7 +236,6 @@ export class TerminalClient extends Disposable {
       return;
     }
 
-    this._container.remove();
     this._container.innerHTML = '';
     this._activated = false;
   }
@@ -276,6 +284,7 @@ export class TerminalClient extends Disposable {
     this._term && this._term.dispose();
 
     this.hide();
+    this._container.remove();
 
     this.service.disposeById(this.id);
 
