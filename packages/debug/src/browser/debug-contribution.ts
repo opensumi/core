@@ -1,4 +1,4 @@
-import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, IContextKeyService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
 import { DebugStackFrameView } from './view/debug-stack-frames.view';
@@ -7,7 +7,7 @@ import { DebubgConfigurationView } from './view/debug-configuration.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { BreakpointManager } from './breakpoint';
+import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/debug-watch.view';
@@ -26,8 +26,6 @@ import { DebugConsoleService } from './view/debug-console.service';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import { DebugToolbarService } from './view/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { DebugBreakpoint } from './model';
-import { DebugBreakpointWidget } from './editor';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -71,21 +69,47 @@ export namespace DEBUG_COMMANDS {
   export const RESTART = {
     id: 'debug.restart',
   };
+  // menu commands
   export const DELETE_BREAKPOINT = {
     id: 'debug.delete.breakpoint',
-    label: '删除断点',
+    label: localize('debug.menu.delete.breakpoint'),
   };
   export const EDIT_BREAKPOINT = {
     id: 'debug.edit.breakpoint',
-    label: '编辑断点',
+    label: localize('debug.menu.edit.breakpoint'),
   };
   export const DISABLE_BREAKPOINT = {
     id: 'debug.disable.breakpoint',
-    label: '禁用断点',
+    label: localize('debug.menu.disable.breakpoint'),
   };
   export const ENABLE_BREAKPOINT = {
     id: 'debug.enable.breakpoint',
-    label: '启用断点',
+    label: localize('debug.menu.enable.breakpoint'),
+  };
+  export const ENABLE_LOGPOINT = {
+    id: 'debug.enable.logpoint',
+    label: localize('debug.menu.enable.logpoint'),
+  };
+  export const ADD_BREAKPOINT = {
+    id: 'debug.add.breakpoint',
+    label: localize('debug.menu.add.breakpoint'),
+  };
+  export const ADD_LOGPOINT = {
+    id: 'debug.add.logpoint',
+    label: localize('debug.menu.add.logpoint'),
+  };
+  export const ADD_CONDITIONAL_BREAKPOINT = {
+    id: 'debug.add.conditional',
+    label: localize('debug.menu.add.conditional'),
+  };
+}
+
+export namespace DebugBreakpointWidgetCommands {
+  export const ACCEPT = {
+    id: 'debug.breakpointWidget.accept',
+  };
+  export const CLOSE = {
+    id: 'debug.breakpointWidget.close',
   };
 }
 
@@ -127,7 +151,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   protected readonly preferences: DebugPreferences;
 
   @Autowired(DebugConsoleService)
-  debugConsole: DebugConsoleService;
+  protected readonly debugConsole: DebugConsoleService;
 
   @Autowired(DebugConfigurationService)
   protected readonly debugConfigurationService: DebugConfigurationService;
@@ -141,22 +165,12 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   @Autowired(DebugToolbarService)
   protected readonly debugToolbarService: DebugToolbarService;
 
-  firstSessionStart: boolean = true;
+  private firstSessionStart: boolean = true;
 
-  // get breakpoints(): DebugBreakpointWidget | undefined {
-  //   const { currentWidget } = this.shell;
-  //   return currentWidget instanceof DebugBreakpointWidget && currentWidget || undefined;
-  // }
-
-  // get selectedAnyBreakpoint(): DebugBreakpoint | undefined {
-  //   const { breakpoints } = this;
-  //   return breakpoints && breakpoints.selectedElement instanceof DebugBreakpoint && breakpoints.selectedElement || undefined;
-  // }
-
-  // get selectedBreakpoint(): DebugBreakpoint | undefined {
-  //   const breakpoint = this.selectedAnyBreakpoint;
-  //   return breakpoint && !breakpoint.logMessage ? breakpoint : undefined;
-  // }
+  get selectedBreakpoint(): SelectedBreakpoint | undefined {
+    const { selectedBreakpoint } = this.breakpointManager;
+    return selectedBreakpoint;
+  }
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-debug', [
@@ -185,12 +199,12 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         collapsed: false,
       },
     ], {
-        iconClass: getIcon('debug'),
-        priority: 7,
-        title: localize('debug.container.title'),
-        containerId: DebugContribution.DEBUG_CONTAINER_ID,
-        activateKeyBinding: 'ctrlcmd+shift+d',
-      });
+      iconClass: getIcon('debug'),
+      priority: 7,
+      title: localize('debug.container.title'),
+      containerId: DebugContribution.DEBUG_CONTAINER_ID,
+      activateKeyBinding: 'ctrlcmd+shift+d',
+    });
   }
 
   async onStart() {
@@ -198,9 +212,9 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       this.debugModel.init(session);
     });
     this.sessionManager.onDidStartDebugSession((session: DebugSession) => {
-      const { noDebug } = session.configuration;
+      const { noDebug, internalConsole } = session.configuration;
       const openDebug = session.configuration.openDebug || this.preferences['debug.openDebug'];
-      if (!noDebug && (openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart))) {
+      if (!noDebug && (openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart && (internalConsole === 'internalConsole' || !internalConsole)))) {
         this.openView();
         this.debugModel.init(session);
       }
@@ -331,44 +345,132 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT, {
-      execute: async () => {
-          // const { selectedBreakpoint } = this;
-          // if (selectedBreakpoint) {
-          //     await this.editors.editBreakpoint(selectedBreakpoint);
-          // }
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { openBreakpointView } = selectedBreakpoint.model;
+          openBreakpointView(position, selectedBreakpoint.breakpoint && selectedBreakpoint.breakpoint.raw);
+        }
       },
-      // isEnabled: () => !!this.selectedBreakpoint,
-      // isVisible: () => !!this.selectedBreakpoint,
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
     commands.registerCommand(DEBUG_COMMANDS.DISABLE_BREAKPOINT, {
-        execute: async () => {
-            // const { selectedLogpoint } = this;
-            // if (selectedLogpoint) {
-            //     await this.editors.editBreakpoint(selectedLogpoint);
-            // }
-        },
-        // isEnabled: () => !!this.selectedLogpoint,
-        // isVisible: () => !!this.selectedLogpoint,
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { uri } = selectedBreakpoint.model;
+          const breakpoint = this.sessionManager.getBreakpoint(uri, position.lineNumber);
+          if (breakpoint) {
+            breakpoint.setEnabled(false);
+          }
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && this.selectedBreakpoint.breakpoint.enabled,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && this.selectedBreakpoint.breakpoint.enabled,
     });
     commands.registerCommand(DEBUG_COMMANDS.ENABLE_BREAKPOINT, {
-        execute: () => {
-            // const { selectedBreakpoint } = this;
-            // if (selectedBreakpoint) {
-            //     selectedBreakpoint.remove();
-            // }
-        },
-        // isEnabled: () => !!this.selectedBreakpoint,
-        // isVisible: () => !!this.selectedBreakpoint,
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { uri } = selectedBreakpoint.model;
+          const breakpoint = this.sessionManager.getBreakpoint(uri, position.lineNumber);
+          if (breakpoint) {
+            breakpoint.setEnabled(true);
+          }
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && !this.selectedBreakpoint.breakpoint.enabled,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint && !this.selectedBreakpoint.breakpoint.enabled,
     });
     commands.registerCommand(DEBUG_COMMANDS.DELETE_BREAKPOINT, {
-        execute: () => {
-            // const { selectedLogpoint } = this;
-            // if (selectedLogpoint) {
-            //     selectedLogpoint.remove();
-            // }
-        },
-        // isEnabled: () => !!this.selectedLogpoint,
-        // isVisible: () => !!this.selectedLogpoint,
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { uri } = selectedBreakpoint.model;
+          const breakpoint = this.sessionManager.getBreakpoint(uri, position.lineNumber);
+          if (breakpoint) {
+            breakpoint.remove();
+          }
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+    });
+
+    commands.registerCommand(DEBUG_COMMANDS.ADD_CONDITIONAL_BREAKPOINT, {
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { uri, openBreakpointView, toggleBreakpoint } = selectedBreakpoint.model;
+          toggleBreakpoint(position);
+          const breakpoint = this.breakpointManager.getBreakpoint(uri, position!.lineNumber);
+          // 更新当前右键选中的断点
+          if (breakpoint) {
+            this.breakpointManager.selectedBreakpoint = {
+              breakpoint,
+              model: selectedBreakpoint.model,
+            };
+          }
+          openBreakpointView(position, selectedBreakpoint.breakpoint && selectedBreakpoint.breakpoint.raw, 'condition');
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
+    });
+    commands.registerCommand(DEBUG_COMMANDS.ADD_LOGPOINT, {
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { openBreakpointView, toggleBreakpoint, uri } = selectedBreakpoint.model;
+          toggleBreakpoint(position);
+          const breakpoint = this.breakpointManager.getBreakpoint(uri, position!.lineNumber);
+          // 更新当前右键选中的断点
+          if (breakpoint) {
+            this.breakpointManager.selectedBreakpoint = {
+              breakpoint,
+              model: selectedBreakpoint.model,
+            };
+          }
+          openBreakpointView(position, selectedBreakpoint.breakpoint && selectedBreakpoint.breakpoint.raw, 'logMessage');
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
+    });
+    commands.registerCommand(DEBUG_COMMANDS.ADD_BREAKPOINT, {
+      execute: async (position: monaco.Position) => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { toggleBreakpoint } = selectedBreakpoint.model;
+          toggleBreakpoint(position);
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !this.selectedBreakpoint.breakpoint,
+    });
+
+    commands.registerCommand(DebugBreakpointWidgetCommands.ACCEPT, {
+      execute: () => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { acceptBreakpoint } = selectedBreakpoint.model;
+          acceptBreakpoint();
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+    });
+    commands.registerCommand(DebugBreakpointWidgetCommands.CLOSE, {
+      execute: () => {
+        const { selectedBreakpoint } = this;
+        if (selectedBreakpoint) {
+          const { closeBreakpointView } = selectedBreakpoint.model;
+          closeBreakpointView();
+        }
+      },
+      isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
+      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
   }
 
@@ -451,24 +553,56 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       keybinding: 'shift+ctrlcmd+f5',
       when: 'inDebugMode',
     });
+
+    keybindings.registerKeybinding({
+      command: DebugBreakpointWidgetCommands.ACCEPT.id,
+      keybinding: 'enter',
+      when: 'breakpointWidgetInputFocus',
+    });
+    keybindings.registerKeybinding({
+      command: DebugBreakpointWidgetCommands.CLOSE.id,
+      keybinding: 'esc',
+      when: 'breakpointWidgetInputFocus',
+    });
   }
 
-  registerNextMenus(menuRegistry: IMenuRegistry): void {
+  registerNextMenus(menuRegistry: IMenuRegistry) {
     menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
       command: DEBUG_COMMANDS.DELETE_BREAKPOINT.id,
+      group: '1_has_breakpoint',
       order: 1,
-      group: '1_open',
     });
     menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
       command: DEBUG_COMMANDS.EDIT_BREAKPOINT.id,
-      order: 1,
-      group: '1_open',
+      group: '1_has_breakpoint',
+      order: 2,
     });
     menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
       command: DEBUG_COMMANDS.DISABLE_BREAKPOINT.id,
-      order: 1,
-      group: '1_open',
+      group: '1_has_breakpoint',
+      order: 3,
+    });
+    menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
+      command: DEBUG_COMMANDS.ENABLE_BREAKPOINT.id,
+      group: '1_has_breakpoint',
+      order: 4,
+    });
+
+    menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
+      command: DEBUG_COMMANDS.ADD_BREAKPOINT.id,
+      group: '2_has_not_breakpoint',
+    });
+    menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
+      command: DEBUG_COMMANDS.ADD_CONDITIONAL_BREAKPOINT.id,
+      group: '2_has_not_breakpoint',
+    });
+    menuRegistry.registerMenuItem(MenuId.DebugBreakpointsContext, {
+      command: DEBUG_COMMANDS.ADD_LOGPOINT.id,
+      group: '2_has_not_breakpoint',
     });
   }
 
+  protected isPosition(position: monaco.Position): boolean {
+    return (position instanceof monaco.Position);
+  }
 }

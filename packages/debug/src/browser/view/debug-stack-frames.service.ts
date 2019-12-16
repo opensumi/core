@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from './debug-view-model';
-import { DebugCallStackItemTypeKey } from '../contextkeys/debug-call-stack-item-type-key';
+import { DebugCallStackItemTypeKey } from '../contextkeys';
 import { DebugStackFrame } from '../model/debug-stack-frame';
 import { CommandService } from '@ali/ide-core-browser';
 
