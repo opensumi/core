@@ -259,7 +259,14 @@ export class TerminalClient extends Disposable {
     this._term.setOption('theme', this.theme.terminalTheme);
   }
 
-  dispose() {
+  /**
+   * clear 参数用于判断是否需要清理 meta 信息，
+   * 不需要 clear 参数的时候基本为正常推出，
+   * 异常的时候需要将 clear 设为 false，保留现场
+   *
+   * @param clear
+   */
+  dispose(clear: boolean = true) {
     if (this._disposed) {
       return;
     }
@@ -286,7 +293,9 @@ export class TerminalClient extends Disposable {
     this.hide();
     this._container.remove();
 
-    this.service.disposeById(this.id);
+    if (clear) {
+      this.service.disposeById(this.id);
+    }
 
     this._disposed = true;
   }

@@ -424,7 +424,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       meta = this.service.meta(last.id);
     } catch { /** do nothing */ }
 
-    last.dispose();
+    /**
+     * 需要 retry 的时候，说明连接已经出现问题，
+     * 需要保留现场和 meta 信息方便重连
+     */
+    last.dispose(false);
     this._clientsMap.set(widgetId, next);
 
     /**
@@ -467,14 +471,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       } else {
         client.layout();
       }
-    }
-  }
-
-  eraseTerminalClient(widgetId: string) {
-    const client = this._clientsMap.get(widgetId);
-
-    if (client) {
-      client.hide();
     }
   }
 

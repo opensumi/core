@@ -36,7 +36,6 @@ export interface ITerminalController {
   drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean, meta?: string): Promise<void>;
   retryTerminalClient(widgetId: string): Promise<void>;
   layoutTerminalClient(widgetId: string): void;
-  eraseTerminalClient(termId: string): void;
   toJSON(): { groups: any[] };
 
   terminals: TerminalInfo[];
