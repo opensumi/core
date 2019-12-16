@@ -27,6 +27,7 @@ export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements
     this.webview.style.width = '100%';
     this.webview.style.position = 'absolute';
     this.webview.style.height = '100%';
+    this.webview.style.zIndex = '2';
     super.init();
   }
 

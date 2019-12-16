@@ -24,6 +24,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   public async createCodeEditor(
     monacoContainer: HTMLElement,
     options?: monaco.editor.IEditorConstructionOptions,
+    overrides: {[key: string]: any} = {},
   ): Promise<monaco.editor.IStandaloneCodeEditor> {
     const editor =  monaco.editor.create(monacoContainer, {
       glyphMargin: true,
@@ -35,7 +36,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       automaticLayout: true,
       renderLineHighlight: 'none',
       ...options,
-    }, this.overrideServices);
+    }, { ...this.overrideServices, ...overrides});
 
     return editor;
   }
@@ -43,6 +44,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   public async createDiffEditor(
     monacoContainer: HTMLElement,
     options?: monaco.editor.IDiffEditorConstructionOptions,
+    overrides: {[key: string]: any} = {},
   ): Promise<monaco.editor.IDiffEditor> {
     const editor =  monaco.editor.createDiffEditor(monacoContainer, {
       glyphMargin: true,
@@ -54,7 +56,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       renderLineHighlight: 'none',
       ignoreTrimWhitespace: false,
       ...options,
-    }, this.overrideServices);
+    }, { ...this.overrideServices, ...overrides});
     return editor;
   }
 

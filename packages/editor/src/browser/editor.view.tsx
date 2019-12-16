@@ -19,15 +19,20 @@ import { TabTitleMenuService } from './menu/title-context.menu';
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
 
-  const instance = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
+  const workbenchEditorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const rightWidgetInfo = componentRegistry.getComponentRegistryInfo('editor-widget-right');
   const RightWidget: React.Component | React.FunctionComponent<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
 
   return (
-    <div className={styles.kt_workbench_editor} id='workbench-editor' ref={(ele) => ref.current = ele}>
+    <div className={styles.kt_workbench_editor} id='workbench-editor' ref={(ele) => {
+      ref.current = ele;
+      if (ele) {
+        workbenchEditorService.onDomCreated(ele);
+      }
+    }}>
       <div className={styles.kt_editor_main_wrapper}>
-        <EditorGridView grid={instance.topGrid} ></EditorGridView>
+        <EditorGridView grid={workbenchEditorService.topGrid} ></EditorGridView>
       </div>
       {RightWidget ?
         <div className={styles.kt_editor_right_widget}>

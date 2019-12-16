@@ -28,6 +28,7 @@ import { Directory, File } from './file-tree-item';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { FileContextKey } from './file-contextkey';
+import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -165,6 +166,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   private _currentContextUriContextKey: IContextKey<string>;
 
+  private _contextMenuResourceContext: ResourceContextKey;
+
   private decorationChangeEmitter = new Emitter<any>();
   decorationChangeEvent: Event<any> = this.decorationChangeEmitter.event;
 
@@ -246,16 +249,23 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   get currentRelativeUriContextKey(): IContextKey<string> {
     if (!this._currentRelativeUriContextKey) {
-      this._currentRelativeUriContextKey = this.contextKeyService.createKey('filetreeContextRelativeUri', '');
+      this._currentRelativeUriContextKey = this.filetreeService.contextMenuContextKeyService.createKey('filetreeContextRelativeUri', '');
     }
     return this._currentRelativeUriContextKey;
   }
 
   get currentContextUriContextKey(): IContextKey<string> {
     if (!this._currentContextUriContextKey) {
-      this._currentContextUriContextKey = this.contextKeyService.createKey('filetreeContextUri', '');
+      this._currentContextUriContextKey = this.filetreeService.contextMenuContextKeyService.createKey('filetreeContextUri', '');
     }
     return this._currentContextUriContextKey;
+  }
+
+  get contextMenuResourceContext(): ResourceContextKey {
+    if (!this._contextMenuResourceContext) {
+      this._contextMenuResourceContext = new ResourceContextKey(this.filetreeService.contextMenuContextKeyService);
+    }
+    return this._contextMenuResourceContext;
   }
 
   private setContextKeys(file: Directory | File) {
@@ -426,6 +436,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.setContextKeys(nodes[0] as (Directory | File));
     this.currentContextUriContextKey.set(uris[0].toString());
     this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
+    this.contextMenuResourceContext.set(uris[0]);
 
     const menus = this.filetreeService.contributedContextMenu;
     const result = generateCtxMenu({ menus });

@@ -25,6 +25,8 @@ export interface AppConfig {
   staticServicePath?: string;
 
   editorBackgroudImage?: string;
+
+  isSyncPreference?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
