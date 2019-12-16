@@ -17,8 +17,18 @@ export interface MenuCommandDesc {
 
 export interface IMenuItem {
   command: string | MenuCommandDesc;
+  /**
+   * 决定是否在视图层展示
+   */
   when?: string | monaco.contextkey.ContextKeyExpr;
+  /**
+   * 决定 toggled 状态, 主要表现为文字左侧有一个 ✅
+   */
   toggledWhen?: string | monaco.contextkey.ContextKeyExpr;
+  /**
+   * 决定 disabled 状态，主要表现为 menu item 颜色变灰
+   */
+  enabledWhen?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
   nativeRole?: string; // electron native 菜单使用
@@ -27,6 +37,9 @@ export interface IMenuItem {
 export interface ISubmenuItem {
   label: string;
   submenu: MenuId | string;
+  /**
+   * 决定是否在视图层展示
+   */
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -51,7 +64,7 @@ export abstract class IMenuRegistry {
 
 export interface IMenubarItem {
   label: string;
-  order?: number; // TODO: 增加排序因子
+  order?: number;
 }
 
 export interface IExtendMenubarItem extends IMenubarItem {
