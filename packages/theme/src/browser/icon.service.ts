@@ -71,7 +71,7 @@ export class IconService implements IIconService {
 
   protected getMaskStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
-    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
+    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50% / 24px;}`;
     return cssRule;
   }
 
