@@ -219,7 +219,7 @@ describe('main layout test', () => {
     const handlerId = service.collectTabbarComponent([], {
       containerId: 'container-use-react',
       title: 'test title',
-    }, 'bottom', MockView);
+    }, 'bottom');
     const accordionService = service.getAccordionService('container-use-react');
     expect(accordionService.views.length).toEqual(0);
     const handler = service.getTabbarHandler(handlerId);
