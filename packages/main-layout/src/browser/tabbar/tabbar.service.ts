@@ -1,7 +1,7 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
-import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
@@ -25,6 +25,11 @@ export class TabbarService extends WithEventBus {
     setRelativeSize: (prev: number, next: number, isLatter: boolean) => void,
     getSize: (isLatter: boolean) => number,
     getRelativeSize: (isLatter: boolean) => number[],
+  } = {
+    setSize: (targetSize: number, isLatter: boolean) => {},
+    setRelativeSize: (prev: number, next: number, isLatter: boolean) => {},
+    getSize: (isLatter: boolean) => 0,
+    getRelativeSize: (isLatter: boolean) => [0],
   };
 
   @Autowired(AbstractMenuService)
@@ -41,6 +46,12 @@ export class TabbarService extends WithEventBus {
 
   @Autowired(KeybindingRegistry)
   keybindingRegistry: KeybindingRegistry;
+
+  @Autowired()
+  private viewContextKeyRegistry: ViewContextKeyRegistry;
+
+  @Autowired(IContextKeyService)
+  private contextKeyService: IContextKeyService;
 
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
@@ -114,6 +125,7 @@ export class TabbarService extends WithEventBus {
       group: '1_widgets',
     });
     this.registerActivateKeyBinding(componentInfo);
+    this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped()).createKey('view', containerId);
   }
 
   getContainer(containerId: string) {
@@ -121,7 +133,7 @@ export class TabbarService extends WithEventBus {
   }
 
   getTitleToolbarMenu(containerId: string) {
-    const menu = this.menuService.createMenu(`container/${containerId}`);
+    const menu = this.menuService.createMenu(MenuId.ViewTitle, this.viewContextKeyRegistry.getContextKeyService(containerId));
     return menu;
   }
 

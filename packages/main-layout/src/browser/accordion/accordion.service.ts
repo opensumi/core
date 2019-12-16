@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
-import { AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
 
 export interface SectionState {
@@ -63,7 +63,8 @@ export class AccordionService {
   }
 
   getSectionToolbarMenu(viewId: string): IMenu {
-    const menu = this.menuService.createMenu(`container/${viewId}`);
+    const scopedCtxKey = this.viewContextKeyRegistry.getContextKeyService(viewId);
+    const menu = this.menuService.createMenu(MenuId.ViewTitle, scopedCtxKey);
     return menu;
   }
 

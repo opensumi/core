@@ -195,7 +195,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             command: item.command,
             iconClass: command!.iconClass,
             when: item.when,
-            group: item.group,
+            group: item.group || 'inline',
           }));
         }
       } else if (menuPosition === 'editor/title') {
