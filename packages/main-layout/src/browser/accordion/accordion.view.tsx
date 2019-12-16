@@ -28,7 +28,7 @@ export const AccordionContainer: React.FC<{
   React.useEffect(() => {
     accordionService.initConfig({headerSize, minSize});
   }, []);
-  return <SplitPanel id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
+  return <SplitPanel dynamicTarget={true} id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
     {accordionService.visibleViews.map((view, index) => {
       const viewState: SectionState = accordionService.getViewState(view.id);
       const titleMenu = view.titleMenu || accordionService.getSectionToolbarMenu(view.id);

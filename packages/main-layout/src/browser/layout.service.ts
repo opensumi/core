@@ -122,6 +122,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     } else {
       tabbarService.currentContainerId = tabbarService.currentContainerId ? '' : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
     }
+    if (tabbarService.currentContainerId && size) {
+      tabbarService.resizeHandle.setSize(size);
+    }
   }
 
   getTabbarService(location: string, noAccordion?: boolean) {

@@ -127,6 +127,9 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
 
   const onMouseMove =  ((e) => {
     e.preventDefault();
+    if (ref.current && ref.current.classList.contains('no-resize')) {
+      return;
+    }
     const prevWidth = startPrevWidth.current + e.pageX - startX.current;
     const nextWidth = startNextWidth.current - ( e.pageX - startX.current);
     if (requestFrame.current) {
@@ -186,6 +189,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     <div ref={(e) => {ref.current = e; } } className={classnames({
       [styles['resize-handle-horizontal']]: true,
       [styles['with-color']]: !props.noColor,
+      [props.className || '']: true,
     })}/>
   );
 };
@@ -303,6 +307,9 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
 
   const onMouseMove = ((e: MouseEvent) => {
     e.preventDefault();
+    if (ref.current && ref.current.classList.contains('no-resize')) {
+      return;
+    }
     const direction = e.pageY > startY.current;
     // 若上层未传入findNextElement，dynamicNext为null，否则找不到符合要求的panel时返回undefined
     const dynamicNext = props.findNextElement ? props.findNextElement(direction) : null;

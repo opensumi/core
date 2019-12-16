@@ -15,11 +15,11 @@ export const TabbarViewBase: React.FC<{
   forbidCollapse?: boolean;
   barSize?: number;
 }> = observer(({ TabView, forbidCollapse, barSize = 50 }) => {
-  const { setSize, getSize, setRelativeSize, getRelativeSize } = React.useContext(PanelContext);
+  const { setSize, getSize, setRelativeSize, getRelativeSize, lockSize } = React.useContext(PanelContext);
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   React.useEffect(() => {
-    tabbarService.registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, barSize);
+    tabbarService.registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, lockSize, barSize);
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
   return (
