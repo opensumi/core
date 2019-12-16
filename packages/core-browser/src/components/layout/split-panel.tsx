@@ -51,11 +51,11 @@ export const SplitPanel: React.FC<{
   const rootRef = React.useRef<HTMLElement>();
 
   const splitPanelService = useInjectable<SplitPanelManager>(SplitPanelManager).getService(id);
-  const refs = splitPanelService.panels;
   const maxLockState = React.useRef(children.map(() => false));
   const resizeLockState = React.useRef(maxLockState.current.slice(0, children.length - 1));
   const [locks, setLocks] = React.useState<boolean[]>(resizeLockState.current);
   const [maxLocks, setMaxLocks] = React.useState<boolean[]>(maxLockState.current);
+  splitPanelService.panels = [];
 
   // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   const setSizeHandle = (index) => {
@@ -161,8 +161,8 @@ export const SplitPanel: React.FC<{
         }}>
         <div
           ref={(ele) => {
-            if (ele && refs.indexOf(ele) === -1) {
-              refs.push(ele);
+            if (ele && splitPanelService.panels.indexOf(ele) === -1) {
+              splitPanelService.panels.push(ele);
             }
           }}
           style={{
