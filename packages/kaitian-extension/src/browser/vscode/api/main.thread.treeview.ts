@@ -5,7 +5,6 @@ import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage } from '../../../common/vscode';
 import { TreeNode, MenuPath, URI, Emitter, ViewUiStateManager } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ExtensionTabbarTreeView } from '../components';
 import { IIconService, IconType } from '@ali/ide-theme';
 
@@ -18,12 +17,6 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
-
-  @Autowired(StaticResourceService)
-  private readonly staticResourceService: StaticResourceService;
-
-  @Autowired(ViewUiStateManager)
-  private readonly viewStateManager: ViewUiStateManager;
 
   @Autowired(IIconService)
   private readonly iconService: IIconService;
@@ -39,22 +32,24 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   }
 
   $registerTreeDataProvider(treeViewId: string): void {
-    const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService, this.iconService);
-    this.dataProviders.set(treeViewId, dataProvider);
-    this.mainLayoutService.replaceViewComponent({
-      id: treeViewId,
-      name: treeViewId,
-      component: ExtensionTabbarTreeView,
-    }, {
-      dataProvider: this.dataProviders.get(treeViewId),
-      viewId: treeViewId,
-    });
+    if (!this.dataProviders.has(treeViewId)) {
+      const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.iconService);
+      this.dataProviders.set(treeViewId, dataProvider);
+      this.mainLayoutService.replaceViewComponent({
+        id: treeViewId,
+        name: treeViewId,
+        component: ExtensionTabbarTreeView,
+      }, {
+        dataProvider: this.dataProviders.get(treeViewId),
+        viewId: treeViewId,
+      });
+    }
   }
 
-  $refresh(treeViewId: string) {
+  $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem) {
     const dataProvider = this.dataProviders.get(treeViewId);
     if (dataProvider) {
-      dataProvider.refresh();
+      dataProvider.refresh(itemsToRefresh);
     }
   }
 
@@ -75,7 +70,6 @@ export class TreeViewDataProviderMain {
   constructor(
     private treeViewId: string,
     private proxy: IExtHostTreeView,
-    private staticResourceService: StaticResourceService,
     private iconService: IIconService,
   ) { }
 
@@ -148,7 +142,7 @@ export class TreeViewDataProviderMain {
     return nodes;
   }
 
-  async refresh() {
-    await this.treeDataChanged.fire('');
+  async refresh(itemsToRefresh?: TreeViewItem) {
+    await this.treeDataChanged.fire(itemsToRefresh);
   }
 }

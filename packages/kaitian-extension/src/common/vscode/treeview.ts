@@ -9,7 +9,8 @@ import { ThemeType } from '@ali/ide-theme';
 
 export interface IMainThreadTreeView {
   $registerTreeDataProvider(treeViewId: string): void;
-  $refresh(treeViewId: string): void;
+  $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): void;
+  $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): void;
   $reveal(treeViewId: string, treeItemId: string): Promise<any>;
   // $registerTreeViewDataProvider(treeViewId: string, options: { showCollapseAll: boolean }): void;
   // $refresh(treeViewId: string, itemsToRefresh?: { [treeItemHandle: string]: ITreeItem }): Promise<void>;

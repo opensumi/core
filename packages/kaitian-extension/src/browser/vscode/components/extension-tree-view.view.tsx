@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as styles from './extension-view.module.less';
 import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
-import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes } from '@ali/ide-core-common';
+import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
@@ -11,13 +11,8 @@ import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { ExtensionViewService } from './extension-view.service';
-
-export interface IExtensionTreeNodeModel {
-  selected?: boolean;
-  expanded?: boolean;
-  focused?: boolean;
-  updated?: boolean;
-}
+import { ExtensionTreeViewModel, IExtensionTreeViewModel } from './extension-tree-view.model';
+import { TreeViewItem } from '../../../common/vscode';
 
 export interface ExtensionTabbarTreeViewProps {
   injector: Injector;
@@ -68,24 +63,52 @@ export const ExtensionTabbarTreeView = observer(({
   viewState,
   viewId,
 }: React.PropsWithChildren<ExtensionTabbarTreeViewProps>) => {
-  const [nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
-  const [model, setModel] = React.useState<Map<any, IExtensionTreeNodeModel>>(new Map());
+  const [ nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
+  const extensionTreeViewModel: ExtensionTreeViewModel = useInjectable(ExtensionTreeViewModel);
   const { width, height } = viewState;
   const scrollContainerStyle = { width, height };
   const injector = useInjectable(INJECTOR_TOKEN);
   const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId]);
-
   const initTreeData = () => {
+    const model = copyMap(extensionTreeViewModel.getTreeViewModel(viewId));
     dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
-      checkIfNeedExpandChildren(data);
+      extensionTreeViewModel.setTreeViewNodes(viewId, data);
+      checkIfNeedExpandChildren(data, model);
     });
+  };
+
+  const refresh = (itemsToRefresh?: TreeViewItem) => {
+    const model = copyMap(extensionTreeViewModel.getTreeViewModel(viewId));
+    // 更新所有元素状态
+    for (const [key, value] of model) {
+      if (!isUndefined(value.expanded)) {
+        model.set(key, {
+          ...value,
+          updated: false,
+        });
+      }
+    }
+    if (!itemsToRefresh) {
+      dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
+        checkIfNeedExpandChildren(data, model);
+      });
+    } else {
+      const defaultNodes = extensionTreeViewModel.getTreeViewNodes(viewId).slice(0);
+      if (defaultNodes) {
+        checkIfNeedExpandChildren(defaultNodes, model);
+      } else {
+        dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
+          checkIfNeedExpandChildren(data, model);
+        });
+      }
+    }
   };
 
   React.useEffect(() => {
     if (dataProvider) {
       initTreeData();
-      dataProvider.onTreeDataChanged(() => {
-        initTreeData();
+      dataProvider.onTreeDataChanged((itemsToRefresh?: TreeViewItem) => {
+        refresh(itemsToRefresh);
       });
     }
   }, [dataProvider]);
@@ -129,6 +152,7 @@ export const ExtensionTabbarTreeView = observer(({
   };
 
   const onTwistieClickHandler = (node: TreeNode<any>) => {
+    const model = extensionTreeViewModel.getTreeViewModel(viewId);
     const nodeModel = model.get(node.id);
     const copyModel = copyMap(model);
     if (node && !node.expanded) {
@@ -138,8 +162,8 @@ export const ExtensionTabbarTreeView = observer(({
       });
       if (node.children.length > 0 || copyModel.get(node.id).updated) {
         const addNodes = getAllSubChildren(node, copyModel);
+        extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
         setNodes(addTreeDatas(nodes, addNodes, node));
-        setModel(copyModel);
       } else {
         checkIfNeedExpandChildren(nodes, copyModel);
       }
@@ -149,12 +173,13 @@ export const ExtensionTabbarTreeView = observer(({
         expanded: false,
       });
       const deleteNodes = getAllSubChildren(node, copyModel);
+
+      extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
       setNodes(removeTreeDatas(nodes, deleteNodes, node));
-      setModel(copyModel);
     }
   };
 
-  const getAllSubChildren = (node: TreeNode<any>, model: Map<any, IExtensionTreeNodeModel>) => {
+  const getAllSubChildren = (node: TreeNode<any>, model: Map<string, IExtensionTreeViewModel>) => {
     let result: TreeNode<any>[] = [];
     const children = node.children || [];
     result = result.concat(children);
@@ -186,7 +211,7 @@ export const ExtensionTabbarTreeView = observer(({
     });
   };
 
-  const checkIfNeedExpandChildren = (nodes: TreeNode<any>[], copyModel: Map<any, IExtensionTreeNodeModel> = copyMap(model)) => {
+  const checkIfNeedExpandChildren = (nodes: TreeNode<any>[], copyModel: Map<string | number, IExtensionTreeViewModel>) => {
     const checkList = nodes.slice(0);
     const promises: Promise<any>[] = [];
     if (checkList.length > 0) {
@@ -216,12 +241,12 @@ export const ExtensionTabbarTreeView = observer(({
             return node;
           }));
         }
-      }
+       }
     }
     if (promises.length === 0) {
-      let newNodes = checkList;
+      let newNodes = [...checkList];
       newNodes = setInlineMenu(newNodes);
-      setModel(copyModel);
+      extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
       setNodes(newNodes);
       return nodes;
     }
@@ -246,23 +271,25 @@ export const ExtensionTabbarTreeView = observer(({
     return <div className={styles.kt_extension_view}>Loading ... </div>;
   }
 
+  const effectNodes = React.useMemo(() => {
+    const model = extensionTreeViewModel.getTreeViewModel(viewId);
+    return nodes.map((node) => {
+      const nodeModel = model.get(node.id);
+      return {
+        ...node,
+        ...nodeModel,
+      };
+    });
+  }, [nodes]);
+
   return <div className={styles.kt_extension_view}>
     <RecycleTree
-      nodes={nodes.map((node) => {
-        const nodeModel = model.get(node.id);
-        return {
-          ...node,
-          ...nodeModel,
-        };
-      })}
-      scrollContainerStyle={
-        scrollContainerStyle
-      }
+      nodes={effectNodes}
+      scrollContainerStyle={ scrollContainerStyle }
       containerHeight={ height }
       onSelect={onSelectHandler}
       onContextMenu={onContextMenuHandler}
       onTwistieClick={onTwistieClickHandler}
-    >
-    </RecycleTree>
+    />
   </div>;
 });

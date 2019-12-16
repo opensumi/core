@@ -4,6 +4,7 @@ import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../.
 import { IDisposable, Emitter, Disposable, Uri } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 import { ThemeIcon } from '../../../common/vscode/ext-types';
+import { isUndefined } from 'util';
 
 export class ExtHostTreeViews implements IExtHostTreeView {
   private proxy: IMainThreadTreeView;
@@ -101,8 +102,6 @@ class ExtHostTreeView<T> implements IDisposable {
 
   private cache: Map<string, T> = new Map<string, T>();
 
-  private idCounter: number = 0;
-
   constructor(
     private treeViewId: string,
     private treeDataProvider: vscode.TreeDataProvider<T>,
@@ -110,8 +109,8 @@ class ExtHostTreeView<T> implements IDisposable {
     proxy.$registerTreeDataProvider(treeViewId);
 
     if (treeDataProvider.onDidChangeTreeData) {
-      treeDataProvider.onDidChangeTreeData(() => {
-        proxy.$refresh(treeViewId);
+      treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
+        proxy.$refresh<T>(treeViewId, itemToRefresh);
       });
     }
   }
@@ -133,10 +132,6 @@ class ExtHostTreeView<T> implements IDisposable {
     }
   }
 
-  generateId(): string {
-    return `item-${this.idCounter++}`;
-  }
-
   getTreeItem(treeItemId?: string): T | undefined {
     if (treeItemId) {
       return this.cache.get(treeItemId);
@@ -151,19 +146,19 @@ class ExtHostTreeView<T> implements IDisposable {
     const result = await this.treeDataProvider.getChildren(cachedElement);
     if (result) {
       const treeItems: TreeViewItem[] = [];
-      const promises = result.map(async (value) => {
+      const promises = result.map(async (value, index) => {
 
         // 遍历treeDataProvider获取的值生成节点
         const treeItem = await this.treeDataProvider.getTreeItem(value);
 
-        // 生成临时ID用于存储缓存
-        const id = this.generateId();
-
-        this.cache.set(id, value);
-
-        // 获取Label属性用于
-        let label = treeItem.label;
-
+        // 获取Label属性
+        let label: string | undefined;
+        const treeItemLabel: string | vscode.TreeItemLabel | undefined = treeItem.label;
+        if (typeof treeItemLabel === 'object' && typeof (treeItemLabel as vscode.TreeItemLabel).label === 'string') {
+          label = (treeItemLabel as vscode.TreeItemLabel).label;
+        } else {
+          label = treeItem.label;
+        }
         // 当没有指定label时尝试使用resourceUri
         if (!label && treeItem.resourceUri) {
           label = treeItem.resourceUri.path.toString();
@@ -173,8 +168,13 @@ class ExtHostTreeView<T> implements IDisposable {
           }
         }
 
+        // 生成ID用于存储缓存
+        const id = treeItem.id || `${treeItemId || 'root'}/${index}:${label}`;
+
+        this.cache.set(id, value);
+
         // 使用ID作为label
-        if (!label) {
+        if (isUndefined(label)) {
           label = id;
         }
 
@@ -264,7 +264,7 @@ class ExtHostTreeView<T> implements IDisposable {
 
   private getIconPath(iconPath: string | Uri): string {
     if (Uri.isUri(iconPath)) {
-      return iconPath.with({scheme: ''}).toString();
+      return iconPath.with({ scheme: '' }).toString();
     }
     return iconPath;
   }
