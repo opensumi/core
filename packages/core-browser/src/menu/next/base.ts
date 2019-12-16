@@ -212,15 +212,15 @@ export function isISubmenuItem(item: IMenuItem | ISubmenuItem): item is ISubmenu
 export interface IMenuAction {
   readonly id: string; // command id
   label: string;
-  tooltip: string;
-  className?: string;
   icon: string; // 标准的 vscode icon 是分两种主题的
-  keybinding: string; // 快捷键描述
-  isKeyCombination: boolean; // 是否为组合键
+  execute(event?: any): any;
+  tooltip?: string;
+  className?: string;
+  keybinding?: string; // 快捷键描述
+  isKeyCombination?: boolean; // 是否为组合键
   disabled?: boolean; // disable 状态的 menu
   checked?: boolean; // checked 状态 通过 toggledWhen 实现
   nativeRole?: string; // eletron menu 使用
-  execute(event?: any): Promise<any>;
 }
 
 export class MenuNode implements IMenuAction {
@@ -229,15 +229,15 @@ export class MenuNode implements IMenuAction {
   tooltip: string;
   className: string | undefined ;
   icon: string;
-  keybinding: string;
-  rawKeybinding: MaybeNull<string>;
+  keybinding?: string;
+  rawKeybinding?: MaybeNull<string>;
   isKeyCombination: boolean;
   disabled: boolean;
   checked: boolean;
   nativeRole: string;
   children: MenuNode[] = [];
 
-  readonly _actionCallback?: (event?: any) => Promise<any>;
+  readonly _actionCallback?: (event?: any) => any;
 
   constructor(
     commandId: string,
@@ -250,7 +250,7 @@ export class MenuNode implements IMenuAction {
     rawKeybinding?: string,
     isKeyCombination: boolean = false,
     className: string = '',
-    actionCallback?: (event?: any) => Promise<any>,
+    actionCallback?: (event?: any) => any,
   ) {
     this.id = commandId;
     this.label = label;

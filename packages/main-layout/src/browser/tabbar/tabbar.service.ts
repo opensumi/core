@@ -1,7 +1,8 @@
 import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
-import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
@@ -19,6 +20,7 @@ export class TabbarService extends WithEventBus {
   @observable state: Map<string, TabState> = new Map();
 
   public prevSize?: number;
+  public commonTitleMenu: IMenu;
 
   resizeHandle: {
     setSize: (targetSize: number) => void,
@@ -62,6 +64,37 @@ export class TabbarService extends WithEventBus {
       },
       group: '0_global',
     });
+    if (this.location === 'bottom') {
+      this.menuRegistry.registerMenuItems(`tabbar/${this.location}/common`, [
+        {
+          command: {
+            id: EXPAND_BOTTOM_PANEL.id,
+            label: localize('layout.tabbar.expand', '最大化面板'),
+          },
+          group: 'navigation',
+          when: '!bottomFullExpanded',
+          order: 1,
+        },
+        {
+          command: {
+            id: RETRACT_BOTTOM_PANEL.id,
+            label: localize('layout.tabbar.retract', '恢复面板'),
+          },
+          group: 'navigation',
+          when: 'bottomFullExpanded',
+          order: 1,
+        },
+        {
+          command: {
+            id: TOGGLE_BOTTOM_PANEL_COMMAND.id,
+            label: localize('layout.tabbar.hide', '收起面板'),
+          },
+          group: 'navigation',
+          order: 2,
+        },
+      ]);
+      this.commonTitleMenu = this.menuService.createMenu(`tabbar/${this.location}/common`);
+    }
   }
 
   public getContainerState(containerId: string) {

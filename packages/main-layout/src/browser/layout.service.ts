@@ -76,9 +76,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   setFloatSize(size: number) {}
 
-  // TODO
-  registerTabbarViewToContainerMap() {}
-
   storeState(service: TabbarService, currentId: string) {
     this.state[service.location] = {
       currentId,
@@ -174,7 +171,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return activityHandler!;
   }
 
-  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent<{}> | undefined): string {
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {
+    if (Fc) {
+      console.warn('collectTabbarComponent api warning: Please move react component into options.component!');
+    }
     const tabbarService = this.getTabbarService(side);
     tabbarService.registerContainer(options.containerId, {views, options});
     return options.containerId;
