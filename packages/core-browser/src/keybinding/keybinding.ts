@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, isWindows } from '@ali/ide-core-common';
+import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable, formatLocalize, isWindows, CommandService } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
@@ -208,6 +208,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
 
   @Autowired(CommandRegistry)
   protected readonly commandRegistry: CommandRegistry;
+
+  @Autowired(CommandService)
+  protected readonly commandService: CommandService;
 
   @Autowired(Logger)
   protected readonly logger: Logger;
@@ -799,11 +802,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
         } else {
           const command = this.commandRegistry.getCommand(binding.command);
           if (command) {
-            const commandHandler = this.commandRegistry.getActiveHandler(command.id);
-
-            if (commandHandler) {
-              commandHandler.execute(...(binding.args || []));
-            }
+            this.commandService.executeCommand(command.id, ...(binding.args || []));
             /* 如果键绑定在上下文中但命令是可用状态下我们仍然在这里停止处理  */
             event.preventDefault();
             event.stopPropagation();

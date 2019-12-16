@@ -10,9 +10,13 @@ import { Command } from '@ali/ide-core-common';
 
 // tslint:disable-next-line:new-parens
 const contextKeyService = new class extends MockContextKeyService {
-  match(bool) {
-    if (bool) {
-      return bool;
+  match(context: string) {
+    if (typeof context === 'string') {
+      try {
+        return JSON.parse(context);
+      } catch (err) {
+        return true;
+      }
     }
     return true;
   }
@@ -316,6 +320,36 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
     }
     expect(foundA).toBeTruthy();
     expect(foundB).toBeTruthy();
+  });
+
+  it('register command with enabledWhen', () => {
+    [
+      { id: 'a', label: 'aaa', enabledWhen: JSON.stringify(true) },
+      { id: 'b', label: 'fff', enabledWhen: JSON.stringify(false) },
+      { id: 'c', label: 'zzz' },
+    ].forEach((desc) => {
+      commandRegistry.registerCommand({
+        id: desc.id,
+        label: desc.label,
+      }, {
+        execute: jest.fn(),
+      });
+
+      disposables.add(menuRegistry.registerMenuItem(testMenuId, {
+        command: desc.id,
+        enabledWhen: desc.enabledWhen,
+      }));
+    });
+
+    const menuNodes = menuService.createMenu(testMenuId, contextKeyService).getMenuNodes();
+    expect(menuNodes.length).toBe(1);
+
+    const [[, actions]] = menuNodes;
+    expect(actions.length).toBe(3);
+    const [one, two, three] = actions;
+    expect(one.disabled).toBeFalsy();
+    expect(two.disabled).toBeTruthy();
+    expect(three.disabled).toBeFalsy();
   });
 
   it('register menu item with label', () => {

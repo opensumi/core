@@ -4,8 +4,8 @@ import * as net from 'net';
 import * as fs from 'fs-extra';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
-import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService } from '../common';
-import { getLogger, Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode } from '@ali/ide-core-node';
+import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService, ProcessMessageType } from '../common';
+import { getLogger, Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData } from '@ali/ide-core-node';
 import * as shellPath from 'shell-path';
 import * as cp from 'child_process';
 import * as psTree from 'ps-tree';
@@ -37,6 +37,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
+
+  @Autowired(IReporter)
+  reporter: IReporter;
 
   private extProcess: cp.ChildProcess;
 
@@ -112,7 +115,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   public async setExtProcessConnectionForward() {
-    console.log('setExtProcessConnectionForward', this.instanceId);
+    getLogger().log('setExtProcessConnectionForward', this.instanceId);
     const self = this;
     this._setMainThreadConnection((connectionResult) => {
       const { connection: mainThreadConnection, clientId } = connectionResult;
@@ -250,6 +253,13 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId);
           if (finishDeferred) {
             finishDeferred.resolve();
+          }
+        } else if (typeof msg === 'object' && msg.type === ProcessMessageType.REPORTER) {
+          const reporterMessage: ReporterProcessMessage = msg.data;
+          if (reporterMessage.reportType === REPORT_TYPE.PERFORMANCE) {
+            this.reporter.performance(reporterMessage.name, reporterMessage.data as PerformanceData);
+          } else if (reporterMessage.reportType === REPORT_TYPE.POINT) {
+            this.reporter.point(reporterMessage.name, reporterMessage.data);
           }
         }
       };

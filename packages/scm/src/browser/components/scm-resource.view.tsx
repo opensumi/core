@@ -1,69 +1,37 @@
 import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
-import { useInjectable, IContextKeyService, IContextKey, useDisposable } from '@ali/ide-core-browser';
+import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { useInjectable } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
-import { URI, CommandService, DisposableStore, Event } from '@ali/ide-core-common';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
-import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
+import { URI, CommandService, DisposableStore, Event } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 
 import { ISCMRepository, scmItemLineHeight } from '../../common';
-import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
-import { getIcon } from '@ali/ide-core-browser';
-import { isSCMResource } from '../scm-util';
-import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { SCMMenus } from '../scm-menu';
+import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm-model';
 import { SCMResourceGroupTreeNode, SCMResourceTreeNode } from '../scm-resource';
-
-enum GitActionList {
-  gitOpenResource = 'git.openResource',
-}
+import { isSCMResource } from '../scm-util';
 
 export const SCMResouceList: React.FC<{
   width: number;
   height: number;
   repository: ISCMRepository;
-}> = observer(({ width, height, repository }) => {
+}> = observer(({ height, repository }) => {
   const commandService = useInjectable<CommandService>(CommandService);
-  const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
 
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
-
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
-  const [ selectedNodeId, setSelectedNodeId ] = React.useState<string | number>();
 
+  const [ selectedNodeId, setSelectedNodeId ] = React.useState<string | number>();
   const _selectTimer = React.useRef<NodeJS.Timer>();
   const _selectTimes = React.useRef<number>(0);
 
-  const $that = React.useRef<{
-    scmMenuService?: SCMMenus;
-    scmProviderCtx?: IContextKey<string | undefined>;
-    scmResourceGroupCtx?: IContextKey<string | undefined>;
-  }>({});
-
-  useDisposable(() => {
-    // 挂在 scm menu service
-    $that.current.scmMenuService = injector.get(SCMMenus, [repository.provider]);
-    return [$that.current.scmMenuService];
-  }, [ repository ]);
-
-  React.useEffect(() => {
-    // 挂在 ctx key service
-    $that.current.scmProviderCtx = contextKeyService.createKey<string | undefined>('scmProvider', undefined);
-    $that.current.scmResourceGroupCtx = contextKeyService.createKey<string | undefined>('scmResourceGroup', undefined);
-  }, []);
-
   React.useEffect(() => {
     const disposables = new DisposableStore();
-
     const resourceGroup = new ResourceGroupSplicer(repository);
-    if ($that.current.scmProviderCtx) {
-      $that.current.scmProviderCtx.set(repository.provider ? repository.provider.contextValue : '');
-    }
 
     // 只处理当前 repository 的事件
     const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repository);
@@ -74,24 +42,28 @@ export const SCMResouceList: React.FC<{
     resourceGroup.run();
 
     return () => {
-      if ($that.current.scmProviderCtx) {
-        $that.current.scmProviderCtx.set(undefined);
-      }
       resourceGroup.dispose();
       disposables.dispose();
     };
   }, [ repository ]);
 
   const nodes = useComputed(() => {
+    const scmMenuService = viewModel.getSCMMenuService(repository);
+
     return viewModel.scmList.map((item) => {
-      const resourceItem = isSCMResource(item)
-        ? injector.get(SCMResourceTreeNode, [item, $that.current.scmMenuService!])
-        : new SCMResourceGroupTreeNode(item, $that.current.scmMenuService!);
+      let resourceItem: SCMResourceTreeNode | SCMResourceGroupTreeNode;
+      if (isSCMResource(item)) {
+        const inlineMenu = scmMenuService && scmMenuService.getResourceInlineActions(item.resourceGroup);
+        resourceItem = injector.get(SCMResourceTreeNode, [item, inlineMenu]);
+      } else {
+        const inlineMenu = scmMenuService && scmMenuService.getResourceGroupInlineActions(item);
+        resourceItem =  new SCMResourceGroupTreeNode(item, inlineMenu);
+      }
 
       resourceItem.selected = selectedNodeId === resourceItem.id;
       return resourceItem;
     });
-  }, [ viewModel.scmList, selectedNodeId ]);
+  }, [ viewModel.scmList, selectedNodeId, repository ]);
 
   const commandActuator = React.useCallback((command: string, params?) => {
     return commandService.executeCommand(command, params);
@@ -149,18 +121,26 @@ export const SCMResouceList: React.FC<{
       return;
     }
 
+    const scmMenuService = viewModel.getSCMMenuService(repository);
+    if (!scmMenuService) {
+      return;
+    }
     const item: ISCMDataItem = file.item;
 
-    const ctxmenuActions = isSCMResource(item)
-      ? $that.current.scmMenuService!.getResourceContextActions(item)
-      : $that.current.scmMenuService!.getResourceGroupContextActions(item);
-
-    ctxMenuRenderer.show({
-      anchor: { x, y },
-      menuNodes: ctxmenuActions,
-      context: [ isSCMResource(item) ? file.resourceState : repository.provider.toJSON() ],
-    });
-  }, []);
+    if (isSCMResource(item)) {
+      ctxMenuRenderer.show({
+        anchor: { x, y },
+        menuNodes: scmMenuService.getResourceContextActions(item),
+        context: [ file.resourceState ],
+      });
+    } else {
+      ctxMenuRenderer.show({
+        anchor: { x, y },
+        menuNodes: scmMenuService.getResourceGroupContextActions(item),
+        context: [ repository.provider.toJSON() ],
+      });
+    }
+  }, [ repository ]);
 
   return (
     <RecycleTree
@@ -168,8 +148,8 @@ export const SCMResouceList: React.FC<{
       onSelect={handleFileSelect}
       onContextMenu={onContextMenu}
       scrollContainerStyle={{ width: '100%', height }}
-      containerHeight={ height }
-      itemLineHeight={ scmItemLineHeight }
+      containerHeight={height}
+      itemLineHeight={scmItemLineHeight}
       commandActuator={commandActuator}
     />
   );

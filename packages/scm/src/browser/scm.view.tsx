@@ -1,18 +1,21 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable } from '@ali/ide-core-browser';
-import { ViewState } from '@ali/ide-activity-panel';
+import { ViewState } from '@ali/ide-core-browser';
 import { CommandService, localize } from '@ali/ide-core-common';
-import { IContextKeyService } from '@ali/ide-core-browser';
+import { IContextKeyService, View, useInjectable  } from '@ali/ide-core-browser';
+import { AccordionContainer } from '@ali/ide-main-layout/lib/browser/accordion/accordion.view';
+import { TitleBar } from '@ali/ide-main-layout/lib/browser/accordion/titlebar.view';
 import { Button } from '@ali/ide-core-browser/lib/components';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
-import { ISCMRepository, SCMService } from '../common';
-import { ViewModelContext } from './scm.store';
+import { ISCMRepository, SCMService, scmProviderViewId, scmResourceViewId } from '../common';
+import { ViewModelContext } from './scm-model';
 import { SCMHeader } from './components/scm-header.view';
 import { SCMResouceList } from './components/scm-resource.view';
 import { SCMRepoSelect } from './components/scm-select.view';
 
 import * as styles from './scm.module.less';
+import { getSCMRepositoryDesc } from './scm-util';
 
 /**
  * 空视图
@@ -76,6 +79,42 @@ export const SCMRepoPanel: React.FC<{
 SCMRepoPanel.displayName = 'SCMRepoPanel';
 
 export const SCMResourceView: React.FC<{ viewState: ViewState }> = observer((props) => {
+  const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
+
+  if (!viewModel.selectedRepos.length) {
+    return <SCMEmpty />;
+  }
+
+  const selectedRepo = viewModel.selectedRepos[0];
+  return <SCMRepoPanel repository={selectedRepo} viewState={props.viewState} />;
+});
+
+SCMResourceView.displayName = 'SCMResourceView';
+
+/**
+ * 多 repo 列表
+ */
+export const SCMProviderList: React.FC<{ viewState: ViewState }> = observer((props) => {
+  const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
+  const selectedRepo = viewModel.selectedRepos[0];
+
+  return (
+    <div className={styles.view}>
+      {
+        viewModel.repoList.length > 1 && (
+          <SCMRepoSelect
+            viewState={props.viewState}
+            repositoryList={viewModel.repoList}
+            selectedRepository={selectedRepo} />
+        )
+      }
+    </div>
+  );
+});
+
+SCMProviderList.displayName = 'SCMProviderList';
+
+export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => {
   const scmService = useInjectable<SCMService>(SCMService);
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
 
@@ -97,36 +136,71 @@ export const SCMResourceView: React.FC<{ viewState: ViewState }> = observer((pro
     });
   }, []);
 
-  if (!viewModel.selectedRepos.length) {
-    return <SCMEmpty />;
-  }
+  const repoList = viewModel.repoList;
+  const hasMultiRepos = viewModel.repoList.length > 1;
+  const selectedRepo: ISCMRepository | undefined = viewModel.selectedRepo;
 
-  const selectedRepo = viewModel.selectedRepos[0];
+  // title for scm panel
+  const panelTitle = React.useMemo(() => {
+    return repoList.length === 1 && selectedRepo
+      // 将当前 repo 信息写到 scm panel title 中去
+      ? `${localize('scm.title')}: ${selectedRepo.provider.label}`
+      // 使用默认 scm panel title
+      : localize('scm.title');
+  }, [ repoList, selectedRepo ]);
 
-  return <SCMRepoPanel repository={selectedRepo} viewState={props.viewState} />;
-});
+  // title for selected repo view
+  const repoViewTitle = React.useMemo(() => {
+    let repoViewTitle = '';
+    if (hasMultiRepos && selectedRepo) {
+      const { title, type } = getSCMRepositoryDesc(selectedRepo);
+      repoViewTitle = title + '-' + type;
+    }
+    return repoViewTitle;
+  }, [ hasMultiRepos, selectedRepo ]);
 
-SCMResourceView.displayName = 'SCMResourceView';
+  const titleMenu = React.useMemo(() => {
+    const scmMenuService = viewModel.getSCMMenuService(selectedRepo);
+    if (scmMenuService) {
+      return scmMenuService.getTitleMenu();
+    }
+  }, [ selectedRepo ]);
 
-/**
- * 多 repo 列表
- */
-export const SCMProviderList: React.FC<{ viewState: ViewState }>  = observer((props) => {
-  const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
-  const selectedRepo = viewModel.selectedRepos[0];
+  // control views
+  const views: View[] = React.useMemo(() => {
+    const scmProviderViewConfig: View = {
+      component: SCMProviderList,
+      id: scmProviderViewId,
+      name: localize('scm.provider.title'),
+      initialProps: { viewState: props.viewState },
+    };
+
+    const scmRepoViewConfig: View = {
+      component: SCMResourceView,
+      id: scmResourceViewId,
+      name: repoViewTitle,
+      titleMenu: hasMultiRepos && titleMenu || undefined,
+      titleMenuContext: selectedRepo && selectedRepo.provider && [selectedRepo.provider],
+    };
+
+    return (hasMultiRepos ? [scmProviderViewConfig] : []).concat(scmRepoViewConfig);
+  }, [ hasMultiRepos, repoViewTitle, selectedRepo ]);
 
   return (
     <div className={styles.view}>
-      {
-        viewModel.repoList.length > 1 && (
-          <SCMRepoSelect
-            viewState={props.viewState}
-            repositoryList={viewModel.repoList}
-            selectedRepository={selectedRepo} />
-        )
-      }
+      <TitleBar title={panelTitle} menubar={
+        !hasMultiRepos && titleMenu
+          ? <InlineActionBar
+            menus={titleMenu}
+            context={selectedRepo && selectedRepo.provider && [selectedRepo.provider]} />
+          : null
+      } />
+      <AccordionContainer
+        views={views}
+        containerId={scmProviderViewId}
+      />
     </div>
   );
 });
 
-SCMProviderList.displayName = 'SCMProviderList';
+SCMPanel.displayName = 'SCMPanel';

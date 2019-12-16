@@ -98,7 +98,9 @@ export class ExtensionScanner {
     if (pkgExist) {
       try {
         const packageJSON = await fs.readJSON(pkgPath);
-        if ( !(packageJSON.engines.vscode || packageJSON.engines.kaitian) ) {
+        if (!packageJSON.engines) {
+          pkgCheckResult = false;
+        } else if (!(packageJSON.engines.vscode || packageJSON.engines.kaitian)) {
           pkgCheckResult = false;
         }
       } catch (e) {
@@ -148,6 +150,8 @@ export class ExtensionScanner {
     let extendConfig = {};
     if (await fs.pathExists(extendPath)) {
       try {
+        // 这里必须clear cache, 不然每次都一样
+        delete getNodeRequire().cache[extendPath];
         extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
         console.error(extendPath, e);

@@ -1,13 +1,14 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { uuid, CommandService, OnEvent, WithEventBus, Emitter } from '@ali/ide-core-common';
+import { uuid, CommandService, OnEvent, WithEventBus, Emitter, Event, ILogger } from '@ali/ide-core-common';
 import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
+import { IThemeService } from '@ali/ide-theme/lib/common';
 import { TerminalClient } from './terminal.client';
 import { WidgetGroup, Widget } from './component/resize.control';
 import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
 import { ITerminalTheme } from './terminal.theme';
+import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -19,6 +20,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @observable
   errors: Map<string, ITerminalError> = new Map();
+
+  @observable
+  themeBackground: string;
 
   @Autowired(ITerminalExternalService)
   service: ITerminalExternalService;
@@ -35,7 +39,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
 
-  tabbarHandler: ActivityBarHandler;
+  @Autowired(ILogger)
+  logger: ILogger;
+  @Autowired(IThemeService)
+  themeService: IThemeService;
+
+  tabbarHandler: TabBarHandler;
 
   private _clientsMap = new Map<string, TerminalClient>();
   private _focusedId: string;
@@ -50,6 +59,31 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   get focusedTerm() {
     return this._clientsMap.get(this._focusedId);
+  }
+
+  public async reconnect() {
+    let canReconnected = true;
+
+    if (this.service.check) {
+      canReconnected = await this.service.check(this.terminals.map((term) => term.id));
+    }
+
+    if (!canReconnected) {
+      this.groups.forEach((_, index) => {
+        this._removeGroupByIndex(index);
+      });
+
+      this.groups = [];
+      this.createGroup(true);
+      this.addWidget();
+    } else {
+      this.terminals.map((term) => {
+        const client = this._clientsMap.get(term.id);
+        if (client) {
+          this.retryTerminalClient(client.widget.id);
+        }
+      });
+    }
   }
 
   private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}) {
@@ -68,7 +102,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async recovery(history: any) {
-    const { groups } = history;
+    let currentWidgetId: string = '';
+    const { groups, current } = history;
     for (const widgets of (groups as any[])) {
       const index = this.createGroup(false);
 
@@ -78,12 +113,26 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         try {
           await client.attach(true, item.meta || '');
           this._addWidgetToGroup(index, client);
+
+          if (current === client.id) {
+            currentWidgetId = widget.id;
+          }
         } catch { /** do nothing */ }
       }
 
       if (this.groups[index] && this.groups[index].length === 0) {
         this._removeGroupByIndex(index);
       }
+    }
+
+    let selectedIndex = -1;
+    this.groups.forEach((group, index) =>
+      Array.from(group.widgetsMap.keys()).find((v) => v === currentWidgetId)
+      && (selectedIndex = index));
+
+    if (selectedIndex > -1 && currentWidgetId) {
+      this.selectGroup(selectedIndex);
+      this._focusedId = currentWidgetId;
     }
   }
 
@@ -97,18 +146,21 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   firstInitialize() {
     this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
+    this.themeBackground = this.termTheme.terminalTheme.background || '';
 
     if (this.tabbarHandler.isActivated()) {
       if (this._checkIfNeedInitialize()) {
         this.createGroup(true);
         this.addWidget();
       } else {
-        this.selectGroup(0);
+        this.selectGroup(this.state.index > -1 ? this.state.index : 0);
       }
     }
 
-    this.service.onError((error: ITerminalError) => {
+    this.addDispose(this.service.onError((error: ITerminalError) => {
       const { id: sessionId, stopped, reconnected = true } = error;
+
+      this.logger.log('TermError: ', error);
 
       if (!stopped) {
         return;
@@ -127,9 +179,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       } catch {
         this.errors.set(widgetId, error);
       }
-    });
+    }));
 
-    this.tabbarHandler.onActivate(() => {
+    this.addDispose(this.tabbarHandler.onActivate(() => {
       if (!this.currentGroup) {
         if (!this.groups[0]) {
           this.createGroup(true);
@@ -142,7 +194,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           this.layoutTerminalClient(widget.id);
         });
       }
-    });
+    }));
+
+    this.addDispose(this.themeService.onThemeChange((theme) => {
+      this._clientsMap.forEach((client) => {
+        client.updateTheme();
+        this.themeBackground = this.termTheme.terminalTheme.background || '';
+      });
+    }));
   }
 
   private _removeWidgetFromWidgetId(widgetId: string) {
@@ -285,13 +344,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   /** terminal client operations */
 
-  async drawTerminalClient(dom: HTMLDivElement, widgetId: string, restore: boolean = false) {
-    let meta: string;
+  async drawTerminalClient(dom: HTMLDivElement, widgetId: string, restore: boolean = false, extra: string = '') {
+    let meta: string = extra;
     const client = this._clientsMap.get(widgetId);
 
     if (client) {
       try {
-        meta = restore ? this.service.meta(widgetId) : '';
+        meta = restore ? (meta || this.service.meta(widgetId)) : '';
       } catch {
         meta = '';
         restore = false;
@@ -299,9 +358,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       client.applyDomNode(dom);
       try {
         await client.attach(restore, meta);
-        this.errors.delete(widgetId);
       } catch {
-        client.dispose();
         this.errors.set(widgetId, {
           id: client.id,
           stopped: true,
@@ -320,6 +377,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async retryTerminalClient(widgetId: string) {
+    let meta = '';
     const last = this._clientsMap.get(widgetId);
 
     if (!last) {
@@ -334,9 +392,25 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
 
     const next = this._createTerminalClientInstance(widget, last.id, last.options);
+
+    try {
+      meta = this.service.meta(last.id);
+    } catch { /** do nothing */ }
+
     last.dispose();
     this._clientsMap.set(widgetId, next);
-    await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true);
+
+    /**
+     * 注意，这里先删除 widgetId 的原因是保证在后续渲染的时候，
+     * 这个 widget 不会是 display none 的状态，
+     * 防止 terminal fit 会出现错误。
+     */
+    this.errors.delete(widgetId);
+    await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true, meta);
+
+    if (this.tabbarHandler.isActivated()) {
+      this.layoutTerminalClient(widgetId);
+    }
   }
 
   layoutTerminalClient(widgetId: string) {
@@ -372,6 +446,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   /** save widget ids and client ids */
 
   toJSON() {
+    const cClient = this._clientsMap.get(this._focusedId);
     const groups = this.groups.map((group) => {
       return group.widgets.map((widget, index) => {
         const client = this._clientsMap.get(widget.id);
@@ -388,7 +463,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       });
     });
 
-    return { groups };
+    return {
+      groups,
+      current: cClient && cClient.id,
+    };
   }
 
   /** end */
@@ -439,9 +517,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this.service.getProcessId(sessionId);
   }
 
-  onDidOpenTerminal = this._onDidOpenTerminal.event;
-  onDidCloseTerminal = this._onDidCloseTerminal.event;
-  onDidChangeActiveTerminal = this._onDidChangeActiveTerminal.event;
+  readonly onDidOpenTerminal: Event<TerminalInfo> = this._onDidOpenTerminal.event;
+  readonly onDidCloseTerminal: Event<string> = this._onDidCloseTerminal.event;
+  readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
 
   showTerm(clientId: string, preserveFocus: boolean = true) {
     let index: number = -1;

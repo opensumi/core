@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, TabBarToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { CONTEXT_MENU } from './file-tree.view';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -60,6 +60,8 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   @Autowired(ILogger)
   private logger;
 
+  private rendered = false;
+
   onStart() {
     const workspace = this.workspaceService.workspace;
     let resourceTitle = localize('file.empty.defaultTitle');
@@ -79,6 +81,10 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       collapsed: false,
       component: ExplorerResourcePanel,
     }, ExplorerContainerId);
+  }
+
+  onReconnect() {
+    this.filetreeService.reWatch();
   }
 
   onDidStart() {
@@ -178,7 +184,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (!locationUri) {
           locationUri = this.filetreeService.selectedUris[0];
         }
-        if (locationUri) {
+        if (locationUri && this.rendered) {
           const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
           if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
             this.explorerResourceService.locationOnShow(locationUri);
@@ -453,7 +459,17 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
+  registerToolbarItems(registry: ToolbarRegistry) {
+    registry.registerItem({
+      id: FILE_COMMANDS.NEW_FILE.id,
+      command: FILE_COMMANDS.NEW_FILE.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.NEW_FOLDER.id,
+      command: FILE_COMMANDS.NEW_FOLDER.id,
+      viewId: ExplorerResourceViewId,
+    });
     registry.registerItem({
       id: FILE_COMMANDS.COLLAPSE_ALL.id,
       command: FILE_COMMANDS.COLLAPSE_ALL.id,
@@ -464,19 +480,10 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       command: FILE_COMMANDS.REFRESH_ALL.id,
       viewId: ExplorerResourceViewId,
     });
-    registry.registerItem({
-      id: FILE_COMMANDS.NEW_FOLDER.id,
-      command: FILE_COMMANDS.NEW_FOLDER.id,
-      viewId: ExplorerResourceViewId,
-    });
-    registry.registerItem({
-      id: FILE_COMMANDS.NEW_FILE.id,
-      command: FILE_COMMANDS.NEW_FILE.id,
-      viewId: ExplorerResourceViewId,
-    });
   }
 
-  onDidUseConfig() {
+  onDidRender() {
+    this.rendered = true;
     const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
     if (handler) {
       handler.onActivate(() => {

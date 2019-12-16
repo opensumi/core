@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "1.6.1",
+  "version": "1.6.6",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -19,19 +19,16 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-connection": "1.6.1",
-    "@ali/ide-core-common": "1.6.1",
+    "@ali/ide-connection": "1.6.6",
+    "@ali/ide-core-common": "1.6.6",
     "@ant-design/dark-theme": "^0.2.2",
-    "@phosphor/commands": "^1.6.1",
-    "@phosphor/default-theme": "^0.1.0",
-    "@phosphor/messaging": "^1.3.0",
-    "@phosphor/signaling": "^1.3.0",
-    "@phosphor/widgets": "^1.6.0",
     "ajv": "^6.10.0",
     "ansi-to-react": "^5.0.0",
     "antd": "^3.20.3",
     "classnames": "^2.2.6",
     "clsx": "^1.0.4",
+    "@phosphor/commands": "^1.6.1",
+    "@phosphor/widgets": "^1.6.0",
     "copy-to-clipboard": "^3.2.0",
     "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",

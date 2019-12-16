@@ -1,29 +1,35 @@
 #workbench-editor {
-  // 覆盖 Monaco 搜索输入框样式
-  .monaco-editor .find-widget .button {
-    outline: none;
-  }
-  .monaco-editor .find-widget .monaco-inputbox .input {
-    border-width: 1px;
-    border-style: solid;
-    outline: none;
-    color: var(--input-foreground);
-    border-color: var(--input-background);
-    &:focus {
-      border-color: var(--inputOption-activeBorder);
+  .monaco-editor {
+    // 覆盖 Monaco 搜索输入框样式
+    .find-widget .button {
+      outline: none;
     }
-    &::placeholder {
-      color: var(--input-placeholderForeground);
+    .find-widget .monaco-inputbox .input {
+      border-width: 1px;
+      border-style: solid;
+      outline: none;
+      color: var(--input-foreground);
+      border-color: var(--input-background);
+      &:focus {
+        border-color: var(--inputOption-activeBorder);
+      }
+      &::placeholder {
+        color: var(--input-placeholderForeground);
+      }
+    }
+
+    // slection相关 主题色应用到 Monaco
+    .focused .selectionHighlight {
+      background-color: var(--editor-selectionbackground);
+    }
+
+    .selectionHighlight {
+      background-color: rgba(var(--editor-selectionbackground), 0.8);
+    }
+
+    // 禁用掉 monaco editor 左侧行号的选中效果，避免在断点 context menu 时选中所有行号
+    .margin-view-overlays .line-numbers {
+      user-select: none;
     }
   }
-
-  // slection相关 主题色应用到 Monaco 
-  .monaco-editor .focused .selectionHighlight {
-    background-color: var(--editor-selectionbackground);
-  }
-
-  .monaco-editor .selectionHighlight {
-    background-color: rgba(var(--editor-selectionbackground), 0.8);
-  }
-
 }

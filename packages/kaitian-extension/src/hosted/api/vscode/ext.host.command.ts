@@ -25,7 +25,7 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
     },
     registerTextEditorCommand(id: string, callback: (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, ...args: any[]) => void, thisArg?: any): vscode.Disposable {
       return extHostCommands.registerCommand(true, id, (...args: any[]): any => {
-        const activeTextEditor = extHostEditors.activeEditor;
+        const activeTextEditor = extHostEditors.activeEditor ? extHostEditors.activeEditor.textEditor : undefined;
         if (!activeTextEditor) {
           console.warn('Cannot execute ' + id + ' because there is no active text editor.');
           return undefined;
@@ -104,6 +104,13 @@ export class ExtHostCommands implements IExtHostCommands {
         { name: 'itemResolveCount', description: '(optional) Number of lenses that should be resolved and returned. Will only return resolved lenses, will impact performance)', constraint: (value: any) => value === undefined || typeof value === 'number' },
       ],
       returns: 'A promise that resolves to an array of CodeLens-instances.',
+    });
+    this.register('vscode.executeDocumentSymbolProvider', this.executeDocumentSymbolProvider, {
+      description: 'Execute document symbol provider.',
+      args: [
+        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
+      ],
+      returns: 'A promise that resolves to an array of SymbolInformation and DocumentSymbol instances.',
     });
   }
 
@@ -206,6 +213,16 @@ export class ExtHostCommands implements IExtHostCommands {
             item.command ? this.converter.fromInternal(item.command) : undefined,
           );
         });
+      });
+  }
+
+  private executeDocumentSymbolProvider(resource: Uri): Promise<vscode.SymbolInformation[] | undefined> {
+    const args = {
+      resource,
+    };
+    return this.proxy.$executeDocumentSymbolProvider(args)
+      .then((items) => {
+        return items.map((item) => extHostTypeConverter.toSymbolInformation(item));
       });
   }
 

@@ -3,6 +3,7 @@ import { Event, URI, Disposable, DomListener, getLogger, IDisposable, Emitter, I
 import { ITheme, IThemeService } from '@ali/ide-theme';
 import { Autowired, Injectable } from '@ali/common-di';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 @Injectable({multiple: true})
 export abstract class AbstractWebviewPanel extends Disposable implements IWebview {
@@ -47,6 +48,9 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
+
+  @Autowired(StaticResourceService)
+  staticResourceService: StaticResourceService;
 
   constructor(public readonly id: string, options: IWebviewContentOptions = {}) {
     super();
@@ -125,9 +129,14 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
     await this.doUpdateContent();
   }
 
+  protected preprocessHtml(html: string): string {
+    return html.replace(/(["'])vscode-resource:([^\s'"]+?)(["'])/gi, (_, startQuote, path, endQuote) =>
+      `${startQuote}${this.staticResourceService.resolveStaticResource(URI.file(path))}${endQuote}`);
+  }
+
   protected doUpdateContent() {
     return this._sendToWebview('content', {
-      contents: this._html,
+      contents: this.preprocessHtml(this._html),
       options: this._options,
       state: this.state,
     });

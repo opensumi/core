@@ -4,6 +4,10 @@
 @import './fileicons.less';
 @import './symbol-icons/symbol-icons.css';
 
+.kt_display_none {
+  display: none !important;
+}
+
 .icon-label::before {
   background-size: 16px;
   background-position: 0;
@@ -11,9 +15,9 @@
   padding-right: 6px;
   width: 16px;
   height: 22px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   -webkit-font-smoothing: antialiased;
-  vertical-align: top;
   flex-shrink: 0;
 }
 .action-icon {
@@ -34,11 +38,15 @@
     height: 16px;
     margin-top: 5px;
   }
-  &.filled {
+  &.toggled {
     height: 16px;
     border-radius: 2px;
     background-color: var(--inputOption-activeBorder);
     line-height: 16px;
+  }
+  &.kticon-up.toggled {
+    background-color: unset;
+    transform: rotate(180deg);
   }
 }
 
@@ -141,3 +149,4 @@
 .monaco-editor.vs-dark .view-overlays .kaitian-debug-top-stack-frame-exception-line {
   background-color: #6C2022;
 }
+

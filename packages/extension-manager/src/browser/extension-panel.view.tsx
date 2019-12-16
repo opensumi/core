@@ -1,157 +1,40 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { AccordionWidget } from '@ali/ide-core-browser/lib/layout';
 import Tabs from 'antd/lib/tabs';
 import 'antd/lib/tabs/style/index.less';
 import { useInjectable, localize, CommandRegistry, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
-import { Widget } from '@phosphor/widgets';
-import { enableExtensionsContainerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromMarketplaceTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, IExtensionManagerService, hotExtensionsFromMarketplaceTarbarHandlerId, TabActiveKey, SearchFromMarketplaceCommandId } from '../common';
+import { enableExtensionsContainerId, hotExtensionsContainerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromMarketplaceTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, IExtensionManagerService, hotExtensionsFromMarketplaceTarbarHandlerId, TabActiveKey, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionHotAccordion, ExtensionEnableAccordion, ExtensionDisableAccordion, ExtensionSearchInstalledAccordion, ExtensionSearchMarketplaceAccordion } from './extension-panel-accordion.view';
 import { ExtensionSearch } from './components/extension-search';
 import * as styles from './extension-panel.module.less';
-import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { AccordionContainer } from '@ali/ide-main-layout/lib/browser/accordion/accordion.view';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 const { TabPane } = Tabs;
 
 export default observer(() => {
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
-  const [ marketElement, setMarketElement ] = React.useState<HTMLElement | null>(null);
-  const [ installedElement, setInstalledElement ] = React.useState<HTMLElement | null>(null);
-  const [ marketAccordion, setMarketAccordion ] = React.useState<AccordionWidget>();
-  const [ installedAccordion, setInstalledAccordion ] = React.useState<AccordionWidget>();
   const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
-  const injector = useInjectable<Injector>(INJECTOR_TOKEN);
-  const eventBus = useInjectable<IEventBus>(IEventBus);
-
-  React.useEffect(() => {
-    const marketAccordionInstance = injector.get(AccordionWidget, [enableExtensionsContainerId, [{
-      component: ExtensionHotAccordion,
-      id: hotExtensionsFromMarketplaceTarbarHandlerId,
-      name: localize('marketplace.panel.hot'),
-      forceHidden: false,
-    }, {
-      component: ExtensionSearchMarketplaceAccordion,
-      id: searchExtensionsFromMarketplaceTarbarHandlerId,
-      name: localize('marketplace.panel.search'),
-      forceHidden: true,
-    }], 'left']);
-
-    const installedAccordionInstance = injector.get(AccordionWidget, ['enableExtensionsContainerId', [{
-      component: ExtensionEnableAccordion,
-      id: enableExtensionsTarbarHandlerId,
-      name: localize('marketplace.panel.enabled'),
-      forceHidden: false,
-    }, {
-      component: ExtensionDisableAccordion,
-      id: disableExtensionsTarbarHandlerId,
-      name: localize('marketplace.panel.disabled'),
-      forceHidden: false,
-    }, {
-      component: ExtensionSearchInstalledAccordion,
-      id: searchExtensionsFromInstalledTarbarHandlerId,
-      name: localize('marketplace.panel.search'),
-      forceHidden: true,
-    }], 'left']);
-    // 设置 accordion 只设置一次
-    setMarketAccordion(marketAccordionInstance);
-    setInstalledAccordion(installedAccordionInstance);
-
-  }, []);
-
-  // 监听 resize 事件，重新渲染 list
-  React.useEffect(() => {
-    const disposer = eventBus.on(ResizeEvent, (event) => {
-      if (marketAccordion) {
-        marketAccordion.update();
-      }
-
-      if (installedAccordion) {
-        installedAccordion.update();
-      }
-    });
-
-    return () => {
-      disposer.dispose();
-    };
-
-  }, [marketAccordion, installedAccordion]);
-
-  const hotExtensionSection = React.useMemo(() => {
-    return marketAccordion && marketAccordion.sections.get(hotExtensionsFromMarketplaceTarbarHandlerId);
-  }, [marketAccordion]);
-
-  const searchFromMarketplaceSection = React.useMemo(() => {
-    return marketAccordion && marketAccordion.sections.get(searchExtensionsFromMarketplaceTarbarHandlerId);
-  }, [marketAccordion]);
-
-  const enableExtensionSection = React.useMemo(() => {
-    return installedAccordion && installedAccordion.sections.get(enableExtensionsTarbarHandlerId);
-  }, [installedAccordion]);
-
-  const disableExtensionSection = React.useMemo(() => {
-    return installedAccordion && installedAccordion.sections.get(disableExtensionsTarbarHandlerId);
-  }, [installedAccordion]);
-
-  const searchFromInstalledSection = React.useMemo(() => {
-    return installedAccordion && installedAccordion.sections.get(searchExtensionsFromInstalledTarbarHandlerId);
-  }, [installedAccordion]);
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
   const showEnableAndDisable = React.useCallback(() => {
-    if (enableExtensionSection) {
-      enableExtensionSection!.setHidden(false);
-    }
-    if (disableExtensionSection) {
-      disableExtensionSection.setHidden(false);
-    }
-    if (searchFromInstalledSection) {
-      searchFromInstalledSection.setHidden(true);
-    }
-  }, [enableExtensionSection, disableExtensionSection, searchFromInstalledSection]);
+    const enabledAccordionService = layoutService.getAccordionService(enableExtensionsContainerId);
+    enabledAccordionService.toggleViewVisibility(enableExtensionsTarbarHandlerId, true);
+    enabledAccordionService.toggleViewVisibility(disableExtensionsTarbarHandlerId, true);
+    enabledAccordionService.toggleViewVisibility(searchExtensionsFromInstalledTarbarHandlerId, false);
+  }, []);
 
   const showHotSection = React.useCallback(() => {
-    if (hotExtensionSection) {
-      hotExtensionSection.setHidden(false);
-    }
-    if (searchFromMarketplaceSection) {
-      searchFromMarketplaceSection.setHidden(true);
-    }
-    if (marketAccordion) {
-      marketAccordion.updateTitleVisibility();
-    }
-  }, [marketAccordion, hotExtensionSection, searchFromMarketplaceSection]);
+    const hotAccordionService = layoutService.getAccordionService(hotExtensionsContainerId);
+    hotAccordionService.toggleViewVisibility(hotExtensionsFromMarketplaceTarbarHandlerId, true);
+    hotAccordionService.toggleViewVisibility(searchExtensionsFromMarketplaceTarbarHandlerId, false);
+  }, []);
 
   const hideHotSearch = React.useCallback(() => {
-    if (hotExtensionSection) {
-      hotExtensionSection.setHidden(true);
-    }
-
-    if (searchFromMarketplaceSection) {
-      searchFromMarketplaceSection.setHidden(false);
-    }
-
-    if (marketAccordion) {
-      marketAccordion.updateTitleVisibility();
-    }
-  }, [marketAccordion, hotExtensionSection, searchFromMarketplaceSection]);
-
-  React.useEffect(() => {
-    if (marketAccordion && marketElement) {
-      Widget.attach(marketAccordion, marketElement);
-    }
-  }, [marketAccordion, marketElement]);
-
-  React.useEffect(() => {
-    if (installedAccordion && installedElement) {
-      Widget.attach(installedAccordion, installedElement);
-    }
-  }, [installedAccordion, installedElement]);
-
-  React.useEffect(() => {
-    // resize accordion
-    if (extensionManagerService.isInit && marketAccordion) {
-      marketAccordion.update();
-    }
-  }, [marketAccordion, extensionManagerService.isInit]);
+    const hotAccordionService = layoutService.getAccordionService(hotExtensionsContainerId);
+    hotAccordionService.toggleViewVisibility(hotExtensionsFromMarketplaceTarbarHandlerId, false);
+    hotAccordionService.toggleViewVisibility(searchExtensionsFromMarketplaceTarbarHandlerId, true);
+  }, []);
 
   React.useEffect(() => {
     // 默认要调用一次，不使用layout状态
@@ -186,16 +69,13 @@ export default observer(() => {
   function handleChangeFromInstalled(value: string) {
     extensionManagerService.installedQuery = value;
     if (value) {
-      enableExtensionSection!.setHidden(true);
-      disableExtensionSection!.setHidden(true);
-      searchFromInstalledSection!.setHidden(false);
+      const enabledAccordionService = layoutService.getAccordionService(enableExtensionsContainerId);
+      enabledAccordionService.toggleViewVisibility(enableExtensionsTarbarHandlerId, false);
+      enabledAccordionService.toggleViewVisibility(disableExtensionsTarbarHandlerId, false);
+      enabledAccordionService.toggleViewVisibility(searchExtensionsFromInstalledTarbarHandlerId, true);
       extensionManagerService.searchFromInstalled(value);
     } else {
       showEnableAndDisable();
-    }
-    // 如果只有一个则隐藏 titlebar
-    if (installedAccordion) {
-      installedAccordion.updateTitleVisibility();
     }
   }
 
@@ -212,7 +92,20 @@ export default observer(() => {
             onChange={handleChangeFromMarket}
             placeholder={localize('marketplace.panel.tab.placeholder.search')}
             />
-          <div className={styles.content} ref={setMarketElement}></div>
+          <AccordionContainer
+            views={[{
+              component: ExtensionHotAccordion,
+              id: hotExtensionsFromMarketplaceTarbarHandlerId,
+              name: localize('marketplace.panel.hot'),
+              forceHidden: false,
+            }, {
+              component: ExtensionSearchMarketplaceAccordion,
+              id: searchExtensionsFromMarketplaceTarbarHandlerId,
+              name: localize('marketplace.panel.search'),
+              forceHidden: true,
+            }]}
+            containerId={hotExtensionsContainerId}
+          />
         </TabPane>
         <TabPane tab={localize('marketplace.tab.installed')} key={TabActiveKey.INSTALLED}>
           <ExtensionSearch
@@ -220,7 +113,25 @@ export default observer(() => {
             onChange={handleChangeFromInstalled}
             placeholder={localize('marketplace.panel.tab.placeholder.installed')}
             />
-          <div className={styles.content} ref={setInstalledElement}></div>
+          <AccordionContainer
+            views={[{
+              component: ExtensionEnableAccordion,
+              id: enableExtensionsTarbarHandlerId,
+              name: localize('marketplace.panel.enabled'),
+              forceHidden: false,
+            }, {
+              component: ExtensionDisableAccordion,
+              id: disableExtensionsTarbarHandlerId,
+              name: localize('marketplace.panel.disabled'),
+              forceHidden: false,
+            }, {
+              component: ExtensionSearchInstalledAccordion,
+              id: searchExtensionsFromInstalledTarbarHandlerId,
+              name: localize('marketplace.panel.search'),
+              forceHidden: true,
+            }]}
+            containerId={enableExtensionsContainerId}
+          />
         </TabPane>
       </Tabs>
     </div>

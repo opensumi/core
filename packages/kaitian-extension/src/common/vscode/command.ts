@@ -17,6 +17,7 @@ export interface IMainThreadCommands {
   $executeReferenceProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
   $executeImplementationProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
   $executeCodeLensProvider(arg: {resource: URI, itemResolveCount: number}): Promise<any | undefined>;
+  $executeDocumentSymbolProvider(arg: {resource: URI}): Promise<any>;
   registerArgumentProcessor(processor: ArgumentProcessor): void;
 }
 

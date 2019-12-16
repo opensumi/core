@@ -154,7 +154,7 @@ export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, gr
       hasFocus ? editorActionRegistry.getActions(group).map((visibleAction) => {
         const item = visibleAction.item;
         const icon = <div className={classnames(styles.editor_action, item.iconClass)} title={item.title} key={item.title}
-                    onClick={() => item.onClick(group.currentResource)} />;
+                    onClick={() => item.onClick(group.currentResource, group)} />;
         if (!item.tip || !visibleAction.tipVisible) {
           return icon;
         } else {

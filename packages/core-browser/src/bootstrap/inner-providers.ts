@@ -11,6 +11,12 @@ import {
   CommandRegistry,
   IElectronMainMenuService,
   isElectronRenderer,
+  ReporterMetadata,
+  IReporter,
+  IReporterService,
+  DefaultReporter,
+  ReporterService,
+  REPORT_HOST,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from '../common';
 import { ClientAppStateService } from '../application/application-state-service';
@@ -37,6 +43,7 @@ import { AbstractMenuService, MenuServiceImpl, AbstractMenubarService, MenubarSe
 import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
 import { ElectronCtxMenuRenderer, ElectronMenuBarService, IElectronMenuFactory, IElectronMenuBarService, ElectronMenuFactory } from '../menu/next/renderer/ctxmenu/electron';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
+import { SlotRendererContribution } from '../react-providers';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -47,6 +54,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, KeybindingContext);
   createContributionProvider(injector, ComponentContribution);
+  createContributionProvider(injector, SlotRendererContribution);
   createContributionProvider(injector, PreferenceContribution);
   createContributionProvider(injector, VariableContribution);
   createContributionProvider(injector, TabBarToolbarContribution);
@@ -116,6 +124,20 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: AbstractMenubarService,
       useClass: MenubarServiceImpl,
+    },
+    {
+      token: IReporter,
+      useClass: DefaultReporter,
+    },
+    {
+      token: IReporterService,
+      useClass: ReporterService,
+    },
+    {
+      token: ReporterMetadata,
+      useValue: {
+        host: REPORT_HOST.BROWSER,
+      },
     },
   ];
   injector.addProviders(...providers);

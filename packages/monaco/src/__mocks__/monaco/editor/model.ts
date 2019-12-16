@@ -90,7 +90,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   }
 
   getValueLength(eol?: monaco.editor.EndOfLinePreference | undefined, preserveBOM?: boolean | undefined): number {
-    throw new Error('Method not implemented.');
+    return 0;
   }
   getValueInRange(range: monaco.IRange, eol?: monaco.editor.EndOfLinePreference | undefined): string {
     throw new Error('Method not implemented.');

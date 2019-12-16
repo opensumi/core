@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import * as styles from './debug-console.module.less';
-import { ViewState } from '@ali/ide-activity-panel';
+import { ViewState } from '@ali/ide-core-browser';
 import { useInjectable, KeyCode, Key, TreeNode, ExpandableTreeNode } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
 import { VariablesTree, Input, RecycleList } from '@ali/ide-core-browser/lib/components';

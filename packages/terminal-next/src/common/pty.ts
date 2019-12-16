@@ -127,6 +127,11 @@ export interface ITerminalService {
   dispose();
 
   setClient(clientId: string, client: ITerminalServiceClient);
+
+  closeClient(clientId: string);
+
+  ensureClientTerminal(clientId: string, terminalIdArr: string[]): boolean;
+
 }
 
 export interface ITerminalServiceClient {
@@ -145,6 +150,8 @@ export interface ITerminalServiceClient {
   setConnectionClientId(clientId: string);
   dispose();
   getShellName(id: string): string;
+
+  ensureTerminal(terminalIdArr: string[]): boolean;
 }
 
 export interface TerminalInfo {

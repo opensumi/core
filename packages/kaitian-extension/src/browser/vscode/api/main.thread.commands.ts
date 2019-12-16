@@ -155,4 +155,9 @@ export class MainThreadCommands implements IMainThreadCommands {
     arg.resource = monaco.Uri.revive(arg.resource);
     return this.monacoCommandService.executeCommand('_executeCodeLensProvider', arg);
   }
+
+  async $executeDocumentSymbolProvider(arg) {
+    arg.resource = monaco.Uri.revive(arg.resource);
+    return this.monacoCommandService.executeCommand('_executeDocumentSymbolProvider', arg);
+  }
 }

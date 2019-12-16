@@ -5,17 +5,22 @@ import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEm
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { FILE_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
+import { FILE_COMMANDS, CorePreferences, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { Schemas } from '@ali/ide-core-common';
 import { isNullOrUndefined } from 'util';
+import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
+import { detectModeId } from '@ali/ide-core-browser/lib/services';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
 
   @observable.shallow
   editorGroups: EditorGroup[] = [];
+
+  @Autowired()
+  private monacoService: MonacoService;
 
   private _sortedEditorGroups: EditorGroup[] | undefined = [];
 
@@ -47,8 +52,15 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   private initializing: Promise<any>;
 
+  public editorContextKeyService: IScopedContextKeyService;
+
+  private _domNode: HTMLElement;
+
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
+
+  @Autowired(IEditorDocumentModelService)
+  protected documentModelManager: IEditorDocumentModelService;
 
   constructor() {
     super();
@@ -154,7 +166,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   public get currentEditor(): IEditor | null {
-    return this.currentEditorGroup.currentEditor;
+    return this.currentEditorGroup && this.currentEditorGroup.currentEditor;
   }
 
   public get currentCodeEditor(): ICodeEditor | null {
@@ -223,6 +235,63 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     const state: IEditorGridState = this.topGrid.serialize()!;
     await this.openedResourceState.set('grid', state);
 
+  }
+
+  prepareContextKeyService(contextKeyService: IContextKeyService) {
+    // 为编辑器创建一个scopedContextService
+    const editorContextKeyService = contextKeyService.createScoped(this._domNode);
+    this.editorContextKeyService = editorContextKeyService;
+
+    // 经过这个Override, 所有编辑器的contextKeyService都是editorContextKeyService的孩子
+    this.monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, (this.editorContextKeyService as any).contextKeyService);
+    // contextKeys
+    const getLanguageFromModel = (uri: URI) => {
+      let result: string | null = null;
+      const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
+      if (modelRef) {
+        if (modelRef) {
+          result = modelRef.instance.languageId;
+        }
+        modelRef.dispose();
+      }
+      return result;
+    };
+    const resourceContext = new ResourceContextKey(this.editorContextKeyService, (uri: URI) => {
+        const res = getLanguageFromModel(uri);
+        if (res) {
+          return res!;
+        } else {
+          return getLanguageFromModel(uri);
+        }
+    });
+    this.onActiveResourceChange((resource) => {
+      if (this.currentEditor && this.currentEditor.currentUri) {
+        resourceContext.set(this.currentEditor.currentUri);
+      } else {
+        if (resource) {
+          resourceContext.set(resource.uri);
+        } else {
+          resourceContext.reset();
+        }
+      }
+    });
+
+    if (this.currentEditor && this.currentEditor.currentUri) {
+      resourceContext.set(this.currentEditor.currentUri);
+    } else {
+      if (this.currentResource) {
+        resourceContext.set(this.currentResource.uri);
+      } else {
+        resourceContext.reset();
+      }
+    }
+  }
+
+  onDomCreated(domNode: HTMLElement) {
+    this._domNode = domNode;
+    if (this.editorContextKeyService) {
+      this.editorContextKeyService.attachToDomNode(domNode);
+    }
   }
 
   public async restoreState() {
@@ -306,6 +375,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
+  @Autowired(AppConfig)
+  config: AppConfig;
+
   codeEditor!: ICodeEditor;
 
   diffEditor!: IDiffEditor;
@@ -351,6 +423,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private readonly toDispose: monaco.IDisposable[] = [];
 
+  private _contextKeyService: IContextKeyService;
+
+  private _resourceContext: ResourceContextKey;
+
+  private _editorLangIDContextKey: IContextKey<string>;
+
+  private _isInDiffEditorContextKey: IContextKey<boolean>;
+
   // 当前为EditorComponent，且monaco光标变化时触发
   private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
   public onCurrentEditorCursorChange = this._onCurrentEditorCursorChange.event;
@@ -359,12 +439,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string) {
     super();
-    this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
-      if (e.payload.gridId === this.grid.uid) {
+    this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
+      if (e.payload.slotLocation === getSlotLocation('@ali/ide-editor', this.config.layoutConfig)) {
+        // window.requestAnimationFrame(() => this.layoutEditors());
         this.layoutEditors();
       }
     });
-    // TODO listen Main layout resize Event
   }
 
   layoutEditors() {
@@ -396,6 +476,54 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       oldOpenType,
       oldResource,
     }));
+    this.setContextKeys();
+  }
+
+  setContextKeys() {
+    if (!this._resourceContext) {
+      const getLanguageFromModel = (uri: URI) => {
+        let result: string | null = null;
+        const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
+        if (modelRef) {
+          if (modelRef) {
+            result = modelRef.instance.languageId;
+          }
+          modelRef.dispose();
+        }
+        return result;
+      };
+      this._resourceContext = new ResourceContextKey(this.contextKeyService, (uri: URI) => {
+          const res = getLanguageFromModel(uri);
+          if (res) {
+            return res!;
+          } else {
+            return getLanguageFromModel(uri);
+          }
+      });
+      this._editorLangIDContextKey = this.contextKeyService.createKey<string>('editorLangId', '');
+      this._isInDiffEditorContextKey = this.contextKeyService.createKey<boolean>('isInDiffEditor', false);
+    }
+    if (this.currentEditor && this.currentEditor.currentUri) {
+      this._resourceContext.set(this.currentEditor.currentUri);
+      if (this.currentEditor.currentDocumentModel) {
+        this._editorLangIDContextKey.set(this.currentEditor.currentDocumentModel.languageId);
+      }
+    } else {
+      if (this.currentResource) {
+        this._resourceContext.set(this.currentResource.uri);
+      } else {
+        this._resourceContext.reset();
+      }
+      this._editorLangIDContextKey.reset();
+    }
+    this._isInDiffEditorContextKey.set(!!this.currentOpenType && this.currentOpenType.type === 'diff');
+  }
+
+  get contextKeyService() {
+    if (!this._contextKeyService) {
+      this._contextKeyService = this.workbenchEditorService.editorContextKeyService.createScoped();
+    }
+    return this._contextKeyService;
   }
 
   get pendingResource() {
@@ -451,7 +579,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async createEditor(dom: HTMLElement) {
-    this.codeEditor = await this.collectionService.createCodeEditor(dom);
+    this.codeEditor = await this.collectionService.createCodeEditor(dom, {}, {
+      [ServiceNames.CONTEXT_KEY_SERVICE]:  (this.contextKeyService as any).contextKeyService,
+    });
     this.codeEditor.layout();
     this.toDispose.push(this.codeEditor.onCursorPositionChanged((e) => {
       this._onCurrentEditorCursorChange.fire(e);
@@ -488,7 +618,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async createDiffEditor(dom: HTMLElement) {
-    this.diffEditor = await this.collectionService.createDiffEditor(dom);
+    this.diffEditor = await this.collectionService.createDiffEditor(dom, {}, {
+      [ServiceNames.CONTEXT_KEY_SERVICE]: (this.contextKeyService as any).contextKeyService,
+    });
     this.diffEditor.layout();
     this.toDispose.push(this.diffEditor.modifiedEditor.onSelectionsChanged((e) => {
       if (this.currentOpenType && this.currentOpenType.type === 'diff') {
@@ -663,6 +795,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range);
         if (options.focus || options.preserveFocus) {
           this.codeEditor.focus();
+        }
+        // 可能在diff Editor中修改导致为脏
+        if (this.codeEditor.currentDocumentModel!.dirty) {
+          this.pinPreviewed(resource.uri);
         }
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;
@@ -1043,6 +1179,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
     return false;
+  }
+
+  /**
+   * 防止作为参数被抛入插件进程时出错
+   */
+  toJSON() {
+    return {
+      name: this.name,
+    };
   }
 }
 

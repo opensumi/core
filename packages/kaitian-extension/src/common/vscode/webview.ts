@@ -26,11 +26,14 @@ export interface IWebviewPanelViewState {
 }
 
 export interface IMainThreadWebview {
+
+  $getWebviewResourceRoots(): Promise<string[]>;
+
   $createWebviewPanel(id: string, viewType: string, title: string, showOptions: WebviewPanelShowOptions, options: IWebviewPanelOptions & IWebviewOptions): void;
   $disposeWebview(id: string): void;
   $reveal(id: string, showOptions: WebviewPanelShowOptions): void;
   $setTitle(id: string, value: string): void;
-  $setIconPath(id: string, value: { light: UriComponents, dark: UriComponents } | undefined): void;
+  $setIconPath(id: string, value?: { light: string, dark: string,  hc: string; } | string): void;
 
   $setHtml(id: string, value: string): void;
   $setOptions(id: string, options: IWebviewOptions): void;
@@ -38,6 +41,14 @@ export interface IMainThreadWebview {
 
   $registerSerializer(viewType: string): void;
   $unregisterSerializer(viewType: string): void;
+
+  $connectPlainWebview(id: string);
+  $postMessageToPlainWebview(id: string, value: any): Promise<boolean>;
+  $createPlainWebview(id: string, title: string, iconPath?: string): Promise<void>;
+  $plainWebviewLoadUrl(id: string, uri: string): Promise<void>;
+  $disposePlainWebview(id: string): Promise<void>;
+  $revealPlainWebview(id: string, groupIndex: number): Promise<void>;
+
 }
 
 export interface IExtHostWebview {

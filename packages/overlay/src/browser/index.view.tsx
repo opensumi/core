@@ -3,7 +3,8 @@ import { observer } from 'mobx-react-lite';
 
 import { CtxMenu } from './ctx-menu/ctx-menu.view';
 import { Dialog } from './dialog.view';
-import { SlotRenderer, ComponentRegistry, SlotLocation, useInjectable, ComponentRegistryInfo, AppConfig } from '@ali/ide-core-browser';
+import { ComponentRenderer, ComponentRegistry, SlotLocation, useInjectable, ComponentRegistryInfo, AppConfig } from '@ali/ide-core-browser';
+import './styles.module.less';
 
 export const Overlay = observer(() => {
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
@@ -23,10 +24,10 @@ export const Overlay = observer(() => {
   }
 
   return (
-    <div className={'ide-overlay'}>
+    <div className='ide-overlay'>
       <Dialog />
       <CtxMenu />
-      <SlotRenderer Component={extraComponents} />
+      <ComponentRenderer Component={extraComponents} />
     </div>
   );
 });

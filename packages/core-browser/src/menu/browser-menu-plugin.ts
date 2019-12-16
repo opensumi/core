@@ -27,6 +27,9 @@ import * as strings from '@ali/ide-core-common/lib/utils/strings';
 import { KeybindingRegistry, ResolvedKeybinding } from '../keybinding';
 import { getIcon } from '../style/icon/icon';
 
+/**
+ * @deprecated
+ */
 @Injectable()
 export class BrowserMainMenuFactory {
 

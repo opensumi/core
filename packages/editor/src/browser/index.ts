@@ -5,7 +5,7 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILang
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { EditorContribution } from './editor.contribution';
+import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService, IEditorActionRegistry, ICompareService, IBreadCrumbService, IEditorFeatureRegistry } from './types';
 import { EditorComponentRegistryImpl } from './component';
@@ -21,9 +21,11 @@ import { CompareService, CompareEditorContribution } from './diff/compare';
 import { BreadCrumbServiceImpl } from './breadcrumb';
 import { EditorContextMenuBrowserEditorContribution } from './menu/editor.context';
 import { EditorFeatureRegistryImpl } from './feature';
+import { MainLayoutContribution } from '@ali/ide-main-layout';
 export * from './types';
 export * from './doc-model/types';
 export * from './doc-cache';
+export * from './editor.less';
 
 @Injectable()
 export class EditorModule extends BrowserModule {
@@ -86,6 +88,7 @@ export class EditorModule extends BrowserModule {
     EditorContribution,
     CompareEditorContribution,
     EditorContextMenuBrowserEditorContribution,
+    EditorAutoSaveEditorContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 
@@ -93,8 +96,8 @@ export class EditorModule extends BrowserModule {
 
 }
 
-@Domain(ClientAppContribution, MonacoContribution)
-export class EditorClientAppContribution implements ClientAppContribution, MonacoContribution {
+@Domain(ClientAppContribution, MonacoContribution, MainLayoutContribution)
+export class EditorClientAppContribution implements ClientAppContribution, MonacoContribution, MainLayoutContribution {
 
   @Autowired()
   resourceService!: ResourceService;
@@ -142,39 +145,12 @@ export class EditorClientAppContribution implements ClientAppContribution, Monac
     await this.workbenchEditorService.initialize();
   }
 
+  async onDidRender() {
+
+  }
+
   onContextKeyServiceReady(contextKeyService: IContextKeyService) {
-    // contextKeys
-    const resourceScheme = contextKeyService.createKey<string>('resourceScheme', '');
-    const resourceFilename = contextKeyService.createKey<string>('resourceFilename', '');
-    const resourceExtname = contextKeyService.createKey<string>('resourceExtname', '');
-    const resourceLangId = contextKeyService.createKey<string>('resourceLangId', '');
-    const resourceKey = contextKeyService.createKey<string>('resource', '');
-    const isFileSystemResource = contextKeyService.createKey<boolean>('isFileSystemResource', false);
-
-    const setKeys = (resource) => {
-      if (resource) {
-        resourceScheme.set(resource.uri.scheme);
-        resourceFilename.set(resource.uri.path.name);
-        resourceExtname.set(resource.uri.path.ext);
-        const langId = this.workbenchEditorService.currentEditor ? this.workbenchEditorService.currentEditor.currentDocumentModel!.languageId : '';
-        resourceLangId.set(langId);
-        resourceKey.set(resource.uri.toString());
-        isFileSystemResource.set(resource.uri.scheme === 'file'); // TOOD FileSystemClient.canHandle
-      } else {
-        resourceScheme.set('');
-        resourceFilename.set('');
-        resourceExtname.set('');
-        resourceLangId.set('');
-        resourceKey.set('');
-        isFileSystemResource.set(false); // TOOD FileSystemClient.canHandle
-      }
-    };
-
-    this.workbenchEditorService.onActiveResourceChange((resource) => {
-      setKeys(resource);
-    });
-
-    setKeys(this.workbenchEditorService.currentResource);
+    this.workbenchEditorService.prepareContextKeyService(contextKeyService);
   }
 
 }

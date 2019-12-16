@@ -8,7 +8,7 @@
 .statusBar {
   background: var(--statusBar-background);
   display: flex;
-  height: 100%;
+  height: 24px;
   border: 1px solid var(--statusBar-border);
   white-space: nowrap;
 }
@@ -40,6 +40,10 @@
 .element.hasCommand:hover {
   background-color: var(--statusBarItem-hoverBackground);
   cursor: pointer;
+}
+
+.element.hasCommand:active {
+  background-color: var(--statusBarItem-activeBackground);
 }
 
 .area.left .element {

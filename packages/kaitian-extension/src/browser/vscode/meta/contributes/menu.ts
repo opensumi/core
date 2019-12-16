@@ -1,12 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction, replaceLocalizePlaceholder, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
-import { TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
-import { SCMMenuId } from '@ali/ide-scm/lib/common';
+import { ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
+import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
 
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
-import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
+import { IEditorGroup } from '@ali/ide-editor';
 
 export interface MenuActionFormat {
   when: string;
@@ -57,6 +57,7 @@ export const contributedMenuUtils = {
   },
 };
 
+// TODO: to be deprecated
 export function parseMenuPath(value: string): string[] | undefined {
   switch (value) {
     case 'commandPalette': return [];
@@ -73,9 +74,9 @@ export function parseMenuPath(value: string): string[] | undefined {
     case 'debug/toolBar': return [];
     case 'menuBar/file': return [];
     case 'scm/title': return [];
-    case 'scm/sourceControl': return [SCMMenuId.SCM_SOURCE_CONTROL];
-    case 'scm/resourceGroup/context': return [SCMMenuId.SCM_RESOURCE_GROUP_CTX];
-    case 'scm/resourceState/context': return [SCMMenuId.SCM_RESOURCE_STATE_CTX];
+    case 'scm/sourceControl': return [];
+    case 'scm/resourceGroup/context': return [];
+    case 'scm/resourceState/context': return [];
     case 'scm/change/title': return [];
     case 'statusBar/windowIndicator': return [];
 
@@ -141,7 +142,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   newMenuRegistry: IMenuRegistry;
 
   @Autowired()
-  toolBarRegistry: TabBarToolbarRegistry;
+  toolBarRegistry: ToolbarRegistry;
 
   @Autowired(IEditorActionRegistry)
   editorActionRegistry: IEditorActionRegistry;
@@ -243,7 +244,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       }
     }
 
-    // new registeration
+    // new menu registeration
     for (const menuPosition of Object.keys(this.json)) {
       const menuActions = this.json[menuPosition];
       if (!isValidMenuItems(menuActions, console)) {
@@ -292,8 +293,12 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         if (menuId === MenuId.EditorTitle && command.iconClass) {
           this.addDispose(this.editorActionRegistry.registerEditorAction({
             title: replaceLocalizePlaceholder(command.label)!,
-            onClick: (resource) => {
-              this.commandService.executeCommand(command.id, resource ? resource.uri : undefined);
+            onClick: (resource, group: IEditorGroup) => {
+              if (group.currentEditor) {
+                this.commandService.executeCommand(command.id, group.currentEditor.currentUri);
+              } else {
+                this.commandService.executeCommand(command.id, resource ? resource.uri : undefined);
+              }
             },
             iconClass: command.iconClass,
             when: item.when,

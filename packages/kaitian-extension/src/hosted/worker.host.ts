@@ -1,4 +1,4 @@
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter, Deferred } from '@ali/ide-core-common';
 import {
   RPCProtocol, ProxyIdentifier,
 } from '@ali/ide-connection';
@@ -38,6 +38,8 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
   private kaitianExtAPIImpl: Map<string, any> = new Map();
   private logger: ExtensionLogger;
 
+  private initDeferred =  new Deferred();
+
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
 
@@ -57,6 +59,8 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.logger.verbose('worker $initExtensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
+
+    this.initDeferred.resolve();
   }
 
   private findExtensionByVarId(workerVarId: string) {
@@ -119,6 +123,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 
   public async $activateExtension(id: string) {
+    await this.initDeferred.promise;
     return this.activateExtension(id);
   }
 

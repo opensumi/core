@@ -18,9 +18,11 @@ renderApp({
   ],
   layoutConfig: defaultConfig,
   useCdnIcon: false,
+  isSyncPreference: true,
   defaultPreferences: {
     'general.theme': 'ide-dark',
     'general.icon': 'vscode-icons',
+    'application.confirmExit': 'never',
   },
   // iconStyleSheets: [
   //   {
@@ -31,4 +33,5 @@ renderApp({
   //     cssPath: '//at.alicdn.com/t/font_403404_1qiu0eed62f.css',
   //   },
   // ],
+},
 });

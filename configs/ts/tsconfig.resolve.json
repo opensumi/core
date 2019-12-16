@@ -69,18 +69,6 @@
       "@ali/ide-editor/lib/*": [
         "../packages/editor/src/*"
       ],
-      "@ali/ide-activity-panel": [
-        "../packages/activity-panel/src/index.ts"
-      ],
-      "@ali/ide-activity-panel/lib/*": [
-        "../packages/activity-panel/src/*"
-      ],
-      "@ali/ide-activity-bar": [
-        "../packages/activity-bar/src/index.ts"
-      ],
-      "@ali/ide-activity-bar/lib/*": [
-        "../packages/activity-bar/src/*"
-      ],
       "@ali/ide-connection": [
         "../packages/connection/src/index.ts"
       ],

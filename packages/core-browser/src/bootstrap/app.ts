@@ -67,7 +67,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
 export interface LayoutConfig {
   [area: string]: {
     modules: Array<string>;
-    // TabPanel支持配置尺寸
+    // @deprecated
     size?: number;
   };
 }
@@ -131,6 +131,8 @@ export class ClientApp implements IClientApp {
       staticServicePath: opts.staticServicePath,
       editorBackgroudImage: opts.editorBackgroudImage,
       extensionCandidate: opts.extensionCandidate,
+      layoutComponent: opts.layoutComponent,
+      isSyncPreference: opts.isSyncPreference,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;

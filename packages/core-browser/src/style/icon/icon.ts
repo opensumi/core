@@ -1,6 +1,6 @@
 import { SymbolKind } from '@ali/ide-core-common';
 
-export const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3jbeug1g5qd.css';
+export const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_y894q0mgk6.css';
 
 const iconPrefixes = ['kaitian-icon kticon-'];
 
@@ -44,7 +44,7 @@ export function getIcon(iconKey: string, options?: {
     iconClass += ` iconfont-anim-${ANIM_CLASS_NAME[anim]}`;
   }
   if (fill) {
-    iconClass += ' filled';
+    iconClass += ' toggled';
   }
   return iconClass;
 }
@@ -137,6 +137,9 @@ export const defaultIconMap = {
   'disconnect': 'disconnect',
   'download': 'download',
   'follow-cursor': 'follow-cursor',
+  'minus': 'minus',
+  'expand': 'arrawsalt',
+  'shrink': 'shrink',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {

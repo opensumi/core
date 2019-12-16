@@ -39,12 +39,13 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
   contribute() {
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
-        this.mainlayoutService.registerTabbarViewToContainerMap(this.getViewsMap(this.contributes));
         for (const container of this.json[location]) {
           const handlerId = this.mainlayoutService.collectTabbarComponent([], {
             iconClass: this.iconService.fromIcon(this.extension.path, container.icon),
             title: container.title,
             containerId: container.id,
+            // 插件注册的视图默认在最后
+            priority: 0,
           }, 'left');
           this.disposableCollection.push({
             dispose: () => {

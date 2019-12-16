@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { renderApp } from '@ali/ide-startup/entry/web/render-app';
-import { SlotRenderer } from '@ali/ide-core-browser';
+import { ComponentRenderer } from '@ali/ide-core-browser';
 import { BrowserModule, CommandRegistry, Command } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
@@ -84,7 +84,7 @@ const StatusBarDemo = observer(() => {
           <button onClick={setText}>设置开天的文字</button>
         </div>
       </div>
-      <SlotRenderer Component={StatusBarView}></SlotRenderer>
+      <ComponentRenderer Component={StatusBarView}></ComponentRenderer>
     </div>
   );
 });

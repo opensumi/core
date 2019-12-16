@@ -2,11 +2,12 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, RenderLineNumbersType, TextEditorCursorStyle } from '../../../common/vscode';
 import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
-import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@ali/ide-core-common';
+import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection, Delayer } from '@ali/ide-core-common';
 import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import debounce = require('lodash.debounce');
+import { MainThreadExtensionDocumentData } from './main.thread.doc';
 
 @Injectable({multiple: true})
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -21,7 +22,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   private readonly proxy: IExtensionHostEditorService;
 
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol, private documents: MainThreadExtensionDocumentData) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEditors);
     this.$getInitialState().then((change) => {
@@ -34,9 +35,15 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const editors = this.editorService.editorGroups.map((group) => {
       if (group.currentOpenType && isEditor(group.currentOpenType)) {
         const editor = group.currentEditor as IMonacoImplEditor;
+        if (!editor.currentDocumentModel) {
+          return undefined;
+        }
+        if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
+          return undefined;
+        }
         return {
           id: getTextEditorId(group, group.currentResource!),
-          uri: editor.currentDocumentModel!.uri.toString(),
+          uri: editor.currentDocumentModel.uri.toString(),
           selections: editor!.getSelections() || [],
           options: getEditorOption(editor.monacoEditor),
           viewColumn: getViewColumn(group),
@@ -47,7 +54,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const activedEditor =  this.editorService.currentResource && editors.find((e) => e!.uri === this.editorService.currentResource!.uri.toString());
     return {
       created: editors,
-      actived: activedEditor && activedEditor.id,
+      actived: activedEditor && this.documents.isDocSyncEnabled(activedEditor.uri) && activedEditor.id,
     } as IEditorChangeDTO;
 
   }
@@ -134,16 +141,22 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         const change: IEditorChangeDTO = {};
         if (payload.newOpenType && (payload.newOpenType.type === 'code' || payload.newOpenType.type === 'diff')) {
           const editor = payload.group.currentEditor as IMonacoImplEditor;
-          change.created = [
-            {
-              id: getTextEditorId(payload.group, payload.newResource!),
-              uri: editor.currentDocumentModel!.uri.toString(),
-              selections: editor!.getSelections() || [],
-              options: getEditorOption(editor.monacoEditor),
-              viewColumn: getViewColumn(payload.group),
-              visibleRanges: editor.monacoEditor.getVisibleRanges(),
-            },
-          ];
+          if (!editor.currentDocumentModel) {
+            // noop
+          } else if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
+            // noop
+          } else {
+            change.created = [
+              {
+                id: getTextEditorId(payload.group, payload.newResource!),
+                uri: editor.currentDocumentModel!.uri.toString(),
+                selections: editor!.getSelections() || [],
+                options: getEditorOption(editor.monacoEditor),
+                viewColumn: getViewColumn(payload.group),
+                visibleRanges: editor.monacoEditor.getVisibleRanges(),
+              },
+            ];
+          }
           // 来自切换打开类型
           if (resourceEquals(payload.newResource, payload.oldResource) && !openTypeEquals(payload.newOpenType, payload.oldOpenType) && payload.newResource === this.editorService.currentResource) {
             change.actived = getTextEditorId(payload.group, payload.newResource!);
@@ -168,9 +181,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       }
     }));
 
-    this.addDispose(
-      this.eventBus.on(EditorSelectionChangeEvent, debounce((e) => {
-
+    const selectionChange = (e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);
       this.proxy.$acceptPropertiesChange({
         id: editorId,
@@ -179,7 +190,21 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           source: e.payload.source,
         },
       });
-    }, 50, {maxWait: 200, leading: true, trailing: true})));
+    };
+
+    const debouncedSelectionChange = debounce((e) => {
+      return selectionChange(e);
+    }, 50, {maxWait: 200, leading: true, trailing: true});
+
+    this.addDispose(
+      this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+        if (e.payload.source === 'mouse') {
+          debouncedSelectionChange(e);
+        } else {
+          debouncedSelectionChange.cancel();
+          selectionChange(e);
+        }
+      }));
 
     this.addDispose(this.eventBus.on(EditorVisibleChangeEvent, debounce((e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);

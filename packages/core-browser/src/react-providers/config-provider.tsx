@@ -15,6 +15,7 @@ export interface AppConfig {
   injector: Injector;
   wsPath: string;
   layoutConfig: LayoutConfig;
+  layoutComponent?: React.FC;
   /**
    * 用于挂载webview的iframe地址
    */
@@ -24,6 +25,8 @@ export interface AppConfig {
   staticServicePath?: string;
 
   editorBackgroudImage?: string;
+
+  isSyncPreference?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

@@ -1,4 +1,4 @@
-import { Emitter, isDevelopment } from '@ali/ide-core-common';
+import { Emitter, isDevelopment, ReporterProcessMessage } from '@ali/ide-core-common';
 import * as net from 'net';
 import {
   createSocketConnection,
@@ -7,13 +7,15 @@ import {
   RPCProtocol,
 } from '@ali/ide-connection';
 import { ExtensionLogger } from './extension-log';
+import { ProcessMessageType } from '../common';
+import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 
 const argv = require('yargs').argv;
 let logger: ExtensionLogger;
 
 async function initRPCProtocol(): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();
-  const {getRPCService} = initRPCService(extCenter);
+  const { getRPCService } = initRPCService(extCenter);
   const extConnection = net.createConnection(argv['kt-process-sockpath']);
 
   extCenter.setConnection(createSocketConnection(extConnection));
@@ -49,6 +51,16 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     }
 
     const preload = new Preload(protocol);
+
+    preload.onFireReporter((reportMessage: ReporterProcessMessage) => {
+      if (process && process.send) {
+        process.send({
+          type: ProcessMessageType.REPORTER,
+          data: reportMessage,
+        });
+      }
+    });
+
     logger!.log('preload.init start');
     await preload.init();
     logger!.log('preload.init end');
@@ -70,25 +82,64 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
 
     }
 
-    } catch (e) {
-      logger!.error(e);
-    }
+  } catch (e) {
+    logger!.error(e);
+  }
 })();
 
 function getErrorLogger() {
   return logger && logger.error.bind(logger) || console.error.bind(console);
 }
 
-process.on('uncaughtException', (err) => {
-  getErrorLogger()('[Extension-Host][Uncaught Exception]', err);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  getErrorLogger()('[Extension-Host][Unhandle Rejection]', promise, 'reason:', reason);
-});
-
-if (isDevelopment()) {
-  process.on('rejectionHandled', (err) => {
-    getErrorLogger()('[Extension-Host][Handled Rejection]', err);
-  });
+function getWarnLogger() {
+  return logger && logger.warn.bind(logger) || console.warn.bind(console);
 }
+
+function unexpectedErrorHandler(e) {
+  setTimeout(() => {
+    getErrorLogger()('[Extension-Host]', e.message, e.stack && '\n\n' + e.stack);
+  }, 0);
+}
+
+function onUnexpectedError(e: any) {
+  let err = e;
+  if (!err) {
+    getWarnLogger()(`Unknow Exception ${err}`);
+    return;
+  }
+
+  if (isPromiseCanceledError(err)) {
+    getWarnLogger()(`Canceled ${err.message}`);
+    return;
+  }
+
+  if (!(err instanceof Error)) {
+    err = new Error(e);
+  }
+  unexpectedErrorHandler(err);
+}
+
+process.on('uncaughtException', (err) => {
+  onUnexpectedError(err);
+});
+
+const unhandledPromises: Promise<any>[] = [];
+process.on('unhandledRejection', (reason, promise) => {
+  unhandledPromises.push(promise);
+  setTimeout(() => {
+    const idx = unhandledPromises.indexOf(promise);
+    if (idx >= 0) {
+      promise.catch((e) => {
+        unhandledPromises.splice(idx, 1);
+        onUnexpectedError(e);
+      });
+    }
+  }, 1000);
+});
+
+process.on('rejectionHandled', (promise: Promise<any>) => {
+  const idx = unhandledPromises.indexOf(promise);
+  if (idx >= 0) {
+    unhandledPromises.splice(idx, 1);
+  }
+});
