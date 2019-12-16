@@ -8,6 +8,7 @@ import { IDisposable, Disposable, URI, MaybeNull, IEventBus, ILogger } from '@al
 import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 import { IKaitianExtHostWebviews } from '../../../common/kaitian/webview';
 import { IIconService } from '@ali/ide-theme';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 @Injectable({multiple: true})
 export class MainThreadWebview extends Disposable implements IMainThreadWebview {
@@ -40,6 +41,9 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
   @Autowired(ILogger)
   logger: ILogger;
+
+  @Autowired(StaticResourceService)
+  staticResourceService: StaticResourceService;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
@@ -176,8 +180,13 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     webviewPanel.editorWebview.title = value;
   }
 
-  $setIconPath(id: string, value: { light: UriComponents; dark: UriComponents; } | undefined): void {
-    // TODO 依赖icon服务
+  $setIconPath(id: string, value: { light: string; dark: string; hc: string; } | undefined): void {
+    const webviewPanel = this.getWebivewPanel(id);
+    if (!value) {
+      webviewPanel.editorWebview.icon = '';
+    } else {
+      webviewPanel.editorWebview.icon = this.iconService.fromIconUrl(value)! + ' background-tab-icon';
+    }
   }
 
   $setHtml(id: string, value: string): void {
@@ -264,6 +273,10 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
       throw new Error('not able to open plain webview id:' + id);
     }
     await (handle as IEditorWebviewComponent<IPlainWebview>).open(groupIndex);
+  }
+
+  async $getWebviewResourceRoots(): Promise<string[]> {
+    return Array.from(this.staticResourceService.resourceRoots);
   }
 
 }

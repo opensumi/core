@@ -49,7 +49,6 @@ export class TerminalClient extends Disposable {
     options?: TerminalOptions,
   ) {
     super();
-
     this._attached = false;
     this._activated = false;
     this._disposed = false;
@@ -58,7 +57,7 @@ export class TerminalClient extends Disposable {
     this._name = this._options.name || '';
     this._widget = widget;
     this._container = document.createElement('div');
-    this._container.className = styles.terminalContent;
+    this._container.className = styles.terminalInstance;
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...TerminalClient.defaultOptions,
@@ -220,7 +219,7 @@ export class TerminalClient extends Disposable {
   }
 
   hide() {
-    if (this._disposed || !this._activated) {
+    if (this._disposed) {
       return;
     }
 

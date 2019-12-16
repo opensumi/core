@@ -135,6 +135,7 @@ export interface IExtensionManagerService extends IExtensionManager  {
   onEnableExtension(extensionPath: string): Promise<void>;
   makeExtensionStatus(extensionId: string, state: Partial<RawExtension>): Promise<void>;
   setRequestHeaders(requestHeaders: RequestHeaders): Promise<void>;
+  openExtensionDetail(options: OpenExtensionOptions): void;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
@@ -155,4 +156,14 @@ export const IExtensionManagerRequester = Symbol('IExtensionManagerRequester');
 export interface IExtensionManagerRequester {
   request<T = any>(path: string, options?: urllib.RequestOptions): Promise<urllib.HttpClientResponse<T>>;
   setHeaders(headers: RequestHeaders): void;
+}
+
+export interface OpenExtensionOptions {
+  publisher: string;
+  name: string;
+  preview: boolean;
+  remote: boolean;
+  displayName?: string;
+  version?: string;
+  icon?: string;
 }

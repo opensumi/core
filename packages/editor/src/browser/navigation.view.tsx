@@ -32,7 +32,7 @@ export const NavigationBar = observer(({ editorGroup }: { editorGroup: IEditorGr
   if (!parts) {
     return null;
   }
-  return (parts.length === 0 ? null : <div className={styles.navigation_container}><div className={styles.navigation}>
+  return (parts.length === 0 ? null : <div className={styles.navigation_container}>
     {
       parts.map((p, i) => {
         return <React.Fragment key={i + '-crumb:' + p.name}>
@@ -41,7 +41,7 @@ export const NavigationBar = observer(({ editorGroup }: { editorGroup: IEditorGr
         </React.Fragment>;
       })
     }
-  </div></div>);
+  </div>);
 });
 export const NavigationItem = ({part}: {part: IBreadCrumbPart}) => {
 

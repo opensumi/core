@@ -80,7 +80,7 @@ const PanelView: React.FC<{
           {titleMenu && <InlineActionBar menus={titleMenu} />}
         </div>
       </div>
-      <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component!} />
+      <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component || component.options!.component!} />
     </div>
   );
 });

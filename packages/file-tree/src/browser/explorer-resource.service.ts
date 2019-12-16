@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import * as styles from './index.module.less';
 import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
 import {
@@ -26,9 +25,10 @@ import {
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from './file-tree-item';
-import { ExplorerFolderContext, ExplorerFocusedContext, FilesExplorerFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { FileContextKey } from './file-contextkey';
+import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -143,9 +143,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(IDecorationsService)
   protected decorationsService: IDecorationsService;
 
-  @Autowired(ContextMenuRenderer)
-  protected contextMenuRenderer: ContextMenuRenderer;
-
   @Autowired(IContextKeyService)
   protected contextKeyService: IContextKeyService;
 
@@ -158,6 +155,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(ICtxMenuRenderer)
   ctxMenuRenderer: ICtxMenuRenderer;
 
+  @Autowired(FileContextKey)
+  private readonly fileContextKey: FileContextKey;
+
   private _locationTarget: URI | undefined = undefined;
 
   private _nextLocationTarget: URI | undefined = undefined;
@@ -165,6 +165,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _currentRelativeUriContextKey: IContextKey<string>;
 
   private _currentContextUriContextKey: IContextKey<string>;
+
+  private _contextMenuResourceContext: ResourceContextKey;
 
   private decorationChangeEmitter = new Emitter<any>();
   decorationChangeEvent: Event<any> = this.decorationChangeEmitter.event;
@@ -187,10 +189,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _selectTimer;
   private _selectTimes: number = 0;
 
-  private explorerFolderContext: IContextKey<boolean>;
-  private explorerFocusedContext: IContextKey<boolean>;
-  private filesExplorerFocusedContext: IContextKey<boolean>;
-
   public overrideFileDecorationService: FileDecorationsProvider = {
     getDecoration: (uri, hasChildren = false) => {
       // 转换URI为vscode.uri
@@ -204,10 +202,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   constructor() {
     super();
     this.listen();
-
-    this.explorerFolderContext = ExplorerFolderContext.bind(this.contextKeyService);
-    this.explorerFocusedContext = ExplorerFocusedContext.bind(this.contextKeyService);
-    this.filesExplorerFocusedContext = FilesExplorerFocusedContext.bind(this.contextKeyService);
   }
 
   listen() {
@@ -255,21 +249,28 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   get currentRelativeUriContextKey(): IContextKey<string> {
     if (!this._currentRelativeUriContextKey) {
-      this._currentRelativeUriContextKey = this.contextKeyService.createKey('filetreeContextRelativeUri', '');
+      this._currentRelativeUriContextKey = this.filetreeService.contextMenuContextKeyService.createKey('filetreeContextRelativeUri', '');
     }
     return this._currentRelativeUriContextKey;
   }
 
   get currentContextUriContextKey(): IContextKey<string> {
     if (!this._currentContextUriContextKey) {
-      this._currentContextUriContextKey = this.contextKeyService.createKey('filetreeContextUri', '');
+      this._currentContextUriContextKey = this.filetreeService.contextMenuContextKeyService.createKey('filetreeContextUri', '');
     }
     return this._currentContextUriContextKey;
   }
 
+  get contextMenuResourceContext(): ResourceContextKey {
+    if (!this._contextMenuResourceContext) {
+      this._contextMenuResourceContext = new ResourceContextKey(this.filetreeService.contextMenuContextKeyService);
+    }
+    return this._contextMenuResourceContext;
+  }
+
   private setContextKeys(file: Directory | File) {
     const isSingleFolder = !this.filetreeService.isMutiWorkspace;
-    this.explorerFolderContext.set((isSingleFolder && !file) || !!file && Directory.isDirectory(file));
+    this.fileContextKey.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.isDirectory(file));
   }
 
   @action.bound
@@ -310,13 +311,13 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   onBlur = () => {
     this.filetreeService.isFocused = false;
-    this.filesExplorerFocusedContext.set(false);
+    this.fileContextKey.filesExplorerFocused.set(false);
   }
 
   onFocus = () => {
     this.filetreeService.isFocused = true;
-    this.filesExplorerFocusedContext.set(true);
-    this.explorerFocusedContext.set(true);
+    this.fileContextKey.filesExplorerFocused.set(true);
+    this.fileContextKey.explorerFocused.set(true);
   }
 
   @action.bound
@@ -435,6 +436,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.setContextKeys(nodes[0] as (Directory | File));
     this.currentContextUriContextKey.set(uris[0].toString());
     this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
+    this.contextMenuResourceContext.set(uris[0]);
 
     const menus = this.filetreeService.contributedContextMenu;
     const result = generateCtxMenu({ menus });

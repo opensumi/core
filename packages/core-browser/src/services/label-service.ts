@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, MaybePromise, DataUri, addElement, IDisposable, LRUMap } from '@ali/ide-core-common';
+import { URI, MaybePromise, DataUri, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ali/ide-core-common';
 import classnames from 'classnames';
 import { getIcon } from '../style/icon/icon';
 
@@ -24,6 +24,11 @@ export interface ILabelProvider {
    * 返回长名称.
    */
   getLongName?(element: URI): string;
+
+  /**
+   * 通知使用方发生了变更
+   */
+  onDidChange?: Event<URI>;
 
 }
 
@@ -68,7 +73,7 @@ export class DefaultUriLabelProvider implements ILabelProvider {
 }
 
 @Injectable()
-export class LabelService {
+export class LabelService extends WithEventBus {
   @Autowired()
   public defaultLabelProvider: DefaultUriLabelProvider;
 
@@ -77,6 +82,7 @@ export class LabelService {
   private cachedProviderMap: Map<string, ILabelProvider> = new LRUMap<string, ILabelProvider>(300, 200);
 
   constructor() {
+    super();
     this.registerLabelProvider(this.defaultLabelProvider);
   }
 
@@ -101,7 +107,19 @@ export class LabelService {
 
   registerLabelProvider(provider: ILabelProvider): IDisposable {
     this.cachedProviderMap.clear();
-    return addElement(this.providers, provider, true);
+    const disposer = new Disposable();
+    if (provider.onDidChange) {
+      disposer.addDispose(provider.onDidChange((uri) => {
+        this.eventBus.fire(new ResourceLabelOrIconChangedEvent(uri));
+      }));
+    }
+    disposer.addDispose(addElement(this.providers, provider, true));
+    disposer.addDispose({
+      dispose: () => {
+        this.cachedProviderMap.clear();
+      },
+    });
+    return disposer;
   }
 
   getIcon(uri: URI, options?: ILabelOptions): string {
@@ -214,3 +232,14 @@ export function detectModeId(modelService, modeService, resource: monaco.Uri): s
   // otherwise fallback to path based detection
   return modeService.getModeIdByFilepathOrFirstLine(resource.toString());
 }
+
+export function getLanguageIdFromMonaco(uri: URI) {
+  modeService = monaco.services.StaticServices.modeService.get();
+  modelService = monaco.services.StaticServices.modelService.get();
+  return detectModeId(modelService, modeService, monaco.Uri.parse(uri.toString()));
+}
+
+/**
+ * labelService所处理的label或者icon变更的事件
+ */
+export class ResourceLabelOrIconChangedEvent extends BasicEvent<URI> {}

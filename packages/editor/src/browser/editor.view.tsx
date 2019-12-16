@@ -10,7 +10,6 @@ import { Tabs } from './tab.view';
 import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry, PreferenceService } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { Scroll } from './component/scroll/scroll';
 import { EditorComponentRegistryImpl } from './component';
 import { NavigationBar } from './navigation.view';
@@ -20,15 +19,20 @@ import { TabTitleMenuService } from './menu/title-context.menu';
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
 
-  const instance = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
+  const workbenchEditorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const rightWidgetInfo = componentRegistry.getComponentRegistryInfo('editor-widget-right');
   const RightWidget: React.Component | React.FunctionComponent<any> | undefined = rightWidgetInfo && rightWidgetInfo.views[0].component;
 
   return (
-    <div className={styles.kt_workbench_editor} id='workbench-editor' ref={(ele) => ref.current = ele}>
+    <div className={styles.kt_workbench_editor} id='workbench-editor' ref={(ele) => {
+      ref.current = ele;
+      if (ele) {
+        workbenchEditorService.onDomCreated(ele);
+      }
+    }}>
       <div className={styles.kt_editor_main_wrapper}>
-        <EditorGridView grid={instance.topGrid} ></EditorGridView>
+        <EditorGridView grid={workbenchEditorService.topGrid} ></EditorGridView>
       </div>
       {RightWidget ?
         <div className={styles.kt_editor_right_widget}>
@@ -125,7 +129,6 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const codeEditorRef = React.useRef<HTMLElement | null>();
   const diffEditorRef = React.useRef<HTMLElement | null>();
   const editorBodyRef = React.useRef<HTMLElement | null>();
-  const contextMenuRenderer = useInjectable(ContextMenuRenderer) as ContextMenuRenderer;
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
   const preferenceService = useInjectable(PreferenceService) as PreferenceService;

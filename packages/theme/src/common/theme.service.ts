@@ -20,7 +20,13 @@ export interface IIconService {
   currentTheme: IIconTheme;
   applyTheme(themeId?: string): Promise<void>;
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
-  fromIconUrl(iconUrl: string): string;
+  /**
+   * 将一个url地址转换为icon的class
+   * @param iconUrl iconUrl地址，可以是直接的字符串，或者和主题类型有关的 object 字符串对象
+   * @param maskMode=false 是否使用mask模式，如果使用, icon将会以webkit-mask的形式生成样式。否则将会以background形式的形式生成样式。默认false。
+   * @returns icon的class
+   */
+  fromIconUrl(iconUrl: string | { [index in ThemeType]: string }, maskMode?: boolean): string;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
   getAvailableThemeInfos(): ThemeInfo[];

@@ -18,6 +18,7 @@ export interface ITerminalController {
   groups: IWidgetGroup[];
   state: { index: number };
   errors: Map<string, ITerminalError>;
+  reconnect(): Promise<void>;
   recovery(history: any): Promise<void>;
   firstInitialize(): void;
   removeFocused(): void;
@@ -31,7 +32,7 @@ export interface ITerminalController {
   createGroup(selected?: boolean): number;
   selectGroup(index: number): void;
 
-  drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean): Promise<void>;
+  drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean, meta?: string): Promise<void>;
   showTerminalClient(widgetId: string): Promise<void>;
   retryTerminalClient(widgetId: string): Promise<void>;
   layoutTerminalClient(widgetId: string): void;

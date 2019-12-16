@@ -25,7 +25,7 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
     },
     registerTextEditorCommand(id: string, callback: (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, ...args: any[]) => void, thisArg?: any): vscode.Disposable {
       return extHostCommands.registerCommand(true, id, (...args: any[]): any => {
-        const activeTextEditor = extHostEditors.activeEditor;
+        const activeTextEditor = extHostEditors.activeEditor ? extHostEditors.activeEditor.textEditor : undefined;
         if (!activeTextEditor) {
           console.warn('Cannot execute ' + id + ' because there is no active text editor.');
           return undefined;

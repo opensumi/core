@@ -128,7 +128,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   getPreference(preferenceName: string, scope: PreferenceScope, inherited: boolean = false): {value: any, effectingScope: PreferenceScope} {
     const { value, scope: resolvedScope } = (this.preferenceService as any).doResolve(preferenceName, undefined, undefined, scope) || { value: undefined, scope: PreferenceScope.Default};
-    const { effectingValue, scope: effectingScope } = (this.preferenceService as any).doResolve(preferenceName, undefined, undefined) || { value: undefined, scope: PreferenceScope.Default};
+    const { scope: effectingScope } = (this.preferenceService as any).doResolve(preferenceName, undefined, undefined) || { value: undefined, scope: PreferenceScope.Default};
     return {
       value,
       effectingScope,
@@ -210,6 +210,7 @@ export const defaultSettingSections: {
       preferences: [
         {id: 'files.exclude', localized: 'preference.files.exclude.title'},
         {id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title'},
+        {id: 'files.associations', localized: 'preference.files.associations.title'},
         {id: 'search.exclude', localized: 'preference.search.exclude.title'},
       ],
     },

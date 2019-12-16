@@ -15,6 +15,7 @@ export class TabbarService extends WithEventBus {
 
   previousContainerId: string = '';
 
+  // 由于 observable.map （即使是deep:false) 会把值转换成observableValue，不希望这样
   containersMap: Map<string, ComponentRegistryInfo> = new Map();
   @observable state: Map<string, TabState> = new Map();
 
@@ -52,7 +53,7 @@ export class TabbarService extends WithEventBus {
   private barSize: number;
   private menuId = `tabbar/${this.location}`;
 
-  constructor(public location: string) {
+  constructor(public location: string, public noAccordion?: boolean) {
     super();
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
@@ -103,16 +104,17 @@ export class TabbarService extends WithEventBus {
     return viewState;
   }
 
-  @computed({equals: (a: ComponentRegistryInfo[], b: ComponentRegistryInfo[]) => a.length === b.length})
+  @computed({equals: visibleContainerEquals})
   get visibleContainers() {
     const components: ComponentRegistryInfo[] = [];
     this.containersMap.forEach((component) => {
-      const state = this.getContainerState(component.options!.containerId);
-      if (!state.hidden) {
+      const state = this.state.get(component.options!.containerId);
+      if (!state || !state.hidden) {
         components.push(component);
       }
     });
-    return components;
+    const size = this.state.size; // 监听state长度
+    return components.sort((pre, next) => (next.options!.priority || 1) - (pre.options!.priority || 1));
   }
 
   registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, barSize) {
@@ -121,6 +123,7 @@ export class TabbarService extends WithEventBus {
     this.listenCurrentChange();
   }
 
+  @action
   registerContainer(containerId: string, componentInfo: ComponentRegistryInfo) {
     let options = componentInfo.options;
     if (!options) {
@@ -133,6 +136,9 @@ export class TabbarService extends WithEventBus {
       views: componentInfo.views,
       options: observable.object(options, undefined, {deep: false}),
     });
+    // 需要立刻设置，lazy 逻辑会导致computed 的 visibleContainers 可能在计算时触发变更，抛出mobx invariant错误
+    // 另外由于containersMap不是observable, 这边setState来触发visibaleContainers更新
+    this.state.set(containerId, {hidden: false});
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(containerId),
@@ -277,6 +283,10 @@ export class TabbarService extends WithEventBus {
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === this.location) {
+      if (!this.currentContainerId) {
+        // 折叠时不监听变化
+        return;
+      }
       const isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
       const size = this.resizeHandle.getSize(isLatter);
       if (size !== this.barSize && !this.shouldExpand(this.currentContainerId)) {
@@ -330,4 +340,15 @@ export class TabbarService extends WithEventBus {
     }
   }
 
+}
+
+function visibleContainerEquals(a: ComponentRegistryInfo[], b: ComponentRegistryInfo[]): boolean {
+  if (a.length !== b.length ) {
+    return false;
+  } else {
+    for (let i = 0; i < a.length; i ++) {
+      return a[i] === b[i];
+    }
+  }
+  return true;
 }

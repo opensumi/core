@@ -21,25 +21,19 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
   empty,
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
-  const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
-  const corePreferences = useInjectable<CorePreferences>(CorePreferences);
-  function openExtensionDetail(extension: RawExtension, isDouble: boolean) {
-    const query = `extensionId=${extension.publisher}.${extension.name}&version=${extension.version}&name=${extension.displayName || extension.name}&icon=${extension.icon}`;
-    // 当打开模式为双击同时预览模式生效时，默认单击为预览
-    const options = {
-      preview: corePreferences['editor.previewMode'] && !isDouble,
-    };
-    if (extension.installed) {
-      workbenchEditorService.open(new URI(`extension://local?${query}`), options);
-    } else {
-      workbenchEditorService.open(new URI(`extension://remote?${query}`), options);
-    }
-  }
 
   function select(extension: RawExtension, isDouble: boolean) {
     setSelectExtensionId(extension.extensionId);
-    openExtensionDetail(extension, isDouble);
+    extensionManagerService.openExtensionDetail({
+      publisher: extension.publisher,
+      name: extension.name,
+      displayName: extension.displayName || extension.name,
+      icon: extension.icon,
+      preview: !isDouble,
+      remote: !extension.installed,
+      version: extension.version,
+    });
   }
 
   async function install(extension: RawExtension) {

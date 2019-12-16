@@ -38,7 +38,7 @@ export interface IMainLayoutService {
   // @deprecated 提供小程序使用的额外位置控制
   setFloatSize(size: number): void;
   handleSetting(event: React.MouseEvent<HTMLElement>): void;
-  getTabbarService(location: string): TabbarService;
+  getTabbarService(location: string, noAccordion?: boolean): TabbarService;
   getAccordionService(containerId: string): AccordionService;
   // 某一位置是否可见
   isVisible(location: string): boolean;

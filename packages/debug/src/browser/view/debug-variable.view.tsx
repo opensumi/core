@@ -4,7 +4,7 @@ import { DebugVariableService } from './debug-variable.service';
 import { observer } from 'mobx-react-lite';
 import * as styles from './debug-variable.module.less';
 import { SourceTree } from '@ali/ide-core-browser/lib/components';
-import { ViewState } from '@ali/ide-activity-panel';
+import { ViewState } from '@ali/ide-core-browser';
 
 export const DebugVariableView = observer(({
   viewState,

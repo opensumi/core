@@ -24,8 +24,9 @@ export const TabRendererBase: React.FC<{
   direction?: Layout.direction;
   TabbarView: React.FC;
   TabpanelView: React.FC;
-}> = (({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView, ...restProps }) => {
-  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  noAccordion?: boolean;
+}> = (({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView, noAccordion, ...restProps }) => {
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side, noAccordion);
   components.forEach((component) => {
     tabbarService.registerContainer(component.options!.containerId, component);
   });
@@ -48,7 +49,7 @@ export const LeftTabRenderer = ({className, components}: {className: string, com
 );
 
 export const BottomTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (
-  <TabRendererBase side='bottom' direction='top-to-bottom' className={clsx(className, 'bottom-slot')} components={components} TabbarView={BottomTabbarRenderer} TabpanelView={BottomTabPanelRenderer} />
+  <TabRendererBase side='bottom' direction='top-to-bottom' className={clsx(className, 'bottom-slot')} components={components} TabbarView={BottomTabbarRenderer} TabpanelView={BottomTabPanelRenderer} noAccordion={true} />
 );
 
 export const NextBottomTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (

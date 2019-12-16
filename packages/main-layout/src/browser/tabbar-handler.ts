@@ -20,7 +20,6 @@ export class TabBarHandler {
   public isVisible: boolean = false;
   public accordionService = this.layoutService.getAccordionService(this.containerId);
 
-  // FIXME panel类型的tababr和侧边栏的tabbar需要一个标志来判断
   constructor(private containerId: string, private tabbarService: TabbarService) {
     this.tabbarService.onCurrentChange((e) => {
       if (e.currentId === this.containerId) {

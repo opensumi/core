@@ -2,6 +2,8 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { IWebviewService } from '../../src/browser';
 import { WebviewServiceImpl } from '../../src/browser/webview.service';
 import { IThemeService, ITheme } from '@ali/ide-theme';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { Disposable } from '@ali/ide-core-common';
 
 const injector = createBrowserInjector([]);
 
@@ -20,6 +22,14 @@ injector.addProviders({
           return undefined;
         },
       } as ITheme;
+    },
+  },
+}, {
+  token: StaticResourceService,
+  useValue: {
+    registerStaticResourceProvider(provider) { return new Disposable(); },
+    resolveStaticResource(uri) {
+      return uri;
     },
   },
 });

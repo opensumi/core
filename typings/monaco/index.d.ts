@@ -1185,6 +1185,7 @@ declare module monaco.contextKeyService {
       private _lastContextId;
       private readonly _contexts;
       private readonly _toDispose;
+      public _domNode: HTMLElement;
       constructor(configurationService: monaco.services.IConfigurationService);
       dispose(): void;
       getContextValuesContainer(contextId: number): Context;
@@ -1413,4 +1414,18 @@ declare module monaco.format {
     export interface LinkedList<T> {
         unshift:(e: T) => {remove: () => any};
     }
+}
+
+declare module monaco.mime {
+  export interface ITextMimeAssociation {
+      readonly id: string;
+      readonly mime: string;
+      readonly filename?: string;
+      readonly extension?: string;
+      readonly filepattern?: string;
+      readonly firstline?: RegExp;
+      readonly userConfigured?: boolean;
+  }
+
+  export function registerTextMime(association: monaco.mime.ITextMimeAssociation, warnOnOverwrite: boolean): void;
 }

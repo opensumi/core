@@ -1,5 +1,5 @@
 declare module "kaitian" {
-  
+
   export namespace layout {
     export function toggleBottomPanel(): Promise<void>;
   }
@@ -15,7 +15,7 @@ declare module "kaitian" {
      * @param message
      */
     postMessage(message: any): Promise<boolean>;
-  
+
     /**
      * 接受来自webview的信息
      */
@@ -25,7 +25,7 @@ declare module "kaitian" {
      * 加载一个url
      */
     loadUrl(url: string): Promise<void>;
-  
+
   }
 
   export interface IDisposable {
@@ -38,28 +38,28 @@ declare module "kaitian" {
   export interface Event<T> {
     (listener: (e: T) => any, thisArgs?: any): IDisposable;
   }
-  
+
   export interface IExtHostPlainWebview extends IPlainWebviewHandle, IDisposable{
-  
+
     reveal(groupIndex: number): Promise<void>;
-  
+
   }
 
   export namespace webview {
 
     /**
      * 获取一个使用<Webview id='xxx'>组件创造的plainWebview的Handle
-     * @param id 
+     * @param id
      */
     export function getPlainWebviewHandle(id: string): IPlainWebviewHandle;
-    
+
     /**
      * 创建一个用于在编辑器区域展示的plain webview组件
-     * @param title 
-     * @param iconPath 
+     * @param title
+     * @param iconPath
      */
     export function createPlainWebview(title: string, iconPath?: string): IExtHostPlainWebview
-  
+
   }
 
   interface IProxy {
@@ -173,7 +173,7 @@ declare module 'kaitian-browser' {
     flip_vertical,
     flip_both,
   }
-  
+
   export enum ANIM_TYPE {
     spin,
     pulse,

@@ -6,6 +6,9 @@ import { electronEnv } from '../../utils/electron';
 import { IContextKeyService, ContextKeyChangeEvent } from '../../context-key';
 import { KeybindingRegistry, ScopedKeybinding } from '../../keybinding';
 
+/**
+ * @deprecated
+ */
 @Injectable()
 export class ElectronContextMenuRenderer implements ContextMenuRenderer {
 
@@ -18,6 +21,9 @@ export class ElectronContextMenuRenderer implements ContextMenuRenderer {
 
 }
 
+/**
+ * @deprecated
+ */
 @Injectable()
 export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFactory {
 

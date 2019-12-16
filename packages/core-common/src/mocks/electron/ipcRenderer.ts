@@ -1,8 +1,11 @@
 import { EventEmitter } from 'events';
 
 export class MockedElectronIpcRenderer  extends EventEmitter implements Electron.IpcRenderer {
-
-
+  
+  invoke(channel: string, ...args: any[]): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
   eventNames() {
     return super.eventNames().map(s => s.toString());
   }
