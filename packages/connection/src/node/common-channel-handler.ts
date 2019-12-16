@@ -234,6 +234,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   }
   private channelConnectionSend = (connection: ws) => {
     return (content: string) => {
+      console.log('connection.readyState', connection.readyState);
       if (connection.readyState === connection.OPEN) {
         connection.send(content, (err: any) => {
           if (err) {

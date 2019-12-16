@@ -30,17 +30,17 @@ export class WSChanneHandler {
     this.connection.send(clientMsg);
   }
   private heartbeatMessage() {
-    // if (this.heartbeatMessageTimer) {
-    //   clearTimeout(this.heartbeatMessageTimer);
-    // }
-    // this.heartbeatMessageTimer = setTimeout(() => {
-    //   const msg = stringify({
-    //     kind: 'heartbeat',
-    //     clientId: this.clientId,
-    //   });
-    //   this.connection.send(msg);
-    //   this.heartbeatMessage();
-    // }, 5000);
+    if (this.heartbeatMessageTimer) {
+      clearTimeout(this.heartbeatMessageTimer);
+    }
+    this.heartbeatMessageTimer = setTimeout(() => {
+      const msg = stringify({
+        kind: 'heartbeat',
+        clientId: this.clientId,
+      });
+      this.connection.send(msg);
+      this.heartbeatMessage();
+    }, 5000);
   }
 
   public async initHandler() {

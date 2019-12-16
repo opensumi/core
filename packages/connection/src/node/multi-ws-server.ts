@@ -1,6 +1,7 @@
 import { ChildConnectPath } from '../common/ws-channel';
 import * as once from 'lodash.once';
 import * as ws from 'ws';
+import * as events from 'events';
 
 interface ExtendWs extends ws {
   sending?: boolean;
@@ -75,40 +76,71 @@ class MessageMarkList {
   }
 }
 
-class MultiConnect {
+/**
+ * 相当于 WebSocket
+ */
+class MultiConnect extends events.EventEmitter {
 
-  public CONNECTING: 0 = 0;
-  public OPEN: 1 = 1;
-  public CLOSING: 2 = 2;
-  public CLOSED: 3 = 3;
+  public isConnected: boolean = false;
+
+  get CONNECTING() {
+    return MultiConnect.CONNECTING;
+  }
+
+  get CLOSING() {
+    return MultiConnect.CLOSING;
+  }
+
+  get CLOSED() {
+    return MultiConnect.CLOSED;
+  }
+
+  get OPEN() {
+    return MultiConnect.OPEN;
+  }
+
+  get binaryType() {
+    return this.connectionList[0].binaryType as BinaryType;
+  }
+
+  set binaryType(type) {
+    this.connectionList.forEach((ws) => {
+      ws.binaryType = type;
+    });
+  }
+
+  get bufferedAmount() {
+    let result = 0;
+
+    this.connectionList.forEach((ws) => {
+      result = result + ws.bufferedAmount;
+    });
+
+    return result;
+  }
 
   public readyState: number = 0;
 
-  private onMessageCallback: (args: any) => void = () => {};
-
-  private onCloseCallback: (args: any) => void = () => {};
-
   private connectionList: ExtendWs[] = [];
-
-  constructor() {}
 
   addConnection(cs: ws) {
     this.connectionList.push(cs);
-    // TODO dispose
-    cs.on('message', this.onMessageCallback);
-  }
-
-  on(name: string, callback: (args: any) => void) {
-    if (name === 'message') {
-      this.onMessageCallback = callback;
-    }
-    if (name === 'close') {
-      this.onCloseCallback = callback;
+    this.bindEvent(cs);
+    if (cs.readyState === this.OPEN) {
+      this.onOpen();
     }
   }
 
-  ping() {
-    // TODO
+  ping(data?: any, mask?: boolean, cb?: (err: Error) => void) {
+    this.connectionList.forEach((ws) => {
+      ws.ping(data, mask, cb);
+    });
+  }
+
+  close(code?: number, data?: string) {
+    this.connectionList.forEach((ws) => {
+      ws.close(code, data);
+    });
   }
 
   async send(data: string, errorCallback: () => void) {
@@ -117,6 +149,10 @@ class MultiConnect {
     content = JSON.parse(content);
     const connection = this.getAvailableConnection( content.method ? content.method : '');
 
+    if (!connection) {
+      throw new Error('找不到可用连接！');
+    }
+
     if (content.method) {
       connection.recentSendMessageMark = connection.recentSendMessageMark || new MessageMarkList();
       connection.recentSendMessageMark.push(content.method);
@@ -124,17 +160,28 @@ class MultiConnect {
     connection.sending = true;
     connection.send(data, (error) => {
       connection.sending = false;
-      errorCallback();
+      if (error && errorCallback) {
+        errorCallback();
+      }
     });
   }
 
-  private getAvailableConnection(mark: string): ExtendWs {
-    // TODO 已经清理已经销毁的
+  private getAvailableConnection(mark: string): ExtendWs | undefined {
     const lastConnection = this.connectionList[this.connectionList.length - 1];
     let availableConnection;
     let recentSameMarkConnect;
 
-    this.connectionList.forEach((ws, index) => {
+    this.connectionList.filter((ws) => {
+      // 过滤掉无效的连接
+      if (ws.readyState === ws.OPEN) {
+        return true;
+      } else {
+        return false;
+      }
+    }).forEach((ws, index) => {
+      if (ws.readyState !== ws.OPEN) {
+        return;
+      }
       if (!ws.sending && !availableConnection) {
         console.log('找到可用连接', ws.routeParam);
         availableConnection = ws;
@@ -148,9 +195,39 @@ class MultiConnect {
     return recentSameMarkConnect || availableConnection || lastConnection;
   }
 
+  private bindEvent(cs: ws) {
+    cs.on('message', (data) => { this.emit('message', data); });
+    cs.on('error', (error) => { this.emit('error', error); });
+    cs.on('ping', (data) => { this.emit('ping', data); });
+    cs.on('pong', (data) => { this.emit('pong', data); });
+    cs.on('close', (code: number, message: string) => { this.onClose(code, message); });
+  }
+
+  private onClose(code: number, message: string ) {
+    if (this.connectionList.some((ws) => {
+      return ws.readyState === this.OPEN;
+    })) {
+      return;
+    }
+    this.emit('close', code, message);
+    this.readyState = this.CLOSED;
+  }
+
+  private onOpen = once(() => {
+    this.emit('open');
+    this.readyState = this.OPEN;
+  });
+
+  static CONNECTING = 0;
+  static OPEN = 1;
+  static CLOSING = 2;
+  static CLOSED = 3;
 }
 
-export class MultiWsServer {
+/**
+ * 相当于 ws.Server
+ */
+export class MultiWsServer extends events.EventEmitter {
 
   /**
    * 每个URL对应的 wsServer 的 map
@@ -163,9 +240,6 @@ export class MultiWsServer {
   private clientMap: Map<string, MultiConnect> = new Map();
 
   private onConnectionCallback: (args: any) => void;
-
-  constructor() {
-  }
 
   handleUpgrade(wsPathname: string, request: any, socket: any, head: any) {
     const clientId = request.headers['sec-websocket-protocol'];
@@ -185,8 +259,8 @@ export class MultiWsServer {
       wsServer = new ws.Server({ noServer: true });
       wsServer.on('connection', (ws) => {
         const clientMultiConnect: MultiConnect = this.clientMap.get(ws.protocol)!;
-        if (clientMultiConnect.readyState !== 1) {
-          clientMultiConnect.readyState = 1;
+        if (!clientMultiConnect.isConnected) {
+          clientMultiConnect.isConnected = true;
           this.onConnection(clientMultiConnect);
         }
       });
@@ -202,17 +276,7 @@ export class MultiWsServer {
     this.wsServerMap.set(wsPathname, wsServer);
   }
 
-  on(name: string, callback: (args: any) => void) {
-    if (name === 'connection') {
-      this.onConnectionCallback = callback;
-    }
-  }
-
-  emit() {
-    // TODO
-  }
-
   private onConnection = (connection: MultiConnect) => {
-    this.onConnectionCallback(connection);
+    this.emit('connection', connection);
   }
 }
