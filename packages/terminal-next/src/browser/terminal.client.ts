@@ -75,7 +75,7 @@ export class TerminalClient extends Disposable {
 
     const searchAddon = new SearchAddon();
     const weblinksAddon = new WebLinksAddon();
-    const filelinkdsAddon = new TerminalFilePathAddon((_, uri: string) => {
+    const filelinksAddon = new TerminalFilePathAddon((_, uri: string) => {
       // todo: support for windows
 
       const mainFuntion = async () => {
@@ -105,7 +105,7 @@ export class TerminalClient extends Disposable {
     });
 
     this._term.loadAddon(searchAddon);
-    this._term.loadAddon(filelinkdsAddon);
+    this._term.loadAddon(filelinksAddon);
     this._term.loadAddon(weblinksAddon);
 
     this.addDispose({
@@ -124,7 +124,7 @@ export class TerminalClient extends Disposable {
         this._fitAddon.dispose();
         searchAddon.dispose();
         weblinksAddon.dispose();
-        filelinkdsAddon.dispose();
+        filelinksAddon.dispose();
         this._layer.dispose();
         this._term.dispose();
       },
