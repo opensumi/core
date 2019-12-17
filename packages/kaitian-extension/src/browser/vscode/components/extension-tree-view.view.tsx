@@ -142,7 +142,7 @@ export const ExtensionTabbarTreeView = observer(({
       if (node.command) {
         if (injector) {
           const commandService: CommandService = injector.get(CommandService);
-          commandService.executeCommand(node.command.command, node.command.arguments);
+          commandService.executeCommand(node.command.command, ...node.command.arguments);
         }
         return;
       } else {
