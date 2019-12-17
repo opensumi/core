@@ -247,14 +247,12 @@ export class ExtHostCommands implements IExtHostCommands {
   }
 
   private processArguments(arg: any[]) {
-    let tempArgs = arg[0];
-    if (Array.isArray(tempArgs) && tempArgs[0].length === 2) {
-      const postion = tempArgs[0];
+    if (Array.isArray(arg) && arg[0].length === 2) {
+      const postion = arg[0];
       if (Position.isPosition(postion[0]) && Position.isPosition(postion[1])) {
-        tempArgs = new Range(new Position(postion[0].line, postion[0].character), new Position(postion[1].line, postion[1].character));
+        return [new Range(new Position(postion[0].line, postion[0].character), new Position(postion[1].line, postion[1].character))];
       }
     }
-    arg[0] = tempArgs;
     return arg;
   }
 
