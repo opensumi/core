@@ -149,9 +149,14 @@ export const ExtensionTabbarTreeView = observer(({
           const commandService: CommandService = injector.get(CommandService);
           commandService.executeCommand(node.command.command, ...(node.command.arguments || []));
         }
+        setNodes(selectNode(node));
         return;
       } else {
-        onTwistieClickHandler(node);
+        if (ExpandableTreeNode.is(node)) {
+          onTwistieClickHandler(node);
+        } else {
+          setNodes(selectNode(node));
+        }
       }
     }
   };
@@ -173,6 +178,16 @@ export const ExtensionTabbarTreeView = observer(({
       extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
       setNodes(removeTreeDatas(nodes, deleteNodes, node));
     }
+  };
+
+  const selectNode = (node: TreeNode<any>) => {
+    const newNodes = nodes.slice(0);
+    for (const n of newNodes) {
+      if (n.id === node.id) {
+        n.selected = true;
+      }
+    }
+    return newNodes;
   };
 
   const getAllSubChildren = (node: TreeNode<any>, model: Map<string | number, IExtensionTreeViewModel>) => {
@@ -314,9 +329,14 @@ export const ExtensionTabbarTreeView = observer(({
     const model = extensionTreeViewModel.getTreeViewModel(viewId);
     return nodes.map((node) => {
       const nodeModel = model.get(node.id);
+      let description = node.description;
+      if (!node.name && !node.label && !node.description) {
+        description = '——';
+      }
       return {
         ...node,
         ...nodeModel,
+        description,
       };
     });
   }, [nodes]);
