@@ -1,9 +1,13 @@
-import { Disposable, ThrottledDelayer } from '@ali/ide-core-common';
+import { Disposable, ThrottledDelayer, URI } from '@ali/ide-core-common';
+import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { Terminal, ITerminalOptions } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { AttachAddon } from 'xterm-addon-attach';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
+import { TerminalFilePathAddon } from './terminal.addon';
 import { ITerminalExternalService, IWidget, TerminalOptions, ITerminalController } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import * as styles from './terminal.module.less';
@@ -42,6 +46,9 @@ export class TerminalClient extends Disposable {
 
   constructor(
     protected readonly service: ITerminalExternalService,
+    protected readonly workspace: IWorkspaceService,
+    protected readonly editorService: WorkbenchEditorService,
+    protected readonly fileService: IFileServiceClient,
     protected theme: ITerminalTheme,
     protected readonly controller: ITerminalController,
     widget: IWidget,
@@ -68,9 +75,60 @@ export class TerminalClient extends Disposable {
 
     const searchAddon = new SearchAddon();
     const weblinksAddon = new WebLinksAddon();
+    const filelinkdsAddon = new TerminalFilePathAddon((_, uri: string) => {
+      // todo: support for windows
+
+      const mainFuntion = async () => {
+        let absolute: string | undefined;
+        if (uri[0] !== '/') {
+          if (this.workspace.workspace) {
+            // 一致处理为无 file scheme 的绝对地址
+            absolute = `${this.workspace.workspace.uri}/${uri}`.substring(7);
+          } else {
+            return;
+          }
+        } else {
+          absolute = uri;
+        }
+
+        if (absolute) {
+          const fileUri = URI.file(absolute);
+          if (fileUri && fileUri.scheme === 'file') {
+            const stat = await this.fileService.getFileStat(fileUri.toString());
+            if (stat && !stat.isDirectory) {
+              this.editorService.open(new URI(stat.uri));
+            }
+          }
+        }
+      };
+      mainFuntion();
+    });
 
     this._term.loadAddon(searchAddon);
+    this._term.loadAddon(filelinkdsAddon);
     this._term.loadAddon(weblinksAddon);
+
+    this.addDispose({
+      dispose: () => {
+        if (this.focusPromiseResolve) {
+          this.focusPromiseResolve();
+          this.focusPromiseResolve = null;
+        }
+
+        if (this.showPromiseResolve) {
+          this.showPromiseResolve();
+          this.showPromiseResolve = null;
+        }
+
+        this._attachAddon && this._attachAddon.dispose();
+        this._fitAddon.dispose();
+        searchAddon.dispose();
+        weblinksAddon.dispose();
+        filelinkdsAddon.dispose();
+        this._layer.dispose();
+        this._term.dispose();
+      },
+    });
 
     this._events();
   }
@@ -274,21 +332,6 @@ export class TerminalClient extends Disposable {
     super.dispose();
 
     this._attached = false;
-
-    if (this.focusPromiseResolve) {
-      this.focusPromiseResolve();
-      this.focusPromiseResolve = null;
-    }
-
-    if (this.showPromiseResolve) {
-      this.showPromiseResolve();
-      this.showPromiseResolve = null;
-    }
-
-    this._layer && this._layer.dispose();
-    this._fitAddon && this._fitAddon.dispose();
-    this._attachAddon && this._attachAddon.dispose();
-    this._term && this._term.dispose();
 
     this.hide();
     this._container.remove();

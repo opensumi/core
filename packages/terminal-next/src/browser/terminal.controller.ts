@@ -10,6 +10,9 @@ import { ITerminalExternalService, ITerminalController, ITerminalError, Terminal
 import { ITerminalTheme } from './terminal.theme';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { TabManager } from './component/tab/manager';
+import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -42,8 +45,18 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(ILogger)
   logger: ILogger;
+
   @Autowired(IThemeService)
   themeService: IThemeService;
+
+  @Autowired(WorkbenchEditorService)
+  editorService: WorkbenchEditorService;
+
+  @Autowired(IFileServiceClient)
+  fileService: IFileServiceClient;
+
+  @Autowired(IWorkspaceService)
+  workspace: IWorkspaceService;
 
   @Autowired()
   tabManager: TabManager;
@@ -63,12 +76,19 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.themeBackground = this.termTheme.terminalTheme.background || '';
   }
 
-  get currentGroup() {
-    return this.groups[this.state.index];
-  }
-
   get focusedTerm() {
     return this._clientsMap.get(this._focusedId);
+  }
+
+  private _getGroup(index: number) {
+    if (index === -1 || index > (this.groups.length - 1)) {
+      return undefined;
+    }
+    return this.groups[index];
+  }
+
+  get currentGroup() {
+    return this._getGroup(this.state.index);
   }
 
   public async reconnect() {
@@ -97,7 +117,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}) {
-    const client = new TerminalClient(this.service, this.termTheme, this, widget, restoreId, options);
+    const client = new TerminalClient(
+      this.service,
+      this.workspace,
+      this.editorService,
+      this.fileService,
+      this.termTheme,
+      this,
+      widget, restoreId, options,
+    );
     client.addDispose({
       dispose: () => {
         this._onDidCloseTerminal.fire(client.id);
@@ -130,7 +158,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         } catch { /** do nothing */ }
       }
 
-      if (this.groups[index] && this.groups[index].length === 0) {
+      const group = this._getGroup(index);
+
+      if (group && group.length === 0) {
         this._removeGroupByIndex(index);
       } else {
         this.tabManager.create();
@@ -150,7 +180,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   private _checkIfNeedInitialize(): boolean {
     let needed = true;
-    if (this.groups[0] && this.groups[0].length > 0) {
+    const group = this._getGroup(0);
+    if (group && group.length > 0) {
       needed = false;
     }
     return needed;
@@ -194,7 +225,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     this.addDispose(this.tabbarHandler.onActivate(() => {
       if (!this.currentGroup) {
-        if (!this.groups[0]) {
+        if (!this._getGroup(0)) {
           this.tabManager.create();
         } else {
           this.selectGroup(0);
@@ -215,7 +246,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     this.tabManager.onSelect(({ index }) => {
       this.selectGroup(index);
-      this.focusWidget(this.currentGroup.widgets[0].id);
+      if (this.currentGroup) {
+        this.focusWidget(this.currentGroup.widgets[0].id);
+      }
     });
 
     this.tabManager.onOpen(({ index }) => {
@@ -225,7 +258,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     });
 
     this.tabManager.onClose(({ index }) => {
-      this.groups[index].widgets.forEach((_, index) => {
+      const group = this._getGroup(index);
+      group && group.widgets.forEach((_, index) => {
         this._delWidgetByIndex(index);
       });
       this._removeGroupByIndex(index);
@@ -240,6 +274,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   private _removeWidgetFromWidgetId(widgetId: string) {
     const group = this.currentGroup;
+
+    if (!group) {
+      throw new Error('group not found');
+    }
+
     const widget = group.widgetsMap.get(widgetId);
     const index = group.widgets.findIndex((w) => w === widget);
     const term = this.focusedTerm;
@@ -248,7 +287,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       term.dispose();
       this._delWidgetByIndex(index);
 
-      if (this.currentGroup.length === 0) {
+      if (this.currentGroup && this.currentGroup.length === 0) {
         this.tabManager.remove(this.state.index);
       }
     }
@@ -266,7 +305,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   snapshot(index: number) {
     let name = '';
-    const group = this.groups[index];
+    const group = this._getGroup(index);
 
     if (group) {
       const length = group.length;
@@ -285,6 +324,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   private _delWidgetByIndex(index: number) {
     const group = this.currentGroup;
+
+    if (!group) {
+      throw new Error('group not found');
+    }
+
     const widget = group.widgets.find((_, i) => index === i);
 
     if (!widget) {
@@ -304,7 +348,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   private _addWidgetToGroup(index: number, restoreClient?: TerminalClient, options?: TerminalOptions) {
-    const group = this.groups[index];
+    const group = this._getGroup(index);
+
+    if (!group) {
+      throw new Error('group not found');
+    }
+
     const widget = restoreClient ? (restoreClient.widget as Widget) : new Widget(uuid());
     const client = restoreClient || this._createTerminalClientInstance(widget, undefined, options);
     this._clientsMap.set(widget.id, client);
@@ -318,7 +367,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   focusWidget(widgetId: string) {
-    const widget = this.currentGroup.widgetsMap.get(widgetId);
+    const group = this.currentGroup;
+
+    if (!group) {
+      throw new Error('group not found');
+    }
+
+    const widget = group.widgetsMap.get(widgetId);
     const client = this._clientsMap.get(widgetId);
 
     if (client && widget) {
@@ -329,7 +384,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   removeWidget(widgetId: string) {
-    const widget = this.currentGroup.widgetsMap.get(widgetId);
+    const group = this.currentGroup;
+
+    if (!group) {
+      throw new Error('group not found');
+    }
+
+    const widget = group.widgetsMap.get(widgetId);
     const client = this._clientsMap.get(widgetId);
 
     if (widget && client) {
@@ -350,7 +411,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   selectGroup(index: number) {
-    this.state.index = index;
+    if (index < this.groups.length || index === -1) {
+      this.state.index = index;
+    }
   }
 
   createGroup(selected: boolean = true) {
@@ -363,7 +426,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   clearGroup(index: number) {
-    const group = this.groups[index];
+    const group = this._getGroup(index);
     if (group && group.widgets && group.length > 0) {
       group.widgets.forEach((widget) => {
         const client = this._clientsMap.get(widget.id);
