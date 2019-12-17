@@ -55,9 +55,17 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       get selection() {
         return treeView.selectedElements;
       },
+      get onDidChangeSelection() {
+        return treeView.onDidChangeSelection;
+      },
+      get visible() {
+        return treeView.visible;
+      },
+      get onDidChangeVisibility() {
+        return treeView.onDidChangeVisibility;
+      },
 
-      reveal: (element: T, selectionOptions: { select?: boolean }): Thenable<void> =>
-        treeView.reveal(element, selectionOptions),
+      reveal: (element: T, selectionOptions: { select?: boolean }): Thenable<void> => treeView.reveal(element, selectionOptions),
 
       dispose: () => {
         this.treeViews.delete(treeViewId);
@@ -66,6 +74,11 @@ export class ExtHostTreeViews implements IExtHostTreeView {
     };
   }
 
+  /**
+   * 获取子节点
+   * @param treeViewId
+   * @param treeItemId
+   */
   async $getChildren(treeViewId: string, treeItemId?: string): Promise<TreeViewItem[] | undefined> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
@@ -75,6 +88,12 @@ export class ExtHostTreeViews implements IExtHostTreeView {
     return treeView.getChildren(treeItemId);
   }
 
+  /**
+   * 设置节点展开属性
+   * @param treeViewId
+   * @param treeItemId
+   * @param expanded
+   */
   async $setExpanded(treeViewId: string, treeItemId: string, expanded: boolean): Promise<any> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
@@ -87,6 +106,32 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       return treeView.onCollapsed(treeItemId);
     }
   }
+
+  /**
+   * 设置选中的节点
+   * @param treeViewId
+   * @param treeItemIds
+   */
+  async $setSelection(treeViewId: string, treeItemIds: string[]): Promise<void> {
+    const treeView = this.treeViews.get(treeViewId);
+    if (!treeView) {
+      throw new Error('No tree view with id' + treeViewId);
+    }
+    treeView.setSelection(treeItemIds);
+  }
+
+  /**
+   * 设置节点是否可见
+   * @param treeViewId
+   * @param isVisible
+   */
+  async $setVisible(treeViewId: string, isVisible: boolean): Promise<void> {
+    const treeView = this.treeViews.get(treeViewId);
+    if (!treeView) {
+      throw new Error('No tree view with id' + treeViewId);
+    }
+    treeView.setVisible(isVisible);
+  }
 }
 
 class ExtHostTreeView<T> implements IDisposable {
@@ -97,8 +142,15 @@ class ExtHostTreeView<T> implements IDisposable {
   private onDidCollapseElementEmitter: Emitter<vscode.TreeViewExpansionEvent<T>> = new Emitter<vscode.TreeViewExpansionEvent<T>>();
   public readonly onDidCollapseElement = this.onDidCollapseElementEmitter.event;
 
-  private selection: T[] = [];
-  get selectedElements(): T[] { return this.selection; }
+  private readonly onDidChangeSelectionEmitter = new Emitter<vscode.TreeViewSelectionChangeEvent<T>>();
+  readonly onDidChangeSelection = this.onDidChangeSelectionEmitter.event;
+
+  private readonly onDidChangeVisibilityEmitter = new Emitter<vscode.TreeViewVisibilityChangeEvent>();
+  readonly onDidChangeVisibility = this.onDidChangeVisibilityEmitter.event;
+
+  private _visible = false;
+
+  private selectedItemIds = new Set<string>();
 
   private cache: Map<string, T> = new Map<string, T>();
 
@@ -116,6 +168,10 @@ class ExtHostTreeView<T> implements IDisposable {
   }
 
   dispose() {
+  }
+
+  get visible(): boolean {
+    return this._visible;
   }
 
   async reveal(element: T, selectionOptions?: { select?: boolean }): Promise<void> {
@@ -269,4 +325,40 @@ class ExtHostTreeView<T> implements IDisposable {
     return iconPath;
   }
 
+  setVisible(visible: boolean): void {
+    if (visible !== this._visible) {
+      this._visible = visible;
+      this.onDidChangeVisibilityEmitter.fire(Object.freeze({ visible: this._visible }));
+    }
+  }
+
+  get selectedElements(): T[] {
+    const items: T[] = [];
+    for (const id of this.selectedItemIds) {
+      const item = this.getTreeItem(id);
+      if (item) {
+        items.push(item);
+      }
+    }
+    return items;
+  }
+
+  setSelection(selectedItemIds: string[]): void {
+    const toDelete = new Set<string>(this.selectedItemIds);
+    for (const id of this.selectedItemIds) {
+      toDelete.delete(id);
+      if (!this.selectedItemIds.has(id)) {
+        this.doSetSelection(selectedItemIds);
+        return;
+      }
+    }
+    if (toDelete.size) {
+      this.doSetSelection(selectedItemIds);
+    }
+  }
+
+  protected doSetSelection(selectedItemIts: string[]): void {
+    this.selectedItemIds = new Set(selectedItemIts);
+    this.onDidChangeSelectionEmitter.fire(Object.freeze({ selection: this.selectedElements }));
+  }
 }

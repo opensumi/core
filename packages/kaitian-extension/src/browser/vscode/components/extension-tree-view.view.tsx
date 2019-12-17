@@ -71,6 +71,7 @@ export const ExtensionTabbarTreeView = observer(({
   const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId]);
   const initTreeData = () => {
     const model = copyMap(extensionTreeViewModel.getTreeViewModel(viewId));
+    dataProvider.setVisible(viewId, true);
     dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
       extensionTreeViewModel.setTreeViewNodes(viewId, data);
       checkIfNeedExpandChildren(data, model);
@@ -110,6 +111,9 @@ export const ExtensionTabbarTreeView = observer(({
       dataProvider.onTreeDataChanged((itemsToRefresh?: TreeViewItem) => {
         refresh(itemsToRefresh);
       });
+      dataProvider.onRevealEvent((itemId: string | number) => {
+        setSelected(itemId);
+      });
     }
   }, [dataProvider]);
 
@@ -139,10 +143,11 @@ export const ExtensionTabbarTreeView = observer(({
   const onSelectHandler = (selectedNodes: TreeNode<any>[]) => {
     if (nodes && selectedNodes.length > 0) {
       const node = selectedNodes[0];
+      setSelected(node.id);
       if (node.command) {
         if (injector) {
           const commandService: CommandService = injector.get(CommandService);
-          commandService.executeCommand(node.command.command, ...node.command.arguments);
+          commandService.executeCommand(node.command.command, ...(node.command.arguments || []));
         }
         return;
       } else {
@@ -152,15 +157,9 @@ export const ExtensionTabbarTreeView = observer(({
   };
 
   const onTwistieClickHandler = (node: TreeNode<any>) => {
-    const model = extensionTreeViewModel.getTreeViewModel(viewId);
-    const nodeModel = model.get(node.id);
-    const copyModel = copyMap(model);
     if (node && !node.expanded) {
-      copyModel.set(node.id, {
-        ...nodeModel,
-        expanded: true,
-      });
-      if (node.children.length > 0 || copyModel.get(node.id).updated) {
+      const copyModel = setExpanded(node.id, true);
+      if (node.children.length > 0 || copyModel.get(node.id)!.updated) {
         const addNodes = getAllSubChildren(node, copyModel);
         extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
         setNodes(addTreeDatas(nodes, addNodes, node));
@@ -168,10 +167,7 @@ export const ExtensionTabbarTreeView = observer(({
         checkIfNeedExpandChildren(nodes, copyModel);
       }
     } else {
-      copyModel.set(node.id, {
-        ...nodeModel,
-        expanded: false,
-      });
+      const copyModel = setExpanded(node.id, false);
       const deleteNodes = getAllSubChildren(node, copyModel);
 
       extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
@@ -270,6 +266,44 @@ export const ExtensionTabbarTreeView = observer(({
     }).then(({data, model}) => {
       return checkIfNeedExpandChildren(data, model);
     });
+  };
+
+  const setSelected = (id: string | number): Map<string | number, IExtensionTreeViewModel> => {
+    const model = extensionTreeViewModel.getTreeViewModel(viewId);
+    const copyModel = copyMap(model);
+    for (const [key, value] of model) {
+      if (key === id) {
+        copyModel.set(key, {
+          ...value,
+          selected: true,
+        });
+      } else {
+        copyModel.set(key, {
+          ...value,
+          selected: false,
+        });
+      }
+    }
+    extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+    dataProvider.setSelection(viewId, id);
+    return copyModel;
+  };
+
+  const setExpanded = (id: string | number, expanded: boolean): Map<string | number, IExtensionTreeViewModel> => {
+    const model = extensionTreeViewModel.getTreeViewModel(viewId);
+    const copyModel = copyMap(model);
+    for (const [key, value] of model) {
+      if (key === id) {
+        copyModel.set(key, {
+          ...value,
+          expanded,
+        });
+        break;
+      }
+    }
+    extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+    dataProvider.setExpanded(viewId, id, expanded);
+    return copyModel;
   };
 
   if (!nodes) {

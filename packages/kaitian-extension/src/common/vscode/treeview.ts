@@ -12,9 +12,6 @@ export interface IMainThreadTreeView {
   $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): void;
   $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): void;
   $reveal(treeViewId: string, treeItemId: string): Promise<any>;
-  // $registerTreeViewDataProvider(treeViewId: string, options: { showCollapseAll: boolean }): void;
-  // $refresh(treeViewId: string, itemsToRefresh?: { [treeItemHandle: string]: ITreeItem }): Promise<void>;
-  // $reveal(treeViewId: string, treeItem: ITreeItem, parentChain: ITreeItem[], options: IRevealOptions): Promise<void>;
   // $setMessage(treeViewId: string, message: string | IMarkdownString): void;
 }
 
@@ -23,10 +20,8 @@ export interface IExtHostTreeView {
   registerTreeDataProvider<T>(treeViewId: string, treeDataProvider: vscode.TreeDataProvider<T>): IDisposable;
   $getChildren(treeViewId: string, treeItemId?: string): Promise<TreeViewItem[] | undefined>;
   $setExpanded(treeViewId: string, treeItemId: string, expanded: boolean): Promise<any>;
-  // $getChildren(treeViewId: string, treeItemHandle?: string): Promise<ITreeItem[]>;
-  // $setExpanded(treeViewId: string, treeItemHandle: string, expanded: boolean): void;
-  // $setSelection(treeViewId: string, treeItemHandles: string[]): void;
-  // $setVisible(treeViewId: string, visible: boolean): void;
+  $setSelection(treeViewId: string, treeItemHandles: string[]): void;
+  $setVisible(treeViewId: string, visible: boolean): void;
 }
 
 // TreeView API Interface dependencies
@@ -62,17 +57,26 @@ export interface TreeView<T> extends IDisposable {
    * 当节点展开时触发的事件
    */
   readonly onDidExpandElement: Event<vscode.TreeViewExpansionEvent<T>>;
-
   /**
-   * 当节点折叠时触发的事件
+   * 当节点折叠状态变化时触发的事件
    */
   readonly onDidCollapseElement: Event<vscode.TreeViewExpansionEvent<T>>;
-
+  /**
+   * 当节点可见性变化时触发的事件
+   */
+  readonly onDidChangeVisibility: Event<vscode.TreeViewVisibilityChangeEvent>;
+  /**
+   * 当节点选中时触发的事件
+   */
+  readonly onDidChangeSelection: Event<vscode.TreeViewSelectionChangeEvent<T>>;
+  /**
+   * 当TreeView视图可见时为 true，否则为false
+   */
+  readonly visible: boolean;
   /**
    * 当前选中的节点
    */
   readonly selection: ReadonlyArray<T>;
-
   /**
    * 展示节点，默认情况下展示的节点为选中状态
    *

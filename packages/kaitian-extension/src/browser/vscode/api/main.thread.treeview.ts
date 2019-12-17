@@ -43,6 +43,14 @@ export class MainThreadTreeView implements IMainThreadTreeView {
         dataProvider: this.dataProviders.get(treeViewId),
         viewId: treeViewId,
       });
+      // TODO: 实现通过treeViewId获取视图handler
+      const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+      handler.onActivate(() => {
+        dataProvider.setVisible(treeViewId, true);
+      });
+      handler.onInActivate(() => {
+        dataProvider.setVisible(treeViewId, false);
+      });
     }
   }
 
@@ -54,17 +62,25 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   }
 
   async $reveal(treeViewId: string, treeItemId: string) {
-
+    const dataProvider = this.dataProviders.get(treeViewId);
+    if (dataProvider) {
+      dataProvider.reveal(treeItemId);
+    }
   }
 
 }
 
 export class TreeViewDataProviderMain {
 
-  private treeDataChanged = new Emitter<any>();
+  private onTreeDataChangedEmitter = new Emitter<any>();
+  private onRevealEventEmitter = new Emitter<any>();
 
   get onTreeDataChanged() {
-    return this.treeDataChanged.event;
+    return this.onTreeDataChangedEmitter.event;
+  }
+
+  get onRevealEvent() {
+    return this.onRevealEventEmitter.event;
   }
 
   constructor(
@@ -73,7 +89,7 @@ export class TreeViewDataProviderMain {
     private iconService: IIconService,
   ) { }
 
-  async createFolderNode(item: TreeViewItem): Promise<CompositeTreeViewNode> {
+  async createFoldNode(item: TreeViewItem): Promise<CompositeTreeViewNode> {
     const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
     const icon = await this.toIconClass(item);
     return {
@@ -93,7 +109,7 @@ export class TreeViewDataProviderMain {
     };
   }
 
-  async createFileNode(item: TreeViewItem): Promise<TreeViewNode> {
+  async createNormalNode(item: TreeViewItem): Promise<TreeViewNode> {
     const icon = await this.toIconClass(item);
     return {
       id: item.id,
@@ -125,15 +141,15 @@ export class TreeViewDataProviderMain {
    */
   async createTreeNode(item: TreeViewItem): Promise<TreeNode> {
     if (item.collapsibleState !== TreeItemCollapsibleState.None) {
-      return await this.createFolderNode(item);
+      return await this.createFoldNode(item);
     }
-    return await this.createFileNode(item);
+    return await this.createNormalNode(item);
   }
 
   async resolveChildren(itemId?: string): Promise<TreeNode[]> {
     const nodes: TreeNode[] = [];
     const children = await this.proxy.$getChildren(this.treeViewId, itemId);
-    if (children) {
+    if (children && Array.isArray(children)) {
       for (const child of children) {
         const node = await this.createTreeNode(child);
         nodes.push(node);
@@ -143,6 +159,23 @@ export class TreeViewDataProviderMain {
   }
 
   async refresh(itemsToRefresh?: TreeViewItem) {
-    await this.treeDataChanged.fire(itemsToRefresh);
+    await this.onTreeDataChangedEmitter.fire(itemsToRefresh);
+  }
+
+  async reveal(viewItemId?: any) {
+    await this.onRevealEventEmitter.fire(viewItemId);
+  }
+
+  async setSelection(treeViewId: string, id: any) {
+    // 仅处理单选情况
+    this.proxy.$setSelection(treeViewId, [id]);
+  }
+
+  async setExpanded(treeViewId: string, id: any, expanded: boolean) {
+    this.proxy.$setExpanded(treeViewId, id, expanded);
+  }
+
+  async setVisible(treeViewId: string, visible: boolean) {
+    this.proxy.$setVisible(treeViewId, visible);
   }
 }
