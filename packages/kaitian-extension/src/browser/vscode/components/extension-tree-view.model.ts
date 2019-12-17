@@ -7,6 +7,7 @@ export interface IExtensionTreeViewModel {
   expanded?: boolean;
   focused?: boolean;
   updated?: boolean;
+  children?: TreeNode<any>[];
 }
 
 @Injectable()

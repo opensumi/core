@@ -179,14 +179,15 @@ export const ExtensionTabbarTreeView = observer(({
     }
   };
 
-  const getAllSubChildren = (node: TreeNode<any>, model: Map<string, IExtensionTreeViewModel>) => {
+  const getAllSubChildren = (node: TreeNode<any>, model: Map<string | number, IExtensionTreeViewModel>) => {
+    const parentModel = model.get(node.id);
     let result: TreeNode<any>[] = [];
-    const children = node.children || [];
-    result = result.concat(children);
-    for (const sub of children) {
-      const subModel = model.get(sub.id);
-      if (subModel && subModel.expanded) {
-        result = result.concat(getAllSubChildren(sub, model));
+    const children = parentModel && parentModel.children || [];
+    for (const child of children) {
+      const childModel = model.get(child.id);
+      result.push(child);
+      if (childModel && childModel.expanded) {
+        result = result.concat(getAllSubChildren(child, model));
       }
     }
     return result;
@@ -251,9 +252,13 @@ export const ExtensionTabbarTreeView = observer(({
       return nodes;
     }
     return Promise.all(promises).then(([...nodes]) => {
-      let newNodes = [...checkList];
+      let newNodes = checkList;
       for (const node of nodes) {
         const nodeModel = copyModel.get(node.id);
+        copyModel.set(node.id, {
+          ...nodeModel,
+          children: node.children,
+        });
         if (ExpandableTreeNode.is(node) && nodeModel && nodeModel.expanded && node.children.length > 0) {
           newNodes = addTreeDatas(newNodes, node.children as TreeNode<any>[], checkList.find((newNode) => newNode.id === node.id));
         }
