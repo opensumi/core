@@ -138,6 +138,7 @@ export const defaultIconMap = {
   'download': 'download',
   'follow-cursor': 'follow-cursor',
   'minus': 'minus',
+  'undock': 'undock',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {
