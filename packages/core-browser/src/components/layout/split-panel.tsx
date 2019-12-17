@@ -44,7 +44,7 @@ export const SplitPanel: React.FC<{
   // setAbsoluteSize 时保证相邻节点总宽度不变
   resizeKeep?: boolean;
   dynamicTarget?: boolean;
-}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, dynamicTarget, ...restProps }) => {
+}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
   const elements: React.ReactNodeArray = [];
