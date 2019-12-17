@@ -8,7 +8,7 @@ import {
  } from '@ali/ide-connection';
 import { Injector, Provider, ConstructorOf } from '@ali/common-di';
 import { ModuleConstructor } from './app';
-import { getLogger, ILogger } from '@ali/ide-core-common';
+import { getLogger, ILogger, IReporterService } from '@ali/ide-core-common';
 import { IStatusBarService } from '../services/';
 import * as net from 'net';
 
@@ -17,9 +17,10 @@ const logger = getLogger();
 
 export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string, onReconnect: () => void, protocols?: string[]) {
   const statusBarService = injector.get(IStatusBarService);
+  const reporterService = injector.get(IReporterService);
   // const logger = injector.get(ILogger)
 
-  const wsChannelHandler = new WSChanneHandler(wsPath, logger, protocols);
+  const wsChannelHandler = new WSChanneHandler(wsPath, logger, reporterService, protocols);
   wsChannelHandler.connection.addEventListener('open', () => {
     statusBarService.setBackgroundColor('var(--statusBar-background)');
   });
