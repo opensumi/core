@@ -259,10 +259,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     this.tabManager.onClose(({ index }) => {
       const group = this._getGroup(index);
-      group && group.widgets.forEach((_, index) => {
-        this._delWidgetByIndex(index);
+      group && group.widgets.forEach((_, widgetIndex) => {
+        this._delWidgetByIndex(widgetIndex, index);
       });
       this._removeGroupByIndex(index);
+
       if (this.groups.length - 1 > -1) {
         this.tabManager.select(this.groups.length - 1);
       } else {
@@ -322,8 +323,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   /** resize widget operations */
 
-  private _delWidgetByIndex(index: number) {
-    const group = this.currentGroup;
+  private _delWidgetByIndex(index: number, groupIndex: number = -1) {
+    const group = (groupIndex > -1) ? this._getGroup(groupIndex) : this.currentGroup;
 
     if (!group) {
       throw new Error('group not found');
