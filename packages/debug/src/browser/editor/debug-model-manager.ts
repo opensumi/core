@@ -1,21 +1,27 @@
 import { Disposable, URI, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { EditorCollectionService, ICodeEditor } from '@ali/ide-editor';
+import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugSessionManager } from '../debug-session-manager';
 import { IDebugSessionManager, DebugModelFactory, IDebugModel } from '../../common';
-import { BreakpointManager } from '../breakpoint';
+import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
+import { DebugBreakpoint } from '../model';
+import { DebugModel } from './debug-model';
 
 export enum DebugModelSupportedEventType {
   down = 'Down',
   move = 'Move',
   leave = 'Leave',
+  contextMenu = 'contextMenu',
 }
 
 @Injectable()
 export class DebugModelManager extends Disposable {
   private models: Map<string, IDebugModel[]>;
   protected readonly toDispose = new DisposableCollection();
+
+  @Autowired(WorkbenchEditorService)
+  private editorService: WorkbenchEditorService;
 
   @Autowired(EditorCollectionService)
   private editorColletion: EditorCollectionService;
@@ -65,7 +71,35 @@ export class DebugModelManager extends Disposable {
     });
     this.breakpointManager.onDidChangeBreakpoints((event) => {
       // 移除breakpointWidget
+      this.closeBreakpointIfAffected(event);
     });
+  }
+
+  get model(): IDebugModel | undefined {
+    const { currentEditor } = this.editorService;
+    const uri = currentEditor && currentEditor.currentUri;
+    if (uri) {
+      const models = this.models.get(uri.toString());
+      return models && models[0];
+    }
+  }
+
+  protected closeBreakpointIfAffected({ uri, removed }: BreakpointsChangeEvent): void {
+    const models = this.models.get(uri.toString());
+    if (!models) {
+        return;
+    }
+    for (const model of models) {
+      const position = model.breakpointWidget.position;
+      if (!position) {
+          return;
+      }
+      for (const breakpoint of removed) {
+        if (breakpoint.raw.line === position.lineNumber) {
+          model.breakpointWidget.dispose();
+        }
+      }
+    }
   }
 
   protected render(uri: URI): void {
@@ -114,13 +148,14 @@ export class DebugModelManager extends Disposable {
       this.handleMouseEvent(new URI(model.uri.toString()),
         type, event as monaco.editor.IEditorMouseEvent, monacoEditor);
     };
-
     this.toDispose.push(
       monacoEditor.onMouseMove((event) => handleMonacoModelEvent(DebugModelSupportedEventType.move, event)));
     this.toDispose.push(
       monacoEditor.onMouseDown((event) => handleMonacoModelEvent(DebugModelSupportedEventType.down, event)));
     this.toDispose.push(
       monacoEditor.onMouseLeave((event) => handleMonacoModelEvent(DebugModelSupportedEventType.leave, event)));
+    this.toDispose.push(
+      monacoEditor.onContextMenu((event) => handleMonacoModelEvent(DebugModelSupportedEventType.contextMenu, event)));
   }
 
   resolve(uri: URI) {
@@ -129,22 +164,6 @@ export class DebugModelManager extends Disposable {
       return undefined;
     }
     return model;
-  }
-
-  getCurrent(monacoEditor: monaco.editor.ICodeEditor) {
-    const model = monacoEditor.getModel();
-
-    if (!model) {
-      return null;
-    }
-
-    const debugModel = this.models.get(model.uri.toString());
-
-    if (!debugModel) {
-      return null;
-    }
-
-    return debugModel;
   }
 
   handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: monaco.editor.ICodeEditor) {
@@ -159,10 +178,13 @@ export class DebugModelManager extends Disposable {
     }
     for (const model of debugModel) {
       if ((model.editor as any)._id === (monacoEditor as any)._id) {
-        model[`onMouse${type}`](event);
+        if (type === DebugModelSupportedEventType.contextMenu) {
+          model[`onContextMenu`](event);
+        } else {
+          model[`onMouse${type}`](event);
+        }
         break;
       }
     }
   }
-
 }
