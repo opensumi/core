@@ -151,7 +151,6 @@ export const SplitPanel: React.FC<{
           delegate={(delegate) => { resizeDelegates.current.push(delegate); }} />,
       );
     }
-    console.log('>>>', id, element.props, element.props.flexGrow);
     elements.push(
       <PanelContext.Provider
         key={index}
