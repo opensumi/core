@@ -209,10 +209,10 @@ export const ExtensionTabbarTreeView = observer(({
       return nodes;
     }
 
-    const contextValue = nodes[0].contextValue;
-    const menus = extensionViewService.getInlineMenus(contextValue);
-
     return nodes.map((node) => {
+      const contextValue = node.contextValue;
+      const menus = extensionViewService.getInlineMenus(contextValue);
+
       return {
         ...node,
         actions: [{
