@@ -3,8 +3,8 @@ import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
 import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
-import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer } from './bar.view';
-import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer } from './panel.view';
+import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer, NextBottomTabbarRenderer } from './bar.view';
+import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer, NextBottomTabPanelRenderer } from './panel.view';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TabbarServiceFactory, TabbarService } from './tabbar.service';
 
@@ -50,4 +50,8 @@ export const LeftTabRenderer = ({className, components}: {className: string, com
 
 export const BottomTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (
   <TabRendererBase side='bottom' direction='top-to-bottom' className={clsx(className, 'bottom-slot')} components={components} TabbarView={BottomTabbarRenderer} TabpanelView={BottomTabPanelRenderer} noAccordion={true} />
+);
+
+export const NextBottomTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (
+  <TabRendererBase side='bottom' direction='bottom-to-top' className={clsx(className, 'bottom-slot')} components={components} TabbarView={NextBottomTabbarRenderer} TabpanelView={NextBottomTabPanelRenderer} />
 );

@@ -82,3 +82,10 @@ export const menuDescriptionForeground = registerColor('kt.menu.descriptionForeg
 
 /* --- menubar --- */
 export const menubarBorder = registerColor('kt.menubar.border', { dark: null, light: null, hc: null }, localize('menubarBorder', 'Border color of menu bar.'));
+
+/* --- inline actionbar --- */
+export const  actionBarSeparatorBg = registerColor(
+  'kt.actionbar.separatorBackground',
+  { dark: null, light: null, hc: null },
+  localize('actionbarSeparatorBackground', 'Separator background color of actionbar'),
+);

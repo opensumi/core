@@ -1,12 +1,12 @@
 import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, View, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, localize, getIcon, CommandService } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
 import { AccordionContainer } from '../accordion/accordion.view';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { InlineActionBar, IconAction } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { TitleBar } from '../accordion/titlebar.view';
 
@@ -45,9 +45,7 @@ const ContainerView: React.FC<{
       {!CustomComponent && <div className={styles.panel_titlebar}>
         <TitleBar
           title={title!}
-          menubar={(
-            <InlineActionBar menus={titleMenu} />
-          )}
+          menubar={<InlineActionBar menus={titleMenu} />}
         />
         {titleComponent && <div className={styles.panel_component}>
           <ConfigProvider value={configContext} >
@@ -79,12 +77,38 @@ const PanelView: React.FC<{
           <ComponentRenderer Component={titleComponent} />
         </div>}
         <div className='toolbar_container'>
-          {titleMenu && <InlineActionBar
-            menus={titleMenu}
-            seperator='navigation' />}
+          {titleMenu && <InlineActionBar menus={titleMenu} />}
         </div>
       </div>
       <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component || component.options!.component!} />
+    </div>
+  );
+});
+
+const NextPanelView: React.FC<{
+  component: ComponentRegistryInfo;
+  side: string;
+  titleMenu: IMenu;
+}> = (({ component, titleMenu, side }) => {
+  const contentRef = React.useRef<HTMLDivElement | null>();
+  const titleComponent = component.options && component.options.titleComponent;
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+
+  return (
+    <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
+      <div className={styles.panel_title_bar}>
+        <h1>{component.options!.title}</h1>
+        <div className={styles.title_component_container}>
+          {titleComponent && <ComponentRenderer Component={titleComponent} />}
+        </div>
+        <div className={styles.panel_toolbar_container}>
+          { titleMenu && <InlineActionBar menus={titleMenu} /> }
+          <InlineActionBar menus={tabbarService.commonTitleMenu} moreAtFirst />
+        </div>
+      </div>
+      <div className={styles.panel_wrapper}>
+        <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component!} />
+      </div>
     </div>
   );
 });
@@ -94,3 +118,5 @@ export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView
 export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 
 export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;
+
+export const NextBottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={NextPanelView} />;

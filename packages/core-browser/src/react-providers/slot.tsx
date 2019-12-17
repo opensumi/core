@@ -46,6 +46,9 @@ export class ErrorBoundary extends React.Component {
       error,
       errorInfo,
     });
+    setTimeout(() => {
+      throw error; // 让上层错误抓取能捕获这个错误
+    });
     logger.error(errorInfo);
   }
 
