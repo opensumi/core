@@ -14,7 +14,7 @@ export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,
   forbidCollapse?: boolean;
   barSize?: number;
-}> = observer(({ TabView, forbidCollapse, barSize = 50 }) => {
+}> = observer(({ TabView, forbidCollapse, barSize = 48 }) => {
   const { setSize, getSize, setRelativeSize, getRelativeSize, lockSize } = React.useContext(PanelContext);
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
@@ -57,12 +57,12 @@ const TextTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ co
   </div>;
 });
 
-export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} barSize={50} />;
+export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} barSize={40} />;
 
 export const LeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   return (<div className='left-tab-bar'>
-    <TabbarViewBase TabView={IconTabView} barSize={50} />
+    <TabbarViewBase TabView={IconTabView} barSize={48} />
     <div className='bottom-icon-container' onClick={layoutService.handleSetting}>
       <i className={`activity-icon ${getIcon('setting')}`}></i>
     </div>
