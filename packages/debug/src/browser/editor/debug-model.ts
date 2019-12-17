@@ -442,7 +442,7 @@ export class DebugModel implements IDebugModel {
       this.ctxMenuRenderer.show({
         anchor: event.event.browserEvent,
         menuNodes,
-        context: [event.target.position!],
+        args: [event.target.position!],
       });
     }
   }

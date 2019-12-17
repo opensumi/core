@@ -26,9 +26,9 @@ import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from './file-tree-item';
 import { IFileTreeItemRendered } from './file-tree.view';
-import { ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { FileContextKey } from './file-contextkey';
+import { MenuId, AbstractContextMenuService, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
+import { FileContextKey } from './file-contextkey';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -157,6 +157,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   @Autowired(FileContextKey)
   private readonly fileContextKey: FileContextKey;
+
+  @Autowired(AbstractContextMenuService)
+  private readonly contextMenuService: AbstractContextMenuService;
 
   private _locationTarget: URI | undefined = undefined;
 
@@ -438,14 +441,17 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
     this.contextMenuResourceContext.set(uris[0]);
 
-    const menus = this.filetreeService.contributedContextMenu;
-    const result = generateCtxMenu({ menus });
+    const menus = this.contextMenuService.createMenu({
+      id: MenuId.ExplorerContext,
+      contextKeyService: this.filetreeService.contextMenuContextKeyService,
+    });
+    const menuNodes = menus.getMergedMenuNodes();
+    menus.dispose();
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
-      // 合并结果
-      menuNodes: [...result[0], ...result[1]],
-      context: [ uris[0], uris ],
+      menuNodes,
+      args: [ uris[0], uris ],
     });
   }
 

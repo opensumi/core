@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
-import { AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
 
 export interface SectionState {
@@ -18,6 +18,9 @@ export class AccordionService {
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
+
+  @Autowired(AbstractContextMenuService)
+  protected ctxMenuService: AbstractContextMenuService;
 
   @Autowired(IMenuRegistry)
   protected menuRegistry: IMenuRegistry;
@@ -184,8 +187,13 @@ export class AccordionService {
 
   @action.bound handleContextMenu(event: React.MouseEvent, viewId: string) {
     event.preventDefault();
-    const menus = this.menuService.createMenu(this.menuId, this.viewContextKeyRegistry.getContextKeyService(viewId));
-    const menuNodes = generateCtxMenu({ menus, options: {args: [{viewId}]} });
+    const menus = this.ctxMenuService.createMenu({
+      id: this.menuId,
+      config: { args: [{viewId}] },
+      contextKeyService: this.viewContextKeyRegistry.getContextKeyService(viewId),
+    });
+    const menuNodes = menus.getGroupedMenuNodes();
+    menus.dispose();
     this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
       x: event.clientX,
       y: event.clientY,

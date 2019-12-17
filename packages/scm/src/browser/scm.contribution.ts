@@ -1,12 +1,8 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema, localize } from '@ali/ide-core-common';
-import {
-  KeybindingContribution, KeybindingRegistry, Logger,
-  ClientAppContribution, IContextKeyService, PreferenceContribution,
-} from '@ali/ide-core-browser';
+import { Logger, ClientAppContribution, IContextKeyService, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
-import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-common/lib/menu';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
@@ -22,10 +18,8 @@ export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
 };
 
-export const SCM_CONTEXT_MENU: MenuPath = ['scm-context-menu'];
-
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution)
-export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution {
+@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution)
+export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution {
   @Autowired()
   protected readonly logger: Logger;
 
@@ -84,12 +78,6 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
         }
       },
     });
-  }
-
-  registerMenus(menus: MenuModelRegistry) {
-  }
-
-  registerKeybindings(keybindings: KeybindingRegistry) {
   }
 
   registerComponent(registry: ComponentRegistry) {

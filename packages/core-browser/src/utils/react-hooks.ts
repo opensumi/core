@@ -3,8 +3,8 @@ import { DisposableStore, IDisposable } from '@ali/ide-core-common';
 import { equals } from '@ali/ide-core-common/lib/utils/arrays';
 
 import { MenuNode } from '../menu/next/base';
-import { IMenu } from '../menu/next/menu-service';
-import { generateInlineActions, MenuSeparator } from '../menu/next/menu-util';
+import { IMenu, IMenuSeparator } from '../menu/next/menu.interface';
+import { generateInlineActions } from '../menu/next/menu-util';
 
 export function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -45,7 +45,7 @@ function menuNodeEquals(a: MenuNode, b: MenuNode): boolean {
 
 export function useMenus(
   menuInitalizer: IMenu | (() => IMenu),
-  separator?: MenuSeparator,
+  separator?: IMenuSeparator,
   args?: any[],
 ) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
@@ -65,7 +65,7 @@ export function useMenus(
       const result = generateInlineActions({
         menus: menuArg,
         separator,
-        options: { args: argList },
+        args: argList,
       });
 
       // menu nodes 对比

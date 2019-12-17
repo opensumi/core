@@ -1,11 +1,11 @@
 import { MenuNode } from '../../base';
 import { IContextKeyService } from '../../../../context-key';
 import { MenuId } from '../../menu-id';
+import { IMenuNodeOptions } from '../../menu.interface';
 
-export interface CtxMenuParams {
+export interface CtxMenuParams extends IMenuNodeOptions {
   menuNodes: MenuNode[] | MenuId | string;
   contextKeyService?: IContextKeyService; // 直接传递 MenuId 时可传递 scopedContextKeyService
-  context?: any[]; // 额外的参数传递给 menu 执行 execute 时调用
 }
 
 export interface CtxMenuRenderParams extends CtxMenuParams {
