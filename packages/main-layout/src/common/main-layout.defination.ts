@@ -30,6 +30,12 @@ export interface IMainLayoutService {
    * @param props 初始prop
    */
   collectViewComponent(view: View, containerId: string, props?: any): string;
+  /**
+   * 替换一个已注册的视图
+   * @param view 子视图信息
+   * @param props 初始prop
+   */
+  replaceViewComponent(view: View, props?: any): void;
   expandBottom(expand: boolean): void;
   bottomExpanded: boolean;
   // @deprecated 提供小程序使用的额外位置控制
