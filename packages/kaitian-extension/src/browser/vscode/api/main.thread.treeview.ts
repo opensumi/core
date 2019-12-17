@@ -43,14 +43,14 @@ export class MainThreadTreeView implements IMainThreadTreeView {
         dataProvider: this.dataProviders.get(treeViewId),
         viewId: treeViewId,
       });
-      // TODO: 实现通过treeViewId获取视图handler
-      const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
-      handler.onActivate(() => {
-        dataProvider.setVisible(treeViewId, true);
-      });
-      handler.onInActivate(() => {
-        dataProvider.setVisible(treeViewId, false);
-      });
+      // FIXME: 实现通过treeViewId获取视图handler
+      // const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+      // handler.onActivate(() => {
+      //   dataProvider.setVisible(treeViewId, true);
+      // });
+      // handler.onInActivate(() => {
+      //   dataProvider.setVisible(treeViewId, false);
+      // });
     }
   }
 

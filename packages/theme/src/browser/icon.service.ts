@@ -36,6 +36,8 @@ export class IconService implements IIconService {
   private getPath(basePath: string, relativePath: string): URI {
     if (relativePath.startsWith('./')) {
       return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
+    } else if (/^http(s)?/.test(relativePath)) {
+      return new URI(relativePath);
     } else if (basePath) {
       return URI.file(new Path(basePath).join(relativePath).toString());
     } else {
@@ -70,13 +72,13 @@ export class IconService implements IIconService {
   }
 
   protected getMaskStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
-    const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
+    const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
     const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50% / 24px;}`;
     return cssRule;
   }
 
   protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
-    const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
+    const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
     const cssRule = `${baseTheme || ''} .${className} {background: url(${iconUrl}) no-repeat 50% 50%;background-size:contain;}`;
     return cssRule;
   }

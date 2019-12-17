@@ -159,7 +159,7 @@ export const ExtensionTabbarTreeView = observer(({
   const onTwistieClickHandler = (node: TreeNode<any>) => {
     if (node && !node.expanded) {
       const copyModel = setExpanded(node.id, true);
-      if (node.children.length > 0 || copyModel.get(node.id)!.updated) {
+      if ((node.children && node.children.length > 0) || copyModel.get(node.id)!.updated) {
         const addNodes = getAllSubChildren(node, copyModel);
         extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
         setNodes(addTreeDatas(nodes, addNodes, node));

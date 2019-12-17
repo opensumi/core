@@ -320,6 +320,9 @@ class ExtHostTreeView<T> implements IDisposable {
 
   private getIconPath(iconPath: string | Uri): string {
     if (Uri.isUri(iconPath)) {
+      if (/^http(s)?/.test(iconPath.scheme)) {
+        return iconPath.toString();
+      }
       return iconPath.with({ scheme: '' }).toString();
     }
     return iconPath;
