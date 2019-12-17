@@ -20,13 +20,17 @@ export class WSChanneHandler {
   private logger = console;
   public clientId: string = `CLIENT_ID:${shorid.generate()}`;
   private heartbeatMessageTimer: NodeJS.Timeout;
+  private reporterService: IReporterService;
 
-  constructor(public wsPath: string, logger: any, private reporterService: IReporterService, public protocols?: string[]) {
+  constructor(public wsPath: string, logger: any, public protocols?: string[]) {
     this.logger = logger || this.logger;
     this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
   setLogger(logger: any) {
     this.logger = logger;
+  }
+  setReporter(reporterService: IReporterService) {
+    this.reporterService = reporterService;
   }
   private clientMessage() {
     const clientMsg = stringify({
@@ -77,7 +81,7 @@ export class WSChanneHandler {
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
             channel.onOpen(() => {
-              this.reporterService.point('channel reconnect');
+              this.reporterService && this.reporterService.point('channel reconnect');
               console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);
