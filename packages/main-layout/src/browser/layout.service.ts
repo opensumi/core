@@ -52,6 +52,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     size?: number;
   }} = {};
 
+  // TODO 使用IconAction完成左侧activityBar上展示的额外图标注册能力
+  // private extraIconActions: IconAction
+
   constructor() {
     super();
   }
@@ -121,6 +124,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     } else {
       tabbarService.currentContainerId = tabbarService.currentContainerId ? '' : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
     }
+    if (tabbarService.currentContainerId && size) {
+      tabbarService.resizeHandle.setSize(size);
+    }
   }
 
   getTabbarService(location: string, noAccordion?: boolean) {
@@ -170,7 +176,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return activityHandler!;
   }
 
-  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent<{}> | undefined): string {
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {
+    if (Fc) {
+      console.warn('collectTabbarComponent api warning: Please move react component into options.component!');
+    }
     const tabbarService = this.getTabbarService(side);
     tabbarService.registerContainer(options.containerId, {views, options});
     views.forEach((view) => {

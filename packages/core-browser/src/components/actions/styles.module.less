@@ -18,7 +18,22 @@
   padding: 0 4px;
   justify-content: right;
   text-align: center;
+  color: var(--kt-menu-descriptionForeground);
 }
+
+.menuAction {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  &.disabled {
+    .shortcut {
+      color: var(--kt-menu-disableForeground);
+    }
+  }
+}
+
 
 .titleActions {
   display: flex;
@@ -31,4 +46,22 @@
 
 .iconAction + .iconAction {
   margin-left: 4px;
+}
+.iconAction + .divider,
+.divider + .iconAction {
+  margin-left: 8px;
+}
+
+.titleActions + .titleActions::before {
+  content: ' ';
+  display: block;
+  margin: 0 6px;
+}
+
+// divider 存在于两个 InlineActionBar 组件之间，也存在与 group 之间
+.titleActions + .titleActions::before,
+.divider {
+  background-color: var(--kt-actionbar-separatorBackground);
+  width: 1px;
+  height: 14px;
 }

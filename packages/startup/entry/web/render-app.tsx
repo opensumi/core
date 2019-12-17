@@ -7,13 +7,13 @@ function DefaultLayout() {
   return <BoxPanel direction='top-to-bottom'>
     <SlotRenderer slot='top' />
     <SplitPanel id='main-horizontal' flex={1}>
-      <SlotRenderer flex={1} slot='left' minSize={50} />
+      <SlotRenderer flex={1} slot='left' minSize={48} />
       <SplitPanel id='main-vertical' flex={2} direction='top-to-bottom'>
         <SlotRenderer flex={2} slot='main' />
         <SlotRenderer flex={1} slot='bottom' />
       </SplitPanel>
       {/* 若不需要右侧tabbar，直接去掉该slot */}
-      <SlotRenderer flex={1} slot='right' minSize={50} />
+      <SlotRenderer flex={1} slot='right' minSize={40} />
     </SplitPanel>
     <SlotRenderer slot='statusBar' />
   </BoxPanel>;

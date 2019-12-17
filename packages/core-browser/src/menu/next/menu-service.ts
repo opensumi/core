@@ -194,16 +194,12 @@ class Menu extends Disposable implements IMenu {
         this.fillKeysInWhenExpr(this._contextKeys, item.toggledWhen);
       }
 
-      // FIXME: 我们的 command 有 precondition(command)/toggled 属性吗？
-      // keep precondition keys for event if applicable
-      // if (isIMenuItem(item) && item.command.precondition) {
-      //   Menu._fillInKbExprKeys(item.command.precondition, this._contextKeys);
-      // }
-
-      // keep toggled keys for event if applicable
-      // if (isIMenuItem(item) && item.command.toggled) {
-      //   Menu._fillInKbExprKeys(item.command.toggled, this._contextKeys);
-      // }
+      // 收集 enabledWhen
+      if (isIMenuItem(item)) {
+        if (item.enabledWhen) {
+          this.fillKeysInWhenExpr(this._contextKeys, item.enabledWhen);
+        }
+      }
     }
     this._onDidChange.fire(this);
   }
@@ -234,16 +230,21 @@ class Menu extends Disposable implements IMenu {
               continue;
             }
 
-            // 默认为 true, command 存在则按照 command#isEnabled 的结果
+            // 默认为 true, 此项状态皆来自于 Command
+            // menu.enabledWhen 的优先级高于 Command.isEnabled
+            // 若设置了 menu.enabledWhen 则忽略 Command.isEnabled
             const commandEnablement = command ? this.commandRegistry.isEnabled(menuCommand.id, ...args) : true;
-            const commandToggle = Boolean(command && this.commandRegistry.isToggled(menuCommand.id, ...args));
+            const disabled = item.enabledWhen !== undefined
+              ? !this.contextKeyService.match(item.enabledWhen)
+              : !commandEnablement;
 
-            const disabled = !commandEnablement;
-            // toggledWhen 的优先级高于 isToggled
-            // 若设置了 toggledWhen 则忽略 Command 的 isVisible
+            // menu.toggledWhen 的优先级高于 Command.isToggled
+            // 若设置了 menu.toggledWhen 则忽略 .Command.isToggled
+            const commandToggle = Boolean(command && this.commandRegistry.isToggled(menuCommand.id, ...args));
             const checked = item.toggledWhen !== undefined
               ? this.contextKeyService.match(item.toggledWhen)
               : commandToggle;
+
             const action = this.injector.get(MenuItemNode, [menuCommand, options, disabled, checked, item.nativeRole]);
             activeActions.push(action);
           } else {

@@ -1,11 +1,11 @@
 import { localize } from '@ali/ide-core-common';
-import { registerColor, lighten, darken } from '../../color-registry';
+import { registerColor, lighten, darken, transparent } from '../../color-registry';
 import { PANEL_BORDER, PANEL_BACKGROUND } from '../panel';
 import { buttonForeground } from '../button';
 import { inputValidationErrorBackground, inputOptionActiveBorder } from '../input';
 import { ACTIVITY_BAR_FOREGROUND } from '../activity-bar';
 import { NOTIFICATIONS_FOREGROUND, NOTIFICATIONS_BACKGROUND } from '../notification';
-import { contrastBorder } from '../base';
+import { contrastBorder, foreground, widgetShadow } from '../base';
 import { menuForeground } from '../menu';
 
 // 自定义颜色
@@ -78,7 +78,55 @@ export const ktStatusBarOfflineBackground = registerColor('kt.statusbar.offline.
 }, localize('statusBarOfflineBackground', 'StatusBar background color when app is offline'));
 
 /* ---  menu --- */
-export const menuDescriptionForeground = registerColor('kt.menu.descriptionForeground', { dark: menuForeground, light: menuForeground, hc: menuForeground }, localize('menuDescriptionForeground', 'Description foreground color of menu items.'));
+export const menuDescriptionForeground = registerColor(
+  'kt.menu.descriptionForeground',
+  { dark: menuForeground, light: menuForeground, hc: menuForeground },
+  localize('menuDescriptionForeground', 'Description foreground color of menu items.'),
+);
+
+export const menuDisableForeground = registerColor(
+  'kt.menu.disableForeground',
+  {
+    dark: transparent(menuForeground, 0.3),
+    light: transparent(menuForeground, 0.3),
+    hc: transparent(menuForeground, 0.3),
+  },
+  localize('menuDisableForeground', 'Foreground color of disabled menu items.'),
+);
+
+export const menuShadow = registerColor(
+  'kt.menu.shadow',
+  { dark: widgetShadow, light: widgetShadow, hc: widgetShadow },
+  localize('menuShadow', 'Box shadow color of menu.'),
+);
+
+export const  actionBarSeparatorBg = registerColor(
+  'kt.actionbar.separatorBackground',
+  { dark: null, light: null, hc: null },
+  localize('actionbarSeparatorBackground', 'Separator background color of actionbar'),
+);
 
 /* --- menubar --- */
-export const menubarBorder = registerColor('kt.menubar.border', { dark: null, light: null, hc: null }, localize('menubarBorder', 'Border color of menu bar.'));
+export const menubarForeground = registerColor(
+  'kt.menubar.foreground',
+  { dark: foreground, light: foreground, hc: foreground },
+  localize('menubarForeground', 'Foreground color of menu bar.'),
+);
+
+export const menubarBackground = registerColor(
+  'kt.menubar.background',
+  { dark: null, light: null, hc: null },
+  localize('menubarBackground', 'Background color of menu bar.'),
+);
+
+export const menubarSeparatorBackground = registerColor(
+  'kt.menubar.separatorBackground',
+  { dark: null, light: null, hc: null },
+  localize('menubarSeparatorBackground', 'Separator background of menu bar.'),
+);
+
+export const menubarBorder = registerColor(
+  'kt.menubar.border',
+  { dark: null, light: null, hc: null },
+  localize('menubarBorder', 'Border color of menu bar.'),
+);

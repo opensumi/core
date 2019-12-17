@@ -13,6 +13,7 @@ import {
   localize,
   IContextKey,
   memoize,
+  OnEvent,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI, PasteTypes, IParseStore, FileStatNode, FileTreeExpandedStatusUpdateEvent } from '../common';
@@ -27,6 +28,7 @@ import { ExplorerResourceCut } from '@ali/ide-core-browser/lib/contextkey/explor
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { ResourceLabelOrIconChangedEvent } from '@ali/ide-core-browser/lib/services';
 
 export type IFileTreeItemStatus = Map<string, {
   selected?: boolean;
@@ -138,9 +140,11 @@ export class FileTreeService extends WithEventBus {
       this.dispose();
       await this.getFiles(workspace);
     });
+
   }
 
   dispose() {
+    super.dispose();
     for (const watcher of Object.keys(this.fileServiceWatchers)) {
       this.fileServiceWatchers[watcher].dispose();
     }
@@ -607,6 +611,31 @@ export class FileTreeService extends WithEventBus {
     }
   }
 
+  @OnEvent(ResourceLabelOrIconChangedEvent)
+  onResourceLabelOrIconChangedEvent(e: ResourceLabelOrIconChangedEvent) {
+    // labelService发生改变时，更新icon和名称
+    this.updateItemMeta(e.payload);
+  }
+
+  @action
+  updateItemMeta(uri: URI) {
+    const statusKey = this.getStatutsKey(uri);
+    const status = this.status.get(statusKey);
+    if (!status) {
+      return;
+    }
+    const file = status.file;
+    const newFileItem = this.fileAPI.fileStat2FileTreeItem(file.filestat, file.parent, file.filestat.isSymbolicLink);
+    if (file instanceof Directory) {
+      file.updateMeta(newFileItem as Directory);
+    } else {
+      file.updateMeta(newFileItem as File);
+    }
+    if (status.file.parent) {
+      status.file.parent.replaceChildren(status.file); // 触发mobx变更
+    }
+  }
+
   searchFileParent(uri: URI, check: any) {
     let parent = uri;
     // 超过两级找不到文件，默认为ignore规则下的文件夹变化
@@ -770,6 +799,7 @@ export class FileTreeService extends WithEventBus {
         this.files = [].concat(item);
         this.updateFileStatus(this.files);
       } else if (file.parent) {
+        item.updateMeta(file);
         file.parent.replaceChildren(item);
         this.updateFileStatus([item]);
       }

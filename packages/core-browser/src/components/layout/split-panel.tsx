@@ -14,14 +14,24 @@ export const PanelContext = React.createContext<{
   setRelativeSize: (prev: number, next: number, isLatter: boolean) => void,
   getSize: (isLatter: boolean) => number,
   getRelativeSize: (isLatter: boolean) => number[],
+  lockSize: (lock: boolean, isLatter: boolean) => void,
 }>({
   setSize: (targetSize: number, isLatter: boolean) => {},
   setRelativeSize: (prev, next, isLatter) => {},
   getSize: (isLatter: boolean) => 0,
   getRelativeSize: (isLatter: boolean) => [0, 0],
+  lockSize: (lock: boolean, isLatter: boolean) => {},
 });
 
-interface SplitChildProps { id: string; minSize?: number; maxSize?: number; flex?: number; slot: string; children?: Array<React.ReactElement<SplitChildProps>>; }
+interface SplitChildProps {
+  id: string;
+  minSize?: number;
+  maxSize?: number;
+  flex?: number;
+  slot: string;
+  noResize?: boolean;
+  children?: Array<React.ReactElement<SplitChildProps>>;
+}
 
 export const SplitPanel: React.FC<{
   children?: Array<React.ReactElement<SplitChildProps>>;
@@ -31,7 +41,8 @@ export const SplitPanel: React.FC<{
   id: string;
   // setAbsoluteSize 时保证相邻节点总宽度不变
   resizeKeep?: boolean;
-}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, ...restProps }) => {
+  dynamicTarget?: boolean;
+}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, dynamicTarget, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
   const elements: React.ReactNodeArray = [];
@@ -40,7 +51,11 @@ export const SplitPanel: React.FC<{
   const rootRef = React.useRef<HTMLElement>();
 
   const splitPanelService = useInjectable<SplitPanelManager>(SplitPanelManager).getService(id);
-  const refs = splitPanelService.panels;
+  const maxLockState = React.useRef(children.map(() => false));
+  const resizeLockState = React.useRef(maxLockState.current.slice(0, children.length - 1));
+  const [locks, setLocks] = React.useState<boolean[]>(resizeLockState.current);
+  const [maxLocks, setMaxLocks] = React.useState<boolean[]>(maxLockState.current);
+  splitPanelService.panels = [];
 
   // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   const setSizeHandle = (index) => {
@@ -85,6 +100,18 @@ export const SplitPanel: React.FC<{
     };
   };
 
+  const lockResizeHandle = (index) => {
+    return (lock: boolean, isLatter?: boolean) => {
+      const targetIndex = isLatter ? index - 1 : index;
+      const newResizeState = resizeLockState.current.map((state, idx) => idx === targetIndex ? (lock !== undefined ? lock : !state) : state);
+      const newMaxState = maxLockState.current.map((state, idx) => idx === index ? (lock !== undefined ? lock : !state) : state);
+      resizeLockState.current = newResizeState;
+      maxLockState.current = newMaxState;
+      setLocks(newResizeState);
+      setMaxLocks(newMaxState);
+    };
+  };
+
   const fireResizeEvent = (location: string, srcElement: HTMLElement, index: number) => {
     if (location) {
       eventBus.fire(new ResizeEvent({slotLocation: location, width: srcElement.clientWidth, height: srcElement.clientHeight}));
@@ -105,8 +132,10 @@ export const SplitPanel: React.FC<{
 
   children.forEach((element, index) => {
     if (index !== 0) {
+      const targetElement = index === 1 ? children[index - 1] : children[index];
       elements.push(
         <ResizeHandle
+          className={targetElement.props.noResize || locks[index - 1] ? 'no-resize' : ''}
           onResize={(prev, next) => {
             const prevLocation = children[index - 1].props.slot;
             const nextLocation = children[index].props.slot;
@@ -114,23 +143,33 @@ export const SplitPanel: React.FC<{
             fireResizeEvent(nextLocation, next, index);
           }}
           noColor={true}
-          findNextElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction)}
-          findPrevElement={(direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true)}
+          findNextElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction) : undefined}
+          findPrevElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true) : undefined}
           key={`split-handle-${index}`}
           delegate={(delegate) => { resizeDelegates.current.push(delegate); }} />,
       );
     }
     elements.push(
-      <PanelContext.Provider key={index} value={{setSize: setSizeHandle(index), getSize: getSizeHandle(index), setRelativeSize: setRelativeSizeHandle(index), getRelativeSize: getRelativeSizeHandle(index)}}>
+      <PanelContext.Provider
+        key={index}
+        value={{
+          setSize: setSizeHandle(index),
+          getSize: getSizeHandle(index),
+          setRelativeSize: setRelativeSizeHandle(index),
+          getRelativeSize: getRelativeSizeHandle(index),
+          lockSize: lockResizeHandle(index),
+        }}>
         <div
           ref={(ele) => {
-            if (ele && refs.indexOf(ele) === -1) {
-              refs.push(ele);
+            if (ele && splitPanelService.panels.indexOf(ele) === -1) {
+              splitPanelService.panels.push(ele);
             }
           }}
           style={{
             [Layout.getSizeProperty(direction)]: ((element.props.flex !== undefined ? element.props.flex : 1) / totalFlexNum * 100) + '%',
+            // 相对尺寸带来的问题，必须限制最小最大尺寸
             [Layout.getMinSizeProperty(direction)]: element.props.minSize ? element.props.minSize + 'px' : '-1px',
+            [Layout.getMaxSizeProperty(direction)]: maxLocks[index] ? element.props.minSize + 'px' : 'unset',
           }}>
           {element}
         </div>

@@ -287,10 +287,12 @@ export class MonacoActionRegistry {
   protected newActionHandler(id: string): MonacoEditorCommandHandler {
     return {
       execute: (editor) => this.runAction(id, editor),
-      isEnabled: (editor) => {
-        const action = editor.getAction(id);
-        return !!action && action.isSupported();
-      },
+
+      // 针对 Selection 等菜单在 electron 上的展示
+      // isEnabled: (editor) => {
+        // const action = editor.getAction(id);
+        // return !!action && action.isSupported();
+      // },
     };
   }
 
