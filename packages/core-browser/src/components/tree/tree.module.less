@@ -133,6 +133,16 @@
   display: flex;
 }
 
+.kt_treenode_edit_wrap {
+  display: flex;
+  width: calc(100% - 50px);
+  .kt_treenode_displayname {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 .kt_treenode_segment_grow {
   flex-grow: 1 !important;
   text-align: left;
