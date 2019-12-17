@@ -10,14 +10,14 @@ import {
   ClientAppContribution,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ITerminalController, ITerminalRestore } from '../common';
 import { terminalClear, terminalSplit, terminalIndepend } from './terminal.command';
 import TerminalView from './terminal.view';
 import TerminalTabs from './component/tab/view';
 
-@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution)
-export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution {
+@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
+export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
 
   @Autowired(ITerminalController)
   terminalController: ITerminalController;
@@ -105,7 +105,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     });
   }
 
-  onDidStart() {
+  onDidRender() {
     this.store.restore()
       .then(() => {
         this.terminalController.firstInitialize();

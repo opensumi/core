@@ -73,12 +73,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   private _onDidCloseTerminal = new Emitter<string>();
   private _onDidChangeActiveTerminal = new Emitter<string>();
 
-  constructor() {
-    super();
-    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
-    this.themeBackground = this.termTheme.terminalTheme.background || '';
-  }
-
   get focusedTerm() {
     return this._clientsMap.get(this._focusedId);
   }
@@ -191,6 +185,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   firstInitialize() {
+    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
+    this.themeBackground = this.termTheme.terminalTheme.background || '';
+
     if (this.tabbarHandler.isActivated()) {
       if (this._checkIfNeedInitialize()) {
         this.createGroup(true);
@@ -704,6 +701,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
 
     client.findNext(this.searchState.input);
+  }
+
+  /** end */
+
+  /** client */
+
+  getCurrentClient() {
+    return this._clientsMap.get(this._focusedId);
   }
 
   /** end */

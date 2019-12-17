@@ -57,4 +57,6 @@ export interface ITerminalController {
   onDidChangeActiveTerminal: Event<string>;
   onDidCloseTerminal: Event<string>;
   onDidOpenTerminal: Event<TerminalInfo>;
+
+  getCurrentClient(): any | undefined;
 }

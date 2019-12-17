@@ -372,6 +372,14 @@ export const localizationBundle = {
     'terminal.maximum': '最大化面板大小',
     'terminal.or': '或者',
 
+    'terminal.menu.search': '搜索',
+    'terminal.menu.split': '拆分',
+    'terminal.menu.selectAll': '全选',
+    'terminal.menu.copy': '复制',
+    'terminal.menu.paste': '粘贴',
+    'terminal.menu.clear': '清空',
+    'terminal.menu.stop': '终止',
+
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
 

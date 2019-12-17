@@ -318,6 +318,14 @@ export const localizationBundle = {
     'terminal.maximum': 'Maximum terminal panel',
     'terminal.or': 'or',
 
+    'terminal.menu.search': 'Search',
+    'terminal.menu.split': 'Split',
+    'terminal.menu.selectAll': 'Select All',
+    'terminal.menu.copy': 'Copy',
+    'terminal.menu.paste': 'Paste',
+    'terminal.menu.clear': 'Clear',
+    'terminal.menu.stop': 'Stop',
+
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
 

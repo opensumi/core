@@ -4,6 +4,7 @@ import { useInjectable, localize, getIcon } from '@ali/ide-core-browser';
 import { ITerminalController, IWidget, ITerminalError } from '../common';
 
 import * as styles from './terminal.module.less';
+import { TerminalContextMenuService } from './terminal.menu';
 
 export interface IProps {
   id: string;
@@ -16,6 +17,7 @@ export interface IProps {
 export default ({ id, dynamic, error, show }: IProps) => {
   const content = React.createRef<HTMLDivElement>();
   const controller = useInjectable<ITerminalController>(ITerminalController);
+  const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
 
   React.useEffect(() => {
     if (content.current) {
@@ -43,7 +45,7 @@ export default ({ id, dynamic, error, show }: IProps) => {
   };
 
   return (
-    <div className={ styles.terminalContainer }>
+    <div className={ styles.terminalContainer } onContextMenu={ (event) => menuService.onContextMenu(event) }>
       {
         error ?
           <div className={ styles.terminalCover }>
