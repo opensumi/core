@@ -360,7 +360,7 @@ export const TreeContainerNode = (
       if (node.name !== TEMP_FILE_NAME && isString(node.name)) {
         selection = {
           start: 0,
-          end: node.name.replace(/\.\w+/, '').length,
+          end: node.name.replace(/\..+/, '').length,
         };
       }
       return <div
