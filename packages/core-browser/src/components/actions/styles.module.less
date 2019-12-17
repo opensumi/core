@@ -18,7 +18,22 @@
   padding: 0 4px;
   justify-content: right;
   text-align: center;
+  color: var(--kt-menu-descriptionForeground);
 }
+
+.menuAction {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  &.disabled {
+    .shortcut {
+      color: var(--kt-menu-disableForeground);
+    }
+  }
+}
+
 
 .titleActions {
   display: flex;
