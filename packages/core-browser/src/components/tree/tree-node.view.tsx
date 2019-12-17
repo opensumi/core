@@ -306,7 +306,7 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight}}>
+    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight - 2}px`}}>
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
     </div>;
   };
@@ -322,9 +322,9 @@ export const TreeContainerNode = (
 
     const blurHandler = (event) => {
       if (actualValidate(value)) {
-        onChange(node, '');
+        // onChange(node, '');
       } else {
-        onChange(node, value);
+        // onChange(node, value);
       }
     };
 
@@ -449,6 +449,9 @@ export const TreeContainerNode = (
       return <div className={styles.kt_treenode_title} style={titleStyle}>{node.title}</div>;
     }
   };
+  const foldNodeOffsetStyle = {
+    width: ExpandableTreeNode.is(node) && foldable ? 'calc(100% - 68px)' : 'calc(100% - 50px)',
+  } as React.CSSProperties;
 
   return (
     <div
@@ -481,7 +484,10 @@ export const TreeContainerNode = (
         <div className={cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')} style={itemStyle}>
           {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
           {renderIcon(node)}
-          <div className={isString(node.name) ? styles.kt_treenode_overflow_wrap : styles.kt_treenode_flex_wrap}>
+          <div
+            className={isEdited ? styles.kt_treenode_edit_wrap : isString(node.name) ? styles.kt_treenode_overflow_wrap : styles.kt_treenode_flex_wrap}
+            style={foldNodeOffsetStyle}
+          >
             {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
             {renderDescription(node, replace)}
           </div>
