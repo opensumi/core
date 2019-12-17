@@ -28,7 +28,7 @@ describe('connection browser', () => {
       });
     });
 
-    const wsChannelHandler = new WSChanneHandler(fakeWSURL, console, new ReporterService(new DefaultReporter()));
+    const wsChannelHandler = new WSChanneHandler(fakeWSURL, console);
 
     await wsChannelHandler.initHandler();
     await new Promise((resolve) => {

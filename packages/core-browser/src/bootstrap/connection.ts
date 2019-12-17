@@ -20,7 +20,8 @@ export async function createClientConnection2(injector: Injector, modules: Modul
   const reporterService = injector.get(IReporterService);
   // const logger = injector.get(ILogger)
 
-  const wsChannelHandler = new WSChanneHandler(wsPath, logger, reporterService, protocols);
+  const wsChannelHandler = new WSChanneHandler(wsPath, logger, protocols);
+  wsChannelHandler.setReporter(reporterService);
   wsChannelHandler.connection.addEventListener('open', () => {
     statusBarService.setBackgroundColor('var(--statusBar-background)');
   });
