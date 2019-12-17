@@ -17,6 +17,7 @@ export interface ITerminalController {
   currentGroup: IWidgetGroup | undefined;
   groups: IWidgetGroup[];
   state: { index: number };
+  searchState: { input: string, show: boolean };
   errors: Map<string, ITerminalError>;
   reconnect(): Promise<void>;
   recovery(history: any): Promise<void>;
@@ -48,6 +49,10 @@ export interface ITerminalController {
   hideTerm(id: string): void;
   removeTerm(id?: string): void;
   sendText(id: string, text: string, addNewLine?: boolean): void;
+
+  openSearchInput(): void;
+  closeSearchInput(): void;
+  search(): void;
 
   onDidChangeActiveTerminal: Event<string>;
   onDidCloseTerminal: Event<string>;

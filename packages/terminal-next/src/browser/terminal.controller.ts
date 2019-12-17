@@ -23,6 +23,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   state: { index: number } = { index: -1 };
 
   @observable
+  searchState: { input: string, show: boolean } = { input: '', show: false };
+
+  @observable
   errors: Map<string, ITerminalError> = new Map();
 
   @observable
@@ -673,6 +676,34 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   sendText(id: string, text: string, addNewLine = true) {
     this.service.sendText(id, `${text}${addNewLine ? '\r\n' : ''}`);
+  }
+
+  /** end */
+
+  /** search */
+
+  openSearchInput() {
+    this.searchState.show = true;
+  }
+
+  closeSearchInput() {
+    this.searchState.show = false;
+  }
+
+  search() {
+    const group = this.currentGroup;
+
+    if (!group) {
+      throw new Error('group not found');
+    }
+
+    const client = this._clientsMap.get(this._focusedId);
+
+    if (!client) {
+      throw new Error('client not found');
+    }
+
+    client.findNext(this.searchState.input);
   }
 
   /** end */

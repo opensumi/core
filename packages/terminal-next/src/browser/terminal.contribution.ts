@@ -105,6 +105,13 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     });
   }
 
+  onDidStart() {
+    this.store.restore()
+      .then(() => {
+        this.terminalController.firstInitialize();
+      });
+  }
+
   onStop() {
     this.store.save();
   }

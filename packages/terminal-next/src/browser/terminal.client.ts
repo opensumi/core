@@ -24,6 +24,7 @@ export class TerminalClient extends Disposable {
   // add on
   private _fitAddon: FitAddon;
   private _attachAddon: AttachAddon;
+  private _searchAddon: SearchAddon;
 
   private _layer = new ThrottledDelayer<void>(50);
 
@@ -70,10 +71,10 @@ export class TerminalClient extends Disposable {
       ...TerminalClient.defaultOptions,
       ...this.service.getOptions(),
     });
+    this._searchAddon = new SearchAddon();
     this._fitAddon = new FitAddon();
     this._term.loadAddon(this._fitAddon);
 
-    const searchAddon = new SearchAddon();
     const weblinksAddon = new WebLinksAddon();
     const filelinksAddon = new TerminalFilePathAddon((_, uri: string) => {
       // todo: support for windows
@@ -104,7 +105,7 @@ export class TerminalClient extends Disposable {
       mainFuntion();
     });
 
-    this._term.loadAddon(searchAddon);
+    this._term.loadAddon(this._searchAddon);
     this._term.loadAddon(filelinksAddon);
     this._term.loadAddon(weblinksAddon);
 
@@ -122,7 +123,7 @@ export class TerminalClient extends Disposable {
 
         this._attachAddon && this._attachAddon.dispose();
         this._fitAddon.dispose();
-        searchAddon.dispose();
+        this._searchAddon.dispose();
         weblinksAddon.dispose();
         filelinksAddon.dispose();
         this._layer.dispose();
@@ -315,6 +316,10 @@ export class TerminalClient extends Disposable {
 
   updateTheme() {
     this._term.setOption('theme', this.theme.terminalTheme);
+  }
+
+  findNext(text: string) {
+    this._searchAddon.findNext(text);
   }
 
   /**

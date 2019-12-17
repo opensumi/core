@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, getIcon } from '@ali/ide-core-browser';
 import ResizeView, { ResizeDirection } from './component/resize.view';
-import { ITerminalController, IWidget, ITerminalRestore } from '../common';
+import { ITerminalController, IWidget } from '../common';
 import TerminalWidget from './terminal.widget';
 
 import 'xterm/css/xterm.css';
@@ -10,7 +10,6 @@ import * as styles from './terminal.module.less';
 
 export default observer(() => {
   const controller = useInjectable<ITerminalController>(ITerminalController);
-  const store = useInjectable<ITerminalRestore>(ITerminalRestore);
   const { groups, state, errors, themeBackground } = controller;
 
   const renderWidget = (widget: IWidget, show: boolean) => {
@@ -20,15 +19,36 @@ export default observer(() => {
     );
   };
 
-  React.useEffect(() => {
-    store.restore()
-      .then(() => {
-        controller.firstInitialize();
-      });
-  }, []);
+  const searchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    controller.searchState.input = event.target.value;
+  };
+
+  const searchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      controller.search();
+    }
+  };
+
+  const searchClose = () => {
+    controller.closeSearchInput();
+  };
 
   return (
-    <div className={ styles.terminalWrapper } style={{backgroundColor: themeBackground}}>
+    <div className={ styles.terminalWrapper } style={ { backgroundColor: themeBackground } }>
+      {
+        controller.searchState.show && <div className={ styles.terminalSearch }>
+          <input
+            placeholder='查找'
+            value={ controller.searchState.input }
+            onChange={ (event) => searchInput(event) }
+            onKeyDown={ (event) => searchKeyDown(event) }
+          />
+          <div
+            className={ getIcon('close') }
+            onClick={ () => searchClose() }
+          ></div>
+        </div>
+      }
       {
         groups
           .map((group, index) => {
