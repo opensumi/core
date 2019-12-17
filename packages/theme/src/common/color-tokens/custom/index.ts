@@ -5,8 +5,10 @@ import { buttonForeground } from '../button';
 import { inputValidationErrorBackground, inputOptionActiveBorder } from '../input';
 import { ACTIVITY_BAR_FOREGROUND } from '../activity-bar';
 import { NOTIFICATIONS_FOREGROUND, NOTIFICATIONS_BACKGROUND } from '../notification';
-import { contrastBorder, foreground, widgetShadow } from '../base';
+import { contrastBorder, foreground, widgetShadow, descriptionForeground } from '../base';
 import { menuForeground } from '../menu';
+import { SIDE_BAR_TITLE_FOREGROUND } from '../sidebar';
+import { listHoverBackground, listInactiveSelectionBackground } from '../list-tree';
 
 // 自定义颜色
 
@@ -76,6 +78,36 @@ export const ktStatusBarOfflineBackground = registerColor('kt.statusbar.offline.
   light: '#D21F28',
   hc: '#D21F28',
 }, localize('statusBarOfflineBackground', 'StatusBar background color when app is offline'));
+
+export const ktSideBarTitleActiveBorder = registerColor('kt.sideBarTitle.activeBorder', {
+  dark: SIDE_BAR_TITLE_FOREGROUND,
+  light: SIDE_BAR_TITLE_FOREGROUND,
+  hc: SIDE_BAR_TITLE_FOREGROUND,
+}, localize('sideBarTitleActiveBorder', 'SideBar title color when active'));
+
+export const ktSideBarListForeground = registerColor('kt.sideBarList.foreground', {
+  dark: foreground,
+  light: foreground,
+  hc: foreground,
+}, localize('ktSideBarListForeground', 'SideBarList foreground'));
+
+export const ktSideBarListSecondaryForeground = registerColor('kt.sideBarList.secondaryForeground', {
+  dark: descriptionForeground,
+  light: descriptionForeground,
+  hc: descriptionForeground,
+}, localize('ktSideBarListSecondaryForeground', 'SideBarList secondary foreground'));
+
+export const ktSideBarListHoverBackground = registerColor('kt.sideBarList.hoverForeground', {
+  dark: listHoverBackground,
+  light: listHoverBackground,
+  hc: listHoverBackground,
+}, localize('ktSideBarListHoverBackground', 'SideBarList hover background'));
+
+export const ktSideBarListSelectionBackground = registerColor('kt.sideBarList.selectionBackground', {
+  dark: listInactiveSelectionBackground,
+  light: listInactiveSelectionBackground,
+  hc: listInactiveSelectionBackground,
+}, localize('ktSideBarListSelectionBackground', 'SideBarList Select background'));
 
 /* ---  menu --- */
 export const menuDescriptionForeground = registerColor(
