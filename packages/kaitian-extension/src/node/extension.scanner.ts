@@ -81,7 +81,8 @@ export class ExtensionScanner {
   static async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
     if (!await fs.pathExists(extensionPath)) {
-      getLogger().error('extension path does not exist');
+      getLogger().error(`extension path ${extensionPath} does not exist`);
+      return;
     }
 
     const pkgPath = path.join(extensionPath, 'package.json');
