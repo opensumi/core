@@ -3,7 +3,8 @@ import { observer } from 'mobx-react-lite';
 import * as cls from 'classnames';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import * as styles from './keymaps.module.less';
-import { Input, RecycleList } from '@ali/ide-core-browser/lib/components';
+import { RecycleList } from '@ali/ide-core-browser/lib/components';
+import { Input } from '@ali/ide-components';
 import { localize, useInjectable, MessageType, KeybindingScope, noKeybidingInputName, KeyCode, Key } from '@ali/ide-core-browser';
 import { KeymapService } from './keymaps.service';
 import { IKeymapService, KeybindingItem } from '../common';
@@ -107,7 +108,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
 
     const renderKeybinding = () => {
       if (isEditing) {
-        return <Input className={styles.keybinding_key_input} autoFocus={true} name={noKeybidingInputName} value={value} onChange={changeHandler} onKeyDown={keydownHandler} onBlur={blurHandler} />;
+        return <Input className={styles.keybinding_key_input} size='small' autoFocus={true} name={noKeybidingInputName} value={value} onChange={changeHandler} onKeyDown={keydownHandler} onBlur={blurHandler} />;
       } else {
         return <span className={styles.keybinding_key} dangerouslySetInnerHTML={{ __html: keybinding || '' }}></span>;
       }

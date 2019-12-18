@@ -228,6 +228,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 750,
       description: '%editor.configuration.readonlyFiles%',
     },
+    'editor.maxTokenizationLineLength': {
+      type: 'integer',
+      default: 10000,
+      description: '%editor.configuration.maxTokenizationLineLength%',
+    },
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,

@@ -7,6 +7,7 @@ export * from './dropdown';
 export * from './editor';
 export * from './index';
 export * from './input';
+export * from './checkbox';
 export * from './list-tree';
 export * from './menu-bar';
 export * from './menu';
