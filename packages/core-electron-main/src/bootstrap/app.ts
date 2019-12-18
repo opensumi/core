@@ -10,13 +10,14 @@ import { ElectronMainModule } from '../electron-main-module';
 import { argv } from 'yargs';
 
 export interface IWindowOpenOptions {
-  windowId: string;
+  windowId: number;
+  // @deprecated
   replace?: boolean;
 }
 
 export class ElectronMainApp {
 
-  private codeWindows: Map<string, CodeWindow> = new Map();
+  private codeWindows: Map<number, CodeWindow> = new Map();
 
   private injector = new Injector();
 
@@ -71,24 +72,26 @@ export class ElectronMainApp {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
-    if (openOptions && openOptions.replace) {
-      let replaceWindow = this.codeWindows.get(openOptions.windowId);
-      if (!replaceWindow && this.codeWindows.size > 0) {
-        replaceWindow = Array.from(this.codeWindows.values())[0];
-      }
-      if (replaceWindow) {
-        replaceWindow.close();
+    if (openOptions && openOptions.windowId) {
+      const lastWindow = this.getCodeWindowByElectronBrowserWindowId(openOptions.windowId);
+      if (lastWindow) {
+        lastWindow.setWorkspace(workspace!);
+        lastWindow.metadata = metadata;
+        lastWindow.reload();
+        return lastWindow;
       }
     }
     const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
-    const windowId = openOptions ? openOptions.windowId : uuid();
-    this.codeWindows.set(windowId, window);
     window.start();
     if (options.show !== false) {
       window.getBrowserWindow().show();
     }
-    window.onDispose(() => {
-      this.codeWindows.delete(windowId);
+    const windowId = window.getBrowserWindow().id;
+    this.codeWindows.set(windowId, window);
+    window.addDispose({
+      dispose: () => {
+        this.codeWindows.delete(windowId);
+      },
     });
 
     return window;

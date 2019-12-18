@@ -427,7 +427,10 @@ export class ClientApp implements IClientApp {
               return this.stopContributionsElectron().then(() => {
                 this.stateService.state = 'electron_confirmed_close';
                 const electronLifeCycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
-                electronLifeCycle.closeWindow(electronEnv.currentWindowId);
+                // 在下一个 event loop 执行，否则可能导致第一次无法关闭。
+                setTimeout(() => {
+                  electronLifeCycle.closeWindow(electronEnv.currentWindowId);
+                }, 0);
               });
             }
           });
