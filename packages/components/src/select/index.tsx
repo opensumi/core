@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import * as classNames from 'classnames';
+import { getIcon } from '@ali/ide-core-browser';
 
 import './style.less';
 import Icon from '../icon';
-import { getIcon } from '../../../core-browser/lib';
 
 interface ISelectProps {
   className?: string;
