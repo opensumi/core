@@ -17,6 +17,7 @@ export interface ItemProps {
   type?: ItemType;
   onClick?: () => void;
   onClose?: () => void;
+  onContextMenu?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
 export function renderInfoItem(props: ItemProps) {
@@ -30,6 +31,7 @@ export function renderInfoItem(props: ItemProps) {
         [styles.item_selected]: !!props.selected,
       }) }
       onClick={ () => handleSelect() }
+      onContextMenu={ (event) => props.onContextMenu && props.onContextMenu(event) }
     >
       <div className={ styles.item_info_name } title={ props.name }>{ props.name }</div>
       <div

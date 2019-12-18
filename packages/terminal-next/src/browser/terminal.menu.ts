@@ -4,6 +4,7 @@ import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMe
 import { memoize, IContextKeyService, localize } from '@ali/ide-core-browser';
 import { ITerminalController } from '../common';
 import { TerminalClient } from './terminal.client';
+import { TabManager } from './component/tab/manager';
 
 export enum MenuId {
   TermTab = 'TermTab',
@@ -18,6 +19,7 @@ export enum SimpleCommonds {
   paste = 'terminal:paste',
   clear = 'terminal:clear',
   stop = 'terminal:stop',
+  stopGroup = 'terminal:stopGroup',
 }
 
 export const group = 'panel_menu';
@@ -27,6 +29,9 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
 
   @Autowired(ITerminalController)
   terminalController: ITerminalController;
+
+  @Autowired()
+  tabManager: TabManager;
 
   registerCommands(registry: CommandRegistry) {
     registry.registerCommand({ id: SimpleCommonds.search }, {
@@ -71,6 +76,14 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
     registry.registerCommand({ id: SimpleCommonds.stop }, {
       execute: async () => {
         this.terminalController.removeFocused();
+      },
+    });
+
+    registry.registerCommand({ id: SimpleCommonds.stopGroup }, {
+      execute: async () => {
+        if (this.terminalController.state.index !== -1) {
+          this.tabManager.remove(this.terminalController.state.index);
+        }
       },
     });
   }
@@ -129,6 +142,24 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
       order: 7,
       group,
     });
+
+    menuRegistry.registerMenuItem(MenuId.TermTab, {
+      command: {
+        id: SimpleCommonds.split,
+        label: localize('terminal.menu.split'),
+      },
+      order: 2,
+      group,
+    });
+
+    menuRegistry.registerMenuItem(MenuId.TermTab, {
+      command: {
+        id: SimpleCommonds.stopGroup,
+        label: localize('terminal.menu.stopGroup'),
+      },
+      order: 1,
+      group,
+    });
   }
 }
 
@@ -154,6 +185,27 @@ export class TerminalContextMenuService extends Disposable {
 
     const { x, y } = event.nativeEvent;
     const menus = this.contextMenu;
+    const result = generateCtxMenu({ menus });
+
+    this.ctxMenuRenderer.show({
+      anchor: { x, y },
+      // 合并结果
+      menuNodes: [...result[0], ...result[1]],
+      context: [ 'some args for command executor' ],
+    });
+  }
+
+  @memoize get tabContextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(MenuId.TermTab, this.contextKeyService);
+    this.addDispose(contributedContextMenu);
+    return contributedContextMenu;
+  }
+
+  onTabContextMenu(event: React.MouseEvent<HTMLElement>) {
+    event.preventDefault();
+
+    const { x, y } = event.nativeEvent;
+    const menus = this.tabContextMenu;
     const result = generateCtxMenu({ menus });
 
     this.ctxMenuRenderer.show({

@@ -309,21 +309,6 @@ export class TerminalClient extends Disposable {
     this._term.focus();
   }
 
-  paste() {
-    this._input.value = '';
-
-    this._input.focus();
-
-    this._input.dispatchEvent(new window.Event('paste'));
-
-    document.execCommand('paste');
-    if (this._input.value) {
-      this.service.sendText(this.id, this._input.value);
-    }
-
-    this._term.focus();
-  }
-
   selectAll() {
     this._term.selectAll();
   }
