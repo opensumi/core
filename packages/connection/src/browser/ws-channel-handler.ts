@@ -33,14 +33,14 @@ export class WSChanneHandler {
     if (this.heartbeatMessageTimer) {
       clearTimeout(this.heartbeatMessageTimer);
     }
-    this.heartbeatMessageTimer = setTimeout(() => {
-      const msg = stringify({
-        kind: 'heartbeat',
-        clientId: this.clientId,
-      });
-      this.connection.send(msg);
-      this.heartbeatMessage();
-    }, 5000);
+    // this.heartbeatMessageTimer = setTimeout(() => {
+    //   const msg = stringify({
+    //     kind: 'heartbeat',
+    //     clientId: this.clientId,
+    //   });
+    //   this.connection.send(msg);
+    //   this.heartbeatMessage();
+    // }, 5000);
   }
 
   public async initHandler() {

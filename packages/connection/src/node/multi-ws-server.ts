@@ -1,5 +1,5 @@
 import { ChildConnectPath } from '../common/ws-channel';
-import * as once from 'lodash.once';
+import { once } from '@ali/ide-core-common';
 import * as ws from 'ws';
 import * as events from 'events';
 
@@ -149,7 +149,7 @@ class MultiConnect extends events.EventEmitter {
     content = JSON.parse(content);
     const connection = this.getAvailableConnection( content.method ? content.method : '');
 
-    if (!connection) {
+    if (connection.readyState !== connection.OPEN) {
       throw new Error('找不到可用连接！');
     }
 
@@ -166,7 +166,7 @@ class MultiConnect extends events.EventEmitter {
     });
   }
 
-  private getAvailableConnection(mark: string): ExtendWs | undefined {
+  private getAvailableConnection(mark: string): ExtendWs {
     const lastConnection = this.connectionList[this.connectionList.length - 1];
     let availableConnection;
     let recentSameMarkConnect;
