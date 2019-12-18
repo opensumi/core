@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
-import { Button } from '@ali/ide-core-browser/lib/components';
+import { Button } from '@ali/ide-components';
 import * as styles from './file-dialog.module.less';
 import { useInjectable, localize, URI, TreeNode } from '@ali/ide-core-browser';
 import { FileDialogService } from './file-dialog.service';

@@ -25,6 +25,7 @@
     "@ali/ide-main-layout": "1.6.6",
     "@ali/ide-monaco-enhance": "1.6.6",
     "@ali/ide-status-bar": "1.6.6",
+    "@ali/ide-components": "1.6.6",
     "@ali/ide-theme": "1.6.6"
   },
   "devDependencies": {
