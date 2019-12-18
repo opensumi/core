@@ -519,7 +519,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   layoutTerminalClient(widgetId: string) {
     const client = this._clientsMap.get(widgetId);
 
-    if (client && this.tabbarHandler.isActivated() &&
+    if (client && this.tabbarHandler && this.tabbarHandler.isActivated() &&
       this.currentGroup && this.currentGroup.widgetsMap.has(widgetId)) {
       if (client.notReadyToShow) {
         /**
