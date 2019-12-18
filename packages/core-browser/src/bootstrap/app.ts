@@ -23,6 +23,7 @@ import {
   isElectronRenderer,
   setLanguageId,
   ILogger,
+  IReporterService,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -267,7 +268,6 @@ export class ClientApp implements IClientApp {
     for (const contribution of this.contributions) {
       if (contribution.initialize) {
         try {
-          this.logger.verbose((contribution.constructor as any).name + '.initialize');
           await this.measure(contribution.constructor.name + '.initialize',
             () => contribution.initialize!(this),
           );
@@ -287,11 +287,9 @@ export class ClientApp implements IClientApp {
     for (const contribution of this.contributions) {
       if (contribution.onStart) {
         try {
-          this.logger.verbose(contribution.constructor.name + '.onStart start');
           await this.measure(contribution.constructor.name + '.onStart',
             () => contribution.onStart!(this),
           );
-          this.logger.verbose(contribution.constructor.name + '.onStart done');
         } catch (error) {
           this.logger.error('Could not start contribution', error);
         }
@@ -318,20 +316,10 @@ export class ClientApp implements IClientApp {
   }
 
   protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {
-    const startMark = name + '-start';
-    const endMark = name + '-end';
-    performance.mark(startMark);
+    const reporterService: IReporterService = this.injector.get(IReporterService);
+    const measureReporter = reporterService.time('measure');
     const result = await fn();
-    performance.mark(endMark);
-    performance.measure(name, startMark, endMark);
-    for (const item of performance.getEntriesByName(name)) {
-      if (item.duration > 100) {
-        this.logger.verbose(item.name + ' is slow, took: ' + item.duration + ' ms');
-      } else {
-        this.logger.verbose(item.name + ' took ' + item.duration + ' ms');
-      }
-    }
-    performance.clearMeasures(name);
+    measureReporter.timeEnd(name);
     return result;
   }
 
