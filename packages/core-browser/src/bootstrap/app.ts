@@ -24,6 +24,7 @@ import {
   setLanguageId,
   ILogger,
   IReporterService,
+  REPORT_NAME,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -317,7 +318,7 @@ export class ClientApp implements IClientApp {
 
   protected async measure<T>(name: string, fn: () => MaybePromise<T>): Promise<T> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
-    const measureReporter = reporterService.time('measure');
+    const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
     const result = await fn();
     measureReporter.timeEnd(name);
     return result;

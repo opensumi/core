@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { DisposableCollection, Emitter, URI, IMarkerData, MarkerManager, LRUMap } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, URI, IMarkerData, MarkerManager, LRUMap, REPORT_NAME } from '@ali/ide-core-common';
 import { SerializedDocumentFilter, LanguageSelector, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../../common/vscode/model.api';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
@@ -101,7 +101,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
 
-        const timer = this.reporter.time('provideCompletionItems');
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_COMPLETION_ITEMS);
         const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, context, token);
         if (!result) {
           return undefined!;
