@@ -1,15 +1,20 @@
-import { Disposable, ThrottledDelayer } from '@ali/ide-core-common';
+import { Disposable, ThrottledDelayer, URI } from '@ali/ide-core-common';
+import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { Terminal, ITerminalOptions } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { AttachAddon } from 'xterm-addon-attach';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
+import { TerminalFilePathAddon } from './terminal.addon';
 import { ITerminalExternalService, IWidget, TerminalOptions, ITerminalController } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import * as styles from './terminal.module.less';
 
 export class TerminalClient extends Disposable {
   private _container: HTMLDivElement;
+  private _input: HTMLTextAreaElement;
   private _term: Terminal;
   private _uid: string;
   private _pid: number;
@@ -20,6 +25,7 @@ export class TerminalClient extends Disposable {
   // add on
   private _fitAddon: FitAddon;
   private _attachAddon: AttachAddon;
+  private _searchAddon: SearchAddon;
 
   private _layer = new ThrottledDelayer<void>(50);
 
@@ -42,6 +48,9 @@ export class TerminalClient extends Disposable {
 
   constructor(
     protected readonly service: ITerminalExternalService,
+    protected readonly workspace: IWorkspaceService,
+    protected readonly editorService: WorkbenchEditorService,
+    protected readonly fileService: IFileServiceClient,
     protected theme: ITerminalTheme,
     protected readonly controller: ITerminalController,
     widget: IWidget,
@@ -57,20 +66,73 @@ export class TerminalClient extends Disposable {
     this._name = this._options.name || '';
     this._widget = widget;
     this._container = document.createElement('div');
+    this._input = document.createElement('textarea');
     this._container.className = styles.terminalInstance;
+    this._input.className = styles.terminalFake;
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...TerminalClient.defaultOptions,
       ...this.service.getOptions(),
     });
+    this._searchAddon = new SearchAddon();
     this._fitAddon = new FitAddon();
     this._term.loadAddon(this._fitAddon);
 
-    const searchAddon = new SearchAddon();
     const weblinksAddon = new WebLinksAddon();
+    const filelinksAddon = new TerminalFilePathAddon((_, uri: string) => {
+      // todo: support for windows
 
-    this._term.loadAddon(searchAddon);
+      const mainFuntion = async () => {
+        let absolute: string | undefined;
+        if (uri[0] !== '/') {
+          if (this.workspace.workspace) {
+            // 一致处理为无 file scheme 的绝对地址
+            absolute = `${this.workspace.workspace.uri}/${uri}`.substring(7);
+          } else {
+            return;
+          }
+        } else {
+          absolute = uri;
+        }
+
+        if (absolute) {
+          const fileUri = URI.file(absolute);
+          if (fileUri && fileUri.scheme === 'file') {
+            const stat = await this.fileService.getFileStat(fileUri.toString());
+            if (stat && !stat.isDirectory) {
+              this.editorService.open(new URI(stat.uri));
+            }
+          }
+        }
+      };
+      mainFuntion();
+    });
+
+    this._term.loadAddon(this._searchAddon);
+    this._term.loadAddon(filelinksAddon);
     this._term.loadAddon(weblinksAddon);
+
+    this.addDispose({
+      dispose: () => {
+        if (this.focusPromiseResolve) {
+          this.focusPromiseResolve();
+          this.focusPromiseResolve = null;
+        }
+
+        if (this.showPromiseResolve) {
+          this.showPromiseResolve();
+          this.showPromiseResolve = null;
+        }
+
+        this._attachAddon && this._attachAddon.dispose();
+        this._fitAddon.dispose();
+        this._searchAddon.dispose();
+        weblinksAddon.dispose();
+        filelinksAddon.dispose();
+        this._layer.dispose();
+        this._term.dispose();
+      },
+    });
 
     this._events();
   }
@@ -117,6 +179,11 @@ export class TerminalClient extends Disposable {
 
   applyDomNode(dom: HTMLDivElement) {
     dom.appendChild(this._container);
+    document.body.appendChild(this._input);
+
+    this._input.addEventListener('paste', (event) => {
+      console.log(event);
+    });
   }
 
   private _doAttach(socket: WebSocket) {
@@ -153,6 +220,15 @@ export class TerminalClient extends Disposable {
     } else {
       return Promise.resolve();
     }
+  }
+
+  /**
+   * 当 container 下面没有子节点或者子节点的高为 0 时候，
+   * 这个时候不能直接渲染，需要重新 open element 才能解决渲染问题
+   */
+  get notReadyToShow() {
+    return (this.container.children.length === 0) ||
+      this.container.children[0] && (this.container.children[0].clientHeight === 0);
   }
 
   private _doShow() {
@@ -218,12 +294,30 @@ export class TerminalClient extends Disposable {
     return Promise.resolve();
   }
 
+  clear() {
+    this._term.clear();
+  }
+
+  copy() {
+    this._input.value = '';
+
+    const str = this._term.getSelection();
+    this._input.value = str;
+    this._input.select();
+    document.execCommand('copy');
+
+    this._term.focus();
+  }
+
+  selectAll() {
+    this._term.selectAll();
+  }
+
   hide() {
     if (this._disposed) {
       return;
     }
 
-    this._container.remove();
     this._container.innerHTML = '';
     this._activated = false;
   }
@@ -247,7 +341,18 @@ export class TerminalClient extends Disposable {
     this._term.setOption('theme', this.theme.terminalTheme);
   }
 
-  dispose() {
+  findNext(text: string) {
+    this._searchAddon.findNext(text);
+  }
+
+  /**
+   * clear 参数用于判断是否需要清理 meta 信息，
+   * 不需要 clear 参数的时候基本为正常推出，
+   * 异常的时候需要将 clear 设为 false，保留现场
+   *
+   * @param clear
+   */
+  dispose(clear: boolean = true) {
     if (this._disposed) {
       return;
     }
@@ -256,24 +361,13 @@ export class TerminalClient extends Disposable {
 
     this._attached = false;
 
-    if (this.focusPromiseResolve) {
-      this.focusPromiseResolve();
-      this.focusPromiseResolve = null;
-    }
-
-    if (this.showPromiseResolve) {
-      this.showPromiseResolve();
-      this.showPromiseResolve = null;
-    }
-
-    this._layer && this._layer.dispose();
-    this._fitAddon && this._fitAddon.dispose();
-    this._attachAddon && this._attachAddon.dispose();
-    this._term && this._term.dispose();
-
     this.hide();
+    this._container.remove();
+    this._input.remove();
 
-    this.service.disposeById(this.id);
+    if (clear) {
+      this.service.disposeById(this.id);
+    }
 
     this._disposed = true;
   }

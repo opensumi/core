@@ -10,14 +10,14 @@ import {
   ClientAppContribution,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
-import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ITerminalController, ITerminalRestore } from '../common';
-import { terminalAdd, terminalRemove, terminalExpand, terminalClear, terminalSplit, toggleBottomPanel } from './terminal.command';
+import { terminalClear, terminalSplit, terminalIndepend } from './terminal.command';
 import TerminalView from './terminal.view';
-import TerminalSelect from './terminal.select';
+import TerminalTabs from './component/tab/view';
 
-@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution)
-export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution {
+@Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution)
+export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution {
 
   @Autowired(ITerminalController)
   terminalController: ITerminalController;
@@ -41,36 +41,11 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       priority: 10,
       activateKeyBinding: 'ctrl+`',
       containerId: 'terminal',
-      titleComponent: TerminalSelect,
+      titleComponent: TerminalTabs,
     });
   }
 
   registerCommands(registry: CommandRegistry) {
-    registry.registerCommand(terminalAdd, {
-      execute: (...args: any[]) => {
-        this.terminalController.createGroup();
-        this.terminalController.addWidget();
-      },
-      isEnabled: () => {
-        return true;
-      },
-      isVisible: () => {
-        return true;
-      },
-    });
-
-    registry.registerCommand(terminalRemove, {
-      execute: (...args: any[]) => {
-        this.terminalController.removeFocused();
-      },
-      isEnabled: () => {
-        return true;
-      },
-      isVisible: () => {
-        return true;
-      },
-    });
-
     registry.registerCommand(terminalSplit, {
       execute: (...args: any[]) => {
         this.terminalController.addWidget();
@@ -85,7 +60,20 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
     registry.registerCommand(terminalClear, {
       execute: (...args: any[]) => {
-        // TODO
+        const current = this.terminalController.state.index;
+        this.terminalController.clearGroup(current);
+      },
+      isEnabled: () => {
+        return true;
+      },
+      isVisible: () => {
+        return true;
+      },
+    });
+
+    registry.registerCommand(terminalIndepend, {
+      execute: (...args: any[]) => {
+        // todo
       },
       isEnabled: () => {
         return true;
@@ -104,17 +92,24 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       tooltip: localize('terminal.split'),
     });
     registry.registerItem({
-      id: terminalRemove.id,
-      command: terminalRemove.id,
-      viewId: terminalRemove.category,
-      tooltip: localize('terminal.stop'),
+      id: terminalClear.id,
+      command: terminalClear.id,
+      viewId: terminalClear.category,
+      tooltip: localize('terminal.clear'),
     });
     registry.registerItem({
-      id: terminalAdd.id,
-      command: terminalAdd.id,
-      viewId: terminalRemove.category,
-      tooltip: localize('terminal.new'),
+      id: terminalIndepend.id,
+      command: terminalIndepend.id,
+      viewId: terminalIndepend.category,
+      tooltip: localize('terminal.independ'),
     });
+  }
+
+  onDidRender() {
+    this.store.restore()
+      .then(() => {
+        this.terminalController.firstInitialize();
+      });
   }
 
   onStop() {
