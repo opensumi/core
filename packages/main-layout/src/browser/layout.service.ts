@@ -161,7 +161,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return service;
   }
 
-  getTabbarHandler(containerId: string): TabBarHandler {
+  getTabbarHandler(viewOrContainerId: string): TabBarHandler | undefined {
+    let handler = this.doGetTabbarHandler(viewOrContainerId);
+    if (!handler) {
+      const containerId = this.viewToContainerMap.get(viewOrContainerId);
+      if (!containerId) {
+        console.warn(`没有找到${viewOrContainerId}对应的tabbar！`);
+      }
+      handler = this.doGetTabbarHandler(containerId || '');
+    }
+    return handler;
+  }
+
+  protected doGetTabbarHandler(containerId: string) {
     let activityHandler = this.handleMap.get(containerId);
     if (!activityHandler) {
       let location: string | undefined;
@@ -174,11 +186,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       if (location) {
         activityHandler = this.injector.get(TabBarHandler, [containerId, this.getTabbarService(location)]);
         this.handleMap.set(containerId, activityHandler);
-      } else {
-        console.error(`没有找到${containerId}对应的tabbar！`);
       }
     }
-    return activityHandler!;
+    return activityHandler;
   }
 
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {

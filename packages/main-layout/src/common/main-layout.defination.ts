@@ -14,8 +14,12 @@ export interface IMainLayoutService {
   // 切换tabbar位置的slot，支持left、right、bottom，size能力暂未实现
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   restoreState(): void;
-  // 获取注册到tabbar位置视图的handler，封装了常用的操作
-  getTabbarHandler(handlerId: string): TabBarHandler;
+  /**
+   * 获取注册到tabbar位置视图的handler，封装了常用的layout操作
+   * 请在onRendered事件触发后或onDidRender contribution内获取handle，否则获取到为空
+   * @param handlerId container或view id
+   */
+  getTabbarHandler(handlerId: string): TabBarHandler | undefined;
   /**
    * 注册单个或多个视图到tabbar位置
    * @param views 使用手风琴能力时传入的多个子视图
