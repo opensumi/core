@@ -309,7 +309,7 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight - 2}px`}}>
+    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight}px`}}>
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
     </div>;
   };
