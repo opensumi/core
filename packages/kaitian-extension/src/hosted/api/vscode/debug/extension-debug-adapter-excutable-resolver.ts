@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { isWindows, isOSX } from '@ali/ide-core-node';
+import { isWindows, isOSX } from '@ali/ide-core-common';
 import { IDebuggerContribution, IPlatformSpecificAdapterContribution } from '@ali/ide-debug';
 
 export async function resolveDebugAdapterExecutable(pluginPath: string, debuggerContribution: IDebuggerContribution): Promise<vscode.DebugAdapterExecutable | undefined> {
