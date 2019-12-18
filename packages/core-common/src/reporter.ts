@@ -1,4 +1,4 @@
-import { IReporterService, ReporterMetadata, IReporter, PerformanceData, PointData, IReporterTimer } from './types/reporter';
+import { IReporterService, ReporterMetadata, IReporter, PerformanceData, PointData, IReporterTimer, REPORT_NAME } from './types/reporter';
 import { ILogger, getLogger } from './log';
 import { Injectable, Inject } from '@ali/common-di';
 import { IDisposable } from './disposable';
@@ -34,11 +34,11 @@ export class ReporterService implements IReporterService, IDisposable {
 
   constructor(@Inject(IReporter) private reporter: IReporter, @Inject(ReporterMetadata) private metadata?: ReporterMetadata) {}
 
-  time(name: string): IReporterTimer {
+  time(name: REPORT_NAME): IReporterTimer {
     return new ReporterTimer(name, this.reporter, this.metadata);
   }
 
-  point(name: string, msg?: string): void {
+  point(name: REPORT_NAME, msg?: string): void {
     this.reporter.point(name, {
       metadata: this.metadata,
       msg,

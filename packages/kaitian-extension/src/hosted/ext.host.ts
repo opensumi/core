@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
-import { getLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, DefaultReporter } from '@ali/ide-core-common';
+import { getLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME } from '@ali/ide-core-common';
 import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -223,7 +223,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     let extensionModule: any = {};
 
     if (extension.packageJSON.main) {
-      const reportTimer = this.reporterService.time('loadExtensionMain');
+      const reportTimer = this.reporterService.time(REPORT_NAME.LOAD_EXTENSION_MAIN);
       extensionModule = getNodeRequire()(modulePath);
       reportTimer.timeEnd(extension.extensionId);
 
@@ -231,7 +231,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         this.logger.debug(`try activate ${extension.name}`);
         // FIXME: 考虑在 Context 这里直接注入服务注册的能力
         try {
-          const reportTimer = this.reporterService.time('activateExtension');
+          const reportTimer = this.reporterService.time(REPORT_NAME.ACTIVE_EXTENSION);
           const extensionExports = await extensionModule.activate(context) || extensionModule;
           reportTimer.timeEnd(extension.extensionId);
           exportsData = extensionExports;
