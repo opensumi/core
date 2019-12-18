@@ -37,7 +37,6 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       this.dataProviders.set(treeViewId, dataProvider);
       this.mainLayoutService.replaceViewComponent({
         id: treeViewId,
-        name: treeViewId,
         component: ExtensionTabbarTreeView,
       }, {
         dataProvider: this.dataProviders.get(treeViewId),

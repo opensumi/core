@@ -36,6 +36,7 @@ export interface IMainLayoutService {
    * @param props 初始prop
    */
   replaceViewComponent(view: View, props?: any): void;
+  disposeViewComponent(viewId: string): void;
   expandBottom(expand: boolean): void;
   bottomExpanded: boolean;
   // @deprecated 提供小程序使用的额外位置控制

@@ -52,6 +52,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     size?: number;
   }} = {};
 
+  private viewsWhenExpr = new Set<string>();
+  private exprToViewMap = new Map<string, View>();
+
   // TODO 使用IconAction完成左侧activityBar上展示的额外图标注册能力
   // private extraIconActions: IconAction
 
@@ -77,6 +80,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       service.prevSize = size;
       service.currentContainerId = currentId !== undefined ? currentId : service.containersMap.keys().next().value;
     }
+    this.listenContextKeyChange();
   }
 
   setFloatSize(size: number) {}
@@ -189,12 +193,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   collectViewComponent(view: View, containerId: string, props?: any): string {
+    this.viewToContainerMap.set(view.id, containerId);
+    if (view.when) {
+      this.viewsWhenExpr.add(view.when);
+      this.exprToViewMap.set(view.when, view);
+      if (!this.ctxKeyService.match(view.when)) {
+        return view.id;
+      }
+    }
     const accordionService: AccordionService = this.getAccordionService(containerId);
     if (props) {
       view.initialProps = props;
     }
     accordionService.appendView(view);
-    this.viewToContainerMap.set(view.id, containerId);
     return containerId;
   }
 
@@ -202,8 +213,19 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     const containerId = this.viewToContainerMap.get(view.id);
     if (!containerId) {
       console.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
+      return;
     }
     this.collectViewComponent(view, containerId!, props);
+  }
+
+  disposeViewComponent(viewId: string) {
+    const containerId = this.viewToContainerMap.get(viewId);
+    if (!containerId) {
+      console.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
+      return;
+    }
+    const accordionService: AccordionService = this.getAccordionService(containerId);
+    accordionService.disposeView(viewId);
   }
 
   handleSetting = (event: React.MouseEvent<HTMLElement>) => {
@@ -226,6 +248,22 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     const tabbarService = this.getTabbarService(SlotLocation.bottom);
     this.ctxKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
     return tabbarService.isExpanded;
+  }
+
+  protected listenContextKeyChange() {
+    this.ctxKeyService.onDidChangeContext((e) => {
+      if (e.payload.affectsSome(this.viewsWhenExpr)) {
+        this.viewsWhenExpr.forEach((whenExpr) => {
+          const view = this.exprToViewMap.get(whenExpr)!;
+          const targetContainerId = this.viewToContainerMap.get(view.id)!;
+          if (this.ctxKeyService.match(whenExpr)) {
+            this.collectViewComponent(view, targetContainerId);
+          } else {
+            this.disposeViewComponent(view.id);
+          }
+        });
+      }
+    });
   }
 
 }

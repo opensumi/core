@@ -64,6 +64,7 @@ export interface View {
   initialProps?: any;
   titleMenu?: IMenu;
   titleMenuContext?: any;
+  when?: string;
 }
 
 export interface ViewContainerOptions extends ExtViewContainerOptions {
