@@ -865,10 +865,12 @@ export class FileTreeService extends WithEventBus {
   updateFileLoadingStatus(file: Directory | File, isLoading: boolean = false) {
     const statusKey = this.getStatutsKey(file);
     const status = this.status.get(statusKey);
-    this.status.set(statusKey, {
-      ...status!,
-      isLoading,
-    });
+    if (status) {
+      this.status.set(statusKey, {
+        ...status!,
+        isLoading,
+      });
+    }
   }
 
   @action
