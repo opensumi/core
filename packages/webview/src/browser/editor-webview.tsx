@@ -6,7 +6,7 @@ import { IDisposable, Disposable, DomListener, useInjectable } from '@ali/ide-co
 declare const ResizeObserver: any;
 declare const MutationObserver: any;
 
-const WEBVIEW_OVERLAY_CONTAINER_ID = ' webview-overlay-container';
+const WEBVIEW_OVERLAY_CONTAINER_ID = 'webview-overlay-container';
 
 export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMetaData> = ({resource}) => {
 
@@ -152,6 +152,8 @@ class WebviewMounter extends Disposable {
       const container = document.createElement('div');
       container.id = WEBVIEW_OVERLAY_CONTAINER_ID;
       container.style.zIndex = '2';
+      container.style.position = 'absolute';
+      container.style.top = '0';
       document.body.appendChild(container);
     }
     this._container = document.createElement('div');

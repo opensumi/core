@@ -439,10 +439,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   constructor(public readonly name: string) {
     super();
+    let lastFrame: number | null;
     this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
       if (e.payload.slotLocation === getSlotLocation('@ali/ide-editor', this.config.layoutConfig)) {
-        // window.requestAnimationFrame(() => this.layoutEditors());
-        this.layoutEditors();
+        if (lastFrame) {
+          window.cancelAnimationFrame(lastFrame);
+        }
+        lastFrame = window.requestAnimationFrame(() => {
+          this.layoutEditors();
+        });
       }
     });
   }
