@@ -38,7 +38,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       id: 'ide-terminal-next',
     }, {
       title: localize('terminal.name'),
-      priority: 10,
+      priority: 1,
       activateKeyBinding: 'ctrl+`',
       containerId: 'terminal',
       titleComponent: TerminalTabs,
