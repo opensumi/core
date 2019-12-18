@@ -7,7 +7,8 @@ import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry, IEditorFeatureRegistry } from './types';
-import { IClientApp, isElectronRenderer } from '@ali/ide-core-browser';
+import { IClientApp } from '@ali/ide-core-browser';
+import { isElectronEnv } from '@ali/ide-core-common';
 import { getIcon } from '@ali/ide-core-browser';
 import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
@@ -114,15 +115,15 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE.id,
-      keybinding: isElectronRenderer() ? 'ctrlcmd+w' : 'alt+shift+w',
+      keybinding: isElectronEnv() ? 'ctrlcmd+w' : 'alt+shift+w',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PREVIOUS.id,
-      keybinding: isElectronRenderer() ? 'alt+cmd+left' : 'ctrlcmd+shift+left',
+      keybinding: isElectronEnv() ? 'alt+cmd+left' : 'ctrlcmd+shift+left',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.NEXT.id,
-      keybinding: isElectronRenderer() ? 'alt+cmd+right' : 'ctrlcmd+shift+right',
+      keybinding: isElectronEnv() ? 'alt+cmd+right' : 'ctrlcmd+shift+right',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_FORWARD.id,
