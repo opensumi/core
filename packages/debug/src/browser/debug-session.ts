@@ -206,6 +206,7 @@ export class DebugSession implements IDisposable {
         const response = await this.sendRequest('setBreakpoints', {
           source: source.raw,
           sourceModified,
+          lines: enabled.map(({ origin }) => origin.raw.line),
           breakpoints: enabled.map(({ origin }) => origin.raw),
         });
         response.body.breakpoints.map((raw, index) => enabled[index].update({ raw }));
