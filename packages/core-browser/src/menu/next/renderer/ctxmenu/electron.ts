@@ -1,13 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
-import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService, CommandRegistry} from '@ali/ide-core-common';
+import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@ali/ide-core-common';
 
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
 import { MenuNode, IExtendMenubarItem } from '../../base';
-import { SeparatorMenuItemNode, SubmenuItemNode, AbstractMenuService } from '../../menu-service';
-import { electronEnv } from '../../../../utils';
+import { SeparatorMenuItemNode, SubmenuItemNode, AbstractContextMenuService } from '../../menu.interface';
 import { AbstractMenubarService } from '../../menubar-service';
-import { generateCtxMenu, generateMergedCtxMenu } from '../../menu-util';
+import { electronEnv } from '../../../../utils';
 
 export abstract class IElectronCtxMenuRenderer extends ICtxMenuRenderer {
 }
@@ -22,22 +21,6 @@ export interface IElectronMenuBarService {
 
 @Injectable()
 export class ElectronMenuFactory extends Disposable {
-  @Autowired(AbstractMenuService)
-  menuService: AbstractMenuService;
-
-  public getMenuNodes(id: string): MenuNode[] {
-    const menus = this.menuService.createMenu(id);
-    if (!menus) {
-      return [];
-    }
-    const result = generateCtxMenu({ menus });
-    if (result && result.length >= 2) {
-      return [...result[0], ...result[1]];
-    } else {
-      return [];
-    }
-  }
-
   public getTemplate(menuNodes: MenuNode[], map: Map<string, () => void>, context?: any[]): INativeMenuTemplate[] | undefined {
     return menuNodes.map((menuNode) => {
       if (menuNode.id === SeparatorMenuItemNode.ID) {
@@ -89,16 +72,22 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
   @Autowired(IElectronMenuFactory)
   factory: ElectronMenuFactory;
 
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  private readonly menuService: AbstractContextMenuService;
 
   public show(payload: CtxMenuRenderParams) {
-    const { onHide, context } = payload;
+    const { onHide, args: context } = payload;
 
     let menuNodes: MenuNode[];
     if (typeof payload.menuNodes === 'string') {
-      const menus = this.menuService.createMenu(payload.menuNodes, payload.contextKeyService);
-      menuNodes = generateMergedCtxMenu({ menus });
+      const menus = this.menuService.createMenu({
+        id: payload.menuNodes,
+        config: {
+          args: payload.args,
+        },
+        contextKeyService: payload.contextKeyService,
+      });
+      menuNodes = menus.getMergedMenuNodes();
       menus.dispose();
     } else {
       menuNodes = payload.menuNodes;
@@ -137,7 +126,6 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
   }
 }
 
-// 应该不会有这种场景?
 function toElectronAccelerator(keybinding: string) {
   return keybinding.replace('ctrlcmd', 'CmdOrCtrl');
 }

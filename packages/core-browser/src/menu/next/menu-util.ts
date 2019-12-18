@@ -1,10 +1,10 @@
-import { MenuItemNode, SubmenuItemNode, SeparatorMenuItemNode, IMenu, IMenuNodeOptions } from './menu-service';
-import { MenuNode } from './base';
+import {
+  MenuItemNode, SubmenuItemNode, SeparatorMenuItemNode,
+  TupleMenuNodeResult, IMenu, IMenuSeparator, IMenuConfig,
+} from './menu.interface';
 
 export const isPrimaryGroup = (group: string) => group === 'navigation';
 export const isInlineGroup = (group: string) => /^inline/.test(group);
-
-export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
 
 /**
  * 将 menuItems 按照 separator 分成两个 group
@@ -12,7 +12,7 @@ export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
  */
 export function splitMenuItems(
   groups: Array<[string, Array<MenuItemNode | SubmenuItemNode>]>,
-  separator: MenuSeparator = 'navigation',
+  separator: IMenuSeparator = 'navigation',
 ): TupleMenuNodeResult {
   const result: TupleMenuNodeResult = [ [], [] ];
   for (const tuple of groups) {
@@ -33,17 +33,12 @@ export function splitMenuItems(
   return result;
 }
 
-export type MenuSeparator = 'navigation' | 'inline';
-
-interface MenuGeneratePayload {
+interface IExtendMenuConfig extends IMenuConfig {
   menus: IMenu;
-  separator?: MenuSeparator;
-  options?: IMenuNodeOptions;
-  withAlt?: boolean;
 }
 
-export function generateMergedCtxMenu(payload: MenuGeneratePayload) {
-  const [ primary, secondary ] = generateCtxMenu(payload);
+export function mergeTupleMenuNodeResult(payload: TupleMenuNodeResult) {
+  const [ primary, secondary ] = payload;
   const result = [ ...primary ];
   if (result.length > 0 && secondary.length > 0) {
     result.push(new SeparatorMenuItemNode());
@@ -52,20 +47,24 @@ export function generateMergedCtxMenu(payload: MenuGeneratePayload) {
   return result.concat(secondary);
 }
 
-export function generateCtxMenu(payload: MenuGeneratePayload) {
-  const { menus, options, separator = 'navigation' } = payload;
+export function generateMergedCtxMenu(payload: IExtendMenuConfig) {
+  return mergeTupleMenuNodeResult(generateCtxMenu(payload));
+}
+
+export function generateCtxMenu(payload: IExtendMenuConfig) {
+  const { menus, separator = 'navigation', ...options } = payload;
   const menuNodes = menus.getMenuNodes(options);
   const menuItems = splitMenuItems(menuNodes, separator);
   return menuItems;
 }
 
-export function generateMergedInlineActions(payload: MenuGeneratePayload) {
+export function generateMergedInlineActions(payload: IExtendMenuConfig) {
   const result = generateInlineActions(payload);
   return [...result[0], ...result[1]];
 }
 
-export function generateInlineActions(payload: Omit<MenuGeneratePayload, 'withAlt'>) {
-  const { menus, options, separator } = payload;
+export function generateInlineActions(payload: Omit<IExtendMenuConfig, 'withAlt'>) {
+  const { menus, separator, ...options } = payload;
   const menuNodes = menus.getMenuNodes(options);
   const menuItems = splitMenuItems(menuNodes, separator);
   return menuItems;

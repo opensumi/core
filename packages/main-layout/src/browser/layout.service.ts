@@ -4,12 +4,13 @@ import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractContextMenuService, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
 import { ActivationEventService } from '@ali/ide-activation-event';
+import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -22,8 +23,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(IMenuRegistry)
   menus: IMenuRegistry;
 
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  private readonly ctxMenuService: AbstractContextMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
@@ -193,8 +194,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   handleSetting = (event: React.MouseEvent<HTMLElement>) => {
-    const menus = this.menuService.createMenu(MenuId.SettingsIconMenu);
-    const menuNodes = generateCtxMenu({ menus });
+    const menus = this.ctxMenuService.createMenu({
+      id: MenuId.SettingsIconMenu,
+    });
+    const menuNodes = menus.getGroupedMenuNodes();
+    menus.dispose();
     this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
       x: event.clientX,
       y: event.clientY,

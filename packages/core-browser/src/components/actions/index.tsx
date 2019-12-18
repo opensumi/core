@@ -5,7 +5,7 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 
-import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, MenuSeparator, SubmenuItemNode, IMenuAction } from '../../menu/next';
+import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, IMenuSeparator, SubmenuItemNode, IMenuAction } from '../../menu/next';
 import Icon from '../icon';
 import { getIcon } from '../../style/icon/icon';
 import { useInjectable } from '../../react-hooks';
@@ -184,7 +184,7 @@ const TitleActionList: React.FC<{
         anchor: { x: e.clientX, y: e.clientY },
         // 合并结果
         menuNodes: secondary,
-        context,
+        args: context,
       });
     }
   }, [ secondary, context ]);
@@ -241,21 +241,21 @@ type TupleContext<T, U, K, M> = (
 interface InlineActionBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extraNavActions'> {
   context?: TupleContext<T, U, K, M>;
   menus: IMenu;
-  seperator?: MenuSeparator;
+  separator?: IMenuSeparator;
 }
 
 export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineActionBarProps<T, U, K, M>,
 ): React.ReactElement<InlineActionBarProps<T, U, K, M>> {
-  const { menus, context, seperator = 'navigation', ...restProps } = props;
+  const { menus, context, separator = 'navigation', ...restProps } = props;
   // TODO: 从一致性考虑是否这里不用 context 的命名
-  const [navMenu, moreMenu] = useMenus(menus, seperator, context);
+  const [navMenu, moreMenu] = useMenus(menus, separator, context);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
   return (
     <TitleActionList
       nav={navMenu}
-      more={seperator === 'inline' ? [] : moreMenu}
+      more={separator === 'inline' ? [] : moreMenu}
       {...restProps} />
   );
 }
