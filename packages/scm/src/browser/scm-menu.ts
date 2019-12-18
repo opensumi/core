@@ -2,7 +2,7 @@ import { Injectable, Autowired, Optional } from '@ali/common-di';
 import { IDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IContextKeyService } from '@ali/ide-core-browser';
-import { AbstractMenuService, IMenu, MenuId, MenuNode, TupleMenuNodeResult, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenu, MenuId, MenuNode, TupleMenuNodeResult, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMProvider, ISCMResource, ISCMResourceGroup } from '../common';
 import { getSCMResourceContextKey } from './scm-util';
@@ -27,6 +27,9 @@ export class SCMMenus implements IDisposable {
 
   @Autowired(AbstractMenuService)
   private readonly menuService: AbstractMenuService;
+
+  @Autowired(AbstractContextMenuService)
+  private readonly contextMenuService: AbstractContextMenuService;
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
@@ -61,33 +64,34 @@ export class SCMMenus implements IDisposable {
    * scm resource group 中的 ctx-menu
    */
   getResourceGroupContextActions(group: ISCMResourceGroup): MenuNode[] {
-    return this.getCtxMenuNodes(MenuId.SCMResourceGroupContext, group)[1];
+    return this.getCtxMenuNodes(MenuId.SCMResourceGroupContext, group);
   }
 
   /**
    * scm resource 中的 ctx-menu
    */
   getResourceContextActions(resource: ISCMResource): MenuNode[] {
-    return this.getCtxMenuNodes(MenuId.SCMResourceContext, resource)[1];
+    return this.getCtxMenuNodes(MenuId.SCMResourceContext, resource);
   }
 
   /**
    * 获取 scm 文件列表中的 ctx-menu
    */
-  private getCtxMenuNodes(menuId: MenuId, resource: ISCMResourceGroup | ISCMResource): TupleMenuNodeResult {
+  private getCtxMenuNodes(menuId: MenuId, resource: ISCMResourceGroup | ISCMResource): MenuNode[] {
     const contextKeyService = this.scopedCtxKeyService.createScoped();
     contextKeyService.createKey('scmResourceGroup', getSCMResourceContextKey(resource));
 
-    const menu = this.menuService.createMenu(menuId, contextKeyService);
-    const result = generateCtxMenu({
-      menus: menu,
-      separator: 'inline',
+    const menus = this.contextMenuService.createMenu({
+      id: menuId,
+      contextKeyService,
+      config: { separator: 'inline' },
     });
+    const result = menus.getGroupedMenuNodes();
 
-    menu.dispose();
+    menus.dispose();
     contextKeyService.dispose();
 
-    return result;
+    return result[1];
   }
 
   /**

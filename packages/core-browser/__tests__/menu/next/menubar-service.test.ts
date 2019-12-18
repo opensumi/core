@@ -6,19 +6,8 @@ import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injecto
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { AbstractMenubarService, MenubarServiceImpl, AbstractMenuService, MenuRegistryImpl, MenuServiceImpl, IMenuRegistry, MenuId, isIMenuItem, generateMergedCtxMenu } from '../../../src/menu/next';
 import { IContextKeyService } from '../../../src/context-key';
-import { Command } from '@ali/ide-core-common';
 
 jest.useFakeTimers();
-
-// tslint:disable-next-line:new-parens
-const contextKeyService = new class extends MockContextKeyService {
-  match(bool) {
-    if (bool) {
-      return bool;
-    }
-    return true;
-  }
-};
 
 describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () => {
   let injector: MockInjector;

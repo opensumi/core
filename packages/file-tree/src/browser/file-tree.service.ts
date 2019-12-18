@@ -25,10 +25,9 @@ import { FileStat } from '@ali/ide-file-service';
 import { IDialogService } from '@ali/ide-overlay';
 import { Directory, File } from './file-tree-item';
 import { ExplorerResourceCut } from '@ali/ide-core-browser/lib/contextkey/explorer';
-import { IMenu } from '@ali/ide-core-browser/lib/menu/next/menu-service';
-import { AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
-import { MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, IContextMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { ResourceLabelOrIconChangedEvent } from '@ali/ide-core-browser/lib/services';
+import { FileContextKey } from './file-contextkey';
 
 export type IFileTreeItemStatus = Map<string, {
   selected?: boolean;
@@ -82,33 +81,36 @@ export class FileTreeService extends WithEventBus {
   } = {};
 
   @Autowired(AppConfig)
-  private config: AppConfig;
+  private readonly config: AppConfig;
 
   @Autowired(IFileTreeAPI)
-  private fileAPI: IFileTreeAPI;
+  private readonly fileAPI: IFileTreeAPI;
 
   @Autowired(CommandService)
-  private commandService: CommandService;
+  private readonly commandService: CommandService;
 
   @Autowired(IFileServiceClient)
-  private fileServiceClient: IFileServiceClient;
+  private readonly fileServiceClient: IFileServiceClient;
 
   @Autowired(IContextKeyService)
-  contextKeyService: IContextKeyService;
-
-  private _contextMenuContextKeyService: IContextKeyService;
+  private readonly contextKeyService: IContextKeyService;
 
   @Autowired(IWorkspaceService)
-  workspaceService: IWorkspaceService;
+  private readonly workspaceService: IWorkspaceService;
 
   @Autowired(IDialogService)
-  dislogService: IDialogService;
+  private readonly dislogService: IDialogService;
 
   @Autowired(CorePreferences)
-  corePreferences: CorePreferences;
+  private readonly corePreferences: CorePreferences;
 
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  private readonly ctxMenuService: AbstractContextMenuService;
+
+  @Autowired(FileContextKey)
+  private readonly fileContextKey: FileContextKey;
+
+  private _contextMenuContextKeyService: IContextKeyService;
 
   private statusChangeEmitter = new Emitter<Uri[]>();
   private explorerResourceCut: IContextKey<boolean>;
@@ -131,7 +133,7 @@ export class FileTreeService extends WithEventBus {
   async init() {
     const roots: IWorkspaceRoots = await this.workspaceService.roots;
 
-    this.explorerResourceCut = ExplorerResourceCut.bind(this.contextKeyService);
+    this.explorerResourceCut = this.fileContextKey.explorerResourceCut;
 
     this._root = this.workspaceService.workspace;
     await this.getFiles(roots);
@@ -158,10 +160,11 @@ export class FileTreeService extends WithEventBus {
     return this._contextMenuContextKeyService;
   }
 
-  @memoize get contributedContextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.ExplorerContext, this.contextMenuContextKeyService);
-    this.addDispose(contributedContextMenu);
-    return contributedContextMenu;
+  @memoize get contributedContextMenu(): IContextMenu {
+    return this.registerDispose(this.ctxMenuService.createMenu({
+      id: MenuId.ExplorerContext,
+      contextKeyService: this.contextMenuContextKeyService,
+    }));
   }
 
   get hasPasteFile(): boolean {

@@ -3,8 +3,7 @@ import * as omit from 'lodash.omit';
 
 import { MenuNode } from '../../base';
 import { ICtxMenuRenderer, CtxMenuRenderParams } from './base';
-import { AbstractMenuService } from '../../menu-service';
-import { generateMergedCtxMenu } from '../../menu-util';
+import { AbstractContextMenuService } from '../../menu.interface';
 
 export abstract class IBrowserCtxMenu extends ICtxMenuRenderer {
   visible: boolean;
@@ -23,13 +22,19 @@ export class BrowserCtxMenuRenderer implements ICtxMenuRenderer {
   @Autowired(IBrowserCtxMenu)
   protected readonly browserCtxMenu: IBrowserCtxMenu;
 
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  private readonly menuService: AbstractContextMenuService;
 
   public show(payload: CtxMenuRenderParams): void {
     if (typeof payload.menuNodes === 'string') {
-      const menus = this.menuService.createMenu(payload.menuNodes, payload.contextKeyService);
-      payload.menuNodes = generateMergedCtxMenu({ menus });
+      const menus = this.menuService.createMenu({
+        id: payload.menuNodes,
+        config: {
+          args: payload.args,
+        },
+        contextKeyService: payload.contextKeyService,
+      });
+      payload.menuNodes = menus.getMergedMenuNodes();
       menus.dispose();
     }
 

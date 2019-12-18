@@ -56,7 +56,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
     }
     const result = generateCtxMenu({
       menus: extensionManagerService.contextMenu,
-      options: { args: [extension] },
+      args: [extension],
     });
 
     ctxMenuRenderer.show({

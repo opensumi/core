@@ -8,6 +8,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { EditorView } from './editor.view';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry, IEditorFeatureRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
+import { isElectronEnv } from '@ali/ide-core-common';
 import { getIcon } from '@ali/ide-core-browser';
 import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
@@ -114,15 +115,15 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE.id,
-      keybinding: 'ctrlcmd+w', // FIXME web上会被chrome拦截
+      keybinding: isElectronEnv() ? 'ctrlcmd+w' : 'alt+shift+w',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PREVIOUS.id,
-      keybinding: 'alt+cmd+left', // FIXME web上会被chrome拦截
+      keybinding: isElectronEnv() ? 'alt+cmd+left' : 'ctrlcmd+shift+left',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.NEXT.id,
-      keybinding: 'alt+cmd+right', // FIXME web上会被chrome拦截
+      keybinding: isElectronEnv() ? 'alt+cmd+right' : 'ctrlcmd+shift+right',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_FORWARD.id,

@@ -7,8 +7,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkbenchEditorService, TrackedRangeStickiness } from '@ali/ide-editor';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { IDialogService } from '@ali/ide-overlay';
-import { memoize, IContextKeyService } from '@ali/ide-core-browser';
-import { AbstractMenuService, IMenu, ICtxMenuRenderer, generateCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, IMenu, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
@@ -209,25 +208,16 @@ export class SearchTreeService {
   @Autowired(IDialogService)
   private dialogService: IDialogService;
 
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  private readonly ctxmenuService: AbstractContextMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly ctxMenuRenderer: ICtxMenuRenderer;
-
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
 
   constructor() {
     this.contentRegistry.registerEditorDocumentModelContentProvider(
       this.replaceDocumentModelContentProvider,
     );
-  }
-
-  @memoize get contextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.SearchContext, this.contextKeyService);
-    this.disposables.push(contributedContextMenu);
-    return contributedContextMenu;
   }
 
   set nodes(data: ISearchTreeItem[]) {
@@ -254,8 +244,6 @@ export class SearchTreeService {
       return;
     }
     const data: any = { id : file.id};
-    const menus = this.contextMenu;
-
     data.file = file;
 
     if (!file.parent) {
@@ -268,11 +256,19 @@ export class SearchTreeService {
       this.isContextmenuOnFile = true;
     }
 
-    const result = generateCtxMenu({ menus, options: { args: [data]} });
+    const menus = this.ctxmenuService.createMenu({
+      id: MenuId.SearchContext,
+      config: {
+        args: [ data ],
+      },
+    });
+
+    const menuNodes = menus.getMergedMenuNodes();
+    menus.dispose();
+
     this.ctxMenuRenderer.show({
       anchor: { x, y },
-      // 合并结果
-      menuNodes: [...result[0], ...result[1]],
+      menuNodes,
     });
   }
 

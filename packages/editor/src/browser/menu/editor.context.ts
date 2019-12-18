@@ -2,13 +2,13 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { Disposable, Domain, memoize, IContextKeyService } from '@ali/ide-core-browser';
 import { IEditor } from '../../common';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '../types';
-import { AbstractMenuService, IMenu, MenuId, generateMergedCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, IContextMenu, MenuId, generateMergedCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable({multiple: true})
 export class EditorContextMenuController extends Disposable {
 
-  @Autowired(AbstractMenuService)
-  menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  ctxMenuService: AbstractContextMenuService;
 
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
@@ -58,21 +58,20 @@ export class EditorContextMenuController extends Disposable {
     this.showContextMenu(anchor);
   }
 
-  @memoize get contextMenu(): IMenu {
-    const contextKeyService = this.contextKeyService.createScoped((this.editor.monacoEditor as any)._contextKeyService);
-    const contributedContextMenu = this.menuService.createMenu(MenuId.EditorContext, contextKeyService);
-    this.addDispose(contributedContextMenu);
-    return contributedContextMenu;
+  @memoize get contextMenu(): IContextMenu {
+    const contextKeyService = this.registerDispose(this.contextKeyService.createScoped((this.editor.monacoEditor as any)._contextKeyService));
+    return this.registerDispose(this.ctxMenuService.createMenu({
+      id: MenuId.EditorContext,
+      contextKeyService,
+    }));
   }
 
   private showContextMenu(anchor: {x: number, y: number } = {x: 0, y: 0}) {
-    const menuNodes = generateMergedCtxMenu({
-      menus: this.contextMenu,
-    });
+    const menuNodes = this.contextMenu.getMergedMenuNodes();
     this.contextMenuRenderer.show({
       anchor,
       menuNodes,
-      context: [ this.editor.currentUri ],
+      args: [ this.editor.currentUri ],
     });
   }
 
