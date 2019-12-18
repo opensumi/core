@@ -84,6 +84,7 @@ export class WSChannel implements IWebSocket {
   }
   handleMessage(msg: ChannelMessage) {
     if (msg.kind === 'ready') {
+      console.log('ready!');
       this.fireOpen(msg.id);
     } else if (msg.kind === 'data') {
       this.fireMessage(msg.content);

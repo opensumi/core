@@ -1,5 +1,5 @@
 import * as shorid from 'shortid';
-import { once } from '@ali/ide-core-common';
+import { once, Emitter } from '@ali/ide-core-common';
 import { MessageString, ChildConnectPath } from '../common/ws-channel';
 
 let ReconnectingWebSocket = require('reconnecting-websocket');
@@ -70,7 +70,7 @@ export class MultiWs implements WebSocket {
   async send(msg: MessageString) {
     const connection = this.getAvailableConnection();
 
-    if (connection.readyState !== connection.OPEN) {
+    if (!connection) {
       throw new Error('找不到可用连接！');
     }
 
@@ -126,11 +126,14 @@ export class MultiWs implements WebSocket {
     });
   }
 
-  private fireOnOpen = once((event) => {
+  private fireOnOpen(event) {
+    if (this.readyState === this.OPEN) {
+      return;
+    }
     this.readyState = this.OPEN;
     this.onOpenlistener(event);
     this.onopen.call(this, event);
-  });
+  }
 
   private fireOnClose(event) {
     if (this.connectionList.some((ws) => {
@@ -143,22 +146,29 @@ export class MultiWs implements WebSocket {
     this.onCloselistener(event);
   }
 
-  private getAvailableConnection() {
-    let connection = this.connectionList[0];
+  private getAvailableConnection(): WebSocket | undefined {
+    let oneAvailableConnection: WebSocket | undefined;
 
     this.connectionList.filter((ws) => {
-      if (ws.OPEN === ws.readyState) {
+      if (this.isAvailable(ws)) {
         return true;
       }
       return false;
     }).some((ws) => {
+      if (!oneAvailableConnection) {
+        oneAvailableConnection = ws;
+      }
       if (ws.bufferedAmount === 0) {
-        connection = ws;
+        oneAvailableConnection = ws;
         return true;
       }
       return false;
     });
 
-    return connection;
+    return oneAvailableConnection;
+  }
+
+  private isAvailable(ws) {
+    return ws.OPEN === ws.readyState;
   }
 }

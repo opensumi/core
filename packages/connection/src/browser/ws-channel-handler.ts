@@ -33,14 +33,14 @@ export class WSChanneHandler {
     if (this.heartbeatMessageTimer) {
       clearTimeout(this.heartbeatMessageTimer);
     }
-    // this.heartbeatMessageTimer = setTimeout(() => {
-    //   const msg = stringify({
-    //     kind: 'heartbeat',
-    //     clientId: this.clientId,
-    //   });
-    //   this.connection.send(msg);
-    //   this.heartbeatMessage();
-    // }, 5000);
+    this.heartbeatMessageTimer = setTimeout(() => {
+      const msg = stringify({
+        kind: 'heartbeat',
+        clientId: this.clientId,
+      });
+      this.connection.send(msg);
+      this.heartbeatMessage();
+    }, 5000);
   }
 
   public async initHandler() {
@@ -61,15 +61,16 @@ export class WSChanneHandler {
     };
     await new Promise((resolve) => {
       this.connection.addEventListener('open', () => {
+        console.log('this.channelMap', this.channelMap);
         this.clientMessage();
         this.heartbeatMessage();
         resolve();
 
         // 重连 channel
-        // FIXME: 暂时不需要，直接通过重新生成实例
 
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
+            console.log('channel', channel);
             channel.onOpen(() => {
               console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
@@ -77,6 +78,7 @@ export class WSChanneHandler {
 
             // 针对前端需要重新设置下后台状态的情况
             if (channel.fireReOpen) {
+              console.log('fireReOpen');
               channel.fireReOpen();
             }
           });

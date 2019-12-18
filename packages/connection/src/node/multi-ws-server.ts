@@ -1,5 +1,4 @@
 import { ChildConnectPath } from '../common/ws-channel';
-import { once } from '@ali/ide-core-common';
 import * as ws from 'ws';
 import * as events from 'events';
 
@@ -149,7 +148,7 @@ class MultiConnect extends events.EventEmitter {
     content = JSON.parse(content);
     const connection = this.getAvailableConnection( content.method ? content.method : '');
 
-    if (connection.readyState !== connection.OPEN) {
+    if (!connection) {
       throw new Error('找不到可用连接！');
     }
 
@@ -166,19 +165,21 @@ class MultiConnect extends events.EventEmitter {
     });
   }
 
-  private getAvailableConnection(mark: string): ExtendWs {
-    const lastConnection = this.connectionList[this.connectionList.length - 1];
-    let availableConnection;
+  private getAvailableConnection(mark: string): ExtendWs | undefined {
+    let oneAvailableConnection: ExtendWs | undefined;
+    let availableConnection: ExtendWs | undefined;
     let recentSameMarkConnect;
 
     this.connectionList.filter((ws) => {
       // 过滤掉无效的连接
-      if (ws.readyState === ws.OPEN) {
+      if (this.isAvailable(ws)) {
         return true;
-      } else {
-        return false;
       }
+      return false;
     }).forEach((ws, index) => {
+      if (!oneAvailableConnection) {
+        oneAvailableConnection = ws;
+      }
       if (ws.readyState !== ws.OPEN) {
         return;
       }
@@ -192,20 +193,27 @@ class MultiConnect extends events.EventEmitter {
         recentSameMarkConnect = ws;
       }
     });
-    return recentSameMarkConnect || availableConnection || lastConnection;
+    return recentSameMarkConnect || availableConnection || oneAvailableConnection;
   }
 
-  private bindEvent(cs: ws) {
-    cs.on('message', (data) => { this.emit('message', data); });
-    cs.on('error', (error) => { this.emit('error', error); });
-    cs.on('ping', (data) => { this.emit('ping', data); });
-    cs.on('pong', (data) => { this.emit('pong', data); });
-    cs.on('close', (code: number, message: string) => { this.onClose(code, message); });
+  private bindEvent(ws: ExtendWs) {
+    ws.on('message', (data) => { this.emit('message', data); });
+    ws.on('error', (error) => { this.emit('error', error); });
+    ws.on('ping', (data) => { this.emit('ping', data); });
+    ws.on('pong', (data) => { this.emit('pong', data); });
+    ws.on('close', (code: number, message: string) => { this.onClose(code, message); });
   }
 
   private onClose(code: number, message: string ) {
-    if (this.connectionList.some((ws) => {
-      return ws.readyState === this.OPEN;
+    if (this.readyState === this.CLOSED) {
+      return;
+    }
+    if (this.connectionList.some((ws: ExtendWs) => {
+      if (ws.readyState === this.OPEN) {
+        return true;
+      }
+      console.log('ws', ws.routeParam!);
+      return false;
     })) {
       return;
     }
@@ -213,10 +221,17 @@ class MultiConnect extends events.EventEmitter {
     this.readyState = this.CLOSED;
   }
 
-  private onOpen = once(() => {
+  private onOpen() {
+    if (this.readyState === this.OPEN) {
+      return;
+    }
     this.emit('open');
     this.readyState = this.OPEN;
-  });
+  }
+
+  private isAvailable(ws) {
+    return ws.OPEN === ws.readyState;
+  }
 
   static CONNECTING = 0;
   static OPEN = 1;
