@@ -37,7 +37,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
           }
         }
         configuration.properties = properties;
-        configuration.title = replaceLocalizePlaceholder(configuration.title) || this.extension.packageJSON.name;
+        configuration.title = replaceLocalizePlaceholder(configuration.title, this.extension.id) || this.extension.packageJSON.name;
         this.updateConfigurationSchema(configuration);
         this.preferenceSettingsService.registerSettingSection('extension', {
           title: configuration.title,

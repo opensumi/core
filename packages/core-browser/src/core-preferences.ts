@@ -252,6 +252,12 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'object',
       description: '%preference.files.associations%',
     },
+    // 设置面板是否用户Scope在前
+    'settings.userBeforeWorkspace': {
+      type: 'boolean',
+      default: false,
+      description: '%settings.configuration.userBeforeWorkspace%',
+    },
   },
 };
 

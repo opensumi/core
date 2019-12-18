@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceSchemaProperty, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceSchemaProperty, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig, PreferenceService } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference.service';
 import './index.less';
 import * as styles from './preferences.module.less';
@@ -20,9 +20,10 @@ import { toPreferenceReadableName, toNormalCase } from '../common';
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
+  const preferences: PreferenceService  = useInjectable(PreferenceService);
   const appConfig: AppConfig = useInjectable(AppConfig);
 
-  const [currentScope, setCurrentScope] = React.useState(PreferenceScope.Workspace);
+  const [currentScope, setCurrentScope] = React.useState(preferences.get<boolean>('settings.userBeforeWorkspace') ? PreferenceScope.User : PreferenceScope.Workspace);
   const [currentSearch, setCurrentSearch] = React.useState('');
 
   const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
@@ -38,8 +39,18 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   }, 100, {maxWait: 1000});
 
   const headers = <div className = {styles.preferences_scopes}>
-    <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
-    <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
+    {
+      preferences.get<boolean>('settings.userBeforeWorkspace')  ?
+      <React.Fragment>
+        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
+        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
+      </React.Fragment>
+      :
+      <React.Fragment>
+      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
+      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
+    </React.Fragment>
+    }
   </div>;
 
   return (
@@ -73,7 +84,7 @@ export const PreferenceSections = (({preferenceSections, navigateTo}: {preferenc
     preferenceSections.filter((s) => s.title).map((section, idx) => {
       return <div key={`${section.title}-${idx}`}
         onClick={() => navigateTo(section)}
-      >{toNormalCase(section.title!)}</div>;
+      >{section.title!}</div>;
     })
   }</div>;
 });
@@ -128,7 +139,7 @@ export const PreferenceBody = ({groupId, scope, search}: {groupId: string, scope
 export const PreferenceSection = ({section, scope}: {section: ISettingSection, scope: PreferenceScope}) => {
   return <div className={styles.preference_section} id={'preferenceSection-' + section.title}>
     {
-      section.title ? <div className={styles.section_title}>{toNormalCase(section.title!)}</div> : null
+      section.title ? <div className={styles.section_title}>{section.title!}</div> : null
     }
     {
       section.component ? <section.component scope={scope}/> :
