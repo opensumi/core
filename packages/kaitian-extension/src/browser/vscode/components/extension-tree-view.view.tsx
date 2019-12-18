@@ -136,7 +136,7 @@ export const ExtensionTabbarTreeView = observer(({
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      context: [node],
+      args: [node],
     });
   };
 
@@ -217,7 +217,7 @@ export const ExtensionTabbarTreeView = observer(({
         ...node,
         actions: [{
           location: TreeViewActionTypes.TreeNode_Right,
-          component: <InlineActionBar context={[node]} menus={menus} seperator='inline' />,
+          component: <InlineActionBar context={[node]} menus={menus} separator='inline' />,
         }],
       };
     });
@@ -238,6 +238,10 @@ export const ExtensionTabbarTreeView = observer(({
         }
         const nodeModel = copyModel.get(node.id);
         if (nodeModel && nodeModel.expanded && !nodeModel.updated) {
+          copyModel.set(node.id, {
+            ...nodeModel,
+            isLoading: true,
+          });
           promises.push(dataProvider.resolveChildren(node && node.id as string).then((childrens: TreeNode<any>[]) => {
             // 简化节点模型，带parent会导致参数序列化循环引用问题
             childrens = childrens.map((child) => {
@@ -250,18 +254,26 @@ export const ExtensionTabbarTreeView = observer(({
               updated: true,
             });
             node.children = childrens;
+
+            copyModel.set(node.id, {
+              ...nodeModel,
+              isLoading: false,
+            });
             return node;
           }));
         }
        }
     }
+
+    let newNodes = [...checkList];
+    newNodes = setInlineMenu(newNodes);
+    extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+    setNodes(newNodes);
+
     if (promises.length === 0) {
-      let newNodes = [...checkList];
-      newNodes = setInlineMenu(newNodes);
-      extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
-      setNodes(newNodes);
       return nodes;
     }
+
     return Promise.all(promises).then(([...nodes]) => {
       let newNodes = checkList;
       for (const node of nodes) {
