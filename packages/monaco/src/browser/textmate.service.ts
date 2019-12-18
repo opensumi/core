@@ -1,9 +1,9 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, isElectronEnv, parseWithComments } from '@ali/ide-core-browser';
+import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
-import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
+import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 import { getNodeRequire } from './monaco-loader';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
@@ -79,6 +79,12 @@ export class TextmateService extends WithEventBus {
   @Autowired(WorkbenchEditorService)
   private editorService: WorkbenchEditorService;
 
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
+
+  @Autowired(ILogger)
+  logger: ILogger;
+
   private grammarRegistry: Registry;
 
   private injections = new Map<string, string[]>();
@@ -87,9 +93,13 @@ export class TextmateService extends WithEventBus {
 
   public initialized = false;
 
+  /**
+   * start contribution 做初始化
+   */
   init() {
     this.initGrammarRegistry();
     this.listenThemeChange();
+    this.listenPreferenceChange();
   }
 
   // themeName要求：/^[a-z0-9\-]+$/ 来源vscode源码
@@ -186,6 +196,10 @@ export class TextmateService extends WithEventBus {
       return;
     }
     this.activatedLanguage.add(languageId);
+    this.setTokensProviderByLanguageId(languageId);
+  }
+
+  private async setTokensProviderByLanguageId(languageId: string) {
     const scopeName = this.textmateRegistry.getScope(languageId);
     if (!scopeName) {
       return;
@@ -194,20 +208,22 @@ export class TextmateService extends WithEventBus {
     if (!provider) {
       return;
     }
-
+    const tokenizerOption: TokenizerOption = {
+      lineLimit: this.preferenceService.get('editor.maxTokenizationLineLength') || 10000,
+    };
     const configuration = this.textmateRegistry.getGrammarConfiguration(languageId)();
     const initialLanguage = getEncodedLanguageId(languageId);
 
     try {
       const grammar = await this.grammarRegistry.loadGrammarWithConfiguration(
         scopeName, initialLanguage, configuration);
-      const options = configuration.tokenizerOption ? configuration.tokenizerOption : TokenizerOptionDEFAULT;
+      const options = configuration.tokenizerOption ? configuration.tokenizerOption : tokenizerOption;
       // 要保证grammar把所有的languageID关联的语法都注册好了
       if (grammar) {
         monaco.languages.setTokensProvider(languageId, createTextmateTokenizer(grammar, options));
       }
     } catch (error) {
-      // console.warn('No grammar for this language id', languageId, error);
+      this.logger.warn('No grammar for this language id', languageId, error);
     }
   }
 
@@ -499,5 +515,15 @@ export class TextmateService extends WithEventBus {
     }
     await loadWASM('https://g.alicdn.com/tb-theia-app/theia-assets/0.0.9/98efdb1150c6b8050818b3ea2552b15b.wasm');
     return new OnigasmLib();
+  }
+
+  private listenPreferenceChange() {
+    this.preferenceService.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'editor.maxTokenizationLineLength') {
+        for (const languageId of this.activatedLanguage) {
+          this.setTokensProviderByLanguageId(languageId);
+        }
+      }
+    });
   }
 }
