@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable, Domain, CommandContribution, CommandRegistry } from '@ali/ide-core-common';
-import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMenuRegistry, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMenuRegistry, generateMergedCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { memoize, IContextKeyService, localize } from '@ali/ide-core-browser';
 import { ITerminalController } from '../common';
 import { TerminalClient } from './terminal.client';
@@ -185,13 +185,12 @@ export class TerminalContextMenuService extends Disposable {
 
     const { x, y } = event.nativeEvent;
     const menus = this.contextMenu;
-    const result = generateCtxMenu({ menus });
+    const menuNodes = generateMergedCtxMenu({ menus });
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
-      // 合并结果
-      menuNodes: [...result[0], ...result[1]],
-      context: [ 'some args for command executor' ],
+      menuNodes,
+      args: [ 'some args for command executor' ],
     });
   }
 
@@ -206,13 +205,12 @@ export class TerminalContextMenuService extends Disposable {
 
     const { x, y } = event.nativeEvent;
     const menus = this.tabContextMenu;
-    const result = generateCtxMenu({ menus });
+    const menuNodes = generateMergedCtxMenu({ menus });
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
-      // 合并结果
-      menuNodes: [...result[0], ...result[1]],
-      context: [ 'some args for command executor' ],
+      menuNodes,
+      args: [ 'some args for command executor' ],
     });
   }
 }
