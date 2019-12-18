@@ -22,7 +22,7 @@ const MenuAction: React.FC<{
 }> = ({ data, hasSubmenu, disabled }) => {
   // 这里遵循 native menu 的原则，保留一个 icon 位置
   return (
-    <div className={clsx(styles.menuAction, { [styles.disabled]: disabled })}>
+    <div className={clsx(styles.menuAction, { [styles.disabled]: disabled, [styles.checked]: data.checked })}>
       <div className={styles.icon}>
         {
           data.checked
@@ -33,18 +33,20 @@ const MenuAction: React.FC<{
       <div className={styles.label}>
         {data.label ? mnemonicButtonLabel(data.label, true) : ''}
       </div>
-      {
-        data.keybinding
-          ? <div className={styles.shortcut}>{data.keybinding}</div>
-          : null
-      }
-      {
-        hasSubmenu && (
-          <div className={styles.submenuIcon}>
-            <Icon iconClass={getIcon('right')} />
-          </div>
-        )
-      }
+      <div className={styles.tip}>
+        {
+          data.keybinding
+            ? <div className={styles.shortcut}>{data.keybinding}</div>
+            : null
+        }
+        {
+          hasSubmenu
+            ? <div className={styles.submenuIcon}>
+              <Icon iconClass={getIcon('right')} />
+            </div>
+            : null
+        }
+      </div>
     </div>
   );
 };
