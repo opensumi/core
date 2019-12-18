@@ -160,7 +160,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE_ALL.id,
-      keybinding: 'ctrlcmd+k w',
+      keybinding: isElectronEnv() ? 'ctrlcmd+k w' : 'alt+shift+p',
       when: '!editorTitleContext',
     });
     keybindings.registerKeybinding({
@@ -173,7 +173,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.REOPEN_CLOSED.id,
-      keybinding: 'ctrlcmd+shift+t',
+      keybinding: isElectronEnv() ? 'ctrlcmd+shift+t' : 'alt+shift+t',
     });
     for (let i = 1; i < 10; i ++ ) {
       keybindings.registerKeybinding({
