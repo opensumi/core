@@ -54,6 +54,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   private viewsWhenExpr = new Set<string>();
   private exprToViewMap = new Map<string, View>();
+  private allViews = new Map<string, View>();
 
   // TODO 使用IconAction完成左侧activityBar上展示的额外图标注册能力
   // private extraIconActions: IconAction
@@ -193,6 +194,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   collectViewComponent(view: View, containerId: string, props?: any): string {
+    this.allViews.set(view.id, view);
     this.viewToContainerMap.set(view.id, containerId);
     if (view.when) {
       this.viewsWhenExpr.add(view.when);
@@ -215,6 +217,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       console.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
       return;
     }
+    const contributedView = this.allViews.get(view.id);
+    if (contributedView) {
+      view = Object.assign(contributedView, view);
+    }
+
     this.collectViewComponent(view, containerId!, props);
   }
 
