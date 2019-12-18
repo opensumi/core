@@ -338,21 +338,24 @@ export class FileService extends RPCService implements IFileService {
    * @memberof FileService
    */
   async getEncoding(uri: string): Promise<string> {
-    const _uri = this.getUri(uri);
-    if (_uri.scheme !== Schemas.file) {
-      console.warn(`Only support scheme file!, will return UTF8!`);
-      return UTF8;
-    }
-    const provider = await this.getProvider(_uri.scheme);
-    const stat = await provider.stat(_uri.codeUri);
-    if (!stat) {
-      throw FileSystemError.FileNotFound(uri);
-    }
-    if (stat.isDirectory) {
-      throw FileSystemError.FileIsDirectory(uri, 'Cannot get the encoding.');
-    }
-    const encoding = detectEncodingByURI(_uri);
-    return encoding || this.options.encoding || UTF8;
+    // TODO 临时修复方案 目前识别率太低，全部返回 UTF8
+    return UTF8;
+
+    // const _uri = this.getUri(uri);
+    // if (_uri.scheme !== Schemas.file) {
+    //   console.warn(`Only support scheme file!, will return UTF8!`);
+    //   return UTF8;
+    // }
+    // const provider = await this.getProvider(_uri.scheme);
+    // const stat = await provider.stat(_uri.codeUri);
+    // if (!stat) {
+    //   throw FileSystemError.FileNotFound(uri);
+    // }
+    // if (stat.isDirectory) {
+    //   throw FileSystemError.FileIsDirectory(uri, 'Cannot get the encoding.');
+    // }
+    // const encoding = detectEncodingByURI(_uri);
+    // return encoding || this.options.encoding || UTF8;
   }
 
   getEncodingInfo = getEncodingInfo

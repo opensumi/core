@@ -139,6 +139,8 @@ export const defaultIconMap = {
   'follow-cursor': 'follow-cursor',
   'minus': 'minus',
   'undock': 'undock',
+  'expand': 'arrawsalt',
+  'shrink': 'shrink',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {

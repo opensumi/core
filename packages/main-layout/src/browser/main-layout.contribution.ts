@@ -52,11 +52,11 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
 };
 export const EXPAND_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.expand',
-  iconClass: getIcon('up'),
+  iconClass: getIcon('expand'),
 };
 export const RETRACT_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.retract',
-  iconClass: getIcon('down'),
+  iconClass: getIcon('shrink'),
 };
 
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution)

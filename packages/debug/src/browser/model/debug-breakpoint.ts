@@ -50,6 +50,7 @@ export class DebugBreakpoint extends DebugBreakpointData {
   get enabled(): boolean {
     return this.breakpoints.breakpointsEnabled && this.origin.enabled;
   }
+
   setEnabled(enabled: boolean): void {
     const { uri, raw } = this;
     let shouldUpdate = false;
