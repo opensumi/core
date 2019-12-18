@@ -169,6 +169,14 @@ export const ExtensionTabbarTreeView = observer(({
         extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
         setNodes(addTreeDatas(nodes, addNodes, node));
       } else {
+        // 加载新数据
+        const newNodes = [...nodes];
+        copyModel.set(node.id, {
+          ...copyModel.get(node.id),
+          isLoading: true,
+        });
+        extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+        setNodes(newNodes);
         checkIfNeedExpandChildren(nodes, copyModel);
       }
     } else {
@@ -252,25 +260,20 @@ export const ExtensionTabbarTreeView = observer(({
             copyModel.set(node.id, {
               ...nodeModel,
               updated: true,
-            });
-            node.children = childrens;
-
-            copyModel.set(node.id, {
-              ...nodeModel,
               isLoading: false,
             });
+            node.children = childrens;
             return node;
           }));
         }
        }
     }
 
-    let newNodes = [...checkList];
-    newNodes = setInlineMenu(newNodes);
-    extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
-    setNodes(newNodes);
-
     if (promises.length === 0) {
+      let newNodes = [...checkList];
+      newNodes = setInlineMenu(newNodes);
+      extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+      setNodes(newNodes);
       return nodes;
     }
 
