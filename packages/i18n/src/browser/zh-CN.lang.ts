@@ -445,5 +445,7 @@ export const localizationBundle = {
     'markers.filter.placefolder': '筛选器，例如：text、**/*.ts、!**/node_modules/**',
     'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
     'markers.filter.reset': '清除筛选器',
+
+    'app.quit': '退出',
   },
 };

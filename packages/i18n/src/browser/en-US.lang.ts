@@ -430,5 +430,7 @@ export const localizationBundle = {
     'markers.filter.placefolder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
     'markers.filter.content.empty': 'No results found with provided filter criteria.',
     'markers.filter.reset': 'Clear Filter.',
+
+    'app.quit': 'Quit',
   },
 };
