@@ -114,7 +114,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE.id,
-      keybinding: 'ctrlcmd+w', // FIXME web上会被chrome拦截
+      keybinding: isElectronRenderer() ? 'ctrlcmd+w' : 'alt+shift+w',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PREVIOUS.id,
