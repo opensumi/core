@@ -9,6 +9,7 @@ import Icon from '../icon';
 import Badge from '../badge';
 import { ValidateInput, InputSelection } from '../input';
 import { KeyCode, Key } from '../../keyboard';
+import { Loading } from '../loading';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -87,6 +88,9 @@ const renderDescription = (node: any, replace: string) => {
 };
 
 const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler: any) => {
+  if (node.isLoading) {
+    return <Loading />;
+  }
   return <div
     onClick={clickHandler}
     className={cls(
@@ -95,8 +99,7 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
       getIcon('right'),
       { [`${styles.kt_mod_collapsed}`]: !node.expanded },
     )}
-  >
-  </div>;
+  />;
 };
 
 const renderHead = (node: TreeNode) => {
@@ -240,7 +243,7 @@ export const TreeContainerNode = (
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px`,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0) + 3}px`,
     ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
@@ -322,9 +325,9 @@ export const TreeContainerNode = (
 
     const blurHandler = (event) => {
       if (actualValidate(value)) {
-        // onChange(node, '');
+        onChange(node, '');
       } else {
-        // onChange(node, value);
+        onChange(node, value);
       }
     };
 
