@@ -198,6 +198,7 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
       <AccordionContainer
         views={views}
         containerId={scmProviderViewId}
+        className={styles.scm_accordion}
       />
     </div>
   );

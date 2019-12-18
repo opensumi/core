@@ -187,7 +187,7 @@ export const SplitPanel: React.FC<{
     <div
       ref={(ele) => rootRef.current = ele!}
       {...restProps}
-      className={clsx(styles['split-panel'])}
+      className={clsx(styles['split-panel'], className)}
       style={
         {flexDirection: Layout.getFlexDirection(direction)}
       }
