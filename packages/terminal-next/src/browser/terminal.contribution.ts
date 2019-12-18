@@ -71,6 +71,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       },
     });
 
+    /*
     registry.registerCommand(terminalIndepend, {
       execute: (...args: any[]) => {
         // todo
@@ -82,6 +83,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
         return true;
       },
     });
+    */
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
@@ -97,12 +99,15 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       viewId: terminalClear.category,
       tooltip: localize('terminal.clear'),
     });
+
+    /*
     registry.registerItem({
       id: terminalIndepend.id,
       command: terminalIndepend.id,
       viewId: terminalIndepend.category,
       tooltip: localize('terminal.independ'),
     });
+    */
   }
 
   onDidRender() {
