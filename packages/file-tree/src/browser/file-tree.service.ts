@@ -34,6 +34,7 @@ export type IFileTreeItemStatus = Map<string, {
   expanded?: boolean;
   focused?: boolean;
   cuted?: boolean;
+  isLoading?: boolean;
   needUpdated?: boolean;
   file: Directory | File;
 }>;
@@ -860,6 +861,18 @@ export class FileTreeService extends WithEventBus {
       }
       uri = paths.pop();
       statusKey = uri && this.getStatutsKey(uri);
+    }
+  }
+
+  @action
+  updateFileLoadingStatus(file: Directory | File, isLoading: boolean = false) {
+    const statusKey = this.getStatutsKey(file);
+    const status = this.status.get(statusKey);
+    if (status) {
+      this.status.set(statusKey, {
+        ...status!,
+        isLoading,
+      });
     }
   }
 

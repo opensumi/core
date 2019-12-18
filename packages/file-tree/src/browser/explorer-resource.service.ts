@@ -114,6 +114,7 @@ const extractFileItemShouldBeRendered = (
       const isExpanded = status.expanded;
       const isFocused = status.focused;
       const isCuted = status.cuted;
+      const isLoading = status.isLoading;
       renderedFiles.push({
         ...file,
         icon: file.getIcon(isExpanded!),
@@ -125,6 +126,7 @@ const extractFileItemShouldBeRendered = (
         selected: isSelected,
         expanded: isExpanded,
         focused: isFocused,
+        isLoading,
       });
       if (isExpanded && file instanceof Directory) {
         renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, statusMap, depth + 1));
@@ -276,8 +278,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.fileContextKey.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.isDirectory(file));
   }
 
-  @action.bound
-  onSelect(files: (Directory | File)[]) {
+  onSelect = (files: (Directory | File)[]) => {
     this._selectTimes++;
     // 单选操作默认先更新选中状态
     this.filetreeService.updateFilesSelectedStatus(files, true);
@@ -286,7 +287,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     if (files.length === 1) {
       if (files[0].filestat.isDirectory) {
         if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
-          this.filetreeService.updateFilesExpandedStatus(files[0]);
+          this.loadingFiles(files[0]);
         }
       } else {
         this.filetreeService.openFile(files[0].uri);
@@ -302,14 +303,13 @@ export class ExplorerResourceService extends AbstractFileTreeService {
             this.filetreeService.openAndFixedFile(files[0].uri);
           } else {
             if (this.corePreferences['workbench.list.openMode'] === 'doubleClick') {
-              this.filetreeService.updateFilesExpandedStatus(files[0]);
+              this.loadingFiles(files[0]);
             }
           }
         }
         this._selectTimes = 0;
       }, 200);
     }
-    this.filetreeService.updateFilesSelectedStatus(files, true);
   }
 
   onBlur = () => {
@@ -323,13 +323,17 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.fileContextKey.explorerFocused.set(true);
   }
 
-  @action.bound
-  onTwistieClick(file: IFileTreeItemRendered) {
-    this.filetreeService.updateFilesExpandedStatus(file as (Directory | File));
+  async loadingFiles(file: IFileTreeItemRendered) {
+    this.filetreeService.updateFileLoadingStatus(file as (Directory | File), true);
+    await this.filetreeService.updateFilesExpandedStatus(file as (Directory | File));
+    this.filetreeService.updateFileLoadingStatus(file as (Directory | File), false);
   }
 
-  @action.bound
-  onDragStart(node: IFileTreeItemRendered, event: React.DragEvent) {
+  onTwistieClick = (file: IFileTreeItemRendered) => {
+    this.loadingFiles(file);
+  }
+
+  onDragStart = (node: IFileTreeItemRendered, event: React.DragEvent) => {
     event.stopPropagation();
 
     let selectedNodes: IFileTreeItemRendered[] = this.filetreeService.selectedFiles;
@@ -361,8 +365,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     }
   }
 
-  @action.bound
-  onDragOver(node: IFileTreeItemRendered, event: React.DragEvent) {
+  onDragOver = (node: IFileTreeItemRendered, event: React.DragEvent) => {
     event.preventDefault();
     event.stopPropagation();
     if (!this.toCancelNodeExpansion.disposed) {
@@ -371,22 +374,20 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     const timer = setTimeout(() => {
       if (node.filestat.isDirectory) {
         if (!node.expanded) {
-          this.filetreeService.updateFilesExpandedStatus(node as (Directory | File));
+          this.loadingFiles(node);
         }
       }
     }, 500);
     this.toCancelNodeExpansion.push(Disposable.create(() => clearTimeout(timer)));
   }
 
-  @action.bound
-  onDragLeave(node: IFileTreeItemRendered, event: React.DragEvent) {
+  onDragLeave = (node: IFileTreeItemRendered, event: React.DragEvent) => {
     event.preventDefault();
     event.stopPropagation();
     this.toCancelNodeExpansion.dispose();
   }
 
-  @action.bound
-  onDragEnter(node: IFileTreeItemRendered, event: React.DragEvent) {
+  onDragEnter = (node: IFileTreeItemRendered, event: React.DragEvent) => {
     event.preventDefault();
     event.stopPropagation();
     const containing = getContainingDir(node) as IFileTreeItemRendered;
@@ -398,8 +399,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.filetreeService.updateFilesSelectedStatus(selectNodes, true);
   }
 
-  @action.bound
-  onDrop(node: IFileTreeItemRendered, event: React.DragEvent) {
+  onDrop = (node: IFileTreeItemRendered, event: React.DragEvent) => {
     try {
       event.preventDefault();
       event.stopPropagation();
@@ -426,8 +426,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     }
   }
 
-  @action.bound
-  onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {
+  onContextMenu = (nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) => {
     const { x, y } = event.nativeEvent;
     let uris: URI[];
     this.filetreeService.updateFilesFocusedStatus(nodes as (Directory | File)[], true);
@@ -455,8 +454,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     });
   }
 
-  @action.bound
-  onChange(node?: IFileTreeItemRendered, value?: string) {
+  onChange = (node?: IFileTreeItemRendered, value?: string) => {
     if (!node) {
       this.filetreeService.removeTempStatus();
     } else if (!value) {
@@ -474,7 +472,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     }
   }
 
-  @action.bound
   getSelectedTreeNodesFromData = (data: DataTransfer) => {
     const resources = data.getData('selected-tree-nodes');
     if (!resources) {
