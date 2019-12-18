@@ -3,7 +3,7 @@ import { DebugBreakpointsService } from './debug-breakpoints.service';
 import { useInjectable, ViewState, URI } from '@ali/ide-core-browser';
 import * as styles from './debug-breakpoints.module.less';
 import * as cls from 'classnames';
-import { CheckBox, CheckBoxSize } from '@ali/ide-core-browser/lib/components/input';
+import { CheckBox } from '@ali/ide-components';
 import { observer } from 'mobx-react-lite';
 import { DebugBreakpoint, DebugExceptionBreakpoint } from '../model';
 import { RecycleList } from '@ali/ide-core-browser/lib/components';
@@ -69,7 +69,7 @@ export const BreakpointItem = ({
 
   return <div className={cls(styles.debug_breakpoints_item)}>
     <div className={cls(isDebugBreakpoint ? !verified ? 'kaitian-debug-breakpoint-unverified' : enabled ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled' : '', styles.debug_breakpoints_icon)}></div>
-    <CheckBox size={CheckBoxSize.SMALL} id={data.id} defaultChecked={enabled} onChange={changeHandler}></CheckBox>
+    <CheckBox size='default' id={data.id} defaultChecked={enabled} onChange={changeHandler}></CheckBox>
     <div className={styles.debug_breakpoints_wrapper} onClick={clickHandler}>
       <span className={styles.debug_breakpoints_name}>{data.name}</span>
       <span className={styles.debug_breakpoints_description}>{data.description}</span>

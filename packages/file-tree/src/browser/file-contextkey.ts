@@ -2,8 +2,9 @@ import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { ExplorerFolderContext, ExplorerFocusedContext, ExplorerResourceCut, FilesExplorerFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 
-@Injectable({ multiple: true })
+@Injectable()
 export class FileContextKey {
+
   @Autowired(IContextKeyService)
   private readonly globalContextkeyService: IContextKeyService;
 

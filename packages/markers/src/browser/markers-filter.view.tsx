@@ -5,7 +5,7 @@ import * as styles from './markers-filter.module.less';
 import { MarkerService } from './markers-service';
 import Messages from './messages';
 import debounce = require('lodash.debounce');
-import { Input } from '@ali/ide-core-browser/lib/components';
+import { Input } from '@ali/ide-components';
 
 /**
  * Marker过滤面板

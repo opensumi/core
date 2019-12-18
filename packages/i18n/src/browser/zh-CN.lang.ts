@@ -290,6 +290,7 @@ export const localizationBundle = {
     'preference.editor.formatOnSaveTimeoutError': '格式化时间超过 {0} 毫秒，终止格式化',
     'preference.editor.autoSave': '自动保存文件',
     'preference.editor.autoSaveDelay': '自动保存延迟',
+    'preference.editor.maxTokenizationLineLength': '最大解析标识长度',
 
     'preference.array.additem': '添加',
 
@@ -307,6 +308,7 @@ export const localizationBundle = {
     'editor.format.chooseFormatter': '选择要使用的格式化扩展',
     'editor.configuration.preferredFormatter': '优先使用的格式化器配置',
     'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
+    'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标记',
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
@@ -383,8 +385,19 @@ export const localizationBundle = {
     'terminal.try.reconnect': '重新连接终端',
     'terminal.new': '新建终端',
     'terminal.split': '拆分终端',
+    'terminal.clear': '清空终端',
+    'terminal.independ': '独立终端',
     'terminal.maximum': '最大化面板大小',
     'terminal.or': '或者',
+
+    'terminal.menu.search': '搜索',
+    'terminal.menu.split': '拆分',
+    'terminal.menu.selectAll': '全选',
+    'terminal.menu.copy': '复制',
+    'terminal.menu.paste': '粘贴',
+    'terminal.menu.clear': '清空',
+    'terminal.menu.stop': '终止',
+    'terminal.menu.stopGroup': '终止',
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
@@ -432,5 +445,7 @@ export const localizationBundle = {
     'markers.filter.placefolder': '筛选器，例如：text、**/*.ts、!**/node_modules/**',
     'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
     'markers.filter.reset': '清除筛选器',
+
+    'app.quit': '退出',
   },
 };

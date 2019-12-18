@@ -1,77 +1,156 @@
-import { URI, IChange } from '@ali/ide-core-common';
-import * as vscode from 'vscode';
+import { CommandRegistry, CommandService, Command, isOSX } from '@ali/ide-core-common';
+import { IDisposable } from '@ali/ide-core-common/lib/disposable';
+import { Event } from '@ali/ide-core-common/lib/event';
+import { Autowired, Injectable, Optional } from '@ali/common-di';
 
-// explorer/context
-// 资源管理器 ctxmenu
-// 第一个参数是当前 ctx-menu 出现在的那个 ExplorerItem 的 URI
-// 第二个参数是多选时 ExplorerItem 列表的 URI
-// 经过进程通信后 URI -- transform --> Uri
-export type ExplorerContextParams = [URI, URI[]];
+import { IContextKeyService } from '../../context-key';
+import { ISubmenuItem, MenuNode } from './base';
+import { MenuId } from './menu-id';
+import { KeybindingRegistry } from '../../keybinding';
 
-export type ExplorerContextCallback = (...args: ExplorerContextParams) => void;
+export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
 
-// editor/context
-export type EditorContextArgs = [URI, URI[]];
-export type EditorContextCallback = (...args: [URI]) => void;
-
-type GroupId = number; // vscode.IEditorGroupView['id'];
-// editor/title
-// editor tab group 最右侧 ellipsis 图标点击 dropdown
-type EditorTitleCallback = (...args: [URI, { groupId: GroupId }]) => void;
-
-// editor/title/context
-// editor tab ctxmenu
-interface EditorTitleExtraArgs {
-  groupId: GroupId;
-  editorIndex: number;
+export interface IMenuNodeOptions {
+  args?: any[]; // 固定参数可从这里传入
+  contextDom?: HTMLElement;
 }
-// 参考 src/vs/workbench/browser/parts/editor/titleControl.ts#304,310
-export type EditorTitleContextCallback = (...args: [URI, EditorTitleExtraArgs]) => void;
 
-// debug/callstack/context
-// debug 时 callstack list item 的 ctxmenu
-// arg.0:"file:///Users/vagusx/Project/ide-test-workspace/aa/aaa.js"
-// arg.1:"stackframe:thread:a0f28e52-6237-40ce-a0d9-11fe2a2de819:1:1001:0"
-export type DebugCallstackContextCallbak = (...args: [string, string]) => void;
+export type IMenuSeparator = 'navigation' | 'inline';
 
-// debug/toolbar
-// debug toolbar 上
-export type DebugToolbarCallbak = (...args: []) => void;
+export interface IMenuConfig extends IMenuNodeOptions {
+  separator?: IMenuSeparator;
+  withAlt?: boolean; // 尚未支持
+}
 
-// scm/title
-// scm titlebar 的 inline actions/more actions
-// 此处是 hosted object
-export type ScmTitleCallback = (...args: [vscode.SourceControl]) => void; // 实际为拓展后的 ExtHostSourceControl
+@Injectable()
+export class MenuItemNode extends MenuNode {
+  readonly item: Command;
+  private _options: IMenuNodeOptions;
 
-// scm/resourceGroup/context
-// scm resource list 的 group 的 ctxmenu
-// 此处是 hosted object
-export type ScmResourceGroupContextCallback = (...args: [vscode.SourceControlResourceGroup]) => void; // 实际为拓展后的 ExtHostSourceControlResourceGroup
+  @Autowired(CommandService)
+  protected readonly commandService: CommandService;
 
-// scm/resourceState/context // 老版本是 scm/resource/context
-// scm resource list 的 item 的 ctxmenu
-// 此处是 hosted object
-export type ScmResourceStateContextCallback = (...args: [vscode.SourceControlResourceState]) => void;
+  @Autowired(KeybindingRegistry)
+  protected readonly keybindings: KeybindingRegistry;
 
-// scm/change/title
-// diff editor 的最右侧 ellipsis 图标点击 dropdown
-// 此处 Uri 是 git scheme 的
-// todo: scm/change/title 是 diff widget 的菜单，这里不对待更新
-export type ScmChangeTitleCallback = (...args: [URI, IChange[], number]) => void;
+  @Autowired(CommandRegistry)
+  protected readonly commandRegistry: CommandRegistry;
 
-// view/title
-// 自定义 contributed view 的 inline actions/more actions
-// 此处参数应该是各个 view 自行定义的
-export type ViewTitleCallback = (...args: []) => void;
+  constructor(
+    @Optional() item: Command,
+    @Optional() options: IMenuNodeOptions = {},
+    @Optional() disabled: boolean,
+    @Optional() checked: boolean,
+    @Optional() nativeRole?: string,
+  ) {
+    super({
+      id: item.id,
+      icon: item.iconClass,
+      label: item.label!,
+      checked,
+      disabled,
+      nativeRole,
+    });
 
-// view/item/context
-// 自定义 contributed view 中 list item 的 ctx menu
-// 此处参数应该是各个 view 自行定义的
-export type ViewItemCallback = (...args: []) => void;
+    this.className = undefined;
 
-// 目前我们没有实现 comment 相关 API
-// comment 相关可参见 https://github.com/microsoft/vscode/issues/77663
-// comments/commentThread/title
-// comments/commentThread/context
-// comments/comment/title
-// comments/comment/context
+    const shortcutDesc = this.getShortcut(item.id);
+
+    this.keybinding = shortcutDesc && shortcutDesc.keybinding || '';
+    this.rawKeybinding = shortcutDesc && shortcutDesc.rawKeybinding || '';
+    this.isKeyCombination = !!(shortcutDesc && shortcutDesc.isKeyCombination);
+    this._options = options;
+
+    this.item = item;
+  }
+
+  execute(args?: any[]): Promise<any> {
+    const runArgs = [
+      ...(this._options.args || []),
+      ...(args || []),
+    ];
+
+    return this.commandService.executeCommand(this.item.id, ...runArgs);
+  }
+
+  private getShortcut(commandId: string) {
+    if (commandId) {
+      const keybindings = this.keybindings.getKeybindingsForCommand(commandId);
+      if (keybindings.length > 0) {
+        const isKeyCombination = Array.isArray(keybindings[0].resolved) && keybindings[0].resolved.length > 1;
+        let keybinding = this.keybindings.acceleratorFor(keybindings[0], isOSX ? '' : '+').join(' ');
+        if (isKeyCombination) {
+          keybinding = `[${keybinding}]`;
+        }
+        return {
+          keybinding,
+          rawKeybinding: keybindings[0].keybinding,
+          isKeyCombination,
+        };
+      }
+    }
+    return null;
+  }
+}
+
+export class SubmenuItemNode extends MenuNode {
+  static readonly ID = 'menu.item.node.submenu';
+
+  readonly item: ISubmenuItem;
+
+  constructor(item: ISubmenuItem) {
+    super({
+      id: SubmenuItemNode.ID,
+      label: item.label!,
+    });
+    this.item = item;
+  }
+}
+
+// 分隔符
+export class SeparatorMenuItemNode extends MenuNode {
+  static readonly ID = 'menu.item.node.separator';
+
+  constructor(id?: string, label?: string) {
+    super({
+      id: id || SeparatorMenuItemNode.ID,
+      label: label || 'separator',
+    });
+  }
+}
+
+export interface IMenu extends IDisposable {
+  readonly onDidChange: Event<IMenu | undefined>;
+  getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]>;
+}
+
+export interface IContextMenu extends IDisposable {
+  /**
+   * menu 重新生成后事件，监听即可拿到最新的 menu
+   */
+  readonly onDidChange: Event<string>;
+
+  /**
+   * 获得已分好组并合并的 MenuNodes 列表
+   */
+  getMergedMenuNodes(): MenuNode[];
+
+  /**
+   * 获得已分好组的 MenuNodes 列表
+   */
+  getGroupedMenuNodes(): TupleMenuNodeResult;
+}
+
+export abstract class AbstractMenuService {
+  abstract createMenu(id: MenuId | string, contextKeyService?: IContextKeyService): IMenu;
+}
+
+export interface CreateMenuPayload {
+  id: MenuId | string;
+  config?: IMenuConfig;
+  contextKeyService?: IContextKeyService;
+}
+
+export abstract class AbstractContextMenuService {
+  abstract createMenu(payload: CreateMenuPayload): IContextMenu;
+}

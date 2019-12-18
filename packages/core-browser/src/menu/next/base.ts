@@ -225,60 +225,48 @@ export function isISubmenuItem(item: IMenuItem | ISubmenuItem): item is ISubmenu
 export interface IMenuAction {
   readonly id: string; // command id
   label: string;
-  icon: string; // 标准的 vscode icon 是分两种主题的
-  execute(event?: any): any;
+  icon?: string; // 标准的 vscode icon 是分两种主题的
   tooltip?: string;
   className?: string;
   keybinding?: string; // 快捷键描述
+  rawKeybinding?: string;
   isKeyCombination?: boolean; // 是否为组合键
   disabled?: boolean; // disable 状态的 menu
   checked?: boolean; // checked 状态 通过 toggledWhen 实现
-  nativeRole?: string; // eletron menu 使用
+  nativeRole?: string; // electron menu 使用
+  execute?: (event?: any) => any;
 }
 
 export class MenuNode implements IMenuAction {
   readonly id: string;
   label: string;
-  tooltip: string;
-  className: string | undefined ;
-  icon: string;
-  keybinding?: string;
-  rawKeybinding?: MaybeNull<string>;
+  icon?: string;
+  tooltip?: string;
+  className?: string;
+  keybinding: string;
+  rawKeybinding: string;
   isKeyCombination: boolean;
   disabled: boolean;
   checked: boolean;
   nativeRole: string;
   children: MenuNode[] = [];
-
   readonly _actionCallback?: (event?: any) => any;
 
-  constructor(
-    commandId: string,
-    icon: string = '',
-    label: string = '',
-    checked = false,
-    disabled = false,
-    nativeRole: string = '',
-    keybinding: string = '',
-    rawKeybinding?: string,
-    isKeyCombination: boolean = false,
-    className: string = '',
-    actionCallback?: (event?: any) => any,
-  ) {
-    this.id = commandId;
-    this.label = label;
-    this.className = className;
-    this.icon = icon;
-    this.keybinding = keybinding;
-    this.rawKeybinding = rawKeybinding;
-    this.isKeyCombination = isKeyCombination;
-    this.disabled = disabled;
-    this.checked = checked;
-    this.nativeRole = nativeRole;
-    this._actionCallback = actionCallback;
+  constructor(props: IMenuAction) {
+    this.id = props.id;
+    this.label = props.label;
+    this.className = props.className || '';
+    this.icon = props.icon || '';
+    this.keybinding = props.keybinding || '';
+    this.rawKeybinding = props.rawKeybinding || '';
+    this.isKeyCombination = Boolean(props.isKeyCombination);
+    this.disabled = Boolean(props.disabled);
+    this.checked = Boolean(props.checked);
+    this.nativeRole = props.nativeRole || '';
+    this._actionCallback = props.execute;
   }
 
-  execute(event?: any): Promise<any> {
+  execute(event?: any): any {
     if (this._actionCallback) {
       return this._actionCallback(event);
     }

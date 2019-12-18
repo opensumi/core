@@ -9,6 +9,7 @@ import Icon from '../icon';
 import Badge from '../badge';
 import { ValidateInput, InputSelection } from '../input';
 import { KeyCode, Key } from '../../keyboard';
+import { Loading } from '../loading';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -87,6 +88,9 @@ const renderDescription = (node: any, replace: string) => {
 };
 
 const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler: any) => {
+  if (node.isLoading) {
+    return <Loading />;
+  }
   return <div
     onClick={clickHandler}
     className={cls(
@@ -95,8 +99,7 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
       getIcon('right'),
       { [`${styles.kt_mod_collapsed}`]: !node.expanded },
     )}
-  >
-  </div>;
+  />;
 };
 
 const renderHead = (node: TreeNode) => {
@@ -240,7 +243,7 @@ export const TreeContainerNode = (
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px`,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0) + 3}px`,
     ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
@@ -306,7 +309,7 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight}}>
+    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight - 2}px`}}>
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
     </div>;
   };
@@ -360,7 +363,7 @@ export const TreeContainerNode = (
       if (node.name !== TEMP_FILE_NAME && isString(node.name)) {
         selection = {
           start: 0,
-          end: node.name.replace(/\.\w+/, '').length,
+          end: node.name.replace(/\..+/, '').length,
         };
       }
       return <div
@@ -449,6 +452,9 @@ export const TreeContainerNode = (
       return <div className={styles.kt_treenode_title} style={titleStyle}>{node.title}</div>;
     }
   };
+  const foldNodeOffsetStyle = {
+    width: ExpandableTreeNode.is(node) && foldable ? 'calc(100% - 68px)' : 'calc(100% - 50px)',
+  } as React.CSSProperties;
 
   return (
     <div
@@ -481,7 +487,10 @@ export const TreeContainerNode = (
         <div className={cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')} style={itemStyle}>
           {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
           {renderIcon(node)}
-          <div className={isString(node.name) ? styles.kt_treenode_overflow_wrap : styles.kt_treenode_flex_wrap}>
+          <div
+            className={isEdited ? styles.kt_treenode_edit_wrap : isString(node.name) ? styles.kt_treenode_overflow_wrap : styles.kt_treenode_flex_wrap}
+            style={foldNodeOffsetStyle}
+          >
             {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
             {renderDescription(node, replace)}
           </div>

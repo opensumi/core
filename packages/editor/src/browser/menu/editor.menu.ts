@@ -3,7 +3,7 @@ import { IEditorActionRegistry, IEditorActionItem, IVisibleAction } from '../typ
 import { IDisposable, URI, BasicEvent, IEventBus, Disposable, IContextKeyService, Emitter, IContextKeyExpr } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup } from '../../common';
 import { observable, reaction, computed } from 'mobx';
-import { AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { EditorGroup } from '../workbench-editor.service';
 
 @Injectable()
@@ -27,8 +27,8 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  @Autowired(AbstractMenuService)
-  menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  ctxMenuService: AbstractContextMenuService;
 
   @Autowired(ICtxMenuRenderer)
   ctxMenuRenderer: ICtxMenuRenderer;
@@ -72,8 +72,11 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
   showMore(x: number, y: number, group: IEditorGroup) {
 
     const contextKeyService = group.currentEditor ? this.contextKeyService.createScoped((group.currentEditor.monacoEditor as any)._contextKeyService) : (group as EditorGroup).contextKeyService;
-    const menus = this.menuService.createMenu(MenuId.EditorTitle, contextKeyService);
-    const result = generateCtxMenu({ menus });
+    const menus = this.ctxMenuService.createMenu({
+      id: MenuId.EditorTitle,
+      contextKeyService,
+    });
+    const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
 
     let currentUri: URI | undefined;
@@ -83,9 +86,8 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
-      // 合并结果
-      menuNodes: [...result[0], ...result[1]],
-      context: [ currentUri ],
+      menuNodes,
+      args: [ currentUri ],
     });
   }
 

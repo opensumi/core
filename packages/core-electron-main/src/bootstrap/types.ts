@@ -115,5 +115,5 @@ export interface ICodeWindowOptions {
 export interface IParsedArgs {
   extensionDir?: string;
   workspaceDir?: string;
-  extensionCandidate?: string[];
+  extensionCandidate: string[];
 }

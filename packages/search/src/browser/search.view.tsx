@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
-import { Input, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
+import { Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
+import { Input, CheckBox } from '@ali/ide-components';
 import { ViewState } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
@@ -110,24 +111,24 @@ export const Search = observer(({
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchInputChange}
                   ref={searchBrowserService.searchInputEl}
-                />
-                <div className={styles.option_buttons}>
-                  <span
+                  controls={[
+                    <span
                     className={cls(getIcon('ab'), styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
                     title={localize('caseDescription')}
                     onClick={(e) => updateUIState({ isMatchCase: !UIState.isMatchCase }, e)}
-                  ></span>
+                  ></span>,
                   <span
                     className={cls(getIcon('abl'), styles['whole-word'], styles.option, { [styles.select]: UIState.isWholeWord })}
                     title={localize('wordsDescription')}
                     onClick={(e) => updateUIState({ isWholeWord: !UIState.isWholeWord }, e)}
-                  ></span>
+                  ></span>,
                   <span
                     className={cls(getIcon('regex'), styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
                     title={localize('regexDescription')}
                     onClick={(e) => updateUIState({ isUseRegexp: !UIState.isUseRegexp }, e)}
-                  ></span>
-                </div>
+                  ></span>,
+                  ]}
+                />
               </div>
               {/* <div className='search-notification '>
               <div>This is only a subset of all results. Use a more specific search term to narrow down the result list.</div>

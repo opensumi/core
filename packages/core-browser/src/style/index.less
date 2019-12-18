@@ -23,7 +23,8 @@ body, html {
   // 全局默认字体颜色
   color: var(--foreground);
   background-color: var(--editor-background);
-  -webkit-font-smoothing: antialiased;
+  // 设置 antialiased 会导致整体清晰度降低
+  // -webkit-font-smoothing: antialiased;
 }
 
 input::placeholder,

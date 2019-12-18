@@ -207,7 +207,7 @@ export class TabbarService extends WithEventBus {
   @action.bound handleContextMenu(event: React.MouseEvent, containerId: string) {
     event.preventDefault();
     const menus = this.menuService.createMenu(this.menuId);
-    const menuNodes = generateCtxMenu({ menus, options: {args: [{containerId}]} });
+    const menuNodes = generateCtxMenu({ menus, args: [{containerId}] });
     this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
       x: event.clientX,
       y: event.clientY,

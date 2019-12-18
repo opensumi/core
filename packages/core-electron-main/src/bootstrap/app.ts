@@ -29,7 +29,10 @@ export class ElectronMainApp {
 
   constructor(private config: ElectronAppConfig) {
     config.extensionDir =  this.parsedArgs.extensionDir ? this.parsedArgs.extensionDir : config.extensionDir || '';
-    config.extensionCandidate = this.parsedArgs.extensionCandidate && this.parsedArgs.extensionCandidate.map((ext) => ({ path: ext, isBuiltin: true })) || config.extensionCandidate || [];
+    config.extensionCandidate = [
+      ...config.extensionCandidate,
+      ...this.parsedArgs.extensionCandidate.map((ext) => ({ path: ext, isBuiltin: true })),
+    ];
     this.injector.addProviders({
       token: ElectronAppConfig,
       useValue: config,

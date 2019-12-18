@@ -6,14 +6,14 @@ import {
   OpenedResourceTreeItem,
 } from './opened-editor.service';
 import { IResource, IResourceDecorationChangeEventPayload, IEditorGroup, WorkbenchEditorService } from '@ali/ide-editor';
-import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig, isUndefined, memoize, IContextKeyService, OPEN_EDITORS_COMMANDS } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig, memoize, OPEN_EDITORS_COMMANDS } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { getIcon } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import * as styles from './index.module.less';
-import { IMenu, AbstractMenuService, MenuId, generateMergedCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { IContextMenu, AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface IOpenEditorStatus {
   focused?: boolean;
@@ -35,11 +35,8 @@ export class ExplorerOpenedEditorService {
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
 
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
-
-  @Autowired(IContextKeyService)
-  private readonly contextKeyService: IContextKeyService;
+  @Autowired(AbstractContextMenuService)
+  private readonly contextMenuService: AbstractContextMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly ctxMenuRenderer: ICtxMenuRenderer;
@@ -333,18 +330,19 @@ export class ExplorerOpenedEditorService {
     this.updateSelected(node.uri!, group);
 
     const menus = this.contributedContextMenu;
-    const menuNodes = generateMergedCtxMenu({ menus });
+    const menuNodes = menus.getMergedMenuNodes();
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       // 合并结果
       menuNodes,
-      context: [ node.uri ],
+      args: [ node.uri ],
     });
   }
 
-  @memoize get contributedContextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.OpenEditorsContext, this.contextKeyService);
-    return contributedContextMenu;
+  @memoize get contributedContextMenu(): IContextMenu {
+    return this.contextMenuService.createMenu({
+      id: MenuId.OpenEditorsContext,
+    });
   }
 
   getStatusKey(node) {

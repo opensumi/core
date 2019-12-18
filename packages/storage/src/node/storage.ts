@@ -2,7 +2,7 @@ import { IStorageServer, IUpdateRequest, IStoragePathServer, StorageChange } fro
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileService } from '@ali/ide-file-service';
 import { Deferred, URI, Emitter, Event } from '@ali/ide-core-common';
-import * as path from 'path';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class WorkspaceStorageServer implements IStorageServer {
@@ -39,23 +39,20 @@ export class WorkspaceStorageServer implements IStorageServer {
     if (!this.databaseStorageDirPath) {
       await this.deferredStorageDirPath.promise;
     }
-    const hasSlash = storageName.indexOf('/') >= 0;
+    const hasSlash = storageName.indexOf(Path.separator) >= 0;
 
     const storagePath = await this.dataStoragePathServer.getLastWorkspaceStoragePath();
 
     if (hasSlash) {
-      const storagePaths = storageName.split('/');
-      storageName = storagePaths[storagePaths.length - 1];
-      const subDirPaths = storagePaths.slice(0, -1);
-      const subDir = path.join(storagePath || '', ...subDirPaths);
-      const uriString = new URI(storagePath).withScheme('file').toString();
+      const storagePaths = new Path(storageName);
+      storageName = storagePaths.name;
+      const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
       if (!await this.fileSystem.exists(uriString)) {
         await this.fileSystem.createFolder(uriString);
       }
-      return storagePath ? path.join(subDir, `${storageName}.json`) : undefined;
+      return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
     }
-
-    return storagePath ? path.join(storagePath, `${storageName}.json`) : undefined;
+    return storagePath ? new URI(storagePath).resolve(`${storageName}.json`).toString() : undefined;
   }
 
   async getItems(storageName: string) {
@@ -66,7 +63,7 @@ export class WorkspaceStorageServer implements IStorageServer {
     if (!storagePath) {
       console.error(`Storage [${this.storageName}] is invalid.`);
     } else {
-      const uriString = new URI(storagePath).withScheme('file').toString();
+      const uriString = new URI(storagePath).toString();
       if (await this.fileSystem.exists(uriString)) {
         const data = await this.fileSystem.resolveContent(uriString);
         try {
@@ -131,7 +128,7 @@ export class WorkspaceStorageServer implements IStorageServer {
     const storagePath = await this.getStoragePath(storageName);
 
     if (storagePath) {
-      const uriString = new URI(storagePath).withScheme('file').toString();
+      const uriString = new URI(storagePath).toString();
       let storageFile = await this.fileSystem.getFileStat(uriString);
       if (!storageFile) {
         storageFile = await this.fileSystem.createFile(uriString);
@@ -183,23 +180,21 @@ export class GlobalStorageServer implements IStorageServer {
     if (!this.databaseStorageDirPath) {
       await this.deferredStorageDirPath.promise;
     }
-    const hasSlash = storageName.indexOf('/') >= 0;
+    const hasSlash = storageName.indexOf(Path.separator) >= 0;
 
     const storagePath = await this.dataStoragePathServer.getLastGlobalStoragePath();
 
     if (hasSlash) {
-      const storagePaths = storageName.split('/');
-      storageName = storagePaths[storagePaths.length - 1];
-      const subDirPaths = storagePaths.slice(0, -1);
-      const subDir = path.join(storagePath || '', ...subDirPaths);
-      const uriString = new URI(storagePath).withScheme('file').toString();
+      const storagePaths = new Path(storageName);
+      storageName = storagePaths.name;
+      const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
       if (!await this.fileSystem.exists(uriString)) {
         await this.fileSystem.createFolder(uriString);
       }
-      return storagePath ? path.join(subDir, `${storageName}.json`) : undefined;
+      return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
     }
 
-    return storagePath ? path.join(storagePath, `${storageName}.json`) : undefined;
+    return storagePath ? new URI(storagePath).resolve(`${storageName}.json`).toString() : undefined;
   }
 
   async getItems(storageName: string) {
@@ -209,7 +204,7 @@ export class GlobalStorageServer implements IStorageServer {
     if (!storagePath) {
       console.error(`Storage [${this.storageName}] is invalid.`);
     } else {
-      const uriString = new URI(storagePath).withScheme('file').toString();
+      const uriString = new URI(storagePath).toString();
       if (await this.fileSystem.exists(uriString)) {
         const data = await this.fileSystem.resolveContent(uriString);
         try {
@@ -250,14 +245,12 @@ export class GlobalStorageServer implements IStorageServer {
     }
 
     this._cache[storageName] = raw;
-
     const storagePath = await this.getStoragePath(storageName);
 
     if (storagePath) {
-      const uriString = new URI(storagePath).withScheme('file').toString();
-      let storageFile = await this.fileSystem.getFileStat(uriString);
+      let storageFile = await this.fileSystem.getFileStat(storagePath);
       if (!storageFile) {
-        storageFile = await this.fileSystem.createFile(uriString);
+        storageFile = await this.fileSystem.createFile(storagePath, {content: ''});
       }
       await this.fileSystem.setContent(storageFile, JSON.stringify(raw));
       const change: StorageChange = {

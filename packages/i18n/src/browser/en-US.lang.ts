@@ -89,6 +89,7 @@ export const localizationBundle = {
     'editor.format.chooseFormatter': 'Choose the Formatter',
     'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.chooseEncoding': 'Reopen with encoding (Unsaved Changes will be lost)',
+    'editor.configuration.maxTokenizationLineLength': 'Lines above this length will not be tokenized for performance reasons',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
@@ -287,6 +288,7 @@ export const localizationBundle = {
     'preference.editor.formatOnSave': 'Enable format on manual save.',
     'preference.editor.formatOnSaveTimeout': 'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
     'preference.editor.formatOnSaveTimeoutError': 'Aborted format on save after ${0}ms',
+    'preference.editor.maxTokenizationLineLength': 'Max Tokenization Line Length',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',
@@ -323,7 +325,7 @@ export const localizationBundle = {
     'open.editors.copyRelativePath': 'Copy Relative Path',
     'open.editors.copyPath': 'Copy Path',
 
-    'terminal.name': 'Terminal',
+    'terminal.name': 'TERMINAL',
     'terminal.disconnected': 'Terminal already disconnected',
     'terminal.top': 'Stop terminal',
     'terminal.try.reconnect': 'Try to reconnect terminal',
@@ -331,6 +333,14 @@ export const localizationBundle = {
     'terminal.split': 'Split terminal',
     'terminal.maximum': 'Maximum terminal panel',
     'terminal.or': 'or',
+
+    'terminal.menu.search': 'Search',
+    'terminal.menu.split': 'Split',
+    'terminal.menu.selectAll': 'Select All',
+    'terminal.menu.copy': 'Copy',
+    'terminal.menu.paste': 'Paste',
+    'terminal.menu.clear': 'Clear',
+    'terminal.menu.stop': 'Stop',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
@@ -420,5 +430,7 @@ export const localizationBundle = {
     'markers.filter.placefolder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
     'markers.filter.content.empty': 'No results found with provided filter criteria.',
     'markers.filter.reset': 'Clear Filter.',
+
+    'app.quit': 'Quit',
   },
 };

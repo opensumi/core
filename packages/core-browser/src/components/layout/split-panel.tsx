@@ -28,6 +28,7 @@ interface SplitChildProps {
   minSize?: number;
   maxSize?: number;
   flex?: number;
+  flexGrow?: number;
   slot: string;
   noResize?: boolean;
   children?: Array<React.ReactElement<SplitChildProps>>;
@@ -38,11 +39,12 @@ export const SplitPanel: React.FC<{
   className?: string;
   direction?: Layout.direction;
   flex?: number;
+  flexGrow?: number;
   id: string;
   // setAbsoluteSize 时保证相邻节点总宽度不变
   resizeKeep?: boolean;
   dynamicTarget?: boolean;
-}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, dynamicTarget, ...restProps }) => {
+}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
   const elements: React.ReactNodeArray = [];
@@ -170,6 +172,7 @@ export const SplitPanel: React.FC<{
             // 相对尺寸带来的问题，必须限制最小最大尺寸
             [Layout.getMinSizeProperty(direction)]: element.props.minSize ? element.props.minSize + 'px' : '-1px',
             [Layout.getMaxSizeProperty(direction)]: maxLocks[index] ? element.props.minSize + 'px' : 'unset',
+            flexGrow: element.props.flexGrow !== undefined ? element.props.flexGrow : 'unset',
           }}>
           {element}
         </div>

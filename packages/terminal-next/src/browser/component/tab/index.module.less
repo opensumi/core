@@ -1,0 +1,42 @@
+.view_container {
+  display: flex;
+}
+
+.item_container {
+  padding: 0px 12px 0px 12px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+
+  :last-child {
+    transition: opacity 0.2s ease-in-out;
+    opacity: 0;
+    line-height: 28px;
+  }
+}
+
+.item_container:hover {
+  :last-child {
+    opacity: 1;
+  }
+}
+
+.item_info_name {
+  margin-right: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60px;
+  line-height: 28px;
+}
+
+.item_selected {
+  background: #242526;
+}
+
+.item_add {
+  padding: 1px;
+  font-size: 18px !important;
+  cursor: pointer;
+  user-select: none;
+}
