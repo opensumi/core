@@ -239,10 +239,10 @@ export const ExtensionTabbarTreeView = observer(({
         const nodeModel = copyModel.get(node.id);
         if (nodeModel && nodeModel.expanded && !nodeModel.updated) {
           promises.push(dataProvider.resolveChildren(node && node.id as string).then((childrens: TreeNode<any>[]) => {
+            // 简化节点模型，带parent会导致参数序列化循环引用问题
             childrens = childrens.map((child) => {
               return {
                 ...child,
-                parent: node,
               };
             });
             copyModel.set(node.id, {
