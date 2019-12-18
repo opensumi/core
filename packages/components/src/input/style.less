@@ -1,0 +1,52 @@
+.kt-input-warp {
+  width: 100%;
+  position: relative;
+}
+
+.kt-input,
+.kt-input-default {
+  height: 28px;
+  border-radius: 2px;
+  text-indent: 8px;
+  padding-left: 0px;
+  background-color: var(--input-background);
+  color: var(--input-foreground);
+  width: auto;
+  font-size: 12px;
+  outline: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--kt-input-border);
+  display: inline-block;
+
+  &::placeholder {
+    color: var(--input-placeholderForeground);
+  }
+
+  &:focus {
+    border-color: var(--focusBorder);
+    background-color: var(--inputOption-activeBackground);
+  }
+
+  &:disabled {
+    color: var(--kt-input-disableForeground);
+    background-color: var(--kt-input-disableBackground);
+  }
+}
+
+.kt-input-large {
+  height: 32px;
+  font-size: 14px;
+}
+
+.kt-input-small {
+  height: 22px;
+  font-size: 12px;
+}
+
+.kt-input-controls {
+  position: absolute;
+  display: flex;
+  top: 4px;
+  right: 2px;
+}

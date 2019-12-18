@@ -8,7 +8,7 @@ import { getIcon } from '@ali/ide-core-browser';
 import clx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Overlay } from '@ali/ide-core-browser/lib/components/overlay';
-import { Button } from '@ali/ide-core-browser/lib/components';
+import { Button } from '@ali/ide-components';
 
 export const Dialog = observer(() => {
   const dialogService = useInjectable<IDialogService>(IDialogService);

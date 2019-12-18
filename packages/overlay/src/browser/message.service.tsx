@@ -3,7 +3,7 @@ import { Injectable } from '@ali/common-di';
 import { IMessageService, AbstractMessageService } from '../common';
 import notification, { ArgsProps } from 'antd/lib/notification';
 import 'antd/lib/notification/style/index.css';
-import { Button } from '@ali/ide-core-browser/lib/components';
+import { Button } from '@ali/ide-components';
 import { Deferred, MessageType, uuid } from '@ali/ide-core-common';
 import clx from 'classnames';
 

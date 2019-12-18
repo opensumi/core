@@ -13,7 +13,7 @@ import debounce = require('lodash.debounce');
 import { IWorkspaceService } from '@ali/ide-workspace';
 import * as cls from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
-import { Input, CheckBox } from '@ali/ide-core-browser/lib/components';
+import { CheckBox, Input, Button } from '@ali/ide-components';
 import { Select } from '@ali/ide-core-browser/lib/components/select';
 import { toPreferenceReadableName, toNormalCase } from '../common';
 
@@ -245,16 +245,16 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
 
   const renderBooleanValue = () => {
 
-    const check = <div><CheckBox checked={value} onChange={(event) => {
-      changeValue(key, event.target.checked);
-    }}></CheckBox></div>;
     const description = prop && prop.description && replaceLocalizePlaceholder(prop.description);
 
     return (
       <div className={styles.preference_line} key={key}>
         <div className={classnames(styles.check, styles.key) }>
-              {check} <div>{localizedName}</div> {status}
-            </div>
+        <CheckBox label={localizedName} checked={value} onChange={(event) => {
+          changeValue(key, event.target.checked);
+        }}/>
+          {status}
+        </div>
         {
           description ?
           <div>
@@ -395,7 +395,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
               className={styles.text_control}
               ref={(el) => { editEl = el; }}
             />
-            <Input className={styles.add_button} onClick={addItem} type='button' value={localize('preference.array.additem', '添加')} />
+            <Button className={styles.add_button} onClick={addItem}>{localize('preference.array.additem', '添加')}</Button>
           </div>
         </div>
       </div>
