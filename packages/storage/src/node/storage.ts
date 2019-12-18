@@ -46,7 +46,7 @@ export class WorkspaceStorageServer implements IStorageServer {
     if (hasSlash) {
       const storagePaths = new Path(storageName);
       storageName = storagePaths.name;
-      const uriString = new URI(storagePath).resolve(storagePaths.dir).withScheme('file').toString();
+      const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
       if (!await this.fileSystem.exists(uriString)) {
         await this.fileSystem.createFolder(uriString);
       }
@@ -63,7 +63,7 @@ export class WorkspaceStorageServer implements IStorageServer {
     if (!storagePath) {
       console.error(`Storage [${this.storageName}] is invalid.`);
     } else {
-      const uriString = new URI(storagePath).withScheme('file').toString();
+      const uriString = new URI(storagePath).toString();
       if (await this.fileSystem.exists(uriString)) {
         const data = await this.fileSystem.resolveContent(uriString);
         try {
@@ -128,7 +128,7 @@ export class WorkspaceStorageServer implements IStorageServer {
     const storagePath = await this.getStoragePath(storageName);
 
     if (storagePath) {
-      const uriString = new URI(storagePath).withScheme('file').toString();
+      const uriString = new URI(storagePath).toString();
       let storageFile = await this.fileSystem.getFileStat(uriString);
       if (!storageFile) {
         storageFile = await this.fileSystem.createFile(uriString);
@@ -187,7 +187,7 @@ export class GlobalStorageServer implements IStorageServer {
     if (hasSlash) {
       const storagePaths = new Path(storageName);
       storageName = storagePaths.name;
-      const uriString = new URI(storagePath).resolve(storagePaths.dir).withScheme('file').toString();
+      const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
       if (!await this.fileSystem.exists(uriString)) {
         await this.fileSystem.createFolder(uriString);
       }
@@ -204,7 +204,7 @@ export class GlobalStorageServer implements IStorageServer {
     if (!storagePath) {
       console.error(`Storage [${this.storageName}] is invalid.`);
     } else {
-      const uriString = new URI(storagePath).withScheme('file').toString();
+      const uriString = new URI(storagePath).toString();
       if (await this.fileSystem.exists(uriString)) {
         const data = await this.fileSystem.resolveContent(uriString);
         try {
