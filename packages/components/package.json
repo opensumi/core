@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@ali/ide-core-browser": "1.6.6"
+    "@ali/ide-core-browser": "1.6.6",
+    "@ali/ide-core-common": "1.6.6"
   }
 }
