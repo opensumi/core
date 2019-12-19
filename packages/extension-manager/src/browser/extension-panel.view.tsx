@@ -97,8 +97,8 @@ export default observer(() => {
             extensionManagerService.tabActiveKey = activeKey;
           }
         }}
-        tabs={[localize('marketplace.panel.tab.marketplace'), localize('marketplace.tab.installed')]}>
-      </Tabs>
+        tabs={[localize('marketplace.panel.tab.marketplace'), localize('marketplace.tab.installed')]}
+      />
       {
         extensionManagerService.tabActiveKey === TabActiveKey.MARKETPLACE
           && (
