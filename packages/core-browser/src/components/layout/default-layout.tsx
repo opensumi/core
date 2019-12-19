@@ -7,12 +7,12 @@ export function DefaultLayout() {
   return <BoxPanel direction='top-to-bottom'>
     <SlotRenderer slot='top' />
     <SplitPanel id='main-horizontal' flex={1}>
-      <SlotRenderer flex={1} slot='left' minSize={50} />
+      <SlotRenderer flex={1} slot='left' minResize={200} minSize={50} />
       <SplitPanel id='main-vertical' flex={2} direction='top-to-bottom'>
         <SlotRenderer flex={2} slot='main' />
-        <SlotRenderer flex={1} slot='bottom' />
+        <SlotRenderer flex={1} minResize={160} slot='bottom' />
       </SplitPanel>
-      <SlotRenderer flex={1} slot='right' minSize={50} />
+      <SlotRenderer flex={1} slot='right' minResize={200} minSize={50} />
     </SplitPanel>
     <SlotRenderer slot='statusBar' />
   </BoxPanel>;

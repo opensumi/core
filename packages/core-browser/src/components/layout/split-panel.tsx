@@ -27,6 +27,7 @@ interface SplitChildProps {
   id: string;
   minSize?: number;
   maxSize?: number;
+  minResize?: number;
   flex?: number;
   slot: string;
   noResize?: boolean;
@@ -160,6 +161,7 @@ export const SplitPanel: React.FC<{
           lockSize: lockResizeHandle(index),
         }}>
         <div
+          data-min-resize={element.props.minResize}
           ref={(ele) => {
             if (ele && splitPanelService.panels.indexOf(ele) === -1) {
               splitPanelService.panels.push(ele);

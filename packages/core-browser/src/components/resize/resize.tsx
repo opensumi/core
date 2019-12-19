@@ -58,12 +58,20 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   const requestFrame = React.useRef<number>();
 
   const setSize = (prev: number, next: number) => {
+    const parentWidth = ref.current!.parentElement!.offsetWidth;
     const prevEle = props.findPrevElement ? props.findPrevElement() : prevElement.current!;
     const nextEle = props.findNextElement ? props.findNextElement() : nextElement.current!;
     if (
       (prevEle && prevEle.classList.contains(RESIZE_LOCK)) || (nextEle && nextEle.classList.contains(RESIZE_LOCK))
     ) {
       return;
+    }
+    const prevMinResize = prevEle!.dataset.minResize || 0;
+    const nextMinResize = nextEle!.dataset.minResize || 0;
+    if (prevMinResize || nextMinResize) {
+      if (prev * parentWidth <= prevMinResize || next * parentWidth <= nextMinResize) {
+        return;
+      }
     }
     if (nextEle) {
       nextEle.style.width = next * 100 + '%';
@@ -408,6 +416,13 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     }
     const parentHeight = ref.current!.parentElement!.offsetHeight;
     requestFrame.current = window.requestAnimationFrame(() => {
+      const prevMinResize = cachedPrevElement.current!.dataset.minResize || 0;
+      const nextMinResize = cachedNextElement.current!.dataset.minResize || 0;
+      if (prevMinResize || nextMinResize) {
+        if (prevHeight <= prevMinResize || nextHeight <= nextMinResize) {
+          return;
+        }
+      }
       setDomSize(prevHeight / parentHeight, nextHeight / parentHeight, cachedPrevElement.current!, cachedNextElement.current!);
     });
   });
