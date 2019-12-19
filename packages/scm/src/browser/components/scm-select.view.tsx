@@ -89,6 +89,7 @@ export const SCMRepoSelect: React.FC<{
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
+      args: [ selectedRepo.provider.toJSON() ],
     });
   }, []);
 
