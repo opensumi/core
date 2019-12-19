@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, localize, CommandService } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, localize, CommandService, isElectronRenderer } from '@ali/ide-core-browser';
 
 import ICommandEvent = monaco.commands.ICommandEvent;
 import ICommandService = monaco.commands.ICommandService;
@@ -182,6 +182,10 @@ export class MonacoCommandRegistry {
    * @param args
    */
   protected isEnabled(monacoHandler: MonacoEditorCommandHandler, ...args: any[]): boolean {
+    if (isElectronRenderer()) {
+      // 针对 Selection 等菜单在 electron 上的展示
+      return true;
+    }
     const editor = this.getActiveCodeEditor();
     return !!editor && (!monacoHandler.isEnabled || monacoHandler.isEnabled(editor, ...args));
   }
@@ -288,11 +292,10 @@ export class MonacoActionRegistry {
     return {
       execute: (editor) => this.runAction(id, editor),
 
-      // 针对 Selection 等菜单在 electron 上的展示
-      // isEnabled: (editor) => {
-        // const action = editor.getAction(id);
-        // return !!action && action.isSupported();
-      // },
+      isEnabled: (editor) => {
+        const action = editor.getAction(id);
+        return !!action && action.isSupported();
+      },
     };
   }
 
