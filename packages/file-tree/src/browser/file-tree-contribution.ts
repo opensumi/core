@@ -250,7 +250,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
       execute: async (uri) => {
         // 默认获取焦点元素
-        const selectedFile = this.filetreeService.selectedUris;
+        const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -270,7 +270,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (uri) => {
-        const selectedFile = this.filetreeService.selectedUris;
+        const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
