@@ -29,7 +29,7 @@ export class TerminalFilePathAddon implements ITerminalAddon {
   public dispose(): void {
     if (this._linuxLinkMatcherId !== undefined && this._windowsLinkMatchId && this._terminal !== undefined) {
       this._terminal.deregisterLinkMatcher(this._linuxLinkMatcherId);
-      this._terminal.deregisterCharacterJoiner(this._windowsLinkMatchId);
+      this._terminal.deregisterLinkMatcher(this._windowsLinkMatchId);
     }
   }
 }
