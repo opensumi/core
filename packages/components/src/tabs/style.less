@@ -1,0 +1,27 @@
+.kt-tabs {
+  display: flex;
+  align-items: center;
+
+  .kt-tab,
+  .kt-custom-tab {
+    border-bottom: 2px solid transparent;
+    color: var(--sideBarTitle-foreground);
+    cursor: pointer;
+
+    &:hover {
+      font-weight: bold;
+    }
+
+    &.kt-tab-selected {
+      font-weight: bold;
+      border-bottom-color: var(--kt-sideBarTitle-activeBorder);
+    }
+  }
+
+  .kt-tab + .kt-tab,
+  .kt-custom-tab + .kt-custom-tab,
+  .kt-tab + .kt-custom-tab,
+  .kt-custom-tab + .kt-tab {
+    margin-left: 24px;
+  }
+}

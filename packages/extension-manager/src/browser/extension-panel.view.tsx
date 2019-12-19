@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import Tabs from 'antd/lib/tabs';
-import 'antd/lib/tabs/style/index.less';
+// import Tabs from 'antd/lib/tabs';
+// import 'antd/lib/tabs/style/index.less';
 import { useInjectable, localize, CommandRegistry, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
 import { enableExtensionsContainerId, hotExtensionsContainerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromMarketplaceTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, IExtensionManagerService, hotExtensionsFromMarketplaceTarbarHandlerId, TabActiveKey, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionHotAccordion, ExtensionEnableAccordion, ExtensionDisableAccordion, ExtensionSearchInstalledAccordion, ExtensionSearchMarketplaceAccordion } from './extension-panel-accordion.view';
@@ -9,8 +9,12 @@ import { ExtensionSearch } from './components/extension-search';
 import * as styles from './extension-panel.module.less';
 import { AccordionContainer } from '@ali/ide-main-layout/lib/browser/accordion/accordion.view';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import { Tabs } from '@ali/ide-components';
 
-const { TabPane } = Tabs;
+const tabMap = [
+  TabActiveKey.MARKETPLACE,
+  TabActiveKey.INSTALLED,
+];
 
 export default observer(() => {
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
@@ -79,61 +83,79 @@ export default observer(() => {
     }
   }
 
+  const tabIndex = tabMap.indexOf(extensionManagerService.tabActiveKey);
+  const selectedTabIndex = tabIndex >= 0 ? tabIndex : 0;
+
   return (
     <div className={styles.panel}>
       <Tabs
-        activeKey={extensionManagerService.tabActiveKey}
-        onChange={(activeKey: TabActiveKey) => extensionManagerService.tabActiveKey = activeKey}
-        tabBarStyle={{margin: 0}}
-        >
-        <TabPane tab={localize('marketplace.panel.tab.marketplace')} key={TabActiveKey.MARKETPLACE}>
-          <ExtensionSearch
-            query={extensionManagerService.marketplaceQuery}
-            onChange={handleChangeFromMarket}
-            placeholder={localize('marketplace.panel.tab.placeholder.search')}
-            />
-          <AccordionContainer
-            views={[{
-              component: ExtensionHotAccordion,
-              id: hotExtensionsFromMarketplaceTarbarHandlerId,
-              name: localize('marketplace.panel.hot'),
-              forceHidden: false,
-            }, {
-              component: ExtensionSearchMarketplaceAccordion,
-              id: searchExtensionsFromMarketplaceTarbarHandlerId,
-              name: localize('marketplace.panel.search'),
-              forceHidden: true,
-            }]}
-            containerId={hotExtensionsContainerId}
-          />
-        </TabPane>
-        <TabPane tab={localize('marketplace.tab.installed')} key={TabActiveKey.INSTALLED}>
-          <ExtensionSearch
-            query={extensionManagerService.installedQuery}
-            onChange={handleChangeFromInstalled}
-            placeholder={localize('marketplace.panel.tab.placeholder.installed')}
-            />
-          <AccordionContainer
-            views={[{
-              component: ExtensionEnableAccordion,
-              id: enableExtensionsTarbarHandlerId,
-              name: localize('marketplace.panel.enabled'),
-              forceHidden: false,
-            }, {
-              component: ExtensionDisableAccordion,
-              id: disableExtensionsTarbarHandlerId,
-              name: localize('marketplace.panel.disabled'),
-              forceHidden: false,
-            }, {
-              component: ExtensionSearchInstalledAccordion,
-              id: searchExtensionsFromInstalledTarbarHandlerId,
-              name: localize('marketplace.panel.search'),
-              forceHidden: true,
-            }]}
-            containerId={enableExtensionsContainerId}
-          />
-        </TabPane>
+        className={styles.tabs}
+        value={selectedTabIndex}
+        onChange={(index: number) => {
+          const activeKey = tabMap[index];
+          if (activeKey) {
+            extensionManagerService.tabActiveKey = activeKey;
+          }
+        }}
+        tabs={[localize('marketplace.panel.tab.marketplace'), localize('marketplace.tab.installed')]}>
       </Tabs>
+      {
+        extensionManagerService.tabActiveKey === TabActiveKey.MARKETPLACE
+          && (
+            <>
+              <ExtensionSearch
+                query={extensionManagerService.marketplaceQuery}
+                onChange={handleChangeFromMarket}
+                placeholder={localize('marketplace.panel.tab.placeholder.search')}
+                />
+              <AccordionContainer
+                views={[{
+                  component: ExtensionHotAccordion,
+                  id: hotExtensionsFromMarketplaceTarbarHandlerId,
+                  name: localize('marketplace.panel.hot'),
+                  forceHidden: false,
+                }, {
+                  component: ExtensionSearchMarketplaceAccordion,
+                  id: searchExtensionsFromMarketplaceTarbarHandlerId,
+                  name: localize('marketplace.panel.search'),
+                  forceHidden: true,
+                }]}
+                containerId={hotExtensionsContainerId}
+              />
+            </>
+          )
+      }
+      {
+        extensionManagerService.tabActiveKey === TabActiveKey.INSTALLED
+          && (
+            <>
+              <ExtensionSearch
+                query={extensionManagerService.installedQuery}
+                onChange={handleChangeFromInstalled}
+                placeholder={localize('marketplace.panel.tab.placeholder.installed')}
+                />
+              <AccordionContainer
+                views={[{
+                  component: ExtensionEnableAccordion,
+                  id: enableExtensionsTarbarHandlerId,
+                  name: localize('marketplace.panel.enabled'),
+                  forceHidden: false,
+                }, {
+                  component: ExtensionDisableAccordion,
+                  id: disableExtensionsTarbarHandlerId,
+                  name: localize('marketplace.panel.disabled'),
+                  forceHidden: false,
+                }, {
+                  component: ExtensionSearchInstalledAccordion,
+                  id: searchExtensionsFromInstalledTarbarHandlerId,
+                  name: localize('marketplace.panel.search'),
+                  forceHidden: true,
+                }]}
+                containerId={enableExtensionsContainerId}
+              />
+            </>
+          )
+      }
     </div>
   );
 });
