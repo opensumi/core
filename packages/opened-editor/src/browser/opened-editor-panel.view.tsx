@@ -28,23 +28,30 @@ export const ExplorerOpenEditorPanel = observer(({
     width: '100%',
     height: containerHeight,
   };
+
+  const renderContent = () => {
+    if (nodes.length === 0) {
+      return <span className={styles.openeditor_empty_text}>{localize('open.editors.empty')}</span>;
+    } else {
+      return <RecycleTree
+        nodes={ nodes }
+        scrollContainerStyle={ scrollContainerStyle }
+        onSelect={ onSelect }
+        onContextMenu={ onContextMenu }
+        containerHeight={ containerHeight }
+        itemLineHeight={ OPEN_EDIROT_NODE_HEIGHT }
+        leftPadding = { 15 }
+        foldable = { false }
+        actions = { actions }
+        commandActuator = { commandActuator }
+        fileDecorationProvider = { overrideFileDecorationService }
+        themeProvider = { themeService as ThemeProvider }
+        notifyFileDecorationsChange = { decorationChangeEvent }
+        notifyThemeChange = { themeChangeEvent }
+      ></RecycleTree>;
+    }
+  };
   return <div className={styles.openeditor_container} >
-    { nodes.length === 0 && <span className={styles.openeditor_empty_text}>{localize('open.editors.empty')}</span> }
-    <RecycleTree
-      nodes={ nodes }
-      scrollContainerStyle={ scrollContainerStyle }
-      onSelect={ onSelect }
-      onContextMenu={ onContextMenu }
-      containerHeight={ containerHeight }
-      itemLineHeight={ OPEN_EDIROT_NODE_HEIGHT }
-      leftPadding = { 15 }
-      foldable = { false }
-      actions = { actions }
-      commandActuator = { commandActuator }
-      fileDecorationProvider = { overrideFileDecorationService }
-      themeProvider = { themeService as ThemeProvider }
-      notifyFileDecorationsChange = { decorationChangeEvent }
-      notifyThemeChange = { themeChangeEvent }
-    ></RecycleTree>
+    { renderContent() }
   </div>;
 });
