@@ -1,5 +1,5 @@
 import { Command } from '@ali/ide-core-common';
-import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser';
+import { getIcon, ROTATE_TYPE, localize } from '@ali/ide-core-browser';
 
 export const terminalAdd: Command = {
   id: 'terminal.add',
@@ -23,16 +23,23 @@ export const terminalExpand: Command = {
   category: 'terminal',
 };
 
+export const terminalIndepend: Command = {
+  id: 'terminal.independ',
+  label: localize('terminal.independ'),
+  iconClass: getIcon('undock'),
+  category: 'terminal',
+};
+
 export const terminalClear: Command = {
   id: 'terminal.clear',
-  label: 'clear terminal',
+  label: localize('terminal.clear'),
   iconClass: getIcon('clear'),
   category: 'terminal',
 };
 
 export const terminalSplit: Command = {
   id: 'terminal.split',
-  label: 'split terminal',
+  label: localize('terminal.split'),
   iconClass: getIcon('embed'),
   category: 'terminal',
 };

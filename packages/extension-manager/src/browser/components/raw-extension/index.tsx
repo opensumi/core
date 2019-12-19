@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { localize, IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
-import { Button } from '@ali/ide-core-browser/lib/components';
+import { Button } from '@ali/ide-components';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import * as clx from 'classnames';
 import { observer } from 'mobx-react-lite';
@@ -56,7 +56,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
     }
     const result = generateCtxMenu({
       menus: extensionManagerService.contextMenu,
-      options: { args: [extension] },
+      args: [extension],
     });
 
     ctxMenuRenderer.show({
@@ -78,21 +78,21 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
             </div>
               <span style={{display: 'flex', flexShrink: 0}} onClick={(e) => e.stopPropagation()}>
-                {extension.reloadRequire && <Button ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
+                {extension.reloadRequire && <Button className={styles.button} type='secondary' ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
                 {extension.installed ? (
                   <InlineActionBar
                   menus={extensionManagerService.contextMenu}
                   context={[extension]} />
                 ) : null}
               </span>
-            {!extension.installed ? <Button loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button> : null}
+            {!extension.installed ? <Button className={styles.button} type='secondary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button> : null}
           </div>
           <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i>{extension.downloadCount}</span>) : null}
             <span>V{extension.version}</span>
             <span>{extension.publisher}</span>
           </div>
-          <div className={styles.description}>{extension.description}</div>
+          <div className={clx(styles.description, 'kt-extension-raw-description')}>{extension.description}</div>
         </div>
       </div>
     </div>

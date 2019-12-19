@@ -45,6 +45,7 @@ export const AccordionContainer: React.FC<{
         id={view.id}
         index={index}
         headerSize={headerSize}
+        minSize={headerSize}
         initialProps={view.initialProps}
         titleMenu={titleMenu}
         titleMenuContext={view.titleMenuContext}

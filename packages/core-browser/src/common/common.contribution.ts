@@ -75,29 +75,33 @@ export class ClientCommonContribution implements CommandContribution, Preference
     menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
 
     /* ---- test for submenu ---- */
-    // const testSubmenuId = 'greatmenu';
-    // menus.registerMenuItem(MenuId.MenubarFileMenu, {
-    //   label: 'kaitian submenu',
-    //   submenu: testSubmenuId,
-    // });
+    // if (process.env.NODE_ENV !== 'production') {
+    //   const testSubmenuId = 'greatmenu';
+    //   menus.registerMenuItem(MenuId.SCMSourceControl, {
+    //     label: 'kaitian submenu',
+    //     submenu: testSubmenuId,
+    //   });
 
-    // menus.registerMenuItems(testSubmenuId, [{
-    //   command: FILE_COMMANDS.NEW_FILE.id,
-    //   group: '1_new',
-    // }, {
-    //   command: FILE_COMMANDS.NEW_FOLDER.id,
-    //   group: '1_new',
-    // }]);
+    //   menus.registerMenuItems(testSubmenuId, [{
+    //     command: FILE_COMMANDS.NEW_FILE.id,
+    //     group: '1_new',
+    //   }]);
 
-    // menus.registerMenuItem(testSubmenuId, {
-    //   label: 'kaitian sub_submenu',
-    //   submenu: 'sub_submenu',
-    // });
+    //   menus.registerMenuItem(testSubmenuId, {
+    //     label: 'kaitian sub_submenu',
+    //     submenu: 'sub_submenu',
+    //   });
 
-    // menus.registerMenuItem('sub_submenu', {
-    //   command: FILE_COMMANDS.NEW_FILE.id,
-    //   group: '1_new',
-    // });
+    //   menus.registerMenuItems(testSubmenuId, [{
+    //     command: FILE_COMMANDS.NEW_FOLDER.id,
+    //     group: '1_new',
+    //   }]);
+
+    //   menus.registerMenuItem('sub_submenu', {
+    //     command: COMMON_COMMANDS.ABOUT_COMMAND.id,
+    //     group: '1_new',
+    //   });
+    // }
 
     /* ---- end for submenu ---- */
 
@@ -169,6 +173,14 @@ export class ClientCommonContribution implements CommandContribution, Preference
         },
         nativeRole: 'selectAll',
         group: '2_clipboard',
+      }]);
+      menus.registerMenuItems(MenuId.MenubarFileMenu, [{
+        command: {
+          id: 'electron.quit',
+          label: localize('app.quit'),
+        },
+        nativeRole: 'quit',
+        group: '4_quit',
       }]);
     } else {
       menus.registerMenuItems(MenuId.MenubarEditMenu, [{

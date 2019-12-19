@@ -4,29 +4,28 @@
   height: 100%;
 }
 
-// 临时解决热门插件高度问题，等 Layout 重构后完全解决
-:global(#extensions\.marketplace\.hot) {
-  height: 100% !important;
-}
-
 .panel :global(.ant-tabs) {
   color: var(--foreground);
 }
 
 .panel :global(.ant-tabs-bar) {
-  border-color: transparent;
+  border-color: var(--kt-sideBarTitle-border);
 }
 
-.panel :global(.ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active) {
-  color: var(--button-background);
-
+.panel :global(.ant-tabs-nav .ant-tabs-tab) {
+  border-color: transparent;
   &:hover {
-    color: var(--button-hoverBackground);
+    color: var(--foreground);
+    font-weight: 500;
   }
 }
 
+.panel :global(.ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active) {
+  color: var(--sideBarTitle-foreground);
+}
+
 .panel :global(.ant-tabs-ink-bar) {
-  background-color: var(--button-background);
+  background-color: var(--kt-sideBarTitle-activeBorder);
 }
 
 .panel :global(.ant-tabs-nav .ant-tabs-tab) {

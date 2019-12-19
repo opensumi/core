@@ -22,7 +22,7 @@ export class WindowServiceImpl implements IWindowService {
     if (isElectronRenderer()) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
       if (options.newWindow) {
-        electronMainLifecycle.openWorkspace(workspace.toString(), { windowId: electronEnv.currentWindowId });
+        electronMainLifecycle.openWorkspace(workspace.toString());
       } else {
         electronMainLifecycle.openWorkspace(workspace.toString(), { windowId: electronEnv.currentWindowId, replace: true });
       }

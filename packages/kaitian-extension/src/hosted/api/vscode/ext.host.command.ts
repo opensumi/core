@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, Position, Range, Location, CodeLens } from '../../../common/vscode/ext-types';
+import { Disposable, Position, Range, Location, CodeLens, SymbolInformation } from '../../../common/vscode/ext-types';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
 import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription } from '../../../common/vscode';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
@@ -222,7 +222,32 @@ export class ExtHostCommands implements IExtHostCommands {
     };
     return this.proxy.$executeDocumentSymbolProvider(args)
       .then((items) => {
-        return items.map((item) => extHostTypeConverter.toSymbolInformation(item));
+        if (!Array.isArray(items) || items === undefined) {
+          return undefined;
+        }
+
+        class MergedInfo extends SymbolInformation implements vscode.DocumentSymbol {
+          static to(symbol: modes.DocumentSymbol): MergedInfo {
+            const res = new MergedInfo(
+              symbol.name,
+              extHostTypeConverter.SymbolKind.toSymbolKind(symbol.kind),
+              symbol.containerName || '',
+              new Location(resource, extHostTypeConverter.toRange(symbol.range)),
+            );
+            res.detail = symbol.detail;
+            res.range = res.location.range;
+            res.selectionRange = extHostTypeConverter.toRange(symbol.selectionRange);
+            res.children = symbol.children ? symbol.children.map(MergedInfo.to) : [];
+            return res;
+          }
+
+          detail!: string;
+          range!: vscode.Range;
+          selectionRange!: vscode.Range;
+          children!: vscode.DocumentSymbol[];
+          containerName!: string;
+        }
+        return items.map(MergedInfo.to);
       });
   }
 

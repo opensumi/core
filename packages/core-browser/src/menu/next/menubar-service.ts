@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 
-import { AbstractMenuService, IMenu, SubmenuItemNode } from './menu-service';
+import { AbstractMenuService, IMenu, SubmenuItemNode } from './menu.interface';
 import { IExtendMenubarItem, IMenuRegistry, MenuNode } from './base';
 import { generateMergedCtxMenu } from './menu-util';
 

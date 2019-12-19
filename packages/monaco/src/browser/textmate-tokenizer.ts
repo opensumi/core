@@ -48,13 +48,6 @@ export interface TokenizerOption {
 
 }
 
-/**
- * The default TextMate tokenizer option.
- */
-export const TokenizerOptionDEFAULT: TokenizerOption = {
-    lineLimit: 400,
-};
-
 export function createTextmateTokenizer(
     grammar: IGrammar, options: TokenizerOption): monaco.languages.EncodedTokensProvider {
     if (options.lineLimit !== undefined && (options.lineLimit <= 0 || !Number.isInteger(options.lineLimit))) {

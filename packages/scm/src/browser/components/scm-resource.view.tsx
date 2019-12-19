@@ -131,13 +131,13 @@ export const SCMResouceList: React.FC<{
       ctxMenuRenderer.show({
         anchor: { x, y },
         menuNodes: scmMenuService.getResourceContextActions(item),
-        context: [ file.resourceState ],
+        args: [ file.resourceState ],
       });
     } else {
       ctxMenuRenderer.show({
         anchor: { x, y },
         menuNodes: scmMenuService.getResourceGroupContextActions(item),
-        context: [ repository.provider.toJSON() ],
+        args: [ repository.provider.toJSON() ],
       });
     }
   }, [ repository ]);

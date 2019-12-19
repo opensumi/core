@@ -1,4 +1,4 @@
-import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider } from './types';
+import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider, IParsedArgs } from './types';
 import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
@@ -7,25 +7,33 @@ import { createContributionProvider, ContributionProvider, URI, uuid } from '@al
 import { serviceProviders } from './services';
 import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
+import { argv } from 'yargs';
 
 export interface IWindowOpenOptions {
-  windowId: string;
+  windowId: number;
+  // @deprecated
   replace?: boolean;
 }
 
 export class ElectronMainApp {
 
-  private codeWindows: Map<string, CodeWindow> = new Map();
+  private codeWindows: Map<number, CodeWindow> = new Map();
 
   private injector = new Injector();
 
   private modules: ElectronMainModule[] = [];
 
+  private parsedArgs: IParsedArgs = {
+    extensionDir: argv.extensionDir as string | undefined,
+    extensionCandidate: Array.isArray(argv.extensionCandidate) ? argv.extensionCandidate : [argv.extensionCandidate],
+  };
+
   constructor(private config: ElectronAppConfig) {
-
-    config.extensionDir = config.extensionDir || '';
-    config.extensionCandidate = config.extensionCandidate || [];
-
+    config.extensionDir =  this.parsedArgs.extensionDir ? this.parsedArgs.extensionDir : config.extensionDir || '';
+    config.extensionCandidate = [
+      ...config.extensionCandidate,
+      ...this.parsedArgs.extensionCandidate.map((ext) => ({ path: ext, isBuiltin: true })),
+    ];
     this.injector.addProviders({
       token: ElectronAppConfig,
       useValue: config,
@@ -64,24 +72,26 @@ export class ElectronMainApp {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
-    if (openOptions && openOptions.replace) {
-      let replaceWindow = this.codeWindows.get(openOptions.windowId);
-      if (!replaceWindow && this.codeWindows.size > 0) {
-        replaceWindow = Array.from(this.codeWindows.values())[0];
-      }
-      if (replaceWindow) {
-        replaceWindow.close();
+    if (openOptions && openOptions.windowId) {
+      const lastWindow = this.getCodeWindowByElectronBrowserWindowId(openOptions.windowId);
+      if (lastWindow) {
+        lastWindow.setWorkspace(workspace!);
+        lastWindow.metadata = metadata;
+        lastWindow.reload();
+        return lastWindow;
       }
     }
     const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
-    const windowId = openOptions ? openOptions.windowId : uuid();
-    this.codeWindows.set(windowId, window);
     window.start();
     if (options.show !== false) {
       window.getBrowserWindow().show();
     }
-    window.onDispose(() => {
-      this.codeWindows.delete(windowId);
+    const windowId = window.getBrowserWindow().id;
+    this.codeWindows.set(windowId, window);
+    window.addDispose({
+      dispose: () => {
+        this.codeWindows.delete(windowId);
+      },
     });
 
     return window;

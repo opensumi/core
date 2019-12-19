@@ -1,4 +1,4 @@
-import { URI, IDisposable, DisposableCollection, isOSX } from '@ali/ide-core-common';
+import { URI, DisposableCollection, isOSX, memoize } from '@ali/ide-core-common';
 import { Injector, Injectable, Autowired } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
@@ -11,6 +11,9 @@ import debounce = require('lodash.debounce');
 import * as options from './debug-styles';
 import { DebugBreakpoint, DebugStackFrame } from '../model';
 import { IDebugModel } from '../../common';
+import { ICtxMenuRenderer, generateMergedCtxMenu, IMenu, MenuId, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { IContextKeyService } from '@ali/ide-core-browser';
+import { DebugBreakpointWidgetContext, DebugBreakpointZoneWidget } from './debug-breakpoint-zone-widget';
 
 @Injectable()
 export class DebugModel implements IDebugModel {
@@ -30,6 +33,15 @@ export class DebugModel implements IDebugModel {
 
   @Autowired(BreakpointManager)
   private breakpointManager: BreakpointManager;
+
+  @Autowired(AbstractMenuService)
+  private readonly menuService: AbstractMenuService;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly ctxMenuRenderer: ICtxMenuRenderer;
 
   protected frameDecorations: string[] = [];
   protected topFrameRange: monaco.Range | undefined;
@@ -66,7 +78,7 @@ export class DebugModel implements IDebugModel {
     return DebugModel.createContainer(injector, editor).get(IDebugModel);
   }
 
-  protected uri: URI;
+  public uri: URI;
 
   constructor() {
     this.init();
@@ -296,8 +308,8 @@ export class DebugModel implements IDebugModel {
   protected createCurrentBreakpointDecorations(): monaco.editor.IModelDeltaDecoration[] {
     const breakpoints = this.debugSessionManager.getBreakpoints(this.uri);
     return breakpoints
-    .filter((breakpoint) => breakpoint instanceof DebugBreakpoint)
-    .map((breakpoint) => this.createCurrentBreakpointDecoration(breakpoint));
+      .filter((breakpoint) => breakpoint instanceof DebugBreakpoint)
+      .map((breakpoint) => this.createCurrentBreakpointDecoration(breakpoint));
   }
 
   /**
@@ -370,8 +382,8 @@ export class DebugModel implements IDebugModel {
    * 断点开关函数
    * @memberof DebugModel
    */
-  toggleBreakpoint(): void {
-    this.doToggleBreakpoint();
+  toggleBreakpoint = (position: monaco.Position = this.position) => {
+    this.doToggleBreakpoint(position);
   }
 
   protected doToggleBreakpoint(position: monaco.Position = this.position) {
@@ -386,14 +398,59 @@ export class DebugModel implements IDebugModel {
     }
   }
 
+  @memoize get contributedContextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(MenuId.DebugBreakpointsContext, this.contextKeyService);
+    return contributedContextMenu;
+  }
+
+  openBreakpointView = (position: monaco.Position, context?: DebugBreakpointWidgetContext, defaultContext?: DebugBreakpointZoneWidget.Context) => {
+    this.breakpointWidget.show(position, context, defaultContext);
+  }
+
+  closeBreakpointView = () => {
+    this.breakpointWidget.hide();
+  }
+
+  acceptBreakpoint = () => {
+    const { position, values } = this.breakpointWidget;
+    if (position && values) {
+      const breakpoint = this.getBreakpoint(position);
+      if (breakpoint) {
+        breakpoint.updateOrigins(values);
+      } else {
+        this.breakpointManager.addBreakpoint(SourceBreakpoint.create(this.uri, {
+          line: position.lineNumber,
+          column: 1,
+          ...values,
+        }));
+      }
+      this.breakpointWidget.hide();
+    }
+  }
+
+  protected onContextMenu(event: monaco.editor.IEditorMouseEvent) {
+    if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+      // 设置当前右键选中的断点
+      const breakpoint = this.breakpointManager.getBreakpoint(this.uri, event.target.position!.lineNumber);
+      this.breakpointManager.selectedBreakpoint = {
+        breakpoint,
+        model: this,
+      };
+      // 获取右键菜单
+      const menus = this.contributedContextMenu;
+      const menuNodes = generateMergedCtxMenu({ menus });
+      this.ctxMenuRenderer.show({
+        anchor: event.event.browserEvent,
+        menuNodes,
+        args: [event.target.position!],
+      });
+    }
+  }
+
   protected onMouseDown(event: monaco.editor.IEditorMouseEvent): void {
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
-      if (event.event.rightButton) {
-        // 缓存断点位置
-        this._position = event.target.position!;
-        // TODO: 处理右键菜单
-      } else {
-        this.doToggleBreakpoint(event.target.position!);
+      if (!event.event.rightButton) {
+        this.toggleBreakpoint(event.target.position!);
       }
     }
     this.hintBreakpoint(event);

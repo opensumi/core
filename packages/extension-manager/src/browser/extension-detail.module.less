@@ -2,6 +2,9 @@
   height: 100%;
 }
 
+.body :global(.ant-tabs-bar) {
+  border-color: var(--kt-sideBarTitle-border);
+}
 
 .body :global(.ant-tabs),
 .body :global(.ant-tabs-content) {
@@ -12,8 +15,12 @@
   color: var(--foreground);
 }
 
-.body :global(.ant-tabs-bar) {
-  border-color: var(--editorGroupHeader-tabsBorder);
+.body :global(.ant-tabs-nav .ant-tabs-tab) {
+  border-color: transparent;
+  &:hover {
+    color: var(--foreground);
+    font-weight: 500;
+  }
 }
 
 .body :global(.ant-tabs-nav .ant-tabs-tab) {
@@ -25,16 +32,12 @@
   }
 }
 
-.body :global(.ant-tabs-nav .ant-tabs-tab-active) {
-  color: var(--button-background);
-
-  &:hover {
-    color: var(--button-hoverBackground);
-  }
+.body :global(.ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active) {
+  color: var(--sideBarTitle-foreground);
 }
 
 .body :global(.ant-tabs-ink-bar) {
-  background-color: var(--button-background);
+  background-color: var(--kt-sideBarTitle-activeBorder);
 }
 
 .content {

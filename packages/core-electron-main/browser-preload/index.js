@@ -26,7 +26,6 @@ electronEnv.currentWindowId = require('electron').remote.getCurrentWindow().id;
 electronEnv.monacoPath = join (dirname(require.resolve('monaco-editor-core/package.json')));
 electronEnv.appPath = require('electron').remote.app.getAppPath();
 
-
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
 electronEnv.metadata = metaData;
 electronEnv.rpcListenPath = metaData.rpcListenPath;

@@ -68,9 +68,7 @@
   }
 
   input[type="text"] {
-    flex: 1;
-    padding-left: 8px;
-    width: 0px;
+    width: 100%;
   }
 
   .search_and_replace_container {
@@ -126,15 +124,6 @@
         border-color: var(--inputOption-activeBorder);
       }
 
-      :global {
-          #search-input-field {
-          border-color: transparent;
-          &:hover {
-            border-color: transparent;
-          }
-        }
-      }
-
       .option_buttons {
         height: 23px;
         display: flex;
@@ -166,13 +155,6 @@
       }
     }
 
-    .focus {
-      border-color: var(--inputOption-activeBorder);
-
-      input {
-        border-color: transparent;
-      }
-    }
 
     .replace_field {
       display: flex;

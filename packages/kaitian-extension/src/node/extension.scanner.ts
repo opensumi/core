@@ -80,8 +80,12 @@ export class ExtensionScanner {
 
   static async getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
-    if (!await fs.pathExists(extensionPath)) {
-      getLogger().error('extension path does not exist');
+    // electron中，extensionPath可能为一个.asar结尾的路径，这种情况下,fs-extra的pathExists会判断为不存在
+    try {
+      await fs.stat(extensionPath);
+    } catch (e) {
+      getLogger().error(`extension path ${extensionPath} does not exist`);
+      return;
     }
 
     const pkgPath = path.join(extensionPath, 'package.json');

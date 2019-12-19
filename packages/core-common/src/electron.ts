@@ -35,11 +35,11 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
   reloadWindow(windowId: number);
 
   /**
-   * 打开新的工作区
+   * 在某个窗口打开新的工作区
    * @param workspace 工作区主Uri
-   * @param windowId 指定的window
+   * @param options
    */
-  openWorkspace(workspace: string, options: any);
+  openWorkspace(workspace: string, options?: any);
 
   /**
    * 在资源管理器里打开文件

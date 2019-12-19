@@ -1,0 +1,209 @@
+.kt-button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  padding: 0px 12px;
+  height: 28px;
+  line-height: 1;
+  box-sizing: border-box;
+  border-radius: 2px;
+  color: var(--button-foreground);
+  background-color: var(--button-background);
+  transition: all 0.15s;
+
+  &:hover {
+    background-color: var(--button-hoverBackground);
+  }
+
+  &:active {
+    background-color: var(--kt-primaryButton-clickBackground);
+  }
+
+  &.block-button {
+    width: 100%;
+  }
+}
+
+.ghost-button {
+  border-style: solid;
+  border-width: 1px;
+
+  &:disabled {
+    border-color: transparent;
+    border: none;
+  }
+}
+
+.primary-button {
+  color: var(--kt-primaryButton-foreground);
+  background-color: var(--kt-primaryButton-background);
+
+  &:hover {
+    background-color: var(--kt-primaryButton-hoverBackground);
+  }
+
+  &:active {
+    background-color: var(--kt-primaryButton-clickBackground);
+  }
+}
+
+.secondary-button {
+  color: var(--kt-secondaryButton-foreground);
+  background-color: var(--kt-secondaryButton-background);
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--kt-secondaryButton-border);
+
+  &:hover {
+    color: var(--kt-secondaryButton-hoverForeground);
+    background-color: var(--kt-secondaryButton-hoverBackground);
+    border-color: var(--kt-secondaryButton-hoverBorder);
+  }
+
+  &:active {
+    color: var(--kt-secondaryButton-clickForeground);
+    background-color: var(--kt-secondaryButton-clickBackground);
+    border-color: var(--kt-secondaryButton-clickBorder);
+  }
+}
+
+.ghost-secondary-button {
+  color: var(--kt-whiteGhostButton-foreground);
+  background-color: var(--kt-whiteGhostButton-background);
+  border-color: transparent;
+
+  &:hover {
+    color: var(--kt-whiteGhostButton-foreground);
+    background-color: transparent;
+    border-color: var(--kt-whiteGhostButton-border);
+  }
+
+  &:active {
+    color: var(--kt-whiteGhostButton-clickForeground);
+    background-color: transparent;
+    border-color: var(--kt-whiteGhostButton-clickBorder);
+  }
+
+  &:disabled {
+    color: var(--kt-whiteGhostButton-disableForeground);
+    border-color: transparent;
+  }
+}
+
+.link-button {
+  color: var(--kt-linkButton-foreground);
+  background-color: transparent;
+
+  &:hover {
+    color: var(--kt-linkButton-hoverForeground);
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  &:active {
+    color: var(--kt-linkButton-clickForeground);
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  &:disabled {
+    color: var(--kt-linkButton-disableForeground);
+    border-color: transparent;
+  }
+}
+
+.ghost-primary-button:disabled {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.ghost-danger-button:disabled,
+.kt-danger-button-loading,
+.kt-primary-button-loading,
+.kt-secondary-button-loading {
+  border-color: var(--kt-button-disableBorder) !important;
+  background-color: var(--kt-button-disableBackground) !important;
+}
+
+.kt-button:disabled,
+.ghost-button:disabled,
+ghost-danger-button:disabled,
+.kt-danger-button-loading,
+.kt-primary-button-loading,
+.kt-secondary-button-loading {
+  color: var(--kt-button-disableForeground) !important;
+  border-style: solid;
+  border-width: 1px;
+  pointer-events: none;
+}
+
+.ghost-primary-button,
+.ghost-primary-button:hover {
+  color: var(--kt-primaryGhostButton-foreground);
+  background-color: var(--kt-primaryGhostButton-background);
+  border-color: var(--kt-primaryGhostButton-border);
+}
+
+.ghost-primary-button:active {
+  color: var(--kt-primaryGhostButton-clickForeground);
+  background-color: var(--kt-primaryGhostButton-clickBackground);
+  border-color: var(--kt-primaryGhostButton-clickBorder);
+}
+
+.danger-button {
+  color: var(--kt-dangerButton-foreground);
+  background-color: var(--kt-dangerButton-background);
+
+  &:hover {
+    color: var(--kt-dangerButton-hoverForeground);
+    background-color: var(--kt-dangerButton-hoverBackground);
+  }
+
+  &:active {
+    color: var(--kt-dangerButton-clickForeground);
+    background-color: var(--kt-dangerButton-clickBackground);
+  }
+}
+
+.ghost-danger-button {
+  color: var(--kt-dangerGhostButton-foreground);
+  background-color: var(--kt-dangerGhostButton-background);
+  border-color: var(--kt-dangerGhostButton-border);
+
+  &:hover {
+    color: var(--kt-dangerGhostButton-hoverForeground);
+    background-color: transparent;
+    border-color: var(--kt-dangerGhostButton-hoverBorder);
+  }
+
+  &:active {
+    color: var(--kt-dangerGhostButton-clickForeground);
+    background-color: var(--kt-dangerGhostButton-clickBackground);
+    border-color: var(--kt-dangerGhostButton-clickBorder);
+  }
+}
+
+.large-button-size {
+  padding: 0px 16px;
+  height: 32px;
+  line-height: 32px;
+  font-size: 14px;
+}
+
+.default-button-size {
+  padding: 0px 12px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 12px;
+}
+
+.small-button-size {
+  padding: 0px 8px;
+  height: 22px;
+  line-height: 22px;
+  font-size: 12px;
+}

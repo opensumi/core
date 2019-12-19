@@ -33,6 +33,9 @@ const MenubarItem = observer<IExtendMenubarItem & {
     <Dropdown
       className={'kt-menu'}
       transitionName=''
+      align={{
+        offset: [0, 0],
+      }}
       overlay={<MenuActionList data={data} onClick={() => onClick()} />}
       trigger={focusMode ? ['click', 'hover'] : ['click']}>
       <div

@@ -138,6 +138,7 @@ export const defaultIconMap = {
   'download': 'download',
   'follow-cursor': 'follow-cursor',
   'minus': 'minus',
+  'undock': 'undock',
   'expand': 'arrawsalt',
   'shrink': 'shrink',
 };

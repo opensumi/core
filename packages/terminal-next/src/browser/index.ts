@@ -7,11 +7,14 @@ import { TerminalController } from './terminal.controller';
 import { ITerminalTheme, DefaultTerminalTheme } from './terminal.theme';
 import { NodePtyTerminalService } from './terminal.service';
 import { TerminalRestore } from './terminal.restore';
+import { TerminalContextMenuService, TerminalMenuContribution } from './terminal.menu';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {
   providers: Provider[] = [
     TerminalBrowserContribution,
+    TerminalMenuContribution,
+    TerminalContextMenuService,
     {
       token: ITerminalController,
       useClass: TerminalController,

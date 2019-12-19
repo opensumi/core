@@ -228,6 +228,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 750,
       description: '%editor.configuration.readonlyFiles%',
     },
+    'editor.maxTokenizationLineLength': {
+      type: 'integer',
+      default: 10000,
+      description: '%editor.configuration.maxTokenizationLineLength%',
+    },
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,
@@ -251,6 +256,12 @@ export const corePreferenceSchema: PreferenceSchema = {
     'files.associations': {
       type: 'object',
       description: '%preference.files.associations%',
+    },
+    // 设置面板是否用户Scope在前
+    'settings.userBeforeWorkspace': {
+      type: 'boolean',
+      default: false,
+      description: '%settings.configuration.userBeforeWorkspace%',
     },
   },
 };

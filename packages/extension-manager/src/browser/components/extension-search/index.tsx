@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as styles from './index.module.less';
-import { Input } from '@ali/ide-core-browser/lib/components';
+import { Input } from '@ali/ide-components';
 
 export interface ExtensionSearchProps {
   query: string;

@@ -17,6 +17,7 @@ export interface ITerminalController {
   currentGroup: IWidgetGroup | undefined;
   groups: IWidgetGroup[];
   state: { index: number };
+  searchState: { input: string, show: boolean };
   errors: Map<string, ITerminalError>;
   reconnect(): Promise<void>;
   recovery(history: any): Promise<void>;
@@ -31,12 +32,11 @@ export interface ITerminalController {
 
   createGroup(selected?: boolean): number;
   selectGroup(index: number): void;
+  clearGroup(index: number): void;
 
   drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean, meta?: string): Promise<void>;
-  showTerminalClient(widgetId: string): Promise<void>;
   retryTerminalClient(widgetId: string): Promise<void>;
   layoutTerminalClient(widgetId: string): void;
-  eraseTerminalClient(termId: string): void;
   toJSON(): { groups: any[] };
 
   terminals: TerminalInfo[];
@@ -50,7 +50,13 @@ export interface ITerminalController {
   removeTerm(id?: string): void;
   sendText(id: string, text: string, addNewLine?: boolean): void;
 
+  openSearchInput(): void;
+  closeSearchInput(): void;
+  search(): void;
+
   onDidChangeActiveTerminal: Event<string>;
   onDidCloseTerminal: Event<string>;
   onDidOpenTerminal: Event<TerminalInfo>;
+
+  getCurrentClient(): any | undefined;
 }

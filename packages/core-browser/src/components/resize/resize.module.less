@@ -1,5 +1,3 @@
-@import '~@ali/ide-core-browser/lib/style/variable.less';
-
 .resize-handle-horizontal{
   cursor: col-resize;
   position: relative;
@@ -8,6 +6,8 @@
   margin-left:-4px;
   z-index:1;
   width:8px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
   &::before {
     content: '';
     position: absolute;
@@ -26,6 +26,8 @@
   margin-bottom:-4px;
   height:8px;
   z-index:1;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
   &::before {
     content: '';
     position: absolute;

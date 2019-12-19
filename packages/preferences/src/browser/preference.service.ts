@@ -202,6 +202,7 @@ export const defaultSettingSections: {
         {id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles'},
         {id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave'},
         {id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout'},
+        {id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength'},
       ],
     },
   ],
