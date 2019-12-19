@@ -47,7 +47,7 @@ export class ElectronMainApp {
     this.injectLifecycleApi();
     createContributionProvider(this.injector, ElectronMainContribution);
     this.createElectronMainModules(this.config.modules);
-
+    this.onBeforeReadyContribution();
     this.registerMainApis();
   }
 
@@ -55,7 +55,10 @@ export class ElectronMainApp {
     // TODO scheme start
     if (!app.isReady()) {
       await new Promise((resolve) => {
-        app.on('ready', resolve);
+        app.on('ready', () => {
+          this.onStartContribution();
+          resolve();
+        });
       });
     }
   }
@@ -64,6 +67,22 @@ export class ElectronMainApp {
     for (const contribution of this.contributions ) {
       if (contribution.registerMainApi) {
         contribution.registerMainApi(this.injector.get(ElectronMainApiRegistry));
+      }
+    }
+  }
+
+  onStartContribution() {
+    for (const contribution of this.contributions ) {
+      if (contribution.onStart) {
+        contribution.onStart();
+      }
+    }
+  }
+
+  onBeforeReadyContribution() {
+    for (const contribution of this.contributions ) {
+      if (contribution.beforeAppReady) {
+        contribution.beforeAppReady();
       }
     }
   }

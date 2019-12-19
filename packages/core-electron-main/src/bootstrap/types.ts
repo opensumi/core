@@ -64,7 +64,11 @@ export const ElectronMainContribution = Symbol('ElectronMainContribution');
 
 export interface ElectronMainContribution {
 
-  registerMainApi(registry: ElectronMainApiRegistry);
+  registerMainApi?(registry: ElectronMainApiRegistry);
+
+  onStart?();
+
+  beforeAppReady?();
 
 }
 

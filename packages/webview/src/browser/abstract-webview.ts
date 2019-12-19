@@ -1,5 +1,5 @@
 import { IWebview, IWebviewContentOptions, IWebviewContentScrollPosition, IWebviewService } from './types';
-import { Event, URI, Disposable, DomListener, getLogger, IDisposable, Emitter, IEventBus, MaybeNull } from '@ali/ide-core-browser';
+import { Event, URI, Disposable, DomListener, getLogger, IDisposable, Emitter, IEventBus, MaybeNull, isElectronRenderer } from '@ali/ide-core-browser';
 import { ITheme, IThemeService } from '@ali/ide-theme';
 import { Autowired, Injectable } from '@ali/common-di';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
@@ -130,6 +130,9 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   }
 
   protected preprocessHtml(html: string): string {
+    if (isElectronRenderer()) {
+      return html;
+    }
     return html.replace(/(["'])vscode-resource:([^\s'"]+?)(["'])/gi, (_, startQuote, path, endQuote) =>
       `${startQuote}${this.staticResourceService.resolveStaticResource(URI.file(path))}${endQuote}`);
   }
