@@ -121,6 +121,7 @@ export default observer(() => {
                   forceHidden: true,
                 }]}
                 containerId={hotExtensionsContainerId}
+                className={styles.accordion}
               />
             </>
           )
@@ -152,6 +153,7 @@ export default observer(() => {
                   forceHidden: true,
                 }]}
                 containerId={enableExtensionsContainerId}
+                className={styles.accordion}
               />
             </>
           )
