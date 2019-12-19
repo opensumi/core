@@ -61,16 +61,16 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         this.collectViewComponent(view, containerId, props);
       });
     }
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.onDidRender) {
+        contribution.onDidRender();
+      }
+    }
     this.restoreState();
     for (const service of this.services.values()) {
       const {currentId, size} = this.state[service.location] || {};
       service.prevSize = size;
       service.currentContainerId = currentId !== undefined ? currentId : service.containersMap.keys().next().value;
-    }
-    for (const contribution of this.contributions.getContributions()) {
-      if (contribution.onDidRender) {
-        contribution.onDidRender();
-      }
     }
   }
 
