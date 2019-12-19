@@ -147,5 +147,5 @@ function getSymbolId(uri: URI, symbol: INormalizedDocumentSymbol) {
     symbolNameList.unshift(parent.name);
     symbol = parent;
   }
-  return uri.toString() + '__' + symbolNameList.join('-');
+  return uri.toString() + '__' + symbolNameList.join('-') + '__' + symbol.kind;
 }
