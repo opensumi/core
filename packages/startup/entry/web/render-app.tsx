@@ -1,24 +1,7 @@
 import * as React from 'react';
-import { App, ClientApp, IClientAppOpts, SlotRenderer } from '@ali/ide-core-browser';
+import { ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
-import { BoxPanel, SplitPanel } from '@ali/ide-core-browser/lib/components';
-
-function DefaultLayout() {
-  return <BoxPanel direction='top-to-bottom'>
-    <SlotRenderer slot='top' />
-    <SplitPanel id='main-horizontal' flex={1}>
-      <SlotRenderer flex={1} slot='left' minSize={48} />
-      {/* flexGrow保证在左右侧限定最大尺寸的情况下，中间的可resize区域仍然撑满可用空间 */}
-      <SplitPanel id='main-vertical' flexGrow={1} flex={2} direction='top-to-bottom'>
-        <SlotRenderer flex={2} slot='main' />
-        <SlotRenderer flex={1} slot='bottom' />
-      </SplitPanel>
-      {/* 若不需要右侧tabbar，直接去掉该slot */}
-      <SlotRenderer flex={1} slot='right' minSize={40} />
-    </SplitPanel>
-    <SlotRenderer slot='statusBar' />
-  </BoxPanel>;
-}
+import { DefaultLayout } from '@ali/ide-core-browser/lib/components';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
