@@ -1,9 +1,11 @@
 .kt-tabs {
   display: flex;
   align-items: center;
-
+  border-bottom: 1px solid var(--kt-sideBarTitle-border);
   .kt-tab,
   .kt-custom-tab {
+    padding: 8px 0 5px;
+    line-height: 20px;
     border-bottom: 2px solid transparent;
     color: var(--sideBarTitle-foreground);
     cursor: pointer;
@@ -22,6 +24,6 @@
   .kt-custom-tab + .kt-custom-tab,
   .kt-tab + .kt-custom-tab,
   .kt-custom-tab + .kt-tab {
-    margin-left: 24px;
+    margin-left: 16px;
   }
 }
