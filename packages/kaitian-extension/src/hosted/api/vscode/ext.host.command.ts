@@ -83,6 +83,17 @@ export class ExtHostCommands implements IExtHostCommands {
         if (Uri.isUri(arg)) {
           return Uri.from(arg);
         }
+
+        // 数组参数的处理
+        if (isNonEmptyArray(arg)) {
+          return arg.map((item) => {
+            if (Uri.isUri(item)) {
+              return Uri.from(item);
+            }
+            return item;
+          });
+        }
+
         return arg;
       },
     });
