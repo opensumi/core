@@ -252,7 +252,7 @@ export const TreeContainerNode = (
   const renderTreeNodeActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: CommandActuator) => {
     return actions.map((action: TreeViewAction, index) => {
       if (isTreeViewActionComponent(action)) {
-        return <span key={`${action.location}-${index}`}>{action.component}</span>;
+        return <span key={`${node.id}-${action.location}-${index}`}>{action.component}</span>;
       }
 
       const clickHandler = (event: React.MouseEvent) => {
@@ -262,7 +262,7 @@ export const TreeContainerNode = (
       };
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
       return <Icon
-        key={`${action.paramsKey ? node[action.paramsKey] : node.uri}-${action.command}`}
+        key={`${node.id}-${action.paramsKey ? node[action.paramsKey] : node.uri}-${action.command}`}
         iconClass={cls(styles.action_icon, icon)}
         title={action.title}
         onClick={clickHandler} />;
@@ -413,6 +413,7 @@ export const TreeContainerNode = (
           break;
       }
     }
+
     if (ExpandableTreeNode.is(node)) {
       if (treeContainerActions.length > 0) {
         return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
