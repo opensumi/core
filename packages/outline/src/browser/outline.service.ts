@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition, IdleValue, compareRangesUsingStarts, IContextKeyService } from '@ali/ide-core-browser';
+import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition, IdleValue, compareRangesUsingStarts, IContextKeyService, IStorage } from '@ali/ide-core-browser';
 import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { observable, action } from 'mobx';
 import { getSymbolIcon } from '@ali/ide-core-browser';
@@ -32,6 +32,7 @@ export class OutLineService extends WithEventBus {
     this.doUpdate(this.currentUri);
     this.ctxKeyService.createKey('outlineSortType', type);
     this._sortType = type;
+    this.state.set('sortType', type);
   }
 
   private _sortType: OutlineSortOrder = OutlineSortOrder.ByPosition;
@@ -60,6 +61,8 @@ export class OutLineService extends WithEventBus {
   // 处理字符串排序，IdleValue 在空闲或需要时执行 [idle-or-urgent stratage implementation](https://philipwalton.com/articles/idle-until-urgent)
   private readonly collator = new IdleValue<Intl.Collator>(() => new Intl.Collator(undefined, { numeric: true }));
 
+  private state: IStorage;
+
   constructor() {
     super();
     this.editorService.onActiveResourceChange((e) => {
@@ -71,6 +74,11 @@ export class OutLineService extends WithEventBus {
     });
     // TODO 状态记录
     this.ctxKeyService.createKey('outlineSortType', OutlineSortOrder.ByPosition);
+  }
+
+  initializeSetting(state: IStorage) {
+    this.state = state;
+    this.sortType = state.get('sortType', OutlineSortOrder.ByPosition);
   }
 
   collapseAll() {

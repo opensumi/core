@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, ComponentContribution, Domain, ComponentRegistry, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry, IContextKeyService } from '@ali/ide-core-browser';
+import { BrowserModule, ComponentContribution, Domain, ComponentRegistry, localize, TabBarToolbarContribution, ToolbarRegistry, CommandContribution, CommandRegistry, IContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
 import { OutLineTree } from './outline.tree.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { OutLineService, OutlineSortOrder } from './outline.service';
 import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser';
+import { StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
 
 export const OUTLINE_COLLAPSE_ALL = 'outline.collapse.all';
 export const OUTLINE_FOLLOW_CURSOR = 'outline.follow.cursor';
@@ -22,8 +23,8 @@ export class OutlineModule extends BrowserModule {
   component = OutLineTree;
 }
 
-@Domain(MainLayoutContribution, TabBarToolbarContribution, CommandContribution)
-export class OutlineContribution implements MainLayoutContribution, TabBarToolbarContribution, CommandContribution {
+@Domain(MainLayoutContribution, TabBarToolbarContribution, CommandContribution, ClientAppContribution)
+export class OutlineContribution implements MainLayoutContribution, TabBarToolbarContribution, CommandContribution, ClientAppContribution {
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 
@@ -32,6 +33,14 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
 
   @Autowired(IContextKeyService)
   contextKey: IContextKeyService;
+
+  @Autowired(StorageProvider)
+  getStorage: StorageProvider;
+
+  async onStart() {
+    const state = await this.getStorage(STORAGE_NAMESPACE.OUTLINE);
+    this.outlineService.initializeSetting(state);
+  }
 
   onDidRender() {
     this.mainLayoutService.collectViewComponent({
