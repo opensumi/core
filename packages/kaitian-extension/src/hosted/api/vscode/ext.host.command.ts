@@ -72,6 +72,20 @@ export class ExtHostCommands implements IExtHostCommands {
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
+    this.registerUriArgProcessor();
+  }
+
+  private registerUriArgProcessor() {
+    this.registerArgumentProcessor({
+      processArgument: (arg: any) => {
+        // 将通信后 toJSON 的 Uri object 转换回 Uri 实例
+        // 插件里面用了 `instanceof Uri`
+        if (Uri.isUri(arg)) {
+          return Uri.from(arg);
+        }
+        return arg;
+      },
+    });
   }
 
   // 需要在 $registerBuiltInCommands 一起注册 避免插件进程启动但浏览器未启动时报错
@@ -278,6 +292,7 @@ export class ExtHostCommands implements IExtHostCommands {
         return [new Range(new Position(postion[0].line, postion[0].character), new Position(postion[1].line, postion[1].character))];
       }
     }
+
     return arg;
   }
 
