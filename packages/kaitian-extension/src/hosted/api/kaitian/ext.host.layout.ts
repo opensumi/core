@@ -5,7 +5,6 @@ export function createLayoutAPIFactory(
 ) {
   return {
     toggleBottomPanel: async () => {
-      console.log('host toggleBottomPanel');
       return await extHostCommands.executeCommand('main-layout.bottom-panel.toggle');
     },
     toggleLeftPanel: async () => {

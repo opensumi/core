@@ -18,6 +18,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   @Autowired(ElectronAppConfig)
   private appConfig: ElectronAppConfig;
 
+  private extensionDir: string = this.appConfig.extensionDir;
+
   private extensionCandidate: ExtensionCandiDate[] = [];
 
   private browser: BrowserWindow;
@@ -54,7 +56,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     });
     if (options) {
       if (options.extensionDir) {
-        this.appConfig.extensionDir = options.extensionDir;
+        this.extensionDir = options.extensionDir;
       }
 
       if (options.extensionCandidate) {
@@ -74,7 +76,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
             webviewPreload: URI.file(this.appConfig.webviewPreload).toString(),
             plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
           },
-          extensionDir: this.appConfig.extensionDir,
+          extensionDir: this.extensionDir,
           extensionCandidate: this.appConfig.extensionCandidate.concat(this.extensionCandidate).filter(Boolean),
           ...this.metadata,
           windowClientId: this.windowClientId,
@@ -104,11 +106,11 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   }
 
   setExtensionDir(extensionDir: string) {
-    this.appConfig.extensionDir = URI.file(extensionDir).toString();
+    this.extensionDir = URI.file(extensionDir).toString();
   }
 
   setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]) {
-    this.appConfig.extensionCandidate = extensionCandidate;
+    this.extensionCandidate = extensionCandidate;
   }
 
   async start() {
