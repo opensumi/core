@@ -217,23 +217,14 @@ export const ExtensionTabbarTreeView = observer(({
     return result;
   };
 
-  const setInlineMenu = (nodes: TreeNode<any>[]) => {
-    if (!nodes.length) {
-      return nodes;
-    }
+  const getInlineMenu = (node: TreeNode<any>) => {
+    const contextValue = node.contextValue;
+    const menus = extensionViewService.getInlineMenus(contextValue);
 
-    return nodes.map((node) => {
-      const contextValue = node.contextValue;
-      const menus = extensionViewService.getInlineMenus(contextValue);
-
-      return {
-        ...node,
-        actions: [{
-          location: TreeViewActionTypes.TreeNode_Right,
-          component: <InlineActionBar context={[node]} menus={menus} separator='inline' />,
-        }],
-      };
-    });
+    return [{
+      location: TreeViewActionTypes.TreeNode_Right,
+      component: <InlineActionBar context={[node]} menus={menus} separator='inline' />,
+    }];
   };
 
   const checkIfNeedExpandChildren = (nodes: TreeNode<any>[], copyModel: Map<string | number, IExtensionTreeViewModel>) => {
@@ -275,8 +266,7 @@ export const ExtensionTabbarTreeView = observer(({
     }
 
     if (promises.length === 0) {
-      let newNodes = [...checkList];
-      newNodes = setInlineMenu(newNodes);
+      const newNodes = [...checkList];
       extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
       setNodes(newNodes);
       return nodes;
@@ -353,10 +343,14 @@ export const ExtensionTabbarTreeView = observer(({
       if (!node.name && !node.label && !node.description) {
         description = '——';
       }
+
+      const actions = getInlineMenu(node);
+
       return {
         ...node,
         ...nodeModel,
         description,
+        actions,
       };
     });
   }, [nodes]);
