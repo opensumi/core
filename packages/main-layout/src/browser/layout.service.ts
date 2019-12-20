@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
+import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
@@ -33,7 +33,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   private layoutState: LayoutState;
 
   @Autowired(IContextKeyService)
-  private ctxKeyService: IContextKeyService;
+  private contextKeyService: IContextKeyService;
 
   @Autowired(ActivationEventService)
   private activationEventService: ActivationEventService;
@@ -53,8 +53,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     size?: number;
   }} = {};
 
-  private viewsWhenExpr = new Set<string>();
-  private exprToViewMap = new Map<string, View>();
+  private viewWhenContextkeys = new Set<string>();
+  private customViewSet = new Set<View>();
   private allViews = new Map<string, View>();
 
   // TODO 使用IconAction完成左侧activityBar上展示的额外图标注册能力
@@ -82,7 +82,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       service.prevSize = size;
       service.currentContainerId = currentId !== undefined ? currentId : service.containersMap.keys().next().value;
     }
-    this.listenContextKeyChange();
+
+    this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
+      this.contextKeyService.onDidChangeContext,
+      (last, event) =>  last || event.payload.affectsSome(this.viewWhenContextkeys),
+      50,
+    )((e) => e && this.handleContextKeyChange(), this));
   }
 
   setFloatSize(size: number) {}
@@ -208,9 +213,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     this.allViews.set(view.id, view);
     this.viewToContainerMap.set(view.id, containerId);
     if (view.when) {
-      this.viewsWhenExpr.add(view.when);
-      this.exprToViewMap.set(view.when, view);
-      if (!this.ctxKeyService.match(view.when)) {
+      this.fillKeysInWhenExpr(this.viewWhenContextkeys, view.when);
+      this.customViewSet.add(view);
+      if (!this.contextKeyService.match(view.when)) {
         return view.id;
       }
     }
@@ -262,29 +267,30 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   expandBottom(expand: boolean): void {
     const tabbarService = this.getTabbarService(SlotLocation.bottom);
     tabbarService.doExpand(expand);
-    this.ctxKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
+    this.contextKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
   }
 
   get bottomExpanded(): boolean {
     const tabbarService = this.getTabbarService(SlotLocation.bottom);
-    this.ctxKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
+    this.contextKeyService.createKey('bottomFullExpanded', tabbarService.isExpanded);
     return tabbarService.isExpanded;
   }
 
-  protected listenContextKeyChange() {
-    this.ctxKeyService.onDidChangeContext((e) => {
-      if (e.payload.affectsSome(this.viewsWhenExpr)) {
-        this.viewsWhenExpr.forEach((whenExpr) => {
-          const view = this.exprToViewMap.get(whenExpr)!;
-          const targetContainerId = this.viewToContainerMap.get(view.id)!;
-          if (this.ctxKeyService.match(whenExpr)) {
-            this.collectViewComponent(view, targetContainerId);
-          } else {
-            this.disposeViewComponent(view.id);
-          }
-        });
+  private handleContextKeyChange() {
+    this.customViewSet.forEach((view) => {
+      const targetContainerId = this.viewToContainerMap.get(view.id)!;
+      if (this.contextKeyService.match(view.when)) {
+        this.collectViewComponent(view, targetContainerId);
+      } else {
+        this.disposeViewComponent(view.id);
       }
     });
   }
 
+  private fillKeysInWhenExpr(set: Set<string>, when?: string) {
+    const keys = this.contextKeyService.getKeysInWhen(when);
+    keys.forEach((key) => {
+      set.add(key);
+    });
+  }
 }
