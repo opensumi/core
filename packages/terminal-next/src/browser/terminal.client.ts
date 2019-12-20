@@ -268,7 +268,11 @@ export class TerminalClient extends Disposable {
   }
 
   clear() {
-    this._term.clear();
+    if (this.service.clear) {
+      this.service.clear(this.id);
+    } else {
+      this._term.clear();
+    }
   }
 
   copy() {
