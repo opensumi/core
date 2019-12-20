@@ -52,6 +52,7 @@ export interface ITerminalController {
 
   openSearchInput(): void;
   closeSearchInput(): void;
+  clearSearchInput(): void;
   search(): void;
 
   onDidChangeActiveTerminal: Event<string>;
@@ -59,4 +60,8 @@ export interface ITerminalController {
   onDidOpenTerminal: Event<TerminalInfo>;
 
   getCurrentClient(): any | undefined;
+
+  isFocus: boolean;
+  focus(): void;
+  blur(): void;
 }

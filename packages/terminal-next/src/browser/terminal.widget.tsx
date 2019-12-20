@@ -45,7 +45,7 @@ export default ({ id, dynamic, error, show }: IProps) => {
   };
 
   return (
-    <div className={ styles.terminalContainer } onContextMenu={ (event) => menuService.onContextMenu(event) }>
+    <div className={ styles.terminalContainer }>
       {
         error ?
           <div className={ styles.terminalCover }>

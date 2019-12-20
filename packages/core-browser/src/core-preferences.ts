@@ -263,6 +263,45 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: '%settings.configuration.userBeforeWorkspace%',
     },
+    // 终端
+    'terminal.type': {
+      type: 'string',
+      enum: [
+        'bash',
+        'zsh',
+        'sh',
+      ],
+      default: 'bash',
+      description: '%preference.terminal.typeDesc%',
+    },
+    'terminal.fontFamily': {
+      type: 'string',
+      description: '%preference.terminal.fontFamilyDesc%',
+    },
+    'terminal.fontSize': {
+      type: 'number',
+      default: 12,
+      description: '%preference.terminal.fontSizeDesc%',
+    },
+    'terminal.fontWeight': {
+      type: 'string',
+      enum: [
+        'normal',
+        'bold',
+      ],
+      default: 400,
+      description: '%preference.terminal.fontWeightDesc%',
+    },
+    'terminal.lineHeight': {
+      type: 'number',
+      default: 1,
+      description: '%preference.terminal.lineHeightDesc%',
+    },
+    'terminal.cursorBlink': {
+      type: 'boolean',
+      default: false,
+      description: '%preference.terminal.cursorBlinkDesc%',
+    },
   },
 };
 

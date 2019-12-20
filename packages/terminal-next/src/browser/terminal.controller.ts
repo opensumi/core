@@ -1,12 +1,12 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { uuid, CommandService, OnEvent, WithEventBus, Emitter, Event, ILogger } from '@ali/ide-core-common';
-import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
+import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation, IContextKeyService, IContextKey, PreferenceService } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IThemeService } from '@ali/ide-theme/lib/common';
 import { TerminalClient } from './terminal.client';
 import { WidgetGroup, Widget } from './component/resize.control';
-import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
+import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient, terminalFocusContextKey } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { TabManager } from './component/tab/manager';
@@ -20,7 +20,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   groups: WidgetGroup[] = [];
 
   @observable
-  state: { index: number } = { index: -1 };
+  state: { index: number, focus: boolean } = { index: -1, focus: false };
 
   @observable
   searchState: { input: string, show: boolean } = { input: '', show: false };
@@ -40,11 +40,17 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(AppConfig)
   private config: AppConfig;
 
+  @Autowired(IContextKeyService)
+  protected readonly contextKeyService: IContextKeyService;
+
   @Autowired(ITerminalTheme)
   private termTheme: ITerminalTheme;
 
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
+
+  @Autowired(PreferenceService)
+  preference: PreferenceService;
 
   @Autowired(ILogger)
   logger: ILogger;
@@ -68,6 +74,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   private _clientsMap = new Map<string, TerminalClient>();
   private _focusedId: string;
+  private _focus: boolean;
+  private _focusKey: IContextKey<boolean>;
 
   private _onDidOpenTerminal = new Emitter<TerminalInfo>();
   private _onDidCloseTerminal = new Emitter<string>();
@@ -120,6 +128,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.editorService,
       this.fileService,
       this.termTheme,
+      this.preference,
       this,
       widget, restoreId, options,
     );
@@ -187,6 +196,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   firstInitialize() {
     this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
     this.themeBackground = this.termTheme.terminalTheme.background || '';
+    this._focusKey = this.contextKeyService.createKey(terminalFocusContextKey, this._focus);
 
     if (this.tabbarHandler.isActivated()) {
       if (this._checkIfNeedInitialize()) {
@@ -688,6 +698,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.searchState.show = false;
   }
 
+  clearSearchInput() {
+    this.searchState.input = '';
+  }
+
   search() {
     const group = this.currentGroup;
 
@@ -710,6 +724,24 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   getCurrentClient() {
     return this._clientsMap.get(this._focusedId);
+  }
+
+  /** end */
+
+  /** focus */
+
+  get isFocus() {
+    return this._focus;
+  }
+
+  focus() {
+    this._focus = true;
+    this._focusKey.set(this._focus);
+  }
+
+  blur() {
+    this._focus = false;
+    this._focusKey.set(this._focus);
   }
 
   /** end */

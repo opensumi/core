@@ -27,6 +27,11 @@ export default observer(() => {
     if (event.key === 'Enter') {
       controller.search();
     }
+
+    if (event.key === 'Escape') {
+      controller.closeSearchInput();
+      controller.clearSearchInput();
+    }
   };
 
   const searchClose = () => {
@@ -34,10 +39,16 @@ export default observer(() => {
   };
 
   return (
-    <div className={ styles.terminalWrapper } style={ { backgroundColor: themeBackground } }>
+    <div
+      onFocus={ () => controller.focus() }
+      onBlur={ () => controller.blur() }
+      className={ styles.terminalWrapper }
+      style={ { backgroundColor: themeBackground } }
+    >
       {
         controller.searchState.show && <div className={ styles.terminalSearch }>
           <input
+            autoFocus
             placeholder='查找'
             value={ controller.searchState.input }
             onChange={ (event) => searchInput(event) }

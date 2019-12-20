@@ -52,7 +52,7 @@ export interface ITerminalExternalService {
    * @param attachMethod 将 websocket 连接和 xterm 连接起来的函数
    * @param options 创建一个新终端的进程选项
    */
-  attach(sessionId: string, term: Terminal, restore: boolean, meta: string, attachMethod: (s: WebSocket) => void, options?: TerminalOptions): Promise<void>;
+  attach(sessionId: string, term: Terminal, restore: boolean, meta: string, attachMethod: (s: WebSocket) => void, options?: TerminalOptions, shellType?: string): Promise<void>;
   /**
    *
    * @param sessionId 会话唯一标识
@@ -80,3 +80,5 @@ export interface ITerminalExternalService {
    */
   onError(handler: (error: ITerminalError) => void): IDisposable;
 }
+
+export const terminalFocusContextKey = 'isTerminalFocused';
