@@ -1,4 +1,3 @@
-import { ChildConnectPath } from '../common/ws-channel';
 import * as ws from 'ws';
 import * as events from 'events';
 
@@ -15,8 +14,6 @@ interface MessageMarkInfo {
   lastUseDate: number;
   usedTimes: number;
 }
-
-const childConnectPath = new ChildConnectPath();
 
 class MessageMarkList {
   public maxLength: number;
