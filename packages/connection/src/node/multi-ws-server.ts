@@ -184,11 +184,11 @@ class MultiConnect extends events.EventEmitter {
         return;
       }
       if (!ws.sending && !availableConnection) {
-        console.log('找到可用连接', ws.routeParam);
+        // console.log('找到可用连接', ws.routeParam);
         availableConnection = ws;
       }
       if (mark && ws.recentSendMessageMark && ws.recentSendMessageMark.has(mark)) {
-        console.log('找到之前使用过的连接', ws.routeParam, mark);
+        // console.log('找到之前使用过的连接', ws.routeParam, mark);
         // 返回最近同类型消息使用过的通道，来保证消息的顺序
         recentSameMarkConnect = ws;
       }
@@ -212,7 +212,6 @@ class MultiConnect extends events.EventEmitter {
       if (ws.readyState === this.OPEN) {
         return true;
       }
-      console.log('ws', ws.routeParam!);
       return false;
     })) {
       return;

@@ -48,9 +48,13 @@ export class MultiWs implements WebSocket {
 
   private defaultLength: number = 4;
 
-  private onOpenlistener: (this: WebSocket, e: any) => any = () => {};
-
-  private onCloselistener: (this: WebSocket, e: any) => any = () => {};
+  private listenerMap: {
+    open: ((this: WebSocket, e: any) => any)[],
+    close: ((this: WebSocket, e: any) => any)[],
+  } = {
+    open: [],
+    close: [],
+  };
 
   constructor(url: string, protocols?: string[], clientId?: string) {
     const connectPath = new ChildConnectPath();
@@ -81,23 +85,26 @@ export class MultiWs implements WebSocket {
     this.connectionList.forEach((ws) => {
       ws.close(code, reason);
     });
+    this.listenerMap = {close: [], open: []};
   }
 
   addEventListener(type, listener, options) {
-    if (type === 'open') {
-      this.onOpenlistener = listener;
+    if (this.listenerMap[type]) {
+      this.listenerMap[type].push(listener);
       return;
     }
-    if (type === 'close') {
-      this.onCloselistener = listener;
-      return;
-    }
+
     this.connectionList.forEach((ws) => {
       ws.addEventListener(type, listener, options);
     });
   }
 
   removeEventListener(type, listener, options) {
+    if (this.listenerMap[type]) {
+      this.listenerMap[type] = this.listenerMap[type].filter((l) => l !== listener);
+      return;
+    }
+
     this.connectionList.forEach((ws) => {
       ws.removeEventListener(type, listener, options);
     });
@@ -131,8 +138,10 @@ export class MultiWs implements WebSocket {
       return;
     }
     this.readyState = this.OPEN;
-    this.onOpenlistener(event);
     this.onopen.call(this, event);
+    this.listenerMap.open.forEach((listener) => {
+      listener.call(this, event);
+    });
   }
 
   private fireOnClose(event) {
@@ -143,7 +152,9 @@ export class MultiWs implements WebSocket {
     }
     this.readyState = this.CLOSED;
     this.onclose.call(this, event);
-    this.onCloselistener(event);
+    this.listenerMap.close.forEach((listener) => {
+      listener.call(this, event);
+    });
   }
 
   private getAvailableConnection(): WebSocket | undefined {
