@@ -22,6 +22,20 @@ export interface IElectronMainUIService extends IElectronMainApi<void> {
 
   showSaveDialog(windowId: number, options:Electron.SaveDialogOptions ): Promise<string | undefined>;
 
+  setZoomFactor(webContentsId: number, options: { value?: number, delta?: number; });
+
+  /**
+   * 在资源管理器里打开文件
+   * @param path 文件路径（不带file协议头)
+   */
+  revealInFinder(path: string);
+
+  /**
+   * 在系统终端中打开文件路径
+   * @param path 文件路径（不带file协议头)
+   */
+  revealInSystemTerminal(path: string);
+  
 }
 
 export const IElectronMainUIService = Symbol('IElectronMainUIService');
@@ -40,18 +54,6 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
    * @param options
    */
   openWorkspace(workspace: string, options?: any);
-
-  /**
-   * 在资源管理器里打开文件
-   * @param path 文件路径（不带file协议头)
-   */
-  revealInFinder(path: string);
-
-  /**
-   * 在系统终端中打开文件路径
-   * @param path 文件路径（不带file协议头)
-   */
-  revealInSystemTerminal(path: string);
 
 }
 

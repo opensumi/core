@@ -23,9 +23,18 @@ export class ProtocolElectronMainContribution implements ElectronMainContributio
   beforeAppReady() {
     if (protocol.registerSchemesAsPrivileged) {
       // 旧版本electron可能没有这个api
+      // electron >= 5.x
       protocol.registerSchemesAsPrivileged([{
         scheme: 'vscode-resource',
+        privileges: {
+          secure: true,
+        },
       }]);
+    } else if ((protocol as any).registerStandardSchemes) {
+      // electron < 5.x
+      (protocol as any).registerStandardSchemes(['vscode-resource'], {
+        secure: true,
+      });
     }
   }
 

@@ -432,5 +432,8 @@ export const localizationBundle = {
     'markers.filter.reset': 'Clear Filter.',
 
     'app.quit': 'Quit',
+    'view.zoomReset': 'Zoom Reset',
+    'view.zoomIn': 'Zoom In',
+    'view.zoomOut': 'Zoom Out',
   },
 };
