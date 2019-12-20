@@ -5,7 +5,7 @@ import { CommandService, localize } from '@ali/ide-core-common';
 import { IContextKeyService, View, useInjectable  } from '@ali/ide-core-browser';
 import { AccordionContainer } from '@ali/ide-main-layout/lib/browser/accordion/accordion.view';
 import { TitleBar } from '@ali/ide-main-layout/lib/browser/accordion/titlebar.view';
-import { Button } from '@ali/ide-core-browser/lib/components';
+import { Button } from '@ali/ide-components';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { ISCMRepository, SCMService, scmProviderViewId, scmResourceViewId } from '../common';
@@ -198,6 +198,7 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
       <AccordionContainer
         views={views}
         containerId={scmProviderViewId}
+        className={styles.scm_accordion}
       />
     </div>
   );

@@ -14,12 +14,12 @@ export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,
   forbidCollapse?: boolean;
   barSize?: number;
-}> = observer(({ TabView, forbidCollapse, barSize = 50 }) => {
-  const { setSize, getSize, setRelativeSize, getRelativeSize } = React.useContext(PanelContext);
+}> = observer(({ TabView, forbidCollapse, barSize = 48 }) => {
+  const { setSize, getSize, setRelativeSize, getRelativeSize, lockSize } = React.useContext(PanelContext);
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   React.useEffect(() => {
-    tabbarService.registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, barSize);
+    tabbarService.registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, lockSize, barSize);
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
   return (
@@ -57,12 +57,12 @@ const TextTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ co
   </div>;
 });
 
-export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} barSize={50} />;
+export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} barSize={40} />;
 
 export const LeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   return (<div className='left-tab-bar'>
-    <TabbarViewBase TabView={IconTabView} barSize={50} />
+    <TabbarViewBase TabView={IconTabView} barSize={48} />
     <div className='bottom-icon-container' onClick={layoutService.handleSetting}>
       <i className={`activity-icon ${getIcon('setting')}`}></i>
     </div>
@@ -73,6 +73,14 @@ export const BottomTabbarRenderer: React.FC = () => {
   return (
     <div className={styles.bottom_bar_container}>
       <TabbarViewBase forbidCollapse={true} TabView={TextTabView} barSize={0} />
+    </div>
+  );
+};
+
+export const NextBottomTabbarRenderer: React.FC = () => {
+  return (
+    <div className={clsx(styles.bottom_bar_container, 'next_bottom_bar')}>
+      <TabbarViewBase TabView={TextTabView} barSize={28} />
     </div>
   );
 };

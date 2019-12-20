@@ -18,6 +18,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   @Autowired(ElectronAppConfig)
   private appConfig: ElectronAppConfig;
 
+  private extensionCandidate: ExtensionCandiDate[] = [];
+
   private browser: BrowserWindow;
 
   private node: KTNodeProcess | null = null;
@@ -56,7 +58,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       }
 
       if (options.extensionCandidate) {
-        this.appConfig.extensionCandidate = options.extensionCandidate;
+        this.extensionCandidate = options.extensionCandidate;
       }
     }
 
@@ -73,7 +75,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
             plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
           },
           extensionDir: this.appConfig.extensionDir,
-          extensionCandidate: this.appConfig.extensionCandidate,
+          extensionCandidate: this.appConfig.extensionCandidate.concat(this.extensionCandidate).filter(Boolean),
           ...this.metadata,
           windowClientId: this.windowClientId,
           rpcListenPath: this.rpcListenPath,

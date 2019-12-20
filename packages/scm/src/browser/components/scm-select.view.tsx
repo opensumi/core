@@ -5,7 +5,7 @@ import { IStatusBarService } from '@ali/ide-status-bar';
 import clx from 'classnames';
 import Badge from '@ali/ide-core-browser/lib/components/badge';
 import { StatusBarItem } from '@ali/ide-status-bar/lib/browser/status-bar-item.view';
-import { AbstractMenuService, ICtxMenuRenderer, generateMergedCtxMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, ICtxMenuRenderer, generateMergedCtxMenu, MenuId, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMRepository } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';
@@ -70,7 +70,7 @@ export const SCMRepoSelect: React.FC<{
   }
 
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
-  const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
+  const ctxmenuService = useInjectable<AbstractContextMenuService>(AbstractContextMenuService);
 
   const handleRepositorySelect = React.useCallback((selectedRepo: ISCMRepository) => {
     selectedRepo.setSelected(true);
@@ -82,18 +82,14 @@ export const SCMRepoSelect: React.FC<{
     e.stopPropagation();
     const { x, y } = e.nativeEvent;
 
-    const menus = menuService.createMenu(MenuId.SCMSourceControl);
-
-    const menuNodes = generateMergedCtxMenu({
-      menus,
-      options: { args: [ selectedRepo.provider.toJSON() ] },
-    });
-
+    const menus = ctxmenuService.createMenu({ id: MenuId.SCMSourceControl });
+    const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
 
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
+      args: [ selectedRepo.provider.toJSON() ],
     });
   }, []);
 

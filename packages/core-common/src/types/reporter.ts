@@ -1,3 +1,11 @@
+export enum REPORT_NAME {
+  ACTIVE_EXTENSION = 'activateExtension',
+  LOAD_EXTENSION_MAIN = 'loadExtensionMain',
+  PROVIDE_COMPLETION_ITEMS = 'provideCompletionItems',
+  CHANNEL_RECONNECT = 'channelReconnect',
+  MEASURE = 'measure'
+}
+
 export enum REPORT_HOST {
   BROWSER = 'browser',
   NODE = 'node',
@@ -34,8 +42,8 @@ export interface IReporterTimer {
 }
 
 export interface IReporterService {
-  time(name: string): IReporterTimer;
-  point(name: string, msg?: string): void;
+  time(name: REPORT_NAME): IReporterTimer;
+  point(name: REPORT_NAME, msg?: string): void;
 }
 
 // 集成方实现

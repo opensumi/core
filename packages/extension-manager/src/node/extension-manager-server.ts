@@ -78,9 +78,10 @@ export class ExtensionManager implements IExtensionManager {
   private appConfig: AppConfig;
 
   async installExtension(extension: BaseExtension, version?: string | undefined): Promise<string> {
-    const request = await this.requestExtension(extension.extensionId, version || extension.version);
+    const currentVersion = version || extension.version;
+    const request = await this.requestExtension(extension.extensionId, currentVersion);
 
-    const extensionDirName = `${extension.publisher}.${extension.name}-${extension.version}`;
+    const extensionDirName = `${extension.publisher}.${extension.name}-${currentVersion}`;
 
     return await this.uncompressExtension(request.res, extensionDirName);
   }

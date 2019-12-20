@@ -17,8 +17,18 @@ export interface MenuCommandDesc {
 
 export interface IMenuItem {
   command: string | MenuCommandDesc;
+  /**
+   * 决定是否在视图层展示
+   */
   when?: string | monaco.contextkey.ContextKeyExpr;
+  /**
+   * 决定 toggled 状态, 主要表现为文字左侧有一个 ✅
+   */
   toggledWhen?: string | monaco.contextkey.ContextKeyExpr;
+  /**
+   * 决定 disabled 状态，主要表现为 menu item 颜色变灰
+   */
+  enabledWhen?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
   nativeRole?: string; // electron native 菜单使用
@@ -27,6 +37,9 @@ export interface IMenuItem {
 export interface ISubmenuItem {
   label: string;
   submenu: MenuId | string;
+  /**
+   * 决定是否在视图层展示
+   */
   when?: string | monaco.contextkey.ContextKeyExpr;
   group?: 'navigation' | string;
   order?: number;
@@ -51,7 +64,7 @@ export abstract class IMenuRegistry {
 
 export interface IMenubarItem {
   label: string;
-  order?: number; // TODO: 增加排序因子
+  order?: number;
 }
 
 export interface IExtendMenubarItem extends IMenubarItem {
@@ -212,60 +225,48 @@ export function isISubmenuItem(item: IMenuItem | ISubmenuItem): item is ISubmenu
 export interface IMenuAction {
   readonly id: string; // command id
   label: string;
-  tooltip: string;
+  icon?: string; // 标准的 vscode icon 是分两种主题的
+  tooltip?: string;
   className?: string;
-  icon: string; // 标准的 vscode icon 是分两种主题的
-  keybinding: string; // 快捷键描述
-  isKeyCombination: boolean; // 是否为组合键
+  keybinding?: string; // 快捷键描述
+  rawKeybinding?: string;
+  isKeyCombination?: boolean; // 是否为组合键
   disabled?: boolean; // disable 状态的 menu
   checked?: boolean; // checked 状态 通过 toggledWhen 实现
-  nativeRole?: string; // eletron menu 使用
-  execute(event?: any): Promise<any>;
+  nativeRole?: string; // electron menu 使用
+  execute?: (event?: any) => any;
 }
 
 export class MenuNode implements IMenuAction {
   readonly id: string;
   label: string;
-  tooltip: string;
-  className: string | undefined ;
-  icon: string;
+  icon?: string;
+  tooltip?: string;
+  className?: string;
   keybinding: string;
-  rawKeybinding: MaybeNull<string>;
+  rawKeybinding: string;
   isKeyCombination: boolean;
   disabled: boolean;
   checked: boolean;
   nativeRole: string;
   children: MenuNode[] = [];
+  readonly _actionCallback?: (event?: any) => any;
 
-  readonly _actionCallback?: (event?: any) => Promise<any>;
-
-  constructor(
-    commandId: string,
-    icon: string = '',
-    label: string = '',
-    checked = false,
-    disabled = false,
-    nativeRole: string = '',
-    keybinding: string = '',
-    rawKeybinding?: string,
-    isKeyCombination: boolean = false,
-    className: string = '',
-    actionCallback?: (event?: any) => Promise<any>,
-  ) {
-    this.id = commandId;
-    this.label = label;
-    this.className = className;
-    this.icon = icon;
-    this.keybinding = keybinding;
-    this.rawKeybinding = rawKeybinding;
-    this.isKeyCombination = isKeyCombination;
-    this.disabled = disabled;
-    this.checked = checked;
-    this.nativeRole = nativeRole;
-    this._actionCallback = actionCallback;
+  constructor(props: IMenuAction) {
+    this.id = props.id;
+    this.label = props.label;
+    this.className = props.className || '';
+    this.icon = props.icon || '';
+    this.keybinding = props.keybinding || '';
+    this.rawKeybinding = props.rawKeybinding || '';
+    this.isKeyCombination = Boolean(props.isKeyCombination);
+    this.disabled = Boolean(props.disabled);
+    this.checked = Boolean(props.checked);
+    this.nativeRole = props.nativeRole || '';
+    this._actionCallback = props.execute;
   }
 
-  execute(event?: any): Promise<any> {
+  execute(event?: any): any {
     if (this._actionCallback) {
       return this._actionCallback(event);
     }

@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-file-tree",
-  "version": "1.6.6",
+  "version": "1.6.8",
   "description": "@ali/ide-file-tree",
   "files": [
     "lib"
@@ -21,23 +21,24 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-core-common": "1.6.6",
-    "@ali/ide-core-node": "1.6.6",
-    "@ali/ide-file-service": "1.6.6",
-    "@ali/ide-workspace": "1.6.6",
-    "@ali/ide-workspace-edit": "1.6.6"
+    "@ali/ide-core-common": "1.6.8",
+    "@ali/ide-core-node": "1.6.8",
+    "@ali/ide-file-service": "1.6.8",
+    "@ali/ide-workspace": "1.6.8",
+    "@ali/ide-workspace-edit": "1.6.8",
+    "@ali/ide-components": "1.6.8"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.6.6",
+    "@ali/ide-core-browser": "1.6.8",
     "@ali/ide-dev-tool": "^1.1.0",
-    "@ali/ide-overlay": "1.6.6",
-    "@ali/ide-explorer": "1.6.6",
-    "@ali/ide-decoration": "1.6.6",
-    "@ali/ide-editor": "1.6.6",
-    "@ali/ide-main-layout": "1.6.6",
-    "@ali/ide-theme": "1.6.6",
-    "@ali/ide-workspace": "1.6.6",
-    "@ali/ide-window": "1.6.6",
+    "@ali/ide-overlay": "1.6.8",
+    "@ali/ide-explorer": "1.6.8",
+    "@ali/ide-decoration": "1.6.8",
+    "@ali/ide-editor": "1.6.8",
+    "@ali/ide-main-layout": "1.6.8",
+    "@ali/ide-theme": "1.6.8",
+    "@ali/ide-workspace": "1.6.8",
+    "@ali/ide-window": "1.6.8",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

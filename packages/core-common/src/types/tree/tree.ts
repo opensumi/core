@@ -150,6 +150,10 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
    * 是否为临时文件，如可编辑节点
    */
   readonly isTemporary?: boolean;
+  /**
+   * 仅对可折叠节点有效，控制loading样式
+   */
+  readonly isLoading?: boolean;
 
   [key: string]: any;
 }

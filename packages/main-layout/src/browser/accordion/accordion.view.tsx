@@ -15,7 +15,8 @@ export const AccordionContainer: React.FC<{
   containerId: string;
   headerSize?: number;
   minSize?: number;
-}> = observer(({ alignment = 'vertical', views, containerId, initState = new Map(), headerSize = 22, minSize = 120 }) => {
+  className?: string;
+}> = observer(({ alignment = 'vertical', views, containerId, initState = new Map(), headerSize = 22, minSize = 120, className }) => {
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
   React.useEffect(() => {
     // 解决视图在渲染前注册的问题
@@ -28,7 +29,7 @@ export const AccordionContainer: React.FC<{
   React.useEffect(() => {
     accordionService.initConfig({headerSize, minSize});
   }, []);
-  return <SplitPanel id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
+  return <SplitPanel className={className} dynamicTarget={true} id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
     {accordionService.visibleViews.map((view, index) => {
       const viewState: SectionState = accordionService.getViewState(view.id);
       const titleMenu = view.titleMenu || accordionService.getSectionToolbarMenu(view.id);
@@ -45,6 +46,7 @@ export const AccordionContainer: React.FC<{
         id={view.id}
         index={index}
         headerSize={headerSize}
+        minSize={headerSize}
         initialProps={view.initialProps}
         titleMenu={titleMenu}
         titleMenuContext={view.titleMenuContext}

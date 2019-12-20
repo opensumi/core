@@ -64,7 +64,11 @@ export const ElectronMainContribution = Symbol('ElectronMainContribution');
 
 export interface ElectronMainContribution {
 
-  registerMainApi(registry: ElectronMainApiRegistry);
+  registerMainApi?(registry: ElectronMainApiRegistry);
+
+  onStart?();
+
+  beforeAppReady?();
 
 }
 
@@ -110,4 +114,10 @@ export interface ICodeWindow {
 export interface ICodeWindowOptions {
   extensionDir?: string;
   extensionCandidate?: ExtensionCandiDate[];
+}
+
+export interface IParsedArgs {
+  extensionDir?: string;
+  workspaceDir?: string;
+  extensionCandidate: string[];
 }

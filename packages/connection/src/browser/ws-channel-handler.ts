@@ -2,6 +2,8 @@ import { WSChannel, MessageString } from '../common/ws-channel';
 import * as shorid from 'shortid';
 import { stringify, parse } from '../common/utils';
 import { MultiWs } from './multi-ws';
+import { IReporterService, REPORT_NAME } from '@ali/ide-core-common';
+
 // import ReconnectingWebSocket from 'reconnecting-websocket';
 // import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
@@ -14,6 +16,7 @@ export class WSChanneHandler {
   private logger = console;
   public clientId: string = `CLIENT_ID:${shorid.generate()}`;
   private heartbeatMessageTimer: NodeJS.Timeout;
+  private reporterService: IReporterService;
 
   constructor(public wsPath: string, logger: any, public protocols?: string[]) {
     this.logger = logger || this.logger;
@@ -21,6 +24,9 @@ export class WSChanneHandler {
   }
   setLogger(logger: any) {
     this.logger = logger;
+  }
+  setReporter(reporterService: IReporterService) {
+    this.reporterService = reporterService;
   }
   private clientMessage() {
     const clientMsg: MessageString = stringify({
@@ -72,6 +78,7 @@ export class WSChanneHandler {
           this.channelMap.forEach((channel) => {
             console.log('channel', channel);
             channel.onOpen(() => {
+              this.reporterService && this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT);
               console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);

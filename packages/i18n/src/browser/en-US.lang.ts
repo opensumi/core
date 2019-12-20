@@ -89,6 +89,7 @@ export const localizationBundle = {
     'editor.format.chooseFormatter': 'Choose the Formatter',
     'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.chooseEncoding': 'Reopen with encoding (Unsaved Changes will be lost)',
+    'editor.configuration.maxTokenizationLineLength': 'Lines above this length will not be tokenized for performance reasons',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
@@ -218,6 +219,20 @@ export const localizationBundle = {
     'debug.configuration.comment2': 'Hover to view descriptions of existing attributes.',
     'debug.configuration.comment3': 'For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
     'debug.launch.existed': 'Debug configuration "{0}" is already running',
+    'debug.expression.log.placeholder': 'Message to log when breakpoint is hit. Expressions within {} are interpolated. Press \ "Enter \" to confirm and \ "Esc \" to cancel.',
+    'debug.expression.hit.placeholder': 'Break when hit count condition is met. Press \ "Enter \" to confirm and \ "Esc \" to cancel.',
+    'debug.expression.condition.placeholder': 'Break when the expression evaluates to true. Press \ "Enter \" to confirm and \ "Esc \" to cancel.',
+    'debug.expression.condition': 'Expression',
+    'debug.expression.hitCondition': 'Hit Count',
+    'debug.expression.logMessage': 'Log Message',
+    'debug.menu.delete.breakpoint': 'Delete Breakpoint',
+    'debug.menu.edit.breakpoint': 'Edit Breakpoint',
+    'debug.menu.disable.breakpoint': 'Disable Breakpoint',
+    'debug.menu.enable.breakpoint': 'Enable Breakpoint',
+    'debug.menu.add.logpoint': 'Add Log breakpoint',
+    'debug.menu.add.conditional': 'Add Condition Breakpoint',
+    'debug.menu.add.breakpoint': 'Add Breakpoint',
+    'debug.menu.disable.logpoint': 'Disable Log Breakpoint',
 
     'output.tabbar.title': 'OUTPUT',
     'output.channel.none': '<no output yet>',
@@ -273,6 +288,7 @@ export const localizationBundle = {
     'preference.editor.formatOnSave': 'Enable format on manual save.',
     'preference.editor.formatOnSaveTimeout': 'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
     'preference.editor.formatOnSaveTimeoutError': 'Aborted format on save after ${0}ms',
+    'preference.editor.maxTokenizationLineLength': 'Max Tokenization Line Length',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',
@@ -309,7 +325,7 @@ export const localizationBundle = {
     'open.editors.copyRelativePath': 'Copy Relative Path',
     'open.editors.copyPath': 'Copy Path',
 
-    'terminal.name': 'Terminal',
+    'terminal.name': 'TERMINAL',
     'terminal.disconnected': 'Terminal already disconnected',
     'terminal.top': 'Stop terminal',
     'terminal.try.reconnect': 'Try to reconnect terminal',
@@ -317,6 +333,14 @@ export const localizationBundle = {
     'terminal.split': 'Split terminal',
     'terminal.maximum': 'Maximum terminal panel',
     'terminal.or': 'or',
+
+    'terminal.menu.search': 'Search',
+    'terminal.menu.split': 'Split',
+    'terminal.menu.selectAll': 'Select All',
+    'terminal.menu.copy': 'Copy',
+    'terminal.menu.paste': 'Paste',
+    'terminal.menu.clear': 'Clear',
+    'terminal.menu.stop': 'Stop',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
@@ -406,5 +430,7 @@ export const localizationBundle = {
     'markers.filter.placefolder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
     'markers.filter.content.empty': 'No results found with provided filter criteria.',
     'markers.filter.reset': 'Clear Filter.',
+
+    'app.quit': 'Quit',
   },
 };

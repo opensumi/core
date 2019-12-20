@@ -5,6 +5,7 @@ import * as styles from './markers-filter.module.less';
 import { MarkerService } from './markers-service';
 import Messages from './messages';
 import debounce = require('lodash.debounce');
+import { Input } from '@ali/ide-components';
 
 /**
  * Marker过滤面板
@@ -36,7 +37,7 @@ export const MarkerFilterPanel = observer(() => {
 
   return (
     <div className={styles.markerFilterContent}>
-      <input className={styles.filterInput}
+      <Input className={styles.filterInput}
         ref={(ele) => ref.current = ele}
         placeholder={Messages.markerPanelFilterInputPlaceholder()}
         onChange={(event) => {

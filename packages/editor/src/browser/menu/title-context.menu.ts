@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { AbstractMenuService, ICtxMenuRenderer, IMenu, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { URI } from '@ali/ide-core-common';
 import { IEditorGroup } from '../../common';
 import { EditorGroup } from '../workbench-editor.service';
@@ -8,8 +8,8 @@ import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resourc
 @Injectable()
 export class TabTitleMenuService {
 
-  @Autowired(AbstractMenuService)
-  menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  ctxMenuService: AbstractContextMenuService;
 
   @Autowired(ICtxMenuRenderer)
   ctxMenuRenderer: ICtxMenuRenderer;
@@ -20,16 +20,18 @@ export class TabTitleMenuService {
     const resourceContext = new ResourceContextKey(titleContext);
     resourceContext.set(uri);
 
-    const menus = this.menuService.createMenu(MenuId.EditorTitleContext, titleContext);
-    const result = generateCtxMenu({ menus });
+    const menus = this.ctxMenuService.createMenu({
+      id: MenuId.EditorTitleContext,
+      contextKeyService: titleContext,
+    });
+    const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
     titleContext.dispose();
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
-      // 合并结果
-      menuNodes: [...result[0], ...result[1]],
-      context: [{uri, group}],
+      menuNodes,
+      args: [{uri, group}],
     });
   }
 

@@ -1,17 +1,166 @@
 :global {
+  .tab-bar {
+    background-color: var(--activityBar-background);
+    height: 100%;
+    display: flex;
+    border-top: 1px solid var(--activityBar-border);
+    user-select: none;
+    li {
+      list-style: none;
+      &.active {
+        background-color: transparent;
+        transform: translateY(0);
+        .activity-icon {
+          color: var(--activityBar-foreground);
+          &.mask-mode {
+            background-color: var(--activityBar-foreground);
+          }
+        }
+      }
+    }
+    .icon-tab {
+      flex: 1;
+    }
+    .activity-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: var(--activityBar-inactiveForeground);
+      &.mask-mode {
+        background-color: var(--activityBar-inactiveForeground);
+      }
+    }
+    .tab-badge {
+      background-color: var(--activityBarBadge-background);
+      color: var(--activityBarBadge-foreground);
+      position: absolute;
+      top: 26px;
+      right: 8px;
+      font-size: 11px;
+      min-width: 8px;
+      height: 18px;
+      line-height: 18px;
+      padding: 0 5px;
+      border-radius: 20px;
+      text-align: center;
+    }
+    .tabbar-content{
+      border: none;
+      align-items: center;
+    }
+    .icon-tab {
+      padding: 0 0;
+      position: relative;
+      height: 40px;
+      background-color: transparent;
+      border: none;
+      line-height: normal;
+      display:flex;
+      justify-content: center;
+      align-items: center;
+      width: 48px;
+      margin-top: 8px;
+    }
+    .icon-tab:hover {
+      cursor: pointer;
+      .activity-icon {
+        color: var(--activityBar-foreground);
+        &.mask-mode {
+          background-color: var(--activityBar-foreground);
+        }
+      }
+    }
+    .icon-tab:hover:not(.active){
+      background-color: transparent;
+    }
+  }
 
-  @tabWidth: 48px;
+  .left-tab-bar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--activityBar-background);
+    .tab-bar {
+      height: auto;
+    }
+    .bottom-icon-container {
+      width: 48px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      &:last-child {
+        margin-bottom: 8px;
+      }
+      .activity-icon {
+        font-size: 20px;
+        margin-top: 6px;
+        &:hover {
+          color: var(--activityBar-foreground);
+          cursor: pointer;
+        }
+      }
+    }
+  }
 
+  .tab-panel {
+    position: relative;
+    flex: 1;
+    border-left: 1px solid var(--panel-border);
+    border-right: 1px solid var(--panel-border);
+    border-top: 1px solid var(--panel-border);
+  }
+
+  // 左侧/右侧 panel 因为 menubar 有 border-bottom
+  // 所以去掉了 border-top
+  :global(.left-slot) .tab-panel,
+  :global(.right-slot) .tab-panel {
+    border-top-width: 0;
+  }
+
+  .tab-tool-bar {
+    .p-TabBar-toolbar {
+      display: flex;
+      flex-direction: row;
+      padding-right: 10px;
+    }
+  }
   .left-slot {
     height: 100%;
     .tab-bar {
       border-right: 1px solid var(--activityBar-border);
+      li.active {
+        .icon-tab::before {
+          content: '';
+          display: block;
+          position: absolute;
+          left: 0;
+          height: 100%;
+          border-left: 3px solid var(--kt-activityBar-activeBorder);
+        }
+      }
     }
   }
   .right-slot {
     height: 100%;
     .tab-bar {
       border-left: 1px solid var(--activityBar-border);
+      .icon-tab {
+        width: 40px;
+        height: 44px;
+        margin: 0;
+      }
+      .activity-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+      li.active {
+        .icon-tab {
+          background-color: var(--sideBar-background);
+        }
+      }
     }
   }
   .bottom-slot {
@@ -25,8 +174,9 @@
       justify-content: space-between;
       z-index: 1;
       flex: 1;
+      user-select: none;
       li {
-        padding: 0 10px;
+        margin: 0 12px;
         position: relative;
         height: 28px;
         line-height: 28px;
@@ -63,117 +213,11 @@
         box-sizing: border-box;
         transform: scale(0.85);
       }
-    }
-  }
-  .tab-bar {
-    background-color: var(--activityBar-background);
-    height: 100%;
-    display: flex;
-    border-top: 1px solid var(--activityBar-border);
-    li {
-      list-style: none;
-      &.active {
-        background-color: transparent;
-        transform: translateY(0);
-        .activity-icon {
-          color: var(--activityBar-foreground);
-          &.mask-mode {
-            background-color: var(--activityBar-foreground);
-          }
+      .next_bottom_bar {
+        .tab-badge {
+          margin-left: 2px;
         }
       }
-    }
-    .icon-tab {
-      flex: 1;
-    }
-    .activity-icon {
-      font-size: 24px;
-      width: 24px;
-      color: var(--activityBar-inactiveForeground);
-      line-height:@tabWidth;
-      height: @tabWidth;
-      &.mask-mode {
-        background-color: var(--activityBar-inactiveForeground);
-      }
-    }
-    .tab-badge {
-      background-color: var(--activityBarBadge-background);
-      color: var(--activityBarBadge-foreground);
-      position: absolute;
-      top: 26px;
-      right: 8px;
-      font-size: 11px;
-      min-width: 8px;
-      height: 18px;
-      line-height: 18px;
-      padding: 0 5px;
-      border-radius: 20px;
-      text-align: center;
-    }
-    .tabbar-content{
-      border: none;
-      align-items: center;
-    }
-    .icon-tab {
-      padding: 0 0;
-      position: relative;
-      min-height: @tabWidth;
-      max-height: @tabWidth;
-      background-color: transparent;
-      border: none;
-      line-height: normal;
-      display:flex;
-      justify-content: center;
-      align-items: center;
-      width: @tabWidth;
-    }
-    .icon-tab:hover {
-      cursor: pointer;
-      .activity-icon {
-        color: var(--activityBar-foreground);
-      }
-    }
-    .icon-tab:hover:not(.active){
-      background-color: transparent;
-    }
-  }
-
-  .left-tab-bar {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: var(--activityBar-background);
-    .tab-bar {
-      height: auto;
-    }
-    .bottom-icon-container {
-      width: 48px;
-      height: 48px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      .activity-icon {
-        font-size: 24px;
-        margin-top: 6px;
-        &:hover {
-          color: var(--activityBar-foreground);
-          cursor: pointer;
-        }
-      }
-    }
-  }
-
-  .tab-panel {
-    position: relative;
-    flex: 1;
-  }
-
-  .tab-tool-bar {
-    .p-TabBar-toolbar {
-      display: flex;
-      flex-direction: row;
-      padding-right: 10px;
     }
   }
 }
@@ -196,6 +240,8 @@
   height: 100%;
   overflow: hidden;
   background-color: var(--panel-background);
+  display: flex;
+  flex-direction: column;
 }
 
 .container_wrap {
@@ -211,6 +257,35 @@
   position: absolute;
   top: -25.5px;
   right: 8px;
+  align-items: center;
+}
+.panel_title_bar {
+  flex-direction: row;
+  display: flex;
+  background-color: var(--kt-panelTitle-background);
+  user-select: none;
+  h1 {
+    margin: 0;
+    font-size: 12px;
+    line-height: 28px;
+    font-weight: 400;
+    padding: 0 8px;
+    color: var(--panelTitle-inactiveForeground);
+  }
+}
+.title_component_container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.panel_toolbar_container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.panel_wrapper {
+  flex: 1;
+  overflow: hidden;
 }
 .bottom_tab_title {
   display: inline-block;
@@ -218,6 +293,12 @@
 .bottom_bar_container {
   display: flex;
   flex-direction: row;
-  border-top: 1px solid var(--panel-border);
   align-items: center;
+  z-index: 99;
+}
+.split_line {
+  border-left: 1px solid #202224;
+  height: 14px;
+  width: 0px;
+  margin: 0 8px;
 }

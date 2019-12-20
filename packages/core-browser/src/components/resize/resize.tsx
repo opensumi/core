@@ -58,12 +58,20 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   const requestFrame = React.useRef<number>();
 
   const setSize = (prev: number, next: number) => {
+    const parentWidth = ref.current!.parentElement!.offsetWidth;
     const prevEle = props.findPrevElement ? props.findPrevElement() : prevElement.current!;
     const nextEle = props.findNextElement ? props.findNextElement() : nextElement.current!;
     if (
       (prevEle && prevEle.classList.contains(RESIZE_LOCK)) || (nextEle && nextEle.classList.contains(RESIZE_LOCK))
     ) {
       return;
+    }
+    const prevMinResize = prevEle!.dataset.minResize || 0;
+    const nextMinResize = nextEle!.dataset.minResize || 0;
+    if (prevMinResize || nextMinResize) {
+      if (prev * parentWidth <= prevMinResize || next * parentWidth <= nextMinResize) {
+        return;
+      }
     }
     if (nextEle) {
       nextEle.style.width = next * 100 + '%';
@@ -86,6 +94,8 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     if (prevEle) {
       prevEle.style.width = prev / (prev + next) * currentTotalWidth + '%';
     }
+    handleZeroSize();
+
     if (props.onResize && nextEle && prevEle) {
       props.onResize(prevEle, nextEle);
     }
@@ -101,6 +111,39 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     return relativeSizes;
   };
 
+  /**
+   * 处理存在置0的情况
+   */
+  const handleZeroSize = () => {
+    // 对于设置为0的情况，一般认为是会需要完全隐藏对应元素，并且当前handle变为不可用
+    const prevEle = prevElement.current!;
+    const nextEle = nextElement.current!;
+    let hasZero = false;
+    if (prevEle) {
+      if (parseFloat(prevEle.style.width) === 0) {
+        prevEle.classList.add('kt_display_none');
+        hasZero = true;
+      } else {
+        prevEle.classList.remove('kt_display_none');
+      }
+    }
+    if (nextEle) {
+      if (parseFloat(nextEle.style.width) === 0) {
+        nextEle.classList.add('kt_display_none');
+        hasZero = true;
+      } else {
+        nextEle.classList.remove('kt_display_none');
+      }
+    }
+    if (ref.current) {
+      if (hasZero) {
+        ref.current.classList.add('none-pointer-event');
+      } else {
+        ref.current.classList.remove('none-pointer-event');
+      }
+    }
+  };
+
   const setAbsoluteSize = (size: number, isLatter?: boolean) => {
     const currentPrev = prevElement.current!.clientWidth;
     const currentNext = nextElement.current!.clientWidth;
@@ -113,6 +156,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
       prevElement.current!.style.width = currentTotalWidth * (size / totalSize) + '%';
       nextElement.current!.style.width = currentTotalWidth * (1 - size / totalSize) + '%';
     }
+    handleZeroSize();
     if (props.onResize) {
       props.onResize(prevElement.current!, nextElement.current!);
     }
@@ -127,6 +171,9 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
 
   const onMouseMove =  ((e) => {
     e.preventDefault();
+    if (ref.current && ref.current.classList.contains('no-resize')) {
+      return;
+    }
     const prevWidth = startPrevWidth.current + e.pageX - startX.current;
     const nextWidth = startNextWidth.current - ( e.pageX - startX.current);
     if (requestFrame.current) {
@@ -186,6 +233,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     <div ref={(e) => {ref.current = e; } } className={classnames({
       [styles['resize-handle-horizontal']]: true,
       [styles['with-color']]: !props.noColor,
+      [props.className || '']: true,
     })}/>
   );
 };
@@ -231,8 +279,42 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     if (prevEle) {
       prevEle.style.height = prev / (prev + next) * currentTotalHeight + '%';
     }
+    handleZeroSize();
     if (props.onResize && nextEle && prevEle) {
       props.onResize(prevEle, nextEle);
+    }
+  };
+
+  /**
+   * 处理存在置0的情况
+   */
+  const handleZeroSize = () => {
+    // 对于设置为0的情况，一般认为是会需要完全隐藏对应元素，并且当前handle变为不可用
+    const prevEle = prevElement.current!;
+    const nextEle = nextElement.current!;
+    let hasZero = false;
+    if (prevEle) {
+      if (parseFloat(prevEle.style.height) === 0) {
+        prevEle.classList.add('kt_display_none');
+        hasZero = true;
+      } else {
+        prevEle.classList.remove('kt_display_none');
+      }
+    }
+    if (nextEle) {
+      if (parseFloat(nextEle.style.height) === 0) {
+        nextEle.classList.add('kt_display_none');
+        hasZero = true;
+      } else {
+        nextEle.classList.remove('kt_display_none');
+      }
+    }
+    if (ref.current) {
+      if (hasZero) {
+        ref.current.classList.add('none-pointer-event');
+      } else {
+        ref.current.classList.remove('none-pointer-event');
+      }
     }
   };
 
@@ -277,6 +359,8 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
         nextElement.current!.style.height = currentTotalHeight * (1 - size / totalSize) + '%';
       }
     }
+    // 使用setTimeout，因为要到下一个eventLoop才会重新计算高度
+    handleZeroSize();
     if (props.onResize) {
       props.onResize(prevElement.current!, nextElement.current!);
     }
@@ -303,6 +387,9 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
 
   const onMouseMove = ((e: MouseEvent) => {
     e.preventDefault();
+    if (ref.current && ref.current.classList.contains('no-resize')) {
+      return;
+    }
     const direction = e.pageY > startY.current;
     // 若上层未传入findNextElement，dynamicNext为null，否则找不到符合要求的panel时返回undefined
     const dynamicNext = props.findNextElement ? props.findNextElement(direction) : null;
@@ -329,6 +416,13 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     }
     const parentHeight = ref.current!.parentElement!.offsetHeight;
     requestFrame.current = window.requestAnimationFrame(() => {
+      const prevMinResize = cachedPrevElement.current!.dataset.minResize || 0;
+      const nextMinResize = cachedNextElement.current!.dataset.minResize || 0;
+      if (prevMinResize || nextMinResize) {
+        if (prevHeight <= prevMinResize || nextHeight <= nextMinResize) {
+          return;
+        }
+      }
       setDomSize(prevHeight / parentHeight, nextHeight / parentHeight, cachedPrevElement.current!, cachedNextElement.current!);
     });
   });

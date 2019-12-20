@@ -3,7 +3,7 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { isOSX, CommandService, DisposableStore } from '@ali/ide-core-common';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import { useHotKey } from '@ali/ide-core-browser/lib/react-hooks/hot-key';
-import { Input } from '@ali/ide-core-browser/lib/components/input';
+import { Input } from '@ali/ide-components';
 
 import { ISCMRepository, InputValidationType } from '../../common';
 import * as styles from './scm-header.module.less';

@@ -4,12 +4,13 @@ import { WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-import { IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractContextMenuService, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
 import { ActivationEventService } from '@ali/ide-activation-event';
+import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -22,8 +23,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(IMenuRegistry)
   menus: IMenuRegistry;
 
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
+  @Autowired(AbstractContextMenuService)
+  private readonly ctxMenuService: AbstractContextMenuService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
@@ -50,21 +51,24 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     size?: number;
   }} = {};
 
+  // TODO 使用IconAction完成左侧activityBar上展示的额外图标注册能力
+  // private extraIconActions: IconAction
+
   constructor() {
     super();
   }
 
   @OnEvent(RenderedEvent)
   didMount() {
-    for (const contribution of this.contributions.getContributions()) {
-      if (contribution.onDidRender) {
-        contribution.onDidRender();
-      }
-    }
     for (const [containerId, views] of this.pendingViewsMap.entries()) {
       views.forEach(({view, props}) => {
         this.collectViewComponent(view, containerId, props);
       });
+    }
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.onDidRender) {
+        contribution.onDidRender();
+      }
     }
     this.restoreState();
     for (const service of this.services.values()) {
@@ -75,9 +79,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   setFloatSize(size: number) {}
-
-  // TODO
-  registerTabbarViewToContainerMap() {}
 
   storeState(service: TabbarService, currentId: string) {
     this.state[service.location] = {
@@ -121,6 +122,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       tabbarService.currentContainerId = '';
     } else {
       tabbarService.currentContainerId = tabbarService.currentContainerId ? '' : tabbarService.previousContainerId || tabbarService.containersMap.keys().next().value;
+    }
+    if (tabbarService.currentContainerId && size) {
+      tabbarService.resizeHandle.setSize(size);
     }
   }
 
@@ -171,7 +175,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return activityHandler!;
   }
 
-  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: React.FunctionComponent<{}> | undefined): string {
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {
+    if (Fc) {
+      console.warn('collectTabbarComponent api warning: Please move react component into options.component!');
+    }
     const tabbarService = this.getTabbarService(side);
     tabbarService.registerContainer(options.containerId, {views, options});
     return options.containerId;
@@ -187,8 +194,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   handleSetting = (event: React.MouseEvent<HTMLElement>) => {
-    const menus = this.menuService.createMenu(MenuId.SettingsIconMenu);
-    const menuNodes = generateCtxMenu({ menus });
+    const menus = this.ctxMenuService.createMenu({
+      id: MenuId.SettingsIconMenu,
+    });
+    const menuNodes = menus.getGroupedMenuNodes();
+    menus.dispose();
     this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
       x: event.clientX,
       y: event.clientY,

@@ -13,7 +13,14 @@
 }
 
 .selected {
-  background: var(--list-inactiveSelectionBackground);
+  background: var(--kt-sideBarList-selectionBackground);
+  :global(.kt-button) {
+    color: var(--kt-whiteGhostButton-foreground);
+    border-color: var(--kt-whiteGhostButton-border);
+  }
+  :global(.kt-extension-raw-description) {
+    color: var(--kt-sideBarList-foreground);
+  }
 }
 
 .empty {

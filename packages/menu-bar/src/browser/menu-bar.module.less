@@ -5,7 +5,8 @@
   align-items: center;
   padding: 0 10px;
   height: 27px;
-  border-bottom: 1px solid var(--kt-menubar-border)
+  border-bottom: 1px solid var(--kt-menubar-border);
+  background-color: var(--kt-menubar-background);
 }
 
 .menubar {
@@ -14,6 +15,9 @@
   justify-content: center;
   align-items: center;
   padding: 0 8px;
+  color: var(--kt-menubar-foreground);
+
+  // 目前尚未开启使用 kt.menubar.separatorBackground
 
   &:hover {
     color: var(--menubar-selectionForeground);
