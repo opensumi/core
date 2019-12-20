@@ -20,7 +20,7 @@ export class ToolbarRegistry {
       when: item.when,
       toggledWhen: item.toggleWhen,
       group: item.group || 'navigation',
-      label: item.label,
+      label: item.label || item.tooltip,
     });
   }
 }

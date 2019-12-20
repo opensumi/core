@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition } from '@ali/ide-core-browser';
+import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition, IdleValue, compareRangesUsingStarts, IContextKeyService } from '@ali/ide-core-browser';
 import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { observable, action } from 'mobx';
 import { getSymbolIcon } from '@ali/ide-core-browser';
@@ -13,16 +13,37 @@ export interface NodeStatus {
   expanded?: boolean;
 }
 
+export const enum OutlineSortOrder {
+  ByPosition,
+  ByName,
+  ByKind,
+}
+
 @Injectable()
 export class OutLineService extends WithEventBus {
   // TODO @魁武 tree需要支持定位激活元素到视区能力
   public followCursor: boolean = false;
+
+  get sortType() {
+    return this._sortType;
+  }
+
+  set sortType(type: OutlineSortOrder) {
+    this.doUpdate(this.currentUri);
+    this.ctxKeyService.createKey('outlineSortType', type);
+    this._sortType = type;
+  }
+
+  private _sortType: OutlineSortOrder = OutlineSortOrder.ByPosition;
 
   @Autowired()
   private documentSymbolStore: DocumentSymbolStore;
 
   @Autowired(WorkbenchEditorService)
   private editorService: WorkbenchEditorService;
+
+  @Autowired(IContextKeyService)
+  private ctxKeyService: IContextKeyService;
 
   @observable.ref treeNodes: TreeSymbol[] = [];
 
@@ -36,6 +57,9 @@ export class OutLineService extends WithEventBus {
   // 处理事件去重 + debounce
   private debouncedChangeEvent: Map<string, () => any> = new Map();
 
+  // 处理字符串排序，IdleValue 在空闲或需要时执行 [idle-or-urgent stratage implementation](https://philipwalton.com/articles/idle-until-urgent)
+  private readonly collator = new IdleValue<Intl.Collator>(() => new Intl.Collator(undefined, { numeric: true }));
+
   constructor() {
     super();
     this.editorService.onActiveResourceChange((e) => {
@@ -45,6 +69,8 @@ export class OutLineService extends WithEventBus {
         this.doUpdate(null);
       }
     });
+    // TODO 状态记录
+    this.ctxKeyService.createKey('outlineSortType', OutlineSortOrder.ByPosition);
   }
 
   collapseAll() {
@@ -97,7 +123,7 @@ export class OutLineService extends WithEventBus {
     if (!this.debouncedChangeEvent.has(uri.toString())) {
       this.debouncedChangeEvent.set(uri.toString(), debounce(() => {
         this.doUpdate(uri);
-      }, 100, {maxWait: 1000}));
+      }, 100, { maxWait: 1000 }));
     }
     this.debouncedChangeEvent.get(uri.toString())!();
   }
@@ -120,6 +146,7 @@ export class OutLineService extends WithEventBus {
   protected doUpdate(uri: MaybeNull<URI>, ignoreCursor?: boolean) {
     const symbols = uri && this.documentSymbolStore.getDocumentSymbol(uri);
     this.currentSymbols = symbols || [];
+    this.sortSymbolTree(this.currentSymbols);
     this.currentUri = uri;
     if (symbols) {
       if (!ignoreCursor && this.followCursor) {
@@ -137,6 +164,27 @@ export class OutLineService extends WithEventBus {
     } else {
       this.treeNodes = [];
     }
+  }
+
+  protected sortSymbolTree(symbols: DocumentSymbol[]) {
+    this.doSort(symbols);
+    symbols.forEach((symbol) => {
+      if (symbol.children) {
+        this.sortSymbolTree(symbol.children);
+      }
+    });
+  }
+
+  protected doSort(symbols: DocumentSymbol[]) {
+    symbols.sort((a, b) => {
+      if (this.sortType === OutlineSortOrder.ByKind) {
+        return a.kind - b.kind || this.collator.getValue().compare(a.name, b.name);
+      } else if (this.sortType === OutlineSortOrder.ByName) {
+        return this.collator.getValue().compare(a.name, b.name) || compareRangesUsingStarts(a.range, b.range);
+      } else {
+        return compareRangesUsingStarts(a.range, b.range) || this.collator.getValue().compare(a.name, b.name);
+      }
+    });
   }
 
   protected selectCursorSymbol(uri: URI, symbols: INormalizedDocumentSymbol[]) {
