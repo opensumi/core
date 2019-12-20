@@ -97,16 +97,19 @@ export class CommonChannelHandler extends WebSocketHandler {
   static channelId = 0;
 
   public handlerId = 'common-channel';
-  private wsServer: MultiWsServer;
+  private wsServer: MultiWsServer | ws.Server;
   private handlerRoute: (wsPathname: string) => any;
   private channelMap: Map<string | number, WSChannel> = new Map();
   private connectionMap: Map<string, ws> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
-  constructor(routePath: string, private logger: any = console) {
+  private isCloseMultichannel: boolean | undefined;
+
+  constructor(routePath: string, private logger: any = console, isCloseMultichannel?: boolean) {
     super();
-    this.handlerRoute = route(`${routePath}/:channel`);
-    this.initWSServer();
+    this.isCloseMultichannel = isCloseMultichannel;
+    this.handlerRoute = route(`${routePath}${ isCloseMultichannel ? '' : '/:channel'}`);
+    this.initWSServer(isCloseMultichannel);
   }
   private hearbeat(connectionId: string, connection: ws) {
     const timer = setTimeout(() => {
@@ -118,9 +121,9 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.heartbeatMap.set(connectionId, timer);
   }
 
-  private initWSServer() {
+  private initWSServer(isCloseMultichannel?: boolean) {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new MultiWsServer();
+    this.wsServer = isCloseMultichannel ? new ws.Server({ noServer: true }) : new MultiWsServer();
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
       connection.on('message', (msg: string) => {
@@ -249,7 +252,17 @@ export class CommonChannelHandler extends WebSocketHandler {
 
     if (routeResult) {
       const wsServer = this.wsServer;
-      wsServer.handleUpgrade(wsPathname, request, socket, head);
+      if (this.isCloseMultichannel) {
+        wsServer.handleUpgrade(request, socket, head, (connection: any) => {
+          connection.routeParam = {
+            pathname: wsPathname,
+          };
+
+          wsServer.emit('connection', connection);
+        });
+      } else {
+        (wsServer as MultiWsServer).handleUpgrade(wsPathname, request, socket, head);
+      }
       return true;
     }
 

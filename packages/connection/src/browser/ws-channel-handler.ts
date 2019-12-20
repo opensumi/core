@@ -4,6 +4,13 @@ import { stringify, parse } from '../common/utils';
 import { MultiWs } from './multi-ws';
 import { IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 
+let ReconnectingWebSocket = require('reconnecting-websocket');
+
+if (ReconnectingWebSocket.default) {
+  /* istanbul ignore next */
+  ReconnectingWebSocket = ReconnectingWebSocket.default;
+}
+
 // import ReconnectingWebSocket from 'reconnecting-websocket';
 // import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
@@ -18,9 +25,9 @@ export class WSChanneHandler {
   private heartbeatMessageTimer: NodeJS.Timeout;
   private reporterService: IReporterService;
 
-  constructor(public wsPath: string, logger: any, public protocols?: string[]) {
+  constructor(public wsPath: string, logger: any, public protocols?: string[], isCloseMultichannel?: boolean) {
     this.logger = logger || this.logger;
-    this.connection = new MultiWs(wsPath, protocols, this.clientId) as any; // new WebSocket(wsPath, protocols);
+    this.connection = isCloseMultichannel ? new ReconnectingWebSocket(wsPath, protocols, {}) : new MultiWs(wsPath, protocols, this.clientId) as any; // new WebSocket(wsPath, protocols);
   }
   setLogger(logger: any) {
     this.logger = logger;

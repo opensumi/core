@@ -1,5 +1,6 @@
 import * as ws from 'ws';
 import * as events from 'events';
+import { stringify, parse } from '../common/utils';
 
 interface ExtendWs extends ws {
   sending?: boolean;
@@ -141,7 +142,7 @@ class MultiConnect extends events.EventEmitter {
 
   async send(data: string, errorCallback: () => void) {
     // TODO 直接传标记，不要再解析一遍
-    let content = JSON.parse(data).content || '{}';
+    let content = parse(data).content || '{}';
     content = JSON.parse(content);
     const connection = this.getAvailableConnection( content.method ? content.method : '');
 

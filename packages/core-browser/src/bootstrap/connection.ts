@@ -15,12 +15,18 @@ import * as net from 'net';
 // 建立连接之前，无法使用落盘的 logger
 const logger = getLogger();
 
-export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string, onReconnect: () => void, protocols?: string[]) {
+export async function createClientConnection2(
+  injector: Injector,
+  modules: ModuleConstructor[],
+  wsPath: string, onReconnect: () => void,
+  protocols?: string[],
+  isCloseMultichannel?: boolean,
+) {
   const statusBarService = injector.get(IStatusBarService);
   const reporterService = injector.get(IReporterService);
   // const logger = injector.get(ILogger)
 
-  const wsChannelHandler = new WSChanneHandler(wsPath, logger, protocols);
+  const wsChannelHandler = new WSChanneHandler(wsPath, logger, protocols, isCloseMultichannel);
   wsChannelHandler.setReporter(reporterService);
   wsChannelHandler.connection.addEventListener('open', () => {
     statusBarService.setBackgroundColor('var(--statusBar-background)');
