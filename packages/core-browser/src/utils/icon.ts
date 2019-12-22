@@ -5,7 +5,7 @@
  * @returns [icon, text]
  */
 export function getIconClass(text: string): [string | null, string] {
-  const regExp = /^\$\((.*)\)(.*)/;
+  const regExp = /\$\((.*)\)(.*)/;
   const result = text.match(regExp);
   if (!result) {
     return [null, text];
