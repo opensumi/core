@@ -78,7 +78,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
   private electronMainLifeCycleService: IElectronMainLifeCycleService;
 
   @Autowired(IElectronMainUIService)
-  private electronMainUIService: IElectronMainLifeCycleService;
+  private electronMainUIService: IElectronMainUIService;
 
   @Autowired(IMessageService)
   private messageService: IMessageService;
@@ -156,6 +156,42 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     });
 
     commands.registerCommand({
+      id: 'electron.zoomIn',
+      label: localize('view.zoomIn'),
+      alias: 'View: Zoom In',
+    }, {
+      execute: () => {
+        this.electronMainUIService.setZoomFactor(electronEnv.currentWebContentsId, {
+          delta: 0.1,
+        });
+      },
+    });
+
+    commands.registerCommand({
+      id: 'electron.zoomOut',
+      label: localize('view.zoomOut'),
+      alias: 'View: Zoom Out',
+    }, {
+      execute: () => {
+        this.electronMainUIService.setZoomFactor(electronEnv.currentWebContentsId, {
+          delta: -0.1,
+        });
+      },
+    });
+
+    commands.registerCommand({
+      id: 'electron.zoomReset',
+      label: localize('view.zoomReset'),
+      alias: 'View: Zoom Reset',
+    }, {
+      execute: () => {
+        this.electronMainUIService.setZoomFactor(electronEnv.currentWebContentsId, {
+          value: 1,
+        });
+      },
+    });
+
+    commands.registerCommand({
       id: 'electron.reload',
       label: localize('window.reload'),
       alias: 'Reload Window',
@@ -218,6 +254,16 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     keybindings.registerKeybinding({
       command: 'electron.reload' ,
       keybinding: 'shift+ctrlcmd+r',
+    });
+
+    keybindings.registerKeybinding({
+      command: 'electron.zoomIn' ,
+      keybinding: 'ctrlcmd+=',
+    });
+
+    keybindings.registerKeybinding({
+      command: 'electron.zoomOut' ,
+      keybinding: 'ctrlcmd+-',
     });
   }
 

@@ -8,6 +8,7 @@ import { createSocketConnection } from '@ali/ide-connection';
 import '@ali/ide-core-browser/lib/style/index.less';
 // 引入本地icon，不使用cdn版本，与useCdnIcon配套使用
 import '@ali/ide-core-browser/lib/style/icon.less';
+import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 
 export async function renderApp(main: Domain, modules?: Domain[]);
 export async function renderApp(opts: IClientAppOpts);
@@ -30,6 +31,11 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   opts.extensionDir = electronEnv.metadata.extensionDir;
   opts.injector = injector;
   const app = new ClientApp(opts);
+
+  // 拦截reload行为
+  app.fireOnReload = () => {
+    injector.get(IElectronMainLifeCycleService).reloadWindow(electronEnv.currentWindowId);
+  };
 
   const netConnection = await (window as any).createRPCNetConnection();
   await app.start(document.getElementById('main')!, 'electron', createSocketConnection(netConnection));

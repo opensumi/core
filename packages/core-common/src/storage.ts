@@ -53,6 +53,7 @@ export const STORAGE_NAMESPACE = {
   LAYOUT: new URI('layout').withScheme(STORAGE_SCHEMA.SCOPE),
   RECENT_DATA: new URI('recent').withScheme(STORAGE_SCHEMA.SCOPE),
   DEBUG: new URI('debug').withScheme(STORAGE_SCHEMA.SCOPE),
+  OUTLINE: new URI('outline').withScheme(STORAGE_SCHEMA.SCOPE),
   // global database
   GLOBAL_EXTENSIONS: new URI('extensions').withScheme(STORAGE_SCHEMA.GLOBAL),
   GLOBAL_RECENT_DATA: new URI('recent').withScheme(STORAGE_SCHEMA.GLOBAL),

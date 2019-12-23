@@ -69,7 +69,7 @@ export function getVsCodeApiScript(state) {
       const targetOrigin = '*';
       let acquired = false;
 
-      let state = ${state ? `JSON.parse('${JSON.stringify(state)}')` : undefined};
+      let state = ${state ? `${JSON.stringify(state)}` : `undefined`};
 
       return () => {
         if (acquired) {

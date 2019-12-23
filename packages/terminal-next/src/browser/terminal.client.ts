@@ -109,34 +109,7 @@ export class TerminalClient extends Disposable {
     this._term.loadAddon(this._fitAddon);
 
     const weblinksAddon = new WebLinksAddon();
-    const filelinksAddon = new TerminalFilePathAddon((_, uri: string) => {
-      // todo: support for windows
-
-      const mainFuntion = async () => {
-        let absolute: string | undefined;
-        if (uri[0] !== '/') {
-          if (this.workspace.workspace) {
-            // 一致处理为无 file scheme 的绝对地址
-            absolute = `${this.workspace.workspace.uri}/${uri}`.substring(7);
-          } else {
-            return;
-          }
-        } else {
-          absolute = uri;
-        }
-
-        if (absolute) {
-          const fileUri = URI.file(absolute);
-          if (fileUri && fileUri.scheme === 'file') {
-            const stat = await this.fileService.getFileStat(fileUri.toString());
-            if (stat && !stat.isDirectory) {
-              this.editorService.open(new URI(stat.uri));
-            }
-          }
-        }
-      };
-      mainFuntion();
-    });
+    const filelinksAddon = new TerminalFilePathAddon(this.workspace, this.fileService, this.editorService);
 
     this._term.loadAddon(this._searchAddon);
     this._term.loadAddon(filelinksAddon);
@@ -322,7 +295,11 @@ export class TerminalClient extends Disposable {
   }
 
   clear() {
-    this._term.clear();
+    if (this.service.clear) {
+      this.service.clear(this.id);
+    } else {
+      this._term.clear();
+    }
   }
 
   selectAll() {
