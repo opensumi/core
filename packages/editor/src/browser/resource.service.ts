@@ -98,6 +98,16 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
       return provider.provideResourceSubname(resource, groupResources);
     }
   }
+
+  handlesScheme(scheme: string) {
+    return this.providers.has(scheme);
+  }
+
+  stopProvideScheme(scheme: string) {
+    if (this.providers.has(scheme)) {
+      this.providers.delete(scheme);
+    }
+  }
 }
 
 const  DefaultResourceDecoration: IResourceDecoration = {

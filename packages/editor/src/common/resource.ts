@@ -36,6 +36,17 @@ export abstract class ResourceService {
 
   abstract getResourceSubname(resource: IResource, groupResources: IResource[]): string | null;
 
+  /**
+   * 是否存在resourceProvider处理对应Scheme
+   * @param scheme
+   */
+  abstract handlesScheme(scheme: string): boolean;
+
+  /**
+   * 停止对一个scheme的继续处理
+   * @param scheme
+   */
+  abstract stopProvideScheme(scheme: string): void;
 }
 
 /**
