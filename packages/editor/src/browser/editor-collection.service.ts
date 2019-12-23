@@ -7,6 +7,7 @@ import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent } from 
 import { Emitter } from '@ali/vscode-jsonrpc';
 import { IEditorFeatureRegistry } from './types';
 import { EditorFeatureRegistryImpl } from './feature';
+import { getConvertedMonacoOptions, isEditorOption } from './preference/converter';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
@@ -34,53 +35,26 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   public onCodeEditorCreate = this._onCodeEditorCreate.event;
   public onDiffEditorCreate = this._onDiffEditorCreate.event;
 
+  constructor() {
+    super();
+    this.preferenceService.onPreferencesChanged((e) => {
+      const changedEditorKeys = Object.keys(e).filter((key) => isEditorOption(key));
+      if (changedEditorKeys.length > 0) {
+        const optionsDelta = getConvertedMonacoOptions(this.preferenceService, changedEditorKeys);
+        this._editors.forEach((editor) => {
+          editor.updateOptions(optionsDelta.editorOptions, optionsDelta.modelOptions);
+        });
+        this._diffEditors.forEach((editor) => {
+          (editor as BrowserDiffEditor).updateDiffOptions(optionsDelta.diffOptions);
+        });
+      }
+    });
+  }
+
   async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor> {
-    const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, options, overrides);
+    const mergedOptions = {...getConvertedMonacoOptions(this.preferenceService).editorOptions, ...options};
+    const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserCodeEditor, [monacoCodeEditor]);
-
-    for (const preferenceName in corePreferenceSchema.properties) {
-      if (preferenceName.startsWith('editor.')) {
-        const optionName = preferenceName.replace(/editor./, '');
-        const optionValue = this.preferenceService.get(preferenceName);
-        if (optionName === 'minimap') {
-          editor.updateOptions(
-            {
-              minimap: {
-                enabled: optionValue as boolean,
-              },
-            }
-        , {});
-        } else {
-          editor.updateOptions({
-            [optionName]: optionValue,
-          }, {
-            [optionName]: optionValue,
-          });
-        }
-
-      }
-    }
-    editor.addDispose(this.preferenceService.onPreferenceChanged((e) => {
-      if (e.preferenceName.startsWith('editor.')) {
-        const optionName = e.preferenceName.replace(/editor./, '');
-
-        if (optionName === 'minimap') {
-          editor.updateOptions(
-            {
-              minimap: {
-                enabled: e.newValue as boolean,
-              },
-            }
-        , {});
-        } else {
-          editor.updateOptions({
-            [optionName]: e.newValue,
-          }, {
-            [optionName]: e.newValue,
-          });
-        }
-      }
-    }));
 
     this._onCodeEditorCreate.fire(editor);
     return editor;
@@ -114,7 +88,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   }
 
   public async createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<IDiffEditor> {
-    const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, options, overrides);
+    const preferenceOptions = getConvertedMonacoOptions(this.preferenceService);
+    const mergedOptions = {...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options};
+    const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor]);
     this._onDiffEditorCreate.fire(editor);
     return editor;
@@ -234,6 +210,7 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
   }
 
   updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
+    // TODO sd
     updateOptionsWithMonacoEditor(this.monacoEditor, editorOptions, modelOptions);
   }
 
@@ -409,6 +386,10 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     this.monacoDiffEditor.updateOptions({
       readOnly: !!this.modifiedDocModel!.readonly,
     });
+  }
+
+  updateDiffOptions(options: Partial<monaco.editor.IDiffEditorOptions>) {
+    this.monacoDiffEditor.updateOptions(options);
   }
 
   getLineChanges(): ILineChange[] | null {
