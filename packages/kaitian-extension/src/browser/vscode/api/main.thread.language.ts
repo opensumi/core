@@ -3,11 +3,10 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { DisposableCollection, Emitter, URI, IMarkerData, MarkerManager, LRUMap, REPORT_NAME } from '@ali/ide-core-common';
-import { SerializedDocumentFilter, LanguageSelector, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../../common/vscode/model.api';
+import { SerializedDocumentFilter, LanguageSelector, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata, CompletionContext } from '../../../common/vscode/model.api';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { PreferenceService, IReporterService } from '@ali/ide-core-browser';
 
 @Injectable({multiple: true})
@@ -101,8 +100,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
 
+        const quickSuggestionsMaxCount = this.preference.get('editor.quickSuggestionsMaxCount') || 0;
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_COMPLETION_ITEMS);
-        const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, context, token);
+        const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, {
+          ...context,
+          quickSuggestionsMaxCount,
+        } as CompletionContext, token);
         if (!result) {
           return undefined!;
         }
@@ -120,6 +123,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           if (!this.isLanguageFeatureEnabled(model)) {
             return undefined!;
           }
+          this.reporter.point(REPORT_NAME.RESOLVE_COMPLETION_ITEM);
           return Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token));
         }
         : undefined,

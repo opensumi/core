@@ -203,6 +203,7 @@ export const defaultSettingSections: {
         {id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave'},
         {id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout'},
         {id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength'},
+        {id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay'},
       ],
     },
   ],

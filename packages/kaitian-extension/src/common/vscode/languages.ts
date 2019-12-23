@@ -1,10 +1,11 @@
-import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider, DocumentFormattingEditProvider } from 'vscode';
+import { DocumentSelector, CompletionItemProvider, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider, DocumentFormattingEditProvider } from 'vscode';
 import { SerializedDocumentFilter, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, SignatureHelp, TextEdit, FileOperationOptions, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange, CompletionItem } from './model.api';
 import { Disposable } from './ext-types';
 import { UriComponents } from 'vscode-uri';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import globToRegExp = require('glob-to-regexp');
 import { IMarkerData } from '@ali/ide-core-common';
+import { CompletionContext } from './model.api';
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;
