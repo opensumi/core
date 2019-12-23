@@ -147,11 +147,8 @@ export const ExtensionTabbarTreeView = observer(({
       if (node.command) {
         if (injector) {
           const commandService: CommandService = injector.get(CommandService);
-          if (node.command.command) {
-            commandService.executeCommand(node.command.command, ...(node.command.arguments || []));
-          } else if (node.command._command) {
-            // 适配如GitHistory插件的command参数
-            commandService.executeCommand(node.command._command, ...(node.command._arguments || []));
+          if (node.command) {
+            commandService.executeCommand(node.command.id, ...(node.command.arguments || []));
           }
         }
         setNodes(selectNode(node));

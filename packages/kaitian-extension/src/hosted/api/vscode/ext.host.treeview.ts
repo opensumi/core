@@ -1,17 +1,18 @@
-import { IExtHostTreeView, IMainThreadTreeView, IExtHostCommands, MainThreadAPIIdentifier } from '../../../common/vscode';
+import { IExtHostTreeView, IMainThreadTreeView, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
-import { IDisposable, Emitter, Disposable, Uri } from '@ali/ide-core-common';
+import { IDisposable, Emitter, Disposable, Uri, DisposableStore } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 import { ThemeIcon } from '../../../common/vscode/ext-types';
 import { isUndefined } from 'util';
+import { ExtHostCommands } from './ext.host.command';
 
 export class ExtHostTreeViews implements IExtHostTreeView {
   private proxy: IMainThreadTreeView;
 
   private treeViews: Map<string, ExtHostTreeView<any>> = new Map<string, ExtHostTreeView<any>>();
 
-  constructor(rpc: IRPCProtocol, extHostCommand: IExtHostCommands) {
+  constructor(rpc: IRPCProtocol, private readonly extHostCommand: ExtHostCommands) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadTreeView);
 
     extHostCommand.registerArgumentProcessor({
@@ -40,7 +41,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       throw new Error('Options with treeDataProvider is mandatory');
     }
 
-    const treeView = new ExtHostTreeView(treeViewId, options.treeDataProvider, this.proxy);
+    const treeView = new ExtHostTreeView(treeViewId, options.treeDataProvider, this.proxy, this.extHostCommand);
     this.treeViews.set(treeViewId, treeView);
 
     return {
@@ -157,7 +158,9 @@ class ExtHostTreeView<T> implements IDisposable {
   constructor(
     private treeViewId: string,
     private treeDataProvider: vscode.TreeDataProvider<T>,
-    private proxy: IMainThreadTreeView) {
+    private proxy: IMainThreadTreeView,
+    private commands: ExtHostCommands,
+  ) {
     proxy.$registerTreeDataProvider(treeViewId);
 
     if (treeDataProvider.onDidChangeTreeData) {
@@ -255,6 +258,8 @@ class ExtHostTreeView<T> implements IDisposable {
           }
         }
 
+        const disposable = new DisposableStore();
+
         const treeViewItem = {
           id,
           label,
@@ -265,7 +270,7 @@ class ExtHostTreeView<T> implements IDisposable {
           tooltip: treeItem.tooltip,
           collapsibleState: treeItem.collapsibleState,
           contextValue: treeItem.contextValue,
-          command: treeItem.command,
+          command: treeItem.command ? this.commands.converter.toInternal(treeItem.command, disposable) : undefined,
         } as TreeViewItem;
 
         treeItems.push(treeViewItem);
