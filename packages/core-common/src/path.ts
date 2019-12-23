@@ -119,6 +119,17 @@ export class Path {
   }
 
   join(...paths: string[]): Path {
+    const code = this.raw.charCodeAt(0);
+    const isWindows = isWindowsDeviceRoot(code);
+
+    /**
+     * 只针对 IDE 后端运行在 Windows 的情况
+     * join('C:\\path\\to\\file', 'path/to/other') === 'C:\\path\\to\\file\\path\\to\\other'
+     */
+    if (isWindows) {
+      return new Path(win32.join(this.raw, ...paths));
+    }
+
     const relativePath = paths.filter(s => !!s).join(Path.separator);
     if (!relativePath) {
       return this;

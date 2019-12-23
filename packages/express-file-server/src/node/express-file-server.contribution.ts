@@ -34,8 +34,11 @@ export class ExpressFileServerContribution implements ServerAppContribution {
       const whitelist = this.getWhiteList();
       const contentType = ALLOW_MIME[path.extname(filePath).slice(1)];
       if (
-        // 地址在白名单内
-        whitelist.some((whitelistPath) => whitelistPath && filePath.startsWith(whitelistPath))
+        /**
+         * 地址在白名单内
+         * Windows 下 C:\\Path\\to\\file 会被转换成 c:\\Path\\to\\file
+         */
+        whitelist.some((whitelistPath) => whitelistPath && filePath.toLowerCase().startsWith(whitelistPath.toLowerCase()))
         // 在允许的 contentType
         && contentType
       ) {
