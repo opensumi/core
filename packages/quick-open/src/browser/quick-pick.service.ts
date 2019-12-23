@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { QuickOpenMode, QuickOpenItem, QuickOpenGroupItem, QuickOpenItemOptions, QuickPickService, QuickOpenService, QuickPickOptions, QuickPickItem, HideReason } from './quick-open.model';
-import { getIconClass } from '@ali/ide-core-browser';
+import { getIconClass, getOctIcon } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 
 @Injectable()
@@ -54,8 +54,9 @@ export class QuickPickServiceImpl implements QuickPickService {
     const description = typeof element === 'string' ? undefined : element.description;
     const detail = typeof element === 'string' ? undefined : element.detail;
     const [icon, text] = getIconClass(label);
+
     if (icon) {
-      iconClass = getIcon(icon);
+      iconClass = getIcon(icon) || getOctIcon(icon);
       label = ` ${text}`;
     }
     return {

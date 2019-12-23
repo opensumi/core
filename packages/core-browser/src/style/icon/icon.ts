@@ -21,11 +21,17 @@ export enum ANIM_TYPE {
 const ROTATE_CLASS_NAME = ['rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both'];
 const ANIM_CLASS_NAME = ['spin', 'pulse'];
 
+/**
+ * 获取 icon className
+ * @param iconKey
+ * @param options
+ * @return 获取拼接好的 className，如果拿不到则返回空字符串
+ */
 export function getIcon(iconKey: string, options?: {
   rotate?: ROTATE_TYPE;
   anim?: ANIM_TYPE;
   fill?: boolean;
-}) {
+}): string {
   const {rotate, anim, fill} = options || {};
   let lastIndex = iconPrefixes.length;
   while (!iconMap[iconPrefixes[--lastIndex]][iconKey]) {
@@ -34,9 +40,10 @@ export function getIcon(iconKey: string, options?: {
   const iconValue = iconMap[iconPrefixes[lastIndex]][iconKey];
   if (!iconValue) {
     console.warn('图标库缺失图标:' + iconKey);
+    return '';
   }
 
-  let iconClass = `${iconPrefixes[lastIndex]}${iconValue || 'smile'}`;
+  let iconClass = `${iconPrefixes[lastIndex]}${iconValue}`;
   if (rotate !== undefined) {
     iconClass += ` iconfont-${ROTATE_CLASS_NAME[rotate]}`;
   }
