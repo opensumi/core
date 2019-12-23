@@ -56,24 +56,25 @@ const BasicInput: React.FC<IInputBaseProps> = (
     }
   }, [selection, isDirty]);
 
-  const observer = new IntersectionObserver(([entry]) => {
-    if (!entry.isIntersecting) {
-      return;
-    }
-    if (entry.boundingClientRect) {
-      inputRef.current!.style.paddingRight = `${entry.boundingClientRect.width}px`;
-      observer.unobserve(entry.target);
-    }
-  });
-
   React.useEffect(() => {
     if (controlsRef.current) {
+      const observer = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) {
+          return;
+        }
+        if (entry.boundingClientRect) {
+          inputRef.current!.style.paddingRight = `${entry.boundingClientRect.width}px`;
+          observer.unobserve(entry.target);
+        }
+      });
       observer.observe(controlsRef.current);
       return () => {
-        observer.unobserve(controlsRef.current!);
+        if (controlsRef.current) {
+          observer.unobserve(controlsRef.current);
+        }
       };
     }
-  }, []);
+  }, [controlsRef]);
 
   const baseInput = () => (<input
     {...otherProps}
