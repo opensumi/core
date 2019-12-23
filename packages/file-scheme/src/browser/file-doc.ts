@@ -37,7 +37,7 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   }
 
   handlesScheme(scheme: string) {
-    return scheme === FILE_SCHEME;
+    return scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme);
   }
 
   async provideEncoding(uri: URI) {

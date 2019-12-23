@@ -7,6 +7,8 @@ export interface IMainThreadFileSystem {
   $subscribeWatcher(options: ExtFileSystemWatcherOptions): number;
   $unsubscribeWatcher(id: number);
   $fireProvidersFilesChange(e: FileChangeEvent);
+  $registerFileSystemProvider(scheme: string): Promise<void>;
+  $unregisterFileSystemProvider(scheme: string): Promise<void>;
 
   haveProvider(scheme: string): Promise<boolean>;
   unWatchFileWithProvider(id: number);
