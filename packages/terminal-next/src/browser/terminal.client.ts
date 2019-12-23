@@ -15,7 +15,6 @@ import * as styles from './terminal.module.less';
 
 export class TerminalClient extends Disposable {
   private _container: HTMLDivElement;
-  private _input: HTMLTextAreaElement;
   private _term: Terminal;
   private _uid: string;
   private _pid: number;
@@ -98,9 +97,7 @@ export class TerminalClient extends Disposable {
     this._name = this._options.name || '';
     this._widget = widget;
     this._container = document.createElement('div');
-    this._input = document.createElement('textarea');
     this._container.className = styles.terminalInstance;
-    this._input.className = styles.terminalFake;
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...TerminalClient.defaultOptions,
@@ -212,11 +209,6 @@ export class TerminalClient extends Disposable {
 
   applyDomNode(dom: HTMLDivElement) {
     dom.appendChild(this._container);
-    document.body.appendChild(this._input);
-
-    this._input.addEventListener('paste', (event) => {
-      console.log(event);
-    });
   }
 
   private _doAttach(socket: WebSocket) {
@@ -332,17 +324,6 @@ export class TerminalClient extends Disposable {
     this._term.clear();
   }
 
-  copy() {
-    this._input.value = '';
-
-    const str = this._term.getSelection();
-    this._input.value = str;
-    this._input.select();
-    document.execCommand('copy');
-
-    this._term.focus();
-  }
-
   selectAll() {
     this._term.selectAll();
   }
@@ -397,7 +378,6 @@ export class TerminalClient extends Disposable {
 
     this.hide();
     this._container.remove();
-    this._input.remove();
 
     if (clear) {
       this.service.disposeById(this.id);

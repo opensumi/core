@@ -58,15 +58,6 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
       },
     });
 
-    registry.registerCommand({ id: SimpleCommonds.copy }, {
-      execute: async () => {
-        const client = this.terminalController.getCurrentClient() as TerminalClient;
-        if (client) {
-          client.copy();
-        }
-      },
-    });
-
     registry.registerCommand({ id: SimpleCommonds.clear }, {
       execute: async () => {
         const client = this.terminalController.getCurrentClient() as TerminalClient;
