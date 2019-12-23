@@ -193,12 +193,21 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return needed;
   }
 
+  private _isActivated() {
+    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
+    if (this.tabbarHandler) {
+      return this.tabbarHandler.isActivated();
+    } else {
+      return true;
+    }
+  }
+
   firstInitialize() {
     this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
     this.themeBackground = this.termTheme.terminalTheme.background || '';
     this._focusKey = this.contextKeyService.createKey(terminalFocusContextKey, this._focus);
 
-    if (this.tabbarHandler.isActivated()) {
+    if (this._isActivated()) {
       if (this._checkIfNeedInitialize()) {
         this.createGroup(true);
         this.addWidget();
@@ -233,19 +242,21 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }
     }));
 
-    this.addDispose(this.tabbarHandler.onActivate(() => {
-      if (!this.currentGroup) {
-        if (!this._getGroup(0)) {
-          this.tabManager.create();
+    if (this.tabbarHandler) {
+      this.addDispose(this.tabbarHandler.onActivate(() => {
+        if (!this.currentGroup) {
+          if (!this._getGroup(0)) {
+            this.tabManager.create();
+          } else {
+            this.selectGroup(0);
+          }
         } else {
-          this.selectGroup(0);
+          this.currentGroup.widgets.forEach((widget) => {
+            this.layoutTerminalClient(widget.id);
+          });
         }
-      } else {
-        this.currentGroup.widgets.forEach((widget) => {
-          this.layoutTerminalClient(widget.id);
-        });
-      }
-    }));
+      }));
+    }
 
     this.addDispose(this.themeService.onThemeChange((theme) => {
       this._clientsMap.forEach((client) => {
@@ -513,7 +524,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.errors.delete(widgetId);
     await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true, meta);
 
-    if (this.tabbarHandler.isActivated()) {
+    if (this._isActivated()) {
       this.layoutTerminalClient(widgetId);
     }
   }
@@ -529,7 +540,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   layoutTerminalClient(widgetId: string) {
     const client = this._clientsMap.get(widgetId);
 
-    if (client && this.tabbarHandler && this.tabbarHandler.isActivated() &&
+    if (client && this._isActivated() &&
       this.currentGroup && this.currentGroup.widgetsMap.has(widgetId)) {
       if (client.notReadyToShow) {
         /**

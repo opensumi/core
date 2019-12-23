@@ -81,7 +81,7 @@ export class TerminalClient extends Disposable {
     protected readonly workspace: IWorkspaceService,
     protected readonly editorService: WorkbenchEditorService,
     protected readonly fileService: IFileServiceClient,
-    protected theme: ITerminalTheme,
+    protected readonly theme: ITerminalTheme,
     protected readonly preference: PreferenceService,
     protected readonly controller: ITerminalController,
     widget: IWidget,
@@ -212,18 +212,10 @@ export class TerminalClient extends Disposable {
   }
 
   private _doAttach(socket: WebSocket) {
-    const info = this.service.intro(this.id);
-
     this._attachAddon = new AttachAddon(socket);
     this._term.loadAddon(this._attachAddon);
     this._attached = true;
     this.attachPromise = null;
-
-    if (info) {
-      this._name = (this._name || info.name) || 'terminal';
-      this._pid = info.pid;
-      this._widget.name = this._name;
-    }
 
     if (this.showPromiseResolve) {
       this.showPromiseResolve();
@@ -240,7 +232,16 @@ export class TerminalClient extends Disposable {
       if (!this.attachPromise) {
         const type = this.preference.get<string>('terminal.type');
         this.attachPromise = this.service.attach(this.id, this.term, restore, meta,
-          (socket: WebSocket) => this._doAttach(socket), this._options, type);
+          (socket: WebSocket) => this._doAttach(socket), this._options, type)
+          .then(() => {
+            const info = this.service.intro(this.id);
+            this.attachPromise = null;
+            if (info) {
+              this._name = (this._name || info.name) || 'terminal';
+              this._pid = info.pid;
+              this._widget.name = this._name;
+            }
+          });
       }
       return this.attachPromise;
     } else {

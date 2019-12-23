@@ -7,7 +7,7 @@ import { IEventBus } from '@ali/ide-core-common';
 import { RenderedEvent } from '../../layout';
 
 export const BoxPanel: React.FC<{
-  children?: Array<React.ReactElement<{ flex?: number; id: string; }>>;
+  children?: Array<React.ReactElement<{ flex?: number; id: string; }>> | React.ReactElement<{ flex?: number; id: string; }>;
   className?: string;
   direction?: Layout.direction;
   flex?: number;
@@ -17,9 +17,12 @@ export const BoxPanel: React.FC<{
   React.useEffect(() => {
     eventBus.fire(new RenderedEvent());
   }, []);
+
+  const arrayChildren: Array<React.ReactElement<{ flex?: number; id: string; }>> = (children && (children as any).map) ? children as any : [children];
+
   return (
     <div {...restProps} className={clsx(styles['box-panel'], className)} style={{flexDirection: Layout.getFlexDirection(direction)}}>
-      {children && children.map((child, index) => {
+      {arrayChildren && arrayChildren.map((child, index) => {
         return(
           <div
             key={index}

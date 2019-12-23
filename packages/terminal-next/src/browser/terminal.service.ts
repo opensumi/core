@@ -92,12 +92,12 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
       throw new Error('default terminal service not support restore');
     }
     const handler = this._createCustomWebSocket(sessionId);
+    attachMethod(handler as any);
     const info = await this.service.create(sessionId, term.rows, term.cols, {
       ...options,
       cwd: this.config.workspaceDir,
     });
     this._info.set(sessionId, info);
-    attachMethod(handler as any);
   }
 
   private _sendMessage(sessionId: string, json: any, requestId?: number) {
