@@ -424,6 +424,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
+  clearCurrentWidget() {
+    const client = this._clientsMap.get(this._focusedId);
+    if (client) {
+      client.clear();
+    }
+  }
+
   /** end */
 
   /** resize view group operation */
@@ -445,18 +452,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.selectGroup(this.groups.length - 1);
     }
     return this.groups.length - 1;
-  }
-
-  clearGroup(index: number) {
-    const group = this._getGroup(index);
-    if (group && group.widgets && group.length > 0) {
-      group.widgets.forEach((widget) => {
-        const client = this._clientsMap.get(widget.id);
-        if (client) {
-          client.clear();
-        }
-      });
-    }
   }
 
   /** end */

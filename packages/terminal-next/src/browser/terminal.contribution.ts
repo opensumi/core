@@ -12,7 +12,7 @@ import {
 import { Autowired } from '@ali/common-di';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ITerminalController, ITerminalRestore } from '../common';
-import { terminalClear, terminalSplit, terminalIndepend } from './terminal.command';
+import { terminalClear, terminalSplit, terminalSearch, terminalIndepend } from './terminal.command';
 import TerminalView from './terminal.view';
 import TerminalTabs from './component/tab/view';
 
@@ -46,6 +46,18 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
   }
 
   registerCommands(registry: CommandRegistry) {
+    registry.registerCommand(terminalSearch, {
+      execute: (...args: any[]) => {
+        this.terminalController.openSearchInput();
+      },
+      isEnabled: () => {
+        return true;
+      },
+      isVisible: () => {
+        return true;
+      },
+    });
+
     registry.registerCommand(terminalSplit, {
       execute: (...args: any[]) => {
         this.terminalController.addWidget();
@@ -60,8 +72,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
     registry.registerCommand(terminalClear, {
       execute: (...args: any[]) => {
-        const current = this.terminalController.state.index;
-        this.terminalController.clearGroup(current);
+        this.terminalController.clearCurrentWidget();
       },
       isEnabled: () => {
         return true;
@@ -88,6 +99,12 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
   registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
+      id: terminalSearch.id,
+      command: terminalSearch.id,
+      viewId: terminalSearch.category,
+      tooltip: localize('terminal.search'),
+    });
+    registry.registerItem({
       id: terminalSplit.id,
       command: terminalSplit.id,
       viewId: terminalSplit.category,
@@ -99,7 +116,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       viewId: terminalClear.category,
       tooltip: localize('terminal.clear'),
     });
-
     /*
     registry.registerItem({
       id: terminalIndepend.id,

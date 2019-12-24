@@ -404,6 +404,7 @@ export const localizationBundle = {
     'terminal.independ': '独立终端',
     'terminal.maximum': '最大化面板大小',
     'terminal.or': '或者',
+    'terminal.search': '搜索',
 
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分',

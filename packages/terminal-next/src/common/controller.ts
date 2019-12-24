@@ -29,10 +29,10 @@ export interface ITerminalController {
   addWidget(client?: any): void;
   focusWidget(widgetId: string): void;
   removeWidget(widgetId: string): void;
+  clearCurrentWidget(): void;
 
   createGroup(selected?: boolean): number;
   selectGroup(index: number): void;
-  clearGroup(index: number): void;
 
   drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean, meta?: string): Promise<void>;
   retryTerminalClient(widgetId: string): Promise<void>;

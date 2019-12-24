@@ -1,6 +1,13 @@
 import { Command } from '@ali/ide-core-common';
 import { getIcon, ROTATE_TYPE, localize } from '@ali/ide-core-browser';
 
+export const terminalSearch: Command = {
+  id: 'terminal.search',
+  label: localize('terminal.search'),
+  iconClass: getIcon('search'),
+  category: 'terminal',
+};
+
 export const terminalAdd: Command = {
   id: 'terminal.add',
   label: 'add terminal',

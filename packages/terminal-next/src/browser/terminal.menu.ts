@@ -12,7 +12,7 @@ export enum MenuId {
 }
 
 export enum SimpleCommonds {
-  search = 'terminal:search',
+  search = 'terminalsearch',
   split = 'terminal:split',
   selectAll = 'terminal:selectAll',
   copy = 'terminal:copy',
