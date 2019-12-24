@@ -14,13 +14,15 @@ export const PanelContext = React.createContext<{
   setRelativeSize: (prev: number, next: number, isLatter: boolean) => void,
   getSize: (isLatter: boolean) => number,
   getRelativeSize: (isLatter: boolean) => number[],
-  lockSize: (lock: boolean, isLatter: boolean) => void,
+  lockSize: (lock: boolean | undefined, isLatter: boolean) => void,
+  setMaxSize: (lock: boolean | undefined, isLatter: boolean) => void,
 }>({
   setSize: (targetSize: number, isLatter: boolean) => {},
   setRelativeSize: (prev, next, isLatter) => {},
   getSize: (isLatter: boolean) => 0,
   getRelativeSize: (isLatter: boolean) => [0, 0],
-  lockSize: (lock: boolean, isLatter: boolean) => {},
+  lockSize: (lock: boolean | undefined, isLatter: boolean) => {},
+  setMaxSize: (lock: boolean | undefined, isLatter: boolean) => {},
 });
 
 interface SplitChildProps {
@@ -104,13 +106,18 @@ export const SplitPanel: React.FC<{
   };
 
   const lockResizeHandle = (index) => {
-    return (lock: boolean, isLatter?: boolean) => {
+    return (lock: boolean | undefined, isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
       const newResizeState = resizeLockState.current.map((state, idx) => idx === targetIndex ? (lock !== undefined ? lock : !state) : state);
-      const newMaxState = maxLockState.current.map((state, idx) => idx === index ? (lock !== undefined ? lock : !state) : state);
       resizeLockState.current = newResizeState;
-      maxLockState.current = newMaxState;
       setLocks(newResizeState);
+    };
+  };
+
+  const setMaxSizeHandle = (index) => {
+    return (lock: boolean | undefined, isLatter?: boolean) => {
+      const newMaxState = maxLockState.current.map((state, idx) => idx === index ? (lock !== undefined ? lock : !state) : state);
+      maxLockState.current = newMaxState;
       setMaxLocks(newMaxState);
     };
   };
@@ -161,6 +168,7 @@ export const SplitPanel: React.FC<{
           setRelativeSize: setRelativeSizeHandle(index),
           getRelativeSize: getRelativeSizeHandle(index),
           lockSize: lockResizeHandle(index),
+          setMaxSize: setMaxSizeHandle(index),
         }}>
         <div
           data-min-resize={element.props.minResize}

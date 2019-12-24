@@ -105,4 +105,8 @@ export class TabBarHandler {
   updateTitle(label: string) {
     this.tabbarService.getContainer(this.containerId)!.options!.title = label;
   }
+
+  setResizeLock(lock?: boolean) {
+    this.tabbarService.resizeHandle.lockSize(lock);
+  }
 }

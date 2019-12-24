@@ -27,7 +27,8 @@ export class TabbarService extends WithEventBus {
     setRelativeSize: (prev: number, next: number) => void,
     getSize: () => number,
     getRelativeSize: () => number[],
-    lockSize: (lock: boolean) => void,
+    lockSize: (lock: boolean | undefined) => void,
+    setMaxSize: (lock: boolean | undefined) => void,
   };
 
   @Autowired(AbstractMenuService)
@@ -119,14 +120,15 @@ export class TabbarService extends WithEventBus {
     return components.sort((pre, next) => (next.options!.priority || 1) - (pre.options!.priority || 1));
   }
 
-  registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, lockSize, barSize) {
+  registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, lockSize, setMaxSize, barSize) {
     this.barSize = barSize;
     this.resizeHandle = {
       setSize: (size) => setSize(size, this.isLatter),
       setRelativeSize: (prev: number, next: number) => setRelativeSize(prev, next, this.isLatter),
       getSize: () => getSize(this.isLatter),
       getRelativeSize: () => getRelativeSize(this.isLatter),
-      lockSize: (lock: boolean) => lockSize(lock, this.isLatter),
+      setMaxSize: (lock: boolean | undefined) => setMaxSize(lock, this.isLatter),
+      lockSize: (lock: boolean | undefined) => lockSize(lock, this.isLatter),
     };
     this.listenCurrentChange();
   }
@@ -302,7 +304,7 @@ export class TabbarService extends WithEventBus {
   }
 
   protected listenCurrentChange() {
-    const {getSize, setSize, lockSize} = this.resizeHandle;
+    const {getSize, setSize, lockSize, setMaxSize} = this.resizeHandle;
     observe(this, 'currentContainerId', (change) => {
       if (this.prevSize === undefined) {
       }
@@ -319,10 +321,12 @@ export class TabbarService extends WithEventBus {
           }
           setSize(this.prevSize || 400);
           lockSize(false);
+          setMaxSize(false);
         } else {
           this.prevSize = getSize();
           setSize(this.barSize);
           lockSize(true);
+          setMaxSize(true);
         }
       }
     });
