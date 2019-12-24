@@ -131,7 +131,9 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
 
   protected preprocessHtml(html: string): string {
     if (isElectronRenderer()) {
-      return html;
+      // 将vscode-resource:/User/xxx 转换为 vscode-resource:///User/xxx
+      return html.replace(/(["'])vscode-resource:(\/\/|)([^\s'"]+?)(["'])/gi, (_, startQuote, slash, path, endQuote) =>
+      `${startQuote}vscode-resource://${path}${endQuote}`);
     }
     return html.replace(/(["'])vscode-resource:([^\s'"]+?)(["'])/gi, (_, startQuote, path, endQuote) =>
       `${startQuote}${this.staticResourceService.resolveStaticResource(URI.file(path))}${endQuote}`);

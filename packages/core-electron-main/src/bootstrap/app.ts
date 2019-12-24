@@ -60,6 +60,8 @@ export class ElectronMainApp {
           resolve();
         });
       });
+    } else {
+      this.onStartContribution();
     }
   }
 
