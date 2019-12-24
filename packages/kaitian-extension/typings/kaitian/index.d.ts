@@ -2,6 +2,7 @@ declare module "kaitian" {
 
   export namespace layout {
     export function toggleBottomPanel(): Promise<void>;
+    export function getTabbarHandler(id: string): ITabbarHandle;
   }
 
   export namespace ideWindow {
@@ -114,6 +115,19 @@ declare module "kaitian" {
     export function timeEnd(name: string, msg?: string): void;
     export function point(name: string, msg?: string): void;
   }
+
+  export interface ITabbarHandle {
+
+    setSize(size: number): void;
+
+    activate(): void;
+
+    deactivate(): void;
+
+    onActivate: Event<void>;
+
+  }
+
 }
 
 
