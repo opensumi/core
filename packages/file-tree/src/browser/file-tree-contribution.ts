@@ -424,9 +424,6 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
             }
           });
       },
-      isVisible: () => {
-        return isElectronRenderer();
-      },
     });
 
   }
