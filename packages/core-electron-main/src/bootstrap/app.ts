@@ -3,7 +3,7 @@ import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
-import { createContributionProvider, ContributionProvider, URI, uuid } from '@ali/ide-core-common';
+import { createContributionProvider, ContributionProvider, URI, uuid, ExtensionCandiDate } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
 import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
@@ -230,4 +230,23 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
     }
   }
 
+  setExtensionDir(extensionDir: string, windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
+      if (codeWindow) {
+        codeWindow.setExtensionDir(extensionDir);
+      }
+    }
+  }
+
+  setExtensionCandidate(candidate: ExtensionCandiDate[], windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
+      if (codeWindow) {
+        codeWindow.setExtensionCandidate(candidate);
+      }
+    }
+  }
 }

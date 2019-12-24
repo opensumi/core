@@ -59,6 +59,7 @@ import {
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
+import { createKaitianApiFactory } from './kaitian/main.thread.api.impl';
 import { createExtensionLogFactory } from './extension-log';
 
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -194,6 +195,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private extensionMetaDataArr: IExtensionMetaData[];
   private vscodeAPIFactoryDisposer: () => void;
+  private kaitianAPIFactoryDisposer: () => void;
 
   private workerProtocol: RPCProtocol;
 
@@ -511,6 +513,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     this.extensionMap = new Map();
     this.vscodeAPIFactoryDisposer();
+    this.kaitianAPIFactoryDisposer();
 
     this.extensionComponentMap.forEach((componentIdArr) => {
       for (const componentId of componentIdArr) {
@@ -609,8 +612,8 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public setVSCodeMainThreadAPI() {
     this.vscodeAPIFactoryDisposer = createVSCodeAPIFactory(this.protocol, this.injector, this);
+    this.kaitianAPIFactoryDisposer = createKaitianApiFactory(this.protocol, this.injector);
     this.mainThreadCommands.set('node', this.protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
-
     // 注册 worker 环境的响应 API
     if (this.workerProtocol) {
       this.workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
