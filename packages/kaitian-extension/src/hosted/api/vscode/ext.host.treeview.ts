@@ -1,7 +1,7 @@
 import { IExtHostTreeView, IMainThreadTreeView, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
-import { IDisposable, Emitter, Disposable, Uri, DisposableStore } from '@ali/ide-core-common';
+import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 import { ThemeIcon } from '../../../common/vscode/ext-types';
 import { isUndefined } from 'util';
@@ -83,7 +83,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
   async $getChildren(treeViewId: string, treeItemId?: string): Promise<TreeViewItem[] | undefined> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
-      throw new Error('No tree view with id' + treeViewId);
+      throw new Error('No tree view with id ' + treeViewId);
     }
 
     return treeView.getChildren(treeItemId);
@@ -98,7 +98,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
   async $setExpanded(treeViewId: string, treeItemId: string, expanded: boolean): Promise<any> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
-      throw new Error('No tree view with id' + treeViewId);
+      throw new Error('No tree view with id ' + treeViewId);
     }
 
     if (expanded) {
@@ -116,7 +116,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
   async $setSelection(treeViewId: string, treeItemIds: string[]): Promise<void> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
-      throw new Error('No tree view with id' + treeViewId);
+      throw new Error('No tree view with id ' + treeViewId);
     }
     treeView.setSelection(treeItemIds);
   }
@@ -129,7 +129,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
   async $setVisible(treeViewId: string, isVisible: boolean): Promise<void> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
-      throw new Error('No tree view with id' + treeViewId);
+      throw new Error('No tree view with id ' + treeViewId);
     }
     treeView.setVisible(isVisible);
   }
@@ -155,6 +155,8 @@ class ExtHostTreeView<T> implements IDisposable {
 
   private cache: Map<string, T> = new Map<string, T>();
 
+  private disposable: DisposableStore = new DisposableStore();
+
   constructor(
     private treeViewId: string,
     private treeDataProvider: vscode.TreeDataProvider<T>,
@@ -164,14 +166,22 @@ class ExtHostTreeView<T> implements IDisposable {
     proxy.$registerTreeDataProvider(treeViewId);
 
     if (treeDataProvider.onDidChangeTreeData) {
-      treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
+
+      const dispose = treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
         // TODO: 处理单独的Item刷新
         proxy.$refresh<T>(treeViewId);
       });
+      if (dispose) {
+        this.disposable.add(dispose);
+      }
     }
+
+    this.disposable.add(toDisposable(() => this.cache.clear()));
+    this.disposable.add(toDisposable(() => proxy.$unregisterTreeDataProvider(treeViewId)));
   }
 
   dispose() {
+    this.disposable.dispose();
   }
 
   get visible(): boolean {
@@ -258,8 +268,6 @@ class ExtHostTreeView<T> implements IDisposable {
           }
         }
 
-        const disposable = new DisposableStore();
-
         const treeViewItem = {
           id,
           label,
@@ -270,7 +278,7 @@ class ExtHostTreeView<T> implements IDisposable {
           tooltip: treeItem.tooltip,
           collapsibleState: treeItem.collapsibleState,
           contextValue: treeItem.contextValue,
-          command: treeItem.command ? this.commands.converter.toInternal(treeItem.command, disposable) : undefined,
+          command: treeItem.command ? this.commands.converter.toInternal(treeItem.command, this.disposable) : undefined,
         } as TreeViewItem;
 
         treeItems.push(treeViewItem);

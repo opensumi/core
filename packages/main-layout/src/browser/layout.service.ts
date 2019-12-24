@@ -281,8 +281,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const targetContainerId = this.viewToContainerMap.get(view.id)!;
       if (this.contextKeyService.match(view.when)) {
         this.collectViewComponent(view, targetContainerId);
-      } else {
-        this.disposeViewComponent(view.id);
       }
     });
   }

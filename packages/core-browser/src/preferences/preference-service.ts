@@ -484,6 +484,8 @@ export class PreferenceServiceImpl implements PreferenceService {
     const changes = Object.values(changesToEmit);
     const defaultScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Default);
     const userScopeChanges = changes.filter((change) => change.scope === PreferenceScope.User);
+    const workspaceScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Workspace);
+    const folderScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Folder);
 
     if (defaultScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
@@ -496,6 +498,20 @@ export class PreferenceServiceImpl implements PreferenceService {
       this._onDidChangeConfiguration.fire({
         affectedKeys: userScopeChanges.map((n) => n.preferenceName),
         source: ConfigurationTarget.USER,
+      });
+    }
+
+    if (workspaceScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: workspaceScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.WORKSPACE,
+      });
+    }
+
+    if (folderScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: folderScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.WORKSPACE_FOLDER,
       });
     }
   }

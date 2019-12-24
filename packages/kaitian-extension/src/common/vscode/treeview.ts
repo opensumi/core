@@ -8,6 +8,7 @@ import { TreeItemCollapsibleState } from './ext-types';
 import { ThemeType } from '@ali/ide-theme';
 
 export interface IMainThreadTreeView {
+  $unregisterTreeDataProvider(treeViewId: string): void;
   $registerTreeDataProvider(treeViewId: string): void;
   $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): void;
   $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): void;

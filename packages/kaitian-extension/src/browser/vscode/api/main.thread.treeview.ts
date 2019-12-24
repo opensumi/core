@@ -3,7 +3,7 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage } from '../../../common/vscode';
-import { TreeNode, MenuPath, URI, Emitter, ViewUiStateManager } from '@ali/ide-core-browser';
+import { TreeNode, MenuPath, URI, Emitter, ViewUiStateManager, DisposableStore, toDisposable } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabbarTreeView } from '../components';
 import { IIconService, IconType } from '@ali/ide-theme';
@@ -23,18 +23,24 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   readonly dataProviders: Map<string, TreeViewDataProviderMain> = new Map<string, TreeViewDataProviderMain>();
 
+  private disposableCollection: Map<string, DisposableStore> = new Map();
+  private disposable: DisposableStore = new DisposableStore();
+
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
+    this.disposable.add(toDisposable(() => this.dataProviders.clear()));
   }
 
   dispose() {
-    this.dataProviders.clear();
+    this.disposable.dispose();
   }
 
   $registerTreeDataProvider(treeViewId: string): void {
     if (!this.dataProviders.has(treeViewId)) {
+      const disposable = new DisposableStore();
       const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.iconService);
       this.dataProviders.set(treeViewId, dataProvider);
+      disposable.add(toDisposable(() => this.dataProviders.delete(treeViewId)));
       this.mainLayoutService.replaceViewComponent({
         id: treeViewId,
         component: ExtensionTabbarTreeView,
@@ -50,7 +56,16 @@ export class MainThreadTreeView implements IMainThreadTreeView {
         handler.onInActivate(() => {
           dataProvider.setVisible(treeViewId, false);
         });
+        disposable.add(toDisposable(() => handler.disposeView(treeViewId)));
       }
+      this.disposableCollection.set(treeViewId, disposable);
+    }
+  }
+
+  $unregisterTreeDataProvider(treeViewId: string) {
+    const disposable = this.disposableCollection.get(treeViewId);
+    if (disposable) {
+      disposable.dispose();
     }
   }
 
@@ -67,7 +82,6 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       dataProvider.reveal(treeItemId);
     }
   }
-
 }
 
 export class TreeViewDataProviderMain {
