@@ -1,10 +1,10 @@
 import { IExtHostCommands } from '../../../common/vscode';
-import { ILayoutHandle, IMainThreadLayout, IExtHostLayout } from '../../../common/kaitian/layout';
+import { ITabbarHandler, IMainThreadLayout, IExtHostLayout } from '../../../common/kaitian/layout';
 import { Disposable, Emitter, stringify } from '@ali/ide-core-common';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
 import { IRPCProtocol } from '@ali/ide-connection';
 
-export class LayoutHandle implements ILayoutHandle {
+export class TabbarHandler implements ITabbarHandler {
   public readonly onActivateEmitter = new Emitter<void>();
   public readonly onActivate = this.onActivateEmitter.event;
 
@@ -28,7 +28,7 @@ export class LayoutHandle implements ILayoutHandle {
 }
 
 export class KaitianExtHostLayout implements IExtHostLayout {
-  private handles: Map<string, LayoutHandle> = new Map();
+  private handles: Map<string, TabbarHandler> = new Map();
 
   private proxy: IMainThreadLayout;
 
@@ -39,10 +39,10 @@ export class KaitianExtHostLayout implements IExtHostLayout {
     this.proxy = this.rpcProtocol.getProxy(MainThreadKaitianAPIIdentifier.MainThreadLayout);
   }
 
-  getTabbarHandler(id: string): ILayoutHandle {
+  getTabbarHandler(id: string): ITabbarHandler {
     if (!this.handles.has(id)) {
       this.proxy.$connectTabbar(id);
-      this.handles.set(id, new LayoutHandle(id, this.proxy));
+      this.handles.set(id, new TabbarHandler(id, this.proxy));
     }
     return this.handles.get(id)!;
   }

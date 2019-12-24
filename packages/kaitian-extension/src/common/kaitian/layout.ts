@@ -1,7 +1,7 @@
 
 import { Event } from '@ali/ide-core-common';
 
-export interface ILayoutHandle {
+export interface ITabbarHandler {
 
   setSize(size: number): void;
 
@@ -21,6 +21,6 @@ export interface IMainThreadLayout {
 }
 
 export interface IExtHostLayout {
-  getTabbarHandler(id: string): ILayoutHandle;
+  getTabbarHandler(id: string): ITabbarHandler;
   $acceptMessage(id: string, type: 'activate' | 'deactivate'): void;
 }
