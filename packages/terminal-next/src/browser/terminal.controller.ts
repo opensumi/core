@@ -376,6 +376,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       throw new Error('group not found');
     }
 
+    if (group.length === 4) {
+      throw new Error('group length maxium');
+    }
+
     const widget = restoreClient ? (restoreClient.widget as Widget) : new Widget(uuid());
     const client = restoreClient || this._createTerminalClientInstance(widget, undefined, options);
     this._clientsMap.set(widget.id, client);
