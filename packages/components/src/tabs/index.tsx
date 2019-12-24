@@ -25,12 +25,14 @@ export const Tabs = (props: ITabsProps) => {
           const selectedClassName = i === value ? 'kt-tab-selected' : '';
           if (typeof tabContent === 'string') {
             return <div
+              key={i}
               className={clx('kt-tab', selectedClassName)}
               onClick={onClick.bind(null, i)}>
               {tabContent}
             </div>;
           }
           return <div
+            key={i}
             className={clx('kt-custom-tab', selectedClassName)}
             onClick={onClick.bind(null, i)}>
             {tabContent}
