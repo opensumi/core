@@ -169,6 +169,14 @@ export abstract class WorkbenchEditorService {
   abstract async close(uri: any, force?: boolean): Promise<void>;
 
   abstract getAllOpenedUris(): URI[];
+
+  // 创建一个带待存的资源
+  abstract createUntitledResource(options?: IUntitledOptions): Promise<IOpenResourceResult>;
+}
+
+export interface IUntitledOptions extends IResourceOpenOptions {
+  uri: URI;
+  resourceOpenOptions?: IResourceOpenOptions;
 }
 
 export interface IResourceOpenOptions {

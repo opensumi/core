@@ -1,5 +1,5 @@
 import * as md5 from 'md5';
-import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService, CorePreferences, CommandService } from '@ali/ide-core-browser';
+import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService, CorePreferences, CommandService, Schemas } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { EOL, EndOfLineSequence, IDocPersistentCacheProvider, IDocCache, isDocContentCache, parseRangeFrom } from '../../common';
@@ -16,6 +16,8 @@ export interface EditorDocumentModelConstructionOptions {
   languageId?: string;
   readonly?: boolean;
   savable?: boolean;
+  alwaysDirty?: boolean;
+  closeAutoSave?: boolean;
 }
 
 export interface IDirtyChange {
@@ -65,6 +67,10 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   public readonly savable: boolean = false;
 
+  public readonly alwaysDirty: boolean = false;
+
+  public readonly closeAutoSave: boolean = false;
+
   private _originalEncoding: string = this._encoding;
 
   private _persistVersionId: number = 0;
@@ -91,6 +97,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     }
     this.readonly = !!options.readonly;
     this.savable = !!options.savable;
+    this.alwaysDirty = !!options.alwaysDirty;
+    this.closeAutoSave = !!options.closeAutoSave;
 
     this.monacoModel = monaco.editor.createModel(content, options.languageId, monaco.Uri.parse(uri.toString()));
     if (options.eol) {
@@ -207,6 +215,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   get dirty() {
+    if (this.alwaysDirty) {
+      return true;
+    }
     if (!this.savable) {
       return false;
     }
@@ -234,6 +245,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (!this.preferenceService.get<boolean>('editor.askIfDiff')) {
       force = true;
     }
+    // 新建的文件也可以保存
     if (!this.dirty) {
       return false;
     }
@@ -388,7 +400,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   private notifyChangeEvent(changes: IEditorDocumentModelContentChange[] = []) {
-    if (this.savable && this.corePreferences['editor.autoSave'] === 'afterDelay') {
+    if (!this.closeAutoSave && this.savable && this.corePreferences['editor.autoSave'] === 'afterDelay') {
       this.tryAutoSaveAfterDelay();
     }
     // 发出内容变化的事件

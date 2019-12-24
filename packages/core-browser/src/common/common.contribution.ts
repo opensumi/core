@@ -110,7 +110,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
       command: FILE_COMMANDS.OPEN_FOLDER.id,
       group: '1_open',
     }, {
-      command: FILE_COMMANDS.NEW_FILE.id,
+      command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
       group: '2_new',
     }, {
       command: FILE_COMMANDS.NEW_FOLDER.id,

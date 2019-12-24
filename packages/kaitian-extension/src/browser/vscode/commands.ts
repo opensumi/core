@@ -31,7 +31,7 @@ export namespace VscodeCommands {
 
   export const NEW_UNTITLED_FILE: Command = {
     id: 'workbench.action.files.newUntitledFile',
-    delegate: FILE_COMMANDS.NEW_FILE.id,
+    delegate: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
   };
 
   export const CLOSE_ALL_EDITORS: Command = {
