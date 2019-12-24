@@ -14,6 +14,7 @@ export class TabBarHandler {
   protected readonly onInActivateEmitter = new Emitter<void>();
   readonly onInActivate: Event<void> = this.onInActivateEmitter.event;
 
+  // @deprecated
   protected readonly onCollapseEmitter = new Emitter<void>();
   readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
 
@@ -46,6 +47,10 @@ export class TabBarHandler {
     this.tabbarService.currentContainerId = this.containerId;
   }
 
+  deactivate() {
+    this.tabbarService.currentContainerId = '';
+  }
+
   isActivated() {
     return this.tabbarService.currentContainerId === this.containerId;
   }
@@ -67,7 +72,7 @@ export class TabBarHandler {
   }
 
   setSize(size: number) {
-    console.warn(this.containerId + ':setSize方法在handler中暂未实现');
+    this.layoutService.toggleSlot(this.tabbarService.location, true, size);
   }
 
   setBadge(badge: string) {
@@ -104,5 +109,9 @@ export class TabBarHandler {
 
   updateTitle(label: string) {
     this.tabbarService.getContainer(this.containerId)!.options!.title = label;
+  }
+
+  setResizeLock(lock?: boolean) {
+    this.tabbarService.resizeHandle.lockSize(lock);
   }
 }
