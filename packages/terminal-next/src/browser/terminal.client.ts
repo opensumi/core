@@ -66,7 +66,8 @@ export class TerminalClient extends Disposable {
     this.addDispose({
       dispose: () => {
         this.preference.onPreferenceChanged(({ preferenceName, newValue }) => {
-          if (support[preferenceName]) {
+          const option = this._term.getOption(preferenceName);
+          if (support[preferenceName] && option !== newValue) {
             this._term.setOption(support[preferenceName], newValue);
           }
         });
