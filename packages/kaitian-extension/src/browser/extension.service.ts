@@ -85,7 +85,7 @@ import { IThemeService, IIconService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
-import * as BrowserApi from './kaitian-browser';
+import { createBrowserApi } from './kaitian-browser';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExtensionCandiDate } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
@@ -421,7 +421,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       return ReactDOM;
     });
     getAMDDefine()('kaitian-browser', [] , () => {
-      return BrowserApi;
+      return createBrowserApi(this.injector);
     });
   }
   private async initBaseData() {

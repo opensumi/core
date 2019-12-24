@@ -14,6 +14,28 @@ declare module "kaitian" {
     export function setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]): Promise<void>;
   }
 
+  /**
+   * 主题相关API
+   */
+  export namespace theme {
+    
+    /**
+     * 当主题被改变时的通知
+     */
+    export const onThemeChanged: Event<void>;
+
+    /**
+     * 获得当前主题的颜色值
+     * 格式 '-分割的颜色名':'颜色值(rgb, rgba或hex)'
+     * 例:
+     * {
+     *  'editor-background':'#000000',
+     * }
+     */
+    export function getThemeColors(): Promise<{[key: string]: string}>;
+
+  }
+
   export interface ExtensionCandiDate {
     path: string;
     isBuintin: boolean;
@@ -189,4 +211,14 @@ declare module 'kaitian-browser' {
     spin,
     pulse,
   }
+
+  /**
+   * 获得当前主题的颜色值
+   * 格式 '-分割的颜色名':'颜色值(rgb, rgba或hex)'
+   * 例:
+   * {
+   *  'editor-background':'#000000',
+   * }
+   */
+  export function getThemeColors(): {[key: string]: string}
 }
