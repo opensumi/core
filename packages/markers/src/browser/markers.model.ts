@@ -1,5 +1,5 @@
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { IMarker, MarkerSeverity, URI, Disposable } from '@ali/ide-core-common';
+import { IMarker, MarkerSeverity, URI, Disposable, compareRangesUsingStarts } from '@ali/ide-core-common';
 import { isFalsyOrEmpty, mergeSort } from '@ali/ide-core-common/lib/arrays';
 import { observable } from 'mobx';
 import { IMarkerService, IRenderableMarkerModel, MarkerModelBuilder } from '../common';
@@ -7,35 +7,6 @@ import { Filter, FilterOptions } from './markers-filter.model';
 
 function compareMarkers(a: IMarker, b: IMarker): number {
   return MarkerSeverity.compare(a.severity, b.severity) || compareRangesUsingStarts(a, b);
-}
-
-function compareRangesUsingStarts(a: IMarker, b: IMarker): number {
-  if (a && b) {
-    const aStartLineNumber = a.startLineNumber || 0;
-    const bStartLineNumber = b.startLineNumber || 0;
-
-    if (aStartLineNumber === bStartLineNumber) {
-      const aStartColumn = a.startColumn || 0;
-      const bStartColumn = b.startColumn || 0;
-
-      if (aStartColumn === bStartColumn) {
-        const aEndLineNumber = a.endLineNumber || 0;
-        const bEndLineNumber = b.endLineNumber || 0;
-
-        if (aEndLineNumber === bEndLineNumber) {
-          const aEndColumn = a.endColumn || 0;
-          const bEndColumn = b.endColumn || 0;
-          return aEndColumn - bEndColumn;
-        }
-        return aEndLineNumber - bEndLineNumber;
-      }
-      return aStartColumn - bStartColumn;
-    }
-    return aStartLineNumber - bStartLineNumber;
-  }
-  const aExists = (a ? 1 : 0);
-  const bExists = (b ? 1 : 0);
-  return aExists - bExists;
 }
 
 /**

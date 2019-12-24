@@ -113,16 +113,19 @@ export const Search = observer(({
                   ref={searchBrowserService.searchInputEl}
                   controls={[
                     <span
+                    key={localize('caseDescription')}
                     className={cls(getIcon('ab'), styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
                     title={localize('caseDescription')}
                     onClick={(e) => updateUIState({ isMatchCase: !UIState.isMatchCase }, e)}
                   ></span>,
                   <span
+                    key={localize('wordsDescription')}
                     className={cls(getIcon('abl'), styles['whole-word'], styles.option, { [styles.select]: UIState.isWholeWord })}
                     title={localize('wordsDescription')}
                     onClick={(e) => updateUIState({ isWholeWord: !UIState.isWholeWord }, e)}
                   ></span>,
                   <span
+                    key={localize('regexDescription')}
                     className={cls(getIcon('regex'), styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
                     title={localize('regexDescription')}
                     onClick={(e) => updateUIState({ isUseRegexp: !UIState.isUseRegexp }, e)}

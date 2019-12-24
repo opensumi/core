@@ -8,6 +8,17 @@ declare module "kaitian" {
     export function reloadWindow(): void;
   }
 
+  export namespace lifecycle {
+    export function setExtensionDir(extensionDir: string): Promise<void>;
+
+    export function setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]): Promise<void>;
+  }
+
+  export interface ExtensionCandiDate {
+    path: string;
+    isBuintin: boolean;
+  }
+
   export interface IPlainWebviewHandle {
 
     /**

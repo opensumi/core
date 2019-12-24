@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
-import { BrowserWindow, dialog, shell } from 'electron';
+import { BrowserWindow, dialog, shell, webContents } from 'electron';
 import { ElectronMainMenuService } from './menu';
 import { Domain, isWindows } from '@ali/ide-core-common';
 import { stat } from 'fs-extra';
@@ -38,6 +38,18 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' |
       targetPath = dirname(path);
     }
     openInTerminal(targetPath);
+  }
+
+  setZoomFactor(webContentsId: number, options: { value?: number, delta?: number; } = {}) {
+    const contents = webContents.fromId(webContentsId);
+    if (contents) {
+      if (options.value) {
+        contents.setZoomFactor(options.value);
+      }
+      if (options.delta) {
+        contents.setZoomFactor(contents.getZoomFactor() + options.delta);
+      }
+    }
   }
 
   async showOpenDialog(windowId: number, options: Electron.OpenDialogOptions): Promise<string[] | undefined> {

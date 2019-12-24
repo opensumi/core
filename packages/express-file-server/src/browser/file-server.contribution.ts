@@ -17,7 +17,11 @@ export class ExpressFileServerContribution implements StaticResourceContribution
         // http://127.0.0.1:8000/assets?path=${path}
         const assetsUri = new URI(this.appConfig.staticServicePath || EXPRESS_SERVER_PATH);
         return assetsUri.withPath('assets').withQuery(decodeURIComponent(URI.stringifyQuery({
-          path: uri.withoutScheme().toString(),
+          /**
+           * uri.path 在 Windows 下会被解析为  \c:\\Path\\to\file
+           * fsPath C:\\Path\\to\\file
+           */
+          path: uri.codeUri.fsPath,
         })));
       },
       roots: [this.appConfig.staticServicePath || EXPRESS_SERVER_PATH],

@@ -5,19 +5,19 @@
 
   .kt-menu {
     &.@{clsx}, .@{clsx} {
-      padding: 3px 0px !important;
+      padding: 2px 0px !important;
       color: var(--menu-foreground) !important;
       font-size: 13px !important;
       background-color: var(--menu-background) !important;
       border: none !important;
       box-shadow: 0px 2px 4px var(--kt-menu-shadow) !important;
-      // display: block !important;
       border-radius: 0 !important;
+      min-width: 120px;
 
       .@{clsx}-item,
       .@{clsx}-submenu-title {
         margin: 0 !important;
-        padding: 4px 8px 4px 4px !important;
+        padding: 3px 4px !important;
         height: 26px !important;
         display: flex !important;
         align-items: center !important;
@@ -37,7 +37,7 @@
       }
 
       .@{clsx}-item-divider {
-        margin: 4px 0 !important;
+        margin: 3px 0 !important;
         pointer-events: none !important;
         background-color: var(--menu-separatorBackground) !important;
       }

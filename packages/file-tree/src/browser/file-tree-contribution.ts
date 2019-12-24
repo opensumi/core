@@ -249,18 +249,20 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
       execute: async (uri) => {
-        // 默认获取焦点元素
-        const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
-        // 只处理单选情况下的创建
-        if (selectedFile.length === 1) {
-          fromUri = selectedFile[0];
+        if (uri) {
+          fromUri = uri;
         } else {
-          if (uri) {
-            fromUri = uri;
-          } else {
-            fromUri = this.filetreeService.root;
+          // 默认获取焦点元素
+          let target = this.filetreeService.focusedUris;
+          if (target.length === 0) {
+            target = this.filetreeService.selectedUris;
+            if (target.length === 0) {
+              target = [this.filetreeService.root];
+            }
           }
+          // 只处理单选情况下的创建
+          fromUri = target[0];
         }
         const tempFileUri = await this.filetreeService.createTempFile(fromUri);
         if (tempFileUri) {
@@ -270,17 +272,20 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (uri) => {
-        const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
-        // 只处理单选情况下的创建
-        if (selectedFile.length === 1) {
-          fromUri = selectedFile[0];
+        if (uri) {
+          fromUri = uri;
         } else {
-          if (uri) {
-            fromUri = uri;
-          } else {
-            fromUri = this.filetreeService.root;
+          // 默认获取焦点元素
+          let target = this.filetreeService.focusedUris;
+          if (target.length === 0) {
+            target = this.filetreeService.selectedUris;
+            if (target.length === 0) {
+              target = [this.filetreeService.root];
+            }
           }
+          // 只处理单选情况下的创建
+          fromUri = target[0];
         }
         const tempFileUri = await this.filetreeService.createTempFolder(fromUri);
         if (tempFileUri) {

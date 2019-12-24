@@ -6,7 +6,7 @@ import * as styles from './debug-breakpoint.module.less';
 import { Select } from '@ali/ide-core-browser/lib/components/select';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { Input } from '@ali/ide-core-browser/lib/components';
-import { localize } from '@ali/ide-core-node';
+import { localize } from '@ali/ide-core-common';
 import { KeyCode, Key, Emitter } from '@ali/ide-core-browser';
 
 export interface BreakpointChangeData {

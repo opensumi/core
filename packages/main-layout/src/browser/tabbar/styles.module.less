@@ -4,6 +4,7 @@
     height: 100%;
     display: flex;
     border-top: 1px solid var(--activityBar-border);
+    user-select: none;
     li {
       list-style: none;
       &.active {
@@ -106,8 +107,16 @@
   .tab-panel {
     position: relative;
     flex: 1;
-    border: 1px solid var(--panel-border);
-    border-bottom: 0;
+    border-left: 1px solid var(--panel-border);
+    border-right: 1px solid var(--panel-border);
+    border-top: 1px solid var(--panel-border);
+  }
+
+  // 左侧/右侧 panel 因为 menubar 有 border-bottom
+  // 所以去掉了 border-top
+  :global(.left-slot) .tab-panel,
+  :global(.right-slot) .tab-panel {
+    border-top-width: 0;
   }
 
   .tab-tool-bar {
@@ -254,6 +263,7 @@
   flex-direction: row;
   display: flex;
   background-color: var(--kt-panelTitle-background);
+  user-select: none;
   h1 {
     margin: 0;
     font-size: 12px;

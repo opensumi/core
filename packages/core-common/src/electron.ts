@@ -1,5 +1,6 @@
 import { IDisposable } from './disposable';
 import * as Electron from 'electron';
+import { ExtensionCandiDate } from './types';
 
 export interface IElectronMainApi<Events> {
 
@@ -22,6 +23,20 @@ export interface IElectronMainUIService extends IElectronMainApi<void> {
 
   showSaveDialog(windowId: number, options:Electron.SaveDialogOptions ): Promise<string | undefined>;
 
+  setZoomFactor(webContentsId: number, options: { value?: number, delta?: number; });
+
+  /**
+   * 在资源管理器里打开文件
+   * @param path 文件路径（不带file协议头)
+   */
+  revealInFinder(path: string);
+
+  /**
+   * 在系统终端中打开文件路径
+   * @param path 文件路径（不带file协议头)
+   */
+  revealInSystemTerminal(path: string);
+  
 }
 
 export const IElectronMainUIService = Symbol('IElectronMainUIService');
@@ -35,24 +50,14 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
   reloadWindow(windowId: number);
 
   /**
-   * 打开新的工作区
+   * 在某个窗口打开新的工作区
    * @param workspace 工作区主Uri
-   * @param windowId 指定的window
+   * @param options
    */
-  openWorkspace(workspace: string, options: any);
+  openWorkspace(workspace: string, options?: any);
 
-  /**
-   * 在资源管理器里打开文件
-   * @param path 文件路径（不带file协议头)
-   */
-  revealInFinder(path: string);
-
-  /**
-   * 在系统终端中打开文件路径
-   * @param path 文件路径（不带file协议头)
-   */
-  revealInSystemTerminal(path: string);
-
+  setExtensionDir(path: string, windowId: number);
+  setExtensionCandidate(candidate: ExtensionCandiDate[], windowId: number): void;
 }
 
 export const IElectronMainLifeCycleService = Symbol('IElectronMainLifeCycleService');

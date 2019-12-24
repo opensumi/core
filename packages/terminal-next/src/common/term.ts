@@ -61,6 +61,10 @@ export interface ITerminalExternalService {
    */
   resize(sessionId: string, cols: number, rows: number): Promise<void>;
   /**
+   * 清理屏幕
+   */
+  clear?(sessionId: string): void;
+  /**
    * 销毁一个终端进程
    *
    * @param sessionId 会话唯一标识

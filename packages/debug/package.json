@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-debug",
-  "version": "1.6.6",
+  "version": "1.6.8",
   "files": [
     "lib"
   ],
@@ -20,29 +20,29 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "1.6.6",
-    "@ali/ide-core-common": "1.6.6",
-    "@ali/ide-core-node": "1.6.6",
-    "@ali/ide-process": "1.6.6"
+    "@ali/ide-connection": "1.6.8",
+    "@ali/ide-core-common": "1.6.8",
+    "@ali/ide-core-node": "1.6.8",
+    "@ali/ide-process": "1.6.8"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.6.6",
+    "@ali/ide-core-browser": "1.6.8",
     "@ali/ide-dev-tool": "^1.1.0",
-    "@ali/ide-workspace-edit": "1.6.6",
-    "@ali/ide-status-bar": "1.6.6",
-    "@ali/ide-editor": "1.6.6",
-    "@ali/ide-file-service": "1.6.6",
-    "@ali/ide-main-layout": "1.6.6",
-    "@ali/ide-output": "1.6.6",
-    "@ali/ide-overlay": "1.6.6",
-    "@ali/ide-preferences": "1.6.6",
-    "@ali/ide-quick-open": "1.6.6",
-    "@ali/ide-terminal-next": "1.6.6",
-    "@ali/ide-variable": "1.6.6",
-    "@ali/ide-workspace": "1.6.6",
-    "@ali/ide-storage": "1.6.6",
-    "@ali/ide-monaco-enhance": "1.6.6",
-    "@ali/ide-components": "1.6.6",
+    "@ali/ide-workspace-edit": "1.6.8",
+    "@ali/ide-status-bar": "1.6.8",
+    "@ali/ide-editor": "1.6.8",
+    "@ali/ide-file-service": "1.6.8",
+    "@ali/ide-main-layout": "1.6.8",
+    "@ali/ide-output": "1.6.8",
+    "@ali/ide-overlay": "1.6.8",
+    "@ali/ide-preferences": "1.6.8",
+    "@ali/ide-quick-open": "1.6.8",
+    "@ali/ide-terminal-next": "1.6.8",
+    "@ali/ide-variable": "1.6.8",
+    "@ali/ide-workspace": "1.6.8",
+    "@ali/ide-storage": "1.6.8",
+    "@ali/ide-monaco-enhance": "1.6.8",
+    "@ali/ide-components": "1.6.8",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

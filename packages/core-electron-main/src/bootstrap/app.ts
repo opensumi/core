@@ -3,20 +3,21 @@ import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
-import { createContributionProvider, ContributionProvider, URI, uuid } from '@ali/ide-core-common';
+import { createContributionProvider, ContributionProvider, URI, uuid, ExtensionCandiDate } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
 import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
 import { argv } from 'yargs';
 
 export interface IWindowOpenOptions {
-  windowId: string;
+  windowId: number;
+  // @deprecated
   replace?: boolean;
 }
 
 export class ElectronMainApp {
 
-  private codeWindows: Map<string, CodeWindow> = new Map();
+  private codeWindows: Map<number, CodeWindow> = new Map();
 
   private injector = new Injector();
 
@@ -46,7 +47,7 @@ export class ElectronMainApp {
     this.injectLifecycleApi();
     createContributionProvider(this.injector, ElectronMainContribution);
     this.createElectronMainModules(this.config.modules);
-
+    this.onBeforeReadyContribution();
     this.registerMainApis();
   }
 
@@ -54,7 +55,10 @@ export class ElectronMainApp {
     // TODO scheme start
     if (!app.isReady()) {
       await new Promise((resolve) => {
-        app.on('ready', resolve);
+        app.on('ready', () => {
+          this.onStartContribution();
+          resolve();
+        });
       });
     }
   }
@@ -67,28 +71,46 @@ export class ElectronMainApp {
     }
   }
 
+  onStartContribution() {
+    for (const contribution of this.contributions ) {
+      if (contribution.onStart) {
+        contribution.onStart();
+      }
+    }
+  }
+
+  onBeforeReadyContribution() {
+    for (const contribution of this.contributions ) {
+      if (contribution.beforeAppReady) {
+        contribution.beforeAppReady();
+      }
+    }
+  }
+
   loadWorkspace(workspace?: string, metadata: any = {}, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}, openOptions?: IWindowOpenOptions): CodeWindow {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
-    if (openOptions && openOptions.replace) {
-      let replaceWindow = this.codeWindows.get(openOptions.windowId);
-      if (!replaceWindow && this.codeWindows.size > 0) {
-        replaceWindow = Array.from(this.codeWindows.values())[0];
-      }
-      if (replaceWindow) {
-        replaceWindow.close();
+    if (openOptions && openOptions.windowId) {
+      const lastWindow = this.getCodeWindowByElectronBrowserWindowId(openOptions.windowId);
+      if (lastWindow) {
+        lastWindow.setWorkspace(workspace!);
+        lastWindow.metadata = metadata;
+        lastWindow.reload();
+        return lastWindow;
       }
     }
     const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
-    const windowId = openOptions ? openOptions.windowId : uuid();
-    this.codeWindows.set(windowId, window);
     window.start();
     if (options.show !== false) {
       window.getBrowserWindow().show();
     }
-    window.onDispose(() => {
-      this.codeWindows.delete(windowId);
+    const windowId = window.getBrowserWindow().id;
+    this.codeWindows.set(windowId, window);
+    window.addDispose({
+      dispose: () => {
+        this.codeWindows.delete(windowId);
+      },
     });
 
     return window;
@@ -208,4 +230,23 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
     }
   }
 
+  setExtensionDir(extensionDir: string, windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
+      if (codeWindow) {
+        codeWindow.setExtensionDir(extensionDir);
+      }
+    }
+  }
+
+  setExtensionCandidate(candidate: ExtensionCandiDate[], windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
+      if (codeWindow) {
+        codeWindow.setExtensionCandidate(candidate);
+      }
+    }
+  }
 }

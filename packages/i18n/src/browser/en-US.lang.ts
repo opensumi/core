@@ -419,6 +419,9 @@ export const localizationBundle = {
     'outline.title': 'OutLine',
     'outline.noinfo': 'There is no outline information from the active editor',
     'outline.collapse.all': 'Collapse All',
+    'outline.sort.kind': 'Sort By SymbolKind',
+    'outline.sort.name': 'Sort By SymbolName',
+    'outline.sort.position': 'Sort By Position',
 
     'welcome.quckstart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',
@@ -432,5 +435,8 @@ export const localizationBundle = {
     'markers.filter.reset': 'Clear Filter.',
 
     'app.quit': 'Quit',
+    'view.zoomReset': 'Zoom Reset',
+    'view.zoomIn': 'Zoom In',
+    'view.zoomOut': 'Zoom Out',
   },
 };
