@@ -14,6 +14,7 @@ export class TabBarHandler {
   protected readonly onInActivateEmitter = new Emitter<void>();
   readonly onInActivate: Event<void> = this.onInActivateEmitter.event;
 
+  // @deprecated
   protected readonly onCollapseEmitter = new Emitter<void>();
   readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
 
@@ -44,6 +45,10 @@ export class TabBarHandler {
 
   activate() {
     this.tabbarService.currentContainerId = this.containerId;
+  }
+
+  deactivate() {
+    this.tabbarService.currentContainerId = '';
   }
 
   isActivated() {
