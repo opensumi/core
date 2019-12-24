@@ -58,6 +58,7 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
         activateKeyBinding: component.keyBinding,
         title: component.title,
         priority: component.priority,
+        noResize: component.noResize,
       },
       position,
     );
