@@ -320,7 +320,12 @@ export class TabbarService extends WithEventBus {
             this.prevSize = getSize();
           }
           setSize(this.prevSize || 400);
-          lockSize(false);
+          const containerInfo = this.getContainer(currentId);
+          if (containerInfo && containerInfo.options!.noResize) {
+            lockSize(true);
+          } else {
+            lockSize(false);
+          }
           setMaxSize(false);
         } else {
           this.prevSize = getSize();

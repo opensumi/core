@@ -67,7 +67,7 @@ export class TabBarHandler {
   }
 
   setSize(size: number) {
-    console.warn(this.containerId + ':setSize方法在handler中暂未实现');
+    this.layoutService.toggleSlot(this.tabbarService.location, true, size);
   }
 
   setBadge(badge: string) {

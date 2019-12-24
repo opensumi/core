@@ -85,6 +85,7 @@ export interface ExtViewContainerOptions {
   // 使用自定义组件时可以传入，否则请作为View的一部分传入
   initialProps?: object;
   titleComponent?: React.FunctionComponent;
+  noResize?: boolean;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
