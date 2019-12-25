@@ -58,7 +58,7 @@ export class MultiWs implements WebSocket {
 
   constructor(url: string, protocols?: string[], clientId?: string) {
     const connectPath = new ChildConnectPath();
-    this.clientId = shorid.generate();
+    this.clientId = clientId || shorid.generate();
     this.protocol = (protocols || [''])[0];
 
     for (let i = 0; i < this.defaultLength; i++) {

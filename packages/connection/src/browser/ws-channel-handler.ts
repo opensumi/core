@@ -21,7 +21,7 @@ export class WSChanneHandler {
   public connection: WebSocket;
   private channelMap: Map<number | string, WSChannel> = new Map();
   private logger = console;
-  public clientId: string = `CLIENT_ID:${shorid.generate()}`;
+  public clientId: string = `CLIENT_ID_${shorid.generate()}`;
   private heartbeatMessageTimer: NodeJS.Timeout;
   private reporterService: IReporterService;
 
@@ -74,7 +74,6 @@ export class WSChanneHandler {
     };
     await new Promise((resolve) => {
       this.connection.addEventListener('open', () => {
-        console.log('this.channelMap', this.channelMap);
         this.clientMessage();
         this.heartbeatMessage();
         resolve();
@@ -83,16 +82,14 @@ export class WSChanneHandler {
 
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
-            console.log('channel', channel);
             channel.onOpen(() => {
               this.reporterService && this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT);
-              console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
+              this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);
 
             // 针对前端需要重新设置下后台状态的情况
             if (channel.fireReOpen) {
-              console.log('fireReOpen');
               channel.fireReOpen();
             }
           });

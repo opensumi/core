@@ -44,15 +44,15 @@ class MessageMarkList {
   }
 
   clearInvalid() {
-    let lastInsertItem;
-    let lastInsertKey;
+    let lastInsertItem: MessageMarkInfo;
+    let lastInsertKey: any;
     const willClearKeyList: any[] = [];
 
     this.listMap.forEach((value, key) => {
       lastInsertItem = lastInsertItem || value;
       lastInsertKey = lastInsertKey || key;
 
-      if (value.lastUseDate > lastInsertItem) {
+      if (value.lastUseDate > lastInsertItem.lastUseDate) {
         lastInsertItem = value;
         lastInsertKey = key;
       }
