@@ -70,7 +70,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired()
   tabManager: TabManager;
 
-  tabbarHandler: TabBarHandler;
+  tabbarHandler: TabBarHandler | undefined;
 
   private _clientsMap = new Map<string, TerminalClient>();
   private _focusedId: string;
@@ -632,9 +632,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       get processId() { return target.pid; },
       get name() { return target.name; },
       show() {
-        self.tabbarHandler.activate();
-        self.showTerm(client.id, true);
-        self._focusedId = widgetId;
+        if (self.tabbarHandler) {
+          self.tabbarHandler.activate();
+          self.showTerm(client.id, true);
+          self._focusedId = widgetId;
+        }
       },
       hide() { /** do nothing */ },
       dispose() {
