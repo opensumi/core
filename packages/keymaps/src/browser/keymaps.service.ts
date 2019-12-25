@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeyCode, KeysOrKeyCodes, IDisposable, DisposableCollection, KeybindingService } from '@ali/ide-core-browser';
+import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeyCode, KeysOrKeyCodes, IDisposable, DisposableCollection, KeybindingService, IContextKeyExpr, ContextKeyExprType } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import { UserStorageUri } from '@ali/ide-userstorage/lib/browser';
 import * as jsoncparser from 'jsonc-parser';
@@ -170,18 +170,51 @@ export class KeymapService implements IKeymapService {
    * @memberof KeymapService
    */
   async open(): Promise<void> {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), {preview: true});
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), { preview: true });
   }
 
   fixed = async () => {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), {preview: false});
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), { preview: false });
   }
 
   getWhen(keybinding?: Keybinding) {
     if (!keybinding) {
       return '';
     }
-    return keybinding.when ? typeof keybinding.when === 'string' ? keybinding.when : keybinding.when.keys().join(' && ') : '';
+    return keybinding.when ? typeof keybinding.when === 'string' ? keybinding.when : this.serialize(keybinding.when) : '';
+  }
+
+  serialize(when: IContextKeyExpr) {
+    let result: string[] = [];
+    if (!when.expr) {
+      return '';
+    }
+    result = when.expr.map((contextKey: any) => {
+      switch (contextKey.getType()) {
+        case ContextKeyExprType.Defined:
+          return contextKey.key;
+        case ContextKeyExprType.Equals:
+          return contextKey.key + ' == \'' + contextKey.getValue() + '\'';
+        case ContextKeyExprType.NotEquals:
+          return contextKey.key + ' != \'' + contextKey.getValue() + '\'';
+        case ContextKeyExprType.Not:
+          return '!' + contextKey.key;
+        case ContextKeyExprType.Regex:
+          const value = contextKey.regexp
+            ? `/${contextKey.regexp.source}/${contextKey.regexp.ignoreCase ? 'i' : ''}`
+            : '/invalid/';
+          return `${contextKey.key} =~ ${value}`;
+        case ContextKeyExprType.NotRegex:
+          return '-not regex-';
+        case ContextKeyExprType.And:
+          return contextKey.expr.map((e) => e.serialize()).join(' && ');
+        case ContextKeyExprType.Or:
+          return contextKey.expr.map((e) => e.serialize()).join(' || ');
+        default:
+          return contextKey.key;
+      }
+    });
+    return result.join(' && ');
   }
 
   /**
