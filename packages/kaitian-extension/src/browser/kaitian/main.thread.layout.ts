@@ -2,12 +2,13 @@ import { Injectable, Injector, Autowired } from '@ali/common-di';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMainThreadLayout, IExtHostLayout } from '../../common/kaitian/layout';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, TabBarRegistrationEvent } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { ExtHostKaitianAPIIdentifier } from '../../common/kaitian';
+import { IEventBus, Disposable } from '@ali/ide-core-browser';
 
 @Injectable({ multiple: true })
-export class MainThreaLayout implements IMainThreadLayout {
+export class MainThreaLayout extends Disposable implements IMainThreadLayout {
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
 
@@ -15,7 +16,11 @@ export class MainThreaLayout implements IMainThreadLayout {
 
   proxy: IExtHostLayout;
 
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
+
   constructor(private rpcProtocol: IRPCProtocol, private injector: Injector) {
+    super();
     this.proxy = rpcProtocol.getProxy(ExtHostKaitianAPIIdentifier.ExtHostLayout);
   }
 
@@ -35,15 +40,28 @@ export class MainThreaLayout implements IMainThreadLayout {
     if (!this.handlerMap.has(id)) {
       const handle = this.layoutService.getTabbarHandler(id);
       if (handle) {
-        this.handlerMap.set(id, handle);
-        handle.onActivate(() => {
-          this.proxy.$acceptMessage(id, 'activate');
+        this.bindHandleEvents(handle);
+      } else {
+        const disposer = this.eventBus.on(TabBarRegistrationEvent, (e) => {
+          if (e.payload.tabBarId === id) {
+            const handle = this.layoutService.getTabbarHandler(id);
+            this.bindHandleEvents(handle!);
+            disposer.dispose();
+          }
         });
-        handle.onInActivate(() => {
-          this.proxy.$acceptMessage(id, 'deactivate');
-        });
+        this.addDispose(disposer);
       }
     }
+  }
+
+  private bindHandleEvents(handle: TabBarHandler) {
+    this.handlerMap.set(handle.containerId, handle);
+    handle.onActivate(() => {
+      this.proxy.$acceptMessage(handle.containerId, 'activate');
+    });
+    handle.onInActivate(() => {
+      this.proxy.$acceptMessage(handle.containerId, 'deactivate');
+    });
   }
 
   protected getHandler(id: string) {
@@ -51,7 +69,7 @@ export class MainThreaLayout implements IMainThreadLayout {
     if (!handler) {
       console.warn(`MainThreaLayout:没有找到${id}对应的handler`);
     }
-    return handler;
+    return handler!;
   }
 
 }

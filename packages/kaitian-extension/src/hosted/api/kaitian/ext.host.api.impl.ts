@@ -34,7 +34,7 @@ export function createAPIFactory(
       host: REPORT_HOST.EXTENSION,
     });
     return {
-      layout: createLayoutAPIFactory(extHostCommands, kaitianLayout),
+      layout: createLayoutAPIFactory(extHostCommands, kaitianLayout, extension),
       ideWindow: createWindowApiFactory(extHostCommands),
       webview: createKaitianWebviewApi(extension, kaitianExtHostWebview),
       lifecycle: createLifeCycleApi(extHostCommands, kaitianLifeCycle),

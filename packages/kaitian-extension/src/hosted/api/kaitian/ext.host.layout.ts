@@ -3,6 +3,7 @@ import { ITabbarHandler, IMainThreadLayout, IExtHostLayout } from '../../../comm
 import { Disposable, Emitter, stringify } from '@ali/ide-core-common';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
 import { IRPCProtocol } from '@ali/ide-connection';
+import { IExtension } from '../../../common';
 
 export class TabbarHandler implements ITabbarHandler {
   public readonly onActivateEmitter = new Emitter<void>();
@@ -60,6 +61,7 @@ export class KaitianExtHostLayout implements IExtHostLayout {
 export function createLayoutAPIFactory(
   extHostCommands: IExtHostCommands,
   kaitianLayout: IExtHostLayout,
+  extension: IExtension,
 ) {
   return {
     toggleBottomPanel: async () => {
@@ -90,7 +92,7 @@ export function createLayoutAPIFactory(
       return await extHostCommands.executeCommand('main-layout.right-panel.is-visible');
     },
     getTabbarHandler: (id: string) => {
-      return kaitianLayout.getTabbarHandler(id);
+      return kaitianLayout.getTabbarHandler( extension.id + ':' + id);
     },
   };
 }

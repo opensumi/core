@@ -13,11 +13,13 @@ export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,
   forbidCollapse?: boolean;
   barSize?: number;
-}> = observer(({ TabView, forbidCollapse, barSize = 48 }) => {
+  panelBorderSize?: number;
+}> = observer(({ TabView, forbidCollapse, barSize = 48, panelBorderSize = 0 }) => {
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   React.useEffect(() => {
     tabbarService.barSize = barSize;
+    tabbarService.panelBorderSize = panelBorderSize;
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
   return (
@@ -55,12 +57,12 @@ const TextTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ co
   </div>;
 });
 
-export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} barSize={40} />;
+export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} barSize={40} panelBorderSize={2}/>;
 
 export const LeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   return (<div className='left-tab-bar'>
-    <TabbarViewBase TabView={IconTabView} barSize={48} />
+    <TabbarViewBase TabView={IconTabView} barSize={48} panelBorderSize={2}/>
     <div className='bottom-icon-container' onClick={layoutService.handleSetting}>
       <i className={`activity-icon ${getIcon('setting')}`}></i>
     </div>
@@ -78,7 +80,7 @@ export const BottomTabbarRenderer: React.FC = () => {
 export const NextBottomTabbarRenderer: React.FC = () => {
   return (
     <div className={clsx(styles.bottom_bar_container, 'next_bottom_bar')}>
-      <TabbarViewBase TabView={TextTabView} barSize={28} />
+      <TabbarViewBase TabView={TextTabView} barSize={28} panelBorderSize={1}/>
     </div>
   );
 };

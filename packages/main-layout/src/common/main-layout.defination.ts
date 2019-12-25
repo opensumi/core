@@ -1,4 +1,4 @@
-import { BasicEvent, SlotLocation } from '@ali/ide-core-browser';
+import { BasicEvent, SlotLocation, Event } from '@ali/ide-core-browser';
 import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-browser/lib/layout';
 import { TabBarHandler } from '../browser/tabbar-handler';
 import { TabbarService } from '../browser/tabbar/tabbar.service';
@@ -62,3 +62,8 @@ export interface MainLayoutContribution {
   provideDefaultState?(): SideStateManager;
 
 }
+
+/**
+ * 当有新的TabBar被注册时发送的新事件
+ */
+export class TabBarRegistrationEvent extends BasicEvent<{tabBarId: string}> {}
