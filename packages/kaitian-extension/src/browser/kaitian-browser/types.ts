@@ -18,7 +18,7 @@ export interface IKaitianBrowserContributions {
   editor?: {
     component: IEditorComponentContribution[];
   };
-  toolbar?: {
+  toolBar?: {
     position?: ToolBarPosition // @deprecated
     component: IToolBarComponentContribution[];
   };
