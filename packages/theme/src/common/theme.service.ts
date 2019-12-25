@@ -24,6 +24,13 @@ export interface IIconService {
   currentThemeId: string;
   currentTheme: IIconTheme;
   applyTheme(themeId?: string): Promise<void>;
+  /**
+   * 将一个url地址或插件主题url转换为icon的class
+   * @param basePath 路径前缀
+   * @param icon iconUrl地址，可以是直接的字符串，或者和主题类型有关的 object 字符串对象
+   * @param type 选择采用Mask或者Background的方式渲染icon资源, 默认值为IconType.Mask
+   * @returns icon的className
+   */
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType): string | undefined;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;

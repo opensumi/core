@@ -83,7 +83,7 @@ export class IconService implements IIconService {
     return cssRule;
   }
 
-  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask): string | undefined {
+  fromIcon(basePath: string = '', icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask): string | undefined {
     if (!icon) {
       return;
     }
