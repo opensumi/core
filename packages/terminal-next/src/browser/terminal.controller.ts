@@ -209,7 +209,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     if (ret && ret.length > 0) {
       return ret[0][0];
     } else {
-      throw new Error('session my not exist');
+      throw new Error('session may not exist');
     }
   }
 
