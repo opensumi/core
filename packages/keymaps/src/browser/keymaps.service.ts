@@ -418,7 +418,10 @@ export class KeymapService implements IKeymapService {
    * 获取被fuzzy替换的原始值
    * @param {string} keybinding
    */
-  getRaw(keybinding: string) {
+  getRaw(keybinding?: string) {
+    if (!keybinding) {
+      return '';
+    }
     return keybinding.replace(new RegExp(/<match>(.*?)<\/match>/g), '$1');
   }
 }

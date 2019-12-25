@@ -110,7 +110,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       if (isEditing) {
         return <Input className={styles.keybinding_key_input} size='small' autoFocus={true} name={noKeybidingInputName} value={value} onChange={changeHandler} onKeyDown={keydownHandler} onBlur={blurHandler} />;
       } else {
-        return <span className={styles.keybinding_key} dangerouslySetInnerHTML={{ __html: keybinding || '' }}></span>;
+        return <span className={styles.keybinding_key} title={getRaw(keybinding)} dangerouslySetInnerHTML={{ __html: keybinding || '' }}></span>;
       }
     };
 
@@ -118,16 +118,16 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       <div className={styles.keybinding_action} onClick={clickHandler}>
         <i className={cls(keybinding ? getIcon('edit') : getIcon('plus'))}></i>
       </div>
-      <div className={styles.keybinding_list_item_box} dangerouslySetInnerHTML={{ __html: command }}></div>
+      <div className={styles.keybinding_list_item_box} title={getRaw(command)} dangerouslySetInnerHTML={{ __html: command }}></div>
       <div className={cls(styles.keybinding_list_item_box)}>
         {
           renderKeybinding()
         }
       </div>
-      <div className={styles.keybinding_list_item_box} dangerouslySetInnerHTML={{ __html: context || when || '—' }}>
+      <div className={styles.keybinding_list_item_box} title={getRaw(context || when || '—')} dangerouslySetInnerHTML={{ __html: context || when || '—' }}>
       </div>
       <div className={styles.keybinding_list_item_box}>
-        <span dangerouslySetInnerHTML={{ __html: source || '' }}></span>
+        <span title={getRaw(source)} dangerouslySetInnerHTML={{ __html: source || '' }}></span>
         {renderReset(source)}
       </div>
     </div>;
