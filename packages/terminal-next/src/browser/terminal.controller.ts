@@ -202,6 +202,17 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
+  private _getWidgetIdFromSession(sessionId: string): string {
+    const ret = Array.from(this._clientsMap.entries())
+      .filter(([_, client]) => client.id === sessionId);
+
+    if (ret && ret.length > 0) {
+      return ret[0][0];
+    } else {
+      throw new Error('session my not exist');
+    }
+  }
+
   firstInitialize() {
     this.tabbarHandler = this.layoutService.getTabbarHandler('terminal')!;
     this.themeBackground = this.termTheme.terminalTheme.background || '';
@@ -227,8 +238,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         return;
       }
 
-      const [[widgetId]] = Array.from(this._clientsMap.entries())
-        .filter(([_, client]) => client.id === sessionId);
+      const widgetId = this._getWidgetIdFromSession(sessionId);
+
+      if (!widgetId) {
+        return;
+      }
 
       // 进行一次重试
       try {
@@ -656,8 +670,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   showTerm(clientId: string, preserveFocus: boolean = true) {
     let index: number = -1;
 
-    const [[widgetId]] = Array.from(this._clientsMap.entries())
-      .filter(([_, client]) => client.id === clientId);
+    const widgetId = this._getWidgetIdFromSession(clientId);
     const client = this._clientsMap.get(widgetId);
 
     this.groups.forEach((group, i) => {
@@ -688,9 +701,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   removeTerm(clientId: string) {
-    const [[widgetId]] = Array.from(this._clientsMap.entries())
-      .filter(([_, client]) => client.id === clientId);
-
+    const widgetId = this._getWidgetIdFromSession(clientId);
     this._removeWidgetFromWidgetId(widgetId);
   }
 
