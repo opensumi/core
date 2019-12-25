@@ -238,21 +238,19 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         return;
       }
 
-      const widgetId = this._getWidgetIdFromSession(sessionId);
-
-      if (!widgetId) {
-        return;
-      }
-
+      let widgetId: string = '';
       // 进行一次重试
       try {
+        widgetId = this._getWidgetIdFromSession(sessionId);
         if (reconnected) {
           this.retryTerminalClient(widgetId);
         } else {
           this.errors.set(widgetId, error);
         }
       } catch {
-        this.errors.set(widgetId, error);
+        if (widgetId) {
+          this.errors.set(widgetId, error);
+        }
       }
     }));
 
