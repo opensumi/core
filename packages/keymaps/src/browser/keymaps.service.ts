@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeyCode, KeysOrKeyCodes, IDisposable, DisposableCollection, KeybindingService, ContextKeyExprType } from '@ali/ide-core-browser';
+import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, DisposableCollection, KeybindingService } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import { UserStorageUri } from '@ali/ide-userstorage/lib/browser';
 import * as jsoncparser from 'jsonc-parser';
@@ -199,24 +199,24 @@ export class KeymapService implements IKeymapService {
     }
     if (!when.expr) {
       switch (when.getType()) {
-        case ContextKeyExprType.Defined:
+        case monaco.contextkey.ContextKeyExprType.Defined:
           return when.key;
-        case ContextKeyExprType.Equals:
+        case monaco.contextkey.ContextKeyExprType.Equals:
           return when.key + ' == \'' + when.getValue() + '\'';
-        case ContextKeyExprType.NotEquals:
+        case monaco.contextkey.ContextKeyExprType.NotEquals:
           return when.key + ' != \'' + when.getValue() + '\'';
-        case ContextKeyExprType.Not:
+        case monaco.contextkey.ContextKeyExprType.Not:
           return '!' + when.key;
-        case ContextKeyExprType.Regex:
+        case monaco.contextkey.ContextKeyExprType.Regex:
           const value = when.regexp
             ? `/${when.regexp.source}/${when.regexp.ignoreCase ? 'i' : ''}`
             : '/invalid/';
           return `${when.key} =~ ${value}`;
-        case ContextKeyExprType.NotRegex:
+        case monaco.contextkey.ContextKeyExprType.NotRegex:
           return '-not regex-';
-        case ContextKeyExprType.And:
+        case monaco.contextkey.ContextKeyExprType.And:
           return when.expr.map((e) => e.serialize()).join(' && ');
-        case ContextKeyExprType.Or:
+        case monaco.contextkey.ContextKeyExprType.Or:
           return when.expr.map((e) => e.serialize()).join(' || ');
         default:
           return when.key;

@@ -107,17 +107,6 @@ export interface Keybinding {
   args?: any;
 }
 
-export const enum ContextKeyExprType {
-  Defined = 1,
-  Not = 2,
-  Equals = 3,
-  NotEquals = 4,
-  And = 5,
-  Regex = 6,
-  NotRegex = 7,
-  Or = 8,
-}
-
 export interface ResolvedKeybinding extends Keybinding {
   /**
    * KeyboardLayoutService会根据用户的键盘布局来转换keybinding得到最终在UI中使用的值
