@@ -263,6 +263,18 @@ export class KeyCode {
         schema.shift = true;
       } else if (keyString === SpecialCases.ALT) {
         schema.alt = true;
+      } else if (keyString === SpecialCases.ARROW_DOWN) {
+        schema.key = Key.ARROW_DOWN;
+      } else if (keyString === SpecialCases.ARROW_UP) {
+        schema.key = Key.ARROW_UP;
+      } else if (keyString === SpecialCases.ARROW_LEFT) {
+        schema.key = Key.ARROW_LEFT;
+      } else if (keyString === SpecialCases.ARROW_RIGHT) {
+        schema.key = Key.ARROW_RIGHT;
+      } else if (keyString === SpecialCases.BACKSPACE) {
+        schema.key = Key.BACKSPACE;
+      } else if (keyString === SpecialCases.ENTER) {
+        schema.key = Key.ENTER;
       } else if (Key.isKey(key)) {
         if (Key.isModifier(key.code)) {
           if (key.code === Key.CONTROL_LEFT.code || key.code === Key.CONTROL_RIGHT.code) {
@@ -468,6 +480,12 @@ export namespace SpecialCases {
   export const ALT = isOSX ? '⌥' : 'alt';
   export const SHIFT = isOSX ? '⇧' : 'shift';
   export const CTRLCMD = 'ctrlcmd';
+  export const ARROW_LEFT = '←';
+  export const ARROW_RIGHT = '→';
+  export const ARROW_UP = '↑';
+  export const ARROW_DOWN = '↓';
+  export const BACKSPACE = '⌫';
+  export const ENTER = '⏎';
 }
 
 export namespace Key {

@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeyCode, KeysOrKeyCodes, IDisposable, DisposableCollection, KeybindingService } from '@ali/ide-core-browser';
+import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, DisposableCollection, KeybindingService } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import { UserStorageUri } from '@ali/ide-userstorage/lib/browser';
 import * as jsoncparser from 'jsonc-parser';
@@ -170,18 +170,62 @@ export class KeymapService implements IKeymapService {
    * @memberof KeymapService
    */
   async open(): Promise<void> {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), {preview: true});
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), { preview: true });
   }
 
   fixed = async () => {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), {preview: false});
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME), { preview: false });
   }
 
   getWhen(keybinding?: Keybinding) {
     if (!keybinding) {
       return '';
     }
-    return keybinding.when ? typeof keybinding.when === 'string' ? keybinding.when : keybinding.when.keys().join(' && ') : '';
+    return keybinding.when ? typeof keybinding.when === 'string' ? keybinding.when : this.serialize(keybinding.when) : '';
+  }
+
+  serialize(when: any) {
+    let result: string[] = [];
+    if (when.expr) {
+      when = when as monaco.contextkey.ContextKeyAndExpr | monaco.contextkey.ContextKeyOrExpr;
+    } else {
+      when = when as monaco.contextkey.ContextKeyDefinedExpr
+      | monaco.contextkey.ContextKeyEqualsExpr
+      | monaco.contextkey.ContextKeyNotEqualsExpr
+      | monaco.contextkey.ContextKeyNotExpr
+      | monaco.contextkey.ContextKeyNotRegexExpr
+      | monaco.contextkey.ContextKeyOrExpr
+      | monaco.contextkey.ContextKeyRegexExpr;
+    }
+    if (!when.expr) {
+      switch (when.getType()) {
+        case monaco.contextkey.ContextKeyExprType.Defined:
+          return when.key;
+        case monaco.contextkey.ContextKeyExprType.Equals:
+          return when.key + ' == \'' + when.getValue() + '\'';
+        case monaco.contextkey.ContextKeyExprType.NotEquals:
+          return when.key + ' != \'' + when.getValue() + '\'';
+        case monaco.contextkey.ContextKeyExprType.Not:
+          return '!' + when.key;
+        case monaco.contextkey.ContextKeyExprType.Regex:
+          const value = when.regexp
+            ? `/${when.regexp.source}/${when.regexp.ignoreCase ? 'i' : ''}`
+            : '/invalid/';
+          return `${when.key} =~ ${value}`;
+        case monaco.contextkey.ContextKeyExprType.NotRegex:
+          return '-not regex-';
+        case monaco.contextkey.ContextKeyExprType.And:
+          return when.expr.map((e) => e.serialize()).join(' && ');
+        case monaco.contextkey.ContextKeyExprType.Or:
+          return when.expr.map((e) => e.serialize()).join(' || ');
+        default:
+          return when.key;
+      }
+    }
+    result = when.expr.map((contextKey: any) => {
+      return this.serialize(contextKey);
+    });
+    return result.join(' && ');
   }
 
   /**
@@ -385,7 +429,10 @@ export class KeymapService implements IKeymapService {
    * 获取被fuzzy替换的原始值
    * @param {string} keybinding
    */
-  getRaw(keybinding: string) {
+  getRaw(keybinding?: string) {
+    if (!keybinding) {
+      return '';
+    }
     return keybinding.replace(new RegExp(/<match>(.*?)<\/match>/g), '$1');
   }
 }
