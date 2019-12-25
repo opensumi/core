@@ -5,9 +5,8 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 
-import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, IMenuSeparator, SubmenuItemNode, IMenuAction } from '../../menu/next';
 import Icon from '../icon';
-import { getIcon } from '../../style/icon/icon';
+import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, IMenuSeparator, SubmenuItemNode, IMenuAction } from '../../menu/next';
 import { useInjectable } from '../../react-hooks';
 import { useMenus } from '../../utils';
 
@@ -42,7 +41,7 @@ const MenuAction: React.FC<{
         {
           hasSubmenu
             ? <div className={styles.submenuIcon}>
-              <Icon iconClass={getIcon('right')} />
+              <Icon icon='right' />
             </div>
             : null
         }
@@ -136,7 +135,7 @@ export const IconAction: React.FC<{
 
   return (
     <Icon
-      className={clsx(styles.iconAction, className)}
+      className={clsx(styles.iconAction, className, { [styles.disabled]: data.disabled })}
       title={data.label}
       iconClass={data.icon}
       onClick={handleClick}
@@ -196,9 +195,7 @@ const TitleActionList: React.FC<{
   }
 
   const moreAction = secondary.length > 0
-    ? <span
-      className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`}
-      onClick={handleShowMore} />
+    ? <Icon icon='ellipsis' className={styles.iconAction} onClick={handleShowMore} />
     : null;
 
   return (
@@ -207,7 +204,7 @@ const TitleActionList: React.FC<{
       {
         primary.map((item) => (
           <IconAction
-            className={clsx({ toggled: item.checked })}
+            className={clsx({ [styles.selected]: item.checked })}
             key={item.id}
             data={item}
             context={context} />

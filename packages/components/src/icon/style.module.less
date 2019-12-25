@@ -1,15 +1,15 @@
 .icon {
     display: inline-block;
     background-repeat: no-repeat;
-  
+
     &:global(.mask-mode) {
       background-color: var(--foreground);
     }
-  
+
     &.loading {
       animation: loadingCircle 1s infinite linear;
     }
-  
+
     &.small {
       font-size: 14px;
       height: 14px;
@@ -24,10 +24,9 @@
       width: 16px;
     }
   }
-  
+
   @keyframes loadingCircle {
     100% {
       transform: rotate(360deg)
     }
   }
-  

@@ -11,10 +11,14 @@ import { SIDE_BAR_TITLE_FOREGROUND } from '../sidebar';
 import { listHoverBackground, listInactiveSelectionBackground } from '../list-tree';
 import { EDITOR_GROUP_HEADER_TABS_BACKGROUND } from '../editor';
 
+// components
 export * from './button';
 export * from './input';
 export * from './checkbox';
 export * from './select';
+
+// blocks
+export * from './actionbar';
 
 // 自定义颜色
 
@@ -142,12 +146,6 @@ export const menuShadow = registerColor(
   'kt.menu.shadow',
   { dark: widgetShadow, light: widgetShadow, hc: widgetShadow },
   localize('menuShadow', 'Box shadow color of menu.'),
-);
-
-export const  actionBarSeparatorBg = registerColor(
-  'kt.actionbar.separatorBackground',
-  { dark: null, light: null, hc: null },
-  localize('actionbarSeparatorBackground', 'Separator background color of actionbar'),
 );
 
 /* --- menubar --- */

@@ -4,7 +4,7 @@ import * as classNames from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
 
 import './style.less';
-import Icon from '../icon';
+import { Icon } from '../icon';
 
 interface ISelectProps {
   className?: string;

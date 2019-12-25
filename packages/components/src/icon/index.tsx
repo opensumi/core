@@ -4,7 +4,7 @@ import clx from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
 import * as styles from './style.module.less';
 
-const Icon: React.FC<{
+export const Icon: React.FC<{
   title?: string;
   icon?: string;
   iconClass?: string;
@@ -28,5 +28,3 @@ const Icon: React.FC<{
     )}
     />;
 };
-
-export default Icon;

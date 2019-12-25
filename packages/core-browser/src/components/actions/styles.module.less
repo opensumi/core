@@ -45,10 +45,27 @@
 .titleActions {
   display: flex;
   align-items: center;
+  height: 100%;
 }
 
 .iconAction {
   cursor: pointer;
+  color: var(--kt-actionbar-foreground);
+  border: 1px solid transparent;
+
+  // hover 时选中图标不变大
+  &:not(.selected):hover {
+    transform: scale(1.2);
+  }
+
+  &.disabled {
+    color: var(--kt-actionbar-disableForeground);
+  }
+
+  &.selected {
+    background-color: var(--kt-actionbar-selectionBackground);
+    border-color: var(--kt-actionbar-selectionBorder);
+  }
 }
 
 .iconAction + .iconAction {
