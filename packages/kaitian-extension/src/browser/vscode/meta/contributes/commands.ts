@@ -1,8 +1,7 @@
 import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, PreferenceService, localize, URI, isNonEmptyArray, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
-import { ExtHostAPIIdentifier } from '../../../../common/vscode';
-import { ThemeType, IIconService } from '@ali/ide-theme';
+import { ThemeType, IIconService, IconType } from '@ali/ide-theme';
 
 export interface CommandFormat {
 
@@ -55,7 +54,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
         category: this.getLocalieFromNlsJSON(command.category),
         label: this.getLocalieFromNlsJSON(command.title),
         id: command.command,
-        iconClass: this.iconService.fromIcon(this.extension.path, command.icon),
+        iconClass: this.iconService.fromIcon(this.extension.path, command.icon, IconType.Background),
       }, {
         execute: (...args: any[]) => {
           this.extensionService.executeExtensionCommand(command.command, args);

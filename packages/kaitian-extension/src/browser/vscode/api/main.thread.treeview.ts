@@ -3,10 +3,10 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage } from '../../../common/vscode';
-import { TreeNode, MenuPath, URI, Emitter, ViewUiStateManager } from '@ali/ide-core-browser';
+import { TreeNode, MenuPath, URI, Emitter, ViewUiStateManager, DisposableStore, toDisposable } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ExtensionTabbarTreeView } from '../components';
+import { IIconService, IconType } from '@ali/ide-theme';
 
 export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];
 export const VIEW_ITEM_INLINE_MNUE: MenuPath = ['view-item-inline-menu'];
@@ -16,66 +16,94 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   private readonly proxy: IExtHostTreeView;
 
   @Autowired(IMainLayoutService)
-  mainLayoutService: IMainLayoutService;
+  private readonly mainLayoutService: IMainLayoutService;
 
-  @Autowired(StaticResourceService)
-  staticResourceService: StaticResourceService;
-
-  @Autowired()
-  viewStateManager: ViewUiStateManager;
+  @Autowired(IIconService)
+  private readonly iconService: IIconService;
 
   readonly dataProviders: Map<string, TreeViewDataProviderMain> = new Map<string, TreeViewDataProviderMain>();
 
+  private disposableCollection: Map<string, DisposableStore> = new Map();
+  private disposable: DisposableStore = new DisposableStore();
+
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
+    this.disposable.add(toDisposable(() => this.dataProviders.clear()));
   }
 
   dispose() {
-    this.dataProviders.clear();
+    this.disposable.dispose();
   }
 
   $registerTreeDataProvider(treeViewId: string): void {
-    const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
-    this.dataProviders.set(treeViewId, dataProvider);
-    this.mainLayoutService.collectViewComponent({
-      id: treeViewId,
-      name: treeViewId,
-      component: ExtensionTabbarTreeView,
-    }, treeViewId, {
-      dataProvider: this.dataProviders.get(treeViewId),
-      inlineMenuPath: VIEW_ITEM_INLINE_MNUE,
-      contextMenuPath: VIEW_ITEM_CONTEXT_MENU,
-    });
+    if (!this.dataProviders.has(treeViewId)) {
+      const disposable = new DisposableStore();
+      const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.iconService);
+      this.dataProviders.set(treeViewId, dataProvider);
+      disposable.add(toDisposable(() => this.dataProviders.delete(treeViewId)));
+      this.mainLayoutService.replaceViewComponent({
+        id: treeViewId,
+        component: ExtensionTabbarTreeView,
+      }, {
+        dataProvider: this.dataProviders.get(treeViewId),
+        viewId: treeViewId,
+      });
+      const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+      if (handler) {
+        handler.onActivate(() => {
+          dataProvider.setVisible(treeViewId, true);
+        });
+        handler.onInActivate(() => {
+          dataProvider.setVisible(treeViewId, false);
+        });
+        disposable.add(toDisposable(() => handler.disposeView(treeViewId)));
+      }
+      this.disposableCollection.set(treeViewId, disposable);
+    }
   }
 
-  $refresh(treeViewId: string) {
+  $unregisterTreeDataProvider(treeViewId: string) {
+    const disposable = this.disposableCollection.get(treeViewId);
+    if (disposable) {
+      disposable.dispose();
+    }
+  }
+
+  $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem) {
     const dataProvider = this.dataProviders.get(treeViewId);
     if (dataProvider) {
-      dataProvider.refresh();
+      dataProvider.refresh(itemsToRefresh);
     }
   }
 
   async $reveal(treeViewId: string, treeItemId: string) {
-
+    const dataProvider = this.dataProviders.get(treeViewId);
+    if (dataProvider) {
+      dataProvider.reveal(treeItemId);
+    }
   }
-
 }
 
 export class TreeViewDataProviderMain {
 
-  private treeDataChanged = new Emitter<any>();
+  private onTreeDataChangedEmitter = new Emitter<any>();
+  private onRevealEventEmitter = new Emitter<any>();
 
   get onTreeDataChanged() {
-    return this.treeDataChanged.event;
+    return this.onTreeDataChangedEmitter.event;
+  }
+
+  get onRevealEvent() {
+    return this.onRevealEventEmitter.event;
   }
 
   constructor(
     private treeViewId: string,
     private proxy: IExtHostTreeView,
-    private staticResourceService: StaticResourceService,
+    private iconService: IIconService,
   ) { }
 
-  async createFolderNode(item: TreeViewItem): Promise<CompositeTreeViewNode> {
+  async createFoldNode(item: TreeViewItem): Promise<CompositeTreeViewNode> {
     const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
     const icon = await this.toIconClass(item);
     return {
@@ -95,7 +123,7 @@ export class TreeViewDataProviderMain {
     };
   }
 
-  async createFileNode(item: TreeViewItem): Promise<TreeViewNode> {
+  async createNormalNode(item: TreeViewItem): Promise<TreeViewNode> {
     const icon = await this.toIconClass(item);
     return {
       id: item.id,
@@ -113,18 +141,10 @@ export class TreeViewDataProviderMain {
   }
 
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
-    if (item.iconUrl && typeof item.iconUrl !== 'string' && item.iconUrl.dark) {
-      const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
-      const iconUrl = (await this.staticResourceService.resolveStaticResource(URI.file(item.iconUrl.dark))).toString();
-      const cssRule = `.${randomIconClass} {background-image: url(${iconUrl});background-size: 16px;background-position: 0;background-repeat: no-repeat;padding-right: 22px;width: 0;height: 22px;-webkit-font-smoothing: antialiased;box-sizing: border-box;}`;
-      let iconStyleNode = document.getElementById('plugin-icons');
-      if (!iconStyleNode) {
-        iconStyleNode = document.createElement('style');
-        iconStyleNode.id = 'plugin-icons';
-        document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
-      }
-      iconStyleNode.append(cssRule);
-      return randomIconClass;
+    if (item.iconUrl || item.icon) {
+      return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background);
+    } else {
+      return '';
     }
   }
 
@@ -135,15 +155,15 @@ export class TreeViewDataProviderMain {
    */
   async createTreeNode(item: TreeViewItem): Promise<TreeNode> {
     if (item.collapsibleState !== TreeItemCollapsibleState.None) {
-      return await this.createFolderNode(item);
+      return await this.createFoldNode(item);
     }
-    return await this.createFileNode(item);
+    return await this.createNormalNode(item);
   }
 
   async resolveChildren(itemId?: string): Promise<TreeNode[]> {
     const nodes: TreeNode[] = [];
     const children = await this.proxy.$getChildren(this.treeViewId, itemId);
-    if (children) {
+    if (children && Array.isArray(children)) {
       for (const child of children) {
         const node = await this.createTreeNode(child);
         nodes.push(node);
@@ -152,7 +172,24 @@ export class TreeViewDataProviderMain {
     return nodes;
   }
 
-  async refresh() {
-    await this.treeDataChanged.fire('');
+  async refresh(itemsToRefresh?: TreeViewItem) {
+    await this.onTreeDataChangedEmitter.fire(itemsToRefresh);
+  }
+
+  async reveal(viewItemId?: any) {
+    await this.onRevealEventEmitter.fire(viewItemId);
+  }
+
+  async setSelection(treeViewId: string, id: any) {
+    // 仅处理单选情况
+    this.proxy.$setSelection(treeViewId, [id]);
+  }
+
+  async setExpanded(treeViewId: string, id: any, expanded: boolean) {
+    this.proxy.$setExpanded(treeViewId, id, expanded);
+  }
+
+  async setVisible(treeViewId: string, visible: boolean) {
+    this.proxy.$setVisible(treeViewId, visible);
   }
 }

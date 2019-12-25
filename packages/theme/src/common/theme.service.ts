@@ -15,18 +15,23 @@ export interface IIconTheme {
 
 export const IIconService = Symbol('IIconTheme');
 
+export enum IconType {
+  Mask = 'mask',
+  Background = 'background',
+}
+
 export interface IIconService {
   currentThemeId: string;
   currentTheme: IIconTheme;
   applyTheme(themeId?: string): Promise<void>;
-  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
   /**
-   * 将一个url地址转换为icon的class
-   * @param iconUrl iconUrl地址，可以是直接的字符串，或者和主题类型有关的 object 字符串对象
-   * @param maskMode=false 是否使用mask模式，如果使用, icon将会以webkit-mask的形式生成样式。否则将会以background形式的形式生成样式。默认false。
-   * @returns icon的class
+   * 将一个url地址或插件主题url转换为icon的class
+   * @param basePath 路径前缀
+   * @param icon iconUrl地址，可以是直接的字符串，或者和主题类型有关的 object 字符串对象
+   * @param type 选择采用Mask或者Background的方式渲染icon资源, 默认值为IconType.Mask
+   * @returns icon的className
    */
-  fromIconUrl(iconUrl: string | { [index in ThemeType]: string }, maskMode?: boolean): string;
+  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType): string | undefined;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
   getAvailableThemeInfos(): ThemeInfo[];

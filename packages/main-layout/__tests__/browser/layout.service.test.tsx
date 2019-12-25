@@ -200,7 +200,7 @@ describe('main layout test', () => {
       component: MockView,
       id: 'test-view-id',
     }], options, 'left');
-    const handler = service.getTabbarHandler(handlerId);
+    const handler = service.getTabbarHandler(handlerId)!;
     expect(handler).toBeDefined();
     const disposer = autorun(() => {
       const info = service.getTabbarService('left');

@@ -305,7 +305,7 @@ export class PreferenceServiceImpl implements PreferenceService {
         value,
       };
     }
-    for (let i = parts.length - 1; i < parts.length; i++) {
+    for (let i = parts.length - 1; i > 0 ; i--) {
       value = this.doResolve(parts.slice(0, i).join('.')).value;
       if (value) {
         reset = parts.slice(i);
@@ -484,6 +484,8 @@ export class PreferenceServiceImpl implements PreferenceService {
     const changes = Object.values(changesToEmit);
     const defaultScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Default);
     const userScopeChanges = changes.filter((change) => change.scope === PreferenceScope.User);
+    const workspaceScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Workspace);
+    const folderScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Folder);
 
     if (defaultScopeChanges.length) {
       this._onDidChangeConfiguration.fire({
@@ -496,6 +498,20 @@ export class PreferenceServiceImpl implements PreferenceService {
       this._onDidChangeConfiguration.fire({
         affectedKeys: userScopeChanges.map((n) => n.preferenceName),
         source: ConfigurationTarget.USER,
+      });
+    }
+
+    if (workspaceScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: workspaceScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.WORKSPACE,
+      });
+    }
+
+    if (folderScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: folderScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.WORKSPACE_FOLDER,
       });
     }
   }

@@ -40,6 +40,7 @@ import {
   SignatureHelp,
   ColorInformation,
   SelectionRange,
+  QuickInputButtons,
 } from '../../../common/vscode/ext-types';
 import { CancellationTokenSource, Emitter, Event } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
@@ -151,6 +152,7 @@ export function createApiFactory(
       OverviewRulerLane,
       Selection,
       SelectionRange,
+      QuickInputButtons,
       CodeAction,
       SignatureHelpTriggerKind,
       SignatureHelp,

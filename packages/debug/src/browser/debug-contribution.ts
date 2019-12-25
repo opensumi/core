@@ -269,7 +269,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
       isVisible: () => {
         const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
-        return handler && handler.isVisible;
+        return handler ? handler.isVisible : false;
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER, {
@@ -278,7 +278,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
       isVisible: () => {
         const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
-        return handler && handler.isVisible;
+        return handler ? handler.isVisible : false;
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.REMOVE_ALL_WATCHER, {
@@ -287,7 +287,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
       isVisible: () => {
         const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
-        return handler && handler.isVisible;
+        return handler ? handler.isVisible : false;
       },
     });
 
@@ -297,7 +297,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
       isVisible: () => {
         const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
-        return handler && handler.isVisible;
+        return handler ? handler.isVisible : false;
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.START, {
@@ -341,7 +341,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
       isVisible: () => {
         const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
-        return handler && handler.isVisible;
+        return handler ? handler.isVisible : false;
       },
     });
     commands.registerCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT, {

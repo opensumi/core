@@ -188,16 +188,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           });
         }
       } else if (menuPosition === 'view/title') {
-        for (const item of this.json[menuPosition]) {
-          const command = this.commandRegistry.getCommand(item.command);
-          this.addDispose(this.toolBarRegistry.registerItem({
-            id: this.createSyntheticCommandId(item, 'title.'),
-            command: item.command,
-            iconClass: command!.iconClass,
-            when: item.when,
-            group: item.group,
-          }));
-        }
+        // to new Registration
       } else if (menuPosition === 'editor/title') {
         // to new Registration
       } else {

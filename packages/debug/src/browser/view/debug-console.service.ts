@@ -29,7 +29,7 @@ export class DebugConsoleService {
 
   get isVisible() {
     const bottomPanelHandler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONSOLE_CONTAINER_ID);
-    return bottomPanelHandler.isVisible;
+    return bottomPanelHandler && bottomPanelHandler.isVisible;
   }
 
   activate() {

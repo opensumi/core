@@ -218,7 +218,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (uris && uris.length) {
           this.filetreeService.deleteFiles(uris);
         } else {
-          const seletedUris = this.filetreeService.selectedUris;
+          const seletedUris = this.filetreeService.focusedUris;
           if (seletedUris && seletedUris.length) {
             this.filetreeService.deleteFiles(seletedUris);
           }
@@ -234,7 +234,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (uris && uris.length) {
           this.filetreeService.renameTempFile(uris[0]);
         } else {
-          const selectedFiles = this.filetreeService.selectedFiles;
+          const selectedFiles = this.filetreeService.focusedFiles;
           if (selectedFiles && selectedFiles.length) {
             const selected = selectedFiles[0];
             if (!selected.isTemporary) {
