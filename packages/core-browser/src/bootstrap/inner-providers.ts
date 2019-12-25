@@ -26,14 +26,9 @@ import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from
 import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry, KeybindingContext } from '../keybinding';
 import { BrowserKeyboardLayoutImpl } from '../keyboard';
 
-import {
-  ContextMenuRenderer,
-  BrowserContextMenuRenderer,
-} from '../menu';
 import { Logger, ILogger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution, TabBarToolbarContribution } from '../layout';
 import { useNativeContextMenu } from '../utils';
-import { ElectronContextMenuRenderer } from '../menu/electron/electron-menu';
 import { createElectronMainApi } from '../utils/electron';
 import { IElectronMainUIService, IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { PreferenceContribution } from '../preferences';
@@ -90,10 +85,6 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: KeyboardLayoutChangeNotifierService,
       useClass: BrowserKeyboardLayoutImpl,
-    },
-    {
-      token: ContextMenuRenderer,
-      useClass: useNativeContextMenu() ? ElectronContextMenuRenderer :  BrowserContextMenuRenderer,
     },
     ClientAppStateService,
     {

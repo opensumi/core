@@ -27,8 +27,6 @@
     "antd": "^3.20.3",
     "classnames": "^2.2.6",
     "clsx": "^1.0.4",
-    "@phosphor/commands": "^1.6.1",
-    "@phosphor/widgets": "^1.6.0",
     "copy-to-clipboard": "^3.2.0",
     "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",
