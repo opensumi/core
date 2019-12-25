@@ -185,6 +185,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
       group,
     });
 
+    /*
     menuRegistry.registerMenuItem(`tabbar/bottom/common`, {
       command: {
         id: SimpleCommonds.clear,
@@ -202,6 +203,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
       order: 1,
       group: more2,
     });
+    */
   }
 }
 
