@@ -2,7 +2,7 @@ import * as React from 'react';
 import classNames from 'classnames';
 
 import './style.less';
-import Icon from '../icon';
+import { Icon } from '../icon';
 import { getIcon, defaultIconMap } from '@ali/ide-core-browser';
 
 export type ButtonType = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link';
