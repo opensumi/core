@@ -82,6 +82,7 @@ export class WebSocketServerRoute {
     const wsServerHandlerArr = this.wsServerHandlerArr;
 
     server.on('upgrade', (request, socket, head) => {
+
       const wsPathname: string = url.parse(request.url).pathname as string;
 
       let wsHandlerIndex = 0;

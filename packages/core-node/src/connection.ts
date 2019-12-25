@@ -21,10 +21,10 @@ export {RPCServiceCenter};
 
 // const logger = getLogger();
 
-export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[]) {
+export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[], isCloseMultichannel?: boolean) {
   const logger = injector.get(INodeLogger);
   const socketRoute = new WebSocketServerRoute(server, logger);
-  const channelHandler = new CommonChannelHandler('/service', logger);
+  const channelHandler = new CommonChannelHandler('/service', logger, isCloseMultichannel);
 
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {

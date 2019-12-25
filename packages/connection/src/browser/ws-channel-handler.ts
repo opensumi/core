@@ -1,13 +1,16 @@
-import { WSChannel } from '../common/ws-channel';
+import { WSChannel, MessageString } from '../common/ws-channel';
 import * as shorid from 'shortid';
 import { stringify, parse } from '../common/utils';
+import { MultiWs } from './multi-ws';
 import { IReporterService, REPORT_NAME } from '@ali/ide-core-common';
+
 let ReconnectingWebSocket = require('reconnecting-websocket');
 
 if (ReconnectingWebSocket.default) {
   /* istanbul ignore next */
   ReconnectingWebSocket = ReconnectingWebSocket.default;
 }
+
 // import ReconnectingWebSocket from 'reconnecting-websocket';
 // import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
@@ -18,13 +21,13 @@ export class WSChanneHandler {
   public connection: WebSocket;
   private channelMap: Map<number | string, WSChannel> = new Map();
   private logger = console;
-  public clientId: string = `CLIENT_ID:${shorid.generate()}`;
+  public clientId: string = `CLIENT_ID_${shorid.generate()}`;
   private heartbeatMessageTimer: NodeJS.Timeout;
   private reporterService: IReporterService;
 
-  constructor(public wsPath: string, logger: any, public protocols?: string[]) {
+  constructor(public wsPath: string, logger: any, public protocols?: string[], isCloseMultichannel?: boolean) {
     this.logger = logger || this.logger;
-    this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
+    this.connection = isCloseMultichannel ? new ReconnectingWebSocket(wsPath, protocols, {}) : new MultiWs(wsPath, protocols, this.clientId) as any; // new WebSocket(wsPath, protocols);
   }
   setLogger(logger: any) {
     this.logger = logger;
@@ -33,7 +36,7 @@ export class WSChanneHandler {
     this.reporterService = reporterService;
   }
   private clientMessage() {
-    const clientMsg = stringify({
+    const clientMsg: MessageString = stringify({
       kind: 'client',
       clientId: this.clientId,
     });
@@ -76,13 +79,12 @@ export class WSChanneHandler {
         resolve();
 
         // 重连 channel
-        // FIXME: 暂时不需要，直接通过重新生成实例
 
         if (this.channelMap.size) {
           this.channelMap.forEach((channel) => {
             channel.onOpen(() => {
               this.reporterService && this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT);
-              console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
+              this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);
 

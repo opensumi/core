@@ -120,3 +120,28 @@ export class WSChannel implements IWebSocket {
     this.fireClose = cb;
   }
 }
+
+export type MessageString = string & {
+  origin?: any;
+};
+
+/**
+ * 路径信息 ${pre}-${index}
+ */
+export class ChildConnectPath {
+  public pathPre = 'child_connect-';
+
+  getConnectPath(index: number, clientId: string) {
+    return `${this.pathPre}${index + 1}`;
+  }
+
+  parseInfo(pathString: string) {
+    const list = pathString.split('-');
+
+    return {
+      pre: list[0],
+      index: list[1],
+      clientId: list[2],
+    };
+  }
+}

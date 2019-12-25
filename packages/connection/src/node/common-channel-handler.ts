@@ -3,6 +3,7 @@ import * as pathMatch from 'path-match';
 import * as ws from 'ws';
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
+import { MultiWsServer } from './multi-ws-server';
 const route = pathMatch();
 
 export interface IPathHander {
@@ -96,16 +97,19 @@ export class CommonChannelHandler extends WebSocketHandler {
   static channelId = 0;
 
   public handlerId = 'common-channel';
-  private wsServer: ws.Server;
+  private wsServer: MultiWsServer | ws.Server;
   private handlerRoute: (wsPathname: string) => any;
   private channelMap: Map<string | number, WSChannel> = new Map();
   private connectionMap: Map<string, ws> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
-  constructor(routePath: string, private logger: any = console) {
+  private isCloseMultichannel: boolean | undefined;
+
+  constructor(routePath: string, private logger: any = console, isCloseMultichannel?: boolean) {
     super();
-    this.handlerRoute = route(routePath);
-    this.initWSServer();
+    this.isCloseMultichannel = isCloseMultichannel;
+    this.handlerRoute = route(`${routePath}${ isCloseMultichannel ? '' : '/:channel'}`);
+    this.initWSServer(isCloseMultichannel);
   }
   private hearbeat(connectionId: string, connection: ws) {
     const timer = setTimeout(() => {
@@ -117,12 +121,11 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.heartbeatMap.set(connectionId, timer);
   }
 
-  private initWSServer() {
+  private initWSServer(isCloseMultichannel?: boolean) {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new ws.Server({ noServer: true });
+    this.wsServer = isCloseMultichannel ? new ws.Server({ noServer: true }) : new MultiWsServer();
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
-
       connection.on('message', (msg: string) => {
         let msgObj: ChannelMessage;
         try {
@@ -248,13 +251,17 @@ export class CommonChannelHandler extends WebSocketHandler {
 
     if (routeResult) {
       const wsServer = this.wsServer;
-      wsServer.handleUpgrade(request, socket, head, (connection: any) => {
-        connection.routeParam = {
-          pathname: wsPathname,
-        };
+      if (this.isCloseMultichannel) {
+        wsServer.handleUpgrade(request, socket, head, (connection: any) => {
+          connection.routeParam = {
+            pathname: wsPathname,
+          };
 
-        wsServer.emit('connection', connection);
-      });
+          wsServer.emit('connection', connection);
+        });
+      } else {
+        (wsServer as MultiWsServer).handleUpgrade(wsPathname, request, socket, head);
+      }
       return true;
     }
 

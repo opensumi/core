@@ -60,6 +60,8 @@ interface Config {
    * 外部设置的 ILogService，替换默认的 logService
    */
   LogServiceClass: ConstructorOf<ILogService>;
+
+  isCloseMultichannel?: boolean;
 }
 
 export interface AppConfig extends Partial<Config> {
@@ -151,6 +153,7 @@ export class ServerApp implements IServerApp {
       terminalPtyCloseThreshold: opts.terminalPtyCloseThreshold,
       staticAllowOrigin: opts.staticAllowOrigin,
       staticAllowPath: opts.staticAllowPath,
+      isCloseMultichannel: opts.isCloseMultichannel,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
@@ -224,7 +227,7 @@ export class ServerApp implements IServerApp {
     } else {
       if (server instanceof http.Server || server instanceof https.Server) {
       // 创建 websocket 通道
-        serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler);
+        serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler, this.config.isCloseMultichannel);
       } else if (server instanceof net.Server) {
         serviceCenter = createNetServerConnection(server, this.injector, this.modulesInstances);
       }

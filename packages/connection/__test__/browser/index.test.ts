@@ -1,15 +1,18 @@
 import { WSChanneHandler } from '../../src/browser/ws-channel-handler';
 import { stringify, parse } from '../../src/common/utils';
+import { ChildConnectPath } from '../../src/common/ws-channel';
 import { WebSocket, Server } from 'mock-socket';
 import { ReporterService, DefaultReporter } from '@ali/ide-core-common';
 (global as any).WebSocket = WebSocket;
+
+const connectPath = new ChildConnectPath();
 
 describe('connection browser', () => {
   it('init connection', async (done) => {
     jest.setTimeout(20000);
 
     const fakeWSURL = 'ws://localhost:8089';
-    const mockServer = new Server(fakeWSURL);
+    const mockServer = new Server(`${fakeWSURL}/${connectPath.getConnectPath(0, '12')}`);
 
     let receivedHeartbeat = false;
     mockServer.on('connection', (socket) => {

@@ -27,6 +27,8 @@ export interface AppConfig {
   editorBackgroudImage?: string;
 
   isSyncPreference?: boolean;
+
+  isCloseMultichannel?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
