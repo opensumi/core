@@ -305,7 +305,7 @@ export class PreferenceServiceImpl implements PreferenceService {
         value,
       };
     }
-    for (let i = parts.length - 1; i < parts.length; i++) {
+    for (let i = parts.length - 1; i > 0 ; i--) {
       value = this.doResolve(parts.slice(0, i).join('.')).value;
       if (value) {
         reset = parts.slice(i);
