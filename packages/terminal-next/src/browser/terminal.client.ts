@@ -1,12 +1,13 @@
-import { Disposable, ThrottledDelayer, URI } from '@ali/ide-core-common';
-import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { Terminal, ITerminalOptions } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { AttachAddon } from 'xterm-addon-attach';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
+import { Disposable, ThrottledDelayer, URI } from '@ali/ide-core-common';
+import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
+import { PreferenceService } from '@ali/ide-core-browser';
 import { TerminalFilePathAddon } from './terminal.addon';
 import { ITerminalExternalService, IWidget, TerminalOptions, ITerminalController } from '../common';
 import { ITerminalTheme } from './terminal.theme';
@@ -14,7 +15,6 @@ import * as styles from './terminal.module.less';
 
 export class TerminalClient extends Disposable {
   private _container: HTMLDivElement;
-  private _input: HTMLTextAreaElement;
   private _term: Terminal;
   private _uid: string;
   private _pid: number;
@@ -46,12 +46,44 @@ export class TerminalClient extends Disposable {
     fontSize: 12,
   };
 
+  private _customTermOptions(): ITerminalOptions {
+    const options = {};
+    const support = {
+      'terminal.fontFamily': 'fontFamily',
+      'terminal.fontSize': 'fontSize',
+      'terminal.fontWeight': 'fontWeight',
+      'terminal.lineHeight': 'lineHeight',
+      'terminal.cursorBlink': 'cursorBlink',
+    };
+
+    Object.keys(support).forEach((key) => {
+      const value = this.preference.get<any>(key);
+      if (value !== undefined && value !== '') {
+        options[support[key]] = value;
+      }
+    });
+
+    this.addDispose({
+      dispose: () => {
+        this.preference.onPreferenceChanged(({ preferenceName, newValue }) => {
+          const option = this._term.getOption(preferenceName);
+          if (support[preferenceName] && option !== newValue) {
+            this._term.setOption(support[preferenceName], newValue);
+          }
+        });
+      },
+    });
+
+    return options;
+  }
+
   constructor(
     protected readonly service: ITerminalExternalService,
     protected readonly workspace: IWorkspaceService,
     protected readonly editorService: WorkbenchEditorService,
     protected readonly fileService: IFileServiceClient,
-    protected theme: ITerminalTheme,
+    protected readonly theme: ITerminalTheme,
+    protected readonly preference: PreferenceService,
     protected readonly controller: ITerminalController,
     widget: IWidget,
     restoreId?: string,
@@ -66,13 +98,12 @@ export class TerminalClient extends Disposable {
     this._name = this._options.name || '';
     this._widget = widget;
     this._container = document.createElement('div');
-    this._input = document.createElement('textarea');
     this._container.className = styles.terminalInstance;
-    this._input.className = styles.terminalFake;
     this._term = new Terminal({
       theme: this.theme.terminalTheme,
       ...TerminalClient.defaultOptions,
       ...this.service.getOptions(),
+      ...this._customTermOptions(),
     });
     this._searchAddon = new SearchAddon();
     this._fitAddon = new FitAddon();
@@ -152,26 +183,13 @@ export class TerminalClient extends Disposable {
 
   applyDomNode(dom: HTMLDivElement) {
     dom.appendChild(this._container);
-    document.body.appendChild(this._input);
-
-    this._input.addEventListener('paste', (event) => {
-      console.log(event);
-    });
   }
 
   private _doAttach(socket: WebSocket) {
-    const info = this.service.intro(this.id);
-
     this._attachAddon = new AttachAddon(socket);
     this._term.loadAddon(this._attachAddon);
     this._attached = true;
     this.attachPromise = null;
-
-    if (info) {
-      this._name = (this._name || info.name) || 'terminal';
-      this._pid = info.pid;
-      this._widget.name = this._name;
-    }
 
     if (this.showPromiseResolve) {
       this.showPromiseResolve();
@@ -186,8 +204,18 @@ export class TerminalClient extends Disposable {
 
     if (!this._attached) {
       if (!this.attachPromise) {
+        const type = this.preference.get<string>('terminal.type');
         this.attachPromise = this.service.attach(this.id, this.term, restore, meta,
-          (socket: WebSocket) => this._doAttach(socket), this._options);
+          (socket: WebSocket) => this._doAttach(socket), this._options, type)
+          .then(() => {
+            const info = this.service.intro(this.id);
+            this.attachPromise = null;
+            if (info) {
+              this._name = (this._name || info.name) || 'terminal';
+              this._pid = info.pid;
+              this._widget.name = this._name;
+            }
+          });
       }
       return this.attachPromise;
     } else {
@@ -275,17 +303,6 @@ export class TerminalClient extends Disposable {
     }
   }
 
-  copy() {
-    this._input.value = '';
-
-    const str = this._term.getSelection();
-    this._input.value = str;
-    this._input.select();
-    document.execCommand('copy');
-
-    this._term.focus();
-  }
-
   selectAll() {
     this._term.selectAll();
   }
@@ -340,7 +357,6 @@ export class TerminalClient extends Disposable {
 
     this.hide();
     this._container.remove();
-    this._input.remove();
 
     if (clear) {
       this.service.disposeById(this.id);

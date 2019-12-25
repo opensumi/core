@@ -255,6 +255,20 @@ export const localizationBundle = {
     'preference.files.associations.title': '文件关联',
     'preference.files.associations': '配置语言的文件关联 (如: "*.extension": "html")。这些关联的优先级高于已安装语言的默认关联。',
 
+    // 终端
+    'preference.terminal.type': '默认终端类型',
+    'preference.terminal.typeDesc': '改变打开终端所使用的默认 Shell 类型',
+    'preference.terminal.fontFamily': '终端字体',
+    'preference.terminal.fontFamilyDesc': '改变所有终端使用的默认字体',
+    'preference.terminal.fontSize': '终端字体大小',
+    'preference.terminal.fontSizeDesc': '改变所有终端使用的默认字体大小',
+    'preference.terminal.fontWeight': '终端字体权重',
+    'preference.terminal.fontWeightDesc': '改变所有终端使用的默认字体权重',
+    'preference.terminal.lineHeight': '终端文字行高',
+    'preference.terminal.lineHeightDesc': '改变所有终端使用的默认单行文字所占行数',
+    'preference.terminal.cursorBlink': '终端光标是否闪烁',
+    'preference.terminal.cursorBlinkDesc': '改变所有终端的光标是否闪烁',
+
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
     'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
@@ -265,6 +279,7 @@ export const localizationBundle = {
     'settings.group.editor': '编辑器',
     'settings.group.extension': '插件',
     'settings.group.feature': '功能',
+    'settings.group.terminal': '终端',
 
     'preference.general.theme': '主题',
     'preference.general.icon': '图标主题',
@@ -391,6 +406,7 @@ export const localizationBundle = {
     'terminal.independ': '独立终端',
     'terminal.maximum': '最大化面板大小',
     'terminal.or': '或者',
+    'terminal.search': '搜索',
 
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分',

@@ -163,6 +163,11 @@ export const defaultSettingGroup: ISettingGroup[] = [
     iconClass: getIcon('setting-editor'),
   },
   {
+    id: 'terminal',
+    title: '%settings.group.terminal%',
+    iconClass: getIcon('setting-editor'),
+  },
+  {
     id: 'feature',
     title: '%settings.group.feature%',
     iconClass: getIcon('setting-file'),
@@ -203,6 +208,18 @@ export const defaultSettingSections: {
         {id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave'},
         {id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout'},
         {id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength'},
+      ],
+    },
+  ],
+  terminal: [
+    {
+      preferences: [
+        { id: 'terminal.type', localized: 'preference.terminal.type' },
+        { id: 'terminal.fontFamily', localized: 'preference.terminal.fontFamily' },
+        { id: 'terminal.fontSize', localized: 'preference.terminal.fontSize' },
+        { id: 'terminal.fontWeight', localized: 'preference.terminal.fontWeight' },
+        { id: 'terminal.lineHeight', localized: 'preference.terminal.lineHeight' },
+        { id: 'terminal.cursorBlink', localized: 'preference.terminal.cursorBlink' },
       ],
     },
   ],

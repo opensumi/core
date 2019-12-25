@@ -29,10 +29,10 @@ export interface ITerminalController {
   addWidget(client?: any): void;
   focusWidget(widgetId: string): void;
   removeWidget(widgetId: string): void;
+  clearCurrentWidget(): void;
 
   createGroup(selected?: boolean): number;
   selectGroup(index: number): void;
-  clearGroup(index: number): void;
 
   drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean, meta?: string): Promise<void>;
   retryTerminalClient(widgetId: string): Promise<void>;
@@ -52,6 +52,7 @@ export interface ITerminalController {
 
   openSearchInput(): void;
   closeSearchInput(): void;
+  clearSearchInput(): void;
   search(): void;
 
   onDidChangeActiveTerminal: Event<string>;
@@ -59,4 +60,8 @@ export interface ITerminalController {
   onDidOpenTerminal: Event<TerminalInfo>;
 
   getCurrentClient(): any | undefined;
+
+  isFocus: boolean;
+  focus(): void;
+  blur(): void;
 }

@@ -1,12 +1,12 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { uuid, CommandService, OnEvent, WithEventBus, Emitter, Event, ILogger } from '@ali/ide-core-common';
-import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation } from '@ali/ide-core-browser';
+import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation, IContextKeyService, IContextKey, PreferenceService } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IThemeService } from '@ali/ide-theme/lib/common';
 import { TerminalClient } from './terminal.client';
 import { WidgetGroup, Widget } from './component/resize.control';
-import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
+import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient, terminalFocusContextKey } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { TabManager } from './component/tab/manager';
@@ -20,7 +20,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   groups: WidgetGroup[] = [];
 
   @observable
-  state: { index: number } = { index: -1 };
+  state: { index: number, focus: boolean } = { index: -1, focus: false };
 
   @observable
   searchState: { input: string, show: boolean } = { input: '', show: false };
@@ -40,11 +40,17 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(AppConfig)
   private config: AppConfig;
 
+  @Autowired(IContextKeyService)
+  protected readonly contextKeyService: IContextKeyService;
+
   @Autowired(ITerminalTheme)
   private termTheme: ITerminalTheme;
 
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
+
+  @Autowired(PreferenceService)
+  preference: PreferenceService;
 
   @Autowired(ILogger)
   logger: ILogger;
@@ -68,6 +74,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   private _clientsMap = new Map<string, TerminalClient>();
   private _focusedId: string;
+  private _focus: boolean;
+  private _focusKey: IContextKey<boolean>;
 
   private _onDidOpenTerminal = new Emitter<TerminalInfo>();
   private _onDidCloseTerminal = new Emitter<string>();
@@ -120,6 +128,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.editorService,
       this.fileService,
       this.termTheme,
+      this.preference,
       this,
       widget, restoreId, options,
     );
@@ -184,11 +193,21 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return needed;
   }
 
+  private _isActivated() {
+    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
+    if (this.tabbarHandler) {
+      return this.tabbarHandler.isActivated();
+    } else {
+      return true;
+    }
+  }
+
   firstInitialize() {
     this.tabbarHandler = this.layoutService.getTabbarHandler('terminal')!;
     this.themeBackground = this.termTheme.terminalTheme.background || '';
+    this._focusKey = this.contextKeyService.createKey(terminalFocusContextKey, this._focus);
 
-    if (this.tabbarHandler.isActivated()) {
+    if (this._isActivated()) {
       if (this._checkIfNeedInitialize()) {
         this.createGroup(true);
         this.addWidget();
@@ -223,19 +242,21 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }
     }));
 
-    this.addDispose(this.tabbarHandler.onActivate(() => {
-      if (!this.currentGroup) {
-        if (!this._getGroup(0)) {
-          this.tabManager.create();
+    if (this.tabbarHandler) {
+      this.addDispose(this.tabbarHandler.onActivate(() => {
+        if (!this.currentGroup) {
+          if (!this._getGroup(0)) {
+            this.tabManager.create();
+          } else {
+            this.selectGroup(0);
+          }
         } else {
-          this.selectGroup(0);
+          this.currentGroup.widgets.forEach((widget) => {
+            this.layoutTerminalClient(widget.id);
+          });
         }
-      } else {
-        this.currentGroup.widgets.forEach((widget) => {
-          this.layoutTerminalClient(widget.id);
-        });
-      }
-    }));
+      }));
+    }
 
     this.addDispose(this.themeService.onThemeChange((theme) => {
       this._clientsMap.forEach((client) => {
@@ -355,6 +376,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       throw new Error('group not found');
     }
 
+    if (group.length === 4) {
+      throw new Error('group length maxium');
+    }
+
     const widget = restoreClient ? (restoreClient.widget as Widget) : new Widget(uuid());
     const client = restoreClient || this._createTerminalClientInstance(widget, undefined, options);
     this._clientsMap.set(widget.id, client);
@@ -403,6 +428,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
+  clearCurrentWidget() {
+    const client = this._clientsMap.get(this._focusedId);
+    if (client) {
+      client.clear();
+    }
+  }
+
   /** end */
 
   /** resize view group operation */
@@ -424,18 +456,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.selectGroup(this.groups.length - 1);
     }
     return this.groups.length - 1;
-  }
-
-  clearGroup(index: number) {
-    const group = this._getGroup(index);
-    if (group && group.widgets && group.length > 0) {
-      group.widgets.forEach((widget) => {
-        const client = this._clientsMap.get(widget.id);
-        if (client) {
-          client.clear();
-        }
-      });
-    }
   }
 
   /** end */
@@ -503,7 +523,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.errors.delete(widgetId);
     await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true, meta);
 
-    if (this.tabbarHandler.isActivated()) {
+    if (this._isActivated()) {
       this.layoutTerminalClient(widgetId);
     }
   }
@@ -519,7 +539,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   layoutTerminalClient(widgetId: string) {
     const client = this._clientsMap.get(widgetId);
 
-    if (client && this.tabbarHandler && this.tabbarHandler.isActivated() &&
+    if (client && this._isActivated() &&
       this.currentGroup && this.currentGroup.widgetsMap.has(widgetId)) {
       if (client.notReadyToShow) {
         /**
@@ -688,6 +708,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.searchState.show = false;
   }
 
+  clearSearchInput() {
+    this.searchState.input = '';
+  }
+
   search() {
     const group = this.currentGroup;
 
@@ -710,6 +734,24 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   getCurrentClient() {
     return this._clientsMap.get(this._focusedId);
+  }
+
+  /** end */
+
+  /** focus */
+
+  get isFocus() {
+    return this._focus;
+  }
+
+  focus() {
+    this._focus = true;
+    this._focusKey.set(this._focus);
+  }
+
+  blur() {
+    this._focus = false;
+    this._focusKey.set(this._focus);
   }
 
   /** end */
