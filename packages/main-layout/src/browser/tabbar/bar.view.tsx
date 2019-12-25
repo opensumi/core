@@ -5,7 +5,6 @@ import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
 import { ComponentRegistryInfo, useInjectable, ConfigProvider, ComponentRenderer, AppConfig } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
-import { PanelContext } from '@ali/ide-core-browser/lib/components/layout/split-panel';
 import { TabbarConfig } from './renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../../common';
@@ -15,11 +14,10 @@ export const TabbarViewBase: React.FC<{
   forbidCollapse?: boolean;
   barSize?: number;
 }> = observer(({ TabView, forbidCollapse, barSize = 48 }) => {
-  const { setSize, getSize, setRelativeSize, getRelativeSize, lockSize, setMaxSize } = React.useContext(PanelContext);
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   React.useEffect(() => {
-    tabbarService.registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, lockSize, setMaxSize, barSize);
+    tabbarService.barSize = barSize;
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
   return (
