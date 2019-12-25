@@ -45,7 +45,7 @@ export class MainThreaLayout extends Disposable implements IMainThreadLayout {
         const disposer = this.eventBus.on(TabBarRegistrationEvent, (e) => {
           if (e.payload.tabBarId === id) {
             const handle = this.layoutService.getTabbarHandler(id);
-            this.bindHandleEvents(handle);
+            this.bindHandleEvents(handle!);
             disposer.dispose();
           }
         });
@@ -69,7 +69,7 @@ export class MainThreaLayout extends Disposable implements IMainThreadLayout {
     if (!handler) {
       console.warn(`MainThreaLayout:没有找到${id}对应的handler`);
     }
-    return handler;
+    return handler!;
   }
 
 }
