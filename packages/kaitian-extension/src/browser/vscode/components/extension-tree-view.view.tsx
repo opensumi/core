@@ -218,7 +218,7 @@ export const ExtensionTabbarTreeView = observer(({
 
     return [{
       location: ExpandableTreeNode.is(node) ? TreeViewActionTypes.TreeContainer : TreeViewActionTypes.TreeNode_Right,
-      component: <InlineActionBar context={[node]} menus={menus} separator='inline' />,
+      component: <InlineActionBar context={[{treeViewId: viewId, treeItemId: node.id}]} menus={menus} separator='inline' />,
     }];
   };
 
