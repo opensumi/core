@@ -8,7 +8,6 @@ import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMResource, ISCMResourceGroup } from '../common';
-import { SCMMenus } from './scm-menu';
 
 interface ISCMResourceTreeNode extends SelectableTreeNode {
   id: string;
@@ -35,7 +34,11 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
   // 视图可直接传入
   public selected: boolean = false;
 
-  readonly style: React.CSSProperties = { fontWeight: 500 };
+  readonly style: React.CSSProperties = {
+    fontWeight: 500,
+    backgroundColor: 'var(--sideBarSectionHeader-background)',
+  };
+
   readonly depth = 0;
   readonly parent = undefined;
 
