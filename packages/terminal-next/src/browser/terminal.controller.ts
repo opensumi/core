@@ -185,7 +185,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   firstInitialize() {
-    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
+    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal')!;
     this.themeBackground = this.termTheme.terminalTheme.background || '';
 
     if (this.tabbarHandler.isActivated()) {

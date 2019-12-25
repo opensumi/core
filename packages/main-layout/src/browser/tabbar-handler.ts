@@ -39,8 +39,7 @@ export class TabBarHandler {
   }
 
   disposeView(viewId: string) {
-    const index = this.accordionService.views.findIndex((view) => view.id === viewId);
-    this.accordionService.views.splice(index, 1);
+    this.accordionService.disposeView(viewId);
   }
 
   activate() {

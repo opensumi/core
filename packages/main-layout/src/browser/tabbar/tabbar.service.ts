@@ -1,7 +1,7 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
-import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 import { ResizeHandle } from '@ali/ide-core-browser/lib/components';
 import debounce = require('lodash.debounce');
@@ -49,6 +49,12 @@ export class TabbarService extends WithEventBus {
 
   @Autowired(KeybindingRegistry)
   keybindingRegistry: KeybindingRegistry;
+
+  @Autowired()
+  private viewContextKeyRegistry: ViewContextKeyRegistry;
+
+  @Autowired(IContextKeyService)
+  private contextKeyService: IContextKeyService;
 
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
@@ -184,6 +190,7 @@ export class TabbarService extends WithEventBus {
       // 需要重新触发currentChange副作用
       this.handleChange(containerId, '');
     }
+    this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped()).createKey('view', containerId);
   }
 
   getContainer(containerId: string) {
@@ -191,7 +198,7 @@ export class TabbarService extends WithEventBus {
   }
 
   getTitleToolbarMenu(containerId: string) {
-    const menu = this.menuService.createMenu(`container/${containerId}`);
+    const menu = this.menuService.createMenu(MenuId.ViewTitle, this.viewContextKeyRegistry.getContextKeyService(containerId));
     return menu;
   }
 

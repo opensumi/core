@@ -1,21 +1,25 @@
 import * as React from 'react';
 import * as styles from './extension-view.module.less';
 import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
-import { TreeNode, CommandService, MenuPath } from '@ali/ide-core-common';
+import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
-import { Injector } from '@ali/common-di';
+import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewState } from '@ali/ide-core-browser';
-import { ExtensionTreeViewModel, IExtensionTreeNodeModel } from './extension-tree-view.model';
+import { useInjectable } from '@ali/ide-core-browser';
+import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+
+import { ExtensionViewService } from './extension-view.service';
+import { ExtensionTreeViewModel, IExtensionTreeViewModel } from './extension-tree-view.model';
+import { TreeViewItem } from '../../../common/vscode';
 
 export interface ExtensionTabbarTreeViewProps {
   injector: Injector;
   dataProvider: TreeViewDataProviderMain;
   viewState: ViewState;
   rendered: boolean;
-  inlineMenuPath: MenuPath;
-  contextMenuPath: MenuPath;
+  viewId: string;
 }
 
 const addTreeDatas = (oldNodes: TreeNode<any>[], newNodes: TreeNode<any>[], parentNode?: TreeNode<any>) => {
@@ -55,185 +59,305 @@ const removeTreeDatas = (oldNodes: TreeNode<any>[], deleteNodes: TreeNode<any>[]
 };
 
 export const ExtensionTabbarTreeView = observer(({
-  injector,
   dataProvider,
   viewState,
-  contextMenuPath,
+  viewId,
 }: React.PropsWithChildren<ExtensionTabbarTreeViewProps>) => {
-  const [nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
+  const [ nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
+  const extensionTreeViewModel: ExtensionTreeViewModel = useInjectable(ExtensionTreeViewModel);
   const { width, height } = viewState;
   const scrollContainerStyle = { width, height };
-  const extensionTreeViewModel = injector.get(ExtensionTreeViewModel);
-  const cache = extensionTreeViewModel.cache;
-  const model = extensionTreeViewModel.model;
-
+  const injector = useInjectable(INJECTOR_TOKEN);
+  const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId]);
   const initTreeData = () => {
+    const model = copyMap(extensionTreeViewModel.getTreeViewModel(viewId));
+    dataProvider.setVisible(viewId, true);
     dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
-      checkIfNeedExpandChildren(data);
+      extensionTreeViewModel.setTreeViewNodes(viewId, data);
+      checkIfNeedExpandChildren(data, model);
     });
+  };
+
+  const refresh = (itemsToRefresh?: TreeViewItem) => {
+    const model = copyMap(extensionTreeViewModel.getTreeViewModel(viewId));
+    // 更新所有元素状态
+    for (const [key, value] of model) {
+      if (!isUndefined(value.expanded)) {
+        model.set(key, {
+          ...value,
+          updated: false,
+        });
+      }
+    }
+    if (!itemsToRefresh) {
+      dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
+        checkIfNeedExpandChildren(data, model);
+      });
+    } else {
+      const defaultNodes = extensionTreeViewModel.getTreeViewNodes(viewId).slice(0);
+      if (defaultNodes) {
+        checkIfNeedExpandChildren(defaultNodes, model);
+      } else {
+        dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
+          checkIfNeedExpandChildren(data, model);
+        });
+      }
+    }
   };
 
   React.useEffect(() => {
     if (dataProvider) {
       initTreeData();
-      dataProvider.onTreeDataChanged(() => {
-        initTreeData();
+      dataProvider.onTreeDataChanged((itemsToRefresh?: TreeViewItem) => {
+        refresh(itemsToRefresh);
+      });
+      dataProvider.onRevealEvent((itemId: string | number) => {
+        setSelected(itemId);
       });
     }
-  }, []);
+  }, [dataProvider]);
+
+  const copyMap = (oldMap: Map<any, any>) => {
+    const newMap: Map<any, any> = new Map();
+    for (const [key, value] of oldMap) {
+      newMap.set(key, value);
+    }
+    return newMap;
+  };
+
+  const onContextMenuHandler = (nodes: TreeNode<any>[], event: React.MouseEvent<HTMLElement>) => {
+    const { x, y } = event.nativeEvent;
+    // TreeViewAPI只处理单选操作
+    const node = nodes[0];
+
+    const [, menuNodes] = extensionViewService.getMenuNodes(node.contextValue);
+    const ctxMenuRenderer: ICtxMenuRenderer = injector.get(ICtxMenuRenderer);
+
+    ctxMenuRenderer.show({
+      anchor: { x, y },
+      menuNodes,
+      args: [{treeViewId: viewId, treeItemId: node.id}],
+    });
+  };
 
   const onSelectHandler = (selectedNodes: TreeNode<any>[]) => {
     if (nodes && selectedNodes.length > 0) {
       const node = selectedNodes[0];
+      setSelected(node.id);
       if (node.command) {
         if (injector) {
           const commandService: CommandService = injector.get(CommandService);
-          commandService.executeCommand(node.command.command, node.command.arguments);
+          commandService.executeCommand(node.command.id, ...(node.command.arguments || []));
         }
+        setNodes(selectNode(node));
         return;
       } else {
-        onTwistieClick(node);
+        if (ExpandableTreeNode.is(node)) {
+          onTwistieClickHandler(node);
+        } else {
+          setNodes(selectNode(node));
+        }
       }
     }
   };
 
-  const onTwistieClick = (node: TreeNode<any>) => {
-    const nodeModel = model.get(node.id);
-    if (nodeModel && !nodeModel.expanded) {
-      model.set(node.id, {
-        ...nodeModel,
-        expanded: true,
-      });
-      if (cache.has(node.id)) {
-        const addNodes = getAllSubCache(cache, model, node);
+  const onTwistieClickHandler = (node: TreeNode<any>) => {
+    if (node && !node.expanded) {
+      const copyModel = setExpanded(node.id, true);
+      if ((node.children && node.children.length > 0) || copyModel.get(node.id)!.updated) {
+        const addNodes = getAllSubChildren(node, copyModel);
+        extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
         setNodes(addTreeDatas(nodes, addNodes, node));
       } else {
-        checkIfNeedExpandChildren(nodes.map((child) => {
-          if (child.id === node.id) {
-            return {
-              ...node,
-              expanded: true,
-            };
-          } else {
-            return child;
-          }
-        }));
+        // 加载新数据
+        const newNodes = [...nodes];
+        copyModel.set(node.id, {
+          ...copyModel.get(node.id),
+          isLoading: true,
+        });
+        extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+        setNodes(newNodes);
+        checkIfNeedExpandChildren(nodes, copyModel);
       }
     } else {
-      model.set(node.id, {
-        ...nodeModel,
-        expanded: false,
-      });
-      const deleteNodes = getAllSubCache(cache, model, node);
+      const copyModel = setExpanded(node.id, false);
+      const deleteNodes = getAllSubChildren(node, copyModel);
+
+      extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
       setNodes(removeTreeDatas(nodes, deleteNodes, node));
     }
   };
 
-  const getAllSubCache = (cache: Map<any, TreeNode<any>[]>, model: Map<any, IExtensionTreeNodeModel>, node: TreeNode<any>) => {
-    const cacheNodes: TreeNode<any>[] = cache.get(node.id) || [];
+  const selectNode = (node: TreeNode<any>) => {
+    const newNodes = nodes.slice(0);
+    for (const n of newNodes) {
+      if (n.id === node.id) {
+        n.selected = true;
+      }
+    }
+    return newNodes;
+  };
+
+  const getAllSubChildren = (node: TreeNode<any>, model: Map<string | number, IExtensionTreeViewModel>) => {
+    const parentModel = model.get(node.id);
     let result: TreeNode<any>[] = [];
-    for (let sub of cacheNodes) {
-      const subModel = model.get(sub.id);
-      sub = {
-        ...sub,
-        depth: node && node.depth ? node.depth + 1 : 0,
-        parent: node,
-      };
-      result.push(sub);
-      if (subModel && subModel.expanded) {
-        result = result.concat(getAllSubCache(cache, model, sub));
+    const children = parentModel && parentModel.children || [];
+    for (const child of children) {
+      const childModel = model.get(child.id);
+      result.push(child);
+      if (childModel && childModel.expanded) {
+        result = result.concat(getAllSubChildren(child, model));
       }
     }
     return result;
   };
 
-  const checkIfNeedExpandChildren = (nodes: TreeNode<any>[], refresh?: boolean) => {
+  const getInlineMenu = (node: TreeNode<any>) => {
+    const contextValue = node.contextValue;
+    const menus = extensionViewService.getInlineMenus(contextValue);
+
+    return [{
+      location: ExpandableTreeNode.is(node) ? TreeViewActionTypes.TreeContainer : TreeViewActionTypes.TreeNode_Right,
+      component: <InlineActionBar context={[{treeViewId: viewId, treeItemId: node.id}]} menus={menus} separator='inline' />,
+    }];
+  };
+
+  const checkIfNeedExpandChildren = (nodes: TreeNode<any>[], copyModel: Map<string | number, IExtensionTreeViewModel>) => {
     const checkList = nodes.slice(0);
     const promises: Promise<any>[] = [];
     if (checkList.length > 0) {
       for (const node of checkList) {
-        model.set(node.id, {
-          ...model.get(node.id),
-          selected: node.selected || false,
-          expanded: node.expanded || false,
-          focused: node.focused || false,
-        });
-        if (node.expanded && !cache.has(node.id)) {
+        if (!copyModel.has(node.id)) {
+          copyModel.set(node.id, {
+            updated: false,
+            expanded: node.expanded || false,
+            selected: node.selected || false,
+            focused: node.focused || false,
+          });
+        }
+        const nodeModel = copyModel.get(node.id);
+        if (nodeModel && nodeModel.expanded && !nodeModel.updated) {
+          copyModel.set(node.id, {
+            ...nodeModel,
+            isLoading: true,
+          });
           promises.push(dataProvider.resolveChildren(node && node.id as string).then((childrens: TreeNode<any>[]) => {
+            // 简化节点模型，带parent会导致参数序列化循环引用问题
             childrens = childrens.map((child) => {
               return {
                 ...child,
-                parent: node,
               };
             });
-            cache.set(node.id, childrens);
+            copyModel.set(node.id, {
+              ...nodeModel,
+              updated: true,
+              isLoading: false,
+            });
+            node.children = childrens;
+            return node;
           }));
         }
-      }
+       }
     }
+
     if (promises.length === 0) {
-      setNodes(nodes);
+      const newNodes = [...checkList];
+      extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+      setNodes(newNodes);
       return nodes;
     }
-    return Promise.all(promises).then(() => {
+
+    return Promise.all(promises).then(([...nodes]) => {
       let newNodes = checkList;
-      const cacheKeys = cache.keys();
-      for (const id of cacheKeys) {
-        const subModel = model.get(id);
-        if (subModel && subModel.updated) {
-          continue;
-        } else {
-          model.set(id, {
-            ...subModel,
-            updated: true,
-          });
+      for (const node of nodes) {
+        const nodeModel = copyModel.get(node.id);
+        copyModel.set(node.id, {
+          ...nodeModel,
+          children: node.children,
+        });
+        if (ExpandableTreeNode.is(node) && nodeModel && nodeModel.expanded && node.children.length > 0) {
+          newNodes = addTreeDatas(newNodes, node.children as TreeNode<any>[], checkList.find((newNode) => newNode.id === node.id));
         }
-        const cacheNodes = cache.get(id);
-        if (!cacheNodes) {
-          continue;
-        }
-        newNodes = addTreeDatas(newNodes, cacheNodes, newNodes.find((node) => node.id === id));
       }
-      setNodes(newNodes);
-      return newNodes;
-    }).then((data) => {
-      return checkIfNeedExpandChildren(data);
+      return {
+        data: newNodes,
+        model: copyModel,
+      };
+    }).then(({data, model}) => {
+      return checkIfNeedExpandChildren(data, model);
     });
   };
 
-  const onContextMenuHandler = (nodes: TreeNode<any>[], event: React.MouseEvent<HTMLElement>) => {
-    // FIXME: old ContextMenuRenderer is deprecated
-    const contextMenuRenderer: ContextMenuRenderer = injector.get(ContextMenuRenderer);
-    const { x, y } = event.nativeEvent;
-    const data = {
-      x,
-      y,
-      ...nodes[0],
-    };
-    contextMenuRenderer.render(contextMenuPath, data);
+  const setSelected = (id: string | number): Map<string | number, IExtensionTreeViewModel> => {
+    const model = extensionTreeViewModel.getTreeViewModel(viewId);
+    const copyModel = copyMap(model);
+    for (const [key, value] of model) {
+      if (key === id) {
+        copyModel.set(key, {
+          ...value,
+          selected: true,
+        });
+      } else {
+        copyModel.set(key, {
+          ...value,
+          selected: false,
+        });
+      }
+    }
+    extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+    dataProvider.setSelection(viewId, id);
+    return copyModel;
+  };
+
+  const setExpanded = (id: string | number, expanded: boolean): Map<string | number, IExtensionTreeViewModel> => {
+    const model = extensionTreeViewModel.getTreeViewModel(viewId);
+    const copyModel = copyMap(model);
+    for (const [key, value] of model) {
+      if (key === id) {
+        copyModel.set(key, {
+          ...value,
+          expanded,
+        });
+        break;
+      }
+    }
+    extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+    dataProvider.setExpanded(viewId, id, expanded);
+    return copyModel;
   };
 
   if (!nodes) {
     return <div className={styles.kt_extension_view}>Loading ... </div>;
   }
 
+  const effectNodes = React.useMemo(() => {
+    const model = extensionTreeViewModel.getTreeViewModel(viewId);
+    return nodes.map((node) => {
+      const nodeModel = model.get(node.id);
+      let description = node.description;
+      if (!node.name && !node.label && !node.description) {
+        description = '——';
+      }
+
+      const actions = getInlineMenu(node);
+
+      return {
+        ...node,
+        ...nodeModel,
+        description,
+        actions,
+      };
+    });
+  }, [nodes]);
+
   return <div className={styles.kt_extension_view}>
     <RecycleTree
-      nodes={nodes.map((node) => {
-        const nodeModel = model.get(node.id);
-        return {
-          ...node,
-          ...nodeModel,
-        };
-      })}
-      scrollContainerStyle={
-        scrollContainerStyle
-      }
+      nodes={effectNodes}
+      scrollContainerStyle={ scrollContainerStyle }
       containerHeight={ height }
       onSelect={onSelectHandler}
       onContextMenu={onContextMenuHandler}
-      onTwistieClick={onTwistieClick}
-    >
-    </RecycleTree>
+      onTwistieClick={onTwistieClickHandler}
+    />
   </div>;
 });

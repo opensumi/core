@@ -1,8 +1,8 @@
-import { URI, Schemas } from '@ali/ide-core-common';
+import { URI, Schemas, IDisposable, Disposable } from '@ali/ide-core-common';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { FileChangeEvent, FileChange, FileChangeType } from '@ali/ide-file-service';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { IFileServiceClient, IBrowserFileSystemRegistry } from '@ali/ide-file-service/lib/common';
 import { FileServiceExtClient } from '@ali/ide-file-service/lib/browser/file-service-ext-client';
 import {
   IMainThreadFileSystem,
@@ -15,7 +15,7 @@ import { ParsedPattern, parse, IRelativePattern } from '../../../common/vscode/g
 import { RelativePattern } from '../../../common/vscode/ext-types';
 
 @Injectable({multiple: true})
-export class MainThreadFileSystem implements IMainThreadFileSystem {
+export class MainThreadFileSystem extends Disposable implements IMainThreadFileSystem {
   private readonly proxy: IExtHostFileSystem;
   private subscriberId: number = 0;
 
@@ -26,7 +26,13 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
   private watcherSubscribers = new Map<number, ExtFileWatcherSubscriber>();
   private fileChangeEvent;
 
+  @Autowired(IBrowserFileSystemRegistry)
+  browserFileSystemRegistry: IBrowserFileSystemRegistry;
+
+  private fileSystemProviderDisposers: Map<string, IDisposable> = new Map();
+
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+    super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostFileSystem);
     this.fileSeystemExtClient.setExtFileSystemClient(this);
     this.fileChangeEvent = this.fileSystemClient.onFilesChanged((event: FileChangeEvent) => {
@@ -54,6 +60,13 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
           }
         });
       });
+    });
+    this.addDispose({
+      dispose: () => {
+        this.fileSystemProviderDisposers.forEach((disposer) => {
+          disposer.dispose();
+        });
+      },
     });
   }
 
@@ -115,5 +128,18 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
 
   private uriMatches(subscriber: ExtFileWatcherSubscriber, fileChange: FileChange): boolean {
     return subscriber.mather(fileChange.uri);
+  }
+
+  async $registerFileSystemProvider(scheme: string) {
+    this.fileSystemProviderDisposers.set(scheme, this.browserFileSystemRegistry.registerFileSystemProvider({
+      scheme,
+    }));
+  }
+
+  async $unregisterFileSystemProvider(scheme: string) {
+    if (this.fileSystemProviderDisposers.has(scheme)) {
+      this.fileSystemProviderDisposers.get(scheme)!.dispose();
+      this.fileSystemProviderDisposers.delete(scheme);
+    }
   }
 }

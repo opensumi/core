@@ -1,8 +1,8 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection, DisposableStore } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
-import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
 
 export interface SectionState {
@@ -46,7 +46,7 @@ export class AccordionService {
   private headerSize: number;
   private minSize: number;
   private menuId = `accordion/${this.containerId}`;
-  private toDispose = new DisposableCollection();
+  private toDispose: Map<string, IDisposable> = new Map();
 
   constructor(public containerId: string) {
     this.splitPanelService = this.splitPanelManager.getService(containerId);
@@ -66,18 +66,25 @@ export class AccordionService {
   }
 
   getSectionToolbarMenu(viewId: string): IMenu {
-    const menu = this.menuService.createMenu(`container/${viewId}`);
+    const scopedCtxKey = this.viewContextKeyRegistry.getContextKeyService(viewId);
+    const menu = this.menuService.createMenu(MenuId.ViewTitle, scopedCtxKey);
     return menu;
   }
 
   appendView(view: View) {
+    // 已存在的viewId直接替换
+    const existIndex = this.views.findIndex((item) => item.id === view.id);
+    if (existIndex !== -1) {
+      this.views[existIndex] = Object.assign({}, this.views[existIndex], view);
+      return;
+    }
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
-    this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped()).createKey('view', view.id);
     if (!view.name) {
       console.warn(view.id + '视图未传入标题，请检查！');
     }
-    this.toDispose.push(this.menuRegistry.registerMenuItem(this.menuId, {
+    this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped()).createKey('view', view.id);
+    this.toDispose.set(view.id, this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(view.id),
         label: view.name || view.id,
@@ -87,9 +94,22 @@ export class AccordionService {
     }));
   }
 
+  disposeView(viewId: string) {
+    const existIndex = this.views.findIndex((item) => item.id === viewId);
+    if (existIndex > -1) {
+      this.views.splice(existIndex, 1);
+    }
+    const disposable = this.toDispose.get(viewId);
+    if (disposable) {
+      disposable.dispose();
+    }
+  }
+
   disposeAll() {
     this.views = [];
-    this.toDispose.dispose();
+    this.toDispose.forEach((disposable) => {
+      disposable.dispose();
+    });
   }
 
   private registerGlobalToggleCommand() {

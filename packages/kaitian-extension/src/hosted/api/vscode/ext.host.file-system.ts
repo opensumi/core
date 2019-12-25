@@ -249,6 +249,8 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     this.fsProviders.set(scheme, provider);
     this.usedSchemes.add(scheme);
 
+    this.proxy.$registerFileSystemProvider(scheme);
+
     toDisposable.push(provider.onDidChangeFile((e: vscode.FileChangeEvent[]) => {
       this.fireProvidersFilesChange(this.convertToKtFileChangeEvent(e));
     }));
@@ -256,6 +258,7 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
       dispose: () => {
          this.fsProviders.delete(scheme);
          this.usedSchemes.delete(scheme);
+         this.proxy.$unregisterFileSystemProvider(scheme);
       },
     });
 

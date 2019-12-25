@@ -1,7 +1,7 @@
 import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType, getThemeTypeSelector } from '../common';
+import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType, getThemeTypeSelector, IconType } from '../common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
 
@@ -34,7 +34,15 @@ export class IconService implements IIconService {
   public currentTheme: IIconTheme;
 
   private getPath(basePath: string, relativePath: string): URI {
-    return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
+    if (relativePath.startsWith('./')) {
+      return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
+    } else if (/^http(s)?/.test(relativePath)) {
+      return new URI(relativePath);
+    } else if (basePath) {
+      return URI.file(new Path(basePath).join(relativePath).toString());
+    } else {
+      return URI.file(relativePath);
+    }
   }
 
   constructor() {
@@ -63,58 +71,43 @@ export class IconService implements IIconService {
     return `icon-${Math.random().toString(36).slice(-8)}`;
   }
 
-  protected getStyleSheet(path: URI, className: string, baseTheme?: string): string {
-    const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
-    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
+  protected getMaskStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
+    const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
+    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50% / 24px;}`;
     return cssRule;
   }
 
-  protected getBackgroundStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
-    iconUrl = this.staticResourceService.resolveStaticResource(new URI(iconUrl)).toString();
+  protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
+    const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
     const cssRule = `${baseTheme || ''} .${className} {background: url(${iconUrl}) no-repeat 50% 50%;background-size:contain;}`;
     return cssRule;
   }
 
-  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined {
+  fromIcon(basePath: string = '', icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask): string | undefined {
     if (!icon) {
       return;
     }
     const randomClass = this.getRandomIconClass();
     if (typeof icon === 'string') {
       const targetPath = this.getPath(basePath, icon);
-      this.appendStyleSheet(this.getStyleSheet(targetPath, randomClass));
+      if (type === IconType.Mask) {
+        this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass));
+      } else {
+        this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass));
+      }
     } else {
       // tslint:disable-next-line: forin
       for (const themeType in icon) {
         const themeSelector = getThemeTypeSelector(themeType as ThemeType);
         const targetPath = this.getPath(basePath, icon[themeType]);
-        this.appendStyleSheet(this.getStyleSheet(targetPath, randomClass, `.${themeSelector}`));
-      }
-    }
-    return randomClass + ' ' + 'mask-mode';
-  }
-
-  fromIconUrl(iconUrl: string | { [index in ThemeType]: string }, maskMode: boolean = false): string {
-    // 和fromIcon保持一致
-    const randomClass = this.getRandomIconClass();
-    if (typeof iconUrl === 'string') {
-      if (maskMode) {
-        this.appendStyleSheet(this.getStyleSheet(new URI(iconUrl), randomClass));
-      } else {
-        this.appendStyleSheet(this.getBackgroundStyleSheet(iconUrl, randomClass));
-      }
-    } else {
-      // tslint:disable-next-line: forin
-      for (const themeType in iconUrl) {
-        const themeSelector = getThemeTypeSelector(themeType as ThemeType);
-        if (maskMode) {
-          this.appendStyleSheet(this.getStyleSheet(new URI(iconUrl[themeType]), randomClass, `.${themeSelector}`));
+        if (type === IconType.Mask) {
+          this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`));
         } else {
-          this.appendStyleSheet(this.getBackgroundStyleSheet(iconUrl[themeType], randomClass, `.${themeSelector}`));
+          this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`));
         }
       }
     }
-    return randomClass + (maskMode ? ' mask-mode' : '');
+    return randomClass + ' ' + (type === IconType.Mask ? 'mask-mode' : 'background-mode');
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {

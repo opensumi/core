@@ -127,7 +127,7 @@ export const AccordionSection = (
         </div>}
       </div>}
       <div
-        className={ styles.kt_split_panel_body }
+        className={ cls([styles.kt_split_panel_body, {[styles.hide]: !expanded}]) }
         style={ bodyStyle }
         ref={(ele) =>  contentRef.current = ele}
       >

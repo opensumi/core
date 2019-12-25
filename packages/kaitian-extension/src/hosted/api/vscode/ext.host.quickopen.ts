@@ -118,6 +118,8 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   private readonly onDidChangeValueEmitter: Emitter<string>;
   private readonly onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
 
+  private didShow = false;
+
   constructor(readonly quickOpen: IExtHostQuickOpen) {
     this._items = [];
     this._activeItems = [];
@@ -142,6 +144,11 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
   set items(activeItems: T[]) {
     this._items = activeItems;
+    // 说明是先 show，再设置 item
+    if (this.didShow) {
+      this.quickOpen.hideQuickPick();
+      this.show();
+    }
   }
 
   get activeItems(): T[] {
@@ -193,11 +200,12 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   }
 
   show(): void {
+    this.didShow = true;
     const hide = () => {
       this.onDidHideEmitter.fire(undefined);
     };
     const selectItem = (item: T) => {
-      this.activeItems = [item];
+      this.selectedItems = this.activeItems = [item];
       this.onDidAcceptEmitter.fire(undefined);
       this.onDidChangeSelectionEmitter.fire([item]);
     };

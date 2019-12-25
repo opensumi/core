@@ -49,7 +49,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
           }, 'left');
           this.disposableCollection.push({
             dispose: () => {
-              const handler = this.mainlayoutService.getTabbarHandler(handlerId);
+              const handler = this.mainlayoutService.getTabbarHandler(handlerId)!;
               handler.dispose();
             },
           });
@@ -64,7 +64,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
 
   getViewsMap(contributes: any) {
     const views = contributes.views;
-    const map = {};
+    const map: {[containerId: string]: string[]} = {};
     if (views) {
       for (const containerId of Object.keys(views)) {
         if (views[containerId] && Array.isArray(views[containerId])) {
@@ -74,6 +74,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
         }
       }
     }
+    console.log(map, '>>>>>');
     return map;
   }
 }

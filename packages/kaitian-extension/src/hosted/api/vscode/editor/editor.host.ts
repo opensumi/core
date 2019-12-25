@@ -385,6 +385,10 @@ export class TextEditorData {
     if (!this._textEditor) {
       const data = this;
       this._textEditor = {
+        // vscode 有这个属性，但是接口未定义
+        get id() {
+          return data.id;
+        },
         get document() {
           return data.documents.getDocument(data.uri)!;
         },
@@ -421,7 +425,7 @@ export class TextEditorData {
         revealRange: data.revealRange.bind(data),
         show: data.show.bind(data),
         hide: data.hide.bind(data),
-      };
+      } as vscode.TextEditor;
     }
     return this._textEditor;
   }

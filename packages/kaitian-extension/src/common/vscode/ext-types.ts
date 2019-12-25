@@ -1531,18 +1531,18 @@ export enum TreeItemCollapsibleState {
 */
 @es5ClassCompat
 export class ThemeIcon {
-  /**
-   * Reference to a icon representing a file. The icon is taken from the current file icon theme or a placeholder icon.
-   */
-  static readonly File: ThemeIcon;
 
-  /**
-   * Reference to a icon representing a folder. The icon is taken from the current file icon theme or a placeholder icon.
-   */
-  static readonly Folder: ThemeIcon;
+  static File: ThemeIcon;
+  static Folder: ThemeIcon;
 
-  private constructor(id: string) { }
+  readonly id: string;
+
+  constructor(id: string) {
+    this.id = id;
+  }
 }
+ThemeIcon.File = new ThemeIcon('file');
+ThemeIcon.Folder = new ThemeIcon('folder');
 
 export class TreeItem {
   label?: string | vscode.TreeItemLabel;
@@ -1716,4 +1716,19 @@ export class FunctionBreakpoint extends Breakpoint {
     super(enabled, condition, hitCondition, logMessage);
     this.functionName = functionName;
   }
+}
+
+export interface QuickInputButton {
+  readonly iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
+  readonly tooltip?: string | undefined;
+}
+
+@es5ClassCompat
+export class QuickInputButtons {
+  static readonly Back: QuickInputButton = {
+    iconPath: {
+      id: 'Back',
+    },
+    tooltip: 'Back',
+  };
 }
