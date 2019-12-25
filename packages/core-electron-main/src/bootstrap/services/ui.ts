@@ -47,7 +47,13 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' |
         contents.setZoomFactor(options.value);
       }
       if (options.delta) {
-        contents.setZoomFactor(contents.getZoomFactor() + options.delta);
+        if (semver.lt(process.versions.electron, '5.0.0')) {
+          (contents as any).getZoomFactor((zoomFactor) => {
+            contents.setZoomFactor(zoomFactor + options.delta);
+          });
+        } else {
+          contents.setZoomFactor(contents.getZoomFactor() + options.delta);
+        }
       }
     }
   }

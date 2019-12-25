@@ -258,12 +258,12 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
 
     keybindings.registerKeybinding({
       command: 'electron.zoomIn' ,
-      keybinding: 'ctrlcmd+=',
+      keybinding: isWindows ? 'alt+=' : 'ctrlcmd+=',
     });
 
     keybindings.registerKeybinding({
       command: 'electron.zoomOut' ,
-      keybinding: 'ctrlcmd+-',
+      keybinding: isWindows ? 'alt+-' : 'ctrlcmd+-',
     });
   }
 

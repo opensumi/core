@@ -1,5 +1,5 @@
 import { ElectronMainContribution } from '../types';
-import { Domain, URI } from '@ali/ide-core-common';
+import { Domain, URI, getLogger } from '@ali/ide-core-common';
 import { protocol } from 'electron';
 import { readFile } from 'fs-extra';
 
@@ -7,14 +7,17 @@ import { readFile } from 'fs-extra';
 export class ProtocolElectronMainContribution implements ElectronMainContribution {
 
   onStart() {
-
     protocol.registerBufferProtocol('vscode-resource', async (req, callback: any) => {
-      const { url } = req;
-      const uri = new URI(url);
       try {
-        const data = await readFile(uri.codeUri.fsPath);
+        const { url } = req;
+        //  对于webview中vscode:/aaaa/a或者 vscode:///aaaa/a 的路径
+         // 旧版electron此处会是vscode://aaaa/a, 少了个斜杠，导致路径解析出现问题
+        const uri = URI.file(url.replace(/^vscode-resource:(\/\/|)/, ''));
+        const fsPath = uri.codeUri.fsPath;
+        const data = await readFile(fsPath);
         callback({ mimeType: getWebviewContentMimeType(uri), data});
       } catch (e) {
+        getLogger().error(e);
         callback({ error: -2});
       }
     });
