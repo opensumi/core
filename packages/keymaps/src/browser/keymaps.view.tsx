@@ -89,9 +89,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       }
     };
 
-    const changeHandler = (event) => {
-    };
-
     const renderReset = (source?: string) => {
       // 修改时固定设置页面
       if (!isDirty) {
@@ -108,7 +105,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
 
     const renderKeybinding = () => {
       if (isEditing) {
-        return <Input className={styles.keybinding_key_input} size='small' autoFocus={true} name={noKeybidingInputName} value={value} onChange={changeHandler} onKeyDown={keydownHandler} onBlur={blurHandler} />;
+        return <Input className={styles.keybinding_key_input} size='small' autoFocus={true} name={noKeybidingInputName} value={value} onKeyDown={keydownHandler} onBlur={blurHandler} />;
       } else {
         return <span className={styles.keybinding_key} title={getRaw(keybinding)} dangerouslySetInnerHTML={{ __html: keybinding || '' }}></span>;
       }
