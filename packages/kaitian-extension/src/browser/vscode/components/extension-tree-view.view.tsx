@@ -136,7 +136,7 @@ export const ExtensionTabbarTreeView = observer(({
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [node],
+      args: [{treeViewId: viewId, treeItemId: node.id}],
     });
   };
 
