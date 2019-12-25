@@ -76,7 +76,7 @@ export const AccordionSection = (
 
   const [headerFocused, setHeaderFocused] = React.useState(false);
 
-  const { setSize, getSize } = React.useContext(PanelContext);
+  const { getSize, setSize } = React.useContext(PanelContext);
 
   const clickHandler = () => {
     const currentSize = getSize(false);

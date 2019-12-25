@@ -1,4 +1,4 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider } from '@ali/ide-core-common';
@@ -61,6 +61,10 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   @Autowired(IEditorDocumentModelService)
   protected documentModelManager: IEditorDocumentModelService;
+
+  private untitledIndex = 1;
+
+  private untitledCloseIndex: number[] = [];
 
   constructor() {
     super();
@@ -335,6 +339,33 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return this._sortedEditorGroups;
   }
 
+  @OnEvent(EditorGroupCloseEvent)
+  private handleOnCloseUntitledResource(e: EditorGroupCloseEvent) {
+    if (e.payload.resource.uri.scheme === Schemas.untitled) {
+      const { index } = e.payload.resource.uri.getParsedQuery();
+      this.untitledCloseIndex.push(parseInt(index, 10));
+      // 升序排序，每次可以去到最小的 index
+      this.untitledCloseIndex.sort((a, b) => a - b);
+    }
+  }
+
+  private createUntitledURI() {
+    // 优先从已删除的 index 中获取
+    const index =  this.untitledCloseIndex.shift() || this.untitledIndex++;
+    return new URI()
+      .withScheme(Schemas.untitled)
+      .withQuery(`name=Untitled-${index}&index=${index}`);
+  }
+
+  createUntitledResource(options: IUntitledOptions = {
+    uri: this.createUntitledURI(),
+  }) {
+    return this.open(options.uri, {
+      preview: false,
+      focus: true,
+      ...options.resourceOpenOptions,
+    });
+  }
 }
 
 export interface IEditorCurrentState {
@@ -1164,6 +1195,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   async saveAll(includeUntitled?: boolean) {
     for (const r of this.resources) {
+      // 不保存无标题文件
+      if (!includeUntitled && r.uri.scheme === Schemas.untitled) {
+        return;
+      }
       const docRef = this.documentModelManager.getModelReference(r.uri);
       if (docRef) {
         if (docRef.instance.dirty) {

@@ -1,12 +1,18 @@
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
-import { Domain, URI } from '@ali/ide-core-browser';
+import { Domain, URI, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
+import { isElectronRenderer, localize } from '@ali/ide-core-common';
 import { ResourceService, IResource } from '@ali/ide-editor';
 import { EDITOR_WEBVIEW_SCHEME, IWebviewService, IWebview, IPlainWebview, IEditorWebviewMetaData } from './types';
 import { Autowired } from '@ali/common-di';
 import { WebviewServiceImpl } from './webview.service';
 
-@Domain(BrowserEditorContribution)
-export class WebviewModuleContribution implements BrowserEditorContribution {
+const WEBVIEW_DEVTOOLS_COMMAND = {
+  id: 'workbench.action.webview.openDeveloperTools',
+  label: localize('openToolsLabel', 'Open Webview Developer Tools'),
+};
+
+@Domain(BrowserEditorContribution, CommandContribution)
+export class WebviewModuleContribution implements BrowserEditorContribution, CommandContribution {
 
   @Autowired(IWebviewService)
   webviewService: WebviewServiceImpl;
@@ -38,4 +44,22 @@ export class WebviewModuleContribution implements BrowserEditorContribution {
     });
   }
 
+  registerCommands(commandRegistry: CommandRegistry) {
+    commandRegistry.registerCommand(WEBVIEW_DEVTOOLS_COMMAND, {
+      execute: () => {
+        const elements = document.querySelectorAll<Electron.WebviewTag>('webview');
+        // tslint:disable-next-line: prefer-for-of
+        for (let i = 0; i < elements.length; i += 1) {
+          try {
+            elements[i].openDevTools();
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      },
+      isEnabled: () => {
+        return isElectronRenderer();
+      },
+    });
+  }
 }

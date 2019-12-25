@@ -86,6 +86,7 @@ export const localizationBundle = {
     'editor.closeSaved': '关闭已保存',
     'editor.closeOtherEditors': '关闭其他',
     'editor.closeToRight': '关闭到右侧',
+    'editor.cannotSaveWithoutDirectory': '请选择要保存的路径',
 
     'edit.cut': '剪切',
     'edit.copy': '复制',
@@ -155,6 +156,7 @@ export const localizationBundle = {
     'selection.all': '选择全部',
 
     'dialog.confirm': '知道了',
+    'dialog.file.name': '文件名',
     'dialog.file.title': '存储目录：',
     'dialog.file.openLabel': '打开文件：',
     'dialog.file.saveLabel': '保存文件：',

@@ -77,6 +77,11 @@ export interface ITabBarComponentContribution {
    * 排序权重
    */
   priority?: number;
+
+  /**
+   * 禁止面板的resize功能
+   */
+  noResize?: boolean;
 }
 
 export interface IEditorComponentContribution {

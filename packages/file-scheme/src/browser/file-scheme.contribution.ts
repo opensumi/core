@@ -1,5 +1,5 @@
 import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent, IEditorOpenType } from '@ali/ide-editor';
-import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType, LRUMap } from '@ali/ide-core-browser';
+import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType, LRUMap, Schemas } from '@ali/ide-core-browser';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
@@ -11,6 +11,7 @@ import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-wa
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IDialogService } from '@ali/ide-overlay';
 import { FileSchemeDocumentProvider, DebugSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
+import { UntitledResourceProvider, UntitledSchemeDocumentProvider } from '@ali/ide-editor/lib/browser/untitled-resource';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
@@ -187,6 +188,12 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   @Autowired()
   vscodeSchemeDocumentProvider: VscodeSchemeDocumentProvider;
 
+  @Autowired()
+  untitledResourceProvider: UntitledResourceProvider;
+
+  @Autowired()
+  untitledSchemeDocumentProvider: UntitledSchemeDocumentProvider;
+
   @Autowired(IFileServiceClient)
   fileServiceClient: IFileServiceClient;
 
@@ -202,6 +209,7 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.fileSystemResourceProvider);
     resourceService.registerResourceProvider(this.debugSchemeResourceProvider);
+    resourceService.registerResourceProvider(this.untitledResourceProvider);
   }
 
   registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
@@ -253,6 +261,14 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
       }
     });
 
+    editorComponentRegistry.registerEditorComponentResolver(Schemas.untitled, (resource: IResource<any>, results: IEditorOpenType[]) => {
+      if (results.length === 0) {
+        results.push({
+          type: 'code',
+        });
+      }
+    });
+
     this.fileServiceClient.onFilesChanged((e) => {
       e.forEach((change) => {
         this.cachedFileType.delete(change.uri.toString());
@@ -264,6 +280,7 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
     registry.registerEditorDocumentModelContentProvider(this.fileSchemeDocumentProvider);
     registry.registerEditorDocumentModelContentProvider(this.debugSchemeDocumentProvider);
     registry.registerEditorDocumentModelContentProvider(this.vscodeSchemeDocumentProvider);
+    registry.registerEditorDocumentModelContentProvider(this.untitledSchemeDocumentProvider);
   }
 }
 

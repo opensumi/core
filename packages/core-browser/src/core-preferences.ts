@@ -1,7 +1,7 @@
 import { Injector } from '@ali/common-di';
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
 
-import { isOSX, isLinux, localize, getAvailableLanguages } from '@ali/ide-core-common';
+import { isOSX, isLinux, localize, getAvailableLanguages, isElectronRenderer } from '@ali/ide-core-common';
 
 const DEFAULT_WINDOWS_FONT_FAMILY = 'Consolas, \'Courier New\', monospace';
 const DEFAULT_MAC_FONT_FAMILY = 'Menlo, Monaco, \'Courier New\', monospace';
@@ -64,6 +64,12 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'string',
       default: 'vs-minimal',
       description: '%preference.description.general.icon%',
+    },
+    // 是否允许打开文件夹
+    'application.supportsOpenFolder': {
+      type: 'boolean',
+      default: isElectronRenderer(),
+      description: 'Whether default open folder behavior is supported',
     },
     'application.confirmExit': {
       type: 'string',

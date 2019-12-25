@@ -200,6 +200,13 @@ export namespace COMMON_COMMANDS {
 export namespace EDITOR_COMMANDS {
   const CATEGORY = 'editor';
 
+  export const NEW_UNTITLED_FILE: Command = {
+    id: 'file.new.untitled',
+    category: CATEGORY,
+    label: '%file.new%',
+    iconClass: getIcon('new-file'),
+  };
+
   export const UNDO: Command = {
     id: 'editor.undo',
     category: CATEGORY,

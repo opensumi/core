@@ -9,18 +9,24 @@ import { IEventBus } from '@ali/ide-core-common';
 import { ResizeEvent } from '../../layout';
 import { SplitPanelManager } from './split-panel.service';
 
-export const PanelContext = React.createContext<{
-  setSize: (targetSize: number, isLatter: boolean) => void,
-  setRelativeSize: (prev: number, next: number, isLatter: boolean) => void,
-  getSize: (isLatter: boolean) => number,
-  getRelativeSize: (isLatter: boolean) => number[],
-  lockSize: (lock: boolean, isLatter: boolean) => void,
-}>({
+export interface ResizeHandle {
+  setSize: (targetSize: number, isLatter: boolean) => void;
+  setRelativeSize: (prev: number, next: number, isLatter: boolean) => void;
+  getSize: (isLatter: boolean) => number;
+  getRelativeSize: (isLatter: boolean) => number[];
+  lockSize: (lock: boolean | undefined, isLatter: boolean) => void;
+  setMaxSize: (lock: boolean | undefined, isLatter: boolean) => void;
+  hidePanel: (show?: boolean) => void;
+}
+
+export const PanelContext = React.createContext<ResizeHandle>({
   setSize: (targetSize: number, isLatter: boolean) => {},
   setRelativeSize: (prev, next, isLatter) => {},
   getSize: (isLatter: boolean) => 0,
   getRelativeSize: (isLatter: boolean) => [0, 0],
-  lockSize: (lock: boolean, isLatter: boolean) => {},
+  lockSize: (lock: boolean | undefined, isLatter: boolean) => {},
+  setMaxSize: (lock: boolean | undefined, isLatter: boolean) => {},
+  hidePanel: (show?: boolean) => {},
 });
 
 interface SplitChildProps {
@@ -55,11 +61,14 @@ export const SplitPanel: React.FC<{
 
   const splitPanelService = useInjectable<SplitPanelManager>(SplitPanelManager).getService(id);
   const maxLockState = React.useRef(children.map(() => false));
+  const hideState = React.useRef(children.map(() => false));
   const resizeLockState = React.useRef(maxLockState.current.slice(0, children.length - 1));
   const [locks, setLocks] = React.useState<boolean[]>(resizeLockState.current);
+  const [hides, setHides] = React.useState<boolean[]>(hideState.current);
   const [maxLocks, setMaxLocks] = React.useState<boolean[]>(maxLockState.current);
   splitPanelService.panels = [];
 
+  // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   const setSizeHandle = (index) => {
     return (size: number, isLatter?: boolean) => {
@@ -104,14 +113,27 @@ export const SplitPanel: React.FC<{
   };
 
   const lockResizeHandle = (index) => {
-    return (lock: boolean, isLatter?: boolean) => {
+    return (lock: boolean | undefined, isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
       const newResizeState = resizeLockState.current.map((state, idx) => idx === targetIndex ? (lock !== undefined ? lock : !state) : state);
-      const newMaxState = maxLockState.current.map((state, idx) => idx === index ? (lock !== undefined ? lock : !state) : state);
       resizeLockState.current = newResizeState;
-      maxLockState.current = newMaxState;
       setLocks(newResizeState);
+    };
+  };
+
+  const setMaxSizeHandle = (index) => {
+    return (lock: boolean | undefined, isLatter?: boolean) => {
+      const newMaxState = maxLockState.current.map((state, idx) => idx === index ? (lock !== undefined ? lock : !state) : state);
+      maxLockState.current = newMaxState;
       setMaxLocks(newMaxState);
+    };
+  };
+
+  const hidePanelHandle = (index: number) => {
+    return (show?: boolean) => {
+      const newHideState = hideState.current.map((state, idx) => idx === index ? (show !== undefined ? !show : !state) : state);
+      hideState.current = newHideState;
+      setHides(newHideState);
     };
   };
 
@@ -120,7 +142,7 @@ export const SplitPanel: React.FC<{
       eventBus.fire(new ResizeEvent({slotLocation: location, width: srcElement.clientWidth, height: srcElement.clientHeight}));
     } else {
       const subChildren = children[index].props.children;
-      if (subChildren && subChildren.length) {
+      if (subChildren && Array.isArray(subChildren)) {
         // TODO 多级嵌套
         subChildren!.forEach((child) => {
           if (direction === 'bottom-to-top' || direction === 'top-to-bottom') {
@@ -161,6 +183,8 @@ export const SplitPanel: React.FC<{
           setRelativeSize: setRelativeSizeHandle(index),
           getRelativeSize: getRelativeSizeHandle(index),
           lockSize: lockResizeHandle(index),
+          setMaxSize: setMaxSizeHandle(index),
+          hidePanel: hidePanelHandle(index),
         }}>
         <div
           data-min-resize={element.props.minResize}
@@ -175,6 +199,7 @@ export const SplitPanel: React.FC<{
             [Layout.getMinSizeProperty(direction)]: element.props.minSize ? element.props.minSize + 'px' : '-1px',
             [Layout.getMaxSizeProperty(direction)]: maxLocks[index] ? element.props.minSize + 'px' : 'unset',
             flexGrow: element.props.flexGrow !== undefined ? element.props.flexGrow : 'unset',
+            display: hides[index] ? 'none' : 'block',
           }}>
           {element}
         </div>

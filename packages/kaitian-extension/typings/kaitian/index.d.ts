@@ -2,6 +2,7 @@ declare module "kaitian" {
 
   export namespace layout {
     export function toggleBottomPanel(): Promise<void>;
+    export function getTabbarHandler(id: string): ITabbarHandle;
   }
 
   export namespace ideWindow {
@@ -12,6 +13,28 @@ declare module "kaitian" {
     export function setExtensionDir(extensionDir: string): Promise<void>;
 
     export function setExtensionCandidate(extensionCandidate: ExtensionCandiDate[]): Promise<void>;
+  }
+
+  /**
+   * 主题相关API
+   */
+  export namespace theme {
+    
+    /**
+     * 当主题被改变时的通知
+     */
+    export const onThemeChanged: Event<void>;
+
+    /**
+     * 获得当前主题的颜色值
+     * 格式 '-分割的颜色名':'颜色值(rgb, rgba或hex)'
+     * 例:
+     * {
+     *  'editor-background':'#000000',
+     * }
+     */
+    export function getThemeColors(): Promise<{[key: string]: string}>;
+
   }
 
   export interface ExtensionCandiDate {
@@ -92,6 +115,19 @@ declare module "kaitian" {
     export function timeEnd(name: string, msg?: string): void;
     export function point(name: string, msg?: string): void;
   }
+
+  export interface ITabbarHandle {
+
+    setSize(size: number): void;
+
+    activate(): void;
+
+    deactivate(): void;
+
+    onActivate: Event<void>;
+
+  }
+
 }
 
 
@@ -189,4 +225,14 @@ declare module 'kaitian-browser' {
     spin,
     pulse,
   }
+
+  /**
+   * 获得当前主题的颜色值
+   * 格式 '-分割的颜色名':'颜色值(rgb, rgba或hex)'
+   * 例:
+   * {
+   *  'editor-background':'#000000',
+   * }
+   */
+  export function getThemeColors(): {[key: string]: string}
 }
