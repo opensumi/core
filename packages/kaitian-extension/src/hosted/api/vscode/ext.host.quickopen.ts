@@ -283,6 +283,11 @@ class QuickInputExt implements vscode.InputBox {
       placeHolder: this.placeholder,
       password: this.password,
       ignoreFocusOut: this.ignoreFocusOut,
+    }).then((item) => {
+      if (item) {
+        this.value = item;
+      }
+      this.onDidAcceptEmitter.fire();
     });
 
   }
