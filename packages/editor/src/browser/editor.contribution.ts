@@ -119,11 +119,11 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PREVIOUS.id,
-      keybinding: isElectronEnv() ? 'alt+cmd+left' : 'ctrlcmd+shift+left',
+      keybinding: isElectronEnv() ? 'alt+cmd+left' : 'ctrlcmd+ctrl+left',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.NEXT.id,
-      keybinding: isElectronEnv() ? 'alt+cmd+right' : 'ctrlcmd+shift+right',
+      keybinding: isElectronEnv() ? 'alt+cmd+right' : 'ctrlcmd+ctrl+right',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_FORWARD.id,
