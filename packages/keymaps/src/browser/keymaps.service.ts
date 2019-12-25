@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeyCode, KeysOrKeyCodes, IDisposable, DisposableCollection, KeybindingService, IContextKeyExpr, ContextKeyExprType } from '@ali/ide-core-browser';
+import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, KeyCode, KeysOrKeyCodes, IDisposable, DisposableCollection, KeybindingService, ContextKeyExprType } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
 import { UserStorageUri } from '@ali/ide-userstorage/lib/browser';
 import * as jsoncparser from 'jsonc-parser';
@@ -184,35 +184,46 @@ export class KeymapService implements IKeymapService {
     return keybinding.when ? typeof keybinding.when === 'string' ? keybinding.when : this.serialize(keybinding.when) : '';
   }
 
-  serialize(when: IContextKeyExpr) {
+  serialize(when: any) {
     let result: string[] = [];
-    if (!when.expr) {
-      return '';
+    if (when.expr) {
+      when = when as monaco.contextkey.ContextKeyAndExpr | monaco.contextkey.ContextKeyOrExpr;
+    } else {
+      when = when as monaco.contextkey.ContextKeyDefinedExpr
+      | monaco.contextkey.ContextKeyEqualsExpr
+      | monaco.contextkey.ContextKeyNotEqualsExpr
+      | monaco.contextkey.ContextKeyNotExpr
+      | monaco.contextkey.ContextKeyNotRegexExpr
+      | monaco.contextkey.ContextKeyOrExpr
+      | monaco.contextkey.ContextKeyRegexExpr;
     }
-    result = when.expr.map((contextKey: any) => {
-      switch (contextKey.getType()) {
+    if (!when.expr) {
+      switch (when.getType()) {
         case ContextKeyExprType.Defined:
-          return contextKey.key;
+          return when.key;
         case ContextKeyExprType.Equals:
-          return contextKey.key + ' == \'' + contextKey.getValue() + '\'';
+          return when.key + ' == \'' + when.getValue() + '\'';
         case ContextKeyExprType.NotEquals:
-          return contextKey.key + ' != \'' + contextKey.getValue() + '\'';
+          return when.key + ' != \'' + when.getValue() + '\'';
         case ContextKeyExprType.Not:
-          return '!' + contextKey.key;
+          return '!' + when.key;
         case ContextKeyExprType.Regex:
-          const value = contextKey.regexp
-            ? `/${contextKey.regexp.source}/${contextKey.regexp.ignoreCase ? 'i' : ''}`
+          const value = when.regexp
+            ? `/${when.regexp.source}/${when.regexp.ignoreCase ? 'i' : ''}`
             : '/invalid/';
-          return `${contextKey.key} =~ ${value}`;
+          return `${when.key} =~ ${value}`;
         case ContextKeyExprType.NotRegex:
           return '-not regex-';
         case ContextKeyExprType.And:
-          return contextKey.expr.map((e) => e.serialize()).join(' && ');
+          return when.expr.map((e) => e.serialize()).join(' && ');
         case ContextKeyExprType.Or:
-          return contextKey.expr.map((e) => e.serialize()).join(' || ');
+          return when.expr.map((e) => e.serialize()).join(' || ');
         default:
-          return contextKey.key;
+          return when.key;
       }
+    }
+    result = when.expr.map((contextKey: any) => {
+      return this.serialize(contextKey);
     });
     return result.join(' && ');
   }

@@ -1,9 +1,9 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { IEditorActionRegistry, IEditorActionItem, IVisibleAction } from '../types';
-import { IDisposable, URI, BasicEvent, IEventBus, Disposable, IContextKeyService, Emitter, IContextKeyExpr } from '@ali/ide-core-browser';
-import { IResource, IEditorGroup } from '../../common';
+import { IDisposable, URI, Disposable, IContextKeyService, Emitter } from '@ali/ide-core-browser';
+import { IEditorGroup } from '../../common';
 import { observable, reaction, computed } from 'mobx';
-import { AbstractContextMenuService, ICtxMenuRenderer, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { EditorGroup } from '../workbench-editor.service';
 
 @Injectable()
@@ -95,8 +95,8 @@ export class EditorActionRegistryImpl implements IEditorActionRegistry {
 
 interface IEditorActionItemData extends IEditorActionItem {
   tipClosed: boolean;
-  contextKeyExpr?: IContextKeyExpr;
-  tipContextKeyExpr?: IContextKeyExpr;
+  contextKeyExpr?: monaco.contextkey.ContextKeyExpr;
+  tipContextKeyExpr?: monaco.contextkey.ContextKeyExpr;
 }
 
 @Injectable({multiple: true})

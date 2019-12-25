@@ -1,4 +1,3 @@
-import { IContextKeyExpr } from './keybinding';
 import { Event, BasicEvent } from '@ali/ide-core-common';
 
 export interface IContextKey<T> {
@@ -13,13 +12,13 @@ export interface IContextKeyService {
   onDidChangeContext: Event<ContextKeyChangeEvent>;
 
   createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
-  match(expression: string | IContextKeyExpr | undefined, context?: HTMLElement | null): boolean;
-  getKeysInWhen(when: string | IContextKeyExpr | undefined): string[];
+  match(expression: string | monaco.contextkey.ContextKeyExpr | undefined, context?: HTMLElement | null): boolean;
+  getKeysInWhen(when: string | monaco.contextkey.ContextKeyExpr | undefined): string[];
   getContextValue<T>(key: string): T | undefined;
 
   createScoped(target?: monaco.contextkey.IContextKeyServiceTarget | monaco.contextKeyService.ContextKeyService): IScopedContextKeyService;
 
-  parse(when: string | undefined): IContextKeyExpr | undefined;
+  parse(when: string | undefined): monaco.contextkey.ContextKeyExpr | undefined;
   dispose(): void;
 }
 

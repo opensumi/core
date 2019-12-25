@@ -101,16 +101,10 @@ export interface Keybinding {
   /**
    * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
    */
-  when?: string | IContextKeyExpr;
+  when?: string | monaco.contextkey.ContextKeyExpr;
 
   // Command执行参数
   args?: any;
-}
-
-export interface IContextKeyExpr {
-  evaluate(context?: any): boolean;
-  keys(): string[];
-  expr: any[];
 }
 
 export const enum ContextKeyExprType {
