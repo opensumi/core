@@ -7,6 +7,7 @@ import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer, NextBott
 import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer, NextBottomTabPanelRenderer } from './panel.view';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TabbarServiceFactory, TabbarService } from './tabbar.service';
+import { PanelContext } from '@ali/ide-core-browser/lib/components';
 
 // TODO 将过深的prop挪到这里
 export const TabbarConfig = React.createContext<{
@@ -27,9 +28,15 @@ export const TabRendererBase: React.FC<{
   noAccordion?: boolean;
 }> = (({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView, noAccordion, ...restProps }) => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side, noAccordion);
+  const resizeHandle = React.useContext(PanelContext);
+  React.useEffect(() => {
+    tabbarService.registerResizeHandle(resizeHandle);
+    tabbarService.updatePanelVisibility(components.length > 0);
+  }, []);
   components.forEach((component) => {
     tabbarService.registerContainer(component.options!.containerId, component);
   });
+
   return (
     <div className={clsx( styles.tab_container, className )} style={{flexDirection: Layout.getFlexDirection(direction)}}>
       <TabbarConfig.Provider value={{side, direction}}>

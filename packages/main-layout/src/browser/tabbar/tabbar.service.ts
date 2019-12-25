@@ -3,6 +3,8 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
+import { ResizeHandle } from '@ali/ide-core-browser/lib/components';
+import debounce = require('lodash.debounce');
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
@@ -29,6 +31,7 @@ export class TabbarService extends WithEventBus {
     getRelativeSize: () => number[],
     lockSize: (lock: boolean | undefined) => void,
     setMaxSize: (lock: boolean | undefined) => void,
+    hidePanel: (show?: boolean) => void,
   };
 
   @Autowired(AbstractMenuService)
@@ -52,7 +55,7 @@ export class TabbarService extends WithEventBus {
   private readonly onSizeChangeEmitter = new Emitter<{size: number}>();
   readonly onSizeChange: Event<{size: number}> = this.onSizeChangeEmitter.event;
 
-  private barSize: number;
+  public barSize: number;
   private menuId = `tabbar/${this.location}`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
 
@@ -107,6 +110,16 @@ export class TabbarService extends WithEventBus {
     return viewState;
   }
 
+  private updatePanel = debounce((show) => {
+    if (this.resizeHandle) {
+      this.resizeHandle.hidePanel(show);
+    }
+  }, 60);
+
+  public updatePanelVisibility(show: boolean) {
+    this.updatePanel(show);
+  }
+
   @computed({equals: visibleContainerEquals})
   get visibleContainers() {
     const components: ComponentRegistryInfo[] = [];
@@ -120,8 +133,8 @@ export class TabbarService extends WithEventBus {
     return components.sort((pre, next) => (next.options!.priority || 1) - (pre.options!.priority || 1));
   }
 
-  registerResizeHandle(setSize, setRelativeSize, getSize, getRelativeSize, lockSize, setMaxSize, barSize) {
-    this.barSize = barSize;
+  registerResizeHandle(resizeHandle: ResizeHandle) {
+    const {setSize, setRelativeSize, getSize, getRelativeSize, lockSize, setMaxSize, hidePanel} = resizeHandle;
     this.resizeHandle = {
       setSize: (size) => setSize(size, this.isLatter),
       setRelativeSize: (prev: number, next: number) => setRelativeSize(prev, next, this.isLatter),
@@ -129,12 +142,16 @@ export class TabbarService extends WithEventBus {
       getRelativeSize: () => getRelativeSize(this.isLatter),
       setMaxSize: (lock: boolean | undefined) => setMaxSize(lock, this.isLatter),
       lockSize: (lock: boolean | undefined) => lockSize(lock, this.isLatter),
+      hidePanel: (show) => hidePanel(show),
     };
     this.listenCurrentChange();
   }
 
   @action
   registerContainer(containerId: string, componentInfo: ComponentRegistryInfo) {
+    if (this.containersMap.has(containerId)) {
+      return;
+    }
     let options = componentInfo.options;
     if (!options) {
       options = {
@@ -146,6 +163,8 @@ export class TabbarService extends WithEventBus {
       views: componentInfo.views,
       options: observable.object(options, undefined, {deep: false}),
     });
+    this.updatePanelVisibility(this.containersMap.size > 0);
+
     // 需要立刻设置，lazy 逻辑会导致computed 的 visibleContainers 可能在计算时触发变更，抛出mobx invariant错误
     // 另外由于containersMap不是observable, 这边setState来触发visibaleContainers更新
     this.state.set(containerId, {hidden: false});

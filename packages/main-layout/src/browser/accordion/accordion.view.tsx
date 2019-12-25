@@ -1,8 +1,6 @@
 import * as React from 'react';
-import * as clsx from 'classnames';
-import * as styles from './styles.module.less';
 import { observer } from 'mobx-react-lite';
-import { Layout, PanelContext } from '@ali/ide-core-browser/lib/components';
+import { Layout } from '@ali/ide-core-browser/lib/components';
 import { SplitPanel } from '@ali/ide-core-browser/lib/components';
 import { AccordionSection } from './section.view';
 import { View, useInjectable } from '@ali/ide-core-browser';
