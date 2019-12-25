@@ -126,6 +126,8 @@ declare module "kaitian" {
 
     onActivate: Event<void>;
 
+    onInActivate: Event<void>;
+
   }
 
 }

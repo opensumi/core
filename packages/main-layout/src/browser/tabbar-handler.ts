@@ -21,7 +21,7 @@ export class TabBarHandler {
   public isVisible: boolean = false;
   public accordionService = this.layoutService.getAccordionService(this.containerId);
 
-  constructor(private containerId: string, private tabbarService: TabbarService) {
+  constructor(public readonly containerId: string, private tabbarService: TabbarService) {
     this.tabbarService.onCurrentChange((e) => {
       if (e.currentId === this.containerId) {
         this.onActivateEmitter.fire();
@@ -72,7 +72,7 @@ export class TabBarHandler {
   }
 
   setSize(size: number) {
-    this.layoutService.toggleSlot(this.tabbarService.location, true, size);
+    this.layoutService.toggleSlot(this.tabbarService.location, true, size + this.tabbarService.barSize + this.tabbarService.panelBorderSize /*border宽(高)度*/);
   }
 
   setBadge(badge: string) {

@@ -5,6 +5,7 @@ import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, 
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 import { ResizeHandle } from '@ali/ide-core-browser/lib/components';
 import debounce = require('lodash.debounce');
+import { TabBarRegistrationEvent } from '../../common';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
@@ -56,6 +57,8 @@ export class TabbarService extends WithEventBus {
   readonly onSizeChange: Event<{size: number}> = this.onSizeChangeEmitter.event;
 
   public barSize: number;
+  // 总的panel border宽度
+  public panelBorderSize: number;
   private menuId = `tabbar/${this.location}`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
 
@@ -176,6 +179,11 @@ export class TabbarService extends WithEventBus {
       group: '1_widgets',
     });
     this.registerActivateKeyBinding(componentInfo);
+    this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
+    if (containerId === this.currentContainerId) {
+      // 需要重新触发currentChange副作用
+      this.handleChange(containerId, '');
+    }
   }
 
   getContainer(containerId: string) {
@@ -323,37 +331,41 @@ export class TabbarService extends WithEventBus {
   }
 
   protected listenCurrentChange() {
-    const {getSize, setSize, lockSize, setMaxSize} = this.resizeHandle;
     observe(this, 'currentContainerId', (change) => {
       if (this.prevSize === undefined) {
       }
       this.previousContainerId = change.oldValue || '';
       const currentId = change.newValue;
-      this.onCurrentChangeEmitter.fire({previousId: change.oldValue || '', currentId});
-      const isCurrentExpanded = this.shouldExpand(currentId);
-      if (this.shouldExpand(this.previousContainerId) || isCurrentExpanded) {
-        this.handleFullExpanded(currentId, isCurrentExpanded);
-      } else {
-        if (currentId) {
-          if (this.prevSize === undefined) {
-            this.prevSize = getSize();
-          }
-          setSize(this.prevSize || 400);
-          const containerInfo = this.getContainer(currentId);
-          if (containerInfo && containerInfo.options!.noResize) {
-            lockSize(true);
-          } else {
-            lockSize(false);
-          }
-          setMaxSize(false);
-        } else {
-          this.prevSize = getSize();
-          setSize(this.barSize);
-          lockSize(true);
-          setMaxSize(true);
-        }
-      }
+      this.handleChange(currentId, this.previousContainerId);
     });
+  }
+
+  private handleChange(currentId, previousId) {
+    const {getSize, setSize, lockSize, setMaxSize} = this.resizeHandle;
+    this.onCurrentChangeEmitter.fire({previousId, currentId});
+    const isCurrentExpanded = this.shouldExpand(currentId);
+    if (this.shouldExpand(this.previousContainerId) || isCurrentExpanded) {
+      this.handleFullExpanded(currentId, isCurrentExpanded);
+    } else {
+      if (currentId) {
+        if (this.prevSize === undefined) {
+          this.prevSize = getSize();
+        }
+        setSize(this.prevSize || 400);
+        const containerInfo = this.getContainer(currentId);
+        if (containerInfo && containerInfo.options!.noResize) {
+          lockSize(true);
+        } else {
+          lockSize(false);
+        }
+        setMaxSize(false);
+      } else {
+        this.prevSize = getSize();
+        setSize(this.barSize);
+        lockSize(true);
+        setMaxSize(true);
+      }
+    }
   }
 
   protected handleFullExpanded(currentId: string, isCurrentExpanded?: boolean) {
