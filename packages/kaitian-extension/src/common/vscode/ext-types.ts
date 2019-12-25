@@ -1717,3 +1717,18 @@ export class FunctionBreakpoint extends Breakpoint {
     this.functionName = functionName;
   }
 }
+
+export interface QuickInputButton {
+  readonly iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
+  readonly tooltip?: string | undefined;
+}
+
+@es5ClassCompat
+export class QuickInputButtons {
+  static readonly Back: QuickInputButton = {
+    iconPath: {
+      id: 'Back',
+    },
+    tooltip: 'Back',
+  };
+}
