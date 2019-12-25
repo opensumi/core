@@ -60,6 +60,8 @@ export interface IDialogOptions {
 
 export interface ISaveDialogOptions extends IDialogOptions {
   saveLabel?: string;
+  showNameInput?: boolean;
+  defaultFileName?: string;
 }
 
 export interface IOpenDialogOptions extends IDialogOptions {
@@ -71,7 +73,7 @@ export interface IOpenDialogOptions extends IDialogOptions {
 
 export namespace ISaveDialogOptions {
   export function is(option) {
-    return 'saveLabel' in option;
+    return 'saveLabel' in option || 'showNameInput' in option || 'defaultFileName' in option;
   }
 }
 

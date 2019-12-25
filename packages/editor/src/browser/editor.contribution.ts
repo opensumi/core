@@ -2,7 +2,7 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, IEditorGroup } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, FILE_COMMANDS } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
@@ -174,6 +174,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.REOPEN_CLOSED.id,
       keybinding: isElectronEnv() ? 'ctrlcmd+shift+t' : 'alt+shift+t',
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
+      keybinding: isElectronEnv() ? 'ctrlcmd+n' : 'alt+n',
     });
     for (let i = 1; i < 10; i ++ ) {
       keybindings.registerKeybinding({
@@ -671,6 +675,12 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         this.historyService.popClosed();
       },
     });
+
+    commands.registerCommand(EDITOR_COMMANDS.NEW_UNTITLED_FILE, {
+      execute: () => {
+        this.workbenchEditorService.createUntitledResource();
+      },
+    });
   }
 
   registerNextMenus(menus: IMenuRegistry) {
@@ -765,7 +775,7 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
         const disposable = new Disposable();
         disposable.addDispose(editor.monacoEditor.onDidBlurEditorWidget(() => {
           if (this.preferenceService.get('editor.autoSave') === 'editorFocusChange') {
-            if (editor.currentDocumentModel && editor.currentDocumentModel.dirty && editor.currentDocumentModel.savable) {
+            if (editor.currentDocumentModel && !editor.currentDocumentModel.closeAutoSave &&  editor.currentDocumentModel.dirty && editor.currentDocumentModel.savable) {
               editor.currentDocumentModel.save();
             }
           }
@@ -775,7 +785,7 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
             if (e.oldModelUrl) {
               const oldUri = new URI(e.oldModelUrl.toString());
               const docRef = this.editorDocumentService.getModelReference(oldUri, 'editor-focus-autosave');
-              if (docRef && docRef.instance.dirty && docRef.instance.savable) {
+              if (docRef && !docRef.instance.closeAutoSave && docRef.instance.dirty && docRef.instance.savable) {
                 docRef.instance.save();
                 docRef.dispose();
               }

@@ -111,7 +111,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
       group: '1_open',
       when: 'config.application.supportsOpenFolder',
     }, {
-      command: FILE_COMMANDS.NEW_FILE.id,
+      command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
       group: '2_new',
     }, {
       command: FILE_COMMANDS.NEW_FOLDER.id,

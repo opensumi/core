@@ -194,11 +194,15 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       readonly,
       languageId,
       eol,
+      alwaysDirty,
+      closeAutoSave,
     ] = await Promise.all([
       (async () => provider.provideEditorDocumentModelContent(uri, encoding))(),
       (async () => provider.isReadonly ? provider.isReadonly(uri) : undefined)(),
       (async () => provider.preferLanguageForUri ? provider.preferLanguageForUri(uri) : undefined)(),
       (async () => provider.provideEOL ? provider.provideEOL(uri) : undefined)(),
+      (async () => provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false)(),
+      (async () => provider.closeAutoSave ? provider.closeAutoSave(uri) : false)(),
     ] as const);
 
     const savable = !!provider.saveDocumentModel;
@@ -209,6 +213,8 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       savable,
       eol,
       encoding,
+      alwaysDirty,
+      closeAutoSave,
     }]);
 
     this.editorDocModels.set(uri.toString(), model);

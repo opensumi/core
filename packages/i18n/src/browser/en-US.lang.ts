@@ -83,6 +83,7 @@ export const localizationBundle = {
     'editor.closeAllInGroup': 'Close All',
     'editor.closeToRight': 'Close To Right',
     'editor.closeSaved': 'Close Saved',
+    'editor.cannotSaveWithoutDirectory': 'Cannot save file without directory',
     'editor.close': 'Close',
     'editor.action.accept': 'Accept Changes (Use version on the right)',
     'editor.action.revert': 'Revert Changes (Use version on the left)',
@@ -161,6 +162,7 @@ export const localizationBundle = {
     'selection.all': 'Select All',
 
     'dialog.confirm': 'confirm',
+    'dialog.file.name': 'File Name',
     'dialog.file.title': 'Select Directory:',
     'dialog.file.openLabel': 'Open File:',
     'dialog.file.saveLabel': 'Save File:',

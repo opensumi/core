@@ -41,6 +41,16 @@ export interface IEditorDocumentModel {
   readonly savable: boolean;
 
   /**
+   * 是否永远都显示 dirty
+   */
+  readonly alwaysDirty: boolean;
+
+  /**
+   * 是否关闭自动保存功能
+   */
+  readonly closeAutoSave: boolean;
+
+  /**
    * 获得monaco的TextModel
    */
   getMonacoModel(): monaco.editor.ITextModel;
@@ -124,6 +134,17 @@ export interface IEditorDocumentModelContentProvider {
 
   onDidDisposeModel?(uri: URI): void;
 
+  /**
+   * 是否永远显示 dirty
+   * 有些类型的文档(untitled)可能刚创建就是 dirty，允许它以空文件的状态保存
+   */
+  isAlwaysDirty?(uri: URI): MaybePromise<boolean>;
+
+  /**
+   * 是否关闭自动保存功能
+   */
+  closeAutoSave?(uri: URI): MaybePromise<boolean>;
+
 }
 
 export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
@@ -149,6 +170,8 @@ export interface IEditorDocumentModelService {
    * @param encoding
    */
   changeModelEncoding(uri: URI, encoding: string);
+
+  saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): MaybePromise<IEditorDocumentModelSaveResult>;
 
 }
 
