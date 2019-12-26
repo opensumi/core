@@ -87,7 +87,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
     };
   }
 
-  async attach(sessionId: string, term: Terminal, restore: boolean, __: string, attachMethod: (s: WebSocket) => void, options = {}, type: string) {
+  async attach(sessionId: string, term: Terminal, restore: boolean, __: string, attachMethod: (s: WebSocket) => void, options = {}, type?: string) {
     if (restore) {
       throw new Error('default terminal service not support restore');
     }
@@ -96,7 +96,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
     const info = await this.service.create(sessionId, term.rows, term.cols, {
       ...options,
       cwd: this.config.workspaceDir,
-      shellPath: `/bin/${type}`,
+      shellPath: type ? `/bin/${type}` : undefined,
     });
     this._info.set(sessionId, info);
   }
