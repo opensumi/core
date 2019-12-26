@@ -310,7 +310,7 @@ export const corePreferenceSchema: PreferenceSchema = {
         'zsh',
         'sh',
       ],
-      default: 'bash',
+      default: '',
       description: '%preference.terminal.typeDesc%',
     },
     'terminal.fontFamily': {
