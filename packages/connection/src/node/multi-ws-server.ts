@@ -147,7 +147,12 @@ class MultiConnect extends events.EventEmitter {
     const connection = this.getAvailableConnection( content.method ? content.method : '');
 
     if (!connection) {
-      throw new Error('找不到可用连接！');
+      if (this.readyState === this.CLOSED) {
+        console.warn('连接已经关闭！');
+        return;
+      } else {
+        throw Error('找不到可用连接！');
+      }
     }
 
     if (content.method) {
