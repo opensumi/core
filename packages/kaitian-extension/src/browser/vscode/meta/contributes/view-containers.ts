@@ -46,6 +46,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
             containerId: container.id,
             // 插件注册的视图默认在最后
             priority: 0,
+            fromExtension: true,
           }, 'left');
           this.disposableCollection.push({
             dispose: () => {
