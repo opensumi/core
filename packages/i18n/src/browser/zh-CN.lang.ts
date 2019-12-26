@@ -384,7 +384,8 @@ export const localizationBundle = {
     'marketplace.quickopen.install': '安装插件',
     'marketplace.quickopen.install.id': '扩展 ID',
     'marketplace.quickopen.install.id.required': '扩展 ID 必填',
-    'marketplace.quickopen.install.version.placeholder': '扩展版本 (可选)',
+    'marketplace.quickopen.install.version.required': '扩展版本必填',
+    'marketplace.quickopen.install.version.placeholder': '扩展版本',
     'marketplace.quickopen.install.error': '安装插件报错',
 
     'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',

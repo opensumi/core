@@ -410,7 +410,8 @@ export const localizationBundle = {
     'marketplace.quickopen.install': 'Install Extension',
     'marketplace.quickopen.install.id': 'Extension ID',
     'marketplace.quickopen.install.id.required': 'Extension ID is required',
-    'marketplace.quickopen.install.version.placeholder': 'Extension version (Optional)',
+    'marketplace.quickopen.install.version.required': 'Extension version is require',
+    'marketplace.quickopen.install.version.placeholder': 'Extension version',
     'marketplace.quickopen.install.error': 'Install Extension has error',
 
     'saveChangesMessage': 'Do you want to save the changes you made to {0}?',
