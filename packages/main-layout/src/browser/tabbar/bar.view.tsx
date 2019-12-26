@@ -18,8 +18,8 @@ export const TabbarViewBase: React.FC<{
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   React.useEffect(() => {
-    tabbarService.barSize = barSize;
-    tabbarService.panelBorderSize = panelBorderSize;
+    // 内部只关注总的宽度
+    tabbarService.barSize = barSize + panelBorderSize;
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
   return (
@@ -57,12 +57,12 @@ const TextTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ co
   </div>;
 });
 
-export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} barSize={40} panelBorderSize={2}/>;
+export const RightTabbarRenderer: React.FC = () => <TabbarViewBase TabView={IconTabView} barSize={40} panelBorderSize={1}/>;
 
 export const LeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   return (<div className='left-tab-bar'>
-    <TabbarViewBase TabView={IconTabView} barSize={48} panelBorderSize={2}/>
+    <TabbarViewBase TabView={IconTabView} barSize={48} panelBorderSize={1}/>
     <div className='bottom-icon-container' onClick={layoutService.handleSetting}>
       <i className={`activity-icon ${getIcon('setting')}`}></i>
     </div>

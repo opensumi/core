@@ -107,16 +107,6 @@
   .tab-panel {
     position: relative;
     flex: 1;
-    border-left: 1px solid var(--panel-border);
-    border-right: 1px solid var(--panel-border);
-    border-top: 1px solid var(--panel-border);
-  }
-
-  // 左侧/右侧 panel 因为 menubar 有 border-bottom
-  // 所以去掉了 border-top
-  :global(.left-slot) .tab-panel,
-  :global(.right-slot) .tab-panel {
-    border-top-width: 0;
   }
 
   .tab-tool-bar {
@@ -126,10 +116,12 @@
       padding-right: 10px;
     }
   }
+  .left-tab-bar {
+    border-right: 1px solid var(--activityBar-border);
+  }
   .left-slot {
     height: 100%;
     .tab-bar {
-      border-right: 1px solid var(--activityBar-border);
       li.active {
         .icon-tab::before {
           content: '';
@@ -140,6 +132,9 @@
           border-left: 3px solid var(--kt-activityBar-activeBorder);
         }
       }
+    }
+    .tab-panel {
+      border-right: 1px solid var(--activityBar-border);
     }
   }
   .right-slot {
@@ -161,6 +156,9 @@
           background-color: var(--sideBar-background);
         }
       }
+    }
+    .tab-panel {
+      border-left: 1px solid var(--activityBar-border);
     }
   }
   .bottom-slot {
@@ -202,22 +200,24 @@
         margin-left: 6px;
         background-color: var(--badge-background);
         color: var(--badge-foreground);
-        padding: 0.3em 0.5em;
-        border-radius: 1em;
+        width: 18px;
+        height: 18px;
+        border-radius: 9px;
         font-size: 12px;
-        line-height: 1em;
-        height: auto;
+        line-height: 18px;
         font-weight: 400;
         text-align: center;
         display: inline-block;
         box-sizing: border-box;
-        transform: scale(0.85);
       }
-      .next_bottom_bar {
-        .tab-badge {
-          margin-left: 2px;
-        }
+    }
+    .next_bottom_bar {
+      .tab-badge {
+        margin-left: 4px;
       }
+    }
+    .tab-panel {
+      border-top: 1px solid var(--panel-border);
     }
   }
 }
@@ -282,6 +282,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  margin-right: 12px;
 }
 .panel_wrapper {
   flex: 1;

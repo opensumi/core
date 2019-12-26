@@ -63,8 +63,6 @@ export class TabbarService extends WithEventBus {
   readonly onSizeChange: Event<{size: number}> = this.onSizeChangeEmitter.event;
 
   public barSize: number;
-  // 总的panel border宽度
-  public panelBorderSize: number;
   private menuId = `tabbar/${this.location}`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
 

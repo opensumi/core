@@ -71,7 +71,7 @@ export class TabBarHandler {
   }
 
   setSize(size: number) {
-    this.layoutService.toggleSlot(this.tabbarService.location, true, size + this.tabbarService.barSize + this.tabbarService.panelBorderSize /*border宽(高)度*/);
+    this.layoutService.toggleSlot(this.tabbarService.location, true, size + this.tabbarService.barSize /*border宽(高)度*/);
   }
 
   setBadge(badge: string) {
