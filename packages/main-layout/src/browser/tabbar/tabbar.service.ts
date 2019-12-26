@@ -358,7 +358,7 @@ export class TabbarService extends WithEventBus {
         if (this.prevSize === undefined) {
           this.prevSize = getSize();
         }
-        setSize(this.prevSize || INIT_PANEL_SIZE + this.barSize);
+        setSize(this.prevSize || (INIT_PANEL_SIZE + this.barSize));
         const containerInfo = this.getContainer(currentId);
         if (containerInfo && containerInfo.options!.noResize) {
           lockSize(true);
