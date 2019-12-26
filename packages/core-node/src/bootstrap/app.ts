@@ -61,7 +61,7 @@ interface Config {
    */
   LogServiceClass: ConstructorOf<ILogService>;
 
-  isCloseMultichannel?: boolean;
+  useExperimentalMultiChannel?: boolean;
 }
 
 export interface AppConfig extends Partial<Config> {
@@ -153,7 +153,7 @@ export class ServerApp implements IServerApp {
       terminalPtyCloseThreshold: opts.terminalPtyCloseThreshold,
       staticAllowOrigin: opts.staticAllowOrigin,
       staticAllowPath: opts.staticAllowPath,
-      isCloseMultichannel: opts.isCloseMultichannel,
+      useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
@@ -227,7 +227,7 @@ export class ServerApp implements IServerApp {
     } else {
       if (server instanceof http.Server || server instanceof https.Server) {
       // 创建 websocket 通道
-        serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler, this.config.isCloseMultichannel);
+        serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler, this.config.useExperimentalMultiChannel);
       } else if (server instanceof net.Server) {
         serviceCenter = createNetServerConnection(server, this.injector, this.modulesInstances);
       }

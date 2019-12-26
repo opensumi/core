@@ -135,7 +135,7 @@ export class ClientApp implements IClientApp {
       extensionCandidate: opts.extensionCandidate,
       layoutComponent: opts.layoutComponent,
       isSyncPreference: opts.isSyncPreference,
-      isCloseMultichannel: opts.isCloseMultichannel,
+      useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
@@ -170,7 +170,7 @@ export class ClientApp implements IClientApp {
 
         await createClientConnection2(this.injector, this.modules, this.connectionPath, () => {
           this.onReconnectContributions();
-        }, this.connectionProtocols, this.config.isCloseMultichannel);
+        }, this.connectionProtocols, this.config.useExperimentalMultiChannel);
 
          // 回写需要用到打点的 Logger 的地方
         this.injector.get(WSChanneHandler).setLogger(this.logger);

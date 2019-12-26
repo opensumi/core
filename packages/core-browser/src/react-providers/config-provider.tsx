@@ -28,7 +28,7 @@ export interface AppConfig {
 
   isSyncPreference?: boolean;
 
-  isCloseMultichannel?: boolean;
+  useExperimentalMultiChannel?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
