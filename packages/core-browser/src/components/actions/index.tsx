@@ -255,6 +255,7 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
     <TitleActionList
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
+      context={context}
       {...restProps} />
   );
 }
