@@ -25,9 +25,9 @@ export class WSChanneHandler {
   private heartbeatMessageTimer: NodeJS.Timeout;
   private reporterService: IReporterService;
 
-  constructor(public wsPath: string, logger: any, public protocols?: string[], isCloseMultichannel?: boolean) {
+  constructor(public wsPath: string, logger: any, public protocols?: string[], useExperimentalMultiChannel?: boolean) {
     this.logger = logger || this.logger;
-    this.connection = isCloseMultichannel ? new ReconnectingWebSocket(wsPath, protocols, {}) : new MultiWs(wsPath, protocols, this.clientId) as any; // new WebSocket(wsPath, protocols);
+    this.connection = useExperimentalMultiChannel ? new MultiWs(wsPath, protocols, this.clientId) as any : new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
   setLogger(logger: any) {
     this.logger = logger;
