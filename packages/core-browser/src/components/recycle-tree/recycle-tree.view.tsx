@@ -78,6 +78,7 @@ export const RecycleTree = (
   {
     nodes,
     leftPadding,
+    defaultLeftPadding,
     multiSelectable,
     scrollContainerStyle,
     scrollContentStyle,
@@ -232,6 +233,7 @@ export const RecycleTree = (
         actions={actions}
         commandActuator={commandActuator}
         leftPadding={leftPadding}
+        defaultLeftPadding={defaultLeftPadding}
         onContextMenu={onContextMenu || noop}
         onDrag={onDrag || noop}
         onBlur={onBlur || noop}

@@ -278,7 +278,12 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
             type='number'
             className={styles.number_control}
             onChange={(event) => {
-              changeValue(key, parseInt(event.target.value, 10));
+              const result = parseInt(event.target.value, 10);
+              if (Number.isSafeInteger(result)) {
+                changeValue(key, result);
+              } else if (event.target.value === '') {
+                changeValue(key, '');
+              }
             }}
             value={value}
             onWheel={(e) => e.preventDefault()}

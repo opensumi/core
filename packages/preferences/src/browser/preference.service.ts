@@ -172,6 +172,11 @@ export const defaultSettingGroup: ISettingGroup[] = [
     title: '%settings.group.feature%',
     iconClass: getIcon('setting-file'),
   },
+  {
+    id: 'view',
+    title: '%settings.group.view%',
+    iconClass: getIcon('detail'),
+  },
 ];
 
 // TODO 做成Contribution分散到各个模块
@@ -208,6 +213,7 @@ export const defaultSettingSections: {
         {id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave'},
         {id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout'},
         {id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength'},
+        {id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay'},
       ],
     },
   ],
@@ -230,6 +236,14 @@ export const defaultSettingSections: {
         {id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title'},
         {id: 'files.associations', localized: 'preference.files.associations.title'},
         {id: 'search.exclude', localized: 'preference.search.exclude.title'},
+      ],
+    },
+  ],
+  view: [
+    {
+      preferences: [
+        {id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title'},
+        {id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title'},
       ],
     },
   ],

@@ -20,13 +20,13 @@ export async function createClientConnection2(
   modules: ModuleConstructor[],
   wsPath: string, onReconnect: () => void,
   protocols?: string[],
-  isCloseMultichannel?: boolean,
+  useExperimentalMultiChannel?: boolean,
 ) {
   const statusBarService = injector.get(IStatusBarService);
   const reporterService = injector.get(IReporterService);
   // const logger = injector.get(ILogger)
 
-  const wsChannelHandler = new WSChanneHandler(wsPath, logger, protocols, isCloseMultichannel);
+  const wsChannelHandler = new WSChanneHandler(wsPath, logger, protocols, useExperimentalMultiChannel);
   wsChannelHandler.setReporter(reporterService);
   wsChannelHandler.connection.addEventListener('open', () => {
     statusBarService.setBackgroundColor('var(--statusBar-background)');

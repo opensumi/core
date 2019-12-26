@@ -13,11 +13,13 @@ export const Overlay: React.FC<{
   visible: boolean;
   afterClose: ModalProps['afterClose'];
   onClose: ModalProps['onCancel'];
-}> = (({ maskClosable = false, className, onClose, children, ...restProps }) => {
+  closable?: ModalProps['closable'];
+}> = (({ maskClosable = false, closable = true, className, onClose, children, ...restProps }) => {
   return (
     <Modal
       footer={null}
       maskClosable={maskClosable}
+      closable={closable}
       onCancel={onClose}
       className={clsx(styles.overlay, className)}
       {...restProps}

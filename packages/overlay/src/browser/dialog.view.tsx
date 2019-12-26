@@ -35,6 +35,7 @@ export const Dialog = observer(() => {
     <Overlay
       visible={dialogService.isVisible()}
       onClose={handleClose}
+      closable={dialogService.closable}
       afterClose={afterClose}>
       { type !== MessageType.Empty ? (
         <>

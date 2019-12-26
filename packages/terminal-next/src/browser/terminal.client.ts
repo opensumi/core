@@ -63,16 +63,14 @@ export class TerminalClient extends Disposable {
       }
     });
 
-    this.addDispose({
-      dispose: () => {
-        this.preference.onPreferenceChanged(({ preferenceName, newValue }) => {
-          const option = this._term.getOption(preferenceName);
-          if (support[preferenceName] && option !== newValue) {
-            this._term.setOption(support[preferenceName], newValue);
-          }
-        });
-      },
-    });
+    this.addDispose(this.preference.onPreferenceChanged(({ preferenceName, newValue }) => {
+      if (support[preferenceName]) {
+        const option = this._term.getOption(support[preferenceName]);
+        if (option !== newValue) {
+          this._term.setOption(support[preferenceName], newValue);
+        }
+      }
+    }));
 
     return options;
   }

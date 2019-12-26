@@ -52,6 +52,9 @@ import {
   getPreferenceLanguageId,
   isElectronRenderer,
   IDisposable,
+  PreferenceService,
+  CoreConfiguration,
+  CorePreferences,
 } from '@ali/ide-core-browser';
 import {
   getIcon,
@@ -87,7 +90,7 @@ import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
 import { createBrowserApi } from './kaitian-browser';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
-import { ExtensionCandiDate } from '@ali/ide-core-common';
+import { ExtensionCandiDate, localize } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
 import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution';
 
@@ -174,6 +177,12 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  @Autowired(CorePreferences)
+  private readonly corePreferences: CorePreferences;
 
   // @Autowired()
   // viewRegistry: ViewRegistry;
@@ -930,19 +939,46 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async processNotExist(clientId: string) {
-    const msg = await this.dialogService.info('插件进程已失效，刷新后可恢复插件使用，刷新或使用其他功能？', ['使用其他功能', '刷新']);
-
-    if (msg === '刷新') {
-      this.clientApp.fireOnReload();
+    const invalidReloadStrategy = this.getInvalidReloadStrategy();
+    const okText = localize('kaitianExtension.invalidExthostReload.confirm.ok');
+    const options = [okText];
+    const ifRequiredReload = invalidReloadStrategy === 'ifRequired';
+    if (ifRequiredReload) {
+      options.unshift(localize('kaitianExtension.invalidExthostReload.confirm.cancel'));
     }
 
+    const msg = await this.dialogService.info(
+      localize('kaitianExtension.invalidExthostReload.confirm.content'),
+      options,
+      !!ifRequiredReload,
+    );
+
+    if (msg === okText) {
+      this.clientApp.fireOnReload();
+    }
   }
 
   public async processCrashRestart(clientId: string) {
-    const msg = await this.messageService.info('插件进程异常退出，是否重启插件进程', ['是', '否']);
-    if (msg === '是') {
+    const invalidReloadStrategy = this.getInvalidReloadStrategy();
+    const okText = localize('common.yes');
+    const options = [okText];
+    const ifRequiredReload = invalidReloadStrategy === 'ifRequired';
+    if (ifRequiredReload) {
+      options.unshift(localize('common.no'));
+    }
+
+    const msg = await this.messageService.info(
+      localize('kaitianExtension.crashedExthostReload.confirm'),
+      options,
+      !!ifRequiredReload,
+    );
+    if (msg === okText) {
       await this.startProcess(false);
     }
   }
 
+  private getInvalidReloadStrategy() {
+    // 获取corePreferences配置判断是否弹出确认框
+    return this.corePreferences['application.invalidExthostReload'];
+  }
 }

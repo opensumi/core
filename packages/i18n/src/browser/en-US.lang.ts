@@ -4,6 +4,8 @@ export const localizationBundle = {
   localizedLanguageName: 'English',
   contents: {
     'extension': 'Extension',
+    'common.yes': 'Yes',
+    'common.no': 'No',
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
     'file.save': 'Save File',
@@ -91,6 +93,7 @@ export const localizationBundle = {
     'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.chooseEncoding': 'Reopen with encoding (Unsaved Changes will be lost)',
     'editor.configuration.maxTokenizationLineLength': 'Lines above this length will not be tokenized for performance reasons',
+    'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
@@ -251,6 +254,10 @@ export const localizationBundle = {
     'preference.array.additem': 'Add',
     'preference.files.associations.title': 'File Association',
     'preference.files.associations': 'Configure file associations to languages (e.g. "*.extension": "html"). These have precedence over the default associations of the languages installed.',
+    'preference.explorer.fileTree.indent': 'Configure indent for each fileTree item',
+    'preference.explorer.fileTree.indent.title': 'Explorer -> FileTree Indent',
+    'preference.explorer.fileTree.baseIndent': 'Configure base indent for whole fileTree',
+    'preference.explorer.fileTree.baseIndent.title': 'Explorer -> FileTree BaseIndent',
 
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
@@ -266,6 +273,7 @@ export const localizationBundle = {
     'settings.group.editor': 'Editor',
     'settings.group.extension': 'Extensions',
     'settings.group.feature': 'Feature',
+    'settings.group.view': 'View',
 
     'settings.menu.keymaps': 'Settings',
 
@@ -291,6 +299,7 @@ export const localizationBundle = {
     'preference.editor.formatOnSaveTimeout': 'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
     'preference.editor.formatOnSaveTimeoutError': 'Aborted format on save after ${0}ms',
     'preference.editor.maxTokenizationLineLength': 'Max Tokenization Line Length',
+    'preference.editor.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 10 (ms)',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',
@@ -401,7 +410,8 @@ export const localizationBundle = {
     'marketplace.quickopen.install': 'Install Extension',
     'marketplace.quickopen.install.id': 'Extension ID',
     'marketplace.quickopen.install.id.required': 'Extension ID is required',
-    'marketplace.quickopen.install.version.placeholder': 'Extension version (Optional)',
+    'marketplace.quickopen.install.version.required': 'Extension version is require',
+    'marketplace.quickopen.install.version.placeholder': 'Extension version',
     'marketplace.quickopen.install.error': 'Install Extension has error',
 
     'saveChangesMessage': 'Do you want to save the changes you made to {0}?',
@@ -440,5 +450,10 @@ export const localizationBundle = {
     'view.zoomReset': 'Zoom Reset',
     'view.zoomIn': 'Zoom In',
     'view.zoomOut': 'Zoom Out',
+
+    'kaitianExtension.invalidExthostReload.confirm.content': 'Ext-host process is invalid. Refresh or ignore to use other features?',
+    'kaitianExtension.invalidExthostReload.confirm.ok': 'Refresh',
+    'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore',
+    'kaitianExtension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
   },
 };

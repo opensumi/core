@@ -5,6 +5,8 @@ export const localizationBundle = {
   contents: {
     'ButtonOK': '确定',
     'ButtonCancel': '取消',
+    'common.yes': '是',
+    'common.no': '否',
     'extension': '插件',
 
     'file.new': '新建文件',
@@ -254,6 +256,10 @@ export const localizationBundle = {
     'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
     'preference.files.associations.title': '文件关联',
     'preference.files.associations': '配置语言的文件关联 (如: "*.extension": "html")。这些关联的优先级高于已安装语言的默认关联。',
+    'preference.explorer.fileTree.indent': '配置资源管理器下每个文件树节点的缩进',
+    'preference.explorer.fileTree.baseIndent': '配置资源管理器下整个文件树的缩进',
+    'preference.explorer.fileTree.indent.title': '资源管理器 -> 文件树缩进',
+    'preference.explorer.fileTree.baseIndent.title': '资源管理器 -> 文件树基础缩进',
 
     // 终端
     'preference.terminal.type': '默认终端类型',
@@ -280,6 +286,7 @@ export const localizationBundle = {
     'settings.group.extension': '插件',
     'settings.group.feature': '功能',
     'settings.group.terminal': '终端',
+    'settings.group.view': '视图',
 
     'preference.general.theme': '主题',
     'preference.general.icon': '图标主题',
@@ -308,6 +315,7 @@ export const localizationBundle = {
     'preference.editor.autoSave': '自动保存文件',
     'preference.editor.autoSaveDelay': '自动保存延迟',
     'preference.editor.maxTokenizationLineLength': '最大解析标识长度',
+    'preference.editor.quickSuggestionsDelay': '智能提示延迟（毫秒）',
 
     'preference.array.additem': '添加',
 
@@ -326,6 +334,7 @@ export const localizationBundle = {
     'editor.configuration.preferredFormatter': '优先使用的格式化器配置',
     'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标记',
+    'editor.configuration.quickSuggestionsDelay': '智能提示延迟（毫秒），默认 100 毫秒',
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
@@ -375,7 +384,8 @@ export const localizationBundle = {
     'marketplace.quickopen.install': '安装插件',
     'marketplace.quickopen.install.id': '扩展 ID',
     'marketplace.quickopen.install.id.required': '扩展 ID 必填',
-    'marketplace.quickopen.install.version.placeholder': '扩展版本 (可选)',
+    'marketplace.quickopen.install.version.required': '扩展版本必填',
+    'marketplace.quickopen.install.version.placeholder': '扩展版本',
     'marketplace.quickopen.install.error': '安装插件报错',
 
     'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
@@ -469,5 +479,10 @@ export const localizationBundle = {
     'view.zoomReset': '重置窗口缩放',
     'view.zoomIn': '窗口缩放放大',
     'view.zoomOut': '窗口缩放缩小',
+
+    'kaitianExtension.invalidExthostReload.confirm.content': '插件进程已失效，刷新后可恢复插件使用，刷新或使用其他功能？',
+    'kaitianExtension.invalidExthostReload.confirm.ok': '刷新',
+    'kaitianExtension.invalidExthostReload.confirm.cancel': '使用其他功能',
+    'kaitianExtension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
   },
 };

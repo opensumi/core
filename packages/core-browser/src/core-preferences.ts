@@ -40,6 +40,11 @@ export const FILES_DEFAULTS = {
   },
 };
 
+export const FILE_TREE_DEFAULTS = {
+  baseIndent: 10,
+  indent: 6,
+};
+
 // TODO: 实现 https://code.visualstudio.com/docs/getstarted/settings
 export const corePreferenceSchema: PreferenceSchema = {
   'type': 'object',
@@ -85,6 +90,15 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
       description: 'Use markdown preview first',
+    },
+    'application.invalidExthostReload': {
+      type: 'string',
+      enum: [
+        'ifRequired',
+        'always',
+      ],
+      default: 'ifRequired',
+      description: 'Reload strategy when exthost process became invalid.',
     },
     'workbench.list.openMode': {
       type: 'string',
@@ -239,6 +253,15 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 10000,
       description: '%editor.configuration.maxTokenizationLineLength%',
     },
+    'editor.quickSuggestionsDelay': {
+      type: 'integer',
+      default: 100,
+      // description: '%editor.configuration.quickSuggestionsDelay%',
+    },
+    'editor.quickSuggestionsMaxCount': {
+      type: 'integer',
+      default: 0,
+    },
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,
@@ -248,6 +271,16 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmMove,
       description: '%preference.explorer.confirm.delete%',
+    },
+    'explorer.fileTree.baseIndent': {
+      type: 'number',
+      default: FILE_TREE_DEFAULTS.baseIndent,
+      description: '%preference.explorer.fileTree.baseIndent%',
+    },
+    'explorer.fileTree.indent': {
+      type: 'number',
+      default: FILE_TREE_DEFAULTS.indent,
+      description: '%preference.explorer.fileTree.indent%',
     },
     'files.exclude': {
       type: 'object',
@@ -276,8 +309,9 @@ export const corePreferenceSchema: PreferenceSchema = {
         'bash',
         'zsh',
         'sh',
+        '',
       ],
-      default: 'bash',
+      default: '',
       description: '%preference.terminal.typeDesc%',
     },
     'terminal.fontFamily': {
@@ -313,9 +347,12 @@ export const corePreferenceSchema: PreferenceSchema = {
 
 export interface CoreConfiguration {
   'application.confirmExit': 'never' | 'ifRequired' | 'always';
+  'application.invalidExthostReload': 'ifRequired' | 'always';
   'workbench.list.openMode': 'singleClick' | 'doubleClick';
   'workbench.commandPalette.history': number;
   'explorer.confirmDelete': boolean;
+  'explorer.fileTree.baseIndent': number;
+  'explorer.fileTree.indent': number;
   'explorer.confirmMove': boolean;
   'files.watcherExclude': { [key: string]: boolean };
   'files.exclude': { [key: string]: boolean };

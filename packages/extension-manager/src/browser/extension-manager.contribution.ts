@@ -168,6 +168,10 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
         const version = await this.quickInputService.open({
           placeHolder: localize('marketplace.quickopen.install.version.placeholder'),
         });
+        if (!version) {
+          this.messageService.info(localize('marketplace.quickopen.install.version.required'));
+          return;
+        }
         try {
           const [publisher, name] = extensionId.split('.');
           this.statusBarService.addElement(ExtensionCommands.INSTALL_EXTENSION_BY_ID.id, {

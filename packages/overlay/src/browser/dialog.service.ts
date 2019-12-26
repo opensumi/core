@@ -20,14 +20,18 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   protected title: string = '';
 
   @observable
+  public closable: boolean = true;
+
+  @observable
   protected buttons: string[] = [];
 
   @action
-  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: any[]): Promise<T | undefined> {
+  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: any[], closable: boolean = true): Promise<T | undefined> {
     this.deferred = new Deferred<string>();
     this.type = type;
     this.message = message;
     this.visible = true;
+    this.closable = closable;
     if (buttons) {
       this.buttons = buttons;
     }
