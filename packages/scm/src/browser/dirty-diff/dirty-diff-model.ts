@@ -251,7 +251,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     if (this._originalModel && this._editorModel) {
       const originalUri = new URI(this._originalModel.uri);
       const editorUri = new URI(this._editorModel.uri);
-      this.editorService.createDiffEditor(widget.getContentNode(), { renderSideBySide: false })
+      this.editorService.createDiffEditor(widget.getContentNode(), { automaticLayout: true, renderSideBySide: false })
         .then(async (editor) => {
           const original = await this.documentModelManager.createModelReference(originalUri);
           const edit = await this.documentModelManager.createModelReference(editorUri);
