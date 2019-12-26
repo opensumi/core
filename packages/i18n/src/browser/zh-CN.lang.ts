@@ -5,6 +5,8 @@ export const localizationBundle = {
   contents: {
     'ButtonOK': '确定',
     'ButtonCancel': '取消',
+    'common.yes': '是',
+    'common.no': '否',
     'extension': '插件',
 
     'file.new': '新建文件',
@@ -469,5 +471,10 @@ export const localizationBundle = {
     'view.zoomReset': '重置窗口缩放',
     'view.zoomIn': '窗口缩放放大',
     'view.zoomOut': '窗口缩放缩小',
+
+    'kaitianExtension.invalidExthostReload.confirm.content': '插件进程已失效，刷新后可恢复插件使用，刷新或使用其他功能？',
+    'kaitianExtension.invalidExthostReload.confirm.ok': '刷新',
+    'kaitianExtension.invalidExthostReload.confirm.cancel': '使用其他功能',
+    'kaitianExtension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
   },
 };

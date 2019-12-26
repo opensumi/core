@@ -90,7 +90,7 @@ import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
 import { createBrowserApi } from './kaitian-browser';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
-import { ExtensionCandiDate } from '@ali/ide-core-common';
+import { ExtensionCandiDate, localize } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
 import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution';
 
@@ -940,37 +940,39 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public async processNotExist(clientId: string) {
     const invalidReloadStrategy = this.getInvalidReloadStrategy();
-    const options = ['刷新'];
+    const okText = localize('kaitianExtension.invalidExthostReload.confirm.ok');
+    const options = [okText];
     const ifRequiredReload = invalidReloadStrategy === 'ifRequired';
     if (ifRequiredReload) {
-      options.unshift('使用其他功能');
+      options.unshift(localize('kaitianExtension.invalidExthostReload.confirm.cancel'));
     }
 
     const msg = await this.dialogService.info(
-      '插件进程已失效，刷新后可恢复插件使用，刷新或使用其他功能？',
+      localize('kaitianExtension.invalidExthostReload.confirm.content'),
       options,
       !!ifRequiredReload,
     );
 
-    if (msg === '刷新') {
+    if (msg === okText) {
       this.clientApp.fireOnReload();
     }
   }
 
   public async processCrashRestart(clientId: string) {
     const invalidReloadStrategy = this.getInvalidReloadStrategy();
-    const options = ['是'];
+    const okText = localize('common.yes');
+    const options = [okText];
     const ifRequiredReload = invalidReloadStrategy === 'ifRequired';
     if (ifRequiredReload) {
-      options.unshift('否');
+      options.unshift(localize('common.no'));
     }
 
     const msg = await this.messageService.info(
-      '插件进程异常退出，是否重启插件进程',
+      localize('kaitianExtension.crashedExthostReload.confirm'),
       options,
       !!ifRequiredReload,
     );
-    if (msg === '是') {
+    if (msg === okText) {
       await this.startProcess(false);
     }
   }

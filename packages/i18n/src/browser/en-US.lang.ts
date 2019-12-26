@@ -4,6 +4,8 @@ export const localizationBundle = {
   localizedLanguageName: 'English',
   contents: {
     'extension': 'Extension',
+    'common.yes': 'Yes',
+    'common.no': 'No',
     'file.new': 'New File',
     'file.folder.new': 'New Folder',
     'file.save': 'Save File',
@@ -440,5 +442,10 @@ export const localizationBundle = {
     'view.zoomReset': 'Zoom Reset',
     'view.zoomIn': 'Zoom In',
     'view.zoomOut': 'Zoom Out',
+
+    'kaitianExtension.invalidExthostReload.confirm.content': 'Ext-host process is invalid. Refresh or ignore to use other features?',
+    'kaitianExtension.invalidExthostReload.confirm.ok': 'Refresh',
+    'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore',
+    'kaitianExtension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
   },
 };
