@@ -57,7 +57,7 @@ describe('connection', () => {
       dispose: () => {},
     });
 
-    const connection = new WebSocket('ws://127.0.0.1:7788/service/channel1', ['12345']);
+    const connection = new WebSocket('ws://127.0.0.1:7788/service');
 
     await new Promise((resolve) => {
       connection.on('open', () => {
