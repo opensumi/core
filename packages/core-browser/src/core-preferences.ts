@@ -309,6 +309,7 @@ export const corePreferenceSchema: PreferenceSchema = {
         'bash',
         'zsh',
         'sh',
+        '',
       ],
       default: '',
       description: '%preference.terminal.typeDesc%',
