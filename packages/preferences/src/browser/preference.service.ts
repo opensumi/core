@@ -241,8 +241,8 @@ export const defaultSettingSections: {
   view: [
     {
       preferences: [
-        {id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent'},
-        {id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent'},
+        {id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title'},
+        {id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title'},
       ],
     },
   ],

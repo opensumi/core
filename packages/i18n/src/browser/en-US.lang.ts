@@ -252,7 +252,9 @@ export const localizationBundle = {
     'preference.files.associations.title': 'File Association',
     'preference.files.associations': 'Configure file associations to languages (e.g. "*.extension": "html"). These have precedence over the default associations of the languages installed.',
     'preference.explorer.fileTree.indent': 'Configure indent for each fileTree item',
+    'preference.explorer.fileTree.indent.title': 'Explorer -> FileTree Indent',
     'preference.explorer.fileTree.baseIndent': 'Configure base indent for whole fileTree',
+    'preference.explorer.fileTree.baseIndent.title': 'Explorer -> FileTree BaseIndent',
 
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
