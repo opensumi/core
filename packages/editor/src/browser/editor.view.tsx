@@ -58,6 +58,7 @@ export const EditorGridView = observer(({ grid }: { grid: EditorGrid }) => {
     if (editorGroupContainer) {
       if (cachedGroupView[grid.editorGroup!.name]) {
         editorGroupContainer.appendChild(cachedGroupView[grid.editorGroup!.name]);
+        (grid.editorGroup! as EditorGroup).layoutEditors();
       } else {
         const div = document.createElement('div');
         cachedGroupView[grid.editorGroup!.name] = div;
@@ -126,6 +127,7 @@ const cachedEditor: { [key: string]: HTMLDivElement } = {};
 const cachedDiffEditor: { [key: string]: HTMLDivElement } = {};
 
 export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
+  const groupWrapperRef = React.useRef<HTMLElement | null>();
   const codeEditorRef = React.useRef<HTMLElement | null>();
   const diffEditorRef = React.useRef<HTMLElement | null>();
   const editorBodyRef = React.useRef<HTMLElement | null>();
@@ -158,7 +160,11 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
         group.createDiffEditor(container);
       }
     }
-  }, [codeEditorRef]);
+  }, [codeEditorRef.current]);
+
+  React.useEffect(() => {
+    group.attachToDom(groupWrapperRef.current);
+  });
 
   const components: React.ReactNode[] = [];
 
@@ -177,7 +183,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const EmptyComponent: React.Component | React.FunctionComponent<any> | undefined = emptyComponentInfo && emptyComponentInfo.views[0].component;
 
   return (
-    <div className={styles.kt_editor_group} tabIndex={1} onFocus={(e) => {
+    <div ref={groupWrapperRef as any} className={styles.kt_editor_group} tabIndex={1} onFocus={(e) => {
       group.gainFocus();
     }}
     >
