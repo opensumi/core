@@ -37,7 +37,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $unregister(handle) {
-    console.log(`unregister ${handle} not implemented!`);
+    const disposable = this.disposables.get(handle);
+    if (disposable) {
+      this.disposables.delete(handle);
+      disposable.dispose();
+    }
   }
 
   $getLanguages(): string[] {
