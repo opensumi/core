@@ -39,7 +39,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   public extentionsActivator: ExtensionsActivator;
   public storage: ExtHostStorage;
 
-  readonly extensionsChangeEmitter: Emitter<string> = new Emitter<string>();
+  readonly extensionsChangeEmitter: Emitter<void> = new Emitter<void>();
 
   private reporterService: IReporterService;
 
@@ -97,6 +97,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.logger.debug('kaitian extensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
+  }
+
+  public async $fireChangeEvent() {
+    this.extensionsChangeEmitter.fire();
   }
 
   public getExtension(extensionId: string): VSCExtension<any> | undefined {

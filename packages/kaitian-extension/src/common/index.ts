@@ -75,6 +75,7 @@ export abstract class ExtensionService {
   abstract async isExtensionRunning(extensionPath: string): Promise<boolean>;
   abstract async postDisableExtension(extensionPath: string): Promise<void>;
   abstract async postEnableExtension(extensionPath: string): Promise<void>;
+  abstract async postUninstallExtension(path: string): Promise<void>;
   abstract getExtensions(): IExtension[];
   abstract async activateExtensionByExtPath(extensionPath: string): Promise<void>;
 }
@@ -142,6 +143,9 @@ export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyI
 export interface IExtensionHostService {
   reporterEmitter: Emitter<ReporterProcessMessage>;
   getExtensions(): IExtension[];
+  $activateExtension(id: string): Promise<void>;
+  $initExtensions(): Promise<void>;
+  $fireChangeEvent(): Promise<void>;
   getExtension(extensionId: string): VSCExtension<any> | undefined;
   storage: ExtHostStorage;
   activateExtension(id: string): Promise<void>;
@@ -149,7 +153,7 @@ export interface IExtensionHostService {
   getExtendExports(id: string): any;
   isActivated(id: string): boolean;
   extentionsActivator: ExtensionsActivator;
-  extensionsChangeEmitter: Emitter<string>;
+  extensionsChangeEmitter: Emitter<void>;
 }
 
 export interface IExtensionWorkerHost {

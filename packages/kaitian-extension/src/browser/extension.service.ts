@@ -19,6 +19,8 @@ import {
   WorkerHostAPIIdentifier,
   ExtensionHostType,
   EXTENSION_ENABLE,
+  IExtensionHostService,
+  IExtensionWorkerHost,
   /*Extension*/
 } from '../common';
 import {
@@ -282,15 +284,33 @@ export class ExtensionServiceImpl implements ExtensionService {
       extension.enable();
       await extension.contributeIfEnabled();
 
-      // @柳千这个判断是否必要，否则在安装插件后可能是 undefined
-      if (this.protocol) {
-        const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
-        await proxy.$initExtensions();
-      }
+      await this.updateExtensionHostData();
 
       const { packageJSON: { activationEvents = [] } } = extension;
       this.fireActivationEventsIfNeed(activationEvents);
     }
+  }
+
+  /**
+   * 更新插件进程中插件的数据
+   */
+  private async updateExtensionHostData() {
+    if (this.protocol) {
+      const proxy: IExtensionHostService = this.protocol.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
+      // 同步 host 进程中的 extension 列表
+      await proxy.$initExtensions();
+      // 发送 extension 变化
+      proxy.$fireChangeEvent();
+    }
+  }
+
+  public async postUninstallExtension(path: string) {
+    const oldExtension = this.extensionMap.get(path);
+    if (oldExtension) {
+      oldExtension.dispose();
+      this.extensionMap.delete(path);
+    }
+    await this.updateExtensionHostData();
   }
 
   private fireActivationEventsIfNeed(activationEvents: string[]) {
@@ -312,6 +332,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   public async postDisableExtension(extensionPath: string) {
     const extension = this.extensionMap.get(extensionPath)!;
     extension.disable();
+    await this.updateExtensionHostData();
   }
 
   public async postEnableExtension(extensionPath: string) {
@@ -319,7 +340,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     extension.enable();
     await extension.contributeIfEnabled();
-
+    await this.updateExtensionHostData();
     if (extension.packageJSON.activationEvents) {
       this.fireActivationEventsIfNeed(extension.packageJSON.activationEvents);
     }
@@ -365,7 +386,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     }
 
     await this.createExtProcess();
-    const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+    const proxy = this.protocol.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
     await proxy.$initExtensions();
 
     if (init) {
@@ -661,13 +682,13 @@ export class ExtensionServiceImpl implements ExtensionService {
   public async activeExtension(extension: IExtension) {
 
     // await this.ready.promise
-    const proxy = await this.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+    const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
     await proxy.$activateExtension(extension.id);
 
     const { extendConfig } = extension;
 
     if (extendConfig.worker && extendConfig.worker.main) {
-      const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+      const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
       await workerProxy.$activateExtension(extension.id);
     }
 
@@ -933,7 +954,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     }
   }
 
-  public async getProxy(identifier): Promise<any> {
+  public async getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T> {
     await this.ready.promise;
     return this.protocol.getProxy(identifier);
   }
