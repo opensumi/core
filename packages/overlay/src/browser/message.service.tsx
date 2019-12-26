@@ -34,7 +34,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     });
   }
 
-  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[]): Promise<T | undefined> {
+  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[], closable: boolean = true): Promise<T | undefined> {
     // 如果两秒内提示信息相同，则直接返回上一个提示
     if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message) {
       return Promise.resolve(undefined);
@@ -62,6 +62,11 @@ export class MessageService extends AbstractMessageService implements IMessageSe
         key={button}>{button}</Button>)) : null,
       message,
     };
+
+    // closable 为 false 时，不展示 closeIcon
+    if (!closable) {
+      args.closeIcon = <span />;
+    }
 
     switch (type) {
       case MessageType.Info:

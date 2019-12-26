@@ -52,6 +52,9 @@ import {
   getPreferenceLanguageId,
   isElectronRenderer,
   IDisposable,
+  PreferenceService,
+  CoreConfiguration,
+  CorePreferences,
 } from '@ali/ide-core-browser';
 import {
   getIcon,
@@ -174,6 +177,12 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  @Autowired(CorePreferences)
+  private readonly corePreferences: CorePreferences;
 
   // @Autowired()
   // viewRegistry: ViewRegistry;
@@ -930,19 +939,44 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async processNotExist(clientId: string) {
-    const msg = await this.dialogService.info('插件进程已失效，刷新后可恢复插件使用，刷新或使用其他功能？', ['使用其他功能', '刷新']);
+    const invalidReloadStrategy = this.getInvalidReloadStrategy();
+    const options = ['刷新'];
+    const ifRequiredReload = invalidReloadStrategy === 'ifRequired';
+    if (ifRequiredReload) {
+      options.unshift('使用其他功能');
+    }
+
+    const msg = await this.dialogService.info(
+      '插件进程已失效，刷新后可恢复插件使用，刷新或使用其他功能？',
+      options,
+      !!ifRequiredReload,
+    );
 
     if (msg === '刷新') {
       this.clientApp.fireOnReload();
     }
-
   }
 
   public async processCrashRestart(clientId: string) {
-    const msg = await this.messageService.info('插件进程异常退出，是否重启插件进程', ['是', '否']);
+    const invalidReloadStrategy = this.getInvalidReloadStrategy();
+    const options = ['是'];
+    const ifRequiredReload = invalidReloadStrategy === 'ifRequired';
+    if (ifRequiredReload) {
+      options.unshift('否');
+    }
+
+    const msg = await this.messageService.info(
+      '插件进程异常退出，是否重启插件进程',
+      options,
+      !!ifRequiredReload,
+    );
     if (msg === '是') {
       await this.startProcess(false);
     }
   }
 
+  private getInvalidReloadStrategy() {
+    // 获取corePreferences配置判断是否弹出确认框
+    return this.corePreferences['application.invalidExthostReload'];
+  }
 }
