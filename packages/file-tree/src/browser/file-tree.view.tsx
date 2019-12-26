@@ -50,6 +50,14 @@ export interface FileTreeProps extends IFileTreeServiceProps {
    * 编辑校验函数
   */
   validate?: (item: Directory | File, value: string ) => ValidateMessage | null;
+  /**
+   * 文件树缩进
+   */
+  leftPadding?: number;
+  /**
+   * 文件树基础缩进
+   */
+  defaultLeftPadding?: number;
 }
 
 export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
@@ -81,16 +89,18 @@ export const FileTree = ({
   notifyThemeChange,
   onTwistieClick,
   validate,
+  leftPadding,
+  defaultLeftPadding,
 }: FileTreeProps) => {
   const FILETREE_LINE_HEIGHT = treeNodeHeight || 22;
   const fileTreeRef = React.createRef<HTMLDivElement>();
   const containerHeight = height && height > 0 ? height : (fileTreeRef.current && fileTreeRef.current.clientHeight) || 0;
-  const containerWidth = width && width > 0 ? width : (fileTreeRef.current && fileTreeRef.current.clientWidth) || 0;
   const [scrollTop, setScrollTop] = React.useState(0);
   const [cacheScrollTop, setCacheScrollTop] = React.useState(0);
   const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / FILETREE_LINE_HEIGHT) || 0;
   const preRenderNumber = shouldShowNumbers;
   const debouncedPostion = useDebounce(position, 200);
+
   const nodes = React.useMemo(() => {
     return files;
   }, [files]);
@@ -177,7 +187,8 @@ export const FileTree = ({
           notifyFileDecorationsChange={notifyFileDecorationsChange}
           notifyThemeChange={notifyThemeChange}
           validate={validate}
-          leftPadding={6}
+          leftPadding={leftPadding}
+          defaultLeftPadding={defaultLeftPadding}
         ></RecycleTree>
       </div>
     </div>

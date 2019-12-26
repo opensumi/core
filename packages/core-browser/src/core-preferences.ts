@@ -40,6 +40,11 @@ export const FILES_DEFAULTS = {
   },
 };
 
+export const FILE_TREE_DEFAULTS = {
+  baseIndent: 10,
+  indent: 6,
+};
+
 // TODO: 实现 https://code.visualstudio.com/docs/getstarted/settings
 export const corePreferenceSchema: PreferenceSchema = {
   'type': 'object',
@@ -249,6 +254,16 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.confirmMove,
       description: '%preference.explorer.confirm.delete%',
     },
+    'explorer.fileTree.baseIndent': {
+      type: 'number',
+      default: FILE_TREE_DEFAULTS.baseIndent,
+      description: '%preference.explorer.fileTree.baseIndent%',
+    },
+    'explorer.fileTree.indent': {
+      type: 'number',
+      default: FILE_TREE_DEFAULTS.indent,
+      description: '%preference.explorer.fileTree.indent%',
+    },
     'files.exclude': {
       type: 'object',
       description: '%preference.files.exclude%',
@@ -316,6 +331,8 @@ export interface CoreConfiguration {
   'workbench.list.openMode': 'singleClick' | 'doubleClick';
   'workbench.commandPalette.history': number;
   'explorer.confirmDelete': boolean;
+  'explorer.fileTree.baseIndent': number;
+  'explorer.fileTree.indent': number;
   'explorer.confirmMove': boolean;
   'files.watcherExclude': { [key: string]: boolean };
   'files.exclude': { [key: string]: boolean };
