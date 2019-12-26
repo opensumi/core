@@ -253,6 +253,15 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 10000,
       description: '%editor.configuration.maxTokenizationLineLength%',
     },
+    'editor.quickSuggestionsDelay': {
+      type: 'integer',
+      default: 100,
+      // description: '%editor.configuration.quickSuggestionsDelay%',
+    },
+    'editor.quickSuggestionsMaxCount': {
+      type: 'integer',
+      default: 0,
+    },
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,

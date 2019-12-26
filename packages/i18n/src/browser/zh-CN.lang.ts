@@ -315,6 +315,7 @@ export const localizationBundle = {
     'preference.editor.autoSave': '自动保存文件',
     'preference.editor.autoSaveDelay': '自动保存延迟',
     'preference.editor.maxTokenizationLineLength': '最大解析标识长度',
+    'preference.editor.quickSuggestionsDelay': '智能提示延迟（毫秒）',
 
     'preference.array.additem': '添加',
 
@@ -333,6 +334,7 @@ export const localizationBundle = {
     'editor.configuration.preferredFormatter': '优先使用的格式化器配置',
     'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标记',
+    'editor.configuration.quickSuggestionsDelay': '智能提示延迟（毫秒），默认 100 毫秒',
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',

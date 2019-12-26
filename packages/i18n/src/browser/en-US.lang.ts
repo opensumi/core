@@ -93,6 +93,7 @@ export const localizationBundle = {
     'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.chooseEncoding': 'Reopen with encoding (Unsaved Changes will be lost)',
     'editor.configuration.maxTokenizationLineLength': 'Lines above this length will not be tokenized for performance reasons',
+    'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
@@ -298,6 +299,7 @@ export const localizationBundle = {
     'preference.editor.formatOnSaveTimeout': 'Timeout in milliseconds after which the formatting that is run on file save is cancelled.',
     'preference.editor.formatOnSaveTimeoutError': 'Aborted format on save after ${0}ms',
     'preference.editor.maxTokenizationLineLength': 'Max Tokenization Line Length',
+    'preference.editor.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 10 (ms)',
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.previewMode': 'Preview Mode',

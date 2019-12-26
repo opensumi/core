@@ -2,7 +2,7 @@ import URI from 'vscode-uri/lib/umd';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
 import * as vscode from 'vscode';
-import { CompletionContext, Position, CompletionItemInsertTextRule, CompletionItem } from '../../../../common/vscode/model.api';
+import { CompletionContext, Position, CompletionItemInsertTextRule, CompletionItem, CompletionTriggerKind } from '../../../../common/vscode/model.api';
 import { Range, SnippetString } from '../../../../common/vscode/ext-types';
 import { mixin } from '../../../../common/vscode/utils';
 import { CommandsConverter } from '../ext.host.command';
@@ -24,7 +24,6 @@ export class CompletionAdapter {
         }
 
         const doc = document.document;
-
         const pos = Converter.toPosition(position);
         const result = await this.delegate.provideCompletionItems(doc, pos, token, context);
         if (!result) {
@@ -34,14 +33,17 @@ export class CompletionAdapter {
         const disposables = new DisposableStore();
         const _id = this.cacheId ++;
         let itemId = 0;
+        const isIncomplete = Array.isArray(result) ? false : result.isIncomplete;
         const originalItems = (Array.isArray(result) ? result : result.items);
         const r = {
+            get $mid() { return -1; },
+            get $type() { return 'CompletionList'; },
             _id,
-            isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
+            isIncomplete,
             items: originalItems.map((item) => {
                 return {
                     pid: _id,
-                    id: itemId ++,
+                    id: itemId++,
                     ...item,
                     insertText: Converter.fromInsertText(item),
                     insertTextRules: (item.insertText instanceof SnippetString ) ? CompletionItemInsertTextRule.InsertAsSnippet : undefined,

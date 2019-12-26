@@ -61,13 +61,34 @@ interface ReplyMessage {
 
 export namespace ObjectTransfer {
   export function replacer(key: string | undefined, value: any ) {
-    if (value && value.$mid === 1) {
-
-      const uri = Uri.revive(value);
-      return {
-        $type: 'VSCODE_URI',
-        data: uri.toString(),
-      };
+    if (value) {
+      if (value.$mid === 1) {
+        const uri = Uri.revive(value);
+        return {
+          $type: 'VSCODE_URI',
+          data: uri.toString(),
+        };
+      } else if (value.$mid === -1 && value.$type === 'CompletionList') {
+        return {
+          $type: 'VSCODE_COMPLETION_LIST',
+          data: {
+            _id: value._id,
+            isIncomplete: value.isIncomplete,
+            items: value.items.map((item) => {
+              return {
+                p: item.pid,
+                i: item.id,
+                l: item.label,
+                k: item.kind,
+                s: item.sortText,
+                f: item.filterText,
+                it: item.insertText === item.label ? undefined : item.insertText,
+                r: item.range || undefined,
+              };
+            }),
+          },
+        };
+      }
     }
 
     return value;
@@ -76,6 +97,24 @@ export namespace ObjectTransfer {
     if (value && value.$type !== undefined && value.data !== undefined) {
       if (value.$type === 'VSCODE_URI') {
         return Uri.parse(value.data);
+      }
+      if (value.$type === 'VSCODE_COMPLETION_LIST') {
+        return {
+          _id: value.data._id,
+          isIncomplete: value.data.isIncomplete,
+          items: value.data.items ? value.data.items.map((item) => {
+            return  {
+              pid: item.p,
+              id: item.i,
+              label: item.l,
+              kind: item.k,
+              sortText: item.s,
+              insertText: item.it || item.l,
+              filterText: item.f,
+              range: item.r || null,
+            };
+          }) : [],
+        };
       }
     }
     return value;

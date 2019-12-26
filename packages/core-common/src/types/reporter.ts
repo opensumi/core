@@ -2,6 +2,7 @@ export enum REPORT_NAME {
   ACTIVE_EXTENSION = 'activateExtension',
   LOAD_EXTENSION_MAIN = 'loadExtensionMain',
   PROVIDE_COMPLETION_ITEMS = 'provideCompletionItems',
+  RESOLVE_COMPLETION_ITEM = 'resolveCompletionItem',
   CHANNEL_RECONNECT = 'channelReconnect',
   MEASURE = 'measure'
 }
