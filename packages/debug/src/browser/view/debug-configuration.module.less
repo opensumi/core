@@ -12,6 +12,29 @@
   .debug_selection {
     width: 100%;
     margin-left: 10px;
+
+    select {
+      outline: 0;
+      line-height: 24px;
+      height: 24px;
+      width: 100%;
+      margin-right: 10px;
+      border-width: 1px;
+      border-style: solid;
+      border-color: var(--dropdown-border);
+      padding: 0 5px;
+      box-sizing: border-box;
+      background-color: var(--dropdown-background);
+      color: var(--dropdown-foreground);
+      &.special_radius {
+        -webkit-appearance: none;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+      &>option {
+        background-color: var(--dropdown-listBackground)
+      }
+    }
   }
   .debug_run_action {
     background: #167CDB;
