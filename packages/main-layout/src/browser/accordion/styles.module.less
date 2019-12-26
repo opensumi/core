@@ -32,6 +32,7 @@
   cursor: pointer;
   color: var(--sideBarSectionHeader-foreground);
   justify-content: space-between;
+  border-bottom: 1px solid var(--sideBar-background);
   &:focus {
     outline-color: rgba(14, 99, 156, 0.8);
     outline-width: 1px;
@@ -110,10 +111,11 @@
 }
 
 i.arrow_icon {
-  font-size: 12px;
+  font-size: 16px;
   margin: 0 4px;
-  &:not(.kt_mod_collapsed) {
-    transform: rotate(90deg);
+  color: var(--kt-sideBarSectionHeaderArrow-foreground);
+  &.kt_mod_collapsed {
+    transform: rotate(-90deg);
   }
 }
 
@@ -129,15 +131,14 @@ i.arrow_icon {
   user-select: none;
   justify-content: space-between;
   align-items: center;
-  padding-right: 10px;
+  padding: 0 8px;
   h1 {
     color: var(--sideBarTitle-foreground);
-    font-weight: 500;
+    font-weight: 400;
     margin: 0;
-    margin-left: 10px;
     text-transform: uppercase;
     font-size: 12px;
-    line-height: 33px;
+    line-height: 28px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

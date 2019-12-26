@@ -1,6 +1,6 @@
 import { localize } from '@ali/ide-core-common';
 import { registerColor, lighten, darken, transparent } from '../../color-registry';
-import { PANEL_BORDER, PANEL_BACKGROUND } from '../panel';
+import { PANEL_BORDER, PANEL_BACKGROUND, PANEL_INACTIVE_TITLE_FOREGROUND } from '../panel';
 import { buttonForeground } from '../button';
 import { inputValidationErrorBackground, inputOptionActiveBorder } from '../input';
 import { ACTIVITY_BAR_FOREGROUND, ACTIVITY_BAR_BACKGROUND } from '../activity-bar';
@@ -85,6 +85,12 @@ export const ktPanelTabBorder = registerColor('kt.panelTab.border', {
   hc: ACTIVITY_BAR_BACKGROUND,
 }, localize('panelTab.border', 'Panel tab border color.'));
 
+export const ktPanelSecondaryForeground = registerColor('kt.panel.secondaryForeground', {
+  dark: lighten(PANEL_INACTIVE_TITLE_FOREGROUND, 0.2),
+  light: lighten(PANEL_INACTIVE_TITLE_FOREGROUND, 0.2),
+  hc: lighten(PANEL_INACTIVE_TITLE_FOREGROUND, 0.2),
+}, localize('panel.secondaryForeground', 'Panel sccondary foreground color.'));
+
 /* --- input --- */
 export const ktInputOptionHoverBorder = registerColor('kt.inputOption.hoverBorder', {
   dark: inputOptionActiveBorder,
@@ -160,6 +166,12 @@ export const ktSideBarListSelectionBackground = registerColor('kt.sideBarList.se
   light: listInactiveSelectionBackground,
   hc: listInactiveSelectionBackground,
 }, localize('ktSideBarListSelectionBackground', 'SideBarList Select background'));
+
+export const ktSideBarSectionHeaderArrowForeground = registerColor('kt.sideBarSectionHeaderArrow.foreground', {
+  dark: foreground,
+  light: foreground,
+  hc: foreground,
+}, localize('ktSideBarSectionHeaderArrowForeground', 'SideBar section header arrow color'));
 
 /* ---  menu --- */
 export const menuDescriptionForeground = registerColor(

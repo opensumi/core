@@ -200,15 +200,15 @@
         margin-left: 6px;
         background-color: var(--badge-background);
         color: var(--badge-foreground);
-        width: 18px;
-        height: 18px;
         border-radius: 9px;
         font-size: 12px;
-        line-height: 18px;
         font-weight: 400;
         text-align: center;
         display: inline-block;
         box-sizing: border-box;
+        padding: 0 6px;
+        height: 18px;
+        line-height: 18px;
       }
     }
     .next_bottom_bar {
@@ -218,6 +218,26 @@
     }
     .tab-panel {
       border-top: 1px solid var(--panel-border);
+      select {
+        outline: none;
+        padding-left: 8px;
+        padding-right: 38px;
+        font-size: 12px;
+        border: 0;
+        height: 22px;
+        line-height: 22px;
+        border-radius: 2px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        color: var(--input-foreground);
+        background: url(https://img.alicdn.com/tfs/TB1rFGZrYr1gK0jSZR0XXbP8XXa-200-200.png) no-repeat var(--input-background);
+        background-position: right 8px top 4px;
+        background-size: 14px;
+        &>option {
+          background-color: var(--dropdown-listBackground)
+        }
+      }
     }
   }
 }
@@ -270,7 +290,7 @@
     line-height: 28px;
     font-weight: 400;
     padding: 0 12px;
-    color: var(--panelTitle-inactiveForeground);
+    color: var(--kt-panel-secondaryForeground);
   }
 }
 .title_component_container {
