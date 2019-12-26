@@ -6,10 +6,10 @@ export const IMessageService = Symbol('IMessageService');
 export * from '../browser/snackbar';
 
 export interface IMessageService {
-  info(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined>;
-  warning(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined>;
-  error(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined>;
-  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[]): Promise<T | undefined>;
+  info(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
+  warning(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
+  error(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
+  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[], closable?: boolean): Promise<T | undefined>;
   hide<T = string>(value?: T): void;
 }
 
@@ -20,6 +20,7 @@ export interface Icon {
 
 export const IDialogService = Symbol('IDialogService');
 export interface IDialogService extends IMessageService {
+  closable?: boolean;
   isVisible(): boolean;
   getMessage(): string | React.ReactNode;
   getIcon(): Icon | undefined;
@@ -29,18 +30,18 @@ export interface IDialogService extends IMessageService {
 }
 
 export abstract class AbstractMessageService implements IMessageService {
-  info(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined> {
-    return this.open(message, MessageType.Info, buttons);
+  info(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined> {
+    return this.open(message, MessageType.Info, buttons, closable);
   }
 
-  warning(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined> {
-    return this.open(message, MessageType.Warning, buttons);
+  warning(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined> {
+    return this.open(message, MessageType.Warning, buttons, closable);
   }
 
-  error(message: string | React.ReactNode, buttons?: string[]): Promise<string | undefined> {
-    return this.open(message, MessageType.Error, buttons);
+  error(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined> {
+    return this.open(message, MessageType.Error, buttons, closable);
   }
-  abstract open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: any[]): Promise<T | undefined>;
+  abstract open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: any[], closable?: boolean): Promise<T | undefined>;
   abstract hide<T = string>(value?: T): void;
 }
 

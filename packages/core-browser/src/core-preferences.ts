@@ -91,6 +91,15 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: 'Use markdown preview first',
     },
+    'application.invalidExthostReload': {
+      type: 'string',
+      enum: [
+        'ifRequired',
+        'always',
+      ],
+      default: 'ifRequired',
+      description: 'Reload strategy when exthost process became invalid.',
+    },
     'workbench.list.openMode': {
       type: 'string',
       enum: ['singleClick', 'doubleClick'],
@@ -328,6 +337,7 @@ export const corePreferenceSchema: PreferenceSchema = {
 
 export interface CoreConfiguration {
   'application.confirmExit': 'never' | 'ifRequired' | 'always';
+  'application.invalidExthostReload': 'ifRequired' | 'always';
   'workbench.list.openMode': 'singleClick' | 'doubleClick';
   'workbench.commandPalette.history': number;
   'explorer.confirmDelete': boolean;
