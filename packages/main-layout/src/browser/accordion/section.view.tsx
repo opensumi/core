@@ -119,7 +119,7 @@ export const AccordionSection = (
       style={{height: headerSize + 'px', lineHeight: headerSize + 'px'}}
       >
         <div className={styles.label_wrap}>
-          <i className={cls(getIcon('right'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
+          <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
           <div className={styles.section_label}>{header}</div>
         </div>
         {expanded && <div className={styles.actions_wrap}>
