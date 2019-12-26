@@ -184,7 +184,7 @@ export class TabbarService extends WithEventBus {
       },
       group: '1_widgets',
     });
-    this.registerActivateKeyBinding(componentInfo);
+    this.registerActivateKeyBinding(componentInfo, options.fromExtension);
     this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
     if (containerId === this.currentContainerId) {
       // 需要重新触发currentChange副作用
@@ -244,13 +244,14 @@ export class TabbarService extends WithEventBus {
   }
 
   // 注册Tab的激活快捷键，对于底部panel，为切换快捷键
-  private registerActivateKeyBinding(component: ComponentRegistryInfo) {
+  private registerActivateKeyBinding(component: ComponentRegistryInfo, fromExtension?: boolean) {
     const options = component.options!;
     const containerId = options.containerId;
     if (!options.activateKeyBinding) {
       return;
     }
-    const activateCommandId = `activity.panel.activate.${containerId}`;
+    // vscode内插件注册的是workbench.view.extension.containerId
+    const activateCommandId = fromExtension ? `workbench.view.extension.${containerId}` : `workbench.view.${containerId}`;
     this.commandRegistry.registerCommand({
       id: activateCommandId,
     }, {

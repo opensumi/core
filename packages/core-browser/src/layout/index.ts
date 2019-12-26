@@ -87,6 +87,7 @@ export interface ExtViewContainerOptions {
   initialProps?: object;
   titleComponent?: React.FunctionComponent;
   noResize?: boolean;
+  fromExtension?: boolean;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
