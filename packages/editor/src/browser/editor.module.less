@@ -1,5 +1,13 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
-@TAB_HEIGHT: 33px;
+@TAB_HEIGHT: var(--tabBar-height);
+
+:global {
+  :root {
+    --tab-fontSize: 12px;
+    --tab-min-size: 112px;
+    --tab-max-size: 800px;
+  }
+}
 
 .kt_workbench_editor {
   height: 100%;
@@ -116,11 +124,13 @@
     .kt_editor_tab {
       display: flex;
       align-items: center;
-      padding: 0 8px;
+      flex-shrink: 0;
+      padding: 0 12px;
       border-right:1px solid var(--tab-border);
-      font-size:@kt-ui-font-size0;
       line-height: 1.5em;
-      font-size: 13px;
+      font-size: var(--tab-fontSize);
+      min-width: var(--tab-min-size);
+      max-width: var(--tab-max-size);
       cursor: pointer;
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
@@ -128,9 +138,18 @@
       z-index: 1;
       div:first-child {
         margin-right:5px;
+        flex-shrink: 0;
+        flex-grow: 0;
+        &::before{
+          background-size: 14px;
+        }
       }
-      div {
+      div:nth-child(2) {
         white-space: nowrap;
+        flex-grow: 1;
+        text-align: left;
+        text-overflow: ellipsis;
+        overflow: hidden;
       }
       .subname{
         color:  @kt-ui-font-color3;
@@ -142,7 +161,10 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        width:10px;
+        width: 13px;
+        flex-shrink: 0;
+        flex-grow: 0;
+        height: 13px;
       }
       .dirty {
         display: flex;

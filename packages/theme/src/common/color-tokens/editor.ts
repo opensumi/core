@@ -20,7 +20,7 @@ export const editorHintBorder = registerColor('editorHint.border', { dark: null,
  * Because of bug https://monacotools.visualstudio.com/DefaultCollection/Monaco/_workitems/edit/13254
  * we are *not* using the color white (or #ffffff, rgba(255,255,255)) but something very close to white.
  */
-export const editorBackground = registerColor('editor.background', { light: '#fffffe', dark: '#1E1E1E', hc: Color.black }, localize('editorBackground', 'Editor background color.'));
+export const editorBackground = registerColor('editor.background', { light: '#fffffe', dark: '#202224', hc: Color.black }, localize('editorBackground', 'Editor background color.'));
 
 /**
  * Editor foreground color.
@@ -147,7 +147,7 @@ export const EDITOR_GROUP_FOCUSED_EMPTY_BORDER = registerColor('editorGroup.focu
 }, localize('editorGroupFocusedEmptyBorder', 'Border color of an empty editor group that is focused. Editor groups are the containers of editors.'));
 
 export const EDITOR_GROUP_HEADER_TABS_BACKGROUND = registerColor('editorGroupHeader.tabsBackground', {
-  dark: '#252526',
+  dark: '#2C3033',
   light: '#F3F3F3',
   hc: null,
 }, localize('tabsContainerBackground', 'Background color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.'));
