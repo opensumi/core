@@ -21,6 +21,7 @@ import {
   coalesce,
   isValidBasename,
   trim,
+  PreferenceService,
 } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
@@ -151,11 +152,14 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(CorePreferences)
   protected corePreferences: CorePreferences;
 
+  @Autowired(PreferenceService)
+  protected preferenceService: PreferenceService;
+
   @Autowired(IThemeService)
   public themeService: IThemeService;
 
   @Autowired(ICtxMenuRenderer)
-  ctxMenuRenderer: ICtxMenuRenderer;
+  private readonly ctxMenuRenderer: ICtxMenuRenderer;
 
   @Autowired(FileContextKey)
   private readonly fileContextKey: FileContextKey;
@@ -185,6 +189,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(Logger)
   logger: Logger;
 
+  @observable
+  baseIndent: number;
+
+  @observable
+  indent: number;
+
   @observable.shallow
   position: {
     x?: number;
@@ -206,6 +216,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   constructor() {
     super();
+    this.init();
+  }
+
+  init() {
+    this.baseIndent = this.corePreferences['explorer.fileTree.baseIndent'] || 10;
+    this.indent = this.corePreferences['explorer.fileTree.indent'] || 6;
     this.listen();
   }
 
@@ -223,6 +239,14 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     // 当status刷新时，通知decorationProvider获取数据
     this.filetreeService.onStatusChange((changes: Uri[]) => {
       this.refreshDecorationEmitter.fire(changes);
+    });
+    // 监听配置变化更新indent
+    this.corePreferences.onPreferenceChanged((change) => {
+      if (change.preferenceName === 'explorer.fileTree.baseIndent') {
+        this.baseIndent = this.corePreferences['explorer.fileTree.baseIndent'];
+      } else if (change.preferenceName === 'explorer.fileTree.indent') {
+        this.indent = this.corePreferences['explorer.fileTree.indent'];
+      }
     });
   }
 

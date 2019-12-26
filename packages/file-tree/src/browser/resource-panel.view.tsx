@@ -32,8 +32,16 @@ export const ExplorerResourcePanel = observer(({
     themeChangeEvent,
     validateFileName,
     root,
+    baseIndent,
+    indent,
   }: ExplorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
   const files = getFiles();
+  const leftPadding = React.useMemo(() => {
+    return indent;
+  }, [indent]);
+  const defaultLeftPadding = React.useMemo(() => {
+    return baseIndent;
+  }, [baseIndent]);
   if (root.path.toString() !== '/') {
     return <FileTree
       width={ viewState.width }
@@ -59,6 +67,8 @@ export const ExplorerResourcePanel = observer(({
       notifyFileDecorationsChange = { decorationChangeEvent }
       notifyThemeChange = { themeChangeEvent }
       validate={ validateFileName }
+      leftPadding={ leftPadding }
+      defaultLeftPadding={ baseIndent }
     ></FileTree>;
   } else {
     return <EmptyView />;
