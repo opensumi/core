@@ -8,11 +8,15 @@
   cursor: pointer;
   user-select: none;
   display: flex;
+  color: var(--kt-panelTab-inactiveForeground);
+  background-color: var(--kt-panelTab-inactiveBackground);
+  border-right: 1px solid var(--kt-panelTab-border);
 
   :last-child {
     transition: opacity 0.2s ease-in-out;
     opacity: 0;
     line-height: 28px;
+    border-right: 0;
   }
 }
 
@@ -23,21 +27,27 @@
 }
 
 .item_info_name {
-  margin-right: 4px;
+  margin-right: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 80px;
-  min-width: 40px;
+  max-width: 800px;
+  min-width: 66px;
   line-height: 28px;
 }
 
 .item_selected {
-  background: #242526;
+  color: var(--kt-panelTab-activeForeground);
+  background-color: var(--kt-panelTab-activeBackground);
 }
 
 .item_add {
-  padding: 1px 16px;
+  padding: 0 16px;
+  line-height: 28px;
   cursor: pointer;
   user-select: none;
+}
+
+.close_icon {
+  color: var(--kt-panelTabActionIcon-foreground);
 }

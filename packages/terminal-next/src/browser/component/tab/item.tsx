@@ -35,9 +35,7 @@ export function renderInfoItem(props: ItemProps) {
     >
       <div className={ styles.item_info_name } title={ props.name }>{ props.name }</div>
       <div
-        className={ clx({
-          [getIcon('close')]: true,
-        }) }
+        className={ clx([getIcon('close'), styles.close_icon]) }
         onClick={ (event) => {
           event.stopPropagation();
           handleClose();
