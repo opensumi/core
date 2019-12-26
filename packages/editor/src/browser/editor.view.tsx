@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { EditorGroup, WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
+import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import * as styles from './editor.module.less';
 import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
