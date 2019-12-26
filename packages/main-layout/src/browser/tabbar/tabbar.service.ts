@@ -11,6 +11,7 @@ export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
   hidden: boolean;
 }
+const INIT_PANEL_SIZE = 280;
 
 @Injectable({multiple: true})
 export class TabbarService extends WithEventBus {
@@ -356,7 +357,7 @@ export class TabbarService extends WithEventBus {
         if (this.prevSize === undefined) {
           this.prevSize = getSize();
         }
-        setSize(this.prevSize || 400);
+        setSize(this.prevSize || INIT_PANEL_SIZE + this.barSize);
         const containerInfo = this.getContainer(currentId);
         if (containerInfo && containerInfo.options!.noResize) {
           lockSize(true);
@@ -383,7 +384,7 @@ export class TabbarService extends WithEventBus {
           setRelativeSize(0, 1);
         }
       } else {
-        setSize(this.prevSize || 400);
+        setSize(this.prevSize || INIT_PANEL_SIZE + this.barSize);
       }
     } else {
       setSize(this.barSize);
