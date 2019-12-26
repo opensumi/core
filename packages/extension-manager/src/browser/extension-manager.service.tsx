@@ -228,6 +228,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
     await this.extensionService.postChangedExtension(true, path, oldExtensionPath);
   }
 
+  private async onUninstallExtension(path: string) {
+    await this.extensionService.postUninstallExtension(path);
+  }
+
   /**
    * 检查是否需要重启
    * @param extensionPath
@@ -538,7 +542,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     // 调用后台删除插件
     const res =  await this.extensionManagerServer.uninstallExtension(extension);
     if (res) {
-
+      await this.onUninstallExtension(extensionPath);
       await this.removeExtensionConfig(extension.extensionId);
       // 如果删除成功，且不需要重启，在列表页删除
       const reloadRequire = await this.computeReloadState(extension.path);
