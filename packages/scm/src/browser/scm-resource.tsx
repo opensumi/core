@@ -36,7 +36,6 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
 
   readonly style: React.CSSProperties = {
     fontWeight: 500,
-    backgroundColor: 'var(--sideBarSectionHeader-background)',
   };
 
   readonly depth = 0;
