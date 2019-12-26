@@ -1,0 +1,13 @@
+{
+  "name": "@ali/kaitian",
+  "version": "1.6.8",
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
+  },
+  "publishConfig": {
+    "registry": "http://registry.npm.alibaba-inc.com"
+  },
+  "private": false,
+  "typings": "index.d.ts"
+}
