@@ -4,7 +4,7 @@ import * as styles from './styles.module.less';
 import { Layout } from './layout';
 import { useInjectable } from '../../react-hooks';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IResizeHandleDelegate } from '../resize/resize';
+import { IResizeHandleDelegate, ResizeFlexMode } from '../resize/resize';
 import { IEventBus } from '@ali/ide-core-common';
 import { ResizeEvent } from '../../layout';
 import { SplitPanelManager } from './split-panel.service';
@@ -36,22 +36,21 @@ interface SplitChildProps {
   minResize?: number;
   flex?: number;
   flexGrow?: number;
-  slot: string;
+  slot?: string;
   noResize?: boolean;
   children?: Array<React.ReactElement<SplitChildProps>>;
 }
 
-export const SplitPanel: React.FC<{
-  children?: Array<React.ReactElement<SplitChildProps>>;
+interface SplitPanelProps extends SplitChildProps {
   className?: string;
   direction?: Layout.direction;
-  flex?: number;
-  flexGrow?: number;
   id: string;
   // setAbsoluteSize 时保证相邻节点总宽度不变
   resizeKeep?: boolean;
   dynamicTarget?: boolean;
-}> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, ...restProps }) => {
+}
+
+export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
   const elements: React.ReactNodeArray = [];
@@ -137,41 +136,37 @@ export const SplitPanel: React.FC<{
     };
   };
 
-  const fireResizeEvent = (location: string, srcElement: HTMLElement, index: number) => {
+  const fireResizeEvent = (location?: string) => {
     if (location) {
-      eventBus.fire(new ResizeEvent({slotLocation: location, width: srcElement.clientWidth, height: srcElement.clientHeight}));
-    } else {
-      const subChildren = children[index].props.children;
-      if (subChildren && Array.isArray(subChildren)) {
-        // TODO 多级嵌套
-        subChildren!.forEach((child) => {
-          if (direction === 'bottom-to-top' || direction === 'top-to-bottom') {
-            eventBus.fire(new ResizeEvent({slotLocation: child.props.slot, height: srcElement.clientHeight}));
-          } else {
-            eventBus.fire(new ResizeEvent({slotLocation: child.props.slot, width: srcElement.clientWidth}));
-          }
-        });
-      }
+      eventBus.fire(new ResizeEvent({slotLocation: location}));
     }
   };
 
   children.forEach((element, index) => {
     if (index !== 0) {
       const targetElement = index === 1 ? children[index - 1] : children[index];
+      let flexMode: ResizeFlexMode | undefined;
+      if (element.props.flexGrow) {
+        flexMode = ResizeFlexMode.Prev;
+      } else if (children[index - 1] && children[index - 1].props.flexGrow) {
+        flexMode = ResizeFlexMode.Next;
+      }
       elements.push(
         <ResizeHandle
           className={targetElement.props.noResize || locks[index - 1] ? 'no-resize' : ''}
           onResize={(prev, next) => {
-            const prevLocation = children[index - 1].props.slot;
-            const nextLocation = children[index].props.slot;
-            fireResizeEvent(prevLocation, prev, index - 1);
-            fireResizeEvent(nextLocation, next, index);
+            const prevLocation = children[index - 1].props.slot || children[index - 1].props.id;
+            const nextLocation = children[index].props.slot || children[index].props.id;
+            fireResizeEvent(prevLocation!);
+            fireResizeEvent(nextLocation!);
           }}
           noColor={true}
           findNextElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction) : undefined}
           findPrevElement={dynamicTarget ? (direction: boolean) => splitPanelService.getFirstResizablePanel(index - 1, direction, true) : undefined}
           key={`split-handle-${index}`}
-          delegate={(delegate) => { resizeDelegates.current.push(delegate); }} />,
+          delegate={(delegate) => { resizeDelegates.current.push(delegate); }}
+          flexMode={ flexMode }
+          />,
       );
     }
     elements.push(
@@ -194,7 +189,7 @@ export const SplitPanel: React.FC<{
             }
           }}
           style={{
-            [Layout.getSizeProperty(direction)]: ((element.props.flex !== undefined ? element.props.flex : 1) / totalFlexNum * 100) + '%',
+            [Layout.getSizeProperty(direction)]: getElementSize(element),
             // 相对尺寸带来的问题，必须限制最小最大尺寸
             [Layout.getMinSizeProperty(direction)]: element.props.minSize ? element.props.minSize + 'px' : '-1px',
             [Layout.getMaxSizeProperty(direction)]: maxLocks[index] ? element.props.minSize + 'px' : 'unset',
@@ -207,10 +202,30 @@ export const SplitPanel: React.FC<{
     );
   });
 
+  function getElementSize(element) {
+    if (element.props.flex) {
+      return element.props.flex / totalFlexNum * 100 + '%';
+    } else if (element.props.defaultSize) {
+      return element.props.defaultSize + 'px';
+    } else {
+      return 1 / totalFlexNum * 100 + '%';
+    }
+  }
+
   React.useEffect(() => {
     if (rootRef.current) {
       splitPanelService.rootNode = rootRef.current;
     }
+    const disposer = eventBus.on(ResizeEvent, (e) => {
+      if (e.payload.slotLocation === id) {
+        children.forEach((c) => {
+          fireResizeEvent(c.props.slot || c.props.id);
+        });
+      }
+    });
+    return () => {
+      disposer.dispose();
+    };
   }, []);
 
   return (

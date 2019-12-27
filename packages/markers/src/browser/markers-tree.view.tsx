@@ -231,7 +231,7 @@ export const MarkerPanel = observer(() => {
   const viewModel = markerService.getViewModel();
 
   return (
-    <div className={styles.markersContent}>
+    <div ref={markerService.rootEle} className={styles.markersContent}>
       {
         viewModel.hasData() ?
           <MarkerList viewModel={viewModel} /> :

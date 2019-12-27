@@ -355,7 +355,7 @@ export class TabbarService extends WithEventBus {
       this.handleFullExpanded(currentId, isCurrentExpanded);
     } else {
       if (currentId) {
-        if (this.prevSize === undefined) {
+        if (previousId && currentId !== previousId) {
           this.prevSize = getSize();
         }
         setSize(this.prevSize || (INIT_PANEL_SIZE + this.barSize));
@@ -367,7 +367,6 @@ export class TabbarService extends WithEventBus {
         }
         setMaxSize(false);
       } else {
-        this.prevSize = getSize();
         setSize(this.barSize);
         lockSize(true);
         setMaxSize(true);

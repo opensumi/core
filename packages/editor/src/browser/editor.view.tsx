@@ -110,7 +110,7 @@ export const EditorGridView = observer(({ grid }: { grid: EditorGrid }) => {
       children.push(<div className={classnames({
         [styles.kt_grid_vertical_child]: grid.splitDirection === SplitDirection.Vertical,
         [styles.kt_grid_horizontal_child]: grid.splitDirection === SplitDirection.Horizontal,
-      })} style={defaultChildStyle} key={g.uid}>
+      })} style={defaultChildStyle} key={g.uid} data-min-resize={ grid.splitDirection === SplitDirection.Horizontal ? 150 : 60}>
         <EditorGridView grid={g} />
       </div>);
     });

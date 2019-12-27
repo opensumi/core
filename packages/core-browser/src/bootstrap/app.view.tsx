@@ -24,7 +24,7 @@ export function App(props: AppProps) {
       lastFrame = window.requestAnimationFrame(() => {
         lastFrame = null;
         allSlot.forEach((item) => {
-          eventBus.fire(new ResizeEvent({slotLocation: item.slot, width: item.dom.clientWidth, height: item.dom.clientHeight}));
+          eventBus.fire(new ResizeEvent({slotLocation: item.slot}));
         });
       });
     };

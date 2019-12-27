@@ -12,6 +12,7 @@ import { MarkerViewModel } from './markers.model';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import debounce = require('lodash.debounce');
 import { observable } from 'mobx';
+import { createRef } from 'react';
 
 const MAX_DIAGNOSTICS_BADGE = 1000;
 
@@ -37,7 +38,9 @@ export class MarkerService extends Themable implements IMarkerService {
   private markerViewModel: MarkerViewModel;
 
   @observable
-  public viewSize: ViewSize;
+  public viewSize: ViewSize = {h: 0};
+
+  public rootEle = createRef<HTMLDivElement>();
 
   // marker filter 事件
   private readonly onMarkerFilterChangedEmitter = new Emitter<FilterOptions | undefined>();
@@ -93,9 +96,8 @@ export class MarkerService extends Themable implements IMarkerService {
   @OnEvent(ResizeEvent)
   onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-markers', this.config.layoutConfig)) {
-      const height = e.payload.height;
-      if (height) {
-        this.onViewResizeCaller({ h: height - 28});
+      if (this.rootEle.current && this.rootEle.current.clientHeight) {
+        this.onViewResizeCaller({ h: this.rootEle.current.clientHeight });
       }
     }
   }

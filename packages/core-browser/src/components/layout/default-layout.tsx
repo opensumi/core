@@ -7,13 +7,12 @@ export function DefaultLayout() {
   return <BoxPanel direction='top-to-bottom'>
     <SlotRenderer slot='top' />
     <SplitPanel id='main-horizontal' flex={1}>
-      {/* minSize加上边框 */}
-      <SlotRenderer flex={1} slot='left' minResize={200} minSize={49} />
-      <SplitPanel id='main-vertical' flex={2} flexGrow={1} direction='top-to-bottom'>
-        <SlotRenderer flex={2} slot='main' />
+      <SlotRenderer slot='left' defaultSize={310}  minResize={200} minSize={49} />
+      <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
+        <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
         <SlotRenderer flex={1} minResize={160} slot='bottom' />
       </SplitPanel>
-      <SlotRenderer flex={1} slot='right' minResize={200} minSize={41} />
+      <SlotRenderer slot='right' defaultSize={310} minResize={200} minSize={41} />
     </SplitPanel>
     <SlotRenderer slot='statusBar' />
   </BoxPanel>;
