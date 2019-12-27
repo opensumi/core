@@ -10,7 +10,7 @@ export class TabbarHandler implements ITabbarHandler {
   public readonly onActivate = this.onActivateEmitter.event;
 
   public readonly onInActivateEmitter = new Emitter<void>();
-  public readonly onInActivate = this.onActivateEmitter.event;
+  public readonly onInActivate = this.onInActivateEmitter.event;
 
   constructor(public id: string, private proxy: IMainThreadLayout) {}
 
@@ -97,7 +97,7 @@ export function createLayoutAPIFactory(
     // 为了获取其他插件注册的tabbarHandler
     getExtensionTabbarHandler: (id: string, extensionId?: string) => {
       if (extensionId) {
-        return kaitianLayout.getTabbarHandler(extension.id + ':' + id);
+        return kaitianLayout.getTabbarHandler(extensionId + ':' + id);
       } else {
         return kaitianLayout.getTabbarHandler(id);
       }
