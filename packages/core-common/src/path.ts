@@ -1,5 +1,7 @@
 import * as process from './process';
+import { isWindows } from './utils';
 
+const SystemPathSeparatorRegex = isWindows ? /\\/g : /\//g;
 /**
  * On POSIX:
  * ┌──────────────────────┬────────────┐
@@ -61,6 +63,7 @@ export class Path {
   constructor(
     raw: string
   ) {
+		raw = raw.replace(SystemPathSeparatorRegex, Path.separator);
     this.raw = Path.normalizeDrive(raw);
     const firstIndex = raw.indexOf(Path.separator);
     const lastIndex = raw.lastIndexOf(Path.separator);
