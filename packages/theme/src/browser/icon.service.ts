@@ -40,6 +40,8 @@ export class IconService implements IIconService {
       return new URI(relativePath);
     } else if (basePath) {
       return URI.file(new Path(basePath).join(relativePath).toString());
+    } else if (/^file:\/\//.test(relativePath)) {
+      return new URI(relativePath);
     } else {
       return URI.file(relativePath);
     }

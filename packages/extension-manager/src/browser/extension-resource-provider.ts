@@ -7,7 +7,7 @@ import {
 } from '@ali/ide-core-browser';
 import { IResourceProvider, IResource } from '@ali/ide-editor';
 import { EXTENSION_SCHEME } from '../common';
-import { IIconService } from '@ali/ide-theme';
+import { IIconService, IconType } from '@ali/ide-theme';
 import * as styles from './extension-manager.common.module.less';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class ExtensionResourceProvider extends WithEventBus implements IResource
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     const { name, icon } = uri.getParsedQuery();
-    const iconClass = this.iconService.fromIcon('', icon);
+    const iconClass = this.iconService.fromIcon('', icon, IconType.Background);
     return {
       name: `${localize('marketplace.extension.container')}: ${name}`,
       icon: `${iconClass} ${styles.tab_icon}`,
