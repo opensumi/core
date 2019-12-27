@@ -13,6 +13,12 @@ declare module "kaitian" {
      * @param id tab id
      */
     export function getTabbarHandler(id: string): ITabbarHandle;
+
+    /**
+     * 获取一个 Tab 的 Handle
+     * @param id tab id, 不限制在本插件注册的handle，需要自己进行字符串拼接
+     */
+    export function getExtensionTabbarHandler(id: string, extensionId?: string): ITabbarHandle;
     
     /**
      * 切换左侧面板显示/隐藏
@@ -318,4 +324,40 @@ declare module 'kaitian-browser' {
    * ```
    */
   export function getThemeColors(): {[key: string]: string}
+  
+
+  export const Button: React.FC<{
+    block?: boolean;
+    loading?: boolean;
+    ghost?: boolean;
+    type?: 'primary' | 'secondary' | 'danger';
+  } & React.HTMLAttributes<HTMLDivElement>>;
+  export const Portal: React.FC<{ id: string }>;
+  export enum PopoverTriggerType {
+    hover,
+    program, // 只遵守外层传入的display
+  }
+  export enum PopoverPosition {
+    top = 'top',
+    bottom = 'bottom',
+  }
+  export const Popover: React.FC<{
+    id: string;
+    insertClass?: string;
+    content?: React.ReactElement;
+    trigger?: PopoverTriggerType;
+    display?: boolean, // 使用程序控制的是否显示
+    [key: string]: any;
+    popoverClass?: string;
+    position?: PopoverPosition;
+  }>;
+  export const Icon: React.FC<{
+    title?: string;
+    icon?: string;
+    iconClass?: string;
+    tooltip?: string;
+    size?: 'small' | 'large';
+    loading?: boolean;
+    onClick?: React.MouseEventHandler<HTMLSpanElement>;
+  } & React.HTMLAttributes<HTMLDivElement>>;
 }

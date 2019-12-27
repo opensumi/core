@@ -94,5 +94,13 @@ export function createLayoutAPIFactory(
     getTabbarHandler: (id: string) => {
       return kaitianLayout.getTabbarHandler( extension.id + ':' + id);
     },
+    // 为了获取其他插件注册的tabbarHandler
+    getExtensionTabbarHandler: (id: string, extensionId?: string) => {
+      if (extensionId) {
+        return kaitianLayout.getTabbarHandler(extension.id + ':' + id);
+      } else {
+        return kaitianLayout.getTabbarHandler(id);
+      }
+    },
   };
 }
