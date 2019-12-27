@@ -104,7 +104,7 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
       viewId: 'outline-view',
       command: OUTLINE_FOLLOW_CURSOR,
       label: localize('outline.follow.cursor', '跟随光标'),
-      toggleWhen: 'followCursor',
+      toggledWhen: 'followCursor',
     });
     registry.registerItem({
       id: 'outline.action.collapse.all',
@@ -117,21 +117,21 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
       viewId: 'outline-view',
       command: OUTLINE_SORT_KIND,
       group: 'inline',
-      toggleWhen: 'outlineSortType == 2',
+      toggledWhen: 'outlineSortType == 2',
     });
     registry.registerItem({
       id: 'outline.menu.sort.name',
       viewId: 'outline-view',
       command: OUTLINE_SORT_NAME,
       group: 'inline',
-      toggleWhen: 'outlineSortType == 1',
+      toggledWhen: 'outlineSortType == 1',
     });
     registry.registerItem({
       id: 'outline.menu.sort.position',
       viewId: 'outline-view',
       command: OUTLINE_SORT_POSITION,
       group: 'inline',
-      toggleWhen: 'outlineSortType == 0',
+      toggledWhen: 'outlineSortType == 0',
     });
   }
 

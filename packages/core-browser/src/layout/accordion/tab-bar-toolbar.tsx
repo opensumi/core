@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Event, IDisposable } from '@ali/ide-core-common';
-import { IMenuRegistry, MenuId } from '../../menu/next';
+import { IMenuRegistry, MenuId, IMenuItem } from '../../menu/next';
 
 export const TabBarToolbarContribution = Symbol('TabBarToolbarContribution');
 export interface TabBarToolbarContribution {
@@ -16,34 +16,18 @@ export class ToolbarRegistry {
 
   registerItem(item: TabBarToolbarItem): IDisposable {
     return this.menuRegistry.registerMenuItem(MenuId.ViewTitle, {
-      command: item.command,
+      ...item,
       when: item.when || `view == ${item.viewId}`,
-      toggledWhen: item.toggleWhen,
       group: item.group || 'navigation',
-      label: item.label || item.tooltip,
-    });
+    } as IMenuItem);
   }
 }
 
-export interface TabBarToolbarItem {
-
+export interface TabBarToolbarItem extends IMenuItem {
   readonly id: string;
-
-  readonly command: string;
-
-  readonly iconClass?: string;
-
-  readonly priority?: number;
-
-  readonly group?: string;
-
   readonly tooltip?: string;
 
   readonly label?: string;
-
-  when?: string;
-
-  toggleWhen?: string;
 
   viewId?: string;
 

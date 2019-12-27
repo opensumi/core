@@ -15,6 +15,7 @@ import { searchPreferenceSchema } from './search-preferences';
 import { SEARCH_CONTAINER_ID, SearchBindingContextIds } from '../common/content-search';
 import { SearchTreeService } from './search-tree.service';
 import { ContentSearchResult, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
+import { SearchContextKey } from './search-contextkey';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution)
 export class SearchContribution implements CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution, NextMenuContribution {
@@ -28,6 +29,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   @Autowired(SearchTreeService)
   searchTreeService: SearchTreeService;
 
+  @Autowired(SearchContextKey)
+  private readonly searchContextKey: SearchContextKey;
+
   schema: PreferenceSchema = searchPreferenceSchema;
 
   private readonly toDispose = new DisposableCollection();
@@ -38,7 +42,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       if (!bar) {
         return;
       }
-      bar.refreshTitle();
+
+      this.searchContextKey.canClearSearchResult.set(this.searchBrowserService.cleanIsEnable());
+      this.searchContextKey.canRefreshSearchResult.set(this.searchBrowserService.foldIsEnable());
     }));
   }
 
@@ -64,22 +70,10 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       execute: (...args: any[]) => {
         this.searchBrowserService.refresh();
       },
-      isVisible: () => {
-        return true;
-      },
-      isEnabled: () => {
-        return this.searchBrowserService.refreshIsEnable();
-      },
     });
     commands.registerCommand(SEARCH_COMMANDS.CLEAN, {
       execute: (...args: any[]) => {
         this.searchBrowserService.clean();
-      },
-      isVisible: () => {
-        return true;
-      },
-      isEnabled: () => {
-        return this.searchBrowserService.cleanIsEnable();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.FOLD, {
@@ -261,12 +255,14 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       command: SEARCH_COMMANDS.CLEAN.id,
       viewId: SEARCH_CONTAINER_ID,
       tooltip: localize('search.ClearSearchResultsAction.label'),
+      enabledWhen: 'canClearSearchResult',
     });
     registry.registerItem({
       id: SEARCH_COMMANDS.REFRESH.id,
       command: SEARCH_COMMANDS.REFRESH.id,
       viewId: SEARCH_CONTAINER_ID,
       tooltip: localize('search.RefreshAction.label'),
+      enabledWhen: 'canRefreshSearchResult',
     });
   }
 
