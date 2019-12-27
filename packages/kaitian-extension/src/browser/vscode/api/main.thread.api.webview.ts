@@ -7,7 +7,7 @@ import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IDisposable, Disposable, URI, MaybeNull, IEventBus, ILogger } from '@ali/ide-core-browser';
 import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 import { IKaitianExtHostWebviews } from '../../../common/kaitian/webview';
-import { IIconService } from '@ali/ide-theme';
+import { IIconService, IconType } from '@ali/ide-theme';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 @Injectable({multiple: true})
@@ -185,7 +185,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     if (!value) {
       webviewPanel.editorWebview.icon = '';
     } else {
-      webviewPanel.editorWebview.icon = this.iconService.fromIcon('', value)! + ' background-tab-icon';
+      webviewPanel.editorWebview.icon = this.iconService.fromIcon('', value, IconType.Background)! + ' background-tab-icon';
     }
   }
 
