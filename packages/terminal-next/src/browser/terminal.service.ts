@@ -128,7 +128,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
   }
 
   disposeById(sessionId: string) {
-    this.sendText(sessionId, '\u0004');
+    this.service.disposeById(sessionId);
   }
 
   /**
