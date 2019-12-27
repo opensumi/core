@@ -33,6 +33,8 @@ export interface ITerminalController {
 
   createGroup(selected?: boolean): number;
   selectGroup(index: number): void;
+  removeAllGroups(): void;
+  clearAllGroups(): void;
 
   drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean, meta?: string): Promise<void>;
   retryTerminalClient(widgetId: string): Promise<void>;

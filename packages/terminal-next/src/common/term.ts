@@ -86,3 +86,11 @@ export interface ITerminalExternalService {
 }
 
 export const terminalFocusContextKey = 'isTerminalFocused';
+
+export const TerminalSupportType = {
+  'terminal.fontFamily': 'fontFamily',
+  'terminal.fontSize': 'fontSize',
+  'terminal.fontWeight': 'fontWeight',
+  'terminal.lineHeight': 'lineHeight',
+  'terminal.cursorBlink': 'cursorBlink',
+};

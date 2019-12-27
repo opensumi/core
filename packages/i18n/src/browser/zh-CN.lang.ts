@@ -426,6 +426,10 @@ export const localizationBundle = {
     'terminal.menu.clear': '清空',
     'terminal.menu.stop': '终止',
     'terminal.menu.stopGroup': '终止',
+    'terminal.menu.stopGroups': '终止所有终端',
+    'terminal.menu.clearGroups': '清空所有日志',
+    'terminal.menu.selectType': '默认终端类型',
+    'terminal.menu.moreSettings': '更多设置',
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',

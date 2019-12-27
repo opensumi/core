@@ -24,10 +24,7 @@ export class TabManager {
   state: { current: number };
 
   constructor() {
-    this.items = observable.array([]);
-    this.state = observable.object({
-      current: -1,
-    });
+    this.clear();
   }
 
   get current() {
@@ -57,6 +54,13 @@ export class TabManager {
     this._onClose.fire({ item, index });
 
     return item;
+  }
+
+  clear() {
+    this.items = observable.array([]);
+    this.state = observable.object({
+      current: -1,
+    });
   }
 
   select(index: number): TabItemInfo {
