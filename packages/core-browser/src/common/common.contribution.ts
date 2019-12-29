@@ -175,7 +175,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
         nativeRole: 'selectAll',
         group: '2_clipboard',
       }]);
-      menus.registerMenuItems(MenuId.MenubarFileMenu, [{
+      menus.registerMenuItems(MenuId.MenubarAppMenu, [{
         command: {
           id: 'electron.quit',
           label: localize('app.quit'),

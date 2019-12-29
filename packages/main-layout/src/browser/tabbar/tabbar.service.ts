@@ -138,7 +138,7 @@ export class TabbarService extends WithEventBus {
       }
     });
     const size = this.state.size; // 监听state长度
-    return components.sort((pre, next) => (next.options!.priority || 1) - (pre.options!.priority || 1));
+    return components.sort((pre, next) => (next.options!.priority !== undefined ? next.options!.priority : 1) - (pre.options!.priority !== undefined ? pre.options!.priority : 1));
   }
 
   registerResizeHandle(resizeHandle: ResizeHandle) {
