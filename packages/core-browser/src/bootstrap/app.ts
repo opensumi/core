@@ -41,6 +41,7 @@ import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 import { DEFAULT_CDN_ICON, updateIconMap } from '../style/icon/icon';
+import ResizeObserver from 'resize-observer-polyfill';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -79,6 +80,11 @@ ClientAppConfigProvider.set({
   applicationName: 'KAITIAN',
   uriScheme: 'KT_KAITIAN',
 });
+
+// 添加resize observer polyfill
+if (typeof (window as any).ResizeObserver === 'undefined') {
+  (window as any).ResizeObserver = ResizeObserver;
+}
 
 export class ClientApp implements IClientApp {
 
