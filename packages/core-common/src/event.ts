@@ -453,6 +453,11 @@ class LeakageMonitor {
 		}
 	}
  */
+
+export interface IAsyncResult<T> {
+  err?: Error,
+  result?: T;
+}
 export class Emitter<T> {
 
   private static readonly _noop = function () { };
@@ -565,6 +570,67 @@ export class Emitter<T> {
         }
       }
     }
+  }
+
+  /**
+   * 发送一个异步事件，等待所有监听器返回，并收集返回值
+   * @param e 
+   * @param timeout 
+   */
+  async fireAndAwait<R = any>(event: T, timeout: number = 2000): Promise<Array<IAsyncResult<R>>> {
+    
+    if (this._listeners) {
+
+      if (!this._deliveryQueue) {
+        this._deliveryQueue = new LinkedList();
+      }
+
+      for (let iter = this._listeners.iterator(), e = iter.next(); !e.done; e = iter.next()) {
+        this._deliveryQueue.push([e.value, event]);
+      }
+
+      const promises: Promise<IAsyncResult<R>>[] = [];
+
+      const timeoutPromise = new Promise<IAsyncResult<R>>(resolve => {
+        setTimeout(() => {
+          resolve({
+            err: new Error('timeout')
+          })
+        }, timeout);
+      });
+      while (this._deliveryQueue.size > 0) {
+        const [listener, event] = this._deliveryQueue.shift()!;
+        try {
+          const promise: Promise<IAsyncResult<R>> = (async () => {
+            try {
+              if (typeof listener === 'function') {
+                return {
+                  result: await listener.call(undefined, event) as any
+                };
+              } else {
+                return {
+                  result: await listener[0].call(listener[1], event) as any
+                }
+              }
+            } catch (e) {
+              return {
+                err: e,
+              }
+            }
+          })();
+          promises.push(Promise.race([timeoutPromise, promise]));
+        } catch (e) {
+          onUnexpectedError(e);
+        }
+      }
+      return Promise.all(promises);
+    } else {
+      return [];
+    }
+  }
+
+  get listenerSize() {
+    return this._listeners ? this._listeners.size : 0;
   }
 
   dispose() {

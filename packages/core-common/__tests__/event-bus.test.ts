@@ -24,6 +24,35 @@ describe('event-bus', () => {
     expect(spyB).toBeCalledWith(bEvent);
   });
 
+  it('event bus fireAndAwait能够正常执行', async (done) => {
+    const eventBus = new EventBusImpl();
+    const spyA = jest.fn();
+    eventBus.on(AEvent, spyA);
+
+    const validListener = async () => {
+      return 'result';
+    }
+    eventBus.on(AEvent, validListener);
+
+    const error = new Error('testError');
+    const errorListener = async () => {
+      throw error;
+    }
+    eventBus.on(AEvent, errorListener);
+
+    const aEvent = new AEvent(1);
+    const res = await eventBus.fireAndAwait<AEvent, any>(aEvent);
+    expect(spyA).toBeCalledTimes(1);
+    expect(spyA).toBeCalledWith(aEvent);
+
+    expect(res[1].result).toBe('result');
+    expect(res[1].err).toBeUndefined();
+    expect(res[2].err).toBe(error);
+    expect(res[2].result).toBeUndefined;
+
+    done();
+  });
+
   it('event bus 能够多次触发', () => {
     const eventBus = new EventBusImpl();
     const spy = jest.fn();
@@ -89,4 +118,5 @@ describe('event-bus', () => {
     expect(spy).toBeCalledTimes(2);
     expect(spy).toBeCalledWith(resizeEvent);
   });
+  
 });

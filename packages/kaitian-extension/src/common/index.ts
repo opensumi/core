@@ -176,3 +176,8 @@ export enum EXTENSION_ENABLE {
   ENABLE = 1,
   DISABLE = 0,
 }
+
+// 广播插件事件
+export const EMIT_EXT_HOST_EVENT = {
+  id: 'kaitian-extension:ext-host-event',
+};
