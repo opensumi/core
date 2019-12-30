@@ -6,7 +6,7 @@ import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
 import { AccordionContainer } from '../accordion/accordion.view';
-import { InlineActionBar, IconAction } from '@ali/ide-core-browser/lib/components/actions';
+import { InlineActionBar, InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { TitleBar } from '../accordion/titlebar.view';
 
@@ -103,7 +103,7 @@ const NextPanelView: React.FC<{
         </div>
         <div className={styles.panel_toolbar_container}>
           { titleMenu && <InlineActionBar menus={titleMenu} /> }
-          <InlineActionBar menus={tabbarService.commonTitleMenu} moreAtFirst />
+          <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>
       </div>
       <div className={styles.panel_wrapper}>

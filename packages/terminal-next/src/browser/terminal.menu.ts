@@ -172,32 +172,31 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
       group: more2,
     });
 
-    menuRegistry.registerMenuItem('tabbar_bottom_select_sub', {
+    menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [{
       command: {
-        id: SimpleCommonds.selectTypeSh,
+        id: SimpleCommonds.selectTypeZsh,
         label: 'zsh',
       },
       order: 1,
       group: more1Sub,
-    });
-
-    menuRegistry.registerMenuItem('tabbar_bottom_select_sub', {
+      toggledWhen: 'config.terminal.type == zsh',
+    }, {
       command: {
-        id: SimpleCommonds.selectTypeZsh,
+        id: SimpleCommonds.selectTypeBash,
         label: 'bash',
       },
       order: 2,
       group: more1Sub,
-    });
-
-    menuRegistry.registerMenuItem('tabbar_bottom_select_sub', {
+      toggledWhen: 'config.terminal.type == bash',
+    }, {
       command: {
-        id: SimpleCommonds.selectTypeBash,
+        id: SimpleCommonds.selectTypeSh,
         label: 'sh',
       },
       order: 3,
       group: more1Sub,
-    });
+      toggledWhen: 'config.terminal.type == sh',
+    }]);
 
     menuRegistry.registerMenuItem(`tabbar/bottom/common`, {
       command: {
