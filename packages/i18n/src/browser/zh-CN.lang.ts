@@ -480,9 +480,9 @@ export const localizationBundle = {
     'view.zoomIn': '窗口缩放放大',
     'view.zoomOut': '窗口缩放缩小',
 
-    'kaitianExtension.invalidExthostReload.confirm.content': '插件进程已失效，刷新后可恢复插件使用，刷新或使用其他功能？',
+    'kaitianExtension.invalidExthostReload.confirm.content': '插件进程已失效，点击刷新后可恢复插件使用',
     'kaitianExtension.invalidExthostReload.confirm.ok': '刷新',
-    'kaitianExtension.invalidExthostReload.confirm.cancel': '使用其他功能',
+    'kaitianExtension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'kaitianExtension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
   },
 };

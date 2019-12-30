@@ -469,9 +469,9 @@ export const localizationBundle = {
     'view.zoomIn': 'Zoom In',
     'view.zoomOut': 'Zoom Out',
 
-    'kaitianExtension.invalidExthostReload.confirm.content': 'Ext-host process is invalid. Refresh or ignore to use other features?',
+    'kaitianExtension.invalidExthostReload.confirm.content': 'Ext-host process is invalid. Click to refresh to resume this process.',
     'kaitianExtension.invalidExthostReload.confirm.ok': 'Refresh',
-    'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore',
+    'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'kaitianExtension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
   },
 };
