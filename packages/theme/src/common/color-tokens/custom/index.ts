@@ -3,7 +3,7 @@ import { registerColor, lighten, darken, transparent } from '../../color-registr
 import { PANEL_BORDER, PANEL_BACKGROUND, PANEL_INACTIVE_TITLE_FOREGROUND } from '../panel';
 import { buttonForeground } from '../button';
 import { inputValidationErrorBackground, inputOptionActiveBorder } from '../input';
-import { ACTIVITY_BAR_FOREGROUND, ACTIVITY_BAR_BACKGROUND } from '../activity-bar';
+import { ACTIVITY_BAR_FOREGROUND, ACTIVITY_BAR_BACKGROUND, ACTIVITY_BAR_BORDER } from '../activity-bar';
 import { NOTIFICATIONS_FOREGROUND, NOTIFICATIONS_BACKGROUND } from '../notification';
 import { contrastBorder, foreground, widgetShadow, descriptionForeground } from '../base';
 import { menuForeground } from '../menu';
@@ -217,6 +217,6 @@ export const menubarSeparatorBackground = registerColor(
 
 export const menubarBorder = registerColor(
   'kt.menubar.border',
-  { dark: null, light: null, hc: null },
+  { dark: ACTIVITY_BAR_BORDER, light: ACTIVITY_BAR_BORDER, hc: ACTIVITY_BAR_BORDER },
   localize('menubarBorder', 'Border color of menu bar.'),
 );
