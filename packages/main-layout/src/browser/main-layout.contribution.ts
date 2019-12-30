@@ -1,12 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
-import { Domain, IEventBus, ContributionProvider, Event } from '@ali/ide-core-common';
+import { Domain, IEventBus, ContributionProvider, Event, localize } from '@ali/ide-core-common';
 import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, ROTATE_TYPE } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../common';
 import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
+import { IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -58,6 +59,10 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.retract',
   iconClass: getIcon('shrink'),
 };
+export const SHOW_SETTING_MENU: Command = {
+  id: 'main-layout.left-panel.setting',
+  iconClass: getIcon('setting'),
+};
 
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution)
 export class MainLayoutModuleContribution implements CommandContribution, ClientAppContribution, SlotRendererContribution {
@@ -92,6 +97,9 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   @Autowired()
   private toolBarRegistry: ToolbarRegistry;
 
+  @Autowired(IMenuRegistry)
+  protected menuRegistry: IMenuRegistry;
+
   async initialize() {
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
@@ -110,6 +118,14 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   async onStart() {
     // 全局只要初始化一次
     await this.layoutState.initStorage();
+    this.menuRegistry.registerMenuItem(MenuId.ActivityBarExtra, {
+      command: {
+        id: SHOW_SETTING_MENU.id,
+        label: localize('layout.tabbar.setting', '打开偏好设置'),
+      },
+      order: 1,
+      group: 'navigation',
+    });
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
@@ -171,7 +187,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     });
     commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
       execute: (show?: boolean, size?: number) => {
-        console.log('run TOGGLE_BOTTOM_PANEL_COMMAND');
         this.mainLayoutService.toggleSlot(SlotLocation.bottom, show, size);
       },
     });
@@ -203,6 +218,11 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     commands.registerCommand(RETRACT_BOTTOM_PANEL, {
       execute: () => {
         this.mainLayoutService.expandBottom(false);
+      },
+    });
+    commands.registerCommand(SHOW_SETTING_MENU, {
+      execute: (anchor: {x: number; y: number}) => {
+        this.mainLayoutService.hand; leSetting(anchor);
       },
     });
   }

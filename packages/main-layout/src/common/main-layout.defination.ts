@@ -3,6 +3,7 @@ import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-brow
 import { TabBarHandler } from '../browser/tabbar-handler';
 import { TabbarService } from '../browser/tabbar/tabbar.service';
 import { AccordionService } from '../browser/accordion/accordion.service';
+import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface ComponentCollection {
   views?: View[];
@@ -45,11 +46,12 @@ export interface IMainLayoutService {
   bottomExpanded: boolean;
   // @deprecated 提供小程序使用的额外位置控制
   setFloatSize(size: number): void;
-  handleSetting(event: React.MouseEvent<HTMLElement>): void;
+  handleSetting(anchor: {x: number; y: number}): void;
   getTabbarService(location: string, noAccordion?: boolean): TabbarService;
   getAccordionService(containerId: string): AccordionService;
   // 某一位置是否可见
   isVisible(location: string): boolean;
+  getExtraMenu(): IMenu;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');

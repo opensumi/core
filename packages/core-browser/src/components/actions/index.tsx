@@ -172,12 +172,14 @@ interface BaseActionListProps {
 const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
+  className?: string;
 } & BaseActionListProps> = ({
   nav: primary = [],
   more: secondary = [],
   context = [],
   extraNavActions = [],
   moreAtFirst = false,
+  className,
 }) => {
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
@@ -203,7 +205,7 @@ const TitleActionList: React.FC<{
     : null;
 
   return (
-    <div className={styles.titleActions}>
+    <div className={clsx([styles.titleActions, className])}>
       { moreAtFirst && moreAction }
       {
         primary.map((item) => (
@@ -245,6 +247,7 @@ interface InlineActionBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'ex
   context?: TupleContext<T, U, K, M>;
   menus: IMenu;
   separator?: IMenuSeparator;
+  className?: string;
 }
 
 export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(
