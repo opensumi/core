@@ -466,21 +466,25 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       id: FILE_COMMANDS.NEW_FILE.id,
       command: FILE_COMMANDS.NEW_FILE.id,
       viewId: ExplorerResourceViewId,
+      order: 1,
     });
     registry.registerItem({
       id: FILE_COMMANDS.NEW_FOLDER.id,
       command: FILE_COMMANDS.NEW_FOLDER.id,
       viewId: ExplorerResourceViewId,
+      order: 2,
     });
     registry.registerItem({
       id: FILE_COMMANDS.COLLAPSE_ALL.id,
       command: FILE_COMMANDS.COLLAPSE_ALL.id,
       viewId: ExplorerResourceViewId,
+      order: 4,
     });
     registry.registerItem({
       id: FILE_COMMANDS.REFRESH_ALL.id,
       command: FILE_COMMANDS.REFRESH_ALL.id,
       viewId: ExplorerResourceViewId,
+      order: 3,
     });
   }
 
