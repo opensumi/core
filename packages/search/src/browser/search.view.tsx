@@ -151,6 +151,7 @@ export const Search = observer(({
                       id={'show_include_rule'}
                       content={getIncludeRuleContent()}
                       trigger={PopoverTriggerType.hover}
+                      delay={500}
                     >
                       {localize('search.help.showIncludeRule')}
                     </Popover>
@@ -172,6 +173,7 @@ export const Search = observer(({
                     id={'search_excludes'}
                     content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes(), searchBrowserService.openPreference)}
                     trigger={PopoverTriggerType.hover}
+                    delay={500}
                   >
                     <span className={cls(getIcon('question-circle'))}></span>
                   </Popover>

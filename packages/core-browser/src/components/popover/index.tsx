@@ -23,20 +23,29 @@ export const Popover: React.FC<{
   [key: string]: any;
   popoverClass?: string;
   position?: PopoverPosition;
-}> = ({ children, trigger, display, id, insertClass, popoverClass, content, position = PopoverPosition.top , ...restProps}) => {
+  delay?: number;
+}> = ({ delay, children, trigger, display, id, insertClass, popoverClass, content, position = PopoverPosition.top , ...restProps}) => {
   const childEl = React.useRef<any>();
   const contentEl = React.useRef<any>();
   const type = trigger || PopoverTriggerType.hover;
   let hideContentTimer;
+  let actionDelayTimer;
 
   function onMouseEnter() {
     if (type === PopoverTriggerType.hover) {
-      showContent();
+      if (delay) {
+        actionDelayTimer = setTimeout(() => {
+          showContent();
+        }, delay);
+      } else {
+        showContent();
+      }
     }
   }
 
   function onMouseLeave() {
     if (type === PopoverTriggerType.hover) {
+      clearTimeout(actionDelayTimer);
       hideContent();
     }
   }
@@ -47,7 +56,7 @@ export const Popover: React.FC<{
     }
     clearTimeout(hideContentTimer);
     contentEl.current.style.display = 'block';
-    contentEl.current.style.visibility = 'hidden';
+    // contentEl.current.style.visibility = 'hidden';
     setTimeout(() => {
       if (!childEl.current || !contentEl.current) {
         return;
@@ -78,7 +87,7 @@ export const Popover: React.FC<{
     }
     hideContentTimer = setTimeout(() => {
       contentEl.current.style.display = 'none';
-    }, 200);
+    }, 500);
   }
 
   React.useEffect(() => {
@@ -103,19 +112,20 @@ export const Popover: React.FC<{
   }, []);
 
   return(
-    <span {...Object.assign({}, restProps)} className={clx(styles.popover, insertClass)} >
+    <span
+      {...Object.assign({}, restProps)}
+      className={clx(styles.popover, insertClass)}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <span
         className={clx(popoverClass || '', styles.content, position)}
         ref={contentEl}
         id={id}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
       >
         {content || ''}
       </span>
       <span
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
         ref={childEl}
       >
         {children}
