@@ -81,9 +81,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const {currentId, size} = this.state[service.location] || {};
       service.currentContainerId = currentId !== undefined ? currentId : service.containersMap.keys().next().value;
       service.prevSize = size;
-      if (size) {
-        service.resizeHandle.setSize(size);
-      }
     }
 
     this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
