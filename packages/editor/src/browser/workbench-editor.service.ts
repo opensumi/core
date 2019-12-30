@@ -1170,8 +1170,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
 
-    if (sourceGroup && sourceGroup !== this) {
-      await sourceGroup.close(uri);
+    if (sourceGroup) {
+      if (sourceGroup !== this) {
+        // 从其他group拖动过来
+        await sourceGroup.close(uri);
+      } else if (position !== DragOverPosition.CENTER) {
+        // split行为
+        await this.close(uri);
+      }
+
     }
 
   }
