@@ -84,7 +84,7 @@ export class WSChanneHandler {
           this.channelMap.forEach((channel) => {
             channel.onOpen(() => {
               this.reporterService && this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT);
-              this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
+              this.logger && this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);
 
