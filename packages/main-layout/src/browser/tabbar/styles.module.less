@@ -3,7 +3,6 @@
     background-color: var(--activityBar-background);
     height: 100%;
     display: flex;
-    border-top: 1px solid var(--activityBar-border);
     user-select: none;
     li {
       list-style: none;
@@ -133,9 +132,6 @@
         }
       }
     }
-    .tab-panel {
-      border-right: 1px solid var(--activityBar-border);
-    }
   }
   .right-slot {
     height: 100%;
@@ -156,9 +152,6 @@
           background-color: var(--sideBar-background);
         }
       }
-    }
-    .tab-panel {
-      border-left: 1px solid var(--activityBar-border);
     }
   }
   .bottom-slot {
@@ -249,6 +242,12 @@
   left: 0;
   right: 0;
   height: 100%;
+}
+:global(.left-slot) .panel_wrap{
+  border-right: 1px solid var(--activityBar-border);
+}
+:global(.right-slot) .panel_wrap{
+  border-left: 1px solid var(--activityBar-border);
 }
 .view_container {
   display: flex;
