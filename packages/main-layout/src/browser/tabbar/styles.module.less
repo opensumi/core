@@ -323,3 +323,42 @@
   width: 0px;
   margin: 0 8px;
 }
+:global(.left-tab-bar) .vertical_icons {
+  height: fit-content;
+  flex-direction: column-reverse;
+  >span {
+    width: 48px;
+    height: 40px;
+    margin-left: 0;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--activityBar-inactiveForeground);
+    &:hover {
+      transform: scale(1);
+      color: var(--activityBar-activeForeground);
+    }
+    &:last-child {
+      margin-bottom: 8px;
+    }
+  }
+}
+// .bottom-icon-container {
+//   width: 48px;
+//   height: 40px;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   &:last-child {
+//     margin-bottom: 8px;
+//   }
+//   .activity-icon {
+//     font-size: 20px;
+//     margin-top: 6px;
+//     &:hover {
+//       color: var(--activityBar-foreground);
+//       cursor: pointer;
+//     }
+//   }
+// }
