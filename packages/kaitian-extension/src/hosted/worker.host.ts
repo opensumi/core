@@ -24,12 +24,6 @@ function initRPCProtocol() {
 
 const protocol = initRPCProtocol();
 
-// protocol.set({serviceId: 'testWorkerService'} as any, {
-//   $hello: (str) => {
-//     return `hello ${str}`;
-//   },
-// });
-
 class ExtensionWorkerHost implements IExtensionWorkerHost {
   private extensions: IExtension[];
   private rpcProtocol: RPCProtocol;
@@ -48,23 +42,21 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 
   public init() {
-    this.defineAPI();
+    // TODO config?.loader
+    // try {
+    //   importScripts('http://127.0.0.1:8080/loader.js');
+    // } catch (err) {
+    //   this.logger.error(`[Worker-Host] ${err.message}`);
+    // }
   }
 
   public async $initExtensions() {
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
-    this.extensions.forEach((extension) => {
-      extension.workerVarId = extension.id.replace(/\./g, '_').replace(/-/g, '_');
-    });
     this.logger.verbose('worker $initExtensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
 
     this.initDeferred.resolve();
-  }
-
-  private findExtensionByVarId(workerVarId: string) {
-    return this.extensions.find((extension) => extension.workerVarId === workerVarId );
   }
 
   private getExtendModuleProxy(extension: IExtension) {
@@ -139,52 +131,59 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
 
     const extendConfig = extension.extendConfig;
     if (extendConfig.worker && extendConfig.worker.main && extension.workerScriptPath) {
-      try {
-        importScripts(extension.workerScriptPath);
-      } catch (err) {
-        this.logger.error(`[Worker-Host] failed to load extension script, reason: \n\n ${err.message}`);
+      const response = await fetch(extension.workerScriptPath);
+
+      if (response.status !== 200) {
+        this.logger.error(response.statusText);
+        return;
       }
 
-      if (
-        self[`kaitian_extend_browser_worker_${extension.workerVarId}`] &&
-        self[`kaitian_extend_browser_worker_${extension.workerVarId}`].activate
-      ) {
+      const initFn = new Function('module', 'exports', 'require', 'window', await response.text());
+      const _exports = {};
+      const _module = { exports: _exports };
+      const _require = (request: string) => {
+        if (request === 'kaitian') {
+          let kaitianAPIImpl = this.kaitianExtAPIImpl.get(id);
+          if (!kaitianAPIImpl) {
+            try {
+              kaitianAPIImpl =  this.kaitianAPIFactory(extension);
+              this.kaitianExtAPIImpl.set(id, kaitianAPIImpl);
+            } catch (e) {
+              this.logger.error('[Worker-Host] worker error');
+              this.logger.error(e);
+            }
+          }
+          return kaitianAPIImpl;
+        }
+      };
+
+      try {
+        initFn(_module, _exports, _require, self);
+      } catch (err) {
+        this.logger.error(`[Worker-Host] failed to initialize extension ${extension.id}`);
+      }
+
+      if (_module.exports && (_module.exports as any).activate) {
         const workerExtContext = this.loadContext(extension);
-        self[`kaitian_extend_browser_worker_${extension.workerVarId}`].activate(workerExtContext);
+        try {
+          /**
+           * @TODO
+           * @example
+           * function activate() {
+           *   return {
+           *    // api...
+           *   }
+           * }
+           * extension.getExtension(id).?
+           */
+          const exports = (_module.exports as any).activate(workerExtContext);
+        } catch (err) {
+          this.logger.error(`[Worker-Host] failed to activate extension ${extension.id} \n\n ${err.message}`);
+        }
       }
     } else {
       this.logger.error('[Worker-Host] extension worker activate error', extension);
     }
-  }
-
-  public defineAPI() {
-    // @ts-ignore
-    self.kaitian = new Proxy(Object.create(null), {
-      get: (target: any, prop: string) => {
-        let workerVarId = prop;
-        workerVarId = workerVarId.replace('extId', '');
-        const extension = this.findExtensionByVarId(workerVarId);
-
-        if (!extension) {
-          return;
-        }
-        const extensionId = extension.id;
-        let kaitianAPIImpl = this.kaitianExtAPIImpl.get(extensionId);
-
-        if (!kaitianAPIImpl) {
-          try {
-            kaitianAPIImpl =  this.kaitianAPIFactory(extension);
-
-            this.kaitianExtAPIImpl.set(extensionId, kaitianAPIImpl);
-          } catch (e) {
-            this.logger.error('[Worker-Host] worker error');
-            this.logger.error(e);
-          }
-        }
-
-        return kaitianAPIImpl;
-      },
-    });
   }
 }
 
