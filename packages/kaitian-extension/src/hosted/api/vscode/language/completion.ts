@@ -45,6 +45,7 @@ export class CompletionAdapter {
                     pid: _id,
                     id: itemId++,
                     ...item,
+                    kind: Converter.fromCompletionItemKind(item.kind),
                     insertText: Converter.fromInsertText(item),
                     insertTextRules: (item.insertText instanceof SnippetString ) ? CompletionItemInsertTextRule.InsertAsSnippet : undefined,
                     range: item.range ? Converter.fromRange(item.range) : null,
