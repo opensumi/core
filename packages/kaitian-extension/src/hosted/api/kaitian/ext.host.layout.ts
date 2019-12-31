@@ -33,9 +33,7 @@ export class KaitianExtHostLayout implements IExtHostLayout {
 
   private proxy: IMainThreadLayout;
 
-  private _extHostPlainWebviewId: number = 1;
-
-  constructor(private rpcProtocol: IRPCProtocol, private webviewIdPrefix: string = 'node') {
+  constructor(private rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadKaitianAPIIdentifier.MainThreadLayout);
   }

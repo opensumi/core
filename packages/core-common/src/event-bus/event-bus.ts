@@ -1,11 +1,12 @@
 import { Injectable } from '@ali/common-di';
-import { IEventBus, IEventLisnter, IEventFireOpts } from './event-bus-types';
-import { Emitter } from '../event';
+import { IEventBus, IEventLisnter, IEventFireOpts, IAsyncEventFireOpts } from './event-bus-types';
+import { Emitter, IAsyncResult } from '../event';
 import { BasicEvent } from './basic-event';
 import { ConstructorOf } from '../declare';
 
 @Injectable()
 export class EventBusImpl implements IEventBus {
+  
   private emitterMap = new Map<any, Emitter<any>>();
   
   fire<T extends BasicEvent<any>>(e: T, opts: IEventFireOpts = {}) {
@@ -19,6 +20,20 @@ export class EventBusImpl implements IEventBus {
         emitter.fire(e);
       }
     }
+  }
+
+  async fireAndAwait<T extends BasicEvent<any>, R>(e: T, opts: IAsyncEventFireOpts = { timeout: 2000 }): Promise<IAsyncResult<R>[]> {
+    const Constructor = e && e.constructor;
+    if (
+      typeof Constructor === 'function' && 
+      BasicEvent.isPrototypeOf(Constructor)
+    ) {
+      const emitter = this.emitterMap.get(Constructor);
+      if (emitter) {
+        return emitter.fireAndAwait<R>(e, opts.timeout);
+      }
+    }
+    return [];
   }
 
   on<T>(Constructor: ConstructorOf<T>, listener: IEventLisnter<T>) {

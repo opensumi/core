@@ -9,6 +9,7 @@ import { KaitianExtHostWebview, createKaitianWebviewApi } from './ext.host.webvi
 import { ExtHostKaitianAPIIdentifier } from '../../../common/kaitian';
 import { ExtHostLifeCycle, createLifeCycleApi } from './ext.host.lifecycle';
 import { ExtHostTheme, createThemeApi } from './ext.host.theme';
+import { ExtHostCommon, createEventAPIFactory } from './ext.host.common';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -26,6 +27,7 @@ export function createAPIFactory(
   const kaitianLifeCycle = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostLifeCycle, new ExtHostLifeCycle(rpcProtocol));
   const kaitianLayout = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostLayout, new KaitianExtHostLayout(rpcProtocol));
   const kaitianExtHostTheme = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostTheme, new ExtHostTheme(rpcProtocol)) as  ExtHostTheme;
+  const kaitianExtHostCommon = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostCommon, new ExtHostCommon(rpcProtocol)) as ExtHostCommon;
 
   return (extension: IExtension) => {
     const reporter = new ExtensionReporterService(reporterEmitter, {
@@ -39,6 +41,7 @@ export function createAPIFactory(
       webview: createKaitianWebviewApi(extension, kaitianExtHostWebview),
       lifecycle: createLifeCycleApi(extHostCommands, kaitianLifeCycle),
       theme: createThemeApi(kaitianExtHostTheme),
+      event: createEventAPIFactory(extHostCommands, kaitianExtHostCommon, extension),
       reporter,
     };
   };

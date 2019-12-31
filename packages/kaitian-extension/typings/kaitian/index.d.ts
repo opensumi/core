@@ -1,6 +1,37 @@
 declare module "kaitian" {
 
   export * from 'vscode';
+  export namespace event {
+
+    /**
+     * 事件响应的返回结果
+     */
+    interface IEventResult<R> {
+      /**
+       * 如果存在err，说明本次调用存在错误
+       */
+      err?: string,
+      /**
+       * 调用结果
+       */
+      result?: R,
+    }
+
+    /**
+     * 订阅一个事件
+     * @param eventId 事件id
+     * @param callback 事件订阅回调
+     */
+    export function subscribe(eventId: string, callback:(...args:any[]) => any): IDisposable
+    
+    /**
+     * 发送一个事件
+     * @param eventId 事件id
+     * @param args 事件参数
+     * @returns Promise 返回处理事件响应的listener的返回值
+     */
+    export function fire<R = any>(eventId: string, ...args: any[]): Promise<IEventResult<R>[]>;
+  }
 
   export namespace layout {
     /**

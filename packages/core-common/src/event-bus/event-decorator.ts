@@ -17,7 +17,7 @@ export class WithEventBus extends Disposable {
     const map: Map<string, ConstructorOf<any>> = Reflect.getMetadata(EVENT_TOKEN, this) || new Map();
     for (const [key, Construcotor] of map.entries()) {
       const dispose = this.eventBus.on(Construcotor, (event: any) => {
-        (this as any)[key](event);
+        return (this as any)[key](event);
       });
       this.addDispose(dispose);
     }
