@@ -127,11 +127,11 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_FORWARD.id,
-      keybinding: isWindows ? 'alt + right' : 'ctrl+shift+-',
+      keybinding: isWindows ? 'alt+right' : 'ctrl+shift+-',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_BACK.id,
-      keybinding: isWindows ? 'alt + left' : 'ctrl+-',
+      keybinding: isWindows ? 'alt+left' : 'ctrl+-',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CHANGE_LANGUAGE.id,
