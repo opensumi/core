@@ -1,26 +1,30 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, Domain, memoize, IContextKeyService } from '@ali/ide-core-browser';
+import { Disposable, Domain, IContextKeyService } from '@ali/ide-core-browser';
+import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { IEditor } from '../../common';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '../types';
-import { AbstractContextMenuService, IContextMenu, MenuId, generateMergedCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable({multiple: true})
 export class EditorContextMenuController extends Disposable {
 
   @Autowired(AbstractContextMenuService)
-  ctxMenuService: AbstractContextMenuService;
+  private readonly contextMenuService: AbstractContextMenuService;
 
   @Autowired(IContextKeyService)
-  private contextKeyService: IContextKeyService;
+  private readonly globalContextKeyService: IContextKeyService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
+
+  private readonly contextKeyService: IContextKeyService;
 
   constructor(private editor: IEditor) {
     super();
     this.addDispose(editor.monacoEditor.onContextMenu((e) => {
       this.onContextMenu(e);
     }));
+
+    this.contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped((this.editor.monacoEditor as any)._contextKeyService));
   }
 
   private onContextMenu(e) {
@@ -58,16 +62,13 @@ export class EditorContextMenuController extends Disposable {
     this.showContextMenu(anchor);
   }
 
-  @memoize get contextMenu(): IContextMenu {
-    const contextKeyService = this.registerDispose(this.contextKeyService.createScoped((this.editor.monacoEditor as any)._contextKeyService));
-    return this.registerDispose(this.ctxMenuService.createMenu({
-      id: MenuId.EditorContext,
-      contextKeyService,
-    }));
-  }
-
   private showContextMenu(anchor: {x: number, y: number } = {x: 0, y: 0}) {
-    const menuNodes = this.contextMenu.getMergedMenuNodes();
+    const contextMenu = this.contextMenuService.createMenu({
+      id: MenuId.EditorContext,
+      contextKeyService: this.contextKeyService,
+    });
+    const menuNodes = contextMenu.getMergedMenuNodes();
+    contextMenu.dispose();
     this.contextMenuRenderer.show({
       anchor,
       menuNodes,
