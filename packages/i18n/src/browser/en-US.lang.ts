@@ -370,6 +370,10 @@ export const localizationBundle = {
     'terminal.menu.clear': 'Clear',
     'terminal.menu.stop': 'Stop',
     'terminal.menu.stopGroup': 'Stop Group',
+    'terminal.menu.stopGroups': 'Stop All Terminals',
+    'terminal.menu.clearGroups': 'Clear All Terminals',
+    'terminal.menu.selectType': 'Default Terminal Type',
+    'terminal.menu.moreSettings': 'More Settings',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',

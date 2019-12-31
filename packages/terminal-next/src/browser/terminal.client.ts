@@ -9,7 +9,7 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { TerminalFilePathAddon } from './terminal.addon';
-import { ITerminalExternalService, IWidget, TerminalOptions, ITerminalController } from '../common';
+import { ITerminalExternalService, IWidget, TerminalOptions, ITerminalController, TerminalSupportType } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import * as styles from './terminal.module.less';
 
@@ -48,13 +48,7 @@ export class TerminalClient extends Disposable {
 
   private _customTermOptions(): ITerminalOptions {
     const options = {};
-    const support = {
-      'terminal.fontFamily': 'fontFamily',
-      'terminal.fontSize': 'fontSize',
-      'terminal.fontWeight': 'fontWeight',
-      'terminal.lineHeight': 'lineHeight',
-      'terminal.cursorBlink': 'cursorBlink',
-    };
+    const support = TerminalSupportType;
 
     Object.keys(support).forEach((key) => {
       const value = this.preference.get<any>(key);

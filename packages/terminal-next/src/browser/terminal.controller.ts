@@ -470,6 +470,24 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this.groups.length - 1;
   }
 
+  removeAllGroups() {
+    this.groups.forEach((group, groupIndex) => {
+      group.widgets.forEach((_, widgetIndex) => {
+        this._delWidgetByIndex(widgetIndex, groupIndex);
+      });
+    });
+    this.groups = observable.array([]);
+    this.state.index = -1;
+    this.tabManager.clear();
+    this.layoutService.toggleSlot(SlotLocation.bottom);
+  }
+
+  clearAllGroups() {
+    for (const [_, client] of this._clientsMap) {
+      client.clear();
+    }
+  }
+
   /** end */
 
   /** terminal client operations */

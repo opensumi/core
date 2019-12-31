@@ -3,7 +3,7 @@ import { DisposableStore, IDisposable } from '@ali/ide-core-common';
 import { equals } from '@ali/ide-core-common/lib/utils/arrays';
 
 import { MenuNode } from '../menu/next/base';
-import { IMenu, IMenuSeparator } from '../menu/next/menu.interface';
+import { IMenu, IMenuSeparator, IContextMenu } from '../menu/next/menu.interface';
 import { generateInlineActions } from '../menu/next/menu-util';
 
 export function useDebounce(value, delay) {
@@ -86,6 +86,38 @@ export function useMenus(
       }),
     ];
   }, [ initalizer, args ]);
+
+  return menuConfig;
+}
+
+export function useContextMenus(
+  menuInitalizer: IContextMenu | (() => IContextMenu),
+) {
+  const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
+
+  const initalizer = useCallback(() => {
+    return typeof menuInitalizer === 'function'
+      ? menuInitalizer()
+      : menuInitalizer;
+  }, []);
+
+  useDisposable(() => {
+    // initialize
+    const menus = initalizer();
+    updateMenuConfig(menus);
+
+    function updateMenuConfig(menuArg: IContextMenu) {
+      const result = menuArg.getGroupedMenuNodes();
+      setMenuConfig(result);
+    }
+
+    return [
+      menus,
+      menus.onDidChange(() => {
+        updateMenuConfig(menus);
+      }),
+    ];
+  }, [ initalizer ]);
 
   return menuConfig;
 }
