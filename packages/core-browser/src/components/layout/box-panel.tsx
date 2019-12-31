@@ -6,33 +6,38 @@ import { useInjectable } from '../../react-hooks';
 import { IEventBus } from '@ali/ide-core-common';
 import { RenderedEvent } from '../../layout';
 
+type ChildComponent = React.ReactElement<{ flex?: number; id: string; }>;
+
 export const BoxPanel: React.FC<{
-  children?: Array<React.ReactElement<{ flex?: number; id: string; }>> | React.ReactElement<{ flex?: number; id: string; }>;
+  children?: ChildComponent | ChildComponent[];
   className?: string;
   direction?: Layout.direction;
   flex?: number;
-}> = (({ className, children, direction = 'left-to-right', ...restProps }) => {
+}> = (({ className, children = [], direction = 'left-to-right', ...restProps }) => {
   const eventBus = useInjectable<IEventBus>(IEventBus);
   // 挪到root节点
   React.useEffect(() => {
     eventBus.fire(new RenderedEvent());
   }, []);
 
-  const arrayChildren: Array<React.ReactElement<{ flex?: number; id: string; }>> = (children && (children as any).map) ? children as any : [children];
+    // convert children to list
+  const arrayChildren = React.Children.toArray(children);
 
   return (
-    <div {...restProps} className={clsx(styles['box-panel'], className)} style={{flexDirection: Layout.getFlexDirection(direction)}}>
-      {arrayChildren && arrayChildren.map((child, index) => {
-        return(
+    <div
+      {...restProps}
+      className={clsx(styles['box-panel'], className)}
+      style={{flexDirection: Layout.getFlexDirection(direction)}}>
+      {
+        arrayChildren.map((child, index) => (
           <div
             key={index}
             className={clsx(styles.wrapper)}
             style={child.props.flex ? {flex: child.props.flex, overflow: 'hidden'} : {}}>
             {child}
           </div>
-        )
-        ;
-      })}
+        ))
+      }
     </div>
   );
 });
