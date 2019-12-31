@@ -11,13 +11,15 @@ import { DisposableStore } from '@ali/ide-core-common';
 export class CompletionAdapter {
     private cacheId = 0;
     private cache = new Map<number, {[key: number]: vscode.CompletionItem }>();
+    private toDispose = new Map<number, DisposableStore>();
 
     constructor(private readonly delegate: vscode.CompletionItemProvider,
+                private readonly commandConverter: CommandsConverter,
                 private readonly documents: ExtensionDocumentDataManager) {
 
     }
 
-    async provideCompletionItems(resource: URI, position: Position, context: CompletionContext, commandConverter: CommandsConverter, token: vscode.CancellationToken) {
+    async provideCompletionItems(resource: URI, position: Position, context: CompletionContext, token: vscode.CancellationToken) {
         const document = this.documents.getDocumentData(resource);
         if (!document) {
             return Promise.reject(new Error(`There are no document for  ${resource}`));
@@ -32,6 +34,7 @@ export class CompletionAdapter {
 
         const disposables = new DisposableStore();
         const _id = this.cacheId ++;
+        this.toDispose.set(_id, disposables);
         let itemId = 0;
         const isIncomplete = Array.isArray(result) ? false : result.isIncomplete;
         const originalItems = (Array.isArray(result) ? result : result.items);
@@ -41,15 +44,11 @@ export class CompletionAdapter {
             _id,
             isIncomplete,
             items: originalItems.map((item) => {
+                const id = itemId++;
                 return {
                     pid: _id,
-                    id: itemId++,
-                    ...item,
-                    kind: Converter.fromCompletionItemKind(item.kind),
-                    insertText: Converter.fromInsertText(item),
-                    insertTextRules: (item.insertText instanceof SnippetString ) ? CompletionItemInsertTextRule.InsertAsSnippet : undefined,
-                    range: item.range ? Converter.fromRange(item.range) : null,
-                    command: item.command ? commandConverter.toInternal(item.command, disposables) : undefined,
+                    id,
+                    ...this.convertCompletionItem(item, pos, id, _id),
                 };
             }),
         };
@@ -77,10 +76,8 @@ export class CompletionAdapter {
                 return completion;
             }
 
-            const doc = this.documents.getDocumentData(resource)!.document;
             const pos = Converter.toPosition(position);
-            const wordRangeBeforePos = (doc.getWordRangeAtPosition(pos) as Range || new Range(pos, pos)).with({ end: pos });
-            const newCompletion = this.convertCompletionItem(resolvedItem, pos, wordRangeBeforePos, id, parentId);
+            const newCompletion = this.convertCompletionItem(resolvedItem, pos, id, parentId);
             if (newCompletion) {
                 mixin(completion, newCompletion, true);
             }
@@ -91,18 +88,27 @@ export class CompletionAdapter {
 
     releaseCompletionItems(id: number) {
         this.cache.delete(id);
+        const toDispose = this.toDispose.get(id);
+        if (toDispose) {
+          toDispose.dispose();
+          this.toDispose.delete(id);
+        }
         return Promise.resolve();
     }
 
-    private convertCompletionItem(item: vscode.CompletionItem, position: vscode.Position, defaultRange: vscode.Range, id: number, parentId: number): CompletionItem | undefined {
+    private convertCompletionItem(item: vscode.CompletionItem, position: vscode.Position, id: number, parentId: number): CompletionItem | undefined {
         if (typeof item.label !== 'string' || item.label.length === 0) {
             console.warn('Invalid Completion Item -> must have at least a label');
             return undefined;
         }
+        const disposables = this.toDispose.get(parentId);
+        if (!disposables) {
+          throw Error('DisposableStore is missing...');
+        }
 
         const result: CompletionItem = {
             id,
-            // TODO range undefined兼容
+            // FIXME range为空
             range: Converter.fromRange(item.range!),
             kind: Converter.fromCompletionItemKind(item.kind),
             parentId,
@@ -114,36 +120,39 @@ export class CompletionAdapter {
             preselect: item.preselect,
             insertText: '',
             additionalTextEdits: item.additionalTextEdits && item.additionalTextEdits.map(Converter.fromTextEdit),
-            command: undefined,   // TODO: implement this: this.commands.toInternal(item.command),
+            command: item.command ? this.commandConverter.toInternal(item.command, disposables) : undefined,
             commitCharacters: item.commitCharacters,
             insertTextRules: undefined,
         };
 
-        if (typeof item.insertText === 'string') {
+        if (item.textEdit) {
+          result.insertText = item.textEdit.newText;
+        } else if (typeof item.insertText === 'string') {
             result.insertText = item.insertText;
             result.snippetType = 'internal';
         } else if (item.insertText instanceof SnippetString) {
             result.insertText = item.insertText.value;
             result.snippetType = 'textmate';
             result.insertTextRules = CompletionItemInsertTextRule.InsertAsSnippet;
-
         } else {
-            result.insertText = item.label;
-            result.snippetType = 'internal';
+          result.insertText = item.label;
+          result.snippetType = 'internal';
         }
 
-        let range: vscode.Range;
-        if (item.range) {
-            range = item.range;
-        } else {
-            range = defaultRange;
+        let range: vscode.Range | undefined;
+        if (item.textEdit) {
+          range = item.textEdit.range;
+        } else if (item.range) {
+          range = item.range;
         }
-        result.overwriteBefore = position.character - range.start.character;
-        result.overwriteAfter = range.end.character - position.character;
+        if (range) {
+          result.overwriteBefore = position.character - range.start.character;
+          result.overwriteAfter = range.end.character - position.character;
 
-        if (!range.isSingleLine || range.start.line !== position.line) {
-            console.warn('Invalid Completion Item -> must be single line and on the same line');
-            return undefined;
+          if (!range.isSingleLine || range.start.line !== position.line) {
+              console.warn('Invalid Completion Item -> must be single line and on the same line');
+              return undefined;
+          }
         }
 
         return result;
