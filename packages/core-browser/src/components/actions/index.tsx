@@ -126,13 +126,16 @@ export const MenuActionList: React.FC<{
 };
 
 export const IconAction: React.FC<{
-  data: IMenuAction;
+  data: MenuNode;
   context?: any[];
 } & React.HTMLAttributes<HTMLDivElement>> = ({ data, context = [], className, ...restProps }) => {
   const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (typeof data.execute === 'function') {
+    if (data.id === SubmenuItemNode.ID) {
+      const anchor = { x: e.clientX, y: e.clientY };
+      data.execute(anchor, ...context);
+    } else if (typeof data.execute === 'function') {
       data.execute(context);
     }
   }, [ data, context ]);
@@ -164,6 +167,7 @@ interface BaseActionListProps {
    * 额外的 IMenuAction
    */
   extraNavActions?: IMenuAction[];
+  className?: string;
 }
 
 /**
@@ -172,7 +176,6 @@ interface BaseActionListProps {
 const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
-  className?: string;
 } & BaseActionListProps> = ({
   nav: primary = [],
   more: secondary = [],

@@ -48,5 +48,5 @@ export enum MenuId {
   CommentActions = 'comment/actions',
   GlobalActivity = 'global/activity',
   ExtensionContext = 'extension/context', // 插件市场 item
-  SettingsIconMenu = 'settings/icon/men', // 右下角 setting menu
+  SettingsIconMenu = 'settings/icon/menu', // 右下角 setting menu
 }

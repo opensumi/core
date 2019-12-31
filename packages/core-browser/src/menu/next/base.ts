@@ -1,7 +1,8 @@
-import { ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider, MaybeNull } from '@ali/ide-core-common';
+import { ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { MenuId } from './menu-id';
+import { CtxMenuRenderParams } from './renderer/ctxmenu/base';
 
 export const NextMenuContribution = Symbol('NextMenuContribution');
 export interface NextMenuContribution {
@@ -35,8 +36,15 @@ export interface IMenuItem {
 }
 
 export interface ISubmenuItem {
-  label: string;
   submenu: MenuId | string;
+  /**
+   * 支持国际化占位符，例如 %evenEditorGroups%
+   */
+  label?: string;
+  /**
+   * 图标的名称
+   */
+  iconClass?: string;
   /**
    * 决定是否在视图层展示
    */
@@ -234,7 +242,7 @@ export interface IMenuAction {
   disabled?: boolean; // disable 状态的 menu
   checked?: boolean; // checked 状态 通过 toggledWhen 实现
   nativeRole?: string; // electron menu 使用
-  execute?: (event?: any) => any;
+  execute?: (...args: any[]) => any;
 }
 
 export class MenuNode implements IMenuAction {
@@ -250,7 +258,7 @@ export class MenuNode implements IMenuAction {
   checked: boolean;
   nativeRole: string;
   children: MenuNode[] = [];
-  readonly _actionCallback?: (event?: any) => any;
+  protected _actionCallback?: (...args: any[]) => any;
 
   constructor(props: IMenuAction) {
     this.id = props.id;
@@ -266,9 +274,9 @@ export class MenuNode implements IMenuAction {
     this._actionCallback = props.execute;
   }
 
-  execute(event?: any): any {
+  execute(...args: any[]): any {
     if (this._actionCallback) {
-      return this._actionCallback(event);
+      return this._actionCallback(...args);
     }
 
     return Promise.resolve(true);

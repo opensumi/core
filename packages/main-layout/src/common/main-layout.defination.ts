@@ -3,7 +3,7 @@ import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-brow
 import { TabBarHandler } from '../browser/tabbar-handler';
 import { TabbarService } from '../browser/tabbar/tabbar.service';
 import { AccordionService } from '../browser/accordion/accordion.service';
-import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface ComponentCollection {
   views?: View[];
@@ -51,7 +51,7 @@ export interface IMainLayoutService {
   getAccordionService(containerId: string): AccordionService;
   // 某一位置是否可见
   isVisible(location: string): boolean;
-  getExtraMenu(): IMenu;
+  getExtraMenu(): IContextMenu;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');

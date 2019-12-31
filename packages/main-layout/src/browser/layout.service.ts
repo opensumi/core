@@ -60,6 +60,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
 
+  @Autowired(AbstractContextMenuService)
+  protected contextmenuService: AbstractContextMenuService;
+
   constructor() {
     super();
   }
@@ -180,7 +183,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   }
 
   getExtraMenu() {
-    return this.menuService.createMenu(MenuId.ActivityBarExtra);
+    return this.contextmenuService.createMenu({
+      id: MenuId.ActivityBarExtra,
+    });
   }
 
   protected doGetTabbarHandler(containerId: string) {
