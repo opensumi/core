@@ -58,6 +58,21 @@ export class DebugVariableService {
     }
   }
 
+  @action.bound
+  async onContextMenu(nodes: TreeNode[]) {
+    const node = nodes[0];
+    const session = this.viewModel.currentSession;
+    const scope = node.parent;
+
+    if (session && scope) {
+      session.setVariableValue({
+        variablesReference: scope.id,
+        name: node.name,
+        value: '5',
+      } as any);
+    }
+  }
+
   extractNodes(scopes: any[], depth: number, order: number = 0): TreeNode[] {
     let nodes: TreeNode[] = [];
     this.updateStatus(scopes, depth);
