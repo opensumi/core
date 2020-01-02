@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, Domain, CommandContribution, CommandRegistry } from '@ali/ide-core-common';
+import { Disposable, Domain, CommandContribution, CommandRegistry, CommandService } from '@ali/ide-core-common';
 import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMenuRegistry, generateMergedCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { memoize, IContextKeyService, localize, KeybindingContribution, KeybindingRegistry, PreferenceService } from '@ali/ide-core-browser';
+import { memoize, IContextKeyService, localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, COMMON_COMMANDS } from '@ali/ide-core-browser';
 import { ITerminalController, terminalFocusContextKey, TerminalSupportType } from '../common';
 import { TerminalClient } from './terminal.client';
 import { TabManager } from './component/tab/manager';
@@ -45,6 +45,12 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
 
   @Autowired(PreferenceService)
   preference: PreferenceService;
+
+  @Autowired(IPreferenceSettingsService)
+  settingService: IPreferenceSettingsService;
+
+  @Autowired(CommandService)
+  commands: CommandService;
 
   registerCommands(registry: CommandRegistry) {
 
@@ -120,7 +126,8 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
 
     registry.registerCommand({ id: SimpleCommonds.moreSettings }, {
       execute: async () => {
-
+        this.commands.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id);
+        this.settingService.setCurrentGroup('terminal');
       },
     });
     /** end */
