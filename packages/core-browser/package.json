@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "1.6.11",
+  "version": "1.7.0",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -19,9 +19,9 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-connection": "1.6.11",
-    "@ali/ide-core-common": "1.6.11",
-    "@ali/ide-components": "1.6.11",
+    "@ali/ide-connection": "1.7.0",
+    "@ali/ide-core-common": "1.7.0",
+    "@ali/ide-components": "1.7.0",
     "@ant-design/dark-theme": "^0.2.2",
     "ajv": "^6.10.0",
     "ansi-to-react": "^5.0.0",
@@ -53,6 +53,6 @@
     "vscode-debugprotocol": "^1.35.0",
     "vscode-languageserver-protocol": "^3.14.1",
     "vscode-textmate": "4.3.0",
-    "resize-observer-polyfill":"1.5.1"
+    "resize-observer-polyfill": "1.5.1"
   }
 }
