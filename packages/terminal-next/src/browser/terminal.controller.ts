@@ -435,7 +435,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.focusWidget(widgetId);
       this.removeFocused();
       this._clientsMap.delete(widgetId);
-      this.service.disposeById(client.id);
       client.dispose();
     }
   }
