@@ -396,7 +396,7 @@ export const TreeContainer = (
   }, [notifyThemeChange]);
 
   return <div
-    className={cls(styles.kt_treenode_container, outerFocused && styles.kt_treenode_container_focused, outerDragOver && styles.kt_treenode_all_focused)}
+    className={cls(styles.treenode_container, outerFocused && styles.treenode_container_focused, outerDragOver && styles.treenode_all_focused)}
     style={style}
     onBlur={outerBlurHandler}
     onFocus={outerFocusHandler}

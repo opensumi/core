@@ -99,6 +99,7 @@ const getNodeById = (nodes: IFileTreeItemRendered[], id: number | string): IFile
 
 const extractFileItemShouldBeRendered = (
   filetreeService: FileTreeService,
+  themeService: IThemeService,
   files: (Directory | File)[] = [],
   statusMap: IFileTreeItemStatus,
   depth: number = 0,
@@ -116,6 +117,7 @@ const extractFileItemShouldBeRendered = (
       const isFocused = status.focused;
       const isCuted = status.cuted;
       const isLoading = status.isLoading;
+      const isDropping = status.isDropping;
       renderedFiles.push({
         ...file,
         icon: file.getIcon(isExpanded!),
@@ -123,6 +125,8 @@ const extractFileItemShouldBeRendered = (
           ...status.file.filestat,
         },
         style: isCuted ? {opacity: .5} as React.CSSProperties : {},
+        // 设置拖拽底色
+        background: isDropping ? themeService.getColor({id: 'sideBar.dropBackground'}) || '' : 'inherit',
         depth,
         selected: isSelected,
         expanded: isExpanded,
@@ -130,7 +134,7 @@ const extractFileItemShouldBeRendered = (
         isLoading,
       });
       if (isExpanded && file instanceof Directory) {
-        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, statusMap, depth + 1));
+        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, themeService, file.children, statusMap, depth + 1));
       }
     }
   });
@@ -265,10 +269,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   getFiles = () => {
     if (this.filetreeService.isMutiWorkspace) {
-      return extractFileItemShouldBeRendered(this.filetreeService, this.filetreeService.files, this.status);
+      return extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status);
     } else {
       // 非多工作区不显示跟路径
-      return extractFileItemShouldBeRendered(this.filetreeService, this.filetreeService.files, this.status).slice(1);
+      return extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status).slice(1);
     }
   }
 
@@ -420,13 +424,14 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       return;
     }
     const selectNodes = getNodesFromExpandedDir([containing]);
-    this.filetreeService.updateFilesSelectedStatus(selectNodes, true);
+    this.filetreeService.updateFilesDroppingStatus(selectNodes, true);
   }
 
   onDrop = (node: IFileTreeItemRendered, event: React.DragEvent) => {
     try {
       event.preventDefault();
       event.stopPropagation();
+      this.filetreeService.resetFilesDroppingStatus();
       event.dataTransfer.dropEffect = 'copy';
       let containing: IFileTreeItemRendered | undefined;
       if (node) {

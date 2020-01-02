@@ -30,12 +30,21 @@ import { ResourceLabelOrIconChangedEvent } from '@ali/ide-core-browser/lib/servi
 import { FileContextKey } from './file-contextkey';
 
 export type IFileTreeItemStatus = Map<string, {
+  // 是否选中
   selected?: boolean;
+  // 是否展开
   expanded?: boolean;
+  // 是否处于焦点
   focused?: boolean;
+  // 是否剪切过
   cuted?: boolean;
+  // 是否加载中
   isLoading?: boolean;
+  // 是否处于拖动状态
+  isDropping?: boolean;
+  // 是否需要更新
   needUpdated?: boolean;
+  // 源节点
   file: Directory | File;
 }>;
 
@@ -684,6 +693,38 @@ export class FileTreeService extends WithEventBus {
             focused: value,
           });
         }
+      });
+    }
+  }
+
+  @action
+  updateFilesDroppingStatus(files: (Directory | File)[] = [], value: boolean) {
+    if (files.length === 0) {
+      this.resetFilesDroppingStatus();
+    } else {
+      this.resetFilesDroppingStatus();
+      files.forEach((file: Directory | File) => {
+        const statusKey = this.getStatutsKey(file);
+        const status = this.status.get(statusKey);
+        if (status) {
+          this.status.set(statusKey, {
+            ...status,
+            isDropping: value,
+          });
+        }
+      });
+    }
+  }
+
+  /**
+   * 重置所有文件isDropping属性
+   */
+  @action
+  resetFilesDroppingStatus() {
+    for (const [key, status] of this.status) {
+      this.status.set(key, {
+        ...status,
+        isDropping: false,
       });
     }
   }
