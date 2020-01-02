@@ -16,6 +16,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
 
   async showOpenDialog(options: IOpenDialogOptions | undefined = {}): Promise<URI[] | undefined> {
     if (isElectronRenderer()) {
+      // TODO 非file协议OpenDialog
       const electronUi = this.injector.get(IElectronMainUIService) as IElectronMainUIService;
       const properties: Array<'openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles' | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory'> = [];
       if (options.canSelectFiles) {
@@ -28,7 +29,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
         properties.push('multiSelections');
       }
       const res = await electronUi.showOpenDialog(electronEnv.currentWindowId, {
-        defaultPath: options.defaultUri ? options.defaultUri.codeUri.fsPath : undefined,
+        defaultPath: options.defaultUri ? options.defaultUri.codeUri.fsPath : 'undefined',
         title: options.openLabel,
         properties,
       });
@@ -48,11 +49,26 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
   }
 
   async showSaveDialog(options: ISaveDialogOptions = {}): Promise<URI | undefined> {
-    const res = await this.dialogService.open<string[]>(<FileDialog options={options}/>, MessageType.Empty);
-    if (res && res.length > 0) {
-      return URI.file(res[0]);
+    if (isElectronRenderer()) {
+      // TODO 非file协议SaveDialog
+      const electronUi = this.injector.get(IElectronMainUIService) as IElectronMainUIService;
+      const res = await electronUi.showSaveDialog(electronEnv.currentWindowId, {
+        defaultPath: (options.defaultUri ? options.defaultUri.codeUri.fsPath : '') + '/' + (options.defaultFileName || ''),
+        title: options.saveLabel,
+        message: options.saveLabel,
+      });
+      if (res) {
+        return URI.file(res);
+      } else {
+        return undefined;
+      }
     } else {
-      return undefined;
+      const res = await this.dialogService.open<string[]>(<FileDialog options={options}/>, MessageType.Empty);
+      if (res && res.length > 0) {
+        return URI.file(res[0]);
+      } else {
+        return undefined;
+      }
     }
   }
 
