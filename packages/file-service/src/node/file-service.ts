@@ -278,7 +278,7 @@ export class FileService extends RPCService implements IFileService {
     const encoding = await this.doGetEncoding(options);
     let newStat: any = await provider.writeFile(_uri.codeUri, encode(content, encoding), {
       create: true,
-      overwrite: options.overwrite || false,
+      overwrite: options && options.overwrite || false,
     });
     newStat = newStat || await provider.stat(_uri.codeUri);
     if (newStat) {
