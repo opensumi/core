@@ -45,10 +45,10 @@ const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRang
         for (let i = 0; i < rangeLen; i ++) {
           content.push(<span>
             { i === 0 ? template.slice(0, ranges[i].start) : template.slice(ranges[i - 1].end, ranges[i].start)}
-            <span className={cls(styles.kt_search_match, replace && styles.replace)}>
+            <span className={cls(styles.search_match, replace && styles.replace)}>
               {template.slice(ranges[i].start, ranges[i].end)}
             </span>
-            <span className={replace && styles.kt_search_replace}>
+            <span className={replace && styles.search_replace}>
               {replace}
             </span>
             { i + 1 < rangeLen ? template.slice(ranges[i + 1].start) : template.slice(ranges[i].end) }
@@ -70,7 +70,7 @@ const renderBadge = (node: TreeNode) => {
     return <Badge style={node.badgeStyle}>{node.badge > limit ? `${limit}+` : node.badge}</Badge>;
   } else if (typeof node.badge === 'string') {
     const limit = node.badgeLimit || node.badge.length;
-    return <div className={styles.kt_treenode_status} style={node.badgeStyle}>
+    return <div className={styles.treenode_status} style={node.badgeStyle}>
       {node.badge.slice(0, limit)}
     </div>;
   }
@@ -81,7 +81,7 @@ const renderDescription = (node: any, replace: string) => {
     const Template = node.description as React.JSXElementConstructor<any>;
     return <Template />;
   } else {
-    return <div className={cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass)}>
+    return <div className={cls(styles.treenode_segment_grow, styles.treenode_description, node.descriptionClass)}>
       {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
     </div>;
   }
@@ -94,10 +94,10 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
   return <div
     onClick={clickHandler}
     className={cls(
-      styles.kt_treenode_segment,
-      styles.kt_expansion_toggle,
-      getIcon('right'),
-      { [`${styles.kt_mod_collapsed}`]: !node.expanded },
+      styles.treenode_segment,
+      styles.expansion_toggle,
+      getIcon('arrow-right'),
+      { [`${styles.mod_collapsed}`]: !node.expanded },
     )}
   />;
 };
@@ -105,7 +105,7 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
 const renderHead = (node: TreeNode) => {
   return <div
     className={cls(
-      styles.kt_treenode_head,
+      styles.treenode_head,
       node.headClass,
     )}
   >
@@ -309,7 +309,7 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.kt_file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight}px`}}>
+    return <div className={cls(node.icon, styles.file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight}px`}}>
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
     </div>;
   };
@@ -367,12 +367,12 @@ export const TreeContainerNode = (
         };
       }
       return <div
-        className={cls(styles.kt_treenode_segment, styles.kt_treenode_inputbox, actualValidate(value) && styles.overflow_visible)}
+        className={cls(styles.treenode_segment, styles.treenode_inputbox, actualValidate(value) && styles.overflow_visible)}
       >
-        <div className={styles.kt_input_wrapper}>
+        <div className={styles.input_wrapper}>
           <ValidateInput
             type='text'
-            className={cls(styles.kt_input_box)}
+            className={cls(styles.input_box)}
             autoFocus={true}
             onBlur={blurHandler}
             value={value}
@@ -389,7 +389,7 @@ export const TreeContainerNode = (
       return <Template />;
     } else {
       return <div
-        className={cls(styles.kt_treenode_segment, styles.kt_treenode_displayname, node.labelClass)}
+        className={cls(styles.treenode_segment, styles.treenode_displayname, node.labelClass)}
       >
         {node.beforeLabel}
         {renderWithRangeAndReplace(node.name, node.highLightRanges && node.highLightRanges.name, replace)}
@@ -416,22 +416,22 @@ export const TreeContainerNode = (
 
     if (ExpandableTreeNode.is(node)) {
       if (treeContainerActions.length > 0) {
-        return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
+        return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
           {renderTreeContainerActions(node, treeContainerActions, commandActuator)}
           {renderBadge(node)}
         </div>;
       } else {
-        return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
+        return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
           {renderBadge(node)}
         </div>;
       }
     } else if (treeNodeRightActions.length !== 0) {
-      return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
+      return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
         {renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator)}
         {renderBadge(node)}
       </div>;
     } else {
-      return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
+      return <div className={cls(styles.treenode_segment, styles.treenode_tail)}>
         {renderBadge(node)}
       </div>;
     }
@@ -450,7 +450,7 @@ export const TreeContainerNode = (
 
   const renderTitle = (node: TreeNode) => {
     if (node.title) {
-      return <div className={styles.kt_treenode_title} style={titleStyle}>{node.title}</div>;
+      return <div className={styles.treenode_title} style={titleStyle}>{node.title}</div>;
     }
   };
   const foldNodeOffsetStyle = {
@@ -475,21 +475,21 @@ export const TreeContainerNode = (
     >
       <div
         className={cls(
-          styles.kt_treenode,
+          styles.treenode,
           {
             [styles.alwaysShowActions]: alwaysShowActions,
-            [styles.kt_mod_focused]: SelectableTreeNode.hasFocus(node),
-            [styles.kt_mod_selected]: !SelectableTreeNode.hasFocus(node) && !!SelectableTreeNode.isSelected(node),
+            [styles.mod_focused]: SelectableTreeNode.hasFocus(node),
+            [styles.mod_selected]: !SelectableTreeNode.hasFocus(node) && !!SelectableTreeNode.isSelected(node),
           },
         )}
         style={TreeNodeStyle}
       >
         {renderTitle(node)}
-        <div className={cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')} style={itemStyle}>
+        <div className={cls(styles.treenode_content, node.badge ? styles.treenode_has_badge : '')} style={itemStyle}>
           {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
           {renderIcon(node)}
           <div
-            className={isEdited ? styles.kt_treenode_edit_wrap : isString(node.name) ? styles.kt_treenode_overflow_wrap : styles.kt_treenode_flex_wrap}
+            className={isEdited ? styles.treenode_edit_wrap : isString(node.name) ? styles.treenode_overflow_wrap : styles.treenode_flex_wrap}
             style={foldNodeOffsetStyle}
           >
             {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
