@@ -420,6 +420,7 @@ export const localizationBundle = {
 
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分',
+    'terminal.menu.rename': '重命名',
     'terminal.menu.selectAll': '全选',
     'terminal.menu.copy': '复制',
     'terminal.menu.paste': '粘贴',

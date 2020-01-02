@@ -5,8 +5,18 @@ import { Emitter, Event, uuid } from '@ali/ide-core-common';
 export class TabItemInfo {
   private _id = uuid();
 
+  private _name = '';
+
   get id() {
     return this._id;
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  constructor(name = '') {
+    this._name = name;
   }
 }
 
@@ -22,6 +32,9 @@ export class TabManager {
 
   @observable
   state: { current: number };
+
+  @observable
+  editable: Set<string>;
 
   constructor() {
     this.clear();
@@ -58,6 +71,7 @@ export class TabManager {
 
   clear() {
     this.items = observable.array([]);
+    this.editable = observable.set(new Set());
     this.state = observable.object({
       current: -1,
     });
@@ -72,8 +86,21 @@ export class TabManager {
     return item;
   }
 
-  setName(index: number, name: string) {
-    this.items.splice(index, 1, new TabItemInfo());
+  addEditable(id: string) {
+    this.editable.add(id);
+  }
+
+  delEditable(id: string) {
+    this.editable.delete(id);
+  }
+
+  rename(id: string, index: number, name: string) {
+    const item = this.items[index];
+
+    this.delEditable(id);
+    if (item) {
+      this.items.splice(index, 1, new TabItemInfo(name));
+    }
   }
 
   private _onOpen = new Emitter<TabEvent>();
