@@ -61,7 +61,10 @@ export class AccordionService {
     });
     this.viewContextKeyRegistry.afterContextKeyServiceRegistered(this.containerId, (contextKeyService) => {
       this.topViewKey = contextKeyService!.createKey('view', containerId);
-      this.popViewKeyIfOnlyOneViewVisible();
+      setTimeout(() => {
+        // 由于tabbar.service会立刻设置view，这边要等下一个event loop
+        this.popViewKeyIfOnlyOneViewVisible();
+      });
     });
   }
 
