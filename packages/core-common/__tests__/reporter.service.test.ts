@@ -49,4 +49,25 @@ describe('packages/core-common/__tests__/reporter.test.ts', () => {
     expect(reporter.performance.mock.calls[0][1].duration - 1000).toBeLessThan(100);
     expect(reporter.performance.mock.calls[1][1].duration - 3000).toBeLessThan(100);
   });
+  it('extra data for time', async () => {
+    const reporterTimer = reporterService.time('test');
+    // 执行耗时 3000 毫秒的方法
+    await sleep(3000);
+    reporterTimer.timeEnd('test', {
+      a: 'this is extra data',
+    });
+    // name 为 test
+    expect(reporter.performance.mock.calls[0][0]).toBe('test');
+    // 可以获取到附加的数据
+    expect(reporter.performance.mock.calls[0][1].extra.a).toBe('this is extra data');
+  });
+  it('extra data for point', async () => {
+    reporterService.point('test', 'test msg', {
+      a: 'this is extra data',
+    });
+    // name 为 test
+    expect(reporter.point.mock.calls[0][0]).toBe('test');
+    // 可以获取到附加的数据
+    expect(reporter.point.mock.calls[0][1].extra.a).toBe('this is extra data');
+  });
 });
