@@ -9,11 +9,12 @@ class ReporterTimer implements IReporterTimer {
     this.now = Date.now();
   }
 
-  timeEnd(msg?: string) {
+  timeEnd(msg?: string, extra?: any) {
     this.reporter.performance(this.name, {
       duration: Date.now() - this.now,
       metadata: this.metadata,
       msg,
+      extra,
     });
   }
 }
@@ -38,10 +39,11 @@ export class ReporterService implements IReporterService, IDisposable {
     return new ReporterTimer(name, this.reporter, this.metadata);
   }
 
-  point(name: REPORT_NAME, msg?: string): void {
+  point(name: REPORT_NAME, msg?: string, extra?: any): void {
     this.reporter.point(name, {
       metadata: this.metadata,
       msg,
+      extra,
     });
   }
 
