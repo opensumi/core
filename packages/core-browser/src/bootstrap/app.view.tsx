@@ -5,6 +5,8 @@ import * as ReactDom from 'react-dom';
 import { DefaultLayout } from '../components/layout/default-layout';
 import { IEventBus } from '@ali/ide-core-common';
 import { ResizeEvent } from '../layout';
+import { getIcon } from '../style/icon/icon';
+import { IconContextProvider } from '@ali/ide-components';
 
 export interface AppProps {
   app: IClientApp;
@@ -32,10 +34,12 @@ export function App(props: AppProps) {
     return () => { window.removeEventListener('resize', handle); };
   }, []);
   return (
-    <ConfigProvider value={ props.app.config }>
-      {<props.main />}
-      {props.overlays && props.overlays.map((Component, index) => <Component key={index} />)}
-    </ConfigProvider>
+    <IconContextProvider value={{ getIcon }}>
+      <ConfigProvider value={ props.app.config }>
+        {<props.main />}
+        {props.overlays && props.overlays.map((Component, index) => <Component key={index} />)}
+      </ConfigProvider>
+    </IconContextProvider>
   );
 }
 
