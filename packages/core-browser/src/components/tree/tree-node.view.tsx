@@ -441,7 +441,7 @@ export const TreeContainerNode = (
   const itemStyle = {
     height: itemLineHeight,
     lineHeight: `${itemLineHeight}px`,
-    paddingLeft: ExpandableTreeNode.is(node) ? 0 : '14px',
+    paddingLeft: ExpandableTreeNode.is(node) ? 0 : foldable ? '14px' : 0,
   } as React.CSSProperties;
 
   const titleStyle = {
