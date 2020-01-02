@@ -23,11 +23,11 @@ import {
   ISchemaStore,
   JsonSchemaContribution,
   ISchemaRegistry,
+  IPreferenceSettingsService,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { PreferenceService } from '@ali/ide-core-browser/lib/preferences';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME } from '../common';
@@ -81,9 +81,6 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   @Autowired(IFileServiceClient)
   protected readonly filesystem: IFileServiceClient;
 
-  @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
-
   @Autowired(PrefResourceProvider)
   prefResourceProvider: PrefResourceProvider;
 
@@ -93,11 +90,15 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   @Autowired(ISchemaRegistry)
   schemaRegistry: ISchemaRegistry;
 
+  @Autowired(IPreferenceSettingsService)
+  preferenceService: IPreferenceSettingsService;
+
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
       isEnabled: () => true,
       execute: async () => {
         await this.openPreferences();
+        // this.preferenceService.setCurrentGroup('terminal');
       },
     });
   }
