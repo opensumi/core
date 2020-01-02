@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import * as classNames from 'classnames';
-import { getIcon } from '@ali/ide-core-browser';
 
 import './style.less';
-import { Icon } from '../icon';
+import { Icon, IconContext } from '../icon';
 
 interface ISelectProps {
   className?: string;
@@ -28,6 +27,7 @@ export const Select: React.FC<ISelectProps> = ({
   value,
   onChange,
 }) => {
+  const { getIcon } = React.useContext(IconContext);
   const [open, setOpen] = useState(false);
   const [select, setSelect] = useState<string | null>(null);
 

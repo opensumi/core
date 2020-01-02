@@ -2,13 +2,10 @@ import * as React from 'react';
 import 'antd/lib/button/style/index.css';
 import { observer } from 'mobx-react-lite';
 import * as styles from './dialog.module.less';
-import { useInjectable, localize, MessageType } from '@ali/ide-core-browser';
+import { useInjectable, localize } from '@ali/ide-core-browser';
 import { IDialogService } from '../common';
-import { getIcon } from '@ali/ide-core-browser';
-import clx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
-import { Overlay } from '@ali/ide-core-browser/lib/components/overlay';
-import { Button } from '@ali/ide-components';
+import { Button, Dialog as DialogView } from '@ali/ide-components';
 
 export const Dialog = observer(() => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
@@ -32,26 +29,19 @@ export const Dialog = observer(() => {
   }
 
   return (
-    <Overlay
+    <DialogView
       visible={dialogService.isVisible()}
       onClose={handleClose}
       closable={dialogService.closable}
-      afterClose={afterClose}>
-      { type !== MessageType.Empty ? (
-        <>
-          <div className={styles.content}>
-          {icon && <div style={{ color: icon.color }} className={clx(styles.icon, getIcon(icon.className))}/>}
-          {typeof message === 'string' ? (<span className={styles.message}>{ message }</span>) : message}
-        </div>
-        <div className={styles.buttonWrap}>
-          {buttons.length ? buttons.map((button, index) => (
-            <Button onClick={handlerClickButton(button)} key={button} type={index === buttons.length - 1 ? 'primary' : 'secondary'} className={styles.button}>{ mnemonicButtonLabel(button, true) }</Button>
-          )) : (
-            <Button onClick={handleClose} type='primary' className={styles.button}>{localize('dialog.confirm')}</Button>
-          )}
-        </div>
-        </>
-      ) :  message}
-    </Overlay>
+      afterClose={afterClose}
+      message={message}
+      type={type}
+      icon={icon}
+      buttons={buttons.length ? buttons.map((button, index) => (
+        <Button onClick={handlerClickButton(button)} key={button} type={index === buttons.length - 1 ? 'primary' : 'secondary'} className={styles.button}>{ mnemonicButtonLabel(button, true) }</Button>
+      )) : (
+        <Button onClick={handleClose} type='primary' className={styles.button}>{localize('dialog.confirm')}</Button>
+      )}
+    />
   );
 });
