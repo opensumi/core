@@ -69,6 +69,7 @@ export class EditorContextMenuController extends Disposable {
     });
     const menuNodes = contextMenu.getMergedMenuNodes();
     contextMenu.dispose();
+
     this.contextMenuRenderer.show({
       anchor,
       menuNodes,

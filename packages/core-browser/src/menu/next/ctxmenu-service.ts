@@ -61,25 +61,25 @@ export class ContextMenu extends Disposable implements IContextMenu {
 
     // 监听内部的 onMenuChange 刷新单个 menubarItem 下的所有节点
     this.addDispose(Event.debounce(
-      this.onMenuChange,
-      (l, menuId: string) => menuId,
+      Event.filter(this.onMenuChange, (menuId) => menuId === this._menuId),
+      () => { },
       50,
     )(this._rebuildMenus, this));
 
     this.addDispose(this._onDidMenuChange);
   }
 
-  // 构建完整的 menubarIds/_menubarItems/_menubarMenus
+  // 构建完整的 menuItems
   private _build() {
     // reset
     this._menuItems = [[], []];
     this._buildMenus(this._menuId);
   }
 
-  // 根据事件监听结果更新单个 menuId 下的 menus
-  private _rebuildMenus(menudId: string) {
-    this._buildMenus(menudId);
-    this._onDidMenuChange.fire(menudId);
+  // 根据事件监听结果更新
+  private _rebuildMenus() {
+    this._buildMenus(this._menuId);
+    this._onDidMenuChange.fire(this._menuId);
   }
 
   /**
