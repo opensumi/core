@@ -42,7 +42,7 @@ export const FILES_DEFAULTS = {
 
 export const FILE_TREE_DEFAULTS = {
   baseIndent: 10,
-  indent: 6,
+  indent: 8,
 };
 
 // TODO: 实现 https://code.visualstudio.com/docs/getstarted/settings
