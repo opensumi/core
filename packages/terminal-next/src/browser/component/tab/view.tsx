@@ -16,16 +16,20 @@ export default observer(() => {
   return (
     <div className={ styles.view_container }>
       {
-        manager.items.map((_, index) => {
+        manager.items.map((item, index) => {
           const group = controller.groups[index];
           return (
             <TabItem
-              name={ (group && group.snapshot) || 'init...' }
+              id={ group && group.id }
+              editable={ manager.editable.has(group && group.id) }
+              name={ (item.name || (group && group.snapshot)) || 'init...' }
               key={ `tab-item-${index}` }
               selected={ manager.state.current === index }
+              onInputBlur={ (id: string) => manager.delEditable(id) }
+              onInputEnter = { (id: string, name: string) => manager.rename(id, index, name) }
               onClick={ () => manager.select(index) }
               onClose={ () => manager.remove(index) }
-              onContextMenu={ (event) => menuService.onTabContextMenu(event) }
+              onContextMenu={ (event) => menuService.onTabContextMenu(event, index) }
             ></TabItem>
           );
         })

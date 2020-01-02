@@ -364,6 +364,7 @@ export const localizationBundle = {
 
     'terminal.menu.search': 'Search',
     'terminal.menu.split': 'Split',
+    'terminal.menu.rename': 'Rename',
     'terminal.menu.selectAll': 'Select All',
     'terminal.menu.copy': 'Copy',
     'terminal.menu.paste': 'Paste',

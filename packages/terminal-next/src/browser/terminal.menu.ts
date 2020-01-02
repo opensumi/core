@@ -14,6 +14,7 @@ export enum MenuId {
 export enum SimpleCommonds {
   search = 'terminalsearch',
   split = 'terminal:split',
+  rename = 'terminal:rename',
   selectAll = 'terminal:selectAll',
   copy = 'terminal:copy',
   paste = 'terminal:paste',
@@ -48,12 +49,6 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
   registerCommands(registry: CommandRegistry) {
 
     /** Tab 右键菜单和 Toolbar 使用的 command */
-    registry.registerCommand({ id: SimpleCommonds.search }, {
-      execute: async () => {
-        this.terminalController.openSearchInput();
-      },
-    });
-
     registry.registerCommand({ id: SimpleCommonds.split }, {
       execute: async () => {
         this.terminalController.addWidget();
@@ -61,10 +56,24 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
     });
 
     registry.registerCommand({ id: SimpleCommonds.stopGroup }, {
-      execute: async () => {
-        if (this.terminalController.state.index !== -1) {
-          this.tabManager.remove(this.terminalController.state.index);
+      execute: async (_: any, index: number) => {
+        if (index !== -1) {
+          this.tabManager.remove(index);
         }
+      },
+    });
+
+    registry.registerCommand({ id: SimpleCommonds.rename }, {
+      execute: async (args: any) => {
+        if (args && args.id) {
+          this.tabManager.addEditable(args.id);
+        }
+      },
+    });
+
+    registry.registerCommand({ id: SimpleCommonds.search }, {
+      execute: async () => {
+        this.terminalController.openSearchInput();
       },
     });
 
@@ -132,6 +141,15 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
         id: SimpleCommonds.split,
         label: localize('terminal.menu.split'),
       },
+      order: 1,
+      group,
+    });
+
+    menuRegistry.registerMenuItem(MenuId.TermTab, {
+      command: {
+        id: SimpleCommonds.rename,
+        label: localize('terminal.menu.rename'),
+      },
       order: 2,
       group,
     });
@@ -141,7 +159,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
         id: SimpleCommonds.stopGroup,
         label: localize('terminal.menu.stopGroup'),
       },
-      order: 1,
+      order: 3,
       group,
     });
     /** end */
@@ -221,6 +239,9 @@ export class TerminalContextMenuService extends Disposable {
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
+  @Autowired()
+  tabManager: TabManager;
+
   @memoize get contextMenu(): IMenu {
     const contributedContextMenu = this.menuService.createMenu(MenuId.TermPanel, this.contextKeyService);
     this.addDispose(contributedContextMenu);
@@ -237,7 +258,7 @@ export class TerminalContextMenuService extends Disposable {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [ 'some args for command executor' ],
+      args: [],
     });
   }
 
@@ -247,7 +268,7 @@ export class TerminalContextMenuService extends Disposable {
     return contributedContextMenu;
   }
 
-  onTabContextMenu(event: React.MouseEvent<HTMLElement>) {
+  onTabContextMenu(event: React.MouseEvent<HTMLElement>, index: number) {
     event.preventDefault();
 
     const { x, y } = event.nativeEvent;
@@ -257,7 +278,7 @@ export class TerminalContextMenuService extends Disposable {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [ 'some args for command executor' ],
+      args: [ event.target, index ],
     });
   }
 }

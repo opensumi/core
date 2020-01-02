@@ -1,6 +1,7 @@
 .view_container {
   display: flex;
   font-size: 12px;
+  overflow: scroll;
 }
 
 .item_container {
@@ -11,6 +12,8 @@
   color: var(--kt-panelTab-inactiveForeground);
   background-color: var(--kt-panelTab-inactiveBackground);
   border-right: 1px solid var(--kt-panelTab-border);
+  max-width: 800px;
+  min-width: 105px;
 
   :last-child {
     transition: opacity 0.2s ease-in-out;
@@ -27,13 +30,26 @@
 }
 
 .item_info_name {
+  flex: 1;
   margin-right: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 800px;
-  min-width: 66px;
   line-height: 28px;
+  text-indent: 1px;
+}
+
+.item_info_input {
+  flex: 1;
+  text-indent: 0px;
+  text-align: left;
+  border: none;
+  outline: none;
+  height: 28px;
+  line-height: 28px;
+  font-size: 12px;
+  color: inherit;
+  background-color: inherit;
 }
 
 .item_selected {
