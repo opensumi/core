@@ -237,6 +237,7 @@ export const TreeContainerNode = (
     position: 'absolute',
     width: '100%',
     height: itemLineHeight,
+    backgroundColor: node.background || 'inherit',
     left: '0',
     opacity: isEdited && !node.isTemporary ? .3 : 1,
     top: `${(node.order || 0) * itemLineHeight}px`,
