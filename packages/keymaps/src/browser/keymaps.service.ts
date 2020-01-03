@@ -7,6 +7,7 @@ import * as jsoncparser from 'jsonc-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KeybindingJson, KEYMAPS_SCHEME, KeybindingItem } from '../common';
 
+// monaco.contextkey.ContextKeyExprType 引入
 export const enum ContextKeyExprType {
   Defined = 1,
   Not = 2,
