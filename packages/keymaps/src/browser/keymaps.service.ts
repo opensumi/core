@@ -7,6 +7,17 @@ import * as jsoncparser from 'jsonc-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KeybindingJson, KEYMAPS_SCHEME, KeybindingItem } from '../common';
 
+export const enum ContextKeyExprType {
+  Defined = 1,
+  Not = 2,
+  Equals = 3,
+  NotEquals = 4,
+  And = 5,
+  Regex = 6,
+  NotRegex = 7,
+  Or = 8,
+}
+
 @Injectable()
 export class KeymapService implements IKeymapService {
 
@@ -199,24 +210,24 @@ export class KeymapService implements IKeymapService {
     }
     if (!when.expr) {
       switch (when.getType()) {
-        case monaco.contextkey.ContextKeyExprType.Defined:
+        case ContextKeyExprType.Defined:
           return when.key;
-        case monaco.contextkey.ContextKeyExprType.Equals:
+        case ContextKeyExprType.Equals:
           return when.key + ' == \'' + when.getValue() + '\'';
-        case monaco.contextkey.ContextKeyExprType.NotEquals:
+        case ContextKeyExprType.NotEquals:
           return when.key + ' != \'' + when.getValue() + '\'';
-        case monaco.contextkey.ContextKeyExprType.Not:
+        case ContextKeyExprType.Not:
           return '!' + when.key;
-        case monaco.contextkey.ContextKeyExprType.Regex:
+        case ContextKeyExprType.Regex:
           const value = when.regexp
             ? `/${when.regexp.source}/${when.regexp.ignoreCase ? 'i' : ''}`
             : '/invalid/';
           return `${when.key} =~ ${value}`;
-        case monaco.contextkey.ContextKeyExprType.NotRegex:
+        case ContextKeyExprType.NotRegex:
           return '-not regex-';
-        case monaco.contextkey.ContextKeyExprType.And:
+        case ContextKeyExprType.And:
           return when.expr.map((e) => e.serialize()).join(' && ');
-        case monaco.contextkey.ContextKeyExprType.Or:
+        case ContextKeyExprType.Or:
           return when.expr.map((e) => e.serialize()).join(' || ');
         default:
           return when.key;
