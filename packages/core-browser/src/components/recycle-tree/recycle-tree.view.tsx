@@ -224,6 +224,7 @@ export const RecycleTree = (
       containerRef={(ref) => {
         setScrollRef(ref);
       }}
+      minScrollbarLength = {20}
     >
       <TreeContainer
         style={contentStyle}

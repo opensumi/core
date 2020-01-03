@@ -71,6 +71,8 @@ export const VariablesTree = (
           labelClass: item.labelClass,
           afterLabel: item.afterLabel,
           children: item.children,
+          isLoading: item.isLoading,
+          badge: item.badge,
           depth,
           parent: item.parent,
         });
@@ -91,6 +93,8 @@ export const VariablesTree = (
           labelClass: item.labelClass,
           afterLabel: item.afterLabel,
           children: item.children,
+          isLoading: item.isLoading,
+          badge: item.badge,
           depth,
           parent: item.parent,
           expanded: nodeModel && typeof nodeModel.expanded === 'boolean' ? nodeModel.expanded : undefined,
