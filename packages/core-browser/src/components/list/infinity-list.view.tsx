@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './infinity-list.module.less';
 import { PerfectScrollbar } from '../scrollbar';
+import throttle = require('lodash.throttle');
 
 const VISIBLE_SLICE_COUNT = 3;
 
@@ -129,10 +130,12 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
 
   readonly state: InfinityListState = defaultInfinityListState;
 
-  componentDidMount() {
-    const { isDrained, scrollBottomIfActive } = this.props;
+  private scrollToBottom = throttle(() => {
+    this.containerEl.scrollTop = this.containerEl.scrollHeight;
+  }, 500);
 
-    this.bindScrollHandler();
+  componentDidMount() {
+    const { isDrained } = this.props;
 
     if (this.shouldOptimize) {
       this.bindBoundaryEls();
@@ -149,8 +152,10 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     const { data: oldData, isDrained: wasDrained } = prevProps;
     const { isLoading, isDrained, data, scrollBottomIfActive } = this.props;
 
-    if (scrollBottomIfActive) {
-      this.containerEl.scrollTop = this.containerEl.scrollHeight;
+    if (oldData.length !== data.length) {
+      if (scrollBottomIfActive) {
+        this.scrollToBottom();
+      }
     } else if (oldData.length > data.length) {
       this.containerEl.scrollTop = 0;
     }
@@ -183,7 +188,6 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   componentWillUnmount() {
     this.stopObserve();
     this.unbindBoundaryEls();
-    this.unbindScrollHandler();
   }
 
   get shouldOptimize() {
@@ -204,6 +208,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
         currentSliceIndex + VISIBLE_SLICE_COUNT,
       );
       const startIndex = visibleSlices[0].startIndex;
+      console.log(visibleSlices, ' visibleSlices ==>');
       const amount = visibleSlices.reduce(
         (amount, slice) => slice.amount + amount,
         0,
@@ -239,14 +244,6 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   unbindBoundaryEls = () => {
     this.topBoundary = null;
     this.bottomBoundary = null;
-  }
-
-  bindScrollHandler = () => {
-    this.containerEl.addEventListener('scroll', this.handleScroll);
-  }
-
-  unbindScrollHandler = () => {
-    this.containerEl.removeEventListener('scroll', this.handleScroll);
   }
 
   handleScroll = () => {
@@ -355,7 +352,13 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     const { className, style, placeholders, isDrained, isLoading } = this.props;
     const { topSpaces, bottomSpaces } = this.state;
     return (
-      <PerfectScrollbar className={cls(styles.infinity_container, className)} style={style} containerRef={(el) => (this.rootEl = el)}>
+      <PerfectScrollbar
+        className={cls(styles.infinity_container, className)}
+        style={style}
+        onScrollY={this.handleScroll}
+        containerRef={(el) => (this.rootEl = el)}
+        minScrollbarLength = {30}
+      >
         <div
           ref={(el) => (this.listEl = el)}
           style={{
