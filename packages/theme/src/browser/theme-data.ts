@@ -158,13 +158,8 @@ export class ThemeData implements IThemeData {
           delete tokenColor.settings[current];
           return previous;
         }
-        if (current !== 'fontStyle' && typeof value === typeof '') {
-          if (value.startsWith('#') && value.length === 4) {
-            // 兼容 #fff 类型色值
-            const color = Color.fromHex(value);
-            value = Color.Format.CSS.formatHex(color);
-            tokenColor.settings[current] = value;
-          } else if ( value.indexOf('#') === -1) {
+        if (current !== 'fontStyle' && typeof value === 'string') {
+          if (value.indexOf('#') === -1) {
             // 兼容 white、red 类型色值
             const color = Color[value];
             if (color) {
@@ -175,8 +170,12 @@ export class ThemeData implements IThemeData {
               delete tokenColor.settings[current];
               return previous;
             }
+          } else {
+            const color = Color.fromHex(value);
+            value = Color.Format.CSS.formatHex(color);
+            // 主题只会识别 Hex 的色值
+            tokenColor.settings[current] = value;
           }
-          value = value.replace(/^\#/, '').slice(0, 6);
         }
         previous[current] = value;
         return previous;
