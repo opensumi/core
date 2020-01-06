@@ -180,7 +180,6 @@ export class TerminalClient extends Disposable {
   private _doAttach(socket: WebSocket) {
     this._attachAddon = new AttachAddon(socket);
     this._term.loadAddon(this._attachAddon);
-    this.attachPromise = null;
 
     if (this.showPromiseResolve) {
       this.showPromiseResolve();
