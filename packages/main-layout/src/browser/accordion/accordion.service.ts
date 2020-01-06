@@ -1,9 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection, DisposableStore, IContextKey } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection, DisposableStore, IContextKey, OnEvent, RenderedEvent, WithEventBus, ResizeEvent } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
+import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 export interface SectionState {
   collapsed: boolean;
@@ -12,7 +13,7 @@ export interface SectionState {
 }
 
 @Injectable({multiple: true})
-export class AccordionService {
+export class AccordionService extends WithEventBus {
   @Autowired()
   protected splitPanelManager: SplitPanelManager;
 
@@ -37,11 +38,14 @@ export class AccordionService {
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
+  @Autowired()
+  private layoutState: LayoutState;
+
   protected splitPanelService: SplitPanelService;
 
   @observable.shallow views: View[] = [];
 
-  @observable state: Map<string, SectionState> = new Map();
+  @observable state: {[containerId: string]: SectionState} = {};
 
   private headerSize: number;
   private minSize: number;
@@ -51,6 +55,7 @@ export class AccordionService {
   private topViewKey: IContextKey<string>;
 
   constructor(public containerId: string) {
+    super();
     this.splitPanelService = this.splitPanelManager.getService(containerId);
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
@@ -65,6 +70,27 @@ export class AccordionService {
         // 由于tabbar.service会立刻设置view，这边要等下一个event loop
         this.popViewKeyIfOnlyOneViewVisible();
       });
+    });
+  }
+
+  restoreState() {
+    const defaultState: {[containerId: string]: SectionState} = {};
+    this.visibleViews.forEach((view) => defaultState[view.id] = { collapsed: false, hidden: false });
+    const restoredState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
+    this.state = restoredState;
+    this.restoreSize();
+    console.log('get:', restoredState);
+  }
+
+  // 调用时需要保证dom可见
+  restoreSize() {
+    this.visibleViews.forEach((view, index) => {
+      const savedState = this.state[view.id];
+      if (savedState.collapsed) {
+        this.setSize(index, 0);
+      } else if (!savedState.collapsed && savedState.size) {
+        this.setSize(index, savedState.size, false);
+      }
     });
   }
 
@@ -123,6 +149,25 @@ export class AccordionService {
     });
   }
 
+  @OnEvent(ResizeEvent)
+  protected onResize(e: ResizeEvent) {
+    if (e.payload.slotLocation) {
+      if (this.state[e.payload.slotLocation]) {
+        const id = e.payload.slotLocation;
+        // get dom of viewId
+        const sectionDom = document.getElementById(id);
+        if (sectionDom) {
+          this.state[id].size = sectionDom.clientHeight;
+          this.storeState();
+        }
+      }
+    }
+  }
+
+  protected storeState() {
+    this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), this.state);
+  }
+
   private registerGlobalToggleCommand() {
     const commandId = `view-container.hide.${this.containerId}`;
     this.commandRegistry.registerCommand({
@@ -159,6 +204,7 @@ export class AccordionService {
       state.hidden = !forceShow;
     }
     this.popViewKeyIfOnlyOneViewVisible();
+    this.storeState();
   }
 
   popViewKeyIfOnlyOneViewVisible() {
@@ -175,12 +221,7 @@ export class AccordionService {
   }
 
   toggleViewVisibility(viewId: string, show?: boolean) {
-    const viewState = this.getViewState(viewId);
-    if (show === undefined) {
-      viewState.hidden = !viewState.hidden;
-    } else {
-      viewState.hidden = !show;
-    }
+    this.doToggleView(viewId, show);
   }
 
   get visibleViews(): View[] {
@@ -192,7 +233,7 @@ export class AccordionService {
 
   get expandedViews(): View[] {
     return this.views.filter((view) => {
-      const viewState = this.state.get(view.id);
+      const viewState = this.state[view.id];
       return !viewState || viewState && !viewState.collapsed;
     });
   }
@@ -222,7 +263,7 @@ export class AccordionService {
     if (!effected) {
       // 找到视图上方首个展开的视图减去对应的高度
       for (let i = index - 1; i >= 0; i--) {
-        if ((this.state.get(this.visibleViews[i].id) || {}).collapsed !== true) {
+        if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
           sizeIncrement = this.setSize(i, sizeIncrement, true);
           break;
         }
@@ -246,10 +287,10 @@ export class AccordionService {
   }
 
   public getViewState(viewId: string) {
-    let viewState = this.state.get(viewId);
+    let viewState = this.state[viewId];
     if (!viewState) {
-      this.state.set(viewId, { collapsed: false, hidden: false });
-      viewState = this.state.get(viewId)!;
+      this.state[viewId] = { collapsed: false, hidden: false };
+      viewState = this.state[viewId]!;
     }
     return viewState;
   }
@@ -271,13 +312,14 @@ export class AccordionService {
     if (isIncrement) {
       calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
       if (this.expandedViews.length > 1) {
-        // 首其他视图展开/折叠影响的视图尺寸记录，仅有一个展开时不足记录
+        // FIXME 首其他视图展开/折叠影响的视图尺寸记录，仅有一个展开时不足记录 -> restore会有问题
         viewState.size = calcTargetSize;
       }
     } else if (targetSize === this.headerSize && this.expandedViews.length > 0) {
       // 当前视图即将折叠且不是唯一展开的视图时，存储当前高度
       viewState.size = prevSize;
     }
+    this.storeState();
     panel.style.height = calcTargetSize / fullHeight * 100 + '%';
     setTimeout(() => {
       // 动画 0.1s，保证结束后移除

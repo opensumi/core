@@ -192,6 +192,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
               splitPanelService.panels.push(ele);
             }
           }}
+          id={element.props.id}
           style={{
             [Layout.getSizeProperty(direction)]: getElementSize(element),
             // 相对尺寸带来的问题，必须限制最小最大尺寸

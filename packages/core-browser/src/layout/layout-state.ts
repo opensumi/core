@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
+import debounce = require('lodash.debounce');
 
 @Injectable()
 export class LayoutState {
@@ -24,8 +25,12 @@ export class LayoutState {
   }
 
   setState(key: string, state: object) {
-    this.layoutStorage.set(key, state);
+    this.debounceSave(key, state);
   }
+
+  private debounceSave = debounce((key, state) => {
+    this.layoutStorage.set(key, state);
+  }, 60);
 }
 
 export namespace LAYOUT_STATE {
