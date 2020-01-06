@@ -260,18 +260,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     accordionService.disposeView(viewId);
   }
 
-  handleSetting = (anchor: {x: number; y: number}) => {
-    const menus = this.ctxMenuService.createMenu({
-      id: MenuId.SettingsIconMenu,
-    });
-    const menuNodes = menus.getGroupedMenuNodes();
-    menus.dispose();
-    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
-      x: anchor.x,
-      y: anchor.y,
-    } });
-  }
-
   // TODO 这样很耦合，不能做到tab renderer自由拆分
   expandBottom(expand: boolean): void {
     const tabbarService = this.getTabbarService(SlotLocation.bottom);

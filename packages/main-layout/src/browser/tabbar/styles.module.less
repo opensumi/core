@@ -324,40 +324,23 @@
 }
 :global(.left-tab-bar) .vertical_icons {
   height: fit-content;
-  flex-direction: column-reverse;
+  flex-direction: column;
   >span {
-    width: 48px;
-    height: 40px;
-    margin-left: 0;
+    width: 20px;
+    height: 20px;
     font-size: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--activityBar-inactiveForeground);
+    margin: 10px auto;
+    background-size: cover;
     &:hover {
       transform: scale(1);
       color: var(--activityBar-activeForeground);
     }
     &:last-child {
-      margin-bottom: 8px;
+      margin-bottom: 18px;
     }
   }
 }
-// .bottom-icon-container {
-//   width: 48px;
-//   height: 40px;
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-//   &:last-child {
-//     margin-bottom: 8px;
-//   }
-//   .activity-icon {
-//     font-size: 20px;
-//     margin-top: 6px;
-//     &:hover {
-//       color: var(--activityBar-foreground);
-//       cursor: pointer;
-//     }
-//   }
-// }

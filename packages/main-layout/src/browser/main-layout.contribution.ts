@@ -59,10 +59,6 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.retract',
   iconClass: getIcon('shrink'),
 };
-export const SHOW_SETTING_MENU: Command = {
-  id: 'main-layout.left-panel.setting',
-  iconClass: getIcon('setting'),
-};
 
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution)
 export class MainLayoutModuleContribution implements CommandContribution, ClientAppContribution, SlotRendererContribution {
@@ -217,11 +213,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     commands.registerCommand(RETRACT_BOTTOM_PANEL, {
       execute: () => {
         this.mainLayoutService.expandBottom(false);
-      },
-    });
-    commands.registerCommand(SHOW_SETTING_MENU, {
-      execute: (anchor: {x: number; y: number}) => {
-        this.mainLayoutService.handleSetting(anchor);
       },
     });
   }

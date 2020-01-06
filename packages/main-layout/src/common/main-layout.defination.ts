@@ -46,7 +46,6 @@ export interface IMainLayoutService {
   bottomExpanded: boolean;
   // @deprecated 提供小程序使用的额外位置控制
   setFloatSize(size: number): void;
-  handleSetting(anchor: {x: number; y: number}): void;
   getTabbarService(location: string, noAccordion?: boolean): TabbarService;
   getAccordionService(containerId: string): AccordionService;
   // 某一位置是否可见
