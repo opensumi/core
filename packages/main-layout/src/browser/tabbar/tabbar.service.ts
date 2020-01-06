@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -371,6 +371,7 @@ export class TabbarService extends WithEventBus {
           lockSize(false);
         }
         setMaxSize(false);
+        this.contextKeyService.createKey(getTabbarCtxKey(this.location), currentId);
       } else {
         setSize(this.barSize);
         lockSize(true);
