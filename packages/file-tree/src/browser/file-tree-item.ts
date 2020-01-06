@@ -43,7 +43,7 @@ export class AbstractFileTreeItem implements IFileTreeItem {
 }
 
 export class Directory extends AbstractFileTreeItem {
-  @observable.shallow public children: (Directory | File)[] = [];
+  @observable.shallow private _children: (Directory | File)[] = [];
   public expanded: boolean = false;
   private _openedIcon: string = '';
 
@@ -70,6 +70,17 @@ export class Directory extends AbstractFileTreeItem {
     } else {
       return this.icon;
     }
+  }
+
+  get children() {
+    return this._children;
+  }
+
+  set children(value) {
+    if (!value) {
+      // TODO: 上报错误情况
+    }
+    this._children = value || [];
   }
 
   updateMeta(directory: Directory) {
