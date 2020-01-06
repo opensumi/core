@@ -1026,7 +1026,7 @@ export class FileTreeService extends WithEventBus {
 
   private onFilesChanged(changes: FileChange[]): void {
     if (!this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
-      this.refresh();
+      this.refresh(this.root);
     }
     this.deleteAffectedNodes(this.getDeletedUris(changes));
   }
