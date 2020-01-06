@@ -41,6 +41,7 @@ import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron
 import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 import { DEFAULT_CDN_ICON, updateIconMap } from '../style/icon/icon';
+import ResizeObserver from 'resize-observer-polyfill';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -79,6 +80,11 @@ ClientAppConfigProvider.set({
   applicationName: 'KAITIAN',
   uriScheme: 'KT_KAITIAN',
 });
+
+// 添加resize observer polyfill
+if (typeof (window as any).ResizeObserver === 'undefined') {
+  (window as any).ResizeObserver = ResizeObserver;
+}
 
 export class ClientApp implements IClientApp {
 
@@ -160,6 +166,7 @@ export class ClientApp implements IClientApp {
   }
 
   public async start(container: HTMLElement, type?: string, connection?: RPCMessageConnection) {
+
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
     } else {
@@ -172,12 +179,13 @@ export class ClientApp implements IClientApp {
           this.onReconnectContributions();
         }, this.connectionProtocols, this.config.useExperimentalMultiChannel);
 
+        this.logger = this.getLogger();
          // 回写需要用到打点的 Logger 的地方
         this.injector.get(WSChanneHandler).setLogger(this.logger);
       }
     }
-    this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
 
+    this.logger = this.getLogger();
     this.stateService.state = 'client_connected';
     console.time('startContribution');
     await this.startContributions();
@@ -186,6 +194,14 @@ export class ClientApp implements IClientApp {
     this.registerEventListeners();
     await this.renderApp(container);
     this.stateService.state = 'ready';
+  }
+
+  private getLogger() {
+    if (this.logger) {
+      return this.logger;
+    }
+    this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
+    return this.logger;
   }
 
   private onReconnectContributions() {

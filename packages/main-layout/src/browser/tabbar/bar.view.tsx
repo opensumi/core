@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../../common';
-import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 
 export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,
@@ -64,7 +64,7 @@ export const LeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   return (<div className='left-tab-bar'>
     <TabbarViewBase TabView={IconTabView} barSize={48} panelBorderSize={1}/>
-    <InlineActionBar context={[{x: 20, y: 600}]} className={styles.vertical_icons} menus={layoutService.getExtraMenu()} />
+    <InlineMenuBar className={styles.vertical_icons} menus={layoutService.getExtraMenu()} />
   </div>);
 };
 

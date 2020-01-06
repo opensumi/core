@@ -1,10 +1,17 @@
 import { IDisposable } from '../disposable';
 import { ConstructorOf } from '../declare';
+import { IAsyncResult } from '../event';
 
 export interface IEventFireOpts {
   nextTick?: boolean;
 }
 
+export interface IAsyncEventFireOpts {
+  /**
+   * 异步事件发送时，listener的最大执行时长（listener并发执行)
+   */
+  timeout?: number
+}
 export interface IEventLisnter<T> {
   (target: T): void;
 }
@@ -33,6 +40,13 @@ export interface IEventBus {
     }
    */
   fire(target: any, opts?: IEventFireOpts): void;
+  
+  /**
+   * 发送一个异步事件，等待并收集结果
+   * @param e 
+   * @param opts 
+   */
+  fireAndAwait<R>(e: any, opts?: IAsyncEventFireOpts): Promise<IAsyncResult<R>[]>;
 
   /**
    * 监听 EventBus 中的事件

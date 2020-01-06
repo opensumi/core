@@ -119,10 +119,9 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     // 全局只要初始化一次
     await this.layoutState.initStorage();
     this.menuRegistry.registerMenuItem(MenuId.ActivityBarExtra, {
-      command: {
-        id: SHOW_SETTING_MENU.id,
-        label: localize('layout.tabbar.setting', '打开偏好设置'),
-      },
+      submenu: MenuId.SettingsIconMenu,
+      iconClass: getIcon('setting'),
+      label: localize('layout.tabbar.setting', '打开偏好设置'),
       order: 1,
       group: 'navigation',
     });
@@ -222,7 +221,7 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     });
     commands.registerCommand(SHOW_SETTING_MENU, {
       execute: (anchor: {x: number; y: number}) => {
-        this.mainLayoutService.hand; leSetting(anchor);
+        this.mainLayoutService.handleSetting(anchor);
       },
     });
   }

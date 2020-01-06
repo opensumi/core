@@ -1,7 +1,7 @@
 import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
-import { AbstractMenuService, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 import { ResizeHandle } from '@ali/ide-core-browser/lib/components';
 import debounce = require('lodash.debounce');
@@ -24,7 +24,7 @@ export class TabbarService extends WithEventBus {
   @observable state: Map<string, TabState> = new Map();
 
   public prevSize?: number;
-  public commonTitleMenu: IMenu;
+  public commonTitleMenu: IContextMenu;
 
   resizeHandle: {
     setSize: (targetSize: number) => void,
@@ -38,6 +38,9 @@ export class TabbarService extends WithEventBus {
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
+
+  @Autowired(AbstractContextMenuService)
+  private readonly ctxmenuService: AbstractContextMenuService;
 
   @Autowired(IMenuRegistry)
   protected menuRegistry: IMenuRegistry;
@@ -105,7 +108,9 @@ export class TabbarService extends WithEventBus {
           order: 2,
         },
       ]);
-      this.commonTitleMenu = this.menuService.createMenu(`tabbar/${this.location}/common`);
+      this.commonTitleMenu = this.ctxmenuService.createMenu({
+        id: `tabbar/${this.location}/common`,
+      });
     }
   }
 
@@ -138,7 +143,7 @@ export class TabbarService extends WithEventBus {
       }
     });
     const size = this.state.size; // 监听state长度
-    return components.sort((pre, next) => (next.options!.priority || 1) - (pre.options!.priority || 1));
+    return components.sort((pre, next) => (next.options!.priority !== undefined ? next.options!.priority : 1) - (pre.options!.priority !== undefined ? pre.options!.priority : 1));
   }
 
   registerResizeHandle(resizeHandle: ResizeHandle) {

@@ -2,7 +2,7 @@ import { WSChannel, MessageString } from '../common/ws-channel';
 import * as shorid from 'shortid';
 import { stringify, parse } from '../common/utils';
 import { MultiWs } from './multi-ws';
-import { IReporterService, REPORT_NAME } from '@ali/ide-core-common';
+import { getLogger, ILogServiceClient, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 
 let ReconnectingWebSocket = require('reconnecting-websocket');
 
@@ -20,6 +20,7 @@ export class WSChanneHandler {
 
   public connection: WebSocket;
   private channelMap: Map<number | string, WSChannel> = new Map();
+  // FIXME: 这里的默认值和类型需要修复一下 @上坡
   private logger = console;
   public clientId: string = `CLIENT_ID_${shorid.generate()}`;
   private heartbeatMessageTimer: NodeJS.Timeout;
@@ -30,7 +31,9 @@ export class WSChanneHandler {
     this.connection = useExperimentalMultiChannel ? new MultiWs(wsPath, protocols, this.clientId) as any : new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
   setLogger(logger: any) {
-    this.logger = logger;
+    if (logger) {
+      this.logger = logger;
+    }
   }
   setReporter(reporterService: IReporterService) {
     this.reporterService = reporterService;
@@ -84,7 +87,7 @@ export class WSChanneHandler {
           this.channelMap.forEach((channel) => {
             channel.onOpen(() => {
               this.reporterService && this.reporterService.point(REPORT_NAME.CHANNEL_RECONNECT);
-              this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
+              this.logger && this.logger.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);
 

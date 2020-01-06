@@ -29,6 +29,8 @@ export const PanelContext = React.createContext<ResizeHandle>({
   hidePanel: (show?: boolean) => {},
 });
 
+type ChildComponent = React.ReactElement<SplitChildProps>;
+
 interface SplitChildProps {
   id: string;
   minSize?: number;
@@ -38,7 +40,7 @@ interface SplitChildProps {
   flexGrow?: number;
   slot?: string;
   noResize?: boolean;
-  children?: Array<React.ReactElement<SplitChildProps>>;
+  children?: ChildComponent | ChildComponent[];
 }
 
 interface SplitPanelProps extends SplitChildProps {
@@ -52,16 +54,18 @@ interface SplitPanelProps extends SplitChildProps {
 
 export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
-  const totalFlexNum = children.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
+  // convert children to list
+  const childList = React.Children.toArray(children);
+  const totalFlexNum = childList.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
   const elements: React.ReactNodeArray = [];
   const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const rootRef = React.useRef<HTMLElement>();
 
   const splitPanelService = useInjectable<SplitPanelManager>(SplitPanelManager).getService(id);
-  const maxLockState = React.useRef(children.map(() => false));
-  const hideState = React.useRef(children.map(() => false));
-  const resizeLockState = React.useRef(maxLockState.current.slice(0, children.length - 1));
+  const maxLockState = React.useRef(childList.map(() => false));
+  const hideState = React.useRef(childList.map(() => false));
+  const resizeLockState = React.useRef(maxLockState.current.slice(0, childList.length - 1));
   const [locks, setLocks] = React.useState<boolean[]>(resizeLockState.current);
   const [hides, setHides] = React.useState<boolean[]>(hideState.current);
   const [maxLocks, setMaxLocks] = React.useState<boolean[]>(maxLockState.current);
@@ -142,21 +146,21 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
     }
   };
 
-  children.forEach((element, index) => {
+  childList.forEach((element, index) => {
     if (index !== 0) {
-      const targetElement = index === 1 ? children[index - 1] : children[index];
+      const targetElement = index === 1 ? childList[index - 1] : childList[index];
       let flexMode: ResizeFlexMode | undefined;
       if (element.props.flexGrow) {
         flexMode = ResizeFlexMode.Prev;
-      } else if (children[index - 1] && children[index - 1].props.flexGrow) {
+      } else if (childList[index - 1] && childList[index - 1].props.flexGrow) {
         flexMode = ResizeFlexMode.Next;
       }
       elements.push(
         <ResizeHandle
           className={targetElement.props.noResize || locks[index - 1] ? 'no-resize' : ''}
           onResize={(prev, next) => {
-            const prevLocation = children[index - 1].props.slot || children[index - 1].props.id;
-            const nextLocation = children[index].props.slot || children[index].props.id;
+            const prevLocation = childList[index - 1].props.slot || childList[index - 1].props.id;
+            const nextLocation = childList[index].props.slot || childList[index].props.id;
             fireResizeEvent(prevLocation!);
             fireResizeEvent(nextLocation!);
           }}
@@ -218,7 +222,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
     }
     const disposer = eventBus.on(ResizeEvent, (e) => {
       if (e.payload.slotLocation === id) {
-        children.forEach((c) => {
+        childList.forEach((c) => {
           fireResizeEvent(c.props.slot || c.props.id);
         });
       }

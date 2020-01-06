@@ -6,9 +6,13 @@ import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 
 import Icon from '../icon';
-import { MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode, IMenu, IMenuSeparator, SubmenuItemNode, IMenuAction } from '../../menu/next';
+import {
+  MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode,
+  IContextMenu, IMenu, IMenuSeparator,
+  SubmenuItemNode, IMenuAction,
+} from '../../menu/next';
 import { useInjectable } from '../../react-hooks';
-import { useMenus } from '../../utils';
+import { useMenus, useContextMenus } from '../../utils';
 
 import placements from './placements';
 
@@ -122,13 +126,16 @@ export const MenuActionList: React.FC<{
 };
 
 export const IconAction: React.FC<{
-  data: IMenuAction;
+  data: MenuNode;
   context?: any[];
 } & React.HTMLAttributes<HTMLDivElement>> = ({ data, context = [], className, ...restProps }) => {
   const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (typeof data.execute === 'function') {
+    if (data.id === SubmenuItemNode.ID) {
+      const anchor = { x: e.clientX, y: e.clientY };
+      data.execute(anchor, ...context);
+    } else if (typeof data.execute === 'function') {
       data.execute(context);
     }
   }, [ data, context ]);
@@ -160,6 +167,7 @@ interface BaseActionListProps {
    * 额外的 IMenuAction
    */
   extraNavActions?: IMenuAction[];
+  className?: string;
 }
 
 /**
@@ -252,6 +260,33 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
   const { menus, context, separator = 'navigation', ...restProps } = props;
   // TODO: 从一致性考虑是否这里不用 context 的命名
   const [navMenu, moreMenu] = useMenus(menus, separator, context);
+
+  // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
+  return (
+    <TitleActionList
+      nav={navMenu}
+      more={separator === 'inline' ? [] : moreMenu}
+      context={context}
+      {...restProps} />
+  );
+}
+
+// 目前先不放出来 extraNavActions 保持 InlineActionBar 只有一个分组
+// 需要两个分组时考虑组合两个 InlineActionBar 组件使用
+interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extraNavActions'> {
+  context?: TupleContext<T, U, K, M>;
+  menus: IContextMenu;
+  separator?: IMenuSeparator;
+}
+
+// 后续考虑使用 IContextMenu, useContextMenus 和 InlineMenuBar 来替换掉老的 IMenu
+// 完成 InlineActionBar 的升级
+export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = undefined>(
+  props: InlineMenuBarProps<T, U, K, M>,
+): React.ReactElement<InlineMenuBarProps<T, U, K, M>> {
+  const { menus, context, separator = 'navigation', ...restProps } = props;
+  // TODO: 从一致性考虑是否这里不用 context 的命名
+  const [navMenu, moreMenu] = useContextMenus(menus);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
   return (

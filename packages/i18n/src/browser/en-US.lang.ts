@@ -370,6 +370,10 @@ export const localizationBundle = {
     'terminal.menu.clear': 'Clear',
     'terminal.menu.stop': 'Stop',
     'terminal.menu.stopGroup': 'Stop Group',
+    'terminal.menu.stopGroups': 'Stop All Terminals',
+    'terminal.menu.clearGroups': 'Clear All Terminals',
+    'terminal.menu.selectType': 'Default Terminal Type',
+    'terminal.menu.moreSettings': 'More Settings',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
@@ -469,9 +473,9 @@ export const localizationBundle = {
     'view.zoomIn': 'Zoom In',
     'view.zoomOut': 'Zoom Out',
 
-    'kaitianExtension.invalidExthostReload.confirm.content': 'Ext-host process is invalid. Refresh or ignore to use other features?',
+    'kaitianExtension.invalidExthostReload.confirm.content': 'Ext-host process is invalid. Click to refresh to resume this process.',
     'kaitianExtension.invalidExthostReload.confirm.ok': 'Refresh',
-    'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore',
+    'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'kaitianExtension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
   },
 };

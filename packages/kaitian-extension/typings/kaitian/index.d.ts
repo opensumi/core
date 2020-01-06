@@ -1,6 +1,37 @@
 declare module "kaitian" {
 
   export * from 'vscode';
+  export namespace event {
+
+    /**
+     * 事件响应的返回结果
+     */
+    interface IEventResult<R> {
+      /**
+       * 如果存在err，说明本次调用存在错误
+       */
+      err?: string,
+      /**
+       * 调用结果
+       */
+      result?: R,
+    }
+
+    /**
+     * 订阅一个事件
+     * @param eventId 事件id
+     * @param callback 事件订阅回调
+     */
+    export function subscribe(eventId: string, callback:(...args:any[]) => any): IDisposable
+    
+    /**
+     * 发送一个事件
+     * @param eventId 事件id
+     * @param args 事件参数
+     * @returns Promise 返回处理事件响应的listener的返回值
+     */
+    export function fire<R = any>(eventId: string, ...args: any[]): Promise<IEventResult<R>[]>;
+  }
 
   export namespace layout {
     /**
@@ -13,6 +44,12 @@ declare module "kaitian" {
      * @param id tab id
      */
     export function getTabbarHandler(id: string): ITabbarHandle;
+
+    /**
+     * 获取一个 Tab 的 Handle
+     * @param id tab id, 不限制在本插件注册的handle，需要自己进行字符串拼接
+     */
+    export function getExtensionTabbarHandler(id: string, extensionId?: string): ITabbarHandle;
     
     /**
      * 切换左侧面板显示/隐藏
@@ -318,4 +355,40 @@ declare module 'kaitian-browser' {
    * ```
    */
   export function getThemeColors(): {[key: string]: string}
+  
+
+  export const Button: React.FC<{
+    block?: boolean;
+    loading?: boolean;
+    ghost?: boolean;
+    type?: 'primary' | 'secondary' | 'danger';
+  } & React.HTMLAttributes<HTMLDivElement>>;
+  export const Portal: React.FC<{ id: string }>;
+  export enum PopoverTriggerType {
+    hover,
+    program, // 只遵守外层传入的display
+  }
+  export enum PopoverPosition {
+    top = 'top',
+    bottom = 'bottom',
+  }
+  export const Popover: React.FC<{
+    id: string;
+    insertClass?: string;
+    content?: React.ReactElement;
+    trigger?: PopoverTriggerType;
+    display?: boolean, // 使用程序控制的是否显示
+    [key: string]: any;
+    popoverClass?: string;
+    position?: PopoverPosition;
+  }>;
+  export const Icon: React.FC<{
+    title?: string;
+    icon?: string;
+    iconClass?: string;
+    tooltip?: string;
+    size?: 'small' | 'large';
+    loading?: boolean;
+    onClick?: React.MouseEventHandler<HTMLSpanElement>;
+  } & React.HTMLAttributes<HTMLDivElement>>;
 }

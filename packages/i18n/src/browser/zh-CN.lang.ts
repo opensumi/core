@@ -426,6 +426,10 @@ export const localizationBundle = {
     'terminal.menu.clear': '清空',
     'terminal.menu.stop': '终止',
     'terminal.menu.stopGroup': '终止',
+    'terminal.menu.stopGroups': '终止所有终端',
+    'terminal.menu.clearGroups': '清空所有日志',
+    'terminal.menu.selectType': '默认终端类型',
+    'terminal.menu.moreSettings': '更多设置',
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
@@ -480,9 +484,9 @@ export const localizationBundle = {
     'view.zoomIn': '窗口缩放放大',
     'view.zoomOut': '窗口缩放缩小',
 
-    'kaitianExtension.invalidExthostReload.confirm.content': '插件进程已失效，刷新后可恢复插件使用，刷新或使用其他功能？',
+    'kaitianExtension.invalidExthostReload.confirm.content': '插件进程已失效，点击刷新后可恢复插件使用',
     'kaitianExtension.invalidExthostReload.confirm.ok': '刷新',
-    'kaitianExtension.invalidExthostReload.confirm.cancel': '使用其他功能',
+    'kaitianExtension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'kaitianExtension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
   },
 };

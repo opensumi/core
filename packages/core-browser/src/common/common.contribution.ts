@@ -77,7 +77,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
     /* ---- test for submenu ---- */
     // if (process.env.NODE_ENV !== 'production') {
     //   const testSubmenuId = 'greatmenu';
-    //   menus.registerMenuItem(MenuId.SCMSourceControl, {
+    //   menus.registerMenuItem(MenuId.SCMResourceGroupContext, {
     //     label: 'kaitian submenu',
     //     submenu: testSubmenuId,
     //   });
@@ -175,7 +175,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
         nativeRole: 'selectAll',
         group: '2_clipboard',
       }]);
-      menus.registerMenuItems(MenuId.MenubarFileMenu, [{
+      menus.registerMenuItems(MenuId.MenubarAppMenu, [{
         command: {
           id: 'electron.quit',
           label: localize('app.quit'),
