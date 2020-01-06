@@ -68,7 +68,7 @@ export const ExplorerResourcePanel = observer(({
       notifyThemeChange = { themeChangeEvent }
       validate={ validateFileName }
       leftPadding={ leftPadding }
-      defaultLeftPadding={ baseIndent }
+      defaultLeftPadding={ defaultLeftPadding }
     ></FileTree>;
   } else {
     return <EmptyView />;

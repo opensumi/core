@@ -385,7 +385,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         label = String(selectedNodes.length);
       }
       const dragImage = document.createElement('div');
-      dragImage.className = styles.kt_filetree_drag_image;
+      dragImage.className = styles.filetree_drag_image;
       dragImage.textContent = label;
       document.body.appendChild(dragImage);
       event.dataTransfer.setDragImage(dragImage, -10, -10);
