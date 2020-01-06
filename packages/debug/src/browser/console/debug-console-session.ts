@@ -57,18 +57,18 @@ export class DebugConsoleSession implements IDebugConsoleSession {
 
   protected async logOutput(session: DebugSession, event: DebugProtocol.OutputEvent): Promise<void> {
     const body = event.body;
-    const { category, variablesReference } = body;
+    const { category, variablesReference, source, line } = body;
+    const severity = category === 'stderr' ? MessageType.Error : event.body.category === 'console' ? MessageType.Warning : MessageType.Info;
     if (category === 'telemetry') {
       this.logger.debug(`telemetry/${event.body.output}`, event.body.data);
       return;
     }
-    const severity = category === 'stderr' ? MessageType.Error : event.body.category === 'console' ? MessageType.Warning : MessageType.Info;
     if (variablesReference) {
-      const items = await new ExpressionContainer({ session, variablesReference }).getChildren();
+      const items = await new ExpressionContainer({ session, variablesReference, source, line }).getChildren();
       this.nodes.push(...items);
     } else if (typeof body.output === 'string') {
-      for (const line of body.output.split('\n')) {
-        this.nodes.push(new AnsiConsoleItem(line, severity));
+      for (const content of body.output.split('\n')) {
+        this.nodes.push(new AnsiConsoleItem(content, severity, source, line));
       }
     }
     this.fireDidChange();
