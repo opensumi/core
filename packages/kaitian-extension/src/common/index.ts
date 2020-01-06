@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
@@ -78,6 +78,7 @@ export abstract class ExtensionService {
   abstract async postUninstallExtension(path: string): Promise<void>;
   abstract getExtensions(): IExtension[];
   abstract async activateExtensionByExtPath(extensionPath: string): Promise<void>;
+  eagerExtensionsActivated: Deferred<void>;
 }
 
 export abstract class ExtensionCapabilityRegistry {

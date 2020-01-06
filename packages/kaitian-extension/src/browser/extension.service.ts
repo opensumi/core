@@ -207,6 +207,9 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private ready: Deferred<any> = new Deferred();
 
+  // 针对 activationEvents 为 * 的插件
+  eagerExtensionsActivated: Deferred<void> = new Deferred();
+
   private extensionMetaDataArr: IExtensionMetaData[];
   private vscodeAPIFactoryDisposer: () => void;
   private kaitianAPIFactoryDisposer: () => void;
@@ -403,9 +406,10 @@ export class ExtensionServiceImpl implements ExtensionService {
           return this.activationEventService.fireEvent(event.topic, event.data);
         }));
       }
-    } else {
-      await this.activationEventService.fireEvent('*');
     }
+
+    await this.activationEventService.fireEvent('*');
+    this.eagerExtensionsActivated.resolve();
   }
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
