@@ -71,7 +71,7 @@ import {
   ProxyIdentifier,
 } from '@ali/ide-connection';
 
-import { VscodeCommands } from './vscode/commands';
+import { VSCodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService, IIconService } from '@ali/ide-theme';
@@ -864,45 +864,46 @@ export class ExtensionServiceImpl implements ExtensionService {
       return args;
     });
 
-    commandRegistry.registerCommand(VscodeCommands.SET_CONTEXT, {
+    commandRegistry.registerCommand(VSCodeCommands.SET_CONTEXT, {
       execute: (contextKey: any, contextValue: any) => {
         this.contextKeyService.createKey(String(contextKey), contextValue);
       },
     });
 
-    commandRegistry.registerCommand(VscodeCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.REVERT_AND_CLOSE_ACTIVE_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR_RIGHT);
-    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR_DOWN);
-    commandRegistry.registerCommand(VscodeCommands.NEW_UNTITLED_FILE);
-    commandRegistry.registerCommand(VscodeCommands.CLOSE_ALL_EDITORS);
-    commandRegistry.registerCommand(VscodeCommands.FILE_SAVE);
-    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR_ORTHOGONAL);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_LEFT);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_RIGHT);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_UP);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_DOWN);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_NEXT);
-    commandRegistry.registerCommand(VscodeCommands.PREVIOUS_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.PREVIOUS_EDITOR_IN_GROUP);
-    commandRegistry.registerCommand(VscodeCommands.NEXT_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.NEXT_EDITOR_IN_GROUP);
-    commandRegistry.registerCommand(VscodeCommands.EVEN_EDITOR_WIDTH);
-    commandRegistry.registerCommand(VscodeCommands.CLOSE_OTHER_GROUPS);
-    commandRegistry.registerCommand(VscodeCommands.LAST_EDITOR_IN_GROUP);
-    commandRegistry.registerCommand(VscodeCommands.OPEN_EDITOR_AT_INDEX);
-    commandRegistry.registerCommand(VscodeCommands.CLOSE_OTHER_EDITORS);
-    commandRegistry.registerCommand(VscodeCommands.REVERT_FILES);
+    commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.REVERT_AND_CLOSE_ACTIVE_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.SPLIT_EDITOR_RIGHT);
+    commandRegistry.registerCommand(VSCodeCommands.SPLIT_EDITOR_DOWN);
+    commandRegistry.registerCommand(VSCodeCommands.NEW_UNTITLED_FILE);
+    commandRegistry.registerCommand(VSCodeCommands.CLOSE_ALL_EDITORS);
+    commandRegistry.registerCommand(VSCodeCommands.FILE_SAVE);
+    commandRegistry.registerCommand(VSCodeCommands.SPLIT_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.SPLIT_EDITOR_ORTHOGONAL);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_LEFT);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_RIGHT);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_UP);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_DOWN);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_NEXT);
+    commandRegistry.registerCommand(VSCodeCommands.PREVIOUS_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.PREVIOUS_EDITOR_IN_GROUP);
+    commandRegistry.registerCommand(VSCodeCommands.NEXT_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.NEXT_EDITOR_IN_GROUP);
+    commandRegistry.registerCommand(VSCodeCommands.EVEN_EDITOR_WIDTH);
+    commandRegistry.registerCommand(VSCodeCommands.CLOSE_OTHER_GROUPS);
+    commandRegistry.registerCommand(VSCodeCommands.LAST_EDITOR_IN_GROUP);
+    commandRegistry.registerCommand(VSCodeCommands.OPEN_EDITOR_AT_INDEX);
+    commandRegistry.registerCommand(VSCodeCommands.CLOSE_OTHER_EDITORS);
+    commandRegistry.registerCommand(VSCodeCommands.REVERT_FILES);
+    commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_FOCUS_FILES_EXPLORER);
 
-    commandRegistry.registerCommand(VscodeCommands.OPEN, {
+    commandRegistry.registerCommand(VSCodeCommands.OPEN, {
       execute: (uriComponents: UriComponents) => {
         const uri = URI.from(uriComponents);
         workbenchEditorService.open(uri);
       },
     });
 
-    commandRegistry.registerCommand(VscodeCommands.DIFF, {
+    commandRegistry.registerCommand(VSCodeCommands.DIFF, {
       execute: (left: UriComponents, right: UriComponents, title: string, options: any) => {
         const original = URI.from(left);
         const modified = URI.from(right);

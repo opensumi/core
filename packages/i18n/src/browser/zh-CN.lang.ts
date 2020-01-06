@@ -43,10 +43,12 @@ export const localizationBundle = {
     'file.confirm.replace.cancel': '取消',
     'file.empty.defaultTitle': '无打开的文件夹',
     'file.empty.defaultMessage': '尚未打开文件夹',
+    'file.workspace.defaultTip': '无标题（工作区）',
     'file.empty.openFolder': '打开文件夹',
     'file.collapse': '全部折叠',
     'file.refresh': '刷新',
     'file.search.folder': '在文件夹中查找',
+    'file.focus.files': '在资源管理器中聚焦文件',
 
     'menu-bar.title.file': '文件',
     'menu-bar.title.edit': '编辑',

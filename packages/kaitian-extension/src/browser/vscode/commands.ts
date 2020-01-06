@@ -4,9 +4,9 @@ import {
   FILE_COMMANDS,
 } from '@ali/ide-core-browser';
 
-export namespace VscodeCommands {
+export namespace VSCodeCommands {
   export const SET_CONTEXT: Command = {
-      id: 'setContext',
+    id: 'setContext',
   };
 
   export const WORKBENCH_CLOSE_ACTIVE_EDITOR: Command = {
@@ -130,6 +130,12 @@ export namespace VscodeCommands {
   export const REVERT_FILES: Command = {
     id: 'workbench.action.files.revert',
     delegate: EDITOR_COMMANDS.REVERT_DOCUMENT.id,
+  };
+
+  // 在资源管理器中聚焦文件
+  export const WORKBENCH_FOCUS_FILES_EXPLORER: Command = {
+    id: 'workbench.files.action.focusFilesExplorer',
+    delegate: FILE_COMMANDS.FOCUS_FILES.id,
   };
 
   // 打开内容

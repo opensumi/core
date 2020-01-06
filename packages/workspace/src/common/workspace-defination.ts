@@ -6,9 +6,10 @@ import { StorageService } from '@ali/ide-core-browser/lib/services';
 export const KAITIAN_MUTI_WORKSPACE_EXT = 'kaitian-workspace';
 export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.kaitian';
 export const WORKSPACE_RECENT_DATA_FILE = 'recentdata.json';
+export const UNTITLED_WORKSPACE = 'Untitled';
 
 export function getTemporaryWorkspaceFileUri(home: URI): URI {
-    return home.resolve(WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`Untitled.${KAITIAN_MUTI_WORKSPACE_EXT}`).withScheme('file');
+    return home.resolve(WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MUTI_WORKSPACE_EXT}`).withScheme('file');
 }
 
 export interface WorkspaceInput {

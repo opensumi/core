@@ -18,7 +18,7 @@ describe('FileTreeService should be work', () => {
   let treeService: FileTreeService;
   let fileApi: IFileTreeAPI;
   let injector: MockInjector;
-  const root = 'file://userhome';
+  const root = 'file://userhome/';
   let rootUri: URI = new URI(root);
   let rootFile: Directory;
   beforeEach(() => {
@@ -175,8 +175,8 @@ describe('FileTreeService should be work', () => {
     });
 
     it('getParent and getChildren should be work', () => {
-      const parentUri = new URI(`${root}/parent`);
-      const childUri = new URI(`${root}/parent/child.js`);
+      const parentUri = rootUri.resolve('parent');
+      const childUri = parentUri.resolve('child.js');
       expect(treeService.getParent(parentUri)).toBeUndefined();
       expect(treeService.getParent(childUri)).toBeUndefined();
       const parentFile: Directory = new Directory(
@@ -219,8 +219,7 @@ describe('FileTreeService should be work', () => {
     });
 
     it('createFile and createFolder should be work', async (done) => {
-      const childUri = new URI(`${root}/child.js`);
-      const newName = 'newName';
+      const childUri = rootUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -262,7 +261,7 @@ describe('FileTreeService should be work', () => {
     });
 
     it('removeStatusAndFileFromParent should be work', () => {
-      const childUri = new URI(`${root}/child.js`);
+      const childUri = rootUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -280,6 +279,7 @@ describe('FileTreeService should be work', () => {
       );
       treeService.updateFileStatus([childFile]);
       rootFile.addChildren(childFile);
+      treeService.updateFileStatus([rootFile]);
       expect(treeService.getChildren(rootUri)!.length > 0).toBeTruthy();
       expect(!!treeService.status.get(treeService.getStatutsKey(childUri))).toBeTruthy();
       treeService.removeStatusAndFileFromParent(childUri);
@@ -303,7 +303,7 @@ describe('FileTreeService should be work', () => {
     });
 
     it('can covert a file to template file', () => {
-      const childUri = new URI(`${root}/child.js`);
+      const childUri = rootUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -321,13 +321,14 @@ describe('FileTreeService should be work', () => {
       );
       treeService.updateFileStatus([childFile]);
       rootFile.addChildren(childFile);
+      treeService.updateFileStatus([rootFile]);
       treeService.renameTempFile(childUri);
       expect(treeService.getChildren(rootUri)!.length > 0).toBeTruthy();
       expect(treeService.getChildren(rootUri)![0].isTemporary).toBeTruthy();
     });
 
     it('can rename file', async (done) => {
-      const childUri = new URI(`${root}/child.js`);
+      const childUri = rootUri.resolve('child.js');
       const newName = 'newName';
       const childFile: File = new File(
         fileApi,
@@ -346,6 +347,7 @@ describe('FileTreeService should be work', () => {
       );
       treeService.updateFileStatus([childFile]);
       rootFile.addChildren(childFile);
+      treeService.updateFileStatus([rootFile]);
       const moveFile = jest.fn();
       const exists = jest.fn(() => false);
       injector.mock(IFileTreeAPI, 'moveFile', moveFile);
@@ -364,7 +366,7 @@ describe('FileTreeService should be work', () => {
     });
 
     it('delete file should be work', async (done) => {
-      const childUri = new URI(`${root}/child.js`);
+      const childUri = rootUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -382,6 +384,7 @@ describe('FileTreeService should be work', () => {
       );
       treeService.updateFileStatus([childFile]);
       rootFile.addChildren(childFile);
+      treeService.updateFileStatus([rootFile]);
       expect(treeService.getChildren(rootUri)!.length > 0).toBeTruthy();
       const deleteFile = (uri: URI) => {
         expect(uri.isEqual(childUri)).toBeTruthy();
@@ -392,8 +395,9 @@ describe('FileTreeService should be work', () => {
     });
 
     it('comfirm view should be work while explorer.confirmMove === true', async (done) => {
-      const childUri = new URI(`${root}/parent/child.js`);
-      const existsChildUri = new URI(`${root}/child.js`);
+      const parentUri = rootUri.resolve('parent');
+      const childUri = parentUri.resolve('child.js');
+      const existsChildUri = rootUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -427,6 +431,7 @@ describe('FileTreeService should be work', () => {
       treeService.updateFileStatus([childFile, existsFile]);
       rootFile.addChildren(childFile);
       rootFile.addChildren(existsFile);
+      treeService.updateFileStatus([rootFile]);
       expect(treeService.getChildren(rootUri)!.length > 0).toBeTruthy();
       injector.overrideProviders({
         token: CorePreferences,
@@ -452,7 +457,8 @@ describe('FileTreeService should be work', () => {
     });
 
     it('comfirm view should be work while explorer.confirmDelete === true', async (done) => {
-      const childUri = new URI(`${root}/child.js`);
+      const parentUri = rootUri.resolve('parent');
+      const childUri = parentUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -470,6 +476,7 @@ describe('FileTreeService should be work', () => {
       );
       treeService.updateFileStatus([childFile]);
       rootFile.addChildren(childFile);
+      treeService.updateFileStatus([rootFile]);
       injector.overrideProviders({
         token: CorePreferences,
         useValue: {
@@ -493,7 +500,8 @@ describe('FileTreeService should be work', () => {
     });
 
     it('update/reset file selected status should be work', () => {
-      const childUri = new URI(`${root}/child.js`);
+      const parentUri = rootUri.resolve('parent');
+      const childUri = parentUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -520,7 +528,8 @@ describe('FileTreeService should be work', () => {
     });
 
     it('update/reset file focused status should be work', () => {
-      const childUri = new URI(`${root}/child.js`);
+      const parentUri = rootUri.resolve('parent');
+      const childUri = parentUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -551,7 +560,8 @@ describe('FileTreeService should be work', () => {
     });
 
     it('can collapse all item without params', async (done) => {
-      const childUri = new URI(`${root}/parent/child.js`);
+      const parentUri = rootUri.resolve('parent');
+      const childUri = parentUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -567,7 +577,6 @@ describe('FileTreeService should be work', () => {
         rootFile,
         1,
       );
-      const parentUri = new URI(`${root}/parent`);
       const parentFile: Directory = new Directory(
         fileApi,
         parentUri,
@@ -600,7 +609,8 @@ describe('FileTreeService should be work', () => {
     });
 
     it('can collapse all item with params', async (done) => {
-      const childUri = new URI(`${root}/parent/child.js`);
+      const parentUri = rootUri.resolve('parent');
+      const childUri = parentUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -616,7 +626,6 @@ describe('FileTreeService should be work', () => {
         rootFile,
         1,
       );
-      const parentUri = new URI(`${root}/parent`);
       const parentFile: Directory = new Directory(
         fileApi,
         parentUri,
@@ -635,6 +644,7 @@ describe('FileTreeService should be work', () => {
       );
       treeService.updateFileStatus([parentFile]);
       rootFile.addChildren(parentFile);
+      treeService.updateFileStatus([rootFile]);
       const getFiles = jest.fn(() => {
         return [{ children: [childFile] }];
       });
@@ -649,7 +659,8 @@ describe('FileTreeService should be work', () => {
     });
 
     it('refresh should be work', async (done) => {
-      const childUri = new URI(`${root}/parent/child.js`);
+      const parentUri = rootUri.resolve('parent');
+      const childUri = parentUri.resolve('child.js');
       const childFile: File = new File(
         fileApi,
         childUri,
@@ -714,7 +725,8 @@ describe('FileTreeService should be work', () => {
 
     it('should open file with preview mode while editor.previewMode === true', () => {
       const firstCall = jest.fn();
-      const openUri = new URI(`${root}/child.js`);
+      const parentUri = rootUri.resolve('parent');
+      const openUri = parentUri.resolve('child.js');
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, firstCall);
       injector.overrideProviders({
         token: CorePreferences,
@@ -734,7 +746,8 @@ describe('FileTreeService should be work', () => {
 
   it('open file with fixed should be work', () => {
     const openResouceMock = jest.fn();
-    const openUri = new URI(`${root}/child.js`);
+    const parentUri = rootUri.resolve('parent');
+    const openUri = parentUri.resolve('child.js');
     injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openResouceMock);
     treeService.openAndFixedFile(openUri);
     expect(openResouceMock).toBeCalledWith(openUri, { disableNavigate: true, preview: false });
@@ -742,7 +755,8 @@ describe('FileTreeService should be work', () => {
 
   it('open file to the side should be work', () => {
     const openResouceMock = jest.fn();
-    const openUri = new URI(`${root}/child.js`);
+    const parentUri = rootUri.resolve('parent');
+    const openUri = parentUri.resolve('child.js');
     injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openResouceMock);
     treeService.openToTheSide(openUri);
     expect(openResouceMock).toBeCalledWith(openUri, { disableNavigate: true, split: 4 /** right */ });
@@ -750,8 +764,8 @@ describe('FileTreeService should be work', () => {
 
   it('comare file should be work', () => {
     const compareMock = jest.fn();
-    const original = new URI(`${root}/child.js`);
-    const modified = new URI(`${root}/parent`);
+    const original = rootUri.resolve('child.js');
+    const modified = rootUri.resolve('parent');
     injector.mockCommand(EDITOR_COMMANDS.COMPARE.id, compareMock);
     treeService.compare(original, modified);
     expect(compareMock).toBeCalledWith({
@@ -761,8 +775,8 @@ describe('FileTreeService should be work', () => {
   });
 
   it('copy/cut/paste file should be work', () => {
-    const child = new URI(`${root}/child.js`);
-    const parent = new URI(`${root}/parent`);
+    const parent = rootUri.resolve('parent');
+    const child = rootUri.resolve('child.js');
     const moveFile = jest.fn();
     injector.mock(IFileTreeAPI, 'moveFile', moveFile);
     const copyFile = jest.fn();
