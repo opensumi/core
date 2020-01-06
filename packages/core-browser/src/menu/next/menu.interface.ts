@@ -95,7 +95,7 @@ export class MenuItemNode extends MenuNode {
   }
 }
 
-@Injectable()
+@Injectable({ multiple: true })
 export class SubmenuItemNode extends MenuNode {
   static readonly ID = 'menu.item.node.submenu';
 
