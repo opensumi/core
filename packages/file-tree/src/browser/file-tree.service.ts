@@ -1,4 +1,4 @@
-import { observable, runInAction, action } from 'mobx';
+import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   WithEventBus,

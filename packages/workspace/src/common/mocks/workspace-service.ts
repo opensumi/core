@@ -10,7 +10,7 @@ export class MockWorkspaceService implements IWorkspaceService {
 
   private _workspace: FileStat | undefined;
 
-  isMultiRootWorkspaceOpened: boolean;
+  isMultiRootWorkspaceOpened: boolean = false;
 
   whenReady: Promise<void>;
 
@@ -51,7 +51,7 @@ export class MockWorkspaceService implements IWorkspaceService {
   protected async updateRoots(workspaceStat?: FileStat | undefined): Promise<void> {
     const root: FileStat = workspaceStat || {
       isDirectory: true,
-      uri: 'file://userhome',
+      uri: 'file://userhome/',
       lastModification: 0,
     };
     this._workspace = root;
