@@ -351,13 +351,16 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   render() {
     const { className, style, placeholders, isDrained, isLoading } = this.props;
     const { topSpaces, bottomSpaces } = this.state;
+    const scorllerBarOptions = {
+      minScrollbarLength: 20,
+    };
     return (
       <PerfectScrollbar
         className={cls(styles.infinity_container, className)}
         style={style}
         onScrollY={this.handleScroll}
         containerRef={(el) => (this.rootEl = el)}
-        minScrollbarLength = {30}
+        options = {scorllerBarOptions}
       >
         <div
           ref={(el) => (this.listEl = el)}

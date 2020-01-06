@@ -216,6 +216,10 @@ export const RecycleTree = (
     userSelect: 'none',
   };
 
+  const scrollerBarOptions = {
+    minScrollbarLength: 20,
+  };
+
   return <React.Fragment>
     <PerfectScrollbar
       style={scrollContainerStyle}
@@ -224,7 +228,7 @@ export const RecycleTree = (
       containerRef={(ref) => {
         setScrollRef(ref);
       }}
-      minScrollbarLength = {20}
+      options = {scrollerBarOptions}
     >
       <TreeContainer
         style={contentStyle}
