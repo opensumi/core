@@ -87,6 +87,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     let afterContentClassName;
     let beforeContentClassName;
     const styles = this.resolveCSSStyle(options);
+
     const inlineStyles = this.resolveInlineCSSStyle(options);
     disposer.addDispose(this.cssManager.addClass(className, styles));
     disposer.addDispose(this.cssManager.addClass(inlineClassName, inlineStyles));
@@ -94,11 +95,19 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       const styles = this.resolveContentCSSStyle(options.after);
       disposer.addDispose(this.cssManager.addClass(key + '-after:after', styles));
       afterContentClassName = key + '-after';
+      // 最新版chrome 中 document.caretRangeFromRange 的行为有所改变
+      // 如果目标位置命中的是两个inline元素之间, 它会认为是前一个元素的内容。
+      // 在之前这个结果是属于公共父级
+      // 这个改变会使得monaco中hitTest返回错误的结果，导致点击decoration的空白区域时会错误选中文本
+      // 临时修复:
+      // 此处将before和after的父级span display强制设置为inline-block, 可以避免这个问题, 是否会带来其他风险未知
+      disposer.addDispose(this.cssManager.addClass(afterContentClassName, {display: 'inline-block'} as any));
     }
     if (options.before) {
       const styles = this.resolveContentCSSStyle(options.before);
       disposer.addDispose(this.cssManager.addClass(key + '-before:before', styles));
       beforeContentClassName = key + '-before';
+      disposer.addDispose(this.cssManager.addClass(beforeContentClassName, {display: 'inline-block'} as any));
     }
 
     return {
