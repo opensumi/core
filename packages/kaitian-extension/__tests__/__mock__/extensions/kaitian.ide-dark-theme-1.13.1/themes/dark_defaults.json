@@ -1,0 +1,180 @@
+{
+  "$schema":"vscode://schemas/color-theme",
+  "name":"Dark Default Colors",
+  "colors":{
+    "activityBar.activeBorder": "#167CDB",
+    "foreground": "#ffffffa6",
+    "descriptionForeground": "#ffffff73",
+
+    "textSeparator.foreground": "#16181A",
+
+    "widget.shadow": "#00000073",
+    "selection.background": "#00488C",
+
+    "textLink.foreground": "#73BCFF",
+    "textLink.activeForeground": "#0070D9",
+
+    "scrollbarSlider.background": "#ffffff40",
+
+    "list.infoForeground": "#00D96D",
+    "inputValidation.infoForeground": "#00D96D",
+    "editorOverviewRuler.infoForeground": "#00D96D",
+    "editorInfo.foreground": "#00D96D",
+    "notificationsInfoIcon.foreground": "#00D96D",
+    "problemsInfoIcon.foreground": "#00D96D",
+
+    "list.warningForeground": "#FAAD14",
+    "inputValidation.warningForeground": "#FAAD14",
+    "editorOverviewRuler.warningForeground": "#FAAD14",
+    "editorWarning.foreground": "#FAAD14",
+    "notificationsWarningIcon.foreground": "#FAAD14",
+    "problemsWarningIcon.foreground": "#FAAD14",
+
+    "list.errorForeground": "#FF4D4F",
+    "inputValidation.errorForeground": "#FF4D4F",
+    "editorOverviewRuler.errorForeground": "#FF4D4F",
+    "editorError.foreground": "#FF4D4F",
+    "notificationsErrorIcon.foreground": "#FF4D4F",
+    "problemsErrorIcon.foreground": "#FF4D4F",
+
+    "button.background": "#0070D9",
+    "button.foreground": "#ffffff",
+    "button.hoverBackground": "#2288E6",
+
+    // kaitian custom button
+    "kt.secondary.button.foreground": "#ffffffd9",
+    "kt.secondary.button.border": "#626A73",
+    "kt.secondary.button.hoverForeground": "#0063BF",
+    "kt.danger.button.foreground": "#ffffff",
+    "kt.danger.button.background": "#FF4D4F",
+    "kt.danger.button.hoverBackground": "#FF7673",
+
+    "input.placeholderForeground": "#ffffff40",
+    "inputOption.activeBorder": "#00488C",
+    "inputValidation.errorBorder": "#FF4D4F",
+    "input.foreground": "#ffffffa6",
+    "input.background": "#16181A",
+    "kt.inputOption.hoverBorder": "#0070D9",
+
+    "dropdown.background": "#333A40",
+    "dropdown.listBackground": "#333A40",
+    "dropdown.foreground": "#ffffffa6",
+    // "dropdown.border": "#ff0000",
+
+    "badge.background": "#ffffff14",
+    "badge.foreground": "#FFFFFF",
+    "activityBarBadge.background": "#0070D9",
+    "activityBarBadge.foreground": "#FFFFFF",
+
+    "notifications.background": "#2B2F33",
+    "notifications.foreground": "#ffffffa6",
+    "notificationCenterHeader.foreground": "#ffffff73",
+
+    "checkbox.background": "#16181A",
+    "checkbox.border": "#16181A",
+    "settings.checkboxBackground": "#0070D9",
+    "settings.checkboxBorder": "#16181A",
+
+    "breadcrumb.foreground": "#ffffff73",
+    "breadcrumb.background": "#242526",
+    "breadcrumbPicker.background": "#333A40",
+
+    "activityBar.foreground":"#FFFFFF",
+    "activityBar.background":"#333A40",
+    "activityBar.inactiveForeground":"#FFFFFF73",
+
+    "sideBar.background":"#2C3033",
+    "sideBar.border": "#252729",
+    "sideBarTitle.foreground":"#FFFFFF",
+    "sideBarSectionHeader.foreground": "#ffffff",
+    "sideBarSectionHeader.background": "#ffffff1a",
+    "kt.sideBarTitle.activeBorder": "#167CDB",
+
+    "kt.sideBarList.foreground": "#D7DBDE",
+    "kt.sideBarList.secondaryForeground": "#868C91",
+    "kt.sideBarList.hoverForeground": "#5F656B40",
+    "kt.sideBarList.selectionBackground": "#1A66AC",
+
+    "tab.activeBackground":"#242526",
+    "tab.activeForeground":"#FFFFFF",
+    "tab.inactiveForeground":"#FFFFFFA6",
+    "tab.inactiveBackground":"#272B2E",
+
+    "terminal.background": "#242526",
+    "terminal.foreground": "#bbc0c4",
+    "terminal.selectionBackground": "#ffffff40",
+
+    "editorGroupHeader.tabsBackground":"#272b2e",
+
+    "editor.background":"#242526",
+    "editor.foreground":"#B2B2B3",
+    "editor.findMatchHighlightBackground": "#fa541c40",
+    "diffEditor.insertedTextBackground": "#00d96d40",
+
+    "editorLineNumber.foreground": "#ffffff73",
+    "editorLineNumber.activeForeground": "#ffffffd9",
+
+    "editorGroupHeader.tabsBorder":"#ffffff0d",
+
+    // "editor.inactiveSelectionBackground":"#3A3D41",
+    // "editorIndentGuide.background":"#404040",
+    // "editorIndentGuide.activeBackground":"#707070",
+    // "editor.selectionHighlightBackground":"#ADD6FF26",
+
+    "statusBar.foreground":"#FFFFFF",
+    "statusBar.background":"#252729",
+    "statusBar.border": "#252729",
+    "statusBar.noFolderBackground": "#35393D",
+    "statusBar.debuggingBackground": "#D77915",
+    "statusBarItem.remoteBackground": "#6329B4",
+    "statusBarItem.hoverBackground":"#FFFFFF1A",
+    "statusBarItem.activeBackground":"#FFFFFF29",
+    "kt.statusbar.offline.background": "#D21F28",
+
+    // menubar
+    "kt.menubar.foreground": "#D7DBDE",
+    "kt.menubar.background": "#35393D",
+    "menubar.selectionForeground": "#FFFFFF",
+    "menubar.selectionBackground": "#2C3033",
+    "kt.menubar.separatorBackground": "#00000040",
+    "kt.menubar.border": "#252729",
+
+    // menu
+    "menu.background": "#2C3033",
+    "menu.foreground": "#D7DBDE",
+    "menu.separatorBackground": "#43484D",
+    "menu.selectionBackground": "#5F656B40",
+    "menu.selectionForeground": "#FFFFFF",
+    "kt.menu.disableForeground": "#5F656B",
+    "kt.menu.descriptionForeground": "#868C91",
+    // kt.menu.shadow
+
+    "list.activeSelectionBackground":"#00498C",
+    "list.hoverBackground":"#43494E",
+    // 待更新，选中但不 focus 时
+    "list.inactiveSelectionBackground": "#1D2F40",
+    "list.inactiveFocusBackground": "#1D2F40",
+
+    "panel.background":"#242526",
+    "panel.border": "#ffffff00",
+    "panelTitle.activeBorder":"#00498c",
+    "panelTitle.activeForeground": "#ffffffd9",
+    "panelTitle.inactiveForeground": "#ffffffa6",
+    "panelInput.border":"#00488c",
+    "kt.panelTitle.background": "#272B2E",
+
+    "kt.tooltip.background": "#4C5359",
+    "kt.tooltip.foreground": "#ffffffd9",
+
+    "kt.notificationsCloseIcon.foreground": "#ffffff73",
+
+    "kt.actionbar.foreground": "#D7DBDE",
+    "kt.actionbar.disableForeground": "#5F656B",
+    "kt.actionbar.separatorBackground": "#00000040",
+    "kt.actionbar.selectionBackground": "#1B2F44",
+    "kt.actionbar.selectionBorder": "#1A66AC",
+
+    "welcomePage.background": "#202224",
+    "walkThrough.embeddedEditorBackground": "#00000040",
+  }
+}

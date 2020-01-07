@@ -18,4 +18,6 @@ global.location = jsdom.window.location;
 global.getComputedStyle = jsdom.window.getComputedStyle;
 global.window = jsdom.window;
 global.DOMParser = jsdom.window.DOMParser;
+global.HTMLDivElement = jsdom.window.HTMLDivElement;
+
 jest.mock(join(__dirname, 'packages/monaco/src/browser/monaco-loader'));
