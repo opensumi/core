@@ -208,7 +208,6 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
         currentSliceIndex + VISIBLE_SLICE_COUNT,
       );
       const startIndex = visibleSlices[0].startIndex;
-      console.log(visibleSlices, ' visibleSlices ==>');
       const amount = visibleSlices.reduce(
         (amount, slice) => slice.amount + amount,
         0,
