@@ -13,9 +13,10 @@ export const AccordionContainer: React.FC<{
   containerId: string;
   headerSize?: number;
   minSize?: number;
+  noRestore?: boolean;
   className?: string;
-}> = observer(({ alignment = 'vertical', views, containerId, initState = new Map(), headerSize = 22, minSize = 120, className }) => {
-  const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId);
+}> = observer(({ alignment = 'vertical', views, containerId, initState = new Map(), headerSize = 22, minSize = 120, className, noRestore }) => {
+  const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore);
   React.useEffect(() => {
     // 解决视图在渲染前注册的问题
     if (!views.length) { return; }

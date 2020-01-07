@@ -47,7 +47,7 @@ export interface IMainLayoutService {
   setFloatSize(size: number): void;
   handleSetting(event: React.MouseEvent<HTMLElement>): void;
   getTabbarService(location: string, noAccordion?: boolean): TabbarService;
-  getAccordionService(containerId: string): AccordionService;
+  getAccordionService(containerId: string, noRestore?: boolean): AccordionService;
   // 某一位置是否可见
   isVisible(location: string): boolean;
 }

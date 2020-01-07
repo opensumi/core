@@ -26,9 +26,9 @@ export class MainLayoutModule extends BrowserModule {
     {
       token: AccordionServiceFactory,
       useFactory: (injector: Injector) => {
-        return (containerId: string) => {
+        return (containerId: string, noRestore?: boolean) => {
           const manager: IMainLayoutService = injector.get(IMainLayoutService);
-          return manager.getAccordionService(containerId);
+          return manager.getAccordionService(containerId, noRestore);
         };
       },
     },

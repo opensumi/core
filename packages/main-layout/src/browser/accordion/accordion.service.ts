@@ -54,7 +54,7 @@ export class AccordionService extends WithEventBus {
 
   private topViewKey: IContextKey<string>;
 
-  constructor(public containerId: string) {
+  constructor(public containerId: string, private noRestore?: boolean) {
     super();
     this.splitPanelService = this.splitPanelManager.getService(containerId);
     this.menuRegistry.registerMenuItem(this.menuId, {
@@ -74,6 +74,7 @@ export class AccordionService extends WithEventBus {
   }
 
   restoreState() {
+    if (this.noRestore) { return; }
     const defaultState: {[containerId: string]: SectionState} = {};
     this.visibleViews.forEach((view) => defaultState[view.id] = { collapsed: false, hidden: false });
     const restoredState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
@@ -165,6 +166,7 @@ export class AccordionService extends WithEventBus {
   }
 
   protected storeState() {
+    if (this.noRestore) { return; }
     console.log('store:', this.state);
     this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), this.state);
   }
