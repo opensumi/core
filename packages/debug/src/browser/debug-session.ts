@@ -513,7 +513,7 @@ export class DebugSession implements IDisposable {
     }
   }
 
-  protected terminated = false;
+  public terminated = false;
   async terminate(restart?: boolean): Promise<void> {
     if (!this.terminated && this.capabilities.supportsTerminateRequest && this.configuration.request === 'launch') {
       this.terminated = true;
