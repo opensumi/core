@@ -5,6 +5,8 @@ import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIco
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
 
+import './icon.less';
+
 @Injectable()
 export class IconService implements IIconService {
   @Autowired()
@@ -109,7 +111,11 @@ export class IconService implements IIconService {
         }
       }
     }
-    return randomClass + ' ' + (type === IconType.Mask ? 'mask-mode' : 'background-mode');
+    return [
+      'kaitian-icon',
+      randomClass,
+      (type === IconType.Mask ? 'mask-mode' : 'background-mode'),
+    ].join(' ');
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {

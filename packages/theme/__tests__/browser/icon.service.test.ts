@@ -215,13 +215,16 @@ describe('icon theme test', () => {
     expect(iconClass).toBeDefined();
     const extraIconNode = document.getElementById('plugin-icons');
     expect(extraIconNode).toBeDefined();
-    expect(extraIconNode!.innerHTML.indexOf(iconClass!.replace(' mask-mode', ''))).toBeGreaterThan(-1);
+    const randomIconClass = iconClass!.replace(/(kaitian-icon|mask-mode|background-mode)/g, '').trim();
+    expect(extraIconNode!.innerHTML.includes(randomIconClass)).toBeTruthy();
     const multiIconClass = service.fromIcon('file:///mock/base/path', {
       dark: './testIcon.svg',
       light: './testIcon2.svg',
       hc: './testIcon3.svg',
     });
-    expect(extraIconNode!.innerHTML.indexOf('.vs .' + multiIconClass!.replace(' mask-mode', ''))).toBeGreaterThan(-1);
+
+    const randomIconClass1 = multiIconClass!.replace(/(kaitian-icon|mask-mode|background-mode)/g, '').trim();
+    expect(extraIconNode!.innerHTML.includes('.vs .' + randomIconClass1)).toBeTruthy();
   });
 
   it('should be able to load font icons', async (done) => {
