@@ -86,7 +86,11 @@ export class AccordionService extends WithEventBus {
   restoreSize() {
     this.visibleViews.forEach((view, index) => {
       const savedState = this.state[view.id];
-      this.doToggleOpen(view.id, savedState.collapsed, index, true);
+      if (savedState.collapsed) {
+        this.setSize(index, 0, false, true);
+      } else if (!savedState.collapsed && savedState.size) {
+        this.setSize(index, savedState.size, false, true);
+      }
     });
   }
 
@@ -161,6 +165,7 @@ export class AccordionService extends WithEventBus {
   }
 
   protected storeState() {
+    console.log('store:', this.state);
     this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), this.state);
   }
 
@@ -313,7 +318,7 @@ export class AccordionService extends WithEventBus {
     let calcTargetSize: number = targetSize;
     if (isIncrement) {
       calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
-      if (this.expandedViews.length > 1) {
+      if (this.expandedViews.length >= 1) {
         // FIXME 首其他视图展开/折叠影响的视图尺寸记录，仅有一个展开时不足记录 -> restore会有问题
         viewState.size = calcTargetSize;
       }
