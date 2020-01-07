@@ -109,8 +109,8 @@ const extractFileItemShouldBeRendered = (
   }
   let renderedFiles: IFileTreeItemRendered[] = [];
   files.forEach((file: Directory | File) => {
-    const uri = filetreeService.getStatutsKey(file);
-    const status = statusMap.get(uri);
+    const statusKey = filetreeService.getStatutsKey(file);
+    const status = statusMap.get(statusKey);
     if (status) {
       const isSelected = status.selected;
       const isExpanded = status.expanded;
@@ -118,8 +118,15 @@ const extractFileItemShouldBeRendered = (
       const isCuted = status.cuted;
       const isLoading = status.isLoading;
       const isDropping = status.isDropping;
+      let name: string;
+      if (filetreeService.isMutiWorkspace) {
+        name = depth === 0 ? filetreeService.getDisplayName(file.uri) : file.uri.displayName;
+      } else {
+        name = file.uri.displayName;
+      }
       renderedFiles.push({
         ...file,
+        name,
         icon: file.getIcon(isExpanded!),
         filestat: {
           ...status.file.filestat,

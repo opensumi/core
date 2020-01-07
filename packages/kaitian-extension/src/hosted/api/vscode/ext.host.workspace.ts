@@ -189,11 +189,15 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
   updateWorkspaceFolders(start: number, deleteCount: number, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean {
     const rootsToAdd = new Set<string>();
+    const workspaceToName: any = {};
     if (Array.isArray(workspaceFoldersToAdd)) {
       workspaceFoldersToAdd.forEach((folderToAdd) => {
         const uri = Uri.isUri(folderToAdd.uri) && folderToAdd.uri.toString();
         if (uri && !rootsToAdd.has(uri)) {
           rootsToAdd.add(uri);
+          if (folderToAdd.name) {
+            workspaceToName[uri.toString()] = folderToAdd.name;
+          }
         }
       });
     }
@@ -228,7 +232,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     }
 
     // 通知主进程更新对应目录
-    this.proxy.$updateWorkspaceFolders(start, deleteCount, ...rootsToAdd).then(undefined, (error) =>
+    this.proxy.$updateWorkspaceFolders(start, deleteCount, workspaceToName, ...rootsToAdd).then(undefined, (error) =>
       this.messageService.showMessage(MessageType.Error, `Failed to update workspace folders: ${error}`),
     );
 

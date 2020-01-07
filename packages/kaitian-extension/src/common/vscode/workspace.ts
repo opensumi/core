@@ -8,7 +8,7 @@ import { EndOfLineSequence } from '@ali/ide-editor/lib/common';
 export interface IMainThreadWorkspace extends IDisposable {
   $saveAll(): Promise<boolean>;
   $tryApplyWorkspaceEdit(dto: WorkspaceEditDto): Promise<boolean>;
-  $updateWorkspaceFolders(start: number, deleteCount?: number, ...rootsToAdd: string[]): Promise<void>;
+  $updateWorkspaceFolders(start: number, deleteCount?: number, workspaceToName?: {[key: string]: string}, ...rootsToAdd: string[]): Promise<void>;
 }
 
 export interface IExtHostWorkspace {

@@ -77,6 +77,9 @@ export class WorkspaceService implements IWorkspaceService {
 
   public whenReady: Promise<void>;
 
+  // 映射工作区显示的文字信息
+  private workspaceToName = {};
+
   constructor() {
     this.whenReady = this.init();
   }
@@ -456,7 +459,7 @@ export class WorkspaceService implements IWorkspaceService {
    * @param uri
    */
   async addRoot(uri: URI): Promise<void> {
-    await this.spliceRoots(this._roots.length, 0, uri);
+    await this.spliceRoots(this._roots.length, 0, {}, uri);
   }
 
   /**
@@ -477,13 +480,18 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-  async spliceRoots(start: number, deleteCount?: number, ...rootsToAdd: URI[]): Promise<URI[]> {
+  async spliceRoots(start: number, deleteCount: number = 0, workspaceToName: {[key: string]: string} = {}, ...rootsToAdd: URI[]): Promise<URI[]> {
     if (!this._workspace) {
       throw new Error('There is not active workspace');
     }
     const dedup = new Set<string>();
     const roots = this._roots.map((root) => (dedup.add(root.uri), root.uri));
     const toAdd: string[] = [];
+    // 更新工作区映射
+    this.workspaceToName = {
+      ...this.workspaceToName,
+      ...workspaceToName,
+    };
     for (const root of rootsToAdd) {
       const uri = root.toString();
       if (!dedup.has(uri)) {
@@ -505,6 +513,10 @@ export class WorkspaceService implements IWorkspaceService {
     const newData = WorkspaceData.buildWorkspaceData(roots, currentData && currentData.settings);
     await this.writeWorkspaceFile(this._workspace, newData);
     return toRemove.map((root) => new URI(root));
+  }
+
+  public getWorkspaceName(uri: URI) {
+    return this.workspaceToName[uri.toString()] || uri.displayName;
   }
 
   protected async getUntitledWorkspace(): Promise<URI | undefined> {
