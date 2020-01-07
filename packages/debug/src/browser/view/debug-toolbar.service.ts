@@ -32,7 +32,7 @@ export class DebugToolbarService {
     this.state = this.model.state;
     this.currentSession = this.model.currentSession;
     this.sessions = this.model.sessions.filter((session: DebugSession) => {
-      return session.state > DebugState.Inactive;
+      return session && session.state > DebugState.Inactive;
     });
     this.sessionCount = this.sessions.length;
   }

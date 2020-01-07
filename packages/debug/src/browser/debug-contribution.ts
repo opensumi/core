@@ -238,6 +238,15 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     this.debugEditorController.init();
     await this.configurations.load();
     await this.breakpointManager.load();
+    this.configurations.onDidChange(() => {
+      this.configurations.save();
+    });
+    this.breakpointManager.onDidChangeBreakpoints(() => {
+      this.breakpointManager.save();
+    });
+    this.debugWatchService.onDidChange(() => {
+      this.debugWatchService.save();
+    });
   }
 
   openView() {
@@ -250,10 +259,11 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     }
   }
 
-  async onWillStop() {
-    await this.configurations.save();
-    await this.breakpointManager.save();
-    await this.debugWatchService.save();
+  onDidRender() {
+    const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+    if (handler) {
+      handler!.setTitleComponent(DebubgConfigurationView);
+    }
   }
 
   registerCommands(commands: CommandRegistry) {
