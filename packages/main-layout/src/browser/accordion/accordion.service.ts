@@ -80,7 +80,6 @@ export class AccordionService extends WithEventBus {
     const restoredState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     this.state = restoredState;
     this.restoreSize();
-    console.log('get:', restoredState);
   }
 
   // 调用时需要保证dom可见
@@ -116,7 +115,7 @@ export class AccordionService extends WithEventBus {
     }
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
-    if (!view.name) {
+    if (view.name === undefined) {
       console.warn(view.id + '视图未传入标题，请检查！');
     }
     this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped()).createKey('view', view.id);
@@ -167,7 +166,6 @@ export class AccordionService extends WithEventBus {
 
   protected storeState() {
     if (this.noRestore) { return; }
-    console.log('store:', this.state);
     this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), this.state);
   }
 
@@ -274,10 +272,10 @@ export class AccordionService extends WithEventBus {
     viewState.collapsed = collapsed;
     let sizeIncrement: number;
     if (collapsed) {
-      sizeIncrement = this.setSize(index, 0, undefined, noAnimation);
+      sizeIncrement = this.setSize(index, 0, false, noAnimation);
     } else {
       // 仅有一个视图展开时独占
-      sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize, noAnimation);
+      sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize, false, noAnimation);
     }
     // 下方视图被影响的情况下，上方视图不会同时变化
     let effected = false;
@@ -318,19 +316,18 @@ export class AccordionService extends WithEventBus {
     const prevSize = panel.clientHeight;
     const viewState = this.getViewState(this.visibleViews[index].id);
     let calcTargetSize: number = targetSize;
+    // 视图即将折叠时、受其他视图影响尺寸变化时、主动展开时、resize时均需要存储尺寸信息
     if (isIncrement) {
       calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
-      if (this.expandedViews.length >= 1) {
-        // FIXME 首其他视图展开/折叠影响的视图尺寸记录，仅有一个展开时不足记录 -> restore会有问题
-        viewState.size = calcTargetSize;
-      }
-    } else if (targetSize === this.headerSize && this.expandedViews.length > 0) {
+      viewState.size = calcTargetSize;
+    } else if (targetSize === this.headerSize) {
       // 当前视图即将折叠且不是唯一展开的视图时，存储当前高度
       viewState.size = prevSize;
+    } else {
+      viewState.size = calcTargetSize;
     }
     this.storeState();
     panel.style.height = calcTargetSize / fullHeight * 100 + '%';
-    console.log(calcTargetSize / fullHeight * 100 + '%', isIncrement ? calcTargetSize - (prevSize - targetSize) : targetSize - prevSize, '<<<<<>>>>>');
     if (!noAnimation) {
       setTimeout(() => {
         // 动画 0.1s，保证结束后移除

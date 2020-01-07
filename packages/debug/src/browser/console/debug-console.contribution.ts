@@ -9,8 +9,8 @@ import { getIcon } from '@ali/ide-core-browser';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 
-@Domain(ComponentContribution, MainLayoutContribution)
-export class DebugConsoleContribution implements ComponentContribution, MainLayoutContribution {
+@Domain(ComponentContribution)
+export class DebugConsoleContribution implements ComponentContribution {
 
   @Autowired()
   logger: Logger;
@@ -27,13 +27,8 @@ export class DebugConsoleContribution implements ComponentContribution, MainLayo
       priority: 8,
       containerId: DebugContribution.DEBUG_CONSOLE_CONTAINER_ID,
       iconClass: getIcon('debug'),
+      titleComponent: DebugConsoleToolbarView,
     });
   }
 
-  onDidRender() {
-    const handler = this.layoutService.getTabbarHandler(DebugContribution.DEBUG_CONSOLE_CONTAINER_ID);
-    if (handler) {
-      handler.setTitleComponent(DebugConsoleToolbarView);
-    }
-  }
 }
