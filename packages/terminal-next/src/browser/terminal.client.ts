@@ -27,7 +27,7 @@ export class TerminalClient extends Disposable {
   private _attachAddon: AttachAddon;
   private _searchAddon: SearchAddon;
 
-  private _layer = new ThrottledDelayer<void>(50);
+  private _delayer = new ThrottledDelayer<void>(50);
 
   private _attached: boolean;
   private _activated: boolean;
@@ -125,7 +125,7 @@ export class TerminalClient extends Disposable {
         this._searchAddon.dispose();
         weblinksAddon.dispose();
         filelinksAddon.dispose();
-        this._layer.dispose();
+        this._delayer.dispose();
         this._term.dispose();
       },
     });
@@ -253,7 +253,7 @@ export class TerminalClient extends Disposable {
   }
 
   private _doLayout() {
-    this._layer.trigger(() => {
+    this._delayer.trigger(() => {
       this._fitAddon.fit();
       return Promise.resolve();
     });
