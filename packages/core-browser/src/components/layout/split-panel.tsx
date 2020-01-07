@@ -52,7 +52,7 @@ interface SplitPanelProps extends SplitChildProps {
   dynamicTarget?: boolean;
 }
 
-export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, ...restProps }) => {
+export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, minResize, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   // convert children to list
   const childList = React.Children.toArray(children);
