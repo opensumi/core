@@ -4,6 +4,9 @@ import clx from 'classnames';
 import { getIcon, defaultIconMap } from '../../style/icon/icon';
 import * as styles from './styles.module.less';
 
+/**
+ * @deprecated 推荐使用 `@ali/ide-components`
+ */
 const Icon: React.FC<{
   title?: string;
   icon?: keyof typeof defaultIconMap;
