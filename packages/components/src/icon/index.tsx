@@ -25,16 +25,18 @@ export const Icon: React.FC<{
   title?: string;
   icon?: string;
   iconClass?: string;
+  tooltip?: string;
   size?: 'small' | 'large';
   loading?: boolean;
   onClick?: React.MouseEventHandler<HTMLSpanElement>;
-} & React.HTMLAttributes<HTMLDivElement>> = (
-  { size = 'small', loading, icon, iconClass, className, ...restProps },
+} & React.HTMLAttributes<HTMLSpanElement>> = (
+  { size = 'small', loading, icon, iconClass, className, tooltip, ...restProps },
 ) => {
   const { getIcon } = React.useContext(IconContext);
   const iconClx = icon ? getIcon(icon) : iconClass;
   return <span
     {...restProps}
+    title={tooltip}
     className={clx(
       styles.icon,
       iconClx,
