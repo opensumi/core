@@ -86,11 +86,7 @@ export class AccordionService extends WithEventBus {
   restoreSize() {
     this.visibleViews.forEach((view, index) => {
       const savedState = this.state[view.id];
-      if (savedState.collapsed) {
-        this.setSize(index, 0);
-      } else if (!savedState.collapsed && savedState.size) {
-        this.setSize(index, savedState.size, false);
-      }
+      this.doToggleOpen(view.id, savedState.collapsed, index, true);
     });
   }
 
@@ -239,36 +235,7 @@ export class AccordionService extends WithEventBus {
   }
 
   @action.bound handleSectionClick(viewId: string, collapsed: boolean, index: number) {
-    const viewState = this.getViewState(viewId);
-    viewState.collapsed = collapsed;
-    let sizeIncrement: number;
-    if (collapsed) {
-      sizeIncrement = this.setSize(index, 0);
-    } else {
-      // 仅有一个视图展开时独占
-      sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize);
-    }
-    // 下方视图被影响的情况下，上方视图不会同时变化
-    let effected = false;
-    // 从视图下方最后一个展开的视图起依次减去对应的高度
-    for (let i = this.visibleViews.length - 1; i > index; i--) {
-      if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
-        sizeIncrement = this.setSize(i, sizeIncrement, true);
-        effected = true;
-        if (sizeIncrement === 0) {
-          break;
-        }
-      }
-    }
-    if (!effected) {
-      // 找到视图上方首个展开的视图减去对应的高度
-      for (let i = index - 1; i >= 0; i--) {
-        if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
-          sizeIncrement = this.setSize(i, sizeIncrement, true);
-          break;
-        }
-      }
-    }
+    this.doToggleOpen(viewId, collapsed, index);
   }
 
   @action.bound handleContextMenu(event: React.MouseEvent, viewId: string) {
@@ -295,10 +262,45 @@ export class AccordionService extends WithEventBus {
     return viewState;
   }
 
-  protected setSize(index: number, targetSize: number, isIncrement?: boolean): number {
+  protected doToggleOpen(viewId: string, collapsed: boolean, index: number, noAnimation?: boolean) {
+    const viewState = this.getViewState(viewId);
+    viewState.collapsed = collapsed;
+    let sizeIncrement: number;
+    if (collapsed) {
+      sizeIncrement = this.setSize(index, 0, undefined, noAnimation);
+    } else {
+      // 仅有一个视图展开时独占
+      sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize, noAnimation);
+    }
+    // 下方视图被影响的情况下，上方视图不会同时变化
+    let effected = false;
+    // 从视图下方最后一个展开的视图起依次减去对应的高度
+    for (let i = this.visibleViews.length - 1; i > index; i--) {
+      if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
+        sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
+        effected = true;
+        if (sizeIncrement === 0) {
+          break;
+        }
+      }
+    }
+    if (!effected) {
+      // 找到视图上方首个展开的视图减去对应的高度
+      for (let i = index - 1; i >= 0; i--) {
+        if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
+          sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
+          break;
+        }
+      }
+    }
+  }
+
+  protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
     const fullHeight = this.splitPanelService.rootNode.clientHeight;
     const panel = this.splitPanelService.panels[index];
-    panel.classList.add('resize-ease');
+    if (!noAnimation) {
+      panel.classList.add('resize-ease');
+    }
     if (!targetSize) {
       targetSize = this.headerSize;
       panel.classList.add(RESIZE_LOCK);
@@ -321,10 +323,13 @@ export class AccordionService extends WithEventBus {
     }
     this.storeState();
     panel.style.height = calcTargetSize / fullHeight * 100 + '%';
-    setTimeout(() => {
-      // 动画 0.1s，保证结束后移除
-      panel.classList.remove('resize-ease');
-    }, 200);
+    console.log(calcTargetSize / fullHeight * 100 + '%', isIncrement ? calcTargetSize - (prevSize - targetSize) : targetSize - prevSize, '<<<<<>>>>>');
+    if (!noAnimation) {
+      setTimeout(() => {
+        // 动画 0.1s，保证结束后移除
+        panel.classList.remove('resize-ease');
+      }, 200);
+    }
     return isIncrement ? calcTargetSize - (prevSize - targetSize) : targetSize - prevSize;
   }
 

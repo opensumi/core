@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -78,8 +78,6 @@ export class TabbarService extends WithEventBus {
   public barSize: number;
   private menuId = `tabbar/${this.location}`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
-
-  private rendered = false;
 
   constructor(public location: string, public noAccordion?: boolean) {
     super();
@@ -334,11 +332,7 @@ export class TabbarService extends WithEventBus {
 
   @OnEvent(RenderedEvent)
   protected async onRendered() {
-    this.rendered = true;
     // accordion panel状态恢复
-    if (this.currentContainerId && !this.noAccordion) {
-      this.tryRestoreAccordionSize(this.currentContainerId);
-    }
   }
 
   protected shouldExpand(containerId: string) {
@@ -390,8 +384,7 @@ export class TabbarService extends WithEventBus {
           lockSize(false);
         }
         setMaxSize(false);
-        this.contextKeyService.createKey(getTabbarCtxKey(this.location), currentId);
-        if (!this.noAccordion && this.rendered) {
+        if (!this.noAccordion) {
           this.tryRestoreAccordionSize(currentId);
         }
       } else {
