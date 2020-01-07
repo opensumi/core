@@ -303,7 +303,7 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
   }
 
   async getStat(provider: vscode.FileSystemProvider, uri: Uri): Promise<FileStat> {
-    return await this.convertToKtStat(provider, uri);
+    return await this.convertToKtStat(provider, uri, 1);
   }
 
   async $watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number> {
@@ -333,6 +333,7 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
   private async convertToKtStat(
     provider: vscode.FileSystemProvider,
     uri: Uri,
+    depth: number,
   ): Promise<FileStat> {
     const stat = await provider.stat(uri);
     const isSymbolicLink = stat.type.valueOf() === VSCFileType.SymbolicLink.valueOf();
@@ -348,7 +349,7 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     };
 
     if (isDirectory) {
-      result.children = await this.convertToKtDirectoryStat(provider, uri);
+      result.children = await this.convertToKtDirectoryStat(provider, uri, depth);
     }
 
     return result;
@@ -357,15 +358,19 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
   private async convertToKtDirectoryStat(
     provider: vscode.FileSystemProvider,
     uri: Uri,
+    depth: number,
   ): Promise<FileStat[]> {
-    const outChilen: FileStat[] = [];
-    const childen = await provider.readDirectory(uri);
-
-    for (const child of childen) {
-      outChilen.push(await this.convertToKtStat(provider, Uri.parse(uri.toString() + `/${child[0]}`)));
+    if (depth < 1) {
+      return [];
+    }
+    const outChildren: FileStat[] = [];
+    const children = await provider.readDirectory(uri);
+    for (const child of children) {
+      const ktUrl = new URI(uri.toString()).resolve(`${child[0]}`);
+      outChildren.push(await this.convertToKtStat(provider, ktUrl.codeUri, depth - 1));
     }
 
-    return outChilen;
+    return outChildren;
   }
 
   private convertToKtFileChangeEvent(events: vscode.FileChangeEvent[]): FileChangeEvent {
