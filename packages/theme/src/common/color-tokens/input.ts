@@ -4,8 +4,8 @@ import { Color } from '../../common/color';
 import { contrastBorder, foreground, focusBorder } from './base';
 
 export const inputBorder = registerColor('input.border', { dark: '#00000000', light: '#00000000', hc: contrastBorder }, localize('inputBoxBorder', 'Input box border.'));
-export const inputBackground = registerColor('input.background', { dark: '#3C3C3C', light: Color.white, hc: Color.black }, localize('inputBoxBackground', 'Input box background.'));
-export const inputForeground = registerColor('input.foreground', { dark: foreground, light: foreground, hc: foreground }, localize('inputBoxForeground', 'Input box foreground.'));
+export const inputBackground = registerColor('input.background', { dark: '#00000040', light: Color.white, hc: Color.black }, localize('inputBoxBackground', 'Input box background.'));
+export const inputForeground = registerColor('input.foreground', { dark: '#D7DBDE', light: foreground, hc: foreground }, localize('inputBoxForeground', 'Input box foreground.'));
 export const inputPlaceholderForeground = registerColor('input.placeholderForeground', { light: '#5F656B', dark: '#5F656B', hc: transparent(foreground, 0.7) }, localize('inputPlaceholderForeground', 'Input box foreground color for placeholder text.'));
 export const inputOptionActiveBorder = registerColor('inputOption.activeBorder', { dark: '#167CDB', light: '#167CDB', hc: contrastBorder }, localize('inputBoxActiveOptionBorder', 'Border color of activated options in input fields.'));
 export const inputOptionActiveBackground = registerColor('inputOption.activeBackground', { dark: '#00000040', light: null, hc: null }, localize('inputOption.activeBackground', 'Background color of activated options in input fields.'));

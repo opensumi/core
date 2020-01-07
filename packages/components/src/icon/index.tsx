@@ -28,9 +28,10 @@ export const Icon: React.FC<{
   tooltip?: string;
   size?: 'small' | 'large';
   loading?: boolean;
+  disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLSpanElement>;
 } & React.HTMLAttributes<HTMLSpanElement>> = (
-  { size = 'small', loading, icon, iconClass, className, tooltip, ...restProps },
+  { size = 'small', loading, icon, iconClass, className, tooltip, disabled, ...restProps },
 ) => {
   const { getIcon } = React.useContext(IconContext);
   const iconClx = icon ? getIcon(icon) : iconClass;
@@ -43,6 +44,7 @@ export const Icon: React.FC<{
       className,
       {
         [styles.loading]: loading,
+        [styles.disabled]: !!disabled,
         [styles[size]]: !!size,
       },
     )}
