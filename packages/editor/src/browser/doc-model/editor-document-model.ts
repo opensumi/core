@@ -1,13 +1,13 @@
-import * as md5 from 'md5';
-import { URI, Disposable, isUndefinedOrNull, IEventBus, ILogger, IRange, IEditorDocumentEditChange, isThenable, localize, formatLocalize, PreferenceService, CorePreferences, CommandService, Schemas } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
-
-import { EOL, EndOfLineSequence, IDocPersistentCacheProvider, IDocCache, isDocContentCache, parseRangeFrom } from '../../common';
-import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IEditorDocumentModelContentChange, EditorDocumentModelSavedEvent, ORIGINAL_DOC_SCHEME, EditorDocumentModelRemovalEvent } from './types';
-import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
-import { EditorDocumentError } from './editor-document-error';
+import { Autowired, Injectable } from '@ali/common-di';
+import { CommandService, CorePreferences, Disposable, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
-import { ICompareService, CompareResult } from '../types';
+import * as md5 from 'md5';
+import { EndOfLineSequence, EOL, IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom } from '../../common';
+import { CompareResult, ICompareService } from '../types';
+import { EditorDocumentError } from './editor-document-error';
+import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
+import { EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModel, IEditorDocumentModelContentChange, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, ORIGINAL_DOC_SCHEME } from './types';
+
 import debounce = require('lodash.debounce');
 
 export interface EditorDocumentModelConstructionOptions {
@@ -58,6 +58,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   @Autowired(CommandService)
   private commandService: CommandService;
+
+  @Autowired(IReporterService)
+  private reporter: IReporterService;
 
   private monacoModel: monaco.editor.ITextModel;
 
@@ -438,14 +441,26 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
     if (formatOnSave) {
       const formatOnSaveTimeout = this.corePreferences['editor.formatOnSaveTimeout'];
+      const timer = this.reporter.time(REPORT_NAME.FORMAT_ON_SAVE);
       try {
         await Promise.race([
-          new Promise((_, reject) => setTimeout(() => reject(formatLocalize('preference.editor.formatOnSaveTimeoutError', formatOnSaveTimeout)), formatOnSaveTimeout)),
+          new Promise((_, reject) => {
+            setTimeout(() => {
+              const err = new Error(formatLocalize('preference.editor.formatOnSaveTimeoutError', formatOnSaveTimeout));
+              err.name = 'FormatOnSaveTimeoutError';
+              reject(err);
+            }, formatOnSaveTimeout);
+          }),
           this.commandService.executeCommand('monaco.editor.action.formatDocument'),
         ]);
       } catch (err) {
+        if (err.name === 'FormatOnSaveTimeoutError') {
+          this.reporter.point(REPORT_NAME.FORMAT_ON_SAVE_TIMEOUT_ERROR, this.uri.toString());
+        }
         // 目前 command 没有读取到 contextkey，在不支持 format 的地方执行 format 命令会报错，先警告下，后续要接入 contextkey 来判断
         this.logger.warn(`${EditorDocumentError.FORMAT_ERROR} ${err && err.message}`);
+      } finally {
+        timer.timeEnd(this.uri.path.ext);
       }
     }
   }

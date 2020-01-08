@@ -1,13 +1,13 @@
-import * as vscode from 'vscode';
+import { Autowired, Injectable, Optinal } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
-import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { DisposableCollection, Emitter, URI, IMarkerData, MarkerManager, LRUMap, REPORT_NAME } from '@ali/ide-core-common';
-import { SerializedDocumentFilter, LanguageSelector, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata, CompletionContext } from '../../../common/vscode/model.api';
-import { fromLanguageSelector } from '../../../common/vscode/converter';
-import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
+import { IReporterService, PreferenceService } from '@ali/ide-core-browser';
+import { DisposableCollection, Emitter, IMarkerData, LRUMap, MarkerManager, REPORT_NAME, URI } from '@ali/ide-core-common';
+import { extname } from '@ali/ide-core-common/lib/path';
 import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
-import { PreferenceService, IReporterService } from '@ali/ide-core-browser';
+import { ExtHostAPIIdentifier, IExtHostLanguages, IMainThreadLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
+import { fromLanguageSelector } from '../../../common/vscode/converter';
+import { CompletionContext, ILink, ISerializedSignatureHelpProviderMetadata, LanguageSelector, SerializedDocumentFilter, SerializedLanguageConfiguration, WorkspaceSymbolProvider } from '../../../common/vscode/model.api';
+import { reviveIndentationRule, reviveOnEnterRules, reviveRegExp, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 
 @Injectable({multiple: true})
 export class MainThreadLanguages implements IMainThreadLanguages {
@@ -114,7 +114,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         if (result.items.length) {
-          timer.timeEnd(model.uri.toString());
+          timer.timeEnd(extname(model.uri.fsPath));
         }
         return {
           suggestions: result.items,
@@ -399,7 +399,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_FORMATTING_EDITS);
         return this.proxy.$provideDocumentFormattingEdits(handle, model.uri, options).then((result) => {
+          timer.timeEnd(extname(model.uri.fsPath));
           if (!result) {
             return undefined;
           }
@@ -431,7 +433,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
+        const timer = this.reporter.time(REPORT_NAME.PROVIDE_DOCUMENT_RANGE_FORMATTING_EDITS);
         return this.proxy.$provideDocumentRangeFormattingEdits(handle, model.uri, range, options).then((result) => {
+          timer.timeEnd(extname(model.uri.fsPath));
           if (!result) {
             return undefined;
           }

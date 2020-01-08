@@ -3,8 +3,12 @@ export enum REPORT_NAME {
   LOAD_EXTENSION_MAIN = 'loadExtensionMain',
   PROVIDE_COMPLETION_ITEMS = 'provideCompletionItems',
   RESOLVE_COMPLETION_ITEM = 'resolveCompletionItem',
+  PROVIDE_DOCUMENT_FORMATTING_EDITS = 'provideDocumentFormattingEdits',
+  PROVIDE_DOCUMENT_RANGE_FORMATTING_EDITS = 'provideDocumentRangeFormattingEdits',
   CHANNEL_RECONNECT = 'channelReconnect',
-  MEASURE = 'measure'
+  MEASURE = 'measure',
+  FORMAT_ON_SAVE_TIMEOUT_ERROR = 'formatOnSaveTimeoutError',
+  FORMAT_ON_SAVE = 'formatOnSave',
 }
 
 export enum REPORT_HOST {
