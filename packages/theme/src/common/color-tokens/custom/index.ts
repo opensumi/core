@@ -17,7 +17,7 @@ export * from './input';
 export * from './checkbox';
 export * from './select';
 export * from './modal';
-
+export * from './icon';
 // blocks
 export * from './actionbar';
 
