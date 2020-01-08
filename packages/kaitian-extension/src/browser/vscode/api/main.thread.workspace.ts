@@ -69,8 +69,8 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
     this.workspaceChangeEvent.dispose();
   }
 
-  async $updateWorkspaceFolders(start: number, deleteCount?: number, ...rootsToAdd: string[]): Promise<void> {
-    await this.workspaceService.spliceRoots(start, deleteCount, ...rootsToAdd.map((root) => new URI(root)));
+  async $updateWorkspaceFolders(start: number, deleteCount?: number, workspaceToName?: {[key: string]: string}, ...rootsToAdd: string[]): Promise<void> {
+    await this.workspaceService.spliceRoots(start, deleteCount, workspaceToName, ...rootsToAdd.map((root) => new URI(root)));
   }
 
   async $tryApplyWorkspaceEdit(dto: WorkspaceEditDto): Promise<boolean> {

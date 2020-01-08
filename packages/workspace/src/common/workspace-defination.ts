@@ -147,11 +147,13 @@ export interface IWorkspaceService {
   // 获取最近搜索关键字
   getMostRecentlySearchWord(): Promise<string[] | undefined>;
   // 操作工作区目录
-  spliceRoots(start: number, deleteCount?: number, ...rootsToAdd: URI[]): Promise<URI[]>;
+  spliceRoots(start: number, deleteCount?: number,  workspaceToName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]>;
   // 获取相对于工作区的路径
   asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean): Promise<string | undefined>;
   // 根据给定的uri获取其根节点
   getWorkspaceRootUri(uri: URI | undefined): URI | undefined;
+  // 获取工作区名称
+  getWorkspaceName(uri: URI): string;
   // 当前存在打开的工作区同时支持混合工作区时，返回true
   isMultiRootWorkspaceEnabled: boolean;
 

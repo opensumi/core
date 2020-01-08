@@ -252,6 +252,10 @@ export class FileTreeService extends WithEventBus {
     return selected;
   }
 
+  getDisplayName(uri: URI) {
+    return this.workspaceService.getWorkspaceName(uri);
+  }
+
   getStatutsKey(file: Directory | File | string | URI) {
     if (file instanceof URI) {
       file = file.toString();

@@ -93,7 +93,7 @@ export class MockWorkspaceService implements IWorkspaceService {
   getMostRecentlySearchWord(): Promise<string[] | undefined> {
     throw new Error('Method not implemented.');
   }
-  spliceRoots(start: number, deleteCount?: number | undefined, ...rootsToAdd: URI[]): Promise<URI[]> {
+  spliceRoots(start: number, deleteCount?: number | undefined, workspaceName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]> {
     throw new Error('Method not implemented.');
   }
   asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean | undefined): Promise<string | undefined> {
@@ -101,6 +101,9 @@ export class MockWorkspaceService implements IWorkspaceService {
   }
   getWorkspaceRootUri(uri: URI | undefined): URI | undefined {
     throw new Error('Method not implemented.');
+  }
+  getWorkspaceName(uri: URI): string {
+    return '';
   }
   isMultiRootWorkspaceEnabled: boolean;
 
