@@ -28,7 +28,8 @@ const Icon: React.FC<{
       className,
       {
         [styles.loading]: loading,
-        [styles[size]]: !!size,
+        // css modules
+        [size === 'small' ? styles.small : styles.large]: !!size,
       },
     )}
     />;

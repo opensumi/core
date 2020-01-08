@@ -4,7 +4,7 @@ import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions,
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-import { IMenuRegistry, AbstractContextMenuService, MenuId, generateCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractContextMenuService, MenuId, generateCtxMenu, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
@@ -57,8 +57,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   private customViewSet = new Set<View>();
   private allViews = new Map<string, View>();
 
-  // TODO 使用IconAction完成左侧activityBar上展示的额外图标注册能力
-  // private extraIconActions: IconAction
+  @Autowired(AbstractMenuService)
+  protected menuService: AbstractMenuService;
+
+  @Autowired(AbstractContextMenuService)
+  protected contextmenuService: AbstractContextMenuService;
 
   constructor() {
     super();
@@ -179,6 +182,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return handler;
   }
 
+  getExtraMenu() {
+    return this.contextmenuService.createMenu({
+      id: MenuId.ActivityBarExtra,
+    });
+  }
+
   protected doGetTabbarHandler(containerId: string) {
     let activityHandler = this.handleMap.get(containerId);
     if (!activityHandler) {
@@ -249,18 +258,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
     const accordionService: AccordionService = this.getAccordionService(containerId);
     accordionService.disposeView(viewId);
-  }
-
-  handleSetting = (event: React.MouseEvent<HTMLElement>) => {
-    const menus = this.ctxMenuService.createMenu({
-      id: MenuId.SettingsIconMenu,
-    });
-    const menuNodes = menus.getGroupedMenuNodes();
-    menus.dispose();
-    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
-      x: event.clientX,
-      y: event.clientY,
-    } });
   }
 
   // TODO 这样很耦合，不能做到tab renderer自由拆分

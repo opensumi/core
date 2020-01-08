@@ -324,3 +324,25 @@
   width: 0px;
   margin: 0 8px;
 }
+:global(.left-tab-bar) .vertical_icons {
+  height: fit-content;
+  flex-direction: column;
+  >span {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--activityBar-inactiveForeground);
+    margin: 10px auto;
+    background-size: cover;
+    &:hover {
+      transform: scale(1);
+      color: var(--activityBar-activeForeground);
+    }
+    &:last-child {
+      margin-bottom: 18px;
+    }
+  }
+}

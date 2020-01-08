@@ -2,11 +2,13 @@ import { CommandRegistry, CommandService, Command, isOSX } from '@ali/ide-core-c
 import { IDisposable } from '@ali/ide-core-common/lib/disposable';
 import { Event } from '@ali/ide-core-common/lib/event';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
+import { warning } from '@ali/ide-core-common/lib/utils/warning';
 
 import { IContextKeyService } from '../../context-key';
 import { ISubmenuItem, MenuNode } from './base';
 import { MenuId } from './menu-id';
 import { KeybindingRegistry } from '../../keybinding';
+import { ICtxMenuRenderer, CtxMenuRenderParams } from './renderer/ctxmenu/base';
 
 export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
 
@@ -93,17 +95,39 @@ export class MenuItemNode extends MenuNode {
   }
 }
 
+@Injectable({ multiple: true })
 export class SubmenuItemNode extends MenuNode {
   static readonly ID = 'menu.item.node.submenu';
 
-  readonly item: ISubmenuItem;
+  @Autowired(ICtxMenuRenderer)
+  protected readonly ctxMenuRenderer: ICtxMenuRenderer;
 
-  constructor(item: ISubmenuItem) {
+  readonly item: ISubmenuItem;
+  readonly submenuId: string;
+  readonly icon: string;
+
+  constructor(@Optional() item: ISubmenuItem) {
     super({
       id: SubmenuItemNode.ID,
       label: item.label!,
     });
+    this.submenuId = item.submenu;
+    this.icon = item.iconClass!;
     this.item = item;
+  }
+
+  // 支持 submenu 点击展开
+  execute(...args: any[]): void {
+    const [anchor, ...restArgs] = args;
+    if (!anchor) {
+      return;
+    }
+
+    this.ctxMenuRenderer.show({
+      anchor,
+      menuNodes: this.children,
+      args: restArgs,
+    });
   }
 }
 

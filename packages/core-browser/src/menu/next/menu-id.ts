@@ -1,6 +1,7 @@
 // menu id 枚举值列表
 export enum MenuId {
   ActivityBarContext = 'activity/bar/context',
+  ActivityBarExtra = 'activity/bar/extra',
   CommandPalette = 'command/palette',
   DebugBreakpointsContext = 'debug/breakpoints/context',
   DebugCallStackContext = 'debug/call/stack/context',
@@ -47,7 +48,7 @@ export enum MenuId {
   CommentActions = 'comment/actions',
   GlobalActivity = 'global/activity',
   ExtensionContext = 'extension/context', // 插件市场 item
-  SettingsIconMenu = 'settings/icon/men', // 右下角 setting menu
+  SettingsIconMenu = 'settings/icon/menu', // 右下角 setting menu
 }
 
 export function getTabbarCommonMenuId(location: string) {
