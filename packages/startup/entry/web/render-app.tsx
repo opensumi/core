@@ -1,6 +1,5 @@
-import * as React from 'react';
-import { ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
+import { ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
 import { DefaultLayout } from '@ali/ide-core-browser/lib/components';
 
 export async function renderApp(opts: IClientAppOpts) {
