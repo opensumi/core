@@ -21,8 +21,8 @@ describe('packages/core-common/__tests__/reporter.test.ts', () => {
     reporterTimer.timeEnd('test', 'test');
     // name 为 test
     expect(reporter.performance.mock.calls[0][0]).toBe('test');
-    // 延时不应该相差 100 毫秒
-    expect(reporter.performance.mock.calls[0][1].duration - 3000).toBeLessThan(100);
+    // 延时不应该相差 1000 毫秒 (考虑 ci 机器性能）
+    expect(reporter.performance.mock.calls[0][1].duration - 3000).toBeLessThan(1000);
   });
   it('use point func ', async () => {
     reporterService.point('active_extension', 'vscode.vim');
@@ -45,9 +45,9 @@ describe('packages/core-common/__tests__/reporter.test.ts', () => {
     await Promise.all([func1(), func2()]);
     expect(reporter.performance.mock.calls[0][0]).toBe('test');
     expect(reporter.performance.mock.calls[1][0]).toBe('test');
-    // 延时不应该相差 100 毫秒
-    expect(reporter.performance.mock.calls[0][1].duration - 1000).toBeLessThan(100);
-    expect(reporter.performance.mock.calls[1][1].duration - 3000).toBeLessThan(100);
+    // 延时不应该相差 1000 毫秒（考虑 ci 机器性能）
+    expect(reporter.performance.mock.calls[0][1].duration - 1000).toBeLessThan(1000);
+    expect(reporter.performance.mock.calls[1][1].duration - 3000).toBeLessThan(1000);
   });
   it('extra data for time', async () => {
     const reporterTimer = reporterService.time('test');
