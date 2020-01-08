@@ -9,18 +9,24 @@ export function getNodeRequire() {
 import { getLanguageId } from '@ali/ide-core-common';
 import { join } from '@ali/ide-core-common/lib/path';
 
-const cdnMonacoBase = isDevelopment() ? 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/' : 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/';
+const monacoCDNBase = isDevelopment() ? 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/' : 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/';
 
 let loadingMonaco: Promise<void> | undefined;
 
-export function loadMonaco(): Promise<void> {
+export interface LoadMonacoOptions {
+  monacoCDNBase: string;
+}
+
+export function loadMonaco(loadMonacoOptions: LoadMonacoOptions = {
+  monacoCDNBase,
+}): Promise<void> {
   if (!loadingMonaco) {
-    loadingMonaco = doLoadMonaco();
+    loadingMonaco = doLoadMonaco(loadMonacoOptions);
   }
   return loadingMonaco!;
 }
 
-function doLoadMonaco(): Promise<void> {
+function doLoadMonaco(loadMonacoOptions: LoadMonacoOptions): Promise<void> {
   const vsRequire: any = (window as any).amdLoader.require;
   if (isElectronEnv()) {
     let lang = getLanguageId().toLowerCase();
@@ -45,7 +51,7 @@ function doLoadMonaco(): Promise<void> {
       lang = '';
     }
     vsRequire.config({
-      paths: { vs: `${cdnMonacoBase}vs` },
+      paths: { vs: `${loadMonacoOptions.monacoCDNBase}vs` },
       'vs/nls': {
         // 设置 monaco 内部的 i18n
         availableLanguages: {
@@ -61,9 +67,9 @@ function doLoadMonaco(): Promise<void> {
     getWorkerUrl() {
       return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
             self.MonacoEnvironment = {
-              baseUrl: '${cdnMonacoBase}'
+              baseUrl: '${loadMonacoOptions.monacoCDNBase}'
             };
-            importScripts('${cdnMonacoBase}vs/base/worker/workerMain.js');`,
+            importScripts('${loadMonacoOptions.monacoCDNBase}vs/base/worker/workerMain.js');`,
       )}`;
     },
   };
