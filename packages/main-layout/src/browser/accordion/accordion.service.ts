@@ -84,14 +84,23 @@ export class AccordionService extends WithEventBus {
 
   // 调用时需要保证dom可见
   restoreSize() {
+    // 计算存储总高度与当前窗口总高度差，加到最后一个展开的面板
+    let availableSize = this.splitPanelService.rootNode.clientHeight;
+    let finalUncollapsedIndex: number | undefined;
     this.visibleViews.forEach((view, index) => {
       const savedState = this.state[view.id];
       if (savedState.collapsed) {
         this.setSize(index, 0, false, true);
+        availableSize -= this.headerSize;
       } else if (!savedState.collapsed && savedState.size) {
         this.setSize(index, savedState.size, false, true);
+        availableSize -= savedState.size;
+        finalUncollapsedIndex = index;
       }
     });
+    if (finalUncollapsedIndex) {
+      this.setSize(finalUncollapsedIndex, this.state[this.visibleViews[finalUncollapsedIndex].id].size! + availableSize);
+    }
   }
 
   initConfig(config: { headerSize: number; minSize: number; }) {
