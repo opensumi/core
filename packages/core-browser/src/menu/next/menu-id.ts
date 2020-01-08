@@ -49,3 +49,7 @@ export enum MenuId {
   ExtensionContext = 'extension/context', // 插件市场 item
   SettingsIconMenu = 'settings/icon/men', // 右下角 setting menu
 }
+
+export function getTabbarCommonMenuId(location: string) {
+  return `tabbar/${location}/common`;
+}
