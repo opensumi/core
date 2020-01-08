@@ -899,18 +899,17 @@ export class ExtensionServiceImpl implements ExtensionService {
     commandRegistry.registerCommand(VSCodeCommands.OPEN, {
       execute: (uriComponents: UriComponents) => {
         const uri = URI.from(uriComponents);
-        workbenchEditorService.open(uri);
+        return workbenchEditorService.open(uri);
       },
     });
 
     commandRegistry.registerCommand(VSCodeCommands.DIFF, {
       execute: (left: UriComponents, right: UriComponents, title: string, options: any) => {
-        const original = URI.from(left);
-        const modified = URI.from(right);
-        commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
-          original,
-          modified,
+        return commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
+          original: URI.from(left),
+          modified: URI.from(right),
           name: title,
+          options,
         });
       },
     });
