@@ -22,20 +22,20 @@ export default observer(() => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
   const showEnableAndDisable = React.useCallback(() => {
-    const enabledAccordionService = layoutService.getAccordionService(enableExtensionsContainerId);
+    const enabledAccordionService = layoutService.getAccordionService(enableExtensionsContainerId, true);
     enabledAccordionService.toggleViewVisibility(enableExtensionsTarbarHandlerId, true);
     enabledAccordionService.toggleViewVisibility(disableExtensionsTarbarHandlerId, true);
     enabledAccordionService.toggleViewVisibility(searchExtensionsFromInstalledTarbarHandlerId, false);
   }, []);
 
   const showHotSection = React.useCallback(() => {
-    const hotAccordionService = layoutService.getAccordionService(hotExtensionsContainerId);
+    const hotAccordionService = layoutService.getAccordionService(hotExtensionsContainerId, true);
     hotAccordionService.toggleViewVisibility(hotExtensionsFromMarketplaceTarbarHandlerId, true);
     hotAccordionService.toggleViewVisibility(searchExtensionsFromMarketplaceTarbarHandlerId, false);
   }, []);
 
   const hideHotSearch = React.useCallback(() => {
-    const hotAccordionService = layoutService.getAccordionService(hotExtensionsContainerId);
+    const hotAccordionService = layoutService.getAccordionService(hotExtensionsContainerId, true);
     hotAccordionService.toggleViewVisibility(hotExtensionsFromMarketplaceTarbarHandlerId, false);
     hotAccordionService.toggleViewVisibility(searchExtensionsFromMarketplaceTarbarHandlerId, true);
   }, []);
@@ -73,7 +73,7 @@ export default observer(() => {
   function handleChangeFromInstalled(value: string) {
     extensionManagerService.installedQuery = value;
     if (value) {
-      const enabledAccordionService = layoutService.getAccordionService(enableExtensionsContainerId);
+      const enabledAccordionService = layoutService.getAccordionService(enableExtensionsContainerId, true);
       enabledAccordionService.toggleViewVisibility(enableExtensionsTarbarHandlerId, false);
       enabledAccordionService.toggleViewVisibility(disableExtensionsTarbarHandlerId, false);
       enabledAccordionService.toggleViewVisibility(searchExtensionsFromInstalledTarbarHandlerId, true);
@@ -113,13 +113,12 @@ export default observer(() => {
                   component: ExtensionHotAccordion,
                   id: hotExtensionsFromMarketplaceTarbarHandlerId,
                   name: localize('marketplace.panel.hot'),
-                  forceHidden: false,
                 }, {
                   component: ExtensionSearchMarketplaceAccordion,
                   id: searchExtensionsFromMarketplaceTarbarHandlerId,
                   name: localize('marketplace.panel.search'),
-                  forceHidden: true,
                 }]}
+                noRestore={true}
                 containerId={hotExtensionsContainerId}
                 className={styles.accordion}
               />
@@ -140,18 +139,17 @@ export default observer(() => {
                   component: ExtensionEnableAccordion,
                   id: enableExtensionsTarbarHandlerId,
                   name: localize('marketplace.panel.enabled'),
-                  forceHidden: false,
                 }, {
                   component: ExtensionDisableAccordion,
                   id: disableExtensionsTarbarHandlerId,
                   name: localize('marketplace.panel.disabled'),
-                  forceHidden: false,
+                  collapsed: true,
                 }, {
                   component: ExtensionSearchInstalledAccordion,
                   id: searchExtensionsFromInstalledTarbarHandlerId,
                   name: localize('marketplace.panel.search'),
-                  forceHidden: true,
                 }]}
+                noRestore={true}
                 containerId={enableExtensionsContainerId}
                 className={styles.accordion}
               />

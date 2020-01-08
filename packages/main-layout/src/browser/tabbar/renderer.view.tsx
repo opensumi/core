@@ -60,5 +60,5 @@ export const BottomTabRenderer = ({className, components}: {className: string, c
 );
 
 export const NextBottomTabRenderer = ({className, components}: {className: string, components: ComponentRegistryInfo[]}) => (
-  <TabRendererBase side='bottom' direction='bottom-to-top' className={clsx(className, 'bottom-slot')} components={components} TabbarView={NextBottomTabbarRenderer} TabpanelView={NextBottomTabPanelRenderer} />
+  <TabRendererBase side='bottom' direction='bottom-to-top' className={clsx(className, 'bottom-slot')} components={components} TabbarView={NextBottomTabbarRenderer} TabpanelView={NextBottomTabPanelRenderer} noAccordion={true} />
 );

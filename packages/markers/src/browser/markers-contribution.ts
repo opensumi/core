@@ -23,8 +23,6 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
   onDidRender() {
     const handler = this.mainlayoutService.getTabbarHandler(MARKER_CONTAINER_ID);
     if (handler) {
-      handler.setTitleComponent(MarkerFilterPanel);
-
       this.markerService.getManager().onMarkerChanged(() => {
         const badge = this.markerService.getBadge();
         handler.setBadge(badge || '');
@@ -41,6 +39,7 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
       priority: 11,
       containerId: MARKER_CONTAINER_ID,
       activateKeyBinding: 'ctrlcmd+shift+m',
+      titleComponent: MarkerFilterPanel,
     });
   }
 

@@ -113,8 +113,8 @@ export namespace DebugBreakpointWidgetCommands {
   };
 }
 
-@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution)
-export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution {
+@Domain(ClientAppContribution, ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution)
+export class DebugContribution implements ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution {
 
   static DEBUG_THREAD_ID: string = 'debug-thread';
   static DEBUG_WATCH_ID: string = 'debug-watch';
@@ -203,6 +203,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       priority: 7,
       title: localize('debug.container.title'),
       containerId: DebugContribution.DEBUG_CONTAINER_ID,
+      titleComponent: DebubgConfigurationView,
       activateKeyBinding: 'ctrlcmd+shift+d',
     });
   }
@@ -253,13 +254,6 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     await this.configurations.save();
     await this.breakpointManager.save();
     await this.debugWatchService.save();
-  }
-
-  onDidRender() {
-    const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
-    if (handler) {
-      handler!.setTitleComponent(DebubgConfigurationView);
-    }
   }
 
   registerCommands(commands: CommandRegistry) {

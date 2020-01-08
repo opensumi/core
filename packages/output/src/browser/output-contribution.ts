@@ -16,8 +16,8 @@ const OUTPUT_CLEAR: Command = {
   label: localize('output.channel.clear', '清理日志'),
 };
 const OUTPUT_CONTAINER_ID = 'ide-output';
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution)
-export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution)
+export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution {
 
   @Autowired()
   logger: Logger;
@@ -27,13 +27,6 @@ export class OutputContribution implements CommandContribution, KeybindingContri
 
   @Autowired()
   private outputService: OutputService;
-
-  onDidRender() {
-    const handler = this.layoutService.getTabbarHandler(OUTPUT_CONTAINER_ID);
-    if (handler) {
-      handler.setTitleComponent(ChannelSelector);
-    }
-  }
 
   registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
@@ -68,6 +61,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
       priority: 9,
       containerId: OUTPUT_CONTAINER_ID,
       activateKeyBinding: 'ctrlcmd+shift+u',
+      titleComponent: ChannelSelector,
     });
   }
 }

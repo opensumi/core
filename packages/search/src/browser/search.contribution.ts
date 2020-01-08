@@ -240,6 +240,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     registry.register('@ali/ide-search', {
       component: Search,
       id: 'ide-search',
+      name: localize('search.title'),
     }, {
       containerId: SEARCH_CONTAINER_ID,
       iconClass: getIcon('search'),

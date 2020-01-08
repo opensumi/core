@@ -1,9 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection, DisposableStore, IContextKey } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection, DisposableStore, IContextKey, OnEvent, RenderedEvent, WithEventBus, ResizeEvent } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
+import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 export interface SectionState {
   collapsed: boolean;
@@ -12,7 +13,7 @@ export interface SectionState {
 }
 
 @Injectable({multiple: true})
-export class AccordionService {
+export class AccordionService extends WithEventBus {
   @Autowired()
   protected splitPanelManager: SplitPanelManager;
 
@@ -37,11 +38,14 @@ export class AccordionService {
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
+  @Autowired()
+  private layoutState: LayoutState;
+
   protected splitPanelService: SplitPanelService;
 
   @observable.shallow views: View[] = [];
 
-  @observable state: Map<string, SectionState> = new Map();
+  @observable state: {[containerId: string]: SectionState} = {};
 
   private headerSize: number;
   private minSize: number;
@@ -50,7 +54,8 @@ export class AccordionService {
 
   private topViewKey: IContextKey<string>;
 
-  constructor(public containerId: string) {
+  constructor(public containerId: string, private noRestore?: boolean) {
+    super();
     this.splitPanelService = this.splitPanelManager.getService(containerId);
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
@@ -65,6 +70,27 @@ export class AccordionService {
         // 由于tabbar.service会立刻设置view，这边要等下一个event loop
         this.popViewKeyIfOnlyOneViewVisible();
       });
+    });
+  }
+
+  restoreState() {
+    if (this.noRestore) { return; }
+    const defaultState: {[containerId: string]: SectionState} = {};
+    this.visibleViews.forEach((view) => defaultState[view.id] = { collapsed: false, hidden: false });
+    const restoredState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
+    this.state = restoredState;
+    this.restoreSize();
+  }
+
+  // 调用时需要保证dom可见
+  restoreSize() {
+    this.visibleViews.forEach((view, index) => {
+      const savedState = this.state[view.id];
+      if (savedState.collapsed) {
+        this.setSize(index, 0, false, true);
+      } else if (!savedState.collapsed && savedState.size) {
+        this.setSize(index, savedState.size, false, true);
+      }
     });
   }
 
@@ -89,7 +115,7 @@ export class AccordionService {
     }
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
-    if (!view.name) {
+    if (view.name === undefined) {
       console.warn(view.id + '视图未传入标题，请检查！');
     }
     this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped()).createKey('view', view.id);
@@ -121,6 +147,26 @@ export class AccordionService {
     this.toDispose.forEach((disposable) => {
       disposable.dispose();
     });
+  }
+
+  @OnEvent(ResizeEvent)
+  protected onResize(e: ResizeEvent) {
+    if (e.payload.slotLocation) {
+      if (this.state[e.payload.slotLocation]) {
+        const id = e.payload.slotLocation;
+        // get dom of viewId
+        const sectionDom = document.getElementById(id);
+        if (sectionDom) {
+          this.state[id].size = sectionDom.clientHeight;
+          this.storeState();
+        }
+      }
+    }
+  }
+
+  protected storeState() {
+    if (this.noRestore) { return; }
+    this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), this.state);
   }
 
   private registerGlobalToggleCommand() {
@@ -159,6 +205,7 @@ export class AccordionService {
       state.hidden = !forceShow;
     }
     this.popViewKeyIfOnlyOneViewVisible();
+    this.storeState();
   }
 
   popViewKeyIfOnlyOneViewVisible() {
@@ -175,12 +222,7 @@ export class AccordionService {
   }
 
   toggleViewVisibility(viewId: string, show?: boolean) {
-    const viewState = this.getViewState(viewId);
-    if (show === undefined) {
-      viewState.hidden = !viewState.hidden;
-    } else {
-      viewState.hidden = !show;
-    }
+    this.doToggleView(viewId, show);
   }
 
   get visibleViews(): View[] {
@@ -192,42 +234,13 @@ export class AccordionService {
 
   get expandedViews(): View[] {
     return this.views.filter((view) => {
-      const viewState = this.state.get(view.id);
+      const viewState = this.state[view.id];
       return !viewState || viewState && !viewState.collapsed;
     });
   }
 
   @action.bound handleSectionClick(viewId: string, collapsed: boolean, index: number) {
-    const viewState = this.getViewState(viewId);
-    viewState.collapsed = collapsed;
-    let sizeIncrement: number;
-    if (collapsed) {
-      sizeIncrement = this.setSize(index, 0);
-    } else {
-      // 仅有一个视图展开时独占
-      sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize);
-    }
-    // 下方视图被影响的情况下，上方视图不会同时变化
-    let effected = false;
-    // 从视图下方最后一个展开的视图起依次减去对应的高度
-    for (let i = this.visibleViews.length - 1; i > index; i--) {
-      if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
-        sizeIncrement = this.setSize(i, sizeIncrement, true);
-        effected = true;
-        if (sizeIncrement === 0) {
-          break;
-        }
-      }
-    }
-    if (!effected) {
-      // 找到视图上方首个展开的视图减去对应的高度
-      for (let i = index - 1; i >= 0; i--) {
-        if ((this.state.get(this.visibleViews[i].id) || {}).collapsed !== true) {
-          sizeIncrement = this.setSize(i, sizeIncrement, true);
-          break;
-        }
-      }
-    }
+    this.doToggleOpen(viewId, collapsed, index);
   }
 
   @action.bound handleContextMenu(event: React.MouseEvent, viewId: string) {
@@ -246,18 +259,53 @@ export class AccordionService {
   }
 
   public getViewState(viewId: string) {
-    let viewState = this.state.get(viewId);
+    let viewState = this.state[viewId];
     if (!viewState) {
-      this.state.set(viewId, { collapsed: false, hidden: false });
-      viewState = this.state.get(viewId)!;
+      this.state[viewId] = { collapsed: false, hidden: false };
+      viewState = this.state[viewId]!;
     }
     return viewState;
   }
 
-  protected setSize(index: number, targetSize: number, isIncrement?: boolean): number {
+  protected doToggleOpen(viewId: string, collapsed: boolean, index: number, noAnimation?: boolean) {
+    const viewState = this.getViewState(viewId);
+    viewState.collapsed = collapsed;
+    let sizeIncrement: number;
+    if (collapsed) {
+      sizeIncrement = this.setSize(index, 0, false, noAnimation);
+    } else {
+      // 仅有一个视图展开时独占
+      sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize, false, noAnimation);
+    }
+    // 下方视图被影响的情况下，上方视图不会同时变化
+    let effected = false;
+    // 从视图下方最后一个展开的视图起依次减去对应的高度
+    for (let i = this.visibleViews.length - 1; i > index; i--) {
+      if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
+        sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
+        effected = true;
+        if (sizeIncrement === 0) {
+          break;
+        }
+      }
+    }
+    if (!effected) {
+      // 找到视图上方首个展开的视图减去对应的高度
+      for (let i = index - 1; i >= 0; i--) {
+        if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
+          sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
+          break;
+        }
+      }
+    }
+  }
+
+  protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
     const fullHeight = this.splitPanelService.rootNode.clientHeight;
     const panel = this.splitPanelService.panels[index];
-    panel.classList.add('resize-ease');
+    if (!noAnimation) {
+      panel.classList.add('resize-ease');
+    }
     if (!targetSize) {
       targetSize = this.headerSize;
       panel.classList.add(RESIZE_LOCK);
@@ -268,21 +316,24 @@ export class AccordionService {
     const prevSize = panel.clientHeight;
     const viewState = this.getViewState(this.visibleViews[index].id);
     let calcTargetSize: number = targetSize;
+    // 视图即将折叠时、受其他视图影响尺寸变化时、主动展开时、resize时均需要存储尺寸信息
     if (isIncrement) {
       calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
-      if (this.expandedViews.length > 1) {
-        // 首其他视图展开/折叠影响的视图尺寸记录，仅有一个展开时不足记录
-        viewState.size = calcTargetSize;
-      }
-    } else if (targetSize === this.headerSize && this.expandedViews.length > 0) {
+      viewState.size = calcTargetSize;
+    } else if (targetSize === this.headerSize) {
       // 当前视图即将折叠且不是唯一展开的视图时，存储当前高度
       viewState.size = prevSize;
+    } else {
+      viewState.size = calcTargetSize;
     }
+    this.storeState();
     panel.style.height = calcTargetSize / fullHeight * 100 + '%';
-    setTimeout(() => {
-      // 动画 0.1s，保证结束后移除
-      panel.classList.remove('resize-ease');
-    }, 200);
+    if (!noAnimation) {
+      setTimeout(() => {
+        // 动画 0.1s，保证结束后移除
+        panel.classList.remove('resize-ease');
+      }, 200);
+    }
     return isIncrement ? calcTargetSize - (prevSize - targetSize) : targetSize - prevSize;
   }
 

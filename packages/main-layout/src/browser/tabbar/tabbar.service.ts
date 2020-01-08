@@ -1,11 +1,12 @@
 import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 import { ResizeHandle } from '@ali/ide-core-browser/lib/components';
 import debounce = require('lodash.debounce');
-import { TabBarRegistrationEvent } from '../../common';
+import { TabBarRegistrationEvent, IMainLayoutService } from '../../common';
+import { AccordionService } from '../accordion/accordion.service';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
@@ -36,6 +37,9 @@ export class TabbarService extends WithEventBus {
     hidePanel: (show?: boolean) => void,
   };
 
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
 
@@ -60,6 +64,11 @@ export class TabbarService extends WithEventBus {
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
+  @Autowired(IMainLayoutService)
+  private layoutService: IMainLayoutService;
+
+  private accordionRestored: Set<string> = new Set();
+
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
   readonly onCurrentChange: Event<{previousId: string; currentId: string}> = this.onCurrentChangeEmitter.event;
 
@@ -82,37 +91,7 @@ export class TabbarService extends WithEventBus {
     });
     this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
     if (this.location === 'bottom') {
-      this.menuRegistry.registerMenuItems(`tabbar/${this.location}/common`, [
-        {
-          command: {
-            id: EXPAND_BOTTOM_PANEL.id,
-            label: localize('layout.tabbar.expand', '最大化面板'),
-          },
-          group: 'navigation',
-          when: '!bottomFullExpanded',
-          order: 1,
-        },
-        {
-          command: {
-            id: RETRACT_BOTTOM_PANEL.id,
-            label: localize('layout.tabbar.retract', '恢复面板'),
-          },
-          group: 'navigation',
-          when: 'bottomFullExpanded',
-          order: 1,
-        },
-        {
-          command: {
-            id: TOGGLE_BOTTOM_PANEL_COMMAND.id,
-            label: localize('layout.tabbar.hide', '收起面板'),
-          },
-          group: 'navigation',
-          order: 2,
-        },
-      ]);
-      this.commonTitleMenu = this.ctxmenuService.createMenu({
-        id: `tabbar/${this.location}/common`,
-      });
+      this.registerPanelMenus();
     }
   }
 
@@ -305,6 +284,40 @@ export class TabbarService extends WithEventBus {
     return commandId;
   }
 
+  protected registerPanelMenus() {
+    this.menuRegistry.registerMenuItems('tabbar/bottom/common', [
+      {
+        command: {
+          id: EXPAND_BOTTOM_PANEL.id,
+          label: localize('layout.tabbar.expand', '最大化面板'),
+        },
+        group: 'navigation',
+        when: '!bottomFullExpanded',
+        order: 1,
+      },
+      {
+        command: {
+          id: RETRACT_BOTTOM_PANEL.id,
+          label: localize('layout.tabbar.retract', '恢复面板'),
+        },
+        group: 'navigation',
+        when: 'bottomFullExpanded',
+        order: 1,
+      },
+      {
+        command: {
+          id: TOGGLE_BOTTOM_PANEL_COMMAND.id,
+          label: localize('layout.tabbar.hide', '收起面板'),
+        },
+        group: 'navigation',
+        order: 2,
+      },
+    ]);
+    this.commonTitleMenu = this.ctxmenuService.createMenu({
+      id: 'tabbar/bottom/common',
+    });
+  }
+
   protected doToggleTab(containerId: string, forceShow?: boolean) {
     const state = this.getContainerState(containerId);
     if (forceShow === undefined) {
@@ -373,6 +386,9 @@ export class TabbarService extends WithEventBus {
           lockSize(false);
         }
         setMaxSize(false);
+        if (!this.noAccordion) {
+          this.tryRestoreAccordionSize(currentId);
+        }
         this.activatedKey.set(currentId);
       } else {
         setSize(this.barSize);
@@ -380,6 +396,18 @@ export class TabbarService extends WithEventBus {
         setMaxSize(true);
       }
     }
+  }
+
+  protected tryRestoreAccordionSize(containerId: string) {
+    if (this.accordionRestored.has(containerId)) {
+      return;
+    }
+    const accordionService = this.layoutService.getAccordionService(containerId);
+    // 需要保证此时tab切换已完成dom渲染
+    setTimeout(() => {
+      accordionService.restoreState();
+      this.accordionRestored.add(containerId);
+    }, 0);
   }
 
   protected handleFullExpanded(currentId: string, isCurrentExpanded?: boolean) {

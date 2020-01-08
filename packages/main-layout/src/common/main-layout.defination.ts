@@ -47,7 +47,7 @@ export interface IMainLayoutService {
   // @deprecated 提供小程序使用的额外位置控制
   setFloatSize(size: number): void;
   getTabbarService(location: string, noAccordion?: boolean): TabbarService;
-  getAccordionService(containerId: string): AccordionService;
+  getAccordionService(containerId: string, noRestore?: boolean): AccordionService;
   // 某一位置是否可见
   isVisible(location: string): boolean;
   getExtraMenu(): IContextMenu;
