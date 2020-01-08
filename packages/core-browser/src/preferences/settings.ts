@@ -16,6 +16,8 @@ export interface IPreferenceSettingsService {
   getPreference(preferenceName: string, scope: PreferenceScope): {value: any, effectingScope: PreferenceScope};
 
   setEnumLabels(preferenceName: string, labels: {[key: string]: string}): void;
+
+  setCurrentGroup(groupId: string): void;
 }
 
 export const IPreferenceSettingsService = Symbol('IPreferenceSettingsService');

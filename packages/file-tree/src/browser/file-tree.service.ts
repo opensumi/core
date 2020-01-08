@@ -1,4 +1,4 @@
-import { observable, runInAction, action } from 'mobx';
+import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   WithEventBus,
@@ -30,12 +30,21 @@ import { ResourceLabelOrIconChangedEvent } from '@ali/ide-core-browser/lib/servi
 import { FileContextKey } from './file-contextkey';
 
 export type IFileTreeItemStatus = Map<string, {
+  // 是否选中
   selected?: boolean;
+  // 是否展开
   expanded?: boolean;
+  // 是否处于焦点
   focused?: boolean;
+  // 是否剪切过
   cuted?: boolean;
+  // 是否加载中
   isLoading?: boolean;
+  // 是否处于拖动状态
+  isDropping?: boolean;
+  // 是否需要更新
   needUpdated?: boolean;
+  // 源节点
   file: Directory | File;
 }>;
 
@@ -688,6 +697,38 @@ export class FileTreeService extends WithEventBus {
     }
   }
 
+  @action
+  updateFilesDroppingStatus(files: (Directory | File)[] = [], value: boolean) {
+    if (files.length === 0) {
+      this.resetFilesDroppingStatus();
+    } else {
+      this.resetFilesDroppingStatus();
+      files.forEach((file: Directory | File) => {
+        const statusKey = this.getStatutsKey(file);
+        const status = this.status.get(statusKey);
+        if (status) {
+          this.status.set(statusKey, {
+            ...status,
+            isDropping: value,
+          });
+        }
+      });
+    }
+  }
+
+  /**
+   * 重置所有文件isDropping属性
+   */
+  @action
+  resetFilesDroppingStatus() {
+    for (const [key, status] of this.status) {
+      this.status.set(key, {
+        ...status,
+        isDropping: false,
+      });
+    }
+  }
+
   /**
    * 重置所有文件Selected属性
    */
@@ -877,6 +918,11 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
+  resetFileStatus() {
+    this.status.clear();
+  }
+
+  @action
   updateFileStatus(files: (Directory | File)[] = []) {
     const changeUri: Uri[] = [];
     files.forEach((file) => {
@@ -980,7 +1026,7 @@ export class FileTreeService extends WithEventBus {
 
   private onFilesChanged(changes: FileChange[]): void {
     if (!this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
-      this.refresh();
+      this.refresh(this.root);
     }
     this.deleteAffectedNodes(this.getDeletedUris(changes));
   }
@@ -997,10 +1043,17 @@ export class FileTreeService extends WithEventBus {
   @action
   private async getFiles(roots: IWorkspaceRoots): Promise<(Directory | File)[]> {
     let result = [];
+    // 每次重新获取文件时重置文件树状态
+    this.resetFileStatus();
     for (const root of roots) {
       let files;
       if (root.isDirectory) {
-        files = await this.fileAPI.getFiles(root.uri);
+        if (this.isMutiWorkspace) {
+          const workspace = this.fileAPI.generatorFileFromFilestat(this.workspaceService.workspace!);
+          files = await this.fileAPI.getFiles(root.uri, workspace);
+        } else {
+          files = await this.fileAPI.getFiles(root.uri);
+        }
         this.updateFileStatus(files);
         result = result.concat(files);
       }

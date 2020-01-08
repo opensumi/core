@@ -27,7 +27,7 @@ export class TerminalClient extends Disposable {
   private _attachAddon: AttachAddon;
   private _searchAddon: SearchAddon;
 
-  private _layer = new ThrottledDelayer<void>(50);
+  private _delayer = new ThrottledDelayer<void>(50);
 
   private _attached: boolean;
   private _activated: boolean;
@@ -125,7 +125,7 @@ export class TerminalClient extends Disposable {
         this._searchAddon.dispose();
         weblinksAddon.dispose();
         filelinksAddon.dispose();
-        this._layer.dispose();
+        this._delayer.dispose();
         this._term.dispose();
       },
     });
@@ -180,8 +180,6 @@ export class TerminalClient extends Disposable {
   private _doAttach(socket: WebSocket) {
     this._attachAddon = new AttachAddon(socket);
     this._term.loadAddon(this._attachAddon);
-    this._attached = true;
-    this.attachPromise = null;
 
     if (this.showPromiseResolve) {
       this.showPromiseResolve();
@@ -202,6 +200,7 @@ export class TerminalClient extends Disposable {
           .then(() => {
             const info = this.service.intro(this.id);
             this.attachPromise = null;
+            this._attached = true;
             if (info) {
               this._name = (this._name || info.name) || 'terminal';
               this._pid = info.pid;
@@ -253,15 +252,25 @@ export class TerminalClient extends Disposable {
     }
   }
 
+  private _doLayout() {
+    this._delayer.trigger(() => {
+      this._fitAddon.fit();
+      return Promise.resolve();
+    });
+  }
+
   layout() {
     if (this._disposed || !this._activated) {
       return;
     }
 
-    this._layer.trigger(() => {
-      this._fitAddon.fit();
-      return Promise.resolve();
-    });
+    if (this.attachPromise) {
+      this.attachPromise.then(() => {
+        this._doLayout();
+      });
+    } else {
+      this._doLayout();
+    }
   }
 
   private _doFocus() {

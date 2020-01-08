@@ -295,7 +295,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   // ### Completion begin
   $provideCompletionItems(handle: number, resource: URI, position: Position, context: CompletionContext, token: CancellationToken) {
-    return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(resource, position, context, this.commands.converter, token));
+    return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(resource, position, context, token));
   }
 
   $resolveCompletionItem(handle: number, resource: URI, position: Position, completion: CompletionItem, token: CancellationToken): Promise<CompletionItem> {
@@ -307,7 +307,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable {
-    const callId = this.addNewAdapter(new CompletionAdapter(provider, this.documents));
+    const callId = this.addNewAdapter(new CompletionAdapter(provider, this.commands.converter, this.documents));
     this.proxy.$registerCompletionSupport(callId, this.transformDocumentSelector(selector), triggerCharacters, CompletionAdapter.hasResolveSupport(provider));
     return this.createDisposable(callId);
   }

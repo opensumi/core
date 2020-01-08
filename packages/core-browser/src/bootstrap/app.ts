@@ -25,6 +25,7 @@ import {
   ILogger,
   IReporterService,
   REPORT_NAME,
+  isElectronEnv,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -143,6 +144,10 @@ export class ClientApp implements IClientApp {
       isSyncPreference: opts.isSyncPreference,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
     };
+    // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
+    if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
+      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(electronEnv.metadata.extensionCandidate.map((extension) => extension.path));
+    }
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
     this.connectionProtocols = opts.connectionProtocols;

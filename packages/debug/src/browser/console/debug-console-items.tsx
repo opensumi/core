@@ -26,12 +26,27 @@ export class ExpressionContainer {
   protected indexedVariables: number | undefined;
   protected readonly startOfVariables: number;
 
+  public source: DebugProtocol.Source | undefined;
+  public line: number | string | undefined;
+
   constructor(options: ExpressionContainer.Options) {
     this.session = options.session;
     this.variablesReference = options.variablesReference || 0;
     this.namedVariables = options.namedVariables;
     this.indexedVariables = options.indexedVariables;
     this.startOfVariables = options.startOfVariables || 0;
+    this.source = options.source;
+    this.line = options.line;
+  }
+
+  private _isLoading: boolean = false;
+
+  get isLoading(): boolean {
+    return this._isLoading;
+  }
+
+  get badge() {
+    return this.source ? `${this.source.name}:${this.line}` : '';
   }
 
   get hasChildren(): boolean {
@@ -41,12 +56,14 @@ export class ExpressionContainer {
   children: any[] = [];
 
   async getChildren(): Promise<ExpressionContainer[]> {
+    this._isLoading = true;
     if (!this.hasChildren || !this.session) {
       return [];
     }
     if (this.children.length === 0) {
       this.children = await this.doResolve();
     }
+    this._isLoading = false;
     return this.children;
   }
 
@@ -88,11 +105,26 @@ export class ExpressionContainer {
       const { variablesReference } = this;
       const response = await this.session!.sendRequest('variables', { variablesReference, filter, start, count });
       const { variables } = response.body;
+      // 变量去重
       const names = new Set<string>();
       for (const variable of variables) {
-        if (!names.has(variable.name)) {
-          result.push(new DebugVariable(this.session, variable, this));
-          names.add(variable.name);
+        if (variable.variablesReference) {
+          if (!names.has(variable.name)) {
+            names.add(variable.name);
+            // 根节点的构造器为ExpressionContainer
+            if (!(this instanceof DebugVariable)) {
+              delete variable.name;
+              result.push(new DebugVariable(this.session, variable, this, this.source, this.line));
+            } else {
+              result.push(new DebugVariable((this as any).session, variable, this));
+            }
+          }
+        } else {
+          if (variable.name === variable.evaluateName) {
+            result.push(new AnsiConsoleItem(variable.value, MessageType.Info, this.source, this.line));
+          } else {
+            result.push(new DebugVariable((this as any).session, variable, this));
+          }
         }
       }
     } catch (e) {
@@ -112,6 +144,8 @@ export namespace ExpressionContainer {
     namedVariables?: number;
     indexedVariables?: number;
     startOfVariables?: number;
+    source?: DebugProtocol.Source;
+    line?: number | string;
   }
 }
 
@@ -121,27 +155,31 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
   static stringRegex = /^(['"]).*\1$/;
 
   constructor(
-    protected readonly session: DebugSession | undefined,
+    public readonly session: DebugSession | undefined,
     protected readonly variable: DebugProtocol.Variable,
     // TODO: 修复类型检查
     public readonly parent: any,
+    source?: DebugProtocol.Source,
+    line?: string | number,
   ) {
     super({
       session,
       variablesReference: variable.variablesReference,
       namedVariables: variable.namedVariables,
       indexedVariables: variable.indexedVariables,
+      source,
+      line,
     });
   }
-
-  public afterLabel: string =  ': ';
+  // 根节点不展示前置Name
+  public afterLabel: string =  !this.name ? '' : ': ';
 
   get id() {
-    return this.variablesReference;
+    return this.variablesReference || uuid() ;
   }
 
   get name(): string {
-    return this.variable.name;
+    return this.variable.name || '';
   }
 
   get description(): string {
@@ -157,7 +195,7 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
   }
 
   get labelClass(): string {
-    return [styles.kaitian_debug_console_variable, styles.name].join(' ');
+    return [styles.debug_console_variable, styles.name].join(' ');
   }
 
   protected _type: string | undefined;
@@ -172,7 +210,7 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
 
   get variableClassName(): string {
     const { type, value } = this;
-    const classNames = [styles.kaitian_debug_console_variable];
+    const classNames = [styles.debug_console_variable];
     if (type === 'number' || type === 'boolean' || type === 'string') {
       classNames.push(styles[type]);
     } else if (!isNaN(+value)) {
@@ -257,7 +295,6 @@ export class ExpressionItem extends ExpressionContainer {
   static notAvailable = 'not available';
 
   private _value = ExpressionItem.notAvailable;
-  private _title = '';
   private _id = '';
 
   get name(): string {
@@ -336,6 +373,9 @@ export class AnsiConsoleItem implements SourceTree {
   constructor(
     public readonly content: string,
     public readonly severity?: MessageType,
+    public readonly source?: DebugProtocol.Source,
+    public readonly line?: string | number,
+
   ) {
     this.labelClass = this.getColor(severity);
   }
@@ -373,6 +413,13 @@ export class AnsiConsoleItem implements SourceTree {
   get parent() {
     return undefined;
   }
+
+  get badge() {
+    if (this.source) {
+      return `${this.source.name}:${this.line}`;
+    }
+    return '';
+  }
 }
 
 export class ExpressionWatchItem extends ExpressionContainer {
@@ -396,7 +443,7 @@ export class ExpressionWatchItem extends ExpressionContainer {
   }
 
   get labelClass(): string {
-    return [styles.kaitian_debug_console_variable, styles.name].join(' ');
+    return [styles.debug_console_variable, styles.name].join(' ');
   }
 
   protected _available = false;

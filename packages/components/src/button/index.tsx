@@ -2,8 +2,7 @@ import * as React from 'react';
 import classNames from 'classnames';
 
 import './style.less';
-import { Icon } from '../icon';
-import { getIcon, defaultIconMap } from '@ali/ide-core-browser';
+import { Icon, IconContext } from '../icon';
 
 export type ButtonType = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link';
 
@@ -11,11 +10,9 @@ export type ButtonHTMLType = 'submit' | 'button' | 'reset';
 
 export type ButtonSize = 'large' | 'default' | 'small';
 
-export type IconTypes = keyof typeof defaultIconMap;
-
 interface IButtonBasicProps {
   type?: ButtonType;
-  icon?: React.ReactNode & IconTypes;
+  iconClass?: string;
   className?: string;
   loading?: boolean;
   ghost?: boolean;
@@ -42,8 +39,10 @@ export const Button: React.FC<ButtonProps> = ({
   onClick,
   disabled,
   block,
+  iconClass,
   ...otherProps
 }) => {
+  const { getIcon } = React.useContext(IconContext);
   const classes = classNames('kt-button', className, {
     [`kt-${type}-button-loading`]: loading,
     [`ghost-${type}-button`]: ghost && !loading && type !== 'link',
@@ -53,9 +52,11 @@ export const Button: React.FC<ButtonProps> = ({
     ['block-button']: block,
   });
 
+  const iconNode = iconClass ? <Icon iconClass={iconClass} /> : null;
   return (
     <button {...otherProps} disabled={disabled} className={classes} type={htmlType} onClick={(loading || disabled) ? noop : onClick}>
       {loading && <Icon size={size === 'small' ? 'small' : 'large'} style={{ marginRight: 6 }} loading iconClass={getIcon('sync')} />}
+      {iconNode && iconNode}
       {children}
     </button>
   );

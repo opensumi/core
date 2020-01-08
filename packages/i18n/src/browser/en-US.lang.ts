@@ -39,10 +39,12 @@ export const localizationBundle = {
     'file.move.existMessage': 'The file to be pasted is deleted or moved at the same time. Unable to move/copy. The file already exists at the target location.',
     'file.empty.defaultTitle': 'No Open Folder',
     'file.empty.defaultMessage': 'The folder has not been opened yet',
+    'file.workspace.defaultTip': 'Untitled (WORKSPACE)',
     'file.empty.openFolder': 'Open Folder',
     'file.collapse': 'Collapse All',
     'file.refresh': 'Refresh',
     'file.search.folder': 'Search on this folder',
+    'file.focus.files': 'Focus on Files Explorer',
 
     'menu-bar.title.file': 'File',
     'menu-bar.title.edit': 'Edit',
@@ -364,6 +366,7 @@ export const localizationBundle = {
 
     'terminal.menu.search': 'Search',
     'terminal.menu.split': 'Split',
+    'terminal.menu.rename': 'Rename',
     'terminal.menu.selectAll': 'Select All',
     'terminal.menu.copy': 'Copy',
     'terminal.menu.paste': 'Paste',

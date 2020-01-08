@@ -8,7 +8,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { EditorView } from './editor.view';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry, IEditorFeatureRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
-import { isElectronEnv } from '@ali/ide-core-common';
+import { isElectronEnv, isWindows } from '@ali/ide-core-common';
 import { getIcon } from '@ali/ide-core-browser';
 import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
@@ -127,11 +127,11 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_FORWARD.id,
-      keybinding: 'ctrl+shift+-',
+      keybinding: isWindows ? 'alt+right' : 'ctrl+shift+-',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.GO_BACK.id,
-      keybinding: 'ctrl+-',
+      keybinding: isWindows ? 'alt+left' : 'ctrl+-',
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CHANGE_LANGUAGE.id,

@@ -1,8 +1,11 @@
 import * as React from 'react';
 import * as classNames from 'classnames';
-import { isUndefined } from '@ali/ide-core-common';
 
 import './style.less';
+
+function isUndefined(obj: any): obj is undefined {
+  return typeof (obj) === 'undefined';
+}
 
 export interface InputSelection {
   start: number;

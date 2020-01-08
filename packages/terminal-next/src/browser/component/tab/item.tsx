@@ -15,14 +15,23 @@ export interface ItemProps {
   name?: string;
   selected?: boolean;
   type?: ItemType;
+  editable?: boolean;
   onClick?: () => void;
   onClose?: () => void;
+  onInputBlur?: (id: string) => void;
+  onInputEnter?: (id: string, name: string) => void;
   onContextMenu?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
 export function renderInfoItem(props: ItemProps) {
   const handleSelect = debouce(() => props.onClick && props.onClick(), 20);
   const handleClose = debouce(() => props.onClose && props.onClose(), 20);
+
+  const handleOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && props.onInputEnter && props.id) {
+      props.onInputEnter(props.id, (e.target as any).value);
+    }
+  };
 
   return (
     <div
@@ -33,14 +42,33 @@ export function renderInfoItem(props: ItemProps) {
       onClick={ () => handleSelect() }
       onContextMenu={ (event) => props.onContextMenu && props.onContextMenu(event) }
     >
-      <div className={ styles.item_info_name } title={ props.name }>{ props.name }</div>
-      <div
-        className={ clx([getIcon('close'), styles.close_icon]) }
-        onClick={ (event) => {
-          event.stopPropagation();
-          handleClose();
-        } }
-      ></div>
+      {
+        props.editable ?
+          <input
+            autoFocus
+            ref={ (ele) => ele && ele.select() }
+            className={ styles.item_info_input }
+            defaultValue={ props.name }
+            onClick={ (e) => e.stopPropagation() }
+            onBlur={ () => (props.onInputBlur && props.id) && props.onInputBlur(props.id) }
+            onKeyDown={ (e) => handleOnKeyDown(e) }
+          ></input> :
+          <div
+            id={ props.id }
+            className={ styles.item_info_name }
+            title={ props.name }>{ props.name }</div>
+      }
+      {
+        props.editable ?
+          <div></div> :
+          <div
+            className={ clx([getIcon('close'), styles.close_icon]) }
+            onClick={ (event) => {
+              event.stopPropagation();
+              handleClose();
+            } }
+          ></div>
+      }
     </div>
   );
 }

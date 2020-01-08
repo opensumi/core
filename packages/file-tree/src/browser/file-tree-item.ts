@@ -43,7 +43,9 @@ export class AbstractFileTreeItem implements IFileTreeItem {
 }
 
 export class Directory extends AbstractFileTreeItem {
-  @observable.shallow public children: (Directory | File)[] = [];
+  @observable.shallow
+  public children: (Directory | File)[] = [];
+
   public expanded: boolean = false;
   private _openedIcon: string = '';
 
@@ -97,7 +99,7 @@ export class Directory extends AbstractFileTreeItem {
         }
       }
     }
-    this.children = this.fileApi.sortByNumberic(children);
+    this.children = this.fileApi.sortByNumberic(children) || [];
   }
 
   async getChildren() {
@@ -105,7 +107,7 @@ export class Directory extends AbstractFileTreeItem {
       const file = await this.fileApi.getFiles(this.filestat, this);
       if (file) {
         const parent = file[0] as Directory;
-        this.children = parent ? parent.children : [];
+        this.children = parent ? parent.children || [] : [];
       } else {
         this.children = [];
       }
@@ -135,7 +137,7 @@ export class Directory extends AbstractFileTreeItem {
         return;
       }
     }
-    this.children = this.fileApi.sortByNumberic(this.children.concat(item));
+    this.children = this.fileApi.sortByNumberic(this.children.concat(item)) || [];
   }
 
   removeChildren(uri: string | URI) {
@@ -162,7 +164,7 @@ export class Directory extends AbstractFileTreeItem {
     }
   }
 
-  updateChildren(items: (Directory | File)[]) {
+  updateChildren(items: (Directory | File)[] = []) {
     this.children = items;
   }
 }

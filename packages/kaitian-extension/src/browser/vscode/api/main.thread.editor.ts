@@ -8,6 +8,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import debounce = require('lodash.debounce');
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
+import { ExtensionService } from '../../../common';
 
 @Injectable({multiple: true})
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -20,13 +21,18 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   @Autowired(EditorCollectionService)
   codeEditorService: EditorCollectionServiceImpl;
 
+  @Autowired(ExtensionService)
+  extensionService: ExtensionService;
+
   private readonly proxy: IExtensionHostEditorService;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol, private documents: MainThreadExtensionDocumentData) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEditors);
-    this.$getInitialState().then((change) => {
-      this.proxy.$acceptChange(change);
+    this.extensionService.eagerExtensionsActivated.promise.then(() => {
+      this.$getInitialState().then((change) => {
+        this.proxy.$acceptChange(change);
+      });
     });
   }
 

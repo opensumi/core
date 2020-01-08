@@ -4,13 +4,10 @@ import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import {
   ExtensionService,
   ExtensionNodeServiceServerPath,
-  IExtensionNodeService,
   IExtraMetaData,
   IExtensionMetaData,
-  ExtensionCapabilityRegistry,
   LANGUAGE_BUNDLE_FIELD,
   IExtension,
-  JSONType,
   EXTENSION_EXTEND_SERVICE_PREFIX,
   MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER,
   ExtraMetaData,
@@ -43,27 +40,18 @@ import {
   Deferred,
   STORAGE_NAMESPACE,
   StorageProvider,
-  IStorage,
   electronEnv,
   IClientApp,
-  ClientAppContribution,
-  ContributionProvider,
-  SlotLocation,
   ILogger,
-  getLanguageId,
   getPreferenceLanguageId,
   isElectronRenderer,
   IDisposable,
   PreferenceService,
-  CoreConfiguration,
   CorePreferences,
 } from '@ali/ide-core-browser';
-import {
-  getIcon,
-} from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
-import {Extension} from './extension';
-import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
+import { Extension } from './extension';
+import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.thread.api.impl';
 import { createKaitianApiFactory } from './kaitian/main.thread.api.impl';
 import { createExtensionLogFactory } from './extension-log';
 
@@ -83,7 +71,7 @@ import {
   ProxyIdentifier,
 } from '@ali/ide-connection';
 
-import { VscodeCommands } from './vscode/commands';
+import { VSCodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService, IIconService } from '@ali/ide-theme';
@@ -103,11 +91,26 @@ function getAMDRequire() {
   if (isElectronEnv()) {
     return (global as any).amdLoader.require;
   } else {
-    (global as any).amdLoader.require.config({ onError: (err) => {
-      throw err;
-    }});
+    (global as any).amdLoader.require.config({
+      onError: (err) => {
+        throw err;
+      },
+    });
     return (global as any).amdLoader.require;
   }
+}
+
+function getWorkerBootstrapUrl(scriptPath: string, label: string): string {
+  if (/^(http:)|(https:)|(file:)/.test(scriptPath)) {
+    const currentUrl = String(window.location);
+    const currentOrigin = currentUrl.substr(0, currentUrl.length - window.location.hash.length - window.location.search.length - window.location.pathname.length);
+    if (scriptPath.substring(0, currentOrigin.length) !== currentOrigin) {
+      const js = `/*${label}*/importScripts('${scriptPath}');/*${label}*/`;
+      const url = `data:text/javascript;charset=utf-8,${encodeURIComponent(js)}`;
+      return url;
+    }
+  }
+  return scriptPath + '#' + label;
 }
 
 function getAMDDefine(): any {
@@ -204,11 +207,14 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private ready: Deferred<any> = new Deferred();
 
+  // 针对 activationEvents 为 * 的插件
+  eagerExtensionsActivated: Deferred<void> = new Deferred();
+
   private extensionMetaDataArr: IExtensionMetaData[];
   private vscodeAPIFactoryDisposer: () => void;
   private kaitianAPIFactoryDisposer: () => void;
 
-  private workerProtocol: RPCProtocol;
+  private workerProtocol: RPCProtocol | undefined;
 
   public async activate(): Promise<void> {
     this.contextKeyService = this.injector.get(IContextKeyService);
@@ -394,15 +400,16 @@ export class ExtensionServiceImpl implements ExtensionService {
     }
 
     if (!init) {
-      if ( this.activationEventService.activatedEventSet.size) {
+      if (this.activationEventService.activatedEventSet.size) {
         await Promise.all(Array.from(this.activationEventService.activatedEventSet.values()).map((event) => {
           this.logger.verbose('fireEvent', 'event.topic', event.topic, 'event.data', event.data);
           return this.activationEventService.fireEvent(event.topic, event.data);
         }));
       }
-    } else {
-      await this.activationEventService.fireEvent('*');
     }
+
+    await this.activationEventService.fireEvent('*');
+    this.eagerExtensionsActivated.resolve();
   }
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
@@ -433,7 +440,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   private async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
-    const [ workspaceStorage, globalStorage ] = await Promise.all([
+    const [workspaceStorage, globalStorage] = await Promise.all([
       this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS),
       this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
     ]);
@@ -444,22 +451,19 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   private async initBrowserDependency() {
-    getAMDDefine()('React', [] , () => {
+    getAMDDefine()('React', [], () => {
       return React;
     });
-    getAMDDefine()('ReactDOM', [] , () => {
+    getAMDDefine()('ReactDOM', [], () => {
       return ReactDOM;
     });
-    getAMDDefine()('kaitian-browser', [] , () => {
+    getAMDDefine()('kaitian-browser', [], () => {
       return createBrowserApi(this.injector);
     });
   }
   private async initBaseData() {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
-    }
-    if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
-      this.extensionCandidate = this.extensionCandidate.concat(electronEnv.metadata.extensionCandidate.map((extension) => extension.path));
     }
     if (this.appConfig.extensionCandidate) {
       this.extensionCandidate = this.extensionCandidate.concat(this.appConfig.extensionCandidate.map((extension) => extension.path));
@@ -468,13 +472,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   /**
-   * electron 下 通过 electronEnv.metadata.extensionCandidate 获取 extensionCandidate 列表
    * @param realPath extension path
    */
   private getExtensionCandidateByPath(realPath: string): ExtensionCandiDate | undefined {
-    if (isElectronEnv()) {
-      return electronEnv.metadata.extensionCandidate && electronEnv.metadata.extensionCandidate.find((extension: ExtensionCandiDate) => extension.path === realPath);
-    }
     return this.appConfig.extensionCandidate && this.appConfig.extensionCandidate.find((extension) => extension.path === realPath);
   }
 
@@ -516,25 +516,6 @@ export class ExtensionServiceImpl implements ExtensionService {
     await Promise.all(languagePackExtensions.map((languagePack) => languagePack.contributeIfEnabled()));
     await Promise.all(normalExtensions.map((extension) => extension.contributeIfEnabled()));
   }
-
-  // FIXME: 临时处理组件激活
-  // private async layoutContribute() {
-  //   console.log('this.viewRegistry.viewsMap.keys()', this.viewRegistry.viewsMap.keys());
-
-  //   for (const containerId of this.viewRegistry.viewsMap.keys()) {
-  //     const views = this.viewRegistry.viewsMap.get(containerId);
-  //     const containerOption = this.viewRegistry.containerMap.get(containerId);
-  //     if (views) {
-  //       // 内置的container
-  //       if (containerOption) {
-  //         // 自定义viewContainer
-  //         this.layoutService.registerTabbarComponent(views, containerOption, SlotLocation.left);
-  //       }
-  //     } else {
-  //       console.warn('注册了一个没有view的viewContainer!');
-  //     }
-  //   }
-  // }
 
   private async disposeExtensions() {
     this.extensionMap.forEach((extension) => {
@@ -580,16 +561,17 @@ export class ExtensionServiceImpl implements ExtensionService {
     // await this.extensionNodeService.resolveProcessInit(clientId);
 
   }
+
   private async initWorkerHost() {
     // @ts-ignore
-    const workerUrl = this.appConfig.extWorkerHost;
+    const workerUrl = getWorkerBootstrapUrl(this.appConfig.extWorkerHost, 'extWorkerHost');
     if (!workerUrl) {
       return;
     }
 
     this.logger.verbose('workerUrl', workerUrl);
 
-    const extendWorkerHost = new Worker(workerUrl);
+    const extendWorkerHost = new Worker(workerUrl, { name: 'KaitianWorkerExtensionHost' });
     const onMessageEmitter = new Emitter<string>();
     const onMessage = onMessageEmitter.event;
 
@@ -621,7 +603,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 
-    const {getRPCService} = initRPCService(mainThreadCenter);
+    const { getRPCService } = initRPCService(mainThreadCenter);
 
     const service = getRPCService('ExtProtocol');
     const onMessageEmitter = new Emitter<string>();
@@ -688,6 +670,10 @@ export class ExtensionServiceImpl implements ExtensionService {
     const { extendConfig } = extension;
 
     if (extendConfig.worker && extendConfig.worker.main) {
+      if (!this.workerProtocol) {
+        this.logger.warn('[Worker Host] extension worker host not yet initialized.');
+        return;
+      }
       const workerProxy = this.workerProtocol.getProxy<IExtensionWorkerHost>(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
       await workerProxy.$activateExtension(extension.id);
     }
@@ -715,7 +701,7 @@ export class ExtensionServiceImpl implements ExtensionService {
    * @param componentId
    */
   private createExtensionExtendProtocol(extension: IExtension, componentId: string) {
-    const {id: extensionId} = extension;
+    const { id: extensionId } = extension;
     const rpcProtocol = this.protocol;
 
     const extendProtocol = new Proxy(rpcProtocol, {
@@ -726,7 +712,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
         if (prop === 'getProxy') {
           return () => {
-            const proxy = obj.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
+            const proxy = obj.getProxy({ serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}` } as ProxyIdentifier<any>);
             return new Proxy(proxy, {
               get: (obj, prop) => {
                 if (typeof prop === 'symbol') {
@@ -738,7 +724,7 @@ export class ExtensionServiceImpl implements ExtensionService {
             });
           };
         } else if (prop === 'set') {
-          const componentProxyIdentifier = {serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}`};
+          const componentProxyIdentifier = { serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}` };
 
           return (componentService) => {
             const service = {};
@@ -771,7 +757,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     });
   }
   private createExtensionExtendProtocol2(extension: IExtension, componentId: string) {
-    const {id: extensionId} = extension;
+    const { id: extensionId } = extension;
     const protocol = this.protocol;
     const workerProtocol = this.workerProtocol;
 
@@ -789,11 +775,11 @@ export class ExtensionServiceImpl implements ExtensionService {
 
         if (prop === 'getProxy') {
           return () => {
-            let protocolProxy = protocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
+            let protocolProxy = protocol.getProxy({ serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}` } as ProxyIdentifier<any>);
             protocolProxy = this.dollarProxy(protocolProxy);
             let workerProtocolProxy;
 
-            if (this.workerProtocol) {
+            if (workerProtocol) {
               workerProtocolProxy = workerProtocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
               workerProtocolProxy = this.dollarProxy(workerProtocolProxy);
             }
@@ -806,7 +792,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
           };
         } else if (prop === 'set') {
-          const componentProxyIdentifier = {serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}`};
+          const componentProxyIdentifier = { serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}` };
 
           return (componentService) => {
             const service = {};
@@ -869,8 +855,8 @@ export class ExtensionServiceImpl implements ExtensionService {
     // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
     this.contextKeyService.createKey('listFocus', true);
 
-    const workbenchEditorService: WorkbenchEditorService =  this.injector.get(WorkbenchEditorService);
-    const commandService: CommandService =  this.injector.get(CommandService);
+    const workbenchEditorService: WorkbenchEditorService = this.injector.get(WorkbenchEditorService);
+    const commandService: CommandService = this.injector.get(CommandService);
     const commandRegistry = this.commandRegistry;
 
     commandRegistry.beforeExecuteCommand(async (command, args) => {
@@ -878,45 +864,46 @@ export class ExtensionServiceImpl implements ExtensionService {
       return args;
     });
 
-    commandRegistry.registerCommand(VscodeCommands.SET_CONTEXT, {
+    commandRegistry.registerCommand(VSCodeCommands.SET_CONTEXT, {
       execute: (contextKey: any, contextValue: any) => {
         this.contextKeyService.createKey(String(contextKey), contextValue);
       },
     });
 
-    commandRegistry.registerCommand(VscodeCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.REVERT_AND_CLOSE_ACTIVE_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR_RIGHT);
-    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR_DOWN);
-    commandRegistry.registerCommand(VscodeCommands.NEW_UNTITLED_FILE);
-    commandRegistry.registerCommand(VscodeCommands.CLOSE_ALL_EDITORS);
-    commandRegistry.registerCommand(VscodeCommands.FILE_SAVE);
-    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR_ORTHOGONAL);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_LEFT);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_RIGHT);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_UP);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_DOWN);
-    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_NEXT);
-    commandRegistry.registerCommand(VscodeCommands.PREVIOUS_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.PREVIOUS_EDITOR_IN_GROUP);
-    commandRegistry.registerCommand(VscodeCommands.NEXT_EDITOR);
-    commandRegistry.registerCommand(VscodeCommands.NEXT_EDITOR_IN_GROUP);
-    commandRegistry.registerCommand(VscodeCommands.EVEN_EDITOR_WIDTH);
-    commandRegistry.registerCommand(VscodeCommands.CLOSE_OTHER_GROUPS);
-    commandRegistry.registerCommand(VscodeCommands.LAST_EDITOR_IN_GROUP);
-    commandRegistry.registerCommand(VscodeCommands.OPEN_EDITOR_AT_INDEX);
-    commandRegistry.registerCommand(VscodeCommands.CLOSE_OTHER_EDITORS);
-    commandRegistry.registerCommand(VscodeCommands.REVERT_FILES);
+    commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.REVERT_AND_CLOSE_ACTIVE_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.SPLIT_EDITOR_RIGHT);
+    commandRegistry.registerCommand(VSCodeCommands.SPLIT_EDITOR_DOWN);
+    commandRegistry.registerCommand(VSCodeCommands.NEW_UNTITLED_FILE);
+    commandRegistry.registerCommand(VSCodeCommands.CLOSE_ALL_EDITORS);
+    commandRegistry.registerCommand(VSCodeCommands.FILE_SAVE);
+    commandRegistry.registerCommand(VSCodeCommands.SPLIT_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.SPLIT_EDITOR_ORTHOGONAL);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_LEFT);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_RIGHT);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_UP);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_DOWN);
+    commandRegistry.registerCommand(VSCodeCommands.NAVIGATE_NEXT);
+    commandRegistry.registerCommand(VSCodeCommands.PREVIOUS_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.PREVIOUS_EDITOR_IN_GROUP);
+    commandRegistry.registerCommand(VSCodeCommands.NEXT_EDITOR);
+    commandRegistry.registerCommand(VSCodeCommands.NEXT_EDITOR_IN_GROUP);
+    commandRegistry.registerCommand(VSCodeCommands.EVEN_EDITOR_WIDTH);
+    commandRegistry.registerCommand(VSCodeCommands.CLOSE_OTHER_GROUPS);
+    commandRegistry.registerCommand(VSCodeCommands.LAST_EDITOR_IN_GROUP);
+    commandRegistry.registerCommand(VSCodeCommands.OPEN_EDITOR_AT_INDEX);
+    commandRegistry.registerCommand(VSCodeCommands.CLOSE_OTHER_EDITORS);
+    commandRegistry.registerCommand(VSCodeCommands.REVERT_FILES);
+    commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_FOCUS_FILES_EXPLORER);
 
-    commandRegistry.registerCommand(VscodeCommands.OPEN, {
+    commandRegistry.registerCommand(VSCodeCommands.OPEN, {
       execute: (uriComponents: UriComponents) => {
         const uri = URI.from(uriComponents);
         workbenchEditorService.open(uri);
       },
     });
 
-    commandRegistry.registerCommand(VscodeCommands.DIFF, {
+    commandRegistry.registerCommand(VSCodeCommands.DIFF, {
       execute: (left: UriComponents, right: UriComponents, title: string, options: any) => {
         const original = URI.from(left);
         const modified = URI.from(right);
@@ -940,7 +927,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         const workerScriptURI = this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extension.extendConfig.worker.main).toString()));
         const workerScriptPath = workerScriptURI.toString();
 
-        return Object.assign({}, extension.toJSON(), {workerScriptPath});
+        return Object.assign({}, extension.toJSON(), { workerScriptPath });
       } else {
         return extension;
       }

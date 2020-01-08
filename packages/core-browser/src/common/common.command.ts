@@ -109,6 +109,12 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
     label: '%file.search.folder%',
   };
+
+  export const FOCUS_FILES: Command = {
+    id: 'filetree.focus.files',
+    category: CATEGORY,
+    label: '%file.focus.files%',
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {

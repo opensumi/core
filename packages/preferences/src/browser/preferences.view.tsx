@@ -28,10 +28,8 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
   const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
 
-  const [currentGroup, setCurrentGroup] = React.useState(groups[0] ? groups[0].id : '');
-
-  if (groups.length > 0 && groups.findIndex( (g) => g.id === currentGroup) === -1) {
-    setCurrentGroup(groups[0].id);
+  if (groups.length > 0 && groups.findIndex( (g) => g.id === preferenceService.currentGroup) === -1) {
+    preferenceService.setCurrentGroup(groups[0].id);
   }
 
   const debouncedSearch = debounce((value) => {
@@ -65,9 +63,9 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
       </div>
       { groups.length > 0 ?
       <div className = {styles.preferences_body}>
-        <PreferencesIndexes groups={groups} currentGroupId={currentGroup} setCurrentGroup={setCurrentGroup} scope={currentScope} search={currentSearch}></PreferencesIndexes>
+        <PreferencesIndexes groups={groups} scope={currentScope} search={currentSearch}></PreferencesIndexes>
         <div className = {styles.preferences_items}>
-          <PreferenceBody groupId={currentGroup} scope={currentScope} search={currentSearch}></PreferenceBody>
+          <PreferenceBody groupId={preferenceService.currentGroup} scope={currentScope} search={currentSearch}></PreferenceBody>
         </div>
       </div> :
         <div className = {styles.preference_noResults}>
@@ -89,7 +87,7 @@ export const PreferenceSections = (({preferenceSections, navigateTo}: {preferenc
   }</div>;
 });
 
-export const PreferencesIndexes = ({groups, currentGroupId: currentGroup, setCurrentGroup, scope, search}: {groups: ISettingGroup[] , currentGroupId: string, setCurrentGroup: (groupId) => void, scope: PreferenceScope , search: string}) => {
+export const PreferencesIndexes = ({groups, scope, search}: {groups: ISettingGroup[], scope: PreferenceScope, search: string}) => {
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
 
   return <div className = {styles.preferences_indexes}>
@@ -102,13 +100,13 @@ export const PreferencesIndexes = ({groups, currentGroupId: currentGroup, setCur
           return (<div key={`${id} - ${title}`}>
             <div key={`${id} - ${title}`} className={classnames({
               [styles.index_item]: true,
-              [styles.activated]: currentGroup === id,
-            })} onClick={() => {setCurrentGroup(id); }}>
+              [styles.activated]: preferenceService.currentGroup === id,
+            })} onClick={() => {preferenceService.setCurrentGroup(id); }}>
             <span className={iconClass}></span>
               {toNormalCase(replaceLocalizePlaceholder(title) || '')}
             </div>
             {
-              currentGroup === id ?
+              preferenceService.currentGroup === id ?
               <div>
                 <PreferenceSections preferenceSections={sections} navigateTo={(section) => {
                   const target = document.getElementById('preferenceSection-' + section.title);

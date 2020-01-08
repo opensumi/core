@@ -28,6 +28,7 @@ export interface ReporterMetadata {
 
 export interface PointData {
   metadata?: ReporterMetadata;
+  extra?: any;
   msg?: string;
 }
 
@@ -39,12 +40,12 @@ export interface PerformanceData extends PointData {
 export const IReporterService = Symbol('IReporterService');
 
 export interface IReporterTimer {
-  timeEnd(msg?: string): void;
+  timeEnd(msg?: string, extra?: any): void;
 }
 
 export interface IReporterService {
   time(name: REPORT_NAME): IReporterTimer;
-  point(name: REPORT_NAME, msg?: string): void;
+  point(name: REPORT_NAME, msg?: string, extra?: any): void;
 }
 
 // 集成方实现

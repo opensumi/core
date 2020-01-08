@@ -180,10 +180,12 @@ export const RecycleTree = (
     setRenderNodes(renderedFileItems);
   }, [nodes, renderedStart, scrollContainerStyle]);
 
-  const scrollUpHanlder = (element: Element) => {
+  const scrollUpHandler = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
     if (positionIndex > upPrerenderNumber) {
-      setRenderedStart(positionIndex - upPrerenderNumber);
+      const start = positionIndex - upPrerenderNumber;
+      // 当开始位置超过节点长度时，重置其实位置
+      setRenderedStart(start > nodes.length ? 0 : start);
     } else {
       setRenderedStart(0);
     }
@@ -191,14 +193,16 @@ export const RecycleTree = (
 
   const scrollUpThrottledHandler = (element: Element) => {
     requestAnimationFrame(() => {
-      scrollUpHanlder(element);
+      scrollUpHandler(element);
     });
   };
 
-  const scrollDownHanlder = (element: Element) => {
+  const scrollDownHandler = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
     if (positionIndex > (prerenderNumber - upPrerenderNumber)) {
-      setRenderedStart(positionIndex - (prerenderNumber - upPrerenderNumber));
+      const start = positionIndex - (prerenderNumber - upPrerenderNumber);
+      // 当开始位置超过节点长度时，重置其实位置
+      setRenderedStart(start > nodes.length ? 0 : start);
     } else {
       setRenderedStart(0);
     }
@@ -206,7 +210,7 @@ export const RecycleTree = (
 
   const scrollDownThrottledHandler = (element: Element) => {
     requestAnimationFrame(() => {
-      scrollDownHanlder(element);
+      scrollDownHandler(element);
     });
   };
 
@@ -214,6 +218,10 @@ export const RecycleTree = (
     width: '100%',
     height: nodes.length * itemLineHeight <= containerHeight ? containerHeight : nodes.length * itemLineHeight,
     userSelect: 'none',
+  };
+
+  const scrollerBarOptions = {
+    minScrollbarLength: 20,
   };
 
   return <React.Fragment>
@@ -224,6 +232,7 @@ export const RecycleTree = (
       containerRef={(ref) => {
         setScrollRef(ref);
       }}
+      options = {scrollerBarOptions}
     >
       <TreeContainer
         style={contentStyle}

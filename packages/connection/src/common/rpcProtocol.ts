@@ -83,6 +83,7 @@ export namespace ObjectTransfer {
                 s: item.sortText,
                 f: item.filterText,
                 it: item.insertText === item.label ? undefined : item.insertText,
+                itl: item.insertTextRules || undefined,
                 r: item.range || undefined,
               };
             }),
@@ -112,6 +113,7 @@ export namespace ObjectTransfer {
               insertText: item.it || item.l,
               filterText: item.f,
               range: item.r || null,
+              insertTextRules: item.itl,
             };
           }) : [],
         };

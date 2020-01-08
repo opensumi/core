@@ -25,7 +25,7 @@ export class ElectronMainApp {
 
   private parsedArgs: IParsedArgs = {
     extensionDir: argv.extensionDir as string | undefined,
-    extensionCandidate: Array.isArray(argv.extensionCandidate) ? argv.extensionCandidate : [argv.extensionCandidate],
+    extensionCandidate: argv.extensionCandidate ? ((Array.isArray(argv.extensionCandidate) ? argv.extensionCandidate : [argv.extensionCandidate])) : [],
   };
 
   constructor(private config: ElectronAppConfig) {

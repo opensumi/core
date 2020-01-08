@@ -14,19 +14,23 @@ export class MockFileTreeAPIImpl implements IFileTreeAPI {
   async getFiles(path: string | FileStat, parent?: Directory | undefined) {
     let file: FileStat | undefined;
     if (typeof path === 'string') {
-      file = {
-        isDirectory: false,
-        isSymbolicLink: false,
-        uri: path,
-        lastModification: (new Date()).getTime(),
-      } as FileStat;
+      if (path.indexOf('.') > 0) {
+        file = {
+          isDirectory: false,
+          isSymbolicLink: false,
+          uri: path,
+          lastModification: (new Date()).getTime(),
+        } as FileStat;
+      } else {
+        file = {
+          isDirectory: true,
+          isSymbolicLink: false,
+          uri: path,
+          lastModification: (new Date()).getTime(),
+        } as FileStat;
+      }
     } else {
-      file = {
-        isDirectory: false,
-        isSymbolicLink: false,
-        uri: path.uri,
-        lastModification: (new Date()).getTime(),
-      } as FileStat;
+      file = path as FileStat;
     }
     const result = await this.fileStat2FileTreeItem(file, parent, file.isSymbolicLink || false);
     return [result];
@@ -65,7 +69,7 @@ export class MockFileTreeAPIImpl implements IFileTreeAPI {
     const uri = new URI(filestat.uri);
     const icon = '';
     const name = '';
-    if (filestat.isDirectory && filestat.children) {
+    if (filestat.isDirectory) {
       return new Directory(
         this,
         uri,

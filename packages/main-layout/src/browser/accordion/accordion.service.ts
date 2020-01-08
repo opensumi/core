@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection, DisposableStore } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection, DisposableStore, IContextKey } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -48,6 +48,8 @@ export class AccordionService {
   private menuId = `accordion/${this.containerId}`;
   private toDispose: Map<string, IDisposable> = new Map();
 
+  private topViewKey: IContextKey<string>;
+
   constructor(public containerId: string) {
     this.splitPanelService = this.splitPanelManager.getService(containerId);
     this.menuRegistry.registerMenuItem(this.menuId, {
@@ -56,6 +58,13 @@ export class AccordionService {
         label: localize('layout.view.hide', '隐藏'),
       },
       group: '0_global',
+    });
+    this.viewContextKeyRegistry.afterContextKeyServiceRegistered(this.containerId, (contextKeyService) => {
+      this.topViewKey = contextKeyService!.createKey('view', containerId);
+      setTimeout(() => {
+        // 由于tabbar.service会立刻设置view，这边要等下一个event loop
+        this.popViewKeyIfOnlyOneViewVisible();
+      });
     });
   }
 
@@ -92,6 +101,7 @@ export class AccordionService {
       group: '1_widgets',
       // TODO order计算
     }));
+    this.popViewKeyIfOnlyOneViewVisible();
   }
 
   disposeView(viewId: string) {
@@ -103,6 +113,7 @@ export class AccordionService {
     if (disposable) {
       disposable.dispose();
     }
+    this.popViewKeyIfOnlyOneViewVisible();
   }
 
   disposeAll() {
@@ -146,6 +157,20 @@ export class AccordionService {
       state.hidden = !state.hidden;
     } else {
       state.hidden = !forceShow;
+    }
+    this.popViewKeyIfOnlyOneViewVisible();
+  }
+
+  popViewKeyIfOnlyOneViewVisible() {
+    if (!this.topViewKey) {
+      // 可能还没初始化
+      return;
+    }
+    const visibleViews = this.visibleViews;
+    if (visibleViews.length === 1) {
+      this.topViewKey.set(visibleViews[0].id);
+    } else {
+      this.topViewKey.reset();
     }
   }
 

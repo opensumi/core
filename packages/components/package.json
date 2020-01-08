@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-components",
-  "version": "1.6.11",
+  "version": "1.7.0",
   "description": "@ali/ide-components",
   "main": "lib/index.js",
   "files": [
@@ -12,10 +12,7 @@
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@ali/ide-core-browser": "1.6.11",
-    "@ali/ide-core-common": "1.6.11"
-  },
+  "devDependencies": {},
   "publishConfig": {
     "registry": "http://registry.npm.alibaba-inc.com"
   }

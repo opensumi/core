@@ -21,7 +21,7 @@ export interface ExtensionMomentState {
 
 export const SearchFromMarketplaceCommandId = 'SearchFromMarketplaceCommand';
 
-export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_d8fa74/afts/img/A*LcaZT6AAG84AAAAAAAAAAABkARQnAQ';
+export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_d8fa74/afts/img/A*upJXQo96It8AAAAAAAAAAABkARQnAQ';
 
 export const PREFIX = '/openapi/ide/';
 export const enableExtensionsContainerId = 'extensions';

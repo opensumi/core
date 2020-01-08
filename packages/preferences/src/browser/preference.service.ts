@@ -25,6 +25,13 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   @Autowired(IClientApp)
   clientApp: IClientApp;
 
+  @observable
+  public currentGroup: string = '';
+
+  public setCurrentGroup(groupId: string) {
+    this.currentGroup = groupId;
+  }
+
   private settingsGroups: ISettingGroup[] = [];
 
   private settingsSections: Map<string, ISettingSection[]> = new Map();

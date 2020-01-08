@@ -5,6 +5,8 @@ import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIco
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
 
+import './icon.less';
+
 @Injectable()
 export class IconService implements IIconService {
   @Autowired()
@@ -109,11 +111,12 @@ export class IconService implements IIconService {
         }
       }
     }
-    let targetClass = randomClass + ' ' + (type === IconType.Mask ? 'mask-mode' : 'background-mode');
-    if (shape === IconShape.Circle) {
-      targetClass += ' circle';
-    }
-    return targetClass;
+    return [
+      'kaitian-icon',
+      randomClass,
+      (type === IconType.Mask ? 'mask-mode' : 'background-mode'),
+      (shape === IconShape.Circle ? 'circle' : ''),
+    ].join(' ');
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {
