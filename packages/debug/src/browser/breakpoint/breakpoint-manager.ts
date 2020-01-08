@@ -163,7 +163,7 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
       data.breakpoints[uri] = this.findMarkers({ uri: new URI(uri) }).map((marker) => marker.data);
     }
     const storage: IStorage = await this.storageProvider(STORAGE_NAMESPACE.DEBUG);
-    storage.set('breakpoints', data);
+    await storage.set('breakpoints', data);
   }
 
   /**

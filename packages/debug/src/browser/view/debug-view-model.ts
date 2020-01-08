@@ -138,7 +138,7 @@ export class DebugViewModel implements IDisposable {
   }
 
   async restart(): Promise<void> {
-    const { session } = this;
+    const session = this.manager.getSession(this.session?.id!);
     if (!session) {
       return;
     }

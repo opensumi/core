@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { TreeNode, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@ali/ide-core-browser';
+import { TreeNode, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, Emitter } from '@ali/ide-core-browser';
 import { DebugViewModel } from './debug-view-model';
 import { DebugWatch } from '../model';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
@@ -17,6 +17,9 @@ export class DebugWatchService {
 
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
+
+  protected readonly onDidChangeEmitter = new Emitter<void>();
+  readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
 
   @observable.shallow
   status: Map<string | number, {
@@ -102,6 +105,7 @@ export class DebugWatchService {
   @action
   initNodes(nodes: any[], depth: number) {
     this.nodes = this.extractNodes(nodes, depth);
+    this.onDidChangeEmitter.fire();
   }
 
   @action

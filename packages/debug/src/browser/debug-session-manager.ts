@@ -214,8 +214,8 @@ export class DebugSessionManager {
 
   protected isExistedDebugSession(options: DebugSessionOptions): boolean {
     const { name } = options.configuration;
-    for (const session of [...this._sessions.values()]) {
-      if (session.configuration.name === name) {
+    for (const [, session] of this._sessions) {
+      if (session.configuration.name === name && !session.terminated) {
         return true;
       }
     }
