@@ -229,7 +229,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     commands.registerCommand(EDITOR_COMMANDS.COMPARE, {
       execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }) => {
         name = name || `${original.displayName} <=> ${modified.displayName}`;
-        this.workbenchEditorService.open(
+        return this.workbenchEditorService.open(
           URI.from({
             scheme: 'diff',
             query: URI.stringifyQuery({
