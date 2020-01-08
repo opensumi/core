@@ -6,7 +6,7 @@ import { ViewState } from '@ali/ide-core-browser';
 import { useInjectable, KeyCode, Key, TreeNode, ExpandableTreeNode } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
 import { VariablesTree, Input, RecycleList } from '@ali/ide-core-browser/lib/components';
-import { ExpressionItem } from '../console/debug-console-items';
+import { DebugVariable } from '../console/debug-console-items';
 
 export const DebugConsoleView = observer(({
   viewState,
@@ -25,7 +25,7 @@ export const DebugConsoleView = observer(({
     setValue(event.target.value);
   };
 
-  const onKeydownHanlder = (event: React.KeyboardEvent) => {
+  const onKeydownHandler = (event: React.KeyboardEvent) => {
     const { key } = KeyCode.createKeyCode(event.nativeEvent);
     if (key && Key.ENTER.keyCode === key.keyCode) {
       event.stopPropagation();
@@ -45,10 +45,16 @@ export const DebugConsoleView = observer(({
     data: TreeNode<any>,
   }) => {
     const renderContent = (data: TreeNode<any>) => {
-      const NameTemplate = data.name as React.JSXElementConstructor<any>;
+      let NameTemplate;
+      if (typeof data.name === 'function') {
+        NameTemplate = data.name as React.JSXElementConstructor<any>;
+      } else {
+        NameTemplate = () => {
+          return <div>{ data.name }</div>;
+        };
+      }
       const itemLineHeight = 20;
-
-      if (data instanceof ExpressionItem) {
+      if (data instanceof DebugVariable) {
         return <div>
           <VariablesTree
             node={data}
@@ -58,7 +64,7 @@ export const DebugConsoleView = observer(({
           />
         </div>;
       } else {
-        return <NameTemplate />;
+        return <NameTemplate/>;
       }
     };
     return <div className={styles.debug_console_item}>
@@ -72,7 +78,7 @@ export const DebugConsoleView = observer(({
     <RecycleList
       data = {nodes}
       template = {template}
-      sliceSize = {15}
+      sliceSize = {100}
       style={scrollContainerStyle}
       scrollBottomIfActive={true}
     />
@@ -82,7 +88,7 @@ export const DebugConsoleView = observer(({
         className={styles.variable_repl_bar_input}
         value={value}
         onChange={onChangeHandler}
-        onKeyDown={onKeydownHanlder}
+        onKeyDown={onKeydownHandler}
       />
     </div>
   </div>;

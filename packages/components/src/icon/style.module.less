@@ -1,32 +1,44 @@
 .icon {
-    display: inline-block;
-    background-repeat: no-repeat;
+  display: inline-block;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  color: var(--kt-icon-foreground);
 
-    &:global(.mask-mode) {
-      background-color: var(--foreground);
-    }
 
-    &.loading {
-      animation: loadingCircle 1s infinite linear;
-    }
-
-    &.small {
-      font-size: 14px;
-      height: 14px;
-      line-height: 14px;
-      width: 14px;
-    }
-
-    &.large {
-      font-size: 16px;
-      height: 16px;
-      line-height: 16px;
-      width: 16px;
-    }
+  &:global(.mask-mode) {
+    background-color: var(--foreground);
   }
 
-  @keyframes loadingCircle {
-    100% {
-      transform: rotate(360deg)
-    }
+  &:hover {
+    color: var(--kt-icon-hoverForeground);
   }
+
+  &.loading {
+    animation: loadingCircle 1s infinite linear;
+  }
+
+  &.small {
+    font-size: 14px;
+  }
+
+  &.large {
+    font-size: 16px;
+  }
+
+  &:active {
+    transform: scale(1.2);
+    color: var(--kt-icon-clickForeground);
+  }
+}
+
+.disabled {
+  color: var(--kt-icon-disableForeground);
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+@keyframes loadingCircle {
+  100% {
+    transform: rotate(360deg)
+  }
+}

@@ -1,7 +1,7 @@
 .wrap {
   display: flex;
   flex-direction: row;
-  padding: 8px 16px;
+  padding: 8px 12px 8px 8px;
 
   &:hover {
     background: var(--kt-sideBarList-hoverForeground);
@@ -33,12 +33,13 @@
   width: 32px;
   height: 32px;
   object-fit: contain;
-  margin-right: 10px;
+  margin-top: 7px; /* (28 - 14) / 2 */
+  margin-right: 12px;
 }
 
 .name {
   flex: 1;
-  font-weight: bold;
+  font-weight: 500;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -49,7 +50,7 @@
 
 .extension_props span{
   font-size: 12px;
-  margin-right: 10px;
+  margin-right: 12px;
   color: var(--kt-sideBarList-foreground);
 }
 

@@ -192,7 +192,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     return decodeURIComponent(path.withScheme('').toString());
   }
 
-  generatorFileFromFilestat(filestat: FileStat, parent: Directory): AbstractFileTreeItem {
+  generatorFileFromFilestat(filestat: FileStat, parent?: Directory): AbstractFileTreeItem {
     const uri = new URI(filestat.uri);
     if (filestat.isDirectory) {
       return new Directory(

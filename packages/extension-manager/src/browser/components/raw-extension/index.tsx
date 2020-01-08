@@ -88,8 +88,8 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
             {!extension.installed ? <Button className={styles.button} type='secondary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button> : null}
           </div>
           <div className={styles.extension_props}>
-            {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i>{extension.downloadCount}</span>) : null}
-            <span>V{extension.version}</span>
+            {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i> {extension.downloadCount}</span>) : null}
+            <span>V {extension.version}</span>
             <span>{extension.publisher}</span>
           </div>
           <div className={clx(styles.description, 'kt-extension-raw-description')}>{extension.description}</div>

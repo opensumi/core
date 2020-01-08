@@ -1,4 +1,4 @@
-import { observable, runInAction, action } from 'mobx';
+import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   WithEventBus,
@@ -918,6 +918,11 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
+  resetFileStatus() {
+    this.status.clear();
+  }
+
+  @action
   updateFileStatus(files: (Directory | File)[] = []) {
     const changeUri: Uri[] = [];
     files.forEach((file) => {
@@ -1021,7 +1026,7 @@ export class FileTreeService extends WithEventBus {
 
   private onFilesChanged(changes: FileChange[]): void {
     if (!this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
-      this.refresh();
+      this.refresh(this.root);
     }
     this.deleteAffectedNodes(this.getDeletedUris(changes));
   }
@@ -1038,10 +1043,17 @@ export class FileTreeService extends WithEventBus {
   @action
   private async getFiles(roots: IWorkspaceRoots): Promise<(Directory | File)[]> {
     let result = [];
+    // 每次重新获取文件时重置文件树状态
+    this.resetFileStatus();
     for (const root of roots) {
       let files;
       if (root.isDirectory) {
-        files = await this.fileAPI.getFiles(root.uri);
+        if (this.isMutiWorkspace) {
+          const workspace = this.fileAPI.generatorFileFromFilestat(this.workspaceService.workspace!);
+          files = await this.fileAPI.getFiles(root.uri, workspace);
+        } else {
+          files = await this.fileAPI.getFiles(root.uri);
+        }
         this.updateFileStatus(files);
         result = result.concat(files);
       }

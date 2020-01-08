@@ -135,8 +135,11 @@ export const FileTree = ({
         scrollTop = (newRenderStart + preRenderNumber / 2) * FILETREE_LINE_HEIGHT;
       } else {
         // 避免极端情况下，如定位节点为一个满屏列表的最后一个时，上面部分渲染不完整情况
-        newRenderStart = locationIndex - shouldShowNumbers;
-        scrollTop = (files.length - shouldShowNumbers) * FILETREE_LINE_HEIGHT;
+        if (shouldShowNumbers >= files.length) {
+          scrollTop = 0;
+        } else {
+          scrollTop = (files.length - shouldShowNumbers) * FILETREE_LINE_HEIGHT;
+        }
       }
       if (newRenderStart < 0) {
         newRenderStart = 0;
@@ -156,8 +159,8 @@ export const FileTree = ({
   };
 
   return (
-    <div className={cls(styles.kt_filetree)} style={FileTreeStyle}>
-      <div className={styles.kt_filetree_container} {...fileTreeAttrs} >
+    <div className={cls(styles.filetree)} style={FileTreeStyle}>
+      <div className={styles.filetree_container} {...fileTreeAttrs} >
         <RecycleTree
           nodes={nodes}
           scrollTop={scrollTop}

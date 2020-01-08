@@ -5,7 +5,7 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 
-import Icon from '../icon';
+import { Icon } from '@ali/ide-components';
 import {
   MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode,
   IContextMenu, IMenu, IMenuSeparator,
@@ -126,13 +126,16 @@ export const MenuActionList: React.FC<{
 };
 
 export const IconAction: React.FC<{
-  data: IMenuAction;
+  data: MenuNode;
   context?: any[];
 } & React.HTMLAttributes<HTMLDivElement>> = ({ data, context = [], className, ...restProps }) => {
   const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (typeof data.execute === 'function') {
+    if (data.id === SubmenuItemNode.ID) {
+      const anchor = { x: e.clientX, y: e.clientY };
+      data.execute(anchor, ...context);
+    } else if (typeof data.execute === 'function') {
       data.execute(context);
     }
   }, [ data, context ]);
@@ -164,6 +167,7 @@ interface BaseActionListProps {
    * 额外的 IMenuAction
    */
   extraNavActions?: IMenuAction[];
+  className?: string;
 }
 
 /**
@@ -172,12 +176,14 @@ interface BaseActionListProps {
 const TitleActionList: React.FC<{
   nav: MenuNode[];
   more?: MenuNode[];
+  className?: string;
 } & BaseActionListProps> = ({
   nav: primary = [],
   more: secondary = [],
   context = [],
   extraNavActions = [],
   moreAtFirst = false,
+  className,
 }) => {
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
@@ -203,7 +209,7 @@ const TitleActionList: React.FC<{
     : null;
 
   return (
-    <div className={styles.titleActions}>
+    <div className={clsx([styles.titleActions, className])}>
       { moreAtFirst && moreAction }
       {
         primary.map((item) => (
@@ -245,6 +251,7 @@ interface InlineActionBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'ex
   context?: TupleContext<T, U, K, M>;
   menus: IMenu;
   separator?: IMenuSeparator;
+  className?: string;
 }
 
 export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(

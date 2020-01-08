@@ -38,6 +38,17 @@
   }
 }
 
+@keyframes loadingCircle {
+  100% {
+    transform: rotate(360deg)
+  }
+}
+
+.kt-button-anticon-spin {
+  animation: loadingCircle 1s infinite linear;
+  margin-right: 5px;
+}
+
 .primary-button {
   color: var(--kt-primaryButton-foreground);
   background-color: var(--kt-primaryButton-background);
@@ -136,6 +147,7 @@ ghost-danger-button:disabled,
 .kt-primary-button-loading,
 .kt-secondary-button-loading {
   color: var(--kt-button-disableForeground) !important;
+  background-color: var(--kt-button-disableBackground) !important;
   border-style: solid;
   border-width: 1px;
   pointer-events: none;

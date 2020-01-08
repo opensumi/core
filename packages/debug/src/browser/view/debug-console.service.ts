@@ -4,6 +4,7 @@ import { observable, action } from 'mobx';
 import { TreeNode } from '@ali/ide-core-browser';
 import { DebugContribution } from '../debug-contribution';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import throttle = require('lodash.throttle');
 
 @Injectable()
 export class DebugConsoleService {
@@ -18,9 +19,11 @@ export class DebugConsoleService {
 
   constructor() {
     this.debugConsole.onDidChange(() => {
-      this.updateNodes();
+      this.throttleUpdateNodes();
     });
   }
+
+  throttleUpdateNodes = throttle(this.updateNodes, 200);
 
   @action
   updateNodes() {

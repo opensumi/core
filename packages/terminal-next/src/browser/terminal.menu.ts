@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable, Domain, CommandContribution, CommandRegistry, CommandService } from '@ali/ide-core-common';
-import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMenuRegistry, generateMergedCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
-import { memoize, IContextKeyService, localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, COMMON_COMMANDS } from '@ali/ide-core-browser';
+import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMenuRegistry, generateMergedCtxMenu, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { memoize, IContextKeyService, localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, COMMON_COMMANDS, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
 import { ITerminalController, terminalFocusContextKey, TerminalSupportType } from '../common';
 import { TerminalClient } from './terminal.client';
 import { TabManager } from './component/tab/manager';
@@ -51,6 +51,9 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
 
   @Autowired(CommandService)
   commands: CommandService;
+
+  @Autowired(AppConfig)
+  config: AppConfig;
 
   registerCommands(registry: CommandRegistry) {
 
@@ -171,30 +174,37 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
     });
     /** end */
 
+    const location = getSlotLocation('@ali/ide-terminal-next', this.config.layoutConfig);
+    const tabbarCtxKey = getTabbarCtxKey(location);
+    const commonMenuId = getTabbarCommonMenuId(location);
+    const when = `${tabbarCtxKey} == terminal`;
     /** 更多菜单 */
-    menuRegistry.registerMenuItem(`tabbar/bottom/common`, {
+    menuRegistry.registerMenuItem(commonMenuId, {
       command: {
         id: SimpleCommonds.clearGroups,
         label: localize('terminal.menu.clearGroups'),
       },
       order: 1,
       group: more1,
+      when,
     });
 
-    menuRegistry.registerMenuItem(`tabbar/bottom/common`, {
+    menuRegistry.registerMenuItem(commonMenuId, {
       command: {
         id: SimpleCommonds.stopGroups,
         label: localize('terminal.menu.stopGroups'),
       },
       order: 1,
       group: more1,
+      when,
     });
 
-    menuRegistry.registerMenuItem(`tabbar/bottom/common`, {
+    menuRegistry.registerMenuItem(commonMenuId, {
       label: localize('terminal.menu.selectType'),
       submenu: 'tabbar_bottom_select_sub',
       order: 1,
       group: more2,
+      when,
     });
 
     menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [{
@@ -205,6 +215,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
       order: 1,
       group: more1Sub,
       toggledWhen: 'config.terminal.type == zsh',
+      when,
     }, {
       command: {
         id: SimpleCommonds.selectTypeBash,
@@ -213,6 +224,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
       order: 2,
       group: more1Sub,
       toggledWhen: 'config.terminal.type == bash',
+      when,
     }, {
       command: {
         id: SimpleCommonds.selectTypeSh,
@@ -221,15 +233,17 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
       order: 3,
       group: more1Sub,
       toggledWhen: 'config.terminal.type == sh',
+      when,
     }]);
 
-    menuRegistry.registerMenuItem(`tabbar/bottom/common`, {
+    menuRegistry.registerMenuItem(commonMenuId, {
       command: {
         id: SimpleCommonds.moreSettings,
         label: localize('terminal.menu.moreSettings'),
       },
       order: 1,
       group: more2,
+      when,
     });
     /** end */
   }

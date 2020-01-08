@@ -49,7 +49,7 @@ export const PlainWebview: React.FunctionComponent<{id: string}> = ({id}) => {
         component.webview.remove();
       };
     }
-  });
+  }, []);
 
   return <div style={{height: '100%'}} ref = {(el) => container = el}></div>;
 };

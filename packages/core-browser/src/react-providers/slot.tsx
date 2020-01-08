@@ -18,14 +18,16 @@ export const SlotLocation = {
   main: 'main',
   statusBar: 'statusBar',
   bottom: 'bottom',
+  extra: 'extra',
+  float: 'float',
+  // @deprecated ->
   bottomBar: 'bottomBar',
   bottomPanel: 'bottomPanel',
   leftBar: 'leftBar',
   leftPanel: 'leftPanel',
   rightBar: 'rightBar',
   rightPanel: 'rightPanel',
-  extra: 'extra',
-  float: 'float',
+  // <- @deprecated
 };
 
 export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {
@@ -36,6 +38,22 @@ export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {
   }
   getLogger().warn(`没有找到${module}所对应的位置！`);
   return '';
+}
+
+export enum TabbarContextKeys {
+  activeViewlet = 'activeViewlet',
+  activePanel = 'activePanel',
+  activeExtendViewlet = 'activeExtendViewlet',
+}
+
+export function getTabbarCtxKey(location: string): TabbarContextKeys {
+  const standardTabbarCtxKeys = {
+    [SlotLocation.left]: TabbarContextKeys.activeViewlet,
+    [SlotLocation.right]: TabbarContextKeys.activeExtendViewlet,
+    [SlotLocation.bottom]: TabbarContextKeys.activePanel,
+  };
+
+  return standardTabbarCtxKeys[location] || 'activeExtendViewlet';
 }
 
 export class ErrorBoundary extends React.Component {

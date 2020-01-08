@@ -28,7 +28,7 @@ export const DebugHoverView = observer(() => {
     if (nodes && nodes.length > 0) {
       return <div
         onWheel={mouseWheelHandler}
-        className={styles.kaitian_debug_hover_content}
+        className={styles.debug_hover_content}
       >
         <SourceTree
           nodes={nodes}
@@ -44,8 +44,8 @@ export const DebugHoverView = observer(() => {
   };
 
   if (value) {
-    return <div className={styles.kaitian_debug_hover}>
-      <div className={cls(styles.kaitian_debug_hover_title, nodes.length > 0 && styles.has_complex_value)}>{value}</div>
+    return <div className={styles.debug_hover}>
+      <div className={cls(styles.debug_hover_title, nodes.length > 0 && styles.has_complex_value)}>{value}</div>
       {renderContent()}
     </div>;
   } else {

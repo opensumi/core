@@ -20,6 +20,11 @@ export enum IconType {
   Background = 'background',
 }
 
+export enum IconShape {
+  Circle,
+  Square,
+}
+
 export interface IIconService {
   currentThemeId: string;
   currentTheme: IIconTheme;
@@ -31,7 +36,7 @@ export interface IIconService {
    * @param type 选择采用Mask或者Background的方式渲染icon资源, 默认值为IconType.Mask
    * @returns icon的className
    */
-  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType): string | undefined;
+  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType, shape?: IconShape): string | undefined;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
   getAvailableThemeInfos(): ThemeInfo[];

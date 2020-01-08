@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -78,6 +78,7 @@ export class TabbarService extends WithEventBus {
   public barSize: number;
   private menuId = `tabbar/${this.location}`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
+  private activatedKey: IContextKey<string>;
 
   constructor(public location: string, public noAccordion?: boolean) {
     super();
@@ -88,6 +89,7 @@ export class TabbarService extends WithEventBus {
       },
       group: '0_global',
     });
+    this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
     if (this.location === 'bottom') {
       this.registerPanelMenus();
     }
@@ -387,6 +389,7 @@ export class TabbarService extends WithEventBus {
         if (!this.noAccordion) {
           this.tryRestoreAccordionSize(currentId);
         }
+        this.activatedKey.set(currentId);
       } else {
         setSize(this.barSize);
         lockSize(true);

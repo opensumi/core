@@ -1,9 +1,11 @@
 import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType, getThemeTypeSelector, IconType } from '../common';
+import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType, getThemeTypeSelector, IconType, IconShape } from '../common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
+
+import './icon.less';
 
 @Injectable()
 export class IconService implements IIconService {
@@ -85,7 +87,7 @@ export class IconService implements IIconService {
     return cssRule;
   }
 
-  fromIcon(basePath: string = '', icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask): string | undefined {
+  fromIcon(basePath: string = '', icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask, shape: IconShape = IconShape.Square): string | undefined {
     if (!icon) {
       return;
     }
@@ -109,7 +111,12 @@ export class IconService implements IIconService {
         }
       }
     }
-    return randomClass + ' ' + (type === IconType.Mask ? 'mask-mode' : 'background-mode');
+    return [
+      'kaitian-icon',
+      randomClass,
+      (type === IconType.Mask ? 'mask-mode' : 'background-mode'),
+      (shape === IconShape.Circle ? 'circle' : ''),
+    ].join(' ');
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {

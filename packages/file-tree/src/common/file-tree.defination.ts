@@ -60,7 +60,7 @@ export interface IFileTreeAPI {
   moveFile(from: URI, to: URI, isDirectory?: boolean): Promise<void>;
   copyFile(from: URI, to: URI): Promise<void>;
   getReadableTooltip(path: URI): string;
-  generatorFileFromFilestat(filestat: FileStat, parent: Directory): Directory | File;
+  generatorFileFromFilestat(filestat: FileStat, parent?: Directory): Directory | File;
   generatorTempFile(uri: URI, parent: Directory): Directory | File;
   generatorTempFolder(uri: URI, parent: Directory): Directory | File;
   sortByNumberic(files: Directory | File[]): (Directory | File)[];
