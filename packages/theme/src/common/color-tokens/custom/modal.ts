@@ -1,8 +1,9 @@
 import { localize } from '@ali/ide-core-common';
 import { registerColor } from '../../color-registry';
+import { NOTIFICATIONS_BACKGROUND, NOTIFICATIONS_FOREGROUND } from '../notification';
 
-export const ktModalForeground = registerColor('kt.modal.foreground', { light: '#D7DBDE', dark: '#D7DBDE', hc: null }, localize('ktModalForeground', 'Modal Foreground color.'));
-export const ktModalBackground = registerColor('kt.modal.background', { light: '#35393D', dark: '#35393D', hc: null }, localize('ktModalBackground', 'Modal Background color.'));
+export const ktModalForeground = registerColor('kt.modal.foreground', { light: NOTIFICATIONS_FOREGROUND, dark: '#D7DBDE', hc: null }, localize('ktModalForeground', 'Modal Foreground color.'));
+export const ktModalBackground = registerColor('kt.modal.background', { light: NOTIFICATIONS_BACKGROUND, dark: '#35393D', hc: null }, localize('ktModalBackground', 'Modal Background color.'));
 
 export const ktModalSeparatorBackground = registerColor('kt.modal.separatorBackground', { light: '#2C3033', dark: '#2C3033', hc: null }, localize('ktModalSeparatorBackground', 'Modal Separator Background color'));
 export const ktModalErrorIconForeground = registerColor('kt.modalErrorIcon.foreground', { light: '#DB4345', dark: '#DB4345', hc: null }, localize('ktModalErrorIconForeground', 'Modal Error Icon Foreground Color.'));

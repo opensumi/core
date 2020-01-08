@@ -1,6 +1,7 @@
 import { localize } from '@ali/ide-core-common';
 import { registerColor } from '../../color-registry';
 import { RGBA, Color } from '../../color';
+import { foreground } from '../base';
 
 /* disable button */
 export const ktButtonDisableForeground = registerColor(
@@ -58,7 +59,7 @@ export const ktPrimaryButtonClickBackground = registerColor(
 /* primary ghost button */
 export const ktPrimaryGhostButtonForeground = registerColor(
   'kt.primaryGhostButton.foreground',
-  { dark: '#3895EB', light: '#3895EB', hc: null },
+  { dark: '#3895EB', light: foreground, hc: null },
   localize(
     'ktPrimaryGhostButtonForeground',
     'Primary Ghost Button Foreground color.',
@@ -97,7 +98,7 @@ export const ktPrimaryGhostButtonClickBorder = registerColor(
 /* secondary button */
 export const ktSecondaryButtonForeground = registerColor(
   'kt.secondaryButton.foreground',
-  { dark: '#D7DBDE', light: '#D7DBDE', hc: null },
+  { dark: '#D7DBDE', light: foreground, hc: null },
   localize('ktSecondaryButtonForeground', 'Secondary Button Foreground color.'),
 );
 export const ktSecondaryButtonBackground = registerColor(
@@ -154,7 +155,7 @@ export const ktSecondaryButtonClickBorder = registerColor(
 /* secondary ghost button */
 export const ktWhiteGhostButtonForeground = registerColor(
   'kt.whiteGhostButton.foreground',
-  { dark: '#FFFFFF', light: '#FFFFFF', hc: null },
+  { dark: '#FFFFFF', light: foreground, hc: null },
   localize(
     'ktWhiteGhostButtonForeground',
     'White Ghost Button Foreground color.',
@@ -170,7 +171,7 @@ export const ktWhiteGhostButtonBackground = registerColor(
 );
 export const ktWhiteGhostButtonBorder = registerColor(
   'kt.whiteGhostButton.border',
-  { dark: '#FFFFFF', light: '#FFFFFF', hc: null },
+  { dark: '#FFFFFF', light: foreground, hc: null },
   localize('ktWhiteGhostButtonBorder', 'White Ghost Button Border color.'),
 );
 export const ktWhiteGhostButtonClickForeground = registerColor(
