@@ -124,7 +124,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   React.useEffect(() => {
     if (canUpdate && latestExtension) {
       messageService
-      .info(formatLocalize('marketplace.extension.findUpdate', latestExtension.name, latestExtension.version), [delayUpdate, nowUpdate])
+      .info(formatLocalize('marketplace.extension.findUpdate', latestExtension.displayName || latestExtension.name, latestExtension.version), [delayUpdate, nowUpdate])
       .then((message) => {
         if (message === nowUpdate) {
           update();
