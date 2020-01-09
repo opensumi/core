@@ -26,6 +26,7 @@ export class SnippetsContributionPoint extends VSCodeContributePoint<SnippetSche
         language: snippet.language,
         source: this.extension.packageJSON.name,
       });
+      // FIXME 装了多个snippet插件的情况下，会注册多个provider，在vscode内有一个经过优化的setSnippetSuggestSupport方法
       if (snippet.language && !this.registed.get(snippet.language)) {
         this.registed.set(snippet.language, true);
         monaco.languages.registerCompletionItemProvider(snippet.language, this.snippetSuggestProvider);
