@@ -6,6 +6,8 @@ import { DebugAction } from '../components/debug-action';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
 import { DebugToolbarView } from './debug-toolbar.view';
+import { Select } from '@ali/ide-core-browser/lib/components/select';
+
 export const DebubgConfigurationView = observer(() => {
   const {
     configurationOptions,
@@ -42,18 +44,14 @@ export const DebubgConfigurationView = observer(() => {
 
   return <div>
     <div className={styles.debug_configuration_toolbar}>
-      <div className={cls(styles.debug_selection)}>
-        <select value={ currentValue } onChange={ setCurrentConfiguration } className={styles.special_radius}>
+      <Select value={ currentValue } onChange={ setCurrentConfiguration } className={cls(styles.debug_selection, styles.special_radius)}>
           { renderConfigurationOptions(configurationOptions) }
           <option disabled>{ addConfigurationLabel.replace(/./g, '-') }</option>
           <option value='__ADD_CONF__'>{ addConfigurationLabel }</option>
-        </select>
-      </div>
-      <div className={cls(styles.debug_run_action)}>
-        <DebugAction color={'#ffffff'} icon={'run-debug'} label={localize('debug.action.start')} run={ start }></DebugAction>
-      </div>
-      <DebugAction icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
-      <DebugAction icon={'codelibrary-fill'} label={localize('debug.action.debug.console')} run={openDebugConsole}></DebugAction>
+        </Select>
+      <DebugAction color={'#62D99D'} icon={'run-debug'} label={localize('debug.action.start')} run={ start }></DebugAction>
+      <DebugAction color={'var(--foreground)'} icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
+      <DebugAction color={'var(--foreground)'} icon={'terminal'} label={localize('debug.action.debug.console')} run={openDebugConsole}></DebugAction>
     </div>
     <DebugToolbarView></DebugToolbarView>
   </div>;
