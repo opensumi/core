@@ -8,7 +8,7 @@ import { TitleBar } from '@ali/ide-main-layout/lib/browser/accordion/titlebar.vi
 import { Button } from '@ali/ide-components';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
-import { ISCMRepository, SCMService, scmProviderViewId, scmResourceViewId } from '../common';
+import { ISCMRepository, SCMService, scmProviderViewId, scmResourceViewId, scmContainerId } from '../common';
 import { ViewModelContext } from './scm-model';
 import { SCMHeader } from './components/scm-header.view';
 import { SCMResouceList } from './components/scm-resource.view';
@@ -197,7 +197,7 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
       } />
       <AccordionContainer
         views={views}
-        containerId={scmProviderViewId}
+        containerId={scmContainerId}
         className={styles.scm_accordion}
       />
     </div>
