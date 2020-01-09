@@ -57,7 +57,7 @@ export const SCMResouceList: React.FC<{
         resourceItem = injector.get(SCMResourceTreeNode, [item, inlineMenu]);
       } else {
         const inlineMenu = scmMenuService && scmMenuService.getResourceGroupInlineActions(item);
-        resourceItem =  new SCMResourceGroupTreeNode(item, inlineMenu);
+        resourceItem = new SCMResourceGroupTreeNode(item, inlineMenu);
       }
 
       resourceItem.selected = selectedNodeId === resourceItem.id;

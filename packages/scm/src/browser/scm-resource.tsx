@@ -56,7 +56,7 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
   private getInlineActions(scmMenu: IMenu) {
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <InlineActionBar<ISCMResourceGroup> context={[this.resourceGroupState]} menus={scmMenu} separator='inline' />,
+      component: <InlineActionBar<ISCMResourceGroup> context={[this.item]} menus={scmMenu} separator='inline' />,
     }];
   }
 }
@@ -115,7 +115,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
   private getInlineActions(scmMenu: IMenu) {
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <InlineActionBar<ISCMResource> context={[this.resourceState]} menus={scmMenu} separator='inline' />,
+      component: <InlineActionBar<ISCMResource> context={[this.item]} menus={scmMenu} separator='inline' />,
     }];
   }
 }
