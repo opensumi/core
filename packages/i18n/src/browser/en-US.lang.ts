@@ -290,6 +290,7 @@ export const localizationBundle = {
     'settings.group.extension': 'Extensions',
     'settings.group.feature': 'Feature',
     'settings.group.view': 'View',
+    'settings.group.terminal': 'Terminal',
 
     'settings.menu.keymaps': 'Settings',
 
