@@ -1,18 +1,27 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
-.debug_configuration_toolbar,
 .kt_debug_action_bar {
   display: flex;
   align-items: center;
   padding-top: 12px;
-  padding-left: 12px;
-  padding-right: 12px;
+  padding-left: 2px;
   padding-bottom: 6px;
+  .debug_selection {
+    width: 100%;
+    margin-left: 8px;
+    margin-right: 2px;
+  }
+}
 
+.debug_configuration_toolbar {
+  display: flex;
+  align-items: center;
+  padding-top: 12px;
+  padding-right: 2px;
+  padding-bottom: 6px;
   .debug_selection {
     width: 100%;
     margin-left: 8px;
     margin-right: 8px;
   }
 }
-
