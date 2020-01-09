@@ -17,6 +17,16 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
 
   private static readonly _maxPrefix = 10000;
 
+  get registedLanguageIds() {
+    const allLanguageIds: string[] = [];
+    this.pendingSnippets.forEach((_, key) => {
+      if (key !== '*') {
+        allLanguageIds.push(key);
+      }
+    });
+    return allLanguageIds;
+  }
+
   async provideCompletionItems(model: monaco.editor.ITextModel, position: monaco.Position, context: monaco.languages.CompletionContext, token: monaco.CancellationToken): Promise<monaco.languages.CompletionList | undefined> {
     if (position.column >= MonacoSnippetSuggestProvider._maxPrefix) {
       // 如果单行过长则忽略
@@ -129,7 +139,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     }
   }
 
-  fromJSON(snippets: JsonSerializedSnippets | undefined, { language, source }: SnippetLoadOptions): void {
+  protected fromJSON(snippets: JsonSerializedSnippets | undefined, { language, source }: SnippetLoadOptions): void {
     this.parseSnippets(snippets, (name, snippet) => {
       // tslint:disable-next-line:prefer-const
       let { prefix, body, description } = snippet;
