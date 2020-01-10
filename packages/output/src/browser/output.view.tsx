@@ -7,6 +7,7 @@ import * as styles from './output.module.less';
 import { InfinityList } from '@ali/ide-core-browser/lib/components';
 
 import Ansi from '../common/ansi';
+import { isElectronRenderer } from '../../../core-common/lib';
 
 const style: React.CSSProperties = {
   whiteSpace: 'normal',
@@ -71,7 +72,7 @@ export const Output = observer(() => {
         style={style}
         data={renderLines(rawLines)}
         className={styles.content}
-        keyProp={'idx'}
+        keyProp={'id'}
         isLoading={false}
         isDrained={false}
         sliceSize={30}
@@ -88,10 +89,14 @@ export const ChannelSelector = observer(() => {
   const outputService = useInjectable<OutputService>(OutputService);
   const channelOptionElements: React.ReactNode[] = [];
   outputService.getChannels().forEach((channel, idx) => {
-      channelOptionElements.push(<option value={channel.name} key={`${idx} - ${channel.name}`}>{channel.name}</option>);
+    channelOptionElements.push(<Option value={channel.name} key={`${idx} - ${channel.name}`}>{channel.name}</Option>);
   });
   if (channelOptionElements.length === 0) {
-      channelOptionElements.push(<option key={NONE} value={NONE}>{NONE}</option>);
+    channelOptionElements.push(<Option key={NONE} value={NONE}>{NONE}</Option>);
+  }
+
+  if (isElectronRenderer()) {
+    return <select>{channelOptionElements}</select>;
   }
   return <select
   className={styles.select}

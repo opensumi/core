@@ -1,7 +1,16 @@
+.kt-select-overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0px;
+  top: 0px;
+  z-index: -1;
+}
+
 .kt-select-container {
   position: relative;
-  width: 100%;
   user-select: none;
+  min-width: 110px;
 
   .kt-select-value {
     margin: 0px;
@@ -17,10 +26,12 @@
     border-style: solid;
     border-width: 1px;
     border-color: transparent;
+    cursor: pointer;
 
     & > option {
       text-overflow: ellipsis;
       overflow: hidden;
+      min-width: 110px;
       white-space: nowrap;
       flex: 1;
     }
@@ -48,25 +59,28 @@
 
   .kt-select-value-large, .kt-select-value-large > option {
     height: 30px;
+    font-size: 14px;
     line-height: 30px;
   }
 
   .kt-select-value-default, .kt-select-value-default > option {
     height: 28px;
+    font-size: 12px;
     line-height: 28px;
   }
 
   .kt-select-value-small, .kt-select-value-small > option {
     height: 22px;
+    font-size: 12px;
     line-height: 22px;
   }
 
   .kt-select-options {
     display: none;
     position: absolute;
-    top: 30px;
+    margin-top: 4px;
     max-width: 100%;
-    width: 100%;
+    min-width: 100%;
     color: var(--kt-selectDropdown-foreground);
     background-color: var(--kt-selectDropdown-background);
     z-index: 20;
@@ -75,7 +89,17 @@
     box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15),
       0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36);
 
-    & > option {
+    .kt-select-option-select {
+
+      option {
+        background-color: var(--kt-selectDropdown-selectionBackground);
+        &:hover {
+          background-color: var(--kt-selectDropdown-selectionBackground);
+        }
+      }
+    }
+
+    option {
       color: var(--kt-selectDropdown-foreground);
       background-color: var(--kt-selectDropdown-background);
       cursor: pointer;
@@ -85,15 +109,11 @@
       overflow: hidden;
       white-space: nowrap;
       line-height: 26px;
-      font-size: 12px;
 
       &:hover {
         background-color: var(--kt-selectDropdown-hoverBackground);
       }
 
-      &.kt-select-option-select {
-        background-color: var(--kt-selectDropdown-selectionBackground);
-      }
     }
 
     &.kt-selecct-options-visible {
@@ -101,31 +121,33 @@
     }
   }
 
-  .kt-select-options-large > option {
-    height: 30px;
-    line-height: 30px;
-  }
-
   .kt-select-options-large {
-    top: 32px;
-  }
+    padding: 4px 0px;
 
-  .kt-select-options-default > option {
-    height: 26px;
-    line-height: 26px;
-  }
-
-  .kt-select-options-default {
-    top: 29px;
-  }
-
-  .kt-select-options-small > option {
-    height: 26px;
-    line-height: 26px;
+    & > option, & > div > option {
+      height: 30px;
+      font-size: 14px;
+      line-height: 30px;
+    }
   }
 
   .kt-select-options-default {
-    top: 23px;
+    padding: 3px 0px;
+
+    & > option, & > div > option {
+      height: 26px;
+      font-size: 12px;
+      line-height: 26px;
+    }
   }
 
+  .kt-select-options-small {
+    padding: 3px 0px;
+
+    & > option, & > div > option {
+      height: 26px;
+      font-size: 12px;
+      line-height: 26px;
+    }
+  }
 }

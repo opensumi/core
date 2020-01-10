@@ -11,11 +11,32 @@ interface ISelectProps {
   opem?: boolean;
   loading?: boolean;
   placeholder?: string;
-  options?: string[];
+  options?: Array<React.ReactNode>;
   value?: string;
   disabled?: boolean;
   onChange?: (value: string) => void;
   [prop: string]: any;
+}
+
+export const Option: React.FC<React.PropsWithChildren<{
+  value: string | number | string[];
+  children?: any;
+  className?: string;
+  onClick?: () => void;
+  optionLabelProp?: string;
+}>> = ({
+  value,
+  children,
+  ...otherProps
+}) => (
+  <option {...otherProps} value={value}>{children}</option>
+);
+
+function getValueWithProps<P extends { value: any }>(element: React.ReactElement<P>, key?: string) {
+  if (key) {
+    return element.props[key];
+  }
+  return element.props.value;
 }
 
 export const Select: React.FC<ISelectProps> = ({
@@ -26,6 +47,7 @@ export const Select: React.FC<ISelectProps> = ({
   children,
   value,
   onChange,
+  optionLabelProp,
 }) => {
   const { getIcon } = React.useContext(IconContext);
   const [open, setOpen] = useState(false);
@@ -33,9 +55,9 @@ export const Select: React.FC<ISelectProps> = ({
 
   useEffect(() => {
     if (onChange && select) {
-      setOpen(false);
       onChange(select);
     }
+    setOpen(false);
   }, [select]);
 
   function toggleOpen() {
@@ -54,20 +76,23 @@ export const Select: React.FC<ISelectProps> = ({
   });
 
   return (<div className='kt-select-container'>
-    <p className={selectClasses}>
+    <p className={selectClasses} onClick={toggleOpen}>
       <option>{value || options && options[0]}</option>
-      <Icon iconClass={getIcon('down')} onClick={toggleOpen} />
+      <Icon iconClass={getIcon('down')} />
     </p>
 
     <div className={optionsCotainerClasses}>
       {options && options.map((v) => {
         if (typeof v === 'string') {
-          return <option className={classNames({
+          return <Option value={v} className={classNames({
             ['kt-select-option-select']: select === v,
-          })} onClick={() => setSelect(v)}>{v}</option>;
+          })} onClick={() => setSelect(v)}>{v}</Option>;
         }
-        return v;
+        return <div className={classNames({
+          ['kt-select-option-select']: select === (v as React.ReactElement).props.value,
+        })} onClick={() => setSelect(getValueWithProps((v as React.ReactElement), optionLabelProp))}>{v}</div>;
       })}
+      <div className='kt-select-overlay' onClick={toggleOpen}></div>
     </div>
     {children && children}
   </div>);

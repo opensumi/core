@@ -20,6 +20,8 @@ export * from './modal';
 export * from './icon';
 export * from './editor';
 export * from './badge';
+export * from './tab';
+
 // blocks
 export * from './actionbar';
 

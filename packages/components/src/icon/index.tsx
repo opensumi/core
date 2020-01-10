@@ -31,13 +31,14 @@ export const Icon: React.FC<{
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLSpanElement>;
 } & React.HTMLAttributes<HTMLSpanElement>> = (
-  { size = 'small', loading, icon, iconClass, className, tooltip, disabled, ...restProps },
+  { size = 'small', loading, icon, iconClass, className, tooltip, disabled, onClick, ...restProps },
 ) => {
   const { getIcon } = React.useContext(IconContext);
   const iconClx = icon ? getIcon(icon) : iconClass;
   return <span
     {...restProps}
     title={tooltip}
+    onClick={onClick}
     className={clx(
       styles.icon,
       iconClx,
@@ -46,6 +47,7 @@ export const Icon: React.FC<{
         [styles.loading]: loading,
         [styles.disabled]: !!disabled,
         [styles[size]]: !!size,
+        [styles.clickable]: !!onClick,
       },
     )}
     />;
