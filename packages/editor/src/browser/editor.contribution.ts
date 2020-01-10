@@ -56,6 +56,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
   @Autowired()
   historyService: EditorHistoryService;
 
+  @Autowired()
+  monacoService: MonacoService;
+
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
       id: 'ide-editor',
@@ -94,7 +97,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
   async onWillStopElectron() {
     for (const group of this.workbenchEditorService.editorGroups) {
-      for ( const resource of group.resources) {
+      for (const resource of group.resources) {
         if (!await this.resourceService.shouldCloseResource(resource, [])) {
           return true;
         }
@@ -179,7 +182,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
       keybinding: isElectronEnv() ? 'ctrlcmd+n' : 'alt+n',
     });
-    for (let i = 1; i < 10; i ++ ) {
+    for (let i = 1; i < 10; i++) {
       keybindings.registerKeybinding({
         command: EDITOR_COMMANDS.GO_TO_GROUP.id,
         keybinding: 'ctrlcmd+' + i,
@@ -681,6 +684,33 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         this.workbenchEditorService.createUntitledResource();
       },
     });
+
+    commands.registerCommand(EDITOR_COMMANDS.TEST_TOKENIZE, {
+      execute: () => {
+        const currentCodeEditor = this.workbenchEditorService.currentCodeEditor;
+        if (currentCodeEditor) {
+          const selections = currentCodeEditor.getSelections();
+          if (selections && selections.length > 0 && currentCodeEditor.currentDocumentModel) {
+            const {
+              selectionStartLineNumber,
+              selectionStartColumn,
+              positionLineNumber,
+              positionColumn,
+            } = selections[0];
+            const selectionText = currentCodeEditor.currentDocumentModel.getText(
+              new monaco.Range(
+                selectionStartLineNumber,
+                selectionStartColumn,
+                positionLineNumber,
+                positionColumn,
+              ),
+            );
+
+            this.monacoService.testTokenize(selectionText, currentCodeEditor.currentDocumentModel.languageId);
+          }
+        }
+      },
+    });
   }
 
   registerNextMenus(menus: IMenuRegistry) {
@@ -775,7 +805,7 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
         const disposable = new Disposable();
         disposable.addDispose(editor.monacoEditor.onDidBlurEditorWidget(() => {
           if (this.preferenceService.get('editor.autoSave') === 'editorFocusChange') {
-            if (editor.currentDocumentModel && !editor.currentDocumentModel.closeAutoSave &&  editor.currentDocumentModel.dirty && editor.currentDocumentModel.savable) {
+            if (editor.currentDocumentModel && !editor.currentDocumentModel.closeAutoSave && editor.currentDocumentModel.dirty && editor.currentDocumentModel.savable) {
               editor.currentDocumentModel.save();
             }
           }

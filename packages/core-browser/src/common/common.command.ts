@@ -459,6 +459,12 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.focus',
     category: CATEGORY,
   };
+
+  export const TEST_TOKENIZE: Command = {
+    id: 'editor.tokenize.test',
+    category: CATEGORY,
+    label: '%editor.tokenize.test%',
+  };
 }
 
 export namespace SEARCH_COMMANDS {

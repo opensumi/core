@@ -2,12 +2,16 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { Disposable } from '@ali/ide-core-browser';
 import { loadMonaco } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';
-import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, Event, ISelection } from '@ali/ide-core-common';
+import { TextmateService } from './textmate.service';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService  {
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
+
+  @Autowired()
+  private textMateService: TextmateService;
 
   private loadingPromise!: Promise<any>;
 
@@ -75,6 +79,10 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       });
     }
     return this.loadingPromise;
+  }
+
+  public testTokenize(text: string, languageId: string) {
+    this.textMateService.testTokenize(text, languageId);
   }
 
 }

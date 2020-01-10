@@ -1,7 +1,7 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger } from '@ali/ide-core-browser';
-import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap } from 'vscode-textmate';
+import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL, IGrammar } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 import { getNodeRequire } from './monaco-loader';
@@ -525,5 +525,28 @@ export class TextmateService extends WithEventBus {
         }
       }
     });
+  }
+
+  async testTokenize(line: string, languageId: string) {
+    const scopeName = this.textmateRegistry.getScope(languageId);
+    if (!scopeName) {
+      return;
+    }
+    const configuration = this.textmateRegistry.getGrammarConfiguration(languageId)();
+    const initialLanguage = getEncodedLanguageId(languageId);
+    const grammar = await this.grammarRegistry.loadGrammarWithConfiguration(
+      scopeName, initialLanguage, configuration);
+    let ruleStack = INITIAL;
+    const lineTokens = grammar.tokenizeLine(line, ruleStack);
+    console.log(`\nTokenizing line: ${line}`);
+    // tslint:disable-next-line: prefer-for-of
+    for (let j = 0; j < lineTokens.tokens.length; j++) {
+      const token = lineTokens.tokens[j];
+      console.log(` - token from ${token.startIndex} to ${token.endIndex} ` +
+        `(${line.substring(token.startIndex, token.endIndex)}) ` +
+        `with scopes ${token.scopes.join(', ')}`,
+      );
+    }
+    ruleStack = lineTokens.ruleStack;
   }
 }
