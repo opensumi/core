@@ -104,6 +104,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this.closeAutoSave = !!options.closeAutoSave;
 
     this.monacoModel = monaco.editor.createModel(content, options.languageId, monaco.Uri.parse(uri.toString()));
+    this.updateOptions({});
     if (options.eol) {
       this.eol = options.eol;
     }
@@ -114,6 +115,20 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
     this.listenTo(this.monacoModel);
     this.readCacheToApply();
+  }
+
+  updateOptions(options) {
+    const finalOptions = {
+      tabSize: this.preferenceService.get<number>('editor.tabSize') || 1,
+      insertSpaces: this.preferenceService.get<boolean>('editor.insertSpaces'),
+      detectIndentation: this.preferenceService.get<boolean>('editor.detectIndentation'),
+      ...options,
+    };
+    if (finalOptions.detectIndentation) {
+      this.monacoModel.detectIndentation(finalOptions.insertSpaces, finalOptions.tabSize);
+    } else {
+      this.monacoModel.updateOptions(finalOptions);
+    }
   }
 
   private listenTo(monacoModel: monaco.editor.ITextModel) {
