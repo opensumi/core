@@ -146,7 +146,7 @@ export const defaultIconMap = {
   'follow-cursor': 'follow-cursor',
   'minus': 'minus',
   'undock': 'undock',
-  'expand': 'arrawsalt',
+  'expand': 'expand',
   'shrink': 'shrink',
   'terminal': 'terminal',
 };
