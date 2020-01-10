@@ -32,7 +32,7 @@ export const Dialog = observer(() => {
     <DialogView
       visible={dialogService.isVisible()}
       onClose={handleClose}
-      closable={true}
+      closable={dialogService.closable}
       afterClose={afterClose}
       message={message}
       type={type}

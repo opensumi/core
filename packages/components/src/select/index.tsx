@@ -22,21 +22,57 @@ export const Option: React.FC<React.PropsWithChildren<{
   value: string | number | string[];
   children?: any;
   className?: string;
-  onClick?: () => void;
+  onClick?: (value: string | number | string[]) => void;
   optionLabelProp?: string;
+  disabled?: boolean;
+  label?: string | undefined;
 }>> = ({
   value,
   children,
+  disabled,
+  onClick,
   ...otherProps
 }) => (
-  <option {...otherProps} value={value}>{children}</option>
+  <option {...otherProps} disabled={disabled} value={value}>{children}</option>
 );
+
+function noop(...args: any) { }
 
 function getValueWithProps<P extends { value: any }>(element: React.ReactElement<P>, key?: string) {
   if (key) {
     return element.props[key];
   }
   return element.props.value;
+}
+
+function flatChildren(children: React.ReactNode[] | React.ReactNode, warpper) {
+  let flatted: React.ReactNode[] = [];
+  if (Array.isArray(children)) {
+    flatted = React.Children.toArray(children).map(warpper);
+  } else {
+    flatted = [warpper(children)];
+  }
+  return flatted;
+}
+
+interface MaybeOption {
+  value?: string;
+  label?: string;
+}
+
+function getLabelWithChildrenProps(value: string | undefined, children: React.ReactNode[] | React.ReactNode) {
+  const nodes = React.Children.toArray(children).filter((v) => React.isValidElement<MaybeOption>(v)) as React.ReactElement[];
+
+  const currentOption: React.ReactElement<MaybeOption> | null | undefined = nodes.find((node) => {
+    if (node.props) {
+      if (node.props?.value === value) {
+        return node;
+      }
+    }
+    return null;
+  });
+
+  return currentOption ? (currentOption.props?.label || currentOption.props?.value) : nodes[0].props?.value;
 }
 
 export const Select: React.FC<ISelectProps> = ({
@@ -48,10 +84,12 @@ export const Select: React.FC<ISelectProps> = ({
   value,
   onChange,
   optionLabelProp,
+  style,
+  className,
 }) => {
   const { getIcon } = React.useContext(IconContext);
   const [open, setOpen] = useState(false);
-  const [select, setSelect] = useState<string | null>(null);
+  const [select, setSelect] = useState<string | undefined>(value);
 
   useEffect(() => {
     if (onChange && select) {
@@ -59,6 +97,9 @@ export const Select: React.FC<ISelectProps> = ({
     }
     setOpen(false);
   }, [select]);
+  useEffect(() => {
+    setSelect(value);
+  }, [value]);
 
   function toggleOpen() {
     setOpen(open ? false : true);
@@ -75,9 +116,19 @@ export const Select: React.FC<ISelectProps> = ({
     [`kt-select-value-${size}`]: size,
   });
 
-  return (<div className='kt-select-container'>
-    <p className={selectClasses} onClick={toggleOpen}>
-      <option>{value || options && options[0]}</option>
+  function Wrapper(node: React.ReactNode) {
+    if (typeof node === 'string' || typeof node === 'number') {
+      node = <Option value={node} label={String(node)}>{node}</Option>;
+    }
+    const disabled = (node as React.ReactElement).props?.disabled || false;
+    return <div className={classNames({
+      ['kt-select-option-select']: select === (node as React.ReactElement).props.value,
+    })} onClick={disabled ? noop : () => setSelect(getValueWithProps((node as React.ReactElement), optionLabelProp))}>{node}</div>;
+  }
+
+  return (<div className={classNames('kt-select-container', className)}>
+    <p className={selectClasses} onClick={toggleOpen} style={style}>
+      <option>{(children && getLabelWithChildrenProps(value, children)) || options && (React.isValidElement(options[0]) ? options[0].props?.value : options[0])}</option>
       <Icon iconClass={getIcon('down')} />
     </p>
 
@@ -88,12 +139,10 @@ export const Select: React.FC<ISelectProps> = ({
             ['kt-select-option-select']: select === v,
           })} onClick={() => setSelect(v)}>{v}</Option>;
         }
-        return <div className={classNames({
-          ['kt-select-option-select']: select === (v as React.ReactElement).props.value,
-        })} onClick={() => setSelect(getValueWithProps((v as React.ReactElement), optionLabelProp))}>{v}</div>;
+        return Wrapper(v);
       })}
+      {children && flatChildren(children, Wrapper)}
       <div className='kt-select-overlay' onClick={toggleOpen}></div>
     </div>
-    {children && children}
   </div>);
 };

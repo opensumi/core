@@ -23,6 +23,10 @@
     color: var(--input-placeholderForeground);
   }
 
+  &::selection {
+    background-color: var(--kt-input-selectionBackground);
+  }
+
   &:hover {
     border-color: var(--focusBorder);
   }
@@ -130,7 +134,7 @@
     }
 
     &.validate-error {
-      color: var(--kt-inputValidation-errorInputForeground);
+      color: var(--kt-inputValidation-errorTextForeground);
     }
 
     &.validate-info {
@@ -138,7 +142,7 @@
     }
 
     &.validate-warning {
-      color: var(--kt-inputValidation-warningInputForeground);
+      color: var(--kt-inputValidation-warningTextForeground);
     }
   }
 }
