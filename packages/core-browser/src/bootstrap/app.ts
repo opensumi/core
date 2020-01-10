@@ -146,7 +146,7 @@ export class ClientApp implements IClientApp {
     };
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
-      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(electronEnv.metadata.extensionCandidate.map((extension) => extension.path));
+      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(electronEnv.metadata.extensionCandidate || []);
     }
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
