@@ -337,6 +337,8 @@ export const localizationBundle = {
     'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标记',
     'editor.configuration.quickSuggestionsDelay': '智能提示延迟（毫秒），默认 100 毫秒',
+    'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
+
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
