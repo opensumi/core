@@ -306,6 +306,8 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
     'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
     'preference.debug.allowBreakpointsEverywhere': 'Allow setting breakpoints in any file.',
+    'preference.debug.toolbar.float.title': 'Run And Debug -> Float Mode',
+    'preference.debug.toolbar.float': 'Float mode',
 
     'preference.tab.name': 'Settings',
     'preference.noResults': 'No Setting Found Containing \'{0}\'',

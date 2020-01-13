@@ -8,6 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { DebugToolbarService } from './debug-toolbar.service';
 import { DebugState, DebugSession } from '../debug-session';
 import { isExtensionHostDebugging } from '../debugUtils';
+
 export const DebugToolbarView = observer(() => {
   const {
     state,
@@ -69,20 +70,31 @@ export const DebugToolbarView = observer(() => {
     }
   };
 
-  const mainDiv = document.getElementById('main');
+  return (
+    <React.Fragment>
+      <div className={ styles.kt_debug_action_bar }>
+        { renderContinue(state) }
+        <DebugAction run={ doStepOver } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step' } label={ localize('debug.action.step-over') } />
+        <DebugAction run={ doStepIn } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-in' } label={ localize('debug.action.step-into') } />
+        <DebugAction run={ doStepOut } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
+        <DebugAction run={ doRestart } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'reload' } label={ localize('debug.action.restart') } />
+        { renderStop(state, sessionCount) }
+        { renderSelections(sessions) }
 
+      </div>
+    </React.Fragment>
+  );
+});
+
+export const FloatDebugToolbarView = observer(() => {
+  const mainDiv = document.getElementById('main');
+  const {
+    state,
+  }: DebugToolbarService = useInjectable(DebugToolbarService);
   if (mainDiv && state) {
     return ReactDOM.createPortal(
       <div className={ styles.debug_toolbar_container }>
-        <div className={ styles.kt_debug_action_bar }>
-          { renderContinue(state) }
-          <DebugAction run={ doStepOver } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step' } label={ localize('debug.action.step-over') } />
-          <DebugAction run={ doStepIn } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-in' } label={ localize('debug.action.step-into') } />
-          <DebugAction run={ doStepOut } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
-          <DebugAction run={ doRestart } enabled={ true } icon={ 'reload' } label={ localize('debug.action.restart') } />
-          { renderStop(state, sessionCount) }
-          { renderSelections(sessions) }
-        </div>
+        <DebugToolbarView />
       </div>,
       mainDiv,
     );
