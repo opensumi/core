@@ -43,8 +43,6 @@ export const DebubgConfigurationView = observer(() => {
     }
   };
 
-  console.log('????????', float);
-
   return <div>
     <div className={styles.debug_configuration_toolbar}>
       <Select value={ currentValue } onChange={ setCurrentConfiguration } className={cls(styles.debug_selection, styles.special_radius)}>
