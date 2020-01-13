@@ -30,6 +30,10 @@ export type MenuPath = string[];
 
 export const MAIN_MENU_BAR: MenuPath = ['menubar'];
 
+/**
+ * @deprecated
+ * util 2020 Feb
+ */
 export const MenuContribution = Symbol('MenuContribution');
 export interface MenuContribution {
     registerMenus(menus: MenuModelRegistry): void;
@@ -54,14 +58,10 @@ export class MenuModelRegistry {
     protected readonly contributions: ContributionProvider<MenuContribution>;
 
     onStart(): void {
-      const contributions = this.contributions.getContributions();
       warning(
-        contributions.length === 0,
-        '[kaitian] `MenuContribution` was deprecated, please use `NextMenuContribution` instead',
+        false,
+        '[kaitian] `MenuContribution` was deprecated and will remove in 2020 Feb, please use `NextMenuContribution` instead',
       );
-      for (const contrib of contributions) {
-            contrib.registerMenus(this);
-        }
     }
 
     get eventBus(): IEventBus {
