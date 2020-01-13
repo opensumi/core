@@ -379,6 +379,9 @@ export const localizationBundle = {
     'terminal.menu.selectType': 'Default Terminal Type',
     'terminal.menu.moreSettings': 'More Settings',
 
+    'deugger.menu.setValue': 'Set Value',
+    'deugger.menu.setValue.param': 'Please input the value of this variable',
+
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
 

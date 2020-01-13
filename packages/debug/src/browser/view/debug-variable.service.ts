@@ -1,8 +1,13 @@
-import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from './debug-view-model';
-import { TreeNode } from '@ali/ide-core-browser';
+import { TreeNode, Emitter } from '@ali/ide-core-browser';
 import { DebugScope } from '../console/debug-console-items';
+
+export interface VariableContextMenuEvent {
+  nodes: TreeNode[];
+  event: React.MouseEvent<HTMLDivElement, MouseEvent>;
+}
 
 @Injectable()
 export class DebugVariableService {
@@ -23,6 +28,9 @@ export class DebugVariableService {
 
   @Autowired(DebugViewModel)
   protected readonly viewModel: DebugViewModel;
+
+  private _onVariableContextMenu = new Emitter<VariableContextMenuEvent>();
+  public onVariableContextMenu = this._onVariableContextMenu.event;
 
   constructor() {
     this.init();
@@ -58,8 +66,7 @@ export class DebugVariableService {
     }
   }
 
-  @action.bound
-  async onContextMenu(nodes: TreeNode[]) {
+  async setNodesValue(nodes: TreeNode[], value: any) {
     const node = nodes[0];
     const session = this.viewModel.currentSession;
     const scope = node.parent;
@@ -68,9 +75,14 @@ export class DebugVariableService {
       session.setVariableValue({
         variablesReference: scope.id,
         name: node.name,
-        value: '5',
+        value,
       } as any);
     }
+  }
+
+  @action.bound
+  onContextMenu(nodes: TreeNode[], event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    this._onVariableContextMenu.fire({ nodes, event });
   }
 
   extractNodes(scopes: any[], depth: number, order: number = 0): TreeNode[] {
