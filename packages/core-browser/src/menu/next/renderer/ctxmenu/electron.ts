@@ -182,6 +182,7 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
         appMenuTemplate.push({
           label: mnemonicButtonLabel(item.label, true),
           submenu: templates,
+          role: item.nativeRole || '',
         });
       }
     });

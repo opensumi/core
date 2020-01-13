@@ -77,6 +77,7 @@ export interface IMenubarItem {
 
 export interface IExtendMenubarItem extends IMenubarItem {
   id: string;
+  nativeRole?: string; // electron menu 使用
 }
 
 @Injectable()
