@@ -2,12 +2,53 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as styles from './debug-configuration.module.less';
 import * as cls from 'classnames';
-import { useInjectable, localize } from '@ali/ide-core-browser';
+import { Injectable } from '@ali/common-di';
+import { observable, action } from 'mobx';
+import { useInjectable, localize, getIcon, ThrottledDelayer } from '@ali/ide-core-browser';
 import { DebugAction } from '../components/debug-action';
 import { observer } from 'mobx-react-lite';
 import { DebugToolbarService } from './debug-toolbar.service';
 import { DebugState, DebugSession } from '../debug-session';
 import { isExtensionHostDebugging } from '../debugUtils';
+
+@Injectable()
+class FloatController {
+  @observable
+  x: number;
+
+  @observable
+  enable: boolean;
+
+  private _origin: number;
+  private _last: number;
+
+  constructor() {
+    this.x = 0;
+    this.enable = false;
+    this._origin = 0;
+    this._last = 0;
+  }
+
+  @action.bound
+  onMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    this.enable = true;
+    this._origin = e.clientX;
+  }
+
+  @action.bound
+  onMouseMove(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    e.stopPropagation();
+    if (this.enable) {
+      this.x = e.clientX - this._origin + this._last;
+    }
+  }
+
+  @action.bound
+  onMouseUp() {
+    this.enable = false;
+    this._last = this.x;
+  }
+}
 
 export const DebugToolbarView = observer(() => {
   const {
@@ -88,13 +129,29 @@ export const DebugToolbarView = observer(() => {
 
 export const FloatDebugToolbarView = observer(() => {
   const mainDiv = document.getElementById('main');
+  const controller = useInjectable<FloatController>(FloatController);
   const {
     state,
   }: DebugToolbarService = useInjectable(DebugToolbarService);
   if (mainDiv && state) {
     return ReactDOM.createPortal(
-      <div className={ styles.debug_toolbar_container }>
-        <DebugToolbarView />
+      <div
+        style={ { pointerEvents: controller.enable ? 'all' : 'none' } }
+        className={ styles.debug_toolbar_container }
+        onMouseMove={ (e) => controller.onMouseMove(e) }
+        onMouseUp={ (e) => controller.onMouseUp() }
+      >
+        <div
+          style={ { transform: `translateX(${controller.x}px)` } }
+          className={ styles.debug_toolbar_wrapper }
+        >
+          <div
+            className={ cls(getIcon('ellipsis'), styles.debug_toolbar_drag) }
+            onMouseDown={ (e) => controller.onMouseDown(e) }
+            onMouseMove={ (e) => controller.onMouseMove(e) }
+          ></div>
+          <DebugToolbarView />
+        </div>
       </div>,
       mainDiv,
     );
