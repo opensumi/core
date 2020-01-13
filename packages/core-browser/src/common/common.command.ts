@@ -36,6 +36,16 @@ export namespace FILE_COMMANDS {
     label: '%file.compare%',
   };
 
+  export const OPEN_FILE: Command = {
+    id: 'file.open',
+    category: CATEGORY,
+  };
+
+  export const SAVE_FILE: Command = {
+    id: 'file.save',
+    category: CATEGORY,
+  };
+
   export const COLLAPSE_ALL: Command = {
     id: 'filetree.collapse.all',
     category: CATEGORY,
