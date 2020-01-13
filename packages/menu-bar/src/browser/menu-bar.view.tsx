@@ -36,7 +36,7 @@ const MenubarItem = observer<IExtendMenubarItem & {
       align={{
         offset: [0, 0],
       }}
-      overlay={<MenuActionList data={data} onClick={() => onClick()} />}
+      overlay={<MenuActionList data={data} afterClick={onClick} />}
       trigger={focusMode ? ['click', 'hover'] : ['click']}>
       <div
         className={styles.menubar}
