@@ -108,6 +108,8 @@ export const localizationBundle = {
     'edit.paste': 'Paste',
     'edit.selectAll': 'Select All',
 
+    'editor.tokenize.test': 'Try Tokenize First Selection',
+
     'quickopen.command.placeholder': 'Placeholder',
     'quickopen.command.description': 'Run Ide Command',
     'quickopen.command.nohandler': 'Cannot Find Anymore',

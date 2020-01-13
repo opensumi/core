@@ -2,187 +2,270 @@ import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import URI from 'vscode-uri';
-import { IRange, Uri } from '@ali/ide-core-common';
+import { IRange, Uri, localize } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
+import { isPatternInWord } from '@ali/ide-core-common/lib/filters';
 
 @Injectable()
 export class MonacoSnippetSuggestProvider implements monaco.languages.CompletionItemProvider {
 
-    @Autowired(IFileServiceClient)
-    protected readonly filesystem: IFileServiceClient;
+  @Autowired(IFileServiceClient)
+  protected readonly filesystem: IFileServiceClient;
 
-    protected readonly snippets = new Map<string, monaco.languages.CompletionItem[]>();
-    protected readonly pendingSnippets = new Map<string, Promise<void>[]>();
+  protected readonly snippets = new Map<string, Snippet[]>();
+  protected readonly pendingSnippets = new Map<string, Promise<void>[]>();
 
-    async provideCompletionItems(model: monaco.editor.ITextModel, position: monaco.Position, context: monaco.languages.CompletionContext, token: monaco.CancellationToken): Promise<monaco.languages.CompletionList> {
-        const languageId = model.getModeId(); // TODO: look up a language id at the position
-        await this.loadSnippets(languageId);
-        const suggestions = this.snippets.get(languageId) || [];
-        return { suggestions };
+  private static readonly _maxPrefix = 10000;
+
+  get registedLanguageIds() {
+    const allLanguageIds: string[] = [];
+    this.pendingSnippets.forEach((_, key) => {
+      if (key !== '*') {
+        allLanguageIds.push(key);
+      }
+    });
+    return allLanguageIds;
+  }
+
+  async provideCompletionItems(model: monaco.editor.ITextModel, position: monaco.Position, context: monaco.languages.CompletionContext, token: monaco.CancellationToken): Promise<monaco.languages.CompletionList | undefined> {
+    if (position.column >= MonacoSnippetSuggestProvider._maxPrefix) {
+      // 如果单行过长则忽略
+      return undefined;
     }
 
-    resolveCompletionItem(_: monaco.editor.ITextModel, __: monaco.Position, item: monaco.languages.CompletionItem, token: monaco.CancellationToken) {
-        return Promise.resolve(item);
+    if (context.triggerKind === monaco.languages.CompletionTriggerKind.TriggerCharacter && context.triggerCharacter === ' ') {
+      // 如果通过空格触发则忽略
+      return undefined;
     }
+    // TODO embed languageId, get languageId at position
+    const languageId = model.getModeId();
+    await this.loadSnippets(languageId);
+    const languageSnippets = this.snippets.get(languageId) || [];
+    const pos = { lineNumber: position.lineNumber, column: 1 };
+    const lineOffsets: number[] = [];
+    const lineContent = model.getLineContent(position.lineNumber);
+    const linePrefixLow = lineContent.substr(0, position.column - 1).toLowerCase();
+    const endsInWhitespace = linePrefixLow.match(/\s$/);
 
-    protected async loadSnippets(scope: string): Promise<void> {
-        const pending: Promise<void>[] = [];
-        pending.push(...(this.pendingSnippets.get(scope) || []));
-        pending.push(...(this.pendingSnippets.get('*') || []));
-        if (pending.length) {
-            await Promise.all(pending);
+    // 从待补全位置往前遍历该行，找出特殊节点
+    while (pos.column < position.column) {
+      const word = model.getWordAtPosition(pos);
+      if (word) {
+        // at a word
+        lineOffsets.push(word.startColumn - 1);
+        pos.column = word.endColumn + 1;
+        if (word.endColumn - 1 < linePrefixLow.length && !/\s/.test(linePrefixLow[word.endColumn - 1])) {
+          lineOffsets.push(word.endColumn - 1);
         }
+      } else if (!/\s/.test(linePrefixLow[pos.column - 1])) {
+        // at a none-whitespace character
+        lineOffsets.push(pos.column - 1);
+        pos.column += 1;
+      } else {
+        // always advance!
+        pos.column += 1;
+      }
     }
 
-    fromPath(path: string, options: SnippetLoadOptions): Promise<void> {
-        const snippetPath = new Path(options.extPath).join(path.replace(/^\.\//, '')).toString();
-        const pending = this.loadURI(Uri.file(snippetPath), options);
-        const { language } = options;
-        const scopes = Array.isArray(language) ? language : !!language ? [language] : ['*'];
-        for (const scope of scopes) {
-            const pendingSnippets = this.pendingSnippets.get(scope) || [];
-            pendingSnippets.push(pending);
-            this.pendingSnippets.set(scope, pendingSnippets);
+    const availableSnippets = new Set<Snippet>();
+    languageSnippets.forEach(availableSnippets.add, availableSnippets);
+    const suggestions: MonacoSnippetSuggestion[] = [];
+    for (const start of lineOffsets) {
+      availableSnippets.forEach((snippet) => {
+        // 对于特殊节点需要处理一下range
+        if (isPatternInWord(linePrefixLow, start, linePrefixLow.length, snippet.prefix.toLowerCase(), 0, snippet.prefix.length)) {
+          suggestions.push(new MonacoSnippetSuggestion(snippet, monaco.Range.fromPositions(position.delta(0, -(linePrefixLow.length - start)), position)));
+          availableSnippets.delete(snippet);
         }
-        return pending;
+      });
     }
-    /**
-     * should NOT throw to prevent load erros on suggest
-     */
-    protected async loadURI(uri: string | URI, options: SnippetLoadOptions): Promise<void> {
-        try {
-            const { content } = await this.filesystem.resolveContent(uri.toString(), { encoding: 'utf-8' });
-            const snippets = content && jsoncparser.parse(content, undefined, { disallowComments: false });
-            this.fromJSON(snippets, options);
-        } catch (e) {
-            console.error(e);
-        }
+    if (endsInWhitespace || lineOffsets.length === 0) {
+      // add remaing snippets when the current prefix ends in whitespace or when no
+      // interesting positions have been found
+      availableSnippets.forEach((snippet) => {
+        suggestions.push(new MonacoSnippetSuggestion(snippet, monaco.Range.fromPositions(position)));
+      });
     }
+    suggestions.sort(MonacoSnippetSuggestion.compareByLabel);
+    for (let i = 0; i < suggestions.length; i++) {
+      const item = suggestions[i];
+      let to = i + 1;
+      for (; to < suggestions.length && item.label === suggestions[to].label; to++) {
+        suggestions[to].label = localize('snippetSuggest.longLabel', suggestions[to].label, suggestions[to].snippet.name);
+      }
+      if (to > i + 1) {
+        suggestions[i].label = localize('snippetSuggest.longLabel', suggestions[i].label, suggestions[i].snippet.name);
+        i = to;
+      }
+    }
+    return { suggestions };
+  }
 
-    fromJSON(snippets: JsonSerializedSnippets | undefined, { language, source }: SnippetLoadOptions): void {
-        this.parseSnippets(snippets, (name, snippet) => {
-            // tslint:disable-next-line:prefer-const
-            let { prefix, body, description } = snippet;
-            if (Array.isArray(body)) {
-                body = body.join('\n');
-            }
-            if (typeof prefix !== 'string' || typeof body !== 'string') {
-                return;
-            }
-            const scopes: string[] = [];
-            if (language) {
-                if (Array.isArray(language)) {
-                    scopes.push(...language);
-                } else {
-                    scopes.push(language);
-                }
-            } else if (typeof snippet.scope === 'string') {
-                for (const rawScope of snippet.scope.split(',')) {
-                    const scope = rawScope.trim();
-                    if (scope) {
-                        scopes.push(scope);
-                    }
-                }
-            }
-            this.push({
-                scopes,
-                name,
-                prefix,
-                description,
-                body,
-                source,
-            });
-        });
-    }
-    protected parseSnippets(snippets: JsonSerializedSnippets | undefined, accept: (name: string, snippet: JsonSerializedSnippet) => void): void {
-        if (typeof snippets === 'object') {
-            // tslint:disable-next-line:forin
-            for (const name in snippets) {
-                const scopeOrTemplate = snippets[name];
-                if (JsonSerializedSnippet.is(scopeOrTemplate)) {
-                    accept(name, scopeOrTemplate);
-                } else {
-                    this.parseSnippets(scopeOrTemplate, accept);
-                }
-            }
-        }
-    }
+  resolveCompletionItem(_: monaco.editor.ITextModel, __: monaco.Position, item: monaco.languages.CompletionItem, token: monaco.CancellationToken) {
+    return Promise.resolve(item);
+  }
 
-    push(...snippets: Snippet[]): void {
-        for (const snippet of snippets) {
-            for (const scope of snippet.scopes) {
-                const languageSnippets = this.snippets.get(scope) || [];
-                languageSnippets.push(new MonacoSnippetSuggestion(snippet));
-                this.snippets.set(scope, languageSnippets);
-            }
-        }
+  protected async loadSnippets(scope: string): Promise<void> {
+    const pending: Promise<void>[] = [];
+    pending.push(...(this.pendingSnippets.get(scope) || []));
+    pending.push(...(this.pendingSnippets.get('*') || []));
+    if (pending.length) {
+      await Promise.all(pending);
     }
+  }
+
+  fromPath(path: string, options: SnippetLoadOptions): Promise<void> {
+    const snippetPath = new Path(options.extPath).join(path.replace(/^\.\//, '')).toString();
+    const pending = this.loadURI(Uri.file(snippetPath), options);
+    const { language } = options;
+    const scopes = Array.isArray(language) ? language : !!language ? [language] : ['*'];
+    for (const scope of scopes) {
+      const pendingSnippets = this.pendingSnippets.get(scope) || [];
+      pendingSnippets.push(pending);
+      this.pendingSnippets.set(scope, pendingSnippets);
+    }
+    return pending;
+  }
+  /**
+   * should NOT throw to prevent load erros on suggest
+   */
+  protected async loadURI(uri: string | URI, options: SnippetLoadOptions): Promise<void> {
+    try {
+      const { content } = await this.filesystem.resolveContent(uri.toString(), { encoding: 'utf-8' });
+      const snippets = content && jsoncparser.parse(content, undefined, { disallowComments: false });
+      this.fromJSON(snippets, options);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  protected fromJSON(snippets: JsonSerializedSnippets | undefined, { language, source }: SnippetLoadOptions): void {
+    this.parseSnippets(snippets, (name, snippet) => {
+      // tslint:disable-next-line:prefer-const
+      let { prefix, body, description } = snippet;
+      if (Array.isArray(body)) {
+        body = body.join('\n');
+      }
+      if (typeof prefix !== 'string' || typeof body !== 'string') {
+        return;
+      }
+      const scopes: string[] = [];
+      if (language) {
+        if (Array.isArray(language)) {
+          scopes.push(...language);
+        } else {
+          scopes.push(language);
+        }
+      } else if (typeof snippet.scope === 'string') {
+        for (const rawScope of snippet.scope.split(',')) {
+          const scope = rawScope.trim();
+          if (scope) {
+            scopes.push(scope);
+          }
+        }
+      }
+      this.push({
+        scopes,
+        name,
+        prefix,
+        description,
+        body,
+        source,
+      });
+    });
+  }
+  protected parseSnippets(snippets: JsonSerializedSnippets | undefined, accept: (name: string, snippet: JsonSerializedSnippet) => void): void {
+    if (typeof snippets === 'object') {
+      // tslint:disable-next-line:forin
+      for (const name in snippets) {
+        const scopeOrTemplate = snippets[name];
+        if (JsonSerializedSnippet.is(scopeOrTemplate)) {
+          accept(name, scopeOrTemplate);
+        } else {
+          this.parseSnippets(scopeOrTemplate, accept);
+        }
+      }
+    }
+  }
+
+  push(...snippets: Snippet[]): void {
+    for (const snippet of snippets) {
+      for (const scope of snippet.scopes) {
+        const languageSnippets = this.snippets.get(scope) || [];
+        languageSnippets.push(snippet);
+        this.snippets.set(scope, languageSnippets);
+      }
+    }
+  }
 
 }
 
 export interface SnippetLoadOptions {
-    language?: string | string[];
-    source: string;
-    extPath: string;
+  language?: string | string[];
+  source: string;
+  extPath: string;
 }
 
 export interface JsonSerializedSnippets {
-    [name: string]: JsonSerializedSnippet | { [name: string]: JsonSerializedSnippet };
+  [name: string]: JsonSerializedSnippet | { [name: string]: JsonSerializedSnippet };
 }
 export interface JsonSerializedSnippet {
-    body: string | string[];
-    scope: string;
-    prefix: string;
-    description: string;
+  body: string | string[];
+  scope: string;
+  prefix: string;
+  description: string;
 }
 export namespace JsonSerializedSnippet {
-    // tslint:disable-next-line:ban-types
-    export function is(obj: Object | undefined): obj is JsonSerializedSnippet {
-        return typeof obj === 'object' && 'body' in obj && 'prefix' in obj;
-    }
+  // tslint:disable-next-line:ban-types
+  export function is(obj: Object | undefined): obj is JsonSerializedSnippet {
+    return typeof obj === 'object' && 'body' in obj && 'prefix' in obj;
+  }
 }
 
 export interface Snippet {
-    readonly scopes: string[];
-    readonly name: string;
-    readonly prefix: string;
-    readonly description: string;
-    readonly body: string;
-    readonly source: string;
+  readonly scopes: string[];
+  readonly name: string;
+  readonly prefix: string;
+  readonly description: string;
+  readonly body: string;
+  readonly source: string;
 }
 
 export class MonacoSnippetSuggestion implements monaco.languages.CompletionItem {
 
-    readonly label: string;
-    readonly detail: string;
-    readonly sortText: string;
-    readonly noAutoAccept = true;
-    readonly type: 'snippet' = 'snippet';
-    readonly snippetType: 'textmate' = 'textmate';
-    readonly kind = monaco.languages.CompletionItemKind.Snippet;
-    // 不传Range默认应该能拿到 getWordRangeAtPosition
-    // @ts-ignore
-    range = null as IRange;
+  label: string;
+  readonly detail: string;
+  readonly sortText: string;
+  readonly noAutoAccept = true;
+  readonly type: 'snippet' = 'snippet';
+  readonly snippetType: 'textmate' = 'textmate';
+  readonly kind = monaco.languages.CompletionItemKind.Snippet;
+  range: IRange;
 
-    insertText: string;
-    documentation?: monaco.IMarkdownString;
-    insertTextRules: monaco.languages.CompletionItemInsertTextRule = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+  insertText: string;
+  documentation?: monaco.IMarkdownString;
+  insertTextRules: monaco.languages.CompletionItemInsertTextRule = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
 
-    constructor(protected readonly snippet: Snippet) {
-        this.label = snippet.prefix;
-        this.detail = `${snippet.description || snippet.name} (${snippet.source})`;
-        this.insertText = snippet.body;
-        this.sortText = `z-${snippet.prefix}`;
+  static compareByLabel(a: MonacoSnippetSuggestion, b: MonacoSnippetSuggestion): number {
+    return a.label > b.label ? 1 : a.label < b.label ? -1 : 0;
+  }
+
+  constructor(readonly snippet: Snippet, range: IRange) {
+    this.label = snippet.prefix;
+    this.detail = `${snippet.description || snippet.name} (${snippet.source})`;
+    this.insertText = snippet.body;
+    this.sortText = `z-${snippet.prefix}`;
+    this.range = range;
+  }
+
+  protected resolved = false;
+  resolve(): MonacoSnippetSuggestion {
+    if (!this.resolved) {
+      const codeSnippet = new monaco.snippetParser.SnippetParser().parse(this.snippet.body).toString();
+      this.documentation = { value: '```\n' + codeSnippet + '```' };
+      this.resolved = true;
     }
-
-    protected resolved = false;
-    resolve(): MonacoSnippetSuggestion {
-        if (!this.resolved) {
-            const codeSnippet = new monaco.snippetParser.SnippetParser().parse(this.snippet.body).toString();
-            this.documentation = { value: '```\n' + codeSnippet + '```' };
-            this.resolved = true;
-        }
-        return this;
-    }
+    return this;
+  }
 
 }

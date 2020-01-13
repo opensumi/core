@@ -339,6 +339,8 @@ export const localizationBundle = {
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标记',
     'editor.configuration.quickSuggestionsDelay': '智能提示延迟（毫秒），默认 100 毫秒',
     'editor.configuration.tabSize': '一个Tab的缩进大小，如果设置了自动检测，那么可能会被自动检测结果覆盖',
+    'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
+
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',

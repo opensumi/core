@@ -16,20 +16,13 @@ export class SnippetsContributionPoint extends VSCodeContributePoint<SnippetSche
   @Autowired(MonacoSnippetSuggestProvider)
   protected readonly snippetSuggestProvider: MonacoSnippetSuggestProvider;
 
-  private registed: Map<string, boolean> = new Map();
-
   contribute() {
-    // TODO 把languageId和provider的映射关系挪到这里来管理？
     for (const snippet of this.json) {
       this.snippetSuggestProvider.fromPath(snippet.path, {
         extPath: this.extension.path,
         language: snippet.language,
         source: this.extension.packageJSON.name,
       });
-      if (snippet.language && !this.registed.get(snippet.language)) {
-        this.registed.set(snippet.language, true);
-        monaco.languages.registerCompletionItemProvider(snippet.language, this.snippetSuggestProvider);
-      }
     }
   }
 }
