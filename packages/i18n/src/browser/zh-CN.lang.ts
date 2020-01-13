@@ -304,6 +304,7 @@ export const localizationBundle = {
     'preference.editor.fontWeight': '字体粗细',
     'preference.editor.fontSize': '字体大小',
     'preference.editor.tabSize': '缩进大小',
+    'preference.editor.detectIndentation': '自动检测缩进大小',
     'preference.editor.renderWhitespace': '显示空白字符',
     'preference.editor.cursorStyle': '光标样式',
     'preference.editor.insertSpace': '使用空格代替Tab',
@@ -337,6 +338,7 @@ export const localizationBundle = {
     'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标记',
     'editor.configuration.quickSuggestionsDelay': '智能提示延迟（毫秒），默认 100 毫秒',
+    'editor.configuration.tabSize': '一个Tab的缩进大小，如果设置了自动检测，那么可能会被自动检测结果覆盖',
     'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
 
     'common.preference.open': '设置',
@@ -459,6 +461,8 @@ export const localizationBundle = {
     'status-bar.label.line': '行',
     'status-bar.label.column': '列',
     'status-bar.label.selected': '已选择',
+    'status-bar.label.tabType.space': '空格',
+    'status-bar.label.tabType.tab': 'Tab 大小',
 
     'saveChangesMessage': '是否要保存对 {0} 的更改?',
     'file.prompt.dontSave': '不保存',
