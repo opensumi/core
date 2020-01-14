@@ -244,7 +244,7 @@ export const TreeContainerNode = (
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: ExpandableTreeNode.is(node) ? `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0) + 3}px`,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0) + 5}px`,
     ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
