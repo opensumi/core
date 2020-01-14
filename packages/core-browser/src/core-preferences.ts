@@ -16,7 +16,7 @@ export const EDITOR_FONT_DEFAULTS = {
   tabSize: 2,
   renderWhitespace: false,
   cursorStyle: 'line',
-  insertSpace: false,
+  insertSpace: true,
   wordWrap: 'off',
   wordWrapColumn: 80,
   lineHeight: 0,
@@ -196,6 +196,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.tabSize,
       description: '%editor.configuration.tabSize%',
     },
+    'editor.detectIndentation': {
+      type: 'boolean',
+      default: true,
+      description: '%editor.configuration.detectIndentation%',
+    },
     'editor.renderWhitespace': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.renderWhitespace,
@@ -214,7 +219,7 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.cursorStyle,
       description: '%editor.configuration.cursorStyle%',
     },
-    'editor.insertSpace': {
+    'editor.insertSpaces': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.insertSpace,
       description: '%editor.configuration.insertSpace%',

@@ -14,6 +14,7 @@ import * as copy from 'copy-to-clipboard';
 import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 import { IWindowService } from '@ali/ide-window';
+import { IWindowDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
 
 export namespace FileTreeContextMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
@@ -59,6 +60,9 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   @Autowired(ILogger)
   private logger;
+
+  @Autowired(IWindowDialogService)
+  private readonly windowDialogService: IWindowDialogService;
 
   private rendered = false;
 
@@ -446,6 +450,19 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (handler) {
           handler.activate();
         }
+      },
+    });
+
+    // open file
+    commands.registerCommand(FILE_COMMANDS.OPEN_FILE, {
+      execute: (options: IOpenDialogOptions) => {
+        return this.windowDialogService.showOpenDialog(options);
+      },
+    });
+    // save file
+    commands.registerCommand(FILE_COMMANDS.SAVE_FILE, {
+      execute: (options: ISaveDialogOptions) => {
+        return this.windowDialogService.showSaveDialog(options);
       },
     });
   }

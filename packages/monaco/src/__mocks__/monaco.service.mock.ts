@@ -29,5 +29,8 @@ export class MockedMonacoService implements MonacoService {
   public registerOverride(serviceName: ServiceNames, service: any): void {
 
   }
+  public testTokenize(line: string, languageId: string) {
+
+  }
 
 }

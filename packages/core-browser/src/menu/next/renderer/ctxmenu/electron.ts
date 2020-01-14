@@ -179,10 +179,14 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
       const menuNodes = this.menubarService.getMenuNodes(menuId);
       const templates = this.factory.getTemplate(menuNodes, this.menuBarActions);
       if (templates && templates.length > 0) {
-        appMenuTemplate.push({
+        const template: INativeMenuTemplate = {
           label: mnemonicButtonLabel(item.label, true),
           submenu: templates,
-        });
+        };
+        if (item.nativeRole) {
+          template.role = item.nativeRole;
+        }
+        appMenuTemplate.push(template);
       }
     });
     this.electronMainMenuService.setApplicationMenu({submenu: appMenuTemplate}, electronEnv.currentWindowId);
