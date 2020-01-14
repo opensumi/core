@@ -121,7 +121,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
-  private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}) {
+  private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}, autofocus = true) {
     const client = new TerminalClient(
       this.service,
       this.workspace,
@@ -130,7 +130,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.termTheme,
       this.preference,
       this,
-      widget, restoreId, options,
+      widget, restoreId, options, autofocus,
     );
     client.addDispose({
       dispose: () => {
@@ -153,7 +153,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
       for (const item of (widgets as any[])) {
         const widget = new Widget();
-        const client = this._createTerminalClientInstance(widget, item.clientId);
+        const client = this._createTerminalClientInstance(widget, item.clientId, {}, false);
         try {
           await client.attach(true, item.meta || '');
           this._addWidgetToGroup(index, client);
@@ -760,8 +760,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   /** client */
 
-  getCurrentClient() {
-    return this._clientsMap.get(this._focusedId);
+  getCurrentClient<T>() {
+    return this._clientsMap.get(this._focusedId) as any;
   }
 
   /** end */

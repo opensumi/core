@@ -61,7 +61,7 @@ export interface ITerminalController {
   onDidCloseTerminal: Event<string>;
   onDidOpenTerminal: Event<TerminalInfo>;
 
-  getCurrentClient(): any | undefined;
+  getCurrentClient<T>(): T | undefined;
 
   isFocus: boolean;
   focus(): void;
