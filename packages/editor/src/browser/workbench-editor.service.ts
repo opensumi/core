@@ -778,7 +778,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if ((options && options.disableNavigate) || (options && options.backend)) {
         // no-op
       } else {
-        this.commands.executeCommand(FILE_COMMANDS.LOCATION.id, uri);
+        this.commands.executeCommand(FILE_COMMANDS.LOCATION.id, uri)
+          .catch((err) => {
+            // no-op: failed when command not found
+            getLogger().warn(err);
+          });
       }
       const oldResource = this.currentResource;
       const oldOpenType = this.currentOpenType;
