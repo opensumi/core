@@ -179,7 +179,18 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
   }
 
   get name(): string {
-    return this.variable.name || '';
+    if (this.variable.name) {
+      return this.variable.name;
+    } else if (this.variable.evaluateName) {
+      const isSymbolExpression = /\["(.+)"]/.exec(this.variable.evaluateName);
+      if (isSymbolExpression) {
+        return isSymbolExpression[1];
+      } else {
+        const evaluateProps = this.variable.evaluateName.split('.');
+        return evaluateProps[evaluateProps.length - 1];
+      }
+    }
+    return '';
   }
 
   get description(): string {
