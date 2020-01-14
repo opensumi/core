@@ -69,6 +69,14 @@ export class WSChanneHandler {
       if (msg.id) {
         const channel = this.channelMap.get(msg.id);
         if (channel) {
+          if (msg.kind === 'data' && !(channel as any).fireMessage) {
+            // 后端最先发送消息时，前端并未准备好，会报该错误，尝试延迟重试一次
+            // 理论上应该前端最新发送消息，不应该出现该错
+            this.logger.error(`channel not ready!`, msg);
+            return setTimeout(() => {
+              channel.handleMessage(msg);
+            }, 50);
+          }
           channel.handleMessage(msg);
         } else {
           this.logger.warn(`channel ${msg.id} not found`);
