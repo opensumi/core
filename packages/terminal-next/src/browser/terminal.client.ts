@@ -196,7 +196,7 @@ export class TerminalClient extends Disposable {
       if (!this.attachPromise) {
         const type = this.preference.get<string>('terminal.type');
         this.attachPromise = this.service.attach(this.id, this.term, restore, meta,
-          (socket: WebSocket) => this._doAttach(socket), this._options, type)
+          (socket: WebSocket) => this._doAttach(socket), this._options, type === 'default' ? '' : type)
           .then(() => {
             const info = this.service.intro(this.id);
             this.attachPromise = null;
