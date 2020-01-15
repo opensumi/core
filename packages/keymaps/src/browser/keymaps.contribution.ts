@@ -11,10 +11,6 @@ import {
   WithEventBus,
   MaybePromise,
   localize,
-  MenuContribution,
-  MenuModelRegistry,
-  EDITOR_COMMANDS,
-  CommandService,
 } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';

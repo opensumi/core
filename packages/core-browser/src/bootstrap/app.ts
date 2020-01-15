@@ -111,8 +111,6 @@ export class ClientApp implements IClientApp {
 
   commandRegistry: CommandRegistry;
 
-  menuRegistry: MenuModelRegistry;
-
   // 这里将 onStart contribution 方法放到 MenuRegistryImpl 上了
   nextMenuRegistry: MenuRegistryImpl;
 
@@ -238,7 +236,6 @@ export class ClientApp implements IClientApp {
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
     this.stateService = this.injector.get(ClientAppStateService);
-    this.menuRegistry = this.injector.get(MenuModelRegistry);
     this.nextMenuRegistry = this.injector.get(IMenuRegistry);
   }
 
@@ -305,7 +302,6 @@ export class ClientApp implements IClientApp {
 
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
-    this.menuRegistry.onStart();
     this.nextMenuRegistry.onStart();
 
     for (const contribution of this.contributions) {
