@@ -2,11 +2,14 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable, localize, CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { Select, Option } from '@ali/ide-components';
+import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { OutputService } from './output.service';
 import * as styles from './output.module.less';
 import { InfinityList } from '@ali/ide-core-browser/lib/components';
 
 import Ansi from '../common/ansi';
+import { isElectronRenderer } from '../../../core-common/lib';
 
 const style: React.CSSProperties = {
   whiteSpace: 'normal',
@@ -71,7 +74,7 @@ export const Output = observer(() => {
         style={style}
         data={renderLines(rawLines)}
         className={styles.content}
-        keyProp={'idx'}
+        keyProp={'id'}
         isLoading={false}
         isDrained={false}
         sliceSize={30}
@@ -88,22 +91,44 @@ export const ChannelSelector = observer(() => {
   const outputService = useInjectable<OutputService>(OutputService);
   const channelOptionElements: React.ReactNode[] = [];
   outputService.getChannels().forEach((channel, idx) => {
-      channelOptionElements.push(<option value={channel.name} key={`${idx} - ${channel.name}`}>{channel.name}</option>);
+    channelOptionElements.push(
+      isElectronRenderer() ?
+      <option value={channel.name} key={`${idx} - ${channel.name}`}>{channel.name}</option> :
+      <Option value={channel.name} key={`${idx} - ${channel.name}`}>{channel.name}</Option>,
+    );
   });
   if (channelOptionElements.length === 0) {
-      channelOptionElements.push(<option key={NONE} value={NONE}>{NONE}</option>);
+    channelOptionElements.push(
+      isElectronRenderer() ?
+      <option key={NONE} value={NONE}>{NONE}</option> :
+      <Option key={NONE} value={NONE}>{NONE}</Option>,
+    );
   }
-  return <select
-  className={styles.select}
+
+  async function handleChange(event: React.ChangeEvent<HTMLSelectElement> | string) {
+    let channelName;
+    if (typeof event === 'object') {
+      channelName = (event.target as HTMLSelectElement).value;
+    } else {
+      channelName = event;
+    }
+
+    if (channelName !== NONE) {
+      outputService.selectedChannel = outputService.getChannel(channelName);
+    }
+  }
+
+  return (
+   isElectronRenderer() ?
+    <NativeSelect
       value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
-      onChange={
-          async (event) => {
-              const channelName = (event.target as HTMLSelectElement).value;
-              if (channelName !== NONE) {
-                outputService.selectedChannel = outputService.getChannel(channelName);
-              }
-          }
-      }>
-      {channelOptionElements}
-  </select>;
+      onChange={handleChange}
+    >{channelOptionElements}</NativeSelect> :
+    <Select
+      value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
+      className={styles.select}
+      size='small'
+      onChange={handleChange}
+    >{channelOptionElements}</Select>
+  );
 });

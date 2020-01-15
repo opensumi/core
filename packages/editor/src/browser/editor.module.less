@@ -66,7 +66,7 @@
       align-items: center;
       padding:0 5px 0 10px;
       background: var(--editorGroupHeader-tabsBackground);
-      border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
+      border-bottom: 1px solid var(--tab-border);
       .editor_action {
         margin-left: 8px;
         width: 14px;
@@ -110,7 +110,7 @@
     &::before {
       content: '';
       height:1px;
-      background: var(--editorGroupHeader-tabsBorder);
+      background: var(--tab-border);
       bottom:0;
       width:100%;
       left:0;
@@ -134,7 +134,7 @@
       cursor: pointer;
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
-      border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
+      border-bottom: 1px solid var(--tab-border);
       z-index: 1;
       div:first-child {
         margin-right:5px;
@@ -175,7 +175,7 @@
           width: 8px;
           height: 8px;
           border-radius: 5px;
-          background-color: var(--tab-inactiveForeground);
+          background-color: var(--kt-dirtyDot-foreground);
         }
       }
       &.kt_editor_tab_current {
@@ -185,7 +185,7 @@
         border-bottom-color: var(--tab-activeBorder);
         .dirty {
           &::before {
-            background-color: var(--tab-activeForeground);
+            background-color: var(--kt-dirtyDot-foreground);
           }
         }
       }

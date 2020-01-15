@@ -73,6 +73,12 @@ export interface IEditorDocumentModel {
 
   updateEncoding(encoding: string): void;
 
+  updateOptions(options: IDocModelUpdateOptions);
+
+}
+
+export interface IDocModelUpdateOptions extends monaco.editor.ITextModelUpdateOptions {
+  detectIndentation?: boolean;
 }
 
 export interface IEditorDocumentModelContentProvider {

@@ -29,6 +29,12 @@ export interface AppConfig {
   isSyncPreference?: boolean;
 
   useExperimentalMultiChannel?: boolean;
+  /**
+   * 自定义客户端 id，是 websocket 服务的唯一标识
+   * 也是传给声明了 backServices 的后端 Service 的唯一标识
+   * 注意保持这个 id 的唯一性
+   */
+  clientId?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

@@ -1,4 +1,4 @@
-import { Event, IJSONSchema, IContextKeyService, IDisposable } from '..';
+import { Event, IJSONSchema, IContextKeyService, IDisposable, ISelection } from '..';
 
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
@@ -24,6 +24,8 @@ export abstract class MonacoService {
                                          options?: monaco.editor.IDiffEditorConstructionOptions, overrides?: {[key: string]: any}): Promise<monaco.editor.IDiffEditor>;
 
   public abstract registerOverride(serviceName: ServiceNames, service: any): void;
+
+  public abstract testTokenize(text: string, languageId: string): void;
 }
 
 export const MonacoContribution = Symbol('MonacoContribution');

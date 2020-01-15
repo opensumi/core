@@ -1,11 +1,10 @@
 // 内置的api类型声明
-import * as vscode from 'vscode';
-import URI, { UriComponents } from 'vscode-uri';
-import { SymbolKind } from './ext-types';
-import { IndentAction } from './ext-types';
 import { IRange } from '@ali/ide-core-common';
-import { SymbolInformation } from 'vscode-languageserver-types';
 import { ISingleEditOperation } from '@ali/ide-editor';
+import * as vscode from 'vscode';
+import { SymbolInformation } from 'vscode-languageserver-types';
+import URI, { UriComponents } from 'vscode-uri';
+import { IndentAction, SymbolKind } from './ext-types';
 
 /**
  * A position in the editor. This interface is suitable for serialization.
@@ -286,6 +285,10 @@ export interface SingleEditOperation {
    * i.e. forceMoveMarkers = true => if `range` is collapsed, all markers at the position will be moved.
    */
   forceMoveMarkers?: boolean;
+  /**
+   * This indicates that this operation only has diff patch
+   */
+  onlyPatch?: boolean;
 }
 
 export type SnippetType = 'internal' | 'textmate';

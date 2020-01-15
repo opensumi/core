@@ -1,6 +1,7 @@
 .wrapper :global(.ant-modal-body) {
   background: var(--kt-modal-background);
   border-color: var(--notifications-border);
+  padding: 24px 24px 10px 24px;
 
   .kticon-info-circle {
     color: var(--kt-modalInfoIcon-foreground);
@@ -13,7 +14,7 @@
 }
 
 .wrapper :global(.ant-modal-close-x) {
-  margin: 10px 10px 0 0;
+  margin: 50% 50% 0 0;
   width: 20px;
   height: 20px;
   line-height: 20px;
@@ -22,6 +23,10 @@
 
 .content {
   display: flex;
+}
+
+.footer {
+  border-top: 1px solid var(--notifications-border);
 }
 
 .icon {

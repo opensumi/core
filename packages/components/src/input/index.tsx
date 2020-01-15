@@ -107,3 +107,71 @@ export interface ITextAreaProps {
 export const TextArea: React.FC<ITextAreaProps> = () => {
   return <textarea name='' id='' cols={30} rows={10}></textarea>;
 };
+
+export enum VALIDATE_TYPE {
+  INFO,
+  WRANING,
+  ERROR,
+}
+
+export interface ValidateMessage {
+  message: string | void;
+  type: VALIDATE_TYPE;
+}
+
+export interface ValidateInputProp extends IInputBaseProps {
+  // void 返回代表验证通过
+  // string 代表有错误信息
+  validate: (value: string) => ValidateMessage;
+  popup?: boolean;
+}
+
+export const ValidateInput: React.FC<ValidateInputProp> = (
+  { className, autoFocus, validate, onChange, popup = true, ...restProps },
+  ref: React.MutableRefObject<HTMLInputElement>,
+) => {
+  const [validateMessage, setValidateMessage] = React.useState<ValidateMessage>();
+
+  const renderValidateMessage = () => {
+    if (validateMessage && validateMessage.message) {
+      return <div
+        className={classNames(
+          'validate-message',
+          validateMessage.type === VALIDATE_TYPE.ERROR ?
+            'validate-error' :
+            validateMessage.type === VALIDATE_TYPE.WRANING ?
+              'validate-warning' :
+              'validate-info',
+          {
+            ['popup']: popup,
+          },
+        )}
+      >
+        {validateMessage.message}
+      </div>;
+    }
+  };
+  const onChangeHandler = (event) => {
+    if (typeof validate === 'function') {
+      const message = validate(event.target.value);
+      setValidateMessage(message);
+    }
+    if (typeof onChange === 'function') {
+      onChange(event);
+    }
+  };
+
+  return <div className={classNames('input-box', { ['popup']: popup })}>
+    <Input
+      type='text'
+      className={classNames(validateMessage && (validateMessage.type === VALIDATE_TYPE.ERROR ? 'validate-error' : validateMessage.type === VALIDATE_TYPE.WRANING ? 'validate-wraning' : 'validate-info'), className)}
+      autoFocus={autoFocus}
+      spellCheck={false}
+      onChange={onChangeHandler}
+      autoCapitalize='off'
+      autoCorrect='off'
+      {...restProps}
+    />
+    {renderValidateMessage()}
+  </div>;
+};

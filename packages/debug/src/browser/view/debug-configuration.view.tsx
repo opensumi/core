@@ -1,12 +1,19 @@
 import * as React from 'react';
 import * as styles from './debug-configuration.module.less';
 import * as cls from 'classnames';
-import { useInjectable, localize } from '@ali/ide-core-browser';
+import { useInjectable, localize, PreferenceService } from '@ali/ide-core-browser';
 import { DebugAction } from '../components/debug-action';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
-import { DebugToolbarView } from './debug-toolbar.view';
-import { Select } from '@ali/ide-core-browser/lib/components/select';
+import { DebugToolbarView, FloatDebugToolbarView} from './debug-toolbar.view';
+import { Select, Option } from '@ali/ide-components';
+import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
+import { isElectronRenderer } from '../../../../core-common/lib';
+
+const style: React.CSSProperties = {
+  width: '100%',
+  margin: '8px 0px',
+};
 
 export const DebubgConfigurationView = observer(() => {
   const {
@@ -19,11 +26,18 @@ export const DebubgConfigurationView = observer(() => {
     openDebugConsole,
     updateConfiguration,
     start,
+    float,
   }: DebugConfigurationService = useInjectable(DebugConfigurationService);
   const addConfigurationLabel = localize('debug.action.add.configuration');
 
-  const setCurrentConfiguration = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.currentTarget.value;
+  const setCurrentConfiguration = (event: React.ChangeEvent<HTMLSelectElement> | string) => {
+    let value: React.ChangeEvent<HTMLSelectElement> | string;
+    if (typeof event === 'object') {
+      value = event.target.value;
+    } else {
+      value = event;
+    }
+
     if (value === '__ADD_CONF__') {
       addConfiguration();
     } else {
@@ -35,24 +49,40 @@ export const DebubgConfigurationView = observer(() => {
   const renderConfigurationOptions = (options) => {
     if (options.length) {
       return options.map((option, index) => {
-        return <option key={index} value={toValue(option)}>{toName(option)}</option>;
+        return isElectronRenderer() ?
+        <option key={index} value={toValue(option)} label={option.configuration.name}>{toName(option)}</option> :
+        <Option key={index} value={toValue(option)} label={option.configuration.name}>{toName(option)}</Option>;
       });
     } else {
-      return <option value='__NO_CONF__'>{localize('debug.action.no.configuration')}</option>;
+      return isElectronRenderer() ?
+        [<option value='__NO_CONF__'>{localize('debug.action.no.configuration')}</option>] :
+        [<Option value='__NO_CONF__'>{localize('debug.action.no.configuration')}</Option>];
     }
+  };
+
+  const renderConfigurationSelect = () => {
+    if (isElectronRenderer()) {
+      return (<NativeSelect value={ currentValue } onChange={ setCurrentConfiguration } className={cls(styles.debug_selection, styles.special_radius)}>
+        {renderConfigurationOptions(configurationOptions)}
+        <option disabled value={addConfigurationLabel.replace(/./g, '-')}>{ addConfigurationLabel.replace(/./g, '-') }</option>
+        <option value='__ADD_CONF__'>{ addConfigurationLabel }</option>
+      </NativeSelect>);
+    }
+
+    return (<Select size='small' value={ currentValue } onChange={ setCurrentConfiguration } className={cls(styles.debug_selection, styles.special_radius)}>
+      {renderConfigurationOptions(configurationOptions)}
+      <Option disabled value={addConfigurationLabel.replace(/./g, '-')}>{ addConfigurationLabel.replace(/./g, '-') }</Option>
+      <Option value='__ADD_CONF__'>{ addConfigurationLabel }</Option>
+    </Select>);
   };
 
   return <div>
     <div className={styles.debug_configuration_toolbar}>
-      <Select value={ currentValue } onChange={ setCurrentConfiguration } className={cls(styles.debug_selection, styles.special_radius)}>
-          { renderConfigurationOptions(configurationOptions) }
-          <option disabled>{ addConfigurationLabel.replace(/./g, '-') }</option>
-          <option value='__ADD_CONF__'>{ addConfigurationLabel }</option>
-        </Select>
+      {renderConfigurationSelect()}
       <DebugAction color={'#62D99D'} icon={'run-debug'} label={localize('debug.action.start')} run={ start }></DebugAction>
       <DebugAction color={'var(--foreground)'} icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
       <DebugAction color={'var(--foreground)'} icon={'terminal'} label={localize('debug.action.debug.console')} run={openDebugConsole}></DebugAction>
     </div>
-    <DebugToolbarView></DebugToolbarView>
+    { float ? <FloatDebugToolbarView /> : <DebugToolbarView /> }
   </div>;
 });

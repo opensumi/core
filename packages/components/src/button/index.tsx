@@ -2,7 +2,7 @@ import * as React from 'react';
 import classNames from 'classnames';
 
 import './style.less';
-import { Icon, IconContext } from '../icon';
+import { Icon } from '../icon';
 
 export type ButtonType = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link' | 'icon';
 
@@ -20,6 +20,8 @@ interface IButtonBasicProps {
   size?: ButtonSize;
   disabled?: boolean;
   block?: boolean;
+  more?: boolean;
+  moreIconClass?: string;
 }
 
 export type ButtonProps = {
@@ -46,6 +48,8 @@ export const Button: React.FC<ButtonProps> = ({
   block,
   iconClass,
   icon,
+  more,
+  moreIconClass,
   ...otherProps
 }) => {
   const classes = classNames('kt-button', className, {
@@ -65,9 +69,10 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button {...otherProps} disabled={disabled} className={classes} type={htmlType} onClick={(loading || disabled) ? noop : onClick}>
-      {loading && <LoadingCircle />}
+      {(loading && type !== 'link') && <LoadingCircle />}
       {iconNode && iconNode}
       {children}
+      {more && <Icon iconClass={moreIconClass} className='kt-button-secondary-more' />}
     </button>
   );
 };

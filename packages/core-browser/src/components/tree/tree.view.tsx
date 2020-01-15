@@ -174,6 +174,10 @@ export const TreeContainer = (
     return !!node.isTemporary;
   });
 
+  const isComplex = !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
+    return ExpandableTreeNode.is(node);
+  });
+
   const innerContextMenuHandler = (node, event: React.MouseEvent) => {
     event.stopPropagation();
     event.preventDefault();
@@ -441,6 +445,7 @@ export const TreeContainer = (
           draggable={draggable}
           foldable={foldable}
           isEdited={isEdited}
+          isComplex={isComplex}
           actions={node.actions || actions}
           replace={node.replace || replace}
           alwaysShowActions={alwaysShowActions}

@@ -3,7 +3,7 @@ import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions } from '../common';
 import { IRange, MonacoService, PreferenceService, corePreferenceSchema } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
-import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent } from './doc-model/types';
+import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
 import { Emitter } from '@ali/vscode-jsonrpc';
 import { IEditorFeatureRegistry } from './types';
 import { EditorFeatureRegistryImpl } from './feature';
@@ -35,6 +35,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   public onCodeEditorCreate = this._onCodeEditorCreate.event;
   public onDiffEditorCreate = this._onDiffEditorCreate.event;
 
+  @Autowired(IEditorDocumentModelService)
+  documentModelService: IEditorDocumentModelService;
+
   constructor() {
     super();
     this.preferenceService.onPreferencesChanged((e) => {
@@ -43,6 +46,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
         const optionsDelta = getConvertedMonacoOptions(this.preferenceService, changedEditorKeys);
         this._editors.forEach((editor) => {
           editor.updateOptions(optionsDelta.editorOptions, optionsDelta.modelOptions);
+        });
+        this.documentModelService.getAllModels().forEach((m) => {
+          m.updateOptions(optionsDelta.modelOptions);
         });
         this._diffEditors.forEach((editor) => {
           (editor as BrowserDiffEditor).updateDiffOptions(optionsDelta.diffOptions);

@@ -55,16 +55,21 @@ export class EditorStatusBarService extends WithEventBus {
       this.statusBar.removeElement('editor-status-language');
       this.statusBar.removeElement('editor-status-encoding');
       this.statusBar.removeElement('editor-status-eol');
+      this.statusBar.removeElement('editor-status-space');
       return;
     }
     let languageId = '';
     let encoding = '';
     let eol = '';
+    let insertSpaces: boolean = false;
+    let tabSize = 2;
     const documentModel = editor.currentDocumentModel;
     if (documentModel) {
       languageId = documentModel.languageId!;
       encoding = documentModel.encoding;
       eol = documentModel.eol;
+      insertSpaces = documentModel.getMonacoModel()!.getOptions().insertSpaces;
+      tabSize = documentModel.getMonacoModel()!.getOptions().tabSize;
     }
     const eolText = eol === '\n' ? 'LF' : 'CRLF';
     const language = this.languageService.getLanguage(languageId);
@@ -87,6 +92,13 @@ export class EditorStatusBarService extends WithEventBus {
       alignment: StatusBarAlignment.RIGHT,
       priority: 3,
       command: EDITOR_COMMANDS.CHANGE_EOL.id,
+    });
+    this.statusBar.addElement('editor-status-space', {
+      text: (insertSpaces ? localize('status-bar.label.tabType.space') : localize('status-bar.label.tabType.tab')) + ': ' + tabSize,
+      alignment: StatusBarAlignment.RIGHT,
+      priority: 4,
+      // TODO 添加快捷设置Tab能力
+      command: undefined,
     });
   }
 
