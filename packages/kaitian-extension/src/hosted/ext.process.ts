@@ -18,7 +18,6 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
   const { getRPCService } = initRPCService(extCenter);
   const extConnection = net.createConnection(argv['kt-process-sockpath']);
   let whenReadySendResolve;
-
   const whenReadySend = new Promise((resolve) => {
     whenReadySendResolve = resolve;
   });
