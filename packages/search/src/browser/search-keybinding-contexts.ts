@@ -16,6 +16,6 @@ export class SearchKeybindingContext implements KeybindingContext {
   readonly id: string = SearchBindingContextIds.searchInputFocus;
 
   isEnabled(): boolean {
-    return this.searchBrowserService.UIState.isSearchFocus;
+    return !!(document.activeElement && document.activeElement.id === 'search-input-field');
   }
 }
