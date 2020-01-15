@@ -19,6 +19,7 @@ export * from './select';
 export * from './modal';
 export * from './icon';
 export * from './editor';
+export * from './badge';
 // blocks
 export * from './actionbar';
 
