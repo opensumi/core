@@ -71,7 +71,7 @@ export const Output = observer(() => {
         style={style}
         data={renderLines(rawLines)}
         className={styles.content}
-        keyProp={'idx'}
+        keyProp={'id'}
         isLoading={false}
         isDrained={false}
         sliceSize={30}
