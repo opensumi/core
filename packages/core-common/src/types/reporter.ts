@@ -1,5 +1,6 @@
 export enum REPORT_NAME {
   ACTIVE_EXTENSION = 'activateExtension',
+  RUNTIME_ERROR_EXTENSION = 'runtimeErrorExtension',
   LOAD_EXTENSION_MAIN = 'loadExtensionMain',
   PROVIDE_COMPLETION_ITEMS = 'provideCompletionItems',
   RESOLVE_COMPLETION_ITEM = 'resolveCompletionItem',

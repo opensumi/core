@@ -256,6 +256,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           const extendModuleExportsData = await extendModule.activate(context);
           extendExports = extendModuleExportsData;
         } catch (e) {
+          this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.name);
           this.logger.log('activateExtension extension.extendConfig error ');
           this.logger.log(e);
           getLogger().error(e);
