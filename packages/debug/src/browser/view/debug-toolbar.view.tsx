@@ -4,13 +4,13 @@ import * as styles from './debug-configuration.module.less';
 import * as cls from 'classnames';
 import { Injectable } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { useInjectable, localize, getIcon, ThrottledDelayer, isElectronRenderer } from '@ali/ide-core-browser';
+import { useInjectable, localize, getIcon, isElectronRenderer, IClientApp } from '@ali/ide-core-browser';
 import { DebugAction } from '../components/debug-action';
 import { observer } from 'mobx-react-lite';
 import { DebugToolbarService } from './debug-toolbar.service';
 import { DebugState, DebugSession } from '../debug-session';
 import { isExtensionHostDebugging } from '../debugUtils';
-import { Select, Option } from '@ali/ide-components';
+import { Select } from '@ali/ide-components';
 
 @Injectable()
 class FloatController {
@@ -140,12 +140,12 @@ export const DebugToolbarView = observer(() => {
 });
 
 export const FloatDebugToolbarView = observer(() => {
-  const mainDiv = document.getElementById('main');
+  const app = useInjectable<IClientApp>(IClientApp);
   const controller = useInjectable<FloatController>(FloatController);
   const {
     state,
   }: DebugToolbarService = useInjectable(DebugToolbarService);
-  if (mainDiv && state) {
+  if (app.container && state) {
     return ReactDOM.createPortal(
       <div
         style={ { pointerEvents: controller.enable ? 'all' : 'none' } }
@@ -165,7 +165,7 @@ export const FloatDebugToolbarView = observer(() => {
           <DebugToolbarView />
         </div>
       </div>,
-      mainDiv,
+      app.container,
     );
   } else {
     return null;
