@@ -12,6 +12,7 @@ export const DebugVariableView = observer(({
   const {
     nodes,
     onSelect,
+    onContextMenu,
   }: DebugVariableService = useInjectable(DebugVariableService);
   const scrollContainerStyle = {
     width: viewState.width,
@@ -21,6 +22,7 @@ export const DebugVariableView = observer(({
     <SourceTree
       nodes={nodes}
       onSelect={onSelect}
+      onContextMenu={onContextMenu}
       outline={false}
       scrollContainerStyle={scrollContainerStyle}
     />

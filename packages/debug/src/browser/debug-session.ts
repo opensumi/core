@@ -586,6 +586,13 @@ export class DebugSession implements IDisposable {
     }
   }
 
+  async setVariableValue(args: DebugProtocol.SetVariableArguments): Promise<DebugProtocol.SetVariableResponse | void> {
+    if (this.capabilities.supportsSetVariable) {
+      const res = await this.sendRequest('setVariable', args);
+      return res;
+    }
+  }
+
   sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
     return this.connection.sendRequest(command, args);
   }

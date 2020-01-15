@@ -3,7 +3,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 import { observable, action } from 'mobx';
 import { DebugSessionOptions } from '../../common';
-import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
+import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, PreferenceService } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugViewModel } from './debug-view-model';
 import { IDebugSessionManager } from '../../common/debug-session';
@@ -32,6 +32,9 @@ export class DebugConfigurationService {
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   constructor() {
     this.init();
   }
@@ -39,13 +42,24 @@ export class DebugConfigurationService {
   @observable
   currentValue: string = '__NO_CONF__';
 
+  @observable
+  float: boolean = true;
+
   @observable.shallow
   configurationOptions: DebugSessionOptions[] = this.debugConfigurationManager.all || [];
 
   async init() {
+    const name = 'debug.toolbar.float';
     this.debugConfigurationManager.onDidChange(() => {
       this.updateConfigurationOptions();
     });
+    this.preferenceService.onPreferenceChanged((event) => {
+      const { preferenceName, newValue } = event;
+      if (preferenceName === name) {
+        this.float = newValue;
+      }
+    });
+    this.float = !!this.preferenceService.get<boolean>(name);
     this.currentValue = await this.getCurrentConfiguration() || '__NO_CONF__';
   }
 

@@ -15,21 +15,35 @@ export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
+  // 缩进步长
   leftPadding?: number;
+  // 默认左边距
   defaultLeftPadding?: number;
+  // 选择事件
   onSelect?: any;
+  // 箭头点击事件
   onTwistieClick?: any;
+  // 右键事件
   onContextMenu?: any;
+  // 拖拽事件
   onDragStart?: any;
   onDragEnter?: any;
   onDragOver?: any;
   onDragLeave?: any;
   onDrag?: any;
+  // 验证函数
   validate?: any;
+  // 是否可拖拽
   draggable?: boolean;
+  // 是否处于编辑状态
   isEdited?: boolean;
+  // 是否为复杂类型的Tree组件，即包含折叠节点
+  isComplex?: boolean;
+  // 节点按钮
   actions?: TreeViewAction[];
+  // 高亮文本
   replace?: string;
+  // 命令处理函数
   commandActuator?: CommandActuator;
 }
 
@@ -131,6 +145,7 @@ export const TreeContainerNode = (
     draggable,
     foldable,
     isEdited,
+    isComplex,
     actions = [],
     alwaysShowActions,
     commandActuator,
@@ -244,7 +259,7 @@ export const TreeContainerNode = (
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: ExpandableTreeNode.is(node) ? `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0) + 3}px`,
+    paddingLeft: ExpandableTreeNode.is(node) ? `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (node.depth || 0) * (leftPadding || 0) + (isComplex ? 5 : 0)}px`,
     ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
@@ -441,7 +456,7 @@ export const TreeContainerNode = (
   const itemStyle = {
     height: itemLineHeight,
     lineHeight: `${itemLineHeight}px`,
-    paddingLeft: ExpandableTreeNode.is(node) ? 0 : foldable ? '14px' : 0,
+    paddingLeft: ExpandableTreeNode.is(node) ? 0 : foldable && isComplex ? '14px' : 0,
   } as React.CSSProperties;
 
   const titleStyle = {
@@ -455,9 +470,6 @@ export const TreeContainerNode = (
       return <div className={styles.treenode_title} style={titleStyle}>{node.title}</div>;
     }
   };
-  const foldNodeOffsetStyle = {
-    width: ExpandableTreeNode.is(node) && foldable ? 'calc(100% - 68px)' : 'calc(100% - 50px)',
-  } as React.CSSProperties;
 
   return (
     <div
@@ -492,7 +504,6 @@ export const TreeContainerNode = (
           {renderIcon(node)}
           <div
             className={isEdited ? styles.treenode_edit_wrap : isString(node.name) ? styles.treenode_overflow_wrap : styles.treenode_flex_wrap}
-            style={foldNodeOffsetStyle}
           >
             {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
             {renderDescription(node, replace)}
