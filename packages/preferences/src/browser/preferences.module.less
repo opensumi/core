@@ -3,6 +3,7 @@
   height:100%;
   font-size: 12px;
   overflow: hidden;
+  margin: 16px 64px 24px 16px;
   .preference_noResults{
     font-size:13px;
     padding:20px;
@@ -24,13 +25,13 @@
         padding:10px;
         border-bottom: 1px solid transparent;
         z-index: 1;
-        color: var(--titleBar-inactiveForeground);
+        color: var(--activityBar-inactiveForeground);
         &:hover {
-          color: var(--titleBar-activeForeground);
+          color: var(--activityBar-activeForeground);
         }
         &.activated {
-          border-bottom-color: var(--titleBar-activeForeground);
-          color: var(--titleBar-activeForeground);
+          border-bottom-color: var(--activityBar-activeBorder);
+          color: var(--activityBar-activeForeground);
         }
       }
     }
@@ -131,8 +132,8 @@
         }
       }
       .desc {
-        font-style: italic;
         opacity: 0.75;
+        color: var(--descriptionForeground);
         margin-bottom: 5px;
       }
       .control_wrap {
