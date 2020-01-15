@@ -264,7 +264,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
   }
 
   async init() {
-    await this.rpcProtocol.whenReady;
+    await this.rpcProtocol.whenReadySend;
     this.resourceRoots = await this._proxy.$getWebviewResourceRoots();
   }
 
