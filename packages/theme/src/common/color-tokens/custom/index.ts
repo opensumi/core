@@ -1,5 +1,5 @@
 import { localize } from '@ali/ide-core-common';
-import { registerColor, lighten, darken, transparent } from '../../color-registry';
+import { registerColor, lighten, darken, transparent, TAB_INACTIVE_BACKGROUND } from '../../color-registry';
 import { PANEL_BORDER, PANEL_BACKGROUND, PANEL_INACTIVE_TITLE_FOREGROUND } from '../panel';
 import { buttonForeground } from '../button';
 import { inputValidationErrorBackground, inputOptionActiveBorder } from '../input';
@@ -45,9 +45,9 @@ export const ktNotificationsInfoIcon = registerColor('kt.notificationsCloseIcon.
 
 /* --- panel --- */
 export const ktPanelTitleBackground = registerColor('kt.panelTitle.background', {
-  dark: ACTIVITY_BAR_BACKGROUND,
-  light: ACTIVITY_BAR_BACKGROUND,
-  hc: ACTIVITY_BAR_BACKGROUND,
+  dark: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
+  light: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
+  hc: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
 }, localize('panelTitle.background', 'Panel title background color. Panels are shown below the editor area and contain views like output and integrated terminal.'));
 
 export const ktPanelTabInactiveForeground = registerColor('kt.panelTab.inactiveForeground', {
@@ -63,9 +63,9 @@ export const ktPanelTabActiveForeground = registerColor('kt.panelTab.activeForeg
 }, localize('panelTab.activeForeground', 'Panel tab active forground color.'));
 
 export const ktPanelTabInactiveBackground = registerColor('kt.panelTab.inactiveBackground', {
-  dark: ACTIVITY_BAR_BACKGROUND,
-  light: ACTIVITY_BAR_BACKGROUND,
-  hc: ACTIVITY_BAR_BACKGROUND,
+  dark: TAB_INACTIVE_BACKGROUND,
+  light: TAB_INACTIVE_BACKGROUND,
+  hc: TAB_INACTIVE_BACKGROUND,
 }, localize('panelTab.inactiveBackground', 'Panel tab background color.'));
 
 export const ktPanelTabActiveBackground = registerColor('kt.panelTab.activeBackground', {
