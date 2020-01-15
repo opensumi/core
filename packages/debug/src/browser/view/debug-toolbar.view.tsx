@@ -10,7 +10,7 @@ import { observer } from 'mobx-react-lite';
 import { DebugToolbarService } from './debug-toolbar.service';
 import { DebugState, DebugSession } from '../debug-session';
 import { isExtensionHostDebugging } from '../debugUtils';
-import { Select } from '@ali/ide-components';
+import { Select, Option } from '@ali/ide-components';
 
 @Injectable()
 class FloatController {
