@@ -17,6 +17,7 @@ import * as copy from 'copy-to-clipboard';
 import { FormattingSelector } from './format/formatterSelect';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { SUPPORTED_ENCODINGS } from './doc-model/encoding';
+import { EditorTopPaddingContribution } from './view/topPadding';
 
 interface ResourceArgs {
   group: EditorGroup;
@@ -836,6 +837,8 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
       'editorFocusChange': localize('editor.autoSave.enum.editorFocusChange'),
       'windowLostFocus': localize('editor.autoSave.enum.windowLostFocus'),
     });
+    registry.registerEditorFeatureContribution(new EditorTopPaddingContribution());
+
   }
 
 }
