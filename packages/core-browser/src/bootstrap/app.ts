@@ -143,6 +143,7 @@ export class ClientApp implements IClientApp {
       layoutComponent: opts.layoutComponent,
       isSyncPreference: opts.isSyncPreference,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
+      clientId: opts.clientId,
     };
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
@@ -182,7 +183,7 @@ export class ClientApp implements IClientApp {
 
         await createClientConnection2(this.injector, this.modules, this.connectionPath, () => {
           this.onReconnectContributions();
-        }, this.connectionProtocols, this.config.useExperimentalMultiChannel);
+        }, this.connectionProtocols, this.config.useExperimentalMultiChannel, this.config.clientId);
 
         this.logger = this.getLogger();
          // 回写需要用到打点的 Logger 的地方

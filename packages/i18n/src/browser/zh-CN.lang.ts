@@ -256,12 +256,14 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': '控制调试视图的位置。',
     'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
     'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
+    'preference.debug.toolbar.float': '浮层模式',
     'preference.files.associations.title': '文件关联',
     'preference.files.associations': '配置语言的文件关联 (如: "*.extension": "html")。这些关联的优先级高于已安装语言的默认关联。',
     'preference.explorer.fileTree.indent': '配置资源管理器下每个文件树节点的缩进',
     'preference.explorer.fileTree.baseIndent': '配置资源管理器下整个文件树的缩进',
     'preference.explorer.fileTree.indent.title': '资源管理器 -> 文件树缩进',
     'preference.explorer.fileTree.baseIndent.title': '资源管理器 -> 文件树基础缩进',
+    'preference.debug.toolbar.float.title': '运行与调试 -> 浮层模式',
 
     // 终端
     'preference.terminal.type': '默认终端类型',
@@ -437,6 +439,9 @@ export const localizationBundle = {
     'terminal.menu.clearGroups': '清空所有日志',
     'terminal.menu.selectType': '默认终端类型',
     'terminal.menu.moreSettings': '更多设置',
+
+    'deugger.menu.setValue': '设置变量',
+    'deugger.menu.setValue.param': '请输入你要改变变量的值',
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',

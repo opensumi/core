@@ -358,7 +358,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     if (!this._handlers[command]) {
       // 对于插件package.json中注册的command，会没有handler，
       // 但是它应该可用，这样才能让插件在未启动的情况下点击菜单
-      return true; 
+      return true;
     }
     return this.getActiveHandler(command, ...args) !== undefined;
   }
@@ -372,7 +372,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     if (!this._handlers[command]) {
       // 对于插件package.json中注册的command，会没有handler，
       // 但是它应该可见，这样才能让插件在未启动的情况下显示菜单
-      return true; 
+      return true;
     }
     return this.getVisibleHandler(command, ...args) !== undefined;
   }

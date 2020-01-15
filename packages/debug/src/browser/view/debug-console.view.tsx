@@ -6,7 +6,7 @@ import { ViewState } from '@ali/ide-core-browser';
 import { useInjectable, KeyCode, Key, TreeNode, ExpandableTreeNode } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
 import { VariablesTree, Input, RecycleList } from '@ali/ide-core-browser/lib/components';
-import { DebugVariable } from '../console/debug-console-items';
+import { DebugVariable, ExpressionItem } from '../console/debug-console-items';
 
 export const DebugConsoleView = observer(({
   viewState,
@@ -54,7 +54,7 @@ export const DebugConsoleView = observer(({
         };
       }
       const itemLineHeight = 20;
-      if (data instanceof DebugVariable) {
+      if (data instanceof DebugVariable || data instanceof ExpressionItem) {
         return <div>
           <VariablesTree
             node={data}

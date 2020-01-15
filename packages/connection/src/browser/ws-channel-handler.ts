@@ -22,12 +22,13 @@ export class WSChanneHandler {
   private channelMap: Map<number | string, WSChannel> = new Map();
   // FIXME: 这里的默认值和类型需要修复一下 @上坡
   private logger = console;
-  public clientId: string = `CLIENT_ID_${shorid.generate()}`;
+  public clientId: string;
   private heartbeatMessageTimer: NodeJS.Timeout;
   private reporterService: IReporterService;
 
-  constructor(public wsPath: string, logger: any, public protocols?: string[], useExperimentalMultiChannel?: boolean) {
+  constructor(public wsPath: string, logger: any, public protocols?: string[], useExperimentalMultiChannel?: boolean, clientId?: string) {
     this.logger = logger || this.logger;
+    this.clientId = clientId || `CLIENT_ID_${shorid.generate()}`;
     this.connection = useExperimentalMultiChannel ? new MultiWs(wsPath, protocols, this.clientId) as any : new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
   setLogger(logger: any) {

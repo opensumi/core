@@ -310,6 +310,8 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
     'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
     'preference.debug.allowBreakpointsEverywhere': 'Allow setting breakpoints in any file.',
+    'preference.debug.toolbar.float.title': 'Run And Debug -> Float Mode',
+    'preference.debug.toolbar.float': 'Float mode',
 
     'preference.tab.name': 'Settings',
     'preference.noResults': 'No Setting Found Containing \'{0}\'',
@@ -385,6 +387,9 @@ export const localizationBundle = {
     'terminal.menu.clearGroups': 'Clear All Terminals',
     'terminal.menu.selectType': 'Default Terminal Type',
     'terminal.menu.moreSettings': 'More Settings',
+
+    'deugger.menu.setValue': 'Set Value',
+    'deugger.menu.setValue.param': 'Please input the value of this variable',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',

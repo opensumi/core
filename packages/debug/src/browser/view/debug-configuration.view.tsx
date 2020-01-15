@@ -1,11 +1,11 @@
 import * as React from 'react';
 import * as styles from './debug-configuration.module.less';
 import * as cls from 'classnames';
-import { useInjectable, localize } from '@ali/ide-core-browser';
+import { useInjectable, localize, PreferenceService } from '@ali/ide-core-browser';
 import { DebugAction } from '../components/debug-action';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
-import { DebugToolbarView } from './debug-toolbar.view';
+import { DebugToolbarView, FloatDebugToolbarView } from './debug-toolbar.view';
 import { Select } from '@ali/ide-core-browser/lib/components/select';
 
 export const DebubgConfigurationView = observer(() => {
@@ -19,6 +19,7 @@ export const DebubgConfigurationView = observer(() => {
     openDebugConsole,
     updateConfiguration,
     start,
+    float,
   }: DebugConfigurationService = useInjectable(DebugConfigurationService);
   const addConfigurationLabel = localize('debug.action.add.configuration');
 
@@ -53,6 +54,6 @@ export const DebubgConfigurationView = observer(() => {
       <DebugAction color={'var(--foreground)'} icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
       <DebugAction color={'var(--foreground)'} icon={'terminal'} label={localize('debug.action.debug.console')} run={openDebugConsole}></DebugAction>
     </div>
-    <DebugToolbarView></DebugToolbarView>
+    { float ? <FloatDebugToolbarView /> : <DebugToolbarView /> }
   </div>;
 });
