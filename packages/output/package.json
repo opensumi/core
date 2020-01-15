@@ -24,6 +24,7 @@
     "@ali/ide-core-node": "1.7.1",
     "@ali/ide-main-layout": "1.7.1",
     "@ali/ide-theme": "1.7.1",
+    "@ali/ide-components": "1.7.1",
     "anser": "^1.4.9",
     "escape-carriage": "^1.3.0"
   },

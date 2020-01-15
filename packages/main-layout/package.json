@@ -22,7 +22,8 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-core-common": "1.7.1"
+    "@ali/ide-core-common": "1.7.1",
+    "@ali/ide-components": "1.7.1"
   },
   "devDependencies": {
     "@ali/ide-activation-event": "1.7.1",

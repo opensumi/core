@@ -14,7 +14,7 @@
     padding-left: 20px;
     line-height: 1;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     height: 14px;
     vertical-align: middle;
     display: inline-block;
@@ -55,6 +55,7 @@
     height: 14px;
     border-style: solid;
     border-width: 1px;
+    text-align: center;
     border-color: var(--kt-checkbox-selectionBackground);
     border-radius: 2px;
     color: var(--kt-checkbox-selectionForeground);
@@ -93,7 +94,6 @@
 .large-checkbox-wrap {
   [type="checkbox"]:not(:checked)+label,
   [type="checkbox"]:checked+label {
-    width: 16px;
     height: 16px;
     vertical-align: middle;
   }
@@ -104,13 +104,13 @@
     position: absolute;
     left: 0;
     top: -1px;
+    width: 16px;
     height: 16px;
-    font-size: 16px;
   }
 
   [type="checkbox"]:not(:checked)+label,
   [type="checkbox"]:checked+label {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   [type="checkbox"]:not(:checked)+label::after,

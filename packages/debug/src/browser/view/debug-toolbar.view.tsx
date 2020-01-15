@@ -4,12 +4,13 @@ import * as styles from './debug-configuration.module.less';
 import * as cls from 'classnames';
 import { Injectable } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { useInjectable, localize, getIcon, ThrottledDelayer } from '@ali/ide-core-browser';
+import { useInjectable, localize, getIcon, ThrottledDelayer, isElectronRenderer } from '@ali/ide-core-browser';
 import { DebugAction } from '../components/debug-action';
 import { observer } from 'mobx-react-lite';
 import { DebugToolbarService } from './debug-toolbar.service';
 import { DebugState, DebugSession } from '../debug-session';
 import { isExtensionHostDebugging } from '../debugUtils';
+import { Select, Option } from '@ali/ide-components';
 
 @Injectable()
 class FloatController {
@@ -85,22 +86,33 @@ export const DebugToolbarView = observer(() => {
 
   const renderSessionOptions = (sessions: DebugSession[]) => {
     return sessions.map((session: DebugSession) => {
-      return <option key={ session.id } value={ session.id }>{ session.label }</option>;
+      if (isElectronRenderer()) {
+        return <option key={ session.id } value={ session.id }>{ session.label }</option>;
+      }
+      return <Option key={ session.id } label={session.label} value={ session.id }>{ session.label }</Option>;
     });
   };
 
   const renderSelections = (sessions: DebugSession[]) => {
     if (sessionCount > 1) {
       return <div className={ cls(styles.debug_selection) }>
-        <select value={ currentSessionId } onChange={ setCurrentSession }>
+        {isElectronRenderer() ?
+          <select value={ currentSessionId } onChange={ setCurrentSession }>
           { renderSessionOptions(sessions) }
-        </select>
+        </select> :
+        <Select value={ currentSessionId } onChange={ setCurrentSession }>
+        { renderSessionOptions(sessions) }
+      </Select>}
       </div>;
     }
   };
 
-  const setCurrentSession = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.currentTarget.value;
+  const setCurrentSession = (event: React.ChangeEvent<HTMLSelectElement> | string | number) => {
+    let value = event;
+    if (isElectronRenderer()) {
+      value = (event as React.ChangeEvent<HTMLSelectElement>).target.value;
+    }
+
     if (!sessions) {
       return;
     }
