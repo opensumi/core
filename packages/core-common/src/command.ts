@@ -1,7 +1,7 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { IDisposable, Disposable } from './disposable';
-import { ContributionProvider } from './contribution-provider';
+import { Autowired, Injectable } from '@ali/common-di';
 import { MaybePromise } from './async';
+import { ContributionProvider } from './contribution-provider';
+import { Disposable, IDisposable } from './disposable';
 import { replaceLocalizePlaceholder } from './localize';
 
 type InterceptorFunction = (result: any) => MaybePromise<any>;

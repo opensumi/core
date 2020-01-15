@@ -29,6 +29,7 @@
     "classnames": "^2.2.6",
     "clsx": "^1.0.4",
     "copy-to-clipboard": "^3.2.0",
+    "diff": "^4.0.1",
     "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",
     "jsonc-parser": "^2.1.0",
@@ -48,11 +49,11 @@
     "react-perfect-scrollbar": "^1.5.2",
     "react-sticky": "^6.0.3",
     "reconnecting-websocket": "^4.2.0",
+    "resize-observer-polyfill": "1.5.1",
     "socket.io-client": "^2.2.0",
     "static-resource": "^0.1.0",
     "vscode-debugprotocol": "^1.35.0",
     "vscode-languageserver-protocol": "^3.14.1",
-    "vscode-textmate": "4.3.0",
-    "resize-observer-polyfill": "1.5.1"
+    "vscode-textmate": "4.3.0"
   }
 }
