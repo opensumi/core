@@ -568,16 +568,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    */
   async layoutTerminalClient(widgetId: string) {
     const client = this._clientsMap.get(widgetId);
-
     if (client && this._isActivated() &&
       this.currentGroup && this.currentGroup.widgetsMap.has(widgetId)) {
       if (client.notReadyToShow) {
-        /**
-         * 这个 settimeout 的目的是等待 dom 被正常渲染，
-         * 由于 xterm 的高宽 fit 强烈依赖父节点的渲染，
-         * 所以在这个等待 50ms
-         */
-         const delayer = new Delayer<Promise<void>>(50);
+         const delayer = new Delayer<Promise<void>>(0);
          await delayer.trigger(async () => {
           client.hide();
           await client.show();
