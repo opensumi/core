@@ -158,7 +158,7 @@ export const FloatDebugToolbarView = observer(() => {
           className={ styles.debug_toolbar_wrapper }
         >
           <div
-            className={ cls(getIcon('ellipsis'), styles.debug_toolbar_drag) }
+            className={ cls(getIcon('drag'), styles.debug_toolbar_drag) }
             onMouseDown={ (e) => controller.onMouseDown(e) }
             onMouseMove={ (e) => controller.onMouseMove(e) }
           ></div>
