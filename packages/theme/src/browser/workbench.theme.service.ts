@@ -170,6 +170,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.eventBus.on(ThemeChangedEvent, (e) => {
       this.themeChangeEmitter.fire( e.payload.theme);
     });
+    // FIXME @kuiwu 工作区设置生效时，全局设置改变时也应该有事件发出来
     this.preferenceService.onPreferenceChanged( (e) => {
       if (e.preferenceName === 'general.theme') {
         this.applyTheme(this.preferenceService.get<string>('general.theme')!);

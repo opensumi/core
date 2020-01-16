@@ -50,7 +50,7 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
         const defaultSelected = options.findIndex((opt) => opt.value === this.themeService.currentThemeId);
         const themeId = await this.quickPickService.show(options, {selectIndex: () => defaultSelected});
         if (themeId) {
-          await this.preferenceService.set('general.theme', themeId, PreferenceScope.User);
+          await this.preferenceService.set('general.theme', themeId, PreferenceScope.Workspace);
         }
       },
     });
@@ -65,7 +65,7 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
         const defaultSelected = options.findIndex((opt) => opt.value === this.iconService.currentThemeId);
         const themeId = await this.quickPickService.show(options, {selectIndex: () => defaultSelected});
         if (themeId) {
-          await this.preferenceService.set('general.icon', themeId, PreferenceScope.User);
+          await this.preferenceService.set('general.icon', themeId, PreferenceScope.Workspace);
         }
       },
     });
