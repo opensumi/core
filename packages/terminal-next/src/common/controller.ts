@@ -26,7 +26,7 @@ export interface ITerminalController {
   snapshot(index: number): string;
   themeBackground: string;
 
-  addWidget(client?: any): void;
+  addWidget(client?: any): string;
   focusWidget(widgetId: string): void;
   removeWidget(widgetId: string): void;
   clearCurrentWidget(): void;
@@ -38,7 +38,7 @@ export interface ITerminalController {
 
   drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean, meta?: string): Promise<void>;
   retryTerminalClient(widgetId: string): Promise<void>;
-  layoutTerminalClient(widgetId: string): void;
+  layoutTerminalClient(widgetId: string): Promise<void>;
   toJSON(): { groups: any[] };
 
   terminals: TerminalInfo[];

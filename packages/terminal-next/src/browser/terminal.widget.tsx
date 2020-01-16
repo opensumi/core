@@ -22,13 +22,13 @@ export default ({ id, dynamic, error, show }: IProps) => {
     if (content.current) {
       controller.drawTerminalClient(content.current, id)
         .then(() => {
-          controller.layoutTerminalClient(id);
-          setTimeout(() => {
-            const client = controller.getCurrentClient<TerminalClient>();
-            if (client && controller.isFocus && client.autofocus) {
-              client.focus();
-            }
-          }, 100);
+          controller.layoutTerminalClient(id)
+            .then(() => {
+              const client = controller.getCurrentClient<TerminalClient>();
+              if (client && controller.isFocus && client.autofocus) {
+                client.focus();
+              }
+            });
         });
     }
   }, []);
