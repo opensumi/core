@@ -10,6 +10,7 @@ export enum REPORT_NAME {
   MEASURE = 'measure',
   FORMAT_ON_SAVE_TIMEOUT_ERROR = 'formatOnSaveTimeoutError',
   FORMAT_ON_SAVE = 'formatOnSave',
+  NOT_FOUND_COMMAND = 'notFoundCommand',
 }
 
 export enum REPORT_HOST {
