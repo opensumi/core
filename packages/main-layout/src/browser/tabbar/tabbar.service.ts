@@ -268,6 +268,9 @@ export class TabbarService extends WithEventBus {
       execute: ({containerId}: {containerId: string}) => {
         this.doToggleTab(containerId);
       },
+      isEnabled: () => {
+        return this.visibleContainers.length > 1;
+      },
     });
     return commandId;
   }
@@ -284,6 +287,10 @@ export class TabbarService extends WithEventBus {
       isToggled: () => {
         const state = this.getContainerState(containerId);
         return !state.hidden;
+      },
+      isEnabled: () => {
+        const state = this.getContainerState(containerId);
+        return state.hidden || this.visibleContainers.length !== 1;
       },
     });
     return commandId;

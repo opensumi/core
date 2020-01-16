@@ -189,6 +189,9 @@ export class AccordionService extends WithEventBus {
       execute: ({viewId}: {viewId: string}) => {
         this.doToggleView(viewId);
       },
+      isEnabled: () => {
+        return this.visibleViews.length > 1;
+      },
     });
     return commandId;
   }
@@ -204,6 +207,10 @@ export class AccordionService extends WithEventBus {
       isToggled: () => {
         const state = this.getViewState(viewId);
         return !state.hidden;
+      },
+      isEnabled: () => {
+        const state = this.getViewState(viewId);
+        return state.hidden || this.visibleViews.length > 1;
       },
     });
     return commandId;
