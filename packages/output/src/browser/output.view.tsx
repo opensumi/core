@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, localize, CommandService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { useInjectable, localize, CommandService, EDITOR_COMMANDS, isElectronRenderer } from '@ali/ide-core-browser';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { OutputService } from './output.service';
@@ -9,7 +9,6 @@ import * as styles from './output.module.less';
 import { InfinityList } from '@ali/ide-core-browser/lib/components';
 
 import Ansi from '../common/ansi';
-import { isElectronRenderer } from '../../../core-common/lib';
 
 const style: React.CSSProperties = {
   whiteSpace: 'normal',
