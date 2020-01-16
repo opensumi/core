@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, Deferred, URI } from '@ali/ide-core-node';
+import { isWindows, Deferred, URI, AppConfig } from '@ali/ide-core-node';
 import { IStoragePathServer, StoragePaths } from '../common';
 import { IFileService } from '@ali/ide-file-service';
 
@@ -20,6 +20,11 @@ export class StoragePathServer implements IStoragePathServer {
   @Autowired(IFileService)
   private readonly fileSystem: IFileService;
 
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
+  private storageDirName: string;
+
   constructor() {
     this.deferredWorkspaceStoragePath = new Deferred<string>();
     this.deferredGlobalStoragePath = new Deferred<string>();
@@ -27,9 +32,9 @@ export class StoragePathServer implements IStoragePathServer {
     this.globalStoragePathInitialized = false;
   }
 
-  async provideWorkspaceStorageDirPath(): Promise<string | undefined> {
-    const storagePathString = await this.getBaseStorageDirPath();
-    const uriString = URI.file(storagePathString).resolve(StoragePaths.GLOBAL_STORAGE_DIR).toString();
+  async provideWorkspaceStorageDirPath(storageDirName: string): Promise<string | undefined> {
+    const storagePathString = await this.getBaseStorageDirPath(storageDirName);
+    const uriString = URI.file(storagePathString).resolve(StoragePaths.DEFAULT_DATA_DIR_NAME).toString();
 
     if (!storagePathString) {
       throw new Error('Unable to get parent storage directory');
@@ -47,8 +52,8 @@ export class StoragePathServer implements IStoragePathServer {
     return this.cachedWorkspaceStoragePath = uriString;
   }
 
-  async provideGlobalStorageDirPath(): Promise<string | undefined> {
-    const storagePathString = await this.getBaseStorageDirPath();
+  async provideGlobalStorageDirPath(storageDirName: string): Promise<string | undefined> {
+    const storagePathString = await this.getBaseStorageDirPath(storageDirName);
     const uriString = URI.file(storagePathString).toString();
     if (!storagePathString) {
       throw new Error('Unable to get parent storage directory');
@@ -69,20 +74,21 @@ export class StoragePathServer implements IStoragePathServer {
   /**
    * 返回数据存储文件夹
    */
-  async getBaseStorageDirPath(): Promise<string> {
-    const workspaceDir = await this.getDataDirPath();
+  async getBaseStorageDirPath(storageDirName?: string): Promise<string> {
+    const workspaceDir = await this.getDataDirPath(storageDirName);
     return workspaceDir;
   }
 
   /**
    * 获取工作区存储路径
    */
-  async getDataDirPath(): Promise<string> {
+  async getDataDirPath(storageDirName?: string): Promise<string> {
     const homeDir = await this.getUserHomeDir();
+    const storageDir = storageDirName || StoragePaths.DEFAULT_STORAGE_DIR_NAME;
     return path.join(
       homeDir,
       ...(isWindows ? this.windowsDataFolders : ['']),
-      StoragePaths.KAITIAN_DIR,
+      storageDir,
     );
   }
 

@@ -12,6 +12,20 @@ export interface AppConfig {
   workspaceDir: string;
   coreExtensionDir?: string;
   extensionDir?: string;
+  /**
+   * 设置全局存储的文件夹名称
+   * 默认值为 .kaitian
+   */
+  storageDirName?: string;
+  /**
+   * 设置工作区配置文件的文件夹名称
+   * 默认值为 .kaitian
+   */
+  preferenceDirName?: string;
+  /**
+   * 全局插件数据存储目录名称，默认 .kaitian
+   */
+  extensionStorageDirName?: string;
   injector: Injector;
   wsPath: string;
   layoutConfig: LayoutConfig;

@@ -47,7 +47,6 @@ interface Config {
   workspaceDir: string;
   coreExtensionDir?: string;
   extensionDir?: string;
-
   /**
    * 设置落盘日志级别，默认为 Info 级别的log落盘
   */
@@ -60,7 +59,9 @@ interface Config {
    * 外部设置的 ILogService，替换默认的 logService
    */
   LogServiceClass: ConstructorOf<ILogService>;
-
+  /**
+   * 是否使用试验性多通道通信能力
+   */
   useExperimentalMultiChannel?: boolean;
 }
 
@@ -141,7 +142,7 @@ export class ServerApp implements IServerApp {
         extensionDir: path.join(
           os.homedir(),
           ...(isWindows ? [ExtensionPaths.WINDOWS_APP_DATA_DIR, ExtensionPaths.WINDOWS_ROAMING_DIR] : ['']),
-          ExtensionPaths.KAITIAN_DIR,
+          ExtensionPaths.DEFAULT_STORAGE_DIR_NAME,
           ExtensionPaths.MARKETPLACE_DIR,
         ),
         showBuiltinExtensions: false,

@@ -10,7 +10,7 @@ import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 export const ExplorerOpenEditorPanel = observer(({
   viewState,
 }: React.PropsWithChildren<{viewState: ViewState}>) => {
-  const OPEN_EDIROT_NODE_HEIGHT = 22;
+  const OPEN_EDITOR_NODE_HEIGHT = 22;
   const {
     onSelect,
     actions,
@@ -39,7 +39,7 @@ export const ExplorerOpenEditorPanel = observer(({
         onSelect={ onSelect }
         onContextMenu={ onContextMenu }
         containerHeight={ containerHeight }
-        itemLineHeight={ OPEN_EDIROT_NODE_HEIGHT }
+        itemLineHeight={ OPEN_EDITOR_NODE_HEIGHT }
         leftPadding = { 15 }
         foldable = { false }
         actions = { actions }
