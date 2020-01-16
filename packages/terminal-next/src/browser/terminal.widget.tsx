@@ -25,7 +25,7 @@ export default ({ id, dynamic, error, show }: IProps) => {
           controller.layoutTerminalClient(id);
           setTimeout(() => {
             const client = controller.getCurrentClient<TerminalClient>();
-            if (client && client.autofocus) {
+            if (client && controller.isFocus && client.autofocus) {
               client.focus();
             }
           }, 100);
