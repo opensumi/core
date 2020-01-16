@@ -6,9 +6,10 @@ import {
   createSocketConnection,
   RPCMessageConnection,
  } from '@ali/ide-connection';
-import { Injector, Provider, ConstructorOf } from '@ali/common-di';
+import { Injector, Provider } from '@ali/common-di';
 import { ModuleConstructor } from './app';
-import { getLogger, ILogger, IReporterService } from '@ali/ide-core-common';
+import { getLogger, IReporterService, BasicModule } from '@ali/ide-core-common';
+import { BackService } from '@ali/ide-core-common/lib/module';
 import { IStatusBarService } from '../services/';
 import * as net from 'net';
 
@@ -89,10 +90,10 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
     getRPCService,
   } = initRPCService(clientCenter);
 
-  const backServiceArr: { servicePath: string, clientToken?: ConstructorOf<any> }[] = [];
+  const backServiceArr: BackService[] = [];
 
   for (const module of modules) {
-    const moduleInstance = injector.get(module) as any;
+    const moduleInstance = injector.get(module) as BasicModule;
     if (moduleInstance.backServices) {
       for (const backService of moduleInstance.backServices) {
         backServiceArr.push(backService);
@@ -101,19 +102,19 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
   }
 
   for (const backService of backServiceArr) {
-    const { servicePath: backServicePath } = backService;
-    const getService = getRPCService(backServicePath);
+    const { servicePath } = backService;
+    const rpcService = getRPCService(servicePath);
 
     const injectService = {
-      token: backServicePath,
-      useValue: getService,
+      token: servicePath,
+      useValue: rpcService,
     } as Provider;
 
     injector.addProviders(injectService);
 
     if (backService.clientToken) {
       const clientService = injector.get(backService.clientToken);
-      getService.onRequestService(clientService);
+      rpcService.onRequestService(clientService);
     }
   }
 }
