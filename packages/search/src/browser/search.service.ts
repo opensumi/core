@@ -320,13 +320,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   focus() {
-    if (!this.searchInputEl || !this.searchInputEl.current) {
-      return;
-    }
-    this.searchInputEl.current.focus();
-    if (this.searchValue !== '') {
-      this.searchInputEl.current.select();
-    }
+    window.requestAnimationFrame(() => {
+      if (!this.searchInputEl || !this.searchInputEl.current) {
+        return;
+      }
+      this.searchInputEl.current.focus();
+      if (this.searchValue !== '') {
+        this.searchInputEl.current.select();
+      }
+    });
   }
 
   refresh() {
