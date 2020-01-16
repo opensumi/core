@@ -69,7 +69,7 @@ export function getVsCodeApiScript(state) {
       const targetOrigin = '*';
       let acquired = false;
 
-      let state = ${state ? `${JSON.stringify(state)}` : `undefined`};
+      let state = ${state ? `JSON.parse(${JSON.stringify(state)})` : undefined};
 
       return () => {
         if (acquired) {
@@ -82,7 +82,7 @@ export function getVsCodeApiScript(state) {
           },
           setState: function(newState) {
             state = newState;
-            originalPostMessage({ command: 'do-update-state', data: newState }, targetOrigin);
+            originalPostMessage({ command: 'do-update-state', data: JSON.stringify(newState) }, targetOrigin);
             return newState;
           },
           getState: function() {
