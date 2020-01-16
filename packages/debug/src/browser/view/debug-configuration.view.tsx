@@ -1,14 +1,13 @@
 import * as React from 'react';
 import * as styles from './debug-configuration.module.less';
 import * as cls from 'classnames';
-import { useInjectable, localize, PreferenceService } from '@ali/ide-core-browser';
+import { useInjectable, localize, PreferenceService, isElectronRenderer } from '@ali/ide-core-browser';
 import { DebugAction } from '../components/debug-action';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
 import { DebugToolbarView, FloatDebugToolbarView} from './debug-toolbar.view';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
-import { isElectronRenderer } from '../../../../core-common/lib';
 
 const style: React.CSSProperties = {
   width: '100%',
