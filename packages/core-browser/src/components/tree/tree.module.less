@@ -23,9 +23,6 @@
     .right_actions,
     .container_actions {
       display: block;
-      z-index: 10;
-      background: var(--list-hoverBackground);
-
       .action_icon {
         margin-left: 6px;
       }
@@ -39,23 +36,11 @@
   &.mod_selected {
     color: var(--list-inactiveSelectionForeground);
     background: var(--list-inactiveSelectionBackground);
-
-    .left_actions,
-    .right_actions,
-    .container_actions {
-      background: var(--list-inactiveSelectionBackground);
-    }
   }
 
   &.mod_focused {
     color: var(--list-activeSelectionForeground);
     background: var(--list-activeSelectionBackground);
-
-    .left_actions,
-    .right_actions,
-    .container_actions {
-      background: var(--list-activeSelectionBackground);
-    }
   }
 
   &.mod_invalid {
@@ -124,6 +109,7 @@
 
 .treenode_overflow_wrap {
   flex: 1;
+  flex-shrink: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -209,7 +195,8 @@
   margin-right: 10px;
   position: relative;
   height: 22px;
-
+  display: flex;
+  align-items: center;
   .right_actions,
   .container_actions {
     display: none;
@@ -217,10 +204,6 @@
     height: 22px;
     padding-left: 4px;
     padding-right: 4px;
-    position: absolute;
-    top: 0;
-    right: 100%;
-    z-index: 10;
   }
 }
 

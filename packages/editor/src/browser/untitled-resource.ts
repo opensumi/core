@@ -1,21 +1,20 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig } from '@ali/ide-core-browser';
+import { getLogger } from '@ali/ide-core-common';
+import { URI, Emitter, Event, Schemas, WithEventBus, IEditorDocumentChange, IEditorDocumentModelSaveResult, localize, AppConfig, CommandService } from '@ali/ide-core-browser';
 import { IResourceProvider, WorkbenchEditorService } from '../common';
-import { IWindowDialogService, IMessageService } from '@ali/ide-overlay';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';
 import * as path from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class UntitledSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
-
-  @Autowired(IWindowDialogService)
-  windowDialogService: IWindowDialogService;
-
   @Autowired(IEditorDocumentModelService)
   editorDocumentModelService: IEditorDocumentModelService;
 
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   @Autowired(AppConfig)
   appConfig: AppConfig;
@@ -47,10 +46,13 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
   async saveDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding: string, ignoreDiff: boolean = false): Promise<IEditorDocumentModelSaveResult> {
     const { name } = uri.getParsedQuery();
     const defaultPath = uri.path.toString() ? path.dirname(uri.path.toString()) : this.appConfig.workspaceDir;
-    const saveUri = await this.windowDialogService.showSaveDialog({
+    const saveUri = await this.commandService.executeCommand<URI>('file.save', {
       showNameInput: true,
       defaultFileName: name || uri.displayName,
       defaultUri: URI.file(defaultPath),
+    }).catch((err) => {
+      // no-op: failed when command not found
+      getLogger().warn(err);
     });
     if (saveUri) {
       await this.editorDocumentModelService.saveEditorDocumentModel(saveUri, content, baseContent, changes, encoding, ignoreDiff);

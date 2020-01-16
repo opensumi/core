@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../../common';
-import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
+import { InlineActionBar, InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 
 export const TabbarViewBase: React.FC<{
   TabView: React.FC<{component: ComponentRegistryInfo}>,

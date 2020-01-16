@@ -120,11 +120,7 @@ export class ExpressionContainer {
             }
           }
         } else {
-          if (variable.name === variable.evaluateName) {
-            result.push(new AnsiConsoleItem(variable.value, MessageType.Info, this.source, this.line));
-          } else {
-            result.push(new DebugVariable((this as any).session, variable, this));
-          }
+          result.push(new DebugVariable((this as any).session, variable, this));
         }
       }
     } catch (e) {
@@ -179,7 +175,18 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
   }
 
   get name(): string {
-    return this.variable.name || '';
+    if (this.variable.name) {
+      return this.variable.name;
+    } else if (this.variable.evaluateName) {
+      const isSymbolExpression = /\["(.+)"]/.exec(this.variable.evaluateName);
+      if (isSymbolExpression) {
+        return isSymbolExpression[1];
+      } else {
+        const evaluateProps = this.variable.evaluateName.split('.');
+        return evaluateProps[evaluateProps.length - 1];
+      }
+    }
+    return '';
   }
 
   get description(): string {
@@ -329,7 +336,9 @@ export class ExpressionItem extends ExpressionContainer {
           this.variablesReference = body.variablesReference;
           this.namedVariables = body.namedVariables;
           this.indexedVariables = body.indexedVariables;
-          this.children = [];
+          if (this.variablesReference > 0) {
+            this.children = [];
+          }
         }
       } catch (err) {
         this._value = err.message;

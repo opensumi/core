@@ -1,49 +1,51 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
-.debug_configuration_toolbar,
 .kt_debug_action_bar {
+  width: 150px;
   display: flex;
-  align-items: center;
-  padding-top: 12px;
-  padding-left: 12px;
-  padding-right: 12px;
-  padding-bottom: 6px;
+  align-content: center;
+  justify-content: center;
+  pointer-events: all;
 
   .debug_selection {
     width: 100%;
-    margin-left: 10px;
-
-    select {
-      outline: 0;
-      line-height: 24px;
-      height: 24px;
-      width: 100%;
-      margin-right: 10px;
-      border-width: 1px;
-      border-style: solid;
-      border-color: var(--dropdown-border);
-      padding: 0 5px;
-      box-sizing: border-box;
-      background-color: var(--dropdown-background);
-      color: var(--dropdown-foreground);
-      &.special_radius {
-        -webkit-appearance: none;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-      }
-      &>option {
-        background-color: var(--dropdown-listBackground)
-      }
-    }
-  }
-  .debug_run_action {
-    background: #167CDB;
-    border-radius: 0 4px 4px 0;
-    width: 24px;
-    height: 24px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    margin-right: 6px;
+    margin-left: 8px;
+    margin-right: 2px;
   }
 }
 
+.debug_configuration_toolbar {
+  display: flex;
+  align-items: center;
+  padding-top: 12px;
+  padding-right: 2px;
+  padding-bottom: 6px;
+  .debug_selection {
+    width: 100%;
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+}
+
+.debug_toolbar_container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  z-index: 999;
+  user-select: none;
+}
+
+.debug_toolbar_wrapper {
+  display: flex;
+  height: 27px;
+  line-height: 27px;
+  background-color: var(--debugToolBar-background);
+}
+
+.debug_toolbar_drag {
+  pointer-events: all;
+  cursor: pointer;
+}

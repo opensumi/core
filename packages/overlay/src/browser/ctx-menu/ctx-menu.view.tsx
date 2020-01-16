@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
 import { useInjectable } from '@ali/ide-core-browser';
 import { IBrowserCtxMenu } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
-import { MenuNode, SeparatorMenuItemNode } from '@ali/ide-core-browser/lib/menu/next';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
 import placements from '@ali/ide-core-browser/lib/components/actions/placements';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
@@ -12,12 +11,7 @@ import 'react-ctxmenu-trigger/assets/index.css';
 export const CtxMenu = observer(() => {
   const ctxMenuService = useInjectable<IBrowserCtxMenu>(IBrowserCtxMenu);
 
-  const handleClick = React.useCallback((item: MenuNode) => {
-    // do nothing when click separator node
-    if (item.id === SeparatorMenuItemNode.ID) {
-      return;
-    }
-
+  const handleClick = React.useCallback(() => {
     ctxMenuService.hide();
   }, []);
 
@@ -43,7 +37,7 @@ export const CtxMenu = observer(() => {
           onOutsideClick={() => ctxMenuService.hide()}>
           <MenuActionList
             data={ctxMenuService.menuNodes}
-            onClick={handleClick}
+            afterClick={handleClick}
             context={ctxMenuService.context}
           />
         </ClickOutside>

@@ -194,10 +194,13 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     throw new Error('Method not implemented.');
   }
   updateOptions(newOpts: monaco.editor.ITextModelUpdateOptions): void {
-    throw new Error('Method not implemented.');
+    this.options = {
+      ...this.options,
+      ...newOpts,
+    };
   }
   detectIndentation(defaultInsertSpaces: boolean, defaultTabSize: number): void {
-    throw new Error('Method not implemented.');
+    return ;
   }
   pushStackElement(): void {
     throw new Error('Method not implemented.');

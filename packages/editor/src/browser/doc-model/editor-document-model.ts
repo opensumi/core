@@ -26,7 +26,7 @@ export interface IDirtyChange {
   changes: IEditorDocumentModelContentChange[];
 }
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class EditorDocumentModel extends Disposable implements IEditorDocumentModel {
 
   @Autowired(IEditorDocumentModelContentRegistry)
@@ -104,16 +104,31 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this.closeAutoSave = !!options.closeAutoSave;
 
     this.monacoModel = monaco.editor.createModel(content, options.languageId, monaco.Uri.parse(uri.toString()));
+    this.updateOptions({});
     if (options.eol) {
       this.eol = options.eol;
     }
     this._originalEncoding = this._encoding;
     this._previousVersionId = this.monacoModel.getVersionId(),
-    this._persistVersionId = this.monacoModel.getAlternativeVersionId();
+      this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     this.baseContent = content;
 
     this.listenTo(this.monacoModel);
     this.readCacheToApply();
+  }
+
+  updateOptions(options) {
+    const finalOptions = {
+      tabSize: this.preferenceService.get<number>('editor.tabSize') || 1,
+      insertSpaces: this.preferenceService.get<boolean>('editor.insertSpaces'),
+      detectIndentation: this.preferenceService.get<boolean>('editor.detectIndentation'),
+      ...options,
+    };
+    if (finalOptions.detectIndentation) {
+      this.monacoModel.detectIndentation(finalOptions.insertSpaces, finalOptions.tabSize);
+    } else {
+      this.monacoModel.updateOptions(finalOptions);
+    }
   }
 
   private listenTo(monacoModel: monaco.editor.ITextModel) {
@@ -290,15 +305,15 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     });
     const fileName = this.uri.path.base;
     const res = await this.compareService.compare(originalUri, this.uri, formatLocalize('editor.compareAndSave.title', fileName, fileName));
-    if (res === CompareResult.revert ) {
+    if (res === CompareResult.revert) {
       this.revert();
-    } else if (res === CompareResult.accept ) {
+    } else if (res === CompareResult.accept) {
       this.save(true);
     }
   }
 
   async initSave() {
-    while (this.savingTasks.length > 0 ) {
+    while (this.savingTasks.length > 0) {
       const res = await this.savingTasks[0].run(this.service, this.baseContent, this.getChangesFromVersion(this._persistVersionId), this.encoding);
       if (res.state === 'success' && this.savingTasks[0]) {
         this.baseContent = this.savingTasks[0].content;
@@ -360,7 +375,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   getChangesFromVersion(versionId) {
-    for (let i = this.dirtyChanges.length - 1; i >= 0; i --) {
+    for (let i = this.dirtyChanges.length - 1; i >= 0; i--) {
       if (this.dirtyChanges[i].fromVersionId === versionId) {
         return this.dirtyChanges.slice(i).map((d) => {
           return {

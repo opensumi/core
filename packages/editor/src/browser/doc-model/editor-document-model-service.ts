@@ -1,5 +1,5 @@
 import * as md5 from 'md5';
-import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, STORAGE_SCHEMA, ILogger } from '@ali/ide-core-browser';
+import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, STORAGE_SCHEMA, ILogger, IPreferenceSettingsService, PreferenceService } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent } from './types';
@@ -22,6 +22,9 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   @Autowired(ILogger)
   logger: ILogger;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
 
   private storage: IStorage;
 
@@ -59,6 +62,13 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
         versionId: model.getMonacoModel().getVersionId(),
       }));
     });
+    this.addDispose(this.preferenceService.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'editor.detectIndentation') {
+        this.editorDocModels.forEach((m) => {
+          m.updateOptions({});
+        });
+      }
+    }));
   }
 
   private _delete(uri: string | URI): void {

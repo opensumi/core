@@ -26,6 +26,8 @@ import { DebugConsoleService } from './view/debug-console.service';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import { DebugToolbarService } from './view/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
+import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
+import { EditorHoverContribution } from './editor/editor-hover-contribution';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -113,8 +115,8 @@ export namespace DebugBreakpointWidgetCommands {
   };
 }
 
-@Domain(ClientAppContribution, ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution)
-export class DebugContribution implements ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution {
+@Domain(ClientAppContribution, ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution, BrowserEditorContribution)
+export class DebugContribution implements ComponentContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution, PreferenceContribution, NextMenuContribution, BrowserEditorContribution {
 
   static DEBUG_THREAD_ID: string = 'debug-thread';
   static DEBUG_WATCH_ID: string = 'debug-watch';
@@ -164,6 +166,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   @Autowired(DebugToolbarService)
   protected readonly debugToolbarService: DebugToolbarService;
+
+  @Autowired()
+  private editorHoverContribution: EditorHoverContribution;
 
   private firstSessionStart: boolean = true;
 
@@ -608,5 +613,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   protected isPosition(position: monaco.Position): boolean {
     return (position instanceof monaco.Position);
+  }
+
+  registerEditorFeature(registry: IEditorFeatureRegistry) {
+    registry.registerEditorFeatureContribution(this.editorHoverContribution);
   }
 }

@@ -159,7 +159,7 @@ export const EDITOR_GROUP_HEADER_NO_TABS_BACKGROUND = registerColor('editorGroup
 }, localize('editorGroupHeaderBackground', 'Background color of the editor group title header when tabs are disabled (`"workbench.editor.showTabs": false`). Editor groups are the containers of editors.'));
 
 export const EDITOR_GROUP_BORDER = registerColor('editorGroup.border', {
-  dark: '#444444',
+  dark: '#2C3033',
   light: '#E7E7E7',
   hc: contrastBorder,
 }, localize('editorGroupBorder', 'Color to separate multiple editor groups from each other. Editor groups are the containers of editors.'));

@@ -5,7 +5,7 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 
-import { Icon } from '@ali/ide-components';
+import { Button, Icon } from '@ali/ide-components';
 import {
   MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode,
   IContextMenu, IMenu, IMenuSeparator,
@@ -59,16 +59,16 @@ const MenuAction: React.FC<{
  */
 export const MenuActionList: React.FC<{
   data: MenuNode[];
-  onClick?: (item: MenuNode) => void;
+  afterClick?: (item: MenuNode) => void;
   context?: any[];
-}> = ({ data = [], context = [], onClick }) => {
+}> = ({ data = [], context = [], afterClick }) => {
   if (!data.length) {
     return null;
   }
 
   const handleClick = React.useCallback((params: ClickParam) => {
     const { key, item } = params;
-    // do nothing when click separator node
+    // do nothing when click separator/submenu node
     if ([SeparatorMenuItemNode.ID, SubmenuItemNode.ID].includes(key)) {
       return;
     }
@@ -83,8 +83,8 @@ export const MenuActionList: React.FC<{
       menuItem.execute(context);
     }
 
-    if (typeof onClick === 'function') {
-      onClick(menuItem);
+    if (typeof afterClick === 'function') {
+      afterClick(menuItem);
     }
   }, [ data, context ]);
 
@@ -125,10 +125,12 @@ export const MenuActionList: React.FC<{
   );
 };
 
-export const IconAction: React.FC<{
+const InlineActionWidget: React.FC<{
   data: MenuNode;
   context?: any[];
-} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context = [], className, ...restProps }) => {
+  type?: InlineActionType;
+  afterClick?: () => void;
+} & React.HTMLAttributes<HTMLElement>> = ({ type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
   const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -138,7 +140,24 @@ export const IconAction: React.FC<{
     } else if (typeof data.execute === 'function') {
       data.execute(context);
     }
+
+    if (typeof afterClick === 'function') {
+      afterClick();
+    }
   }, [ data, context ]);
+
+  if (type === 'button') {
+    return (
+      <Button
+        className={clsx(className, styles.btnAction)}
+        disabled={data.disabled}
+        onClick={handleClick}
+        title={data.tooltip || data.label}
+        {...restProps}>
+        {data.label}
+      </Button>
+    );
+  }
 
   return (
     <Icon
@@ -152,7 +171,9 @@ export const IconAction: React.FC<{
   );
 };
 
-IconAction.displayName = 'IconAction';
+InlineActionWidget.displayName = 'InlineAction';
+
+type InlineActionType = 'button' | 'icon';
 
 interface BaseActionListProps {
   /**
@@ -164,10 +185,22 @@ interface BaseActionListProps {
    */
   context?: any[];
   /**
-   * 额外的 IMenuAction
+   * reserve option 额外的 IMenuAction
    */
   extraNavActions?: IMenuAction[];
+  /**
+   * class name
+   */
   className?: string;
+  /**
+   * menu 的类型, 默认为 icon
+   */
+  type?: InlineActionType;
+
+  /**
+   * InlineAction 点击之后的回调
+   */
+  afterClick?: () => void;
 }
 
 /**
@@ -178,12 +211,14 @@ const TitleActionList: React.FC<{
   more?: MenuNode[];
   className?: string;
 } & BaseActionListProps> = ({
+  type,
   nav: primary = [],
   more: secondary = [],
   context = [],
   extraNavActions = [],
   moreAtFirst = false,
   className,
+  afterClick,
 }) => {
   const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
 
@@ -196,6 +231,7 @@ const TitleActionList: React.FC<{
         // 合并结果
         menuNodes: secondary,
         args: context,
+        onHide: afterClick,
       });
     }
   }, [ secondary, context ]);
@@ -213,10 +249,12 @@ const TitleActionList: React.FC<{
       { moreAtFirst && moreAction }
       {
         primary.map((item) => (
-          <IconAction
+          <InlineActionWidget
             className={clsx({ [styles.selected]: item.checked })}
+            type={type}
             key={item.id}
             data={item}
+            afterClick={afterClick}
             context={context} />
         ))
       }
@@ -259,6 +297,8 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
 ): React.ReactElement<InlineActionBarProps<T, U, K, M>> {
   const { menus, context, separator = 'navigation', ...restProps } = props;
   // TODO: 从一致性考虑是否这里不用 context 的命名
+  // **warning** 这里不需要额外传参
+  // 因为这里的 context 塞到 useMenus 之后会自动把参数加入到 MenuItem.execute 里面
   const [navMenu, moreMenu] = useMenus(menus, separator, context);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
@@ -293,7 +333,6 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
     <TitleActionList
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
-      context={context}
       {...restProps} />
   );
 }

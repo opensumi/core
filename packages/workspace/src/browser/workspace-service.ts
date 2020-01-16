@@ -389,7 +389,7 @@ export class WorkspaceService implements IWorkspaceService {
     list = oldList.concat(list);
     list = Array.from(new Set(list));
     // 仅存储10个
-    list = list.slice(0, 10);
+    list = list.slice(list.length - 10, list.length);
     this.recentStorage.set('SEARCH_WORD', list);
   }
 

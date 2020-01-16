@@ -16,7 +16,7 @@ export const EDITOR_FONT_DEFAULTS = {
   tabSize: 2,
   renderWhitespace: false,
   cursorStyle: 'line',
-  insertSpace: false,
+  insertSpace: true,
   wordWrap: 'off',
   wordWrapColumn: 80,
   lineHeight: 0,
@@ -196,6 +196,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.tabSize,
       description: '%editor.configuration.tabSize%',
     },
+    'editor.detectIndentation': {
+      type: 'boolean',
+      default: true,
+      description: '%editor.configuration.detectIndentation%',
+    },
     'editor.renderWhitespace': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.renderWhitespace,
@@ -214,7 +219,7 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.cursorStyle,
       description: '%editor.configuration.cursorStyle%',
     },
-    'editor.insertSpace': {
+    'editor.insertSpaces': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.insertSpace,
       description: '%editor.configuration.insertSpace%',
@@ -282,6 +287,13 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: FILE_TREE_DEFAULTS.indent,
       description: '%preference.explorer.fileTree.indent%',
     },
+    /*
+    'debug.toolbar.float': {
+      type: 'boolean',
+      default: true,
+      description: '%preference.debugger.toolbar.float%',
+    },
+    */
     'files.exclude': {
       type: 'object',
       description: '%preference.files.exclude%',
@@ -309,7 +321,7 @@ export const corePreferenceSchema: PreferenceSchema = {
         'bash',
         'zsh',
         'sh',
-        '',
+        'default',
       ],
       default: '',
       description: '%preference.terminal.typeDesc%',
@@ -354,6 +366,7 @@ export interface CoreConfiguration {
   'explorer.fileTree.baseIndent': number;
   'explorer.fileTree.indent': number;
   'explorer.confirmMove': boolean;
+  'debug.toolbar.float': boolean;
   'files.watcherExclude': { [key: string]: boolean };
   'files.exclude': { [key: string]: boolean };
   'files.associations': { [key: string]: string };

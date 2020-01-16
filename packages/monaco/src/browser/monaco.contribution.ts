@@ -1,12 +1,13 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry, Disposable, CommandRegistry, IMimeService, CorePreferences } from '@ali/ide-core-browser';
-import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
+import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
 import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus } from './monaco-menu';
 import { TextmateService } from './textmate.service';
 import { IThemeService } from '@ali/ide-theme';
+import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution {
@@ -52,6 +53,9 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   @Autowired(IMimeService)
   mimeService: IMimeService;
 
+  @Autowired(MonacoSnippetSuggestProvider)
+  protected readonly snippetSuggestProvider: MonacoSnippetSuggestProvider;
+
   private KEY_CODE_MAP = [];
 
   async initialize() {
@@ -70,6 +74,11 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     // monaco 的 keycode 和 ide 之间的映射
     // 依赖 Monaco 加载完毕
     this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
+  }
+
+  onDidStart() {
+    // @ts-ignore
+    monaco.modes.CompletionProviderRegistry.register(this.snippetSuggestProvider.registedLanguageIds, this.snippetSuggestProvider);
   }
 
   protected setSchemaPreferenceListener(registry: ISchemaStore) {

@@ -1,4 +1,4 @@
-import { MenuContribution, Domain, MenuModelRegistry, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, replaceLocalizePlaceholder, PreferenceScope } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, replaceLocalizePlaceholder, PreferenceScope } from '@ali/ide-core-browser';
 import { IThemeService, IIconService } from '../common';
 import { Autowired } from '@ali/common-di';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';

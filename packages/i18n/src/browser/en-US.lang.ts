@@ -99,12 +99,16 @@ export const localizationBundle = {
     'status-bar.label.line': 'Ln',
     'status-bar.label.column': 'Col',
     'status-bar.label.selected': 'Selected',
+    'status-bar.label.tabType.space': 'Spaces',
+    'status-bar.label.tabType.tab': 'Tab Size',
     'editor.closeOtherEditors': 'Close Others',
 
     'edit.cut': 'Cut',
     'edit.copy': 'Copy',
     'edit.paste': 'Paste',
     'edit.selectAll': 'Select All',
+
+    'editor.tokenize.test': 'Try Tokenize First Selection',
 
     'quickopen.command.placeholder': 'Placeholder',
     'quickopen.command.description': 'Run Ide Command',
@@ -306,6 +310,8 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': 'Controls the location of the debug view.',
     'preference.debug.trace': 'Enable/disable tracing communications with debug adapters.',
     'preference.debug.allowBreakpointsEverywhere': 'Allow setting breakpoints in any file.',
+    'preference.debug.toolbar.float.title': 'Run And Debug -> Float Mode',
+    'preference.debug.toolbar.float': 'Float mode',
 
     'preference.tab.name': 'Settings',
     'preference.noResults': 'No Setting Found Containing \'{0}\'',
@@ -326,10 +332,13 @@ export const localizationBundle = {
     'preference.editor.askIfDiff': 'Error If File On Disk is ewer',
     'preference.editor.autoSave': 'Editor Auto Save',
     'preference.editor.autoSaveDelay': 'Auto Save Delay',
+    'preference.editor.detectIndentation': 'Auto Detect Indentation',
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
     'editor.configuration.autoSave': 'Controls how dirty files are auto saved.',
     'editor.configuration.autoSaveDelay': 'Controls the delay in ms after which a dirty file is saved automatically. Only applies when Editor Auto Save is set to \'Save After Delay\'.',
     'editor.configuration.minimap': 'If Open Minimap',
+    'editor.configuration.tabSize': 'The number of spaces a tab is equal to. This setting is overridden based on the file contents when Detect Indentation is on.',
+    'editor.configuration.detectIndentation': 'Controls whether Tab Size and Insert Spaces will be automatically detected when a file is opened based on the file contents.',
     'editor.autoSave.enum.off': 'OFF',
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
     'editor.autoSave.enum.afterDelay': 'Save after delay',
@@ -378,6 +387,9 @@ export const localizationBundle = {
     'terminal.menu.clearGroups': 'Clear All Terminals',
     'terminal.menu.selectType': 'Default Terminal Type',
     'terminal.menu.moreSettings': 'More Settings',
+
+    'deugger.menu.setValue': 'Set Value',
+    'deugger.menu.setValue.param': 'Please input the value of this variable',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',

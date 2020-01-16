@@ -33,6 +33,7 @@
     .tab-badge {
       background-color: var(--activityBarBadge-background);
       color: var(--activityBarBadge-foreground);
+      border: 1px solid var(--kt-activityBarBadge-border);
       position: absolute;
       top: 26px;
       right: 8px;
@@ -43,6 +44,9 @@
       padding: 0 5px;
       border-radius: 20px;
       text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .tabbar-content{
       border: none;
@@ -194,11 +198,14 @@
         margin-left: 6px;
         background-color: var(--badge-background);
         color: var(--badge-foreground);
+        border: 1px solid var(--kt-activityBarBadge-border);
         border-radius: 9px;
         font-size: 12px;
         font-weight: 400;
         text-align: center;
-        display: inline-block;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
         box-sizing: border-box;
         padding: 0 6px;
         height: 18px;
@@ -211,7 +218,6 @@
       }
     }
     .tab-panel {
-      border-top: 1px solid var(--panel-border);
       select {
         outline: none;
         padding-left: 8px;
@@ -297,7 +303,6 @@
   flex: 1;
   display: flex;
   align-items: center;
-  overflow: hidden;
 }
 .panel_toolbar_container {
   display: flex;

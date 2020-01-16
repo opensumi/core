@@ -256,12 +256,14 @@ export const localizationBundle = {
     'preference.debug.debugViewLocation': '控制调试视图的位置。',
     'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
     'preference.debug.allowBreakpointsEverywhere': '允许在所有文件中设置断点。',
+    'preference.debug.toolbar.float': '浮层模式',
     'preference.files.associations.title': '文件关联',
     'preference.files.associations': '配置语言的文件关联 (如: "*.extension": "html")。这些关联的优先级高于已安装语言的默认关联。',
     'preference.explorer.fileTree.indent': '配置资源管理器下每个文件树节点的缩进',
     'preference.explorer.fileTree.baseIndent': '配置资源管理器下整个文件树的缩进',
     'preference.explorer.fileTree.indent.title': '资源管理器 -> 文件树缩进',
     'preference.explorer.fileTree.baseIndent.title': '资源管理器 -> 文件树基础缩进',
+    'preference.debug.toolbar.float.title': '运行与调试 -> 浮层模式',
 
     // 终端
     'preference.terminal.type': '默认终端类型',
@@ -304,6 +306,7 @@ export const localizationBundle = {
     'preference.editor.fontWeight': '字体粗细',
     'preference.editor.fontSize': '字体大小',
     'preference.editor.tabSize': '缩进大小',
+    'preference.editor.detectIndentation': '自动检测缩进大小',
     'preference.editor.renderWhitespace': '显示空白字符',
     'preference.editor.cursorStyle': '光标样式',
     'preference.editor.insertSpace': '使用空格代替Tab',
@@ -337,6 +340,9 @@ export const localizationBundle = {
     'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标记',
     'editor.configuration.quickSuggestionsDelay': '智能提示延迟（毫秒），默认 100 毫秒',
+    'editor.configuration.tabSize': '一个Tab的缩进大小，如果设置了自动检测，那么可能会被自动检测结果覆盖',
+    'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
+
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
@@ -434,6 +440,9 @@ export const localizationBundle = {
     'terminal.menu.selectType': '默认终端类型',
     'terminal.menu.moreSettings': '更多设置',
 
+    'deugger.menu.setValue': '设置变量',
+    'deugger.menu.setValue.param': '请输入你要改变变量的值',
+
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
 
@@ -457,6 +466,8 @@ export const localizationBundle = {
     'status-bar.label.line': '行',
     'status-bar.label.column': '列',
     'status-bar.label.selected': '已选择',
+    'status-bar.label.tabType.space': '空格',
+    'status-bar.label.tabType.tab': 'Tab 大小',
 
     'saveChangesMessage': '是否要保存对 {0} 的更改?',
     'file.prompt.dontSave': '不保存',

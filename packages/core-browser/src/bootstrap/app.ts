@@ -111,8 +111,6 @@ export class ClientApp implements IClientApp {
 
   commandRegistry: CommandRegistry;
 
-  menuRegistry: MenuModelRegistry;
-
   // 这里将 onStart contribution 方法放到 MenuRegistryImpl 上了
   nextMenuRegistry: MenuRegistryImpl;
 
@@ -143,10 +141,11 @@ export class ClientApp implements IClientApp {
       layoutComponent: opts.layoutComponent,
       isSyncPreference: opts.isSyncPreference,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
+      clientId: opts.clientId,
     };
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
-      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(electronEnv.metadata.extensionCandidate.map((extension) => extension.path));
+      this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(electronEnv.metadata.extensionCandidate || []);
     }
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
@@ -182,7 +181,7 @@ export class ClientApp implements IClientApp {
 
         await createClientConnection2(this.injector, this.modules, this.connectionPath, () => {
           this.onReconnectContributions();
-        }, this.connectionProtocols, this.config.useExperimentalMultiChannel);
+        }, this.connectionProtocols, this.config.useExperimentalMultiChannel, this.config.clientId);
 
         this.logger = this.getLogger();
          // 回写需要用到打点的 Logger 的地方
@@ -237,7 +236,6 @@ export class ClientApp implements IClientApp {
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
     this.stateService = this.injector.get(ClientAppStateService);
-    this.menuRegistry = this.injector.get(MenuModelRegistry);
     this.nextMenuRegistry = this.injector.get(IMenuRegistry);
   }
 
@@ -304,7 +302,6 @@ export class ClientApp implements IClientApp {
 
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
-    this.menuRegistry.onStart();
     this.nextMenuRegistry.onStart();
 
     for (const contribution of this.contributions) {
