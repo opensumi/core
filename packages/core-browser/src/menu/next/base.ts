@@ -73,6 +73,7 @@ export abstract class IMenuRegistry {
 export interface IMenubarItem {
   label: string;
   order?: number;
+  nativeRole?: string;
 }
 
 export interface IExtendMenubarItem extends IMenubarItem {
