@@ -53,16 +53,19 @@ export class AccordionService extends WithEventBus {
   private toDispose: Map<string, IDisposable> = new Map();
 
   private topViewKey: IContextKey<string>;
+  private scopedCtxKeyService = this.contextKeyService.createScoped();
 
   constructor(public containerId: string, private noRestore?: boolean) {
     super();
     this.splitPanelService = this.splitPanelManager.getService(containerId);
+    this.scopedCtxKeyService.createKey('triggerWithSection', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerGlobalToggleCommand(),
         label: localize('layout.view.hide', '隐藏'),
       },
       group: '0_global',
+      when: 'triggerWithSection == true',
     });
     this.viewContextKeyRegistry.afterContextKeyServiceRegistered(this.containerId, (contextKeyService) => {
       this.topViewKey = contextKeyService!.createKey('view', containerId);
@@ -127,7 +130,7 @@ export class AccordionService extends WithEventBus {
     if (view.name === undefined) {
       console.warn(view.id + '视图未传入标题，请检查！');
     }
-    this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped()).createKey('view', view.id);
+    this.viewContextKeyRegistry.registerContextKeyService(view.id, this.scopedCtxKeyService.createScoped()).createKey('view', view.id);
     this.toDispose.set(view.id, this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(view.id),
@@ -208,11 +211,14 @@ export class AccordionService extends WithEventBus {
 
   protected doToggleView(viewId: string, forceShow?: boolean) {
     const state = this.getViewState(viewId);
+    let nextState: boolean;
     if (forceShow === undefined) {
-      state.hidden = !state.hidden;
+      nextState = !state.hidden;
     } else {
-      state.hidden = !forceShow;
+      nextState = !forceShow;
     }
+    if (nextState && this.visibleViews.length === 1) { return; }
+    state.hidden = nextState;
     this.popViewKeyIfOnlyOneViewVisible();
     this.storeState();
   }
@@ -252,12 +258,12 @@ export class AccordionService extends WithEventBus {
     this.doToggleOpen(viewId, collapsed, index);
   }
 
-  @action.bound handleContextMenu(event: React.MouseEvent, viewId: string) {
+  @action.bound handleContextMenu(event: React.MouseEvent, viewId?: string) {
     event.preventDefault();
     const menus = this.ctxMenuService.createMenu({
       id: this.menuId,
       config: { args: [{viewId}] },
-      contextKeyService: this.viewContextKeyRegistry.getContextKeyService(viewId),
+      contextKeyService: viewId ? this.viewContextKeyRegistry.getContextKeyService(viewId) : undefined,
     });
     const menuNodes = menus.getGroupedMenuNodes();
     menus.dispose();
