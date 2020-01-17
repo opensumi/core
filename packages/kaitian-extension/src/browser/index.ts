@@ -1,16 +1,15 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, ClientAppContribution, Domain, SlotLocation, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult } from '@ali/ide-core-browser';
-import { ExtensionNodeServiceServerPath, ExtensionService, ExtensionCapabilityRegistry, /*Extension*/
-EMIT_EXT_HOST_EVENT} from '../common';
-import { ExtensionServiceImpl /*ExtensionCapabilityRegistryImpl*/ } from './extension.service';
-import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
-// import { ExtensionImpl } from './extension'
+import { BrowserModule, ClientAppContribution, Domain, localize, IPreferenceSettingsService, CommandContribution, CommandRegistry, IClientApp, IEventBus, CommandService, IAsyncResult } from '@ali/ide-core-browser';
+import { ExtensionNodeServiceServerPath, ExtensionService, EMIT_EXT_HOST_EVENT} from '../common';
+import { ExtensionServiceImpl } from './extension.service';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IDebugServer } from '@ali/ide-debug';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
 import { DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
 import { getIcon } from '@ali/ide-core-browser';
 import { ExtHostEvent, Serializable } from './types';
 import { ActivationEventService } from '@ali/ide-activation-event/lib/browser';
+import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
 
 const RELOAD_WINDOW_COMMAND = {
   id: 'reload_window',
@@ -40,6 +39,9 @@ export class KaitianExtensionModule extends BrowserModule {
     {
       servicePath: ExtensionNodeServiceServerPath,
       clientToken: ExtensionService,
+    },
+    {
+      servicePath: FileSearchServicePath,
     },
   ];
 }

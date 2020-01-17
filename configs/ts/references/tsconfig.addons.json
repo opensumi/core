@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/addons/src",
+    "outDir": "../../../packages/addons/lib"
+  },
+  "include": [
+    "../../../packages/addons/src"
+  ]
+}

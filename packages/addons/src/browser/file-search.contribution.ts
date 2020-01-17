@@ -12,13 +12,11 @@ import {
 } from '@ali/ide-core-common';
 import {
   localize,
-  AppConfig,
   CommandService,
   URI,
   EDITOR_COMMANDS,
   QuickOpenActionProvider,
   QuickOpenItem,
-  QuickOpenAction,
   QuickOpenService,
   CorePreferences,
 } from '@ali/ide-core-browser';
@@ -29,9 +27,11 @@ import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorGroupSplitAction } from '@ali/ide-editor';
-import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
 import { getIcon } from '@ali/ide-core-browser';
-import { SearchPreferences } from './search-preferences';
+import { SearchPreferences } from '@ali/ide-search/lib/browser/search-preferences';
+import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
+
+const DEFAULT_FILE_SEARCH_LIMIT = 200;
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
@@ -137,7 +137,6 @@ export class FileSearchQuickCommandHandler {
   @Autowired(SearchPreferences)
   searchPreferences: SearchPreferences;
 
-  private items: QuickOpenGroupItem[] = [];
   private cancelIndicator = new CancellationTokenSource();
   private currentLookFor: string = '';
   readonly default: boolean = true;
@@ -401,8 +400,8 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(quickFileOpen, {
-      execute: (...args: any[]) => {
-        this.quickOpenService.open('...');
+      execute: () => {
+        return this.quickOpenService.open('...');
       },
     });
   }

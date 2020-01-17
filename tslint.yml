@@ -23,6 +23,9 @@ rules:
   no-namespace: false
   no-unused-expression: false
   no-string-literal: false
+  no-unused-variable:
+    - true
+    - ignore-pattern: "^_"
 
 linterOptions:
   exclude:

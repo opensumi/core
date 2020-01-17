@@ -105,6 +105,12 @@
       "@ali/ide-language/lib/*": [
         "../packages/language/src/*"
       ],
+      "@ali/ide-file-search": [
+        "../packages/file-search/src/index.ts"
+      ],
+      "@ali/ide-file-search/lib/*": [
+        "../packages/file-search/src/*"
+      ],
       "@ali/ide-search": [
         "../packages/search/src/index.ts"
       ],
@@ -329,7 +335,13 @@
       ],
       "@ali/ide-components": [
         "../packages/components/src/index.ts"
-      ]
+      ],
+      "@ali/ide-addons": [
+        "../packages/addons/src/index.ts"
+      ],
+      "@ali/ide-addons/lib/*": [
+        "../packages/addons/src/*"
+      ],
     }
   }
 }

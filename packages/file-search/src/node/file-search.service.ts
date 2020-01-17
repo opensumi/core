@@ -3,7 +3,7 @@ import * as readline from 'readline';
 import * as path from 'path';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CancellationToken, CancellationTokenSource, Schemas, replaceAsarInPath } from '@ali/ide-core-common';
+import { CancellationToken, CancellationTokenSource, replaceAsarInPath } from '@ali/ide-core-common';
 import { URI, FileUri, INodeLogger } from '@ali/ide-core-node';
 import { IProcessFactory } from '@ali/ide-process';
 import { IFileSearchService } from '../common';

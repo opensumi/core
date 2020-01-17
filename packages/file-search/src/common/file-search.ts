@@ -1,3 +1,5 @@
+import { CancellationToken } from '@ali/ide-core-common';
+
 export const FileSearchServicePath = 'FileSearchServicePath';
 
 /**
@@ -9,11 +11,12 @@ export interface IFileSearchService {
    * finds files by a given search pattern.
    * @return the matching paths, relative to the given `options.rootUri`.
    */
-  find(searchPattern: string, options: IFileSearchService.Options): Promise<string[]>;
+  find(searchPattern: string, options: IFileSearchService.Options, cancellationToken?: CancellationToken): Promise<string[]>;
 
 }
 
 export const IFileSearchService = Symbol('FileSearchService');
+
 export namespace IFileSearchService {
   export interface BaseOptions {
     useGitIgnore?: boolean;
@@ -37,5 +40,3 @@ export namespace IFileSearchService {
     defaultIgnorePatterns?: string[];
   }
 }
-
-export const DEFAULT_FILE_SEARCH_LIMIT = 200;
