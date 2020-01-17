@@ -7,10 +7,9 @@ import { MaybePromise, ContributionProvider, createContributionProvider, isWindo
 import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
-import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace } from '@ali/ide-core-common';
+import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@ali/ide-core-common';
 import * as os from 'os';
 import * as path from 'path';
-import { ExtensionPaths } from '../storage';
 import { injectInnerProviders } from './inner-providers';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
@@ -141,9 +140,9 @@ export class ServerApp implements IServerApp {
         endpoint: 'https://marketplace.antfin-inc.com',
         extensionDir: path.join(
           os.homedir(),
-          ...(isWindows ? [ExtensionPaths.WINDOWS_APP_DATA_DIR, ExtensionPaths.WINDOWS_ROAMING_DIR] : ['']),
-          ExtensionPaths.DEFAULT_STORAGE_DIR_NAME,
-          ExtensionPaths.MARKETPLACE_DIR,
+          ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),
+          StoragePaths.DEFAULT_STORAGE_DIR_NAME,
+          StoragePaths.MARKETPLACE_DIR,
         ),
         showBuiltinExtensions: false,
         accountId: '',

@@ -1,8 +1,9 @@
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
 import { isWindows, Deferred, URI, AppConfig } from '@ali/ide-core-node';
-import { IStoragePathServer, StoragePaths } from '../common';
+import { IStoragePathServer } from '../common';
 import { IFileService } from '@ali/ide-file-service';
+import { StoragePaths } from '@ali/ide-core-common';
 
 @Injectable()
 export class StoragePathServer implements IStoragePathServer {

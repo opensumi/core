@@ -1,7 +1,7 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred, URI, ExtensionPaths, INodeLogger } from '@ali/ide-core-node';
+import { Deferred, URI, INodeLogger } from '@ali/ide-core-node';
+import { StoragePaths } from '@ali/ide-core-common';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, DEFAULT_EXTENSION_STORAGE_DIR_NAME } from '../common/';
 
@@ -30,7 +30,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     await this.fileSystem.createFolder(URI.file(workspaceDataDirPath).toString());
     this.workspaceDataDirPath = workspaceDataDirPath;
 
-    this.globalDataPath = path.join(this.workspaceDataDirPath, ExtensionPaths.EXTENSIONS_GLOBAL_STORAGE_DIR);
+    this.globalDataPath = path.join(this.workspaceDataDirPath, StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR);
     await this.fileSystem.createFolder(URI.file(this.globalDataPath).toString());
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);

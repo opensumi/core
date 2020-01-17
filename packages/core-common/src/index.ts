@@ -29,4 +29,5 @@ export * from './date';
 export * from './log';
 export * from './json-schema';
 export * from './reporter';
-export * from './connection'
+export * from './connection';
+export * from './storage';

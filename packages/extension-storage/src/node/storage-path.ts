@@ -1,7 +1,8 @@
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, URI, Deferred, ExtensionPaths, AppConfig } from '@ali/ide-core-node';
+import { isWindows, URI, Deferred, AppConfig } from '@ali/ide-core-node';
+import { StoragePaths } from '@ali/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
 import { KAITIAN_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '@ali/ide-workspace';
 import { IFileService, FileStat } from '@ali/ide-file-service';
@@ -10,7 +11,7 @@ import { ILogServiceManager } from '@ali/ide-logs';
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
 
-  private windowsDataFolders = [ExtensionPaths.WINDOWS_APP_DATA_DIR, ExtensionPaths.WINDOWS_ROAMING_DIR];
+  private windowsDataFolders = [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR];
   // 当没有工作区被打开时，存储路径为undefined
   private cachedStoragePath: string | undefined;
   // 获取最后一次生成的工作区存储路径，初始化前返回对应的Promise
@@ -142,7 +143,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
    */
   private async getLogsDirPath(): Promise<string> {
     const logDir = this.loggerManager.getLogFolder();
-    return path.join(logDir, ExtensionPaths.EXTENSIONS_LOGS_DIR);
+    return path.join(logDir, StoragePaths.EXTENSIONS_LOGS_DIR);
   }
 
   /**
@@ -150,7 +151,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
    */
   private async getWorkspaceStorageDirPath(extensionStorageDirName: string): Promise<string> {
     const appDataDir = await this.getWorkspaceDataDirPath(extensionStorageDirName);
-    return path.join(appDataDir, ExtensionPaths.EXTENSIONS_WORKSPACE_STORAGE_DIR);
+    return path.join(appDataDir, StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR);
   }
 
   /**
