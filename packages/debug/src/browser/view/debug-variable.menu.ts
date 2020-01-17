@@ -30,9 +30,11 @@ export class VariablesPanelContribution implements NextMenuContribution, Command
   private contextKeyService: IContextKeyService;
 
   constructor() {
+    /*
     this.service.onVariableContextMenu(({ nodes, event }) => {
       this.onContextMenu(nodes, event);
     });
+    */
   }
 
   registerCommands(registry: CommandRegistry) {

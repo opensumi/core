@@ -1,11 +1,12 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
 .kt_debug_action_bar {
-  width: 150px;
+  height: 36px;
   display: flex;
-  align-content: center;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
   pointer-events: all;
+  padding: 0px 2px;
 
   .debug_selection {
     width: 100%;
@@ -16,10 +17,8 @@
 
 .debug_configuration_toolbar {
   display: flex;
-  align-items: center;
   padding-top: 12px;
   padding-right: 2px;
-  padding-bottom: 6px;
   .debug_selection {
     width: 100%;
     margin-left: 8px;
