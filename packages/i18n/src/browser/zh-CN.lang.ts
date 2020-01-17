@@ -330,7 +330,7 @@ export const localizationBundle = {
     'editor.configuration.autoSaveDelay': '如果自动保存被设置为 "编辑后自动保存"， 这个选项用于设置自动保存的延迟时长。单位: 毫秒。 ',
     'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行报警',
     'editor.configuration.minimap': '是否打开 minimap',
-    'editor.configuration.readOnly': '是否启用 只读模式',
+    'editor.configuration.forceReadOnly': '是否启用 只读模式',
     'editor.autoSave.enum.off': '不启用',
     'editor.autoSave.enum.editorFocusChange': '编辑器失去焦点时自动保存',
     'editor.autoSave.enum.afterDelay': '编辑后自动保存（延迟一定时间）',

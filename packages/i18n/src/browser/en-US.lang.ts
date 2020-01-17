@@ -338,7 +338,7 @@ export const localizationBundle = {
     'editor.configuration.autoSave': 'Controls how dirty files are auto saved.',
     'editor.configuration.autoSaveDelay': 'Controls the delay in ms after which a dirty file is saved automatically. Only applies when Editor Auto Save is set to \'Save After Delay\'.',
     'editor.configuration.minimap': 'If Open Minimap',
-    'editor.configuration.readOnly': 'If Enable readOnly',
+    'editor.configuration.forceReadOnly': 'If Enable readOnly',
     'editor.configuration.tabSize': 'The number of spaces a tab is equal to. This setting is overridden based on the file contents when Detect Indentation is on.',
     'editor.configuration.detectIndentation': 'Controls whether Tab Size and Insert Spaces will be automatically detected when a file is opened based on the file contents.',
     'editor.autoSave.enum.off': 'OFF',
