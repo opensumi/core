@@ -153,7 +153,7 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: '%editor.configuration.minimap%',
     },
-    'editor.readOnly': {
+    'editor.forceReadOnly': {
       type: 'boolean',
       default: false,
       description: '%editor.configuration.readOnly%',

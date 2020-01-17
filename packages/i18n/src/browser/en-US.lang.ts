@@ -328,7 +328,7 @@ export const localizationBundle = {
     'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
     'preference.editor.minimap': 'minimap',
-    'preference.editor.readOnly': 'readOnly',
+    'preference.editor.forceReadOnly': 'readOnly',
     'preference.editor.renderLineHighlight': 'Render Line Highlight',
     'preference.editor.askIfDiff': 'Error If File On Disk is ewer',
     'preference.editor.autoSave': 'Editor Auto Save',
