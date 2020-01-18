@@ -8,7 +8,7 @@ import {
  } from '@ali/ide-connection';
 import { Injector, Provider, ConstructorOf } from '@ali/common-di';
 import { ModuleConstructor } from './app';
-import { getLogger, ILogger, IReporterService } from '@ali/ide-core-common';
+import { getLogger, ILogger, IReporterService, BrowserConnectionCloseEvent, IEventBus } from '@ali/ide-core-common';
 import { IStatusBarService } from '../services/';
 import * as net from 'net';
 
@@ -25,6 +25,7 @@ export async function createClientConnection2(
 ) {
   const statusBarService = injector.get(IStatusBarService);
   const reporterService = injector.get(IReporterService);
+  const eventBus = injector.get(IEventBus);
   // const logger = injector.get(ILogger)
 
   const wsChannelHandler = new WSChanneHandler(wsPath, logger, protocols, useExperimentalMultiChannel, clientId);
@@ -34,6 +35,7 @@ export async function createClientConnection2(
   });
   wsChannelHandler.connection.addEventListener('close', () => {
     statusBarService.setBackgroundColor('var(--kt-statusbar-offline-background)');
+    eventBus.fire(new BrowserConnectionCloseEvent());
   });
   await wsChannelHandler.initHandler();
 
