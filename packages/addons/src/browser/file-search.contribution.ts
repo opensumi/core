@@ -51,7 +51,7 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
   constructor() {
     super({
       id: 'file-search:splitToRight',
-      tooltip: localize('search.quickOpen.leftRight'),
+      tooltip: localize('file-search.quickOpen.leftRight'),
       class: getIcon('embed'),
     });
   }
@@ -77,13 +77,13 @@ class FileSearchActionUpDown extends QuickOpenBaseAction {
   constructor() {
     super({
       id: 'file-search:splitToRight',
-      tooltip: localize('search.quickOpen.upDown'),
+      tooltip: localize('file-search.quickOpen.upDown'),
       class: getIcon('embed'),
     });
   }
 
   run(item: QuickOpenItem): Promise<void> {
-        // TODO: 读取 quickOpenPreview 配置
+    // TODO: 读取 quickOpenPreview 配置
     return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
       preview: false,
       // split: EditorGroupSplitAction.Bottom,
@@ -105,7 +105,7 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
     return true;
   }
 
-  getActions(item: QuickOpenItem) {
+  getActions() {
     return [this.fileSearchActionLeftRight];
   }
 }
@@ -141,7 +141,7 @@ export class FileSearchQuickCommandHandler {
   private currentLookFor: string = '';
   readonly default: boolean = true;
   readonly prefix: string = '...';
-  readonly description: string =  localize('search.command.fileOpen.description');
+  readonly description: string =  localize('file-search.command.fileOpen.description');
 
   getModel(): QuickOpenModel {
     return {

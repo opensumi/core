@@ -341,7 +341,7 @@
       ],
       "@ali/ide-addons/lib/*": [
         "../packages/addons/src/*"
-      ],
+      ]
     }
   }
 }
