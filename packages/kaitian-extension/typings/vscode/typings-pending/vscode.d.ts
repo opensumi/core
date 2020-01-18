@@ -880,43 +880,6 @@ declare module 'vscode' {
 	}
 
 	/**
-	 * The event that is fired when an element in the [TreeView](#TreeView) is expanded or collapsed
-	 */
-	export interface TreeViewExpansionEvent<T> {
-
-		/**
-		 * Element that is expanded or collapsed.
-		 */
-		readonly element: T;
-
-	}
-
-	/**
-	 * The event that is fired when there is a change in [tree view's selection](#TreeView.selection)
-	 */
-	export interface TreeViewSelectionChangeEvent<T> {
-
-		/**
-		 * Selected elements.
-		 */
-		readonly selection: T[];
-
-	}
-
-	/**
-	 * The event that is fired when there is a change in [tree view's visibility](#TreeView.visible)
-	 */
-	export interface TreeViewVisibilityChangeEvent {
-
-		/**
-		 * `true` if the [tree view](#TreeView) is visible otherwise `false`.
-		 */
-		readonly visible: boolean;
-
-	}
-
-
-	/**
 	 * A location in the editor at which progress information can be shown. It depends on the
 	 * location how progress is visually represented.
 	 */

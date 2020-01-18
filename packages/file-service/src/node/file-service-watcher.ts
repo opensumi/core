@@ -12,6 +12,7 @@ import {
   WatchOptions,
 } from '../common/file-service-watcher-protocol';
 import { FileChangeCollection } from './file-change-collection';
+import { INsfw } from '../common/watcher';
 import { setInterval, clearInterval } from 'timers';
 import debounce = require('lodash.debounce');
 
@@ -117,14 +118,14 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
    *  * windows 下 https://github.com/Axosoft/nsfw/issues/26
    * @param events
    */
-  protected trimChangeEvent(events: nsfw.ChangeEvent[]): nsfw.ChangeEvent[] {
+  protected trimChangeEvent(events: INsfw.ChangeEvent[]): INsfw.ChangeEvent[] {
     if (events.length < 2) {
       return events;
     }
 
-    let renameEvent: nsfw.ChangeEvent;
+    let renameEvent: INsfw.ChangeEvent;
 
-    events = events.filter((event: nsfw.ChangeEvent, index) => {
+    events = events.filter((event: INsfw.ChangeEvent, index) => {
       if (event.file) {
         if (/\.\d{7}\d+$/.test(event.file)) {
           // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434, 视为 xxx.xx;
@@ -134,13 +135,13 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
       // Fix https://github.com/Axosoft/nsfw/issues/26
       if (isWindows) {
-        if (renameEvent && event.action === nsfw.actions.CREATED &&
+        if (renameEvent && event.action === INsfw.actions.CREATED &&
             event.directory === renameEvent.directory &&
             event.file === renameEvent.oldFile
         ) {
           return false;
         }
-        if (event.action === nsfw.actions.RENAMED) {
+        if (event.action === INsfw.actions.RENAMED) {
           renameEvent = event;
         }
       }
@@ -157,19 +158,19 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       ...rawOptions,
     };
 
-    let watcher: nsfw.NSFW | undefined = await nsfw(fs.realpathSync(basePath), (events: nsfw.ChangeEvent[]) => {
+    let watcher: INsfw.NSFW | undefined = await (nsfw as any)(fs.realpathSync(basePath), (events: INsfw.ChangeEvent[]) => {
       events = this.trimChangeEvent(events);
       for (const event of events) {
-        if (event.action === nsfw.actions.CREATED) {
+        if (event.action === INsfw.actions.CREATED) {
           this.pushAdded(watcherId, this.resolvePath(event.directory, event.file!));
         }
-        if (event.action === nsfw.actions.DELETED) {
+        if (event.action === INsfw.actions.DELETED) {
           this.pushDeleted(watcherId, this.resolvePath(event.directory, event.file!));
         }
-        if (event.action === nsfw.actions.MODIFIED) {
+        if (event.action === INsfw.actions.MODIFIED) {
           this.pushUpdated(watcherId, this.resolvePath(event.directory, event.file!));
         }
-        if (event.action === nsfw.actions.RENAMED) {
+        if (event.action === INsfw.actions.RENAMED) {
           if (event.newDirectory) {
             this.pushDeleted(watcherId, this.resolvePath(event.directory, event.oldFile!));
             this.pushAdded(watcherId, this.resolvePath(event.newDirectory, event.newFile!));
@@ -186,11 +187,11 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
           this.unwatchFileChanges(watcherId);
         },
       });
-    await watcher.start();
+    await watcher!.start();
     // this.options.info('Started watching:', basePath);
     if (toDisposeWatcher.disposed) {
       this.debug('Stopping watching:', basePath);
-      await watcher.stop();
+      await watcher!.stop();
       // remove a reference to nsfw otherwise GC cannot collect it
       watcher = undefined;
       this.options.info('Stopped watching:', basePath);
