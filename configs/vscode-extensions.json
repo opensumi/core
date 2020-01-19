@@ -96,7 +96,7 @@
     "kaitian": [
       {
         "name": "ide-dark-theme",
-        "version": "1.15.0"
+        "version": "*"
       }
     ],
     "cloud-ide": [
