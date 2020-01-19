@@ -83,7 +83,7 @@ export class ExtensionManager implements IExtensionManager {
 
     const extensionDirName = `${extension.publisher}.${extension.name}-${currentVersion}`;
 
-    return await this.uncompressExtension(request.res, extensionDirName);
+    return await this.uncompressExtension(request.res, extensionDirName, extension);
   }
   async updateExtension(extension: BaseExtension, version: string): Promise<string> {
     // 先下载插件
@@ -102,7 +102,7 @@ export class ExtensionManager implements IExtensionManager {
     }
   }
 
-  public async getUnpressExtensionDir(extensionDirName: string) {
+  public async getUnpressExtensionDir(extensionDirName: string, extension) {
     return path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
   }
 
@@ -111,10 +111,10 @@ export class ExtensionManager implements IExtensionManager {
    * @param source 来源 stream
    * @param extensionDirName 插件文件夹名
    */
-  private async uncompressExtension(source: any, extensionDirName: string): Promise<string> {
+  private async uncompressExtension(source: any, extensionDirName: string, extension): Promise<string> {
     const zipStream = new compressing.zip.UncompressStream({ source });
     // 插件目录
-    const extensionDir = await this.getUnpressExtensionDir(extensionDirName);
+    const extensionDir = await this.getUnpressExtensionDir(extensionDirName, extension);
     // 创建插件目录
     await fs.mkdirp(extensionDir);
 
