@@ -402,6 +402,11 @@ export class TabbarService extends WithEventBus {
     if (this.accordionRestored.has(containerId)) {
       return;
     }
+    const containerInfo = this.containersMap.get(containerId);
+    // 使用自定义视图取代手风琴的面板不需要restore
+    if (!containerInfo || containerInfo.options!.component) {
+      return;
+    }
     const accordionService = this.layoutService.getAccordionService(containerId);
     // 需要保证此时tab切换已完成dom渲染
     setTimeout(() => {
