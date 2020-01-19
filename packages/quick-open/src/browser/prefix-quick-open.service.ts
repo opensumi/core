@@ -6,7 +6,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 export const QuickOpenContribution = Symbol('QuickOpenContribution');
 
 export interface QuickOpenContribution {
-  registerQuickOpenHandlers(handlers: QuickOpenHandlerRegistry): void;
+  registerQuickOpenHandlers(handlers: IQuickOpenHandlerRegistry): void;
 }
 
 export interface QuickOpenHandler {
@@ -36,10 +36,13 @@ export interface QuickOpenHandler {
   onClose?: (canceled: boolean) => void;
 }
 
+export interface IQuickOpenHandlerRegistry {
+ registerHandler(handler: QuickOpenHandler): IDisposable;
+}
+
 @Injectable()
-export class QuickOpenHandlerRegistry implements IDisposable {
+export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHandlerRegistry {
   protected readonly handlers: Map<string, QuickOpenHandler> = new Map();
-  protected readonly toDispose = new DisposableCollection();
   protected defaultHandler: QuickOpenHandler | undefined;
 
   @Autowired(ILogger)
@@ -54,7 +57,7 @@ export class QuickOpenHandlerRegistry implements IDisposable {
     const disposable = {
       dispose: () => this.handlers.delete(handler.prefix),
     };
-    this.toDispose.push(disposable);
+    this.addDispose(disposable);
 
     if (handler.default) {
       this.defaultHandler = handler;
@@ -81,10 +84,6 @@ export class QuickOpenHandlerRegistry implements IDisposable {
       }
     }
     return this.getDefaultHandler();
-  }
-
-  dispose(): void {
-    this.toDispose.dispose();
   }
 }
 
