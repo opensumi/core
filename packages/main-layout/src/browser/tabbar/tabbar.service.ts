@@ -7,6 +7,7 @@ import { ResizeHandle } from '@ali/ide-core-browser/lib/components';
 import debounce = require('lodash.debounce');
 import { TabBarRegistrationEvent, IMainLayoutService } from '../../common';
 import { AccordionService } from '../accordion/accordion.service';
+import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
@@ -67,6 +68,9 @@ export class TabbarService extends WithEventBus {
   @Autowired(IMainLayoutService)
   private layoutService: IMainLayoutService;
 
+  @Autowired()
+  private layoutState: LayoutState;
+
   private accordionRestored: Set<string> = new Set();
 
   private readonly onCurrentChangeEmitter = new Emitter<{previousId: string; currentId: string}>();
@@ -123,6 +127,7 @@ export class TabbarService extends WithEventBus {
         components.push(component);
       }
     });
+    // TODO 使用object来存state的话，初始containersMap为空，貌似就无法实现这个监听（无法引用到一个observable的属性）
     const size = this.state.size; // 监听state长度
     return components.sort((pre, next) => (next.options!.priority !== undefined ? next.options!.priority : 1) - (pre.options!.priority !== undefined ? pre.options!.priority : 1));
   }
@@ -228,6 +233,23 @@ export class TabbarService extends WithEventBus {
     } });
   }
 
+  restoreState() {
+    const storedState: {[containerId: string]: TabState} = this.layoutState.getState(LAYOUT_STATE.getTabbarSpace(this.location), {});
+    for (const containerId of this.state.keys()) {
+      if (storedState[containerId]) {
+        this.state.set(containerId, storedState[containerId]);
+      }
+    }
+  }
+
+  protected storeState() {
+    const stateObj = {};
+    this.state.forEach((value, key) => {
+      stateObj[key] = value;
+    });
+    this.layoutState.setState(LAYOUT_STATE.getTabbarSpace(this.location), stateObj);
+  }
+
   // 注册Tab的激活快捷键，对于底部panel，为切换快捷键
   private registerActivateKeyBinding(component: ComponentRegistryInfo, fromExtension?: boolean) {
     const options = component.options!;
@@ -330,11 +352,12 @@ export class TabbarService extends WithEventBus {
         this.currentContainerId = this.visibleContainers[0].options!.containerId;
       }
     }
+    this.storeState();
   }
 
   @OnEvent(RenderedEvent)
-  protected async onRendered() {
-    // accordion panel状态恢复
+  protected async onDidRender() {
+    this.restoreState();
   }
 
   protected shouldExpand(containerId: string) {

@@ -37,8 +37,12 @@ export namespace LAYOUT_STATE {
 
   export const MAIN = 'layout';
 
-  export function getContainerSpace(containerId) {
+  export function getContainerSpace(containerId: string) {
     return `view/${containerId}`;
+  }
+
+  export function getTabbarSpace(location: string) {
+    return `tabbar/${location}`;
   }
 
 }
