@@ -1,4 +1,4 @@
-import { WSChanneHandler } from '../../src/browser/ws-channel-handler';
+import { WSChannelHandler } from '../../src/browser/ws-channel-handler';
 import { stringify, parse } from '../../src/common/utils';
 import { WebSocket, Server } from 'mock-socket';
 import { ReporterService, DefaultReporter } from '@ali/ide-core-common';
@@ -28,7 +28,7 @@ describe('connection browser', () => {
       });
     });
 
-    const wsChannelHandler = new WSChanneHandler(fakeWSURL, console);
+    const wsChannelHandler = new WSChannelHandler(fakeWSURL, console);
 
     await wsChannelHandler.initHandler();
     await new Promise((resolve) => {

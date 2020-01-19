@@ -3,7 +3,7 @@ import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChann
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution } from '@ali/ide-debug';
 import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSchemaUpdater, DebugBreakpoint, DebugSessionContributionRegistry, DebugModelManager, SourceBreakpoint } from '@ali/ide-debug/lib/browser';
-import { IRPCProtocol, WSChanneHandler } from '@ali/ide-connection';
+import { IRPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -57,8 +57,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(IFileServiceClient)
   fileSystem: IFileServiceClient;
 
-  @Autowired(WSChanneHandler)
-  protected readonly connectionProvider: WSChanneHandler;
+  @Autowired(WSChannelHandler)
+  protected readonly connectionProvider: WSChannelHandler;
 
   @Autowired(IDebugServer)
   protected readonly adapterContributionRegistrator: ExtensionDebugService;

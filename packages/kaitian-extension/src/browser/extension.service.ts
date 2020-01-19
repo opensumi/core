@@ -62,7 +62,7 @@ import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import {
-  WSChanneHandler as IWSChanneHandler,
+  WSChannelHandler as IWSChanneHandler,
   RPCServiceCenter,
   initRPCService,
   createWebSocketConnection,
