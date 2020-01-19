@@ -153,6 +153,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: '%editor.configuration.minimap%',
     },
+    'editor.forceReadOnly': {
+      type: 'boolean',
+      default: false,
+      description: '%editor.configuration.forceReadOnly%',
+    },
     // 会启用languageFeature的最大文件尺寸
     'editor.languageFeatureEnabledMaxSize': {
       type: 'number',

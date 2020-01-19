@@ -191,6 +191,9 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
   private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
   public onRefOpen = this._onRefOpen.event;
 
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
+
   public get currentDocumentModel() {
     if (this._currentDocumentModelRef && !this._currentDocumentModelRef.disposed) {
       return this._currentDocumentModelRef.instance;
@@ -288,9 +291,12 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
     this.saveCurrentState();
     this._currentDocumentModelRef = documentModelRef;
     const model = this.currentDocumentModel!.getMonacoModel();
-    this.monacoEditor.updateOptions({
-      readOnly: !!documentModelRef.instance.readonly,
-    });
+    this.updateReadonly();
+    this.addDispose(this.preferenceService.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'editor.forceReadOnly') {
+        this.updateReadonly();
+      }
+    }));
     this.currentUri = new URI(model.uri.toString());
     this.monacoEditor.setModel(model);
     if (range) {
@@ -304,6 +310,13 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
     this._onCursorPositionChanged.fire({
       position: this.monacoEditor.getPosition(),
       selectionLength: 0,
+    });
+  }
+
+  updateReadonly() {
+    const readonly = this.preferenceService.get<boolean>('editor.forceReadOnly') || !!this.currentDocumentModel!.readonly;
+    this.monacoEditor.updateOptions({
+      readOnly: readonly,
     });
   }
 
@@ -377,6 +390,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
+
   constructor(public readonly monacoDiffEditor: monaco.editor.IDiffEditor) {
     super();
     this.wrapEditors();
@@ -389,8 +405,20 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       original: this.originalDocModel!.getMonacoModel(),
       modified: this.modifiedDocModel!.getMonacoModel(),
     });
+
+    this.updateReadonly();
+    this.addDispose(this.preferenceService.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'editor.forceReadOnly') {
+        this.updateReadonly();
+      }
+    }));
+  }
+
+  updateReadonly() {
+    const readonly = this.preferenceService.get<boolean>('editor.forceReadOnly') || !!this.modifiedDocModel!.readonly;
+
     this.monacoDiffEditor.updateOptions({
-      readOnly: !!this.modifiedDocModel!.readonly,
+      readOnly: readonly,
     });
   }
 
