@@ -8,7 +8,7 @@ import {
  } from '@ali/ide-connection';
 import { Injector, Provider } from '@ali/common-di';
 import { ModuleConstructor } from './app';
-import { getLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, IEventBus } from '@ali/ide-core-common';
+import { getLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent,  IEventBus } from '@ali/ide-core-common';
 import { BackService } from '@ali/ide-core-common/lib/module';
 import { IStatusBarService } from '../services/';
 import * as net from 'net';
@@ -33,6 +33,7 @@ export async function createClientConnection2(
   wsChannelHandler.setReporter(reporterService);
   wsChannelHandler.connection.addEventListener('open', () => {
     statusBarService.setBackgroundColor('var(--statusBar-background)');
+    eventBus.fire(new BrowserConnectionOpenEvent());
   });
   wsChannelHandler.connection.addEventListener('close', () => {
     statusBarService.setBackgroundColor('var(--kt-statusbar-offline-background)');
