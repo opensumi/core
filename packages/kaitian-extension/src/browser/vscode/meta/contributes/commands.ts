@@ -57,7 +57,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
         iconClass: this.iconService.fromIcon(this.extension.path, command.icon, IconType.Background),
       }, {
         execute: (...args: any[]) => {
-          this.extensionService.executeExtensionCommand(command.command, args);
+          return this.extensionService.executeExtensionCommand(command.command, args);
         },
       }));
       // TODO 支持定义worker中的command
