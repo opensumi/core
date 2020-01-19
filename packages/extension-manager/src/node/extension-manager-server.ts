@@ -102,6 +102,10 @@ export class ExtensionManager implements IExtensionManager {
     }
   }
 
+  public async getUnpressExtensionDir(extensionDirName: string) {
+    return path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
+  }
+
   /**
    * 解压插件
    * @param source 来源 stream
@@ -110,7 +114,7 @@ export class ExtensionManager implements IExtensionManager {
   private async uncompressExtension(source: any, extensionDirName: string): Promise<string> {
     const zipStream = new compressing.zip.UncompressStream({ source });
     // 插件目录
-    const extensionDir = path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
+    const extensionDir = await this.getUnpressExtensionDir(extensionDirName);
     // 创建插件目录
     await fs.mkdirp(extensionDir);
 
