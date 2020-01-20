@@ -499,7 +499,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       },
     };
 
-    const decorationApplierModified = this.injector.get(MonacoEditorDecorationApplier, [diffEditor.monacoDiffEditor.getOriginalEditor()]);
+    const decorationApplierModified = this.injector.get(MonacoEditorDecorationApplier, [diffEditor.monacoDiffEditor.getModifiedEditor()]);
     this.modifiedEditor = {
       getId() {
         return diffEditor.monacoDiffEditor.getModifiedEditor().getId();

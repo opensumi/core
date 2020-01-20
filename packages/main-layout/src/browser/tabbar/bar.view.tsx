@@ -92,11 +92,19 @@ const TextTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ co
   </div>;
 });
 
-export const RightTabbarRenderer: React.FC = () => <TabbarViewBase tabClassName={styles.kt_right_tab} TabView={IconTabView} barSize={40} panelBorderSize={1}/>;
+export const RightTabbarRenderer: React.FC = () => {
+  const { side } = React.useContext(TabbarConfig);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  return (<div className={styles.right_tab_bar} onContextMenu={tabbarService.handleContextMenu}>
+    <TabbarViewBase tabClassName={styles.kt_right_tab} TabView={IconTabView} barSize={40} panelBorderSize={1}/>
+  </div>);
+};
 
 export const LeftTabbarRenderer: React.FC = () => {
+  const { side } = React.useContext(TabbarConfig);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
-  return (<div className={styles.left_tab_bar}>
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  return (<div className={styles.left_tab_bar} onContextMenu={tabbarService.handleContextMenu}>
     <TabbarViewBase tabClassName={styles.kt_left_tab} TabView={IconTabView} barSize={48} panelBorderSize={1}/>
     <InlineMenuBar className={styles.vertical_icons} menus={layoutService.getExtraMenu()} />
   </div>);
@@ -111,8 +119,10 @@ export const BottomTabbarRenderer: React.FC = () => {
 };
 
 export const NextBottomTabbarRenderer: React.FC = () => {
+  const { side } = React.useContext(TabbarConfig);
+  const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   return (
-    <div className={clsx(styles.bottom_bar_container, 'next_bottom_bar')}>
+    <div onContextMenu={tabbarService.handleContextMenu} className={clsx(styles.bottom_bar_container, 'next_bottom_bar')}>
       <TabbarViewBase tabClassName={styles.kt_bottom_tab} TabView={TextTabView} barSize={28} panelBorderSize={1}/>
     </div>
   );

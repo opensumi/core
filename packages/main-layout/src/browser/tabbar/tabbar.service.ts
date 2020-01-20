@@ -87,14 +87,18 @@ export class TabbarService extends WithEventBus {
   private rendered = false;
   private sortedContainers: Array<ComponentRegistryInfo> = [];
 
+  private scopedCtxKeyService = this.contextKeyService.createScoped();
+
   constructor(public location: string, public noAccordion?: boolean) {
     super();
+    this.scopedCtxKeyService.createKey('triggerWithTab', true);
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerGlobalToggleCommand(),
         label: localize('layout.tabbar.hide', '隐藏'),
       },
       group: '0_global',
+      when: 'triggerWithTab == true',
     });
     this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
     if (this.location === 'bottom') {
@@ -237,9 +241,10 @@ export class TabbarService extends WithEventBus {
     }
   }
 
-  @action.bound handleContextMenu(event: React.MouseEvent, containerId: string) {
+  @action.bound handleContextMenu(event: React.MouseEvent, containerId?: string) {
     event.preventDefault();
-    const menus = this.menuService.createMenu(this.menuId);
+    event.stopPropagation();
+    const menus = this.menuService.createMenu(this.menuId, containerId ? this.scopedCtxKeyService : this.contextKeyService);
     const menuNodes = generateCtxMenu({ menus, args: [{containerId}] });
     this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
       x: event.clientX,
@@ -315,6 +320,9 @@ export class TabbarService extends WithEventBus {
       execute: ({containerId}: {containerId: string}) => {
         this.doToggleTab(containerId);
       },
+      isEnabled: () => {
+        return this.visibleContainers.length > 1;
+      },
     });
     return commandId;
   }
@@ -331,6 +339,10 @@ export class TabbarService extends WithEventBus {
       isToggled: () => {
         const state = this.getContainerState(containerId);
         return !state.hidden;
+      },
+      isEnabled: () => {
+        const state = this.getContainerState(containerId);
+        return state.hidden || this.visibleContainers.length !== 1;
       },
     });
     return commandId;
