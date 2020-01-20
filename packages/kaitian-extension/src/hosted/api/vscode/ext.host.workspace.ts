@@ -56,7 +56,9 @@ export function createWorkspaceApiFactory(
     applyEdit: (edit) => {
       return extHostWorkspace.applyEdit(edit);
     },
-    textDocuments: extHostDocument.getAllDocument(),
+    get textDocuments() {
+      return extHostDocument.getAllDocument();
+    },
     ...fileSystemApi,
     onDidRenameFile: extHostWorkspace.onDidRenameFile,
     saveAll: () => {
