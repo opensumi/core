@@ -19,7 +19,7 @@ export const BaseTabPanelView: React.FC<{
   const panelVisible = { zIndex: 1, display: 'block' };
   const panelInVisible = { zIndex: -1, display: 'none' };
   return (
-    <div className='tab-panel'>
+    <div className={styles.tab_panel}>
       {tabbarService.visibleContainers.map((component) => {
         const containerId = component.options!.containerId;
         const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
