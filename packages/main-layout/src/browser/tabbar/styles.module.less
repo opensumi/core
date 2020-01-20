@@ -7,7 +7,6 @@
     li {
       list-style: none;
       &.active {
-        background-color: transparent;
         transform: translateY(0);
         .activity-icon {
           color: var(--activityBar-foreground);
@@ -63,7 +62,6 @@
       justify-content: center;
       align-items: center;
       width: 48px;
-      margin-top: 8px;
     }
     .icon-tab:hover {
       cursor: pointer;
@@ -126,14 +124,21 @@
   .left-slot {
     height: 100%;
     .tab-bar {
-      li.active {
-        .icon-tab::before {
-          content: '';
-          display: block;
-          position: absolute;
-          left: 0;
-          height: 100%;
-          border-left: 3px solid var(--kt-activityBar-activeBorder);
+      li {
+        margin-top: 8px;
+        background-color: var(--activityBar-background);
+        &.on-drag-over {
+          background-color: var(--activityBar-dropBackground);
+        }
+        &.active {
+          .icon-tab::before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 0;
+            height: 100%;
+            border-left: 3px solid var(--kt-activityBar-activeBorder);
+          }
         }
       }
     }
@@ -152,9 +157,15 @@
         width: 20px;
         height: 20px;
       }
-      li.active {
-        .icon-tab {
-          background-color: var(--sideBar-background);
+      li {
+        background-color: var(--activityBar-background);
+        &.on-drag-over {
+          background-color: var(--activityBar-dropBackground);
+        }
+        &.active {
+          .icon-tab {
+            background-color: var(--sideBar-background);
+          }
         }
       }
     }
@@ -172,17 +183,22 @@
       flex: 1;
       user-select: none;
       li {
-        margin: 0 12px;
+        margin: 0 4px;
+        padding: 0 8px;
         position: relative;
         height: 28px;
         line-height: 28px;
+        background-color: var(--kt-panelTitle-background);
         &:hover {
           color: var(--panelTitle-activeForeground);
           cursor: pointer;
         }
         &.active {
           color: var(--panelTitle-activeForeground);
-          &::after {
+          >div {
+            position: relative;
+          }
+          >div::after {
             content: '';
             position: absolute;
             bottom: 0;
@@ -191,6 +207,9 @@
             width: 100%;
             height: 2px;
           }
+        }
+        &.on-drag-over {
+          background-color: var(--panel-dropBackground);
         }
       }
       .tab-badge {

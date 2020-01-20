@@ -28,12 +28,33 @@ export const TabbarViewBase: React.FC<{
       <div className={styles.bar_content} style={{flexDirection: Layout.getTabbarDirection(direction)}}>
         {tabbarService.visibleContainers.map((component) => {
           const containerId = component.options!.containerId;
+          let ref: HTMLLIElement | null;
           return (
             <li
+              draggable={true}
+              onDragStart={(e) => tabbarService.handleDragStart(e, containerId)}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (ref) {
+                  ref.classList.add('on-drag-over');
+                }
+              }}
+              onDragLeave={(e) => {
+                if (ref) {
+                  ref.classList.remove('on-drag-over');
+                }
+              }}
+              onDrop={(e) => {
+                if (ref) {
+                  ref.classList.remove('on-drag-over');
+                }
+                tabbarService.handleDrop(e, containerId);
+              }}
               key={containerId}
               id={containerId}
               onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
               onClick={(e) => handleTabClick(e, forbidCollapse)}
+              ref={(el) => ref = el}
               className={clsx({active: currentContainerId === containerId})}>
               <TabView component={component} />
             </li>

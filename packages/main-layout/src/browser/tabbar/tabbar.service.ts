@@ -12,6 +12,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
   hidden: boolean;
+  priority: number;
 }
 const INIT_PANEL_SIZE = 280;
 
@@ -83,6 +84,8 @@ export class TabbarService extends WithEventBus {
   private menuId = `tabbar/${this.location}`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
   private activatedKey: IContextKey<string>;
+  private rendered = false;
+  private sortedContainers: Array<ComponentRegistryInfo> = [];
 
   constructor(public location: string, public noAccordion?: boolean) {
     super();
@@ -100,12 +103,8 @@ export class TabbarService extends WithEventBus {
   }
 
   public getContainerState(containerId: string) {
-    let viewState = this.state.get(containerId);
-    if (!viewState) {
-      this.state.set(containerId, { hidden: false });
-      viewState = this.state.get(containerId)!;
-    }
-    return viewState;
+    const viewState = this.state.get(containerId);
+    return viewState!;
   }
 
   private updatePanel = debounce((show) => {
@@ -129,7 +128,9 @@ export class TabbarService extends WithEventBus {
     });
     // TODO 使用object来存state的话，初始containersMap为空，貌似就无法实现这个监听（无法引用到一个observable的属性）
     const size = this.state.size; // 监听state长度
-    return components.sort((pre, next) => (next.options!.priority !== undefined ? next.options!.priority : 1) - (pre.options!.priority !== undefined ? pre.options!.priority : 1));
+    // 排序策略：默认根据priority来做一次排序，后续根据存储的index来排序，未存储过的（新插入的，比如插件）在渲染后（时序控制）始终放在最后
+    return components.sort((pre, next) =>
+      this.getContainerState(next.options!.containerId).priority - this.getContainerState(pre.options!.containerId).priority);
   }
 
   registerResizeHandle(resizeHandle: ResizeHandle) {
@@ -163,10 +164,23 @@ export class TabbarService extends WithEventBus {
       options: observable.object(options, undefined, {deep: false}),
     });
     this.updatePanelVisibility(this.containersMap.size > 0);
-
-    // 需要立刻设置，lazy 逻辑会导致computed 的 visibleContainers 可能在计算时触发变更，抛出mobx invariant错误
+    // 需要立刻设置state，lazy 逻辑会导致computed 的 visibleContainers 可能在计算时触发变更，抛出mobx invariant错误
     // 另外由于containersMap不是observable, 这边setState来触发visibaleContainers更新
-    this.state.set(containerId, {hidden: false});
+    if (this.rendered) {
+      // 渲染后状态已恢复，使用状态内的顺序或插到最后
+      if (!this.getContainerState(containerId)) {
+        this.state.set(containerId, {hidden: false, priority: this.sortedContainers.length});
+        this.sortedContainers.push(componentInfo);
+      }
+    } else {
+      // 渲染前根据priority排序
+      const insertIndex = this.sortedContainers.findIndex((item) => (item.options!.priority || 1) <= (componentInfo.options!.priority || 1)) + 1;
+      this.sortedContainers.splice(insertIndex, 0, componentInfo);
+      for (let i = insertIndex; i < this.sortedContainers.length; i++) {
+        const info = this.sortedContainers[i];
+        this.state.set(info.options!.containerId, {hidden: false, priority: i});
+      }
+    }
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(containerId),
@@ -231,6 +245,22 @@ export class TabbarService extends WithEventBus {
       x: event.clientX,
       y: event.clientY,
     } });
+  }
+
+  // drag & drop
+  handleDragStart(e: React.DragEvent, containerId: string) {
+    e.dataTransfer.setData('containerId', containerId);
+  }
+  handleDrop(e: React.DragEvent, target: string) {
+    if (e.dataTransfer.getData('containerId')) {
+      const containerId = e.dataTransfer.getData('containerId');
+      const sourceState = this.getContainerState(containerId);
+      const targetState = this.getContainerState(target);
+      const sourcePriority = sourceState.priority;
+      sourceState.priority = targetState.priority;
+      targetState.priority = sourcePriority;
+      this.storeState();
+    }
   }
 
   restoreState() {
@@ -358,6 +388,7 @@ export class TabbarService extends WithEventBus {
   @OnEvent(RenderedEvent)
   protected async onDidRender() {
     this.restoreState();
+    this.rendered = true;
   }
 
   protected shouldExpand(containerId: string) {
@@ -461,9 +492,13 @@ function visibleContainerEquals(a: ComponentRegistryInfo[], b: ComponentRegistry
   if (a.length !== b.length ) {
     return false;
   } else {
+    let isEqual = true;
     for (let i = 0; i < a.length; i ++) {
-      return a[i] === b[i];
+      if (a[i] !== b[i]) {
+        isEqual = false;
+        break;
+      }
     }
+    return isEqual;
   }
-  return true;
 }
