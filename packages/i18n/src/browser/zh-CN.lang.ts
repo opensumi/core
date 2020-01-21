@@ -509,5 +509,10 @@ export const localizationBundle = {
     'kaitianExtension.invalidExthostReload.confirm.ok': '刷新',
     'kaitianExtension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'kaitianExtension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
+
+    'comments': '评论',
+    'comments.reply.placeholder': '请输入',
+    'comments.participants': '参与者',
+    'comments.zone.title': '开始讨论',
   },
 };

@@ -1221,6 +1221,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.grid.dispose();
     this.workbenchEditorService.removeGroup(this);
     super.dispose();
+    this.codeEditor && this.codeEditor.dispose();
+    this.diffEditor && this.diffEditor.dispose();
     this.toDispose.forEach((disposable) => disposable.dispose());
     this.eventBus.fire(new EditorGroupDisposeEvent({
       group: this,

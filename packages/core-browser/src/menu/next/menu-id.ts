@@ -42,13 +42,12 @@ export enum MenuId {
   TouchBarContext = 'touch/bar/context',
   ViewItemContext = 'view/item/context',
   ViewTitle = 'view/title',
-  CommentThreadTitle = 'comment/thread/title',
-  CommentThreadActions = 'comment/thread/actions',
-  CommentTitle = 'comment/title',
-  CommentActions = 'comment/actions',
   GlobalActivity = 'global/activity',
   ExtensionContext = 'extension/context', // 插件市场 item
   SettingsIconMenu = 'settings/icon/menu', // 右下角 setting menu
+  CommentsCommentThreadContext = 'comments/commentThread/context',
+  CommentsCommentTitle = 'comments/comment/title',
+  CommentsCommentContext = 'comments/comment/context',
 }
 
 export function getTabbarCommonMenuId(location: string) {

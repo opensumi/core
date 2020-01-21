@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/comments/src",
+    "outDir": "../../../packages/comments/lib"
+  },
+  "include": [
+    "../../../packages/comments/src"
+  ]
+}

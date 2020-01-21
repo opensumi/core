@@ -341,6 +341,12 @@
       ],
       "@ali/ide-addons/lib/*": [
         "../packages/addons/src/*"
+      ],
+      "@ali/ide-comments": [
+        "../packages/comments/src/index.ts"
+      ],
+      "@ali/ide-comments/lib/*": [
+        "../packages/comments/src/*"
       ]
     }
   }

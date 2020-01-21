@@ -13,6 +13,8 @@ export interface CommandFormat {
 
   icon: { [index in ThemeType]: string } | string;
 
+  enablement?: string;
+
 }
 
 export type CommandsSchema = Array<CommandFormat>;
@@ -55,6 +57,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
         label: this.getLocalieFromNlsJSON(command.title),
         id: command.command,
         iconClass: this.iconService.fromIcon(this.extension.path, command.icon, IconType.Background),
+        enablement: command.enablement,
       }, {
         execute: (...args: any[]) => {
           return this.extensionService.executeExtensionCommand(command.command, args);

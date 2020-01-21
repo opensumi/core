@@ -1,0 +1,121 @@
+:global {
+  .monaco-editor {
+    .comments-glyph {
+      margin-left: 15px;
+      width: 4px !important;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .comments-glyph::before {
+      position: absolute;
+      content: '';
+      height: 100%;
+      width: 0;
+      left: -2px;
+      transition: width 80ms linear, left 80ms linear;
+    }
+
+    .comment-thread:before,
+    .margin-view-overlays>div:hover>.comment-diff-added:not(.comment-thread):before {
+      position: absolute;
+      content: '+';
+      height: 100%;
+      width: 8px;
+      left: -6px;
+      color: var(--editorGutter-background);
+      text-align: center;
+    }
+
+    .comment-diff-added,
+    .comment-thread {
+      border-left: 3px solid var(--editorGutter-commentRangeForeground);
+
+      &:before {
+        background: var(--editorGutter-commentRangeForeground);
+      }
+    }
+
+    .comment-thread:before {
+      content: '◆';
+    }
+  }
+}
+
+.comment_container {
+  background-color: var(--peekViewResult-background);
+  border-top: 2px solid var(--peekView-border);
+  border-bottom: 2px solid var(--peekView-border);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  height: 22px;
+  line-height: 22px;
+  padding: 0 2px 0 20px;
+  border-bottom: 1px solid var(--foreground);
+}
+
+.review_title {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow:ellipsis;
+  white-space: nowrap;
+}
+
+.review_action {
+  transform: rotate(180deg);
+  cursor: pointer;
+}
+
+.comment_reply_container {
+  margin: 10px 20px;
+}
+
+.textarea_container {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.textarea {
+  flex: 1;
+  border-color: transparent;
+  resize: none;
+  outline: none;
+  background-color: var(--peekViewEditor-background);
+  padding: 0 6px;
+}
+
+.comment_reply_actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.comment_item {
+  padding: 6px 30px;
+}
+
+.comment_item_head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.comment_item_author_name {
+  font-weight: bold;
+  line-height: 26px;
+}
+
+.comment_item_icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  margin-right: 10px;
+}
+
+.comment_panel {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
