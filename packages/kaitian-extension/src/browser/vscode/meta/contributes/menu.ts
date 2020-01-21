@@ -47,10 +47,10 @@ export const contributedMenuUtils = {
       case 'statusBar/windowIndicator': return MenuId.StatusBarWindowIndicatorMenu;
       case 'view/title': return MenuId.ViewTitle;
       case 'view/item/context': return MenuId.ViewItemContext;
-      case 'comments/commentThread/title': return MenuId.CommentThreadTitle;
-      case 'comments/commentThread/context': return MenuId.CommentThreadActions;
-      case 'comments/comment/title': return MenuId.CommentTitle;
-      case 'comments/comment/context': return MenuId.CommentActions;
+      case 'comments/commentThread/title': return MenuId.CommentsCommentThreadTitle;
+      case 'comments/commentThread/context': return MenuId.CommentsCommentThreadContext;
+      case 'comments/comment/title': return MenuId.CommentsCommentTitle;
+      case 'comments/comment/context': return MenuId.CommentsCommentContext;
     }
     return undefined;
   },

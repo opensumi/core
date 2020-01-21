@@ -46,6 +46,7 @@ export enum MenuId {
   ExtensionContext = 'extension/context', // 插件市场 item
   SettingsIconMenu = 'settings/icon/menu', // 右下角 setting menu
   CommentsCommentThreadContext = 'comments/commentThread/context',
+  CommentsCommentThreadTitle = 'comments/commentThread/title',
   CommentsCommentTitle = 'comments/comment/title',
   CommentsCommentContext = 'comments/comment/context',
 }

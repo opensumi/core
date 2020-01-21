@@ -73,7 +73,8 @@
     "@ali/ide-workspace": "1.7.7",
     "@ali/ide-workspace-edit": "1.7.7",
     "@ali/ide-keymaps": "1.7.7",
-    "@ali/ide-outline": "1.7.7"
+    "@ali/ide-outline": "1.7.7",
+    "@ali/ide-comments": "1.7.7"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
