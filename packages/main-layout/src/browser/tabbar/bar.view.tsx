@@ -15,7 +15,8 @@ export const TabbarViewBase: React.FC<{
   forbidCollapse?: boolean;
   barSize?: number;
   panelBorderSize?: number;
-}> = observer(({ TabView, forbidCollapse, barSize = 48, panelBorderSize = 0 }) => {
+  tabClassName?: string;
+}> = observer(({ TabView, forbidCollapse, barSize = 48, panelBorderSize = 0, tabClassName }) => {
   const { side, direction } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   React.useEffect(() => {
@@ -24,17 +25,50 @@ export const TabbarViewBase: React.FC<{
   }, []);
   const { currentContainerId, handleTabClick } = tabbarService;
   return (
-    <div className='tab-bar'>
+    <div className={styles.tab_bar}>
       <div className={styles.bar_content} style={{flexDirection: Layout.getTabbarDirection(direction)}}>
         {tabbarService.visibleContainers.map((component) => {
           const containerId = component.options!.containerId;
+          let ref: HTMLLIElement | null;
           return (
             <li
+              draggable={true}
+              onDragStart={(e) => {
+                if (ref) {
+                  const dragImage = ref.cloneNode(true) as HTMLLIElement;
+                  dragImage.classList.add(styles.dragging);
+                  if (tabClassName) {
+                    dragImage.classList.add(tabClassName);
+                  }
+                  document.body.appendChild(dragImage);
+                  e.dataTransfer.setDragImage(dragImage, 0, 0);
+                  setTimeout(() => document.body.removeChild(dragImage), 0);
+                }
+                tabbarService.handleDragStart(e, containerId);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (ref) {
+                  ref.classList.add('on-drag-over');
+                }
+              }}
+              onDragLeave={(e) => {
+                if (ref) {
+                  ref.classList.remove('on-drag-over');
+                }
+              }}
+              onDrop={(e) => {
+                if (ref) {
+                  ref.classList.remove('on-drag-over');
+                }
+                tabbarService.handleDrop(e, containerId);
+              }}
               key={containerId}
               id={containerId}
               onContextMenu={(e) => tabbarService.handleContextMenu(e, containerId)}
               onClick={(e) => handleTabClick(e, forbidCollapse)}
-              className={clsx({active: currentContainerId === containerId})}>
+              ref={(el) => ref = el}
+              className={clsx({active: currentContainerId === containerId}, tabClassName)}>
               <TabView component={component} />
             </li>
           );
@@ -45,24 +79,24 @@ export const TabbarViewBase: React.FC<{
 });
 
 const IconTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ component }) => {
-  return <div className='icon-tab'>
+  return <div className={styles.icon_tab}>
     <div className={clsx(component.options!.iconClass, 'activity-icon')} title={component.options!.title}></div>
-    {component.options!.badge && <div className='tab-badge'>{component.options!.badge}</div>}
+    {component.options!.badge && <div className={styles.tab_badge}>{component.options!.badge}</div>}
   </div>;
 });
 
 const TextTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ component }) => {
   return <div className={styles.text_tab}>
     <div className={styles.bottom_tab_title}>{component.options!.title}</div>
-    {component.options!.badge && <div className='tab-badge'>{component.options!.badge}</div>}
+    {component.options!.badge && <div className={styles.tab_badge}>{component.options!.badge}</div>}
   </div>;
 });
 
 export const RightTabbarRenderer: React.FC = () => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  return (<div className='right-tab-bar' onContextMenu={tabbarService.handleContextMenu}>
-    <TabbarViewBase TabView={IconTabView} barSize={40} panelBorderSize={1}/>
+  return (<div className={styles.right_tab_bar} onContextMenu={tabbarService.handleContextMenu}>
+    <TabbarViewBase tabClassName={styles.kt_right_tab} TabView={IconTabView} barSize={40} panelBorderSize={1}/>
   </div>);
 };
 
@@ -70,8 +104,8 @@ export const LeftTabbarRenderer: React.FC = () => {
   const { side } = React.useContext(TabbarConfig);
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  return (<div className='left-tab-bar' onContextMenu={tabbarService.handleContextMenu}>
-    <TabbarViewBase TabView={IconTabView} barSize={48} panelBorderSize={1}/>
+  return (<div className={styles.left_tab_bar} onContextMenu={tabbarService.handleContextMenu}>
+    <TabbarViewBase tabClassName={styles.kt_left_tab} TabView={IconTabView} barSize={48} panelBorderSize={1}/>
     <InlineMenuBar className={styles.vertical_icons} menus={layoutService.getExtraMenu()} />
   </div>);
 };
@@ -89,7 +123,7 @@ export const NextBottomTabbarRenderer: React.FC = () => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   return (
     <div onContextMenu={tabbarService.handleContextMenu} className={clsx(styles.bottom_bar_container, 'next_bottom_bar')}>
-      <TabbarViewBase TabView={TextTabView} barSize={28} panelBorderSize={1}/>
+      <TabbarViewBase tabClassName={styles.kt_bottom_tab} TabView={TextTabView} barSize={28} panelBorderSize={1}/>
     </div>
   );
 };
