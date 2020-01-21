@@ -181,7 +181,7 @@ export class ExplorerOpenedEditorService {
             if (status.dirty) {
               node  = {
                 ...node,
-                headClass: styles.dirty_icon,
+                headIconClass: styles.dirty_icon,
               };
             }
             treeData.push({
@@ -232,7 +232,7 @@ export class ExplorerOpenedEditorService {
         });
         return {
           ...node,
-          headClass: payload.decoration.dirty ? styles.dirty_icon : '',
+          headIconClass: payload.decoration.dirty ? styles.dirty_icon : '',
         };
       }
       return node;

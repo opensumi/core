@@ -146,9 +146,9 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   readonly descriptionClass?: string;
 
   /**
-   * 节点头部的样式，如，dirty状态文件的小圆点
+   * 节点头部的图标样式，如，dirty状态文件的小圆点
    */
-  readonly headClass?: string;
+  readonly headIconClass?: string;
 
   /**
    * 是否为临时文件，如可编辑节点

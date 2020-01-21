@@ -116,16 +116,6 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
   />;
 };
 
-const renderHead = (node: TreeNode) => {
-  return <div
-    className={cls(
-      styles.treenode_head,
-      node.headClass,
-    )}
-  >
-  </div>;
-};
-
 export const TreeContainerNode = (
   {
     node,
@@ -312,7 +302,7 @@ export const TreeContainerNode = (
 
   };
 
-  const renderIcon = (node: TreeNode | ExpandableTreeNode) => {
+  const renderHead = (node: TreeNode | ExpandableTreeNode) => {
     const treeNodeLeftActions: TreeViewAction[] = [];
     if (!ExpandableTreeNode.is(node)) {
       for (const action of actions) {
@@ -325,8 +315,21 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight}px`}}>
+    return <div
+      className={cls(
+        styles.treenode_head,
+      )}
+    >
+      { node.headIconClass && <div className={cls(
+        styles.treenode_head_icon,
+        node.headIconClass,
+      )}></div>}
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
+    </div>;
+  };
+
+  const renderIcon = (node: TreeNode | ExpandableTreeNode) => {
+    return <div className={cls(node.icon, styles.file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight}px`}}>
     </div>;
   };
 
@@ -501,7 +504,7 @@ export const TreeContainerNode = (
       >
         {renderTitle(node)}
         <div className={cls(styles.treenode_content, node.badge ? styles.treenode_has_badge : '')} style={itemStyle}>
-          {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
+          {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || renderHead(node)}
           {renderIcon(node)}
           <div
             className={isEdited ? styles.treenode_edit_wrap : isString(node.name) ? styles.treenode_overflow_wrap : styles.treenode_flex_wrap}
