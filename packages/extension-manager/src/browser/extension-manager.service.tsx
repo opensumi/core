@@ -123,13 +123,16 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @debounce(300)
   private async searchExtensionFromMarketplace(query: string) {
     try {
+      const installedExtensions = this.showExtensions.filter((extension) => {
+        return extension.name.includes(query) || (extension.displayName && extension.displayName.includes(query));
+      });
+      this.searchMarketplaceResults = installedExtensions;
       // 排除掉已安装的插件
       const res = await this.extensionManagerServer.search(query, this.installedIds);
-      if (res.count > 0) {
-        const data = res.data
-        .map(this.transformMarketplaceExtension);
+      if (res.count > 0 || installedExtensions.length > 0) {
+        const data = res.data.map(this.transformMarketplaceExtension);
         runInAction(() => {
-          this.searchMarketplaceResults = data;
+          this.searchMarketplaceResults = [...installedExtensions, ...data];
           this.searchMarketplaceState = SearchState.LOADED;
         });
       } else {
