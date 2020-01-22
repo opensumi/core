@@ -97,6 +97,7 @@ export class TabBarHandler {
     const targetView = this.accordionService.views.find((view) => view.id === viewId);
     if (targetView) {
       targetView.name = title;
+      this.accordionService.forceUpdate ++;
     } else {
       console.error('没有找到目标视图，无法更新手风琴标题!');
     }
