@@ -10,6 +10,7 @@ export interface SectionState {
   collapsed: boolean;
   hidden: boolean;
   size?: number;
+  nextSize?: number;
 }
 
 @Injectable({multiple: true})
@@ -47,6 +48,8 @@ export class AccordionService extends WithEventBus {
 
   @observable state: {[containerId: string]: SectionState} = {};
 
+  rendered = false;
+
   private headerSize: number;
   private minSize: number;
   private menuId = `accordion/${this.containerId}`;
@@ -83,6 +86,7 @@ export class AccordionService extends WithEventBus {
     const restoredState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     this.state = restoredState;
     this.restoreSize();
+    this.rendered = true;
   }
 
   // 调用时需要保证dom可见
@@ -177,7 +181,7 @@ export class AccordionService extends WithEventBus {
   }
 
   protected storeState() {
-    if (this.noRestore) { return; }
+    if (this.noRestore || !this.rendered) { return; }
     this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), this.state);
   }
 
@@ -341,15 +345,18 @@ export class AccordionService extends WithEventBus {
     // 视图即将折叠时、受其他视图影响尺寸变化时、主动展开时、resize时均需要存储尺寸信息
     if (isIncrement) {
       calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
-      viewState.size = calcTargetSize;
-    } else if (targetSize === this.headerSize) {
-      // 当前视图即将折叠且不是唯一展开的视图时，存储当前高度
-      viewState.size = prevSize;
-    } else {
-      viewState.size = calcTargetSize;
+    }
+    if (this.rendered) {
+      if (targetSize === this.headerSize) {
+        // 当前视图即将折叠且不是唯一展开的视图时，存储当前高度
+        viewState.size = prevSize;
+      } else {
+        viewState.size = calcTargetSize;
+      }
     }
     this.storeState();
-    panel.style.height = calcTargetSize / fullHeight * 100 + '%';
+    // panel.style.height = calcTargetSize / fullHeight * 100 + '%';
+    viewState.nextSize = calcTargetSize;
     if (!noAnimation) {
       setTimeout(() => {
         // 动画 0.1s，保证结束后移除
