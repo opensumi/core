@@ -16,38 +16,38 @@ export class Logger implements ILogServiceClient {
   private LoggerManager: ILoggerManagerClient;
   private logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.Browser);
 
-  getLevel() {
+  public getLevel() {
     return this.getLevel();
   }
 
-  setLevel(level: LogLevel) {
+  public setLevel(level: LogLevel) {
     return this.logger.setLevel(level);
   }
 
-  error(...args) {
+  public error(...args) {
     return this.logger.error(...args);
   }
 
-  warn(...args) {
+  public warn(...args) {
     return this.logger.warn(...args);
   }
 
-  log(...args) {
+  public log(...args) {
     return this.logger.log(...args);
   }
-  debug(...args) {
+  public debug(...args) {
     return this.logger.debug(...args);
   }
 
-  verbose(...args) {
+  public verbose(...args) {
     return this.logger.verbose(...args);
   }
 
-  critical(...args) {
+  public critical(...args) {
     return this.logger.critical(...args);
   }
 
-  dispose() {
+  public dispose() {
     return this.logger.dispose();
   }
 }

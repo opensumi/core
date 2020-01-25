@@ -4,7 +4,7 @@ export class ClientAppConfigProvider {
 
   private static KEY = Symbol('ClientAppConfigProvider');
 
-  static get(): ClientAppConfig {
+  public static get(): ClientAppConfig {
     const config = ClientAppConfigProvider.doGet();
     if (config === undefined) {
       throw new Error('The configuration is not set. Did you call ClientAppConfigProvider#set?');
@@ -12,7 +12,7 @@ export class ClientAppConfigProvider {
     return config;
   }
 
-  static set(config: ClientAppConfig): void {
+  public static set(config: ClientAppConfig): void {
     if (ClientAppConfigProvider.doGet() !== undefined) {
       throw new Error('The configuration is already set.');
     }
