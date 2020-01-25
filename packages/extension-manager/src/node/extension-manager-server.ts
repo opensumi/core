@@ -102,7 +102,7 @@ export class ExtensionManager implements IExtensionManager {
     }
   }
 
-  public async getUnpressExtensionDir(extensionDirName: string, extension) {
+  public async getUnpressExtensionDir(extensionDirName: string, extension: BaseExtension): Promise<string> {
     return path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
   }
 
