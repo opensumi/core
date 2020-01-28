@@ -38,6 +38,7 @@ export enum SearchState {
   LOADING,
   LOADED,
   NO_CONTENT,
+  NO_MORE,
 }
 
 /**
@@ -140,13 +141,14 @@ export interface IExtensionManagerService  {
   installExtension(extension: BaseExtension, version?: string): Promise<string>;
   updateExtension(extension: BaseExtension, version: string): Promise<string>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
+  loadHotExtensions(): Promise<void>;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
 export interface IExtensionManagerServer {
   search(query: string, ignoreId?: string[]): Promise<any>;
   getExtensionFromMarketPlace(extensionId: string, version?: string): Promise<any>;
-  getHotExtensions(ignoreId?: string[]): Promise<any>;
+  getHotExtensions(ignoreId: string[], queryIndex: number): Promise<any>;
   isShowBuiltinExtensions(): boolean;
   setHeaders(headers: RequestHeaders): void;
   installExtension(extension: BaseExtension, version?: string): Promise<string>;
