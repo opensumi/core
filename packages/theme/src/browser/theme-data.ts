@@ -123,7 +123,7 @@ export class ThemeData implements IThemeData {
   }
 
   private async loadSyntaxTokens(themeLocation): Promise<ITokenColorizationRule[]> {
-    const {content} = await this.fileServiceClient.resolveContent(themeLocation);
+    const {content} = await this.fileServiceClient.resolveContent(URI.file(themeLocation).toString());
     try {
       const theme = parsePList(content);
       const settings = theme.settings;
