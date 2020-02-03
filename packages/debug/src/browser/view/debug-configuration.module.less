@@ -1,28 +1,61 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
 .kt_debug_action_bar {
-  height: 36px;
+  height: 44px;
   display: flex;
   align-items: center;
+  padding-right: 8px;
+  padding-left: 8px;
   justify-content: flex-start;
   pointer-events: all;
-  padding: 0px 2px;
+
+  .kt_debug_actions {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 124px;
+    max-width: 144px;
+  }
 
   .debug_selection {
     width: 100%;
-    margin-left: 8px;
-    margin-right: 2px;
+    min-width: 50px;
+    margin-right: 10px;
+
+    :global(.kt-select-value) {
+      & > option {
+        min-width: 22px;
+      }
+    }
   }
 }
 
 .debug_configuration_toolbar {
   display: flex;
-  padding-top: 12px;
-  padding-right: 2px;
+  padding-right: 8px;
+  align-items: center;
+
+  .kt_debug_actions {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 58px;
+    max-width: 66px;
+  }
+
   .debug_selection {
     width: 100%;
+    min-width: 50px;
     margin-left: 8px;
-    margin-right: 8px;
+    margin-right: 6px;
+
+    :global(.kt-select-value) {
+      & > option {
+        min-width: 22px;
+      }
+    }
   }
 }
 

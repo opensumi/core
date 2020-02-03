@@ -90,20 +90,20 @@ export const DebugToolbarView = observer(() => {
       if (isElectronRenderer()) {
         return <option key={ session.id } value={ session.id }>{ session.label }</option>;
       }
-      return <Option key={ session.id } label={session.label} value={ session.id }>{ session.label }</Option>;
+      return <Option key={ session.id } label={ session.label } value={ session.id }>{ session.label }</Option>;
     });
   };
 
   const renderSelections = (sessions: DebugSession[]) => {
     if (sessionCount > 1) {
       return <div className={ cls(styles.debug_selection) }>
-        {isElectronRenderer() ?
+        { isElectronRenderer() ?
           <NativeSelect value={ currentSessionId } onChange={ setCurrentSession }>
-          { renderSessionOptions(sessions) }
-        </NativeSelect> :
-        <Select value={ currentSessionId } onChange={ setCurrentSession }>
-        { renderSessionOptions(sessions) }
-      </Select>}
+            { renderSessionOptions(sessions) }
+          </NativeSelect> :
+          <Select value={ currentSessionId } onChange={ setCurrentSession } className={ cls(styles.debug_selection, styles.special_radius) }>
+            { renderSessionOptions(sessions) }
+          </Select> }
       </div>;
     }
   };
@@ -127,14 +127,15 @@ export const DebugToolbarView = observer(() => {
   return (
     <React.Fragment>
       <div className={ styles.kt_debug_action_bar }>
-        { renderContinue(state) }
-        <DebugAction run={ doStepOver } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step' } label={ localize('debug.action.step-over') } />
-        <DebugAction run={ doStepIn } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-in' } label={ localize('debug.action.step-into') } />
-        <DebugAction run={ doStepOut } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
-        <DebugAction run={ doRestart } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'reload' } label={ localize('debug.action.restart') } />
-        { renderStop(state, sessionCount) }
         { renderSelections(sessions) }
-
+        <div className={ styles.kt_debug_actions }>
+          { renderContinue(state) }
+          <DebugAction run={ doStepOver } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step' } label={ localize('debug.action.step-over') } />
+          <DebugAction run={ doStepIn } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-in' } label={ localize('debug.action.step-into') } />
+          <DebugAction run={ doStepOut } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
+          <DebugAction run={ doRestart } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'reload' } label={ localize('debug.action.restart') } />
+          { renderStop(state, sessionCount) }
+        </div>
       </div>
     </React.Fragment>
   );
