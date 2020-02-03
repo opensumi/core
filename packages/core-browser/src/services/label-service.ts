@@ -49,7 +49,7 @@ function serializeLabelOptions(options?: ILabelOptions): string {
 @Injectable()
 export class DefaultUriLabelProvider implements ILabelProvider {
 
-  canHandle(uri: object, options?: ILabelOptions): number {
+  public canHandle(uri: object, options?: ILabelOptions): number {
     if (uri instanceof URI) {
       return 1;
     }
@@ -57,16 +57,16 @@ export class DefaultUriLabelProvider implements ILabelProvider {
   }
 
   // TODO 运行时获取
-  getIcon(uri: URI, options?: ILabelOptions): string {
+  public getIcon(uri: URI, options?: ILabelOptions): string {
     const iconClass = getIconClass(uri, options);
     return iconClass || getIcon('ellipsis');
   }
 
-  getName(uri: URI): string {
+  public getName(uri: URI): string {
     return uri.displayName;
   }
 
-  getLongName(uri: URI): string {
+  public getLongName(uri: URI): string {
     return uri.path.toString();
   }
 
@@ -105,7 +105,7 @@ export class LabelService extends WithEventBus {
     }
   }
 
-  registerLabelProvider(provider: ILabelProvider): IDisposable {
+  public registerLabelProvider(provider: ILabelProvider): IDisposable {
     this.cachedProviderMap.clear();
     const disposer = new Disposable();
     if (provider.onDidChange) {
@@ -122,7 +122,7 @@ export class LabelService extends WithEventBus {
     return disposer;
   }
 
-  getIcon(uri: URI, options?: ILabelOptions): string {
+  public getIcon(uri: URI, options?: ILabelOptions): string {
     const provider = this.getProviderForUri(uri, options);
     if (provider) {
       return provider.getIcon!(uri, options);
@@ -131,7 +131,7 @@ export class LabelService extends WithEventBus {
     }
   }
 
-  getName(uri: URI): string {
+  public getName(uri: URI): string {
     const provider = this.getProviderForUri(uri);
     if (provider) {
       return provider.getName!(uri);
@@ -140,7 +140,7 @@ export class LabelService extends WithEventBus {
     }
   }
 
-  getLongName(uri: URI): string {
+  public getLongName(uri: URI): string {
     const provider = this.getProviderForUri(uri);
     if (provider) {
       return provider.getLongName!(uri);
