@@ -84,6 +84,6 @@ export const DebubgConfigurationView = observer(() => {
         <DebugAction color={ 'var(--foreground)' } icon={ 'terminal' } label={ localize('debug.action.debug.console') } run={ openDebugConsole }></DebugAction>
       </div>
     </div>
-    { float ? <FloatDebugToolbarView /> : <DebugToolbarView /> }
+    { float ? <FloatDebugToolbarView /> : <DebugToolbarView float={ false } /> }
   </div>;
 });
