@@ -8,6 +8,7 @@ import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
 import * as awaitEvent from 'await-event';
 import { renameSync } from 'fs-extra';
 import * as pkg from '@ali/ide-core-node/package.json';
+import * as qs from 'querystring';
 
 @Injectable()
 export class ExtensionManagerRequester implements IExtensionManagerRequester {
@@ -219,10 +220,13 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
     }
   }
 
-  async getHotExtensions(ignoreId: string[] = []) {
-    const ignoreIdList = [...ignoreId, ...this.appConfig.marketplace.ignoreId].map((id) => `&ignoreId=${id}`).join('');
+  async getHotExtensions(ignoreId: string[] = [], pageIndex = 1) {
+    const query = {
+      ignoreId: [...ignoreId, ...this.appConfig.marketplace.ignoreId],
+      pageIndex,
+    };
     try {
-      const res = await this.extensionManagerRequester.request(`hot${ignoreIdList ? '?' + ignoreIdList : ''}`, {
+      const res = await this.extensionManagerRequester.request(`hot?${qs.stringify(query)}`, {
         dataType: 'json',
         timeout: 5000,
       });
