@@ -1,6 +1,7 @@
 import { Injectable, Autowired, Injector } from '@ali/common-di';
 import { URI, createContributionProvider } from '@ali/ide-core-common';
-import { ContributionProvider } from '@ali/ide-core-common';
+import { ContributionProvider, DEFAULT_WORKSPACE_STORAGE_DIR_NAME } from '@ali/ide-core-common';
+import { AppConfig } from '../react-providers';
 
 export const PreferenceConfiguration = Symbol('PreferenceConfiguration');
 
@@ -16,15 +17,20 @@ export function injectPreferenceConfigurations(injector: Injector): void {
   });
 }
 
-export const WORKSPACE_FOLDER_NAME = '.kaitian';
 @Injectable()
 export class PreferenceConfigurations {
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   @Autowired(PreferenceConfiguration)
   private readonly preferenceConfigurationProvider: ContributionProvider<PreferenceConfiguration>;
 
-  public getPaths(): string[] {
-    return [WORKSPACE_FOLDER_NAME];
+  getPaths(): string[] {
+    if (this.appConfig.preferenceDirName) {
+      return [this.appConfig.preferenceDirName];
+    }
+    return [DEFAULT_WORKSPACE_STORAGE_DIR_NAME];
   }
 
   public getConfigName(): string {

@@ -142,6 +142,9 @@ export class ClientApp implements IClientApp {
       isSyncPreference: opts.isSyncPreference,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
       clientId: opts.clientId,
+      preferenceDirName: opts.preferenceDirName,
+      storageDirName: opts.storageDirName,
+      extensionStorageDirName: opts.extensionStorageDirName,
     };
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {

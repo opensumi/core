@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceSchemaProperty, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig, PreferenceService } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig, PreferenceService } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference.service';
 import './index.less';
 import * as styles from './preferences.module.less';
@@ -154,14 +154,13 @@ export const PreferenceSection = ({section, scope}: {section: ISettingSection, s
 
 export const PreferenceItemView = ({preferenceName, localizedName, scope}: {preferenceName: string, localizedName?: string, scope: PreferenceScope}) => {
   const appConfig: AppConfig = useInjectable(AppConfig);
-
   const logger = useInjectable(ILogger);
+
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = useInjectable(PreferenceSchemaProvider);
 
   const commandService = useInjectable(CommandService);
   const fileServiceClient = useInjectable(IFileServiceClient);
-  const workspaceService: IWorkspaceService = useInjectable(IWorkspaceService);
 
   const key = preferenceName;
   const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
@@ -419,37 +418,20 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
       </div>
     );
   };
-  const editSettingsJson = () => {
-
-    const doOpen = (uri) => {
-      fileServiceClient.exists(uri).then((exist) => {
-        if (exist) {
-          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
-        } else {
-          fileServiceClient.createFile(uri, {content: '', overwrite: false}).then((fstat) => {
-            commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
-          }).catch((e) => {
-            console.log('create settings.json faild!', e);
-          });
-        }
-
-      });
-    };
-
-    if (scope === PreferenceScope.User) {
-      fileServiceClient.getCurrentUserHome().then((dir) => {
-        if (dir) {
-          doOpen(dir.uri + '/.kaitian/settings.json');
-        }
-      });
-    } else {
-      workspaceService.roots.then( (dirs) => {
-        const dir = dirs[0];
-        if (dir) {
-          doOpen(dir.uri + '/.kaitian/settings.json');
-        }
-      });
+  const editSettingsJson = async () => {
+    const openUri = await preferenceService.getPreferenceUrl(scope);
+    if (!openUri) {
+      return;
     }
+    const exist = await fileServiceClient.exists(openUri);
+    if (!exist) {
+      try {
+        await fileServiceClient.createFile(openUri, {content: '', overwrite: false});
+      } catch (e) {
+        logger.error('create settings.json failed!', e);
+      }
+    }
+    commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(openUri));
   };
 
   return <div className={classnames({

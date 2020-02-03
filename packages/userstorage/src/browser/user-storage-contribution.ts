@@ -33,12 +33,16 @@ export class UserStorageResource implements Resource {
     this.toDispose.dispose();
   }
 
-  readContents(options?: { encoding?: string }): Promise<string> {
-    return this.service.readContents(this.uri);
+  async readContents(options?: { encoding?: string }) {
+    return await this.service.readContents(this.uri);
   }
 
-  saveContents(content: string): Promise<void> {
-    return this.service.saveContents(this.uri, content);
+  async saveContents(content: string) {
+    return await this.service.saveContents(this.uri, content);
+  }
+
+  async getFsPath() {
+    return await this.service.getFsPath(this.uri);
   }
 
   get onDidChangeContents(): Event<void> {

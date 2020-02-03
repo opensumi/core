@@ -7,9 +7,14 @@ export interface IExtensionStoragePathServer {
     // 构建插件进程的日志路径，当路径不存在时，创建该文件路径
     provideHostLogPath(): Promise<string>;
     // 根据给定的workspace构建存储路径
-    provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[]): Promise<string | undefined>;
-    // 返回最后使用的存储路径
+    provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName: string): Promise<string | undefined>;
+    // 返回最后使用的存储路径(根据workspace生成的存储路径)
+    getLastWorkspaceStoragePath(): Promise<string | undefined>;
+    // 获取最后使用的顶级存储路径，默认为 ~/.kaitian
     getLastStoragePath(): Promise<string | undefined>;
     // 返回数据存储文件夹
-    getWorkspaceDataDirPath(): Promise<string>;
+    getWorkspaceDataDirPath(extensionStorageDirName: string): Promise<string>;
 }
+
+// 可配置，通过AppConfig传入extensionStorageDirName替换
+export const DEFAULT_EXTENSION_STORAGE_DIR_NAME = '.kaitian';

@@ -7,6 +7,8 @@ export interface UserStorageService extends IDisposable {
 
   saveContents(uri: URI, content: string): Promise<void>;
 
+  getFsPath(uri: URI): Promise<string | undefined>;
+
   onUserStorageChanged: Event<UserStorageChangeEvent>;
 }
 

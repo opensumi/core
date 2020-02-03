@@ -7,7 +7,7 @@ export interface IStoragePathServer {
   // 返回缓存的全局存储路径
   getLastGlobalStoragePath(): Promise<string | undefined>;
   // 提供对应storageName的工作区文件夹存储路径
-  provideWorkspaceStorageDirPath(): Promise<string | undefined>;
+  provideWorkspaceStorageDirPath(storageDirName?: string): Promise<string | undefined>;
   // 提供对应storageName的全局文件夹存储路径
-  provideGlobalStorageDirPath(): Promise<string | undefined>;
+  provideGlobalStorageDirPath(storageDirName?: string): Promise<string | undefined>;
 }

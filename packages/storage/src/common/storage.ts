@@ -20,7 +20,7 @@ export interface StringKeyToAnyValue {
 }
 
 export interface IStorageServer {
-  init(workspace?: string): Promise<string | undefined>;
+  init(storageDirName?: string, workspace?: string): Promise<string | undefined>;
 
   getItems(storageName: string): Promise<StringKeyToAnyValue>;
   updateItems(storageName: string, request: IUpdateRequest): Promise<void>;

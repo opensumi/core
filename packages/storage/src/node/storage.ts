@@ -23,13 +23,13 @@ export class WorkspaceStorageServer implements IStorageServer {
   private onDidChangeEmiter = new Emitter<StorageChange>();
   readonly onDidChange: Event<StorageChange> = this.onDidChangeEmiter.event;
 
-  public async init(workspaceNamespace?: string) {
+  public async init(storageDirName?: string, workspaceNamespace?: string) {
     this.workspaceNamespace = workspaceNamespace;
-    return await this.setupDirectories();
+    return await this.setupDirectories(storageDirName);
   }
 
-  private async setupDirectories() {
-    const storagePath = await this.dataStoragePathServer.provideWorkspaceStorageDirPath();
+  private async setupDirectories(storageDirName?: string) {
+    const storagePath = await this.dataStoragePathServer.provideWorkspaceStorageDirPath(storageDirName);
     this.deferredStorageDirPath.resolve(storagePath);
     this.databaseStorageDirPath = storagePath;
     return storagePath;
@@ -165,12 +165,12 @@ export class GlobalStorageServer implements IStorageServer {
   private onDidChangeEmiter = new Emitter<StorageChange>();
   readonly onDidChange: Event<StorageChange> = this.onDidChangeEmiter.event;
 
-  public async init() {
-    return await this.setupDirectories();
+  public async init(storageDirName: string) {
+    return await this.setupDirectories(storageDirName);
   }
 
-  private async setupDirectories() {
-    const storagePath = await this.dataStoragePathServer.provideGlobalStorageDirPath();
+  private async setupDirectories(storageDirName: string) {
+    const storagePath = await this.dataStoragePathServer.provideGlobalStorageDirPath(storageDirName);
     this.deferredStorageDirPath.resolve(storagePath);
     this.databaseStorageDirPath = storagePath;
     return storagePath;

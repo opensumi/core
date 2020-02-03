@@ -8,6 +8,7 @@ import { createHash } from 'crypto';
 import { ExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService } from '../common';
 import { RPCService } from '@ali/ide-connection';
 import * as lp from './languagePack';
+import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
 
 export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.kaitian');
 
@@ -16,11 +17,14 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
 
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;
+
+  @Autowired(IExtensionStoragePathServer)
+  private extensionStoragePathServer: IExtensionStoragePathServer;
+
   private clientId: string;
 
   public setConnectionClientId(clientId: string) {
     this.clientId = clientId;
-
     this.extensionService.setConnectionServiceClient(this.clientId, this);
   }
 
@@ -79,8 +83,9 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
 
   public async updateLanguagePack(languageId: string, languagePack: string): Promise<void> {
     let languagePacks: { [key: string]: any } = {};
-    if (fs.existsSync(path.join(DEFAULT_NLS_CONFIG_DIR, 'languagepacks.json'))) {
-      const rawLanguagePacks = fs.readFileSync(path.join(DEFAULT_NLS_CONFIG_DIR, 'languagepacks.json')).toString();
+    const storagePath = await this.extensionStoragePathServer.getLastStoragePath() || DEFAULT_NLS_CONFIG_DIR;
+    if (fs.existsSync(path.join(storagePath, 'languagepacks.json'))) {
+      const rawLanguagePacks = fs.readFileSync(path.join(storagePath, 'languagepacks.json')).toString();
       try {
         languagePacks = JSON.parse(rawLanguagePacks);
       } catch (err) {
@@ -115,7 +120,7 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
       }
     }
 
-    fs.writeFileSync(path.join(DEFAULT_NLS_CONFIG_DIR, 'languagepacks.json'), JSON.stringify(languagePacks));
+    fs.writeFileSync(path.join(storagePath, 'languagepacks.json'), JSON.stringify(languagePacks));
 
     const nlsConfig = await lp.getNLSConfiguration('f06011ac164ae4dc8e753a3fe7f9549844d15e35', path.join(os.homedir(), '.kaitian'), languageId.toLowerCase());
     // tslint:disable-next-line: no-string-literal

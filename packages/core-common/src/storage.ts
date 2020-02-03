@@ -84,5 +84,17 @@ export class DefaultStorageProvider {
     }
     return ;
   }
+}
 
+export namespace StoragePaths {
+  export const WINDOWS_APP_DATA_DIR = 'AppData';
+  export const WINDOWS_ROAMING_DIR = 'Roaming';
+  // 可通过AppConfig配置替换，目前仅作为默认值使用
+  export const DEFAULT_STORAGE_DIR_NAME = '.kaitian';
+  export const DEFAULT_DATA_DIR_NAME = 'datas';
+  // TODO: 当前不可替换
+  export const MARKETPLACE_DIR = 'extensions';
+  export const EXTENSIONS_LOGS_DIR = 'extensions';
+  export const EXTENSIONS_GLOBAL_STORAGE_DIR = 'extension-storage';
+  export const EXTENSIONS_WORKSPACE_STORAGE_DIR = 'workspace-storage';
 }
