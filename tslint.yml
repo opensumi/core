@@ -22,6 +22,7 @@ rules:
   no-var-requires: false
   no-namespace: false
   no-unused-expression: false
+  no-string-literal: false
 
 linterOptions:
   exclude:

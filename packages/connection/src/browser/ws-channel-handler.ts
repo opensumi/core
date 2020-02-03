@@ -2,6 +2,7 @@ import { WSChannel, MessageString } from '../common/ws-channel';
 import * as shorid from 'shortid';
 import { stringify, parse } from '../common/utils';
 import { MultiWs } from './multi-ws';
+import { warning } from '@ali/ide-core-common/lib/utils/warning';
 import { getLogger, ILogServiceClient, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 
 let ReconnectingWebSocket = require('reconnecting-websocket');
@@ -15,9 +16,7 @@ if (ReconnectingWebSocket.default) {
 // import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
 // 前台链接管理类
-export class WSChanneHandler {
-  static CLOSESTATUSCOLOR = '#ff0000';
-
+export class WSChannelHandler {
   public connection: WebSocket;
   private channelMap: Map<number | string, WSChannel> = new Map();
   // FIXME: 这里的默认值和类型需要修复一下 @上坡
@@ -130,5 +129,12 @@ export class WSChanneHandler {
     if (this.heartbeatMessageTimer) {
       clearTimeout(this.heartbeatMessageTimer);
     }
+  }
+}
+
+export class WSChanneHandler extends WSChannelHandler {
+  constructor(public wsPath: string, logger: any, public protocols?: string[], useExperimentalMultiChannel?: boolean, clientId?: string) {
+    super(wsPath, logger, protocols, useExperimentalMultiChannel, clientId);
+    warning(false, '[Deprecated warning]: WSChanneHandler was a wrong typo, please use WSChannelHandler');
   }
 }

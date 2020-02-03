@@ -43,7 +43,7 @@ export class LocalStorageService implements StorageService {
     }
   }
 
-  async setData<T>(key: string, data?: T): Promise<void> {
+  public async setData<T>(key: string, data?: T): Promise<void> {
     if (data !== undefined) {
       try {
         this.storage[this.prefix(key)] = JSON.stringify(data);
@@ -55,7 +55,7 @@ export class LocalStorageService implements StorageService {
     }
   }
 
-  async getData<T>(key: string, defaultValue?: T): Promise<T | undefined> {
+  public async getData<T>(key: string, defaultValue?: T): Promise<T | undefined> {
     const result = this.storage[this.prefix(key)];
     if (result === undefined) {
       return defaultValue;

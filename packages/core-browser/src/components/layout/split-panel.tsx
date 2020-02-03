@@ -56,7 +56,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
   const ResizeHandle = Layout.getResizeHandle(direction);
   // convert children to list
   const childList = React.Children.toArray(children);
-  const totalFlexNum = childList.reduce((accumulator, item) => accumulator + (item.props.flex !== undefined ? item.props.flex : 1), 0);
+  const totalFlexNum = childList.reduce((accumulator, item) => accumulator + (item['props'] && (item['props'].flex !== undefined) ? item['props'].flex : 1), 0);
   const elements: React.ReactNodeArray = [];
   const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
@@ -150,17 +150,17 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
     if (index !== 0) {
       const targetElement = index === 1 ? childList[index - 1] : childList[index];
       let flexMode: ResizeFlexMode | undefined;
-      if (element.props.flexGrow) {
+      if (element['props'] && element['props'].flexGrow) {
         flexMode = ResizeFlexMode.Prev;
-      } else if (childList[index - 1] && childList[index - 1].props.flexGrow) {
+      } else if (childList[index - 1] && childList[index - 1]['props'] && childList[index - 1]['props'].flexGrow) {
         flexMode = ResizeFlexMode.Next;
       }
       elements.push(
         <ResizeHandle
-          className={targetElement.props.noResize || locks[index - 1] ? 'no-resize' : ''}
+          className={targetElement['props'] && targetElement['props'].noResize || locks[index - 1] ? 'no-resize' : ''}
           onResize={(prev, next) => {
-            const prevLocation = childList[index - 1].props.slot || childList[index - 1].props.id;
-            const nextLocation = childList[index].props.slot || childList[index].props.id;
+            const prevLocation = childList[index - 1]['props'] && childList[index - 1]['props'].slot || childList[index - 1]['props'] && childList[index - 1]['props'].id;
+            const nextLocation = childList[index]['props'] && childList[index]['props'].slot || childList[index]['props'] && childList[index]['props'].id;
             fireResizeEvent(prevLocation!);
             fireResizeEvent(nextLocation!);
           }}
@@ -186,19 +186,19 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
           hidePanel: hidePanelHandle(index),
         }}>
         <div
-          data-min-resize={element.props.minResize}
+          data-min-resize={element['props'] && element['props'].minResize}
           ref={(ele) => {
             if (ele && splitPanelService.panels.indexOf(ele) === -1) {
               splitPanelService.panels.push(ele);
             }
           }}
-          id={element.props.id}
+          id={element['props'] && element['props'].id}
           style={{
             [Layout.getSizeProperty(direction)]: getElementSize(element),
             // 相对尺寸带来的问题，必须限制最小最大尺寸
-            [Layout.getMinSizeProperty(direction)]: element.props.minSize ? element.props.minSize + 'px' : '-1px',
-            [Layout.getMaxSizeProperty(direction)]: maxLocks[index] ? element.props.minSize + 'px' : 'unset',
-            flexGrow: element.props.flexGrow !== undefined ? element.props.flexGrow : 'unset',
+            [Layout.getMinSizeProperty(direction)]: element['props'] && element['props'].minSize ? element['props'].minSize + 'px' : '-1px',
+            [Layout.getMaxSizeProperty(direction)]: maxLocks[index] ? element['props'].minSize + 'px' : 'unset',
+            flexGrow: element['props'] && element['props'].flexGrow !== undefined ? element['props'].flexGrow : 'unset',
             display: hides[index] ? 'none' : 'block',
           }}>
           {element}
@@ -224,7 +224,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
     const disposer = eventBus.on(ResizeEvent, (e) => {
       if (e.payload.slotLocation === id) {
         childList.forEach((c) => {
-          fireResizeEvent(c.props.slot || c.props.id);
+          fireResizeEvent(c['props'] && c['props'].slot || c['props'] && c['props'].id);
         });
       }
     });

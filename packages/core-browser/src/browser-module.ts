@@ -16,8 +16,8 @@ export interface IClientApp {
 export abstract class BrowserModule<T = any> extends BasicModule {
   @Autowired(IClientApp)
   protected app: IClientApp;
-  component?: React.FunctionComponent<T>;
-  preferences?: (inject: Injector) => void;
+  public component?: React.FunctionComponent<T>;
+  public preferences?: (inject: Injector) => void;
   // 脱离于layout渲染的模块
-  isOverlay?: boolean;
+  public isOverlay?: boolean;
 }

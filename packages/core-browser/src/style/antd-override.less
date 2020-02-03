@@ -55,6 +55,11 @@
         display: none;
       }
     }
+
+    // 解决 antd 弹出元素防穿透的背景色
+    &.@{clsx}-submenu {
+      background-color: var(--menu-background) !important;
+    }
   }
 
   .overrideAntdMenu(@n, (@i + 1));

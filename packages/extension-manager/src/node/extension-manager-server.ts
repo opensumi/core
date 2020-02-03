@@ -8,6 +8,7 @@ import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
 import * as awaitEvent from 'await-event';
 import { renameSync } from 'fs-extra';
 import * as pkg from '@ali/ide-core-node/package.json';
+import * as qs from 'querystring';
 
 @Injectable()
 export class ExtensionManagerRequester implements IExtensionManagerRequester {
@@ -83,7 +84,7 @@ export class ExtensionManager implements IExtensionManager {
 
     const extensionDirName = `${extension.publisher}.${extension.name}-${currentVersion}`;
 
-    return await this.uncompressExtension(request.res, extensionDirName);
+    return await this.uncompressExtension(request.res, extensionDirName, extension);
   }
   async updateExtension(extension: BaseExtension, version: string): Promise<string> {
     // 先下载插件
@@ -102,15 +103,19 @@ export class ExtensionManager implements IExtensionManager {
     }
   }
 
+  public async getUnpressExtensionDir(extensionDirName: string, extension: BaseExtension): Promise<string> {
+    return path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
+  }
+
   /**
    * 解压插件
    * @param source 来源 stream
    * @param extensionDirName 插件文件夹名
    */
-  private async uncompressExtension(source: any, extensionDirName: string): Promise<string> {
+  private async uncompressExtension(source: any, extensionDirName: string, extension): Promise<string> {
     const zipStream = new compressing.zip.UncompressStream({ source });
     // 插件目录
-    const extensionDir = path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
+    const extensionDir = await this.getUnpressExtensionDir(extensionDirName, extension);
     // 创建插件目录
     await fs.mkdirp(extensionDir);
 
@@ -215,10 +220,13 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
     }
   }
 
-  async getHotExtensions(ignoreId: string[] = []) {
-    const ignoreIdList = [...ignoreId, ...this.appConfig.marketplace.ignoreId].map((id) => `&ignoreId=${id}`).join('');
+  async getHotExtensions(ignoreId: string[] = [], pageIndex = 1) {
+    const query = {
+      ignoreId: [...ignoreId, ...this.appConfig.marketplace.ignoreId],
+      pageIndex,
+    };
     try {
-      const res = await this.extensionManagerRequester.request(`hot${ignoreIdList ? '?' + ignoreIdList : ''}`, {
+      const res = await this.extensionManagerRequester.request(`hot?${qs.stringify(query)}`, {
         dataType: 'json',
         timeout: 5000,
       });
