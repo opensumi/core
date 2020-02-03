@@ -278,6 +278,8 @@ export const localizationBundle = {
     'preference.terminal.lineHeightDesc': 'To change the line height of all terminals',
     'preference.terminal.cursorBlink': 'Terminal Cursor Link',
     'preference.terminal.cursorBlinkDesc': 'To change the cursor link of all terminals',
+    'preference.terminal.scrollback': 'Terminal Cursor Scrollback',
+    'preference.terminal.scrollbackDesc': 'To change the scrollback of terminals',
 
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',

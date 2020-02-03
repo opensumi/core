@@ -278,6 +278,8 @@ export const localizationBundle = {
     'preference.terminal.lineHeightDesc': '改变所有终端使用的默认单行文字所占行数',
     'preference.terminal.cursorBlink': '终端光标是否闪烁',
     'preference.terminal.cursorBlinkDesc': '改变所有终端的光标是否闪烁',
+    'preference.terminal.scrollback': '终端可滚动内容行数',
+    'preference.terminal.scrollbackDesc': '改变终端可滚动内容行数',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
