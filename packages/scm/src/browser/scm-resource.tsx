@@ -33,6 +33,7 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
 
   // 视图可直接传入
   public selected: boolean = false;
+  public focused: boolean = false;
 
   readonly style: React.CSSProperties = {
     fontWeight: 500,
@@ -83,6 +84,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
 
   // 视图可直接传入
   public selected: boolean = false;
+  public focused: boolean = false;
 
   readonly actions: any;
 
