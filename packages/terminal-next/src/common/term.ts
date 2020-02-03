@@ -93,4 +93,5 @@ export const TerminalSupportType = {
   'terminal.fontWeight': 'fontWeight',
   'terminal.lineHeight': 'lineHeight',
   'terminal.cursorBlink': 'cursorBlink',
+  'terminal.scrollback': 'scrollback',
 };

@@ -359,6 +359,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: '%preference.terminal.cursorBlinkDesc%',
     },
+    'terminal.scrollback': {
+      type: 'number',
+      default: 5000,
+      description: '%preference.terminal.scrollbackDesc%',
+    },
   },
 };
 
