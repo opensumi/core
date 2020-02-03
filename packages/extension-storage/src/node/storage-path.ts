@@ -32,6 +32,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
 
   constructor() {
     this.deferredWorkspaceStoragePath = new Deferred<string>();
+    this.deferredStoragePath = new Deferred<string>();
     this.storagePathInitialized = false;
   }
 
