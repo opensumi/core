@@ -27,6 +27,9 @@ renderApp({
     'editor.quickSuggestionsMaxCount': 50,
     // 'editor.forceReadOnly': true,
   },
+  preferenceDirName: '.vscode',
+  storageDirName: '.testdata',
+  extensionStorageDirName: '.testdata',
   // iconStyleSheets: [
   //   {
   //     iconMap: {

@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue } from '@ali/ide-core-common';
+import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, Resource } from '@ali/ide-core-common';
 import { PreferenceScope } from '@ali/ide-core-common/lib/preferences/preference-scope';
 
 export interface PreferenceProviderDataChange {
@@ -31,6 +31,8 @@ export abstract class PreferenceProvider implements IDisposable {
   protected readonly toDispose = new DisposableCollection();
 
   protected readonly _ready = new Deferred<void>();
+
+  public resource: Promise<Resource>;
 
   constructor() {
     this.toDispose.push(this.onDidPreferencesChangedEmitter);
