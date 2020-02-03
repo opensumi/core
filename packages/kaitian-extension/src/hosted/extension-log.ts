@@ -15,32 +15,32 @@ export class ExtensionLogger {
 
   verbose(...args: any[]) {
     this.debugLog.info(...args);
-    this.logger.$verbose(...args);
+    return this.logger.$verbose(...args);
   }
 
   debug(...args: any[]) {
     this.debugLog.debug(...args);
-    this.logger.$debug(...args);
+    return this.logger.$debug(...args);
   }
 
   log(...args: any[]) {
     this.debugLog.log(...args);
-    this.logger.$log(...args);
+    return this.logger.$log(...args);
   }
 
   warn(...args: any[]) {
     this.debugLog.warn(...args);
-    this.logger.$warn(...args);
+    return this.logger.$warn(...args);
   }
 
   error(...args: any[]) {
     this.debugLog.error(...args);
-    this.logger.$error(...args);
+    return this.logger.$error(...args);
   }
 
   critical(...args: any[]) {
     this.debugLog.error(...args);
-    this.logger.$critical(...args);
+    return this.logger.$critical(...args);
   }
 
 }
