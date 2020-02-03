@@ -295,17 +295,17 @@ export const corePreferenceSchema: PreferenceSchema = {
     'debug.toolbar.float': {
       type: 'boolean',
       default: true,
-      description: '%preference.debugger.toolbar.float%',
+      description: '%preference.debug.toolbar.float%',
     },
     'debug.toolbar.top': {
       type: 'number',
       default: 0,
-      description: '%preference.debugger.toolbar.top%',
+      description: '%preference.debug.toolbar.top%',
     },
     'debug.toolbar.height': {
       type: 'number',
       default: 30,
-      description: '%preference.debugger.toolbar.height%',
+      description: '%preference.debug.toolbar.height%',
     },
     'files.exclude': {
       type: 'object',
