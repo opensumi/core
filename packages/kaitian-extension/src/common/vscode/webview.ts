@@ -52,6 +52,7 @@ export interface IMainThreadWebview {
 }
 
 export interface IExtHostWebview {
+  $init(): void;
   $onMessage(id: string, message: any): void;
   $onDidChangeWebviewPanelViewState(id: string, newState: IWebviewPanelViewState): void;
   $onDidDisposeWebviewPanel(id: string): Promise<void>;

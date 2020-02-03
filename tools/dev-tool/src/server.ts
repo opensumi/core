@@ -28,6 +28,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     staticAllowPath: [
       path.join(__dirname, '../../../packages/kaitian-extension'),
     ],
+    useExperimentalMultiChannel: true,
   };
   if (Array.isArray(arg1)) {
     opts = {

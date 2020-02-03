@@ -17,17 +17,12 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();
   const { getRPCService } = initRPCService(extCenter);
   const extConnection = net.createConnection(argv['kt-process-sockpath']);
-  let whenReadySendResolve;
-  const whenReadySend = new Promise((resolve) => {
-    whenReadySendResolve = resolve;
-  });
 
   extCenter.setConnection(createSocketConnection(extConnection));
 
   const service = getRPCService('ExtProtocol');
   const onMessageEmitter = new Emitter<string>();
   service.on('onMessage', (msg) => {
-    whenReadySendResolve();
     onMessageEmitter.fire(msg);
   });
   const onMessage = onMessageEmitter.event;
@@ -37,7 +32,6 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     onMessage,
     send,
   });
-  extProtocol.whenReadySend = whenReadySend;
 
   logger = new ExtensionLogger(extProtocol);
   logger.log('process extConnection path', argv['kt-process-sockpath']);

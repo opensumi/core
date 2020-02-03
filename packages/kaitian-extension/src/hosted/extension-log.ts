@@ -14,48 +14,33 @@ export class ExtensionLogger {
   }
 
   verbose(...args: any[]) {
-    this.whenReady.then(() => {
-      this.debugLog.info(...args);
-      this.logger.$verbose(...args);
-    });
+    this.debugLog.info(...args);
+    this.logger.$verbose(...args);
   }
 
   debug(...args: any[]) {
-    this.whenReady.then(() => {
-      this.debugLog.debug(...args);
-      this.logger.$debug(...args);
-    });
+    this.debugLog.debug(...args);
+    this.logger.$debug(...args);
   }
 
   log(...args: any[]) {
-    this.whenReady.then(() => {
-      this.debugLog.log(...args);
-      this.logger.$log(...args);
-    });
+    this.debugLog.log(...args);
+    this.logger.$log(...args);
   }
 
   warn(...args: any[]) {
-    this.whenReady.then(() => {
-      this.debugLog.warn(...args);
-      this.logger.$warn(...args);
-    });
+    this.debugLog.warn(...args);
+    this.logger.$warn(...args);
   }
 
   error(...args: any[]) {
-    this.whenReady.then(() => {
-      this.debugLog.error(...args);
-      this.logger.$error(...args);
-    });
+    this.debugLog.error(...args);
+    this.logger.$error(...args);
   }
 
   critical(...args: any[]) {
-    this.whenReady.then(() => {
-      this.debugLog.error(...args);
-      this.logger.$critical(...args);
-    });
+    this.debugLog.error(...args);
+    this.logger.$critical(...args);
   }
 
-  private get whenReady() {
-    return this.rpcProtocol.whenReadySend || Promise.resolve();
-  }
 }

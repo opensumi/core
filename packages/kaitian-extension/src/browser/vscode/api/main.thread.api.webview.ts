@@ -49,6 +49,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWebivew);
     this.kaitianProxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.KaitianExtHostWebview);
+    this.proxy.$init(); // FIXME: 确定是否需要保证时序
     this.initEvents();
   }
 
