@@ -61,7 +61,11 @@ class FloatController {
   }
 }
 
-export const DebugToolbarView = observer(() => {
+export interface DebugToolbarViewProps {
+  float: boolean;
+}
+
+export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   const {
     state,
     sessionCount,
@@ -110,7 +114,12 @@ export const DebugToolbarView = observer(() => {
           <NativeSelect value={ currentSessionId } onChange={ setCurrentSession }>
             { renderSessionOptions(sessions) }
           </NativeSelect> :
-          <Select value={ currentSessionId } onChange={ setCurrentSession } className={ cls(styles.debug_selection, styles.special_radius) }>
+          <Select
+            className={ cls(styles.debug_selection, styles.special_radius) }
+            size={ props.float ? 'small' : 'default' }
+            value={ currentSessionId }
+            onChange={ setCurrentSession }
+          >
             { renderSessionOptions(sessions) }
           </Select> }
       </div>;
@@ -184,7 +193,7 @@ export const FloatDebugToolbarView = observer(() => {
               onMouseMove={ (e) => controller.onMouseMove(e) }
             ></div>
           </div>
-          <DebugToolbarView />
+          <DebugToolbarView float={ true } />
         </div>
       </div>,
       app.container,
