@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition, IdleValue, compareRangesUsingStarts, IContextKeyService, IStorage } from '@ali/ide-core-browser';
+import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition, IdleValue, compareRangesUsingStarts, IContextKeyService, IStorage, MarkerManager, MarkerSeverity, IRange } from '@ali/ide-core-browser';
 import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { observable, action } from 'mobx';
 import { getSymbolIcon } from '@ali/ide-core-browser';
@@ -7,10 +7,14 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { EditorSelectionChangeEvent } from '@ali/ide-editor/lib/browser';
 import debounce = require('lodash.debounce');
 import { findCurrentDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/default';
+import { binarySearch, coalesceInPlace } from '@ali/ide-core-common/lib/arrays';
+import { listErrorForeground, listWarningForeground, IThemeService } from '@ali/ide-theme';
 
 export interface NodeStatus {
   selected?: boolean;
   expanded?: boolean;
+  badge?: string;
+  color?: string;
 }
 
 export const enum OutlineSortOrder {
@@ -46,12 +50,17 @@ export class OutLineService extends WithEventBus {
   @Autowired(IContextKeyService)
   private ctxKeyService: IContextKeyService;
 
+  @Autowired()
+  private markerManager: MarkerManager;
+
+  @Autowired(IThemeService)
+  private themeService: IThemeService;
+
   @observable.ref treeNodes: TreeSymbol[] = [];
 
   // 状态存储
   private statusMap: Map<string, NodeStatus> = new Map();
 
-  private currentSymbols: DocumentSymbol[] = [];
   private currentUri: MaybeNull<URI>;
   private currentSelectedId: string;
 
@@ -72,8 +81,12 @@ export class OutLineService extends WithEventBus {
         this.doUpdate(null);
       }
     });
-    // TODO 状态记录
     this.ctxKeyService.createKey('outlineSortType', OutlineSortOrder.ByPosition);
+    this.markerManager.onMarkerChanged((resources) => {
+      if (this.currentUri && resources.find((resource) => resource === this.currentUri!.toString())) {
+        this.doUpdate(this.currentUri, undefined, true);
+      }
+    });
   }
 
   initializeSetting(state: IStorage) {
@@ -84,7 +97,7 @@ export class OutLineService extends WithEventBus {
   collapseAll() {
     this.treeNodes.forEach((symbol) => {
       // tree组件使用for in判断的，有点僵硬
-      const status = this.getOrCreateStatus(this.currentUri, symbol);
+      const status = this.getOrCreateStatus(symbol);
       if (status.expanded) {
         status.expanded = false;
       }
@@ -106,9 +119,7 @@ export class OutLineService extends WithEventBus {
   handleTwistieClick(node: TreeSymbol) {
     const status = this.statusMap.get(node.id)!;
     status.expanded = !status.expanded;
-    const nodes: TreeSymbol[] = [];
-    createTreeNodesFromSymbolTreeDeep({ children: this.currentSymbols } as TreeSymbol, -1, nodes, this.statusMap, this.currentUri!);
-    this.treeNodes = nodes;
+    this.notifyUpdate(this.currentUri!);
   }
 
   // 树重新生成逻辑会比较好维护，但是性能会差一些
@@ -136,7 +147,7 @@ export class OutLineService extends WithEventBus {
     this.debouncedChangeEvent.get(uri.toString())!();
   }
 
-  protected getOrCreateStatus(uri: MaybeNull<URI>, node: INormalizedDocumentSymbol): NodeStatus {
+  protected getOrCreateStatus(node: INormalizedDocumentSymbol): NodeStatus {
     const symbolId = node.id;
     let status = this.statusMap.get(symbolId);
     if (!status) {
@@ -151,19 +162,26 @@ export class OutLineService extends WithEventBus {
     return status;
   }
 
-  protected doUpdate(uri: MaybeNull<URI>, ignoreCursor?: boolean) {
+  protected doUpdate(uri: MaybeNull<URI>, ignoreCursor?: boolean, updateMarker?: boolean) {
     const symbols = uri && this.documentSymbolStore.getDocumentSymbol(uri);
-    this.currentSymbols = symbols || [];
-    this.sortSymbolTree(this.currentSymbols);
+    const clonedSymbols = symbols && symbols.map((i) => i) || [];
+    const diagnosisInfo: IOutlineMarker[] = uri ? this.markerManager.getMarkers({ resource: uri.toString(), opened: true }) : [];
+    // 为了后续使用折半查找
+    diagnosisInfo.sort(monaco.Range.compareRangesUsingStarts);
+    this.sortSymbolTree(clonedSymbols);
     this.currentUri = uri;
-    if (symbols) {
+    if (clonedSymbols.length) {
       if (!ignoreCursor && this.followCursor) {
-        this.selectCursorSymbol(uri!, symbols);
+        this.selectCursorSymbol(uri!, clonedSymbols);
       }
       const nodes: TreeSymbol[] = [];
-      createTreeNodesFromSymbolTreeDeep({ children: symbols } as TreeSymbol, -1, nodes, this.statusMap, uri!);
+      createTreeNodesFromSymbolTreeDeep({ children: clonedSymbols } as TreeSymbol, -1, nodes, this.statusMap, uri!);
+      if (updateMarker) {
+        this.clearMarkers();
+        nodes.forEach((item) => this.updateMarker(diagnosisInfo, item));
+      }
       this.treeNodes = nodes.map((node) => {
-        const status = this.getOrCreateStatus(uri, node);
+        const status = this.getOrCreateStatus(node);
         return {
           ...node,
           ...status,
@@ -172,6 +190,60 @@ export class OutLineService extends WithEventBus {
     } else {
       this.treeNodes = [];
     }
+  }
+
+  private clearMarkers() {
+    this.statusMap.forEach((status) => {
+      delete status.badge;
+      delete status.color;
+    });
+  }
+
+  private updateMarker(markers: IOutlineMarker[], item: TreeSymbol): void {
+    // TODO 性能优化，视图折叠时service不响应
+    // 使用折半查找获取到range.start与目标节点一致的marker信息
+    const idx = binarySearch<IRange>(markers, item.range, monaco.Range.compareRangesUsingStarts);
+    let start: number;
+    if (idx < 0) {
+      // tslint:disable-next-line: no-bitwise
+      start = ~idx;
+      if (start > 0 && monaco.Range.areIntersecting(markers[start - 1], item.range)) {
+        start -= 1;
+      }
+    } else {
+      start = idx;
+    }
+
+    const myMarkers: IOutlineMarker[] = [];
+    let myTopSev: MarkerSeverity | undefined;
+
+    for (; start < markers.length && monaco.Range.areIntersecting(item.range, markers[start]); start++) {
+      // 将与目标节点range相交的marker信息存入内部数组myMarkers，用于子节点的计算
+      // 在遍历相交marker信息的同时，获取问题严重性的最大值
+      const marker = markers[start];
+      myMarkers.push(marker);
+      // 清空父节点与当前节点相关的marker信息条目
+      (markers as Array<IOutlineMarker | undefined>)[start] = undefined;
+      if (!myTopSev || marker.severity > myTopSev) {
+        myTopSev = marker.severity;
+      }
+    }
+
+    // 使用与当前节点相交的marker信息计算子节点信息
+    // tslint:disable-next-line: forin
+    for (const key in item.children) {
+      this.updateMarker(myMarkers, item.children[key]);
+    }
+
+    if (myTopSev) {
+      const status = this.getOrCreateStatus(item);
+      // 若当前节点存在问题，且均属于子节点的问题，则渲染一个·符号
+      // TODO @魁武 vscode渲染的是一个圆形的icon，tree能否支持？
+      status.badge = myMarkers.length > 0 ? (myMarkers.length > 9 ? '9+' : myMarkers.length + '') : '•';
+      status.color = this.themeService.getColor({ id: myTopSev === MarkerSeverity.Error ? listErrorForeground : listWarningForeground });
+    }
+    // 清空非真的数组元素
+    coalesceInPlace(markers);
   }
 
   protected sortSymbolTree(symbols: DocumentSymbol[]) {
@@ -202,7 +274,7 @@ export class OutLineService extends WithEventBus {
       this.statusMap.get(this.currentSelectedId)!.selected = false;
     }
     activeSymbols.forEach((symbol, index) => {
-      const status = this.getOrCreateStatus(uri, symbol);
+      const status = this.getOrCreateStatus(symbol);
       // 非当前position的叶子节点
       if (index < activeSymbols.length - 1) {
         status.expanded = true;
@@ -239,7 +311,6 @@ function createTreeNodesFromSymbolTreeDeep(parent: TreeSymbol, depth: number, tr
       depth: depth + 1,
       parent,
       icon: getSymbolIcon(symbol.kind) + ' outline-icon',
-      ...status,
     };
     treeNodes.push(treeSymbol);
     if (symbol.children && symbol.children.length > 0 && status.expanded) {
@@ -255,4 +326,14 @@ interface TreeSymbol extends INormalizedDocumentSymbol {
   icon: string;
   selected?: boolean;
   expanded?: boolean;
+  color?: string;
+  badge?: number | string;
+}
+
+export interface IOutlineMarker {
+  startLineNumber: number;
+  startColumn: number;
+  endLineNumber: number;
+  endColumn: number;
+  severity: MarkerSeverity;
 }
