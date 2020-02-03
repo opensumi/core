@@ -201,8 +201,6 @@ export interface IRPCProtocol {
   getProxy<T>(proxyId: ProxyIdentifier<T>): T;
   set<T>(identifier: ProxyIdentifier<T>, instance: T): T;
   get<T>(identifier: ProxyIdentifier<T>): T;
-
-  whenReadySend?: Promise<any>;
 }
 
 function canceled(): Error {
@@ -219,8 +217,6 @@ export class RPCProtocol implements IRPCProtocol {
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
   private logger;
-
-  public whenReadySend?: Promise<any>;
 
   constructor(connection: IMessagePassingProtocol, logger?: any) {
     this._protocol = connection;
