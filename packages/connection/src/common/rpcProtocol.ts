@@ -8,6 +8,30 @@ export enum RPCProtocolEnv {
   EXT,
 }
 
+export interface SerializedError {
+  readonly $isError: true;
+  readonly name: string;
+  readonly message: string;
+  readonly stack: string;
+}
+
+export function transformErrorForSerialization(error: Error): SerializedError;
+export function transformErrorForSerialization(error: any): any;
+export function transformErrorForSerialization(error: any): any {
+  if (error instanceof Error) {
+    const { name, message } = error;
+    const stack: string = (error as any).stacktrace || (error as any).stack;
+    return {
+      $isError: true,
+      name,
+      message,
+      stack,
+    };
+  }
+
+  return error;
+}
+
 export class ProxyIdentifier<T> {
   public static count = 0;
 
@@ -56,6 +80,12 @@ interface ReplyMessage {
   type: MessageType.Reply;
   id: string;
   res: any;
+}
+
+interface ErrorMessage {
+  type: MessageType.Cancel;
+  id: string;
+  res: SerializedError;
 }
 
 export namespace ObjectTransfer {
@@ -154,6 +184,16 @@ export class MessageIO {
       }
     }
   }
+  public static serializeReplyError(callId: string, error: Error, logger?: any): string {
+    try {
+      return `{"type": ${MessageType.ReplyErr}, "id": "${callId}", "res": ${JSON.stringify(transformErrorForSerialization(error), ObjectTransfer.replacer)}}`;
+    } catch (e) {
+      if (logger) {
+        logger.error('error', error);
+      }
+      return `{"type": ${MessageType.ReplyErr}, "id": "${callId}", "res": {}}`;
+    }
+  }
 }
 
 export const IRPCProtocol = Symbol('IRPCProtocol');
@@ -250,7 +290,6 @@ export class RPCProtocol implements IRPCProtocol {
 
   private _receiveOneMessage(rawmsg: string): void {
     const msg = JSON.parse(rawmsg, ObjectTransfer.reviver);
-
     switch (msg.type) {
       case MessageType.Request:
         this._receiveRequest(msg);
@@ -261,6 +300,9 @@ export class RPCProtocol implements IRPCProtocol {
       case MessageType.Cancel:
         this._receiveCancel(msg);
         break;
+      case MessageType.ReplyErr:
+        this._receiveError(msg);
+        break;
     }
   }
   private _receiveCancel(msg: CancelMessage) {
@@ -269,6 +311,30 @@ export class RPCProtocol implements IRPCProtocol {
       cancellationTokenSource.cancel();
     }
   }
+
+  private _receiveError(msg: ErrorMessage) {
+    const callId = msg.id;
+    if (!this._pendingRPCReplies.has(callId)) {
+      return;
+    }
+
+    const pendingReply = this._pendingRPCReplies.get(callId) as Deferred<any>;
+    this._pendingRPCReplies.delete(callId);
+
+    let err: any;
+    if (msg.res) {
+      if (msg.res.$isError) {
+        err = new Error();
+        err.name = msg.res.name;
+        err.message = msg.res.message;
+        err.stack = msg.res.stack;
+      } else {
+        err = msg.res;
+      }
+    }
+    pendingReply.reject(err);
+  }
+
   private _receiveRequest(msg: RequestMessage): void {
     const callId = msg.id;
     const rpcId = msg.proxyId;
@@ -285,6 +351,9 @@ export class RPCProtocol implements IRPCProtocol {
     const promise = this._invokeHandler(rpcId, method, args);
     promise.then((r) => {
       this._protocol.send(MessageIO.serializeReplyOK(callId, r));
+      this._cancellationTokenSources.delete(callId);
+    }).catch((err) => {
+      this._protocol.send(MessageIO.serializeReplyError(callId, err));
       this._cancellationTokenSources.delete(callId);
     });
 
