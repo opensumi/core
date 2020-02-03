@@ -25,6 +25,7 @@ renderApp({
     'application.confirmExit': 'never',
     'editor.quickSuggestionsDelay': 100,
     'editor.quickSuggestionsMaxCount': 50,
+    // 'editor.forceReadOnly': true,
   },
   // iconStyleSheets: [
   //   {

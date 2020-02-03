@@ -41,7 +41,7 @@ export class KeyboardLayoutService {
     return this.keyboardLayoutChanged.event;
   }
 
-  async initialize(): Promise<void> {
+  public async initialize(): Promise<void> {
     this.layoutChangeNotifier.onDidChangeNativeLayout((newLayout) => this.updateLayout(newLayout));
     const initialLayout = await this.layoutProvider.getNativeLayout();
     this.updateLayout(initialLayout);
@@ -52,7 +52,7 @@ export class KeyboardLayoutService {
    * If no keyboard layout has been detected or the layout does not contain the
    * key used in the KeyCode, the KeyCode is returned unchanged.
    */
-  resolveKeyCode(inCode: KeyCode): KeyCode {
+  public resolveKeyCode(inCode: KeyCode): KeyCode {
     const layout = this.currentLayout;
     if (layout && inCode.key) {
       for (let shift = 0; shift <= 1; shift++) {
@@ -73,7 +73,7 @@ export class KeyboardLayoutService {
    * Return the character shown on the user's keyboard for the given key.
    * Use this to determine UI representations of keybindings.
    */
-  getKeyboardCharacter(key: Key): string {
+  public getKeyboardCharacter(key: Key): string {
     const layout = this.currentLayout;
     if (layout) {
       const value = layout.code2Character[key.code];
@@ -88,7 +88,7 @@ export class KeyboardLayoutService {
    * 当KeybindingRegistry处理KeyboardEvent时调用。
    * 如果键盘布局有验证函数用于支持KeyCode验证，运行校验程序。
    */
-  validateKeyCode(keyCode: KeyCode): void {
+  public validateKeyCode(keyCode: KeyCode): void {
     // tslint:disable-next-line:no-any
     const provider = this.layoutProvider as any;
     if (typeof provider.validateKeyCode === 'function') {

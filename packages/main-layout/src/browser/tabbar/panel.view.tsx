@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
+import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, localize, getIcon, CommandService } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
@@ -9,6 +10,7 @@ import { AccordionContainer } from '../accordion/accordion.view';
 import { InlineActionBar, InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { TitleBar } from '../accordion/titlebar.view';
+import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
 
 export const BaseTabPanelView: React.FC<{
   PanelView: React.FC<{ component: ComponentRegistryInfo, side: string, titleMenu: IMenu }>;
@@ -19,7 +21,7 @@ export const BaseTabPanelView: React.FC<{
   const panelVisible = { zIndex: 1, display: 'block' };
   const panelInVisible = { zIndex: -1, display: 'none' };
   return (
-    <div className='tab-panel'>
+    <div className={styles.tab_panel}>
       {tabbarService.visibleContainers.map((component) => {
         const containerId = component.options!.containerId;
         const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
@@ -38,11 +40,16 @@ const ContainerView: React.FC<{
 }> = (({ component, titleMenu }) => {
   const ref = React.useRef<HTMLElement | null>();
   const configContext = useInjectable<AppConfig>(AppConfig);
-  const { title, titleComponent, component: CustomComponent } = component.options!;
+  const { title, titleComponent, component: CustomComponent, containerId } = component.options!;
+  const injector: Injector = useInjectable(INJECTOR_TOKEN);
+  const handleContextMenu = (e: React.MouseEvent) => {
+    const accordionService: AccordionService = injector.get(AccordionServiceFactory)(containerId);
+    accordionService.handleContextMenu(e);
+  };
 
   return (
     <div className={styles.view_container}>
-      {!CustomComponent && <div className={styles.panel_titlebar}>
+      {!CustomComponent && <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
         <TitleBar
           title={title!}
           menubar={<InlineActionBar menus={titleMenu} />}

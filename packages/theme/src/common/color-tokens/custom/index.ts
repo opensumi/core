@@ -18,10 +18,21 @@ export * from './checkbox';
 export * from './select';
 export * from './modal';
 export * from './icon';
+export * from './editor';
+export * from './badge';
+export * from './tab';
+
 // blocks
 export * from './actionbar';
 
 // 自定义颜色
+
+/* --- activity bar --- */
+export const ktActivityBarDropUpBackground = registerColor('kt.activityBar.dropUpBackground', {
+  dark: ACTIVITY_BAR_BACKGROUND,
+  light: ACTIVITY_BAR_BACKGROUND,
+  hc: ACTIVITY_BAR_BACKGROUND,
+}, localize('activityBar.dropUpBackground', 'dragging item background color'));
 
 /* --- button --- */
 // @deprecated

@@ -72,12 +72,20 @@ export class DebugVariableService {
     const scope = node.parent;
 
     if (session && scope) {
-      session.setVariableValue({
+      await session.setVariableValue({
         variablesReference: scope.id,
         name: node.name,
         value,
       } as any);
+      this.updateVariableValue(node.id, value);
     }
+  }
+
+  @action
+  updateVariableValue(id: string | number, value: string) {
+    const variableMap = new Map();
+    variableMap.set(id, value);
+    this.nodes = this.extractNodes(this.scopes, 0, 0, variableMap);
   }
 
   @action.bound
@@ -85,7 +93,7 @@ export class DebugVariableService {
     this._onVariableContextMenu.fire({ nodes, event });
   }
 
-  extractNodes(scopes: any[], depth: number, order: number = 0): TreeNode[] {
+  extractNodes(scopes: any[], depth: number, order: number = 0, variableMap: Map<string | number, string> = new Map()): TreeNode[] {
     let nodes: TreeNode[] = [];
     this.updateStatus(scopes, depth);
     scopes.forEach((scope, index) => {
@@ -95,7 +103,7 @@ export class DebugVariableService {
           id: scope.id,
           name: scope.name,
           tooltip: scope.tooltip,
-          description: scope.description,
+          description: variableMap.has(scope.id) ? variableMap.get(scope.id) : scope.description,
           descriptionClass: scope.descriptionClass,
           labelClass: scope.labelClass,
           afterLabel: scope.afterLabel,
@@ -112,7 +120,7 @@ export class DebugVariableService {
             order,
             name: scope.name,
             tooltip: scope.tooltip,
-            description: scope.description,
+            description: variableMap.has(scope.id) ? variableMap.get(scope.id) : scope.description,
             descriptionClass: scope.descriptionClass,
             labelClass: scope.labelClass,
             afterLabel: scope.afterLabel,
@@ -122,8 +130,8 @@ export class DebugVariableService {
             expanded: status && status.expanded ? status.expanded : false,
           } as TreeNode);
           if (status.expanded) {
-            const childs = this.extractNodes(scope.children, depth + 1, order + 1);
-            nodes = nodes.concat(childs);
+            const child = this.extractNodes(scope.children, depth + 1, order + 1, variableMap);
+            nodes = nodes.concat(child);
           }
         }
       }

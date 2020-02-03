@@ -1,11 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, localize } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, Logger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { Output, ChannelSelector } from './output.view';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { getIcon } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
@@ -16,8 +15,8 @@ const OUTPUT_CLEAR: Command = {
   label: localize('output.channel.clear', '清理日志'),
 };
 const OUTPUT_CONTAINER_ID = 'ide-output';
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution)
-export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution {
+@Domain(CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution)
+export class OutputContribution implements CommandContribution, KeybindingContribution, ComponentContribution, TabBarToolbarContribution {
 
   @Autowired()
   logger: Logger;
@@ -42,10 +41,6 @@ export class OutputContribution implements CommandContribution, KeybindingContri
       // FIXME 默认为output面板时，无法直接刷新按钮可用状态，需要给出事件 @CC
       isEnabled: () => !!this.outputService.selectedChannel,
     });
-  }
-
-  registerMenus(menus: MenuModelRegistry): void {
-
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {

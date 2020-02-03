@@ -40,14 +40,14 @@ export class ClientAppStateService {
     }
   }
 
-  reachedState(state: ClientAppState): Promise<void> {
+  public reachedState(state: ClientAppState): Promise<void> {
     if (this.deferred[state] === undefined) {
       this.deferred[state] = new Deferred();
     }
     return this.deferred[state].promise;
   }
 
-  reachedAnyState(...states: ClientAppState[]): Promise<void> {
+  public reachedAnyState(...states: ClientAppState[]): Promise<void> {
     return Promise.race(states.map((s) => this.reachedState(s)));
   }
 

@@ -1,11 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction, replaceLocalizePlaceholder, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, replaceLocalizePlaceholder, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
 import { ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
 
 import { VSCodeContributePoint, Contributes } from '../../../../common';
-import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
 import { IEditorGroup } from '@ali/ide-editor';
 
 export interface MenuActionFormat {
@@ -57,43 +56,6 @@ export const contributedMenuUtils = {
   },
 };
 
-// TODO: to be deprecated
-export function parseMenuPath(value: string): string[] | undefined {
-  switch (value) {
-    case 'commandPalette': return [];
-    case 'touchBar': return [];
-
-    case 'editor/title': return ['editor', 'title'];
-    case 'editor/context': return [];
-    case 'editor/title/context': return ['editor'];
-
-    case 'explorer/context': return ['filetree-context-menu'];
-
-    case 'debug/callstack/context': return [];
-    case 'debug/toolbar': return [];
-    case 'debug/toolBar': return [];
-    case 'menuBar/file': return [];
-    case 'scm/title': return [];
-    case 'scm/sourceControl': return [];
-    case 'scm/resourceGroup/context': return [];
-    case 'scm/resourceState/context': return [];
-    case 'scm/change/title': return [];
-    case 'statusBar/windowIndicator': return [];
-
-    case 'view/title': return [];
-  }
-
-  return undefined;
-}
-export function isProposedAPI(menuPosition: string): boolean {
-  switch (menuPosition) {
-    case 'statusBar/windowIndicator':
-    case 'menuBar/file':
-      return true;
-  }
-  return false;
-}
-
 export function isValidMenuItems(menu: MenuActionFormat[], collector: Console): boolean {
   if (!Array.isArray(menu)) {
     collector.error(formatLocalize('requirearray'));
@@ -135,9 +97,6 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   @Autowired(ILogger)
   logger: ILogger;
 
-  @Autowired(MenuModelRegistry)
-  menuRegistry: MenuModelRegistry;
-
   @Autowired(IMenuRegistry)
   newMenuRegistry: IMenuRegistry;
 
@@ -165,77 +124,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
 
     const collector = console;
 
-    // TODO: deprecated
-    for (const menuPosition of Object.keys(this.json)) {
-      if (menuPosition === 'view/item/context') {
-        for (const menu of this.json[menuPosition]) {
-          const inline = menu.group && /^inline/.test(menu.group) || false;
-          const menuPath = inline ? VIEW_ITEM_INLINE_MNUE : VIEW_ITEM_CONTEXT_MENU;
-          const command = this.commandRegistry.getCommand(menu.command);
-          const alt = menu.alt && this.commandRegistry.getCommand(menu.alt);
-
-          if (!command) {
-            collector.error(formatLocalize('missing.command', menu.command));
-            continue;
-          }
-          if (menu.alt && !alt) {
-            collector.warn(formatLocalize('missing.altCommand', menu.alt));
-          }
-          this.menuRegistry.registerMenuAction(menuPath, {
-            commandId: command.id,
-            // TODO: 设置ContextKeys
-            // when: menu.when,
-          });
-        }
-      } else if (menuPosition === 'view/title') {
-        // to new Registration
-      } else if (menuPosition === 'editor/title') {
-        // to new Registration
-      } else {
-        const menuActions = this.json[menuPosition];
-        if (!isValidMenuItems(menuActions, console)) {
-          return;
-        }
-
-        const menuPath = parseMenuPath(menuPosition);
-        if (!menuPath) {
-          collector.warn(formatLocalize('menuId.invalid', menuPosition));
-          return;
-        }
-
-        if (isProposedAPI(menuPosition)/* && !extension.description.enableProposedApi*/) {
-          collector.error(formatLocalize('proposedAPI.invalid', menuPosition));
-          return;
-        }
-
-        for (const item of menuActions) {
-          const command = this.commandRegistry.getCommand(item.command);
-          const alt = item.alt && this.commandRegistry.getCommand(item.alt);
-
-          if (!command) {
-            collector.error(formatLocalize('missing.command', item.command));
-            continue;
-          }
-          if (item.alt && !alt) {
-            collector.warn(formatLocalize('missing.altCommand', item.alt));
-          }
-          if (item.command === item.alt) {
-            collector.info(formatLocalize('dupe.command'));
-          }
-          const { when } = item;
-          const [group = '', order] = (item.group || '').split('@');
-          const action: MenuAction = { commandId: item.command, order, when };
-          const inline = /^inline/.test(group);
-          // todo: 先跳过 inline 的 menu @taian.lta
-          if (!inline) {
-            const currentMenuPath = [...menuPath, group];
-            this.menuRegistry.registerMenuAction(currentMenuPath, action);
-          }
-        }
-      }
-    }
-
-    // new menu registeration
+    // menu registeration
     for (const menuPosition of Object.keys(this.json)) {
       const menuActions = this.json[menuPosition];
       if (!isValidMenuItems(menuActions, console)) {

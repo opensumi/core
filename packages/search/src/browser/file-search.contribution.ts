@@ -25,7 +25,6 @@ import {
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -387,8 +386,8 @@ export class FileSearchQuickCommandHandler {
   }
 }
 
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution)
-export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution {
+@Domain(CommandContribution, KeybindingContribution, QuickOpenContribution)
+export class FileSearchContribution implements CommandContribution, KeybindingContribution, QuickOpenContribution {
 
   @Autowired(FileSearchQuickCommandHandler)
   protected fileSearchQuickCommandHandler: FileSearchQuickCommandHandler;
@@ -407,8 +406,6 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
       },
     });
   }
-
-  registerMenus(menus: MenuModelRegistry): void { }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({

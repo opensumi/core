@@ -9,9 +9,6 @@
     background-color: var(--foreground);
   }
 
-  &:hover {
-    color: var(--kt-icon-hoverForeground);
-  }
 
   &.loading {
     animation: loadingCircle 1s infinite linear;
@@ -23,6 +20,14 @@
 
   &.large {
     font-size: 16px;
+  }
+
+}
+
+.clickable {
+  &:hover {
+    transform: scale(1.2);
+    color: var(--kt-icon-hoverForeground);
   }
 
   &:active {

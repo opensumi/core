@@ -21,6 +21,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
 
   constructor(private editor: monaco.editor.ICodeEditor) {
     super();
+    this.applyDecorationFromProvider();
     this.editor.onDidChangeModel(() => {
       this.clearDecorations();
       this.applyDecorationFromProvider();

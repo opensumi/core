@@ -297,6 +297,8 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
 ): React.ReactElement<InlineActionBarProps<T, U, K, M>> {
   const { menus, context, separator = 'navigation', ...restProps } = props;
   // TODO: 从一致性考虑是否这里不用 context 的命名
+  // **warning** 这里不需要额外传参
+  // 因为这里的 context 塞到 useMenus 之后会自动把参数加入到 MenuItem.execute 里面
   const [navMenu, moreMenu] = useMenus(menus, separator, context);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
@@ -304,7 +306,6 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
     <TitleActionList
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
-      context={context}
       {...restProps} />
   );
 }
@@ -331,7 +332,6 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
     <TitleActionList
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
-      context={context}
       {...restProps} />
   );
 }

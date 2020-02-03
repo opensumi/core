@@ -15,16 +15,13 @@
   background-color: var(--button-background);
   transition: all 0.15s;
 
-  &:hover {
-    background-color: var(--button-hoverBackground);
-  }
-
-  &:active {
-    background-color: var(--kt-primaryButton-clickBackground);
-  }
-
   &.block-button {
     width: 100%;
+  }
+
+  & > .kt-button-secondary-more {
+    color: inherit;
+    margin-left: 5px;
   }
 }
 
@@ -123,7 +120,8 @@
 
   &:disabled {
     color: var(--kt-linkButton-disableForeground);
-    border-color: transparent;
+    border-color: transparent !important;
+    background-color: transparent !important;
   }
 }
 
@@ -132,32 +130,35 @@
   background-color: transparent;
 }
 
-.ghost-danger-button:disabled,
-.kt-danger-button-loading,
-.kt-primary-button-loading,
-.kt-secondary-button-loading {
-  border-color: var(--kt-button-disableBorder) !important;
-  background-color: var(--kt-button-disableBackground) !important;
-}
-
-.kt-button:disabled,
 .ghost-button:disabled,
+.danger-button:disabled,
+.secondary-button:disabled,
+.primary-button:disabled,
 ghost-danger-button:disabled,
 .kt-danger-button-loading,
 .kt-primary-button-loading,
 .kt-secondary-button-loading {
   color: var(--kt-button-disableForeground) !important;
+  border-color: var(--kt-button-disableBorder) !important;
   background-color: var(--kt-button-disableBackground) !important;
   border-style: solid;
   border-width: 1px;
   pointer-events: none;
+
+  & > .kt-button-secondary-more {
+    color: var(--kt-button-disableForeground);
+  }
 }
 
-.ghost-primary-button,
-.ghost-primary-button:hover {
+.ghost-primary-button {
   color: var(--kt-primaryGhostButton-foreground);
   background-color: var(--kt-primaryGhostButton-background);
-  border-color: var(--kt-primaryGhostButton-border);
+  border-color: transparent;
+
+  &:hover {
+    border-color: var(--kt-primaryGhostButton-border);
+    background-color: transparent;
+  }
 }
 
 .ghost-primary-button:active {
@@ -171,12 +172,10 @@ ghost-danger-button:disabled,
   background-color: var(--kt-dangerButton-background);
 
   &:hover {
-    color: var(--kt-dangerButton-hoverForeground);
     background-color: var(--kt-dangerButton-hoverBackground);
   }
 
   &:active {
-    color: var(--kt-dangerButton-clickForeground);
     background-color: var(--kt-dangerButton-clickBackground);
   }
 }
@@ -187,13 +186,11 @@ ghost-danger-button:disabled,
   border-color: var(--kt-dangerGhostButton-border);
 
   &:hover {
-    color: var(--kt-dangerGhostButton-hoverForeground);
     background-color: transparent;
     border-color: var(--kt-dangerGhostButton-hoverBorder);
   }
 
   &:active {
-    color: var(--kt-dangerGhostButton-clickForeground);
     background-color: var(--kt-dangerGhostButton-clickBackground);
     border-color: var(--kt-dangerGhostButton-clickBorder);
   }

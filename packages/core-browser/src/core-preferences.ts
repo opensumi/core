@@ -153,6 +153,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: false,
       description: '%editor.configuration.minimap%',
     },
+    'editor.forceReadOnly': {
+      type: 'boolean',
+      default: false,
+      description: '%editor.configuration.forceReadOnly%',
+    },
     // 会启用languageFeature的最大文件尺寸
     'editor.languageFeatureEnabledMaxSize': {
       type: 'number',
@@ -287,11 +292,13 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: FILE_TREE_DEFAULTS.indent,
       description: '%preference.explorer.fileTree.indent%',
     },
+    /*
     'debug.toolbar.float': {
       type: 'boolean',
       default: true,
       description: '%preference.debugger.toolbar.float%',
     },
+    */
     'files.exclude': {
       type: 'object',
       description: '%preference.files.exclude%',

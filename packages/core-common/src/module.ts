@@ -9,7 +9,7 @@ interface FrontService {
   servicePath: string,
 }
 
-interface BackService {
+export interface BackService {
   token?: Token,
   clientToken?: Token,
   servicePath: string,

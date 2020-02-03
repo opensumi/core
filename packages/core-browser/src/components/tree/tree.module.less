@@ -18,11 +18,16 @@
   &:hover {
     color: var(--list-hoverForeground);
     background: var(--list-hoverBackground);
-
+    .treenode_head_icon {
+      display: none;
+    }
     .left_actions,
     .right_actions,
     .container_actions {
-      display: block;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
       .action_icon {
         margin-left: 6px;
       }
@@ -73,9 +78,20 @@
 .treenode_head {
   position: absolute;
   z-index: 10;
-  left: 0;
+  right: 100%;
   top: 0;
-  width: 100%;
+  .left_actions {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 21px;
+    span {
+      color: var(--foreground);
+      font-size: 12px;
+    }
+
+  }
 }
 
 .treenode_status {
@@ -170,20 +186,6 @@
     text-align: center;
     margin-right: 4px;
   }
-
-  .left_actions {
-    display: none;
-    position: absolute;
-    right: 100%;
-    top: 0;
-    height: 21px;
-
-    span {
-      color: var(--foreground);
-      font-size: 12px;
-    }
-
-  }
 }
 
 .file_icon:global(&.fileIcon:before) {
@@ -196,6 +198,7 @@
   position: relative;
   height: 22px;
   display: flex;
+  align-items: center;
   .right_actions,
   .container_actions {
     display: none;

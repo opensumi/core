@@ -3,7 +3,7 @@ import { DebugServer, DebuggerDescription, DebugServerPath, IDebugSessionManager
 import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
 import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet, WaitUntilEvent } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { WSChanneHandler } from '@ali/ide-connection';
+import { WSChannelHandler } from '@ali/ide-connection';
 import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@ali/ide-logs/lib/browser';
 import { DebugConfiguration } from '@ali/ide-debug/lib/common/debug-configuration';
 import { DebugConfigurationManager } from '@ali/ide-debug/lib/browser';
@@ -34,8 +34,8 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   protected readonly sessionId2contrib = new Map<string, ExtensionDebugAdapterContribution>();
   protected delegated: DebugServer;
 
-  @Autowired(WSChanneHandler)
-  protected readonly connectionProvider: WSChanneHandler;
+  @Autowired(WSChannelHandler)
+  protected readonly connectionProvider: WSChannelHandler;
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;

@@ -320,13 +320,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   focus() {
-    if (!this.searchInputEl || !this.searchInputEl.current) {
-      return;
-    }
-    this.searchInputEl.current.focus();
-    if (this.searchValue !== '') {
-      this.searchInputEl.current.select();
-    }
+    window.requestAnimationFrame(() => {
+      if (!this.searchInputEl || !this.searchInputEl.current) {
+        return;
+      }
+      this.searchInputEl.current.focus();
+      if (this.searchValue !== '') {
+        this.searchInputEl.current.select();
+      }
+    });
   }
 
   refresh() {
@@ -584,7 +586,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       true,
       !!searchOptions.useRegExp,
       !!searchOptions.matchCase,
-      !!searchOptions.matchWholeWord ? '/\'\\ \n' : null,
+      !!searchOptions.matchWholeWord ? '`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/? \n' : null,
       false,
     );
     findResults.forEach((find: monaco.editor.FindMatch, index) => {
@@ -627,6 +629,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     docModels.forEach((docModel: IEditorDocumentModel) => {
       const uriString = docModel.uri.toString();
+
+      // 只搜索file协议内容
+      if (docModel.uri.scheme !== Schemas.file) {
+        return;
+      }
 
       // 非激活态的忽略
       if (!resources.some((res) => {

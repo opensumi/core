@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, localize, CommandService, isElectronRenderer } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, localize, CommandService, isElectronRenderer, IReporterService, REPORT_NAME } from '@ali/ide-core-browser';
 
 import ICommandEvent = monaco.commands.ICommandEvent;
 import ICommandService = monaco.commands.ICommandService;
@@ -57,6 +57,9 @@ export class MonacoCommandService implements ICommandService {
 
   @Autowired(CommandService)
   commandService: CommandService;
+
+  @Autowired(IReporterService)
+  reporterService: IReporterService;
   /**
    * 设置委托对象
    * @param delegate 真正要执行 monaco 内部 command 的 commandSerice
@@ -90,6 +93,7 @@ export class MonacoCommandService implements ICommandService {
     if (this.delegate) {
       return this.delegate.executeCommand(MonacoCommandAlias[commandId] ? MonacoCommandAlias[commandId] : commandId, ...args);
     }
+    this.reporterService.point(REPORT_NAME.NOT_FOUND_COMMAND, commandId);
     return Promise.reject(new Error(`command '${commandId}' not found`));
   }
 }

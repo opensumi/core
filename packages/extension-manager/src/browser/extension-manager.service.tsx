@@ -95,6 +95,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
   // 是否显示内置插件
   private isShowBuiltinExtensions: boolean = false;
 
+  private hotPageIndex = 1;
+
   constructor() {
     // 创建 contextMenu
     this.contextMenu = this.menuService.createMenu(MenuId.ExtensionContext, this.contextKeyService);
@@ -123,13 +125,16 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @debounce(300)
   private async searchExtensionFromMarketplace(query: string) {
     try {
+      const installedExtensions = this.showExtensions.filter((extension) => {
+        return extension.name.includes(query) || (extension.displayName && extension.displayName.includes(query));
+      });
+      this.searchMarketplaceResults = installedExtensions;
       // 排除掉已安装的插件
       const res = await this.extensionManagerServer.search(query, this.installedIds);
-      if (res.count > 0) {
-        const data = res.data
-        .map(this.transformMarketplaceExtension);
+      if (res.count > 0 || installedExtensions.length > 0) {
+        const data = res.data.map(this.transformMarketplaceExtension);
         runInAction(() => {
-          this.searchMarketplaceResults = data;
+          this.searchMarketplaceResults = [...installedExtensions, ...data];
           this.searchMarketplaceState = SearchState.LOADED;
         });
       } else {
@@ -328,27 +333,16 @@ export class ExtensionManagerService implements IExtensionManagerService {
     await this.extensionManagerServer.setHeaders({
       'x-language-id': getLanguageId(),
     });
-    this.loading = SearchState.LOADING;
     // 获取所有已安装的插件
     const extensionProps = await this.extensionService.getAllExtensionJson();
     const extensions = await this.transformFromExtensionProp(extensionProps);
-    let hotExtensions: RawExtension[] = [];
-    try {
-      hotExtensions = await this.getHotExtensions(extensions.map((extensions) => extensions.extensionId));
-      runInAction(() => {
-        this.hotExtensions = hotExtensions;
-        this.loading = SearchState.LOADED;
-      });
-    } catch (err) {
-      this.logger.error(err);
-      runInAction(() => {
-        this.loading = SearchState.NO_CONTENT;
-      });
-    }
     // 是否要展示内置插件
     this.isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
     runInAction(() => {
       this.extensions = extensions;
+    });
+    await this.loadHotExtensions();
+    runInAction(() => {
       this.isInit = true;
     });
   }
@@ -668,12 +662,42 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   private async getHotExtensions(ignoreId: string[]): Promise<RawExtension[]> {
-    const res = await this.extensionManagerServer.getHotExtensions(ignoreId);
+    const res = await this.extensionManagerServer.getHotExtensions(ignoreId, this.hotPageIndex);
     if (res.count) {
       return res.data
         .map(this.transformMarketplaceExtension);
     } else {
       return [];
+    }
+  }
+
+  @action
+  public async loadHotExtensions() {
+    if (this.loading === SearchState.LOADING || this.loading === SearchState.NO_MORE) {
+      return;
+    }
+    this.loading = SearchState.LOADING;
+    let hotExtensions: RawExtension[] = [];
+    try {
+      hotExtensions = await this.getHotExtensions(this.extensions.map((extensions) => extensions.extensionId));
+      if (hotExtensions.length) {
+        runInAction(() => {
+          this.hotExtensions.push(...hotExtensions);
+          this.loading = SearchState.LOADED;
+          this.hotPageIndex++;
+        });
+      } else {
+        runInAction(() => {
+          this.loading = SearchState.NO_MORE;
+        });
+      }
+    } catch (err) {
+      this.logger.error(err);
+      if (this.hotPageIndex === 1) {
+        runInAction(() => {
+          this.loading = SearchState.NO_CONTENT;
+        });
+      }
     }
   }
 

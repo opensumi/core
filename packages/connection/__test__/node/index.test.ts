@@ -192,11 +192,19 @@ describe('connection', () => {
     const testMainIdentifier = createMainContextProxyIdentifier('testIendifier');
     const mockMainIndetifierMethod = jest.fn();
     const mockUriTestFn = jest.fn((uri) => uri);
+    const mockErrorFn = jest.fn(() => {
+      throw new Error('custom error');
+    });
 
     aProtocol.set(testMainIdentifier, {
       $test: mockMainIndetifierMethod,
       $getUri: mockUriTestFn,
+      $errorFunction: mockErrorFn,
     });
+
+    function errorFunction() {
+      return bProtocol.getProxy(testMainIdentifier).$errorFunction();
+    }
 
     const testUri = Uri.file('/Users/franklife/work/ide/ac4/ide-framework/README.md');
     await bProtocol.getProxy(testMainIdentifier).$test();
@@ -204,7 +212,7 @@ describe('connection', () => {
     expect(mockMainIndetifierMethod.mock.calls.length).toBe(1);
     expect(mockUriTestFn.mock.results[0].value).toBeInstanceOf(Uri);
     expect(mockUriTestFn.mock.results[0].value.toString()).toBe(testUri.toString());
-
+    await expect(errorFunction()).rejects.toThrow(new Error('custom error'));
     done();
   });
 });

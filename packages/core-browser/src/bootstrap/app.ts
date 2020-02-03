@@ -30,7 +30,7 @@ import {
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
-import { RPCMessageConnection, WSChanneHandler } from '@ali/ide-connection';
+import { RPCMessageConnection, WSChannelHandler } from '@ali/ide-connection';
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider, IExternalPreferenceProvider,
 } from '../preferences';
@@ -111,8 +111,6 @@ export class ClientApp implements IClientApp {
 
   commandRegistry: CommandRegistry;
 
-  menuRegistry: MenuModelRegistry;
-
   // 这里将 onStart contribution 方法放到 MenuRegistryImpl 上了
   nextMenuRegistry: MenuRegistryImpl;
 
@@ -187,7 +185,7 @@ export class ClientApp implements IClientApp {
 
         this.logger = this.getLogger();
          // 回写需要用到打点的 Logger 的地方
-        this.injector.get(WSChanneHandler).setLogger(this.logger);
+        this.injector.get(WSChannelHandler).setLogger(this.logger);
       }
     }
 
@@ -238,7 +236,6 @@ export class ClientApp implements IClientApp {
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
     this.stateService = this.injector.get(ClientAppStateService);
-    this.menuRegistry = this.injector.get(MenuModelRegistry);
     this.nextMenuRegistry = this.injector.get(IMenuRegistry);
   }
 
@@ -305,7 +302,6 @@ export class ClientApp implements IClientApp {
 
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
-    this.menuRegistry.onStart();
     this.nextMenuRegistry.onStart();
 
     for (const contribution of this.contributions) {

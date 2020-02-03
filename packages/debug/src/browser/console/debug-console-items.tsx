@@ -171,7 +171,7 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
   public afterLabel: string =  !this.name ? '' : ': ';
 
   get id() {
-    return this.variablesReference || uuid() ;
+    return this.variablesReference || this.parent ? `${this.parent.variablesReference}_${this.name}` : uuid() ;
   }
 
   get name(): string {

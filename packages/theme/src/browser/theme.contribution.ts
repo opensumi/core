@@ -1,4 +1,4 @@
-import { MenuContribution, Domain, MenuModelRegistry, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, replaceLocalizePlaceholder, PreferenceScope } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, replaceLocalizePlaceholder, PreferenceScope } from '@ali/ide-core-browser';
 import { IThemeService, IIconService } from '../common';
 import { Autowired } from '@ali/common-di';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -50,7 +50,12 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
         const defaultSelected = options.findIndex((opt) => opt.value === this.themeService.currentThemeId);
         const themeId = await this.quickPickService.show(options, {selectIndex: () => defaultSelected});
         if (themeId) {
-          await this.preferenceService.set('general.theme', themeId, PreferenceScope.User);
+          const hasWorkspaceConfig = await this.preferenceService.get('general.theme', PreferenceScope.Workspace);
+          if (hasWorkspaceConfig) {
+            await this.preferenceService.set('general.theme', themeId, PreferenceScope.Workspace);
+          } else {
+            await this.preferenceService.set('general.theme', themeId, PreferenceScope.User);
+          }
         }
       },
     });
@@ -65,7 +70,12 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
         const defaultSelected = options.findIndex((opt) => opt.value === this.iconService.currentThemeId);
         const themeId = await this.quickPickService.show(options, {selectIndex: () => defaultSelected});
         if (themeId) {
-          await this.preferenceService.set('general.icon', themeId, PreferenceScope.User);
+          const hasWorkspaceConfig = await this.preferenceService.get('general.icon', PreferenceScope.Workspace);
+          if (hasWorkspaceConfig) {
+            await this.preferenceService.set('general.icon', themeId, PreferenceScope.Workspace);
+          } else {
+            await this.preferenceService.set('general.icon', themeId, PreferenceScope.User);
+          }
         }
       },
     });

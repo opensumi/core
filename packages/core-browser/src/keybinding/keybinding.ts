@@ -55,9 +55,9 @@ export namespace KeybindingContexts {
 
 export namespace KeybindingsResultCollection {
   export class KeybindingsResult {
-    full: Keybinding[] = [];
-    partial: Keybinding[] = [];
-    shadow: Keybinding[] = [];
+    public full: Keybinding[] = [];
+    public partial: Keybinding[] = [];
+    public shadow: Keybinding[] = [];
 
     /**
      * 合并KeybindingsResult至this
@@ -65,7 +65,7 @@ export namespace KeybindingsResultCollection {
      * @param other
      * @return this
      */
-    merge(other: KeybindingsResult): KeybindingsResult {
+    public merge(other: KeybindingsResult): KeybindingsResult {
       this.full.push(...other.full);
       this.partial.push(...other.partial);
       this.shadow.push(...other.shadow);
@@ -78,7 +78,7 @@ export namespace KeybindingsResultCollection {
      * @param fn 过滤函数
      * @return KeybindingsResult
      */
-    filter(fn: (binding: Keybinding) => boolean): KeybindingsResult {
+    public filter(fn: (binding: Keybinding) => boolean): KeybindingsResult {
       const result = new KeybindingsResult();
       result.full = this.full.filter(fn);
       result.partial = this.partial.filter(fn);
@@ -181,7 +181,7 @@ export interface KeybindingService {
 export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingService {
 
   // 该伪命令用于让事件冒泡，使事件不被Keybinding消费掉
-  static readonly PASSTHROUGH_PSEUDO_COMMAND = 'passthrough';
+  public static readonly PASSTHROUGH_PSEUDO_COMMAND = 'passthrough';
   protected readonly contexts: { [id: string]: KeybindingContext } = {};
   protected readonly keymaps: Keybinding[][] = [...Array(KeybindingScope.length)].map(() => []);
 
@@ -190,7 +190,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
 
   private keySequenceTimer: any;
 
-  static KEYSEQUENCE_TIMEOUT = 5000;
+  public static KEYSEQUENCE_TIMEOUT = 5000;
 
   @Autowired(KeyboardLayoutService)
   protected readonly keyboardLayoutService: KeyboardLayoutService;
@@ -216,7 +216,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   @Autowired(IStatusBarService)
   protected readonly statusBar: IStatusBarService;
 
-  async onStart(): Promise<void> {
+  public async onStart(): Promise<void> {
     await this.keyboardLayoutService.initialize();
     this.keyboardLayoutService.onKeyboardLayoutChanged((newLayout) => {
       this.clearResolvedKeybindings();
@@ -261,7 +261,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 注册默认 Keybinding
    * @param binding
    */
-  registerKeybinding(binding: Keybinding): IDisposable {
+  public registerKeybinding(binding: Keybinding): IDisposable {
     return this.doRegisterKeybinding(binding, KeybindingScope.DEFAULT);
   }
 
@@ -269,7 +269,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 注册默认 Keybindings
    * @param bindings
    */
-  registerKeybindings(...bindings: Keybinding[]): IDisposable {
+  public registerKeybindings(...bindings: Keybinding[]): IDisposable {
     return this.doRegisterKeybindings(bindings, KeybindingScope.DEFAULT);
   }
 
@@ -277,10 +277,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 注销 Keybinding
    * @param binding
    */
-  unregisterKeybinding(binding: Keybinding, scope?: KeybindingScope): void;
+  public unregisterKeybinding(binding: Keybinding, scope?: KeybindingScope): void;
   // tslint:disable-next-line:unified-signatures
-  unregisterKeybinding(key: string, scope?: KeybindingScope): void;
-  unregisterKeybinding(keyOrBinding: Keybinding | string, scope: KeybindingScope = KeybindingScope.DEFAULT): void {
+  public unregisterKeybinding(key: string, scope?: KeybindingScope): void;
+  public unregisterKeybinding(keyOrBinding: Keybinding | string, scope: KeybindingScope = KeybindingScope.DEFAULT): void {
     const key = Keybinding.is(keyOrBinding) ? keyOrBinding.keybinding : keyOrBinding;
     const keymap = this.keymaps[scope];
     const bindings = keymap.filter((el) => el.keybinding === key);
@@ -332,7 +332,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 通过调用KeyboardLayoutService来设置给定的ResolvedKeybinding中的`resolved`属性。
    * @param binding
    */
-  resolveKeybinding(binding: ResolvedKeybinding): KeyCode[] {
+  public resolveKeybinding(binding: ResolvedKeybinding): KeyCode[] {
     if (!binding.resolved) {
       const sequence = KeySequence.parse(binding.keybinding);
       binding.resolved = sequence.map((code) => this.keyboardLayoutService.resolveKeyCode(code));
@@ -359,7 +359,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param bindings
    * @param binding
    */
-  containsKeybinding(bindings: Keybinding[], binding: Keybinding): boolean {
+  public containsKeybinding(bindings: Keybinding[], binding: Keybinding): boolean {
     const bindingKeySequence = this.resolveKeybinding(binding);
     const collisions = this.getKeySequenceCollisions(bindings, bindingKeySequence)
       .filter((b) => b.context === binding.context || b.when === binding.when);
@@ -390,7 +390,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param binding
    * @param scope
    */
-  containsKeybindingInScope(binding: Keybinding, scope: KeybindingScope = KeybindingScope.USER): boolean {
+  public containsKeybindingInScope(binding: Keybinding, scope: KeybindingScope = KeybindingScope.USER): boolean {
     return this.containsKeybinding(this.keymaps[scope], binding);
   }
 
@@ -399,7 +399,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param keybinding
    * @param separator
    */
-  acceleratorFor(keybinding: Keybinding, separator: string = ' '): string[] {
+  public acceleratorFor(keybinding: Keybinding, separator: string = ' '): string[] {
     const bindingKeySequence = this.resolveKeybinding(keybinding);
     return this.acceleratorForSequence(bindingKeySequence, separator);
   }
@@ -409,7 +409,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param keySequence
    * @param separator
    */
-  acceleratorForSequence(keySequence: KeySequence, separator: string = ' '): string[] {
+  public acceleratorForSequence(keySequence: KeySequence, separator: string = ' '): string[] {
     return keySequence.map((keyCode) => this.acceleratorForKeyCode(keyCode, separator));
   }
 
@@ -418,7 +418,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param keyCode
    * @param separator
    */
-  acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
+  public acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
     const keyCodeResult: any[] = [];
     if (keyCode.meta) {
       if (isOSX) {
@@ -460,7 +460,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 根据Key返回可读文本
    * @param key
    */
-  acceleratorForKey(key: Key): string {
+  public acceleratorForKey(key: Key): string {
     if (isOSX) {
       if (key === Key.ARROW_LEFT) {
         return '←';
@@ -545,7 +545,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 列表按优先级排序 （见sortKeybindingsByPriority方法）
    * @param keySequence
    */
-  getKeybindingsForKeySequence(keySequence: KeySequence, event: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult {
+  public getKeybindingsForKeySequence(keySequence: KeySequence, event: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult {
     const result = new KeybindingsResultCollection.KeybindingsResult();
 
     for (let scope = KeybindingScope.END; --scope >= KeybindingScope.DEFAULT;) {
@@ -571,7 +571,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 获取与commandId相关联的键绑定
    * @param commandId
    */
-  getKeybindingsForCommand(commandId: string): ScopedKeybinding[] {
+  public getKeybindingsForCommand(commandId: string): ScopedKeybinding[] {
     const result: ScopedKeybinding[] = [];
 
     for (let scope = KeybindingScope.END - 1; scope >= KeybindingScope.DEFAULT; scope--) {
@@ -596,7 +596,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param scope
    * @param commandId
    */
-  getScopedKeybindingsForCommand(scope: KeybindingScope, commandId: string): Keybinding[] {
+  public getScopedKeybindingsForCommand(scope: KeybindingScope, commandId: string): Keybinding[] {
     const result: Keybinding[] = [];
 
     if (scope >= KeybindingScope.END) {
@@ -658,7 +658,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param binding
    * @param event
    */
-  isEnabled(binding: Keybinding, event: KeyboardEvent): boolean {
+  public isEnabled(binding: Keybinding, event: KeyboardEvent): boolean {
     const context = binding.context && this.contexts[binding.context];
     if (context && !context.isEnabled(binding)) {
       return false;
@@ -673,7 +673,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 判断是否为PASSTHROUGH_PSEUDO_COMMAND
    * @param commandId
    */
-  isPseudoCommand(commandId: string): boolean {
+  public isPseudoCommand(commandId: string): boolean {
     return commandId === KeybindingRegistryImpl.PASSTHROUGH_PSEUDO_COMMAND;
   }
 
@@ -682,7 +682,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param scope
    * @param bindings
    */
-  setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
+  public setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
     this.resetKeybindingsForScope(scope);
     this.doRegisterKeybindings(bindings, scope);
     this.keybindingsChanged.fire({ affectsCommands: bindings.map((b) => b.command) });
@@ -692,14 +692,14 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 重置特定Scope下的Keybindings
    * @param scope
    */
-  resetKeybindingsForScope(scope: KeybindingScope): void {
+  public resetKeybindingsForScope(scope: KeybindingScope): void {
     this.keymaps[scope] = [];
   }
 
   /**
    * 重置所有Scope下的键绑定（仅保留映射的默认键绑定）
    */
-  resetKeybindings(): void {
+  public resetKeybindings(): void {
     for (let i = KeybindingScope.DEFAULT + 1; i < KeybindingScope.END; i++) {
       this.keymaps[i] = [];
     }
@@ -710,7 +710,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    *
    * @param event 键盘事件
    */
-  run(event: KeyboardEvent): void {
+  public run(event: KeyboardEvent): void {
     if (event.defaultPrevented) {
       return;
     }
@@ -755,7 +755,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   *
   * @param event 键盘事件
   */
-  convert(event: KeyboardEvent, separator: string = ' '): string {
+  public convert(event: KeyboardEvent, separator: string = ' '): string {
 
     const keyCode = KeyCode.createKeyCode(event);
 
@@ -775,7 +775,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   /**
    * 清空键盘事件队列
    */
-  clearConvert() {
+  public clearConvert() {
     this.convertKeySequence = [];
   }
 

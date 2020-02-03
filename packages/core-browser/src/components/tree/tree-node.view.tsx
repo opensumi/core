@@ -7,7 +7,7 @@ import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../style/icon/icon';
 import Icon from '../icon';
 import Badge from '../badge';
-import { ValidateInput, InputSelection } from '../input';
+import { ValidateInput, InputSelection } from '@ali/ide-components';
 import { KeyCode, Key } from '../../keyboard';
 import { Loading } from '../loading';
 
@@ -114,16 +114,6 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
       { [`${styles.mod_collapsed}`]: !node.expanded },
     )}
   />;
-};
-
-const renderHead = (node: TreeNode) => {
-  return <div
-    className={cls(
-      styles.treenode_head,
-      node.headClass,
-    )}
-  >
-  </div>;
 };
 
 export const TreeContainerNode = (
@@ -312,7 +302,7 @@ export const TreeContainerNode = (
 
   };
 
-  const renderIcon = (node: TreeNode | ExpandableTreeNode) => {
+  const renderHead = (node: TreeNode | ExpandableTreeNode) => {
     const treeNodeLeftActions: TreeViewAction[] = [];
     if (!ExpandableTreeNode.is(node)) {
       for (const action of actions) {
@@ -325,8 +315,21 @@ export const TreeContainerNode = (
         }
       }
     }
-    return <div className={cls(node.icon, styles.file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight}px`}}>
+    return <div
+      className={cls(
+        styles.treenode_head,
+      )}
+    >
+      { node.headIconClass && <div className={cls(
+        styles.treenode_head_icon,
+        node.headIconClass,
+      )}></div>}
       {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
+    </div>;
+  };
+
+  const renderIcon = (node: TreeNode | ExpandableTreeNode) => {
+    return <div className={cls(node.icon, styles.file_icon, {expanded: node.expanded})} style={{...node.iconStyle, height: itemLineHeight, lineHeight: `${itemLineHeight}px`}}>
     </div>;
   };
 
@@ -390,6 +393,7 @@ export const TreeContainerNode = (
             type='text'
             className={cls(styles.input_box)}
             autoFocus={true}
+            popup
             onBlur={blurHandler}
             value={value}
             onChange={changeHandler}
@@ -456,7 +460,7 @@ export const TreeContainerNode = (
   const itemStyle = {
     height: itemLineHeight,
     lineHeight: `${itemLineHeight}px`,
-    paddingLeft: ExpandableTreeNode.is(node) ? 0 : foldable && isComplex ? '14px' : 0,
+    paddingLeft: ExpandableTreeNode.is(node) ? 0 : foldable && isComplex ? '15px' : 0,
   } as React.CSSProperties;
 
   const titleStyle = {
@@ -500,7 +504,7 @@ export const TreeContainerNode = (
       >
         {renderTitle(node)}
         <div className={cls(styles.treenode_content, node.badge ? styles.treenode_has_badge : '')} style={itemStyle}>
-          {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
+          {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || renderHead(node)}
           {renderIcon(node)}
           <div
             className={isEdited ? styles.treenode_edit_wrap : isString(node.name) ? styles.treenode_overflow_wrap : styles.treenode_flex_wrap}

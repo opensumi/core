@@ -1,16 +1,16 @@
 import {
   RPCServiceCenter,
   initRPCService,
-  WSChanneHandler,
+  WSChannelHandler,
   createWebSocketConnection,
   createSocketConnection,
   RPCMessageConnection,
  } from '@ali/ide-connection';
-import { Injector, Provider, ConstructorOf } from '@ali/common-di';
+import { Injector, Provider } from '@ali/common-di';
+import { getLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, IEventBus } from '@ali/ide-core-common';
+import { BackService } from '@ali/ide-core-common/lib/module';
+
 import { ModuleConstructor } from './app';
-import { getLogger, ILogger, IReporterService } from '@ali/ide-core-common';
-import { IStatusBarService } from '../services/';
-import * as net from 'net';
 
 // 建立连接之前，无法使用落盘的 logger
 const logger = getLogger();
@@ -23,22 +23,21 @@ export async function createClientConnection2(
   useExperimentalMultiChannel?: boolean,
   clientId?: string,
 ) {
-  const statusBarService = injector.get(IStatusBarService);
-  const reporterService = injector.get(IReporterService);
-  // const logger = injector.get(ILogger)
+  const reporterService: IReporterService = injector.get(IReporterService);
+  const eventBus = injector.get(IEventBus);
 
-  const wsChannelHandler = new WSChanneHandler(wsPath, logger, protocols, useExperimentalMultiChannel, clientId);
+  const wsChannelHandler = new WSChannelHandler(wsPath, logger, protocols, useExperimentalMultiChannel, clientId);
   wsChannelHandler.setReporter(reporterService);
   wsChannelHandler.connection.addEventListener('open', () => {
-    statusBarService.setBackgroundColor('var(--statusBar-background)');
+    eventBus.fire(new BrowserConnectionOpenEvent());
   });
   wsChannelHandler.connection.addEventListener('close', () => {
-    statusBarService.setBackgroundColor('var(--kt-statusbar-offline-background)');
+    eventBus.fire(new BrowserConnectionCloseEvent());
   });
   await wsChannelHandler.initHandler();
 
   injector.addProviders({
-    token: WSChanneHandler,
+    token: WSChannelHandler,
     useValue: wsChannelHandler,
   });
 
@@ -89,10 +88,10 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
     getRPCService,
   } = initRPCService(clientCenter);
 
-  const backServiceArr: { servicePath: string, clientToken?: ConstructorOf<any> }[] = [];
+  const backServiceArr: BackService[] = [];
 
   for (const module of modules) {
-    const moduleInstance = injector.get(module) as any;
+    const moduleInstance = injector.get(module) as BasicModule;
     if (moduleInstance.backServices) {
       for (const backService of moduleInstance.backServices) {
         backServiceArr.push(backService);
@@ -101,19 +100,19 @@ export async function bindConnectionService(injector: Injector, modules: ModuleC
   }
 
   for (const backService of backServiceArr) {
-    const { servicePath: backServicePath } = backService;
-    const getService = getRPCService(backServicePath);
+    const { servicePath } = backService;
+    const rpcService = getRPCService(servicePath);
 
     const injectService = {
-      token: backServicePath,
-      useValue: getService,
+      token: servicePath,
+      useValue: rpcService,
     } as Provider;
 
     injector.addProviders(injectService);
 
     if (backService.clientToken) {
       const clientService = injector.get(backService.clientToken);
-      getService.onRequestService(clientService);
+      rpcService.onRequestService(clientService);
     }
   }
 }

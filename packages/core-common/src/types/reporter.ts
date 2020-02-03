@@ -1,5 +1,6 @@
 export enum REPORT_NAME {
   ACTIVE_EXTENSION = 'activateExtension',
+  RUNTIME_ERROR_EXTENSION = 'runtimeErrorExtension',
   LOAD_EXTENSION_MAIN = 'loadExtensionMain',
   PROVIDE_COMPLETION_ITEMS = 'provideCompletionItems',
   RESOLVE_COMPLETION_ITEM = 'resolveCompletionItem',
@@ -9,6 +10,7 @@ export enum REPORT_NAME {
   MEASURE = 'measure',
   FORMAT_ON_SAVE_TIMEOUT_ERROR = 'formatOnSaveTimeoutError',
   FORMAT_ON_SAVE = 'formatOnSave',
+  NOT_FOUND_COMMAND = 'notFoundCommand',
 }
 
 export enum REPORT_HOST {

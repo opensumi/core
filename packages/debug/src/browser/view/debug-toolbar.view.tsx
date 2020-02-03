@@ -4,12 +4,14 @@ import * as styles from './debug-configuration.module.less';
 import * as cls from 'classnames';
 import { Injectable } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { useInjectable, localize, getIcon, ThrottledDelayer } from '@ali/ide-core-browser';
+import { useInjectable, localize, getIcon, isElectronRenderer, IClientApp } from '@ali/ide-core-browser';
+import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { DebugAction } from '../components/debug-action';
 import { observer } from 'mobx-react-lite';
 import { DebugToolbarService } from './debug-toolbar.service';
 import { DebugState, DebugSession } from '../debug-session';
 import { isExtensionHostDebugging } from '../debugUtils';
+import { Select, Option } from '@ali/ide-components';
 
 @Injectable()
 class FloatController {
@@ -85,22 +87,33 @@ export const DebugToolbarView = observer(() => {
 
   const renderSessionOptions = (sessions: DebugSession[]) => {
     return sessions.map((session: DebugSession) => {
-      return <option key={ session.id } value={ session.id }>{ session.label }</option>;
+      if (isElectronRenderer()) {
+        return <option key={ session.id } value={ session.id }>{ session.label }</option>;
+      }
+      return <Option key={ session.id } label={session.label} value={ session.id }>{ session.label }</Option>;
     });
   };
 
   const renderSelections = (sessions: DebugSession[]) => {
     if (sessionCount > 1) {
       return <div className={ cls(styles.debug_selection) }>
-        <select value={ currentSessionId } onChange={ setCurrentSession }>
+        {isElectronRenderer() ?
+          <NativeSelect value={ currentSessionId } onChange={ setCurrentSession }>
           { renderSessionOptions(sessions) }
-        </select>
+        </NativeSelect> :
+        <Select value={ currentSessionId } onChange={ setCurrentSession }>
+        { renderSessionOptions(sessions) }
+      </Select>}
       </div>;
     }
   };
 
-  const setCurrentSession = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.currentTarget.value;
+  const setCurrentSession = (event: React.ChangeEvent<HTMLSelectElement> | string | number) => {
+    let value = event;
+    if (isElectronRenderer()) {
+      value = (event as React.ChangeEvent<HTMLSelectElement>).target.value;
+    }
+
     if (!sessions) {
       return;
     }
@@ -128,12 +141,12 @@ export const DebugToolbarView = observer(() => {
 });
 
 export const FloatDebugToolbarView = observer(() => {
-  const mainDiv = document.getElementById('main');
+  const app = useInjectable<IClientApp>(IClientApp);
   const controller = useInjectable<FloatController>(FloatController);
   const {
     state,
   }: DebugToolbarService = useInjectable(DebugToolbarService);
-  if (mainDiv && state) {
+  if (app.container && state) {
     return ReactDOM.createPortal(
       <div
         style={ { pointerEvents: controller.enable ? 'all' : 'none' } }
@@ -146,14 +159,14 @@ export const FloatDebugToolbarView = observer(() => {
           className={ styles.debug_toolbar_wrapper }
         >
           <div
-            className={ cls(getIcon('ellipsis'), styles.debug_toolbar_drag) }
+            className={ cls(getIcon('drag'), styles.debug_toolbar_drag) }
             onMouseDown={ (e) => controller.onMouseDown(e) }
             onMouseMove={ (e) => controller.onMouseMove(e) }
           ></div>
           <DebugToolbarView />
         </div>
       </div>,
-      mainDiv,
+      app.container,
     );
   } else {
     return null;
