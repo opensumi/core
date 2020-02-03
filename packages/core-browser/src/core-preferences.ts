@@ -297,6 +297,16 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: true,
       description: '%preference.debugger.toolbar.float%',
     },
+    'debug.toolbar.top': {
+      type: 'number',
+      default: 0,
+      description: '%preference.debugger.toolbar.top%',
+    },
+    'debug.toolbar.height': {
+      type: 'number',
+      default: 30,
+      description: '%preference.debugger.toolbar.height%',
+    },
     'files.exclude': {
       type: 'object',
       description: '%preference.files.exclude%',
@@ -370,6 +380,8 @@ export interface CoreConfiguration {
   'explorer.fileTree.indent': number;
   'explorer.confirmMove': boolean;
   'debug.toolbar.float': boolean;
+  'debug.toolbar.top': number;
+  'debug.toolbar.height': number;
   'files.watcherExclude': { [key: string]: boolean };
   'files.exclude': { [key: string]: boolean };
   'files.associations': { [key: string]: string };

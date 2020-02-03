@@ -4,8 +4,7 @@
   height: 28px;
   display: flex;
   align-items: center;
-  padding-right: 8px;
-  padding-left: 8px;
+  padding: 0px 8px;
   margin-bottom: 8px;
   justify-content: flex-start;
   pointer-events: all;
@@ -72,16 +71,29 @@
   justify-content: center;
   z-index: 999;
   user-select: none;
+
+  .kt_debug_action_bar {
+    height: 100%;
+    padding: 0px 12px;
+    background: #35393D;
+  }
 }
 
 .debug_toolbar_wrapper {
   display: flex;
-  height: 27px;
-  line-height: 27px;
+  height: 28px;
   background-color: var(--debugToolBar-background);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .debug_toolbar_drag {
   pointer-events: all;
   cursor: pointer;
+}
+
+.debug_toolbar_drag_wrapper {
+  background: #43484D;
+  display: flex;
+  height: 100%;
+  align-items: center;
 }

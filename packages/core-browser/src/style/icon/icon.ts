@@ -149,6 +149,7 @@ export const defaultIconMap = {
   'expand': 'expand',
   'shrink': 'shrink',
   'terminal': 'terminal',
+  'drag': 'drag',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {
