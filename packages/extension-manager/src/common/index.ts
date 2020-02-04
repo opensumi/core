@@ -165,6 +165,7 @@ export const IExtensionManagerRequester = Symbol('IExtensionManagerRequester');
 export interface IExtensionManagerRequester {
   request<T = any>(path: string, options?: urllib.RequestOptions): Promise<urllib.HttpClientResponse<T>>;
   setHeaders(headers: RequestHeaders): void;
+  getHeaders(): RequestHeaders;
 }
 
 export interface OpenExtensionOptions {

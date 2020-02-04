@@ -1,5 +1,5 @@
 import { uuid } from '@ali/ide-core-common';
-import { IExtensionManagerServer, BaseExtension, IExtensionManagerRequester } from '../../src/common';
+import { IExtensionManagerServer, BaseExtension, IExtensionManagerRequester, IExtensionManager } from '../../src/common';
 import { ExtensionManagerModule } from '../../src/node';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { AppConfig, INodeLogger } from '@ali/ide-core-node';
@@ -155,19 +155,19 @@ describe('template test', () => {
     await fs.mkdirp(extensionDir);
     const extensionId = `${publisher}.${name}`;
     const extensionDirName = `${extensionId}-${version}`;
+    const extensionPath = path.join(extensionDir, extensionDirName);
     // mock 请求方法
-    injector.mock(IExtensionManagerRequester, 'request', () => ({
-      headers: {
-        'content-disposition': `attachment; filename="${extensionDirName}.zip"`,
+    injector.mock(IExtensionManager, 'installer', {
+      install: () => {
+        return extensionPath;
       },
-      res: fs.createReadStream(path.join(__dirname, `../res/5d7102ffe8ecb2045ca51ef5-1.9.1.zip`)),
-    }));
+    });
     return {
       extensionId,
       name,
       publisher,
       version,
-      path: path.join(extensionDir, extensionDirName),
+      path: extensionPath,
     };
   }
 

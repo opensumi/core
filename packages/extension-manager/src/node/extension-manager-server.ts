@@ -1,14 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import * as compressing from 'compressing';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { IExtensionManagerServer, PREFIX, RequestHeaders, EXTENSION_DIR, BaseExtension, IExtensionManager, IExtensionManagerRequester } from '../common';
+import { IExtensionManagerServer, PREFIX, RequestHeaders, BaseExtension, IExtensionManager, IExtensionManagerRequester } from '../common';
 import * as urllib from 'urllib';
 import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
-import * as awaitEvent from 'await-event';
-import { renameSync } from 'fs-extra';
 import * as pkg from '@ali/ide-core-node/package.json';
 import * as qs from 'querystring';
+import { ExtensionInstaller } from '@ali/ide-extension-installer';
 
 @Injectable()
 export class ExtensionManagerRequester implements IExtensionManagerRequester {
@@ -64,6 +62,10 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
       ...headers,
     };
   }
+
+  getHeaders() {
+    return this.headers;
+  }
 }
 
 @Injectable()
@@ -78,13 +80,45 @@ export class ExtensionManager implements IExtensionManager {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
+  private installer: ExtensionInstaller;
+
+  constructor() {
+    this.installer = new ExtensionInstaller({
+      accountId: this.appConfig.marketplace.accountId,
+      masterKey: this.appConfig.marketplace.masterKey,
+      api: this.appConfig.marketplace.endpoint,
+      isElectronEnv: isElectronEnv(),
+      frameworkVersion: pkg.version,
+      request: {
+        headers: this.extensionManagerRequester.getHeaders(),
+        beforeRequest: (options) => {
+          if (this.appConfig.marketplace.transformRequest) {
+            const { headers, path} = this.appConfig.marketplace.transformRequest({
+              path: options.path,
+              headers: options.headers,
+            });
+            if (path) {
+              options.path = path;
+            }
+            if (headers) {
+              options.headers = headers;
+            }
+          }
+        },
+      },
+    });
+  }
+
   async installExtension(extension: BaseExtension, version?: string | undefined): Promise<string> {
     const currentVersion = version || extension.version;
-    const request = await this.requestExtension(extension.extensionId, currentVersion);
-
     const extensionDirName = `${extension.publisher}.${extension.name}-${currentVersion}`;
-
-    return await this.uncompressExtension(request.res, extensionDirName, extension);
+    const dist = await this.getUnpressExtensionDir(extensionDirName, extension);
+    return this.installer.install({
+      publisher: extension.publisher,
+      name: extension.name,
+      version: currentVersion,
+      dist,
+    });
   }
   async updateExtension(extension: BaseExtension, version: string): Promise<string> {
     // 先下载插件
@@ -105,69 +139,6 @@ export class ExtensionManager implements IExtensionManager {
 
   public async getUnpressExtensionDir(extensionDirName: string, extension: BaseExtension): Promise<string> {
     return path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
-  }
-
-  /**
-   * 解压插件
-   * @param source 来源 stream
-   * @param extensionDirName 插件文件夹名
-   */
-  private async uncompressExtension(source: any, extensionDirName: string, extension): Promise<string> {
-    const zipStream = new compressing.zip.UncompressStream({ source });
-    // 插件目录
-    const extensionDir = await this.getUnpressExtensionDir(extensionDirName, extension);
-    // 创建插件目录
-    await fs.mkdirp(extensionDir);
-
-    zipStream.on('entry', async (header, stream, next) => {
-      if (header.type === 'directory') {
-        next();
-      } else {
-        if (!header.name.startsWith(EXTENSION_DIR)) {
-          next();
-        } else {
-          // 说明进入了插件目录
-          // 去除插件目录
-          const fileName = header.name.replace(EXTENSION_DIR, '');
-          let distFile = path.join(extensionDir, fileName);
-
-          if (fileName.endsWith('.asar') && isElectronEnv()) {
-            // 在Electron中，如果解包的文件中存在.asar文件，会由于Electron本身的bug导致无法对.asar创建writeStream
-            // 此处先把.asar文件写到另外一个目标文件中，完成后再进行重命名
-            const originalDistFile = distFile;
-            distFile += '_prevent_bug';
-            stream.on('end', () => {
-              renameSync(distFile, originalDistFile);
-            });
-          }
-
-          // 创建目录
-          await fs.mkdirp(path.dirname(distFile));
-          stream.on('end', () => {
-            next();
-          });
-          stream.pipe(fs.createWriteStream(distFile));
-        }
-      }
-    });
-
-    try {
-      await Promise.race([awaitEvent(zipStream, 'finish'), awaitEvent(zipStream, 'error')]);
-    } catch (err) {
-      this.logger.error(err);
-    }
-    return extensionDir;
-  }
-
-  /**
-   * 请求下载插件接口
-   * @param extensionId 插件 id
-   */
-  private async requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
-    const request = await this.extensionManagerRequester.request<NodeJS.ReadWriteStream>(`download/${extensionId}${version ? `?version=${version}` : ''}`, {
-      streaming: true,
-    });
-    return request;
   }
 }
 

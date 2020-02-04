@@ -5,10 +5,11 @@ import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, CorePreferences } from '@ali/ide-core-browser';
-import { memoize, IDisposable, dispose, getLanguageId } from '@ali/ide-core-common';
+import { memoize, IDisposable, dispose, getLanguageId, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IMessageService } from '@ali/ide-overlay';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -49,6 +50,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
 
+  @Autowired(IMessageService)
+  messageService: IMessageService;
+
   private readonly disposables: IDisposable[] = [];
 
   @observable
@@ -83,6 +87,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired(IReporterService)
+  reporterService: IReporterService;
 
   @observable
   isInit: boolean = false;
@@ -178,7 +185,18 @@ export class ExtensionManagerService implements IExtensionManagerService {
       isInstalling: true,
     });
     // 1. 调用后台下载插件
-    const path = await this.extensionManagerServer.installExtension(extension, version || extension.version);
+    let path = '';
+    try {
+      path = await this.extensionManagerServer.installExtension(extension, version || extension.version);
+    } catch (error) {
+      this.logger.error(error);
+      this.extensionMomentState.set(extensionId, {
+        isInstalling: false,
+      });
+      this.messageService.error(error.message);
+      this.reporterService.point(REPORT_NAME.INSTALL_EXTENSION_ERROR, extensionId);
+      return '';
+    }
     const reloadRequire = await this.computeReloadState(path);
 
     if (!reloadRequire) {
