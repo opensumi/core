@@ -25,6 +25,7 @@
     "@ali/ide-explorer": "1.7.5",
     "@ali/ide-core-node": "1.7.5",
     "@ali/ide-main-layout": "1.7.5",
+    "@ali/ide-theme": "1.7.5",
     "lodash.debounce": "^4.0.8"
   },
   "devDependencies": {
