@@ -5,6 +5,8 @@ import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from '
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 import { ExtensionCandiDate } from '@ali/ide-core-common';
+import * as psTree from 'ps-tree';
+import * as isRunning from 'is-running';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
@@ -236,8 +238,25 @@ export class KTNodeProcess {
   }
 
   dispose() {
+    const logger = getLogger();
+    logger.log('KTNodeProcess dispose', this._process);
     if (this._process) {
-      this._process.kill();
+
+      psTree(this._process.pid, (err: Error, childProcesses) => {
+        childProcesses.forEach((p: psTree.PS) => {
+          logger.log('main psTree kill child process', p.PID);
+          try {
+            const pid = parseInt(p.PID, 10);
+            if (isRunning(pid)) {
+              process.kill(pid);
+            }
+          } catch (e) {
+            logger.error(e);
+          }
+        });
+
+        this._process.kill();
+      });
     }
   }
 }

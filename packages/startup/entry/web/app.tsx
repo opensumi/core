@@ -9,6 +9,7 @@ import '@ali/ide-core-browser/lib/style/index.less';
 // 引入本地icon，不使用cdn版本，与useCdnIcon配套使用
 import '@ali/ide-core-browser/lib/style/icon.less';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
+import { SlotLocation } from '@ali/ide-core-browser';
 
 renderApp({
   modules: [
@@ -16,7 +17,12 @@ renderApp({
     ExpressFileServerModule,
     StartupModule,
   ],
-  layoutConfig: defaultConfig,
+  layoutConfig: {
+    ...defaultConfig,
+    ...{[SlotLocation.top]: {
+      modules: ['@ali/ide-menu-bar', 'toolbar'],
+    }},
+  },
   useCdnIcon: false,
   // isSyncPreference: true,
   defaultPreferences: {

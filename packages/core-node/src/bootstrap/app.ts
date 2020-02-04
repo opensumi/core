@@ -272,12 +272,14 @@ export class ServerApp implements IServerApp {
     process.on('SIGINT', async () => {
       this.logger.log('process SIGINT');
       await this.onStop();
+      this.logger.log('process SIGINT DONE');
       process.exit(0);
     });
     // Handles `kill pid`.
     process.on('SIGTERM', async () => {
-      this.logger.log('process SIGINT');
+      this.logger.log('process SIGTERM');
       await this.onStop();
+      this.logger.log('process SIGTERM DONE');
       process.exit(0);
     });
   }
