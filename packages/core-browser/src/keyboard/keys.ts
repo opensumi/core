@@ -132,7 +132,7 @@ export class KeyCode {
   /**
    * Return true if the given KeyCode is equal to this one.
    */
-  equals(other: KeyCode): boolean {
+  public equals(other: KeyCode): boolean {
     if (this.key && (!other.key || this.key.code !== other.key.code) || !this.key && other.key) {
       return false;
     }
@@ -142,7 +142,7 @@ export class KeyCode {
   /*
    * Return a keybinding string compatible with the `Keybinding.keybinding` property.
    */
-  toString(): string {
+  public toString(): string {
     const result: string[] = [];
     if (this.meta) {
       result.push(isOSX ? '⌘' : 'Win');

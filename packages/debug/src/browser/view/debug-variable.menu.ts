@@ -30,11 +30,9 @@ export class VariablesPanelContribution implements NextMenuContribution, Command
   private contextKeyService: IContextKeyService;
 
   constructor() {
-    /*
     this.service.onVariableContextMenu(({ nodes, event }) => {
       this.onContextMenu(nodes, event);
     });
-    */
   }
 
   registerCommands(registry: CommandRegistry) {
@@ -42,6 +40,7 @@ export class VariablesPanelContribution implements NextMenuContribution, Command
       execute: async (nodes: TreeNode[]) => {
         const param = await this.quickInputService.open({
           placeHolder: localize('deugger.menu.setValue.param'),
+          value: nodes[0].description as string,
         });
         if (param !== undefined && param !== null) {
           this.service.setNodesValue(nodes, param);

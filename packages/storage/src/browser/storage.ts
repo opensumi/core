@@ -1,6 +1,7 @@
 import { getLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, DisposableCollection, isObject, isArray } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IStorageServer, IUpdateRequest } from '../common';
+import { AppConfig } from '@ali/ide-core-browser';
 
 enum StorageState {
   None,
@@ -31,7 +32,7 @@ export class Storage implements IStorage {
 
   private readonly logger = getLogger();
 
-  constructor(private readonly database: IStorageServer, private readonly workspace: IWorkspaceService, storageName: string) {
+  constructor(private readonly database: IStorageServer, private readonly workspace: IWorkspaceService, private readonly appConfig: AppConfig, storageName: string) {
     this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);
     this.flushDelayer = new ThrottledDelayer(Storage.DEFAULT_FLUSH_DELAY);
@@ -55,7 +56,7 @@ export class Storage implements IStorage {
     this.state = StorageState.Initialized;
     await this.workspace.whenReady;
     const workspace = this.workspace.workspace;
-    await this.database.init(workspace && workspace.uri);
+    await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
     const cache = await this.database.getItems(storageName);
     this.cache = this.jsonToMap(cache);
   }
@@ -64,7 +65,7 @@ export class Storage implements IStorage {
     const storageName = this.storageName;
     await this.workspace.whenReady;
     const workspace = this.workspace.workspace;
-    await this.database.init(workspace && workspace.uri);
+    await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
     const cache = await this.database.getItems(storageName);
     this.cache = this.jsonToMap(cache);
   }

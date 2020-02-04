@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue } from '@ali/ide-core-common';
+import { IDisposable, DisposableCollection, Emitter, Event, URI, Deferred, JSONUtils, JSONValue, Resource } from '@ali/ide-core-common';
 import { PreferenceScope } from '@ali/ide-core-common/lib/preferences/preference-scope';
 
 export interface PreferenceProviderDataChange {
@@ -26,17 +26,19 @@ export abstract class PreferenceProvider implements IDisposable {
   public readonly name: string;
 
   protected readonly onDidPreferencesChangedEmitter = new Emitter<PreferenceProviderDataChanges>();
-  readonly onDidPreferencesChanged: Event<PreferenceProviderDataChanges> = this.onDidPreferencesChangedEmitter.event;
+  public readonly onDidPreferencesChanged: Event<PreferenceProviderDataChanges> = this.onDidPreferencesChangedEmitter.event;
 
   protected readonly toDispose = new DisposableCollection();
 
   protected readonly _ready = new Deferred<void>();
 
+  public resource: Promise<Resource>;
+
   constructor() {
     this.toDispose.push(this.onDidPreferencesChangedEmitter);
   }
 
-  dispose(): void {
+  public dispose(): void {
     this.toDispose.dispose();
   }
 
@@ -56,11 +58,11 @@ export abstract class PreferenceProvider implements IDisposable {
     }
   }
 
-  get<T>(preferenceName: string, resourceUri?: string): T | undefined {
+  public get<T>(preferenceName: string, resourceUri?: string): T | undefined {
     return this.resolve<T>(preferenceName, resourceUri).value;
   }
 
-  resolve<T>(preferenceName: string, resourceUri?: string): PreferenceResolveResult<T> {
+  public resolve<T>(preferenceName: string, resourceUri?: string): PreferenceResolveResult<T> {
     const value = this.getPreferences(resourceUri)[preferenceName];
     if (value !== undefined) {
       return {
@@ -71,9 +73,9 @@ export abstract class PreferenceProvider implements IDisposable {
     return {};
   }
 
-  abstract getPreferences(resourceUri?: string): { [p: string]: any };
+  public abstract getPreferences(resourceUri?: string): { [p: string]: any };
 
-  abstract setPreference(key: string, value: any, resourceUri?: string): Promise<boolean>;
+  public abstract setPreference(key: string, value: any, resourceUri?: string): Promise<boolean>;
 
   /**
    * 返回promise，当 preference provider 已经可以提供配置时返回resolved
@@ -85,18 +87,18 @@ export abstract class PreferenceProvider implements IDisposable {
   /**
    * 默认返回undefined
    */
-  getDomain(): string[] | undefined {
+  public getDomain(): string[] | undefined {
     return undefined;
   }
 
   /**
    * 默认返回undefined
    */
-  getConfigUri(resourceUri?: string): URI | undefined {
+  public getConfigUri(resourceUri?: string): URI | undefined {
     return undefined;
   }
 
-  static merge(source: JSONValue | undefined, target: JSONValue): JSONValue {
+  public static merge(source: JSONValue | undefined, target: JSONValue): JSONValue {
     if (source === undefined || !JSONUtils.isObject(source)) {
       return JSONUtils.deepCopy(target);
     }

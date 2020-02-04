@@ -73,7 +73,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   protected readonly logger: ILogger;
 
   protected readonly onDidPreferenceSchemaChangedEmitter = new Emitter<void>();
-  readonly onDidPreferenceSchemaChanged: Event<void> = this.onDidPreferenceSchemaChangedEmitter.event;
+  public readonly onDidPreferenceSchemaChanged: Event<void> = this.onDidPreferenceSchemaChangedEmitter.event;
 
   protected fireDidPreferenceSchemaChanged(): void {
     this.onDidPreferenceSchemaChangedEmitter.fire(undefined);
@@ -102,7 +102,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   protected readonly overrideIdentifiers = new Set<string>();
-  registerOverrideIdentifier(overrideIdentifier: string): void {
+  public registerOverrideIdentifier(overrideIdentifier: string): void {
     if (this.overrideIdentifiers.has(overrideIdentifier)) {
       return;
     }
@@ -239,7 +239,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   protected readonly unsupportedPreferences = new Set<string>();
-  validate(name: string, value: any): boolean {
+  public validate(name: string, value: any): boolean {
     if (this.configurations.isSectionName(name)) {
       return true;
     }
@@ -255,25 +255,25 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     return result;
   }
 
-  getCombinedSchema(): PreferenceDataSchema {
+  public getCombinedSchema(): PreferenceDataSchema {
     return this.combinedSchema;
   }
 
-  setSchema(schema: PreferenceSchema, override?: boolean): void {
+  public setSchema(schema: PreferenceSchema, override?: boolean): void {
     const changes = this.doSetSchema(schema, override);
     this.fireDidPreferenceSchemaChanged();
     this.emitPreferencesChangedEvent(changes);
   }
 
-  getPreferences(): { [name: string]: any } {
+  public getPreferences(): { [name: string]: any } {
     return this.preferences;
   }
 
-  async setPreference(): Promise<boolean> {
+  public async setPreference(): Promise<boolean> {
     return false;
   }
 
-  isValidInScope(preferenceName: string, scope: PreferenceScope): boolean {
+  public isValidInScope(preferenceName: string, scope: PreferenceScope): boolean {
     const preference = this.getPreferenceProperty(preferenceName);
     if (preference) {
       return preference.scope! >= scope;
@@ -281,7 +281,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     return false;
   }
 
-  *getPreferenceNames(): IterableIterator<string> {
+  public *getPreferenceNames(): IterableIterator<string> {
     // tslint:disable-next-line:forin
     for (const preferenceName in this.combinedSchema.properties) {
       yield preferenceName;
@@ -291,7 +291,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     }
   }
 
-  *getOverridePreferenceNames(preferenceName: string): IterableIterator<string> {
+  public *getOverridePreferenceNames(preferenceName: string): IterableIterator<string> {
     const preference = this.combinedSchema.properties[preferenceName];
     if (preference && preference.overridable) {
       for (const overrideIdentifier of this.overrideIdentifiers) {
@@ -300,15 +300,15 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     }
   }
 
-  getPreferenceProperty(preferenceName: string): PreferenceItem | undefined {
+  public getPreferenceProperty(preferenceName: string): PreferenceItem | undefined {
     const overridden = this.overriddenPreferenceName(preferenceName);
     return this.combinedSchema.properties[overridden ? overridden.preferenceName : preferenceName];
   }
 
-  overridePreferenceName({ preferenceName, overrideIdentifier }: OverridePreferenceName): string {
+  public overridePreferenceName({ preferenceName, overrideIdentifier }: OverridePreferenceName): string {
     return `[${overrideIdentifier}].${preferenceName}`;
   }
-  overriddenPreferenceName(name: string): OverridePreferenceName | undefined {
+  public overriddenPreferenceName(name: string): OverridePreferenceName | undefined {
     const index = name.indexOf('.');
     if (index === -1) {
       return undefined;
@@ -322,7 +322,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     return { preferenceName, overrideIdentifier };
   }
 
-  testOverrideValue(name: string, value: any): value is PreferenceSchemaProperties {
+  public testOverrideValue(name: string, value: any): value is PreferenceSchemaProperties {
     return PreferenceSchemaProperties.is(value) && OVERRIDE_PROPERTY_PATTERN.test(name);
   }
 }
@@ -330,7 +330,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
 @Injectable()
 export class DefaultPreferenceProvider extends PreferenceProvider {
   @Autowired(PreferenceSchemaProvider)
-  preferenceSchemaProvider: PreferenceSchemaProvider;
+  public preferenceSchemaProvider: PreferenceSchemaProvider;
 
   private preferences: { [name: string]: any } = {};
 
@@ -343,14 +343,14 @@ export class DefaultPreferenceProvider extends PreferenceProvider {
     this._ready.resolve();
   }
 
-  getPreferences() {
+  public getPreferences() {
     return {
       ...this.preferenceSchemaProvider.getPreferences(),
       ...this.preferences,
     };
   }
 
-  async setPreference(key: string, value: any, resourceUri?: string) {
+  public async setPreference(key: string, value: any, resourceUri?: string) {
     const newPrefs = {};
     newPrefs[key] = value;
     const oldValue = this.preferences[key];
@@ -359,7 +359,7 @@ export class DefaultPreferenceProvider extends PreferenceProvider {
     return true;
   }
 
-  handlePreferenceChanges(preferenceName: string, newValue: any, oldValue: any) {
+  public handlePreferenceChanges(preferenceName: string, newValue: any, oldValue: any) {
     const prefChanges: PreferenceProviderDataChange[] = [
       {
         preferenceName,

@@ -153,7 +153,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     const { isLoading, isDrained, data, scrollBottomIfActive } = this.props;
 
     if (oldData.length !== data.length) {
-      if (scrollBottomIfActive) {
+      if (scrollBottomIfActive && data.length) {
         this.scrollToBottom();
       }
     } else if (oldData.length > data.length) {
@@ -222,16 +222,9 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   }
 
   bindBoundaryEls = () => {
-    const { slices, currentSliceIndex, bottomSpaces, topSpaces } = this.state;
+    const { slices, currentSliceIndex } = this.state;
     const nodeList = this.listEl.childNodes;
     this.topBoundary = nodeList[slices[currentSliceIndex].amount];
-    // 仅在初次渲染时初始化底部缺省空间
-    if (bottomSpaces.length === 0 && topSpaces.length === 0) {
-      const sliceHeight = this.topBoundary.getBoundingClientRect().top - this.listEl.firstChild.getBoundingClientRect().top;
-      this.setState({
-        bottomSpaces: new Array(slices.length - VISIBLE_SLICE_COUNT).fill(sliceHeight),
-      });
-    }
     this.bottomBoundary =
       nodeList[
       slices[currentSliceIndex].amount +

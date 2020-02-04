@@ -1,39 +1,49 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, localize, CommandService } from '@ali/ide-core-browser';
+import { useInjectable, localize, CommandService, ViewState } from '@ali/ide-core-browser';
 import { IExtensionManagerService, SearchState, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionList } from './components/extension-list';
 import * as styles from './extension-panel.module.less';
 
-export const ExtensionDisableAccordion = observer(() => {
+export const ExtensionDisableAccordion: React.FC<{
+  viewState: ViewState,
+}> = observer(({ viewState }) => {
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
 
   return (
     <ExtensionList
+      height={viewState.height}
       list={extensionManagerService.disableResults}
       empty={extensionManagerService.disableResults.length === 0 ? localize('marketplace.extension.empty.disabled') : ''}
     />
   );
 });
 
-export const ExtensionEnableAccordion = observer(() => {
+export const ExtensionEnableAccordion: React.FC<{
+  viewState: ViewState,
+}> = observer(({ viewState }) => {
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
 
   return (
     <ExtensionList
+      height={viewState.height}
       list={extensionManagerService.enableResults}
     />
   );
 });
 
-export const ExtensionHotAccordion = observer(() => {
+export const ExtensionHotAccordion: React.FC<{
+  viewState: ViewState,
+}> = observer(({ viewState }) => {
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
 
   return (
     <ExtensionList
+      height={viewState.height}
+      onYReachEnd={() => extensionManagerService.loadHotExtensions()}
       loading={extensionManagerService.loading === SearchState.LOADING}
       list={extensionManagerService.hotExtensions}
       empty={extensionManagerService.loading === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound') : ''}
@@ -41,13 +51,16 @@ export const ExtensionHotAccordion = observer(() => {
   );
 });
 
-export const ExtensionSearchInstalledAccordion = observer(() => {
+export const ExtensionSearchInstalledAccordion: React.FC<{
+  viewState: ViewState,
+}> = observer(({ viewState }) => {
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const commandService = useInjectable<CommandService>(CommandService);
 
   return (
     <ExtensionList
+      height={viewState.height}
       loading={extensionManagerService.searchInstalledState === SearchState.LOADING}
       list={extensionManagerService.searchInstalledResults}
       empty={extensionManagerService.searchInstalledState === SearchState.NO_CONTENT ? (
@@ -60,12 +73,15 @@ export const ExtensionSearchInstalledAccordion = observer(() => {
   );
 });
 
-export const ExtensionSearchMarketplaceAccordion = observer(() => {
+export const ExtensionSearchMarketplaceAccordion: React.FC<{
+  viewState: ViewState,
+}> = observer(({ viewState }) => {
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
 
   return (
     <ExtensionList
+      height={viewState.height}
       loading={extensionManagerService.searchMarketplaceState === SearchState.LOADING}
       list={extensionManagerService.searchMarketplaceResults}
       empty={extensionManagerService.searchMarketplaceState === SearchState.NO_CONTENT ? localize('marketplace.extension.notfound') : ''}

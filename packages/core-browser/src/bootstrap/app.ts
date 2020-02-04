@@ -30,7 +30,7 @@ import {
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
-import { RPCMessageConnection, WSChanneHandler } from '@ali/ide-connection';
+import { RPCMessageConnection, WSChannelHandler } from '@ali/ide-connection';
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider, IExternalPreferenceProvider,
 } from '../preferences';
@@ -142,6 +142,9 @@ export class ClientApp implements IClientApp {
       isSyncPreference: opts.isSyncPreference,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
       clientId: opts.clientId,
+      preferenceDirName: opts.preferenceDirName,
+      storageDirName: opts.storageDirName,
+      extensionStorageDirName: opts.extensionStorageDirName,
     };
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
@@ -185,7 +188,7 @@ export class ClientApp implements IClientApp {
 
         this.logger = this.getLogger();
          // 回写需要用到打点的 Logger 的地方
-        this.injector.get(WSChanneHandler).setLogger(this.logger);
+        this.injector.get(WSChannelHandler).setLogger(this.logger);
       }
     }
 

@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
 import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, IClientApp, localize, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from '@ali/ide-core-browser';
+import { IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import { IDialogService } from '@ali/ide-overlay';
 import { toPreferenceReadableName } from '../common';
@@ -11,13 +11,16 @@ import { toPreferenceReadableName } from '../common';
 export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   @Autowired(IWorkspaceService)
-  workspaceService;
+  protected readonly workspaceService;
 
   @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  protected readonly preferenceService: PreferenceService;
 
   @Autowired(PreferenceSchemaProvider)
-  schemaProvider: PreferenceSchemaProvider;
+  protected readonly schemaProvider: PreferenceSchemaProvider;
+
+  @Autowired(PreferenceProviderProvider)
+  protected readonly providerProvider: PreferenceProviderProvider;
 
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
@@ -154,6 +157,16 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     await this.preferenceService.set(preferenceName, undefined, scope);
     if (preferenceName === 'general.language' ) {
       this.onLocalizationLanguageChanged();
+    }
+  }
+
+  async getPreferenceUrl(scope: PreferenceScope) {
+    const preferenceProvider: PreferenceProvider = this.providerProvider(scope);
+    const resource = await preferenceProvider.resource;
+    if (resource && resource.getFsPath) {
+      return await resource.getFsPath();
+    } else {
+      return preferenceProvider.getConfigUri()?.toString();
     }
   }
 }

@@ -2,7 +2,7 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di'
 import { isElectronEnv, uuid, Emitter, ILogger, Event } from '@ali/ide-core-common';
 import { Emitter as Dispatcher, Disposable as DispatcherDisposable } from 'event-kit';
 import { electronEnv, AppConfig } from '@ali/ide-core-browser';
-import { WSChanneHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
+import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
 import { Terminal } from 'xterm';
 import { ITerminalExternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath  } from '../common';
 

@@ -3,7 +3,7 @@ import { ContributionProvider } from '@ali/ide-core-browser';
 import { DebugSession } from './debug-session';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { WSChanneHandler } from '@ali/ide-connection';
+import { WSChannelHandler } from '@ali/ide-connection';
 import { DebugPreferences } from './debug-preferences';
 import { DebugSessionConnection } from './debug-session-connection';
 import { DebugModelManager } from './editor/debug-model-manager';
@@ -69,8 +69,8 @@ export interface DebugSessionFactory {
 @Injectable()
 export class DefaultDebugSessionFactory implements DebugSessionFactory {
 
-  @Autowired(WSChanneHandler)
-  protected readonly connectionProvider: WSChanneHandler;
+  @Autowired(WSChannelHandler)
+  protected readonly connectionProvider: WSChannelHandler;
   @Autowired(WorkbenchEditorService)
   protected readonly workbenchEditorService: WorkbenchEditorService;
   @Autowired(BreakpointManager)

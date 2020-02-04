@@ -33,7 +33,7 @@ export class PreferenceChangeImpl implements PreferenceChange {
     return this.change.scope;
   }
 
-  affects(resourceUri?: string): boolean {
+  public affects(resourceUri?: string): boolean {
     const resourcePath = resourceUri && new URI(resourceUri).path;
     const domain = this.change.domain;
     return !resourcePath || !domain || domain.some((uri) => new URI(uri).path.relativity(resourcePath) >= 0);
@@ -77,10 +77,10 @@ export type PreferenceProviderProvider = (scope: PreferenceScope, uri?: URI) => 
 export class PreferenceServiceImpl implements PreferenceService {
 
   protected readonly onPreferenceChangedEmitter = new Emitter<PreferenceChange>();
-  readonly onPreferenceChanged = this.onPreferenceChangedEmitter.event;
+  public readonly onPreferenceChanged = this.onPreferenceChangedEmitter.event;
 
   protected readonly onPreferencesChangedEmitter = new Emitter<PreferenceChanges>();
-  readonly onPreferencesChanged = this.onPreferencesChangedEmitter.event;
+  public readonly onPreferencesChanged = this.onPreferencesChangedEmitter.event;
 
   protected readonly toDispose = new DisposableCollection(this.onPreferenceChangedEmitter, this.onPreferencesChangedEmitter);
 
@@ -112,7 +112,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     this.initializeProviders();
   }
 
-  dispose(): void {
+  public dispose(): void {
     this.toDispose.dispose();
   }
 
@@ -264,7 +264,7 @@ export class PreferenceServiceImpl implements PreferenceService {
    * @returns {{ [key: string]: any }}
    * @memberof PreferenceServiceImpl
    */
-  getPreferences(resourceUri?: string): { [key: string]: any } {
+  public getPreferences(resourceUri?: string): { [key: string]: any } {
     const preferences: { [key: string]: any } = {};
     for (const preferenceName of this.schema.getPreferenceNames()) {
       preferences[preferenceName] = this.get(preferenceName, undefined, resourceUri);
@@ -279,19 +279,19 @@ export class PreferenceServiceImpl implements PreferenceService {
    * @returns {boolean}
    * @memberof PreferenceServiceImpl
    */
-  has(preferenceName: string, resourceUri?: string): boolean {
+  public has(preferenceName: string, resourceUri?: string): boolean {
     return this.get(preferenceName, undefined, resourceUri) !== undefined;
   }
 
-  get<T>(preferenceName: string): T | undefined;
-  get<T>(preferenceName: string, defaultValue: T): T;
+  public get<T>(preferenceName: string): T | undefined;
+  public get<T>(preferenceName: string, defaultValue: T): T;
   // tslint:disable-next-line: unified-signatures
-  get<T>(preferenceName: string, defaultValue: T, resourceUri?: string): T;
-  get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): T | undefined {
+  public get<T>(preferenceName: string, defaultValue: T, resourceUri?: string): T;
+  public get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): T | undefined {
     return this.resolve<T>(preferenceName, defaultValue, resourceUri).value;
   }
 
-  lookUp<T>(key: string): PreferenceResolveResult<T> {
+  public lookUp<T>(key: string): PreferenceResolveResult<T> {
     let value;
     let reset;
     if (!key) {
@@ -318,7 +318,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     return { value };
   }
 
-  resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): {
+  public resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): {
     configUri?: URI,
     value?: T,
   } {
@@ -334,7 +334,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     return { value, configUri };
   }
 
-  async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
+  public async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
     const resolvedScope = !isUndefined(scope) ? scope : (!resourceUri ? PreferenceScope.Workspace : PreferenceScope.Folder);
     // TODO: 错误日志错误码机制
     if (resolvedScope === PreferenceScope.User && this.configurations.isSectionName(preferenceName.split('.', 1)[0])) {
@@ -366,20 +366,20 @@ export class PreferenceServiceImpl implements PreferenceService {
     throw new Error(`Unable to write to ${PreferenceScope.getScopeNames(resolvedScope)[0]} Settings.`);
   }
 
-  getBoolean(preferenceName: string): boolean | undefined;
-  getBoolean(preferenceName: string, defaultValue: boolean): boolean;
+  public getBoolean(preferenceName: string): boolean | undefined;
+  public getBoolean(preferenceName: string, defaultValue: boolean): boolean;
   // tslint:disable-next-line:unified-signatures
-  getBoolean(preferenceName: string, defaultValue: boolean, resourceUri: string): boolean;
-  getBoolean(preferenceName: string, defaultValue?: boolean, resourceUri?: string): boolean | undefined {
+  public getBoolean(preferenceName: string, defaultValue: boolean, resourceUri: string): boolean;
+  public getBoolean(preferenceName: string, defaultValue?: boolean, resourceUri?: string): boolean | undefined {
     const value = resourceUri ? this.get(preferenceName, defaultValue, resourceUri) : this.get(preferenceName, defaultValue);
     return value !== null && value !== undefined ? !!value : defaultValue;
   }
 
-  getString(preferenceName: string): string | undefined;
-  getString(preferenceName: string, defaultValue: string): string;
+  public getString(preferenceName: string): string | undefined;
+  public getString(preferenceName: string, defaultValue: string): string;
   // tslint:disable-next-line:unified-signatures
-  getString(preferenceName: string, defaultValue: string, resourceUri: string): string;
-  getString(preferenceName: string, defaultValue?: string, resourceUri?: string): string | undefined {
+  public getString(preferenceName: string, defaultValue: string, resourceUri: string): string;
+  public getString(preferenceName: string, defaultValue?: string, resourceUri?: string): string | undefined {
     const value = resourceUri ? this.get(preferenceName, defaultValue, resourceUri) : this.get(preferenceName, defaultValue);
     if (value === null || value === undefined) {
       return defaultValue;
@@ -387,11 +387,11 @@ export class PreferenceServiceImpl implements PreferenceService {
     return value.toString();
   }
 
-  getNumber(preferenceName: string): number | undefined;
-  getNumber(preferenceName: string, defaultValue: number): number;
+  public getNumber(preferenceName: string): number | undefined;
+  public getNumber(preferenceName: string, defaultValue: number): number;
   // tslint:disable-next-line:unified-signatures
-  getNumber(preferenceName: string, defaultValue: number, resourceUri: string): number;
-  getNumber(preferenceName: string, defaultValue?: number, resourceUri?: string): number | undefined {
+  public getNumber(preferenceName: string, defaultValue: number, resourceUri: string): number;
+  public getNumber(preferenceName: string, defaultValue?: number, resourceUri?: string): number | undefined {
     const value = resourceUri ? this.get(preferenceName, defaultValue, resourceUri) : this.get(preferenceName, defaultValue);
     if (value === null || value === undefined) {
       return defaultValue;
@@ -402,7 +402,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     return Number(value);
   }
 
-  inspect<T>(preferenceName: string, resourceUri?: string): {
+  public inspect<T>(preferenceName: string, resourceUri?: string): {
     preferenceName: string,
     defaultValue: T | undefined,
     globalValue: T | undefined, // User Preference
@@ -427,11 +427,11 @@ export class PreferenceServiceImpl implements PreferenceService {
     return value;
   }
 
-  overridePreferenceName(options: OverridePreferenceName): string {
+  public overridePreferenceName(options: OverridePreferenceName): string {
     return this.schema.overridePreferenceName(options);
   }
 
-  overriddenPreferenceName(preferenceName: string): OverridePreferenceName | undefined {
+  public overriddenPreferenceName(preferenceName: string): OverridePreferenceName | undefined {
     return this.schema.overriddenPreferenceName(preferenceName);
   }
 
@@ -516,12 +516,12 @@ export class PreferenceServiceImpl implements PreferenceService {
     }
   }
 
-  getValue<T>(preferenceName: string): T | undefined {
+  public getValue<T>(preferenceName: string): T | undefined {
     return this.resolve<T>(preferenceName).value;
   }
 
   protected readonly _onDidChangeConfiguration = new Emitter<IConfigurationChangeEvent>();
-  readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
+  public readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
 }
 
 // copied from vscdoe

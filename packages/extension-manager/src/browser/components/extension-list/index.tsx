@@ -10,15 +10,19 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { observer } from 'mobx-react-lite';
 
 interface ExtensionListProps {
+  height: number;
   loading?: boolean;
   empty?: React.ReactNode | string;
+  onYReachEnd?: () => void;
   list: RawExtension[];
 }
 
 export const ExtensionList: React.FC<ExtensionListProps> = observer(({
+  height,
   loading = false,
   list,
   empty,
+  onYReachEnd,
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
@@ -44,19 +48,23 @@ export const ExtensionList: React.FC<ExtensionListProps> = observer(({
     <div className={styles.wrap}>
       <ProgressBar loading={loading} />
       {list && list.length ? (
-        <PerfectScrollbar>
-        {list.map((rawExtension, index) => {
-          return (<RawExtensionView className={clx({
-            [styles.selected]: rawExtension.extensionId === selectExtensionId,
-            [styles.gray]: rawExtension.installed && !rawExtension.enable,
-            [styles.last_item]: index === list.length - 1,
-          })}
-          key={`${rawExtension.extensionId}_${rawExtension.version}`}
-          extension={rawExtension}
-          select={select}
-          install={install}
-          />);
-        })}
+        <PerfectScrollbar
+          onYReachEnd={onYReachEnd}
+        >
+          <div style={{ height }}>
+            {list.map((rawExtension, index) => {
+              return (<RawExtensionView className={clx({
+                [styles.selected]: rawExtension.extensionId === selectExtensionId,
+                [styles.gray]: rawExtension.installed && !rawExtension.enable,
+                [styles.last_item]: index === list.length - 1,
+              })}
+              key={`${rawExtension.extensionId}_${rawExtension.version}`}
+              extension={rawExtension}
+              select={select}
+              install={install}
+              />);
+            })}
+          </div>
       </PerfectScrollbar>
       ) : typeof empty === 'string' ? (<div className={styles.empty}>{empty}</div>) : empty}
     </div>
