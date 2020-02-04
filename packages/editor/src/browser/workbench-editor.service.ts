@@ -638,6 +638,22 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  get currentFocusedEditor(): IEditor | undefined {
+    if (this.currentOpenType) {
+      if (this.currentOpenType.type === 'code') {
+        if (this.codeEditor.monacoEditor.hasWidgetFocus()) {
+          return this.codeEditor;
+        }
+      } else if (this.currentOpenType.type === 'diff') {
+        if (this.diffEditor.modifiedEditor.monacoEditor.hasWidgetFocus()) {
+          return this.diffEditor.modifiedEditor;
+        } else if (this.diffEditor.originalEditor.monacoEditor.hasWidgetFocus()) {
+          return this.diffEditor.originalEditor;
+        }
+      }
+    }
+  }
+
   get currentCodeEditor(): ICodeEditor | null {
     if (this.currentOpenType) {
       if (this.currentOpenType.type === 'code') {

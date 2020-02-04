@@ -121,6 +121,11 @@ export interface IEditorGroup {
 
   currentEditor: IEditor | null;
 
+  /**
+   * 和currentEditor不同，对于diffEditor来说会取确实在focus的Editor
+   */
+  currentFocusedEditor: IEditor | undefined;
+
   resources: IResource[];
 
   currentResource: MaybeNull<IResource>;
