@@ -213,6 +213,13 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       extProcessPath = (process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../hosted/ext.process.js') : path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename)));
     }
 
+    // 注意只能传递可以序列化的数据
+    forkArgs.push(`--kt-app-config=${JSON.stringify({
+      logDir: this.appConfig.logDir,
+      logLevel: this.appConfig.logLevel,
+      extLogServiceClassPath: this.appConfig.extLogServiceClassPath,
+    })}`);
+
     if (isDevelopment()) {
       forkOptions.execArgv.push('--inspect=9889');
     }

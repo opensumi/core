@@ -1,4 +1,4 @@
-import { Emitter, isDevelopment, ReporterProcessMessage } from '@ali/ide-core-common';
+import { Emitter, isDevelopment, ReporterProcessMessage, LogLevel } from '@ali/ide-core-common';
 import * as net from 'net';
 import {
   createSocketConnection,
@@ -6,14 +6,26 @@ import {
   initRPCService,
   RPCProtocol,
 } from '@ali/ide-connection';
-import { ExtensionLogger } from './extension-log';
+import { ExtensionLogger2 } from './extension-log2';
 import { ProcessMessageType } from '../common';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
+import { Injector } from '@ali/common-di';
+import { AppConfig } from '@ali/ide-core-node';
+
+// TODO: 注入自定义 class
 
 const argv = require('yargs').argv;
-let logger: ExtensionLogger;
+let logger: any = console;
 
-async function initRPCProtocol(): Promise<RPCProtocol> {
+const extAppConfig = JSON.parse(argv['kt-app-config'] || '{}');
+
+const extInjector = new Injector();
+extInjector.addProviders({
+  token: AppConfig,
+  useValue: extAppConfig,
+});
+
+async function initRPCProtocol(): Promise<any> {
   const extCenter = new RPCServiceCenter();
   const { getRPCService } = initRPCService(extCenter);
   const extConnection = net.createConnection(argv['kt-process-sockpath']);
@@ -33,14 +45,13 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     send,
   });
 
-  logger = new ExtensionLogger(extProtocol);
+  logger = new ExtensionLogger2(extInjector); // new ExtensionLogger(extProtocol);
   logger.log('process extConnection path', argv['kt-process-sockpath']);
-
-  return extProtocol;
+  return {extProtocol, logger};
 }
 
 (async () => {
-  const protocol = await initRPCProtocol();
+  const {extProtocol: protocol, logger} = await initRPCProtocol();
   // if (argv['kt-process-preload']) {
 
   // }
@@ -50,7 +61,7 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
       Preload = Preload.default;
     }
 
-    const preload = new Preload(protocol);
+    const preload = new Preload(protocol, logger);
 
     preload.onFireReporter((reportMessage: ReporterProcessMessage) => {
       if (process && process.send) {

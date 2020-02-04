@@ -11,7 +11,7 @@ import { MainThreadAPIIdentifier, VSCodeExtensionService } from '../common/vscod
 import { ExtenstionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 import { VSCExtension } from './vscode.extension';
-import { ExtensionLogger } from './extension-log';
+// import { ExtensionLogger } from './extension-log';
 import { ExtensionReporterService } from './extension-reporter';
 
 /**
@@ -26,7 +26,7 @@ export function getNodeRequire() {
 }
 
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
-  private logger: ExtensionLogger;
+  private logger: any; // ExtensionLogger;
   private extensions: IExtension[];
   private rpcProtocol: RPCProtocol;
 
@@ -47,7 +47,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   readonly onFireReporter = this.reporterEmitter.event;
 
-  constructor(rpcProtocol: RPCProtocol) {
+  constructor(rpcProtocol: RPCProtocol, logger) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
     this.vscodeAPIFactory = createVSCodeAPIFactory(
@@ -64,7 +64,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     this.vscodeExtAPIImpl = new Map();
     this.kaitianExtAPIImpl = new Map();
-    this.logger = new ExtensionLogger(rpcProtocol);
+    this.logger = logger; // new ExtensionLogger(rpcProtocol);
     this.reporterService = new ExtensionReporterService(this.reporterEmitter, {
       host: REPORT_HOST.EXTENSION,
     });

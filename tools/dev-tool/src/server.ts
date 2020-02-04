@@ -2,7 +2,7 @@ import 'tsconfig-paths/register';
 import * as path from 'path';
 import * as http from 'http';
 import * as Koa from 'koa';
-import { Deferred } from '@ali/ide-core-common';
+import { Deferred, LogLevel } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
@@ -29,6 +29,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
       path.join(__dirname, '../../../packages/kaitian-extension'),
     ],
     useExperimentalMultiChannel: true,
+    extLogServiceClassPath: path.join(__dirname, './mock-log-service.js'),
   };
   if (Array.isArray(arg1)) {
     opts = {

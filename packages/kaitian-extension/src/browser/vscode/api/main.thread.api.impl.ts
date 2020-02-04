@@ -38,7 +38,7 @@ import { MainThreadConnection } from './main.thread.connection';
 import { MainThreadTerminal } from './main.thread.terminal';
 import { MainThreadWindow } from './main.thread.window';
 
-export function createApiFactory(
+export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
   injector: Injector,
   extensionService: VSCodeExtensionService,
@@ -90,6 +90,8 @@ export function createApiFactory(
   rpcProtocol.set<MainThreadConnection>(MainThreadAPIIdentifier.MainThreadConnection, MainThreadConnectionAPI);
   rpcProtocol.set<MainThreadDebug>(MainThreadAPIIdentifier.MainThreadDebug, MainThreadDebugAPI);
   rpcProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, MainThreadTerminalAPI);
+
+  await MainThreadWebviewAPI.init();
 
   return () => {
     MainThreadLanguagesAPI.dispose();

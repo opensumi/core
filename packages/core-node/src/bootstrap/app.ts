@@ -62,6 +62,7 @@ interface Config {
   LogServiceClass: ConstructorOf<ILogService>;
 
   useExperimentalMultiChannel?: boolean;
+  extLogServiceClassPath?: string;
 }
 
 export interface AppConfig extends Partial<Config> {
@@ -154,6 +155,7 @@ export class ServerApp implements IServerApp {
       staticAllowOrigin: opts.staticAllowOrigin,
       staticAllowPath: opts.staticAllowPath,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
+      extLogServiceClassPath: opts.extLogServiceClassPath,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
