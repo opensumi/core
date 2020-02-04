@@ -28,11 +28,21 @@ export const AccordionContainer: React.FC<{
   React.useEffect(() => {
     accordionService.initConfig({headerSize, minSize});
   }, []);
-  return <SplitPanel className={className} dynamicTarget={true} id={containerId} resizeKeep={false} direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
+  const allCollapsed = !accordionService.visibleViews.find((view) => {
+    const viewState: SectionState = accordionService.getViewState(view.id);
+    return !viewState.collapsed;
+  });
+  return <SplitPanel
+    className={className}
+    dynamicTarget={true}
+    id={containerId}
+    resizeKeep={false}
+    useDomSize={allCollapsed}
+    direction={alignment === 'horizontal' ? 'left-to-right' : 'top-to-bottom'}>
     {accordionService.visibleViews.map((view, index) => {
       const viewState: SectionState = accordionService.getViewState(view.id);
       const titleMenu = view.titleMenu || accordionService.getSectionToolbarMenu(view.id);
-      const { collapsed } = viewState;
+      const { collapsed, nextSize } = viewState;
       return <AccordionSection
         noHeader={accordionService.visibleViews.length === 1}
         onItemClick={() => accordionService.handleSectionClick(view.id, !collapsed, index)}
@@ -49,6 +59,7 @@ export const AccordionContainer: React.FC<{
         initialProps={view.initialProps}
         titleMenu={titleMenu}
         titleMenuContext={view.titleMenuContext}
+        savedSize={nextSize}
         flex={view.weight || 1}>
         {view.component}
       </AccordionSection>;
