@@ -62,14 +62,31 @@ interface Config {
    * 是否使用试验性多通道通信能力
    */
   useExperimentalMultiChannel?: boolean;
+  /**
+   * 启用插件进程的最大个数
+   */
+  maxExtProcessCount?: number;
+  /**
+   * 插件进程关闭时间，默认断连后5秒退出
+   * 开发环境断连后立即关闭
+   */
+  processCloseExitThreshold?: number;
+  /**
+   * terminal pty 退出时间
+   */
+  terminalPtyCloseThreshold?: number;
+  /**
+   * 访问静态资源允许的 origin
+   */
+  staticAllowOrigin?: string;
+  /**
+   * 访问静态资源允许的 path
+   */
+  staticAllowPath?: string[];
 }
 
 export interface AppConfig extends Partial<Config> {
   marketplace: MarketplaceConfig;
-  processCloseExitThreshold?: number;
-  terminalPtyCloseThreshold?: number;
-  staticAllowOrigin?: string;
-  staticAllowPath?: string[];
 }
 
 export interface IServerAppOpts extends Partial<Config> {
@@ -79,10 +96,6 @@ export interface IServerAppOpts extends Partial<Config> {
   webSocketHandler?: WebSocketHandler[];
   marketplace?: Partial<MarketplaceConfig>;
   use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
-  processCloseExitThreshold?: number;
-  terminalPtyCloseThreshold?: number;
-  staticAllowOrigin?: string;
-  staticAllowPath?: string[];
 }
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
@@ -154,6 +167,7 @@ export class ServerApp implements IServerApp {
       staticAllowOrigin: opts.staticAllowOrigin,
       staticAllowPath: opts.staticAllowPath,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
+      maxExtProcessCount: opts.maxExtProcessCount,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
