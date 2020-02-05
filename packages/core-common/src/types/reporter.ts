@@ -11,6 +11,7 @@ export enum REPORT_NAME {
   FORMAT_ON_SAVE_TIMEOUT_ERROR = 'formatOnSaveTimeoutError',
   FORMAT_ON_SAVE = 'formatOnSave',
   NOT_FOUND_COMMAND = 'notFoundCommand',
+  INSTALL_EXTENSION_ERROR = 'installExtensionError'
 }
 
 export enum REPORT_HOST {
