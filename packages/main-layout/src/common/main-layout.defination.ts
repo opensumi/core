@@ -42,7 +42,16 @@ export interface IMainLayoutService {
    * @param props 初始prop
    */
   replaceViewComponent(view: View, props?: any): void;
+  /**
+   * 从手风琴销毁一个子视图
+   * @param viewId 子视图ID
+   */
   disposeViewComponent(viewId: string): void;
+  /**
+   * 销毁一个容器视图
+   * @param containerId 容器视图ID
+   */
+  disposeContainer(containerId: string): void;
   expandBottom(expand: boolean): void;
   bottomExpanded: boolean;
   // @deprecated 提供小程序使用的额外位置控制
