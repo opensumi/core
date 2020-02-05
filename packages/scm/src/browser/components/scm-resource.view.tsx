@@ -26,6 +26,7 @@ export const SCMResouceList: React.FC<{
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
 
   const [ selectedNodeId, setSelectedNodeId ] = React.useState<string | number>();
+  const [ isScmPanelFocused, setIsScmPanelFocused] = React.useState<boolean>(false);
   const _selectTimer = React.useRef<NodeJS.Timer>();
   const _selectTimes = React.useRef<number>(0);
 
@@ -61,9 +62,10 @@ export const SCMResouceList: React.FC<{
       }
 
       resourceItem.selected = selectedNodeId === resourceItem.id;
+      resourceItem.focused = resourceItem.selected && isScmPanelFocused;
       return resourceItem;
     });
-  }, [ viewModel.scmList, selectedNodeId, repository ]);
+  }, [ viewModel.scmList, selectedNodeId, repository, isScmPanelFocused ]);
 
   const commandActuator = React.useCallback((command: string, params?) => {
     return commandService.executeCommand(command, params);
@@ -114,6 +116,14 @@ export const SCMResouceList: React.FC<{
     }, 200);
   }, []);
 
+  const handlePanelBlur = () => {
+    setIsScmPanelFocused(false);
+  };
+
+  const handlePanelFocus = () => {
+    setIsScmPanelFocused(true);
+  };
+
   const onContextMenu = React.useCallback((files, event: React.MouseEvent<HTMLElement>) => {
     const { x, y } = event.nativeEvent;
     const file: TreeNode = files[0];
@@ -152,6 +162,8 @@ export const SCMResouceList: React.FC<{
       containerHeight={height}
       itemLineHeight={scmItemLineHeight}
       commandActuator={commandActuator}
+      onBlur={handlePanelBlur}
+      onFocus={handlePanelFocus}
     />
   );
 });
