@@ -27,9 +27,6 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
 
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
-
   constructor() {
     this.deferredWorkspaceStoragePath = new Deferred<string>();
     this.deferredStoragePath = new Deferred<string>();
