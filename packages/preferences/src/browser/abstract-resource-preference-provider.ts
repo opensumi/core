@@ -1,6 +1,6 @@
 import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
-import { JSONUtils, URI, Resource, ResourceProvider, Disposable, isUndefined } from '@ali/ide-core-browser';
+import { JSONUtils, URI, ResourceProvider, Disposable, isUndefined } from '@ali/ide-core-browser';
 import {
   PreferenceProvider,
   PreferenceSchemaProvider,
@@ -13,10 +13,12 @@ import {
 export abstract class AbstractResourcePreferenceProvider extends PreferenceProvider {
 
   protected preferences: { [key: string]: any } = {};
-  protected resource: Promise<Resource>;
 
-  @Autowired(ResourceProvider) protected readonly resourceProvider: ResourceProvider;
-  @Autowired(PreferenceSchemaProvider) protected readonly schemaProvider: PreferenceSchemaProvider;
+  @Autowired(ResourceProvider)
+  protected readonly resourceProvider: ResourceProvider;
+
+  @Autowired(PreferenceSchemaProvider)
+  protected readonly schemaProvider: PreferenceSchemaProvider;
 
   @Autowired(PreferenceConfigurations)
   protected readonly configurations: PreferenceConfigurations;

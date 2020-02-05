@@ -201,6 +201,7 @@ export const localizationBundle = {
     'debug.action.step-out': 'Step Out',
     'debug.action.restart': 'Restart',
     'debug.action.pause': 'Pause',
+    'debug.action.stop': 'Stop',
     'debug.action.disattach': 'Disattach',
     'debug.breakpoint.toggle': 'Enable/Disable Breakpoints',
     'debug.breakpoint.removeAll': 'Remove All Breakpoints',

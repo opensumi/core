@@ -196,10 +196,12 @@ export class MonacoCommandRegistry {
 
   /**
    * 获取当前活动的编辑器
+   * 此处的活动编辑器和 workbenchEditorService.currentEditor 的概念不同，对于diffEditor，需要获取确实的那个editor而不是modifiedEditor
    */
   protected getActiveCodeEditor(): monaco.editor.ICodeEditor | undefined {
-    if (this.workbenchEditorService.currentEditor) {
-      return (this.workbenchEditorService.currentEditor as IMonacoImplEditor).monacoEditor;
+    const editorGroup = this.workbenchEditorService.currentEditorGroup;
+    if (editorGroup) {
+      return ((editorGroup.currentFocusedEditor || editorGroup.currentEditor)! as IMonacoImplEditor).monacoEditor;
     }
   }
 }

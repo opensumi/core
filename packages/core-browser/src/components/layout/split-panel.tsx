@@ -40,6 +40,8 @@ interface SplitChildProps {
   flexGrow?: number;
   slot?: string;
   noResize?: boolean;
+  savedSize?: number;
+  defaultSize?: number;
   children?: ChildComponent | ChildComponent[];
 }
 
@@ -50,17 +52,23 @@ interface SplitPanelProps extends SplitChildProps {
   // setAbsoluteSize 时保证相邻节点总宽度不变
   resizeKeep?: boolean;
   dynamicTarget?: boolean;
+  // 控制使用传入尺寸之和作为总尺寸或使用dom尺寸
+  useDomSize?: boolean;
 }
 
-export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, minResize, ...restProps }) => {
+export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, minResize, useDomSize, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   // convert children to list
   const childList = React.Children.toArray(children);
   const totalFlexNum = childList.reduce((accumulator, item) => accumulator + (item['props'] && (item['props'].flex !== undefined) ? item['props'].flex : 1), 0);
+  let totalSize: number = useDomSize ? 0 : childList.reduce((accumulator, item) => accumulator + (item['props'] && item['props'].savedSize !== undefined ? item['props'].savedSize : 0), 0);
   const elements: React.ReactNodeArray = [];
   const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const rootRef = React.useRef<HTMLElement>();
+  if (useDomSize && rootRef.current) {
+    totalSize = rootRef.current.clientHeight;
+  }
 
   const splitPanelService = useInjectable<SplitPanelManager>(SplitPanelManager).getService(id);
   const maxLockState = React.useRef(childList.map(() => false));
@@ -71,7 +79,6 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
   const [maxLocks, setMaxLocks] = React.useState<boolean[]>(maxLockState.current);
   splitPanelService.panels = [];
 
-  // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   const setSizeHandle = (index) => {
     return (size: number, isLatter?: boolean) => {
@@ -207,8 +214,10 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
     );
   });
 
-  function getElementSize(element) {
-    if (element.props.flex) {
+  function getElementSize(element: any) {
+    if (element.props.savedSize) {
+      return element.props.savedSize / totalSize * 100 + '%';
+    } else if (element.props.flex) {
       return element.props.flex / totalFlexNum * 100 + '%';
     } else if (element.props.defaultSize) {
       return element.props.defaultSize + 'px';

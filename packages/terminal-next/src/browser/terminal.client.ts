@@ -21,6 +21,7 @@ export class TerminalClient extends Disposable {
   private _widget: IWidget;
   private _name: string;
   private _options: TerminalOptions;
+  private _autofocus: boolean;
 
   // add on
   private _fitAddon: FitAddon;
@@ -80,11 +81,13 @@ export class TerminalClient extends Disposable {
     widget: IWidget,
     restoreId?: string,
     options?: TerminalOptions,
+    autofocus: boolean = true,
   ) {
     super();
     this._attached = false;
     this._activated = false;
     this._disposed = false;
+    this._autofocus = autofocus;
     this._uid = restoreId || this.service.makeId();
     this._options = options || {};
     this._name = this._options.name || '';
@@ -143,6 +146,10 @@ export class TerminalClient extends Disposable {
 
   get pid() {
     return this._pid;
+  }
+
+  get autofocus() {
+    return this._autofocus;
   }
 
   get options() {

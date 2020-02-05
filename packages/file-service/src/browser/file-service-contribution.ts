@@ -81,6 +81,10 @@ export class FileResource implements Resource {
     this.stat = await this.doSaveContents(content, options);
   }
 
+  async getFsPath() {
+    return await this.fileSystem.getFsPath(this.uriString);
+  }
+
   protected async doSaveContents(content: string, options?: { encoding?: string }): Promise<FileStat> {
     const stat = await this.getFileStat();
     if (stat) {

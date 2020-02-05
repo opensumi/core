@@ -1,9 +1,9 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
-import { Domain, IEventBus, ContributionProvider, Event, localize } from '@ali/ide-core-common';
-import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, ROTATE_TYPE } from '@ali/ide-core-browser';
+import { Domain, IEventBus, ContributionProvider, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
+import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../common';
-import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
@@ -61,7 +61,7 @@ export const RETRACT_BOTTOM_PANEL: Command = {
 };
 
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution)
-export class MainLayoutModuleContribution implements CommandContribution, ClientAppContribution, SlotRendererContribution {
+export class MainLayoutModuleContribution extends WithEventBus implements CommandContribution, ClientAppContribution, SlotRendererContribution {
 
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
@@ -215,5 +215,10 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
         this.mainLayoutService.expandBottom(false);
       },
     });
+  }
+
+  @OnEvent(RenderedEvent)
+  didMount() {
+    this.mainLayoutService.didMount();
   }
 }

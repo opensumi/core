@@ -1,28 +1,63 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
 .kt_debug_action_bar {
-  height: 36px;
+  height: 28px;
   display: flex;
   align-items: center;
+  padding: 0px 8px;
+  margin-bottom: 8px;
   justify-content: flex-start;
   pointer-events: all;
-  padding: 0px 2px;
+
+  .kt_debug_actions {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 124px;
+    max-width: 144px;
+  }
 
   .debug_selection {
     width: 100%;
-    margin-left: 8px;
-    margin-right: 2px;
+    min-width: 50px;
+    margin-right: 10px;
+
+    :global(.kt-select-value) {
+      & > option {
+        min-width: 22px;
+      }
+    }
   }
 }
 
 .debug_configuration_toolbar {
   display: flex;
-  padding-top: 12px;
-  padding-right: 2px;
+  height: 28px;
+  padding-right: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+
+  .kt_debug_actions {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 58px;
+    max-width: 66px;
+  }
+
   .debug_selection {
     width: 100%;
+    min-width: 50px;
     margin-left: 8px;
-    margin-right: 8px;
+    margin-right: 6px;
+
+    :global(.kt-select-value) {
+      & > option {
+        min-width: 22px;
+      }
+    }
   }
 }
 
@@ -35,16 +70,29 @@
   justify-content: center;
   z-index: 999;
   user-select: none;
+
+  .kt_debug_action_bar {
+    height: 100%;
+    padding: 0px 12px;
+    background: #35393D;
+  }
 }
 
 .debug_toolbar_wrapper {
   display: flex;
-  height: 27px;
-  line-height: 27px;
+  height: 28px;
   background-color: var(--debugToolBar-background);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .debug_toolbar_drag {
   pointer-events: all;
   cursor: pointer;
+}
+
+.debug_toolbar_drag_wrapper {
+  background: #43484D;
+  display: flex;
+  height: 100%;
+  align-items: center;
 }

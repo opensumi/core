@@ -1,5 +1,5 @@
 
-import { DisposableCollection, ILogger, Emitter, Event, URI } from '@ali/ide-core-browser';
+import { DisposableCollection, ILogger, Emitter, Event, URI, AppConfig } from '@ali/ide-core-browser';
 import { UserStorageChangeEvent, UserStorageService } from './user-storage-service';
 import { Injectable, Autowired } from '@ali/common-di';
 import { UserStorageUri } from '../common/user-storage-uri';
@@ -19,17 +19,19 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
   protected readonly fileSystem: IFileServiceClient;
   @Autowired(ILogger)
   protected readonly logger: ILogger;
+  @Autowired(AppConfig)
+  protected readonly appConfig: AppConfig;
 
   constructor() {
     // 请求用户路径并存储
     this.userStorageFolder = this.fileSystem.getCurrentUserHome().then((home) => {
       if (home) {
-        const userStorageFolderUri = new URI(home.uri).resolve(KAITIAN_USER_STORAGE_FOLDER);
+        const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.preferenceDirName || KAITIAN_USER_STORAGE_FOLDER);
         this.fileSystem.watchFileChanges(userStorageFolderUri, ['**/logs/**']).then((disposable) =>
           this.toDispose.push(disposable),
         );
         this.toDispose.push(this.fileSystem.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
-        return new URI(home.uri).resolve(KAITIAN_USER_STORAGE_FOLDER);
+        return new URI(home.uri).resolve(this.appConfig.preferenceDirName || KAITIAN_USER_STORAGE_FOLDER);
       }
     });
 
@@ -85,6 +87,15 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
     } else {
       this.fileSystem.createFile(filesystemUri.toString(), { content });
     }
+  }
+
+  async getFsPath(uri: URI) {
+    const folderUri = await this.userStorageFolder;
+    if (folderUri) {
+      const filesystemUri = UserStorageServiceFilesystemImpl.toFilesystemURI(folderUri, uri);
+      return filesystemUri.toString();
+    }
+    return undefined;
   }
 
   get onUserStorageChanged(): Event<UserStorageChangeEvent> {

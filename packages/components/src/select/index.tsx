@@ -105,14 +105,14 @@ export const Select: React.FC<ISelectProps> = ({
     setOpen(open ? false : true);
   }
 
-  const optionsCotainerClasses = classNames('kt-select-options', {
-    ['kt-selecct-options-visible']: open,
+  const optionsContainerClasses = classNames('kt-select-options', {
+    ['kt-select-options-visible']: open,
     [`kt-select-options-${size}`]: size,
   });
 
   const selectClasses = classNames('kt-select-value', {
     ['kt-select-disabled']: disabled,
-    ['kt-selecct-value-active']: open,
+    ['kt-select-value-active']: open,
     [`kt-select-value-${size}`]: size,
   });
 
@@ -132,7 +132,7 @@ export const Select: React.FC<ISelectProps> = ({
       <Icon iconClass={getIcon('down')} />
     </p>
 
-    <div className={optionsCotainerClasses}>
+    <div className={optionsContainerClasses}>
       {options && options.map((v) => {
         if (typeof v === 'string') {
           return <Option value={v} className={classNames({

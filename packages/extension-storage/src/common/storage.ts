@@ -10,7 +10,7 @@ export interface IExtensionStorageServer {
   set(key: string, value: KeysToAnyValues, isGlobal: boolean): Promise<boolean>;
   get(key: string, isGlobal: boolean): Promise<KeysToAnyValues>;
   getAll(isGlobal: boolean): Promise<KeysToKeysToAnyValue>;
-  init(workspace: FileStat | undefined, roots: FileStat[]): Promise<ExtensionStoragePath>;
+  init(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName?: string): Promise<ExtensionStoragePath>;
 }
 
 export const IExtensionStorageService = Symbol('ExtensionStorageService');

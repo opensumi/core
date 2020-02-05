@@ -5,7 +5,7 @@ import { useInjectable, localize, PreferenceService, isElectronRenderer } from '
 import { DebugAction } from '../components/debug-action';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
-import { DebugToolbarView, FloatDebugToolbarView} from './debug-toolbar.view';
+import { DebugToolbarView, FloatDebugToolbarView } from './debug-toolbar.view';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 
@@ -49,39 +49,41 @@ export const DebubgConfigurationView = observer(() => {
     if (options.length) {
       return options.map((option, index) => {
         return isElectronRenderer() ?
-        <option key={index} value={toValue(option)} label={option.configuration.name}>{toName(option)}</option> :
-        <Option key={index} value={toValue(option)} label={option.configuration.name}>{toName(option)}</Option>;
+          <option key={ index } value={ toValue(option) } label={ option.configuration.name }>{ toName(option) }</option> :
+          <Option key={ index } value={ toValue(option) } label={ option.configuration.name }>{ toName(option) }</Option>;
       });
     } else {
       return isElectronRenderer() ?
-        [<option value='__NO_CONF__'>{localize('debug.action.no.configuration')}</option>] :
-        [<Option value='__NO_CONF__'>{localize('debug.action.no.configuration')}</Option>];
+        [<option value='__NO_CONF__' label={ localize('debug.action.no.configuration') }>{ localize('debug.action.no.configuration') }</option>] :
+        [<Option value='__NO_CONF__' label={ localize('debug.action.no.configuration') }>{ localize('debug.action.no.configuration') }</Option>];
     }
   };
 
   const renderConfigurationSelect = () => {
     if (isElectronRenderer()) {
-      return (<NativeSelect value={ currentValue } onChange={ setCurrentConfiguration } className={cls(styles.debug_selection, styles.special_radius)}>
-        {renderConfigurationOptions(configurationOptions)}
-        <option disabled value={addConfigurationLabel.replace(/./g, '-')}>{ addConfigurationLabel.replace(/./g, '-') }</option>
+      return (<NativeSelect value={ currentValue } onChange={ setCurrentConfiguration } className={ cls(styles.debug_selection, styles.special_radius) }>
+        { renderConfigurationOptions(configurationOptions) }
+        <option disabled value={ addConfigurationLabel.replace(/./g, '-') }>{ addConfigurationLabel.replace(/./g, '-') }</option>
         <option value='__ADD_CONF__'>{ addConfigurationLabel }</option>
       </NativeSelect>);
     }
 
-    return (<Select size='small' value={ currentValue } onChange={ setCurrentConfiguration } className={cls(styles.debug_selection, styles.special_radius)}>
-      {renderConfigurationOptions(configurationOptions)}
-      <Option disabled value={addConfigurationLabel.replace(/./g, '-')}>{ addConfigurationLabel.replace(/./g, '-') }</Option>
+    return (<Select value={ currentValue } onChange={ setCurrentConfiguration } className={ cls(styles.debug_selection, styles.special_radius) }>
+      { renderConfigurationOptions(configurationOptions) }
+      <Option disabled value={ addConfigurationLabel.replace(/./g, '-') }>{ addConfigurationLabel.replace(/./g, '-') }</Option>
       <Option value='__ADD_CONF__'>{ addConfigurationLabel }</Option>
     </Select>);
   };
 
   return <div>
-    <div className={styles.debug_configuration_toolbar}>
-      {renderConfigurationSelect()}
-      <DebugAction color={'#62D99D'} icon={'run-debug'} label={localize('debug.action.start')} run={ start }></DebugAction>
-      <DebugAction color={'var(--foreground)'} icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
-      <DebugAction color={'var(--foreground)'} icon={'terminal'} label={localize('debug.action.debug.console')} run={openDebugConsole}></DebugAction>
+    <div className={ styles.debug_configuration_toolbar }>
+      { renderConfigurationSelect() }
+      <div className={ styles.kt_debug_actions }>
+        <DebugAction color={ '#62D99D' } icon={ 'run-debug' } label={ localize('debug.action.start') } run={ start }></DebugAction>
+        <DebugAction color={ 'var(--foreground)' } icon={ 'setting' } label={ localize('debug.action.open.configuration') } run={ openConfiguration }></DebugAction>
+        <DebugAction color={ 'var(--foreground)' } icon={ 'terminal' } label={ localize('debug.action.debug.console') } run={ openDebugConsole }></DebugAction>
+      </div>
     </div>
-    { float ? <FloatDebugToolbarView /> : <DebugToolbarView /> }
+    { float ? <FloatDebugToolbarView /> : <DebugToolbarView float={ false } /> }
   </div>;
 });

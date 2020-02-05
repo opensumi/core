@@ -22,6 +22,7 @@ export interface Resource extends IDisposable {
   readContents(options?: { encoding?: string }): Promise<string>;
   saveContents?(content: string, options?: { encoding?: string }): Promise<void>;
   saveContentChanges?(changes: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<void>;
+  getFsPath?(): Promise<string | undefined>;
   readonly onDidChangeContents?: Event<void>;
 }
 export namespace Resource {

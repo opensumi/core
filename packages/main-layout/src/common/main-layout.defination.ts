@@ -12,6 +12,7 @@ export interface ComponentCollection {
 
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
+  didMount(): void;
   // 切换tabbar位置的slot，支持left、right、bottom，size能力暂未实现
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   restoreState(): void;

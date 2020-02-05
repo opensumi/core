@@ -12,8 +12,6 @@ import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { Injector } from '@ali/common-di';
 import { AppConfig } from '@ali/ide-core-node';
 
-// TODO: 注入自定义 class
-
 const argv = require('yargs').argv;
 let logger: any = console;
 

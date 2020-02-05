@@ -1,7 +1,8 @@
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, URI, Deferred, ExtensionPaths } from '@ali/ide-core-node';
+import { isWindows, URI, Deferred, AppConfig } from '@ali/ide-core-node';
+import { StoragePaths } from '@ali/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
 import { KAITIAN_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '@ali/ide-workspace';
 import { IFileService, FileStat } from '@ali/ide-file-service';
@@ -10,10 +11,12 @@ import { ILogServiceManager } from '@ali/ide-logs';
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
 
-  private windowsDataFolders = [ExtensionPaths.WINDOWS_APP_DATA_DIR, ExtensionPaths.WINDOWS_ROAMING_DIR];
+  private windowsDataFolders = [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR];
   // 当没有工作区被打开时，存储路径为undefined
   private cachedStoragePath: string | undefined;
-  // 初始化前返回对应的Promise
+  // 获取最后一次生成的工作区存储路径，初始化前返回对应的Promise
+  private deferredWorkspaceStoragePath: Deferred<string>;
+  // 获取顶级存储路径， 默认为 ~/.kaitian, 初始化前返回对应的Promise
   private deferredStoragePath: Deferred<string>;
   // 当初始化完成时为true
   private storagePathInitialized: boolean;
@@ -22,9 +25,13 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   private readonly fileSystem: IFileService;
 
   @Autowired(ILogServiceManager)
-  private loggerManager: ILogServiceManager;
+  private readonly loggerManager: ILogServiceManager;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   constructor() {
+    this.deferredWorkspaceStoragePath = new Deferred<string>();
     this.deferredStoragePath = new Deferred<string>();
     this.storagePathInitialized = false;
   }
@@ -42,8 +49,8 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     return new URI(extensionDirPath).path.toString();
   }
 
-  async provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[]): Promise<string | undefined> {
-    const parentStorageDir = await this.getWorkspaceStorageDirPath();
+  async provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[], extensionStorageDirName: string): Promise<string | undefined> {
+    const parentStorageDir = await this.getWorkspaceStorageDirPath(extensionStorageDirName);
 
     if (!parentStorageDir) {
       throw new Error('Unable to get parent storage directory');
@@ -51,6 +58,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
 
     if (!workspace) {
       if (!this.storagePathInitialized) {
+        this.deferredWorkspaceStoragePath.resolve(undefined);
         this.deferredStoragePath.resolve(undefined);
         this.storagePathInitialized = true;
       }
@@ -69,7 +77,8 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
 
     const storagePathString = new URI(storageDirPath).path.toString();
     if (!this.storagePathInitialized) {
-      this.deferredStoragePath.resolve(storagePathString);
+      this.deferredWorkspaceStoragePath.resolve(storagePathString);
+      this.deferredStoragePath.resolve(parentStorageDir);
       this.storagePathInitialized = true;
     }
 
@@ -77,14 +86,21 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   }
 
   /**
-   * 获取最后的数据存储路径
+   * 获取最后使用的工作区数据存储路径
    */
-  async getLastStoragePath(): Promise<string | undefined> {
+  async getLastWorkspaceStoragePath(): Promise<string | undefined> {
     if (this.storagePathInitialized) {
       return this.cachedStoragePath;
     } else {
-      return this.deferredStoragePath.promise;
+      return this.deferredWorkspaceStoragePath.promise;
     }
+  }
+
+  /**
+   * 获取最后使用的顶级存储路径，默认为 ~/.kaitian
+   */
+  async getLastStoragePath(): Promise<string | undefined> {
+    return this.deferredStoragePath.promise;
   }
 
   /**
@@ -128,26 +144,27 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
    */
   private async getLogsDirPath(): Promise<string> {
     const logDir = this.loggerManager.getLogFolder();
-    return path.join(logDir, ExtensionPaths.EXTENSIONS_LOGS_DIR);
+    return path.join(logDir, StoragePaths.EXTENSIONS_LOGS_DIR);
   }
 
   /**
    * 获取用户工作区存储路径
    */
-  private async getWorkspaceStorageDirPath(): Promise<string> {
-    const appDataDir = await this.getWorkspaceDataDirPath();
-    return path.join(appDataDir, ExtensionPaths.EXTENSIONS_WORKSPACE_STORAGE_DIR);
+  private async getWorkspaceStorageDirPath(extensionStorageDirName: string): Promise<string> {
+    const appDataDir = await this.getWorkspaceDataDirPath(extensionStorageDirName);
+    return path.join(appDataDir, StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR);
   }
 
   /**
    * 获取应用存储路径
    */
-  async getWorkspaceDataDirPath(): Promise<string> {
+  async getWorkspaceDataDirPath(extensionStorageDirName: string): Promise<string> {
     const homeDir = await this.getUserHomeDir();
+    const storageDirName = extensionStorageDirName;
     return path.join(
       homeDir,
       ...(isWindows ? this.windowsDataFolders : ['']),
-      ExtensionPaths.KAITIAN_DIR,
+      storageDirName,
     );
   }
 
