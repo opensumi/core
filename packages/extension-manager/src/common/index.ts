@@ -103,7 +103,6 @@ export const IExtensionManagerService = Symbol('IExtensionManagerService');
 
 export const IExtensionManager = Symbol('IExtensionManager');
 export interface IExtensionManager {
-  getUnpressExtensionDir(extensionDirName: string, extension: BaseExtension): Promise<string>;
   installExtension(extension: BaseExtension, version?: string): Promise<string>;
   updateExtension(extension: BaseExtension, version: string): Promise<string>;
   uninstallExtension(extension: BaseExtension): Promise<boolean>;
