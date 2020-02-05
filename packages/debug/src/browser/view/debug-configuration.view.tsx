@@ -54,8 +54,8 @@ export const DebubgConfigurationView = observer(() => {
       });
     } else {
       return isElectronRenderer() ?
-        [<option value='__NO_CONF__'>{ localize('debug.action.no.configuration') }</option>] :
-        [<Option value='__NO_CONF__'>{ localize('debug.action.no.configuration') }</Option>];
+        [<option value='__NO_CONF__' label={ localize('debug.action.no.configuration') }>{ localize('debug.action.no.configuration') }</option>] :
+        [<Option value='__NO_CONF__' label={ localize('debug.action.no.configuration') }>{ localize('debug.action.no.configuration') }</Option>];
     }
   };
 
