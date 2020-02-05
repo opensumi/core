@@ -30,12 +30,12 @@ export const TabRendererBase: React.FC<{
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side, noAccordion);
   const resizeHandle = React.useContext(PanelContext);
   React.useEffect(() => {
+    components.forEach((component) => {
+      tabbarService.registerContainer(component.options!.containerId, component);
+    });
     tabbarService.registerResizeHandle(resizeHandle);
     tabbarService.updatePanelVisibility(components.length > 0);
   }, []);
-  components.forEach((component) => {
-    tabbarService.registerContainer(component.options!.containerId, component);
-  });
 
   return (
     <div className={clsx( styles.tab_container, className )} style={{flexDirection: Layout.getFlexDirection(direction)}}>

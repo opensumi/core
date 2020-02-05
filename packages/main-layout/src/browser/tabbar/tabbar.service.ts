@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -86,6 +86,7 @@ export class TabbarService extends WithEventBus {
   private activatedKey: IContextKey<string>;
   private rendered = false;
   private sortedContainers: Array<ComponentRegistryInfo> = [];
+  private disposableMap: Map<string, DisposableCollection> = new Map();
 
   private scopedCtxKeyService = this.contextKeyService.createScoped();
 
@@ -156,6 +157,7 @@ export class TabbarService extends WithEventBus {
     if (this.containersMap.has(containerId)) {
       return;
     }
+    const disposables = new DisposableCollection();
     let options = componentInfo.options;
     if (!options) {
       options = {
@@ -167,6 +169,10 @@ export class TabbarService extends WithEventBus {
       views: componentInfo.views,
       options: observable.object(options, undefined, {deep: false}),
     });
+    disposables.push({ dispose: () => {
+      this.containersMap.delete(containerId);
+      this.state.delete(containerId);
+    } });
     this.updatePanelVisibility(this.containersMap.size > 0);
     // 需要立刻设置state，lazy 逻辑会导致computed 的 visibleContainers 可能在计算时触发变更，抛出mobx invariant错误
     // 另外由于containersMap不是observable, 这边setState来触发visibaleContainers更新
@@ -185,20 +191,31 @@ export class TabbarService extends WithEventBus {
         this.state.set(info.options!.containerId, {hidden: false, priority: i});
       }
     }
-    this.menuRegistry.registerMenuItem(this.menuId, {
+    disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(containerId),
         label: componentInfo.options!.title || '',
       },
       group: '1_widgets',
-    });
-    this.registerActivateKeyBinding(componentInfo, options.fromExtension);
+    }));
+    if (options.activateKeyBinding) {
+      disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
+    }
     this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
     if (containerId === this.currentContainerId) {
       // 需要重新触发currentChange副作用
       this.handleChange(containerId, '');
     }
     this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped()).createKey('view', containerId);
+    this.disposableMap.set(containerId, disposables);
+  }
+
+  @action
+  disposeContainer(containerId: string) {
+    const disposables = this.disposableMap.get(containerId);
+    if (disposables) {
+      disposables.dispose();
+    }
   }
 
   getContainer(containerId: string) {
@@ -289,12 +306,10 @@ export class TabbarService extends WithEventBus {
   private registerActivateKeyBinding(component: ComponentRegistryInfo, fromExtension?: boolean) {
     const options = component.options!;
     const containerId = options.containerId;
-    if (!options.activateKeyBinding) {
-      return;
-    }
     // vscode内插件注册的是workbench.view.extension.containerId
     const activateCommandId = fromExtension ? `workbench.view.extension.${containerId}` : `workbench.view.${containerId}`;
-    this.commandRegistry.registerCommand({
+    const disposables = new DisposableCollection();
+    disposables.push(this.commandRegistry.registerCommand({
       id: activateCommandId,
     }, {
       execute: () => {
@@ -305,11 +320,12 @@ export class TabbarService extends WithEventBus {
           this.currentContainerId = containerId;
         }
       },
-    });
-    this.keybindingRegistry.registerKeybinding({
+    }));
+    disposables.push(this.keybindingRegistry.registerKeybinding({
       command: activateCommandId,
-      keybinding: options.activateKeyBinding,
-    });
+      keybinding: options.activateKeyBinding!,
+    }));
+    return disposables;
   }
 
   private registerGlobalToggleCommand() {

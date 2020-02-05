@@ -142,6 +142,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
   }
 
+  // TODO: noAccordion应该由视图决定，service不需要关心
   getTabbarService(location: string, noAccordion?: boolean) {
     const service = this.services.get(location) || this.injector.get(TabbarService, [location, noAccordion]);
     if (!this.services.get(location)) {
@@ -257,6 +258,22 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
     const accordionService: AccordionService = this.getAccordionService(containerId);
     accordionService.disposeView(viewId);
+  }
+
+  disposeContainer(containerId: string) {
+    let location: string | undefined;
+    for (const service of this.services.values()) {
+      if (service.getContainer(containerId)) {
+        location = service.location;
+        break;
+      }
+    }
+    if (location) {
+      const tabbarService = this.getTabbarService(location);
+      tabbarService.disposeContainer(containerId);
+    } else {
+      console.warn('没有找到containerId所属Tabbar!');
+    }
   }
 
   // TODO 这样很耦合，不能做到tab renderer自由拆分
