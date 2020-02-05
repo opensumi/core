@@ -292,13 +292,21 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: FILE_TREE_DEFAULTS.indent,
       description: '%preference.explorer.fileTree.indent%',
     },
-    /*
     'debug.toolbar.float': {
       type: 'boolean',
       default: true,
-      description: '%preference.debugger.toolbar.float%',
+      description: '%preference.debug.toolbar.float%',
     },
-    */
+    'debug.toolbar.top': {
+      type: 'number',
+      default: 0,
+      description: '%preference.debug.toolbar.top%',
+    },
+    'debug.toolbar.height': {
+      type: 'number',
+      default: 30,
+      description: '%preference.debug.toolbar.height%',
+    },
     'files.exclude': {
       type: 'object',
       description: '%preference.files.exclude%',
@@ -372,6 +380,8 @@ export interface CoreConfiguration {
   'explorer.fileTree.indent': number;
   'explorer.confirmMove': boolean;
   'debug.toolbar.float': boolean;
+  'debug.toolbar.top': number;
+  'debug.toolbar.height': number;
   'files.watcherExclude': { [key: string]: boolean };
   'files.exclude': { [key: string]: boolean };
   'files.associations': { [key: string]: string };

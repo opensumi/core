@@ -7,7 +7,7 @@ export function DefaultLayout() {
   return <BoxPanel direction='top-to-bottom'>
     <SlotRenderer slot='top' />
     <SplitPanel id='main-horizontal' flex={1}>
-      <SlotRenderer slot='left' defaultSize={310}  minResize={200} minSize={49} />
+      <SlotRenderer slot='left' defaultSize={310}  minResize={204} minSize={49} />
       <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
         <SlotRenderer flex={2} flexGrow={1} minResize={200} slot='main' />
         <SlotRenderer flex={1} minResize={160} slot='bottom' />

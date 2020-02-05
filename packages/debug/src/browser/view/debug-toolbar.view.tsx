@@ -4,7 +4,7 @@ import * as styles from './debug-configuration.module.less';
 import * as cls from 'classnames';
 import { Injectable } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { useInjectable, localize, getIcon, isElectronRenderer, IClientApp } from '@ali/ide-core-browser';
+import { useInjectable, localize, getIcon, isElectronRenderer, IClientApp, PreferenceService } from '@ali/ide-core-browser';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { DebugAction } from '../components/debug-action';
 import { observer } from 'mobx-react-lite';
@@ -19,22 +19,30 @@ class FloatController {
   x: number;
 
   @observable
+  line: number;
+
+  @observable
   enable: boolean;
 
   private _origin: number;
   private _last: number;
 
+  private _y: number;
+
   constructor() {
     this.x = 0;
+    this.line = 0;
     this.enable = false;
     this._origin = 0;
     this._last = 0;
+    this._y = 0;
   }
 
   @action.bound
   onMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     this.enable = true;
     this._origin = e.clientX;
+    this._y = e.clientY;
   }
 
   @action.bound
@@ -42,6 +50,7 @@ class FloatController {
     e.stopPropagation();
     if (this.enable) {
       this.x = e.clientX - this._origin + this._last;
+      this.line = e.clientY - this._y > 10 ? 1 : 0;
     }
   }
 
@@ -52,7 +61,11 @@ class FloatController {
   }
 }
 
-export const DebugToolbarView = observer(() => {
+export interface DebugToolbarViewProps {
+  float: boolean;
+}
+
+export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   const {
     state,
     sessionCount,
@@ -90,20 +103,25 @@ export const DebugToolbarView = observer(() => {
       if (isElectronRenderer()) {
         return <option key={ session.id } value={ session.id }>{ session.label }</option>;
       }
-      return <Option key={ session.id } label={session.label} value={ session.id }>{ session.label }</Option>;
+      return <Option key={ session.id } label={ session.label } value={ session.id }>{ session.label }</Option>;
     });
   };
 
   const renderSelections = (sessions: DebugSession[]) => {
     if (sessionCount > 1) {
       return <div className={ cls(styles.debug_selection) }>
-        {isElectronRenderer() ?
+        { isElectronRenderer() ?
           <NativeSelect value={ currentSessionId } onChange={ setCurrentSession }>
-          { renderSessionOptions(sessions) }
-        </NativeSelect> :
-        <Select value={ currentSessionId } onChange={ setCurrentSession }>
-        { renderSessionOptions(sessions) }
-      </Select>}
+            { renderSessionOptions(sessions) }
+          </NativeSelect> :
+          <Select
+            className={ cls(styles.debug_selection, styles.special_radius) }
+            size={ props.float ? 'small' : 'default' }
+            value={ currentSessionId }
+            onChange={ setCurrentSession }
+          >
+            { renderSessionOptions(sessions) }
+          </Select> }
       </div>;
     }
   };
@@ -127,22 +145,29 @@ export const DebugToolbarView = observer(() => {
   return (
     <React.Fragment>
       <div className={ styles.kt_debug_action_bar }>
-        { renderContinue(state) }
-        <DebugAction run={ doStepOver } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step' } label={ localize('debug.action.step-over') } />
-        <DebugAction run={ doStepIn } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-in' } label={ localize('debug.action.step-into') } />
-        <DebugAction run={ doStepOut } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
-        <DebugAction run={ doRestart } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'reload' } label={ localize('debug.action.restart') } />
-        { renderStop(state, sessionCount) }
         { renderSelections(sessions) }
-
+        <div className={ styles.kt_debug_actions }>
+          { renderContinue(state) }
+          <DebugAction run={ doStepOver } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step' } label={ localize('debug.action.step-over') } />
+          <DebugAction run={ doStepIn } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-in' } label={ localize('debug.action.step-into') } />
+          <DebugAction run={ doStepOut } enabled={ typeof state === 'number' && state === DebugState.Stopped } icon={ 'step-out' } label={ localize('debug.action.step-out') } />
+          <DebugAction run={ doRestart } enabled={ typeof state === 'number' && state !== DebugState.Inactive } icon={ 'reload' } label={ localize('debug.action.restart') } />
+          { renderStop(state, sessionCount) }
+        </div>
       </div>
     </React.Fragment>
   );
 });
 
+const DebugPreferenceTopKey = 'debug.toolbar.top';
+const DebugPreferenceHeightKey = 'debug.toolbar.height';
+
 export const FloatDebugToolbarView = observer(() => {
   const app = useInjectable<IClientApp>(IClientApp);
   const controller = useInjectable<FloatController>(FloatController);
+  const preference = useInjectable<PreferenceService>(PreferenceService);
+  const customTop = preference.get<number>(DebugPreferenceTopKey) || 0;
+  const customHeight = preference.get<number>(DebugPreferenceHeightKey) || 0;
   const {
     state,
   }: DebugToolbarService = useInjectable(DebugToolbarService);
@@ -155,15 +180,20 @@ export const FloatDebugToolbarView = observer(() => {
         onMouseUp={ (e) => controller.onMouseUp() }
       >
         <div
-          style={ { transform: `translateX(${controller.x}px)` } }
+          style={ {
+            transform: `translateX(${controller.x}px) translateY(${customTop + controller.line * customHeight}px)`,
+            height: `${customHeight}px`,
+          } }
           className={ styles.debug_toolbar_wrapper }
         >
-          <div
-            className={ cls(getIcon('drag'), styles.debug_toolbar_drag) }
-            onMouseDown={ (e) => controller.onMouseDown(e) }
-            onMouseMove={ (e) => controller.onMouseMove(e) }
-          ></div>
-          <DebugToolbarView />
+          <div className={ cls(styles.debug_toolbar_drag_wrapper) }>
+            <div
+              className={ cls(getIcon('drag'), styles.debug_toolbar_drag) }
+              onMouseDown={ (e) => controller.onMouseDown(e) }
+              onMouseMove={ (e) => controller.onMouseMove(e) }
+            ></div>
+          </div>
+          <DebugToolbarView float={ true } />
         </div>
       </div>,
       app.container,

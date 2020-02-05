@@ -189,6 +189,7 @@ export const localizationBundle = {
     'debug.action.step-out': '单步跳出',
     'debug.action.restart': '重启',
     'debug.action.pause': '暂停',
+    'debug.action.stop': '终止',
     'debug.action.disattach': '断开',
     'debug.action.continue': '下一步',
     'debug.console.panel.title': '调试控制台',
