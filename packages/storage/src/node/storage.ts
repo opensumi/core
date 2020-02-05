@@ -162,8 +162,8 @@ export class GlobalStorageServer implements IStorageServer {
   private storageName: string;
   private _cache: any = {};
 
-  private onDidChangeEmiter = new Emitter<StorageChange>();
-  readonly onDidChange: Event<StorageChange> = this.onDidChangeEmiter.event;
+  private onDidChangeEmitter = new Emitter<StorageChange>();
+  readonly onDidChange: Event<StorageChange> = this.onDidChangeEmitter.event;
 
   public async init(storageDirName: string) {
     return await this.setupDirectories(storageDirName);
@@ -257,7 +257,7 @@ export class GlobalStorageServer implements IStorageServer {
         path: storageFile.uri,
         data: JSON.stringify(raw),
       };
-      this.onDidChangeEmiter.fire(change);
+      this.onDidChangeEmitter.fire(change);
     }
   }
 
