@@ -153,6 +153,11 @@ export interface IEditorDocumentModelContentProvider {
 
 }
 
+export interface IPreferredModelOptions {
+  encoding?: string;
+  langaugeId?: string;
+}
+
 export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
 
 export interface IEditorDocumentModelService {
@@ -171,11 +176,11 @@ export interface IEditorDocumentModelService {
   getAllModels(): IEditorDocumentModel[];
 
   /**
-   * 修改某个uri的encoding （会存储在偏好内）
+   * 修改某个uri的option （会存储在偏好内）
    * @param uri
-   * @param encoding
+   * @param options
    */
-  changeModelEncoding(uri: URI, encoding: string);
+  changeModelOptions(uri: URI, options: IPreferredModelOptions);
 
   saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): MaybePromise<IEditorDocumentModelSaveResult>;
 

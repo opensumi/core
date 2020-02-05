@@ -5,7 +5,7 @@ import {
   CancellationToken,
   CancellationTokenSource,
 } from '@ali/ide-core-common';
-import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent } from '../../../../common/vscode';
+import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelOptionsChangedEvent } from '../../../../common/vscode';
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Uri } from '../../../../common/vscode/ext-types';
@@ -143,6 +143,18 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     }
 
     throw new Error('new document provider for ' + path);
+  }
+
+  $fireModelOptionsChangedEvent(e: IExtensionDocumentModelOptionsChangedEvent) {
+    const document = this._documents.get(e.uri);
+    if (document) {
+      // 和vscode中相同，接收到languages变更时，发送一个close和一个open事件
+      if (e.languageId) {
+        document._acceptLanguageId(e.languageId);
+        this._onDidCloseTextDocument.fire(document.document);
+        this._onDidOpenTextDocument.fire(document.document);
+      }
+    }
   }
 
   $fireModelChangedEvent(e: IExtensionDocumentModelChangedEvent) {

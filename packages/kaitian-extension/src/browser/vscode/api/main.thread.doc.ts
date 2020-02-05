@@ -4,7 +4,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Schemas } from '../../../common/vscode/ext-types';
 import { ResourceService } from '@ali/ide-editor';
-import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider, EditorDocumentModelOptionChangedEvent } from '@ali/ide-editor/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { PreferenceService } from '@ali/ide-core-browser';
 
@@ -129,6 +129,18 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
       eol: e.payload.eol,
       dirty: e.payload.dirty,
       versionId: e.payload.versionId,
+    });
+  }
+
+  @OnEvent(EditorDocumentModelOptionChangedEvent)
+  onEditorDocumentModelOptionChangedEvent(e: EditorDocumentModelOptionChangedEvent) {
+    if (!this.isDocSyncEnabled(e.payload.uri)) {
+      return;
+    }
+    this.proxy.$fireModelOptionsChangedEvent({
+      encoding: e.payload.encoding,
+      uri: e.payload.uri.toString(),
+      languageId: e.payload.languageId,
     });
   }
 

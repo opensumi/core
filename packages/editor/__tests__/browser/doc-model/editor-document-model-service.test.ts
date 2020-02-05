@@ -47,8 +47,9 @@ describe('EditorDocumentModelService', () => {
     const testCodeUri = new URI('test://testUri1');
     const testDoc1 = await editorDocModelService.createModelReference(testCodeUri);
     expect(testDoc1.instance.encoding).toBe('utf8');
-    await editorDocModelService.changeModelEncoding(testCodeUri, 'gbk');
+    await editorDocModelService.changeModelOptions(testCodeUri, { encoding: 'gbk' , langaugeId: 'javascript'});
     expect(testDoc1.instance.encoding).toBe('gbk');
+    expect(testDoc1.instance.languageId).toBe('javascript');
 
     done();
   });

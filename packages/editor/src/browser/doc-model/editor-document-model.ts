@@ -246,7 +246,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     monaco.editor.setModelLanguage(this.monacoModel, languageId);
     this.eventBus.fire(new EditorDocumentModelOptionChangedEvent({
       uri: this.uri,
-      encoding: languageId,
+      languageId,
     }));
   }
 

@@ -2,12 +2,13 @@ import * as md5 from 'md5';
 import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, STORAGE_SCHEMA, ILogger, IPreferenceSettingsService, PreferenceService } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
-import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent } from './types';
+import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent, IPreferredModelOptions } from './types';
 import { EditorDocumentModel } from './editor-document-model';
 import { mapToSerializable, serializableToMap } from '@ali/ide-core-common/lib/map';
 
 export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = URI.from({scheme: STORAGE_SCHEMA.SCOPE, path: 'editor-doc'});
-export const EDITOR_DOC_ENCODING_PREF_KEY = 'editor_encoding_pref';
+export const EDITOR_DOC_OPTIONS_PREF_KEY = 'editor_doc_pref';
+
 @Injectable()
 export class EditorDocumentModelServiceImpl extends WithEventBus implements IEditorDocumentModelService {
 
@@ -36,7 +37,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   private _modelsToDispose = new Set<string>();
 
-  private  preferredModelEncodings = new Map<string, string>();
+  private  preferredModelOptions = new Map<string, IPreferredModelOptions>();
 
   private _ready: Promise<void> | undefined;
 
@@ -91,28 +92,39 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     this._modelsToDispose.delete(uri);
   }
 
-  async changeModelEncoding(uri: URI, encoding: string) {
+  async changeModelOptions(uri: URI, options: IPreferredModelOptions) {
     await this.ready;
-    this.preferredModelEncodings.set(uri.toString(), encoding);
+    if (this.preferredModelOptions.has(uri.toString())) {
+      options = {
+        ...this.preferredModelOptions.get(uri.toString()),
+        ...options,
+      };
+    }
+    this.preferredModelOptions.set(uri.toString(), options);
     const docRef = this.getModelReference(uri);
     if (docRef) {
-      docRef.instance.updateEncoding(encoding);
+      if (options.encoding && options.encoding !== docRef.instance.encoding) {
+        docRef.instance.updateEncoding(options.encoding);
+      }
+      if (options.langaugeId && options.langaugeId !== docRef.instance.languageId) {
+        docRef.instance.languageId = options.langaugeId;
+      }
       docRef.dispose();
     }
-    return this.persistEncodingPreference();
+    return this.persistOptionsPreference();
   }
 
-  persistEncodingPreference() {
-    return this.storage.set(EDITOR_DOC_ENCODING_PREF_KEY, JSON.stringify(mapToSerializable(this.preferredModelEncodings)));
+  persistOptionsPreference() {
+    return this.storage.set(EDITOR_DOC_OPTIONS_PREF_KEY, JSON.stringify(mapToSerializable(this.preferredModelOptions)));
   }
 
   get ready() {
     if (!this._ready) {
       this._ready = new Promise(async (resolve) => {
         this.storage = await this.getStorage(EDITOR_DOCUMENT_MODEL_STORAGE);
-        if (this.storage.get(EDITOR_DOC_ENCODING_PREF_KEY)) {
+        if (this.storage.get(EDITOR_DOC_OPTIONS_PREF_KEY)) {
           try {
-            this.preferredModelEncodings = serializableToMap(JSON.parse(this.storage.get(EDITOR_DOC_ENCODING_PREF_KEY)!));
+            this.preferredModelOptions = serializableToMap(JSON.parse(this.storage.get(EDITOR_DOC_OPTIONS_PREF_KEY)!));
           } catch (e) {
             this.logger.error(e);
           }
@@ -191,13 +203,17 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       throw new Error(`未找到${uri.toString()}的文档提供商`);
     }
 
+    const preferedOptions = this.preferredModelOptions.get(uri.toString());
+
     if (!encoding && provider.provideEncoding) {
-      if (this.preferredModelEncodings.has(uri.toString())) {
-        encoding = this.preferredModelEncodings.get(uri.toString());
+      if (preferedOptions && preferedOptions.encoding) {
+        encoding = preferedOptions.encoding;
       } else if (provider.provideEncoding) {
         encoding = await provider.provideEncoding(uri);
       }
     }
+
+    const preferredLanguage = preferedOptions && preferedOptions.langaugeId;
 
     const [
       content,
@@ -209,7 +225,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     ] = await Promise.all([
       (async () => provider.provideEditorDocumentModelContent(uri, encoding))(),
       (async () => provider.isReadonly ? provider.isReadonly(uri) : undefined)(),
-      (async () => provider.preferLanguageForUri ? provider.preferLanguageForUri(uri) : undefined)(),
+      (async () => preferredLanguage ? preferredLanguage : (provider.preferLanguageForUri ? provider.preferLanguageForUri(uri) : undefined))(),
       (async () => provider.provideEOL ? provider.provideEOL(uri) : undefined)(),
       (async () => provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false)(),
       (async () => provider.closeAutoSave ? provider.closeAutoSave(uri) : false)(),
