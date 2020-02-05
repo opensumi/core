@@ -29,7 +29,7 @@ const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   private instanceId = 'ExtensionNodeServiceImpl:' + new Date();
-  static MaxExtProcesCount: number = 5;
+  static MaxExtProcessCount: number = 5;
   static ProcessCloseExitThreshold: number = 1000 * 5;
 
   @Autowired(INodeLogger)
@@ -172,7 +172,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     this.logger.log('createProcess2 clientId', clientId);
 
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
-    if (processClientIdArr.length >= ExtensionNodeServiceImpl.MaxExtProcesCount) {
+    if (processClientIdArr.length >= (this.appConfig.maxExtProcessCount || ExtensionNodeServiceImpl.MaxExtProcessCount)) {
       const killProcessClientId = processClientIdArr[0];
       await this.disposeClientExtProcess(killProcessClientId);
     }
