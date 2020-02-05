@@ -197,7 +197,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   }
 
   async $fireTextDocumentChangedEvent(uri: string) {
-
+    this.provider.onDidChangeContentEmitter.fire(new URI(uri));
   }
 
   $unregisterDocumentProviderWithScheme(scheme: string) {
