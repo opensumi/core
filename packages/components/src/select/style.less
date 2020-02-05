@@ -10,7 +10,8 @@
 .kt-select-container {
   position: relative;
   user-select: none;
-  min-width: 110px;
+  min-width: 0px;
+  width: 100%;
 
   .kt-select-value {
     margin: 0px;
@@ -31,9 +32,9 @@
     & > option {
       text-overflow: ellipsis;
       overflow: hidden;
-      min-width: 110px;
       white-space: nowrap;
       flex: 1;
+      min-width: 0px;
     }
 
     & > span {

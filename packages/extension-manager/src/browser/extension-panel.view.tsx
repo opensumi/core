@@ -89,6 +89,7 @@ export default observer(() => {
   return (
     <div className={styles.panel}>
       <Tabs
+        mini
         className={styles.tabs}
         value={selectedTabIndex}
         onChange={(index: number) => {
