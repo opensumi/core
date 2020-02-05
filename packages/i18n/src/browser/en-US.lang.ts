@@ -248,6 +248,8 @@ export const localizationBundle = {
 
     'output.tabbar.title': 'OUTPUT',
     'output.channel.none': '<no output yet>',
+    'output.configurationTitle': 'Ouput settings',
+    'output.logWhenNoPanel': 'Whether to output to the browser when no available panel',
 
     'preference.explorer.confirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.confirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',

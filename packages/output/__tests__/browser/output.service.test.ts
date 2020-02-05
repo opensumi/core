@@ -1,10 +1,10 @@
 import { Injector, Injectable } from '@ali/common-di';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { ThemeModule } from '@ali/ide-theme/lib/browser/';
-import { ILoggerManagerClient, Uri } from '@ali/ide-core-common';
-import { OutputModule } from '../../src/browser/index';
+import { ILoggerManagerClient, Event } from '@ali/ide-core-common';
 import { OutputService } from '../../src/browser/output.service';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
+import { PreferenceService } from '@ali/ide-core-browser';
+import { OutputPreferences } from '../../src/browser/output-preference';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -29,23 +29,29 @@ class MockMainLayoutService {
 }
 
 describe('Output.service.ts', () => {
+  // let mockPreferenceVal = false;
 
-  let injector: Injector;
-  let outputService: OutputService;
+  const injector: Injector = createBrowserInjector([], new Injector([
+    {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManagerClient,
+    }, {
+      token: IMainLayoutService,
+      useClass : MockMainLayoutService,
+    }, {
+      token: PreferenceService,
+      useValue: {
+        onPreferenceChanged: Event.None,
+      },
+    }, {
+      token: OutputPreferences,
+      useValue: {
+        'output.logWhenNoPanel': true,
+      },
+    },
+  ]));
 
-  injector = createBrowserInjector([
-    OutputModule as any,
-    ThemeModule,
-  ]);
-  injector.addProviders({
-    token: ILoggerManagerClient,
-    useClass: MockLoggerManagerClient,
-  }, {
-    token: IMainLayoutService,
-    useClass : MockMainLayoutService,
-  });
-
-  outputService = injector.get(OutputService);
+  const outputService = injector.get(OutputService);
 
   test('getChannel', () => {
     const output = outputService.getChannel('1');

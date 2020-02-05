@@ -197,6 +197,11 @@ export const defaultSettingGroup: ISettingGroup[] = [
     title: '%settings.group.view%',
     iconClass: getIcon('detail'),
   },
+  {
+    id: 'output',
+    title: '%settings.group.view%',
+    iconClass: getIcon('detail'),
+  },
 ];
 
 // TODO 做成Contribution分散到各个模块
@@ -268,6 +273,13 @@ export const defaultSettingSections: {
         {id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title'},
         {id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title'},
         {id: 'debug.toolbar.float', localized: 'preference.debug.toolbar.float.title'},
+      ],
+    },
+  ],
+  output: [
+    {
+      preferences: [
+        {id: 'output.logWhenNoPanel', localized: 'preference.explorer.fileTree.baseIndent.title'},
       ],
     },
   ],

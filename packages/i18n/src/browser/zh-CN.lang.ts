@@ -197,6 +197,8 @@ export const localizationBundle = {
 
     'output.tabbar.title': '输出',
     'output.channel.none': '<还没有任何输出>',
+    'output.configurationTitle': '输出配置',
+    'output.logWhenNoPanel': '无面板时是否输出到浏览器 console',
 
     'debug.stack.loadMore': '加载更多堆栈',
     'debug.breakpoint.deactive': '关闭所有断点',
