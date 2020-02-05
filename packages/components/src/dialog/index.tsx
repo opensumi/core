@@ -4,6 +4,7 @@ import * as clx from 'classnames';
 import { Overlay, IOverlayProps } from '../overlay';
 import * as styles from './styles.module.less';
 import { IconContext } from '../icon';
+import { Button } from '../button';
 
 export enum MessageType {
   Error,
@@ -12,49 +13,71 @@ export enum MessageType {
   Empty,
 }
 
+export type ModalType = 'basic' | 'confirm' | 'info';
+
 export interface IconDesc {
   color: string;
   className: string;
 }
 
 export interface IDialogProps extends IOverlayProps {
-  type?: MessageType;
+  messageType?: MessageType;
+  type?: ModalType;
   icon?: IconDesc;
   message: string | React.ReactNode;
   buttons: JSX.Element[] | JSX.Element;
   closable?: boolean;
+  onOk?: () => void;
+  onCancel?: () => void;
+  okText?: string;
+  cancelText?: string;
 }
+
+const DefaultButtons = ({ onCancel, onOk, cancelText, okText }) => (
+  <>
+    <Button onClick={onCancel} type='secondary'>{cancelText || '取消'}</Button>
+    <Button onClick={onOk}>{okText || '确定'}</Button>
+  </>
+);
 
 export const Dialog: React.FC<IDialogProps> = ({
   visible,
   onClose,
   closable,
   afterClose,
-  type,
+  messageType,
   icon,
   message,
   buttons,
+  type = 'confirm',
   title,
+  onOk,
+  onCancel,
+  okText,
+  cancelText,
 }) => {
   const { getIcon } = React.useContext(IconContext);
   return (
     <Overlay
       visible={visible}
       onClose={onClose}
-      title={title}
-      closable={closable}
+      title={type === 'basic' ? title : null}
+      closable={false}
+      footer={type === 'basic' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : undefined}
       afterClose={afterClose}>
-      { type !== MessageType.Empty ? (
-        <>
-          <div className={styles.content}>
+      <>
+        <div className={styles.content}>
           {icon && <div style={{ color: icon.color }} className={clx(styles.icon, getIcon(icon.className))}/>}
-          {typeof message === 'string' ? (<span className={styles.message}>{ message }</span>) : message}
+          <div className={styles.content_area}>
+            {type !== 'basic' && title && <p className={styles.content_title}>{title}</p>}
+            {typeof message === 'string' ? (<span className={styles.message}>{ message }</span>) : message}
+          </div>
+          {closable && <button className={clx(styles.closex, getIcon('close'))} onClick={onClose}></button>}
         </div>
-        <div className={styles.buttonWrap}>
-          {buttons}
-        </div>
-        </>
-      ) :  message}
+        {type !== 'basic' && <div className={styles.buttonWrap}>
+          {type === 'confirm' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : <Button size='large' onClick={onClose}>知道了</Button>}
+        </div>}
+      </>
     </Overlay>
   );
 };

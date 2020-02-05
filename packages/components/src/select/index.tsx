@@ -89,10 +89,10 @@ export const Select: React.FC<ISelectProps> = ({
 }) => {
   const { getIcon } = React.useContext(IconContext);
   const [open, setOpen] = useState(false);
-  const [select, setSelect] = useState<string | undefined>(value);
+  const [select, setSelect] = useState(value);
 
   useEffect(() => {
-    if (onChange && select) {
+    if (onChange && select && select !== value) {
       onChange(select);
     }
     setOpen(false);

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig, PreferenceService } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig, PreferenceService, isElectronRenderer } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference.service';
 import './index.less';
 import * as styles from './preferences.module.less';
@@ -13,8 +13,9 @@ import debounce = require('lodash.debounce');
 import { IWorkspaceService } from '@ali/ide-workspace';
 import * as cls from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
-import { CheckBox, Input, Button } from '@ali/ide-components';
-import { Select } from '@ali/ide-core-browser/lib/components/select';
+import { CheckBox, Input, Button, IconContextProvider } from '@ali/ide-components';
+import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
+import { Select, Option } from '@ali/ide-components';
 import { toPreferenceReadableName, toNormalCase } from '../common';
 
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
@@ -52,27 +53,29 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   </div>;
 
   return (
-    <div className = {styles.preferences}>
-      <div className = {styles.preferences_header}>
-        {appConfig.isSyncPreference ? <div /> : headers}
-        <div className = {styles.search_pref}>
-          <Input placeholder={localize('preference.searchPlaceholder')} onChange={(e) => {
-              debouncedSearch((e.target as HTMLInputElement).value);
-          }}/>
+    <IconContextProvider value={{ getIcon }}>
+      <div className = {styles.preferences}>
+        <div className = {styles.preferences_header}>
+          {appConfig.isSyncPreference ? <div /> : headers}
+          <div className = {styles.search_pref}>
+            <Input placeholder={localize('preference.searchPlaceholder')} onChange={(e) => {
+                debouncedSearch((e.target as HTMLInputElement).value);
+            }}/>
+          </div>
         </div>
+        { groups.length > 0 ?
+        <div className = {styles.preferences_body}>
+          <PreferencesIndexes groups={groups} scope={currentScope} search={currentSearch}></PreferencesIndexes>
+          <div className = {styles.preferences_items}>
+            <PreferenceBody groupId={preferenceService.currentGroup} scope={currentScope} search={currentSearch}></PreferenceBody>
+          </div>
+        </div> :
+          <div className = {styles.preference_noResults}>
+            {formatLocalize('preference.noResults', currentSearch)}
+          </div>
+        }
       </div>
-      { groups.length > 0 ?
-      <div className = {styles.preferences_body}>
-        <PreferencesIndexes groups={groups} scope={currentScope} search={currentSearch}></PreferencesIndexes>
-        <div className = {styles.preferences_items}>
-          <PreferenceBody groupId={preferenceService.currentGroup} scope={currentScope} search={currentSearch}></PreferenceBody>
-        </div>
-      </div> :
-        <div className = {styles.preference_noResults}>
-          {formatLocalize('preference.noResults', currentSearch)}
-        </div>
-      }
-    </div>
+    </IconContextProvider>
   );
 });
 
@@ -327,9 +330,13 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     // enum 本身为 string[] | number[]
     const labels = preferenceService.getEnumLabels(preferenceName);
     const options = optionEnum && optionEnum.map((item, idx) =>
+      isElectronRenderer() ?
       <option value={item} key={`${idx} - ${item}`}>{
         replaceLocalizePlaceholder((labels[item] || item).toString())
-      }</option>);
+      }</option> :
+      <Option value={item} label={replaceLocalizePlaceholder((labels[item] || item).toString())} key={`${idx} - ${item}`}>{
+        replaceLocalizePlaceholder((labels[item] || item).toString())
+      }</Option>);
 
     return (
       <div className={styles.preference_line} key={key}>
@@ -338,14 +345,20 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
         </div>
         {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
         <div className={styles.control_wrap}>
-          <Select onChange={(event) => {
+          {isElectronRenderer() ?
+          <NativeSelect onChange={(event) => {
               changeValue(key, event.target.value);
             }}
             className={styles.select_control}
             value={value}
           >
             {options}
-          </Select>
+          </NativeSelect> :
+          <Select onChange={(value) => {
+            changeValue(key, value);
+          }} value={value} className={styles.select_control}>
+            {options}
+          </Select>}
         </div>
       </div>
     );
