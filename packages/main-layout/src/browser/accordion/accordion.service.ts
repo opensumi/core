@@ -47,6 +47,8 @@ export class AccordionService extends WithEventBus {
   @observable.shallow views: View[] = [];
 
   @observable state: {[containerId: string]: SectionState} = {};
+  // 提供给Mobx强刷，有没有更好的办法？
+  @observable forceUpdate: number = 0;
 
   rendered = false;
 

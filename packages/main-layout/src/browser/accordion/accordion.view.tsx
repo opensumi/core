@@ -32,6 +32,7 @@ export const AccordionContainer: React.FC<{
     const viewState: SectionState = accordionService.getViewState(view.id);
     return !viewState.collapsed;
   });
+  const forceUpdate = accordionService.forceUpdate;
   return <SplitPanel
     className={className}
     dynamicTarget={true}
