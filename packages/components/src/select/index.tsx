@@ -121,7 +121,7 @@ export const Select: React.FC<ISelectProps> = ({
       node = <Option value={node} label={String(node)}>{node}</Option>;
     }
     const disabled = (node as React.ReactElement).props?.disabled || false;
-    return <div className={classNames({
+    return <div key={(node as React.ReactElement).props.value} className={classNames({
       ['kt-select-option-select']: select === (node as React.ReactElement).props.value,
     })} onClick={disabled ? noop : () => setSelect(getValueWithProps((node as React.ReactElement), optionLabelProp))}>{node}</div>;
   }
@@ -135,7 +135,7 @@ export const Select: React.FC<ISelectProps> = ({
     <div className={optionsContainerClasses}>
       {options && options.map((v) => {
         if (typeof v === 'string') {
-          return <Option value={v} className={classNames({
+          return <Option value={v} key={v} className={classNames({
             ['kt-select-option-select']: select === v,
           })} onClick={() => setSelect(v)}>{v}</Option>;
         }
