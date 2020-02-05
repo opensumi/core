@@ -254,6 +254,7 @@ export const defaultSettingSections: {
         { id: 'terminal.fontWeight', localized: 'preference.terminal.fontWeight' },
         { id: 'terminal.lineHeight', localized: 'preference.terminal.lineHeight' },
         { id: 'terminal.cursorBlink', localized: 'preference.terminal.cursorBlink' },
+        { id: 'terminal.scrollback', localized: 'preference.terminal.scrollback' },
       ],
     },
   ],
