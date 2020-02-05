@@ -60,7 +60,9 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
     registry.registerCommand(terminalSplit, {
       execute: (...args: any[]) => {
-        this.terminalController.addWidget();
+        const id = this.terminalController.addWidget();
+        this.terminalController.focus();
+        this.terminalController.focusWidget(id);
       },
       isEnabled: () => {
         return true;

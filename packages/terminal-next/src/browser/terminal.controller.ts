@@ -1,7 +1,7 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { uuid, CommandService, OnEvent, WithEventBus, Emitter, Event, ILogger } from '@ali/ide-core-common';
-import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation, IContextKeyService, IContextKey, PreferenceService } from '@ali/ide-core-browser';
+import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation, IContextKeyService, IContextKey, PreferenceService, Delayer } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IThemeService } from '@ali/ide-theme/lib/common';
 import { TerminalClient } from './terminal.client';
@@ -121,7 +121,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
-  private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}) {
+  private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}, autofocus = true) {
     const client = new TerminalClient(
       this.service,
       this.workspace,
@@ -130,7 +130,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.termTheme,
       this.preference,
       this,
-      widget, restoreId, options,
+      widget, restoreId, options, autofocus,
     );
     client.addDispose({
       dispose: () => {
@@ -153,7 +153,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
       for (const item of (widgets as any[])) {
         const widget = new Widget();
-        const client = this._createTerminalClientInstance(widget, item.clientId);
+        const client = this._createTerminalClientInstance(widget, item.clientId, {}, false);
         try {
           await client.attach(true, item.meta || '');
           this._addWidgetToGroup(index, client);
@@ -288,6 +288,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.createGroup(true);
       this.addWidget();
       this.tabManager.select(index);
+      this.focus();
     });
 
     this.tabManager.onClose(({ index }) => {
@@ -565,22 +566,17 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    *
    * @param widgetId
    */
-  layoutTerminalClient(widgetId: string) {
+  async layoutTerminalClient(widgetId: string) {
     const client = this._clientsMap.get(widgetId);
-
     if (client && this._isActivated() &&
       this.currentGroup && this.currentGroup.widgetsMap.has(widgetId)) {
       if (client.notReadyToShow) {
-        /**
-         * 这个 settimeout 的目的是等待 dom 被正常渲染，
-         * 由于 xterm 的高宽 fit 强烈依赖父节点的渲染，
-         * 所以在这个等待 50ms
-         */
-        setTimeout(async () => {
+         const delayer = new Delayer<Promise<void>>(0);
+         await delayer.trigger(async () => {
           client.hide();
           await client.show();
           client.layout();
-        }, 50);
+         });
       } else {
         client.layout();
       }
@@ -760,8 +756,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   /** client */
 
-  getCurrentClient() {
-    return this._clientsMap.get(this._focusedId);
+  getCurrentClient<T>() {
+    return this._clientsMap.get(this._focusedId) as any;
   }
 
   /** end */

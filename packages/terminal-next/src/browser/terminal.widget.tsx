@@ -1,10 +1,10 @@
 import * as React from 'react';
 import * as clx from 'classnames';
 import { useInjectable, localize, getIcon } from '@ali/ide-core-browser';
+import { TerminalClient } from './terminal.client';
 import { ITerminalController, IWidget, ITerminalError } from '../common';
 
 import * as styles from './terminal.module.less';
-import { TerminalContextMenuService } from './terminal.menu';
 
 export interface IProps {
   id: string;
@@ -17,13 +17,18 @@ export interface IProps {
 export default ({ id, dynamic, error, show }: IProps) => {
   const content = React.createRef<HTMLDivElement>();
   const controller = useInjectable<ITerminalController>(ITerminalController);
-  const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
 
   React.useEffect(() => {
     if (content.current) {
       controller.drawTerminalClient(content.current, id)
         .then(() => {
-          controller.layoutTerminalClient(id);
+          controller.layoutTerminalClient(id)
+            .then(() => {
+              const client = controller.getCurrentClient<TerminalClient>();
+              if (client && controller.isFocus && client.autofocus) {
+                client.focus();
+              }
+            });
         });
     }
   }, []);
