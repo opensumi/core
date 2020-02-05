@@ -201,7 +201,8 @@ export class MonacoCommandRegistry {
   protected getActiveCodeEditor(): monaco.editor.ICodeEditor | undefined {
     const editorGroup = this.workbenchEditorService.currentEditorGroup;
     if (editorGroup) {
-      return ((editorGroup.currentFocusedEditor || editorGroup.currentEditor)! as IMonacoImplEditor).monacoEditor;
+      const editor = editorGroup.currentFocusedEditor || editorGroup.currentEditor;
+      return editor ? editor.monacoEditor : undefined;
     }
   }
 }
