@@ -228,7 +228,6 @@ export class AccordionService extends WithEventBus {
     } else {
       nextState = !forceShow;
     }
-    if (nextState && this.visibleViews.length === 1) { return; }
     state.hidden = nextState;
     this.popViewKeyIfOnlyOneViewVisible();
     this.storeState();
