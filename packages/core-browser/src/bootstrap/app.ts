@@ -26,6 +26,7 @@ import {
   IReporterService,
   REPORT_NAME,
   isElectronEnv,
+  IEventBus,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -43,6 +44,7 @@ import { electronEnv } from '../utils';
 import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 import { DEFAULT_CDN_ICON, updateIconMap } from '../style/icon/icon';
 import ResizeObserver from 'resize-observer-polyfill';
+import { RenderedEvent } from '../layout';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -324,6 +326,9 @@ export class ClientApp implements IClientApp {
   private async renderApp(container: HTMLElement) {
     this.container = container;
     await renderClientApp(this, this.container);
+
+    const eventBus = this.injector.get(IEventBus);
+    eventBus.fire(new RenderedEvent());
 
     for (const contribution of this.contributions) {
       if (contribution.onDidStart) {

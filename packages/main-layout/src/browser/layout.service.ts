@@ -67,7 +67,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     super();
   }
 
-  @OnEvent(RenderedEvent)
   didMount() {
     for (const [containerId, views] of this.pendingViewsMap.entries()) {
       views.forEach(({view, props}) => {

@@ -2,9 +2,6 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from './layout';
-import { useInjectable } from '../../react-hooks';
-import { IEventBus } from '@ali/ide-core-common';
-import { RenderedEvent } from '../../layout';
 
 type ChildComponent = React.ReactElement<{ flex?: number; id: string; }>;
 
@@ -14,12 +11,6 @@ export const BoxPanel: React.FC<{
   direction?: Layout.direction;
   flex?: number;
 }> = (({ className, children = [], direction = 'left-to-right', ...restProps }) => {
-  const eventBus = useInjectable<IEventBus>(IEventBus);
-  // 挪到root节点
-  React.useEffect(() => {
-    eventBus.fire(new RenderedEvent());
-  }, []);
-
     // convert children to list
   const arrayChildren = React.Children.toArray(children);
 
