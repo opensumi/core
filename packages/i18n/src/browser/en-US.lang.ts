@@ -190,6 +190,8 @@ export const localizationBundle = {
     'scm.provider.title': 'Source Control Providers',
     'scm.provider.empty': 'No source control providers registered.',
     'scm.provider.init': 'Click to initialize a repository',
+    'scm.diff.change.next': 'Next Change',
+    'scm.diff.change.previous': 'Previous Change',
 
     'debug.action.add.configuration': 'Add Configuration...',
     'debug.action.no.configuration': 'No Configurations',
