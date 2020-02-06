@@ -68,7 +68,7 @@ export const DebubgConfigurationView = observer(() => {
       </NativeSelect>);
     }
 
-    return (<Select size='small' value={ currentValue } onChange={ setCurrentConfiguration } className={cls(styles.debug_selection, styles.special_radius)}>
+    return (<Select value={ currentValue } onChange={ setCurrentConfiguration } className={cls(styles.debug_selection, styles.special_radius)}>
       {renderConfigurationOptions(configurationOptions)}
       <Option disabled key={'--'} value={addConfigurationLabel.replace(/./g, '-')}>{ addConfigurationLabel.replace(/./g, '-') }</Option>
       <Option value='__ADD_CONF__' key={'__ADD_CONF__'}>{ addConfigurationLabel }</Option>
