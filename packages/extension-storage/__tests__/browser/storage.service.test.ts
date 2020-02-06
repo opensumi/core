@@ -2,9 +2,9 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ExtensionStorageServerPath, IExtensionStorageService } from '../../src/common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { CorePreferences, EDITOR_COMMANDS, IContextKeyService, AppConfig } from '@ali/ide-core-browser';
+import { AppConfig } from '@ali/ide-core-browser';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
-import { ExtensionStorageService } from '../../lib/browser';
+import { ExtensionStorageService } from '@ali/ide-extension-storage/lib/browser';
 
 describe('ExtensionStorage service should be work', () => {
   let injector: MockInjector;
