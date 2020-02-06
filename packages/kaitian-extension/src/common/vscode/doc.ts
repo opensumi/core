@@ -53,6 +53,12 @@ export interface IExtensionDocumentModelChangedEvent {
   dirty: boolean;
 }
 
+export interface IExtensionDocumentModelOptionsChangedEvent {
+  uri: string;
+  encoding?: string;
+  languageId?: string;
+}
+
 export interface IExtensionDocumentModelOpenedEvent {
   uri: string;
   lines: string[];
@@ -73,6 +79,7 @@ export interface IExtensionDocumentModelSavedEvent {
 export const ExtensionDocumentManagerProxy = Symbol('ExtensionDocumentManagerProxy');
 
 export interface IExtensionHostDocService {
+  $fireModelOptionsChangedEvent(event: IExtensionDocumentModelOptionsChangedEvent): void;
   $fireModelChangedEvent(event: IExtensionDocumentModelChangedEvent): void;
   $fireModelOpenedEvent(event: IExtensionDocumentModelOpenedEvent): void;
   $fireModelRemovedEvent(event: IExtensionDocumentModelRemovedEvent): void;

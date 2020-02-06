@@ -440,8 +440,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
           if (this.workbenchEditorService.currentEditor) {
             const currentDocModel = this.workbenchEditorService.currentEditor.currentDocumentModel;
             if (currentDocModel) {
-              monaco.editor.setModelLanguage(currentDocModel.getMonacoModel(), targetLanguageId);
-              currentDocModel.languageId = targetLanguageId;
+              this.editorDocumentModelService.changeModelOptions(currentDocModel.uri, {
+                langaugeId: targetLanguageId,
+              });
             }
           }
         }
@@ -461,7 +462,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
             placeholder: localize('editor.chooseEncoding'),
           });
           if (res) {
-            this.editorDocumentModelService.changeModelEncoding(resource.uri, res);
+            this.editorDocumentModelService.changeModelOptions(resource.uri, {
+              encoding: res,
+            });
           }
         }
       },
