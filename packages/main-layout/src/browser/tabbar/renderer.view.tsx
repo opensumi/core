@@ -29,7 +29,7 @@ export const TabRendererBase: React.FC<{
 }> = (({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView, noAccordion, ...restProps }) => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side, noAccordion);
   const resizeHandle = React.useContext(PanelContext);
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     components.forEach((component) => {
       tabbarService.registerContainer(component.options!.containerId, component);
     });

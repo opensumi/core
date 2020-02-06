@@ -79,7 +79,7 @@ export const Search = observer(({
   }, [UIState, searchOptionRef.current, searchResults.size > 0]);
 
   const collapsePanelContainerStyle = {
-    width: viewState.width,
+    width: viewState.width || '100%',
     height: viewState.height,
   };
 

@@ -79,12 +79,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
     }
     this.restoreState();
-    for (const service of this.services.values()) {
-      const {currentId, size} = this.state[service.location] || {};
-      service.prevSize = size;
-      service.currentContainerId = currentId !== undefined ? (service.containersMap.has(currentId) ? currentId : '') : service.containersMap.keys().next().value;
-    }
-
     this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
       this.contextKeyService.onDidChangeContext,
       (last, event) =>  last || event.payload.affectsSome(this.viewWhenContextkeys),
@@ -117,6 +111,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         size: undefined,
       },
     });
+    for (const service of this.services.values()) {
+      const {currentId, size} = this.state[service.location] || {};
+      service.prevSize = size;
+      service.currentContainerId = currentId !== undefined ? (service.containersMap.has(currentId) ? currentId : '') : service.containersMap.keys().next().value;
+    }
   }
 
   isVisible(location: string) {
