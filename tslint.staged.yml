@@ -1,0 +1,7 @@
+extends:
+  - ./tslint.yml
+
+rules:
+  no-unused-variable:
+    - true
+    - ignore-pattern: "^_"
