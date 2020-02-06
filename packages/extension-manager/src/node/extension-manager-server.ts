@@ -111,8 +111,7 @@ export class ExtensionManager implements IExtensionManager {
 
   async installExtension(extension: BaseExtension, version?: string | undefined): Promise<string> {
     const currentVersion = version || extension.version;
-    const extensionDirName = `${extension.publisher}.${extension.name}-${currentVersion}`;
-    const dist = await this.getUnpressExtensionDir(extensionDirName, extension);
+    const dist = await this.getUnpressExtensionDir(extension);
     return this.installer.install({
       publisher: extension.publisher,
       name: extension.name,
@@ -137,8 +136,8 @@ export class ExtensionManager implements IExtensionManager {
     }
   }
 
-  protected async getUnpressExtensionDir(extensionDirName: string, extension: BaseExtension): Promise<string> {
-    return path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
+  protected async getUnpressExtensionDir(extension: BaseExtension): Promise<string> {
+    return this.appConfig.marketplace.extensionDir;
   }
 }
 
