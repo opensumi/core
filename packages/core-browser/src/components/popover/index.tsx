@@ -125,9 +125,7 @@ export const Popover: React.FC<{
       >
         {content || ''}
       </span>
-      <span
-        ref={childEl}
-      >
+      <span ref={childEl}>
         {children}
       </span>
     </span>
