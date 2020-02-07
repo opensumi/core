@@ -74,7 +74,7 @@ export const Dialog: React.FC<IDialogProps> = ({
           </div>
           {closable && <button className={clx(styles.closex, getIcon('close'))} onClick={onClose}></button>}
         </div>
-        {type !== 'basic' && <div className={styles.buttonWrap}>
+        {messageType !== MessageType.Empty && type !== 'basic' && <div className={styles.buttonWrap}>
           {type === 'confirm' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : <Button size='large' onClick={onClose}>知道了</Button>}
         </div>}
       </>
