@@ -9,7 +9,6 @@ import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
   SEARCH_STATE,
-  ResultTotal,
 } from '../common/';
 import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
@@ -166,24 +165,27 @@ export const Search = observer(({
                 />
               </div>
               <div className={cls(styles.glob_field, styles.search_excludes)}>
-                <div className={cls(styles.label)}>
+                <div className={styles.label}>
                   {localize('search.excludes')}
-                  <Popover
-                    insertClass={cls(styles.search_excludes_description)}
-                    id={'search_excludes'}
-                    content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes(), searchBrowserService.openPreference)}
-                    trigger={PopoverTriggerType.hover}
-                    delay={500}
-                  >
-                    <span className={cls(getIcon('question-circle'))}></span>
-                  </Popover>
-                  <CheckBox
-                    insertClass={cls(styles.checkbox)}
-                    label={localize('search.excludes.default.enable')}
-                    checked={!UIState.isIncludeIgnored}
-                    id='search-input-isIncludeIgnored'
-                    onChange={() => { updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }); }}
-                  />
+                  <div className={styles.checkbox_wrap}>
+                    <CheckBox
+                      insertClass={cls(styles.checkbox)}
+                      label={localize('search.excludes.default.enable')}
+                      checked={!UIState.isIncludeIgnored}
+                      id='search-input-isIncludeIgnored'
+                      onChange={() => { updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }); }}
+                    />
+                    <Popover
+                      insertClass={cls(styles.search_excludes_description)}
+                      id={'search_excludes'}
+                      content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes(), searchBrowserService.openPreference)}
+                      trigger={PopoverTriggerType.hover}
+                      delay={500}
+                    >
+                      <span className={cls(getIcon('question-circle'))}></span>
+                    </Popover>
+                  </div>
+
                 </div>
                 <Input
                   type='text'
