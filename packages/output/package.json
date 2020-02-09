@@ -21,7 +21,6 @@
   "dependencies": {
     "@ali/ide-core-browser": "1.7.7",
     "@ali/ide-core-common": "1.7.7",
-    "@ali/ide-core-node": "1.7.7",
     "@ali/ide-main-layout": "1.7.7",
     "@ali/ide-components": "1.7.7",
     "anser": "^1.4.9",
