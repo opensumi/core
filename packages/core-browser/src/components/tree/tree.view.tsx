@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TreeNode, TreeViewActionConfig, SelectableTreeNode } from './';
+import { TreeNode, SelectableTreeNode } from './';
 import { TreeContainerNode, CommandActuator } from './tree-node.view';
 import { isOSX, Event, FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode, TreeViewAction } from '@ali/ide-core-common';
 import * as cls from 'classnames';
@@ -127,7 +127,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
 export const defaultTreeProps: TreeProps = {
   nodes: [],
   leftPadding: 8,
-  defaultLeftPadding: 10,
+  defaultLeftPadding: 8,
 };
 
 export const TreeContainer = (
