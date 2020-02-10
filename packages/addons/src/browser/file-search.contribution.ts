@@ -43,10 +43,10 @@ export const quickFileOpen: Command = {
 class FileSearchActionLeftRight extends QuickOpenBaseAction {
 
   @Autowired(CommandService)
-  commandService: CommandService;
+  private readonly commandService: CommandService;
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  private readonly injector: Injector;
 
   constructor() {
     super({
@@ -72,7 +72,7 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
 class FileSearchActionUpDown extends QuickOpenBaseAction {
 
   @Autowired(CommandService)
-  commandService: CommandService;
+  private readonly commandService: CommandService;
 
   constructor() {
     super({
@@ -98,6 +98,7 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
   @Autowired()
   fileSearchActionLeftRight: FileSearchActionLeftRight;
 
+  // FIXME: 这个貌似并没有使用？@墨蛰
   @Autowired()
   fileSearchActionUpDown: FileSearchActionUpDown;
 
@@ -114,28 +115,28 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
 export class FileSearchQuickCommandHandler {
 
   @Autowired(CommandService)
-  private commandService: CommandService;
+  private readonly commandService: CommandService;
 
   @Autowired(FileSearchServicePath)
-  private fileSearchService;
+  private readonly fileSearchService;
 
   @Autowired()
-  private labelService: LabelService;
+  private readonly labelService: LabelService;
 
   @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
+  private readonly workspaceService: IWorkspaceService;
 
   @Autowired(ILogger)
-  logger: ILogger;
+  private readonly logger: ILogger;
 
   @Autowired()
-  fileSearchActionProvider: FileSearchActionProvider;
+  private readonly fileSearchActionProvider: FileSearchActionProvider;
 
   @Autowired(CorePreferences)
-  corePreferences: CorePreferences;
+  private readonly corePreferences: CorePreferences;
 
   @Autowired(SearchPreferences)
-  searchPreferences: SearchPreferences;
+  private readonly searchPreferences: SearchPreferences;
 
   private cancelIndicator = new CancellationTokenSource();
   private currentLookFor: string = '';

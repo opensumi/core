@@ -33,6 +33,7 @@
     "@ali/ide-decoration": "1.7.7",
     "@ali/ide-editor": "1.7.7",
     "@ali/ide-extension-storage": "1.7.7",
+    "@ali/ide-file-search": "1.7.7",
     "@ali/ide-file-service": "1.7.7",
     "@ali/ide-logs": "1.7.7",
     "@ali/ide-main-layout": "1.7.7",
