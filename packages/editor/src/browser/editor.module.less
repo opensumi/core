@@ -107,6 +107,9 @@
     display:flex;
     background: var(--editorGroupHeader-tabsBackground);
     position: relative;
+    &.kt_on_drag_over {
+      background-color: var(--editorGroup-dropBackground);
+    }
     &::before {
       content: '';
       height:1px;
@@ -190,7 +193,7 @@
         }
       }
       &.kt_on_drag_over {
-        background: rgba(0,0,0,.5);
+        background-color: var(--editorGroup-dropBackground);
       }
       .close_tab {
         display:none;
