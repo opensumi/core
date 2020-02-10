@@ -5,9 +5,9 @@ import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUn
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@ali/ide-core-browser';
+import { ViewState, getIcon } from '@ali/ide-core-browser';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { ICtxMenuRenderer, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { ExtensionViewService } from './extension-view.service';
@@ -71,6 +71,7 @@ export const ExtensionTabbarTreeView = observer(({
   const scrollContainerStyle = { width, height };
   const injector = useInjectable(INJECTOR_TOKEN);
   const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId]);
+  const menuRegistry: IMenuRegistry = useInjectable(IMenuRegistry);
   const { canSelectMany, showCollapseAll }  = options;
 
   const initTreeData = () => {
@@ -208,15 +209,26 @@ export const ExtensionTabbarTreeView = observer(({
     return newNodes;
   };
 
-  const collapseAll = () => {
-    const newNodes = nodes.slice(0);
-    for (const n of newNodes) {
-      if (n.expanded) {
-        n.expanded = false;
-      }
+  // const collapseAll = () => {
+  //   const newNodes = nodes.slice(0);
+  //   for (const n of newNodes) {
+  //     if (n.expanded) {
+  //       n.expanded = false;
+  //     }
+  //   }
+  //   setNodes(newNodes);
+  // };
+
+  React.useEffect(() => {
+    if (showCollapseAll) {
+      menuRegistry.registerMenuItem(MenuId.ViewTitle, {
+        iconClass: getIcon('collapse-all'),
+        when: `view == ${viewId}`,
+        // @魁武 修改命令
+        command: 'vscode.diff',
+      });
     }
-    setNodes(newNodes);
-  };
+  }, []);
 
   const getAllSubChildren = (node: TreeNode<any>, model: Map<string | number, IExtensionTreeViewModel>) => {
     const parentModel = model.get(node.id);
