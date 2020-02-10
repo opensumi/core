@@ -21,12 +21,14 @@ import {
   ICommentsThreadOptions,
   ICommentsThread,
   ICommentsTreeNode,
+  ICommentsFeatureRegistry,
 } from '../common';
 import { CommentsThread } from './comments-thread';
 import { observable, computed } from 'mobx';
 import * as flattenDeep from 'lodash.flattendeep';
 import * as groupBy from 'lodash.groupby';
 import { dirname } from '@ali/ide-core-common/lib/path';
+import { IIconService, IconType } from '@ali/ide-theme';
 
 @Injectable()
 export class CommentsService extends Disposable implements ICommentsService {
@@ -46,10 +48,22 @@ export class CommentsService extends Disposable implements ICommentsService {
   @Autowired(CommentsContribution)
   private readonly contributions: ContributionProvider<CommentsContribution>;
 
+  @Autowired(IIconService)
+  iconService: IIconService;
+
+  @Autowired(ICommentsFeatureRegistry)
+  commentsFeatureRegistry: ICommentsFeatureRegistry;
+
   private _decorationChange = new Emitter<URI>();
 
   @observable
-  private threads = new Map<string, CommentsThread>();
+  private threads = new Map<string, ICommentsThread>();
+
+  private threadsChangeEmitter = new Emitter<void>();
+
+  get onThreadsChanged() {
+    return this.threadsChangeEmitter.event;
+  }
 
   private createDecoration(
     type: CommentGutterType,
@@ -145,16 +159,18 @@ export class CommentsService extends Disposable implements ICommentsService {
     const thread = this.injector.get(CommentsThread, [uri, range, options]);
     thread.onDispose(() => {
       this.threads.delete(thread.id);
+      this.threadsChangeEmitter.fire();
     });
     this.threads.set(thread.id, thread);
     this.addDispose(thread);
+    this.threadsChangeEmitter.fire();
     return thread;
   }
 
   @computed
   get commentsTreeNodes(): ICommentsTreeNode[] {
+    let treeNodes: ICommentsTreeNode[] = [];
     const commentThreads = [...this.threads.values()];
-    const treeNodes: ICommentsTreeNode[] = [];
     const threadUris = groupBy(commentThreads, (thread: ICommentsThread) => thread.uri);
     Object.keys(threadUris).forEach((uri) => {
       const threads: ICommentsThread[] = threadUris[uri];
@@ -184,6 +200,10 @@ export class CommentsService extends Disposable implements ICommentsService {
         const firstCommentNode: ICommentsTreeNode = {
           id: firstComment.id,
           name: firstComment.author.name,
+          iconStyle: {
+            marginRight: 5,
+          },
+          icon: this.iconService.fromIcon('', firstComment.author.iconPath?.toString(), IconType.Background),
           description: firstComment.body,
           uri: thread.uri,
           parent: rootNode,
@@ -193,6 +213,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             expanded: true,
             children: [],
           },
+          comment: firstComment,
         };
         const firstCommentChildren = otherComments.map((comment) => {
           const otherCommentNode: ICommentsTreeNode = {
@@ -200,9 +221,14 @@ export class CommentsService extends Disposable implements ICommentsService {
             name: comment.author.name,
             description: comment.body,
             uri: thread.uri,
+            iconStyle: {
+              marginRight: 5,
+            },
+            icon: this.iconService.fromIcon('', comment.author.iconPath?.toString(), IconType.Background),
             parent: firstCommentNode,
             depth: 2,
             thread,
+            comment,
           };
           return otherCommentNode;
         });
@@ -211,6 +237,11 @@ export class CommentsService extends Disposable implements ICommentsService {
         treeNodes.push(...firstCommentChildren);
       });
     });
+
+    for (const handler of this.commentsFeatureRegistry.getCommentsPanelTreeNodeHandlers()) {
+      treeNodes = handler(treeNodes);
+    }
+
     return treeNodes;
   }
 

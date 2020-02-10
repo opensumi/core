@@ -5,12 +5,15 @@ import {
   IDisposable,
   MaybePromise,
   TreeNode,
+  Event,
 } from '@ali/ide-core-common';
+
+type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 /**
  * 评论树的节点
  */
-export interface ICommentsTreeNode extends TreeNode<ICommentsTreeNode> {
+export interface ICommentsTreeNode extends Writeable<TreeNode<ICommentsTreeNode>> {
   /**
    * 子节点
    */
@@ -23,6 +26,11 @@ export interface ICommentsTreeNode extends TreeNode<ICommentsTreeNode> {
    * 子节点对应的 thread
    */
   thread: ICommentsThread;
+  /**
+   * 子节点对应的 comment
+   * 如果是根节点则为 undefined
+   */
+  comment?: IComment;
 }
 
 /**
@@ -107,7 +115,7 @@ export interface IComment {
   /**
    * 附属显示
    */
-  label?: string;
+  label?: string | React.ReactNode;
 }
 
 /**
@@ -120,6 +128,25 @@ export interface IThreadComment extends IComment {
   id: string;
 }
 
+export interface CommentsPanelOptions {
+  iconClass?: string;
+  priority?: number;
+  title?: string;
+  hidden?: boolean;
+  badge?: string;
+  titleComponent?: React.FunctionComponent;
+}
+
+export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];
+
+export const ICommentsFeatureRegistry = Symbol('ICommentsFeatureRegistry');
+export interface ICommentsFeatureRegistry {
+  registerPanelOptions(options: CommentsPanelOptions): void;
+  registerPanelTreeNodeHandler(handler: PanelTreeNodeHandler): void;
+  getCommentsPanelOptions(): CommentsPanelOptions;
+  getCommentsPanelTreeNodeHandlers(): PanelTreeNodeHandler[];
+}
+
 export const CommentsContribution = Symbol('CommentsContribution');
 export interface CommentsContribution {
   /**
@@ -127,6 +154,11 @@ export interface CommentsContribution {
    * @param editor 当前 editor 实例
    */
   provideCommentingRanges(editor: IEditor): MaybePromise<IRange[] | undefined>;
+  /**
+   * 扩展评论模块的能力
+   * @param registry
+   */
+  registerCommentsFeature?(registry: ICommentsFeatureRegistry): void;
 }
 
 /**
@@ -203,6 +235,10 @@ export interface ICommentsService {
    * @param options 额外参数
    */
   createThread(uri: URI, range: IRange, options?: ICommentsThreadOptions): ICommentsThread;
+  /**
+   * threads 变化的事件
+   */
+  onThreadsChanged: Event<void>;
 }
 
 /**

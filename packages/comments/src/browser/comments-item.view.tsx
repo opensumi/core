@@ -6,6 +6,7 @@ export const CommentItem: React.FC<IComment> = (
   {
     body,
     author,
+    label,
   },
 ) => {
   const iconUrl = author.iconPath?.toString();
@@ -16,6 +17,7 @@ export const CommentItem: React.FC<IComment> = (
       {iconUrl && <img className={styles.comment_item_icon} src={iconUrl} alt={author.name}/>}
       <div>
         <span className={styles.comment_item_author_name}>{author.name}</span>
+        {typeof label === 'string' ? <span className={styles.comment_item_label}>{label}</span> : label}
       </div>
     </div>
     <div>{body}</div>
