@@ -16,8 +16,8 @@
 
   &.alwaysShowActions,
   &:hover {
-    color: var(--list-hoverForeground);
-    background: var(--list-hoverBackground);
+    color: var(--kt-tree-hoverForeground);
+    background: var(--kt-tree-hoverBackground);
     .treenode_head_icon {
       display: none;
     }
@@ -39,17 +39,17 @@
   }
 
   &.mod_selected {
-    color: var(--list-inactiveSelectionForeground);
-    background: var(--list-inactiveSelectionBackground);
+    color: var(--kt-tree-inactiveSelectionForeground);
+    background: var(--kt-tree-inactiveSelectionBackground);
   }
 
   &.mod_focused {
-    color: var(--list-activeSelectionForeground);
-    background: var(--list-activeSelectionBackground);
+    color: var(--kt-tree-activeSelectionForeground);
+    background: var(--kt-tree-activeSelectionBackground);
   }
 
   &.mod_invalid {
-    color: var(--list-invalidItemForeground)
+    color: var(--kt-tree-invalidItemForeground)
   }
 }
 
@@ -120,7 +120,7 @@
 .treenode_description {
   display: inline;
   transform: scale(0.96);
-  opacity: .7;
+  color: var(--descriptionForeground);
 }
 
 .treenode_overflow_wrap {
@@ -180,7 +180,7 @@
 
 .file_icon {
   position: relative;
-
+  color: var(--icon-foreground);
   &:before {
     font-size: calc(@kt-content-font-size * 0.8);
     text-align: center;
@@ -256,8 +256,8 @@
 }
 
 .treenode_all_focused {
-  color: var(--list-focusForeground);
-  background: var(--list-focusBackground);
+  color: var(--kt-tree-focusForeground);
+  background: var(--kt-tree-focusBackground);
 }
 
 .validate_message {

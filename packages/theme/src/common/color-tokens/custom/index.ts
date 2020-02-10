@@ -21,6 +21,7 @@ export * from './icon';
 export * from './editor';
 export * from './badge';
 export * from './tab';
+export * from './tree';
 
 // blocks
 export * from './actionbar';
