@@ -47,6 +47,8 @@ import { MonacoEnhanceModule } from '@ali/ide-monaco-enhance/lib/browser/module'
 import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
 import { TerminalNextModule } from '@ali/ide-terminal-next/lib/browser';
 
+import { ClientAddonModule } from '@ali/ide-addons/lib/browser';
+
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
     OverlayModule,
@@ -92,4 +94,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     // FeatureExtensionModule,
     ExtensionManagerModule,
     MonacoEnhanceModule,
+
+    // addons
+    ClientAddonModule,
 ];

@@ -12,13 +12,11 @@ import {
 } from '@ali/ide-core-common';
 import {
   localize,
-  AppConfig,
   CommandService,
   URI,
   EDITOR_COMMANDS,
   QuickOpenActionProvider,
   QuickOpenItem,
-  QuickOpenAction,
   QuickOpenService,
   CorePreferences,
 } from '@ali/ide-core-browser';
@@ -29,9 +27,11 @@ import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorGroupSplitAction } from '@ali/ide-editor';
-import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
 import { getIcon } from '@ali/ide-core-browser';
-import { SearchPreferences } from './search-preferences';
+import { SearchPreferences } from '@ali/ide-search/lib/browser/search-preferences';
+import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
+
+const DEFAULT_FILE_SEARCH_LIMIT = 200;
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
@@ -43,15 +43,15 @@ export const quickFileOpen: Command = {
 class FileSearchActionLeftRight extends QuickOpenBaseAction {
 
   @Autowired(CommandService)
-  commandService: CommandService;
+  private readonly commandService: CommandService;
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  private readonly injector: Injector;
 
   constructor() {
     super({
       id: 'file-search:splitToRight',
-      tooltip: localize('search.quickOpen.leftRight'),
+      tooltip: localize('file-search.quickOpen.leftRight'),
       class: getIcon('embed'),
     });
   }
@@ -72,18 +72,18 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
 class FileSearchActionUpDown extends QuickOpenBaseAction {
 
   @Autowired(CommandService)
-  commandService: CommandService;
+  private readonly commandService: CommandService;
 
   constructor() {
     super({
       id: 'file-search:splitToRight',
-      tooltip: localize('search.quickOpen.upDown'),
+      tooltip: localize('file-search.quickOpen.upDown'),
       class: getIcon('embed'),
     });
   }
 
   run(item: QuickOpenItem): Promise<void> {
-        // TODO: 读取 quickOpenPreview 配置
+    // TODO: 读取 quickOpenPreview 配置
     return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
       preview: false,
       // split: EditorGroupSplitAction.Bottom,
@@ -98,6 +98,7 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
   @Autowired()
   fileSearchActionLeftRight: FileSearchActionLeftRight;
 
+  // FIXME: 这个貌似并没有使用？@墨蛰
   @Autowired()
   fileSearchActionUpDown: FileSearchActionUpDown;
 
@@ -105,7 +106,7 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
     return true;
   }
 
-  getActions(item: QuickOpenItem) {
+  getActions() {
     return [this.fileSearchActionLeftRight];
   }
 }
@@ -114,35 +115,34 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
 export class FileSearchQuickCommandHandler {
 
   @Autowired(CommandService)
-  private commandService: CommandService;
+  private readonly commandService: CommandService;
 
   @Autowired(FileSearchServicePath)
-  private fileSearchService;
+  private readonly fileSearchService;
 
   @Autowired()
-  private labelService: LabelService;
+  private readonly labelService: LabelService;
 
   @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
+  private readonly workspaceService: IWorkspaceService;
 
   @Autowired(ILogger)
-  logger: ILogger;
+  private readonly logger: ILogger;
 
   @Autowired()
-  fileSearchActionProvider: FileSearchActionProvider;
+  private readonly fileSearchActionProvider: FileSearchActionProvider;
 
   @Autowired(CorePreferences)
-  corePreferences: CorePreferences;
+  private readonly corePreferences: CorePreferences;
 
   @Autowired(SearchPreferences)
-  searchPreferences: SearchPreferences;
+  private readonly searchPreferences: SearchPreferences;
 
-  private items: QuickOpenGroupItem[] = [];
   private cancelIndicator = new CancellationTokenSource();
   private currentLookFor: string = '';
   readonly default: boolean = true;
   readonly prefix: string = '...';
-  readonly description: string =  localize('search.command.fileOpen.description');
+  readonly description: string =  localize('file-search.command.fileOpen.description');
 
   getModel(): QuickOpenModel {
     return {
@@ -401,8 +401,8 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(quickFileOpen, {
-      execute: (...args: any[]) => {
-        this.quickOpenService.open('...');
+      execute: () => {
+        return this.quickOpenService.open('...');
       },
     });
   }

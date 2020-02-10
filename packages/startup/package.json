@@ -28,6 +28,7 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
+    "@ali/ide-addons": "1.7.7",
     "@ali/ide-activation-event": "1.7.7",
     "@ali/ide-core-browser": "1.7.7",
     "@ali/ide-core-common": "1.7.7",
@@ -39,6 +40,7 @@
     "@ali/ide-extension-manager": "1.7.7",
     "@ali/ide-extension-storage": "1.7.7",
     "@ali/ide-file-scheme": "1.7.7",
+    "@ali/ide-file-search": "1.7.7",
     "@ali/ide-file-service": "1.7.7",
     "@ali/ide-file-tree": "1.7.7",
     "@ali/ide-kaitian-extension": "1.7.7",

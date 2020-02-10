@@ -3,7 +3,7 @@ import * as shorid from 'shortid';
 import { stringify, parse } from '../common/utils';
 import { MultiWs } from './multi-ws';
 import { warning } from '@ali/ide-core-common/lib/utils/warning';
-import { getLogger, ILogServiceClient, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
+import { IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 
 let ReconnectingWebSocket = require('reconnecting-websocket');
 

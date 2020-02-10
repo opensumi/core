@@ -1,10 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { VSCodeContributeRunner } from './contributes';
-import { IExtension, IExtensionProps } from '../../../common';
+import { IExtension } from '../../../common';
 import { Disposable, ILogger } from '@ali/ide-core-browser';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { FileSearchServicePath, IFileSearchService } from '@ali/ide-search/lib/common';
+import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 import { getLogger, IEventBus, ExtensionEnabledEvent } from '@ali/ide-core-browser';
 
 @Injectable({multiple: true})
@@ -29,6 +29,7 @@ export class VSCodeMetaService extends Disposable {
   private eventBus: IEventBus;
 
   public async run(extension: IExtension) {
+    console.log(this.injector.get(FileSearchServicePath), 'xxx');
     try {
       const runner = this.injector.get(VSCodeContributeRunner, [extension]);
       this.addDispose(runner);
