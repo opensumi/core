@@ -12,10 +12,11 @@ import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
 import { ExtensionViewService } from './extension-view.service';
 import { ExtensionTreeViewModel, IExtensionTreeViewModel } from './extension-tree-view.model';
-import { TreeViewItem } from '../../../common/vscode';
+import { TreeViewItem, TreeViewOptions } from '../../../common/vscode';
 
 export interface ExtensionTabbarTreeViewProps {
   injector: Injector;
+  options: TreeViewOptions<any>;
   dataProvider: TreeViewDataProviderMain;
   viewState: ViewState;
   rendered: boolean;
@@ -60,6 +61,7 @@ const removeTreeDatas = (oldNodes: TreeNode<any>[], deleteNodes: TreeNode<any>[]
 
 export const ExtensionTabbarTreeView = observer(({
   dataProvider,
+  options,
   viewState,
   viewId,
 }: React.PropsWithChildren<ExtensionTabbarTreeViewProps>) => {
@@ -69,6 +71,8 @@ export const ExtensionTabbarTreeView = observer(({
   const scrollContainerStyle = { width, height };
   const injector = useInjectable(INJECTOR_TOKEN);
   const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId]);
+  const { canSelectMany, showCollapseAll }  = options;
+
   const initTreeData = () => {
     const model = copyMap(extensionTreeViewModel.getTreeViewModel(viewId));
     dataProvider.setVisible(viewId, true);
@@ -111,8 +115,8 @@ export const ExtensionTabbarTreeView = observer(({
       dataProvider.onTreeDataChanged((itemsToRefresh?: TreeViewItem) => {
         refresh(itemsToRefresh);
       });
-      dataProvider.onRevealEvent((itemId: string | number) => {
-        setSelected(itemId);
+      dataProvider.onRevealEvent((itemId: string) => {
+        setSelected([itemId]);
       });
     }
   }, [dataProvider]);
@@ -136,28 +140,33 @@ export const ExtensionTabbarTreeView = observer(({
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [{treeViewId: viewId, treeItemId: node.id}],
+      args: [{treeViewId: viewId, treeItemId: node.id}, nodes.map((node) => ({treeViewId: viewId, treeItemId: node.id}))],
     });
   };
 
   const onSelectHandler = (selectedNodes: TreeNode<any>[]) => {
     if (nodes && selectedNodes.length > 0) {
-      const node = selectedNodes[0];
-      setSelected(node.id);
-      if (node.command) {
-        if (injector) {
-          const commandService: CommandService = injector.get(CommandService);
-          commandService.executeCommand(node.command.id, ...(node.command.arguments || []));
-        }
-        setNodes(selectNode(node));
-        return;
-      } else {
-        if (ExpandableTreeNode.is(node)) {
-          onTwistieClickHandler(node);
+      const selectedNodeIds = selectedNodes.map((node) => node.id as string);
+      // 回传插件进程选中的节点
+      setSelected(selectedNodeIds);
+
+      // 仅在单选情况执行如下操作
+      // 复选情况下不执行command等其他操作，仅选中元素
+      if (selectedNodes.length === 1) {
+        const node = selectedNodes[0];
+        if (node.command) {
+          if (injector) {
+            const commandService: CommandService = injector.get(CommandService);
+            commandService.executeCommand(node.command.id, ...(node.command.arguments || []));
+          }
         } else {
-          setNodes(selectNode(node));
+          if (ExpandableTreeNode.is(node)) {
+            onTwistieClickHandler(node);
+            return;
+          }
         }
       }
+      setNodes(selectNode(selectedNodeIds));
     }
   };
 
@@ -188,14 +197,25 @@ export const ExtensionTabbarTreeView = observer(({
     }
   };
 
-  const selectNode = (node: TreeNode<any>) => {
+  const selectNode = (ids: string[]) => {
+    const idSet = new Set(ids);
     const newNodes = nodes.slice(0);
     for (const n of newNodes) {
-      if (n.id === node.id) {
+      if (idSet.has(n.id as string)) {
         n.selected = true;
       }
     }
     return newNodes;
+  };
+
+  const collapseAll = () => {
+    const newNodes = nodes.slice(0);
+    for (const n of newNodes) {
+      if (n.expanded) {
+        n.expanded = false;
+      }
+    }
+    setNodes(newNodes);
   };
 
   const getAllSubChildren = (node: TreeNode<any>, model: Map<string | number, IExtensionTreeViewModel>) => {
@@ -215,7 +235,6 @@ export const ExtensionTabbarTreeView = observer(({
   const getInlineMenu = (node: TreeNode<any>) => {
     const contextValue = node.contextValue;
     const menus = extensionViewService.getInlineMenus(contextValue);
-
     return [{
       location: ExpandableTreeNode.is(node) ? TreeViewActionTypes.TreeContainer : TreeViewActionTypes.TreeNode_Right,
       component: <InlineActionBar context={[{treeViewId: viewId, treeItemId: node.id}]} menus={menus} separator='inline' />,
@@ -288,11 +307,12 @@ export const ExtensionTabbarTreeView = observer(({
     });
   };
 
-  const setSelected = (id: string | number): Map<string | number, IExtensionTreeViewModel> => {
+  const setSelected = (ids: string[]): Map<string | number, IExtensionTreeViewModel> => {
     const model = extensionTreeViewModel.getTreeViewModel(viewId);
+    const idSet = new Set(ids);
     const copyModel = copyMap(model);
     for (const [key, value] of model) {
-      if (key === id) {
+      if (idSet.has(key as string)) {
         copyModel.set(key, {
           ...value,
           selected: true,
@@ -305,7 +325,7 @@ export const ExtensionTabbarTreeView = observer(({
       }
     }
     extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
-    dataProvider.setSelection(viewId, id);
+    dataProvider.setSelection(viewId, Array.from(idSet));
     return copyModel;
   };
 
@@ -358,6 +378,7 @@ export const ExtensionTabbarTreeView = observer(({
       onSelect={onSelectHandler}
       onContextMenu={onContextMenuHandler}
       onTwistieClick={onTwistieClickHandler}
+      multiSelectable={canSelectMany}
     />
   </div>;
 });
