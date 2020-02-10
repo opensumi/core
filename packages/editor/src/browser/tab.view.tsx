@@ -30,6 +30,7 @@ export interface ITabsProps {
 
 export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId, previewUri, onDbClick, hasFocus, group}: ITabsProps) => {
   const tabContainer = React.useRef<HTMLDivElement | null>();
+  const contentRef = React.useRef<HTMLDivElement>();
   const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
   const configContext = React.useContext(ConfigContext);
@@ -75,9 +76,30 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
   }, [currentResource, resources]);
 
   return <div className={styles.kt_editor_tabs}>
-    <div className={styles.kt_editor_tabs_scroll_wrapper}>
+    <div className={styles.kt_editor_tabs_scroll_wrapper} >
     <Scroll ref={(el) => el ? tabContainer.current = el.ref : null } className={styles.kt_editor_tabs_scroll}>
-    <div className={styles.kt_editor_tabs_content}>
+    <div className={styles.kt_editor_tabs_content} ref={contentRef as any}
+      onDragLeave={(e) => {
+        if (contentRef.current) {
+          contentRef.current.classList.remove(styles.kt_on_drag_over);
+        }
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (contentRef.current) {
+          contentRef.current.classList.add(styles.kt_on_drag_over);
+        }
+      }}
+      onDrop={(e) => {
+        if (contentRef.current) {
+          contentRef.current.classList.remove(styles.kt_on_drag_over);
+        }
+        if (onDrop) {
+          onDrop(e);
+        }
+      }}
+    >
     {resources.map((resource, i) => {
       let ref: HTMLDivElement | null;
       const decoration = resourceService.getResourceDecoration(resource.uri);
@@ -94,6 +116,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                   onMouseDown={(e) => onActivate(resource)}
                   onDragOver={(e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     if (ref) {
                       ref.classList.add(styles.kt_on_drag_over);
                     }
