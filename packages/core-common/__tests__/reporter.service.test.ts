@@ -14,7 +14,7 @@ describe('packages/core-common/__tests__/reporter.test.ts', () => {
       host: REPORT_HOST.NODE,
     });
   });
-  it('use time func ', async () => {
+  it.skip('use time func ', async () => {
     const reporterTimer = reporterService.time('test');
     // 执行耗时 3000 毫秒的方法
     await sleep(3000);
@@ -30,7 +30,7 @@ describe('packages/core-common/__tests__/reporter.test.ts', () => {
     expect(reporter.point.mock.calls[0][1].msg).toBe('vscode.vim');
     expect(reporter.point.mock.calls[0][1].metadata.host).toBe(REPORT_HOST.NODE);
   });
-  it('concurrency time reporter', async () => {
+  it.skip('concurrency time reporter', async () => {
     const func1 = async () => {
       await sleep(1000);
       const reporterTimer = reporterService.time('test');
