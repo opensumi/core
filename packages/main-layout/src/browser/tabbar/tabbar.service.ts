@@ -1,5 +1,5 @@
 import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection } from '@ali/ide-core-browser';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
@@ -38,9 +38,6 @@ export class TabbarService extends WithEventBus {
     setMaxSize: (lock: boolean | undefined) => void,
     hidePanel: (show?: boolean) => void,
   };
-
-  @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
@@ -132,10 +129,11 @@ export class TabbarService extends WithEventBus {
       }
     });
     // TODO 使用object来存state的话，初始containersMap为空，貌似就无法实现这个监听（无法引用到一个observable的属性）
+    // tslint:disable-next-line:no-unused-variable
     const size = this.state.size; // 监听state长度
     // 排序策略：默认根据priority来做一次排序，后续根据存储的index来排序，未存储过的（新插入的，比如插件）在渲染后（时序控制）始终放在最后
     return components.sort((pre, next) =>
-      this.getContainerState(next.options!.containerId).priority - this.getContainerState(pre.options!.containerId).priority);
+      this.getContainerState(pre.options!.containerId).priority - this.getContainerState(next.options!.containerId).priority);
   }
 
   registerResizeHandle(resizeHandle: ResizeHandle) {
@@ -184,7 +182,10 @@ export class TabbarService extends WithEventBus {
       }
     } else {
       // 渲染前根据priority排序
-      const insertIndex = this.sortedContainers.findIndex((item) => (item.options!.priority || 1) <= (componentInfo.options!.priority || 1)) + 1;
+      let insertIndex = this.sortedContainers.findIndex((item) => (item.options!.priority || 1) <= (componentInfo.options!.priority || 1));
+      if (insertIndex === -1) {
+        insertIndex = this.sortedContainers.length;
+      }
       this.sortedContainers.splice(insertIndex, 0, componentInfo);
       for (let i = insertIndex; i < this.sortedContainers.length; i++) {
         const info = this.sortedContainers[i];

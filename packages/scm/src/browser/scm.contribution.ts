@@ -84,7 +84,7 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
     registry.register('@ali/ide-scm', [], {
       iconClass: getIcon('scm'),
       title: localize('scm.title'),
-      priority: 5,
+      priority: 8,
       containerId: scmContainerId,
       component: SCMPanel,
       activateKeyBinding: 'ctrlcmd+shift+g',
