@@ -3,11 +3,12 @@ import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
-import { createContributionProvider, ContributionProvider, URI, uuid, ExtensionCandiDate } from '@ali/ide-core-common';
+import { createContributionProvider, ContributionProvider, URI, ExtensionCandiDate, IEventBus, EventBusImpl } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
 import { ICodeWindowOptions } from './types';
 import { ElectronMainModule } from '../electron-main-module';
 import { argv } from 'yargs';
+import { WindowDestroyedEvent, WindowCreatedEvent } from './services/events';
 
 export interface IWindowOpenOptions {
   windowId: number;
@@ -35,6 +36,9 @@ export class ElectronMainApp {
       ...this.parsedArgs.extensionCandidate.map((ext) => ({ path: ext, isBuiltin: true })),
     ];
     this.injector.addProviders({
+      token: IEventBus,
+      useClass: EventBusImpl,
+    }, {
       token: ElectronAppConfig,
       useValue: config,
     }, {
@@ -111,9 +115,11 @@ export class ElectronMainApp {
     this.codeWindows.set(windowId, window);
     window.addDispose({
       dispose: () => {
+        this.injector.get(IEventBus).fire(new WindowDestroyedEvent(window));
         this.codeWindows.delete(windowId);
       },
     });
+    this.injector.get(IEventBus).fire(new WindowCreatedEvent(window));
 
     return window;
   }

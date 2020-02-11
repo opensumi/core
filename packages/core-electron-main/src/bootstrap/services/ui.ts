@@ -1,15 +1,39 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
 import { BrowserWindow, dialog, shell, webContents } from 'electron';
-import { ElectronMainMenuService } from './menu';
-import { Domain, isWindows } from '@ali/ide-core-common';
+import { Domain, isWindows, IEventBus } from '@ali/ide-core-common';
 import { stat } from 'fs-extra';
 import { dirname } from 'path';
 import { spawn } from 'child_process';
 import * as semver from 'semver';
+import { WindowCreatedEvent } from './events';
 
 @Injectable()
-export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {
+export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenStatusChange'> {
+
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
+
+  constructor() {
+    super();
+    this.eventBus.on(WindowCreatedEvent, (e) => {
+      const window = e.payload;
+      window.getBrowserWindow().on('enter-full-screen', () => {
+        this.fireFullScreenChangedEvent(window.getBrowserWindow().id, true);
+      });
+      window.getBrowserWindow().on('leave-full-screen', () => {
+        this.fireFullScreenChangedEvent(window.getBrowserWindow().id, false);
+      });
+    });
+  }
+
+  fireFullScreenChangedEvent(windowId, isFullScreen) {
+    this.eventEmitter.fire('fullScreenStatusChange', windowId, isFullScreen);
+  }
+
+  async isFullScreen(windowId) {
+    return BrowserWindow.fromId(windowId).isFullScreen();
+  }
 
   async maximize(windowId) {
     BrowserWindow.fromId(windowId).maximize();

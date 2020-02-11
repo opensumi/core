@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import * as styles from './header.module.less';
-import { useInjectable, IEventBus, MaybeNull, isWindows, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv } from '@ali/ide-core-browser';
+import { useInjectable, MaybeNull, isWindows, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IWindowService } from '@ali/ide-window';
@@ -18,6 +18,25 @@ export const ElectronHeaderBar = observer(() => {
   const windowService: IWindowService = useInjectable(IWindowService);
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
 
+  const [isFullScreen, setFullScreen] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    uiService.isFullScreen(electronEnv.currentWindowId).then((res) => {
+      setFullScreen(res);
+    });
+    const listener = uiService.on('fullScreenStatusChange', (windowId, res) => {
+      if (windowId === electronEnv.currentWindowId) {
+        setFullScreen(res);
+      }
+    });
+    return () => {
+      listener.dispose();
+    };
+  }, []);
+  // 在 Mac 下，如果是全屏状态，隐藏顶部标题栏
+  if (isOSX && isFullScreen) {
+    return <div></div>;
+  }
   return <div className={styles.header} onDoubleClick={() => {
     uiService.maximize((global as any).currentWindowId);
     state.maximized = (global as any).electronEnv.isMaximized();
