@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as styles from './extension-view.module.less';
 import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
-import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined } from '@ali/ide-core-common';
+import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined, CommandRegistry, Command } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
@@ -72,8 +72,9 @@ export const ExtensionTabbarTreeView = observer(({
   const injector = useInjectable(INJECTOR_TOKEN);
   const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId]);
   const menuRegistry: IMenuRegistry = useInjectable(IMenuRegistry);
+  const commandRegistry: CommandRegistry = useInjectable(CommandRegistry);
   const { canSelectMany, showCollapseAll }  = options;
-
+  const TREE_VIEW_COMMAND_PREFIX = 'treeView';
   const initTreeData = () => {
     const model = copyMap(extensionTreeViewModel.getTreeViewModel(viewId));
     dataProvider.setVisible(viewId, true);
@@ -209,23 +210,31 @@ export const ExtensionTabbarTreeView = observer(({
     return newNodes;
   };
 
-  // const collapseAll = () => {
-  //   const newNodes = nodes.slice(0);
-  //   for (const n of newNodes) {
-  //     if (n.expanded) {
-  //       n.expanded = false;
-  //     }
-  //   }
-  //   setNodes(newNodes);
-  // };
+  const collapseAll = () => {
+    const newNodes = nodes.slice(0);
+    for (const n of newNodes) {
+      if (n.expanded) {
+        n.expanded = false;
+      }
+    }
+    setNodes(newNodes);
+  };
 
   React.useEffect(() => {
+
     if (showCollapseAll) {
+      const collapseCommand: Command = {
+        id: `${TREE_VIEW_COMMAND_PREFIX}_COLLAPSE_ALL_${viewId}`,
+      };
+      commandRegistry.registerCommand(collapseCommand, {
+        execute: () => {
+          collapseAll();
+        },
+      });
       menuRegistry.registerMenuItem(MenuId.ViewTitle, {
         iconClass: getIcon('collapse-all'),
         when: `view == ${viewId}`,
-        // @魁武 修改命令
-        command: 'vscode.diff',
+        command: collapseCommand.id,
       });
     }
   }, []);
