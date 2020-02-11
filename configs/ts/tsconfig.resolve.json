@@ -219,12 +219,6 @@
       "@ali/ide-toolbar/lib/*": [
         "../packages/toolbar/src/*"
       ],
-      "@ali/ide-navigation-bar": [
-        "../packages/navigation-bar/src/index.ts"
-      ],
-      "@ali/ide-navigation-bar/lib/*": [
-        "../packages/navigation-bar/src/*"
-      ],
       "@ali/ide-markers": [
         "../packages/markers/src/index.ts"
       ],

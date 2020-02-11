@@ -51,7 +51,6 @@
     "@ali/ide-monaco": "1.7.7",
     "@ali/ide-monaco-enhance": "1.7.7",
     "@ali/ide-markers": "1.7.7",
-    "@ali/ide-navigation-bar": "1.7.7",
     "@ali/ide-opened-editor": "1.7.7",
     "@ali/ide-output": "1.7.7",
     "@ali/ide-overlay": "1.7.7",

@@ -130,9 +130,6 @@
       "path": "./references/tsconfig.electron-basic.json"
     },
     {
-      "path": "./references/tsconfig.navigation-bar.json"
-    },
-    {
       "path": "./references/tsconfig.terminal-next.json"
     },
     {
