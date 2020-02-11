@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@ali/common-di';
-// import { StatusBar } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 
 import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IEditor, CursorStatus, ILanguageService } from '../common';
