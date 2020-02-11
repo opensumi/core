@@ -60,7 +60,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       renderLineHighlight: 'none',
       ignoreTrimWhitespace: false,
       ...options,
-    }, { ...this.overrideServices, ...overrides});
+    } as any, { ...this.overrideServices, ...overrides});
     return editor;
   }
 

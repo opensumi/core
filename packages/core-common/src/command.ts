@@ -39,6 +39,11 @@ export interface Command {
    * 在任意语言下都相同的别名
    */
   alias?: string;
+  /**
+   * 是否启用该命令，值为 when 表达式
+   * 这个值只影响 UI 是否展示 （命令面板或者菜单）
+   */
+  enablement?: string;
 }
 
 /**

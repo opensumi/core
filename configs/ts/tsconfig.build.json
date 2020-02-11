@@ -160,6 +160,9 @@
       "path": "./references/tsconfig.addons.json"
     },
     {
+      "path": "./references/tsconfig.comments.json"
+    },
+    {
       "path": "./references/tsconfig.startup.json"
     }
   ]

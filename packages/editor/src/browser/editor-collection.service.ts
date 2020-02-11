@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection, Disposable } from '@ali/ide-core-common';
-import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions } from '../common';
+import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, EditorType } from '../common';
 import { IRange, MonacoService, PreferenceService, corePreferenceSchema } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
@@ -206,6 +206,10 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
     return this.monacoEditor.getId();
   }
 
+  getType() {
+    return EditorType.CODE;
+  }
+
   getSelections() {
     return this.monacoEditor.getSelections() || [];
   }
@@ -245,6 +249,11 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
         selectionLength: selection ? this.currentDocumentModel.getMonacoModel().getValueInRange(selection).length : 0,
       });
     }));
+    this.addDispose({
+      dispose: () => {
+        this.monacoEditor.dispose();
+      },
+    });
   }
 
   layout(): void {
@@ -263,7 +272,6 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
     super.dispose();
     this.saveCurrentState();
     this.collectionService.removeEditors([this]);
-    this.monacoEditor.dispose();
     this._disposed = true;
     this.toDispose.forEach((disposable) => disposable.dispose());
   }
@@ -437,6 +445,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       getId() {
         return diffEditor.monacoDiffEditor.getOriginalEditor().getId();
       },
+      getType() {
+        return EditorType.ORIGINAL_DIFF;
+      },
       get currentDocumentModel() {
         return diffEditor.originalDocModel;
       },
@@ -503,6 +514,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     this.modifiedEditor = {
       getId() {
         return diffEditor.monacoDiffEditor.getModifiedEditor().getId();
+      },
+      getType() {
+        return EditorType.MODIFIED_DIFF;
       },
       get currentDocumentModel() {
         return diffEditor.modifiedDocModel;

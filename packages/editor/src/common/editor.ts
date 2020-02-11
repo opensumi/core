@@ -10,12 +10,29 @@ export interface CursorStatus {
   selectionLength: number;
 }
 
+export enum EditorType {
+  /**
+   * 普通编辑器
+   */
+  CODE,
+  /**
+   * 原始对比编辑器(左侧)
+   */
+  ORIGINAL_DIFF,
+  /**
+   * 修改对比编辑器(右侧)
+   */
+  MODIFIED_DIFF,
+}
+
 /**
  * 一个IEditor代表了一个最小的编辑器单元，可以是CodeEditor中的一个，也可以是DiffEditor中的两个
  */
 export interface IEditor {
 
   getId(): string;
+
+  getType(): EditorType;
   /**
    * editor中打开的documentModel
    */
@@ -40,7 +57,7 @@ export interface IEditor {
 
   setSelection(selection: IRange | ISelection);
 
-  updateOptions(editorOptions: any, modelOptions: any);
+  updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions);
 
   save(): Promise<void>;
 

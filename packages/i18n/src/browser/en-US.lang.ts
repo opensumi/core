@@ -502,5 +502,10 @@ export const localizationBundle = {
     'kaitianExtension.invalidExthostReload.confirm.ok': 'Refresh',
     'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'kaitianExtension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
+
+    'comments': 'Comments',
+    'comments.reply.placeholder': 'Reply',
+    'comments.participants': 'Participants',
+    'comments.zone.title': 'Start discussion',
   },
 };
