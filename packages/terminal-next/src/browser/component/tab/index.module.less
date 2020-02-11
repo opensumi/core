@@ -2,18 +2,21 @@
   display: flex;
   font-size: 12px;
   overflow: scroll;
+  height: 28px;
 }
 
 .item_container {
   padding: 0px 12px 0px 12px;
   cursor: pointer;
   user-select: none;
+  height: 28px;
   display: flex;
   color: var(--kt-panelTab-inactiveForeground);
   background-color: var(--kt-panelTab-inactiveBackground);
   border-right: 1px solid var(--kt-panelTab-border);
   max-width: 800px;
   min-width: 105px;
+  margin-top: 1px;
 
   :last-child {
     transition: opacity 0.2s ease-in-out;
@@ -35,7 +38,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 28px;
+  line-height: 20px;
+  height: 20px;
+  position: relative;
+  bottom: -4px;
   text-indent: 1px;
 }
 
@@ -55,10 +61,12 @@
 .item_selected {
   color: var(--kt-panelTab-activeForeground);
   background-color: var(--kt-panelTab-activeBackground);
+  border-top: 1px solid var(--kt-panelTab-activeBorder);
+  margin-top: 0px;
 }
 
 .item_add {
-  padding: 0 16px;
+  padding: 0 12px;
   line-height: 28px;
   cursor: pointer;
   user-select: none;
