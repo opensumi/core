@@ -22,7 +22,6 @@
     "@ali/ide-core-common": "1.7.7",
     "@ali/ide-core-node": "1.7.7",
     "@ali/ide-overlay": "1.7.7",
-    "@ali/ide-webview": "1.7.7",
     "@ali/ide-editor": "1.7.7"
   },
   "devDependencies": {

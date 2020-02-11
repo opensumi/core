@@ -21,8 +21,6 @@
   "dependencies": {
     "@ali/ide-core-common": "1.7.7",
     "@ali/ide-core-node": "1.7.7",
-    "@ali/ide-static-resource": "1.7.7",
-    "@ali/ide-status-bar": "1.7.7",
     "@ali/ide-theme": "1.7.7",
     "@ali/vscode-jsonrpc": "^4.0.1",
     "@ali/ide-workspace": "1.7.7",

@@ -23,8 +23,6 @@
     "@ali/ide-core-common": "1.7.7",
     "@ali/ide-core-node": "1.7.7",
     "@ali/ide-editor": "1.7.7",
-    "@ali/ide-explorer": "1.7.7",
-    "@ali/ide-file-service": "1.7.7",
     "@ali/ide-logs": "1.7.7",
     "@ali/ide-main-layout": "1.7.7",
     "@ali/ide-overlay": "1.7.7",

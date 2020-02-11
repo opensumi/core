@@ -22,10 +22,7 @@
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
     "@ali/ide-core-common": "1.7.7",
-    "@ali/ide-core-node": "1.7.7",
-    "@ali/ide-main-layout": "1.7.7",
-    "@ali/ide-quick-open": "1.7.7",
-    "@ali/ide-theme": "1.7.7"
+    "@ali/ide-core-node": "1.7.7"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.7.7",
