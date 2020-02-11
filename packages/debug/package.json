@@ -30,7 +30,6 @@
     "@ali/ide-core-browser": "1.7.7",
     "@ali/ide-dev-tool": "^1.1.0",
     "@ali/ide-workspace-edit": "1.7.7",
-    "@ali/ide-status-bar": "1.7.7",
     "@ali/ide-editor": "1.7.7",
     "@ali/ide-file-service": "1.7.7",
     "@ali/ide-main-layout": "1.7.7",
