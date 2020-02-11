@@ -44,6 +44,8 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   @Autowired(EditorCollectionService)
   editorService: EditorCollectionService;
 
+  private changeIndex = 0;
+
   // TODO: dynamic
   static heightInLines = 18;
 
@@ -287,11 +289,34 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     }
   }
 
+  getNextChangeLineNumber(): number {
+    if (this.changes.length === 0) {
+      return 0;
+    }
+    if (this.changeIndex + 1 === this.changes.length) {
+      this.changeIndex = 0;
+    }
+    const change = this.changes[++this.changeIndex];
+    return change.modifiedStartLineNumber;
+  }
+
+  getPreviousChangeLineNumber(): number {
+    if (this.changes.length === 0) {
+      return 0;
+    }
+    if (this.changeIndex - 1 <= 0) {
+      this.changeIndex = this.changes.length;
+    }
+    const change = this.changes[--this.changeIndex];
+    return change.modifiedStartLineNumber;
+  }
+
   dispose(): void {
     super.dispose();
 
     this._editorModel = null;
     this._originalModel = null;
+    this.changeIndex = 0;
 
     if (this.diffDelayer) {
       this.diffDelayer.cancel();

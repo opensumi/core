@@ -178,6 +178,8 @@ export const localizationBundle = {
     'scm.provider.title': '代码仓库列表',
     'scm.provider.empty': '没有可用的源代码仓库',
     'scm.provider.init': '点击初始化仓库',
+    'scm.diff.change.next': '下一个变化',
+    'scm.diff.change.previous': '上一个变化',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',

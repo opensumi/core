@@ -130,7 +130,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     const models = this.editorService.editorGroups
 
       // only interested in code editor widgets
-      .filter((editorGroup) => editorGroup.currentOpenType && editorGroup.currentOpenType.type === 'code')
+      .filter((editorGroup) => editorGroup.currentOpenType && ['code', 'diff'].includes(editorGroup.currentOpenType.type))
       // set model registry and map to models
       .map((editorGroup) => {
         const currentEditor = editorGroup.currentEditor as IMonacoImplEditor;
@@ -255,6 +255,11 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     }
 
     return item.model;
+  }
+
+  public get curModel(): DirtyDiffModel | null {
+    const curEditorModel = this.editorService.currentEditor?.monacoEditor.getModel();
+    return curEditorModel ? this.getModel(curEditorModel) : null;
   }
 
   dispose(): void {

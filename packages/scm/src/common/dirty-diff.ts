@@ -2,6 +2,8 @@ import { IChange, Command } from '@ali/ide-core-common';
 
 export interface IDirtyDiffModel {
   changes: IChange[];
+  getNextChangeLineNumber(): number;
+  getPreviousChangeLineNumber(): number;
   findNextClosestChange(lineNumber: number, inclusive?: boolean): number;
   findNextClosestChangeLineNumber(lineNumber: number, inclusive?: boolean): number;
   findPreviousClosestChange(lineNumber: number, inclusive?: boolean): number;
@@ -15,4 +17,12 @@ export interface IDirtyDiffWorkbenchController {
 
 export const OPEN_DIRTY_DIFF_WIDGET: Command = {
   id: 'OPEN_DIRTY_DIFF_WIDGET',
+};
+
+export const GOTO_NEXT_CHANGE: Command = {
+  id: 'workbench.action.compareEditor.nextChange',
+};
+
+export const GOTO_PREVIOUS_CHANGE: Command = {
+  id: 'workbench.action.compareEditor.previousChange',
 };
