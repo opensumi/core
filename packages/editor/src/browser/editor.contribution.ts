@@ -1,8 +1,8 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, IEditorGroup } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService, FILE_COMMANDS } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
@@ -273,7 +273,6 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
-          uri = group && group.currentResource && group.currentResource.uri,
         } = resource;
         if (group) {
           await group.closeAll();
@@ -286,7 +285,6 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         resource = resource || {};
         const {
           group = this.workbenchEditorService.currentEditorGroup,
-          uri = group && group.currentResource && group.currentResource.uri,
         } = resource;
         if (group) {
           await group.closeSaved();
@@ -546,9 +544,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }
         const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) - 1;
         if (editorGroup.resources[index]) {
-          return editorGroup.open(editorGroup.resources[index].uri);
+          return editorGroup.open(editorGroup.resources[index].uri, {focus: true});
         } else {
-          return editorGroup.open(editorGroup.resources[0].uri);
+          return editorGroup.open(editorGroup.resources[0].uri, {focus: true});
         }
       },
     });
@@ -561,9 +559,9 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }
         const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) + 1;
         if (editorGroup.resources[index]) {
-          return editorGroup.open(editorGroup.resources[index].uri);
+          return editorGroup.open(editorGroup.resources[index].uri, {focus: true});
         } else {
-          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri);
+          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri, {focus: true});
         }
       },
     });
@@ -576,12 +574,12 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }
         const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) + 1;
         if (editorGroup.resources[index]) {
-          return editorGroup.open(editorGroup.resources[index].uri);
+          return editorGroup.open(editorGroup.resources[index].uri, {focus: true});
         } else {
           const nextEditorGroupIndex = editorGroup.index === this.workbenchEditorService.editorGroups.length - 1 ? 0 : editorGroup.index + 1;
           const nextEditorGroup = this.workbenchEditorService.sortedEditorGroups[nextEditorGroupIndex];
           nextEditorGroup.focus();
-          return nextEditorGroup.open(nextEditorGroup.resources[0].uri);
+          return nextEditorGroup.open(nextEditorGroup.resources[0].uri, {focus: true});
         }
       },
     });
@@ -594,12 +592,12 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         }
         const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) - 1;
         if (editorGroup.resources[index]) {
-          return editorGroup.open(editorGroup.resources[index].uri);
+          return editorGroup.open(editorGroup.resources[index].uri, {focus: true});
         } else {
           const nextEditorGroupIndex = editorGroup.index === 0 ? this.workbenchEditorService.editorGroups.length - 1 : editorGroup.index - 1;
           const nextEditorGroup = this.workbenchEditorService.sortedEditorGroups[nextEditorGroupIndex];
           nextEditorGroup.focus();
-          return nextEditorGroup.open(nextEditorGroup.resources[nextEditorGroup.resources.length - 1].uri);
+          return nextEditorGroup.open(nextEditorGroup.resources[nextEditorGroup.resources.length - 1].uri, {focus: true});
         }
       },
     });
@@ -608,7 +606,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       execute: async () => {
         const editorGroup = this.workbenchEditorService.currentEditorGroup;
         if (editorGroup.resources.length > 0) {
-          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri);
+          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri, {focus: true});
         }
       },
     });
@@ -635,7 +633,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
         const editorGroup = this.workbenchEditorService.currentEditorGroup;
         const target = editorGroup.resources[index];
         if (target) {
-          await editorGroup.open(target.uri);
+          await editorGroup.open(target.uri, {focus: true});
         }
       },
     });
