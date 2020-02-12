@@ -199,6 +199,7 @@ export const FloatDebugToolbarView = observer(() => {
       app.container,
     );
   } else {
+    controller.enable = false;
     return null;
   }
 });
