@@ -46,7 +46,6 @@ import {
   getPreferenceLanguageId,
   isElectronRenderer,
   IDisposable,
-  PreferenceService,
   CorePreferences,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -77,14 +76,12 @@ import { UriComponents } from '../common/vscode/ext-types';
 import { IThemeService, IIconService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
-import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
 import { createBrowserApi } from './kaitian-browser';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExtensionCandiDate, localize } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
 import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution';
 
-const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 const LOAD_FAILED_CODE = 'load';
 
 function getAMDRequire() {
@@ -183,16 +180,8 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
 
-  @Autowired(PreferenceService)
-  private readonly preferenceService: PreferenceService;
-
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
-
-  // @Autowired()
-  // viewRegistry: ViewRegistry;
-  @Autowired(IToolBarViewService)
-  private toolBarViewService: IToolBarViewService;
 
   @Autowired()
   editorComponentRegistry: EditorComponentRegistry;
@@ -700,6 +689,7 @@ export class ExtensionServiceImpl implements ExtensionService {
    * @param extension
    * @param componentId
    */
+  // tslint:disable-next-line:no-unused-variable
   private createExtensionExtendProtocol(extension: IExtension, componentId: string) {
     const { id: extensionId } = extension;
     const rpcProtocol = this.protocol;

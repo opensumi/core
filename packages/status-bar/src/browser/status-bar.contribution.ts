@@ -10,6 +10,10 @@ class StatusBarCommand {
   static changeColor = {
     id: 'statusbar.changeColor',
   };
+
+  static changeBackgroundColor = {
+    id: 'statusbar.changeBackgroundColor',
+  };
 }
 
 @Domain(ComponentContribution, CommandContribution)
@@ -27,9 +31,15 @@ export class StatusBarContribution implements ComponentContribution, CommandCont
   }
 
   registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(StatusBarCommand.changeBackgroundColor, {
+      execute: (backgroundColor: string) => {
+        return this.statusBarService.setBackgroundColor(backgroundColor);
+      },
+    });
+
     commands.registerCommand(StatusBarCommand.changeColor, {
       execute: (color: string) => {
-        return this.statusBarService.setBackgroundColor(color);
+        return this.statusBarService.setColor(color);
       },
     });
   }

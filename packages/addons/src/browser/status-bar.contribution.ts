@@ -11,11 +11,11 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
 
   @OnEvent(BrowserConnectionOpenEvent)
   handleBrowserConnectionOpen() {
-    this.commandService.executeCommand('statusbar.changeColor', 'var(--statusBar-background)');
+    this.commandService.executeCommand('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
   }
 
   @OnEvent(BrowserConnectionCloseEvent)
   handleBrowserConnectionClose() {
-    this.commandService.executeCommand('statusbar.changeColor', 'var(--kt-statusbar-offline-background)');
+    this.commandService.executeCommand('statusbar.changeBackgroundColor', 'var(--kt-statusbar-offline-background)');
   }
 }
