@@ -294,7 +294,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
       return 0;
     }
     if (this.changeIndex + 1 === this.changes.length) {
-      this.changeIndex = 0;
+      this.changeIndex = -1;
     }
     const change = this.changes[++this.changeIndex];
     return change.modifiedStartLineNumber;
@@ -304,7 +304,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     if (this.changes.length === 0) {
       return 0;
     }
-    if (this.changeIndex - 1 <= 0) {
+    if (this.changeIndex - 1 < 0) {
       this.changeIndex = this.changes.length;
     }
     const change = this.changes[--this.changeIndex];
