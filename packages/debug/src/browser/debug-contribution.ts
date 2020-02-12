@@ -224,8 +224,8 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.debugModel.init(session);
       }
       this.firstSessionStart = false;
-      this.commandService.executeCommand('statusbar.changeBackgroundColor', 'var(--statusBar-debuggingBackground)');
-      this.commandService.executeCommand('statusbar.changeColor', 'var(--statusBar-debuggingForeground)');
+      this.commandService.tryExecuteCommand('statusbar.changeBackgroundColor', 'var(--statusBar-debuggingBackground)');
+      this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-debuggingForeground)');
     });
     this.sessionManager.onDidStopDebugSession((session) => {
       const { openDebug } = session.configuration;
@@ -235,8 +235,8 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     });
     this.sessionManager.onDidDestroyDebugSession((session) => {
       if (this.sessionManager.sessions.length === 0) {
-        this.commandService.executeCommand('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
-        this.commandService.executeCommand('statusbar.changeColor', 'var(--statusBar-foreground)');
+        this.commandService.tryExecuteCommand('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
+        this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-foreground)');
       }
     });
     this.debugEditorController.init();
