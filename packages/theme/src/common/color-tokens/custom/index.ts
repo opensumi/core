@@ -92,6 +92,12 @@ export const ktPanelTabActionIconForeground = registerColor('kt.panelTabActionIc
   hc: foreground,
 }, localize('panelTabActionIcon.foreground', 'Panel tab close icon color.'));
 
+export const ktPanelTabActiveBorder = registerColor('kt.panelTab.activeBorder', {
+  dark: ACTIVITY_BAR_BACKGROUND,
+  light: ACTIVITY_BAR_BACKGROUND,
+  hc: ACTIVITY_BAR_BACKGROUND,
+}, localize('panelTab.border', 'Panel tab border color.'));
+
 export const ktPanelTabBorder = registerColor('kt.panelTab.border', {
   dark: ACTIVITY_BAR_BACKGROUND,
   light: ACTIVITY_BAR_BACKGROUND,
