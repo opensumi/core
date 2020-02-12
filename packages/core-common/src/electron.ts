@@ -9,7 +9,7 @@ export interface IElectronMainApi<Events> {
 }
 
 
-export interface IElectronMainUIService extends IElectronMainApi<void> {
+export interface IElectronMainUIService extends IElectronMainApi<'fullScreenStatusChange'> {
 
   openItem(path: string): void;
 
@@ -18,6 +18,8 @@ export interface IElectronMainUIService extends IElectronMainApi<void> {
   moveToTrash(path: string): Promise<void>;
 
   maximize(windowId: number): Promise<void>;
+
+  isFullScreen(windowId: number): Promise<boolean>;
 
   showOpenDialog(windowId: number, options:Electron.OpenDialogOptions ): Promise<string[] >;
 
