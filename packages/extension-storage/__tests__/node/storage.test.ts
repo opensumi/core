@@ -9,6 +9,7 @@ import * as temp from 'temp';
 import * as path from 'path';
 import { FileServiceModule } from '@ali/ide-file-service/lib/node';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
+import { AppConfig } from '@ali/ide-core-node';
 
 process.on('unhandledRejection', (reason) => {
   console.error(reason);
@@ -30,6 +31,9 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
     injector.addProviders({
       token: ILogServiceManager,
       useClass: MockLoggerManageClient,
+    }, {
+      token: AppConfig,
+      useValue: {},
     });
   };
 
@@ -83,6 +87,9 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
     injector.addProviders({
       token: ILogServiceManager,
       useClass: MockLoggerManageClient,
+    }, {
+      token: AppConfig,
+      useValue: {},
     });
   };
 

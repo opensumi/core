@@ -1,29 +1,32 @@
 
 import * as path from 'path';
-import * as fs from 'fs-extra';
-import * as temp from 'temp';
-import { tmpdir } from 'os';
+// import * as fs from 'fs-extra';
+// import * as temp from 'temp';
+// import { tmpdir } from 'os';
 import { Injector } from '@ali/common-di';
-import { URI, FileUri } from '@ali/ide-core-node';
+import { URI, AppConfig } from '@ali/ide-core-node';
 import { IFileService } from '../../../src/common';
 import { createNodeInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { FileServiceModule } from '../../../src/node';
-import { FileStat } from '../../../src/common/files';
-import { encode } from '../../../src/node/encoding';
+// import { FileStat } from '../../../src/common/files';
+// import { encode } from '../../../src/node/encoding';
 
 function getUriString(pathString): string {
   return URI.file(pathString).toString();
 }
 
 describe('encoding', () => {
-  let root: URI;
+  // let root: URI;
   let fileService: IFileService;
   let injector: Injector;
 
   beforeEach(() => {
-    root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
+    // root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
 
-    injector = createNodeInjector([FileServiceModule]);
+    injector = createNodeInjector([FileServiceModule], new Injector([{
+      token: AppConfig,
+      useValue: {},
+    }]));
 
     fileService = injector.get(IFileService);
   });

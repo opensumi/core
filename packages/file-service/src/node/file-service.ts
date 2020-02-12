@@ -17,7 +17,7 @@ import {
   isArray,
   isEmptyObject,
 } from '@ali/ide-core-common';
-import { FileUri, INodeLogger } from '@ali/ide-core-node';
+import { FileUri, INodeLogger, AppConfig } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection'
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import { FileChangeEvent, WatchOptions } from '../common/file-service-watcher-protocol';
@@ -73,7 +73,10 @@ export class FileService extends RPCService implements IFileService {
   protected workspaceRoots: string[] = [];
 
   @Autowired(INodeLogger)
-  logger: INodeLogger;
+  private readonly logger: INodeLogger;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
@@ -565,7 +568,7 @@ export class FileService extends RPCService implements IFileService {
   }
 
   private initProvider() {
-    this.registerProvider(Schemas.file, new DiskFileSystemProvider());
+    this.registerProvider(Schemas.file, new DiskFileSystemProvider({ useExperimentalEfsw: this.appConfig.useExperimentalEfsw }));
     this.registerProvider('debug', new ShadowFileSystemProvider());
   }
 

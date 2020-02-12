@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@ali/common-di';
 import { StorageModule } from '../../src/node';
 import { IStorageServer, IStoragePathServer, IUpdateRequest, IWorkspaceStorageServer, IGlobalStorageServer } from '../../src/common';
-import { URI, FileUri } from '@ali/ide-core-node';
+import { URI, FileUri, AppConfig } from '@ali/ide-core-node';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -41,6 +41,11 @@ describe('WorkspaceStorage should be work', () => {
       FileServiceModule,
       StorageModule,
     ]);
+
+    injector.addProviders({
+      token: AppConfig,
+      useValue: {},
+    });
 
     injector.overrideProviders({
       token: IStoragePathServer,

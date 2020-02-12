@@ -1,15 +1,14 @@
 import { Injector } from '@ali/common-di';
-import { FileSystemNodeOptions, FileServiceModule } from '../../src/node';
+import { FileServiceModule } from '../../src/node';
 import { IFileService } from '../../src/common';
-import { URI, FileUri } from '@ali/ide-core-node';
+import { URI, FileUri, AppConfig } from '@ali/ide-core-node';
 import { isWindows } from '../../../core-common';
-// import * as os from 'os';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 // import { servicePath as FileTreeServicePath } from '@ali/ide-file-tree'
 // import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
+// import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
 
 // tslint:disable:variable-name
 
@@ -23,7 +22,10 @@ describe('FileService', () => {
   beforeEach(() => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
 
-    injector = createNodeInjector([FileServiceModule]);
+    injector = createNodeInjector([FileServiceModule], new Injector([{
+      token: AppConfig,
+      useValue: { useExperimentalEfsw: true },
+    }]));
 
     // injector = new Injector([{
     //   token: 'FileServiceOptions',

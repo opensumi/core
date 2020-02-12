@@ -4,7 +4,8 @@ const disableJSDOM = enableJSDOM();
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, ResourceProvider, PreferenceScope, injectPreferenceSchemaProvider, CorePreferences, DefaultResourceProvider } from '@ali/ide-core-browser';
+import { PreferenceService, ClientAppConfigProvider, FileUri, Disposable, DisposableCollection, ILogger, ResourceProvider, PreferenceScope, injectPreferenceSchemaProvider, DefaultResourceProvider } from '@ali/ide-core-browser';
+import { AppConfig } from '@ali/ide-core-node';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IMessageService } from '@ali/ide-overlay';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -413,6 +414,10 @@ describe('Launch Preferences', () => {
           },
           {
             token: IMessageService,
+            useValue: {},
+          },
+          {
+            token: AppConfig,
             useValue: {},
           },
           {

@@ -24,6 +24,7 @@
     "@ali/ide-core-common": "1.7.7",
     "@ali/ide-core-node": "1.7.7",
     "drivelist": "^6.4.3",
+    "efsw": "^1.0.3",
     "file-type": "^12.0.0",
     "iconv-lite": "^0.5.0",
     "jschardet": "^2.1.0",
