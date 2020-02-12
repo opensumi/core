@@ -1,4 +1,4 @@
-import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
+import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Event, IEventBus, CommandService } from '@ali/ide-core-common';
 import { Disposable, DisposableStore, DisposableCollection } from '@ali/ide-core-common/lib/disposable';
@@ -43,6 +43,9 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   @Autowired(WorkbenchEditorService)
   editorService: WorkbenchEditorService;
 
+  @Autowired(IEditorFeatureRegistry)
+  editorFeatureRegistry: IEditorFeatureRegistry;
+
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
@@ -65,8 +68,10 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     onDidChangeDiffWidthConfiguration(this.onDidChangeDiffWidthConfiguration, this);
     this.onDidChangeDiffWidthConfiguration();
 
-    this.addDispose(monaco.editor.onDidCreateEditor((codeEditor) => {
-      this.attachEvents(codeEditor);
+    this.addDispose(this.editorFeatureRegistry.registerEditorFeatureContribution({
+      contribute: (editor) => {
+        return this.attachEvents(editor.monacoEditor);
+      },
     }));
 
     this.addDispose(this.scmPreferences.onPreferenceChanged((event) => {
@@ -135,7 +140,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       .map((editorGroup) => {
         const currentEditor = editorGroup.currentEditor as IMonacoImplEditor;
         if (currentEditor) {
-          const codeEditor = currentEditor.monacoEditor;
+          // const codeEditor = currentEditor.monacoEditor;
           // const controller = DirtyDiffController.get(codeEditor);
           // controller.modelRegistry = this;
           return currentEditor.currentDocumentModel && currentEditor.currentDocumentModel.getMonacoModel();
@@ -245,6 +250,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     disposeCollecton.push(codeEditor.onDidDispose(() => {
       disposeCollecton.dispose();
     }));
+    return disposeCollecton;
   }
 
   getModel(editorModel: monaco.editor.ITextModel): DirtyDiffModel | null {

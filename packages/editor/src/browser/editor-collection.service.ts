@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection, Disposable } from '@ali/ide-core-common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, EditorType } from '../common';
-import { IRange, MonacoService, PreferenceService, corePreferenceSchema } from '@ali/ide-core-browser';
+import { IRange, MonacoService, PreferenceService } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
 import { Emitter } from '@ali/vscode-jsonrpc';
@@ -23,8 +23,6 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   @Autowired(IEditorFeatureRegistry)
   editorFeatureRegistry: EditorFeatureRegistryImpl;
-
-  private collection: Map<string, ICodeEditor> = new Map();
 
   private _editors: Set<IMonacoImplEditor> = new Set();
   private _diffEditors: Set<IDiffEditor> = new Set();
@@ -54,6 +52,11 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
           (editor as BrowserDiffEditor).updateDiffOptions(optionsDelta.diffOptions);
         });
       }
+    });
+    this.editorFeatureRegistry.onDidRegisterFeature((contribution) => {
+      this._editors.forEach((editor) => {
+        this.editorFeatureRegistry.runOneContribution(editor, contribution);
+      });
     });
   }
 
