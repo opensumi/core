@@ -23,7 +23,6 @@ import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager, launchSchemaUri } from '../common';
 import { DebugConsoleService, DebugConsoleDocumentProvider } from './view/debug-console.service';
-import { IStatusBarService } from '@ali/ide-status-bar';
 import { DebugToolbarService } from './view/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
 import { BrowserEditorContribution, IEditorFeatureRegistry, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
