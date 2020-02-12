@@ -1,6 +1,6 @@
 'use strict';
 import { Autowired, Injectable } from '@ali/common-di';
-import { useInjectable, ResizeEvent, getSlotLocation, AppConfig } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Emitter, Event, IBaseMarkerManager, IMarkerData, MarkerManager, OnEvent, URI } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -10,7 +10,6 @@ import { IMarkerService } from '../common/types';
 import { FilterOptions } from './markers-filter.model';
 import { MarkerViewModel } from './markers.model';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import debounce = require('lodash.debounce');
 import { observable } from 'mobx';
 import { createRef } from 'react';
 
@@ -22,9 +21,6 @@ export interface ViewSize {
 
 @Injectable()
 export class MarkerService extends Themable implements IMarkerService {
-  @Autowired(AppConfig)
-  private config: AppConfig;
-
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
 
@@ -52,8 +48,6 @@ export class MarkerService extends Themable implements IMarkerService {
 
   private readonly onResourceCloseEmitter = new Emitter<string>();
   public readonly onResourceClose: Event<string> = this.onResourceCloseEmitter.event;
-
-  private onViewResizeCaller = debounce((viewSize: ViewSize) => this.viewSize = viewSize, 20);
 
   constructor() {
     super();
@@ -91,15 +85,6 @@ export class MarkerService extends Themable implements IMarkerService {
 
   public getManager(): IBaseMarkerManager {
     return this.markerManager;
-  }
-
-  @OnEvent(ResizeEvent)
-  onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === getSlotLocation('@ali/ide-markers', this.config.layoutConfig)) {
-      if (this.rootEle.current && this.rootEle.current.clientHeight) {
-        this.onViewResizeCaller({ h: this.rootEle.current.clientHeight });
-      }
-    }
   }
 
   /**
