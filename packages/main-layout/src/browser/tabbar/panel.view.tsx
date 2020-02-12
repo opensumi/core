@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, localize, getIcon, CommandService } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ViewUiStateManager, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
@@ -100,9 +100,31 @@ const NextPanelView: React.FC<{
   const contentRef = React.useRef<HTMLDivElement | null>();
   const titleComponent = component.options && component.options.titleComponent;
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const viewStateManager = useInjectable<ViewUiStateManager>(ViewUiStateManager);
+  const eventBus = useInjectable<IEventBus>(IEventBus);
+  // TODO 底部支持多个视图的渲染
+  React.useEffect(() => {
+    let lastFrame: number | null;
+    const disposer = eventBus.on(ResizeEvent, (e) => {
+      if (e.payload.slotLocation === side) {
+        if (lastFrame) {
+          window.cancelAnimationFrame(lastFrame);
+        }
+        lastFrame = window.requestAnimationFrame(() => {
+          if (contentRef.current) {
+            viewStateManager.updateSize(component.views[0].id, contentRef.current.clientHeight, contentRef.current.clientWidth);
+          }
+        });
+      }
+    });
+    return () => {
+      disposer.dispose();
+    };
+  }, [contentRef]);
+  const viewState = viewStateManager.getState(component.views[0].id);
 
   return (
-    <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
+    <div className={styles.panel_container}>
       <div className={styles.panel_title_bar}>
         <h1>{component.options!.title}</h1>
         <div className={styles.title_component_container}>
@@ -113,8 +135,8 @@ const NextPanelView: React.FC<{
           <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>
       </div>
-      <div className={styles.panel_wrapper}>
-        <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component!} />
+      <div ref={(ele) =>  contentRef.current = ele} className={styles.panel_wrapper}>
+        <ComponentRenderer initialProps={{viewState, ...component.options!.initialProps}} Component={component.views[0].component!} />
       </div>
     </div>
   );
