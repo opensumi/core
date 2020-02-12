@@ -106,7 +106,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined!;
         }
-
         const quickSuggestionsMaxCount = this.preference.get('editor.quickSuggestionsMaxCount') || 0;
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_COMPLETION_ITEMS);
         const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, {
@@ -715,7 +714,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $registerWorkspaceSymbolProvider(handle: number): void {
-    const workspaceSymbolProvider = this.createWorkspaceSymbolProvider(handle);
     const disposable = new DisposableCollection();
     console.log('TODO registerWorkspaceSymbolProvider');
     this.disposables.set(handle, disposable);
