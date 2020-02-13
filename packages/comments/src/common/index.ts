@@ -116,6 +116,10 @@ export interface IComment {
    * 附属显示
    */
   label?: string | React.ReactNode;
+  /**
+   * 添加附属数据
+   */
+  data?: any;
 }
 
 /**
@@ -183,6 +187,10 @@ export interface ICommentsThread extends IDisposable {
    */
   range: IRange;
   /**
+   * 附属数据
+   */
+  data?: any;
+  /**
    * 添加一条评论
    * @param comment
    */
@@ -211,6 +219,10 @@ export interface ICommentsThreadOptions {
    * 初始化折叠状态，默认为展开
    */
   isCollapsed?: boolean;
+  /**
+   * 附属数据
+   */
+  data?: any;
 }
 
 export const ICommentsService = Symbol('ICommentsService');
