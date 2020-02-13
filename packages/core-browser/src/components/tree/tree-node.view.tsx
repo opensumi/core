@@ -57,12 +57,12 @@ const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRang
       if (rangeLen > 0) {
         const content: any = [];
         for (let i = 0; i < rangeLen; i ++) {
-          content.push(<span>
+          content.push(<span key={`${i}-0`}>
             { i === 0 ? template.slice(0, ranges[i].start) : template.slice(ranges[i - 1].end, ranges[i].start)}
-            <span className={cls(styles.search_match, replace && styles.replace)}>
+            <span className={cls(styles.search_match, replace && styles.replace)} key={`${i}-child-0`}>
               {template.slice(ranges[i].start, ranges[i].end)}
             </span>
-            <span className={replace && styles.search_replace}>
+            <span className={replace && styles.search_replace} key={`${i}-child-1`}>
               {replace}
             </span>
             { i + 1 < rangeLen ? template.slice(ranges[i + 1].start) : template.slice(ranges[i].end) }
