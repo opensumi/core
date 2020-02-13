@@ -60,9 +60,9 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         }
       } else {
         setKeybinding({
-          command: id,
-          when: when || '',
-          context: context || '',
+          command: getRaw(id),
+          when: getRaw(when) || '',
+          context: getRaw(context) || '',
           keybinding: value,
         });
         clearCovert();
