@@ -22,10 +22,10 @@ import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager, launchSchemaUri } from '../common';
-import { DebugConsoleService } from './view/debug-console.service';
+import { DebugConsoleService, DebugConsoleDocumentProvider } from './view/debug-console.service';
 import { DebugToolbarService } from './view/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
+import { BrowserEditorContribution, IEditorFeatureRegistry, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
 import { EditorHoverContribution } from './editor/editor-hover-contribution';
 
 export namespace DEBUG_COMMANDS {
@@ -168,6 +168,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   @Autowired()
   private editorHoverContribution: EditorHoverContribution;
+
+  @Autowired()
+  private debugConsoleDocProvider: DebugConsoleDocumentProvider;
 
   private firstSessionStart: boolean = true;
 
@@ -616,5 +619,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution(this.editorHoverContribution);
+  }
+
+  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
+    registry.registerEditorDocumentModelContentProvider(this.debugConsoleDocProvider);
   }
 }

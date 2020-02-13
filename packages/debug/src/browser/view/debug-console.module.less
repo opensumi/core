@@ -34,10 +34,24 @@
   border-top: 1px solid hsla(0, 0%, 50%, .35);
   width: 100%;
   overflow: hidden;
-  background-color: var(--input-background);
+  height: 24px;
+  background-color: var(--editor-background);
 
-  .variable_repl_bar_input {
+  .variable_repl_editor {
+    height: 100%;
     width: 100%;
+
+    :global(.margin) {
+      display: none;
+    }
+
+    :global(.monaco-editor .lines-content .cigr) {
+      box-shadow: none;
+    }
+
+    :global(.monaco-editor .lines-content .cigra) {
+      box-shadow: none;
+    }
   }
 
   &:before {
