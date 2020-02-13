@@ -43,6 +43,8 @@ export class KeymapService implements IKeymapService {
   @Autowired(KeybindingService)
   protected readonly keybindingService: KeybindingService;
 
+  private currentSearchValue: string;
+
   protected resource: Resource;
 
   protected readonly keymapChangeEmitter = new Emitter<void>();
@@ -94,6 +96,9 @@ export class KeymapService implements IKeymapService {
   async reconcile() {
     const keybindings = await this.parseKeybindings();
     this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keybindings);
+    if (this.currentSearchValue) {
+      this.doSearchKeybindings(this.currentSearchValue);
+    }
     this.keymapChangeEmitter.fire(undefined);
   }
 
@@ -301,13 +306,13 @@ export class KeymapService implements IKeymapService {
    */
   @action
   searchKeybindings = (event) => {
-    const searchValue = event.target && event.target.value ? event.target.value.toLocaleLowerCase() : '';
+    this.currentSearchValue = event.target && event.target.value ? event.target.value.toLocaleLowerCase() : '';
     // debounce
     if (this.searchTimer) {
       clearTimeout(this.searchTimer);
     }
     this.searchTimer = setTimeout(() => {
-      this.doSearchKeybindings(searchValue);
+      this.doSearchKeybindings(this.currentSearchValue);
     }, 100);
   }
 
@@ -445,6 +450,6 @@ export class KeymapService implements IKeymapService {
     if (!keybinding) {
       return '';
     }
-    return keybinding.replace(new RegExp(/<match>(.*?)<\/match>/g), '$1');
+    return keybinding.replace(new RegExp(/<(\/)?match>/ig), '');
   }
 }
