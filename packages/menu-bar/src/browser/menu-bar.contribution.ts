@@ -64,6 +64,7 @@ export class MenuBarContribution implements CommandContribution, MenuContributio
         label: localize('menu-bar.view.outward.right-panel.hide'),
       },
       when: 'rightPanelVisible',
+      group: '5_panel',
     });
 
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
@@ -72,6 +73,7 @@ export class MenuBarContribution implements CommandContribution, MenuContributio
         label: localize('menu-bar.view.outward.right-panel.show'),
       },
       when: '!rightPanelVisible',
+      group: '5_panel',
     });
 
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
@@ -80,6 +82,7 @@ export class MenuBarContribution implements CommandContribution, MenuContributio
         label: localize('menu-bar.view.outward.left-panel.hide'),
       },
       when: 'leftPanelVisible',
+      group: '5_panel',
     });
 
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
@@ -88,6 +91,7 @@ export class MenuBarContribution implements CommandContribution, MenuContributio
         label: localize('menu-bar.view.outward.left-panel.show'),
       },
       when: '!leftPanelVisible',
+      group: '5_panel',
     });
   }
 }
