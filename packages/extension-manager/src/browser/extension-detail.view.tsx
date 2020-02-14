@@ -22,7 +22,7 @@ const { TabPane } = Tabs;
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
-  const { extensionId } = props.resource.uri.getParsedQuery();
+  const { extensionId, version } = props.resource.uri.getParsedQuery();
   const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
   const [updated, setUpdated] = React.useState(false);
@@ -42,12 +42,14 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const extension = rawExtension || currentExtension;
   const installed = rawExtension && rawExtension.installed;
 
+  console.log('version', version);
+
   React.useEffect(() => {
     const fetchData = async () => {
       let remote;
       try {
         // 获取最新的插件信息，用来做更新提示
-        remote = await extensionManagerService.getDetailFromMarketplace(extensionId);
+        remote = await extensionManagerService.getDetailFromMarketplace(extensionId, version);
         if (remote) {
           setLatestExtension(remote);
         }
