@@ -2,11 +2,11 @@ import { Autowired, Injectable } from '@ali/common-di';
 import { CommandService, CorePreferences, Disposable, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
 import * as md5 from 'md5';
-import { EndOfLineSequence, EOL, IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom } from '../../common';
+import { EndOfLineSequence, EOL, IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
 import { CompareResult, ICompareService } from '../types';
 import { EditorDocumentError } from './editor-document-error';
 import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
-import { EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModel, IEditorDocumentModelContentChange, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, ORIGINAL_DOC_SCHEME } from './types';
+import { EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, ORIGINAL_DOC_SCHEME, EditorDocumentModelWillSaveEvent } from './types';
 
 import debounce = require('lodash.debounce');
 
@@ -258,8 +258,13 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this.monacoModel;
   }
 
-  async save(force: boolean = false): Promise<boolean> {
+  async save(force: boolean = false, reason: SaveReason = SaveReason.Manual): Promise<boolean> {
     await this.formatOnSave();
+    // 发送willSave并等待完成
+    await this.eventBus.fireAndAwait(new EditorDocumentModelWillSaveEvent({
+      uri: this.uri,
+      reason,
+    }));
     if (!this.preferenceService.get<boolean>('editor.askIfDiff')) {
       force = true;
     }
@@ -406,11 +411,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   get tryAutoSaveAfterDelay() {
     if (!this._tryAutoSaveAfterDelay) {
       this._tryAutoSaveAfterDelay = debounce(() => {
-        this.save();
+        this.save(undefined, SaveReason.AfterDelay);
       }, this.corePreferences['editor.autoSaveDelay'] || 1000);
       this.addDispose(this.corePreferences.onPreferenceChanged((change) => {
         this._tryAutoSaveAfterDelay = debounce(() => {
-          this.save();
+          this.save(undefined, SaveReason.AfterDelay);
         }, this.corePreferences['editor.autoSaveDelay'] || 1000);
       }));
     }

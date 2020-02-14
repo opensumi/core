@@ -2,19 +2,19 @@ import * as vscode from 'vscode';
 import * as convert from '../../../../common/vscode/converter';
 import {
   Emitter as EventEmiiter, IDisposable,
-  CancellationToken,
   CancellationTokenSource,
 } from '@ali/ide-core-common';
-import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelOptionsChangedEvent } from '../../../../common/vscode';
+import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent, IExtensionDocumentModelOptionsChangedEvent, IExtensionDocumentModelWillSaveEvent, IMainThreadWorkspace, ITextEdit, WorkspaceEditDto } from '../../../../common/vscode';
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Uri } from '../../../../common/vscode/ext-types';
+import { Uri, TextEdit } from '../../../../common/vscode/ext-types';
 
 const OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
 
 export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataManager {
   private readonly rpcProtocol: IRPCProtocol;
   private readonly _proxy: IMainThreadDocumentsShape;
+  private readonly _workspaceProxy: IMainThreadWorkspace;
   private readonly _logService: any;
 
   private _documents: Map<string, ExtHostDocumentData> = new Map();
@@ -23,7 +23,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   private _onDidOpenTextDocument = new EventEmiiter<vscode.TextDocument>();
   private _onDidCloseTextDocument = new EventEmiiter<vscode.TextDocument>();
   private _onDidChangeTextDocument = new EventEmiiter<vscode.TextDocumentChangeEvent>();
-  private _onWillSaveTextDocument = new EventEmiiter<vscode.TextDocument>();
+  private _onWillSaveTextDocument = new EventEmiiter<vscode.TextDocumentWillSaveEvent>();
   private _onDidSaveTextDocument = new EventEmiiter<vscode.TextDocument>();
 
   public onDidOpenTextDocument = this._onDidOpenTextDocument.event;
@@ -35,6 +35,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadDocuments);
+    this._workspaceProxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWorkspace);
     this._logService = {
       trace() {
         console.log.apply(console, arguments as any);
@@ -217,7 +218,44 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     }
   }
 
+  async $fireModelWillSaveEvent(e: IExtensionDocumentModelWillSaveEvent) {
+    const { uri } = e;
+    const document = this._documents.get(uri);
+
+    if (document) {
+      const promises: Promise<any>[] = [];
+      const event: vscode.TextDocumentWillSaveEvent = {
+        document: document.document,
+        reason: e.reason as number,
+        waitUntil: (promise) => {
+          promises.push(this.createWaitUntil(document.document.uri, promise));
+        },
+      };
+      this._onWillSaveTextDocument.fire(event);
+      await Promise.all(promises);
+      return;
+    }
+    throw new Error('document not found: ' + uri.toString());
+  }
+
+  async createWaitUntil(uri: Uri, promise: Promise<TextEdit[] | void>): Promise<void> {
+    const res = await promise;
+    if (res instanceof Array && res[0] && res[0] instanceof TextEdit) {
+      await this.applyEdit(uri, res.map(convert.TypeConverts.TextEdit.from));
+    }
+  }
+
   setWordDefinitionFor(modeId: string, wordDefinition: RegExp | undefined) {
     setWordDefinitionFor(modeId, wordDefinition);
+  }
+
+  applyEdit(uri: Uri, edits: ITextEdit[]): Promise<boolean> {
+    const dto: WorkspaceEditDto =  {
+      edits: [{
+        resource: uri,
+        edits,
+      }],
+    };
+    return this._workspaceProxy.$tryApplyWorkspaceEdit(dto);
   }
 }

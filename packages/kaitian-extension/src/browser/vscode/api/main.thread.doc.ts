@@ -1,10 +1,10 @@
-import { Emitter as EventEmitter, WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter, LRUMap } from '@ali/ide-core-common';
+import { WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter, LRUMap } from '@ali/ide-core-common';
 import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Schemas } from '../../../common/vscode/ext-types';
 import { ResourceService } from '@ali/ide-editor';
-import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider, EditorDocumentModelOptionChangedEvent } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider, EditorDocumentModelOptionChangedEvent, EditorDocumentModelWillSaveEvent } from '@ali/ide-editor/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { PreferenceService } from '@ali/ide-core-browser';
 
@@ -129,6 +129,17 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
       eol: e.payload.eol,
       dirty: e.payload.dirty,
       versionId: e.payload.versionId,
+    });
+  }
+
+  @OnEvent(EditorDocumentModelWillSaveEvent)
+  async onEditorDocumentModelWillSaveEvent(e: EditorDocumentModelWillSaveEvent) {
+    if (!this.isDocSyncEnabled(e.payload.uri)) {
+      return;
+    }
+    await this.proxy.$fireModelWillSaveEvent({
+      uri: e.payload.uri.toString(),
+      reason: e.payload.reason,
     });
   }
 

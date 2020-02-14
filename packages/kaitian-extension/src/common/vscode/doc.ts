@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import { IDisposable, Event } from '@ali/ide-core-common';
-import { IEditorDocumentModelContentChange } from '@ali/ide-editor/lib/browser';
-import { UriComponents } from './models';
 import { Uri } from './ext-types';
+import { SaveReason, IEditorDocumentModelContentChange } from '@ali/ide-editor';
 
 export interface IModelChangedEvent {
   /**
@@ -40,9 +39,10 @@ export interface ExtensionDocumentDataManager extends IExtensionHostDocService {
   onDidOpenTextDocument: Event<vscode.TextDocument>;
   onDidCloseTextDocument: Event<vscode.TextDocument>;
   onDidChangeTextDocument: Event<vscode.TextDocumentChangeEvent>;
-  onWillSaveTextDocument: Event<vscode.TextDocument>;
+  onWillSaveTextDocument: Event<vscode.TextDocumentWillSaveEvent>;
   onDidSaveTextDocument: Event<vscode.TextDocument>;
   setWordDefinitionFor(modeId: string, wordDefinition: RegExp | undefined): void;
+
 }
 
 export interface IExtensionDocumentModelChangedEvent {
@@ -76,6 +76,11 @@ export interface IExtensionDocumentModelSavedEvent {
   uri: string;
 }
 
+export interface IExtensionDocumentModelWillSaveEvent {
+  uri: string;
+  reason: SaveReason;
+}
+
 export const ExtensionDocumentManagerProxy = Symbol('ExtensionDocumentManagerProxy');
 
 export interface IExtensionHostDocService {
@@ -84,5 +89,6 @@ export interface IExtensionHostDocService {
   $fireModelOpenedEvent(event: IExtensionDocumentModelOpenedEvent): void;
   $fireModelRemovedEvent(event: IExtensionDocumentModelRemovedEvent): void;
   $fireModelSavedEvent(event: IExtensionDocumentModelSavedEvent): void;
+  $fireModelWillSaveEvent(e: IExtensionDocumentModelWillSaveEvent): Promise<void>;
   $provideTextDocumentContent(path: string): Promise<string>;
 }

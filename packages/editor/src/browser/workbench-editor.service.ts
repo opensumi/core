@@ -1,7 +1,7 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
-import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider } from '@ali/ide-core-common';
+import { observable, computed, action, reaction } from 'mobx';
+import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
@@ -25,9 +25,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   @Autowired(INJECTOR_TOKEN)
   private injector!: Injector;
-
-  @Autowired(CommandService)
-  private commands: CommandService;
 
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
@@ -93,13 +90,13 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return uris;
   }
 
-  async saveAll(includeUntitled?: boolean) {
+  async saveAll(includeUntitled?: boolean, reason?: SaveReason) {
     for (const editorGroup of this.editorGroups) {
-      await editorGroup.saveAll();
+      await editorGroup.saveAll(includeUntitled, reason);
     }
   }
 
-  hasDirty(includeUntitled?: boolean): boolean {
+  hasDirty(): boolean {
     for (const editorGroup of this.editorGroups) {
       if (editorGroup.hasDirty()) {
         return true;
@@ -336,16 +333,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       this.topGrid.sortEditorGroups(this._sortedEditorGroups);
     }
     return this._sortedEditorGroups;
-  }
-
-  @OnEvent(EditorGroupCloseEvent)
-  private handleOnCloseUntitledResource(e: EditorGroupCloseEvent) {
-    if (e.payload.resource.uri.scheme === Schemas.untitled) {
-      const { index } = e.payload.resource.uri.getParsedQuery();
-      this.untitledCloseIndex.push(parseInt(index, 10));
-      // 升序排序，每次可以去到最小的 index
-      this.untitledCloseIndex.sort((a, b) => a - b);
-    }
   }
 
   private createUntitledURI() {
@@ -696,7 +683,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }));
       }
     }));
-    this.toDispose.push(this.codeEditor.onConfigurationChanged((e) => {
+    this.toDispose.push(this.codeEditor.onConfigurationChanged(() => {
       if (this.currentOpenType && this.currentOpenType.type === 'code') {
         this.eventBus.fire(new EditorConfigurationChangedEvent({
           group: this,
@@ -734,7 +721,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }));
       }
     }));
-    this.toDispose.push(this.diffEditor.modifiedEditor.onConfigurationChanged((e) => {
+    this.toDispose.push(this.diffEditor.modifiedEditor.onConfigurationChanged(() => {
       if (this.currentOpenType && this.currentOpenType.type === 'diff') {
         this.eventBus.fire(new EditorConfigurationChangedEvent({
           group: this,
@@ -800,8 +787,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             getLogger().warn(err);
           });
       }
-      const oldResource = this.currentResource;
-      const oldOpenType = this.currentOpenType;
       if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
         // 就是当前打开的resource
         if (options.focus && this.currentEditor) {
@@ -855,7 +840,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  async openUris(uris: URI[], options?: IResourceOpenOptions): Promise<void> {
+  async openUris(uris: URI[]): Promise<void> {
     for (const uri of uris) {
       await this.open(uri);
     }
@@ -1266,7 +1251,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  async saveAll(includeUntitled?: boolean) {
+  async saveAll(includeUntitled?: boolean, reason?: SaveReason) {
     for (const r of this.resources) {
       // 不保存无标题文件
       if (!includeUntitled && r.uri.scheme === Schemas.untitled) {
@@ -1275,14 +1260,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const docRef = this.documentModelManager.getModelReference(r.uri);
       if (docRef) {
         if (docRef.instance.dirty) {
-          await docRef.instance.save();
+          await docRef.instance.save(undefined, reason);
         }
         docRef.dispose();
       }
     }
   }
 
-  hasDirty(includeUntitled?: boolean): boolean {
+  hasDirty(): boolean {
     for (const r of this.resources) {
       const docRef = this.documentModelManager.getModelReference(r.uri);
       if (docRef) {
