@@ -5,3 +5,4 @@ rules:
   no-unused-variable:
     - true
     - ignore-pattern: "^_"
+  no-console: true

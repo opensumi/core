@@ -29,7 +29,6 @@ export class VSCodeMetaService extends Disposable {
   private eventBus: IEventBus;
 
   public async run(extension: IExtension) {
-    console.log(this.injector.get(FileSearchServicePath), 'xxx');
     try {
       const runner = this.injector.get(VSCodeContributeRunner, [extension]);
       this.addDispose(runner);
