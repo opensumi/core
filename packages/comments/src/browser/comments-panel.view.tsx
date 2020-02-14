@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, isUndefined } from '@ali/ide-core-browser';
+import { useInjectable, isUndefined, ViewState } from '@ali/ide-core-browser';
 import { ICommentsService, ICommentsTreeNode } from '../common';
 import * as styles from './comments.module.less';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -22,11 +22,9 @@ function getRenderTree(nodes: ICommentsTreeNode[]) {
   });
 }
 
-export const CommentsPanel = observer((props) => {
+export const CommentsPanel = observer<{ viewState: ViewState}>((props) => {
   const commentsService = useInjectable<ICommentsService>(ICommentsService);
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
-  // TODO: 使用 viewState.h
-  const [ containerHeight, setContainerHeight ] = React.useState(300);
   const [ treeNodes, setTreeNodes ] = React.useState<ICommentsTreeNode[]>([]);
 
   React.useEffect(() => {
@@ -52,7 +50,7 @@ export const CommentsPanel = observer((props) => {
   return (
     <div className={styles.comment_panel}>
       <RecycleTree
-        containerHeight={containerHeight}
+        containerHeight={props.viewState.height}
         scrollContainerStyle={scrollContainerStyle}
         nodes={getRenderTree(treeNodes)}
         foldable={true}

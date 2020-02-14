@@ -44,6 +44,10 @@ export class Comment implements IThreadComment {
   get label() {
     return this.options.label;
   }
+
+  get data() {
+    return this.options.data;
+  }
 }
 
 @Injectable({ multiple: true })
@@ -71,6 +75,8 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   private _readOnly: boolean;
   private _isCollapsed: boolean;
 
+  private _data?: any;
+
   static getId(uri: URI, range: IRange): string {
     return `${uri}#${range.startLineNumber}`;
   }
@@ -84,6 +90,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this._readOnly = !!options.readOnly;
     this._isCollapsed = !!options.isCollapsed;
     this.comments = options.comments ? options.comments.map((comment) => new Comment(comment)) : [];
+    this._data = options.data;
     this.initMenuContext();
   }
 
@@ -109,6 +116,10 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   get isCollapsed() {
     return this._isCollapsed;
+  }
+
+  get data() {
+    return this._data;
   }
 
   private getEditorsByUri(uri: URI): IEditor[] {

@@ -50,6 +50,7 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       }], {
         containerId: CommentPanelId,
         title: localize('comments').toUpperCase(),
+        hidden: false,
         ...this.commentsFeatureRegistry.getCommentsPanelOptions(),
       }, 'bottom');
     });
