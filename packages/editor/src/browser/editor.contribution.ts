@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
@@ -664,8 +664,8 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SAVE_ALL, {
-      execute: async () => {
-        this.workbenchEditorService.saveAll();
+      execute: async (reason?: SaveReason) => {
+        this.workbenchEditorService.saveAll(undefined, reason);
       },
     });
 
@@ -808,7 +808,7 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
         disposable.addDispose(editor.monacoEditor.onDidBlurEditorWidget(() => {
           if (this.preferenceService.get('editor.autoSave') === 'editorFocusChange') {
             if (editor.currentDocumentModel && !editor.currentDocumentModel.closeAutoSave && editor.currentDocumentModel.dirty && editor.currentDocumentModel.savable) {
-              editor.currentDocumentModel.save();
+              editor.currentDocumentModel.save(undefined, SaveReason.FocusOut);
             }
           }
         }));
@@ -818,7 +818,7 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
               const oldUri = new URI(e.oldModelUrl.toString());
               const docRef = this.editorDocumentService.getModelReference(oldUri, 'editor-focus-autosave');
               if (docRef && !docRef.instance.closeAutoSave && docRef.instance.dirty && docRef.instance.savable) {
-                docRef.instance.save();
+                docRef.instance.save(undefined, SaveReason.FocusOut);
                 docRef.dispose();
               }
             }
@@ -829,7 +829,7 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
     });
     window.addEventListener('blur', () => {
       if (this.preferenceService.get('editor.autoSave') === 'windowLostFocus') {
-        this.commandService.executeCommand(EDITOR_COMMANDS.SAVE_ALL.id);
+        this.commandService.executeCommand(EDITOR_COMMANDS.SAVE_ALL.id, SaveReason.FocusOut);
       }
     });
     this.preferenceSettings.setEnumLabels('editor.autoSave', {

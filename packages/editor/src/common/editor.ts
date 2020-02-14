@@ -3,7 +3,6 @@ import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILi
 import { IResource } from './resource';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
-import { IContextKeyService } from '@ali/ide-core-browser';
 
 export interface CursorStatus {
   position: MaybeNull<monaco.Position>;
@@ -448,4 +447,20 @@ export enum Direction {
   DOWN = 'down',
   LEFT = 'left',
   RIGHT = 'right',
+}
+
+export enum SaveReason {
+
+  Manual = 1,
+
+  AfterDelay = 2,
+
+  FocusOut = 3,
+}
+
+export interface IEditorDocumentModelContentChange {
+  range: IRange;
+  text: string;
+  rangeLength: number;
+  rangeOffset: number;
 }
