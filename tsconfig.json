@@ -16,5 +16,6 @@
     "./tools/workspace/**/*",
     "./tools/extensions/**/*",
     "./tools/candidate-ext/**/*"
-  ]
+  ],
+  "tslint.configFile": "./tslint.yml"
 }
