@@ -335,6 +335,16 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return this._sortedEditorGroups;
   }
 
+  @OnEvent(EditorGroupCloseEvent)
+  handleOnCloseUntitledResource(e: EditorGroupCloseEvent) {
+    if (e.payload.resource.uri.scheme === Schemas.untitled) {
+      const { index } = e.payload.resource.uri.getParsedQuery();
+      this.untitledCloseIndex.push(parseInt(index, 10));
+      // 升序排序，每次可以去到最小的 index
+      this.untitledCloseIndex.sort((a, b) => a - b);
+    }
+  }
+
   private createUntitledURI() {
     // 优先从已删除的 index 中获取
     const index =  this.untitledCloseIndex.shift() || this.untitledIndex++;
