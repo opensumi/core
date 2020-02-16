@@ -6,6 +6,7 @@ import {
   MaybePromise,
   TreeNode,
   Event,
+  BasicEvent,
 } from '@ali/ide-core-common';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
@@ -275,3 +276,7 @@ export function toRange(position: monaco.IPosition | number): monaco.IRange {
     };
   }
 }
+
+export const CollapseId = 'comments.panel.action.collapse';
+
+export class CommentPanelCollapse extends BasicEvent<void> {}

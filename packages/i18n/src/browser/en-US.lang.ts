@@ -507,5 +507,6 @@ export const localizationBundle = {
     'comments.reply.placeholder': 'Reply',
     'comments.participants': 'Participants',
     'comments.zone.title': 'Start discussion',
+    'comments.panel.action.collapse': 'Collapse All',
   },
 };

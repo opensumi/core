@@ -516,5 +516,6 @@ export const localizationBundle = {
     'comments.reply.placeholder': '请输入',
     'comments.participants': '参与者',
     'comments.zone.title': '开始讨论',
+    'comments.panel.action.collapse': '全部折叠',
   },
 };

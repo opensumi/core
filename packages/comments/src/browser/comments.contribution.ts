@@ -1,33 +1,53 @@
 import { Autowired } from '@ali/common-di';
-import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event } from '@ali/ide-core-browser';
-import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry } from '../common';
-import { WorkbenchEditorService, IEditor } from '@ali/ide-editor';
+import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@ali/ide-core-browser';
+import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse } from '../common';
+import { IEditor } from '@ali/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { CommentsPanel } from './comments-panel.view';
 
-@Domain(ClientAppContribution, BrowserEditorContribution)
-export class CommentsBrowserContribution extends Disposable implements ClientAppContribution, BrowserEditorContribution {
+@Domain(ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution)
+export class CommentsBrowserContribution extends Disposable implements ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution {
 
   @Autowired(ICommentsService)
-  commentsService: ICommentsService;
-
-  @Autowired(WorkbenchEditorService)
-  workbenchEditorService: WorkbenchEditorService;
+  private readonly commentsService: ICommentsService;
 
   @Autowired(IMainLayoutService)
-  layoutService: IMainLayoutService;
+  private readonly layoutService: IMainLayoutService;
 
   @Autowired(ICommentsFeatureRegistry)
-  commentsFeatureRegistry: ICommentsFeatureRegistry;
+  private readonly commentsFeatureRegistry: ICommentsFeatureRegistry;
 
   @Autowired(CommentsContribution)
   private readonly contributions: ContributionProvider<CommentsContribution>;
+
+  @Autowired(IEventBus)
+  private readonly eventBus: IEventBus;
 
   onStart() {
     this.listenToCreateCommentsPanel();
     this.registerCommentsFeature();
     this.commentsService.init();
+  }
+
+  registerCommands(registry: CommandRegistry) {
+    registry.registerCommand({
+      id: CollapseId,
+      iconClass: getIcon('collapse-all'),
+    }, {
+      execute: () => {
+        this.eventBus.fire(new CommentPanelCollapse());
+      },
+    });
+  }
+
+  registerToolbarItems(registry: ToolbarRegistry) {
+    registry.registerItem({
+      id: CollapseId,
+      viewId: CommentPanelId,
+      command: CollapseId,
+      tooltip: localize('comments.panel.action.collapse'),
+    });
   }
 
   private registerCommentsFeature() {
