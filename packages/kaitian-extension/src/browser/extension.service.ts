@@ -47,6 +47,7 @@ import {
   isElectronRenderer,
   IDisposable,
   CorePreferences,
+  ExtensionActivateEvent,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { Extension } from './extension';
@@ -55,7 +56,7 @@ import { createKaitianApiFactory } from './kaitian/main.thread.api.impl';
 import { createExtensionLogFactory } from './extension-log';
 
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ActivationEventService } from '@ali/ide-activation-event';
+import { IActivationEventService } from './types';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
@@ -78,7 +79,7 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { createBrowserApi } from './kaitian-browser';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
-import { ExtensionCandiDate, localize } from '@ali/ide-core-common';
+import { ExtensionCandiDate, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
 import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution';
 
@@ -119,7 +120,7 @@ function getAMDDefine(): any {
 }
 
 @Injectable()
-export class ExtensionServiceImpl implements ExtensionService {
+export class ExtensionServiceImpl extends WithEventBus implements ExtensionService {
 
   private extensionScanDir: string[] = [];
   private extensionCandidate: string[] = [];
@@ -144,8 +145,8 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(CommandRegistry)
   private commandRegistry: CommandRegistry;
 
-  @Autowired()
-  private activationEventService: ActivationEventService;
+  @Autowired(IActivationEventService)
+  private activationEventService: IActivationEventService;
 
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
@@ -204,6 +205,11 @@ export class ExtensionServiceImpl implements ExtensionService {
   private kaitianAPIFactoryDisposer: () => void;
 
   private workerProtocol: RPCProtocol | undefined;
+
+  @OnEvent(ExtensionActivateEvent)
+  onActivateExtension(e) {
+    this.activationEventService.fireEvent(e.payload.topic, e.payload.data);
+  }
 
   public async activate(): Promise<void> {
     this.contextKeyService = this.injector.get(IContextKeyService);

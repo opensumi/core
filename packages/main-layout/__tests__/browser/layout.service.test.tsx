@@ -6,8 +6,6 @@ import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, ICon
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { MainLayoutModuleContribution } from '../../src/browser/main-layout.contribution';
-import { ActivationEventService } from '@ali/ide-activation-event';
-import { ActivationEventServiceImpl } from '@ali/ide-activation-event/lib/browser/activation.service';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
@@ -121,10 +119,6 @@ describe('main layout test', () => {
       {
         token: MainLayoutModuleContribution,
         useClass: MainLayoutModuleContribution,
-      },
-      {
-        token: ActivationEventService,
-        useClass: ActivationEventServiceImpl,
       },
       {
         token: ILoggerManagerClient,

@@ -6,8 +6,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TextmateService } from '../../src/browser/textmate.service';
 import { Injectable } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { ActivationEventService } from '@ali/ide-activation-event';
-import { ActivationEventServiceImpl } from '@ali/ide-activation-event/lib/browser/activation.service';
+import { IEventBus, EventBusImpl, ExtensionActivateEvent } from '@ali/ide-core-browser';
 
 @Injectable()
 class MockFileServiceClient {
@@ -128,16 +127,16 @@ describe('textmate service test', () => {
       useClass: MonacoServiceImpl,
     },
     {
+      token: IEventBus,
+      useClass: EventBusImpl,
+    },
+    {
       token: TextmateService,
       useClass: TextmateService,
     },
     {
       token: IFileServiceClient,
       useClass: MockFileServiceClient,
-    },
-    {
-      token: ActivationEventService,
-      useClass: ActivationEventServiceImpl,
     },
   );
 
@@ -165,8 +164,8 @@ describe('textmate service test', () => {
       ],
       configuration: './language-configuration.json',
     }, 'file:///mock/base');
-    const activationService: ActivationEventService = injector.get(ActivationEventService);
-    activationService.onEvent('onLanguage:html', () => done());
+    const eventBus = injector.get(IEventBus);
+    eventBus.on(ExtensionActivateEvent, (e) => done());
   });
 
   it('on language event should be fired', () => {

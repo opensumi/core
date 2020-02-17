@@ -11,7 +11,7 @@ import { IMessageService } from '@ali/ide-overlay';
 import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry } from './debug';
 import { ExtensionDebugService } from './debug/extension-debug-service';
 import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
-import { ActivationEventService } from '@ali/ide-activation-event';
+import { IActivationEventService } from '../../types';
 import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
@@ -63,8 +63,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(IDebugServer)
   protected readonly adapterContributionRegistrator: ExtensionDebugService;
 
-  @Autowired(ActivationEventService)
-  protected readonly activationEventService: ActivationEventService;
+  @Autowired(IActivationEventService)
+  protected readonly activationEventService: IActivationEventService;
 
   @Autowired(DebugSessionContributionRegistry)
   sessionContributionRegistrator: ExtensionDebugSessionContributionRegistry;

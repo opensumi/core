@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { VSCodeContributeRunner } from './contributes';
 import { IExtension } from '../../../common';
 import { Disposable, ILogger } from '@ali/ide-core-browser';
-import { ActivationEventService } from '@ali/ide-activation-event';
+import { IActivationEventService } from '../../types';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 import { getLogger, IEventBus, ExtensionEnabledEvent } from '@ali/ide-core-browser';
@@ -14,7 +14,7 @@ export class VSCodeMetaService extends Disposable {
   private injector: Injector;
 
   @Autowired()
-  private activationService: ActivationEventService;
+  private activationService: IActivationEventService;
 
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;

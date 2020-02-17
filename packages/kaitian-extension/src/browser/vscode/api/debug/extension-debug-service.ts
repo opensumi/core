@@ -8,7 +8,7 @@ import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@a
 import { DebugConfiguration } from '@ali/ide-debug/lib/common/debug-configuration';
 import { DebugConfigurationManager } from '@ali/ide-debug/lib/browser';
 import { DebugActivationEvent } from '../../../../common/vscode';
-import { ActivationEventService } from '@ali/ide-activation-event';
+import { IActivationEventService } from '../../../types';
 
 export interface ExtensionDebugAdapterContributionRegistrator {
   /**
@@ -53,8 +53,8 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   @Autowired(DebugConfigurationManager)
   protected readonly debugConfigurationManager: DebugConfigurationManager;
 
-  @Autowired(ActivationEventService)
-  protected readonly activationEventService: ActivationEventService;
+  @Autowired(IActivationEventService)
+  protected readonly activationEventService: IActivationEventService;
 
   protected readonly activationEvents = new Set<string>();
 

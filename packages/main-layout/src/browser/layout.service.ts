@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
+import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
@@ -8,7 +8,6 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
-import { ActivationEventService } from '@ali/ide-activation-event';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -26,9 +25,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
-
-  @Autowired(ActivationEventService)
-  private activationEventService: ActivationEventService;
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 
@@ -142,7 +138,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         if (currentId && !service.noAccordion) {
           const accordionService = this.getAccordionService(currentId);
           accordionService.expandedViews.forEach((view) => {
-            this.activationEventService.fireEvent(`onView:${view.id}`);
+            this.eventBus.fire(new ExtensionActivateEvent({ topic: `onView:${view.id}` }));
           });
         }
       });
