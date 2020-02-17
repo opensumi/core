@@ -43,7 +43,7 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
    * @memberof CommentsBrowserContribution
    */
   private listenToCreateCommentsPanel() {
-    Event.once(this.commentsService.onThreadsChanged)(() => {
+    Event.once(this.commentsService.onThreadsCreated)(() => {
       this.layoutService.collectTabbarComponent([{
         id: CommentPanelId,
         component: CommentsPanel,
