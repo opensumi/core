@@ -425,6 +425,7 @@ export const localizationBundle = {
 
     'terminal.name': '终端',
     'terminal.disconnected': '终端断开连接',
+    'terminal.can.not.reconnect': '终端不可用，请',
     'terminal.stop': '终止终端',
     'terminal.try.reconnect': '重新连接终端',
     'terminal.new': '新建终端',

@@ -373,6 +373,7 @@ export const localizationBundle = {
 
     'terminal.name': 'TERMINAL',
     'terminal.disconnected': 'Terminal Already Disconnected',
+    'terminal.can.not.reconnect': 'Terminal Unavailable, Please',
     'terminal.stop': 'Stop The Terminal',
     'terminal.try.reconnect': 'Try To Reconnect The Terminal',
     'terminal.new': 'Create Terminal',
