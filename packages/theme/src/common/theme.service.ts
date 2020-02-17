@@ -82,6 +82,21 @@ export interface IColorMap {
 
 export type BuiltinTheme = 'vs' | 'vs-dark' | 'hc-black';
 
+export function getThemeTypeName(base: BuiltinTheme) {
+  const map = {
+    'vs': 'theme.base.vs',
+    'vs-dark': 'theme.base.vs-dark',
+    'hc-black': 'theme.base.hc-black',
+  };
+  return map[base];
+}
+
+export enum BuiltinThemeComparator {
+  'vs',
+  'vs-dark',
+  'hc-black',
+}
+
 export interface IStandaloneThemeData {
   base: BuiltinTheme;
   inherit: boolean;
@@ -199,7 +214,7 @@ export type ColorValue = Color | string | ColorIdentifier | ColorFunction;
 
 export interface ThemeInfo {
   name: string;
-  base?: BuiltinTheme;
+  base: BuiltinTheme;
   themeId: string;
   inherit?: boolean;
 }

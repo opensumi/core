@@ -455,6 +455,10 @@ export const localizationBundle = {
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',
 
+    'theme.base.vs': '浅色主题',
+    'theme.base.vs-dark': '深色主题',
+    'theme.base.hc-black': '高对比度主题',
+
     'preference.workbench.list.openMode': '控制如何（如果支持）在树和列表中打开项目。对于有子节点的父节点，此设置将控制单击展开父节点还是双击。请注意，如果某些设置不启用，一些树和列表可能会选择忽略此设置。',
 
     'keymaps.search.placeholder': '搜索快捷键',
