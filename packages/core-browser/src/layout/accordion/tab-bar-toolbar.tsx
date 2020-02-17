@@ -14,7 +14,23 @@ export class ToolbarRegistry {
   @Autowired(IMenuRegistry)
   menuRegistry: IMenuRegistry;
 
+  /**
+   *
+   *
+   * @param {TabBarToolbarItem} item
+   * @returns {IDisposable}
+   * @memberof ToolbarRegistry
+   */
   registerItem(item: TabBarToolbarItem): IDisposable {
+    if (typeof item.command === 'string') {
+      const label = item.tooltip || item.label;
+      if (label) {
+        item.command = {
+          id: item.command,
+          label,
+        };
+      }
+    }
     return this.menuRegistry.registerMenuItem(MenuId.ViewTitle, {
       ...item,
       when: item.when || `view == ${item.viewId}`,

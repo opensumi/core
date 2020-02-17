@@ -101,6 +101,8 @@ export class TabbarService extends WithEventBus {
     this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
     if (this.location === 'bottom') {
       this.registerPanelMenus();
+      // TODO: 底部支持多视图
+      this.noAccordion = true;
     }
   }
 
