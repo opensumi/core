@@ -114,6 +114,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
     const tabbarService = this.getTabbarService(location);
     if (!tabbarService) {
+      // tslint:disable-next-line no-console
       console.error(`没有找到${location}对应位置的TabbarService，无法切换面板`);
       return;
     }
@@ -162,6 +163,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     if (!handler) {
       const containerId = this.viewToContainerMap.get(viewOrContainerId);
       if (!containerId) {
+        // tslint:disable-next-line no-console
         console.warn(`没有找到${viewOrContainerId}对应的tabbar！`);
       }
       handler = this.doGetTabbarHandler(containerId || '');
@@ -195,6 +197,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {
     if (Fc) {
+      // tslint:disable-next-line no-console
       console.warn('collectTabbarComponent api warning: Please move react component into options.component!');
     }
     const tabbarService = this.getTabbarService(side);
@@ -226,6 +229,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   replaceViewComponent(view: View, props?: any) {
     const containerId = this.viewToContainerMap.get(view.id);
     if (!containerId) {
+      // tslint:disable-next-line no-console
       console.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
       return;
     }
@@ -240,6 +244,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   disposeViewComponent(viewId: string) {
     const containerId = this.viewToContainerMap.get(viewId);
     if (!containerId) {
+      // tslint:disable-next-line no-console
       console.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
       return;
     }
@@ -259,6 +264,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const tabbarService = this.getTabbarService(location);
       tabbarService.disposeContainer(containerId);
     } else {
+      // tslint:disable-next-line no-console
       console.warn('没有找到containerId所属Tabbar!');
     }
   }

@@ -1,7 +1,6 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MonacoService, ServiceNames } from '../../src/common';
+import { MonacoService } from '../../src/common';
 import MonacoServiceImpl from '../../src/browser/monaco.service';
-import { MockedStandaloneCodeEditor } from '../../src/__mocks__/monaco/editor/code-editor';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { TextmateService } from '../../src/browser/textmate.service';
 import { Injectable } from '@ali/common-di';

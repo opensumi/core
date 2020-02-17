@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "@ali/ide-addons": "1.7.8",
-    "@ali/ide-activation-event": "1.7.8",
     "@ali/ide-core-browser": "1.7.8",
     "@ali/ide-core-common": "1.7.8",
     "@ali/ide-core-node": "1.7.8",

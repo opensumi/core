@@ -82,7 +82,7 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
     const { type } = contrib;
 
     if (this.contributors.has(type)) {
-      console.warn(`Debugger with type '${type}' already registered.`);
+      this.logger.warn(`Debugger with type '${type}' already registered.`);
       return Disposable.NULL;
     }
 

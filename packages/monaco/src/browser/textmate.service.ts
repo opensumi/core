@@ -1,7 +1,7 @@
 import { TextmateRegistry } from './textmate-registry';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent } from '@ali/ide-core-browser';
-import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL, IGrammar } from 'vscode-textmate';
+import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 import { getNodeRequire } from './monaco-loader';

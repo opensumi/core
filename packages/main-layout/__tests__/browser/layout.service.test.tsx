@@ -2,7 +2,7 @@ import * as React from 'react';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IMainLayoutService, MainLayoutContribution } from '../../src';
-import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, IEventBus, RenderedEvent, ViewContainerOptions } from '@ali/ide-core-browser';
+import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, ViewContainerOptions } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { MainLayoutModuleContribution } from '../../src/browser/main-layout.contribution';
@@ -24,6 +24,7 @@ describe('main layout test', () => {
 
   const mockLayoutContribution: MainLayoutContribution = {
     onDidRender() {
+      // tslint:disable-next-line no-console
       console.log('layout contribution');
     },
   };
@@ -199,6 +200,7 @@ describe('main layout test', () => {
     const disposer = autorun(() => {
       const info = service.getTabbarService('left');
       const opt = info.getContainer('testContainerId')!.options!;
+      // tslint:disable-next-line no-console
       console.log('autorun:', opt.badge, opt.title, opt.initialProps);
       if (opt.title === 'gggggggg') {
         done();
