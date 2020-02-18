@@ -22,6 +22,8 @@ const contextKeyService = new class extends MockContextKeyService {
   }
 };
 
+jest.useFakeTimers();
+
 describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
   let injector: MockInjector;
 
@@ -465,5 +467,34 @@ describe('test for packages/core-browser/src/menu/next/menu-service.ts', () => {
     // menu registry 会忽略排序，排序是在 menubar-service 里做的
     expect(menubarItems[0].label).toBe('a1');
     expect(menubarItems.map((n) => n.label)).toEqual(['a1', 'a2', 'a3']);
+  });
+
+  it('unregister menu-id', () => {
+    disposables.add(menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: {
+        id: 'a',
+        label: 'a1',
+      },
+    }));
+
+    disposables.add(menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: {
+        id: 'b',
+        label: 'b1',
+      },
+    }));
+
+    const menus = menuService.createMenu(MenuId.ExplorerContext, contextKeyService);
+    disposables.add(menus);
+
+    let menuNodes = generateMergedCtxMenu({ menus });
+    expect(menuNodes.length).toBe(2);
+    expect(menuNodes.map((n) => n.label)).toEqual(['a1', 'b1']);
+
+    disposables.add(menuRegistry.unregisterMenuId(MenuId.ExplorerContext));
+    jest.runAllTimers();
+
+    menuNodes = generateMergedCtxMenu({ menus });
+    expect(menuNodes.length).toBe(0);
   });
 });
