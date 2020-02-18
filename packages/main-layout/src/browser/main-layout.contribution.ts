@@ -7,7 +7,7 @@ import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, To
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
-import { IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -60,8 +60,8 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   iconClass: getIcon('shrink'),
 };
 
-@Domain(CommandContribution, ClientAppContribution, SlotRendererContribution)
-export class MainLayoutModuleContribution extends WithEventBus implements CommandContribution, ClientAppContribution, SlotRendererContribution {
+@Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution)
+export class MainLayoutModuleContribution extends WithEventBus implements CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution {
 
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
@@ -93,9 +93,6 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
   @Autowired()
   private toolBarRegistry: ToolbarRegistry;
 
-  @Autowired(IMenuRegistry)
-  protected menuRegistry: IMenuRegistry;
-
   async initialize() {
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
@@ -114,13 +111,6 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
   async onStart() {
     // 全局只要初始化一次
     await this.layoutState.initStorage();
-    this.menuRegistry.registerMenuItem(MenuId.ActivityBarExtra, {
-      submenu: MenuId.SettingsIconMenu,
-      iconClass: getIcon('setting'),
-      label: localize('layout.tabbar.setting', '打开偏好设置'),
-      order: 1,
-      group: 'navigation',
-    });
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
@@ -214,6 +204,81 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       execute: () => {
         this.mainLayoutService.expandBottom(false);
       },
+    });
+
+    commands.registerCommand({
+      id: 'view.outward.right-panel.hide',
+    }, {
+      execute: () => {
+        this.commandService.executeCommand('main-layout.right-panel.toggle', false);
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.right-panel.show',
+    }, {
+      execute: (size?: number) => {
+        this.commandService.executeCommand('main-layout.right-panel.toggle', true, size);
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.left-panel.hide',
+    }, {
+      execute: () => {
+        this.commandService.executeCommand('main-layout.left-panel.toggle', false);
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.left-panel.show',
+    }, {
+      execute: (size?: number) => {
+        this.commandService.executeCommand('main-layout.left-panel.toggle', true, size);
+      },
+    });
+  }
+
+  registerNextMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(MenuId.ActivityBarExtra, {
+      submenu: MenuId.SettingsIconMenu,
+      iconClass: getIcon('setting'),
+      label: localize('layout.tabbar.setting', '打开偏好设置'),
+      order: 1,
+      group: 'navigation',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.right-panel.hide',
+        label: localize('menu-bar.view.outward.right-panel.hide'),
+      },
+      when: 'rightPanelVisible',
+      group: '5_panel',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.right-panel.show',
+        label: localize('menu-bar.view.outward.right-panel.show'),
+      },
+      when: '!rightPanelVisible',
+      group: '5_panel',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.left-panel.hide',
+        label: localize('menu-bar.view.outward.left-panel.hide'),
+      },
+      when: 'leftPanelVisible',
+      group: '5_panel',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.left-panel.show',
+        label: localize('menu-bar.view.outward.left-panel.show'),
+      },
+      when: '!leftPanelVisible',
+      group: '5_panel',
     });
   }
 
