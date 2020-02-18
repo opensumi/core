@@ -1,6 +1,5 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, CommandService } from '@ali/ide-core-common';
-import { ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { localize } from '@ali/ide-core-common';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
@@ -8,14 +7,11 @@ import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId } from 
 
 import { MenuBar } from './menu-bar.view';
 
-@Domain(ClientAppContribution, CommandContribution, MenuContribution, ComponentContribution)
-export class MenuBarContribution implements CommandContribution, MenuContribution, ClientAppContribution, ComponentContribution {
+@Domain(CommandContribution, MenuContribution, ComponentContribution)
+export class MenuBarContribution implements CommandContribution, MenuContribution, ComponentContribution {
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
-
-  onStart() {
-  }
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-menu-bar', {
