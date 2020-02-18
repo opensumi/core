@@ -10,13 +10,22 @@ import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { ISettingGroup, IPreferenceSettingsService, ISettingSection } from '@ali/ide-core-browser';
 import throttle = require('lodash.throttle');
 import debounce = require('lodash.debounce');
-import { IWorkspaceService } from '@ali/ide-workspace';
 import * as cls from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
 import { CheckBox, Input, Button, IconContextProvider } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
-import { Select, Option } from '@ali/ide-components';
+import { Select, Option, Tabs } from '@ali/ide-components';
 import { toPreferenceReadableName, toNormalCase } from '../common';
+
+const WorkspaceScope = {
+  id: PreferenceScope.Workspace ,
+  label: 'preference.tab.workspace',
+};
+
+const UserScope = {
+  id: PreferenceScope.User ,
+  label: 'preference.tab.user',
+};
 
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
@@ -24,7 +33,16 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   const preferences: PreferenceService  = useInjectable(PreferenceService);
   const appConfig: AppConfig = useInjectable(AppConfig);
 
-  const [currentScope, setCurrentScope] = React.useState(preferences.get<boolean>('settings.userBeforeWorkspace') ? PreferenceScope.User : PreferenceScope.Workspace);
+  const userBeforeWorkspace = preferences.get<boolean>('settings.userBeforeWorkspace');
+  const tabList = userBeforeWorkspace
+    ? [ UserScope, WorkspaceScope ]
+    : [ WorkspaceScope, UserScope ];
+
+  const [ tabIndex, setTabIndex ] = React.useState<number>(0);
+  const currentScope = React.useMemo<PreferenceScope>(() => {
+    return (tabList[tabIndex] || tabList[0]).id;
+  }, [ tabList, tabIndex ]);
+
   const [currentSearch, setCurrentSearch] = React.useState('');
 
   const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
@@ -37,20 +55,13 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     setCurrentSearch(value);
   }, 100, {maxWait: 1000});
 
-  const headers = <div className = {styles.preferences_scopes}>
-    {
-      preferences.get<boolean>('settings.userBeforeWorkspace')  ?
-      <React.Fragment>
-        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
-        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
-      </React.Fragment>
-      :
-      <React.Fragment>
-      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
-      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
-    </React.Fragment>
-    }
-  </div>;
+  const headers = (
+    <Tabs
+      className={styles.tabs}
+      value={tabIndex}
+      onChange={(index: number) => setTabIndex(index)}
+      tabs={tabList.map((n) => localize(n.label))} />
+  );
 
   return (
     <IconContextProvider value={{ getIcon }}>
