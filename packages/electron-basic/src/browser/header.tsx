@@ -7,6 +7,7 @@ import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IWindowService } from '@ali/ide-window';
 import { getIcon } from '@ali/ide-core-browser';
 import { observable } from 'mobx';
+import { basename } from '@ali/ide-core-common/lib/utils/paths';
 
 const state = observable({
   maximized: (global as any).electronEnv.isMaximized(),
@@ -113,5 +114,7 @@ export const TitleInfo = observer(() => {
     }
   }
 
-  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{ currentResource ? currentResource.name + ' -- ' : null} {replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE'}</span></div>;
+  const dirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : undefined;
+
+  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{ currentResource ? currentResource.name + ' -- ' : null} { dirname ? dirname + ' - '  : '' } {replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE'}</span></div>;
 });
