@@ -1,16 +1,14 @@
-import * as React from 'react';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
+import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-import { IMenuRegistry, AbstractContextMenuService, MenuId, generateCtxMenu, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
 import { ActivationEventService } from '@ali/ide-activation-event';
-import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -22,12 +20,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   @Autowired(IMenuRegistry)
   menus: IMenuRegistry;
-
-  @Autowired(AbstractContextMenuService)
-  private readonly ctxMenuService: AbstractContextMenuService;
-
-  @Autowired(ICtxMenuRenderer)
-  private readonly contextMenuRenderer: ICtxMenuRenderer;
 
   @Autowired()
   private layoutState: LayoutState;
@@ -114,7 +106,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     for (const service of this.services.values()) {
       const {currentId, size} = this.state[service.location] || {};
       service.prevSize = size;
-      service.currentContainerId = currentId !== undefined ? (service.containersMap.has(currentId) ? currentId : '') : service.containersMap.keys().next().value;
+      service.currentContainerId = currentId !== undefined ? (service.containersMap.has(currentId) ? currentId : '') : service.visibleContainers[0].options!.containerId;
     }
   }
 
@@ -145,7 +137,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   getTabbarService(location: string, noAccordion?: boolean) {
     const service = this.services.get(location) || this.injector.get(TabbarService, [location, noAccordion]);
     if (!this.services.get(location)) {
-      service.onCurrentChange(({previousId, currentId}) => {
+      service.onCurrentChange(({currentId}) => {
         this.storeState(service, currentId);
         if (currentId && !service.noAccordion) {
           const accordionService = this.getAccordionService(currentId);
@@ -154,7 +146,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
           });
         }
       });
-      service.onSizeChange(({size}) => debounce(() => this.storeState(service, service.currentContainerId), 200)());
+      service.onSizeChange(() => debounce(() => this.storeState(service, service.currentContainerId), 200)());
       this.services.set(location, service);
     }
     return service;
