@@ -25,6 +25,7 @@ export * from './tree';
 
 // blocks
 export * from './actionbar';
+export * from './settings';
 
 // 自定义颜色
 

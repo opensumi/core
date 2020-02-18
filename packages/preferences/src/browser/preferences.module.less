@@ -15,26 +15,7 @@
     justify-content: space-between;
     align-items: center;
     padding-right:20px;
-    .preferences_scopes {
-      display: flex;
-      position: relative;
-      flex-shrink: 0;
-      margin-right: 50px;
-      > div {
-        cursor: pointer;
-        padding:10px;
-        border-bottom: 1px solid transparent;
-        z-index: 1;
-        color: var(--tab-inactiveForeground);
-        &:hover {
-          color: var(--tab-activeForeground);
-        }
-        &.activated {
-          border-bottom-color: var(--tab-activeBorder);
-          color: var(--tab-activeForeground);
-        }
-      }
-    }
+
     height: 40px;
     .search_pref {
       flex-grow:1;
@@ -178,6 +159,16 @@
     }
   }
 
+  .tabs {
+    padding: 0 !important;
+
+    :global {
+      .kt-tab {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+  }
 }
 
 .preference_status {
