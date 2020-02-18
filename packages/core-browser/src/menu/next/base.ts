@@ -2,7 +2,6 @@ import { ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, 
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { MenuId } from './menu-id';
-import { CtxMenuRenderParams } from './renderer/ctxmenu/base';
 
 export const NextMenuContribution = Symbol('NextMenuContribution');
 export interface NextMenuContribution {
@@ -67,6 +66,7 @@ export abstract class IMenuRegistry {
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
   abstract registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable;
   abstract registerMenuItems(menuId: MenuId | string, items: Array<IMenuItem | ISubmenuItem>): IDisposable;
+  abstract unregisterMenuId(menuId: string): IDisposable;
   abstract getMenuItems(menuId: MenuId | string): Array<IMenuItem | ISubmenuItem>;
 }
 
@@ -84,14 +84,18 @@ export interface IExtendMenubarItem extends IMenubarItem {
 @Injectable()
 export class CoreMenuRegistryImpl implements IMenuRegistry {
   private readonly _menubarItems = new Map<string, IExtendMenubarItem>();
-  private readonly _onDidChangeMenubar = new Emitter<string>();
 
+  private readonly _onDidChangeMenubar = new Emitter<string>();
   readonly onDidChangeMenubar: Event<string> = this._onDidChangeMenubar.event;
 
   private readonly _menuItems = new Map<string, Array<IMenuItem | ISubmenuItem>>();
-  private readonly _onDidChangeMenu = new Emitter<string>();
 
+  private readonly _onDidChangeMenu = new Emitter<string>();
   readonly onDidChangeMenu: Event<string> = this._onDidChangeMenu.event;
+
+  // 记录被禁用的 menu-id
+  // TODO: 考虑是否存到持久化数据中? @taian.lta
+  private readonly _disabledMenuIds = new Set<string>();
 
   @Autowired(NextMenuContribution)
   protected readonly contributions: ContributionProvider<NextMenuContribution>;
@@ -176,7 +180,26 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     return combinedDisposable(disposables);
   }
 
+  unregisterMenuId(menuId: string): IDisposable {
+    this._disabledMenuIds.add(menuId);
+    this._onDidChangeMenu.fire(menuId);
+
+    return {
+      dispose: () => {
+        const deleted = this._disabledMenuIds.delete(menuId);
+        if (deleted) {
+          this._onDidChangeMenu.fire(menuId);
+        }
+      },
+    };
+  }
+
   getMenuItems(id: MenuId | string): Array<IMenuItem | ISubmenuItem> {
+    // 将 disable 掉的 MenuId 返回为空
+    if (this._disabledMenuIds.has(id)) {
+      return [];
+    }
+
     const result = (this._menuItems.get(id) || []).slice(0);
 
     if (id === MenuId.CommandPalette) {

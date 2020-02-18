@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder, URI, ILogger, formatLocalize } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, IElectronMainMenuService, localize, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder, URI, ILogger, formatLocalize } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ElectronHeaderBar } from './header';
 import { WelcomeContribution } from './welcome/contribution';
