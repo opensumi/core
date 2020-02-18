@@ -13,16 +13,25 @@ import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
 import Dropdown from 'antd/lib/dropdown';
 import Menu from 'antd/lib/menu';
-import Tabs from 'antd/lib/tabs';
-import 'antd/lib/tabs/style/index.less';
+import { Tabs } from '@ali/ide-components';
 import 'antd/lib/dropdown/style/index.less';
 import 'antd/lib/menu/style/index.less';
 
-const { TabPane } = Tabs;
+const tabMap = [
+  {
+    key: 'readme',
+    label: localize('marketplace.extension.readme'),
+  },
+  {
+    key: 'changelog',
+    label: localize('marketplace.extension.changelog'),
+  },
+];
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
   const { extensionId, version } = props.resource.uri.getParsedQuery();
+  const [tabIndex, setTabIndex] = React.useState(0);
   const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
   const [updated, setUpdated] = React.useState(false);
@@ -41,8 +50,6 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
   const extension = rawExtension || currentExtension;
   const installed = rawExtension && rawExtension.installed;
-
-  console.log('version', version);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -186,14 +193,20 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           </div>
         </div>)}
         {currentExtension && (<div className={styles.body}>
-          <Tabs tabBarStyle={{marginBottom: 0}}>
-            <TabPane className={styles.content} tab={localize('marketplace.extension.readme')} key='readme'>
+          <Tabs
+            className={styles.tabs}
+            value={tabIndex}
+            onChange={(index: number) => setTabIndex(index)}
+            tabs={tabMap.map((tab) => tab.label)}
+            />
+            <div className={styles.content}>
+            {tabMap[tabIndex].key === 'readme' && (
               <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`}/>
-            </TabPane>
-            <TabPane tab={localize('marketplace.extension.changelog')} key='changelog'>
+            )}
+            {tabMap[tabIndex].key === 'changelog' && (
               <Markdown content={currentExtension.changelog ? currentExtension.changelog : 'no changelog'}/>
-            </TabPane>
-          </Tabs>
+            )}
+            </div>
         </div>)}
     </div>
   );
