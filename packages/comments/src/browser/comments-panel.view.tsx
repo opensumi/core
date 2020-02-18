@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, isUndefined, ViewState } from '@ali/ide-core-browser';
-import { ICommentsService, ICommentsTreeNode } from '../common';
+import { useInjectable, isUndefined, ViewState, IEventBus } from '@ali/ide-core-browser';
+import { ICommentsService, ICommentsTreeNode, CommentPanelCollapse } from '../common';
 import * as styles from './comments.module.less';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 
@@ -26,6 +26,18 @@ export const CommentsPanel = observer<{ viewState: ViewState}>((props) => {
   const commentsService = useInjectable<ICommentsService>(ICommentsService);
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const [ treeNodes, setTreeNodes ] = React.useState<ICommentsTreeNode[]>([]);
+  const eventBus: IEventBus = useInjectable(IEventBus);
+
+  React.useEffect(() => {
+    eventBus.on(CommentPanelCollapse, () => {
+      setTreeNodes((nodes) => nodes.map((node) => {
+        if (!isUndefined(node.expanded)) {
+          node.expanded = false;
+        }
+        return node;
+      }));
+    });
+  }, []);
 
   React.useEffect(() => {
     setTreeNodes(commentsService.commentsTreeNodes);
