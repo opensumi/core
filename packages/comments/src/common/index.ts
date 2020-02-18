@@ -251,7 +251,11 @@ export interface ICommentsService {
   /**
    * threads 变化的事件
    */
-  onThreadsChanged: Event<void>;
+  onThreadsChanged: Event<ICommentsThread>;
+  /**
+   * threads 创建的事件
+   */
+  onThreadsCreated: Event<ICommentsThread>;
 }
 
 /**

@@ -54,15 +54,21 @@ export class CommentsService extends Disposable implements ICommentsService {
   @Autowired(ICommentsFeatureRegistry)
   commentsFeatureRegistry: ICommentsFeatureRegistry;
 
-  private _decorationChange = new Emitter<URI>();
+  private decorationChangeEmitter = new Emitter<URI>();
 
   @observable
   private threads = new Map<string, ICommentsThread>();
 
-  private threadsChangeEmitter = new Emitter<void>();
+  private threadsChangeEmitter = new Emitter<ICommentsThread>();
+
+  private threadsCreatedEmitter = new Emitter<ICommentsThread>();
 
   get onThreadsChanged() {
     return this.threadsChangeEmitter.event;
+  }
+
+  get onThreadsCreated() {
+    return this.threadsCreatedEmitter.event;
   }
 
   private createDecoration(
@@ -88,29 +94,21 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   public init() {
     this.registerDecorationProvider();
-    // 第一次必须要手动 fire
-    this._decorationChange.fire(
-      this.workbenchEditorService.currentResource?.uri!,
-    );
   }
 
   public handleOnCreateEditor(editor: IEditor) {
-    const ranges = this.getContributionRanges();
-    if (ranges.length || this.threads.size) {
-      const disposer = new Disposable();
-      const editorOptions = editor.getType() === EditorType.CODE ? {
-        lineNumbersMinChars: 3,
-        lineDecorationsWidth: '1.5ch',
-      } : {
-        lineNumbersMinChars: 5,
-        lineDecorationsWidth: '3ch',
-      };
-      editor.monacoEditor.updateOptions(editorOptions);
-      // 绑定点击事件
-      disposer.addDispose(this.bindClickGutterEvent(editor));
-      return disposer;
-    }
-    return Disposable.NULL;
+    const disposer = new Disposable();
+    const editorOptions = editor.getType() === EditorType.CODE ? {
+      lineNumbersMinChars: 3,
+      lineDecorationsWidth: '1.5ch',
+    } : {
+      lineNumbersMinChars: 5,
+      lineDecorationsWidth: '3ch',
+    };
+    editor.monacoEditor.updateOptions(editorOptions);
+    // 绑定点击事件
+    disposer.addDispose(this.bindClickGutterEvent(editor));
+    return disposer;
   }
 
   // 绑定点击 gutter 事件
@@ -159,11 +157,13 @@ export class CommentsService extends Disposable implements ICommentsService {
     const thread = this.injector.get(CommentsThread, [uri, range, options]);
     thread.onDispose(() => {
       this.threads.delete(thread.id);
-      this.threadsChangeEmitter.fire();
+      this.threadsChangeEmitter.fire(thread);
     });
     this.threads.set(thread.id, thread);
     this.addDispose(thread);
-    this.threadsChangeEmitter.fire();
+    this.threadsChangeEmitter.fire(thread);
+    this.threadsCreatedEmitter.fire(thread);
+    this.decorationChangeEmitter.fire(uri);
     return thread;
   }
 
@@ -245,11 +245,11 @@ export class CommentsService extends Disposable implements ICommentsService {
     return treeNodes;
   }
 
-  private getContributionRanges(): IRange[] {
+  private async getContributionRanges(): Promise<IRange[]> {
     const editor = this.workbenchEditorService.currentEditor!;
-    const res = this.contributions.getContributions().map((contribution) => {
+    const res = await Promise.all(this.contributions.getContributions().map((contribution) => {
       return contribution.provideCommentingRanges(editor);
-    });
+    }));
     // 拍平，去掉 undefined
     return flattenDeep(res).filter(Boolean);
   }
@@ -259,10 +259,10 @@ export class CommentsService extends Disposable implements ICommentsService {
       this.editorDecorationCollectionService.registerDecorationProvider({
         schemes: ['file', 'git'],
         key: 'comments',
-        onDidDecorationChange: this._decorationChange.event,
-        provideEditorDecoration: (uri: URI) => {
+        onDidDecorationChange: this.decorationChangeEmitter.event,
+        provideEditorDecoration: async (uri: URI) => {
           const decorations: monaco.editor.IModelDeltaDecoration[] = [];
-          const ranges = this.getContributionRanges();
+          const ranges = await this.getContributionRanges();
           if (ranges && ranges.length) {
             decorations.push(
               ...ranges.map((range) => ({
