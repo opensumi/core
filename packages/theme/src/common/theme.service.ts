@@ -39,7 +39,7 @@ export interface IIconService {
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType, shape?: IconShape): string | undefined;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
-  getAvailableThemeInfos(): ThemeInfo[];
+  getAvailableThemeInfos(): IconThemeInfo[];
 }
 
 export interface IThemeData extends ThemeMix {
@@ -127,6 +127,7 @@ const HC_BLACK_THEME_NAME = 'hc-black';
 export interface ThemeContribution {
   id?: string;
   label: string;
+  // default to be vs
   uiTheme?: BuiltinTheme;
   path: string;
 }
@@ -217,6 +218,11 @@ export interface ThemeInfo {
   base: BuiltinTheme;
   themeId: string;
   inherit?: boolean;
+}
+
+export interface IconThemeInfo {
+  name: string;
+  themeId: string;
 }
 
 export function themeColorFromId(id: ColorIdentifier) {
