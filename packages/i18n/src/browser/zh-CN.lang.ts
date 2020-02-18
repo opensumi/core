@@ -458,6 +458,8 @@ export const localizationBundle = {
     'theme.base.vs': '浅色主题',
     'theme.base.vs-dark': '深色主题',
     'theme.base.hc-black': '高对比度主题',
+    'theme.quickopen.plh': '选择主题（上下移动光标预览）',
+    'icon.quickopen.plh': '选择图标主题（上下移动光标预览）',
 
     'preference.workbench.list.openMode': '控制如何（如果支持）在树和列表中打开项目。对于有子节点的父节点，此设置将控制单击展开父节点还是双击。请注意，如果某些设置不启用，一些树和列表可能会选择忽略此设置。',
 

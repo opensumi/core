@@ -64,7 +64,10 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
         const defaultSelected = items.findIndex((opt) => opt.value === this.themeService.currentThemeId);
 
         const prevThemeId = this.iconService.currentThemeId;
-        const themeId = await this.showPickWithPreview(items, {selectIndex: () => defaultSelected}, (value) => {
+        const themeId = await this.showPickWithPreview(items, {
+          selectIndex: () => defaultSelected,
+          placeholder: localize('theme.quickopen.plh'),
+        }, (value) => {
           this.updateTopPreference('general.theme', value);
         });
         if (themeId) {
@@ -83,7 +86,10 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
         }));
         const defaultSelected = items.findIndex((opt) => opt.value === this.iconService.currentThemeId);
         const prevThemeId = this.iconService.currentThemeId;
-        const themeId = await this.showPickWithPreview(items, {selectIndex: () => defaultSelected}, (value) => {
+        const themeId = await this.showPickWithPreview(items, {
+          selectIndex: () => defaultSelected,
+          placeholder: localize('icon.quickopen.plh'),
+        }, (value) => {
           this.updateTopPreference('general.icon', value);
         });
         if (themeId) {
@@ -129,11 +135,11 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
         }
       });
       this.quickOpenService.open({
-        onType: (lookfor, acceptor) => acceptor(items),
+        onType: (_, acceptor) => acceptor(items),
       }, {
         onClose: () => resolve(undefined),
         fuzzyMatchLabel: true,
-        fuzzyMatchDescription: true,
+        showItemsWithoutHighlight: false,
         ...options,
       });
     });
