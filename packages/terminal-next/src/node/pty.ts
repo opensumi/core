@@ -3,7 +3,7 @@ import * as pty from 'node-pty';
 import * as shellPath from 'shell-path';
 import * as osLocale from 'os-locale';
 import * as omit from 'lodash.omit';
-import { ITerminalService, TerminalOptions } from '../common';
+import { TerminalOptions } from '../common';
 
 export { pty };
 
@@ -11,9 +11,11 @@ export interface IPty extends pty.IPty {
   bin: string;
 }
 
+const defaultWindowsType = 'powershell.exe';
+
 export class PtyService {
   create(rows: number, cols: number, options: TerminalOptions): IPty {
-    const bin = options.shellPath || process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL'] || '/bin/sh';
+    const bin = options.shellPath || process.env[os.platform() === 'win32' ? defaultWindowsType : 'SHELL'] || '/bin/sh';
     const locale = osLocale.sync();
     let ptyEnv: { [key: string]: string };
 
