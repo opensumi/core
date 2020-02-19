@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as styles from './extension-view.module.less';
 import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
-import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined, CommandRegistry, Command } from '@ali/ide-core-common';
+import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined, CommandRegistry, Command, IDisposable } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
@@ -9,6 +9,7 @@ import { ViewState, getIcon } from '@ali/ide-core-browser';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ICtxMenuRenderer, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
+import { useDisposable } from '@ali/ide-core-browser/lib/utils/react-hooks';
 
 import { ExtensionViewService } from './extension-view.service';
 import { ExtensionTreeViewModel, IExtensionTreeViewModel } from './extension-tree-view.model';
@@ -22,6 +23,8 @@ export interface ExtensionTabbarTreeViewProps {
   rendered: boolean;
   viewId: string;
 }
+
+const TREE_VIEW_COMMAND_PREFIX = 'treeView';
 
 const addTreeDatas = (oldNodes: TreeNode<any>[], newNodes: TreeNode<any>[], parentNode?: TreeNode<any>) => {
   let spliceIndex = 0;
@@ -70,11 +73,10 @@ export const ExtensionTabbarTreeView = observer(({
   const { width, height } = viewState;
   const scrollContainerStyle = { width, height };
   const injector = useInjectable(INJECTOR_TOKEN);
-  const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId]);
+  const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId, options]);
   const menuRegistry: IMenuRegistry = useInjectable(IMenuRegistry);
   const commandRegistry: CommandRegistry = useInjectable(CommandRegistry);
   const { canSelectMany, showCollapseAll }  = options;
-  const TREE_VIEW_COMMAND_PREFIX = 'treeView';
   const initTreeData = () => {
     const model = copyMap(extensionTreeViewModel.getTreeViewModel(viewId));
     dataProvider.setVisible(viewId, true);
@@ -220,23 +222,31 @@ export const ExtensionTabbarTreeView = observer(({
     setNodes(newNodes);
   };
 
-  React.useEffect(() => {
-
+  useDisposable(() => {
+    const disposables: IDisposable[] = [];
     if (showCollapseAll) {
       const collapseCommand: Command = {
         id: `${TREE_VIEW_COMMAND_PREFIX}_COLLAPSE_ALL_${viewId}`,
-      };
-      commandRegistry.registerCommand(collapseCommand, {
-        execute: () => {
-          collapseAll();
-        },
-      });
-      menuRegistry.registerMenuItem(MenuId.ViewTitle, {
+        label: '测试一下',
         iconClass: getIcon('collapse-all'),
-        when: `view == ${viewId}`,
-        command: collapseCommand.id,
-      });
+      };
+      disposables.push(
+        commandRegistry.registerCommand(collapseCommand, {
+          execute: () => {
+            collapseAll();
+          },
+        }),
+      );
+      disposables.push(
+        menuRegistry.registerMenuItem(MenuId.ViewTitle, {
+          command: collapseCommand.id,
+          when: `view == ${viewId}`,
+          group: 'navigation',
+          order: 10000, // keep the last position
+        }),
+      );
     }
+    return disposables;
   }, []);
 
   const getAllSubChildren = (node: TreeNode<any>, model: Map<string | number, IExtensionTreeViewModel>) => {
