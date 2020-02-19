@@ -1,4 +1,4 @@
-import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType, IEditor } from '../common';
+import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, IEditorOpenType, IEditor } from '../common';
 import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
@@ -26,6 +26,11 @@ export enum EditorComponentRenderMode {
   ONE_PER_GROUP = 2, // 每个Group最多存在一个新的
   ONE_PER_WORKBENCH = 3, // 整个IDE只有一个, 视图会被重用
 }
+
+/**
+ * 注册编辑器组件 Resolver 时触发
+ */
+export class RegisterEditorComponentResolverEvent extends BasicEvent<string> {}
 
 export abstract class EditorComponentRegistry {
 
