@@ -18,7 +18,7 @@ import {
   QuickOpenActionProvider,
   QuickOpenItem,
   QuickOpenService,
-  CorePreferences,
+  PreferenceService,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-core-browser';
@@ -28,7 +28,6 @@ import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, Pr
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorGroupSplitAction } from '@ali/ide-editor';
 import { getIcon } from '@ali/ide-core-browser';
-import { SearchPreferences } from '@ali/ide-search/lib/browser/search-preferences';
 import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
 
 const DEFAULT_FILE_SEARCH_LIMIT = 200;
@@ -132,17 +131,14 @@ export class FileSearchQuickCommandHandler {
   @Autowired()
   private readonly fileSearchActionProvider: FileSearchActionProvider;
 
-  @Autowired(CorePreferences)
-  private readonly corePreferences: CorePreferences;
-
-  @Autowired(SearchPreferences)
-  private readonly searchPreferences: SearchPreferences;
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   private cancelIndicator = new CancellationTokenSource();
   private currentLookFor: string = '';
   readonly default: boolean = true;
   readonly prefix: string = '...';
-  readonly description: string =  localize('file-search.command.fileOpen.description');
+  readonly description: string = localize('file-search.command.fileOpen.description');
 
   getModel(): QuickOpenModel {
     return {
@@ -374,8 +370,8 @@ export class FileSearchQuickCommandHandler {
 
   private getPreferenceSearchExcludes(): string[] {
     const excludes: string[] = [];
-    const fileExcludes = this.corePreferences['files.exclude'];
-    const searchExcludes = this.searchPreferences['search.exclude'];
+    const fileExcludes = this.preferenceService.get<object>('files.exclude');
+    const searchExcludes = this.preferenceService.get<object>('search.exclude');
     const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
     for (const key of Object.keys(allExcludes)) {
       if (allExcludes[key]) {
