@@ -1,13 +1,15 @@
+import { CommentsZoneWidget } from './comments-zone.view';
 import { Autowired } from '@ali/common-di';
 import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@ali/ide-core-browser';
-import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse } from '../common';
+import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse, CloseThreadId, ICommentsThread } from '../common';
 import { IEditor } from '@ali/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { CommentsPanel } from './comments-panel.view';
+import { IMenuRegistry, MenuId, NextMenuContribution } from '@ali/ide-core-browser/lib/menu/next';
 
-@Domain(ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution)
-export class CommentsBrowserContribution extends Disposable implements ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution {
+@Domain(ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, NextMenuContribution)
+export class CommentsBrowserContribution extends Disposable implements ClientAppContribution, BrowserEditorContribution, CommandContribution, TabBarToolbarContribution, NextMenuContribution {
 
   @Autowired(ICommentsService)
   private readonly commentsService: ICommentsService;
@@ -33,11 +35,30 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
   registerCommands(registry: CommandRegistry) {
     registry.registerCommand({
       id: CollapseId,
+      label: '%comments.panel.action.collapse%',
       iconClass: getIcon('collapse-all'),
     }, {
       execute: () => {
         this.eventBus.fire(new CommentPanelCollapse());
       },
+    });
+
+    registry.registerCommand({
+      id: CloseThreadId,
+      label: '%comments.thread.action.close%',
+      iconClass: getIcon('close'),
+    }, {
+      execute: (thread: ICommentsThread, widget: CommentsZoneWidget) => {
+        widget.toggle();
+      },
+    });
+  }
+
+  registerNextMenus(registry: IMenuRegistry): void {
+    registry.registerMenuItem(MenuId.CommentsCommentThreadTitle, {
+      command: CloseThreadId,
+      group: 'inline',
+      order: Number.MAX_SAFE_INTEGER,
     });
   }
 

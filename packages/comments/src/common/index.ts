@@ -283,4 +283,6 @@ export function toRange(position: monaco.IPosition | number): monaco.IRange {
 
 export const CollapseId = 'comments.panel.action.collapse';
 
+export const CloseThreadId = 'comments.thread.action.close';
+
 export class CommentPanelCollapse extends BasicEvent<void> {}

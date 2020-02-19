@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import * as styles from './comments.module.less';
-import { getIcon, ConfigProvider, IRange, localize } from '@ali/ide-core-browser';
+import { ConfigProvider, localize } from '@ali/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
 import { ICommentReply } from '../common';
@@ -11,31 +11,30 @@ import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
 import { CommentsThread } from './comments-thread';
 
-const expandIconClassName = getIcon('down');
-
 export interface ICommentProps {
   thread: CommentsThread;
-  hide: () => void;
+  widget: CommentsZoneWidget;
 }
 
-const CommentsZone: React.FC<ICommentProps> = observer(({ thread, hide }) => {
-  const { commentThreadContext, readOnly, comments } = thread;
-  const [isFocusReply, setFocusReply] = React.useState(true);
-  const [rows, setRows] = React.useState(5);
+const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
+  const { commentThreadTitle, commentThreadContext, readOnly, comments } = thread;
+  const [isFocusReply] = React.useState(true);
+  const [rows] = React.useState(5);
   const [replyText, setReplyText] = React.useState('');
 
   function onBlurReply(event: React.FocusEvent<HTMLTextAreaElement>) {
+    // TODO: 和 ResizeZone Widget 配合使用会抖动，先注释掉
     // setFocusReply(false);
-    if (replyText === '') {
-      // setRows(1);
-    }
+    // if (replyText === '') {
+    //   setRows(1);
+    // }
   }
 
   function onFocusReply(event: React.FocusEvent<HTMLTextAreaElement>) {
     // setFocusReply(true);
-    if (replyText === '') {
-      // setRows(5);
-    }
+    // if (replyText === '') {
+    //   setRows(5);
+    // }
   }
 
   function onChangeReply(event: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -59,12 +58,12 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, hide }) => {
     <div className={styles.comment_container}>
       <div className={styles.head}>
         <div className={styles.review_title}>{comments.length > 0 ? commentTitleWithAuthor : startReview}</div>
-        <div>
-          <div
-            onClick={hide}
-            className={clx(styles.review_action, expandIconClassName)}
-          ></div>
-        </div>
+        <InlineActionBar
+          menus={commentThreadTitle}
+          context={[thread, widget]}
+          separator='inline'
+          type='icon'
+          />
       </div>
       <div>
         {comments.map((comment) => (
@@ -121,9 +120,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget {
     this.addDispose(this.observeContainer(this._wrapper));
     ReactDOM.render(
       <ConfigProvider value={thread.appConfig}>
-        <CommentsZone thread={thread} hide={() => {
-          this.toggle();
-        }} />
+        <CommentsZone thread={thread} widget={this} />
       </ConfigProvider>,
       this._wrapper,
     );
