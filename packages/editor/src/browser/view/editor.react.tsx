@@ -54,11 +54,9 @@ export const CodeEditor = (props: ICodeEditorProps) => {
     };
   }, [container.current]);
 
-  React.useEffect(() => {
-    if (props && props.editorRef) {
-      props.editorRef(editor);
-    }
-  }, [editor]);
+  if (props && editor && props.editorRef) {
+    props.editorRef(editor);
+  }
 
   if (uri) {
     if (fetchingUri !== uri) {
