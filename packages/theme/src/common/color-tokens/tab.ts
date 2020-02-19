@@ -19,7 +19,7 @@ export const TAB_UNFOCUSED_ACTIVE_BACKGROUND = registerColor('tab.unfocusedActiv
 }, localize('tabUnfocusedActiveBackground', 'Active tab background color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_INACTIVE_BACKGROUND = registerColor('tab.inactiveBackground', {
-  dark: '#35393D',
+  dark: '#2D2D2D',
   light: '#ECECEC',
   hc: null,
 }, localize('tabInactiveBackground', 'Inactive tab background color. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
@@ -37,8 +37,8 @@ export const TAB_UNFOCUSED_HOVER_BACKGROUND = registerColor('tab.unfocusedHoverB
 }, localize('tabUnfocusedHoverBackground', 'Tab background color in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_BORDER = registerColor('tab.border', {
-  dark: '#2C3033',
-  light: '#E0E0E0',
+  dark: '#252526',
+  light: '#F3F3F3',
   hc: contrastBorder,
 }, localize('tabBorder', 'Border to separate tabs from each other. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
@@ -104,13 +104,13 @@ export const TAB_UNFOCUSED_HOVER_BORDER = registerColor('tab.unfocusedHoverBorde
 
 export const TAB_ACTIVE_FOREGROUND = registerColor('tab.activeForeground', {
   dark: Color.white,
-  light: '#262626',
+  light: '#333333',
   hc: Color.white,
 }, localize('tabActiveForeground', 'Active tab foreground color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_INACTIVE_FOREGROUND = registerColor('tab.inactiveForeground', {
-  dark: '#D7DBDE',
-  light: '#4D4D4D',
+  dark: transparent(TAB_ACTIVE_FOREGROUND, 0.5),
+  light: transparent(TAB_ACTIVE_FOREGROUND, 0.7),
   hc: Color.white,
 }, localize('tabInactiveForeground', 'Inactive tab foreground color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
