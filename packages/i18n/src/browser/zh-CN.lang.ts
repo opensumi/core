@@ -533,5 +533,6 @@ export const localizationBundle = {
     'comments.participants': '参与者',
     'comments.zone.title': '开始讨论',
     'comments.panel.action.collapse': '全部折叠',
+    'comments.thread.action.close': '关闭面板',
   },
 };

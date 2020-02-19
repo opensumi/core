@@ -520,5 +520,6 @@ export const localizationBundle = {
     'comments.participants': 'Participants',
     'comments.zone.title': 'Start discussion',
     'comments.panel.action.collapse': 'Collapse All',
+    'comments.thread.action.close': 'Close Panel',
   },
 };

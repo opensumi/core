@@ -71,6 +71,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   private _commentThreadContext: IMenu;
   private _commentTitle: IMenu;
   private _commentContext: IMenu;
+  private _commentThreadTitle: IMenu;
 
   private _readOnly: boolean;
   private _isCollapsed: boolean;
@@ -110,6 +111,10 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     return this._commentContext;
   }
 
+  get commentThreadTitle() {
+    return this._commentThreadTitle;
+  }
+
   get readOnly() {
     return this._readOnly;
   }
@@ -140,9 +145,14 @@ export class CommentsThread extends Disposable implements ICommentsThread {
       MenuId.CommentsCommentContext,
       this.contextKeyService,
     );
+    this._commentThreadTitle = this.menuService.createMenu(
+      MenuId.CommentsCommentThreadTitle,
+      this.contextKeyService,
+    );
     this.addDispose(this._commentThreadContext);
     this.addDispose(this._commentTitle);
     this.addDispose(this._commentContext);
+    this.addDispose(this._commentThreadTitle);
   }
 
   private addWidgetByEditor(editor: IEditor) {
