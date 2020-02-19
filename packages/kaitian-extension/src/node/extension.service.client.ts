@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import * as path from 'path';
-import { uuid, INodeLogger } from '@ali/ide-core-node';
+import { uuid, INodeLogger, Uri } from '@ali/ide-core-node';
 import * as os from 'os';
 import { createHash } from 'crypto';
 
@@ -95,7 +95,6 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
   private convertLanguagePack(packageJson, languagePackPath: string) {
     const { contributes: { localizations }, publisher, name, version } = packageJson;
     const languagePacks: { [key: string]: any } = {};
-
     for (const localization of localizations) {
       const md5 = createHash('md5');
       // 这里需要添加languagePack路径作为id一部分，因为可能存在多个
@@ -125,7 +124,7 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     let languagePacks: { [key: string]: any } = {};
     const storagePath = await this.extensionStoragePathServer.getLastStoragePath() || DEFAULT_NLS_CONFIG_DIR;
     this.logger.log(`find ${languageId}， storagePath：${storagePath}`);
-    const languagePath = path.join(storagePath, 'languagepacks.json');
+    const languagePath = Uri.file(path.join(storagePath, 'languagepacks.json')).toString();
 
     if (await this.fileService.exists(languagePath)) {
       const rawLanguagePacks = await this.fileService.resolveContent(languagePath);
@@ -138,10 +137,15 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
       await this.fileService.createFile(languagePath);
     }
 
-    const rawPkgJson = (await this.fileService.resolveContent(path.join(languagePack, 'package.json'))).content;
-    const packageJson = JSON.parse(rawPkgJson);
+    const rawPkgJson = (await this.fileService.resolveContent(Uri.file(path.join(languagePack, 'package.json')).toString())).content;
+    let packageJson;
+    try {
+      packageJson = JSON.parse(rawPkgJson);
+    } catch (err) {
+      this.logger.error(err.message);
+    }
 
-    if (packageJson.contributes && packageJson.contributes.localizations) {
+    if (packageJson?.contributes && packageJson?.contributes?.localizations) {
       languagePacks = {
         ...languagePacks,
         ...this.convertLanguagePack(packageJson, languagePath),
@@ -151,7 +155,7 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     const languagePackJson = await this.fileService.getFileStat(languagePath);
     this.fileService.setContent(languagePackJson!, JSON.stringify(languagePacks));
 
-    const nlsConfig = await lp.getNLSConfiguration('f06011ac164ae4dc8e753a3fe7f9549844d15e35', path.join(os.homedir(), '.kaitian'), languageId.toLowerCase());
+    const nlsConfig = await lp.getNLSConfiguration('f06011ac164ae4dc8e753a3fe7f9549844d15e35', path.join(storagePath), languageId.toLowerCase());
     // tslint:disable-next-line: no-string-literal
     nlsConfig['_languagePackSupport'] = true;
     process.env.VSCODE_NLS_CONFIG = JSON.stringify(nlsConfig);
