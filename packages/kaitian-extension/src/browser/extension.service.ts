@@ -26,6 +26,8 @@ import {
   ExtHostAPIIdentifier,
   IMainThreadCommands,
   isLanguagePackExtension,
+  ViewColumn,
+  TextDocumentShowOptions,
 } from '../common/vscode';
 
 import {
@@ -55,7 +57,7 @@ import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.th
 import { createKaitianApiFactory } from './kaitian/main.thread.api.impl';
 import { createExtensionLogFactory } from './extension-log';
 
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
 import { IActivationEventService } from './types';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
@@ -893,9 +895,23 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_FOCUS_FILES_EXPLORER);
 
     commandRegistry.registerCommand(VSCodeCommands.OPEN, {
-      execute: (uriComponents: UriComponents) => {
+      execute: (uriComponents: UriComponents, columnOrOptions?: ViewColumn | TextDocumentShowOptions, label?: string) => {
         const uri = URI.from(uriComponents);
-        return workbenchEditorService.open(uri);
+        const options: IResourceOpenOptions = {};
+        if (columnOrOptions) {
+          if (typeof columnOrOptions === 'number') {
+            options.groupIndex = columnOrOptions;
+          } else {
+            options.groupIndex = columnOrOptions.viewColumn;
+            options.preserveFocus = columnOrOptions.preserveFocus;
+            options.range = columnOrOptions.selection;
+            options.preview = columnOrOptions.preview;
+          }
+        }
+        if (label) {
+          options.label = label;
+        }
+        return workbenchEditorService.open(uri, options);
       },
     });
 

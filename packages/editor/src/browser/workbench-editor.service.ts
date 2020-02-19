@@ -818,6 +818,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           if (!resource) {
             throw new Error('This uri cannot be opened!: ' + uri);
           }
+          if (options && options.label) {
+            resource.name = options.label;
+          }
           if (options && options.index !== undefined && options.index < this.resources.length) {
             this.resources.splice(options.index, 0, resource);
           } else {

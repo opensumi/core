@@ -210,6 +210,9 @@ export interface IResourceOpenOptions {
 
   groupIndex?: number;
 
+  // 强制使用这个作为tab名称
+  label?: string;
+
   split?: EditorGroupSplitAction;
 
   /**
