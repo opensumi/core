@@ -49,9 +49,6 @@
       "path": "./references/tsconfig.status-bar.json"
     },
     {
-      "path": "./references/tsconfig.activation-event.json"
-    },
-    {
       "path": "./references/tsconfig.main-layout.json"
     },
     {

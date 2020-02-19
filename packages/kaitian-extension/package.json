@@ -25,7 +25,6 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-activation-event": "1.7.8",
     "@ali/ide-connection": "1.7.8",
     "@ali/ide-core-common": "1.7.8",
     "@ali/ide-core-node": "1.7.8",

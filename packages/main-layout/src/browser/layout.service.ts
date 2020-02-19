@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
+import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
@@ -8,7 +8,6 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
-import { ActivationEventService } from '@ali/ide-activation-event';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -26,9 +25,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
-
-  @Autowired(ActivationEventService)
-  private activationEventService: ActivationEventService;
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 
@@ -118,6 +114,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
     const tabbarService = this.getTabbarService(location);
     if (!tabbarService) {
+      // tslint:disable-next-line no-console
       console.error(`没有找到${location}对应位置的TabbarService，无法切换面板`);
       return;
     }
@@ -142,7 +139,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         if (currentId && !service.noAccordion) {
           const accordionService = this.getAccordionService(currentId);
           accordionService.expandedViews.forEach((view) => {
-            this.activationEventService.fireEvent(`onView:${view.id}`);
+            this.eventBus.fire(new ExtensionActivateEvent({ topic: `onView:${view.id}` }));
           });
         }
       });
@@ -166,6 +163,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     if (!handler) {
       const containerId = this.viewToContainerMap.get(viewOrContainerId);
       if (!containerId) {
+        // tslint:disable-next-line no-console
         console.warn(`没有找到${viewOrContainerId}对应的tabbar！`);
       }
       handler = this.doGetTabbarHandler(containerId || '');
@@ -199,6 +197,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {
     if (Fc) {
+      // tslint:disable-next-line no-console
       console.warn('collectTabbarComponent api warning: Please move react component into options.component!');
     }
     const tabbarService = this.getTabbarService(side);
@@ -230,6 +229,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   replaceViewComponent(view: View, props?: any) {
     const containerId = this.viewToContainerMap.get(view.id);
     if (!containerId) {
+      // tslint:disable-next-line no-console
       console.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
       return;
     }
@@ -244,6 +244,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   disposeViewComponent(viewId: string) {
     const containerId = this.viewToContainerMap.get(viewId);
     if (!containerId) {
+      // tslint:disable-next-line no-console
       console.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
       return;
     }
@@ -263,6 +264,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const tabbarService = this.getTabbarService(location);
       tabbarService.disposeContainer(containerId);
     } else {
+      // tslint:disable-next-line no-console
       console.warn('没有找到containerId所属Tabbar!');
     }
   }

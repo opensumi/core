@@ -1,10 +1,11 @@
-import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
-import { ActivationEventModule, ActivationEventService } from '../src/browser';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import {  IActivationEventService } from '../../src/browser/types';
+import { KaitianExtensionModule } from '../../src/browser';
 
 describe('activation event test', () => {
 
-  const injector = createBrowserInjector([ActivationEventModule]);
-  const service: ActivationEventService = injector.get(ActivationEventService);
+  const injector = createBrowserInjector([KaitianExtensionModule]);
+  const service: IActivationEventService = injector.get(IActivationEventService);
 
   it('normal event should be listened', async (done) => {
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { ActivationEventService } from './types';
+import { IActivationEventService } from './types';
 import { IDisposable } from '@ali/ide-core-common/lib/disposable';
 import { MaybePromise } from '@ali/ide-core-common';
 import * as pm from 'picomatch';
@@ -11,7 +11,7 @@ import * as pm from 'picomatch';
  // topic可能支持data通配符，比如workspaceContains: **/a.json
 
 @Injectable()
-export class ActivationEventServiceImpl implements ActivationEventService {
+export class ActivationEventServiceImpl implements IActivationEventService {
 
   private eventListeners: Map<string, IActivationEventListener[]> = new Map();
 
@@ -24,7 +24,6 @@ export class ActivationEventServiceImpl implements ActivationEventService {
   }
 
   async fireEvent(topic: string, data: string = ''): Promise<void> {
-
     this.activatedEventSet.add({topic, data});
 
     let listeners: IActivationEventListener[] | undefined;

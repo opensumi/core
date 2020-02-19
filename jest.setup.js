@@ -12,9 +12,9 @@ const jsdom = new JSDOM(`<div id="main"></div>`, {
 global.document = jsdom.window.document;
 global.navigator = jsdom.window.navigator;
 global.Element = jsdom.window.Element;
+global.HTMLDivElement = jsdom.window.HTMLDivElement;
 global.fetch = jsdom.window.fetch;
 global.location = jsdom.window.location;
 global.getComputedStyle = jsdom.window.getComputedStyle;
 global.window = jsdom.window;
-
 jest.mock(join(__dirname, 'packages/monaco/src/browser/monaco-loader'));

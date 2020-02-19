@@ -7,9 +7,9 @@ import { IDebugServer } from '@ali/ide-debug';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
 import { DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
 import { getIcon } from '@ali/ide-core-browser';
-import { ExtHostEvent, Serializable } from './types';
-import { ActivationEventService } from '@ali/ide-activation-event/lib/browser';
+import { ExtHostEvent, Serializable, IActivationEventService } from './types';
 import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
+import { ActivationEventServiceImpl } from './activation.service';
 
 const RELOAD_WINDOW_COMMAND = {
   id: 'reload_window',
@@ -31,6 +31,10 @@ export class KaitianExtensionModule extends BrowserModule {
       token: DebugSessionContributionRegistry,
       useClass: ExtensionDebugSessionContributionRegistry,
       override: true,
+    },
+    {
+      token: IActivationEventService,
+      useClass: ActivationEventServiceImpl,
     },
     KaitianExtensionClientAppContribution,
   ];
@@ -54,8 +58,8 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 
-  @Autowired(ActivationEventService)
-  activationEventService: ActivationEventService;
+  @Autowired(IActivationEventService)
+  activationEventService: IActivationEventService;
 
   @Autowired(IPreferenceSettingsService)
   preferenceSettingsService: IPreferenceSettingsService;

@@ -15,7 +15,6 @@ import { QuickOpenModule } from '@ali/ide-quick-open/lib/browser';
 import { ClientCommonModule, BrowserModule, ConstructorOf } from '@ali/ide-core-browser';
 import { ThemeModule } from '@ali/ide-theme/lib/browser';
 
-import { ActivationEventModule } from '@ali/ide-activation-event';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/lib/browser';
 import { OutlineModule } from '@ali/ide-outline/lib/browser';
 import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
@@ -69,7 +68,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MarkersModule,
 
     ThemeModule,
-    ActivationEventModule,
     WorkspaceModule,
     ExtensionStorageModule,
     StorageModule,

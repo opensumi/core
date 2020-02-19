@@ -1,7 +1,7 @@
 import { TextmateRegistry } from './textmate-registry';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger } from '@ali/ide-core-browser';
-import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL, IGrammar } from 'vscode-textmate';
+import { Injectable, Autowired } from '@ali/common-di';
+import { WithEventBus, isElectronEnv, parseWithComments, PreferenceService, ILogger, ExtensionActivateEvent } from '@ali/ide-core-browser';
+import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, INITIAL } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 import { getNodeRequire } from './monaco-loader';
@@ -9,7 +9,6 @@ import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { ActivationEventService } from '@ali/ide-activation-event';
 import { ThemeMix } from '@ali/ide-theme';
 import URI from 'vscode-uri';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -73,9 +72,6 @@ export class TextmateService extends WithEventBus {
   @Autowired(IFileServiceClient)
   private fileServiceClient: IFileServiceClient;
 
-  @Autowired(ActivationEventService)
-  private activationEventService: ActivationEventService;
-
   @Autowired(WorkbenchEditorService)
   private editorService: WorkbenchEditorService;
 
@@ -135,7 +131,7 @@ export class TextmateService extends WithEventBus {
       });
 
       monaco.languages.onLanguage(language.id, () => {
-        this.activationEventService.fireEvent('onLanguage', language.id);
+        this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onLanguage', data: language.id }));
         this.activateLanguage(language.id);
       });
     }
