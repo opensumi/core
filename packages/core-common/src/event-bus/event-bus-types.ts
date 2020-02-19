@@ -12,7 +12,7 @@ export interface IAsyncEventFireOpts {
    */
   timeout?: number
 }
-export interface IEventLisnter<T> {
+export interface IEventListener<T> {
   (target: T): void;
 }
 
@@ -40,11 +40,11 @@ export interface IEventBus {
     }
    */
   fire(target: any, opts?: IEventFireOpts): void;
-  
+
   /**
    * 发送一个异步事件，等待并收集结果
-   * @param e 
-   * @param opts 
+   * @param e
+   * @param opts
    */
   fireAndAwait<R>(e: any, opts?: IAsyncEventFireOpts): Promise<IAsyncResult<R>[]>;
 
@@ -62,5 +62,9 @@ export interface IEventBus {
       }
     }
   */
-  on<T>(constructor: ConstructorOf<T>, listener: IEventLisnter<T>): IDisposable;
+  on<T>(constructor: ConstructorOf<T>, listener: IEventListener<T>): IDisposable;
+  /**
+   * 监听 EventBus 中的事件，只会触发一次
+  */
+  once<T>(constructor: ConstructorOf<T>, listener: IEventListener<T>): IDisposable;
 }

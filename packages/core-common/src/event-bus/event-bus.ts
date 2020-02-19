@@ -1,18 +1,18 @@
 import { Injectable } from '@ali/common-di';
-import { IEventBus, IEventLisnter, IEventFireOpts, IAsyncEventFireOpts } from './event-bus-types';
-import { Emitter, IAsyncResult } from '../event';
+import { IEventBus, IEventListener, IEventFireOpts, IAsyncEventFireOpts } from './event-bus-types';
+import { Emitter, IAsyncResult, Event } from '../event';
 import { BasicEvent } from './basic-event';
 import { ConstructorOf } from '../declare';
 
 @Injectable()
 export class EventBusImpl implements IEventBus {
-  
+
   private emitterMap = new Map<any, Emitter<any>>();
-  
+
   fire<T extends BasicEvent<any>>(e: T, opts: IEventFireOpts = {}) {
     const Constructor = e && e.constructor;
     if (
-      typeof Constructor === 'function' && 
+      typeof Constructor === 'function' &&
       BasicEvent.isPrototypeOf(Constructor)
     ) {
       const emitter = this.emitterMap.get(Constructor);
@@ -25,7 +25,7 @@ export class EventBusImpl implements IEventBus {
   async fireAndAwait<T extends BasicEvent<any>, R>(e: T, opts: IAsyncEventFireOpts = { timeout: 2000 }): Promise<IAsyncResult<R>[]> {
     const Constructor = e && e.constructor;
     if (
-      typeof Constructor === 'function' && 
+      typeof Constructor === 'function' &&
       BasicEvent.isPrototypeOf(Constructor)
     ) {
       const emitter = this.emitterMap.get(Constructor);
@@ -36,9 +36,14 @@ export class EventBusImpl implements IEventBus {
     return [];
   }
 
-  on<T>(Constructor: ConstructorOf<T>, listener: IEventLisnter<T>) {
+  on<T>(Constructor: ConstructorOf<T>, listener: IEventListener<T>) {
     const emitter = this.getOrCreateEmitter(Constructor);
     return emitter.event(listener);
+  }
+
+  once<T>(Constructor: ConstructorOf<T>, listener: IEventListener<T>) {
+    const emitter = this.getOrCreateEmitter(Constructor);
+    return Event.once(emitter.event)(listener);
   }
 
   private getOrCreateEmitter(key: any) {
@@ -51,4 +56,4 @@ export class EventBusImpl implements IEventBus {
     this.emitterMap.set(key, emitter);
     return emitter;
   }
-} 
+}
