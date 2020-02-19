@@ -94,6 +94,8 @@ export const localizationBundle = {
     'editor.format.chooseFormatter': 'Choose the Formatter',
     'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.chooseEncoding': 'Reopen with encoding (Unsaved Changes will be lost)',
+    'editor.changeEol': 'Select End Of Line Sequence',
+    'editor.changeLanguageId': 'Select Langugae Mode',
     'editor.configuration.maxTokenizationLineLength': 'Lines above this length will not be tokenized for performance reasons',
     'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',
     'status-bar.label.line': 'Ln',
@@ -102,6 +104,9 @@ export const localizationBundle = {
     'status-bar.label.tabType.space': 'Spaces',
     'status-bar.label.tabType.tab': 'Tab Size',
     'editor.closeOtherEditors': 'Close Others',
+    'status.editor.chooseLanguage': 'Choose Language Mode',
+    'status.editor.chooseEncoding': 'Choose Encoding',
+    'status.editor.changeEol': 'Select End Of Line Sequence',
 
     'edit.cut': 'Cut',
     'edit.copy': 'Copy',

@@ -78,6 +78,7 @@ export class EditorStatusBarService extends WithEventBus {
       alignment: StatusBarAlignment.RIGHT,
       priority: 1,
       command: EDITOR_COMMANDS.CHANGE_LANGUAGE.id,
+      tooltip: localize('status.editor.chooseLanguage'),
     });
     // TODO 语言的配置能力
     this.statusBar.addElement('editor-status-encoding', {
@@ -85,12 +86,14 @@ export class EditorStatusBarService extends WithEventBus {
       alignment: StatusBarAlignment.RIGHT,
       priority: 2,
       command: EDITOR_COMMANDS.CHANGE_ENCODING.id,
+      tooltip: localize('status.editor.chooseEncoding'),
     });
     this.statusBar.addElement('editor-status-eol', {
       text: eolText,
       alignment: StatusBarAlignment.RIGHT,
       priority: 3,
       command: EDITOR_COMMANDS.CHANGE_EOL.id,
+      tooltip: localize('status.editor.changeEol'),
     });
     this.statusBar.addElement('editor-status-space', {
       text: (insertSpaces ? localize('status-bar.label.tabType.space') : localize('status-bar.label.tabType.tab')) + ': ' + tabSize,

@@ -90,6 +90,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private _tryAutoSaveAfterDelay: (() => any) | undefined;
 
+  private _isInitOption = true;
+
   constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {
     super();
     this.onDispose(() => {
@@ -113,6 +115,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     this.baseContent = content;
 
+    this._isInitOption = false;
     this.listenTo(this.monacoModel);
     this.readCacheToApply();
   }
@@ -226,6 +229,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   set eol(eol) {
     this.monacoModel.setEOL(eol === EOL.LF ? EndOfLineSequence.LF : EndOfLineSequence.CRLF as any);
+    if (!this._isInitOption) {
+      this.eventBus.fire(new EditorDocumentModelOptionChangedEvent({
+        uri: this.uri,
+        eol,
+      }));
+    }
   }
 
   get eol() {
