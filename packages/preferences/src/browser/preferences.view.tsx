@@ -29,8 +29,8 @@ const UserScope = {
 
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
-  const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
-  const preferences: PreferenceService  = useInjectable(PreferenceService);
+  const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const preferences: PreferenceService = useInjectable(PreferenceService);
   const appConfig: AppConfig = useInjectable(AppConfig);
 
   const userBeforeWorkspace = preferences.get<boolean>('settings.userBeforeWorkspace');
