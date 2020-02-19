@@ -1,4 +1,4 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix, getThemeId, IThemeData, getThemeTypeSelector } from '../common/theme.service';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, getThemeId, IThemeData, getThemeTypeSelector } from '../common/theme.service';
 import { WithEventBus, localize, Emitter, Event } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
@@ -160,7 +160,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       themeInfos.push({
         themeId: getThemeId(contribution),
         name: label,
-        base: uiTheme,
+        base: uiTheme || 'vs',
       });
     }
     return themeInfos;

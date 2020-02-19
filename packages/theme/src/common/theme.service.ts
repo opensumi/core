@@ -39,7 +39,7 @@ export interface IIconService {
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType, shape?: IconShape): string | undefined;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
-  getAvailableThemeInfos(): ThemeInfo[];
+  getAvailableThemeInfos(): IconThemeInfo[];
 }
 
 export interface IThemeData extends ThemeMix {
@@ -82,6 +82,21 @@ export interface IColorMap {
 
 export type BuiltinTheme = 'vs' | 'vs-dark' | 'hc-black';
 
+export function getThemeTypeName(base: BuiltinTheme) {
+  const map = {
+    'vs': 'theme.base.vs',
+    'vs-dark': 'theme.base.vs-dark',
+    'hc-black': 'theme.base.hc-black',
+  };
+  return map[base];
+}
+
+export enum BuiltinThemeComparator {
+  'vs',
+  'vs-dark',
+  'hc-black',
+}
+
 export interface IStandaloneThemeData {
   base: BuiltinTheme;
   inherit: boolean;
@@ -112,6 +127,7 @@ const HC_BLACK_THEME_NAME = 'hc-black';
 export interface ThemeContribution {
   id?: string;
   label: string;
+  // default to be vs
   uiTheme?: BuiltinTheme;
   path: string;
 }
@@ -199,9 +215,14 @@ export type ColorValue = Color | string | ColorIdentifier | ColorFunction;
 
 export interface ThemeInfo {
   name: string;
-  base?: BuiltinTheme;
+  base: BuiltinTheme;
   themeId: string;
   inherit?: boolean;
+}
+
+export interface IconThemeInfo {
+  name: string;
+  themeId: string;
 }
 
 export function themeColorFromId(id: ColorIdentifier) {

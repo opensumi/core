@@ -1,7 +1,7 @@
-import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId } from '@ali/ide-core-browser';
+import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId, ILogger } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType, getThemeTypeSelector, IconType, IconShape } from '../common';
+import { ThemeType, IIconService, ThemeContribution, getThemeId, IIconTheme, getThemeTypeSelector, IconType, IconShape, IconThemeInfo } from '../common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
 
@@ -23,6 +23,9 @@ export class IconService implements IIconService {
 
   @Autowired(IPreferenceSettingsService)
   private preferenceSettings: IPreferenceSettingsService;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   private themeChangeEmitter: Emitter<IIconTheme> = new Emitter();
 
@@ -140,8 +143,8 @@ export class IconService implements IIconService {
     this.preferenceSettings.setEnumLabels('general.icon', map);
   }
 
-  getAvailableThemeInfos(): ThemeInfo[] {
-    const themeInfos: ThemeInfo[] = [];
+  getAvailableThemeInfos(): IconThemeInfo[] {
+    const themeInfos: IconThemeInfo[] = [];
     for (const {contribution} of this.iconContributionRegistry.values()) {
       const {
         label,
@@ -178,7 +181,7 @@ export class IconService implements IIconService {
     }
     const iconThemeData = await this.getIconTheme(themeId);
     if (!iconThemeData) {
-      console.warn('没有检测到目标图标主题插件，使用内置图标！');
+      this.logger.warn('没有检测到目标图标主题插件，使用内置图标！');
       document.getElementsByTagName('body')[0].classList.add('default-file-icons');
       return;
     }
