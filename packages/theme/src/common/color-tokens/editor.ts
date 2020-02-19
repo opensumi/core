@@ -20,7 +20,7 @@ export const editorHintBorder = registerColor('editorHint.border', { dark: null,
  * Because of bug https://monacotools.visualstudio.com/DefaultCollection/Monaco/_workitems/edit/13254
  * we are *not* using the color white (or #ffffff, rgba(255,255,255)) but something very close to white.
  */
-export const editorBackground = registerColor('editor.background', { light: '#fffffe', dark: '#202224', hc: Color.black }, localize('editorBackground', 'Editor background color.'));
+export const editorBackground = registerColor('editor.background', { light: '#fffffe', dark: '#1E1E1E', hc: Color.black }, localize('editorBackground', 'Editor background color.'));
 
 /**
  * Editor foreground color.
@@ -147,7 +147,7 @@ export const EDITOR_GROUP_FOCUSED_EMPTY_BORDER = registerColor('editorGroup.focu
 }, localize('editorGroupFocusedEmptyBorder', 'Border color of an empty editor group that is focused. Editor groups are the containers of editors.'));
 
 export const EDITOR_GROUP_HEADER_TABS_BACKGROUND = registerColor('editorGroupHeader.tabsBackground', {
-  dark: '#2C3033',
+  dark: '#252526',
   light: '#F3F3F3',
   hc: null,
 }, localize('tabsContainerBackground', 'Background color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.'));
@@ -159,13 +159,13 @@ export const EDITOR_GROUP_HEADER_NO_TABS_BACKGROUND = registerColor('editorGroup
 }, localize('editorGroupHeaderBackground', 'Background color of the editor group title header when tabs are disabled (`"workbench.editor.showTabs": false`). Editor groups are the containers of editors.'));
 
 export const EDITOR_GROUP_BORDER = registerColor('editorGroup.border', {
-  dark: '#2C3033',
+  dark: '#444444',
   light: '#E7E7E7',
   hc: contrastBorder,
 }, localize('editorGroupBorder', 'Color to separate multiple editor groups from each other. Editor groups are the containers of editors.'));
 
 export const EDITOR_DRAG_AND_DROP_BACKGROUND = registerColor('editorGroup.dropBackground', {
-  dark: Color.fromHex('#000000').transparent(0.5),
+  dark: Color.fromHex('#53595D').transparent(0.5),
   light: Color.fromHex('#2677CB').transparent(0.18),
   hc: null,
 }, localize('editorDragAndDropBackground', 'Background color when dragging editors around. The color should have transparency so that the editor contents can still shine through.'));
