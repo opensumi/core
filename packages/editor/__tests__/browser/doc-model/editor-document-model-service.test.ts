@@ -1,7 +1,4 @@
-import * as md5 from 'md5';
-import { uniqueId } from 'lodash';
 import { URI, IEventBus } from '@ali/ide-core-browser';
-
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
@@ -47,7 +44,7 @@ describe('EditorDocumentModelService', () => {
     const testCodeUri = new URI('test://testUri1');
     const testDoc1 = await editorDocModelService.createModelReference(testCodeUri);
     expect(testDoc1.instance.encoding).toBe('utf8');
-    await editorDocModelService.changeModelOptions(testCodeUri, { encoding: 'gbk' , langaugeId: 'javascript'});
+    await editorDocModelService.changeModelOptions(testCodeUri, { encoding: 'gbk' , languageId: 'javascript'});
     expect(testDoc1.instance.encoding).toBe('gbk');
     expect(testDoc1.instance.languageId).toBe('javascript');
 
@@ -62,6 +59,7 @@ describe('EditorDocumentModelService', () => {
     const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
 
     const testCodeUri = new URI('test://testUri2');
+    // tslint:disable-next-line:no-unused-variable
     const testDoc2 = await editorDocModelService.createModelReference(testCodeUri);
     expect(createFn).toBeCalledTimes(1);
 
