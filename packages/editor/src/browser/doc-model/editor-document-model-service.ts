@@ -1,5 +1,5 @@
 import * as md5 from 'md5';
-import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, STORAGE_SCHEMA, ILogger, IPreferenceSettingsService, PreferenceService } from '@ali/ide-core-browser';
+import { URI, IRef, ReferenceManager, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_SCHEMA, ILogger, PreferenceService } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, EditorDocumentModelOptionExternalUpdatedEvent, EditorDocumentModelCreationEvent, IPreferredModelOptions } from './types';
@@ -106,8 +106,11 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       if (options.encoding && options.encoding !== docRef.instance.encoding) {
         docRef.instance.updateEncoding(options.encoding);
       }
-      if (options.langaugeId && options.langaugeId !== docRef.instance.languageId) {
-        docRef.instance.languageId = options.langaugeId;
+      if (options.languageId && options.languageId !== docRef.instance.languageId) {
+        docRef.instance.languageId = options.languageId;
+      }
+      if (options.eol && options.eol !== docRef.instance.eol) {
+        docRef.instance.eol = options.eol;
       }
       docRef.dispose();
     }
@@ -213,7 +216,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       }
     }
 
-    const preferredLanguage = preferedOptions && preferedOptions.langaugeId;
+    const preferredLanguage = preferedOptions && preferedOptions.languageId;
 
     const [
       content,

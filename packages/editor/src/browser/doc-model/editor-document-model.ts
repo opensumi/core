@@ -226,6 +226,10 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   set eol(eol) {
     this.monacoModel.setEOL(eol === EOL.LF ? EndOfLineSequence.LF : EndOfLineSequence.CRLF as any);
+    this.eventBus.fire(new EditorDocumentModelOptionChangedEvent({
+      uri: this.uri,
+      eol,
+    }));
   }
 
   get eol() {

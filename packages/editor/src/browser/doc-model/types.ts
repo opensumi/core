@@ -155,7 +155,8 @@ export interface IEditorDocumentModelContentProvider {
 
 export interface IPreferredModelOptions {
   encoding?: string;
-  langaugeId?: string;
+  languageId?: string;
+  eol?: EOL;
 }
 
 export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
@@ -224,6 +225,7 @@ export interface IEditorDocumentModelOptionChangedEventPayload {
   uri: URI;
   encoding?: string;
   languageId?: string;
+  eol?: EOL;
 }
 
 export class EditorDocumentModelCreationEvent extends BasicEvent<IEditorDocumentModelCreationEventPayload> {}

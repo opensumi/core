@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService, IDocPersistentCacheProvider, IEditor, SaveReason, EOL } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer, Schemas, PreferenceService, Disposable, IPreferenceSettingsService } from '@ali/ide-core-browser';
@@ -433,13 +433,16 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
           value: language.id,
           description: `(${language.id})`,
         }));
-        const targetLanguageId = await this.quickPickService.show(allLanguageItems);
+        const targetLanguageId = await this.quickPickService.show(allLanguageItems, {
+          placeholder: localize('editor.changeLanguageId'),
+          selectIndex: () => allLanguageItems.findIndex((item) => item.value === this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.languageId),
+        });
         if (targetLanguageId && currentLanguageId !== targetLanguageId) {
           if (this.workbenchEditorService.currentEditor) {
             const currentDocModel = this.workbenchEditorService.currentEditor.currentDocumentModel;
             if (currentDocModel) {
               this.editorDocumentModelService.changeModelOptions(currentDocModel.uri, {
-                langaugeId: targetLanguageId,
+                languageId: targetLanguageId,
               });
             }
           }
@@ -462,6 +465,27 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
           if (res) {
             this.editorDocumentModelService.changeModelOptions(resource.uri, {
               encoding: res,
+            });
+          }
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.CHANGE_EOL, {
+      execute: async () => {
+        const resource = this.workbenchEditorService.currentResource;
+        const currentCodeEditor = this.workbenchEditorService.currentCodeEditor;
+        if (currentCodeEditor && currentCodeEditor.currentDocumentModel && resource) {
+          const res: EOL | undefined = await this.quickPickService.show([
+            {label: 'LF', value: EOL.LF},
+            {label: 'CRLF', value: EOL.CRLF},
+          ], {
+            placeholder: localize('editor.changeEol'),
+            selectIndex: () => currentCodeEditor.currentDocumentModel!.eol === EOL.LF ? 0 : 1,
+          });
+          if (res) {
+            this.editorDocumentModelService.changeModelOptions(resource.uri, {
+              eol: res,
             });
           }
         }

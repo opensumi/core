@@ -347,10 +347,16 @@ export const localizationBundle = {
     'editor.format.chooseFormatter': '选择要使用的格式化扩展',
     'editor.configuration.preferredFormatter': '优先使用的格式化器配置',
     'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
+    'editor.changeEol': '选择行尾序列',
+    'editor.changeLanguageId': '选择语言模式',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标记',
     'editor.configuration.quickSuggestionsDelay': '智能提示延迟（毫秒），默认 100 毫秒',
     'editor.configuration.tabSize': '一个Tab的缩进大小，如果设置了自动检测，那么可能会被自动检测结果覆盖',
     'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
+
+    'status.editor.chooseLanguage': '选择语言模式',
+    'status.editor.chooseEncoding': '选择编码',
+    'status.editor.changeEol': '选择行尾序列',
 
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
