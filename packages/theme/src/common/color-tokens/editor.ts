@@ -135,8 +135,8 @@ registerColor('editorGroup.background', {
 }, localize('editorGroupBackground', 'Deprecated background color of an editor group.'), false, localize('deprecatedEditorGroupBackground', 'Deprecated: Background color of an editor group is no longer being supported with the introduction of the grid editor layout. You can use editorGroup.emptyBackground to set the background color of empty editor groups.'));
 
 export const EDITOR_GROUP_EMPTY_BACKGROUND = registerColor('editorGroup.emptyBackground', {
-  dark: null,
-  light: null,
+  dark: '#202224',
+  light: '#FFFFFF',
   hc: null,
 }, localize('editorGroupEmptyBackground', 'Background color of an empty editor group. Editor groups are the containers of editors.'));
 
@@ -148,7 +148,7 @@ export const EDITOR_GROUP_FOCUSED_EMPTY_BORDER = registerColor('editorGroup.focu
 
 export const EDITOR_GROUP_HEADER_TABS_BACKGROUND = registerColor('editorGroupHeader.tabsBackground', {
   dark: '#2C3033',
-  light: '#F3F3F3',
+  light: '#F2F2F2',
   hc: null,
 }, localize('tabsContainerBackground', 'Background color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.'));
 
@@ -159,13 +159,13 @@ export const EDITOR_GROUP_HEADER_NO_TABS_BACKGROUND = registerColor('editorGroup
 }, localize('editorGroupHeaderBackground', 'Background color of the editor group title header when tabs are disabled (`"workbench.editor.showTabs": false`). Editor groups are the containers of editors.'));
 
 export const EDITOR_GROUP_BORDER = registerColor('editorGroup.border', {
-  dark: '#2C3033',
-  light: '#E7E7E7',
+  dark: '#43484D',
+  light: '#E0E0E0',
   hc: contrastBorder,
 }, localize('editorGroupBorder', 'Color to separate multiple editor groups from each other. Editor groups are the containers of editors.'));
 
 export const EDITOR_DRAG_AND_DROP_BACKGROUND = registerColor('editorGroup.dropBackground', {
-  dark: Color.fromHex('#000000').transparent(0.5),
-  light: Color.fromHex('#2677CB').transparent(0.18),
+  dark: Color.fromHex('#5F656B').transparent(0.25),
+  light: Color.fromHex('#CCCCCC').transparent(0.25),
   hc: null,
 }, localize('editorDragAndDropBackground', 'Background color when dragging editors around. The color should have transparency so that the editor contents can still shine through.'));

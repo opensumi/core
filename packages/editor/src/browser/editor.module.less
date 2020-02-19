@@ -48,6 +48,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  background-color: var(--editorGroup-emptyBackground);
 
   .kt_editor_background {
     background-position: center;
@@ -139,6 +140,10 @@
       background: var(--tab-inactiveBackground);
       border-bottom: 1px solid var(--tab-border);
       z-index: 1;
+      &:hover {
+        background-color: var(--tab-hoverBackground);
+        border-bottom-color: var(--tab-hoverBorder) !important;
+      }
       div:first-child {
         margin-right:5px;
         flex-shrink: 0;
@@ -186,6 +191,8 @@
         color: var(--tab-activeForeground);
         border-bottom: 1px solid var(--tab-activeBackground);
         border-bottom-color: var(--tab-activeBorder);
+        border-top: 1px solid var(--tab-activeBackground);
+        border-top-color: var(--tab-activeBorderTop);
         .dirty {
           &::before {
             background-color: var(--kt-dirtyDot-foreground);
