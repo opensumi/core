@@ -13,7 +13,4 @@ export class MenuBarContribution implements ComponentContribution {
       size: 27,
     });
   }
-
-  registerCommands(): void {
-  }
 }

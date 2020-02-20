@@ -3,7 +3,8 @@
   "compilerOptions": {
     "sourceMap": true,
     "skipLibCheck": false,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "noUnusedLocals": false,
   },
   "include": [
     "./packages",

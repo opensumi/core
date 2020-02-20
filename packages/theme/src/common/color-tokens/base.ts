@@ -1,5 +1,6 @@
 import { registerColor, transparent } from '../color-registry';
 import { localize } from '@ali/ide-core-common';
+import { editorWarningForeground, editorErrorForeground, editorInfoForeground } from './editor';
 
 // base colors
 export const foreground = registerColor('foreground', { dark: '#CCCCCC', light: '#616161', hc: '#FFFFFF' }, localize('foreground', 'Overall foreground color. This color is only used if not overridden by a component.'));
@@ -40,7 +41,7 @@ export const iconSecondaryForeground = registerColor(
 
 export const errorIconForeground = registerColor(
   'kt.errorIconForeground',
-  { dark: '#DB4345', light: '#FF4D4F', hc: iconForeground },
+  { dark: editorErrorForeground, light: editorErrorForeground, hc: editorErrorForeground },
   localize('errorIconForeground', 'Foreground color for error icon'),
 );
 
@@ -50,9 +51,15 @@ export const errorBackground = registerColor(
   localize('errorBackground', 'Background color for error text'),
 );
 
+/**
+ * 备注: 为保障对 vscode theme 插件的最大程度兼容
+ * 这里 [warning/error/info]IconForeground
+ * 皆 fallback 到 vscode token 中 notificationsIcon 相关的默认值
+ * 即全部 fallback 搭配 editorForeground 色值
+ */
 export const warningIconForeground = registerColor(
   'kt.warningIconForeground',
-  { dark: '#DBA936', light: '#FFC53D', hc: iconForeground },
+  { dark: editorWarningForeground, light: editorWarningForeground, hc: editorWarningForeground },
   localize('warningIconForeground', 'Foreground color for warning icon'),
 );
 
@@ -76,7 +83,7 @@ export const successBackground = registerColor(
 
 export const infoIconForeground = registerColor(
   'kt.infoIconForeground',
-  { dark: '#3895EB', light: '#3D9CF5', hc: iconForeground },
+  { dark: editorInfoForeground, light: editorInfoForeground, hc: editorInfoForeground },
   localize('infoIconForeground', 'Foreground color for info icon'),
 );
 
