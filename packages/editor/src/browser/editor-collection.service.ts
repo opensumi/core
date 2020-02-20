@@ -36,6 +36,12 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   @Autowired(IEditorDocumentModelService)
   documentModelService: IEditorDocumentModelService;
 
+  private _currentEditor: IEditor | undefined;
+
+  get currentEditor() {
+    return this._currentEditor;
+  }
+
   constructor() {
     super();
     this.preferenceService.onPreferencesChanged((e) => {
@@ -79,6 +85,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
       if (!this._editors.has(editor)) {
         this._editors.add(editor);
         this.editorFeatureRegistry.runContributions(editor);
+        editor.monacoEditor.onDidFocusEditorWidget(() => {
+          this._currentEditor = editor;
+        });
       }
     });
     if (this._editors.size !== beforeSize) {
@@ -90,6 +99,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     const beforeSize = this._editors.size;
     editors.forEach((editor) => {
       this._editors.delete(editor);
+      if (this._currentEditor === editor) {
+        this._currentEditor = undefined;
+      }
     });
     if (this._editors.size !== beforeSize) {
       // fire event;

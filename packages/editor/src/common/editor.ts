@@ -107,6 +107,7 @@ export interface IDiffEditor extends IDisposable {
 
 @Injectable()
 export abstract class EditorCollectionService {
+  public readonly currentEditor: IEditor | undefined;
   public abstract async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor>;
   public abstract async createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<IDiffEditor>;
   public abstract listEditors(): IEditor[];

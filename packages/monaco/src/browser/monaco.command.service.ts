@@ -1,10 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, localize, CommandService, isElectronRenderer, IReporterService, REPORT_NAME } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME } from '@ali/ide-core-browser';
 
 import ICommandEvent = monaco.commands.ICommandEvent;
 import ICommandService = monaco.commands.ICommandService;
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
+import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
 import { SELECT_ALL_COMMAND } from './monaco-menu';
 
 /**
@@ -60,6 +59,7 @@ export class MonacoCommandService implements ICommandService {
 
   @Autowired(IReporterService)
   reporterService: IReporterService;
+
   /**
    * 设置委托对象
    * @param delegate 真正要执行 monaco 内部 command 的 commandSerice
@@ -108,6 +108,9 @@ export class MonacoCommandRegistry {
 
   @Autowired(WorkbenchEditorService)
   protected workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(EditorCollectionService)
+  editorCollectionService: EditorCollectionService;
 
   /**
    * 给命令加入 monaco 前缀，防止全局被污染
@@ -202,8 +205,12 @@ export class MonacoCommandRegistry {
     const editorGroup = this.workbenchEditorService.currentEditorGroup;
     if (editorGroup) {
       const editor = editorGroup.currentFocusedEditor || editorGroup.currentEditor;
-      return editor ? editor.monacoEditor : undefined;
+      if (editor) {
+        return editor.monacoEditor;
+      }
     }
+    // 如果不是在 workbenchEditorService 管理的 editor 中，可能是使用 React 组件创造的编辑器
+    return this.editorCollectionService.currentEditor && this.editorCollectionService.currentEditor.monacoEditor ;
   }
 }
 
