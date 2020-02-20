@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-comments",
-  "version": "1.7.8",
+  "version": "1.7.9",
   "files": [
     "lib"
   ],
@@ -20,13 +20,13 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-browser": "1.7.8",
-    "@ali/ide-core-common": "1.7.8",
-    "@ali/ide-core-node": "1.7.8",
-    "@ali/ide-editor": "1.7.8",
-    "@ali/ide-main-layout": "1.7.8",
-    "@ali/ide-monaco-enhance": "1.7.8",
-    "@ali/ide-theme": "1.7.8",
+    "@ali/ide-core-browser": "1.7.9",
+    "@ali/ide-core-common": "1.7.9",
+    "@ali/ide-core-node": "1.7.9",
+    "@ali/ide-editor": "1.7.9",
+    "@ali/ide-main-layout": "1.7.9",
+    "@ali/ide-monaco-enhance": "1.7.9",
+    "@ali/ide-theme": "1.7.9",
     "lodash.flattendeep": "^4.4.0",
     "lodash.groupby": "^4.6.0"
   },
