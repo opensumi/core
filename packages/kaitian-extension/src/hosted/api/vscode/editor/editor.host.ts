@@ -1,9 +1,9 @@
 import { IExtensionHostEditorService, ExtensionDocumentDataManager, MainThreadAPIIdentifier } from '../../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import * as vscode from 'vscode';
-import { Uri, Position, Range, Selection, EndOfLine, TextEditorLineNumbersStyle} from '../../../../common/vscode/ext-types';
+import { Uri, Position, Range, Selection, TextEditorLineNumbersStyle} from '../../../../common/vscode/ext-types';
 import { ISelection, Emitter, Event, IRange, getLogger, Disposable } from '@ali/ide-core-common';
-import { TypeConverts, toPosition, fromPosition, fromRange, fromSelection } from '../../../../common/vscode/converter';
+import { TypeConverts, fromRange, fromSelection, viewColumnToResourceOpenOptions } from '../../../../common/vscode/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../../common/vscode/editor';
 import { TextEditorEdit } from './edit.builder';
 import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
@@ -106,12 +106,12 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     let options: IResourceOpenOptions;
     if (typeof columnOrOptions === 'number') {
       options = {
-        groupIndex: columnOrOptions,
+        ...viewColumnToResourceOpenOptions(columnOrOptions),
         preserveFocus,
       };
     } else if (typeof columnOrOptions === 'object') {
       options = {
-        groupIndex: columnOrOptions.viewColumn,
+        ...viewColumnToResourceOpenOptions(columnOrOptions.viewColumn),
         preserveFocus: columnOrOptions.preserveFocus,
         range: typeof columnOrOptions.selection === 'object' ? TypeConverts.Range.from(columnOrOptions.selection) : undefined,
         // TODO pinned: typeof columnOrOptions.preview === 'boolean' ? !columnOrOptions.preview : undefined
@@ -295,7 +295,7 @@ export class TextEditorData {
   }
   setDecorations(decorationType: ExtHostTextEditorDecorationType, rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[]): void {
     if (decorationType.disposed) {
-      console.warn(`decorationType with key ${decorationType.key} has been disposed!`);
+      getLogger().warn(`decorationType with key ${decorationType.key} has been disposed!`);
       return;
     }
     let resolved: IDecorationApplyOptions[] = [];

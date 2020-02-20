@@ -1,6 +1,6 @@
-import {Event, URI, IDisposable, MaybeNull, BasicEvent} from '@ali/ide-core-common';
+import {Event, URI, IDisposable, MaybeNull } from '@ali/ide-core-common';
 import { ITheme } from '@ali/ide-theme';
-import { IEditorGroup, IEditor, IResourceOpenOptions, IResource } from '@ali/ide-editor';
+import { IEditorGroup } from '@ali/ide-editor';
 
 export const EDITOR_WEBVIEW_SCHEME = 'editor-webview';
 /**
@@ -163,7 +163,10 @@ export interface IEditorWebviewComponent<T extends IWebview | IPlainWebview> ext
 
   title: string;
 
-  open(groupIndex?: number);
+  open(options: {
+    groupIndex?: number,
+    relativeGroupIndex?: number,
+  });
 
   close();
 
