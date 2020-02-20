@@ -27,13 +27,11 @@ export interface ValidateInputProp extends InputProp {
 
 export interface InputProp extends React.InputHTMLAttributes<HTMLInputElement> {
   // 选中范围
-  selection: InputSelection;
+  selection?: InputSelection;
 }
 
-const PureInput: React.FC<InputProp> = (
-  { className, autoFocus, selection, onChange, ...restProps },
-  ref: React.MutableRefObject<HTMLInputElement>,
-) => {
+export const Input = React.forwardRef<HTMLInputElement, InputProp>((props, ref) => {
+  const { className, autoFocus, selection, onChange, ...restProps } = props;
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const [isDirty, setIsDirty] = React.useState(false);
   React.useImperativeHandle(ref, () => inputRef.current!);
@@ -67,9 +65,7 @@ const PureInput: React.FC<InputProp> = (
       {...restProps}
     />
   );
-};
-
-export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(PureInput);
+});
 
 export enum CheckBoxSize {
   SMALL,
