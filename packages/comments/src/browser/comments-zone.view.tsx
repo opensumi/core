@@ -1,8 +1,9 @@
 import * as React from 'react';
+import { Injectable, Autowired } from '@ali/common-di';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import * as styles from './comments.module.less';
-import { ConfigProvider, localize } from '@ali/ide-core-browser';
+import { ConfigProvider, localize, AppConfig } from '@ali/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
 import { ICommentReply } from '../common';
@@ -55,8 +56,8 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   }, []);
 
   return (
-    <div className={styles.comment_container}>
-      <div className={styles.head}>
+    <div className={clx(thread.options.threadClassName, styles.comment_container)}>
+      <div className={clx(thread.options.threadHeadClassName, styles.head)}>
         <div className={styles.review_title}>{comments.length > 0 ? commentTitleWithAuthor : startReview}</div>
         <InlineActionBar
           menus={commentThreadTitle}
@@ -110,8 +111,14 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   );
 });
 
+@Injectable({ multiple: true })
 export class CommentsZoneWidget extends ResizeZoneWidget {
+
+  @Autowired(AppConfig)
+  appConfig: AppConfig;
+
   private _wrapper: HTMLDivElement;
+
   constructor(protected editor: monaco.editor.ICodeEditor, thread: CommentsThread) {
     super(editor, thread.range);
     this._wrapper = document.createElement('div');
@@ -119,7 +126,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget {
     this._container.appendChild(this._wrapper);
     this.addDispose(this.observeContainer(this._wrapper));
     ReactDOM.render(
-      <ConfigProvider value={thread.appConfig}>
+      <ConfigProvider value={this.appConfig}>
         <CommentsZone thread={thread} widget={this} />
       </ConfigProvider>,
       this._wrapper,

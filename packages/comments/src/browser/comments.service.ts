@@ -172,6 +172,13 @@ export class CommentsService extends Disposable implements ICommentsService {
     return thread;
   }
 
+  public getThreadsByUri(uri: URI) {
+    return this.commentsThreads
+      .filter((thread) => thread.uri.isEqual(uri))
+      // 默认按照 rang 顺序 升序排列
+      .sort((a, b) => a.range.startLineNumber -  b.range.startLineNumber);
+  }
+
   @computed
   get commentsTreeNodes(): ICommentsTreeNode[] {
     let treeNodes: ICommentsTreeNode[] = [];

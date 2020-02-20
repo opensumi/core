@@ -192,6 +192,10 @@ export interface ICommentsThread extends IDisposable {
    */
   data?: any;
   /**
+   * thread 参数
+   */
+  options: ICommentsThreadOptions;
+  /**
    * 添加一条评论
    * @param comment
    */
@@ -220,6 +224,14 @@ export interface ICommentsThreadOptions {
    * 初始化折叠状态，默认为展开
    */
   isCollapsed?: boolean;
+  /**
+   * thread container className
+   */
+  threadClassName?: string;
+  /**
+   * thread title className
+   */
+  threadHeadClassName?: string;
   /**
    * 附属数据
    */
@@ -252,6 +264,12 @@ export interface ICommentsService {
    * @param options 额外参数
    */
   createThread(uri: URI, range: IRange, options?: ICommentsThreadOptions): ICommentsThread;
+  /**
+   * 获取指定 uri 下所有的 threads
+   * 默认按照 range 升序排列
+   * @param uri
+   */
+  getThreadsByUri(uri: URI): ICommentsThread[];
   /**
    * threads 变化的事件
    */

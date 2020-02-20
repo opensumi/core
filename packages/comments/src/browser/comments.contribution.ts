@@ -46,7 +46,7 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
     registry.registerCommand({
       id: CloseThreadId,
       label: '%comments.thread.action.close%',
-      iconClass: getIcon('close'),
+      iconClass: getIcon('up'),
     }, {
       execute: (thread: ICommentsThread, widget: CommentsZoneWidget) => {
         widget.toggle();
