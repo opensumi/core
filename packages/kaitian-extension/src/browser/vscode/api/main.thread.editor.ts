@@ -1,8 +1,8 @@
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, RenderLineNumbersType, TextEditorCursorStyle } from '../../../common/vscode';
-import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService } from '@ali/ide-editor';
+import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
-import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection, Delayer } from '@ali/ide-core-common';
+import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@ali/ide-core-common';
 import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
@@ -419,7 +419,7 @@ function isGroupEditorState(group: IEditorGroup) {
 }
 
 function getViewColumn(group: IEditorGroup) {
-  return group.index;
+  return group.index + 1;
 }
 
 function resourceEquals(r1: MaybeNull<IResource>, r2: MaybeNull<IResource>) {

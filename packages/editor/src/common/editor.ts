@@ -211,6 +211,9 @@ export interface IResourceOpenOptions {
 
   groupIndex?: number;
 
+  // 相对于当前活跃的 groupIndex
+  relativeGroupIndex?: number;
+
   // 强制使用这个作为tab名称
   label?: string;
 

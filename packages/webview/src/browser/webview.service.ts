@@ -3,10 +3,10 @@ import { isElectronRenderer, getLogger, localize, URI, IEventBus, Disposable, Ma
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFrameWebviewPanel } from './iframe-webview';
-import { ITheme, IThemeService } from '@ali/ide-theme';
+import { ITheme } from '@ali/ide-theme';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
-import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource, ResourceService } from '@ali/ide-editor';
+import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@ali/ide-editor';
 import { EditorComponentRegistry, EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 import { EditorWebviewComponentView } from './editor-webview';
 import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
@@ -27,9 +27,6 @@ export class WebviewServiceImpl implements IWebviewService {
 
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
-
-  @Autowired(IThemeService)
-  private themeService: IThemeService;
 
   constructor() {
 
@@ -160,8 +157,8 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
 
   private _webview: MaybeNull<T>;
 
-  open(groupIndex?: number | undefined) {
-    return this.workbenchEditorService.open(this.webviewUri, {groupIndex: groupIndex ? groupIndex - 1 : 0, preview: false});
+  open(options: { groupIndex?: number, relativeGroupIndex?: number}) {
+    return this.workbenchEditorService.open(this.webviewUri, {...options, preview: false});
   }
 
   close() {

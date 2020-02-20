@@ -1,7 +1,6 @@
 import { IMainThreadWebview, WebviewPanelShowOptions, IWebviewPanelOptions, IWebviewOptions, ExtHostAPIIdentifier, IExtHostWebview, IWebviewPanelViewState } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { UriComponents } from '../../../common/vscode/ext-types';
-import { IWebviewService, IEditorWebviewComponent, IWebview, EDITOR_WEBVIEW_SCHEME, IPlainWebview, IPlainWebviewComponentHandle } from '@ali/ide-webview';
+import { IWebviewService, IEditorWebviewComponent, IWebview, IPlainWebview, IPlainWebviewComponentHandle } from '@ali/ide-webview';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IDisposable, Disposable, URI, MaybeNull, IEventBus, ILogger } from '@ali/ide-core-browser';
@@ -9,6 +8,7 @@ import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 import { IKaitianExtHostWebviews } from '../../../common/kaitian/webview';
 import { IIconService, IconType } from '@ali/ide-theme';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
 
 @Injectable({multiple: true})
 export class MainThreadWebview extends Disposable implements IMainThreadWebview {
@@ -19,8 +19,6 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   private webivewPanels: Map<string, IWebviewPanel> = new Map();
 
   private plainWebviews: Map<string, IEditorWebviewComponent<IPlainWebview> |  IPlainWebviewComponentHandle > = new Map();
-
-  private activeWebivewPanel: string;
 
   private readonly _revivers = new Set<string>();
 
@@ -150,7 +148,8 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     editorWebview.webview.onDidClickLink((e) => {
       window.open(e.toString());
     });
-    editorWebview.open(showOptions.viewColumn);
+    const editorOpenOptions = viewColumnToResourceOpenOptions(showOptions.viewColumn);
+    editorWebview.open(editorOpenOptions);
 
   }
 
@@ -172,7 +171,8 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
   }
   $reveal(id: string, showOptions: WebviewPanelShowOptions = {}): void {
     const webviewPanel = this.getWebivewPanel(id);
-    webviewPanel.editorWebview.open(Object.assign({}, webviewPanel.showOptions, showOptions).viewColumn);
+    const viewColumn = Object.assign({}, webviewPanel.showOptions, showOptions).viewColumn;
+    webviewPanel.editorWebview.open(viewColumnToResourceOpenOptions(viewColumn));
   }
 
   $setTitle(id: string, value: string): void {
@@ -272,7 +272,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     if (!(handle as IEditorWebviewComponent<IPlainWebview>).open) {
       throw new Error('not able to open plain webview id:' + id);
     }
-    await (handle as IEditorWebviewComponent<IPlainWebview>).open(groupIndex);
+    await (handle as IEditorWebviewComponent<IPlainWebview>).open({groupIndex});
   }
 
   async $getWebviewResourceRoots(): Promise<string[]> {

@@ -180,11 +180,17 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   async open(uri: URI, options?: IResourceOpenOptions) {
     await this.initialize();
     let group = this.currentEditorGroup;
-    if (options && options.groupIndex) {
-      if (options.groupIndex >= this.editorGroups.length) {
+    let groupIndex: number | undefined;
+    if (options && (typeof options.groupIndex !== 'undefined')) {
+      groupIndex = options.groupIndex;
+    } else if (options && options.relativeGroupIndex) {
+      groupIndex = this.currentEditorGroup.index + options.relativeGroupIndex;
+    }
+    if (groupIndex) {
+      if (groupIndex >= this.editorGroups.length) {
         return group.open(uri, Object.assign({}, options, { split: EditorGroupSplitAction.Right }));
       } else {
-        group = this.sortedEditorGroups[options.groupIndex] || this.currentEditorGroup;
+        group = this.sortedEditorGroups[groupIndex] || this.currentEditorGroup;
       }
     }
     return group.open(uri, options);
