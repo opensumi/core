@@ -186,7 +186,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     } else if (options && options.relativeGroupIndex) {
       groupIndex = this.currentEditorGroup.index + options.relativeGroupIndex;
     }
-    if (groupIndex) {
+    if (typeof groupIndex === 'number' && groupIndex >= 0) {
       if (groupIndex >= this.editorGroups.length) {
         return group.open(uri, Object.assign({}, options, { split: EditorGroupSplitAction.Right }));
       } else {
