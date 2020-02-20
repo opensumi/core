@@ -1,6 +1,6 @@
-import { SymbolKind } from '@ali/ide-core-common';
+import { SymbolKind, getLogger } from '@ali/ide-core-common';
 
-export const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_9llik995rrs.css';
+export const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_f2azpunw76t.css';
 
 const iconPrefixes = ['kaitian-icon kticon-'];
 
@@ -39,7 +39,7 @@ export function getIcon(iconKey: string, options?: {
   }
   const iconValue = iconMap[iconPrefixes[lastIndex]][iconKey];
   if (!iconValue) {
-    console.warn('图标库缺失图标:' + iconKey);
+    getLogger().warn('图标库缺失图标:' + iconKey);
     return '';
   }
 
@@ -150,6 +150,9 @@ export const defaultIconMap = {
   'shrink': 'shrink',
   'terminal': 'terminal',
   'drag': 'drag',
+  'openfile': 'openfile',
+  'arrowup': 'arrowup',
+  'arrowdown': 'arrowdown',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {

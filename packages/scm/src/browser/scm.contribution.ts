@@ -121,7 +121,7 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
 
   registerEditorActions(registry: IEditorActionRegistry) {
     registry.registerEditorAction({
-      iconClass: getIcon('up'),
+      iconClass: getIcon('arrowup'),
       title: localize('scm.diff.change.previous'),
       when: 'isInDiffEditor',
       onClick: () => {
@@ -130,7 +130,7 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
     });
 
     registry.registerEditorAction({
-      iconClass: getIcon('down'),
+      iconClass: getIcon('arrowdown'),
       title: localize('scm.diff.change.next'),
       when: 'isInDiffEditor',
       onClick: () => {
