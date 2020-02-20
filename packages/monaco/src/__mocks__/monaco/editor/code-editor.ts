@@ -347,6 +347,14 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor implements mona
   setDecorationsFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
     throw new Error('Method not implemented.');
   }
+  revealLineInCenter(line: number) {
+    // tslint:disable-next-line:no-console
+    console.log('revealLineInCenter called');
+  }
+  setPosition(position: monaco.Position) {
+    // tslint:disable-next-line:no-console
+    console.log('setPosition called');
+  }
 
   _instantiationService: monaco.instantiation.IInstantiationService;
 
