@@ -1,11 +1,10 @@
 import * as React from 'react';
-import 'antd/lib/button/style/index.css';
 import { observer } from 'mobx-react-lite';
-import * as styles from './dialog.module.less';
 import { useInjectable, localize } from '@ali/ide-core-browser';
-import { IDialogService } from '../common';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Button, Dialog as DialogView } from '@ali/ide-components';
+
+import { IDialogService } from '../common';
 
 export const Dialog = observer(() => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
@@ -35,13 +34,24 @@ export const Dialog = observer(() => {
       closable={dialogService.closable}
       afterClose={afterClose}
       message={message}
-      type={'confirm'}
+      type='confirm'
       messageType={type}
       icon={icon}
       buttons={buttons.length ? buttons.map((button, index) => (
-        <Button size='large' onClick={handlerClickButton(button)} key={button} type={index === buttons.length - 1 ? 'primary' : 'secondary'}>{ mnemonicButtonLabel(button, true) }</Button>
+        <Button
+          size='large'
+          onClick={handlerClickButton(button)}
+          key={button}
+          type={index === buttons.length - 1 ? 'primary' : 'secondary'}>
+          { mnemonicButtonLabel(button, true) }
+        </Button>
       )) : (
-        <Button size='large' onClick={handleClose} type='primary'>{localize('dialog.confirm')}</Button>
+        <Button
+          size='large'
+          onClick={handleClose}
+          type='primary'>
+          {localize('dialog.confirm')}
+        </Button>
       )}
     />
   );

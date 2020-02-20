@@ -67,17 +67,17 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     switch (this.type) {
       case MessageType.Error:
         return {
-          color: '#CC2D30',
+          color: 'var(--notificationsErrorIcon-foreground)',
           className: 'close-circle',
         };
       case MessageType.Info:
           return {
-            color: '#73BCFF',
+            color: 'var(--notificationsInfoIcon-foreground)',
             className: 'info-circle',
           };
       case MessageType.Warning:
           return {
-            color: '#FAAD14',
+            color: 'var(--notificationsWarningIcon-foreground)',
             className: 'question-circle',
           };
       default:
