@@ -223,13 +223,23 @@ li {
     background-color: var(--activityBar-dropBackground);
   }
   &:global(.active) {
-    .icon_tab::before {
-      content: '';
-      display: block;
-      position: absolute;
-      left: 0;
-      height: 100%;
-      border-left: 3px solid var(--activityBar-activeBorder);
+    .icon_tab {
+      &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        height: 100%;
+        border-left: 3px solid var(--activityBar-activeBorder);
+      }
+      :global {
+        div.activity-icon {
+          color: var(--activityBar-foreground);
+          &.mask-mode {
+            background-color: var(--activityBar-foreground);
+          }
+        }
+      }
     }
   }
 }
