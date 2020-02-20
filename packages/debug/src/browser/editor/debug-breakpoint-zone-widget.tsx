@@ -1,13 +1,12 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { ZoneWidget } from '@ali/ide-monaco-enhance';
-import { DebugEditor, IDebugModel } from '../../common';
+import { DebugEditor } from '../../common';
 import * as styles from './debug-breakpoint.module.less';
-import { Select } from '@ali/ide-core-browser/lib/components/select';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { Input } from '@ali/ide-core-browser/lib/components';
+import { Input, Select } from '@ali/ide-components';
 import { localize } from '@ali/ide-core-common';
-import { KeyCode, Key, Emitter } from '@ali/ide-core-browser';
+import { Emitter } from '@ali/ide-core-browser';
 
 export interface BreakpointChangeData {
   context: DebugBreakpointZoneWidget.Context;
@@ -74,11 +73,11 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
     return <option value={context}>{label}</option>;
   }
 
-  protected readonly updateInput = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  protected readonly updateInput = (value: string) => {
     if (!!this.textInput) {
       this._values[this.context] = this.textInput.value || undefined;
     }
-    this.context = e.currentTarget.value as DebugBreakpointZoneWidget.Context;
+    this.context = value as DebugBreakpointZoneWidget.Context;
     this.render();
   }
 
