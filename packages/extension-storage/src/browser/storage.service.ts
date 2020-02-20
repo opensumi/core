@@ -53,7 +53,8 @@ export class ExtensionStorageService implements IExtensionStorageService {
   public async reConnectInit() {
     const roots: FileStat[] = await this.workspaceService.roots;
     const workspace = this.workspaceService.workspace;
-    this._extensionStoragePath = await this.extensionStorageServer.init(workspace, roots);
+    const extensionStorageDirName = this.appConfig.extensionStorageDirName || DEFAULT_EXTENSION_STORAGE_DIR_NAME;
+    this._extensionStoragePath = await this.extensionStorageServer.init(workspace, roots, extensionStorageDirName);
     return this._extensionStoragePath;
   }
 }
