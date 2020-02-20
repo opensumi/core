@@ -126,6 +126,10 @@ export class CommentsZoneWidget extends ResizeZoneWidget {
     );
   }
 
+  get currentEditor() {
+    return this.editor;
+  }
+
   get isShow() {
     return this._isShow;
   }

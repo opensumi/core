@@ -229,6 +229,10 @@ export interface ICommentsThreadOptions {
 export const ICommentsService = Symbol('ICommentsService');
 export interface ICommentsService {
   /**
+   * 评论节点
+   */
+  commentsThreads: ICommentsThread[];
+  /**
    * 评论树节点
    */
   commentsTreeNodes: ICommentsTreeNode[];

@@ -63,6 +63,11 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private threadsCreatedEmitter = new Emitter<ICommentsThread>();
 
+  @computed
+  get commentsThreads() {
+    return [...this.threads.values()];
+  }
+
   get onThreadsChanged() {
     return this.threadsChangeEmitter.event;
   }
