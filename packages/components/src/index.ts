@@ -6,3 +6,4 @@ export * from './tabs';
 export * from './overlay';
 export * from './dialog';
 export * from './icon';
+export * from './notification';
