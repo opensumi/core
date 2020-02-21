@@ -60,7 +60,6 @@ export const FileDialog = (
   };
 
   const isSaveDialog = !IOpenDialogOptions.is(options) && ISaveDialogOptions.is(options);
-  // const isOpenDialog = IOpenDialogOptions.is(options) && !ISaveDialogOptions.is(options);
   const isNormalDialog = !IOpenDialogOptions.is(options) && !ISaveDialogOptions.is(options);
 
   const directoryOptions = getDirectoryList().map((item, idx) =>
