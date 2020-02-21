@@ -3,10 +3,10 @@ import { MockSCMProvider } from '../scm-test-util';
 import { SCMService, InputValidationType } from '../../src/common';
 
 describe('scm service', () => {
-  let service: SCMService;
+  let scmService: SCMService;
 
   beforeEach(() => {
-    service = new SCMService();
+    scmService = new SCMService();
   });
 
   describe('registerSCMProvider', () => {
@@ -16,14 +16,14 @@ describe('scm service', () => {
       const mockProvider = new (class extends MockSCMProvider {
         dispose = repoDispose;
       })(0);
-      service.registerSCMProvider(mockProvider);
+      scmService.registerSCMProvider(mockProvider);
 
-      expect(service.repositories.length === 1);
+      expect(scmService.repositories.length === 1);
       // 添加进来的首个 repo 默认被选中
-      expect(service.repositories[0].selected).toBeTruthy();
+      expect(scmService.repositories[0].selected).toBeTruthy();
 
       // repo 实例测试
-      const repo = service.repositories[0];
+      const repo = scmService.repositories[0];
 
       // repo selection
       const repoSelectListner = jest.fn();
@@ -48,12 +48,51 @@ describe('scm service', () => {
       // repo dispose
       repo.dispose();
       expect(repoDispose).toHaveBeenCalledTimes(1);
+      expect(scmService.repositories.length).toBe(0);
+    });
+
+    it('two repositories works', async () => {
+      // basic completeness checking
+      const repoDispose = jest.fn();
+      const mockProvider = new (class extends MockSCMProvider {
+        dispose = repoDispose;
+      })(0);
+      scmService.registerSCMProvider(mockProvider);
+
+      // 前置空白 repo
+      scmService.registerSCMProvider(new MockSCMProvider(1));
+
+      expect(scmService.repositories.length === 2);
+      // 添加进来的首个 repo 默认被选中
+      expect(scmService.repositories[0].selected).toBeTruthy();
+
+      // repo 实例测试
+      const repo0 = scmService.repositories[0];
+
+      // repo0 selection
+      const repoSelectListner = jest.fn();
+      scmService.onDidChangeSelectedRepositories(repoSelectListner);
+      // re-select
+      repo0.setSelected(true);
+      expect(repo0.selected).toBeTruthy();
+      // test for SCMRepository#onDidFocus
+      expect(repoSelectListner).toHaveBeenCalledTimes(0);
+
+      // repo0 dispose
+      repo0.dispose();
+      expect(repoDispose).toHaveBeenCalledTimes(1);
+      expect(scmService.repositories.length).toBe(1);
+
+      // dispose called again: but make no sense
+      repo0.dispose();
+      expect(repoDispose).toHaveBeenCalledTimes(2);
+      expect(scmService.repositories.length).toBe(1);
     });
 
     it('scm input works', async () => {
-      service.registerSCMProvider(new MockSCMProvider(0));
+      scmService.registerSCMProvider(new MockSCMProvider(0));
       // repo 下的 scmInput 实例测试
-      const scmInput = service.repositories[0].input;
+      const scmInput = scmService.repositories[0].input;
       // input value
       expect(scmInput.value).toBe('');
       const inputChangeListener = jest.fn();
@@ -112,13 +151,13 @@ describe('scm service', () => {
       const scmProvider2 = new MockSCMProvider(2);
 
       const addRepoListener = jest.fn();
-      service.onDidAddRepository(addRepoListener);
+      scmService.onDidAddRepository(addRepoListener);
 
       const changeSelectedRepoListener = jest.fn();
-      service.onDidChangeSelectedRepositories(changeSelectedRepoListener);
+      scmService.onDidChangeSelectedRepositories(changeSelectedRepoListener);
 
-      const repo1 = service.registerSCMProvider(scmProvider1);
-      const repo2 = service.registerSCMProvider(scmProvider2);
+      const repo1 = scmService.registerSCMProvider(scmProvider1);
+      const repo2 = scmService.registerSCMProvider(scmProvider2);
 
       expect(repo1.provider).toEqual(scmProvider1);
       expect(repo2.provider).toEqual(scmProvider2);
@@ -127,29 +166,29 @@ describe('scm service', () => {
       expect(addRepoListener.mock.calls[0][0]).toEqual(repo1);
       expect(addRepoListener.mock.calls[1][0]).toEqual(repo2);
 
-      expect(service.repositories.length === 2);
-      expect(service.repositories.map((n) => n.selected)).toEqual([true, false]);
+      expect(scmService.repositories.length === 2);
+      expect(scmService.repositories.map((n) => n.selected)).toEqual([true, false]);
 
       // 只会默认选中一个 repo
       expect(changeSelectedRepoListener).toHaveBeenCalledTimes(1);
       expect(changeSelectedRepoListener.mock.calls[0][0].length).toBe(1);
       expect(changeSelectedRepoListener.mock.calls[0][0][0].provider).toEqual(scmProvider1);
 
-      service.repositories[1].setSelected(true);
-      expect(service.repositories.map((n) => n.selected)).toEqual([false, true]);
+      scmService.repositories[1].setSelected(true);
+      expect(scmService.repositories.map((n) => n.selected)).toEqual([false, true]);
 
       expect(changeSelectedRepoListener).toHaveBeenCalledTimes(2);
       expect(changeSelectedRepoListener.mock.calls[1][0].length).toBe(1);
       expect(changeSelectedRepoListener.mock.calls[1][0][0].provider).toEqual(scmProvider2);
 
       const removeRepoListener = jest.fn();
-      service.onDidRemoveRepository(removeRepoListener);
+      scmService.onDidRemoveRepository(removeRepoListener);
 
       // 2rd repo disposed
-      service.repositories[1].dispose();
-      expect(service.repositories.length).toBe(1);
+      scmService.repositories[1].dispose();
+      expect(scmService.repositories.length).toBe(1);
       // 移除当前选中 repo 时会默认选中另外一个 repo
-      expect(service.repositories[0].selected).toBeTruthy();
+      expect(scmService.repositories[0].selected).toBeTruthy();
       expect(changeSelectedRepoListener).toHaveBeenCalledTimes(3);
       expect(changeSelectedRepoListener.mock.calls[2][0].length).toBe(1);
       expect(changeSelectedRepoListener.mock.calls[2][0][0].provider).toEqual(scmProvider1);
@@ -159,8 +198,8 @@ describe('scm service', () => {
       expect(removeRepoListener.mock.calls[0][0]).toEqual(repo2);
 
       // 1st repo disposed
-      service.repositories[0].dispose();
-      expect(service.repositories.length).toBe(0);
+      scmService.repositories[0].dispose();
+      expect(scmService.repositories.length).toBe(0);
 
       // test for onDidRemoveRepository
       expect(removeRepoListener).toHaveBeenCalledTimes(2);
@@ -170,10 +209,10 @@ describe('scm service', () => {
     it('duplicate provider id', () => {
       const scmProvider1 = new MockSCMProvider(1);
 
-      service.registerSCMProvider(scmProvider1);
+      scmService.registerSCMProvider(scmProvider1);
 
       try {
-        service.registerSCMProvider(scmProvider1);
+        scmService.registerSCMProvider(scmProvider1);
       } catch (err) {
         expect(err.message).toBe('SCM Provider scm_id_1 already exists.');
       }
