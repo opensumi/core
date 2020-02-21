@@ -1,21 +1,21 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { observable } from 'mobx';
 import {
   IRange,
   Disposable,
   URI,
   IContextKeyService,
-  AppConfig,
   uuid,
 } from '@ali/ide-core-browser';
 import { CommentsZoneWidget } from './comments-zone.view';
-import { ICommentsThread, IComment, ICommentsThreadOptions, CommentMode, ICommentAuthorInformation, IThreadComment } from '../common';
+import { ICommentsThread, IComment, ICommentsThreadOptions, CommentMode, ICommentAuthorInformation, IThreadComment, ICommentsService } from '../common';
 import {
   MenuId,
   AbstractMenuService,
   IMenu,
 } from '@ali/ide-core-browser/lib/menu/next';
 import { IEditor, EditorCollectionService } from '@ali/ide-editor';
+import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 
 export class Comment implements IThreadComment {
   private options: IComment;
@@ -52,17 +52,23 @@ export class Comment implements IThreadComment {
 
 @Injectable({ multiple: true })
 export class CommentsThread extends Disposable implements ICommentsThread {
+
   @Autowired(AbstractMenuService)
   private readonly menuService: AbstractMenuService;
 
+  @Autowired(ICommentsService)
+  commentsService: ICommentsService;
+
   @Autowired(IContextKeyService)
+  private readonly globalContextKeyService: IContextKeyService;
+
   private readonly contextKeyService: IContextKeyService;
 
   @Autowired(EditorCollectionService)
   editorCollectionService: EditorCollectionService;
 
-  @Autowired(AppConfig)
-  public readonly appConfig: AppConfig;
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   @observable
   public comments: IThreadComment[];
@@ -72,11 +78,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   private _commentTitle: IMenu;
   private _commentContext: IMenu;
   private _commentThreadTitle: IMenu;
-
-  private _readOnly: boolean;
-  private _isCollapsed: boolean;
-
-  private _data?: any;
 
   static getId(uri: URI, range: IRange): string {
     return `${uri}#${range.startLineNumber}`;
@@ -88,11 +89,17 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     public options: ICommentsThreadOptions,
   ) {
     super();
-    this._readOnly = !!options.readOnly;
-    this._isCollapsed = !!options.isCollapsed;
     this.comments = options.comments ? options.comments.map((comment) => new Comment(comment)) : [];
-    this._data = options.data;
+    this.contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped());
+    // 设置 resource context key
+    const resourceContext = new ResourceContextKey(this.contextKeyService);
+    resourceContext.set(uri);
     this.initMenuContext();
+    const threadsLengthContext = this.contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
+    // 监听每次 thread 的变化，重新设置 threadsLength
+    this.commentsService.onThreadsChanged(() => {
+      threadsLengthContext.set(this.commentsService.getThreadsByUri(uri).length);
+    });
   }
 
   get id() {
@@ -116,15 +123,15 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   get readOnly() {
-    return this._readOnly;
+    return !!this.options.readOnly;
   }
 
   get isCollapsed() {
-    return this._isCollapsed;
+    return !!this.options.isCollapsed;
   }
 
   get data() {
-    return this._data;
+    return this.options.data;
   }
 
   private getEditorsByUri(uri: URI): IEditor[] {
@@ -133,30 +140,26 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   private initMenuContext() {
-    this._commentThreadContext = this.menuService.createMenu(
+    this._commentThreadContext = this.registerDispose(this.menuService.createMenu(
       MenuId.CommentsCommentThreadContext,
       this.contextKeyService,
-    );
-    this._commentTitle = this.menuService.createMenu(
+    ));
+    this._commentTitle = this.registerDispose(this.menuService.createMenu(
       MenuId.CommentsCommentTitle,
       this.contextKeyService,
-    );
-    this._commentContext = this.menuService.createMenu(
+    ));
+    this._commentContext = this.registerDispose(this.menuService.createMenu(
       MenuId.CommentsCommentContext,
       this.contextKeyService,
-    );
-    this._commentThreadTitle = this.menuService.createMenu(
+    ));
+    this._commentThreadTitle = this.registerDispose(this.menuService.createMenu(
       MenuId.CommentsCommentThreadTitle,
       this.contextKeyService,
-    );
-    this.addDispose(this._commentThreadContext);
-    this.addDispose(this._commentTitle);
-    this.addDispose(this._commentContext);
-    this.addDispose(this._commentThreadTitle);
+    ));
   }
 
   private addWidgetByEditor(editor: IEditor) {
-    const widget = new CommentsZoneWidget(editor.monacoEditor, this);
+    const widget = this.injector.get(CommentsZoneWidget, [editor.monacoEditor, this]);
     this.widgets.set(editor, widget);
     this.addDispose(widget);
     editor.onDispose(() => {
