@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, URI, localize, isUndefined } from '@ali/ide-core-browser';
+import { useInjectable, localize, isUndefined } from '@ali/ide-core-browser';
 import * as styles from './debug-stack-frames.module.less';
 import { DebugStackFramesService } from './debug-stack-frames.service';
 import { ViewState } from '@ali/ide-core-browser';
@@ -20,7 +20,7 @@ export const DebugStackFrameView = observer(({
     setCurentFrame,
   }: DebugStackFramesService = useInjectable(DebugStackFramesService);
 
-  const [selected, setSelected] = React.useState();
+  const [selected, setSelected] = React.useState<number | undefined>();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const containerStyle = {
     width: viewState.width,
