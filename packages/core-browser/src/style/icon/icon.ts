@@ -1,6 +1,6 @@
 import { SymbolKind, getLogger } from '@ali/ide-core-common';
 
-export const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_f2azpunw76t.css';
+export const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_908sjcjy17a.css';
 
 const iconPrefixes = ['kaitian-icon kticon-'];
 
