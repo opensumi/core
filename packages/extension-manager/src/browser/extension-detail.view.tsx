@@ -56,7 +56,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       let remote;
       try {
         // 获取最新的插件信息，用来做更新提示
-        remote = await extensionManagerService.getDetailFromMarketplace(extensionId, version);
+        remote = await extensionManagerService.getDetailFromMarketplace(extensionId, isLocal ? '' : version);
         if (remote) {
           setLatestExtension(remote);
         }
