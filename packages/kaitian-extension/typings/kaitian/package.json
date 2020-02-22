@@ -1,6 +1,6 @@
 {
   "name": "@ali/kaitian",
-  "version": "1.7.9",
+  "version": "1.7.10",
   "repository": {
     "type": "git",
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
