@@ -1,6 +1,5 @@
-import * as React from 'react';
 import { Provider, Injector, Injectable } from '@ali/common-di';
-import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
+import { BrowserModule } from '@ali/ide-core-browser';
 import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -9,14 +8,22 @@ import { PreferenceScope, PreferenceConfigurations, PreferenceProvider, IPrefere
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 import { PreferenceSettingsService } from './preference.service';
+import { UserStorageServiceImpl, UserStorageResolverContribution } from './userstorage';
+import { IUserStorageService } from '../common';
+
 @Injectable()
 export class PreferencesModule extends BrowserModule {
   providers: Provider[] = [
     ...createPreferenceProviders(),
     {
+      token: IUserStorageService,
+      useClass: UserStorageServiceImpl,
+    },
+    {
       token: IPreferenceSettingsService,
       useClass: PreferenceSettingsService,
     },
+    UserStorageResolverContribution,
     PreferenceContribution,
   ];
 

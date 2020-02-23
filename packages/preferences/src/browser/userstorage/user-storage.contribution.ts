@@ -7,8 +7,7 @@ import {
   Emitter, Event, MaybePromise,
   DisposableCollection,
 } from '@ali/ide-core-browser';
-import { UserStorageService } from './user-storage-service';
-import { UserStorageUri } from '../common';
+import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
 
 export class UserStorageResource implements Resource {
 
@@ -16,7 +15,7 @@ export class UserStorageResource implements Resource {
   protected readonly toDispose = new DisposableCollection();
   constructor(
     public uri: URI,
-    protected readonly service: UserStorageService,
+    protected readonly service: IUserStorageService,
   ) {
     this.toDispose.push(this.service.onUserStorageChanged((e) => {
       for (const changedUri of e.uris) {
@@ -51,12 +50,12 @@ export class UserStorageResource implements Resource {
 }
 
 @Domain(ResourceResolverContribution)
-export class UserStorageResolver implements ResourceResolverContribution {
-  @Autowired(UserStorageService)
-  private readonly service: UserStorageService;
+export class UserStorageResolverContribution implements ResourceResolverContribution {
+  @Autowired(IUserStorageService)
+  private readonly service: IUserStorageService;
 
   resolve(uri: URI): MaybePromise<UserStorageResource | void> {
-    if (uri.scheme !== UserStorageUri.SCHEME) {
+    if (uri.scheme !== USER_STORAGE_SCHEME) {
       return;
     }
     return new UserStorageResource(uri, this.service);
