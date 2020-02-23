@@ -644,6 +644,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.createGroup(true);
     const widgetId = this.addWidget(undefined, options);
     const client = this._clientsMap.get(widgetId);
+    this.tabManager.create(true, true);
 
     if (!client) {
       throw new Error('session not find');
@@ -699,6 +700,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         client.focus();
       }
     }
+
+    if (this.tabbarHandler) {
+      this.tabbarHandler.activate();
+    }
   }
 
   isTermActive(clientId: string) {
@@ -717,7 +722,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   sendText(id: string, text: string, addNewLine = true) {
-    this.service.sendText(id, `${text}${addNewLine ? '\r\n' : ''}`);
+    this.service.sendText(id, `${text}${addNewLine ? '\r' : ''}`);
   }
 
   /** end */
