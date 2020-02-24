@@ -34,6 +34,10 @@ export function getPreferenceLanguageId(): string {
 function registerLocalStorageProvider(key: string) {
   registerExternalPreferenceProvider<string>(key, {
     set: (value, scope) => {
+      if (scope >= PreferenceScope.Folder) {
+        // earlyPreference不支持针对作用域大于Folder的值设置
+        return;
+      }
       if ((global as any).localStorage) {
         if (value !== undefined) {
           localStorage.setItem(scope + `:${key}`, value);
