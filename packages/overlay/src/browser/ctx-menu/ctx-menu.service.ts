@@ -31,7 +31,7 @@ export class BrowserCtxMenuService implements IBrowserCtxMenu {
 
     this.context = context;
     this.menuNodes.splice(0, this.menuNodes.length, ...menuNodes);
-    const { x, y } = anchor instanceof MouseEvent ? { x: anchor.clientX, y: anchor.clientY } : anchor;
+    const { x, y } = anchor instanceof window.MouseEvent ? { x: anchor.clientX, y: anchor.clientY } : anchor;
     this.onHide = onHide;
     this.point = { pageX: x, pageY: y };
     this.visible = true;
@@ -48,9 +48,5 @@ export class BrowserCtxMenuService implements IBrowserCtxMenu {
   @action.bound
   private reset() {
     this.visible = false;
-    // this.onHide = undefined;
-    // this.context = undefined;
-    // this.position = undefined;
-    // this.menuNodes.splice(0, this.menuNodes.length);
   }
 }
