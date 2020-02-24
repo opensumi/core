@@ -214,6 +214,7 @@ export class CommentsService extends Disposable implements ICommentsService {
           name: firstComment.author.name,
           iconStyle: {
             marginRight: 5,
+            backgroundSize: '14px 14px',
           },
           icon: this.iconService.fromIcon('', firstComment.author.iconPath?.toString(), IconType.Background),
           description: firstComment.body,
@@ -235,6 +236,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             uri: thread.uri,
             iconStyle: {
               marginRight: 5,
+              backgroundSize: '14px 14px',
             },
             icon: this.iconService.fromIcon('', comment.author.iconPath?.toString(), IconType.Background),
             parent: firstCommentNode,
