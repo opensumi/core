@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TreeProps, TreeContainer, TreeNode } from '../tree';
+import { TreeProps, TreeContainer, TreeNode, ExpandableTreeNode } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
 
 export interface RecycleTreeProps extends TreeProps {
@@ -224,6 +224,10 @@ export const RecycleTree = (
     minScrollbarLength: 20,
   };
 
+  const isComplex = !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
+    return ExpandableTreeNode.is(node);
+  });
+
   return <React.Fragment>
     <PerfectScrollbar
       style={scrollContainerStyle}
@@ -264,7 +268,8 @@ export const RecycleTree = (
         themeProvider={themeProvider}
         notifyFileDecorationsChange={notifyFileDecorationsChange}
         notifyThemeChange={notifyThemeChange}
-        validate={validate} />
+        validate={validate}
+        isComplex={isComplex} />
     </PerfectScrollbar>
   </React.Fragment>;
 };
