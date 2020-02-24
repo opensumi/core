@@ -199,11 +199,12 @@ export class CommentsService extends Disposable implements ICommentsService {
         description: filePath.replace(/^\//, ''),
         parent: undefined,
         thread: firstThread,
-        ...firstThread.comments.length && {
+        ...threads.length && {
           expanded: true,
           children: [],
         },
       };
+      treeNodes.push(rootNode);
       threads.forEach((thread) => {
         if (thread.comments.length === 0) {
           return;
@@ -246,7 +247,6 @@ export class CommentsService extends Disposable implements ICommentsService {
           };
           return otherCommentNode;
         });
-        treeNodes.push(rootNode);
         treeNodes.push(firstCommentNode);
         treeNodes.push(...firstCommentChildren);
       });
