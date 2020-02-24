@@ -49,6 +49,13 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   readonly selected?: boolean;
 
   /**
+   * 纯普通节点节点与包含可折叠节点在样式上存在左侧下拉展开图标占位
+   * 需要通过判断处理掉折叠图标带来的边距影响，时上下Tree组件的基础边距达到对齐效果
+   * 当isComplex值为True时，默认添加5px边距，否则为0
+   */
+  readonly isComplex?: boolean;
+
+  /**
    * 选择事件回调
    */
   onSelect?: any;
@@ -164,6 +171,7 @@ export const TreeContainer = (
     style,
     outline,
     validate,
+    isComplex,
   }: TreeProps,
 ) => {
   const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
@@ -172,10 +180,6 @@ export const TreeContainer = (
 
   const isEdited = editable && !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
     return !!node.isTemporary;
-  });
-
-  const isComplex = !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
-    return ExpandableTreeNode.is(node);
   });
 
   const innerContextMenuHandler = (node, event: React.MouseEvent) => {
