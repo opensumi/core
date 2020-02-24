@@ -8,7 +8,7 @@ import {
   uuid,
 } from '@ali/ide-core-browser';
 import { CommentsZoneWidget } from './comments-zone.view';
-import { ICommentsThread, IComment, ICommentsThreadOptions, CommentMode, ICommentAuthorInformation, IThreadComment, ICommentsService } from '../common';
+import { ICommentsThread, IComment, ICommentsThreadOptions, ICommentsService, IThreadComment } from '../common';
 import {
   MenuId,
   AbstractMenuService,
@@ -16,39 +16,6 @@ import {
 } from '@ali/ide-core-browser/lib/menu/next';
 import { IEditor, EditorCollectionService } from '@ali/ide-editor';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
-
-export class Comment implements IThreadComment {
-  private options: IComment;
-  private _id: string;
-  constructor(options: IComment) {
-    this.options = options;
-    this._id = uuid();
-  }
-
-  get id() {
-    return this._id;
-  }
-
-  get mode() {
-    return this.options.mode;
-  }
-
-  get body() {
-    return this.options.body;
-  }
-
-  get author() {
-    return this.options.author;
-  }
-
-  get label() {
-    return this.options.label;
-  }
-
-  get data() {
-    return this.options.data;
-  }
-}
 
 @Injectable({ multiple: true })
 export class CommentsThread extends Disposable implements ICommentsThread {
@@ -62,7 +29,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   @Autowired(IContextKeyService)
   private readonly globalContextKeyService: IContextKeyService;
 
-  private readonly contextKeyService: IContextKeyService;
+  private readonly _contextKeyService: IContextKeyService;
 
   @Autowired(EditorCollectionService)
   editorCollectionService: EditorCollectionService;
@@ -75,8 +42,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   private widgets = new Map<IEditor, CommentsZoneWidget>();
   private _commentThreadContext: IMenu;
-  private _commentTitle: IMenu;
-  private _commentContext: IMenu;
   private _commentThreadTitle: IMenu;
 
   static getId(uri: URI, range: IRange): string {
@@ -89,13 +54,16 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     public options: ICommentsThreadOptions,
   ) {
     super();
-    this.comments = options.comments ? options.comments.map((comment) => new Comment(comment)) : [];
-    this.contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped());
+    this.comments = options.comments ? options.comments.map((comment) => ({
+      ...comment,
+      id: uuid(),
+    })) : [];
+    this._contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped());
     // 设置 resource context key
-    const resourceContext = new ResourceContextKey(this.contextKeyService);
+    const resourceContext = new ResourceContextKey(this._contextKeyService);
     resourceContext.set(uri);
     this.initMenuContext();
-    const threadsLengthContext = this.contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
+    const threadsLengthContext = this._contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
     // 监听每次 thread 的变化，重新设置 threadsLength
     this.commentsService.onThreadsChanged(() => {
       threadsLengthContext.set(this.commentsService.getThreadsByUri(uri).length);
@@ -106,16 +74,12 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     return CommentsThread.getId(this.uri, this.range);
   }
 
+  get contextKeyService() {
+    return this._contextKeyService;
+  }
+
   get commentThreadContext() {
     return this._commentThreadContext;
-  }
-
-  get commentTitle() {
-    return this._commentTitle;
-  }
-
-  get commentContext() {
-    return this._commentContext;
   }
 
   get commentThreadTitle() {
@@ -142,14 +106,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   private initMenuContext() {
     this._commentThreadContext = this.registerDispose(this.menuService.createMenu(
       MenuId.CommentsCommentThreadContext,
-      this.contextKeyService,
-    ));
-    this._commentTitle = this.registerDispose(this.menuService.createMenu(
-      MenuId.CommentsCommentTitle,
-      this.contextKeyService,
-    ));
-    this._commentContext = this.registerDispose(this.menuService.createMenu(
-      MenuId.CommentsCommentContext,
       this.contextKeyService,
     ));
     this._commentThreadTitle = this.registerDispose(this.menuService.createMenu(
@@ -204,6 +160,9 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   }
 
   public addComment(...comments: IComment[]) {
-    this.comments.push(...comments.map((comment) => new Comment(comment)));
+    this.comments.push(...comments.map((comment) => ({
+      ...comment,
+      id: uuid(),
+    })));
   }
 }

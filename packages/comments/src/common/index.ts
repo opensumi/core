@@ -8,6 +8,7 @@ import {
   Event,
   BasicEvent,
 } from '@ali/ide-core-common';
+import { IContextKeyService } from '@ali/ide-core-browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -92,9 +93,46 @@ export interface ICommentReply {
   text: string;
 }
 
+export interface ICommentsZoneWidget {
+  /**
+   * widget 所在的 editor
+   */
+  coreEditor: monaco.editor.ICodeEditor;
+  /**
+   * 是否在展示
+   */
+  isShow: boolean;
+  /**
+   * 控制显隐
+   */
+  toggle(): void;
+}
+
+export interface ICommentThreadTitle {
+  /**
+   * 当前 thread
+   */
+  thread: ICommentsThread;
+  /**
+   * 当前 widget
+   */
+  widget: ICommentsZoneWidget;
+}
+
 export interface ICommentAuthorInformation {
   name: string;
   iconPath?: URI | string;
+}
+
+export interface ICommentsCommentTitle {
+  /**
+   * 当前 thread
+   */
+  thread: ICommentsThread;
+  /**
+   * 当前评论
+   */
+  comment: IComment;
 }
 
 /**
@@ -121,6 +159,12 @@ export interface IComment {
    * 添加附属数据
    */
   data?: any;
+  /**
+   * comment 的 context, key 为 comment
+   * 比如只想在某些 comment 贡献菜单，可以在 when 里写 comment == aaa
+   * 其中 aaa 就是 contextValue 的值
+   */
+  contextValue?: string;
 }
 
 /**
@@ -195,6 +239,10 @@ export interface ICommentsThread extends IDisposable {
    * thread 参数
    */
   options: ICommentsThreadOptions;
+  /**
+   * 评论面板的 context key service
+   */
+  contextKeyService: IContextKeyService;
   /**
    * 添加一条评论
    * @param comment
