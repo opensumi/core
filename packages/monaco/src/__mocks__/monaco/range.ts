@@ -1,17 +1,35 @@
-import { partialMock, quickEvent } from './common/util';
+import { partialMock } from './common/util';
+import { IRange } from '@ali/ide-core-common';
 
-export function createMockedMonacoRamgeApi(): typeof monaco.Range {
-  const mockedMonacoRangeApi: Partial<typeof monaco.Range> = {
+export function createMockedMonacoRangeApi(): typeof monaco.Range {
+  class MockedMonacoRange {
+    constructor(public startLineNumber: number, public startColumn: number, public endLineNumber: number, public endColumn: number) { }
     // lift(range: undefined | null): null;
     // lift(range: monaco.IRange): monaco.Range;
-    lift(range?: monaco.IRange | null): any {
+    static lift(range?: monaco.IRange | null): any {
       if (!range) {
         return null;
       }
 
       return range as monaco.Range;
-    },
-  };
+    }
+
+    static areIntersecting(a: IRange, b: IRange) {
+      // Check if `a` is before `b`
+      if (a.endLineNumber < b.startLineNumber || (a.endLineNumber === b.startLineNumber && a.endColumn <= b.startColumn)) {
+        return false;
+      }
+
+      // Check if `b` is before `a`
+      if (b.endLineNumber < a.startLineNumber || (b.endLineNumber === a.startLineNumber && b.endColumn <= a.startColumn)) {
+        return false;
+      }
+
+      // These ranges must intersect
+      return true;
+    }
+  }
+  const mockedMonacoRangeApi: any = MockedMonacoRange;
 
   return partialMock('monaco.Range', mockedMonacoRangeApi);
 }

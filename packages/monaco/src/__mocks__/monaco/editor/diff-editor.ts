@@ -86,14 +86,14 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
   getPosition(): monaco.Position | null {
     return this.modifiedEditor.getPosition();
   }
-  setPosition(position: monaco.IPosition): void {
+  setPosition(position: monaco.Position): void {
     this.modifiedEditor.setPosition(position);
   }
   revealLine(lineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
     this.modifiedEditor.revealLine(lineNumber, scrollType);
   }
   revealLineInCenter(lineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
-    this.modifiedEditor.revealLineInCenter(lineNumber, scrollType);
+    this.modifiedEditor.revealLineInCenter(lineNumber);
   }
   revealLineInCenterIfOutsideViewport(lineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
     this.modifiedEditor.revealLineInCenterIfOutsideViewport(lineNumber, scrollType);
