@@ -47,7 +47,7 @@ export class TabManager {
     return this.items[this.state.current];
   }
 
-  create(selected: boolean = false): TabItemInfo {
+  create(selected: boolean = false, noEvent: boolean = false): TabItemInfo {
 
     const item = new TabItemInfo();
     const length = this.items.push(item);
@@ -56,7 +56,9 @@ export class TabManager {
       this.select(this.items.length - 1);
     }
 
-    this._onOpen.fire({ item, index: length - 1 });
+    if (!noEvent) {
+      this._onOpen.fire({ item, index: length - 1 });
+    }
 
     return item;
   }
