@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 
-import { JSONUtils, Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI, isUndefined } from '@ali/ide-core-common';
+import { Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI, isUndefined } from '@ali/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';
 import { PreferenceSchemaProvider, OverridePreferenceName } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
@@ -452,7 +452,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     const result: PreferenceResolveResult<T> = { scope: PreferenceScope.Default };
     const externalProvider = getExternalPreferenceProvider(preferenceName);
     if (externalProvider) {
-      return getExternalPreference(preferenceName, this.schema.getPreferenceProperty(preferenceName));
+      return getExternalPreference(preferenceName, this.schema.getPreferenceProperty(preferenceName), untilScope);
     }
     const scopes = untilScope ? PreferenceScope.getScopes().filter((s) => s <= untilScope) : PreferenceScope.getScopes();
     for (const scope of scopes) {
