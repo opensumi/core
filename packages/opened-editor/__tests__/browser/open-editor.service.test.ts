@@ -3,19 +3,21 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { ExplorerOpenedEditorService } from '@ali/ide-opened-editor/lib/browser/explorer-opened-editor.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { WorkbenchEditorService, ResourceDecorationChangeEvent } from '@ali/ide-editor';
 import { MockWorkbenchEditorService } from '@ali/ide-editor/lib/common/mocks/workbench-editor.service';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { OpenedEditorModule } from '../../lib/browser';
 import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorationsService';
 import { OpenedEditorData } from '@ali/ide-opened-editor/lib/browser/opened-editor.service';
-import { URI } from '@ali/ide-core-common';
+import { URI, IEventBus } from '@ali/ide-core-common';
 import { IThemeService } from '@ali/ide-theme';
 import { MockThemeService } from '@ali/ide-theme/lib/common/mocks/theme.service';
+import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 
 describe('ExplorerOpenedEditorService should be work', () => {
   let openEditorService: ExplorerOpenedEditorService;
   let injector: MockInjector;
+  const testFileUri = new URI('file://test0.js');
   beforeEach(() => {
     injector = createBrowserInjector([
       OpenedEditorModule,
@@ -82,7 +84,7 @@ describe('ExplorerOpenedEditorService should be work', () => {
         name: 'group 1',
         resources: [{
           name: 'test',
-          uri: new URI('file://test0.js'),
+          uri: testFileUri,
           icon: '',
           metadata: {},
         }],
@@ -116,10 +118,54 @@ describe('ExplorerOpenedEditorService should be work', () => {
   });
 
   describe('02 #API should be worked.', () => {
-    it('getChildren return resource', async (done) => {
+    it('The tree data should no be empty', async (done) => {
+      expect(openEditorService.nodes.length > 0).toBeTruthy();
       done();
     });
-    it('getChildren return resource groups', async (done) => {
+
+    it('Status should be dirty while file change', async (done) => {
+      const eventBus = injector.get(IEventBus);
+      eventBus.fire(new ResourceDecorationChangeEvent({
+        uri: testFileUri,
+        decoration: {
+          dirty: true,
+        },
+      }));
+      // ts-jest 测试无法获取less的样式对象，用status来做额外判断
+      const node = openEditorService.nodes[0];
+      const status = openEditorService.status.get(openEditorService.getStatusKey(node));
+      expect(status?.dirty).toBeTruthy();
+      done();
+    });
+
+    it('Select file should be work', async (done) => {
+      const node = openEditorService.nodes[0];
+      openEditorService.onSelect([node]);
+      const status = openEditorService.status.get(openEditorService.getStatusKey(node));
+      expect(status?.selected).toBeTruthy();
+      expect(status?.focused).toBeTruthy();
+      done();
+    });
+
+    it('Blur file should be work', async (done) => {
+      const node = openEditorService.nodes[0];
+      openEditorService.onSelect([node]);
+      let status = openEditorService.status.get(openEditorService.getStatusKey(node));
+      expect(status?.selected).toBeTruthy();
+      expect(status?.focused).toBeTruthy();
+      openEditorService.resetFocused();
+      status = openEditorService.status.get(openEditorService.getStatusKey(node));
+      expect(status?.selected).toBeTruthy();
+      expect(status?.focused).toBeFalsy();
+      done();
+    });
+
+    it('Close file should be work', async (done) => {
+      const closeFile = jest.fn();
+      const node = openEditorService.nodes[0];
+      injector.mockCommand(EDITOR_COMMANDS.CLOSE.id, closeFile);
+      openEditorService.closeFile(node);
+      expect(closeFile).toBeCalledWith(node.uri);
       done();
     });
   });
