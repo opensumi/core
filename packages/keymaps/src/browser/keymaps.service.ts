@@ -2,10 +2,10 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, DisposableCollection, KeybindingService } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
-import { UserStorageUri } from '@ali/ide-userstorage/lib/browser';
 import * as jsoncparser from 'jsonc-parser';
 import * as fuzzy from 'fuzzy';
 import { KEYMAPS_FILE_NAME, IKeymapService, KeybindingJson, KEYMAPS_SCHEME, KeybindingItem } from '../common';
+import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
 
 // monaco.contextkey.ContextKeyExprType 引入
 export const enum ContextKeyExprType {
@@ -74,7 +74,7 @@ export class KeymapService implements IKeymapService {
   }
 
   async init() {
-    this.resource = await this.resourceProvider(new URI().withScheme(UserStorageUri.SCHEME).withPath(KEYMAPS_FILE_NAME));
+    this.resource = await this.resourceProvider(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
     await this.reconcile();
     if (this.resource.onDidChangeContents) {
       this.resource.onDidChangeContents(async () => {

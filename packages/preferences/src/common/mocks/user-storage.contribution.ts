@@ -1,4 +1,3 @@
-import { Autowired } from '@ali/common-di';
 import {
   Domain,
   URI,
@@ -7,7 +6,7 @@ import {
   Emitter, Event, MaybePromise,
   DisposableCollection,
 } from '@ali/ide-core-browser';
-import { UserStorageUri } from '../';
+import { USER_STORAGE_SCHEME } from '..';
 
 export class MockUserStorageResource implements Resource {
 
@@ -39,7 +38,7 @@ export class MockUserStorageResource implements Resource {
 @Domain(ResourceResolverContribution)
 export class MockUserStorageResolver implements ResourceResolverContribution {
   resolve(uri: URI): MaybePromise<MockUserStorageResource | void> {
-    if (uri.scheme !== UserStorageUri.SCHEME) {
+    if (uri.scheme !== USER_STORAGE_SCHEME) {
       return;
     }
     return new MockUserStorageResource(uri);

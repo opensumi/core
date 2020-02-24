@@ -1,8 +1,9 @@
+
 import { Event, IDisposable, URI } from '@ali/ide-core-browser';
 
-export const UserStorageService = Symbol('UserStorageService');
+export const IUserStorageService = Symbol('IUserStorageService');
 
-export interface UserStorageService extends IDisposable {
+export interface IUserStorageService extends IDisposable {
   readContents(uri: URI): Promise<string>;
 
   saveContents(uri: URI, content: string): Promise<void>;
@@ -15,3 +16,5 @@ export interface UserStorageService extends IDisposable {
 export interface UserStorageChangeEvent {
   uris: URI[];
 }
+
+export const USER_STORAGE_SCHEME = 'user_storage';

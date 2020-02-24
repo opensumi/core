@@ -1,15 +1,14 @@
 
 import { DisposableCollection, ILogger, Emitter, Event, URI, AppConfig } from '@ali/ide-core-browser';
-import { UserStorageChangeEvent, UserStorageService } from './user-storage-service';
 import { Injectable, Autowired } from '@ali/common-di';
-import { UserStorageUri } from '../common/user-storage-uri';
+import { USER_STORAGE_SCHEME, UserStorageChangeEvent, IUserStorageService } from '../../common';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 
-export const KAITIAN_USER_STORAGE_FOLDER = '.kaitian';
+export const DEFAULT_USER_STORAGE_FOLDER = '.kaitian';
 
 @Injectable()
-export class UserStorageServiceFilesystemImpl implements UserStorageService {
+export class UserStorageServiceImpl implements IUserStorageService {
 
   protected readonly toDispose = new DisposableCollection();
   protected readonly onUserStorageChangedEmitter = new Emitter<UserStorageChangeEvent>();
@@ -26,12 +25,12 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
     // 请求用户路径并存储
     this.userStorageFolder = this.fileSystem.getCurrentUserHome().then((home) => {
       if (home) {
-        const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.preferenceDirName || KAITIAN_USER_STORAGE_FOLDER);
+        const userStorageFolderUri = new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
         this.fileSystem.watchFileChanges(userStorageFolderUri, ['**/logs/**']).then((disposable) =>
           this.toDispose.push(disposable),
         );
         this.toDispose.push(this.fileSystem.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
-        return new URI(home.uri).resolve(this.appConfig.preferenceDirName || KAITIAN_USER_STORAGE_FOLDER);
+        return new URI(home.uri).resolve(this.appConfig.preferenceDirName || DEFAULT_USER_STORAGE_FOLDER);
       }
     });
 
@@ -50,7 +49,7 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
         for (const change of event) {
           const changeUri = new URI(change.uri);
           if (folder.isEqualOrParent(changeUri)) {
-            const userStorageUri = UserStorageServiceFilesystemImpl.toUserStorageUri(folder, changeUri);
+            const userStorageUri = UserStorageServiceImpl.toUserStorageUri(folder, changeUri);
             uris.push(userStorageUri);
           }
         }
@@ -64,7 +63,7 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
   async readContents(uri: URI): Promise<string> {
     const folderUri = await this.userStorageFolder;
     if (folderUri) {
-      const filesystemUri = UserStorageServiceFilesystemImpl.toFilesystemURI(folderUri, uri);
+      const filesystemUri = UserStorageServiceImpl.toFilesystemURI(folderUri, uri);
       const exists = await this.fileSystem.exists(filesystemUri.toString());
 
       if (exists) {
@@ -79,7 +78,7 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
     if (!folderUri) {
       return;
     }
-    const filesystemUri = UserStorageServiceFilesystemImpl.toFilesystemURI(folderUri, uri);
+    const filesystemUri = UserStorageServiceImpl.toFilesystemURI(folderUri, uri);
 
     const fileStat = await this.fileSystem.getFileStat(filesystemUri.toString());
     if (fileStat) {
@@ -92,7 +91,7 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
   async getFsPath(uri: URI) {
     const folderUri = await this.userStorageFolder;
     if (folderUri) {
-      const filesystemUri = UserStorageServiceFilesystemImpl.toFilesystemURI(folderUri, uri);
+      const filesystemUri = UserStorageServiceImpl.toFilesystemURI(folderUri, uri);
       return filesystemUri.toString();
     }
     return undefined;
@@ -109,7 +108,7 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
    */
   public static toUserStorageUri(userStorageFolderUri: URI, rawUri: URI): URI {
     const userStorageRelativePath = this.getRelativeUserStoragePath(userStorageFolderUri, rawUri);
-    return new URI('').withScheme(UserStorageUri.SCHEME).withPath(userStorageRelativePath).withFragment(rawUri.fragment).withQuery(rawUri.query);
+    return new URI('').withScheme(USER_STORAGE_SCHEME).withPath(userStorageRelativePath).withFragment(rawUri.fragment).withQuery(rawUri.query);
   }
 
   /**

@@ -25,7 +25,7 @@
   "devDependencies": {
     "@ali/ide-core-browser": "1.7.10",
     "@ali/ide-overlay": "1.7.10",
-    "@ali/ide-userstorage": "1.7.10",
+    "@ali/ide-preferences": "1.7.10",
     "@ali/ide-dev-tool": "1.2.1",
     "@ali/ide-file-service": "1.7.10",
     "@ali/ide-editor": "1.7.10",

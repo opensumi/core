@@ -2,9 +2,9 @@ import { KeymapService } from '../../src/browser/keymaps.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { KeymapsParser } from '../../src/browser/keymaps-parser';
-import { ResourceProvider, KeybindingRegistry, CommandService, KeybindingService, URI, KeybindingScope, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { UserStorageUri } from '@ali/ide-userstorage/lib/browser';
+import { ResourceProvider, KeybindingRegistry, KeybindingService, URI, KeybindingScope, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { KEYMAPS_FILE_NAME } from '../../src';
+import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
 
 describe('KeymapsService should be work', () => {
   let keymapsService: KeymapService;
@@ -67,7 +67,7 @@ describe('KeymapsService should be work', () => {
 
     it('should ready to work after init', () => {
 
-      expect(resourceProvider).toBeCalledWith(new URI().withScheme(UserStorageUri.SCHEME).withPath(KEYMAPS_FILE_NAME));
+      expect(resourceProvider).toBeCalledWith(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
       expect(setKeymap).toBeCalledWith(KeybindingScope.USER, []);
 
       expect(typeof keymapsService.init).toBe('function');
