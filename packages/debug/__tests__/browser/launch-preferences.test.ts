@@ -17,7 +17,7 @@ import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-servi
 import { IFileServiceClient, FileServicePath, FileStat } from '@ali/ide-file-service';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileSystemNodeOptions, FileService } from '@ali/ide-file-service/lib/node';
-import { MockUserStorageResolverContribution } from '@ali/ide-preferences/lib/common/mocks';
+import { MockUserStorageResolver } from '@ali/ide-preferences/lib/common/mocks';
 import { FileResourceResolver } from '@ali/ide-file-service/lib/browser/file-service-contribution';
 import { WorkspacePreferences } from '@ali/ide-workspace/lib/browser/workspace-preferences';
 disableJSDOM();
@@ -436,7 +436,7 @@ describe('Launch Preferences', () => {
               };
             },
           },
-          MockUserStorageResolverContribution,
+          MockUserStorageResolver,
           FileResourceResolver,
         );
         // TODO: 为了mock实例提前获取

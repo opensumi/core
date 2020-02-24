@@ -36,7 +36,7 @@ export class MockUserStorageResource implements Resource {
 }
 
 @Domain(ResourceResolverContribution)
-export class MockUserStorageResolverContribution implements ResourceResolverContribution {
+export class MockUserStorageResolver implements ResourceResolverContribution {
   resolve(uri: URI): MaybePromise<MockUserStorageResource | void> {
     if (uri.scheme !== USER_STORAGE_SCHEME) {
       return;

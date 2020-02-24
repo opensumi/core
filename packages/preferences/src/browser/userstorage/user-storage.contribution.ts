@@ -50,7 +50,7 @@ export class UserStorageResource implements Resource {
 }
 
 @Domain(ResourceResolverContribution)
-export class UserStorageResolverContribution implements ResourceResolverContribution {
+export class UserStorageResolver implements ResourceResolverContribution {
   @Autowired(IUserStorageService)
   private readonly service: IUserStorageService;
 
