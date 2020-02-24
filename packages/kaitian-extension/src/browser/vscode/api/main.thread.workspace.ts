@@ -109,7 +109,8 @@ export function reviveWorkspaceEditDto(data: WorkspaceEditDto | undefined): IWor
       } else {
         ( edit as IResourceFileEdit).newUri = ( edit as ResourceFileEditDto).newUri ? URI.from(( edit as ResourceFileEditDto).newUri!) : undefined;
         ( edit as IResourceFileEdit).oldUri = ( edit as ResourceFileEditDto).oldUri ? URI.from(( edit as ResourceFileEditDto).oldUri!) : undefined;
-        ( edit as IResourceFileEdit).options.showInEditor = true;
+        // 似乎 vscode 的行为默认不会 showInEditor，参考来自 codeMe 插件
+        ( edit as IResourceFileEdit).options.showInEditor = false;
       }
     }
   }
