@@ -1,17 +1,16 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { Event } from '@ali/ide-core-common/lib/event';
 import { Disposable, IDisposable, dispose, combinedDisposable } from '@ali/ide-core-common/lib/disposable';
-import { IMainLayoutService } from '@ali/ide-main-layout';
 import { basename } from '@ali/ide-core-common/lib/path';
-import { IContextKeyService, localize } from '@ali/ide-core-browser';
-import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
+import { IMainLayoutService } from '@ali/ide-main-layout';
+import { getOctIcon, localize } from '@ali/ide-core-browser';
 import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
-import { getOctIcon } from '@ali/ide-core-browser';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 import { SCMService, ISCMRepository, scmContainerId } from '../common';
 
-// 更新 ActivityBar 中 SCM 模块边的数字
+// 更新 ActivityBar 中 SCM 模块边的数字, 标注当前的 changes 数量
 @Injectable()
 export class SCMBadgeController {
   private disposables: IDisposable[] = [];
@@ -80,19 +79,13 @@ export class SCMBadgeController {
 @Injectable()
 export class SCMStatusBarController {
   @Autowired(SCMService)
-  private scmService: SCMService;
+  private readonly scmService: SCMService;
 
   @Autowired(IStatusBarService)
-  private statusbarService: IStatusBarService;
-
-  @Autowired(IContextKeyService)
-  private contextKeyService: IContextKeyService;
+  private readonly statusbarService: IStatusBarService;
 
   @Autowired(WorkbenchEditorService)
-  protected workbenchEditorService: WorkbenchEditorService;
-
-  @Autowired(IMainLayoutService)
-  private layoutService: IMainLayoutService;
+  private readonly workbenchEditorService: WorkbenchEditorService;
 
   private focusDisposable: IDisposable = Disposable.None;
   private focusedRepository: ISCMRepository | undefined = undefined;

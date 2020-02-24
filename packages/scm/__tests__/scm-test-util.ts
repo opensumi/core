@@ -5,7 +5,7 @@ import Uri from 'vscode-uri';
 import { ISCMProvider, ISCMResourceGroup, ISCMResource } from '../src/common';
 
 export class MockSCMProvider implements ISCMProvider {
-  readonly groups = new Sequence<ISCMResourceGroup>();
+  public groups = new Sequence<ISCMResourceGroup>();
 
   private _label: string;
   private _id: string;
@@ -23,8 +23,19 @@ export class MockSCMProvider implements ISCMProvider {
   get id() { return this._id; }
   get contextValue() { return this._contextValue; }
 
-  readonly onDidChangeResources: Event<void> = Event.None;
-  readonly onDidChange: Event<void> = Event.None;
+  private _count: number;
+  get count() {
+    return this._count;
+  }
+  set count(num: number) {
+    this._count = num;
+  }
+
+  public didChangeEmitter = new Emitter<void>();
+  readonly onDidChange: Event<void> = this.didChangeEmitter.event;
+
+  public didChangeResourcesEmitter = new Emitter<void>();
+  readonly onDidChangeResources: Event<void> = this.didChangeResourcesEmitter.event;
 
   async getOriginalResource() { return null; }
   toJSON() { return { $mid: 5 }; }
@@ -43,7 +54,7 @@ export class MockSCMResourceGroup implements ISCMResourceGroup {
   readonly provider: ISCMProvider;
 
   private _hideWhenEmpty: boolean = false;
-  readonly elements: ISCMResource[] = [];
+  public elements: ISCMResource[] = [];
 
   private _onDidSplice = new Emitter<ISplice<ISCMResource>>();
   readonly onDidSplice = this._onDidSplice.event;
