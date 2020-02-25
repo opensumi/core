@@ -100,6 +100,7 @@ export const RecycleTree = (
     onSelect,
     onBlur,
     onFocus,
+    onReveal,
     onTwistieClick,
     scrollTop,
     prerenderNumber = 10,
@@ -260,6 +261,7 @@ export const RecycleTree = (
         onChange={onChange || noop}
         onDrop={onDrop || noop}
         onSelect={onSelect || noop}
+        onReveal={onReveal || noop}
         onTwistieClick={onTwistieClick}
         draggable={draggable}
         foldable={foldable}

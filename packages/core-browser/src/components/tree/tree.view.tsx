@@ -61,6 +61,11 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   onSelect?: any;
 
   /**
+   * 显示事件回调
+   */
+  onReveal?: any;
+
+  /**
    * 折叠箭头点击回调
    */
   onTwistieClick?: any;
@@ -86,6 +91,10 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 节点中替换文本，需在node节点中存在hightlightRange时可用
    */
   replace?: string;
+  /**
+   * 筛选条件
+   */
+  filter?: string;
   /**
    * 节点高度
    */
@@ -156,6 +165,7 @@ export const TreeContainer = (
     onChange,
     onBlur,
     onFocus,
+    onReveal,
     draggable,
     foldable = true,
     editable,
