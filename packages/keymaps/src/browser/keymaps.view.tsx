@@ -107,14 +107,30 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       if (isEditing) {
         return <Input className={styles.keybinding_key_input} size='small' autoFocus={true} name={noKeybidingInputName} value={value} onKeyDown={keydownHandler} onBlur={blurHandler} />;
       } else {
-        return <span className={styles.keybinding_key} title={getRaw(keybinding)} dangerouslySetInnerHTML={{ __html: keybinding || '' }}></span>;
+        const keyBlocks = keybinding?.split(' ');
+        return <div className={styles.keybinding_key} title={getRaw(keybinding)}>
+          <div className={styles.keybinding_action} onClick={clickHandler}>
+            <span className={cls(keybinding ? getIcon('edit') : getIcon('plus'), styles.keybinding_inline_action)}></span>
+            {renderReset(source)}
+          </div>
+          {
+            keyBlocks?.map((block) => {
+              const keys = block.split('+');
+              return <div className={styles.keybinding_key_block}>
+                {
+                  keys.map((key) => {
+                    return <div className={styles.keybinding_key_item} dangerouslySetInnerHTML={{ __html: key || '' }}></div>;
+                  })
+                }
+              </div>;
+            })
+          }
+        </div>;
+
       }
     };
 
     return <div className={cls(styles.keybinding_list_item, index % 2 === 1 && styles.odd)}>
-      <div className={styles.keybinding_action} onClick={clickHandler}>
-        <i className={cls(keybinding ? getIcon('edit') : getIcon('plus'))}></i>
-      </div>
       <div className={styles.keybinding_list_item_box} title={getRaw(command)} dangerouslySetInnerHTML={{ __html: command }}></div>
       <div className={cls(styles.keybinding_list_item_box)}>
         {
@@ -125,7 +141,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       </div>
       <div className={styles.keybinding_list_item_box}>
         <span title={getRaw(source)} dangerouslySetInnerHTML={{ __html: source || '' }}></span>
-        {renderReset(source)}
       </div>
     </div>;
   };
