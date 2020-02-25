@@ -305,8 +305,8 @@ export class KeymapService implements IKeymapService {
    * 搜索快捷键
    */
   @action
-  searchKeybindings = (event) => {
-    this.currentSearchValue = event.target && event.target.value ? event.target.value.toLocaleLowerCase() : '';
+  searchKeybindings = (search: string) => {
+    this.currentSearchValue = search;
     // debounce
     if (this.searchTimer) {
       clearTimeout(this.searchTimer);
