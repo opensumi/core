@@ -6,7 +6,7 @@ import * as styles from './comments.module.less';
 import { ConfigProvider, localize, AppConfig } from '@ali/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
-import { ICommentReply } from '../common';
+import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle } from '../common';
 import * as clx from 'classnames';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
@@ -18,7 +18,12 @@ export interface ICommentProps {
 }
 
 const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
-  const { commentThreadTitle, commentThreadContext, readOnly, comments } = thread;
+  const {
+    commentThreadTitle,
+    commentThreadContext,
+    readOnly,
+    comments,
+  } = thread;
   const [isFocusReply] = React.useState(true);
   const [rows] = React.useState(5);
   const [replyText, setReplyText] = React.useState('');
@@ -59,23 +64,22 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
     <div className={clx(thread.options.threadClassName, styles.comment_container)}>
       <div className={clx(thread.options.threadHeadClassName, styles.head)}>
         <div className={styles.review_title}>{comments.length > 0 ? commentTitleWithAuthor : startReview}</div>
-        <InlineActionBar
+        <InlineActionBar<ICommentThreadTitle>
           menus={commentThreadTitle}
-          context={[thread, widget]}
+          context={[{
+            thread,
+            widget,
+          }]}
           separator='inline'
           type='icon'
           />
       </div>
-      <div>
-        {comments.map((comment) => (
-          <CommentItem
-            key={comment.id}
-            mode={comment.mode}
-            body={comment.body}
-            label={comment.label}
-            author={comment.author} />
-        ))}
-      </div>
+      {comments.map((comment) => (
+        <CommentItem
+          key={comment.id}
+          thread={thread}
+          comment={comment} />
+      ))}
       {!readOnly && (
         <div className={clx(styles.comment_reply_container)}>
           <CommentsTextArea
@@ -88,22 +92,21 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
             rows={rows}
           />
           {(isFocusReply || replyText) && (
-            <div className={clx(styles.comment_reply_actions)}>
-              <InlineActionBar<ICommentReply>
-                separator='inline'
-                type='button'
-                context={[
-                  {
-                    text: replyText,
-                    thread,
-                  },
-                ]}
-                menus={commentThreadContext}
-                afterClick={() => {
-                  setReplyText('');
-                }}
-              />
-            </div>
+            <InlineActionBar<ICommentReply>
+              className={styles.comment_reply_actions}
+              separator='inline'
+              type='button'
+              context={[
+                {
+                  text: replyText,
+                  thread,
+                },
+              ]}
+              menus={commentThreadContext}
+              afterClick={() => {
+                setReplyText('');
+              }}
+            />
           )}
         </div>
       )}
@@ -112,7 +115,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
 });
 
 @Injectable({ multiple: true })
-export class CommentsZoneWidget extends ResizeZoneWidget {
+export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZoneWidget {
 
   @Autowired(AppConfig)
   appConfig: AppConfig;
@@ -133,7 +136,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget {
     );
   }
 
-  get currentEditor() {
+  get coreEditor() {
     return this.editor;
   }
 

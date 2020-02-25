@@ -88,18 +88,27 @@
 }
 
 .comment_reply_actions {
-  display: flex;
   justify-content: flex-end;
 }
 
 .comment_item {
-  padding: 6px 30px;
+  padding: 6px 22px;
+  &:hover {
+    .comment_item_title_context {
+      visibility: visible;
+    }
+  }
 }
 
 .comment_item_head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 4px;
+}
+
+.comment_item_author {
+  display: flex;
 }
 
 .comment_item_author_name {
@@ -116,6 +125,14 @@
   width: 28px;
   height: 28px;
   margin-right: 10px;
+}
+
+.comment_item_title_context {
+  visibility: hidden;
+}
+
+.comment_item_context {
+  justify-content: flex-end;
 }
 
 .comment_panel {
