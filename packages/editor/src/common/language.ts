@@ -82,7 +82,15 @@ export interface Diagnostic {
    * a scope collide all definitions can be marked via this property.
    */
   relatedInformation?: DiagnosticRelatedInformation[];
+
+  tags?: DiagnosticTag[];
 }
+
+export enum DiagnosticTag {
+  Unnecessary = 1,
+  Deprecated = 2,
+}
+
 export function asSeverity(severity?: number): MarkerSeverity {
   if (severity === 1) {
       return MarkerSeverity.Error;
@@ -130,6 +138,7 @@ export function asDiagnostic(diagnostic: Diagnostic): monaco.editor.IMarkerData 
     endLineNumber: diagnostic.range.end.line + 1,
     endColumn: diagnostic.range.end.character + 1,
     relatedInformation: asRelatedInformations(diagnostic.relatedInformation),
+    tags: diagnostic.tags as number[],
   };
 }
 
