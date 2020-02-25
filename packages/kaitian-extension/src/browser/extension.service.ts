@@ -247,7 +247,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     await this.initBrowserDependency();
 
-    await this.startProcess(true);
+    if (!this.appConfig.noExtHost) {
+      await this.startProcess(true);
+    }
 
     // this.ready.resolve();
 
