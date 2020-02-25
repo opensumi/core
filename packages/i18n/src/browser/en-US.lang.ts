@@ -521,5 +521,7 @@ export const localizationBundle = {
     'comments.zone.title': 'Start discussion',
     'comments.panel.action.collapse': 'Collapse All',
     'comments.thread.action.close': 'Close Panel',
+
+    'treeview.command.action.collapse': 'Collapse ALL',
   },
 };

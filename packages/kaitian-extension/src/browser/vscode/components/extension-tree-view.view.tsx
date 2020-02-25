@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as styles from './extension-view.module.less';
 import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
-import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined, CommandRegistry, Command, IDisposable } from '@ali/ide-core-common';
+import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined, CommandRegistry, Command, IDisposable, localize } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
@@ -76,7 +76,7 @@ export const ExtensionTabbarTreeView = observer(({
   const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId, options]);
   const menuRegistry: IMenuRegistry = useInjectable(IMenuRegistry);
   const commandRegistry: CommandRegistry = useInjectable(CommandRegistry);
-  const { canSelectMany, showCollapseAll }  = options;
+  const { canSelectMany, showCollapseAll }  = options || {};
   const initTreeData = () => {
     const model = copyMap(extensionTreeViewModel.getTreeViewModel(viewId));
     dataProvider.setVisible(viewId, true);
@@ -213,13 +213,17 @@ export const ExtensionTabbarTreeView = observer(({
   };
 
   const collapseAll = () => {
-    const newNodes = nodes.slice(0);
-    for (const n of newNodes) {
-      if (n.expanded) {
-        n.expanded = false;
-      }
+    const model = extensionTreeViewModel.getTreeViewModel(viewId);
+    const copyModel = copyMap(model);
+    for (const [key, value] of copyModel) {
+      copyModel.set(key, {
+        ...value,
+        expanded: false,
+      });
     }
-    setNodes(newNodes);
+    extensionTreeViewModel.setTreeViewModel(viewId, copyModel);
+    const nodes = extensionTreeViewModel.getTreeViewNodes(viewId);
+    checkIfNeedExpandChildren(nodes, copyModel);
   };
 
   useDisposable(() => {
@@ -227,7 +231,7 @@ export const ExtensionTabbarTreeView = observer(({
     if (showCollapseAll) {
       const collapseCommand: Command = {
         id: `${TREE_VIEW_COMMAND_PREFIX}_COLLAPSE_ALL_${viewId}`,
-        label: '测试一下',
+        label: localize('treeview.command.action.collapse'),
         iconClass: getIcon('collapse-all'),
       };
       disposables.push(
@@ -236,8 +240,6 @@ export const ExtensionTabbarTreeView = observer(({
             collapseAll();
           },
         }),
-      );
-      disposables.push(
         menuRegistry.registerMenuItem(MenuId.ViewTitle, {
           command: collapseCommand.id,
           when: `view == ${viewId}`,
