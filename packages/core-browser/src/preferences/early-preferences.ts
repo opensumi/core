@@ -59,18 +59,13 @@ registerLocalStorageProvider('general.icon');
 registerLocalStorageProvider('general.language');
 
 export function getExternalPreference<T>(preferenceName: string, schema?: PreferenceItem, untilScope?: PreferenceScope): {value: T | undefined, scope: PreferenceScope } {
-  for (const scope of PreferenceScope.getReversedScopes()) {
+  const scopes = untilScope ? PreferenceScope.getReversedScopes().filter((s) => s <= untilScope) : PreferenceScope.getReversedScopes();
+  for (const scope of scopes) {
     const value = providers.get(preferenceName)!.get(scope);
     if (value !== undefined) {
       return {
         value,
         scope,
-      };
-    }
-    if (scope === untilScope) {
-      return {
-        value: undefined,
-        scope: untilScope,
       };
     }
   }

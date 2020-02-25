@@ -318,11 +318,8 @@ export class PreferenceServiceImpl implements PreferenceService {
     return { value };
   }
 
-  public resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): {
-    configUri?: URI,
-    value?: T,
-  } {
-    const { value, configUri } = this.doResolve(preferenceName, defaultValue, resourceUri);
+  public resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T> {
+    const { value, configUri, scope } = this.doResolve(preferenceName, defaultValue, resourceUri);
     if (typeof value === 'undefined') {
       const overridden = this.overriddenPreferenceName(preferenceName);
       if (overridden) {
@@ -331,7 +328,7 @@ export class PreferenceServiceImpl implements PreferenceService {
         return this.lookUp(preferenceName);
       }
     }
-    return { value, configUri };
+    return { value, configUri, scope };
   }
 
   public async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
