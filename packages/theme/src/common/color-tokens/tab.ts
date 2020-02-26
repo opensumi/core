@@ -91,9 +91,9 @@ export const TAB_UNFOCUSED_INACTIVE_MODIFIED_BORDER = registerColor('tab.unfocus
 }, localize('unfocusedINactiveModifiedBorder', 'Border on the top of modified (dirty) inactive tabs in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_HOVER_BORDER = registerColor('tab.hoverBorder', {
-  dark: null,
-  light: null,
-  hc: null,
+  dark: '#00000000',
+  light: '#00000000',
+  hc: '#00000000',
 }, localize('tabHoverBorder', 'Border to highlight tabs when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_UNFOCUSED_HOVER_BORDER = registerColor('tab.unfocusedHoverBorder', {
