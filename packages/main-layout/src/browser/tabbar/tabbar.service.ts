@@ -26,6 +26,8 @@ export class TabbarService extends WithEventBus {
   containersMap: Map<string, ComponentRegistryInfo> = new Map();
   @observable state: Map<string, TabState> = new Map();
 
+  private storedState: {[containerId: string]: TabState} = {};
+
   public prevSize?: number;
   public commonTitleMenu: IContextMenu;
 
@@ -178,9 +180,16 @@ export class TabbarService extends WithEventBus {
     // 另外由于containersMap不是observable, 这边setState来触发visibaleContainers更新
     if (this.rendered) {
       // 渲染后状态已恢复，使用状态内的顺序或插到最后
-      if (!this.getContainerState(containerId)) {
-        this.state.set(containerId, {hidden: false, priority: this.sortedContainers.length});
-        this.sortedContainers.push(componentInfo);
+      if (!this.storedState[containerId]) {
+        // kaitian拓展都在渲染后注册
+        const insertIndex = componentInfo.options!.priority ? Math.max(Math.min(componentInfo.options!.priority, this.sortedContainers.length), 0) : 0;
+        this.sortedContainers.splice(insertIndex, 0, componentInfo);
+        for (let i = insertIndex; i < this.sortedContainers.length; i++) {
+          const info = this.sortedContainers[i];
+          this.state.set(info.options!.containerId, {hidden: false, priority: i});
+        }
+      } else {
+        this.state.set(componentInfo.options!.containerId, this.storedState[containerId]);
       }
     } else {
       // 渲染前根据priority排序
@@ -289,10 +298,10 @@ export class TabbarService extends WithEventBus {
   }
 
   restoreState() {
-    const storedState: {[containerId: string]: TabState} = this.layoutState.getState(LAYOUT_STATE.getTabbarSpace(this.location), {});
+    this.storedState = this.layoutState.getState(LAYOUT_STATE.getTabbarSpace(this.location), {});
     for (const containerId of this.state.keys()) {
-      if (storedState[containerId]) {
-        this.state.set(containerId, storedState[containerId]);
+      if (this.storedState[containerId]) {
+        this.state.set(containerId, this.storedState[containerId]);
       }
     }
   }
