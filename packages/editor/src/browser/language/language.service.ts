@@ -46,6 +46,7 @@ function reviveMarker(marker: IMarkerData): Diagnostic {
     message: marker.message,
     source: marker.source,
     relatedInformation: undefined,
+    tags: marker.tags as number[],
   };
 
   if (marker.relatedInformation) {
