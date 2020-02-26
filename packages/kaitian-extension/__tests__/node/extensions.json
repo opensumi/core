@@ -1,0 +1,14 @@
+{
+  "vscode-extensions": [
+    {
+      "name": "vscode-language-pack-zh-hans",
+      "version": "1.37.1"
+    }
+  ],
+  "kaitian": [
+    {
+      "name": "ide-dark-theme",
+      "version": "1.13.1"
+    }
+  ]
+}
