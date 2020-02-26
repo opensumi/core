@@ -62,8 +62,9 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     // 设置 resource context key
     const resourceContext = new ResourceContextKey(this._contextKeyService);
     resourceContext.set(uri);
-    this.initMenuContext();
+    options.contextValue && this._contextKeyService.createKey<string>('thread', options.contextValue);
     const threadsLengthContext = this._contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
+    this.initMenuContext();
     // 监听每次 thread 的变化，重新设置 threadsLength
     this.commentsService.onThreadsChanged(() => {
       threadsLengthContext.set(this.commentsService.getThreadsByUri(uri).length);

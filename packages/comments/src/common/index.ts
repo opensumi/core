@@ -33,6 +33,10 @@ export interface ICommentsTreeNode extends Writeable<TreeNode<ICommentsTreeNode>
    * 如果是根节点则为 undefined
    */
   comment?: IComment;
+  /**
+   * 点击事件
+   */
+  onSelect?: (node: ICommentsTreeNode) => void;
 }
 
 /**
@@ -284,6 +288,10 @@ export interface ICommentsThreadOptions {
    * 附属数据
    */
   data?: any;
+  /**
+   * thread context value
+   */
+  contextValue?: string;
 }
 
 export const ICommentsService = Symbol('ICommentsService');
