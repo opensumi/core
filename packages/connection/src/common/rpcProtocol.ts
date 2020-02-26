@@ -114,6 +114,12 @@ export namespace ObjectTransfer {
                 it: item.insertText === item.label ? undefined : item.insertText,
                 itl: item.insertTextRules || undefined,
                 r: item.range || undefined,
+                d: item.detail,
+                dc: item.documentation,
+                ps: item.preselect,
+                c: item.command,
+                cc: item.commitCharacters,
+                at: item.additionalTextEdits,
               };
             }),
           },
@@ -143,6 +149,12 @@ export namespace ObjectTransfer {
               filterText: item.f,
               range: item.r || null,
               insertTextRules: item.itl,
+              detail: item.d,
+              documentation: item.dc,
+              preselect: item.ps,
+              command: item.c,
+              commitCharacters: item.cc,
+              additionalTextEdits: item.at,
             };
           }) : [],
         };
@@ -216,6 +228,7 @@ export class RPCProtocol implements IRPCProtocol {
   private readonly _cancellationTokenSources: Map<string, CancellationTokenSource>;
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
+  // tslint:disable-next-line:no-unused-variable
   private logger;
 
   constructor(connection: IMessagePassingProtocol, logger?: any) {
