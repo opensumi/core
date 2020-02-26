@@ -1,11 +1,10 @@
-import { Injector, ConstructorOf, Domain } from '@ali/common-di';
+import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService, noKeybidingInputName } from '../keybinding';
 import {
   CommandRegistry,
-  MenuModelRegistry,
   isOSX, ContributionProvider,
   MaybePromise,
   createContributionProvider,
@@ -22,7 +21,6 @@ import {
   getLogger,
   isElectronRenderer,
   setLanguageId,
-  ILogger,
   IReporterService,
   REPORT_NAME,
   isElectronEnv,
@@ -33,7 +31,7 @@ import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import { RPCMessageConnection, WSChannelHandler } from '@ali/ide-connection';
 import {
-  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider, IExternalPreferenceProvider,
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
@@ -147,6 +145,7 @@ export class ClientApp implements IClientApp {
       preferenceDirName: opts.preferenceDirName,
       storageDirName: opts.storageDirName,
       extensionStorageDirName: opts.extensionStorageDirName,
+      noExtHost: opts.noExtHost,
     };
     // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
     if (isElectronEnv() && electronEnv.metadata.extensionCandidate) {
@@ -196,9 +195,7 @@ export class ClientApp implements IClientApp {
 
     this.logger = this.getLogger();
     this.stateService.state = 'client_connected';
-    console.time('startContribution');
     await this.startContributions();
-    console.timeEnd('startContribution');
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
     await this.renderApp(container);

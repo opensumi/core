@@ -49,6 +49,8 @@ export interface AppConfig {
    * 注意保持这个 id 的唯一性
    */
   clientId?: string;
+  // 是否禁用插件进程
+  noExtHost?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
