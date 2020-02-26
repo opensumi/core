@@ -54,9 +54,13 @@ export const CommentsPanel = observer<{ viewState: ViewState}>((props) => {
       setTreeNodes(newNodes);
     }
 
-    workbenchEditorService.open(item.uri!, {
-      range: item.thread.range,
-    });
+    if (item.onSelect) {
+      item.onSelect(item);
+    } else {
+      workbenchEditorService.open(item.uri!, {
+        range: item.thread.range,
+      });
+    }
   }, [workbenchEditorService, treeNodes]);
 
   return (
