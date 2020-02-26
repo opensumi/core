@@ -23,6 +23,35 @@
   line-height: 30px;
 }
 
+.keybinding_key_input_container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  &:hover {
+    .keybinding_optional_actions {
+      z-index: 999;
+      display: flex;
+    }
+    .keybinding_key_input_placeholder {
+      display: none;
+    }
+  }
+}
+
+.keybinding_key_input_placeholder {
+  z-index: 100;
+  position: absolute;
+  right: 5px;
+  top: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--inputicon-foreground);
+  width: 16px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+}
+
 .keybinding_key_input, .keybinding_key {
   width: 100%;
   height: 100%;
@@ -84,13 +113,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-
-    span {
-      height: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
   }
 
   &.odd {
@@ -141,12 +163,38 @@
 .search_container {
   position: relative;
   height: 100%;
+  &:hover {
+    .keybinding_optional_actions {
+      display: flex;
+    }
+  }
 }
 
 .search_input {
   height: 30px;
   width: 100%;
   text-indent: 30px;
+
+}
+
+.keybinding_optional_actions {
+  position: absolute;
+  right: 5px;
+  top: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  .keybinding_optional_action {
+    cursor: pointer;
+    color: var(--inputicon-foreground);
+    display: block;
+    font-size: 14px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+  }
 }
 
 .search_inline_action {

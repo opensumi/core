@@ -73,10 +73,10 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       }
     };
     const blurHandler = () => {
-      if (value) {
-        updateKeybinding(value);
-      }
-      setIsEditing(false);
+      // if (value) {
+      //   updateKeybinding(value);
+      // }
+      // setIsEditing(false);
     };
 
     const keydownHandler = (event: React.KeyboardEvent) => {
@@ -91,6 +91,15 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       } else {
         setValue(covert(event.nativeEvent));
       }
+    };
+
+    const renderClear = () => {
+      const clear = () => {
+        setValue('');
+      };
+      return <div className={styles.keybinding_optional_actions}>
+        <span className={cls(getIcon('close-circle-fill'), styles.keybinding_optional_action)} onClick={clear} title={localize('keymaps.action.reset')}></span>
+      </div>;
     };
 
     const renderReset = (source?: string) => {
@@ -109,7 +118,11 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
 
     const renderKeybinding = () => {
       if (isEditing) {
-        return <Input className={styles.keybinding_key_input} size='small' autoFocus={true} name={noKeybidingInputName} value={value} onKeyDown={keydownHandler} onBlur={blurHandler} />;
+        return <div className={styles.keybinding_key_input_container}>
+          { renderClear() }
+          <Input className={styles.keybinding_key_input} size='small' autoFocus={true} name={noKeybidingInputName} value={value} onKeyDown={keydownHandler} onBlur={blurHandler} />
+          <div className={styles.keybinding_key_input_placeholder}>⏎</div>
+        </div>;
       } else {
         const keyBlocks = keybinding?.split(' ');
         return <div className={styles.keybinding_key} title={getRaw(keybinding)}>
@@ -144,7 +157,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       <div className={styles.keybinding_list_item_box} title={getRaw(context || when || '—')} dangerouslySetInnerHTML={{ __html: context || when || '—' }}>
       </div>
       <div className={styles.keybinding_list_item_box}>
-        <span title={getRaw(source)} dangerouslySetInnerHTML={{ __html: source || '' }}></span>
+        <div title={getRaw(source)} dangerouslySetInnerHTML={{ __html: source || '' }}></div>
       </div>
     </div>;
   };
@@ -201,6 +214,16 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     }
   };
 
+  const clearSearch = () => {
+    setSearch('');
+  };
+
+  const renderClearAction = () => {
+    return <div className={styles.keybinding_optional_actions}>
+      <span className={cls(getIcon('close-circle-fill'), styles.keybinding_optional_action)} onClick={clearSearch} title={localize('keymaps.action.reset')}></span>
+    </div>;
+  };
+
   React.useEffect(() => {
     searchKeybindings(search);
   }, [search]);
@@ -216,6 +239,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         onChange={onChangeHandler}
         onKeyDown={onKeyDownHandler}
       />
+      { renderClearAction() }
     </div>;
   };
 
