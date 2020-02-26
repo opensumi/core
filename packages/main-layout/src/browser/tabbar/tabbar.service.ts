@@ -201,9 +201,7 @@ export class TabbarService extends WithEventBus {
       },
       group: '1_widgets',
     }));
-    if (options.activateKeyBinding) {
-      disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
-    }
+    disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
     this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
     if (containerId === this.currentContainerId) {
       // 需要重新触发currentChange副作用
@@ -315,19 +313,21 @@ export class TabbarService extends WithEventBus {
     disposables.push(this.commandRegistry.registerCommand({
       id: activateCommandId,
     }, {
-      execute: () => {
+      execute: ({forceShow}: {forceShow?: boolean}) => {
         // 支持toggle
-        if (this.location === 'bottom') {
+        if (this.location === 'bottom' && !forceShow) {
           this.currentContainerId = this.currentContainerId === containerId ? '' : containerId;
         } else {
           this.currentContainerId = containerId;
         }
       },
     }));
-    disposables.push(this.keybindingRegistry.registerKeybinding({
-      command: activateCommandId,
-      keybinding: options.activateKeyBinding!,
-    }));
+    if (options.activateKeyBinding) {
+      disposables.push(this.keybindingRegistry.registerKeybinding({
+        command: activateCommandId,
+        keybinding: options.activateKeyBinding!,
+      }));
+    }
     return disposables;
   }
 
