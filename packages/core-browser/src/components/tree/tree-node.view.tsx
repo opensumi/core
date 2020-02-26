@@ -495,7 +495,7 @@ export const TreeContainerNode = (
         className={cls(
           styles.treenode,
           {
-            [styles.alwaysShowActions]: alwaysShowActions,
+            [styles.alwaysShowActions]: alwaysShowActions || node.alwaysShowActions,
             [styles.mod_focused]: SelectableTreeNode.hasFocus(node),
             [styles.mod_selected]: !SelectableTreeNode.hasFocus(node) && !!SelectableTreeNode.isSelected(node),
           },

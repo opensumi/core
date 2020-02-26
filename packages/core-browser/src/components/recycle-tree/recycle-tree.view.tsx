@@ -112,6 +112,7 @@ export const RecycleTree = (
     notifyFileDecorationsChange,
     notifyThemeChange,
     validate,
+    alwaysShowActions,
   }: RecycleTreeProps,
 ) => {
   const noop = () => { };
@@ -269,7 +270,8 @@ export const RecycleTree = (
         notifyFileDecorationsChange={notifyFileDecorationsChange}
         notifyThemeChange={notifyThemeChange}
         validate={validate}
-        isComplex={isComplex} />
+        isComplex={isComplex}
+        alwaysShowActions={alwaysShowActions} />
     </PerfectScrollbar>
   </React.Fragment>;
 };
