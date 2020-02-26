@@ -188,6 +188,7 @@ export interface CommentsPanelOptions {
   hidden?: boolean;
   badge?: string;
   titleComponent?: React.FunctionComponent;
+  initialProps?: object;
 }
 
 export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];

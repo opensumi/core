@@ -5,6 +5,7 @@ import { useInjectable, isUndefined, ViewState, IEventBus } from '@ali/ide-core-
 import { ICommentsService, ICommentsTreeNode, CommentPanelCollapse } from '../common';
 import * as styles from './comments.module.less';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import * as clx from 'classnames';
 
 const scrollContainerStyle = {
   width: '100%',
@@ -22,7 +23,7 @@ function getRenderTree(nodes: ICommentsTreeNode[]) {
   });
 }
 
-export const CommentsPanel = observer<{ viewState: ViewState}>((props) => {
+export const CommentsPanel = observer<{ viewState: ViewState; className?: string}>((props) => {
   const commentsService = useInjectable<ICommentsService>(ICommentsService);
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
   const [ treeNodes, setTreeNodes ] = React.useState<ICommentsTreeNode[]>([]);
@@ -64,7 +65,7 @@ export const CommentsPanel = observer<{ viewState: ViewState}>((props) => {
   }, [workbenchEditorService, treeNodes]);
 
   return (
-    <div className={styles.comment_panel}>
+    <div className={clx(props.className, styles.comment_panel)}>
       <RecycleTree
         containerHeight={props.viewState.height}
         scrollContainerStyle={scrollContainerStyle}
