@@ -1,7 +1,6 @@
-import { CommentsZoneWidget } from './comments-zone.view';
 import { Autowired } from '@ali/common-di';
 import { Domain, ClientAppContribution, Disposable, localize, ContributionProvider, Event, ToolbarRegistry, CommandContribution, CommandRegistry, getIcon, TabBarToolbarContribution, IEventBus } from '@ali/ide-core-browser';
-import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse, CloseThreadId, ICommentsThread } from '../common';
+import { ICommentsService, CommentPanelId, CommentsContribution, ICommentsFeatureRegistry, CollapseId, CommentPanelCollapse, CloseThreadId, ICommentThreadTitle } from '../common';
 import { IEditor } from '@ali/ide-editor';
 import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -48,7 +47,7 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       label: '%comments.thread.action.close%',
       iconClass: getIcon('up'),
     }, {
-      execute: (thread: ICommentsThread, widget: CommentsZoneWidget) => {
+      execute: ({ widget }: ICommentThreadTitle) => {
         widget.toggle();
       },
     });
@@ -92,6 +91,7 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
         containerId: CommentPanelId,
         title: localize('comments').toUpperCase(),
         hidden: false,
+        activateKeyBinding: 'shift+ctrlcmd+c',
         ...this.commentsFeatureRegistry.getCommentsPanelOptions(),
       }, 'bottom');
     });
