@@ -160,6 +160,22 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     }
   }
 
+  public showAll() {
+    for (const [, widget] of this.widgets) {
+      if (!widget.isShow) {
+        widget.toggle();
+      }
+    }
+  }
+
+  public hideAll() {
+    for (const [, widget] of this.widgets) {
+      if (widget.isShow) {
+        widget.toggle();
+      }
+    }
+  }
+
   public addComment(...comments: IComment[]) {
     this.comments.push(...comments.map((comment) => ({
       ...comment,
