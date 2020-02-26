@@ -16,8 +16,6 @@
 
   &.alwaysShowActions,
   &:hover {
-    color: var(--kt-tree-hoverForeground);
-    background: var(--kt-tree-hoverBackground);
     .treenode_head_icon {
       display: none;
     }
@@ -32,6 +30,11 @@
         margin-left: 6px;
       }
     }
+  }
+
+  &:hover {
+    color: var(--kt-tree-hoverForeground);
+    background: var(--kt-tree-hoverBackground);
   }
 
   .treenode_title {
