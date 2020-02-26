@@ -90,7 +90,11 @@ export class KeymapService implements IKeymapService {
     this.keyBindingRegistry.onKeybindingsChanged(() => this.keymapChangeEmitter.fire(undefined));
     this.keybindings = this.getKeybindingItems();
     this.onDidKeymapChanges(() => {
-      this.keybindings = this.getKeybindingItems();
+      if (this.currentSearchValue) {
+        this.doSearchKeybindings(this.currentSearchValue);
+      } else {
+        this.keybindings = this.getKeybindingItems();
+      }
     });
   }
 
@@ -102,10 +106,6 @@ export class KeymapService implements IKeymapService {
   async reconcile(keybindings?: Keybinding[]) {
     keybindings = keybindings || await this.parseKeybindings();
     this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keybindings);
-    if (this.currentSearchValue) {
-      this.doSearchKeybindings(this.currentSearchValue);
-    }
-    this.keymapChangeEmitter.fire(undefined);
   }
 
   /**
@@ -151,7 +151,7 @@ export class KeymapService implements IKeymapService {
     this.saveKeybinding(keybindings);
   }
 
-  async saveKeybinding(keybindings: Keybinding[]) {
+  private async saveKeybinding(keybindings: Keybinding[]) {
     if (!this.resource.saveContents) {
       return;
     }
@@ -334,6 +334,7 @@ export class KeymapService implements IKeymapService {
    * 模糊搜索匹配的快捷键
    * @protected
    */
+  @action
   protected readonly doSearchKeybindings = (search) => {
     const items = this.getKeybindingItems();
     const result: KeybindingItem[] = [];

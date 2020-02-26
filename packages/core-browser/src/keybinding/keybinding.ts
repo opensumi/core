@@ -728,7 +728,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
     this.resetKeybindingsForScope(scope);
     this.doRegisterKeybindings(bindings, scope);
-    this.keybindingsChanged.fire({ affectsCommands: bindings.map((b) => b.command) });
   }
 
   /**

@@ -1,3 +1,5 @@
+import { Keybinding } from '@ali/ide-core-common';
+
 export const IKeymapService = Symbol('IKeymapService');
 
 export interface KeybindingItem {
@@ -27,11 +29,11 @@ export interface KeybindingItem {
 export interface IKeymapService {
   /**
    * 设置快捷键
-   * @param {KeybindingJson} keybindingJson
+   * @param {Keybinding} keybinding
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  setKeybinding(keybindingJson: KeybindingJson): void;
+  setKeybinding(keybinding: Keybinding): void;
 
   /**
    * 移除给定ID的快捷键绑定
