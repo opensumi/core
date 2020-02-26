@@ -36,7 +36,7 @@ export const ElectronHeaderBar = observer(() => {
   }, []);
   // 在 Mac 下，如果是全屏状态，隐藏顶部标题栏
   if (isOSX && isFullScreen) {
-    return <div></div>;
+    return <div><TitleInfo hidden={true}/></div>;
   }
   return <div className={styles.header} onDoubleClick={() => {
     uiService.maximize((global as any).currentWindowId);
@@ -71,10 +71,10 @@ export const ElectronHeaderBar = observer(() => {
 
 declare const ResizeObserver: any;
 
-export const TitleInfo = observer(() => {
+export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
 
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
-  const [currentResource, setCurrentResource] = React.useState<MaybeNull<IResource>>(undefined);
+  const [currentResource, setCurrentResource] = React.useState<MaybeNull<IResource>>(editorService.currentResource);
   const ref = React.useRef<HTMLDivElement>();
   const spanRef = React.useRef<HTMLSpanElement>();
   const appConfig: AppConfig = useInjectable(AppConfig);
@@ -116,5 +116,16 @@ export const TitleInfo = observer(() => {
 
   const dirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : undefined;
 
-  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{ currentResource ? currentResource.name + ' -- ' : null} { dirname ? dirname + ' - '  : '' } {replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE'}</span></div>;
+  const title = (currentResource ? currentResource.name + ' — ' : '') + (dirname ? dirname + ' — '  : '') + (replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE');
+
+  // 同时更新 Html Title
+  React.useEffect(() => {
+    document.title = title;
+  }, [title]);
+
+  if (hidden) {
+    return null;
+  }
+
+  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{title}</span></div>;
 });
