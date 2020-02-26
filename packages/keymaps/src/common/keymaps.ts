@@ -1,25 +1,4 @@
-import { KeybindingScope } from '@ali/ide-core-browser';
-
 export const IKeymapService = Symbol('IKeymapService');
-
-export interface KeybindingJson {
-  /**
-   * 命令ID
-   */
-  command: string;
-  /**
-   * 可视化的快捷键
-   */
-  keybinding: string;
-  /**
-   * when条件语句
-   */
-  when: string;
-  /**
-   * context条件语句
-   */
-  context: string;
-}
 
 export interface KeybindingItem {
   id: string;
@@ -52,7 +31,7 @@ export interface IKeymapService {
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  setKeybinding(keybindingJson: KeybindingJson): Promise<void>;
+  setKeybinding(keybindingJson: KeybindingJson): void;
 
   /**
    * 移除给定ID的快捷键绑定

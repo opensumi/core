@@ -137,15 +137,20 @@ export interface ValidateMessage {
 export interface ValidateInputProp extends IInputBaseProps {
   // void 返回代表验证通过
   // string 代表有错误信息
-  validate: (value: string) => ValidateMessage;
+  validate?: (value: string) => ValidateMessage | undefined;
+  validateMessage?: ValidateMessage;
   popup?: boolean;
 }
 
 export const ValidateInput: React.FC<ValidateInputProp> = (
-  { className, autoFocus, validate, onChange, popup = true, ...restProps },
+  {className, autoFocus, validate, onChange, validateMessage: validateInfo, popup = true, ...restProps },
   ref: React.MutableRefObject<HTMLInputElement>,
 ) => {
-  const [validateMessage, setValidateMessage] = React.useState<ValidateMessage>();
+  const [validateMessage, setValidateMessage] = React.useState<ValidateMessage | undefined>();
+
+  React.useEffect(() => {
+    setValidateMessage(validateInfo);
+  }, [validateInfo]);
 
   const renderValidateMessage = () => {
     if (validateMessage && validateMessage.message) {
@@ -166,6 +171,7 @@ export const ValidateInput: React.FC<ValidateInputProp> = (
       </div>;
     }
   };
+
   const onChangeHandler = (event) => {
     if (typeof validate === 'function') {
       const message = validate(event.target.value);
