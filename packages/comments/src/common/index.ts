@@ -265,6 +265,14 @@ export interface ICommentsThread extends IDisposable {
    * 隐藏 zone widget
    */
   hide(): void;
+  /**
+   * 显示所有 zone widget
+   */
+  showAll(): void;
+  /**
+   * 隐藏所有 widget
+   */
+  hideAll(): void;
 }
 
 export interface ICommentsThreadOptions {
