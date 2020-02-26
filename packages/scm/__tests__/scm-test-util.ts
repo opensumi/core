@@ -2,7 +2,7 @@ import { Sequence, ISplice } from '@ali/ide-core-common/lib/sequence';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import Uri from 'vscode-uri';
 
-import { ISCMProvider, ISCMResourceGroup, ISCMResource } from '../src/common';
+import { ISCMProvider, ISCMResourceGroup, ISCMResource, VSCommand } from '../src/common';
 
 export class MockSCMProvider implements ISCMProvider {
   public groups = new Sequence<ISCMResourceGroup>();
@@ -23,13 +23,11 @@ export class MockSCMProvider implements ISCMProvider {
   get id() { return this._id; }
   get contextValue() { return this._contextValue; }
 
-  private _count: number;
-  get count() {
-    return this._count;
-  }
-  set count(num: number) {
-    this._count = num;
-  }
+  public count: number;
+  public statusBarCommands: VSCommand[] | undefined = [];
+
+  public didChangeStatusBarCommandsEmitter = new Emitter<VSCommand[]>();
+  readonly onDidChangeStatusBarCommands: Event<VSCommand[]> = this.didChangeStatusBarCommandsEmitter.event;
 
   public didChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.didChangeEmitter.event;
