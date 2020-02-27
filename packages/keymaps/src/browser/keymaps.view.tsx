@@ -128,7 +128,8 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         fixed();
         setIsDirty(true);
       }
-      const reset = () => {
+      const reset = (event) => {
+        event.preventDefault();
         removeKeybinding(id);
       };
       // 重置快捷键作用域

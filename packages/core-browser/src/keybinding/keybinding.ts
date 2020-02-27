@@ -728,6 +728,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
     this.resetKeybindingsForScope(scope);
     this.doRegisterKeybindings(bindings, scope);
+    if (bindings.length === 0) {
+      // 当设置空的keymaps时手动触发一次快捷键更改事件
+      this.keybindingsChanged.fire({ affectsCommands: [] });
+    }
   }
 
   /**
