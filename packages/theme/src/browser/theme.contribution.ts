@@ -102,11 +102,12 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
   }
 
   protected async updateTopPreference(key: string, value: string) {
-    const hasWorkspaceConfig = this.preferenceService.get(key, PreferenceScope.Workspace);
-    if (hasWorkspaceConfig) {
-      await this.preferenceService.set(key, value, PreferenceScope.Workspace);
-    } else {
+    const effectiveScope = this.preferenceService.resolve(key).scope;
+    // 最小就更新 User 的值
+    if ( typeof effectiveScope === 'undefined' || effectiveScope <= PreferenceScope.User) {
       await this.preferenceService.set(key, value, PreferenceScope.User);
+    } else {
+      await this.preferenceService.set(key, value, effectiveScope);
     }
   }
 
