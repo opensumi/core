@@ -153,6 +153,7 @@ export const defaultIconMap = {
   'openfile': 'openfile',
   'arrowup': 'arrowup',
   'arrowdown': 'arrowdown',
+  'keyboard': 'keyboard',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {

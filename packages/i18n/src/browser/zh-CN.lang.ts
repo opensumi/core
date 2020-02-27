@@ -473,7 +473,8 @@ export const localizationBundle = {
 
     'preference.workbench.list.openMode': '控制如何（如果支持）在树和列表中打开项目。对于有子节点的父节点，此设置将控制单击展开父节点还是双击。请注意，如果某些设置不启用，一些树和列表可能会选择忽略此设置。',
 
-    'keymaps.search.placeholder': '搜索快捷键',
+    'keymaps.search.placeholder': '输入关键字查找',
+    'keymaps.search.keyboard.placeholder': '输入快捷键',
     'keymaps.header.command.title': '命令',
     'keymaps.header.source.title': '作用域',
     'keymaps.header.keybinding.title': '快捷键',
@@ -482,8 +483,15 @@ export const localizationBundle = {
     'keymaps.source.default': '默认',
     'keymaps.source.user': '用户',
     'keymaps.source.workspace': '工作区',
-    'keymaps.keybinding.collide': '当前快捷键存在冲突',
+    'keymaps.keybinding.full.collide': '该快捷键与"{0}"命令冲突，请重新设置',
+    'keymaps.keybinding.partial.collide': '该快捷键与"{0}"命令存在包含关系冲突，请重新设置',
+    'keymaps.keybinding.shadow.collide': '该快捷键与"{0}"命令存在包含关系冲突，请重新设置',
+    'keymaps.keybinding.duplicate': '该快捷键已绑定以下 {0} 条命令：',
+    'keymaps.keybinding.success': '快捷键修改成功',
     'keymaps.keybinding.require': '请输入快捷键',
+    'keymaps.action.edit': '编辑快捷键',
+    'keymaps.action.add': '添加快捷键',
+    'keymaps.action.reset': '重置快捷键',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
     'layout.tabbar.hide': '隐藏',

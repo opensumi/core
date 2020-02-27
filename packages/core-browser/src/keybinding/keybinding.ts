@@ -142,11 +142,13 @@ export interface KeybindingRegistry {
   resolveKeybinding(binding: ResolvedKeybinding): KeyCode[];
   containsKeybinding(bindings: Keybinding[], binding: Keybinding): boolean;
   containsKeybindingInScope(binding: Keybinding, scope?: KeybindingScope): boolean;
+  validateKeybinding(bindings: Keybinding[], binding: Keybinding): string;
+  validateKeybindingInScope(binding: Keybinding, scope?: KeybindingScope): string;
   acceleratorFor(keybinding: Keybinding, separator: string): string[];
   acceleratorForSequence(keySequence: KeySequence, separator: string): string[];
   acceleratorForKeyCode(keyCode: KeyCode, separator: string): string;
   acceleratorForKey(key: Key): string;
-  getKeybindingsForKeySequence(keySequence: KeySequence, event: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult;
+  getKeybindingsForKeySequence(keySequence: KeySequence, event?: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult;
   getKeybindingsForCommand(commandId: string): ScopedKeybinding[];
   getScopedKeybindingsForCommand(scope: KeybindingScope, commandId: string): Keybinding[];
   isEnabled(binding: Keybinding, event: KeyboardEvent): boolean;
@@ -386,12 +388,53 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   }
 
   /**
+   * 检查Keybindings列表中的keySequence冲突
+   * 直接返回错误信息，无错误则返回空字符串
+   * @param bindings
+   * @param binding
+   */
+  public validateKeybinding(bindings: Keybinding[], binding: Keybinding): string {
+    const bindingKeySequence = this.resolveKeybinding(binding);
+    const collisions = this.getKeySequenceCollisions(bindings, bindingKeySequence)
+      .filter((b) => b.context === binding.context || b.when === binding.when);
+
+    if (collisions.full.length > 0) {
+      const collision = collisions.full[0];
+      const command = this.commandRegistry.getCommand(collision.command);
+      return formatLocalize('keymaps.keybinding.full.collide', `${command ? command?.label : collision.command}(${collision.when})`);
+    }
+    if (collisions.partial.length > 0) {
+      const collision = collisions.partial[0];
+      const command = this.commandRegistry.getCommand(collision.command);
+      return formatLocalize('keymaps.keybinding.partial.collide', `${command ? command?.label : collision.command}(${collision.when})`);
+    }
+    if (collisions.shadow.length > 0) {
+      const collision = collisions.shadow[0];
+      const command = this.commandRegistry.getCommand(collision.command);
+      return formatLocalize('keymaps.keybinding.shadow.collide', `${command ? command?.label : collision.command}(${collision.when})`);
+    }
+    return '';
+  }
+
+  /**
    * 检查在特定Scope下是否包含该Keybinding
+   *
    * @param binding
    * @param scope
    */
   public containsKeybindingInScope(binding: Keybinding, scope: KeybindingScope = KeybindingScope.USER): boolean {
     return this.containsKeybinding(this.keymaps[scope], binding);
+  }
+
+  /**
+   * 检查在特定Scope下是否包含该Keybinding
+   * 返回冲突信息
+   * 无冲突返回空字符串
+   * @param binding
+   * @param scope
+   */
+  public validateKeybindingInScope(binding: Keybinding, scope: KeybindingScope = KeybindingScope.USER): string {
+    return this.validateKeybinding(this.keymaps[scope], binding);
   }
 
   /**
@@ -545,7 +588,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * 列表按优先级排序 （见sortKeybindingsByPriority方法）
    * @param keySequence
    */
-  public getKeybindingsForKeySequence(keySequence: KeySequence, event: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult {
+  public getKeybindingsForKeySequence(keySequence: KeySequence, event?: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult {
     const result = new KeybindingsResultCollection.KeybindingsResult();
 
     for (let scope = KeybindingScope.END; --scope >= KeybindingScope.DEFAULT;) {
@@ -658,12 +701,12 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param binding
    * @param event
    */
-  public isEnabled(binding: Keybinding, event: KeyboardEvent): boolean {
+  public isEnabled(binding: Keybinding, event?: KeyboardEvent): boolean {
     const context = binding.context && this.contexts[binding.context];
     if (context && !context.isEnabled(binding)) {
       return false;
     }
-    if (binding.when && !this.whenContextService.match(binding.when, event.target as HTMLElement)) {
+    if (binding.when && !this.whenContextService.match(binding.when, event && event.target as HTMLElement)) {
       return false;
     }
     return true;
@@ -685,7 +728,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
     this.resetKeybindingsForScope(scope);
     this.doRegisterKeybindings(bindings, scope);
-    this.keybindingsChanged.fire({ affectsCommands: bindings.map((b) => b.command) });
   }
 
   /**
