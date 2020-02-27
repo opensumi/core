@@ -67,7 +67,7 @@ export class KeymapService implements IKeymapService {
     pre: '<match>',
     post: '</match>',
   };
-  private _storeKeybindings: Keybinding[] = [];
+  private _storeKeybindings: Keybinding[];
 
   get storeKeybindings() {
     return this._storeKeybindings;
@@ -137,14 +137,20 @@ export class KeymapService implements IKeymapService {
     const keybindings: Keybinding[] = this.storeKeybindings;
 
     let updated = false;
-    for (const keybinding of keybindings) {
-      if (keybinding.command === keybinding.command) {
+    for (const kb of keybindings) {
+      if (kb.command === keybinding.command) {
         updated = true;
-        keybinding.keybinding = keybinding.keybinding;
+        kb.keybinding = keybinding.keybinding;
       }
     }
     if (!updated) {
-      const item: Keybinding = { ...keybinding };
+      // 不能额外传入keybinding的resolved值
+      const item: Keybinding = {
+        when: keybinding.when,
+        command: keybinding.command,
+        context: keybinding.context,
+        keybinding: keybinding.keybinding,
+       };
       keybindings.push(item);
     }
     // 后置存储流程
@@ -159,7 +165,7 @@ export class KeymapService implements IKeymapService {
     // 存储前配置化当前快捷键
     this.reconcile(keybindings);
 
-    await this.resource.saveContents(JSON.stringify(keybindings, undefined, 4));
+    await this.resource.saveContents(JSON.stringify(keybindings, undefined, 2));
   }
 
   covert = (event: KeyboardEvent) => {
@@ -469,7 +475,7 @@ export class KeymapService implements IKeymapService {
           const command = this.commandRegistry.getCommand(binding.command);
           return {
             id: binding.command,
-            command: (command ? command.label : binding.command) || '',
+            command: (command ? command.label || command.id : binding.command) || '',
             when: typeof binding.when === 'string' ? binding.when : this.serialize(binding.when),
             keybinding: binding.keybinding,
           };
