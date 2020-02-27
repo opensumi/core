@@ -25,13 +25,15 @@ export function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-export function useDisposable(callback: () => IDisposable[], deps: DependencyList = []) {
+export function useDisposable(callback: () => IDisposable[] | void, deps: DependencyList = []) {
   useEffect(() => {
     const disposableStore = new DisposableStore();
     const disposables = callback();
-    disposables.forEach((disposable) => {
-      disposableStore.add(disposable);
-    });
+    if (Array.isArray(disposables)) {
+      disposables.forEach((disposable) => {
+        disposableStore.add(disposable);
+      });
+    }
 
     return () => {
       disposableStore.dispose();

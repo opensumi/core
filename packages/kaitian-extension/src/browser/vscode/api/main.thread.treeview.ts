@@ -1,9 +1,9 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../../common/vscode';
+import { TreeViewItem, TreeViewNode, CompositeTreeViewNode, TreeViewOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
-import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage } from '../../../common/vscode';
-import { TreeNode, MenuPath, URI, Emitter, ViewUiStateManager, DisposableStore, toDisposable } from '@ali/ide-core-browser';
+import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { TreeNode, MenuPath, Emitter, DisposableStore, toDisposable } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabbarTreeView } from '../components';
 import { IIconService, IconType } from '@ali/ide-theme';
@@ -35,7 +35,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     this.disposable.dispose();
   }
 
-  $registerTreeDataProvider(treeViewId: string): void {
+  $registerTreeDataProvider(treeViewId: string, options: TreeViewOptions<any>): void {
     if (!this.dataProviders.has(treeViewId)) {
       const disposable = new DisposableStore();
       const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.iconService);
@@ -47,6 +47,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       }, {
         dataProvider: this.dataProviders.get(treeViewId),
         viewId: treeViewId,
+        options,
       });
       const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
       if (handler) {
@@ -180,9 +181,8 @@ export class TreeViewDataProviderMain {
     await this.onRevealEventEmitter.fire(viewItemId);
   }
 
-  async setSelection(treeViewId: string, id: any) {
-    // 仅处理单选情况
-    this.proxy.$setSelection(treeViewId, [id]);
+  async setSelection(treeViewId: string, id: string[]) {
+    this.proxy.$setSelection(treeViewId, id);
   }
 
   async setExpanded(treeViewId: string, id: any, expanded: boolean) {
