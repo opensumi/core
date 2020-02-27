@@ -1738,3 +1738,5 @@ export enum TextDocumentSaveReason {
   AfterDelay = 2,
   FocusOut = 3,
 }
+
+export { TextEditorRevealType } from './editor';

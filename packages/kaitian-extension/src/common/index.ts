@@ -1,6 +1,4 @@
-import { Injectable } from '@ali/common-di';
-import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred } from '@ali/ide-core-common';
-import * as cp from 'child_process';
+import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize } from '@ali/ide-core-common';
 import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { VSCExtension } from '../hosted/vscode.extension';
@@ -129,6 +127,15 @@ export abstract class VSCodeContributePoint< T extends JSONType = JSONType > ext
   schema?: IJSONSchema;
 
   abstract async contribute();
+
+  protected getLocalizeFromNlsJSON(title: string) {
+    const nlsRegx = /^%([\w\d.-]+)%$/i;
+    const result = nlsRegx.exec(title);
+    if (result) {
+      return localize(result[1], undefined, this.extension.id);
+    }
+    return title;
+  }
 }
 
 export const CONTRIBUTE_NAME_KEY = 'contribute_name';
