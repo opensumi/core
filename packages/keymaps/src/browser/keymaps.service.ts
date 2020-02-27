@@ -472,12 +472,15 @@ export class KeymapService implements IKeymapService {
       // 只返回全匹配快捷键，不返回包含关系快捷键（包含关系会在保存前提示冲突）
       if (keybindings.full.length > 0) {
         return keybindings.full.map((binding) => {
+
           const command = this.commandRegistry.getCommand(binding.command);
+          const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
           return {
             id: binding.command,
             command: (command ? command.label || command.id : binding.command) || '',
             when: typeof binding.when === 'string' ? binding.when : this.serialize(binding.when),
             keybinding: binding.keybinding,
+            source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
           };
         });
       }
