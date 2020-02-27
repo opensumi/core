@@ -134,15 +134,7 @@ export class KeymapService implements IKeymapService {
    */
   @action
   setKeybinding = (keybinding: Keybinding) => {
-    // 存储前清理多余属性
-    const keybindings: Keybinding[] = this.storeKeybindings.map((kb) => {
-      return {
-        when: kb.when,
-        command: kb.command,
-        context: kb.context,
-        keybinding: kb.keybinding,
-       };
-    });
+    const keybindings: Keybinding[] = this.storeKeybindings;
     let updated = false;
     for (const kb of keybindings) {
       if (kb.command === keybinding.command) {
@@ -157,7 +149,7 @@ export class KeymapService implements IKeymapService {
         command: keybinding.command,
         context: keybinding.context,
         keybinding: keybinding.keybinding,
-       };
+      };
       keybindings.push(item);
     }
     // 后置存储流程
@@ -171,8 +163,15 @@ export class KeymapService implements IKeymapService {
     this.storeKeybindings = keybindings;
     // 存储前配置化当前快捷键
     this.reconcile(keybindings);
-
-    await this.resource.saveContents(JSON.stringify(keybindings, undefined, 2));
+    // 存储前清理多余属性
+    await this.resource.saveContents(JSON.stringify(keybindings.map((kb) => {
+      return {
+        when: kb.when,
+        command: kb.command,
+        context: kb.context,
+        keybinding: kb.keybinding,
+      };
+    }), undefined, 2));
   }
 
   covert = (event: KeyboardEvent) => {
@@ -234,12 +233,12 @@ export class KeymapService implements IKeymapService {
       when = when as monaco.contextkey.ContextKeyAndExpr | monaco.contextkey.ContextKeyOrExpr;
     } else {
       when = when as monaco.contextkey.ContextKeyDefinedExpr
-      | monaco.contextkey.ContextKeyEqualsExpr
-      | monaco.contextkey.ContextKeyNotEqualsExpr
-      | monaco.contextkey.ContextKeyNotExpr
-      | monaco.contextkey.ContextKeyNotRegexExpr
-      | monaco.contextkey.ContextKeyOrExpr
-      | monaco.contextkey.ContextKeyRegexExpr;
+        | monaco.contextkey.ContextKeyEqualsExpr
+        | monaco.contextkey.ContextKeyNotEqualsExpr
+        | monaco.contextkey.ContextKeyNotExpr
+        | monaco.contextkey.ContextKeyNotRegexExpr
+        | monaco.contextkey.ContextKeyOrExpr
+        | monaco.contextkey.ContextKeyRegexExpr;
     }
     if (!when.expr) {
       switch (when.getType()) {
