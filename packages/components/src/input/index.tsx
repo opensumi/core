@@ -140,26 +140,18 @@ export interface ValidateInputProp extends IInputBaseProps {
   validate?: (value: string) => ValidateMessage | undefined;
   validateMessage?: ValidateMessage;
   popup?: boolean;
-  containerRef?: any;
 }
 
-export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputProp>((
-  {className, autoFocus, validate, onChange, validateMessage: validateInfo, containerRef, popup = true, ...restProps },
+export const ValidateInput: React.FC<ValidateInputProp> = (
+  {className, autoFocus, validate, onChange, validateMessage: validateInfo, popup = true, ...restProps },
   ref: React.MutableRefObject<HTMLInputElement>,
 ) => {
-  const inputRef = React.useRef<HTMLInputElement | null>(null);
-  React.useImperativeHandle(ref, () => inputRef.current!);
   const [validateMessage, setValidateMessage] = React.useState<ValidateMessage | undefined>();
 
   React.useEffect(() => {
     setValidateMessage(validateInfo);
   }, [validateInfo]);
 
-  React.useEffect(() => {
-    if (containerRef) {
-      containerRef(inputRef);
-    }
-  }, [inputRef]);
   const renderValidateMessage = () => {
     if (validateMessage && validateMessage.message) {
       return <div
@@ -195,7 +187,6 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
       type='text'
       className={classNames(validateMessage && (validateMessage.type === VALIDATE_TYPE.ERROR ? 'validate-error' : validateMessage.type === VALIDATE_TYPE.WRANING ? 'validate-wraning' : 'validate-info'), className)}
       autoFocus={autoFocus}
-      ref={inputRef}
       spellCheck={false}
       onChange={onChangeHandler}
       autoCapitalize='off'
