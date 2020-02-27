@@ -57,6 +57,20 @@ describe('VariableResolverService should be work', () => {
       done();
     });
 
+    it('should resolve known variables in a array', async (done) => {
+      const variableArray = ['root: ${root}'];
+      const resolved = await variableResolverService.resolve(variableArray);
+      expect(resolved[0]).toBe(`root: ${workspaceRoot}`);
+      done();
+    });
+
+    it('should resolve known variables in a object', async (done) => {
+      const variableObject = {root: '${root}'};
+      const resolved = await variableResolverService.resolve(variableObject);
+      expect(resolved.root).toBe(`${workspaceRoot}`);
+      done();
+    });
+
     it('should resolve known variables in a string array', async () => {
         const resolved = await variableResolverService.resolveArray(['name: ${name}', 'root: ${root}']);
         expect(resolved.length).toBe(2);
