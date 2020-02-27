@@ -436,6 +436,8 @@ export const localizationBundle = {
     'keymaps.action.edit': 'Edit',
     'keymaps.action.add': 'Add',
     'keymaps.action.reset': 'Reset',
+    'keymaps.action.clear': 'Clear',
+    'keymaps.edit.placeholder': 'Press Enter to save',
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 

@@ -401,17 +401,17 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
     if (collisions.full.length > 0) {
       const collision = collisions.full[0];
       const command = this.commandRegistry.getCommand(collision.command);
-      return formatLocalize('keymaps.keybinding.full.collide', `${command ? command?.label : collision.command}(${collision.when})`);
+      return formatLocalize('keymaps.keybinding.full.collide', `${command ? command?.label || command.id : collision.command}${collision.when ? `{${collision.when}}` : collision.when}`);
     }
     if (collisions.partial.length > 0) {
       const collision = collisions.partial[0];
       const command = this.commandRegistry.getCommand(collision.command);
-      return formatLocalize('keymaps.keybinding.partial.collide', `${command ? command?.label : collision.command}(${collision.when})`);
+      return formatLocalize('keymaps.keybinding.partial.collide', `${command ? command?.label || command.id : collision.command}${collision.when ? `{${collision.when}}` : collision.when}`);
     }
     if (collisions.shadow.length > 0) {
       const collision = collisions.shadow[0];
       const command = this.commandRegistry.getCommand(collision.command);
-      return formatLocalize('keymaps.keybinding.shadow.collide', `${command ? command?.label : collision.command}(${collision.when})`);
+      return formatLocalize('keymaps.keybinding.shadow.collide', `${command ? command?.label || command.id : collision.command}${collision.when ? `{${collision.when}}` : collision.when}`);
     }
     return '';
   }
@@ -728,6 +728,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
   public setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
     this.resetKeybindingsForScope(scope);
     this.doRegisterKeybindings(bindings, scope);
+    if (bindings.length === 0) {
+      // 当设置空的keymaps时手动触发一次快捷键更改事件
+      this.keybindingsChanged.fire({ affectsCommands: [] });
+    }
   }
 
   /**

@@ -492,6 +492,8 @@ export const localizationBundle = {
     'keymaps.action.edit': '编辑快捷键',
     'keymaps.action.add': '添加快捷键',
     'keymaps.action.reset': '重置快捷键',
+    'keymaps.action.clear': '清空',
+    'keymaps.edit.placeholder': '请按 Enter 键保存',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
     'layout.tabbar.hide': '隐藏',
