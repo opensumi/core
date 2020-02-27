@@ -146,7 +146,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
               detectiveKeybindings.map((keybinding) => {
                 return <li className={styles.keybinding_detective_messages_item} key={keybinding.id} title={`${keybinding.command}-${keybinding.when}`}>
                   <div className={styles.title}>{localize('keymaps.header.command.title')}: {keybinding.command}</div>
-                  <div className={styles.description}>{localize('keymaps.header.when.title')}: {keybinding.when}</div>
+                  <div className={styles.description}>{localize('keymaps.header.when.title')}: {keybinding.when || '—'}</div>
                 </li>;
               })
             }
