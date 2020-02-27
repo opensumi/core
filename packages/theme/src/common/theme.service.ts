@@ -18,6 +18,7 @@ export const IIconService = Symbol('IIconTheme');
 export enum IconType {
   Mask = 'mask',
   Background = 'background',
+  Base64 = 'base64',
 }
 
 export enum IconShape {

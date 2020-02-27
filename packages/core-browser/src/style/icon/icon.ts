@@ -154,6 +154,7 @@ export const defaultIconMap = {
   'arrowup': 'arrowup',
   'arrowdown': 'arrowdown',
   'keyboard': 'keyboard',
+  'message': 'message',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {

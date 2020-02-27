@@ -78,16 +78,24 @@ export class IconService implements IIconService {
     return `icon-${Math.random().toString(36).slice(-8)}`;
   }
 
+  protected getMaskStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
+    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url("${iconUrl}") no-repeat 50% 50% / 24px;}`;
+    return cssRule;
+  }
+
   protected getMaskStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
-    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50% / 24px;}`;
+    return this.getMaskStyleSheet(iconUrl, className, baseTheme);
+  }
+
+  protected getBackgroundStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
+    const cssRule = `${baseTheme || ''} .${className} {background: url("${iconUrl}") no-repeat 50% 50%;background-size:contain;}`;
     return cssRule;
   }
 
   protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
-    const cssRule = `${baseTheme || ''} .${className} {background: url(${iconUrl}) no-repeat 50% 50%;background-size:contain;}`;
-    return cssRule;
+    return this.getBackgroundStyleSheet(iconUrl, className, baseTheme);
   }
 
   fromIcon(basePath: string = '', icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask, shape: IconShape = IconShape.Square): string | undefined {
@@ -96,11 +104,20 @@ export class IconService implements IIconService {
     }
     const randomClass = this.getRandomIconClass();
     if (typeof icon === 'string') {
-      const targetPath = this.getPath(basePath, icon);
-      if (type === IconType.Mask) {
-        this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass));
+      /**
+       * 处理 data:image 格式，/^data:image\//
+       * 如 data:image/svg+xml or data:image/gif;base64,
+       * 此时无需 static service
+       */
+      if (type === IconType.Base64) {
+        this.appendStyleSheet(this.getBackgroundStyleSheet(icon, randomClass));
       } else {
-        this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass));
+        const targetPath = this.getPath(basePath, icon);
+        if (type === IconType.Mask) {
+          this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass));
+        } else {
+          this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass));
+        }
       }
     } else {
       // tslint:disable-next-line: forin
@@ -114,10 +131,15 @@ export class IconService implements IIconService {
         }
       }
     }
+
     return [
       'kaitian-icon',
       randomClass,
-      (type === IconType.Mask ? 'mask-mode' : 'background-mode'),
+      ({
+        [IconType.Background]: 'background-mode',
+        [IconType.Base64]: 'background-mode',
+        [IconType.Mask]: 'mask-mode',
+      })[type],
       (shape === IconShape.Circle ? 'circle' : ''),
     ].join(' ');
   }
