@@ -3,7 +3,6 @@ import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from './layout';
 import { useInjectable } from '../../react-hooks';
-import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IResizeHandleDelegate, ResizeFlexMode } from '../resize/resize';
 import { IEventBus } from '@ali/ide-core-common';
 import { ResizeEvent } from '../../layout';
@@ -60,8 +59,8 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
   const ResizeHandle = Layout.getResizeHandle(direction);
   // convert children to list
   const childList = React.Children.toArray(children);
-  const totalFlexNum = childList.reduce((accumulator, item) => accumulator + (item['props'] && (item['props'].flex !== undefined) ? item['props'].flex : 1), 0);
-  let totalSize: number = useDomSize ? 0 : childList.reduce((accumulator, item) => accumulator + (item['props'] && item['props'].savedSize !== undefined ? item['props'].savedSize : 0), 0);
+  const totalFlexNum = childList.reduce((accumulator, item) => accumulator + (item['props'].flex !== undefined ? item['props'].flex : 1), 0);
+  let totalSize: number = useDomSize ? 0 : childList.reduce((accumulator, item) => accumulator + (item['props'].savedSize !== undefined ? item['props'].savedSize : 0), 0);
   const elements: React.ReactNodeArray = [];
   const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
