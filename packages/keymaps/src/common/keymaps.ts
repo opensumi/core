@@ -1,4 +1,5 @@
-import { Keybinding } from '@ali/ide-core-common';
+// 快捷键相关功能为纯前端模块，这里直接从browser引入定义
+import { Keybinding } from '@ali/ide-core-browser';
 
 export const IKeymapService = Symbol('IKeymapService');
 
@@ -48,7 +49,7 @@ export interface IKeymapService {
    * @returns {Promise<KeybindingJson[]>}
    * @memberof KeymapsService
    */
-  getKeybindings(): Promise<KeybindingJson[]>;
+  getKeybindings(): Promise<Keybinding[]>;
 
   /**
    * 打开快捷键面板
