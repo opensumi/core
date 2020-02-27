@@ -20,6 +20,38 @@ export function createMockedMonaco(): Partial<typeof monaco> {
         },
       },
     },
+    // @ts-ignore
+    services: {
+      // @ts-ignore
+      StaticServices: {
+        modeService: {
+          get: () => ({
+            getOrCreateModeByFilenameOrFirstLine: (filename, firstLine) => {
+              return Promise.resolve({
+                getId: () => {
+
+                },
+                getLanguageIdentifier: () => {
+
+                },
+              });
+            },
+            getModeIdByFilepathOrFirstLine: () => {},
+          }),
+        },
+        modelService: {
+          get: () => ({
+            getModel: () => {
+              return {
+                getModeId: () => {
+                  return 'typescript';
+                },
+              };
+            },
+          }),
+        },
+      },
+    },
   };
 }
 
