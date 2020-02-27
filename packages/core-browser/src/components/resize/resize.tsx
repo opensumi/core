@@ -42,7 +42,7 @@ export interface IResizeHandleDelegate {
 
 function preventWebviewCatchMouseEvents() {
   const iframes = document.getElementsByTagName('iframe');
-  const webviews = document.getElementsByTagName('webviews');
+  const webviews = document.getElementsByTagName('webview');
   for (const webview of webviews as any) {
     webview.classList.add('none-pointer-event');
   }
@@ -53,7 +53,7 @@ function preventWebviewCatchMouseEvents() {
 
 function allowWebviewCatchMouseEvents() {
   const iframes = document.getElementsByTagName('iframe');
-  const webviews = document.getElementsByTagName('webviews');
+  const webviews = document.getElementsByTagName('webview');
   for (const webview of webviews  as any) {
     webview.classList.remove('none-pointer-event');
   }
@@ -321,7 +321,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   const ref = React.useRef<HTMLElement>();
   const resizing = React.useRef<boolean>(false);
   const startY = React.useRef<number>(0);
-  const startHeight = React.useRef<number>(0);
+  // const startHeight = React.useRef<number>(0);
   const startPrevHeight = React.useRef<number>(0);
   const startNextHeight = React.useRef<number>(0);
   const prevElement = React.useRef<HTMLElement>();
