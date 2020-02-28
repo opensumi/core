@@ -470,22 +470,24 @@ export class KeymapService implements IKeymapService {
       return [];
     }
     try {
-      const keySequence = KeySequence.parse(keybinding);
       if (keybindingItem.keybinding === keybinding) {
         return [];
       }
-      const keybindings = this.keybindingRegistry.getKeybindingsForKeySequence(keySequence);
+      // 可能匹配了高亮结果，需要还原部分数据
+      const keybindings = this.keybindings.filter((kb) => this.getRaw(kb.keybinding) === keybinding );
       // 只返回全匹配快捷键，不返回包含关系快捷键（包含关系会在保存前提示冲突）
-      if (keybindings.full.length > 0) {
-        return keybindings.full.map((binding) => {
+      if (keybindings.length > 0) {
+        return keybindings.map((binding) => {
 
-          const command = this.commandRegistry.getCommand(binding.command);
+          const command = this.commandRegistry.getCommand(this.getRaw(binding.command));
           const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
+          binding.when = this.getRaw(binding.when);
+          binding.keybinding = this.getRaw(binding.keybinding);
           return {
-            id: binding.command,
+            id: command ? command.id : this.getRaw(binding.command),
             command: (command ? command.label || command.id : binding.command) || '',
             when: typeof binding.when === 'string' ? binding.when : this.serialize(binding.when),
-            keybinding: binding.keybinding,
+            keybinding: this.getRaw(binding.keybinding),
             source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
           };
         });
