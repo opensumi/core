@@ -87,25 +87,35 @@ export class KeymapService implements IKeymapService {
   async init() {
     this.resource = await this.resourceProvider(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
     await this.reconcile();
-    this.keyBindingRegistry.onKeybindingsChanged(() => this.keymapChangeEmitter.fire(undefined));
-    this.keybindings = this.getKeybindingItems();
-    this.onDidKeymapChanges(() => {
-      if (this.currentSearchValue) {
-        this.doSearchKeybindings(this.currentSearchValue);
-      } else {
-        this.keybindings = this.getKeybindingItems();
-      }
-    });
   }
 
   dispose() {
     this.toDisposeOnDetach.dispose();
   }
 
-  // 重新加载并设置Keymap定义的快捷键
+  /**
+   * 重新加载并设置Keymap定义的快捷键
+   * @param keybindings
+   */
   async reconcile(keybindings?: Keybinding[]) {
     const keymap = keybindings ? keybindings.slice(0) : await this.parseKeybindings();
-    this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keymap);
+    // 重新注册快捷键前取消注册先前的快捷键
+    this.dispose();
+    this.toDisposeOnDetach.push(this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keymap));
+
+    this.updateKeybindings();
+  }
+
+  /**
+   * 更新keybindings列表
+   */
+  @action
+  private updateKeybindings() {
+    if (this.currentSearchValue) {
+      this.doSearchKeybindings(this.currentSearchValue);
+    } else {
+      this.keybindings = this.getKeybindingItems();
+    }
   }
 
   /**
