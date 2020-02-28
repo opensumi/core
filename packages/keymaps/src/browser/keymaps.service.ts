@@ -326,7 +326,8 @@ export class KeymapService implements IKeymapService {
           id: command.id,
           command: command.label || command.id,
           keybinding: isUserKeybinding ? isUserKeybinding.keybinding : (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
-          context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
+          context: isUserKeybinding ? isUserKeybinding.context : (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
+          when: isUserKeybinding ? this.getWhen(isUserKeybinding) : this.getWhen((keybindings && keybindings[0])),
           source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
         };
       } else {
