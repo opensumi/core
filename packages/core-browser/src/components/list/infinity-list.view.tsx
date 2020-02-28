@@ -95,10 +95,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     }
 
     // 数据更新或被裁剪
-    if (
-      (prevData[0] && data[0] && prevData[0] !== data[0]) ||
-      data.length < prevData.length
-    ) {
+    if (data.length !== prevData.length) {
       return {
         slices,
         currentSliceIndex: 0,
