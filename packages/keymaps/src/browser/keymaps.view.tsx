@@ -206,6 +206,10 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     };
 
     React.useEffect(() => {
+      // 当值变化时清空错误信息
+      if (validateMessage) {
+        setValidateMessage(undefined);
+      }
       // 根据快捷键查当前绑定的命令
       if (value && isEditing) {
         setDetectiveKeybindings(detectKeybindings(data, value));
