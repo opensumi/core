@@ -100,6 +100,7 @@ export class KeymapService implements IKeymapService {
   async reconcile(keybindings?: Keybinding[]) {
     const keymap = keybindings ? keybindings.slice(0) : await this.parseKeybindings();
     // 重新注册快捷键前取消注册先前的快捷键
+    // TODO: 差量注册，差量移除
     this.dispose();
     this.toDisposeOnDetach.push(this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keymap));
 
