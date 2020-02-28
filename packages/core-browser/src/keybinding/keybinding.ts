@@ -153,8 +153,7 @@ export interface KeybindingRegistry {
   getScopedKeybindingsForCommand(scope: KeybindingScope, commandId: string): Keybinding[];
   isEnabled(binding: Keybinding, event: KeyboardEvent): boolean;
   isPseudoCommand(commandId: string): boolean;
-  setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void;
-  resetKeybindingsForScope(scope: KeybindingScope): void;
+  setKeymap(scope: KeybindingScope, bindings: Keybinding[]): IDisposable;
   resetKeybindings(): void;
   onKeybindingsChanged: Event<{ affectsCommands: string[] }>;
 }
@@ -725,21 +724,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
    * @param scope
    * @param bindings
    */
-  public setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
-    this.resetKeybindingsForScope(scope);
-    this.doRegisterKeybindings(bindings, scope);
-    if (bindings.length === 0) {
-      // 当设置空的keymaps时手动触发一次快捷键更改事件
-      this.keybindingsChanged.fire({ affectsCommands: [] });
-    }
-  }
-
-  /**
-   * 重置特定Scope下的Keybindings
-   * @param scope
-   */
-  public resetKeybindingsForScope(scope: KeybindingScope): void {
-    this.keymaps[scope] = [];
+  public setKeymap(scope: KeybindingScope, bindings: Keybinding[]): IDisposable {
+    return this.doRegisterKeybindings(bindings, scope);
   }
 
   /**

@@ -87,25 +87,44 @@ export class KeymapService implements IKeymapService {
   async init() {
     this.resource = await this.resourceProvider(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
     await this.reconcile();
-    this.keyBindingRegistry.onKeybindingsChanged(() => this.keymapChangeEmitter.fire(undefined));
-    this.keybindings = this.getKeybindingItems();
-    this.onDidKeymapChanges(() => {
-      if (this.currentSearchValue) {
-        this.doSearchKeybindings(this.currentSearchValue);
-      } else {
-        this.keybindings = this.getKeybindingItems();
-      }
-    });
   }
 
   dispose() {
     this.toDisposeOnDetach.dispose();
   }
 
-  // 重新加载并设置Keymap定义的快捷键
+  /**
+   * 重新加载并设置Keymap定义的快捷键
+   * @param keybindings
+   */
   async reconcile(keybindings?: Keybinding[]) {
     const keymap = keybindings ? keybindings.slice(0) : await this.parseKeybindings();
-    this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keymap);
+    // 重新注册快捷键前取消注册先前的快捷键
+    // TODO: 差量注册，差量移除
+    this.dispose();
+    this.toDisposeOnDetach.push(this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keymap.map((kb) => {
+      // 清洗存入keymap数据
+      return {
+        when: kb.when,
+        command: kb.command,
+        context: kb.context,
+        keybinding: kb.keybinding,
+      };
+    })));
+
+    this.updateKeybindings();
+  }
+
+  /**
+   * 更新keybindings列表
+   */
+  @action
+  private updateKeybindings() {
+    if (this.currentSearchValue) {
+      this.doSearchKeybindings(this.currentSearchValue);
+    } else {
+      this.keybindings = this.getKeybindingItems();
+    }
   }
 
   /**
@@ -299,15 +318,29 @@ export class KeymapService implements IKeymapService {
     const items: KeybindingItem[] = [];
     for (const command of commands) {
       const keybindings = this.keybindingRegistry.getKeybindingsForCommand(command.id);
-      const item: KeybindingItem = {
-        id: command.id,
-        command: command.label || command.id,
-        keybinding: (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
-        when: this.getWhen((keybindings && keybindings[0])),
-        context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
-        source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')
-          ? this.getScope(keybindings[0].scope!) : '',
-      };
+      let item: KeybindingItem;
+
+      if (this.storeKeybindings) {
+        const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
+        item = {
+          id: command.id,
+          command: command.label || command.id,
+          keybinding: isUserKeybinding ? isUserKeybinding.keybinding : (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
+          context: isUserKeybinding ? isUserKeybinding.context : (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
+          when: isUserKeybinding ? this.getWhen(isUserKeybinding) : this.getWhen((keybindings && keybindings[0])),
+          source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
+        };
+      } else {
+        item = {
+          id: command.id,
+          command: command.label || command.id,
+          keybinding: (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
+          when: this.getWhen((keybindings && keybindings[0])),
+          context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
+          source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')
+            ? this.getScope(keybindings[0].scope!) : '',
+        };
+      }
       items.push(item);
     }
 
@@ -470,22 +503,24 @@ export class KeymapService implements IKeymapService {
       return [];
     }
     try {
-      const keySequence = KeySequence.parse(keybinding);
       if (keybindingItem.keybinding === keybinding) {
         return [];
       }
-      const keybindings = this.keybindingRegistry.getKeybindingsForKeySequence(keySequence);
+      // 可能匹配了高亮结果，需要还原部分数据
+      const keybindings = this.keybindings.filter((kb) => this.getRaw(kb.keybinding) === keybinding );
       // 只返回全匹配快捷键，不返回包含关系快捷键（包含关系会在保存前提示冲突）
-      if (keybindings.full.length > 0) {
-        return keybindings.full.map((binding) => {
+      if (keybindings.length > 0) {
+        return keybindings.map((binding) => {
 
-          const command = this.commandRegistry.getCommand(binding.command);
+          const command = this.commandRegistry.getCommand(this.getRaw(binding.command));
           const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
+          binding.when = this.getRaw(binding.when);
+          binding.keybinding = this.getRaw(binding.keybinding);
           return {
-            id: binding.command,
+            id: command ? command.id : this.getRaw(binding.command),
             command: (command ? command.label || command.id : binding.command) || '',
             when: typeof binding.when === 'string' ? binding.when : this.serialize(binding.when),
-            keybinding: binding.keybinding,
+            keybinding: this.getRaw(binding.keybinding),
             source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
           };
         });
