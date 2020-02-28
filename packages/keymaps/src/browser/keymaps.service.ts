@@ -102,7 +102,15 @@ export class KeymapService implements IKeymapService {
     // 重新注册快捷键前取消注册先前的快捷键
     // TODO: 差量注册，差量移除
     this.dispose();
-    this.toDisposeOnDetach.push(this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keymap));
+    this.toDisposeOnDetach.push(this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keymap.map((kb) => {
+      // 清洗存入keymap数据
+      return {
+        when: kb.when,
+        command: kb.command,
+        context: kb.context,
+        keybinding: kb.keybinding,
+      };
+    })));
 
     this.updateKeybindings();
   }
@@ -310,15 +318,28 @@ export class KeymapService implements IKeymapService {
     const items: KeybindingItem[] = [];
     for (const command of commands) {
       const keybindings = this.keybindingRegistry.getKeybindingsForCommand(command.id);
-      const item: KeybindingItem = {
-        id: command.id,
-        command: command.label || command.id,
-        keybinding: (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
-        when: this.getWhen((keybindings && keybindings[0])),
-        context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
-        source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')
-          ? this.getScope(keybindings[0].scope!) : '',
-      };
+      let item: KeybindingItem;
+
+      if (this.storeKeybindings) {
+        const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
+        item = {
+          id: command.id,
+          command: command.label || command.id,
+          keybinding: isUserKeybinding ? isUserKeybinding.keybinding : (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
+          context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
+          source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
+        };
+      } else {
+        item = {
+          id: command.id,
+          command: command.label || command.id,
+          keybinding: (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
+          when: this.getWhen((keybindings && keybindings[0])),
+          context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
+          source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')
+            ? this.getScope(keybindings[0].scope!) : '',
+        };
+      }
       items.push(item);
     }
 
