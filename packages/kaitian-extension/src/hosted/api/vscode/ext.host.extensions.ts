@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtensionHostService, IExtendProxy } from '../../../common';
+import { IExtensionHostService, IExtendProxy, getExtensionId } from '../../../common';
 import { VSCExtension } from '../../vscode.extension'; // '../../node/vscode.extension';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 import { VSCodeExtensionService } from '../../../common/vscode';
@@ -84,7 +84,7 @@ export function createExtensionsApiFactory(
       return extensionService.extensionsChangeEmitter.event;
     },
     getExtension(extensionId: string) {
-      return extensionService.getExtension(extensionId);
+      return extensionService.getExtension(getExtensionId(extensionId));
     },
   };
 }
