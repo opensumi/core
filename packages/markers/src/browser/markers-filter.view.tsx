@@ -6,43 +6,38 @@ import { MarkerService } from './markers-service';
 import Messages from './messages';
 import debounce = require('lodash.debounce');
 import { Input } from '@ali/ide-components';
+import { useDisposable } from '@ali/ide-core-browser/src/react-hooks/disposable';
 
 /**
  * Marker过滤面板
  */
 export const MarkerFilterPanel = observer(() => {
-  const ref = React.useRef<HTMLInputElement | null>();
   const markerService = MarkerService.useInjectable();
+  const [filterValue, setFilterValue] = React.useState<string>('');
 
-  React.useEffect(() => {
-    const markerFilterChangedDispose = markerService.onMarkerFilterChanged((opt) => {
-      if (opt === undefined) {
-        if (ref.current) {
-          ref.current.value = '';
+  useDisposable(() => {
+    return [
+      markerService.onMarkerFilterChanged((opt) => {
+        if (opt === undefined) {
+          setFilterValue('');
         }
-      }
-    });
-    return () => {
-      markerFilterChangedDispose.dispose();
-    };
+      }),
+    ];
   });
 
   const onChangeCallback = debounce((value) => {
-    if (value) {
-      markerService.fireFilterChanged(new FilterOptions(value));
-    } else {
-      markerService.fireFilterChanged(undefined);
-    }
+    setFilterValue(value);
+    markerService.fireFilterChanged(value ? new FilterOptions(value) : undefined);
   }, 250);
 
   return (
     <div className={styles.markerFilterContent}>
-      <Input className={styles.filterInput}
-        ref={(ele) => ref.current = ele}
+      <Input
+        hasClear
+        className={styles.filterInput}
         placeholder={Messages.markerPanelFilterInputPlaceholder()}
-        onChange={(event) => {
-          onChangeCallback(event.target.value);
-        }} />
+        value={filterValue}
+        onValueChange={onChangeCallback} />
     </div>
   );
 });

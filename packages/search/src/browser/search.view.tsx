@@ -110,7 +110,7 @@ export const Search = observer(({
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchInputChange}
                   ref={searchBrowserService.searchInputEl}
-                  controls={[
+                  addonAfter={[
                     <span
                     key={localize('caseDescription')}
                     className={cls(getIcon('ab'), styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}

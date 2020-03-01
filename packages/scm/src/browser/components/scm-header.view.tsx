@@ -12,7 +12,7 @@ export function convertValidationType(type: InputValidationType) {
   return ['info', 'warning', 'error'][type];
 }
 
-function getPlacholder(repository: ISCMRepository) {
+function getPlaceholder(repository: ISCMRepository) {
   return format(repository.input.placeholder, isOSX ? '⌘Enter' : 'Ctrl+Enter');
 }
 
@@ -23,9 +23,8 @@ export const SCMHeader: React.FC<{
 
   const [ commitMsg, setCommitMsg ] = React.useState('');
   const [ placeholder, setPlaceholder] = React.useState('');
-  const inputRef = React.useRef<HTMLTextAreaElement>(null);
 
-  const handleChange = React.useCallback((msg: string) => {
+  const handleValueChange = React.useCallback((msg: string) => {
     // todo: 校验貌似并不需要
     // repository.input.validateInput(msg, inputRef.current!.selectionStart || 0)
     //   .then((result) => {
@@ -50,9 +49,9 @@ export const SCMHeader: React.FC<{
     }));
     // 单向同步 input placeholder
     disposables.add(repository.input.onDidChangePlaceholder(() => {
-      setPlaceholder(getPlacholder(repository));
+      setPlaceholder(getPlaceholder(repository));
     }));
-    setPlaceholder(getPlacholder(repository));
+    setPlaceholder(getPlaceholder(repository));
 
     return () => {
       disposables.dispose();
@@ -86,7 +85,7 @@ export const SCMHeader: React.FC<{
         value={commitMsg}
         onKeyDown={(e) => onKeyDown(e.keyCode)}
         onKeyUp={onKeyUp}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e.target.value)}
+        onValueChange={handleValueChange}
       />
     </div>
   );
