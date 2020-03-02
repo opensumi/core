@@ -49,6 +49,8 @@ export const localizationBundle = {
     'file.refresh': '刷新',
     'file.search.folder': '在文件夹中查找',
     'file.focus.files': '在资源管理器中聚焦文件',
+    'file.filetree.filter': '在资源管理器中筛选文件',
+    'file.filetree.filter.placeholder': '输入关键字或路径查找，如 app/home',
 
     'menu-bar.title.file': '文件',
     'menu-bar.title.edit': '编辑',

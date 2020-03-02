@@ -1,6 +1,4 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import * as styles from './index.module.less';
-import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
 import { TEMP_FILE_NAME, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
 import {
@@ -25,11 +23,17 @@ import {
 } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
-import { Directory, File } from './file-tree-item';
-import { IFileTreeItemRendered } from './file-tree.view';
+import { memoize } from '@ali/ide-core-common';
 import { MenuId, AbstractContextMenuService, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
+import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+
+import { Directory, File } from './file-tree-item';
+import { IFileTreeItemRendered } from './file-tree.view';
 import { FileContextKey } from './file-contextkey';
+import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
+
+import * as styles from './index.module.less';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -212,6 +216,14 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     y?: number;
   } = {};
 
+  @observable
+  // 筛选模式开关
+  filterMode: boolean = false;
+
+  @observable
+  // 筛选关键字
+  filter: string = '';
+
   private _selectTimer;
   private _selectTimes: number = 0;
 
@@ -259,6 +271,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         this.indent = this.corePreferences['explorer.fileTree.indent'];
       }
     });
+  }
+
+  @memoize
+  get filesExplorerFocused(): IContextKey<boolean> {
+    const explorerFocused = ExplorerFilteredContext.bind(this.contextKeyService);
+    return explorerFocused;
   }
 
   get status() {
@@ -311,6 +329,16 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private setContextKeys(file: Directory | File) {
     const isSingleFolder = !this.filetreeService.isMutiWorkspace;
     this.fileContextKey.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.isDirectory(file));
+  }
+
+  // 切换 filter 模式，会通过
+  toggleFilterMode = () => {
+    this.filterMode = !this.filterMode;
+    this.filesExplorerFocused.set(!!this.filterMode);
+    // 清理掉输入值
+    if (this.filterMode === false) {
+      this.filter = '';
+    }
   }
 
   onSelect = (files: (Directory | File)[]) => {
@@ -596,6 +624,11 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       return false;
     }
     return true;
+  }
+
+  @action.bound
+  onFilterChange(filter: string) {
+    this.filter = filter;
   }
 
   @action

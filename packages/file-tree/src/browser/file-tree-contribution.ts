@@ -14,10 +14,7 @@ import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } fro
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 import { IWindowService } from '@ali/ide-window';
 import { IWindowDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
-
-export interface FileUri {
-  uris: URI[];
-}
+import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 
 export const ExplorerResourceViewId = 'file-explorer';
 
@@ -455,6 +452,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.windowDialogService.showSaveDialog(options);
       },
     });
+
+    // filter in filetree
+    commands.registerCommand(FILE_COMMANDS.FILTER, {
+      execute: () => {
+        return this.explorerResourceService.toggleFilterMode();
+      },
+    });
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {
@@ -504,16 +508,23 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       order: 2,
     });
     registry.registerItem({
-      id: FILE_COMMANDS.COLLAPSE_ALL.id,
-      command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      id: FILE_COMMANDS.FILTER.id,
+      command: FILE_COMMANDS.FILTER.id,
       viewId: ExplorerResourceViewId,
-      order: 4,
+      order: 3,
+      toggledWhen: ExplorerFilteredContext.raw,
     });
     registry.registerItem({
       id: FILE_COMMANDS.REFRESH_ALL.id,
       command: FILE_COMMANDS.REFRESH_ALL.id,
       viewId: ExplorerResourceViewId,
-      order: 3,
+      order: 4,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.COLLAPSE_ALL.id,
+      command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      viewId: ExplorerResourceViewId,
+      order: 5,
     });
   }
 

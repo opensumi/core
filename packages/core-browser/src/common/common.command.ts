@@ -125,6 +125,13 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
     label: '%file.focus.files%',
   };
+
+  export const FILTER: Command = {
+    id: 'filetree.filter.files',
+    category: CATEGORY,
+    label: '%file.filetree.filter%',
+    iconClass: getIcon('search'),
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {

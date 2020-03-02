@@ -24,7 +24,6 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { IDialogService } from '@ali/ide-overlay';
 import { Directory, File } from './file-tree-item';
-import { ExplorerResourceCut } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { AbstractContextMenuService, IContextMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { ResourceLabelOrIconChangedEvent } from '@ali/ide-core-browser/lib/services';
 import { FileContextKey } from './file-contextkey';
@@ -244,7 +243,7 @@ export class FileTreeService extends WithEventBus {
 
   get focusedFiles(): (Directory | File)[] {
     const selected: (Directory | File)[] = [];
-    for (const [key, status] of this.status) {
+    for (const [, status] of this.status) {
       if (status.focused) {
         selected.push(status.file);
       }
