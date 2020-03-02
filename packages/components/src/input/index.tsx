@@ -1,3 +1,3 @@
-export { TextArea } from './TextArea';
-export { Input } from './Input';
-export { ValidateInput } from './ValidateInput';
+export * from './TextArea';
+export * from './Input';
+export * from './ValidateInput';

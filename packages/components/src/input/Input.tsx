@@ -110,13 +110,6 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
     // make `ref` to input works
     React.useImperativeHandle(ref, () => inputRef.current!);
 
-    // trigger `dirty` state
-    React.useEffect(() => {
-      if (!isDirty) {
-        setIsDirty(true);
-      }
-    }, [value]);
-
     // handle `selection`
     React.useEffect(() => {
       if (selection && !isUndefined(selection.start) && !isDirty) {
@@ -152,6 +145,11 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
 
       if (typeof onValueChange === 'function') {
         onValueChange(value);
+      }
+
+      // trigger `dirty` state
+      if (!isDirty) {
+        setIsDirty(true);
       }
     };
 
