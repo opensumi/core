@@ -14,6 +14,7 @@ export const localizationBundle = {
 
     'file.save': '保存文件',
     'file.saveAll': '保存全部',
+    'file.autoSave': '自动保存',
     'file.open': '打开文件',
     'file.open.side': '侧边栏打开',
     'file.delete': '删除',
