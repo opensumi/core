@@ -6,7 +6,7 @@ import { MarkerService } from './markers-service';
 import Messages from './messages';
 import debounce = require('lodash.debounce');
 import { Input } from '@ali/ide-components';
-import { useDisposable } from '@ali/ide-core-browser/src/react-hooks/disposable';
+import { useDisposable } from '@ali/ide-core-browser/lib/utils/react-hooks';
 
 /**
  * Marker过滤面板
