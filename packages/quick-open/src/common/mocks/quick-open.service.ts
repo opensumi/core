@@ -1,4 +1,4 @@
-import { QuickOpenOptions, HideReason, QuickOpenService, QuickOpenModel } from '../../../lib';
+import { QuickOpenOptions, HideReason, QuickOpenService, QuickOpenModel } from '../';
 import { MessageType } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
 
