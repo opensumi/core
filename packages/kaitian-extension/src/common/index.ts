@@ -1,5 +1,5 @@
 import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize } from '@ali/ide-core-common';
-import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
+import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { VSCExtension } from '../hosted/vscode.extension';
 import { ExtensionsActivator } from '../hosted/ext.host.activator';
@@ -189,3 +189,7 @@ export enum EXTENSION_ENABLE {
 export const EMIT_EXT_HOST_EVENT = {
   id: 'kaitian-extension:ext-host-event',
 };
+
+export function getExtensionId(extensionId: string) {
+  return extensionId.toLowerCase();
+}

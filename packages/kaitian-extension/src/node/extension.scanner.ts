@@ -3,7 +3,7 @@ import * as fs from 'fs-extra';
 import * as os from 'os';
 import { getLogger, getNodeRequire } from '@ali/ide-core-node';
 import * as semver from 'semver';
-import { IExtensionMetaData, ExtraMetaData } from '../common';
+import { IExtensionMetaData, ExtraMetaData, getExtensionId } from '../common';
 
 function resolvePath(path) {
   if (path[0] === '~') {
@@ -158,14 +158,13 @@ export class ExtensionScanner {
         delete getNodeRequire().cache[extendPath];
         extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
-        console.error(extendPath, e);
         getLogger().error(e);
       }
     }
 
     const extension = {
       // vscode 规范
-      id: `${packageJSON.publisher}.${packageJSON.name}`,
+      id: getExtensionId(`${packageJSON.publisher}.${packageJSON.name}`),
       // 使用插件市场的 id
       // 从插件市场下载的插件命名规范为 ${publiser}.${name}-${version}
       extensionId: this.getExtensionIdByExtensionPath(extensionPath, packageJSON.version),
@@ -200,7 +199,7 @@ export class ExtensionScanner {
     }
 
     const [, publisher, name] = match;
-    return `${publisher}.${name}`;
+    return getExtensionId(`${publisher}.${name}`);
   }
 
   private isLatestVersion(extension: IExtensionMetaData): boolean {
