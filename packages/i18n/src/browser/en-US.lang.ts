@@ -10,6 +10,7 @@ export const localizationBundle = {
     'file.folder.new': 'New Folder',
     'file.save': 'Save File',
     'file.saveAll': 'Save All',
+    'file.autoSave': 'Auto Save',
     'file.open': 'Open',
     'file.open.side': 'Open to the Side',
     'file.delete': 'Delete',

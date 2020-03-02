@@ -475,6 +475,11 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
     label: '%editor.tokenize.test%',
   };
+
+  export const AUTO_SAVE: Command = {
+    id: 'editor.autoSave',
+    category: CATEGORY,
+  };
 }
 
 export namespace SEARCH_COMMANDS {

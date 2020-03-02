@@ -8,7 +8,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { EditorView } from './editor.view';
 import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorActionRegistry, IEditorFeatureRegistry } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
-import { isElectronEnv, isWindows } from '@ali/ide-core-common';
+import { isElectronEnv, isWindows, PreferenceScope } from '@ali/ide-core-common';
 import { getIcon } from '@ali/ide-core-browser';
 import { EditorHistoryService } from './history';
 import { NavigationMenuContainer } from './navigation.view';
@@ -807,9 +807,8 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
 
 }
 
-@Domain(BrowserEditorContribution)
-export class EditorAutoSaveEditorContribution implements BrowserEditorContribution {
-
+@Domain(BrowserEditorContribution, CommandContribution)
+export class EditorAutoSaveEditorContribution implements BrowserEditorContribution, CommandContribution {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -866,4 +865,18 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
 
   }
 
+  registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand(EDITOR_COMMANDS.AUTO_SAVE, {
+      execute: () => {
+        const value = this.preferenceSettings.getPreference('files.autoSave', PreferenceScope.User).value as string || 'off';
+        const nextValue = [
+          'afterDelay',
+          'editorFocusChange',
+          'windowLostFocus',
+        ].includes(value) ? 'off' : 'afterDelay';
+
+        return this.preferenceSettings.setPreference('editor.autoSave', nextValue, PreferenceScope.User);
+      },
+    });
+  }
 }

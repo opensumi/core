@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
 import { corePreferenceSchema } from '../core-preferences';
-import { CommandContribution, CommandService, PreferenceSchema, CommandRegistry, localize, Domain, Event, isElectronRenderer, replaceLocalizePlaceholder, isOSX } from '@ali/ide-core-common';
+import { CommandContribution, CommandService, PreferenceSchema, CommandRegistry, localize, Domain, Event, isElectronRenderer, replaceLocalizePlaceholder } from '@ali/ide-core-common';
 import { PreferenceContribution } from '../preferences';
 import { ClientAppContribution } from './common.define';
 import { IContextKeyService, IContextKey } from '../context-key';
@@ -128,6 +128,13 @@ export class ClientCommonContribution implements CommandContribution, Preference
         label: localize('file.saveAll'),
       },
       group: '3_save',
+    }, {
+      command: {
+        id: EDITOR_COMMANDS.AUTO_SAVE.id,
+        label: localize('file.autoSave'),
+      },
+      toggledWhen: 'config.editor.autoSave != off',
+      group: '4_autosave',
     }]);
 
     // Edit 菜单
