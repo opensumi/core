@@ -2,10 +2,10 @@ import { Sequence, ISplice } from '@ali/ide-core-common/lib/sequence';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import Uri from 'vscode-uri';
 
-import { ISCMProvider, ISCMResourceGroup, ISCMResource } from '../src/common';
+import { ISCMProvider, ISCMResourceGroup, ISCMResource, VSCommand } from '../src/common';
 
 export class MockSCMProvider implements ISCMProvider {
-  readonly groups = new Sequence<ISCMResourceGroup>();
+  public groups = new Sequence<ISCMResourceGroup>();
 
   private _label: string;
   private _id: string;
@@ -23,8 +23,17 @@ export class MockSCMProvider implements ISCMProvider {
   get id() { return this._id; }
   get contextValue() { return this._contextValue; }
 
-  readonly onDidChangeResources: Event<void> = Event.None;
-  readonly onDidChange: Event<void> = Event.None;
+  public count: number;
+  public statusBarCommands: VSCommand[] | undefined = [];
+
+  public didChangeStatusBarCommandsEmitter = new Emitter<VSCommand[]>();
+  readonly onDidChangeStatusBarCommands: Event<VSCommand[]> = this.didChangeStatusBarCommandsEmitter.event;
+
+  public didChangeEmitter = new Emitter<void>();
+  readonly onDidChange: Event<void> = this.didChangeEmitter.event;
+
+  public didChangeResourcesEmitter = new Emitter<void>();
+  readonly onDidChangeResources: Event<void> = this.didChangeResourcesEmitter.event;
 
   async getOriginalResource() { return null; }
   toJSON() { return { $mid: 5 }; }
@@ -43,7 +52,7 @@ export class MockSCMResourceGroup implements ISCMResourceGroup {
   readonly provider: ISCMProvider;
 
   private _hideWhenEmpty: boolean = false;
-  readonly elements: ISCMResource[] = [];
+  public elements: ISCMResource[] = [];
 
   private _onDidSplice = new Emitter<ISplice<ISCMResource>>();
   readonly onDidSplice = this._onDidSplice.event;

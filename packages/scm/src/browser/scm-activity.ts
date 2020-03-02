@@ -1,26 +1,24 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { Event } from '@ali/ide-core-common/lib/event';
 import { Disposable, IDisposable, dispose, combinedDisposable } from '@ali/ide-core-common/lib/disposable';
-import { IMainLayoutService } from '@ali/ide-main-layout';
 import { basename } from '@ali/ide-core-common/lib/path';
-import { IContextKeyService, localize } from '@ali/ide-core-browser';
-import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
-import { getOctIcon } from '@ali/ide-core-browser';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 import { SCMService, ISCMRepository, scmContainerId } from '../common';
 
-// 更新 ActivityBar 中 SCM 模块边的数字
+// 更新 ActivityBar 中 SCM 模块边的数字, 标注当前的 changes 数量
 @Injectable()
 export class SCMBadgeController {
   private disposables: IDisposable[] = [];
 
   @Autowired(SCMService)
-  private scmService: SCMService;
+  private readonly scmService: SCMService;
 
   @Autowired(IMainLayoutService)
-  private layoutService: IMainLayoutService;
+  private readonly layoutService: IMainLayoutService;
 
   public start() {
     for (const repository of this.scmService.repositories) {
@@ -80,19 +78,13 @@ export class SCMBadgeController {
 @Injectable()
 export class SCMStatusBarController {
   @Autowired(SCMService)
-  private scmService: SCMService;
+  private readonly scmService: SCMService;
 
   @Autowired(IStatusBarService)
-  private statusbarService: IStatusBarService;
-
-  @Autowired(IContextKeyService)
-  private contextKeyService: IContextKeyService;
+  private readonly statusbarService: IStatusBarService;
 
   @Autowired(WorkbenchEditorService)
-  protected workbenchEditorService: WorkbenchEditorService;
-
-  @Autowired(IMainLayoutService)
-  private layoutService: IMainLayoutService;
+  private readonly workbenchEditorService: WorkbenchEditorService;
 
   private focusDisposable: IDisposable = Disposable.None;
   private focusedRepository: ISCMRepository | undefined = undefined;
@@ -107,41 +99,8 @@ export class SCMStatusBarController {
       this.onDidAddRepository(repository);
     }
 
-    // 监听当前 EditorGroup 的 currentResouce 变化以提供多 repo 支持
-    this.workbenchEditorService.onActiveResourceChange(() => {
-      this.onDidActiveResouceChange();
-    });
-  }
-
-  private onDidActiveResouceChange(): void {
-    const currentResouce = this.workbenchEditorService.currentResource;
-
-    if (!currentResouce || currentResouce.uri.scheme !== 'file') {
-      return;
-    }
-
-    let bestRepository: ISCMRepository | null = null;
-    let bestMatchLength = Number.NEGATIVE_INFINITY;
-
-    for (const repository of this.scmService.repositories) {
-      const root = repository.provider.rootUri;
-
-      if (!root) {
-        continue;
-      }
-
-      const rootFSPath = root.fsPath;
-      const prefixLength = commonPrefixLength(rootFSPath, currentResouce.uri.codeUri.fsPath);
-
-      if (prefixLength === rootFSPath.length && prefixLength > bestMatchLength) {
-        bestRepository = repository;
-        bestMatchLength = prefixLength;
-      }
-    }
-
-    if (bestRepository) {
-      this.onDidFocusRepository(bestRepository);
-    }
+    // 监听当前 EditorGroup 的 currentResource 变化以提供多 repo 支持
+    this.workbenchEditorService.onActiveResourceChange(this.onDidActiveResouceChange, this, this.disposables);
   }
 
   private onDidAddRepository(repository: ISCMRepository): void {
@@ -163,6 +122,37 @@ export class SCMStatusBarController {
 
     if (!this.focusedRepository) {
       this.onDidFocusRepository(repository);
+    }
+  }
+
+  private onDidActiveResouceChange(): void {
+    const currentResource = this.workbenchEditorService.currentResource;
+
+    if (!currentResource || currentResource.uri.scheme !== 'file') {
+      return;
+    }
+
+    let bestRepository: ISCMRepository | null = null;
+    let bestMatchLength = Number.NEGATIVE_INFINITY;
+
+    for (const repository of this.scmService.repositories) {
+      const root = repository.provider.rootUri;
+
+      if (!root) {
+        continue;
+      }
+
+      const rootFSPath = root.fsPath;
+      const prefixLength = commonPrefixLength(rootFSPath, currentResource.uri.codeUri.fsPath);
+
+      if (prefixLength === rootFSPath.length && prefixLength > bestMatchLength) {
+        bestRepository = repository;
+        bestMatchLength = prefixLength;
+      }
+    }
+
+    if (bestRepository) {
+      this.onDidFocusRepository(bestRepository);
     }
   }
 
@@ -193,33 +183,29 @@ export class SCMStatusBarController {
       return;
     }
 
+    const label = this.getRepoLabel(repository);
+
+    // 注册 statusbar elements
+    commands.forEach((c, index) => {
+      this.disposables.push(
+        this.statusbarService.addElement(`status.scm.repo.${index}`, {
+          text: c.title,
+          priority: 10000, // copied from vscode
+          alignment: StatusBarAlignment.LEFT,
+          command: c.id,
+          arguments: c.arguments,
+          tooltip: `${label} - ${c.tooltip || c.title}`,
+        }),
+      );
+    });
+  }
+
+  private getRepoLabel(repository) {
     const label = repository.provider.rootUri
       ? `${basename(repository.provider.rootUri.path)} (${repository.provider.label})`
       : repository.provider.label;
 
-    // 多 repo 时增加当前 repo 信息到 statusbar
-    if (this.scmService.repositories.length > 1) {
-      // 注册当前 repo 的信息到 statusbar
-      this.statusbarService.addElement('status.scm.0', {
-        text: label,
-        priority: 10000, // copy from vscode
-        alignment: StatusBarAlignment.LEFT,
-        tooltip: `${localize('scm.statusbar.repo')} - ${label}`,
-        iconClass: getOctIcon('repo'),
-      });
-    }
-
-    // 注册 statusbar elements
-    commands.forEach((c, index) => {
-      this.statusbarService.addElement(`status.scm.${index + 1}`, {
-        text: c.title,
-        priority: 10000, // copy from vscode
-        alignment: StatusBarAlignment.LEFT,
-        command: c.id,
-        arguments: c.arguments,
-        tooltip: `${label} - ${c.tooltip}`,
-      });
-    });
+    return label;
   }
 
   dispose(): void {
