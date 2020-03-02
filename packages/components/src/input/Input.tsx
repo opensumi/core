@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as classNames from 'classnames';
+import * as clx from 'classnames';
 import warning from '@ali/ide-core-common/lib/utils/warning';
 
 import { Icon } from '../icon';
@@ -97,10 +97,6 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
       '[@ali/ide-components Input]: `controls` was deprecated, please use `addonAfter` instead',
     );
 
-    const clx = classNames('kt-input', className, {
-      [`kt-input-${size}`]: size,
-      ['kt-input-disabled']: props.disabled,
-    });
     const inputRef = React.useRef<HTMLInputElement | null>(null);
     const [isDirty, setIsDirty] = React.useState(false);
     // handle initial value from `value` or `defaultValue`
@@ -172,12 +168,12 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
         },
       } : {};
 
-    const addonRender = (addonNodes: React.ReactNode | undefined) => {
+    const addonRender = (addonNodes: React.ReactNode | undefined, klassName: string) => {
       if (!addonNodes) {
         return null;
       }
       return (
-        <div className='kt-input-addon kt-input-addon-before' {...persistFocusProps}>
+        <div className={clx('kt-input-addon', klassName)} {...persistFocusProps}>
           {
             React.Children.map(addonNodes, (child) =>
               React.isValidElement(child)
@@ -189,9 +185,14 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
       );
     };
 
+    const inputClx = clx('kt-input', className, {
+      [`kt-input-${size}`]: size,
+      ['kt-input-disabled']: props.disabled,
+    });
+
     return (
-      <div className={clx}>
-        {addonRender(addonBefore)}
+      <div className={inputClx}>
+        {addonRender(addonBefore, 'kt-input-addon-before')}
         <div className='kt-input-box'>
           <input
             ref={inputRef}
@@ -214,7 +215,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
                 {...persistFocusProps} />
           }
         </div>
-        {addonRender(addonAfterNode)}
+        {addonRender(addonAfterNode, 'kt-input-addon-after')}
       </div>
     );
   },
