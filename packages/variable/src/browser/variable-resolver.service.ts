@@ -127,7 +127,6 @@ export namespace VariableResolverService {
         const value = variable && await variable.resolve(this.options.context);
         this.resolved.set(name, value);
       } catch (e) {
-        console.error(`Failed to resolved '${name}' variable`, e);
         this.resolved.set(name, undefined);
       }
     }
