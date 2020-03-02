@@ -15,5 +15,8 @@
   "devDependencies": {},
   "publishConfig": {
     "registry": "http://registry.npm.alibaba-inc.com"
+  },
+  "dependencies": {
+    "@ali/ide-core-common": "1.7.10"
   }
 }

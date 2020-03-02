@@ -69,9 +69,10 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
         <div className = {styles.preferences_header}>
           {appConfig.isSyncPreference ? <div /> : headers}
           <div className = {styles.search_pref}>
-            <Input placeholder={localize('preference.searchPlaceholder')} onChange={(e) => {
-                debouncedSearch((e.target as HTMLInputElement).value);
-            }}/>
+            <Input
+              placeholder={localize('preference.searchPlaceholder')}
+              onValueChange={debouncedSearch}
+            />
           </div>
         </div>
         { groups.length > 0 ?
