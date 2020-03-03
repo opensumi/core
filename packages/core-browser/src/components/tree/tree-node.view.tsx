@@ -94,7 +94,7 @@ const renderDescription = (node: any, replace: string) => {
   if (!isString(node.description) && !isUndefined(node.description)) {
     const Template = node.description as React.JSXElementConstructor<any>;
     return <Template />;
-  } else {
+  } else if (!isUndefined(node.description)) {
     return <div className={cls(styles.treenode_segment_grow, styles.treenode_description, node.descriptionClass)}>
       {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
     </div>;

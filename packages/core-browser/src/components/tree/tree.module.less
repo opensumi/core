@@ -62,7 +62,7 @@
   align-items: center;
   width: 100%;
 
-  .search_match {
+  .search_match, match {
     background-color: var(--editor-findMatchHighlightBackground);
 
     &.replace {
@@ -136,7 +136,12 @@
 }
 
 .treenode_flex_wrap {
-  display: flex;
+  flex: 1;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
 }
 
 .treenode_edit_wrap {

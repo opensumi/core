@@ -32,7 +32,6 @@ import { Directory, File } from './file-tree-item';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { FileContextKey } from './file-contextkey';
 import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
-
 import * as styles from './index.module.less';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
@@ -135,9 +134,9 @@ const extractFileItemShouldBeRendered = (
         filestat: {
           ...status.file.filestat,
         },
-        style: isCuted ? {opacity: .5} as React.CSSProperties : {},
+        style: isCuted ? { opacity: .5 } as React.CSSProperties : {},
         // 设置拖拽底色
-        background: isDropping ? themeService.getColor({id: 'sideBar.dropBackground'}) || '' : 'inherit',
+        background: isDropping ? themeService.getColor({ id: 'sideBar.dropBackground' }) || '' : 'inherit',
         depth,
         selected: isSelected,
         expanded: isExpanded,
@@ -191,6 +190,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _currentContextUriContextKey: IContextKey<string>;
 
   private _contextMenuResourceContext: ResourceContextKey;
+
+  private filterTimer;
 
   private decorationChangeEmitter = new Emitter<any>();
   decorationChangeEvent: Event<any> = this.decorationChangeEmitter.event;
@@ -514,7 +515,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [ uris[0], uris ],
+      args: [uris[0], uris],
     });
   }
 
@@ -626,8 +627,22 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return true;
   }
 
-  @action.bound
-  onFilterChange(filter: string) {
+  onFilterChange = (filter: string) => {
+    // 当存在搜索条件时，展开所有存在缓存的文件夹进行匹配
+    // throttle
+    if (this.filterTimer) {
+      clearTimeout(this.filterTimer);
+    }
+    this.filterTimer = setTimeout(() => {
+      this.doFilterFiles(filter);
+    }, 100);
+  }
+
+  @action
+  async doFilterFiles(filter: string) {
+    if (filter) {
+      await this.filetreeService.expandCachedFolder();
+    }
     this.filter = filter;
   }
 
@@ -652,7 +667,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return filename;
   }
 
-  trimLongName(name: string): string  {
+  trimLongName(name: string): string {
     if (name && name.length > 255) {
       return `${name.substr(0, 255)}...`;
     }

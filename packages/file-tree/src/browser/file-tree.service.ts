@@ -123,6 +123,8 @@ export class FileTreeService extends WithEventBus {
   private statusChangeEmitter = new Emitter<Uri[]>();
   private explorerResourceCut: IContextKey<boolean>;
 
+  private cacheFolders: Directory[] = [];
+
   private pasteStore: IParseStore = {
     files: [],
     type: PasteTypes.NONE,
@@ -881,12 +883,27 @@ export class FileTreeService extends WithEventBus {
           needUpdated: false,
         });
         this.eventBus.fire(new FileTreeExpandedStatusUpdateEvent({uri: file.uri, expanded: true}));
+        this.cacheFolders.push(file as Directory);
       } else {
         this.status.set(statusKey, {
           ...status!,
           expanded: false,
         });
         this.eventBus.fire(new FileTreeExpandedStatusUpdateEvent({uri: file.uri, expanded: false}));
+      }
+    }
+  }
+
+  @action
+  async expandCachedFolder() {
+    for (const cache of this.cacheFolders) {
+      const statusKey = this.getStatutsKey(cache);
+      const status = this.status.get(statusKey);
+      if (!status?.expanded) {
+        this.status.set(statusKey, {
+          ...status!,
+          expanded: true,
+        });
       }
     }
   }

@@ -366,7 +366,7 @@ export class KeymapService implements IKeymapService {
   @action
   searchKeybindings = (search: string) => {
     this.currentSearchValue = search;
-    // debounce
+    // throttle
     if (this.searchTimer) {
       clearTimeout(this.searchTimer);
     }
