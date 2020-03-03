@@ -101,10 +101,15 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     this.model = model;
   }
   getConfiguration(): monaco.editor.InternalEditorOptions {
-    return {} as any;
+    return {
+      viewInfo: {
+        renderLineHighlight: 'line',
+        renderLineNumbers: 1,
+      },
+    } as any;
   }
   getValue(options?: { preserveBOM: boolean; lineEnding: string; } | undefined): string {
-    return '';
+    return this.model?.getValue() || '';
   }
   setValue(newValue: string): void {
     return;
@@ -140,6 +145,13 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     return true;
   }
   executeEdits(source: string, edits: monaco.editor.IIdentifiedSingleEditOperation[], endCursorState?: monaco.Selection[] | undefined): boolean {
+    switch (source) {
+      case 'MainThreadTextEditor':
+        this.model?.applyEdits(edits);
+        break;
+      default:
+        break;
+    }
     return true;
   }
   executeCommands(source: string, commands: (monaco.editor.ICommand | null)[]): void {
@@ -182,7 +194,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     };
   }
   getVisibleRanges(): monaco.Range[] {
-    return [];
+    return [new monaco.Range(1, 12, 1, 12)];
   }
   getTopForLineNumber(lineNumber: number): number {
     return 0;
@@ -243,8 +255,9 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   getEditorType(): string {
     throw new Error('Method not implemented.');
   }
-  updateOptions(newOptions: monaco.editor.IEditorOptions): void {
+  updateOptions(newOptions): void {
     this.options = newOptions;
+    this._onDidChangeConfiguration.fire(newOptions as monaco.editor.IConfigurationChangedEvent);
   }
   layout(dimension?: monaco.editor.IDimension | undefined): void {
     return;
@@ -294,6 +307,12 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
 
   setSelection(selection: any) {
     this.selections = [selection];
+    this._onDidChangeCursorSelection.fire({
+      selection,
+      secondarySelections: [],
+      reason: 0,
+      source: 'api',
+    });
   }
   setSelections(selections: monaco.ISelection[]): void {
     this.selections = selections;

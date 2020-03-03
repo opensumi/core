@@ -198,6 +198,8 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
       ...this.options,
       ...newOpts,
     };
+    // @ts-ignore
+    this._onDidChangeOptions.fire(this.options);
   }
   detectIndentation(defaultInsertSpaces: boolean, defaultTabSize: number): void {
     return ;
