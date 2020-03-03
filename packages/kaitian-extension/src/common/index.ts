@@ -33,6 +33,7 @@ export interface IExtensionNodeService {
   createProcess2(clientId: string): Promise<void>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
+  getExtServerListenPath(clientId: string);
   resolveConnection();
   resolveProcessInit();
   getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
