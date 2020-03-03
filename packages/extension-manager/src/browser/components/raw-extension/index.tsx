@@ -6,9 +6,9 @@ import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import * as clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
-import { generateCtxMenu, ICtxMenuRenderer, IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { generateCtxMenu, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
-import { RawExtension, IExtensionManagerService, EnableScope } from '../../../common';
+import { RawExtension, IExtensionManagerService } from '../../../common';
 import * as commonStyles from '../../extension-manager.common.module.less';
 import * as styles from './index.module.less';
 
@@ -87,7 +87,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               </span>
             {!extension.installed ? <Button className={styles.button} type='secondary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button> : null}
           </div>
-          <div className={styles.extension_props}>
+          <div className={clx(styles.extension_props, 'kt-extension-raw-description')}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i> {extension.downloadCount}</span>) : null}
             <span>V {extension.version}</span>
             <span>{extension.publisher}</span>

@@ -4,7 +4,7 @@
   padding: 8px 12px 8px 8px;
 
   &:hover {
-    background: var(--kt-sideBarList-hoverForeground);
+    background: var(--list-hoverBackground);
     :global(.kt-button) {
       color: var(--kt-whiteGhostButton-foreground);
       border-color: var(--kt-whiteGhostButton-border);
@@ -43,15 +43,18 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  color: var(--kt-sideBarList-foreground);
+  color: var(--list-activeSelectionForeground);
   margin-right: 8px;
   font-size: 14px;
+}
+
+.extension_props {
+  color: var(--list-inactiveSelectionForeground);
 }
 
 .extension_props span{
   font-size: 12px;
   margin-right: 12px;
-  color: var(--kt-sideBarList-foreground);
 }
 
 .description {
@@ -62,7 +65,7 @@
   -webkit-box-orient: vertical;
   padding-right: 11px;
   font-size: 12px;
-  color: var(--kt-sideBarList-secondaryForeground);
+  color: var(--list-inactiveSelectionForeground);
 }
 
 .button {
