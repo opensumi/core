@@ -54,7 +54,7 @@ export abstract class EditorComponentRegistry {
  * @param resolve 调用这个函数，传入结果可结束责任链直接返回支持的打开方式
  */
 export type IEditorComponentResolver<MetaData = any> =
-  (resource: IResource<MetaData>, results: IEditorOpenType[], resolve?: (results: IEditorOpenType[]) => void) => MaybePromise<void>;
+  (resource: IResource<MetaData>, results: IEditorOpenType[], resolve: (results: IEditorOpenType[]) => void) => MaybePromise<void>;
 
 export const BrowserEditorContribution = Symbol('BrowserEditorContribution');
 
@@ -312,3 +312,5 @@ export interface IEditorFeatureContribution {
   contribute(editor: IEditor): IDisposable;
 
 }
+
+export class ResourceOpenTypeChangedEvent extends BasicEvent<URI> {}

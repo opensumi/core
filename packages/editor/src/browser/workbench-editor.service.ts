@@ -2,7 +2,7 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution } from './types';
+import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { FILE_COMMANDS, CorePreferences, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey } from '@ali/ide-core-browser';
@@ -615,6 +615,17 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (this.previewURI && this.previewURI.isEqual(e.payload.uri)) {
         this.pinPreviewed();
       }
+    }
+  }
+
+  @OnEvent(ResourceOpenTypeChangedEvent)
+  oResourceOpenTypeChangedEvent(e: ResourceOpenTypeChangedEvent) {
+    const uri = e.payload;
+    if (this.cachedResourcesOpenTypes.has(uri.toString())) {
+      this.cachedResourcesOpenTypes.delete(uri.toString());
+    }
+    if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
+      this.displayResourceComponent(this.currentResource, {});
     }
   }
 
