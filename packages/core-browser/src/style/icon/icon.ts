@@ -1,6 +1,10 @@
 import { SymbolKind, getLogger } from '@ali/ide-core-common';
+import { warning } from '@ali/ide-core-common/lib/utils/warning';
 
-export const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_908sjcjy17a.css';
+import { IDE_ICONFONT_CN_CSS } from './ide-iconfont';
+import iconfontMap from './iconfont/iconMap';
+
+export const DEFAULT_CDN_ICON = IDE_ICONFONT_CN_CSS;
 
 const iconPrefixes = ['kaitian-icon kticon-'];
 
@@ -65,97 +69,28 @@ export function updateIconMap(prefix: string, customIconMap: { [iconKey: string]
   iconPrefixes.push(prefix);
 }
 
-export const defaultIconMap = {
-  'wait': 'wait',
-  'extension': 'extension',
-  'debug': 'debug',
-  'scm': 'scm',
-  'search': 'search',
-  'explorer': 'explorer',
-  'arrow-down': 'arrow-down',
-  'arrow-right': 'arrow-right',
-  'dashboard-fill': 'dashboard-fill',
-  'info-circle': 'info-circle',
-  'info-circle-fill': 'info-circle-fill',
-  'close-circle': 'close-circle',
-  'close-circle-fill': 'close-circle-fill',
-  'check-circle-fill': 'check-circle-fill',
-  'check': 'check',
-  'delete': 'delete',
-  'detail': 'detail',
-  'sync': 'sync',
-  'question-circle': 'question-circle',
-  'control-fill': 'control-fill',
-  'codelibrary-fill': 'codelibrary-fill',
-  'close': 'close',
-  'unorderedlist': 'unorderedlist',
-  'swap': 'swap',
-  'up': 'up',
-  'down': 'down',
-  'branches': 'branches',
-  'file-exclamation': 'file-exclamation',
-  'folder-fill': 'folder-fill',
+// key 为 iconName enum, value 为 icon className
+const typoIconMap = {
   'folder-fill-open': 'folder-fill',
-  'ellipsis': 'ellipsis',
-  'right': 'right',
-  'cloud-server': 'cloud-server',
-  'bell': 'bell',
-  'file-text': 'file-text',
-  'team': 'team',
-  'setting': 'setting',
-  'embed': 'embed',
-  'refresh': 'refresh',
   'search-close': 'close-square',
   'fold': 'collapse-all',
-  'open': 'open',
-  'withdraw': 'withdraw',
-  'plus': 'plus',
-  'line': 'line',
-  'add': 'add',
-  'ab': 'ab',
-  'abl': 'abl',
-  'regex': 'regex',
-  'eye': 'eye',
-  'clear': 'clear',
-  'eye-close': 'eye-close',
-  'replace': 'replace',
-  'window-maximize': 'window-maximize',
-  'cloud-download': 'cloud-download',
-  'new-file': 'new-file',
-  'new-folder': 'new-folder',
-  'collapse-all': 'collapse-all',
-  'close-all': 'close-all',
-  'save-all': 'save-all',
   'setting-general': 'setting',
   'setting-editor': 'codelibrary-fill',
   'setting-file': 'file-text',
   'setting-extension': 'extension',
-  'edit': 'edit',
-  'rollback': 'rollback',
-  'terminate': 'terminate',
-  'step': 'step',
-  'stop': 'stop',
-  'step-out': 'step-out',
-  'step-in': 'step-in',
-  'start': 'start',
-  'reload': 'reload',
   'run-debug': 'rundebug',
   'toggle-breakpoints': 'deactivate-breakpoints',
-  'disconnect': 'disconnect',
-  'download': 'download',
-  'follow-cursor': 'follow-cursor',
-  'minus': 'minus',
-  'undock': 'undock',
-  'expand': 'expand',
-  'shrink': 'shrink',
-  'terminal': 'terminal',
-  'drag': 'drag',
-  'openfile': 'openfile',
-  'arrowup': 'arrowup',
-  'arrowdown': 'arrowdown',
-  'keyboard': 'keyboard',
-  'message': 'message',
 };
+
+const _defaultIconMap = Object.assign({}, iconfontMap, typoIconMap);
+
+export const defaultIconMap = new Proxy(_defaultIconMap, {
+  get(obj, prop: string) {
+    const typoValue = typoIconMap[prop];
+    warning(!typoValue, `Icon '${prop}' was a typo, please use '${typoValue}' instead`);
+    return obj[prop];
+  },
+});
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {
   [iconPrefixes[0]]: defaultIconMap,
