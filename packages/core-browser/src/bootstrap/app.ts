@@ -141,6 +141,7 @@ export class ClientApp implements IClientApp {
       layoutComponent: opts.layoutComponent,
       isSyncPreference: opts.isSyncPreference,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
+      useExperimentalShadowDom: opts.useExperimentalShadowDom,
       clientId: opts.clientId,
       preferenceDirName: opts.preferenceDirName,
       storageDirName: opts.storageDirName,
