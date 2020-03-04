@@ -9,11 +9,13 @@ import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
 import { ElectronBasicModule } from '@ali/ide-electron-basic/lib/browser';
 import { renderApp } from './app';
 import { CommonBrowserModules } from '@ali/ide-startup/lib/browser/common-modules';
+import { StartupModule } from '@ali/ide-startup/lib/browser';
 
 renderApp({
   modules: [
     ...CommonBrowserModules,
     ElectronBasicModule,
+    StartupModule,
   ],
   layoutConfig: defaultConfig,
 });
