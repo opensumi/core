@@ -1,5 +1,5 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema, localize } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema, localize, URI } from '@ali/ide-core-common';
 import { Logger, ClientAppContribution, IContextKeyService, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
@@ -12,7 +12,7 @@ import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { getIcon } from '@ali/ide-core-browser';
-import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
+import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@ali/ide-editor/lib/common';
 import { BrowserEditorContribution, IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
 
 export const SCM_ACCEPT_INPUT: Command = {
@@ -45,9 +45,14 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
   @Autowired(IDirtyDiffWorkbenchController)
   protected readonly dirtyDiffWorkbenchController: DirtyDiffWorkbenchController;
 
+  @Autowired(EditorCollectionService)
+  editorCollectionService: EditorCollectionService;
+
   private toDispose = new Disposable();
 
   schema: PreferenceSchema = scmPreferenceSchema;
+
+  private diffChangesIndex: Map<URI, number> = new Map();
 
   onDidRender() {
     [
@@ -83,12 +88,8 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
     commands.registerCommand(GOTO_PREVIOUS_CHANGE, {
       execute: () => {
         const editor = this.editorService.currentEditor;
-        const curModel = this.dirtyDiffWorkbenchController.curModel;
-        if (editor && curModel) {
-          const codeEditor = editor.monacoEditor;
-          setTimeout(() => {
-            codeEditor.revealLineInCenter(curModel.getPreviousChangeLineNumber());
-          }, 50);
+        if (editor && editor.currentUri) {
+          editor.monacoEditor.revealLineInCenter(this.getDiffChangeLineNumber(editor.currentUri, editor, 'previous'));
         }
       },
     });
@@ -96,12 +97,8 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
     commands.registerCommand(GOTO_NEXT_CHANGE, {
       execute: () => {
         const editor = this.editorService.currentEditor;
-        const curModel = this.dirtyDiffWorkbenchController.curModel;
-        if (editor && curModel) {
-          const codeEditor = editor.monacoEditor;
-          setTimeout(() => {
-            codeEditor.revealLineInCenter(curModel.getNextChangeLineNumber());
-          }, 50);
+        if (editor && editor.currentUri) {
+          editor.monacoEditor.revealLineInCenter(this.getDiffChangeLineNumber(editor.currentUri, editor, 'next'));
         }
       },
     });
@@ -138,5 +135,38 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
       },
     });
 
+  }
+
+  private getDiffChangesIndex(uri: URI, editor: IEditor) {
+    if (!this.diffChangesIndex.has(uri)) {
+      editor.onDispose(() => {
+        this.diffChangesIndex.delete(uri);
+      });
+      this.diffChangesIndex.set(uri, 0);
+    }
+    return this.diffChangesIndex.get(uri)!;
+  }
+
+  private getDiffEditor(editor: IEditor) {
+    const editorId = editor.getId();
+    const [ diffEditor ] = this.editorCollectionService.listDiffEditors().filter((diffEditor) => diffEditor.modifiedEditor.getId() === editorId || diffEditor.originalEditor.getId() === editorId);
+    return diffEditor;
+  }
+
+  private getDiffChangeLineNumber(uri: URI, editor: IEditor, type: 'previous' | 'next') {
+    const diffChangesIndex = this.getDiffChangesIndex(uri, editor);
+    const diffEditor = this.getDiffEditor(editor);
+    const lineChanges = diffEditor.getLineChanges() || [];
+    if (!lineChanges || lineChanges.length === 0) {
+      return 0;
+    }
+    let index = 0;
+    if (type === 'previous') {
+      index = diffChangesIndex - 1 < 0 ? lineChanges.length - 1 : diffChangesIndex - 1;
+    } else {
+      index = diffChangesIndex >= lineChanges.length - 1 ? 0 : diffChangesIndex + 1;
+    }
+    this.diffChangesIndex.set(uri, index);
+    return lineChanges[index].modifiedStartLineNumber;
   }
 }

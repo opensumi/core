@@ -450,7 +450,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   }
 
   getLineChanges(): ILineChange[] | null {
-    throw new Error('Method not implemented.');
+    return this.monacoDiffEditor.getLineChanges();
   }
 
   private wrapEditors() {
