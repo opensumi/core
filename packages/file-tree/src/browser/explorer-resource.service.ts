@@ -342,6 +342,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     }
   }
 
+  enableFilterMode = () => {
+    this.filterMode = true;
+  }
+
   onSelect = (files: (Directory | File)[]) => {
     this._selectTimes++;
     // 单选操作默认先更新选中状态

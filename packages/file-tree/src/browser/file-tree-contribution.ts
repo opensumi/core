@@ -454,9 +454,15 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
 
     // filter in filetree
-    commands.registerCommand(FILE_COMMANDS.FILTER, {
+    commands.registerCommand(FILE_COMMANDS.FILTER_TOGGLE, {
       execute: () => {
         return this.explorerResourceService.toggleFilterMode();
+      },
+    });
+
+    commands.registerCommand(FILE_COMMANDS.FILTER_OPEN, {
+      execute: () => {
+        return this.explorerResourceService.enableFilterMode();
       },
     });
   }
@@ -492,6 +498,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       keybinding: 'ctrlcmd+backspace',
       when: 'filesExplorerFocus && !inputFocus',
     });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.FILTER_OPEN.id,
+      keybinding: 'ctrlcmd+f',
+      when: 'filesExplorerFocus && !inputFocus',
+    });
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
@@ -508,8 +520,8 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       order: 2,
     });
     registry.registerItem({
-      id: FILE_COMMANDS.FILTER.id,
-      command: FILE_COMMANDS.FILTER.id,
+      id: FILE_COMMANDS.FILTER_TOGGLE.id,
+      command: FILE_COMMANDS.FILTER_TOGGLE.id,
       viewId: ExplorerResourceViewId,
       order: 3,
       toggledWhen: ExplorerFilteredContext.raw,
