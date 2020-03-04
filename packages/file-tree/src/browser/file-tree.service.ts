@@ -321,6 +321,8 @@ export class FileTreeService extends WithEventBus {
       // 先修改数据，后置文件操作，在文件创建成功后会有事件通知前台更新
       // 保证在调用定位文件命令时文件树中存在新建的文件
       if (isDirectory) {
+        // 为新建的文件夹添加选中态，新建文件由于还有打开操作，不需要重复更新选中态
+        this.updateFilesSelectedStatus([newFile], true);
         this.fileAPI.createFolder(uri.parent.resolve(newName));
       } else {
         this.fileAPI.createFile(uri.parent.resolve(newName));
@@ -942,6 +944,10 @@ export class FileTreeService extends WithEventBus {
     this.status.clear();
   }
 
+  /**
+   * 更新文件节点及其子节点所有的状态
+   * @param files
+   */
   @action
   updateFileStatus(files: (Directory | File)[] = []) {
     const changeUri: Uri[] = [];
