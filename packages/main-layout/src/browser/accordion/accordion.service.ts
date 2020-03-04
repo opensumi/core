@@ -204,7 +204,7 @@ export class AccordionService extends WithEventBus {
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {
-      execute: ({forceShow}: {forceShow?: boolean}) => {
+      execute: ({forceShow}: {forceShow?: boolean} = {}) => {
         this.doToggleView(viewId, forceShow);
       },
       isToggled: () => {
