@@ -1,6 +1,5 @@
 import { registerColor, transparent } from '../color-registry';
 import { localize } from '@ali/ide-core-common';
-import { editorWarningForeground, editorErrorForeground, editorInfoForeground } from './editor';
 
 // base colors
 export const foreground = registerColor('foreground', { dark: '#CCCCCC', light: '#616161', hc: '#FFFFFF' }, localize('foreground', 'Overall foreground color. This color is only used if not overridden by a component.'));
@@ -38,6 +37,8 @@ export const iconSecondaryForeground = registerColor(
   { dark: iconForeground, light: iconForeground, hc: iconForeground },
   localize('secondaryForeground', 'The secondary color for icons in the workbench.'),
 );
+
+import { editorWarningForeground, editorErrorForeground, editorInfoForeground } from './editor';
 
 export const errorIconForeground = registerColor(
   'kt.errorIconForeground',
