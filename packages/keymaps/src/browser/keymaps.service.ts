@@ -80,10 +80,6 @@ export class KeymapService implements IKeymapService {
   @observable.shallow
   keybindings: KeybindingItem[] = [];
 
-  constructor() {
-    this.init();
-  }
-
   async init() {
     this.resource = await this.resourceProvider(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
     await this.reconcile();

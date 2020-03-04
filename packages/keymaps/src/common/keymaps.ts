@@ -29,6 +29,10 @@ export interface KeybindingItem {
 
 export interface IKeymapService {
   /**
+   * 初始化快捷键注册信息
+   */
+  init(): Promise<void>;
+  /**
    * 设置快捷键
    * @param {Keybinding} keybinding
    * @returns {Promise<void>}
