@@ -80,6 +80,11 @@ const typoIconMap = {
   'setting-extension': 'extension',
   'run-debug': 'rundebug',
   'toggle-breakpoints': 'deactivate-breakpoints',
+  // new typos issue
+  'withdraw': 'close',
+  'terminate1': 'terminate',
+  'stop1': 'stop',
+  'add': 'plus',
 };
 
 const _defaultIconMap = Object.assign({}, iconfontMap, typoIconMap);
