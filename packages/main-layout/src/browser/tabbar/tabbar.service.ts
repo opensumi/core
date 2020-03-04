@@ -322,7 +322,7 @@ export class TabbarService extends WithEventBus {
     disposables.push(this.commandRegistry.registerCommand({
       id: activateCommandId,
     }, {
-      execute: ({forceShow}: {forceShow?: boolean}) => {
+      execute: ({forceShow}: {forceShow?: boolean} = {}) => {
         // 支持toggle
         if (this.location === 'bottom' && !forceShow) {
           this.currentContainerId = this.currentContainerId === containerId ? '' : containerId;
@@ -361,7 +361,7 @@ export class TabbarService extends WithEventBus {
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {
-      execute: ({forceShow}: {forceShow?: boolean}) => {
+      execute: ({forceShow}: {forceShow?: boolean} = {}) => {
         this.doToggleTab(containerId, forceShow);
       },
       isToggled: () => {
