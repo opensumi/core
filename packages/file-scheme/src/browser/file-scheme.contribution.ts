@@ -2,7 +2,7 @@ import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent,
 import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType, LRUMap, Schemas, IEventBus } from '@ali/ide-core-browser';
 import { Autowired, Injectable } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, ResourceOpenTypeChangedEvent } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME } from '../common';
@@ -252,28 +252,6 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
           type: 'code',
           title: localize('editorOpenType.code'),
         });
-      }
-    });
-
-    // FIXME: 测试用代码, 允许用原来的方式打开文件
-    const uris: Set<URI> = new Set();
-    let shouldPrevent = true;
-    (window as any) .test = () => {
-      shouldPrevent = false;
-      uris.forEach((uri) => {
-        this.eventBus.fire(new ResourceOpenTypeChangedEvent(uri));
-      });
-    };
-    // TODO: 过大文件  @木农
-    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, async (resource: IResource<any>, results: IEditorOpenType[], resolve) => {
-      if (shouldPrevent) {
-        uris.add(resource.uri);
-        resolve([
-          {
-            type: 'component',
-            componentId: EXTERNAL_OPEN_COMPONENT_ID,
-          },
-        ]);
       }
     });
 
