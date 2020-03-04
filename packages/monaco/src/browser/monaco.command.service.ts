@@ -236,6 +236,7 @@ export class MonacoActionRegistry {
    */
   protected static readonly EXCLUDE_ACTIONS = [
     'editor.action.quickCommand',
+    'editor.action.toggleHighContrast',
   ];
 
   /**
