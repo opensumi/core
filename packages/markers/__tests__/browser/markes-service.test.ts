@@ -109,21 +109,3 @@ describe('markers.service.ts', () => {
   });
 
 });
-
-// describe('markers.filter.ts', () => {
-//   beforeEach(() => {
-//     manager.updateMarkers('test', fakeUri.toString(), [fakeMarker]);
-//   });
-
-//   it('test update markers', () => {
-//     manager.fireFilterChanged({
-//       filterTe
-//     })
-//   });
-
-//   it('test remove markers', () => {
-//     markerService.onEditorGroupClose(fakeCloseEvent);
-//     expect(manager.getResources()).toEqual([]);
-//   });
-
-// });
