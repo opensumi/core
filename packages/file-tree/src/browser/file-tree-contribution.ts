@@ -53,7 +53,8 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   private rendered = false;
 
-  onStart() {
+  async onStart() {
+    await this.filetreeService.init();
     this.mainLayoutService.collectViewComponent({
       id: ExplorerResourceViewId,
       name: this.getWorkspaceTitle(),

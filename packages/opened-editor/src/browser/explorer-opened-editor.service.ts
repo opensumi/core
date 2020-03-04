@@ -86,10 +86,6 @@ export class ExplorerOpenedEditorService {
   private activeGroup: string;
   private activeUri: URI;
 
-  constructor() {
-    this.init();
-  }
-
   async init() {
     await this.getTreeDatas();
     this.openEditorTreeDataProvider.onDidChange(async (element) => {

@@ -1,10 +1,9 @@
-import { Domain, localize, Command, CommandContribution, CommandRegistry, OPEN_EDITORS_COMMANDS, URI, CommandService, FILE_COMMANDS, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { Domain, localize, CommandContribution, CommandRegistry, OPEN_EDITORS_COMMANDS, URI, CommandService, FILE_COMMANDS, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { ExplorerOpenEditorPanel } from './opened-editor-panel.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
-import { getIcon } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ClientAppContribution } from '@ali/ide-core-browser';
 import { ExplorerOpenedEditorService } from './explorer-opened-editor.service';
@@ -27,7 +26,8 @@ export class OpenedEditorContribution implements ClientAppContribution, TabBarTo
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
-  onStart() {
+  async onStart() {
+    await this.openEditorService.init();
     this.mainLayoutService.collectViewComponent({
       id: ExplorerOpenedEditorViewId,
       name: localize('open.editors.title'),
