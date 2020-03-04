@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
 import { Domain, IEventBus, ContributionProvider, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
-import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry } from '@ali/ide-core-browser';
+import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, KeybindingRegistry } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../common';
 import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
@@ -93,6 +93,9 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
   @Autowired()
   private toolBarRegistry: ToolbarRegistry;
 
+  @Autowired(KeybindingRegistry)
+  protected keybindingRegistry: KeybindingRegistry;
+
   async initialize() {
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
@@ -111,6 +114,7 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
   async onStart() {
     // 全局只要初始化一次
     await this.layoutState.initStorage();
+    this.registerSideToggleKey();
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
@@ -286,4 +290,16 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
   didMount() {
     this.mainLayoutService.didMount();
   }
+
+  protected registerSideToggleKey() {
+    this.keybindingRegistry.registerKeybinding({
+      keybinding: 'ctrlcmd+b',
+      command: TOGGLE_LEFT_PANEL_COMMAND.id,
+    });
+    this.keybindingRegistry.registerKeybinding({
+      keybinding: 'ctrlcmd+j',
+      command: TOGGLE_BOTTOM_PANEL_COMMAND.id,
+    });
+  }
+
 }
