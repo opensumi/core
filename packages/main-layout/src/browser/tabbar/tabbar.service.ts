@@ -57,7 +57,7 @@ export class TabbarService extends WithEventBus {
   private readonly contextMenuRenderer: ICtxMenuRenderer;
 
   @Autowired(KeybindingRegistry)
-  keybindingRegistry: KeybindingRegistry;
+  private keybindingRegistry: KeybindingRegistry;
 
   @Autowired()
   private viewContextKeyRegistry: ViewContextKeyRegistry;
