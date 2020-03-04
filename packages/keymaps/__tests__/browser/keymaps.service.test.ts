@@ -1,10 +1,11 @@
-import { KeymapService } from '../../src/browser/keymaps.service';
+import { KeymapService } from '@ali/ide-keymaps/lib/browser/keymaps.service';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { KeymapsParser } from '../../src/browser/keymaps-parser';
+import { KeymapsParser } from '@ali/ide-keymaps/lib/browser/keymaps-parser';
 import { ResourceProvider, KeybindingRegistry, KeybindingService, URI, KeybindingScope, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { KEYMAPS_FILE_NAME } from '../../src';
+import { KEYMAPS_FILE_NAME } from '@ali/ide-keymaps';
 import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
+import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
 
 describe('KeymapsService should be work', () => {
   let keymapsService: KeymapService;
@@ -15,7 +16,9 @@ describe('KeymapsService should be work', () => {
   let onKeybindingsChanged;
   let setKeymap;
   beforeEach(() => {
-    injector = createBrowserInjector([]);
+    injector = createBrowserInjector([
+      KeymapsModule,
+    ]);
 
     // mock used instance
     injector.overrideProviders(
@@ -37,11 +40,6 @@ describe('KeymapsService should be work', () => {
       },
     );
 
-    injector.addProviders({
-      token: KeymapService,
-      useClass: KeymapService,
-    });
-
     keybindingContent = '{}';
     resourceProvider = jest.fn(() => ({
       readContents: () => keybindingContent,
@@ -51,11 +49,17 @@ describe('KeymapsService should be work', () => {
       useValue: resourceProvider,
     });
     onKeybindingsChanged = jest.fn();
-    setKeymap = jest.fn();
+    setKeymap = jest.fn(() => {
+      return {
+        dispose: () => {},
+      };
+    });
     injector.mock(KeybindingRegistry, 'onKeybindingsChanged', onKeybindingsChanged);
     injector.mock(KeybindingRegistry, 'setKeymap', setKeymap);
 
     keymapsService = injector.get(KeymapService);
+
+    keymapsService.init();
 
   });
 
@@ -65,7 +69,7 @@ describe('KeymapsService should be work', () => {
 
   describe('01 #Init', () => {
 
-    it('should ready to work after init', () => {
+    it('should ready to work after init', async (done) => {
 
       expect(resourceProvider).toBeCalledWith(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
       expect(setKeymap).toBeCalledWith(KeybindingScope.USER, []);
@@ -84,6 +88,7 @@ describe('KeymapsService should be work', () => {
       expect(typeof keymapsService.searchKeybindings).toBe('function');
       expect(typeof keymapsService.validateKeybinding).toBe('function');
       expect(typeof keymapsService.getRaw).toBe('function');
+      done();
     });
   });
 
