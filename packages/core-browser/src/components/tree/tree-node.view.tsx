@@ -94,7 +94,7 @@ const renderDescription = (node: any, replace: string) => {
   if (!isString(node.description) && !isUndefined(node.description)) {
     const Template = node.description as React.JSXElementConstructor<any>;
     return <Template />;
-  } else {
+  } else if (!isUndefined(node.description)) {
     return <div className={cls(styles.treenode_segment_grow, styles.treenode_description, node.descriptionClass)}>
       {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
     </div>;
@@ -264,11 +264,11 @@ export const TreeContainerNode = (
       const clickHandler = (event: React.MouseEvent) => {
         event.stopPropagation();
         event.preventDefault();
-        commandActuator(action.command, action.paramsKey ? node[action.paramsKey] : node.uri);
+        commandActuator(action.command, action.paramsKey ? node[action.paramsKey] : node.id);
       };
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
       return <Icon
-        key={`${node.id}-${action.paramsKey ? node[action.paramsKey] : node.uri}-${action.command}`}
+        key={`${node.id}-${action.paramsKey ? node[action.paramsKey] : node.id}-${action.command}`}
         iconClass={cls(styles.action_icon, icon)}
         title={action.title}
         onClick={clickHandler} />;
@@ -335,7 +335,7 @@ export const TreeContainerNode = (
 
   const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
     const isComponent = !isString(node.name);
-    const [value, setValue] = React.useState<string>(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : !isComponent && node.name === TEMP_FILE_NAME ? '' : isComponent ? '' : node.name as string);
+    const [value, setValue] = React.useState<string>(!isComponent && node.name === TEMP_FILE_NAME ? '' : isComponent ? '' : node.name as string);
 
     const changeHandler = (event) => {
       const newValue = event.target.value;

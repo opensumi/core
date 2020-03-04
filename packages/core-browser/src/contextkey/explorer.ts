@@ -8,3 +8,4 @@ export const ExplorerFolderContext = new RawContextKey<boolean>('explorerResourc
 export const ExplorerResourceCut = new RawContextKey<boolean>('explorerResourceCut', false);
 export const FilesExplorerFocusedContext = new RawContextKey<boolean>('filesExplorerFocus', false);
 export const ExplorerFocusedContext = new RawContextKey<boolean>('explorerViewletFocus', false);
+export const ExplorerFilteredContext = new RawContextKey<boolean>('explorerViewletFilter', false);

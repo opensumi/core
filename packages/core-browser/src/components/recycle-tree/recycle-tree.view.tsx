@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { TreeProps, TreeContainer, TreeNode, ExpandableTreeNode } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
+import * as fuzzy from 'fuzzy';
 
 export interface RecycleTreeProps extends TreeProps {
   /**
@@ -100,6 +101,8 @@ export const RecycleTree = (
     onSelect,
     onBlur,
     onFocus,
+    onReveal,
+    filter,
     onTwistieClick,
     scrollTop,
     prerenderNumber = 10,
@@ -124,6 +127,17 @@ export const RecycleTree = (
   // 预加载因子
   const preFactor = 3 / 4;
   const upPrerenderNumber = Math.floor(prerenderNumber * preFactor);
+  const fuzzyOptions = {
+    pre: '<match>',
+    post: '</match>',
+    extract: (node: TreeNode) => {
+      if (typeof node.name === 'string') {
+        return node.name;
+      }
+      return '';
+    },
+  };
+
   React.useEffect(() => {
     if (typeof scrollTop === 'number' && scrollRef) {
       scrollRef.scrollTop = scrollTop;
@@ -132,7 +146,34 @@ export const RecycleTree = (
   }, [scrollTop]);
 
   React.useEffect(() => {
-    let renderedFileItems = nodes!.filter((item: TreeNode, index: number) => {
+    let renderedFileItems;
+    if (filter) {
+      const fuzzyLists = fuzzy.filter(filter, nodes, fuzzyOptions);
+      renderedFileItems = nodes.map((node: TreeNode) => {
+        for (const item of fuzzyLists) {
+          if (node.uri?.isEqual(item.original.uri)) {
+            // 匹配，存在高亮
+            return {
+              ...node,
+              name: () => {
+                return <div style={{
+                  flex: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }} dangerouslySetInnerHTML={{ __html: item.string || ''}}></div>;
+              },
+            };
+          } else if (node.uri?.isEqualOrParent(item.original.uri)) {
+            // 子节点存在匹配，不高亮但需展示
+            return  node;
+          }
+        }
+      }).filter((node: TreeNode) => !!node);
+    } else {
+      renderedFileItems = nodes;
+    }
+    renderedFileItems = renderedFileItems!.filter((item: TreeNode, index: number) => {
       return renderedStart <= index && index <= renderedEnd;
     });
     renderedFileItems = renderedFileItems.map((item: TreeNode, index: number) => {
@@ -180,6 +221,13 @@ export const RecycleTree = (
     });
     setRenderNodes(renderedFileItems);
   }, [nodes, renderedStart, scrollContainerStyle]);
+
+  React.useEffect(() => {
+    if (scrollRef) {
+      scrollRef.scrollTop = 0;
+    }
+    setRenderedStart(0);
+  }, [filter]);
 
   const scrollUpHandler = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
@@ -260,6 +308,7 @@ export const RecycleTree = (
         onChange={onChange || noop}
         onDrop={onDrop || noop}
         onSelect={onSelect || noop}
+        onReveal={onReveal || noop}
         onTwistieClick={onTwistieClick}
         draggable={draggable}
         foldable={foldable}

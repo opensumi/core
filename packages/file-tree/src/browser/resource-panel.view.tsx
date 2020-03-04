@@ -1,10 +1,16 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import { ViewState, ThemeProvider, useInjectable } from '@ali/ide-core-browser';
+import { Icon, Input } from '@ali/ide-components';
+import { localize } from '@ali/ide-core-common';
+
 import { FileTree } from './file-tree.view';
 import { ExplorerResourceService } from './explorer-resource.service';
-import { ViewState } from '@ali/ide-core-browser';
-import { ThemeProvider, useInjectable } from '@ali/ide-core-browser';
 import { EmptyView } from './empty.view';
+
+import * as styles from './resource-panel.module.less';
+
+const filterAreaHeight = 30;
 
 export const ExplorerResourcePanel = observer(({
   viewState,
@@ -34,6 +40,9 @@ export const ExplorerResourcePanel = observer(({
     root,
     baseIndent,
     indent,
+    filterMode,
+    filter,
+    onFilterChange,
   }: ExplorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
   const files = getFiles();
   const leftPadding = React.useMemo(() => {
@@ -43,33 +52,53 @@ export const ExplorerResourcePanel = observer(({
     return baseIndent;
   }, [baseIndent]);
   if (root.path.toString() !== '/') {
-    return <FileTree
-      width={ viewState.width }
-      height={ viewState.height }
-      files={ files }
-      onSelect={ onSelect }
-      onTwistieClick={ onTwistieClick }
-      onDragStart={ onDragStart }
-      onDragOver={ onDragOver }
-      onDragEnter={ onDragEnter }
-      onDragLeave={ onDragLeave }
-      onChange = { onChange }
-      onDrop={ onDrop }
-      onBlur={ onBlur }
-      onFocus={ onFocus }
-      draggable={ draggable }
-      editable={ editable }
-      multiSelectable={ multiSelectable }
-      onContextMenu={ onContextMenu }
-      position = { position }
-      fileDecorationProvider = { overrideFileDecorationService }
-      themeProvider = { themeService as ThemeProvider }
-      notifyFileDecorationsChange = { decorationChangeEvent }
-      notifyThemeChange = { themeChangeEvent }
-      validate={ validateFileName }
-      leftPadding={ leftPadding }
-      defaultLeftPadding={ defaultLeftPadding }
-    ></FileTree>;
+    return (
+      <>
+        {
+          filterMode
+            && <div className={styles.filterWrapper} style={{ height: filterAreaHeight }}>
+              <Input
+                hasClear
+                size='small'
+                autoFocus
+                className={styles.filterInput}
+                value={filter}
+                onValueChange={onFilterChange}
+                placeholder={localize('file.filetree.filter.placeholder')}
+                addonBefore={<Icon icon='search' />} />
+            </div>
+        }
+        <FileTree
+          style={{ top: filterMode ? filterAreaHeight : 0 }}
+          width={ viewState.width }
+          height={ viewState.height - (filterMode ? filterAreaHeight : 0) }
+          filter={filter}
+          files={ files }
+          onSelect={ onSelect }
+          onTwistieClick={ onTwistieClick }
+          onDragStart={ onDragStart }
+          onDragOver={ onDragOver }
+          onDragEnter={ onDragEnter }
+          onDragLeave={ onDragLeave }
+          onChange = { onChange }
+          onDrop={ onDrop }
+          onBlur={ onBlur }
+          onFocus={ onFocus }
+          draggable={ draggable }
+          editable={ editable }
+          multiSelectable={ multiSelectable }
+          onContextMenu={ onContextMenu }
+          position = { position }
+          fileDecorationProvider = { overrideFileDecorationService }
+          themeProvider = { themeService as ThemeProvider }
+          notifyFileDecorationsChange = { decorationChangeEvent }
+          notifyThemeChange = { themeChangeEvent }
+          validate={ validateFileName }
+          leftPadding={ leftPadding }
+          defaultLeftPadding={ defaultLeftPadding }
+        />
+      </>
+    );
   } else {
     return <EmptyView />;
   }

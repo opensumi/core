@@ -24,7 +24,6 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { IDialogService } from '@ali/ide-overlay';
 import { Directory, File } from './file-tree-item';
-import { ExplorerResourceCut } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { AbstractContextMenuService, IContextMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { ResourceLabelOrIconChangedEvent } from '@ali/ide-core-browser/lib/services';
 import { FileContextKey } from './file-contextkey';
@@ -123,6 +122,8 @@ export class FileTreeService extends WithEventBus {
 
   private statusChangeEmitter = new Emitter<Uri[]>();
   private explorerResourceCut: IContextKey<boolean>;
+
+  private cacheFolders: Directory[] = [];
 
   private pasteStore: IParseStore = {
     files: [],
@@ -244,7 +245,7 @@ export class FileTreeService extends WithEventBus {
 
   get focusedFiles(): (Directory | File)[] {
     const selected: (Directory | File)[] = [];
-    for (const [key, status] of this.status) {
+    for (const [, status] of this.status) {
       if (status.focused) {
         selected.push(status.file);
       }
@@ -882,12 +883,27 @@ export class FileTreeService extends WithEventBus {
           needUpdated: false,
         });
         this.eventBus.fire(new FileTreeExpandedStatusUpdateEvent({uri: file.uri, expanded: true}));
+        this.cacheFolders.push(file as Directory);
       } else {
         this.status.set(statusKey, {
           ...status!,
           expanded: false,
         });
         this.eventBus.fire(new FileTreeExpandedStatusUpdateEvent({uri: file.uri, expanded: false}));
+      }
+    }
+  }
+
+  @action
+  async expandCachedFolder() {
+    for (const cache of this.cacheFolders) {
+      const statusKey = this.getStatutsKey(cache);
+      const status = this.status.get(statusKey);
+      if (!status?.expanded) {
+        this.status.set(statusKey, {
+          ...status!,
+          expanded: true,
+        });
       }
     }
   }
