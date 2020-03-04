@@ -126,11 +126,16 @@ export namespace FILE_COMMANDS {
     label: '%file.focus.files%',
   };
 
-  export const FILTER: Command = {
-    id: 'filetree.filter.files',
+  export const FILTER_TOGGLE: Command = {
+    id: 'filetree.files.filter_toggle',
     category: CATEGORY,
     label: '%file.filetree.filter%',
-    iconClass: getIcon('search'),
+    iconClass: getIcon('retrieval'),
+  };
+
+  export const FILTER_OPEN: Command = {
+    id: 'filetree.files.filter_open',
+    category: CATEGORY,
   };
 }
 

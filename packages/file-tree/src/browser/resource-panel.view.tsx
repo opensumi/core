@@ -65,7 +65,7 @@ export const ExplorerResourcePanel = observer(({
                 value={filter}
                 onValueChange={onFilterChange}
                 placeholder={localize('file.filetree.filter.placeholder')}
-                addonBefore={<Icon icon='search' />} />
+                addonBefore={<Icon className={styles.filterIcon} icon='retrieval' />} />
             </div>
         }
         <FileTree

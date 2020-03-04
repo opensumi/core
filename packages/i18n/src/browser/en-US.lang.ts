@@ -46,8 +46,8 @@ export const localizationBundle = {
     'file.refresh': 'Refresh',
     'file.search.folder': 'Search on this folder',
     'file.focus.files': 'Focus on Files Explorer',
-    'file.filetree.filter': 'Filter on Files Explorer',
-    'file.filetree.filter.placeholder': 'Enter a keyword or path to filter, such as app / home',
+    'file.filetree.filter': 'Filter on opened files',
+    'file.filetree.filter.placeholder': 'Enter a keyword or path to filter',
 
     'menu-bar.title.file': 'File',
     'menu-bar.title.edit': 'Edit',
