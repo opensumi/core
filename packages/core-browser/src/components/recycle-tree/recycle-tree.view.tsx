@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TreeProps, TreeContainer, TreeNode, ExpandableTreeNode } from '../tree';
+import { TreeProps, TreeContainer, TreeNode, ExpandableTreeNode, TEMP_FILE_NAME } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
 import * as fuzzy from 'fuzzy';
 
@@ -138,6 +138,27 @@ export const RecycleTree = (
     },
   };
 
+  const isEqualOrParent = (node1: TreeNode, node2: TreeNode) => {
+    if (node1.id === node2.id) {
+      return true;
+    }
+    let parent = node2.parent;
+    while (parent) {
+      if (parent.id === node1.id) {
+        return true;
+      }
+      parent = parent.parent;
+    }
+    return false;
+  };
+
+  const isEqual  = (node1: TreeNode, node2: TreeNode) => {
+    if (node1.id === node2.id) {
+      return true;
+    }
+    return false;
+  };
+
   React.useEffect(() => {
     if (typeof scrollTop === 'number' && scrollRef) {
       scrollRef.scrollTop = scrollTop;
@@ -149,9 +170,10 @@ export const RecycleTree = (
     let renderedFileItems;
     if (filter) {
       const fuzzyLists = fuzzy.filter(filter, nodes, fuzzyOptions);
+      const tempNode = nodes.find((node: TreeNode) => node.name === TEMP_FILE_NAME);
       renderedFileItems = nodes.map((node: TreeNode) => {
         for (const item of fuzzyLists) {
-          if (node.uri?.isEqual(item.original.uri)) {
+          if (isEqual(node, (item as any).original)) {
             // 匹配，存在高亮
             return {
               ...node,
@@ -164,9 +186,12 @@ export const RecycleTree = (
                 }} dangerouslySetInnerHTML={{ __html: item.string || ''}}></div>;
               },
             };
-          } else if (node.uri?.isEqualOrParent(item.original.uri)) {
+          } else if (isEqualOrParent(node, (item as any).original) || (tempNode && isEqualOrParent(node, tempNode))) {
             // 子节点存在匹配，不高亮但需展示
             return  node;
+          } else if (node.name === TEMP_FILE_NAME) {
+            // 如果为新建节点的节点，直接返回展示
+            return node;
           }
         }
       }).filter((node: TreeNode) => !!node);
