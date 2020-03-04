@@ -1,0 +1,129 @@
+import { Injector, Injectable } from '@ali/common-di';
+import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { IThemeService } from '@ali/ide-theme';
+import { WorkbenchEditorService, IEditorGroup } from '@ali/ide-editor';
+import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
+import { Uri, URI, MarkerManager } from '@ali/ide-core-common';
+import { EditorGroupCloseEvent } from '@ali/ide-editor/lib/browser';
+import { MarkerService } from '../../src/browser/markers-service';
+import { MarkerSeverity } from '../../../core-common/src/types/markers/markers';
+
+@Injectable()
+class MockMainLayoutService {
+  getTabbarHandler() {
+    return {
+      isVisible: false,
+      activate() {},
+    };
+  }
+}
+
+@Injectable()
+class MockEditorService {
+  open() {}
+}
+
+@Injectable()
+class MockThemeService {
+  onThemeChange = jest.fn();
+}
+
+const fakeUri = new URI(Uri.file('/test/workspace/fakeResource.ts'));
+const fakeResource = {
+  name: 'fakeResource',
+  uri: fakeUri,
+  icon: 'fakeResourceIcon',
+};
+
+const fakeEditorGroup: IEditorGroup = {
+  index: 1,
+  name: 'fakeEditorGroup',
+  currentEditor: null,
+  codeEditor: (() => {}) as any,
+  currentFocusedEditor: undefined,
+  resources: [],
+  currentResource: null,
+  currentOpenType: null,
+  open: (() => {}) as any,
+  pin: (() => {}) as any,
+  close: (() => {}) as any,
+  getState: (() => {}) as any,
+  restoreState: (() => {}) as any,
+  saveAll: (() => {}) as any,
+  closeAll: (() => {}) as any,
+};
+
+fakeEditorGroup.resources = [fakeResource];
+
+const fakeCloseEvent = new EditorGroupCloseEvent({
+  group: fakeEditorGroup,
+  resource: fakeResource,
+});
+
+const fakeMarker = {
+  code: 'code1',
+  severity: MarkerSeverity.Error,
+  message: 'error message 1',
+  startLineNumber: 1,
+  startColumn: 1,
+  endLineNumber: 2,
+  endColumn: 2,
+};
+
+const injector: Injector = createBrowserInjector([], new Injector([
+  {
+    token: IMainLayoutService,
+    useValue: MockMainLayoutService,
+  },
+  {
+    token: WorkbenchEditorService,
+    useClass: MockEditorService,
+  },
+  {
+    token: IThemeService,
+    useClass: MockThemeService,
+  },
+  {
+    token: MarkerManager,
+    useClass: MarkerManager,
+  },
+  MarkerService,
+]));
+
+const markerService = injector.get(MarkerService);
+const manager = markerService.getManager();
+
+describe('markers.service.ts', () => {
+  beforeEach(() => {
+    manager.updateMarkers('test', fakeUri.toString(), [fakeMarker]);
+  });
+
+  it('test update markers', () => {
+    manager.updateMarkers('test', fakeUri.toString(), [fakeMarker]);
+    expect(manager.getResources()).toEqual([ 'file:///test/workspace/fakeResource.ts' ]);
+  });
+
+  it('test remove markers', () => {
+    markerService.onEditorGroupClose(fakeCloseEvent);
+    expect(manager.getResources()).toEqual([]);
+  });
+
+});
+
+// describe('markers.filter.ts', () => {
+//   beforeEach(() => {
+//     manager.updateMarkers('test', fakeUri.toString(), [fakeMarker]);
+//   });
+
+//   it('test update markers', () => {
+//     manager.fireFilterChanged({
+//       filterTe
+//     })
+//   });
+
+//   it('test remove markers', () => {
+//     markerService.onEditorGroupClose(fakeCloseEvent);
+//     expect(manager.getResources()).toEqual([]);
+//   });
+
+// });
