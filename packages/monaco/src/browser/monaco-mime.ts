@@ -25,6 +25,9 @@ export class MonacoMimeService implements IMimeService {
 
   protected getPreferenceFileAssociations(): MimeAssociation[] {
     const fileAssociations = this.corePreferences['files.associations'];
+    if (!fileAssociations) {
+      return [];
+    }
     return Object.keys(fileAssociations).map((filePattern) => ({ id: fileAssociations[filePattern], filePattern }));
   }
 }

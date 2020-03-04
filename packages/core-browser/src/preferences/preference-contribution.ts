@@ -214,10 +214,11 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
         return '';
       case 'array':
         return [];
+      // vscode插件如 highlight-matching-tag
+      // 依赖null作为默认的object解析值
       case 'object':
-        return {};
+        return null;
     }
-    // tslint:disable-next-line:no-null-keyword
     return null;
   }
 
@@ -249,7 +250,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
       // 避免每次发生变化时重复提示警告
       if (!this.unsupportedPreferences.has(name)) {
         this.unsupportedPreferences.add(name);
-        console.warn(`"${name}" preference is not supported`);
+        this.logger.warn(`"${name}" preference is not supported`);
       }
     }
     return result;
