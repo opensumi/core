@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
-import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
+import { RecycleTree, TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
 import { ViewState } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
@@ -63,7 +63,7 @@ function getResultTotalContent(total: ResultTotal, searchTreeService: SearchTree
           title={localize('search.CollapseDeepestExpandedLevelAction.label')}
           onClick={searchTreeService.foldTree}
           className={cls(
-            getIcon('fold'),
+            getIcon('collapse-all'),
             styles.result_fold,
             { [styles.result_fold_enabled]: total.fileNum > 0 },
           )

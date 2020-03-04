@@ -81,7 +81,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
     this.preferenceSettingsService.registerSettingGroup({
       id: 'extension',
       title: localize('settings.group.extension'),
-      iconClass: getIcon('setting-extension'),
+      iconClass: getIcon('extension'),
     });
   }
 

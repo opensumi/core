@@ -47,7 +47,7 @@ export namespace DEBUG_COMMANDS {
   };
   export const TOGGLE_BREAKPOINTS = {
     id: 'debug.breakpoints.toggle',
-    iconClass: getIcon('toggle-breakpoints'),
+    iconClass: getIcon('deactivate-breakpoints'),
   };
   export const START = {
     id: 'debug.start',

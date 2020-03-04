@@ -515,7 +515,7 @@ export namespace SEARCH_COMMANDS {
   export const FOLD: Command = {
     id: 'file-search.fold',
     label: 'fold search',
-    iconClass: getIcon('fold'),
+    iconClass: getIcon('collapse-all'),
     category: CATEGORY,
   };
 

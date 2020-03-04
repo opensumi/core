@@ -1,18 +1,13 @@
 import * as React from 'react';
 import * as styles from './debug-configuration.module.less';
 import * as cls from 'classnames';
-import { useInjectable, localize, PreferenceService, isElectronRenderer } from '@ali/ide-core-browser';
+import { useInjectable, localize, isElectronRenderer } from '@ali/ide-core-browser';
 import { DebugAction } from '../components/debug-action';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
 import { DebugToolbarView, FloatDebugToolbarView } from './debug-toolbar.view';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
-
-const style: React.CSSProperties = {
-  width: '100%',
-  margin: '8px 0px',
-};
 
 export const DebubgConfigurationView = observer(() => {
   const {
@@ -79,7 +74,7 @@ export const DebubgConfigurationView = observer(() => {
     <div className={ styles.debug_configuration_toolbar }>
       { renderConfigurationSelect() }
       <div className={ styles.kt_debug_actions }>
-        <DebugAction color={ '#62D99D' } icon={ 'run-debug' } label={ localize('debug.action.start') } run={ start }></DebugAction>
+        <DebugAction color={ '#62D99D' } icon={ 'rundebug' } label={ localize('debug.action.start') } run={ start }></DebugAction>
         <DebugAction color={ 'var(--foreground)' } icon={ 'setting' } label={ localize('debug.action.open.configuration') } run={ openConfiguration }></DebugAction>
         <DebugAction color={ 'var(--foreground)' } icon={ 'terminal' } label={ localize('debug.action.debug.console') } run={ openDebugConsole }></DebugAction>
       </div>
