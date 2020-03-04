@@ -65,6 +65,10 @@ export const electronEnv: {
   [key: string]: any,
 } = (global as any) || {};
 
+if ( typeof ElectronIpcRenderer !== 'undefined') {
+  electronEnv.ipcRenderer = ElectronIpcRenderer;
+}
+
 export interface IElectronNativeDialogService {
 
   showOpenDialog(options: Electron.OpenDialogOptions): Promise<string[] | undefined>;

@@ -114,6 +114,26 @@ export interface IPlainWebview extends IDisposable {
 
 }
 
+/**
+ * 打开一个新的窗口，并显示一个url中的内容
+ * 暂时仅限 electron 中使用
+ */
+export interface IPlainWebviewWindow extends IDisposable {
+
+  readonly url: string | undefined;
+
+  loadURL(url: string): Promise<void>;
+
+  show(): Promise<void>;
+
+  postMessage(message: any): Promise<void>;
+
+  onMessage: Event<any>;
+
+  onClosed: Event<void>;
+
+}
+
 export const IWebviewService = Symbol('IWebviewService');
 
 export interface IWebviewService {
@@ -133,6 +153,13 @@ export interface IWebviewService {
   getEditorPlainWebviewComponent(id: string): IEditorWebviewComponent<IPlainWebview> | undefined;
 
   getPlainWebviewComponent(id: string): IPlainWebviewComponentHandle | undefined;
+
+  /**
+   * 创建一个 window 的 webview 容器, 暂时只支持 electron
+   * @param options electron的创建的options
+   * @param env 会传递给 webview内的 window.env 的内容
+   */
+  createWebviewWindow(options?: Electron.BrowserWindowConstructorOptions, env?: {[key: string]: string}): IPlainWebviewWindow;
 }
 
 export interface IPlainWebviewConstructionOptions {

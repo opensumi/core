@@ -8,8 +8,7 @@ export interface IElectronMainApi<Events> {
 
 }
 
-
-export interface IElectronMainUIService extends IElectronMainApi<'fullScreenStatusChange'> {
+export interface IElectronMainUIServiceShape {
 
   openItem(path: string): void;
 
@@ -21,7 +20,7 @@ export interface IElectronMainUIService extends IElectronMainApi<'fullScreenStat
 
   isFullScreen(windowId: number): Promise<boolean>;
 
-  showOpenDialog(windowId: number, options:Electron.OpenDialogOptions ): Promise<string[] >;
+  showOpenDialog(windowId: number, options:Electron.OpenDialogOptions ): Promise<string[] | undefined>;
 
   showSaveDialog(windowId: number, options:Electron.SaveDialogOptions ): Promise<string | undefined>;
 
@@ -38,6 +37,42 @@ export interface IElectronMainUIService extends IElectronMainApi<'fullScreenStat
    * @param path 文件路径（不带file协议头)
    */
   revealInSystemTerminal(path: string);
+
+  /**
+   * 创建一个browserWindow
+   * @param options
+   * @returns windowId
+   */
+  createBrowserWindow(options?: Electron.BrowserWindowConstructorOptions): Promise<number>;
+
+  /**
+   * 显示指定的 url
+   * @param windowId 
+   */
+  showBrowserWindow(windowId: number): Promise<void>;
+  
+  /**
+   * 让一个指定的 browserWindow 加载一个url
+   * @param windowId 
+   * @param url 
+   */
+  browserWindowLoadUrl(windowId: number, url: string): Promise<void>;
+  /**
+   * 关闭一个browserWindow
+   * @param windowId 
+   */
+  closeBrowserWindow(windowId: number): Promise<void>;
+
+  /**
+   * 向一个browserWindow发送消息
+   * @param windowId: window的id
+   * @param message: 消息体，需要能被序列化
+   */
+  postMessageToBrowserWindow(windowId: number, channel: string, message: any): Promise<void>;
+  
+}
+export interface IElectronMainUIService extends IElectronMainUIServiceShape, IElectronMainApi<'fullScreenStatusChange' | 'windowClosed'> {
+
   
 }
 

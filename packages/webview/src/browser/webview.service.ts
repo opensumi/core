@@ -1,4 +1,4 @@
-import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle } from './types';
+import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle, IPlainWebviewWindow } from './types';
 import { isElectronRenderer, getLogger, localize, URI, IEventBus, Disposable, MaybeNull } from '@ali/ide-core-browser';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
@@ -10,6 +10,7 @@ import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResourc
 import { EditorComponentRegistry, EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 import { EditorWebviewComponentView } from './editor-webview';
 import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
+import { ElectronPlainWebviewWindow } from './webview-window';
 
 @Injectable()
 export class WebviewServiceImpl implements IWebviewService {
@@ -120,6 +121,13 @@ export class WebviewServiceImpl implements IWebviewService {
   }
   getPlainWebviewComponent(id: string): IPlainWebviewComponentHandle | undefined {
     return this.plainWebviewsComponents.get(id);
+  }
+
+  createWebviewWindow(options?: Electron.BrowserWindowConstructorOptions, env?: {[key: string]: string}): IPlainWebviewWindow {
+    if (isElectronRenderer()) {
+      return this.injector.get(ElectronPlainWebviewWindow, [options,  env]);
+    }
+    throw new Error('not supported!');
   }
 }
 
