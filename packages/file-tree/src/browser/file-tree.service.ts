@@ -137,7 +137,6 @@ export class FileTreeService extends WithEventBus {
   constructor(
   ) {
     super();
-    this.init();
   }
 
   async init() {

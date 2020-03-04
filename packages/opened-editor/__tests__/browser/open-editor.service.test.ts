@@ -18,7 +18,7 @@ describe('ExplorerOpenedEditorService should be work', () => {
   let openEditorService: ExplorerOpenedEditorService;
   let injector: MockInjector;
   const testFileUri = new URI('file://test0.js');
-  beforeEach(() => {
+  beforeEach(async (done) => {
     injector = createBrowserInjector([
       OpenedEditorModule,
     ]);
@@ -94,6 +94,8 @@ describe('ExplorerOpenedEditorService should be work', () => {
     injector.mock(WorkbenchEditorService, 'editorGroups', groups);
     injector.mock(WorkbenchEditorService, 'onActiveResourceChange', () => {});
     openEditorService = injector.get(ExplorerOpenedEditorService);
+    await openEditorService.init();
+    done();
   });
 
   describe('01 #Init', () => {

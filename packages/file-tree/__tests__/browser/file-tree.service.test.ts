@@ -21,7 +21,7 @@ describe('FileTreeService should be work', () => {
   const root = 'file://userhome/';
   let rootUri: URI = new URI(root);
   let rootFile: Directory;
-  beforeEach(() => {
+  beforeEach(async (done) => {
     injector = createBrowserInjector([]);
 
     // mock used instance
@@ -52,6 +52,8 @@ describe('FileTreeService should be work', () => {
     treeService = injector.get(FileTreeService);
     fileApi = injector.get(IFileTreeAPI);
 
+    await treeService.init();
+
     rootUri = new URI(root);
     rootFile = new Directory(
       fileApi,
@@ -70,6 +72,7 @@ describe('FileTreeService should be work', () => {
       1,
     );
     treeService.updateFileStatus([rootFile]);
+    done();
   });
 
   afterEach(async () => {
