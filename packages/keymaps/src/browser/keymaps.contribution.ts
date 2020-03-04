@@ -88,8 +88,8 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
     });
   }
 
-  onStart() {
-
+  async onStart() {
+    await this.keymapService.init();
   }
 
   initialize(): void {
