@@ -1,11 +1,12 @@
 import { Disposable } from '@ali/ide-core-common';
 import { Event, Emitter } from '@ali/ide-core-browser';
-import { Injectable, Injector } from '@ali/common-di';
+import { Injectable } from '@ali/common-di';
 import { AbstractMenubarService, IExtendMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
 
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';
 import { AbstractMenubarStore, MenubarStore } from '../src/browser/menu-bar.store';
+import { MenuBarModule } from '../src';
 
 jest.useFakeTimers();
 
@@ -64,12 +65,10 @@ describe('test for packages/menu-bar/src/browser/menu-bar.store.ts', () => {
   let menubarStore: MenubarStore;
 
   beforeEach(() => {
-    injector = createBrowserInjector([], new Injector([
-      {
-        token: AbstractMenubarService,
-        useClass: MockMenubarServiceImpl,
-      },
-    ]));
+    injector = createBrowserInjector([ MenuBarModule ], new MockInjector([{
+      token: AbstractMenubarService,
+      useClass: MockMenubarServiceImpl,
+    }]));
 
     injector.addProviders({
       token: AbstractMenubarStore,
