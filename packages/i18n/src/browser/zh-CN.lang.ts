@@ -31,7 +31,7 @@ export const localizationBundle = {
     'file.action.new.folder': '新建文件夹',
     'file.action.refresh': '刷新文件',
     'file.action.collapse': '全部折叠',
-    'file.location': '文件定位',
+    'file.location': '在文件树中定位',
     'file.open.folder': '打开文件夹',
     'file.confirm.delete': '确定删除下面列的文件?\n{0}',
     'file.confirm.delete.ok': '移入回收站',
