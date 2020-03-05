@@ -20,10 +20,11 @@ import {
   isValidBasename,
   trim,
   PreferenceService,
+  FILE_COMMANDS,
 } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
-import { memoize } from '@ali/ide-core-common';
+import { CommandService, memoize } from '@ali/ide-core-common';
 import { MenuId, AbstractContextMenuService, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
@@ -180,6 +181,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   @Autowired(AbstractContextMenuService)
   private readonly contextMenuService: AbstractContextMenuService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   private _locationTarget: URI | undefined = undefined;
 
@@ -338,6 +342,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.filesExplorerFocused.set(!!this.filterMode);
     // 清理掉输入值
     if (this.filterMode === false) {
+      // 退出时若需要做 filter 值清理则做聚焦操作
+      if (this.filter) {
+        this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
+      }
       this.filter = '';
     }
   }
@@ -629,6 +637,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       return false;
     }
     return true;
+  }
+
+  onClearClicked = () => {
+    this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
   }
 
   onFilterChange = (filter: string) => {

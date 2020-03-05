@@ -22,7 +22,7 @@ export const localizationBundle = {
     'file.paste.file': 'Paste',
     'file.copy.file': 'Copy',
     'file.cut.file': 'Cut',
-    'file.location': 'Location The File',
+    'file.location': 'Locate in Files Explorer',
     'file.action.new.file': 'New File',
     'file.action.new.folder': 'New Folder',
     'file.action.refresh': 'Refresh',
