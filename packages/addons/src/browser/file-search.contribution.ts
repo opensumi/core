@@ -38,7 +38,7 @@ export const quickFileOpen: Command = {
   label: 'Open File...',
 };
 
-const matchLineReg = /\S+\(\s*(\d*)\s*,*\s*(\d*)\s*\)*\s*$/;
+const matchLineReg = /(\S+)\(\s*(\d*)\s*,*\s*(\d*)\s*\)*\s*$/;
 
 function getRangeByInput(input: string): monaco.Range | undefined {
   const matchList = (input || '').match(matchLineReg) || [];
@@ -48,8 +48,8 @@ function getRangeByInput(input: string): monaco.Range | undefined {
   }
 
   const lineInfo = {
-    line: Number(matchList[1] || 0),
-    start: Number(matchList[2] || 0),
+    line: Number(matchList[2] || 0),
+    start: Number(matchList[3] || 0),
   };
 
   return new monaco.Range(
@@ -61,7 +61,7 @@ function getRangeByInput(input: string): monaco.Range | undefined {
 }
 
 function getValidInput(input: string) {
-  return input.replace(matchLineReg, '');
+  return input.replace(matchLineReg, '$1');
 }
 
 @Injectable()
