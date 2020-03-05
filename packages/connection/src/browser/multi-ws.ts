@@ -1,5 +1,4 @@
 import * as shorid from 'shortid';
-import { once, Emitter } from '@ali/ide-core-common';
 import { MessageString, ChildConnectPath } from '../common/ws-channel';
 
 let ReconnectingWebSocket = require('reconnecting-websocket');
@@ -46,7 +45,7 @@ export class MultiWs implements WebSocket {
 
   private connectionList: WebSocket[] = [];
 
-  private defaultLength: number = 4;
+  static defaultLength: number = 4;
 
   private listenerMap: {
     open: ((this: WebSocket, e: any) => any)[],
@@ -61,7 +60,7 @@ export class MultiWs implements WebSocket {
     this.clientId = clientId || shorid.generate();
     this.protocol = (protocols || [''])[0];
 
-    for (let i = 0; i < this.defaultLength; i++) {
+    for (let i = 0; i < MultiWs.defaultLength; i++) {
       this.connectionList.push(new ReconnectingWebSocket(`${url}/${connectPath.getConnectPath(i, this.clientId)}`, [this.clientId], {}));
     }
     this.bindMethod();
