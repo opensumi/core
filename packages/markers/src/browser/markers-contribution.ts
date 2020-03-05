@@ -35,7 +35,7 @@ export class MarkersContribution implements ComponentContribution, MainLayoutCon
       id: MARKER_CONTAINER_ID,
       component: MarkerPanel,
     }, {
-      title: Messages.markerTile(),
+      title: Messages.markerTitle(),
       priority: 11,
       containerId: MARKER_CONTAINER_ID,
       activateKeyBinding: 'ctrlcmd+shift+m',
