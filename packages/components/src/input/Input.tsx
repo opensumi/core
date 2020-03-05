@@ -41,6 +41,10 @@ export interface IInputBaseProps extends Omit<React.InputHTMLAttributes<HTMLInpu
    */
   hasClear?: boolean;
   /**
+   * 点击清空之后的回调
+   */
+  afterClear?: () => void;
+  /**
    * @deprecated please use `addonAfter` instead
    */
   controls?: React.ReactNode[];
@@ -85,6 +89,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
       addonAfter,
       persistFocus = true,
       hasClear,
+      afterClear,
       value = '',
       onValueChange,
       onPressEnter,
@@ -134,6 +139,9 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
       e.preventDefault();
       triggerChange('');
       resolveOnChange(inputRef.current!, e, onChange);
+      if (typeof afterClear === 'function') {
+        afterClear();
+      }
     };
 
     const triggerChange = (value: string) => {
@@ -150,10 +158,10 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.keyCode === 13 && onPressEnter) {
+      if (e.keyCode === 13 && typeof onPressEnter === 'function') {
         onPressEnter(e);
       }
-      if (onKeyDown) {
+      if (typeof onKeyDown === 'function') {
         onKeyDown(e);
       }
     };

@@ -43,6 +43,7 @@ export const ExplorerResourcePanel = observer(({
     filterMode,
     filter,
     onFilterChange,
+    onClearClicked,
   }: ExplorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
   const files = getFiles();
   const leftPadding = React.useMemo(() => {
@@ -59,11 +60,12 @@ export const ExplorerResourcePanel = observer(({
             && <div className={styles.filterWrapper} style={{ height: filterAreaHeight }}>
               <Input
                 hasClear
-                size='small'
                 autoFocus
+                size='small'
                 className={styles.filterInput}
                 value={filter}
                 onValueChange={onFilterChange}
+                afterClear={onClearClicked}
                 placeholder={localize('file.filetree.filter.placeholder')}
                 addonBefore={<Icon className={styles.filterIcon} icon='retrieval' />} />
             </div>
