@@ -144,7 +144,7 @@ export const Search = observer(({
             <div className='glob_field-container'>
               <div className={cls(styles.glob_field)}>
                 <div className={cls(styles.label)}>
-                  {localize('search.includes')}
+                  <span className={styles.limit}>{localize('search.includes')}</span>
                   <span className={cls(styles.include_rule)}>
                     <Popover
                       id={'show_include_rule'}
@@ -166,7 +166,7 @@ export const Search = observer(({
               </div>
               <div className={cls(styles.glob_field, styles.search_excludes)}>
                 <div className={styles.label}>
-                  {localize('search.excludes')}
+                  <span className={styles.limit}>{localize('search.excludes')}</span>
                   <div className={styles.checkbox_wrap}>
                     <CheckBox
                       insertClass={cls(styles.checkbox)}

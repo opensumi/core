@@ -7,7 +7,7 @@
   position: absolute;
 
   .search_options {
-    padding: 0 10px;
+    padding: 0 8px;
     display: block;
 
     input {
@@ -165,6 +165,7 @@
     .glob_field {
       display: flex;
       flex-direction: column;
+      white-space: nowrap;
 
       .label {
         margin: 12px 0 4px 0;
@@ -303,4 +304,10 @@
     max-width: 200px;
     color: var(--descriptionForeground);
   }
+}
+
+.limit {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
