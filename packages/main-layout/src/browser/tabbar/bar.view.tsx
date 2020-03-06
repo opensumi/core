@@ -133,7 +133,7 @@ export const IconElipses: React.FC = () => {
 
 export const TextElipses: React.FC = () => {
   return <div className={styles.text_tab}>
-    <div className={styles.bottom_tab_title}><i className={getIcon('ellipsis')}></i></div>
+    <div className={styles.bottom_tab_title}><i className={getIcon('doubleright')}></i></div>
   </div>;
 };
 
