@@ -4,6 +4,7 @@ const flexDirectionMap: {
   [index: string]: {
     direction: any;
     size: 'width' | 'height';
+    domSize: 'clientWidth' | 'clientHeight';
     minSize: 'minWidth' | 'minHeight';
     maxSize: 'maxWidth' | 'maxHeight';
   },
@@ -11,24 +12,28 @@ const flexDirectionMap: {
   'left-to-right': {
     direction: 'row',
     size: 'width',
+    domSize: 'clientHeight',
     minSize: 'minWidth',
     maxSize: 'maxWidth',
   },
   'right-to-left': {
     direction: 'row-reverse',
     size: 'width',
+    domSize: 'clientHeight',
     minSize: 'minWidth',
     maxSize: 'maxWidth',
   },
   'top-to-bottom': {
     direction: 'column',
     size: 'height',
+    domSize: 'clientWidth',
     minSize: 'minHeight',
     maxSize: 'maxHeight',
   },
   'bottom-to-top': {
     direction: 'column-reverse',
     size: 'height',
+    domSize: 'clientWidth',
     minSize: 'minHeight',
     maxSize: 'maxHeight',
   },
@@ -45,6 +50,10 @@ export namespace Layout {
 
   export function getSizeProperty(direction: Layout.direction) {
     return flexDirectionMap[direction].size;
+  }
+
+  export function getDomSizeProperty(direction: Layout.direction) {
+    return flexDirectionMap[direction].domSize;
   }
 
   export function getMinSizeProperty(direction: Layout.direction) {

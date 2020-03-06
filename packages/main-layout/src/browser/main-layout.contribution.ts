@@ -245,6 +245,14 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
       group: 'navigation',
     });
 
+    menus.registerMenuItem(MenuId.ActivityBarExtra, {
+      command: 'file.new',
+      iconClass: getIcon('setting'),
+      label: localize('layout.tabbar.setting', '打开偏好设置'),
+      order: 2,
+      group: 'navigation',
+    });
+
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: {
         id: 'view.outward.right-panel.hide',

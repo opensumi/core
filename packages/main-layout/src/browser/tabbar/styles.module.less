@@ -70,7 +70,8 @@
   background-color: var(--activityBar-background);
   border-right: 1px solid var(--activityBar-border);
   .tab_bar {
-    height: auto;
+    flex: 1;
+    overflow: hidden;
   }
 }
 li {
@@ -326,14 +327,14 @@ li {
   height: fit-content;
   flex-direction: column;
   >span {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--activityBar-inactiveForeground);
-    margin: 10px auto;
+    margin: 8px auto;
     background-size: cover;
     &:hover {
       transform: scale(1);
