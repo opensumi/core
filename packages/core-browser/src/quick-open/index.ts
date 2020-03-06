@@ -331,6 +331,7 @@ export interface QuickInputOptions {
 export interface QuickOpenActionProvider {
   hasActions(item: QuickOpenItem): boolean;
   getActions(item: QuickOpenItem): QuickOpenAction[];
+  getValidateInput?(): string;
 }
 
 export interface QuickOpenActionOptions {

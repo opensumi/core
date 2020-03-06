@@ -127,12 +127,19 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
   @Autowired()
   fileSearchActionUpDown: FileSearchActionUpDown;
 
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   hasActions(): boolean {
     return true;
   }
 
   getActions() {
     return [this.fileSearchActionLeftRight];
+  }
+
+  getValidateInput() {
+    return getValidInput(this.injector.get(FileSearchQuickCommandHandler).currentLookFor);
   }
 }
 
@@ -333,7 +340,7 @@ export class FileSearchQuickCommandHandler {
     }
 
     // Normalize the user query.
-    const query: string = normalize(this.currentLookFor);
+    const query: string = normalize(getValidInput(this.currentLookFor));
 
     /**
      * Score a given string.

@@ -238,6 +238,11 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
 
   private toOpenModel(lookFor: string, items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider): monaco.quickOpen.QuickOpenModel {
     const entries: monaco.quickOpen.QuickOpenEntry[] = [];
+
+    if (actionProvider && actionProvider.getValidateInput) {
+      lookFor = actionProvider.getValidateInput();
+    }
+
     for (const item of items) {
         const entry = this.createEntry(item, lookFor);
         if (entry) {
