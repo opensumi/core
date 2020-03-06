@@ -133,7 +133,7 @@ export const IconElipses: React.FC = () => {
 
 export const TextElipses: React.FC = () => {
   return <div className={styles.text_tab}>
-    <div className={styles.bottom_tab_title}>More</div>
+    <div className={styles.bottom_tab_title}><i className={getIcon('ellipsis')}></i></div>
   </div>;
 };
 
@@ -142,7 +142,7 @@ export const RightTabbarRenderer: React.FC = () => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   return (<div className={styles.right_tab_bar} onContextMenu={tabbarService.handleContextMenu}>
     <TabbarViewBase
-      tabSize={40}
+      tabSize={44}
       MoreTabView={IconElipses}
       tabClassName={styles.kt_right_tab}
       TabView={IconTabView}
@@ -170,6 +170,7 @@ export const LeftTabbarRenderer: React.FC = () => {
   </div>);
 };
 
+// @deprecated
 export const BottomTabbarRenderer: React.FC = () => {
   return (
     <div className={styles.bottom_bar_container}>
@@ -189,7 +190,8 @@ export const NextBottomTabbarRenderer: React.FC = () => {
   return (
     <div onContextMenu={tabbarService.handleContextMenu} className={clsx(styles.bottom_bar_container, 'next_bottom_bar')}>
       <TabbarViewBase
-        tabSize={40}
+        // TODO: 暂时通过预估值来计算是否超出可视范围，实际上需要通过dom尺寸的计算
+        tabSize={80}
         MoreTabView={TextElipses}
         tabClassName={styles.kt_bottom_tab}
         TabView={TextTabView}
