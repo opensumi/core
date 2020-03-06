@@ -1,7 +1,6 @@
 import { localize, Domain } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { getIcon } from '@ali/ide-core-browser';
-import { ExplorerContainer } from './explorer.view';
 
 export const ExplorerContainerId = 'explorer';
 
