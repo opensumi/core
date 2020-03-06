@@ -69,6 +69,11 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this.commentsService.onThreadsChanged(() => {
       threadsLengthContext.set(this.commentsService.getThreadsByUri(uri).length);
     });
+    this.addDispose({
+      dispose: () => {
+        this.comments = [];
+      },
+    });
   }
 
   get id() {
