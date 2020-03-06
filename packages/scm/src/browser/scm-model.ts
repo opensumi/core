@@ -1,12 +1,12 @@
 import { IDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
 import { Disposable, Emitter, Event, getLogger } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
-import { observable, computed, action } from 'mobx';
-import { Injector, INJECTOR_TOKEN, Injectable, Autowired, Optional } from '@ali/common-di';
+import { observable, action } from 'mobx';
+import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
 
-import { ISCMRepository, ISCMResourceGroup, ISCMResource } from '../common';
+import { ISCMRepository, ISCMResourceGroup, ISCMResource, SCMService } from '../common';
 import { SCMMenus } from './scm-menu';
 
 export interface IGroupItem {
@@ -196,6 +196,9 @@ export class ViewModelContext extends Disposable {
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
+  @Autowired(SCMService)
+  private readonly scmService: SCMService;
+
   private scmProviderCtxKey: IContextKey<string | undefined>;
 
   private logger = getLogger();
@@ -206,6 +209,22 @@ export class ViewModelContext extends Disposable {
   constructor() {
     super();
     this.scmProviderCtxKey = this.contextKeyService.createKey<string | undefined>('scmProvider', undefined);
+
+    this.scmService.onDidAddRepository((repo: ISCMRepository) => {
+      this.addRepo(repo);
+    }, this, this.disposables);
+
+    this.scmService.onDidRemoveRepository((repo: ISCMRepository) => {
+      this.deleteRepo(repo);
+    }, this, this.disposables);
+
+    this.scmService.onDidChangeSelectedRepositories((repos: ISCMRepository[]) => {
+      this.changeSelectedRepos(repos);
+    }, this, this.disposables);
+
+    this.scmService.repositories.forEach((repo) => {
+      this.addRepo(repo);
+    });
   }
 
   @observable

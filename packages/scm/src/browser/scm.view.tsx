@@ -8,7 +8,7 @@ import { TitleBar } from '@ali/ide-main-layout/lib/browser/accordion/titlebar.vi
 import { Button } from '@ali/ide-components';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 
-import { ISCMRepository, SCMService, scmProviderViewId, scmResourceViewId, scmContainerId } from '../common';
+import { ISCMRepository, scmProviderViewId, scmResourceViewId, scmContainerId } from '../common';
 import { ViewModelContext } from './scm-model';
 import { SCMHeader } from './components/scm-header.view';
 import { SCMResouceList } from './components/scm-resource.view';
@@ -115,26 +115,7 @@ export const SCMProviderList: React.FC<{ viewState: ViewState }> = observer((pro
 SCMProviderList.displayName = 'SCMProviderList';
 
 export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => {
-  const scmService = useInjectable<SCMService>(SCMService);
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
-
-  React.useEffect(() => {
-    scmService.onDidAddRepository((repo: ISCMRepository) => {
-      viewModel.addRepo(repo);
-    });
-
-    scmService.onDidRemoveRepository((repo: ISCMRepository) => {
-      viewModel.deleteRepo(repo);
-    });
-
-    scmService.onDidChangeSelectedRepositories((repos: ISCMRepository[]) => {
-      viewModel.changeSelectedRepos(repos);
-    });
-
-    scmService.repositories.forEach((repo) => {
-      viewModel.addRepo(repo);
-    });
-  }, []);
 
   const repoList = viewModel.repoList;
   const hasMultiRepos = viewModel.repoList.length > 1;
