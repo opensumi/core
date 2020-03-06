@@ -89,7 +89,7 @@ export class TabbarService extends WithEventBus {
   private disposableMap: Map<string, DisposableCollection> = new Map();
   private tabInMoreKeyMap: Map<string, IContextKey<boolean>> = new Map();
 
-  public scopedCtxKeyService: IScopedContextKeyService = this.contextKeyService.createScoped();
+  private scopedCtxKeyService: IScopedContextKeyService = this.contextKeyService.createScoped();
 
   constructor(public location: string, public noAccordion?: boolean) {
     super();
