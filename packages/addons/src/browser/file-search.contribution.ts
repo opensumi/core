@@ -60,7 +60,7 @@ function getRangeByInput(input: string): monaco.Range | undefined {
   );
 }
 
-function getValidInput(input: string) {
+function getValidateInput(input: string) {
   return input.replace(matchLineReg, '$1');
 }
 
@@ -139,7 +139,7 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
   }
 
   getValidateInput() {
-    return getValidInput(this.injector.get(FileSearchQuickCommandHandler).currentLookFor);
+    return getValidateInput(this.injector.get(FileSearchQuickCommandHandler).currentLookFor);
   }
 }
 
@@ -185,7 +185,7 @@ export class FileSearchQuickCommandHandler {
 
         lookFor = lookFor.trim().replace(/\s/g, '');
         this.currentLookFor = lookFor;
-        const validLookFor = getValidInput(lookFor);
+        const validLookFor = getValidateInput(lookFor);
         const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, validLookFor, token);
 
         if (lookFor) {
@@ -340,7 +340,7 @@ export class FileSearchQuickCommandHandler {
     }
 
     // Normalize the user query.
-    const query: string = normalize(getValidInput(this.currentLookFor));
+    const query: string = normalize(getValidateInput(this.currentLookFor));
 
     /**
      * Score a given string.
