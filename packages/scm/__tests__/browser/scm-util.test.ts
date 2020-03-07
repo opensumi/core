@@ -1,6 +1,6 @@
 import { Uri } from '@ali/ide-core-common';
 
-import { SCMService } from '../../src/common';
+import { SCMService } from '../../src';
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
 import { isSCMResource, getSCMResourceContextKey, getSCMRepositoryDesc } from '../../src/browser/scm-util';

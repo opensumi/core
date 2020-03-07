@@ -7,7 +7,7 @@ import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-t
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource, ISCMRepository } from '../../src/common';
+import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource, ISCMRepository } from '../../src';
 import { ViewModelContext, ResourceGroupSplicer } from '../../src/browser/scm-model';
 
 describe('test for scm.store.ts', () => {
@@ -43,7 +43,7 @@ describe('test for scm.store.ts', () => {
 
     it('addRepo/deleteRepo', () => {
       store.addRepo(repo1);
-      expect(store.repoList.length).toBe(1);
+      expect(store.repoList.length).toBe(2);
       expect(store.repoList[0].provider).toEqual(provider1);
 
       store.addRepo(repo2);
