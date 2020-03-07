@@ -70,13 +70,13 @@ describe('test for scm.store.ts', () => {
     });
 
     it('spliceSCMList', () => {
-      const mockResourceGroup = new MockSCMResourceGroup(0);
+      const mockResourceGroup = new MockSCMResourceGroup(provider1, 0);
       const mockResource = new MockSCMResource(mockResourceGroup);
 
       store.spliceSCMList(0, 0, mockResourceGroup, mockResource);
       expect(store.scmList).toEqual([mockResourceGroup, mockResource]);
 
-      const mockResourceGroup1 = new MockSCMResourceGroup(1);
+      const mockResourceGroup1 = new MockSCMResourceGroup(provider1, 1);
       store.spliceSCMList(1, 1, mockResourceGroup1);
       expect(store.scmList).toEqual([mockResourceGroup, mockResourceGroup1]);
     });
@@ -114,7 +114,7 @@ describe('test for scm.store.ts', () => {
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
 
-      provider.registerGroup(new MockSCMResourceGroup(1));
+      provider.registerGroup(new MockSCMResourceGroup(provider, 1));
 
       expect(spliceListener).toHaveBeenCalledTimes(2);
       expect(spliceListener.mock.calls[1][0].target.provider).toBe(provider);
@@ -133,7 +133,7 @@ describe('test for scm.store.ts', () => {
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
 
-      const scmResourceGroup = new MockSCMResourceGroup(1);
+      const scmResourceGroup = new MockSCMResourceGroup(provider, 1);
       provider.registerGroup(scmResourceGroup);
 
       expect(spliceListener).toHaveBeenCalledTimes(2);
@@ -158,7 +158,7 @@ describe('test for scm.store.ts', () => {
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
 
-      const scmResourceGroup = new MockSCMResourceGroup(1);
+      const scmResourceGroup = new MockSCMResourceGroup(provider, 1);
       provider.registerGroup(scmResourceGroup);
       expect(spliceListener).toHaveBeenCalledTimes(2);
 

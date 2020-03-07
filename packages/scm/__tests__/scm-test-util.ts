@@ -65,7 +65,8 @@ export class MockSCMResourceGroup implements ISCMResourceGroup {
   get label() { return this._label; }
   get id() { return this._id; }
 
-  constructor(id) {
+  constructor(provider: ISCMProvider, id: number) {
+    this.provider = provider;
     this._label = 'test_scm_resource_group_' + id;
     this._id = 'scm_resource_group_' + id;
   }

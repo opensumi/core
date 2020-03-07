@@ -5,13 +5,11 @@ import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-t
 
 import { isSCMResource, getSCMResourceContextKey, getSCMRepositoryDesc } from '../../src/browser/scm-util';
 
-// tslint:disable-next-line: new-parens
-const mockSCMResourceGroup = new MockSCMResourceGroup(1);
-
-// tslint:disable-next-line: new-parens
-const mockSCMResource = new MockSCMResource(mockSCMResourceGroup);
-
 describe('test for scm-util', () => {
+  const mockSCMProvider = new MockSCMProvider(0);
+  const mockSCMResourceGroup = new MockSCMResourceGroup(mockSCMProvider, 1);
+  const mockSCMResource = new MockSCMResource(mockSCMResourceGroup);
+
   it('isSCMResource', () => {
     expect(isSCMResource(mockSCMResourceGroup)).toBeFalsy();
     expect(isSCMResource(mockSCMResource)).toBeTruthy();
@@ -25,16 +23,16 @@ describe('test for scm-util', () => {
   it('getSCMRepositoryDesc', () => {
     const scmService = new SCMService();
 
-    const repo = scmService.registerSCMProvider(new MockSCMProvider(0));
+    const repo = scmService.registerSCMProvider(mockSCMProvider);
     expect(getSCMRepositoryDesc(repo)).toEqual({
       title: 'scm_label_0',
       type: '',
     });
 
-    const mockSCMProvider = new MockSCMProvider(1);
-    mockSCMProvider.rootUri = Uri.file('/test/workspace');
+    const mockSCMProvider1 = new MockSCMProvider(1);
+    mockSCMProvider1.rootUri = Uri.file('/test/workspace');
 
-    const repo1 = scmService.registerSCMProvider(mockSCMProvider);
+    const repo1 = scmService.registerSCMProvider(mockSCMProvider1);
 
     expect(getSCMRepositoryDesc(repo1)).toEqual({
       title: 'workspace',
