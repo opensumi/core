@@ -241,10 +241,6 @@ export class ViewModelContext extends Disposable {
 
   public titleMenu: IMenu | null;
 
-  private setContextKey(selectedRepo) {
-    this.scmProviderCtxKey.set(selectedRepo ? selectedRepo.provider.contextValue : undefined);
-  }
-
   public getSCMMenuService(repository: ISCMRepository | undefined) {
     if (!repository) {
       return undefined;
@@ -252,19 +248,19 @@ export class ViewModelContext extends Disposable {
     return this.scmMenuMap.get(repository.provider.id);
   }
 
-  @action.bound
-  public changeSelectedRepos(repos: ISCMRepository[]) {
-    this.selectedRepos.replace(repos);
-    const selectedRepo = repos[0];
-    this.selectedRepo = selectedRepo;
-    // set context key
-    this.setContextKey(selectedRepo);
+  @action
+  public spliceSCMList = (start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
+    this.scmList.splice(start, deleteCount, ...toInsert);
   }
 
-  @action.bound
-  public addRepo(repo: ISCMRepository) {
+  private setContextKey(selectedRepo) {
+    this.scmProviderCtxKey.set(selectedRepo ? selectedRepo.provider.contextValue : undefined);
+  }
+
+  @action
+  private addRepo(repo: ISCMRepository) {
     if (this.repoList.indexOf(repo) > -1) {
-      this.logger.warn('depulicate scm repo', repo);
+      this.logger.warn('duplicate scm repo', repo);
       return;
     }
     this.repoList.push(repo);
@@ -274,7 +270,7 @@ export class ViewModelContext extends Disposable {
   }
 
   @action
-  public deleteRepo(repo: ISCMRepository) {
+  private deleteRepo(repo: ISCMRepository) {
     const index = this.repoList.indexOf(repo);
     if (index < 0) {
       this.logger.warn('no such scm repo', repo);
@@ -291,7 +287,11 @@ export class ViewModelContext extends Disposable {
   }
 
   @action
-  public spliceSCMList = (start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
-    this.scmList.splice(start, deleteCount, ...toInsert);
+  private changeSelectedRepos(repos: ISCMRepository[]) {
+    this.selectedRepos.replace(repos);
+    const selectedRepo = repos[0];
+    this.selectedRepo = selectedRepo;
+    // set context key
+    this.setContextKey(selectedRepo);
   }
 }

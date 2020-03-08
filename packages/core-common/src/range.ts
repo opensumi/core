@@ -1,4 +1,8 @@
-export function toRange(position: monaco.IPosition | number): monaco.IRange {
+/**
+ * position 转换 range
+ * @param position
+ */
+export function positionToRange(position: monaco.IPosition | number): monaco.IRange {
   if (typeof position === 'number') {
     return {
       startLineNumber: position,
@@ -7,7 +11,7 @@ export function toRange(position: monaco.IPosition | number): monaco.IRange {
       endColumn: 1,
     };
   } else {
-    const { lineNumber }  = position;
+    const { lineNumber } = position;
     return {
       startLineNumber: lineNumber,
       endLineNumber: lineNumber,

@@ -1,6 +1,6 @@
 import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Event, IEventBus, CommandService } from '@ali/ide-core-common';
+import { Event, IEventBus, CommandService, positionToRange } from '@ali/ide-core-common';
 import { Disposable, DisposableStore, DisposableCollection } from '@ali/ide-core-common/lib/disposable';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
@@ -11,7 +11,6 @@ import { SCMPreferences } from '../scm-preference';
 import { DirtyDiffModel } from './dirty-diff-model';
 import { DirtyDiffDecorator } from './dirty-diff-decorator';
 import { DirtyDiffWidget } from './dirty-diff-widget';
-import { toRange } from './utils';
 
 import './dirty-diff.module.less';
 
@@ -180,7 +179,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       if (dirtyModel) {
         if (widget) {
           const currentIndex = widget.currentIndex;
-          const { count: targetIndex } = dirtyModel.getChangeFromRange(toRange(position));
+          const { count: targetIndex } = dirtyModel.getChangeFromRange(positionToRange(position));
 
           widget.dispose();
           if (currentIndex === targetIndex) {
@@ -193,7 +192,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
         widget.onDispose(() => {
           this.widgets.delete(codeEditor.getId());
         });
-        dirtyModel.onClickDecoration(widget, toRange(position));
+        dirtyModel.onClickDecoration(widget, positionToRange(position));
         this.widgets.set(codeEditor.getId(), widget);
       }
     }

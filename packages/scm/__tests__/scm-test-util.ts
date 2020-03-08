@@ -13,10 +13,10 @@ export class MockSCMProvider implements ISCMProvider {
 
   public rootUri: Uri;
 
-  constructor(id: number) {
+  constructor(id: number, scheme = 'git') {
     this._label = 'scm_label_' + id;
     this._id = 'scm_id_' + id;
-    this._contextValue = 'scm_contextValue_' + id;
+    this._contextValue = scheme;
   }
 
   get label() { return this._label; }

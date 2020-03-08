@@ -64,7 +64,7 @@ describe('test for scm-menu.ts', () => {
             label: 'fakeCmd1',
           },
           group: 'navigation',
-          when: 'scmProvider == scm_contextValue_0',
+          when: 'scmProvider == git',
         }),
       );
 
@@ -82,7 +82,7 @@ describe('test for scm-menu.ts', () => {
 
     it('ok for no repo', () => {
       const scmMenus = injector.get(SCMMenus, []);
-      expect((scmMenus as any).scopedCtxKeyService.getContextValue('scmProvider')).toBe('');
+      expect(scmMenus['scopedCtxKeyService'].getContextValue('scmProvider')).toBe('');
 
       const menuNodes = generateMergedCtxMenu({ menus: scmMenus.getTitleMenu() });
       expect(menuNodes.length).toBe(1);
@@ -92,7 +92,7 @@ describe('test for scm-menu.ts', () => {
     it('ok', () => {
       const repoProvider = new MockSCMProvider(0);
       const scmMenus = injector.get(SCMMenus, [repoProvider]);
-      expect((scmMenus as any).scopedCtxKeyService.getContextValue('scmProvider')).toBe(repoProvider.contextValue);
+      expect(scmMenus['scopedCtxKeyService'].getContextValue('scmProvider')).toBe(repoProvider.contextValue);
 
       const menuNodes = generateMergedCtxMenu({ menus: scmMenus.getTitleMenu() });
       expect(menuNodes.length).toBe(1);
