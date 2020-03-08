@@ -126,10 +126,6 @@ export class DebugBreakpoint extends DebugBreakpointData {
     return this.raw && this.raw.source && this.session && this.session.getSource(this.raw.source);
   }
 
-  protected readonly setBreakpointEnabled = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setEnabled(event.target.checked);
-  }
-
   remove(): void {
     const breakpoints = this.doRemove(this.origins);
     if (breakpoints) {
@@ -212,7 +208,6 @@ export class DebugBreakpoint extends DebugBreakpointData {
     if (this.installed && !this.verified) {
       return this.getUnverifiedBreakpointDecoration();
     }
-    // TODO: hitcount, logpoint, expression 支持
     return this.getBreakpointDecoration();
   }
 
