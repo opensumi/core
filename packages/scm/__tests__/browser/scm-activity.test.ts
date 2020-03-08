@@ -7,10 +7,11 @@ import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-import { SCMService } from '../../src/common';
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
+import { SCMService } from '../../src';
 import { SCMBadgeController, SCMStatusBarController } from '../../src/browser/scm-activity';
+import { SCMModule } from '../../src/browser';
 
 jest.useFakeTimers();
 
@@ -34,17 +35,14 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     });
 
     beforeEach(() => {
-      injector = createBrowserInjector([], new Injector([
+      injector = createBrowserInjector([SCMModule], new Injector([
         {
           token: IMainLayoutService,
           useValue: {
             getTabbarHandler: fakeGetTabbarHandler,
           },
         },
-        SCMService,
       ]));
-
-      injector.addProviders(SCMBadgeController);
 
       scmService = injector.get(SCMService);
       scmBadgeController = injector.get(SCMBadgeController);
@@ -137,7 +135,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
 
       const mockProvider0 = new MockSCMProvider(0);
       // prepare data
-      const mockSCMResourceGroup0 = new MockSCMResourceGroup(0);
+      const mockSCMResourceGroup0 = new MockSCMResourceGroup(mockProvider0, 0);
       mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0)]);
 
       mockProvider0.groups.splice(mockProvider0.groups.elements.length, 0, [mockSCMResourceGroup0]);
@@ -192,7 +190,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     beforeEach(() => {
       fakeAddElement = jest.fn();
 
-      injector = createBrowserInjector([], new Injector([
+      injector = createBrowserInjector([SCMModule], new Injector([
         {
           token: WorkbenchEditorService,
           useClass: MockWorkbenchEditorService,
@@ -203,10 +201,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
             addElement: fakeAddElement,
           },
         },
-        SCMService,
       ]));
-
-      injector.addProviders(SCMStatusBarController);
 
       scmService = injector.get(SCMService);
       scmStatusBarController = injector.get(SCMStatusBarController);

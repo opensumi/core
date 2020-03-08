@@ -4,9 +4,9 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 import { ClientAddonModule } from '../../src/browser';
-import { StatusBarContribution } from '../../src/browser/status-bar.contribution';
+import { StatusBarContribution } from '../../src/browser/status-bar-contribution';
 
-describe('test for browser/status-bar.contribution.ts', () => {
+describe('test for browser/status-bar-contribution.ts', () => {
   let injector: MockInjector;
   let eventBus: IEventBus;
   const fakeExecCmd = jest.fn();

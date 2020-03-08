@@ -1,9 +1,8 @@
 import { Autowired, Injectable, Optional } from '@ali/common-di';
+import { Emitter, Event, sortedDiff, ThrottledDelayer, IChange, positionToRange } from '@ali/ide-core-common';
 import { Uri, URI } from '@ali/ide-core-common/lib/uri';
-import { Emitter, Event, sortedDiff } from '@ali/ide-core-common';
 import { IDisposable, dispose, Disposable, DisposableStore, toDisposable } from '@ali/ide-core-common/lib/disposable';
 import { first } from '@ali/ide-core-common/lib/async';
-import { ThrottledDelayer, IChange } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { EditorCollectionService } from '@ali/ide-editor';
 
@@ -11,7 +10,6 @@ import { SCMService, ISCMRepository, IDirtyDiffModel } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { DirtyDiffWidget } from './dirty-diff-widget';
-import { toRange } from './utils';
 
 @Injectable()
 export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
@@ -274,7 +272,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
           widget.addDispose(this.onDidChange(() => {
             const { change, count } = this.getChangeFromRange(range) || {};
             widget.updateCurrent(count);
-            widget.show(toRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
+            widget.show(positionToRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
           }));
 
           widget.onDispose(() => {
@@ -283,7 +281,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
           if (count && change) {
             widget.updateCurrent(count);
-            widget.show(toRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
+            widget.show(positionToRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
           }
         });
     }

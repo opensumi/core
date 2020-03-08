@@ -1,12 +1,12 @@
 import { IDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
 import { Disposable, Emitter, Event, getLogger } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
-import { observable, computed, action } from 'mobx';
-import { Injector, INJECTOR_TOKEN, Injectable, Autowired, Optional } from '@ali/common-di';
+import { observable, action } from 'mobx';
+import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
 
-import { ISCMRepository, ISCMResourceGroup, ISCMResource } from '../common';
+import { ISCMRepository, ISCMResourceGroup, ISCMResource, SCMService } from '../common';
 import { SCMMenus } from './scm-menu';
 
 export interface IGroupItem {
@@ -196,6 +196,9 @@ export class ViewModelContext extends Disposable {
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
+  @Autowired(SCMService)
+  private readonly scmService: SCMService;
+
   private scmProviderCtxKey: IContextKey<string | undefined>;
 
   private logger = getLogger();
@@ -206,6 +209,22 @@ export class ViewModelContext extends Disposable {
   constructor() {
     super();
     this.scmProviderCtxKey = this.contextKeyService.createKey<string | undefined>('scmProvider', undefined);
+
+    this.scmService.onDidAddRepository((repo: ISCMRepository) => {
+      this.addRepo(repo);
+    }, this, this.disposables);
+
+    this.scmService.onDidRemoveRepository((repo: ISCMRepository) => {
+      this.deleteRepo(repo);
+    }, this, this.disposables);
+
+    this.scmService.onDidChangeSelectedRepositories((repos: ISCMRepository[]) => {
+      this.changeSelectedRepos(repos);
+    }, this, this.disposables);
+
+    this.scmService.repositories.forEach((repo) => {
+      this.addRepo(repo);
+    });
   }
 
   @observable
@@ -222,10 +241,6 @@ export class ViewModelContext extends Disposable {
 
   public titleMenu: IMenu | null;
 
-  private setContextKey(selectedRepo) {
-    this.scmProviderCtxKey.set(selectedRepo ? selectedRepo.provider.contextValue : undefined);
-  }
-
   public getSCMMenuService(repository: ISCMRepository | undefined) {
     if (!repository) {
       return undefined;
@@ -233,19 +248,19 @@ export class ViewModelContext extends Disposable {
     return this.scmMenuMap.get(repository.provider.id);
   }
 
-  @action.bound
-  public changeSelectedRepos(repos: ISCMRepository[]) {
-    this.selectedRepos.replace(repos);
-    const selectedRepo = repos[0];
-    this.selectedRepo = selectedRepo;
-    // set context key
-    this.setContextKey(selectedRepo);
+  @action
+  public spliceSCMList = (start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
+    this.scmList.splice(start, deleteCount, ...toInsert);
   }
 
-  @action.bound
-  public addRepo(repo: ISCMRepository) {
+  private setContextKey(selectedRepo) {
+    this.scmProviderCtxKey.set(selectedRepo ? selectedRepo.provider.contextValue : undefined);
+  }
+
+  @action
+  private addRepo(repo: ISCMRepository) {
     if (this.repoList.indexOf(repo) > -1) {
-      this.logger.warn('depulicate scm repo', repo);
+      this.logger.warn('duplicate scm repo', repo);
       return;
     }
     this.repoList.push(repo);
@@ -255,7 +270,7 @@ export class ViewModelContext extends Disposable {
   }
 
   @action
-  public deleteRepo(repo: ISCMRepository) {
+  private deleteRepo(repo: ISCMRepository) {
     const index = this.repoList.indexOf(repo);
     if (index < 0) {
       this.logger.warn('no such scm repo', repo);
@@ -269,10 +284,19 @@ export class ViewModelContext extends Disposable {
       scmMenuService.dispose();
       this.scmMenuMap.delete(repo.provider.id);
     }
+
+    // 最后一个 repo 移除时将 scmProvider 重置
+    if (this.repoList.length === 0) {
+      this.setContextKey(undefined);
+    }
   }
 
   @action
-  public spliceSCMList = (start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
-    this.scmList.splice(start, deleteCount, ...toInsert);
+  private changeSelectedRepos(repos: ISCMRepository[]) {
+    this.selectedRepos.replace(repos);
+    const selectedRepo = repos[0];
+    this.selectedRepo = selectedRepo;
+    // set context key
+    this.setContextKey(selectedRepo);
   }
 }

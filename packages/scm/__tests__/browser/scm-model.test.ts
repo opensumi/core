@@ -7,7 +7,7 @@ import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-t
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource, ISCMRepository } from '../../src/common';
+import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource, ISCMRepository } from '../../src';
 import { ViewModelContext, ResourceGroupSplicer } from '../../src/browser/scm-model';
 
 describe('test for scm.store.ts', () => {
@@ -20,6 +20,7 @@ describe('test for scm.store.ts', () => {
     let scmService: SCMService;
 
     let injector: MockInjector;
+
     beforeEach(() => {
       injector = createBrowserInjector([], new Injector([
         {
@@ -29,56 +30,119 @@ describe('test for scm.store.ts', () => {
         SCMService,
       ]));
 
-      injector.addProviders(ViewModelContext);
-
-      provider1 = new MockSCMProvider(1);
-      provider2 = new MockSCMProvider(2);
+      provider1 = new MockSCMProvider(1, 'git');
+      provider2 = new MockSCMProvider(2, 'svn');
 
       scmService = injector.get(SCMService);
-      repo1 = scmService.registerSCMProvider(provider1);
-      repo2 = scmService.registerSCMProvider(provider2);
-
       store = injector.get(ViewModelContext);
     });
 
-    it('addRepo/deleteRepo', () => {
-      store.addRepo(repo1);
-      expect(store.repoList.length).toBe(1);
-      expect(store.repoList[0].provider).toEqual(provider1);
+    it('ViewModelContext: already contains repos', () => {
+      const repo1 = scmService.registerSCMProvider(provider1);
+      const repo2 = scmService.registerSCMProvider(provider2);
 
-      store.addRepo(repo2);
+      injector.addProviders(ViewModelContext);
+      store = injector.get(ViewModelContext);
+
       expect(store.repoList.length).toBe(2);
+      expect(store['scmProviderCtxKey'].get()).toBe('git');
       expect(store.repoList[0].provider).toEqual(provider1);
+      expect(store.repoList[1].provider).toEqual(provider2);
 
-      store.deleteRepo(repo1);
+      repo1.dispose();
       expect(store.repoList.length).toBe(1);
       expect(store.repoList[0].provider).toEqual(provider2);
+      expect(store['scmProviderCtxKey'].get()).toBe('svn');
 
-      store.deleteRepo(repo2);
+      repo2.dispose();
       expect(store.repoList.length).toBe(0);
+      expect(store['scmProviderCtxKey'].get()).toBe(undefined);
     });
 
-    it('changeSelectedRepos', () => {
-      store.addRepo(repo1);
-      store.addRepo(repo2);
+    describe('ok', () => {
+      beforeEach(() => {
+        injector.addProviders(ViewModelContext);
+        store = injector.get(ViewModelContext);
+      });
 
-      store.changeSelectedRepos([repo2]);
-      expect(store.selectedRepos).toEqual([repo2]);
+      it('add repo and then remove them', () => {
+        repo1 = scmService.registerSCMProvider(provider1);
 
-      store.changeSelectedRepos([repo1]);
-      expect(store.selectedRepos).toEqual([repo1]);
-    });
+        expect(store.repoList.length).toBe(1);
+        expect(store.repoList[0].provider).toEqual(provider1);
 
-    it('spliceSCMList', () => {
-      const mockResourceGroup = new MockSCMResourceGroup(0);
-      const mockResource = new MockSCMResource(mockResourceGroup);
+        repo2 = scmService.registerSCMProvider(provider2);
+        expect(store.repoList.length).toBe(2);
+        expect(store.repoList[0].provider).toEqual(provider1);
+        expect(store['scmProviderCtxKey'].get()).toBe('git');
 
-      store.spliceSCMList(0, 0, mockResourceGroup, mockResource);
-      expect(store.scmList).toEqual([mockResourceGroup, mockResource]);
+        // 无效的重复添加
+        // (store as any).addRepo(repo1);
+        // expect(warnSpy).toBeCalledTimes(1);
+        // expect(warnSpy.mock.calls[0][0]).toBe('duplicate scm repo');
 
-      const mockResourceGroup1 = new MockSCMResourceGroup(1);
-      store.spliceSCMList(1, 1, mockResourceGroup1);
-      expect(store.scmList).toEqual([mockResourceGroup, mockResourceGroup1]);
+        repo1.dispose();
+        expect(store.repoList.length).toBe(1);
+        expect(store.repoList[0].provider).toEqual(provider2);
+        expect(store['scmProviderCtxKey'].get()).toBe('svn');
+
+        repo2.dispose();
+        expect(store.repoList.length).toBe(0);
+        expect(store['scmProviderCtxKey'].get()).toBe(undefined);
+
+        // 无效的重复删除
+        // (store as any).deleteRepo(repo2);
+        // expect(warnSpy).toBeCalledTimes(2);
+        // expect(warnSpy.mock.calls[1][0]).toBe('no such scm repo');
+      });
+
+      it('changeSelectedRepos', () => {
+        repo1 = scmService.registerSCMProvider(provider1);
+        repo2 = scmService.registerSCMProvider(provider2);
+
+        expect(store['scmProviderCtxKey'].get()).toBe('git');
+
+        repo1.setSelected(false);
+        repo2.setSelected(true);
+        expect(store.selectedRepos).toEqual([repo2]);
+        expect(store['scmProviderCtxKey'].get()).toBe('svn');
+
+        repo2.setSelected(false);
+        repo1.setSelected(true);
+        expect(store.selectedRepos).toEqual([repo1]);
+        expect(store['scmProviderCtxKey'].get()).toBe('git');
+      });
+
+      it('spliceSCMList', () => {
+        const mockResourceGroup = new MockSCMResourceGroup(provider1, 0);
+        const mockResource = new MockSCMResource(mockResourceGroup);
+
+        store.spliceSCMList(0, 0, mockResourceGroup, mockResource);
+        expect(store.scmList).toEqual([mockResourceGroup, mockResource]);
+
+        const mockResourceGroup1 = new MockSCMResourceGroup(provider1, 1);
+        store.spliceSCMList(1, 1, mockResourceGroup1);
+        expect(store.scmList).toEqual([mockResourceGroup, mockResourceGroup1]);
+      });
+
+      it('getSCMMenuService', () => {
+        expect(store.getSCMMenuService(undefined)).toBeUndefined();
+
+        expect(store.getSCMMenuService(repo1)).toBeUndefined();
+        expect(store.getSCMMenuService(repo2)).toBeUndefined();
+
+        repo1 = scmService.registerSCMProvider(provider1);
+        repo2 = scmService.registerSCMProvider(provider2);
+
+        expect(store.getSCMMenuService(repo1)).not.toBeUndefined();
+        expect(store.getSCMMenuService(repo2)).not.toBeUndefined();
+
+        repo1.dispose();
+        expect(store.getSCMMenuService(repo1)).toBeUndefined();
+
+        repo2.dispose();
+        expect(store.getSCMMenuService(repo2)).toBeUndefined();
+      });
     });
   });
 
@@ -114,7 +178,7 @@ describe('test for scm.store.ts', () => {
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
 
-      provider.registerGroup(new MockSCMResourceGroup(1));
+      provider.registerGroup(new MockSCMResourceGroup(provider, 1));
 
       expect(spliceListener).toHaveBeenCalledTimes(2);
       expect(spliceListener.mock.calls[1][0].target.provider).toBe(provider);
@@ -122,6 +186,13 @@ describe('test for scm.store.ts', () => {
       expect(spliceListener.mock.calls[1][0].deleteCount).toBe(0);
       expect(spliceListener.mock.calls[1][0].elements.length).toBe(1);
       expect((spliceListener.mock.calls[1][0].elements[0] as ISCMResourceGroup).id).toBe('scm_resource_group_1');
+
+      resourceGroup.dispose();
+      expect(spliceListener).toHaveBeenCalledTimes(3);
+      expect(spliceListener.mock.calls[2][0].target.provider).toBe(provider);
+      expect(spliceListener.mock.calls[2][0].index).toBe(0);
+      expect(spliceListener.mock.calls[2][0].deleteCount).toBe(1);
+      expect(spliceListener.mock.calls[2][0].elements).toEqual([]);
     });
 
     it('group onChange when updateHideWhenEmpty', () => {
@@ -133,7 +204,7 @@ describe('test for scm.store.ts', () => {
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
 
-      const scmResourceGroup = new MockSCMResourceGroup(1);
+      const scmResourceGroup = new MockSCMResourceGroup(provider, 1);
       provider.registerGroup(scmResourceGroup);
 
       expect(spliceListener).toHaveBeenCalledTimes(2);
@@ -158,7 +229,7 @@ describe('test for scm.store.ts', () => {
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
 
-      const scmResourceGroup = new MockSCMResourceGroup(1);
+      const scmResourceGroup = new MockSCMResourceGroup(provider, 1);
       provider.registerGroup(scmResourceGroup);
       expect(spliceListener).toHaveBeenCalledTimes(2);
 
