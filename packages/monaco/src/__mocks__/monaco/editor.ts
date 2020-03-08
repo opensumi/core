@@ -4,6 +4,9 @@ import { MockedDiffEditor, MockedDiffNavigator } from './editor/diff-editor';
 import { MockedMonacoModel } from './editor/model';
 
 export function createMockedMonacoEditorApi(): typeof monaco.editor {
+
+  const models = new Map<string, MockedMonacoModel>();
+
   const mockedMonacoEditorApi: Partial<typeof monaco.editor> = {
     onDidCreateEditor: quickEvent('onDidCreateEditor'),
     create: (dom, options, override) => {
@@ -22,7 +25,9 @@ export function createMockedMonacoEditorApi(): typeof monaco.editor {
     },
     onDidCreateModel: quickEvent(' onDidCreateModel'),
     createModel: (value, language, uri) => {
-      return new MockedMonacoModel(value, language, uri);
+      const model = new MockedMonacoModel(value, language, uri);
+      models.set(uri ? uri.toString() : ('model_' + Math.random() * 1000), model);
+      return model;
     },
     setModelLanguage: (model, languageId) => {
       (model as MockedMonacoModel).language = languageId;
@@ -34,7 +39,7 @@ export function createMockedMonacoEditorApi(): typeof monaco.editor {
       return [];
     },
     getModel: (uri) => {
-      return null;
+      return models.get(uri.toString()) || null;
     },
     getModels: () => {
       return [];
