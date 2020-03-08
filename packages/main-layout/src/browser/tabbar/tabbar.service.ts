@@ -1,4 +1,4 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection } from '@ali/ide-core-browser';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -81,13 +81,15 @@ export class TabbarService extends WithEventBus {
 
   public barSize: number;
   private menuId = `tabbar/${this.location}`;
+  private moreMenuId = `tabbar/${this.location}/more`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
   private activatedKey: IContextKey<string>;
   private rendered = false;
   private sortedContainers: Array<ComponentRegistryInfo> = [];
   private disposableMap: Map<string, DisposableCollection> = new Map();
+  private tabInMoreKeyMap: Map<string, IContextKey<boolean>> = new Map();
 
-  private scopedCtxKeyService = this.contextKeyService.createScoped();
+  private scopedCtxKeyService: IScopedContextKeyService = this.contextKeyService.createScoped();
 
   constructor(public location: string, public noAccordion?: boolean) {
     super();
@@ -121,6 +123,13 @@ export class TabbarService extends WithEventBus {
 
   public updatePanelVisibility(show: boolean) {
     this.updatePanel(show);
+  }
+
+  public updateTabInMoreKey(containerId: string, value: boolean) {
+    const ctxKey = this.tabInMoreKeyMap.get(containerId);
+    if (ctxKey) {
+      ctxKey.set(value);
+    }
   }
 
   @computed({equals: visibleContainerEquals})
@@ -210,6 +219,18 @@ export class TabbarService extends WithEventBus {
       },
       group: '1_widgets',
     }));
+    // 注册溢出后的菜单
+    const tabInMoreKey = this.scopedCtxKeyService.createKey(this.getTabInMoreCtxKey(containerId), false);
+    this.tabInMoreKeyMap.set(containerId, tabInMoreKey);
+    disposables.push({
+      dispose: () => this.tabInMoreKeyMap.delete(containerId),
+    });
+    disposables.push(this.menuRegistry.registerMenuItem(this.moreMenuId, {
+      command: this.registerMoreToggleCommand(componentInfo),
+      group: 'inline',
+      when: `${this.getTabInMoreCtxKey(containerId)} == true`,
+      toggledWhen: `${getTabbarCtxKey(this.location)} == ${containerId}`,
+    }));
     disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
     this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
     if (containerId === this.currentContainerId) {
@@ -273,6 +294,15 @@ export class TabbarService extends WithEventBus {
     event.stopPropagation();
     const menus = this.menuService.createMenu(this.menuId, containerId ? this.scopedCtxKeyService : this.contextKeyService);
     const menuNodes = generateCtxMenu({ menus, args: [{containerId}] });
+    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+      x: event.clientX,
+      y: event.clientY,
+    } });
+  }
+
+  showMoreMenu(event: React.MouseEvent, lastContainerId?: string) {
+    const menus = this.menuService.createMenu(this.moreMenuId, this.scopedCtxKeyService);
+    const menuNodes = generateCtxMenu({ menus, args: [{lastContainerId}] });
     this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
       x: event.clientX,
       y: event.clientY,
@@ -374,6 +404,36 @@ export class TabbarService extends WithEventBus {
       },
     });
     return commandId;
+  }
+
+  private registerMoreToggleCommand(component: ComponentRegistryInfo): string {
+    const { options } = component;
+    const { containerId, title, iconClass } = options!;
+    const commandId = `activity.bar.activate.more.${containerId}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+      label: title || containerId,
+      iconClass,
+    }, {
+      execute: ({lastContainerId}: {lastContainerId?: string}) => {
+        // 切换激活tab
+        this.currentContainerId = containerId;
+        if (lastContainerId) {
+          // 替换最后一个可见tab
+          const sourceState = this.getContainerState(containerId);
+          const targetState = this.getContainerState(lastContainerId);
+          const sourcePriority = sourceState.priority;
+          sourceState.priority = targetState.priority;
+          targetState.priority = sourcePriority;
+          this.storeState();
+        }
+      },
+    });
+    return commandId;
+  }
+
+  private getTabInMoreCtxKey(containerId: string) {
+    return `${containerId}.isInMore`;
   }
 
   protected registerPanelMenus() {
