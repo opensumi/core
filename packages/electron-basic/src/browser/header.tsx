@@ -10,7 +10,7 @@ import { observable } from 'mobx';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 
 const state = observable({
-  maximized: (global as any).electronEnv.isMaximized(),
+  maximized: (global as any).electronEnv && (global as any).electronEnv.isMaximized(),
 });
 
 export const ElectronHeaderBar = observer(() => {
