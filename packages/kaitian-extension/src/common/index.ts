@@ -1,4 +1,4 @@
-import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize, Event } from '@ali/ide-core-common';
 import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { VSCExtension } from '../hosted/vscode.extension';
@@ -77,6 +77,7 @@ export abstract class ExtensionService {
   abstract async postUninstallExtension(path: string): Promise<void>;
   abstract getExtensions(): IExtension[];
   abstract async activateExtensionByExtPath(extensionPath: string): Promise<void>;
+  onDidExtensionActivated: Event<IExtensionProps>;
   eagerExtensionsActivated: Deferred<void>;
 }
 

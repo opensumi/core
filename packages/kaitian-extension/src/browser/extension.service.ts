@@ -34,6 +34,7 @@ import {
   AppConfig,
   isElectronEnv,
   Emitter,
+  Event,
   IContextKeyService,
   CommandService,
   CommandRegistry,
@@ -208,6 +209,9 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   private workerProtocol: RPCProtocol | undefined;
 
+  private _onDidExtensionActivated: Emitter<IExtensionProps> = new Emitter<IExtensionProps>();
+  public onDidExtensionActivated: Event<IExtensionProps> = this._onDidExtensionActivated.event;
+
   @OnEvent(ExtensionActivateEvent)
   onActivateExtension(e) {
     this.activationEventService.fireEvent(e.payload.topic, e.payload.data);
@@ -274,6 +278,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         this,
         await this.checkExtensionEnable(extensionMetadata),
         this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false,
+        this._onDidExtensionActivated,
       ]);
 
       this.extensionMap.set(path, extension);
@@ -489,6 +494,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
         isBuiltin,
+        this._onDidExtensionActivated,
       ]);
 
       this.extensionMap.set(extensionMetaData.path, extension);
