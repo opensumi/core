@@ -7,9 +7,9 @@ import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-import { SCMService } from '../../src';
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
+import { SCMService } from '../../src';
 import { SCMBadgeController, SCMStatusBarController } from '../../src/browser/scm-activity';
 import { SCMModule } from '../../src/browser';
 

@@ -284,6 +284,11 @@ export class ViewModelContext extends Disposable {
       scmMenuService.dispose();
       this.scmMenuMap.delete(repo.provider.id);
     }
+
+    // 最后一个 repo 移除时将 scmProvider 重置
+    if (this.repoList.length === 0) {
+      this.setContextKey(undefined);
+    }
   }
 
   @action
