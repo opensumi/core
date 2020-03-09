@@ -204,15 +204,12 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   detectIndentation(defaultInsertSpaces: boolean, defaultTabSize: number): void {
     return ;
   }
-  pushStackElement(): void {
-    throw new Error('Method not implemented.');
-  }
-  pushEditOperations(beforeCursorState: monaco.Selection[], editOperations: monaco.editor.IIdentifiedSingleEditOperation[], cursorStateComputer: monaco.editor.ICursorStateComputer): monaco.Selection[] | null {
-    throw new Error('Method not implemented.');
-  }
-  pushEOL(eol: monaco.editor.EndOfLineSequence): void {
-    throw new Error('Method not implemented.');
-  }
+  pushStackElement = jest.fn();
+
+  pushEditOperations = jest.fn();
+
+  pushEOL = jest.fn();
+
   applyEdits(operations: monaco.editor.IIdentifiedSingleEditOperation[]): monaco.editor.IIdentifiedSingleEditOperation[] {
     for (const operation of operations) {
       this.value =
