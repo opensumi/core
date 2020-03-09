@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, TERMINAL_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -15,6 +15,7 @@ import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } 
 import { IWindowService } from '@ali/ide-window';
 import { IWindowDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
 import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { IsTerminalViewInitialized } from '@ali/ide-core-browser/lib/contextkey';
 
 export const ExplorerResourceViewId = 'file-explorer';
 
@@ -108,6 +109,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FOLDER.id,
       order: 2,
+      group: '0_new',
+    });
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: TERMINAL_COMMANDS.OPEN_WITH_PATH.id,
+      when: IsTerminalViewInitialized.raw,
+      order: 3,
       group: '0_new',
     });
 

@@ -394,6 +394,7 @@ export const localizationBundle = {
     'terminal.or': 'Or',
     'terminal.search': 'Search',
     'terminal.search.next': 'Search Next',
+    'terminal.openWithPath': 'Open In The Terminal',
 
     'terminal.menu.search': 'Search',
     'terminal.menu.split': 'Split',

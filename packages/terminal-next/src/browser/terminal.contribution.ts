@@ -10,6 +10,8 @@ import {
   ClientAppContribution,
   KeybindingRegistry,
   KeybindingContribution,
+  TERMINAL_COMMANDS,
+  URI,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
@@ -52,12 +54,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       execute: (...args: any[]) => {
         this.terminalController.openSearchInput();
       },
-      isEnabled: () => {
-        return true;
-      },
-      isVisible: () => {
-        return true;
-      },
     });
 
     registry.registerCommand(terminalSplit, {
@@ -66,23 +62,17 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
         this.terminalController.focus();
         this.terminalController.focusWidget(id);
       },
-      isEnabled: () => {
-        return true;
-      },
-      isVisible: () => {
-        return true;
-      },
     });
 
     registry.registerCommand(terminalClear, {
       execute: (...args: any[]) => {
         this.terminalController.clearCurrentWidget();
       },
-      isEnabled: () => {
-        return true;
-      },
-      isVisible: () => {
-        return true;
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.OPEN_WITH_PATH, {
+      execute: (uri: URI) => {
+        // TODO:实现在terminal中打开对应路径
       },
     });
 

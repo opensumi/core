@@ -453,7 +453,7 @@ export const localizationBundle = {
     'terminal.or': '或者',
     'terminal.search': '搜索',
     'terminal.search.next': '搜索下一个匹配项',
-
+    'terminal.openWithPath': '在终端中打开',
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分',
     'terminal.menu.rename': '重命名',
