@@ -22,6 +22,9 @@ renderApp({
     ...{[SlotLocation.top]: {
       modules: ['@ali/ide-menu-bar', 'toolbar'],
     }},
+    ...{[SlotLocation.action]: {
+      modules: ['@ali/ide-toolbar-action'],
+    }},
   },
   useCdnIcon: false,
   // isSyncPreference: true,

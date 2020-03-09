@@ -18,6 +18,7 @@ import { ViewsSchema, ViewsContributionPoint } from './views';
 import { DebuggersContributionScheme, DebuggersContributionPoint } from './debuggers';
 import { BreakpointsContributionScheme, BreakpointsContributionPoint } from './breakpoints';
 import { IconThemesContributionPoint } from './icon';
+import { ActionContributionSchema, ActionsContributionPoint } from './actions';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9\-A-Z]*)\\.([a-z0-9A-Z][a-z0-9\-A-Z]*)$';
 
@@ -261,6 +262,7 @@ export interface ContributesSchema {
   views: ViewsSchema;
   debuggers: DebuggersContributionScheme;
   breakpoints: BreakpointsContributionScheme;
+  actions: ActionContributionSchema;
 }
 
 const CONTRIBUTES_SYMBOL = Symbol();
@@ -287,6 +289,7 @@ export class VSCodeContributeRunner extends Disposable {
     ViewsContributionPoint,
     BreakpointsContributionPoint,
     DebuggersContributionPoint,
+    ActionsContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)

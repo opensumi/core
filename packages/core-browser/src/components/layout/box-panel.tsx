@@ -24,7 +24,11 @@ export const BoxPanel: React.FC<{
           <div
             key={index}
             className={clsx(styles.wrapper)}
-            style={child['props'] && child['props'].flex ? {flex: child['props'].flex, overflow: 'hidden'} : {}}>
+            style={child['props'] ? {
+              flex: child['props'].flex,
+              overflow: child['props']?.overflow,
+              zIndex: child['props']?.zIndex,
+              } : {}}>
             {child}
           </div>
         ))

@@ -20,6 +20,7 @@ export const SlotLocation = {
   bottom: 'bottom',
   extra: 'extra',
   float: 'float',
+  action: 'action',
   // @deprecated ->
   bottomBar: 'bottomBar',
   bottomPanel: 'bottomPanel',
@@ -95,7 +96,7 @@ export class ErrorBoundary extends React.Component {
 
 export const allSlot: {slot: string, dom: HTMLElement}[] = [];
 
-export const SlotDecorator: React.FC<{slot: string}> = ({slot, ...props}) => {
+export const SlotDecorator: React.FC<{slot: string }> = ({slot, ...props}) => {
   const ref = React.useRef<HTMLElement>();
   React.useEffect(() => {
     if (ref.current) {
