@@ -3,6 +3,7 @@ import { MockedMonacoUri } from './common/uri';
 import { createMockedMonacoLanguageApi, mockFeatureProviderRegistry } from './langauge';
 import { createMockedMonacoRangeApi } from './range';
 import { createMockedMonacoPositionApi } from './position';
+import { createMockedMonacoTextModelApi } from './textModel';
 
 export function createMockedMonaco(): Partial<typeof monaco> {
   return {
@@ -20,6 +21,7 @@ export function createMockedMonaco(): Partial<typeof monaco> {
         },
       },
     },
+    textModel: createMockedMonacoTextModelApi(),
     // @ts-ignore
     services: {
       // @ts-ignore

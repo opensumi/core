@@ -34,25 +34,25 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   private readonly transientDisposables = new DisposableStore();
 
   @Autowired(SCMPreferences)
-  scmPreferences: SCMPreferences;
+  private readonly scmPreferences: SCMPreferences;
 
   @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(WorkbenchEditorService)
-  editorService: WorkbenchEditorService;
+  private readonly editorService: WorkbenchEditorService;
 
   @Autowired(IEditorFeatureRegistry)
-  editorFeatureRegistry: IEditorFeatureRegistry;
+  private readonly editorFeatureRegistry: IEditorFeatureRegistry;
 
   @Autowired(IEventBus)
-  eventBus: IEventBus;
+  private readonly eventBus: IEventBus;
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  private readonly injector: Injector;
 
   @Autowired(CommandService)
-  commandService: CommandService;
+  private readonly commandService: CommandService;
 
   constructor() {
     super();
@@ -229,15 +229,15 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   }
 
   private attachEvents(codeEditor: monaco.editor.ICodeEditor) {
-    const disposeCollecton = new DisposableCollection();
+    const disposeCollection = new DisposableCollection();
 
-    disposeCollecton.push(codeEditor.onMouseDown((event) => {
+    disposeCollection.push(codeEditor.onMouseDown((event) => {
       if (this.scmPreferences['scm.alwaysShowDiffWidget']) {
         this._doMouseDown(codeEditor, event);
       }
     }));
 
-    disposeCollecton.push(codeEditor.onDidChangeModel(({ oldModelUrl }) => {
+    disposeCollection.push(codeEditor.onDidChangeModel(({ oldModelUrl }) => {
       if (oldModelUrl) {
         const oldWidget = this.widgets.get(codeEditor.getId());
         if (oldWidget) {
@@ -246,10 +246,10 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       }
     }));
 
-    disposeCollecton.push(codeEditor.onDidDispose(() => {
-      disposeCollecton.dispose();
+    disposeCollection.push(codeEditor.onDidDispose(() => {
+      disposeCollection.dispose();
     }));
-    return disposeCollecton;
+    return disposeCollection;
   }
 
   getModel(editorModel: monaco.editor.ITextModel): DirtyDiffModel | null {

@@ -185,7 +185,7 @@ export class LRUMap<K, V> extends Map<K, V>{
 		}
 		return v;
 	}
-	
+
 
 	set(key: K, value: V): this {
 		this.markRecentUsed(key);
@@ -228,7 +228,7 @@ export class LRUMap<K, V> extends Map<K, V>{
 		})
 		return super.delete(key);
 	}
-	
+
 
 	shrink() {
 		const toDelete = this.size - this.softLimit;

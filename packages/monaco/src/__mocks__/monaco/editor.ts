@@ -3,6 +3,13 @@ import { MockedStandaloneCodeEditor } from './editor/code-editor';
 import { MockedDiffEditor, MockedDiffNavigator } from './editor/diff-editor';
 import { MockedMonacoModel } from './editor/model';
 
+enum TrackedRangeStickiness {
+  AlwaysGrowsWhenTypingAtEdges = 0,
+  NeverGrowsWhenTypingAtEdges = 1,
+  GrowsOnlyWhenTypingBefore = 2,
+  GrowsOnlyWhenTypingAfter = 3,
+}
+
 export function createMockedMonacoEditorApi(): typeof monaco.editor {
 
   const models = new Map<string, MockedMonacoModel>();
@@ -44,6 +51,7 @@ export function createMockedMonacoEditorApi(): typeof monaco.editor {
     getModels: () => {
       return [];
     },
+    TrackedRangeStickiness,
   };
 
   return partialMock('monaco.editor', mockedMonacoEditorApi);

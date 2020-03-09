@@ -1,3 +1,4 @@
+// tslint:disable:no-console
 import { MockedMonacoUri } from '../common/uri';
 import { Disposable, Emitter } from '@ali/ide-core-common';
 import { EOL, EndOfLineSequence } from '@ali/ide-editor';
@@ -5,12 +6,11 @@ import { EOL, EndOfLineSequence } from '@ali/ide-editor';
 let id = 1;
 
 const eolStringMap = new Map<number, string>([
-  [ EndOfLineSequence.LF, EOL.LF ],
-  [ EndOfLineSequence.CRLF, EOL.CRLF ],
+  [EndOfLineSequence.LF, EOL.LF],
+  [EndOfLineSequence.CRLF, EOL.CRLF],
 ]);
 
 export class MockedMonacoModel extends Disposable implements monaco.editor.ITextModel {
-
   id: string;
   _lines: string[];
   uri: monaco.Uri;
@@ -167,8 +167,14 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     throw new Error('Method not implemented.');
   }
   deltaDecorations(oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[], ownerId?: number | undefined): string[] {
-    throw new Error('Method not implemented.');
+    console.log('deltaDecorations was called');
+    if (oldDecorations.length === 0 && newDecorations.length === 0) {
+      // nothing to do
+      return [];
+    }
+    return newDecorations.map((_, i) => 'deco_IntervalNode' + i);
   }
+
   getDecorationOptions(id: string): monaco.editor.IModelDecorationOptions | null {
     throw new Error('Method not implemented.');
   }
@@ -202,7 +208,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     this._onDidChangeOptions.fire(this.options);
   }
   detectIndentation(defaultInsertSpaces: boolean, defaultTabSize: number): void {
-    return ;
+    return;
   }
   pushStackElement = jest.fn();
 
