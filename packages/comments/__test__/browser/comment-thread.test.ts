@@ -1,8 +1,8 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { CommentsModule } from '../../src/browser';
 import { Injector } from '@ali/common-di';
-import { ICommentsService, toRange, CommentMode } from '../../src/common';
-import { URI } from '@ali/ide-core-common';
+import { ICommentsService, CommentMode } from '../../src/common';
+import { URI, positionToRange } from '@ali/ide-core-common';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
@@ -31,7 +31,7 @@ describe('comment service test', () => {
 
   it('basic props', () => {
     const uri = URI.file('/test');
-    const thread = commentsService.createThread(uri, toRange(1), {
+    const thread = commentsService.createThread(uri, positionToRange(1), {
       comments: [{
         mode: CommentMode.Editor,
         author: {
@@ -47,7 +47,7 @@ describe('comment service test', () => {
 
   it('thread and comment data', () => {
     const uri = URI.file('/test');
-    const thread = commentsService.createThread(uri, toRange(1), {
+    const thread = commentsService.createThread(uri, positionToRange(1), {
       comments: [{
         mode: CommentMode.Editor,
         author: {
@@ -68,7 +68,7 @@ describe('comment service test', () => {
 
   it('thread add comment', () => {
     const uri = URI.file('/test');
-    const thread = commentsService.createThread(uri, toRange(1));
+    const thread = commentsService.createThread(uri, positionToRange(1));
     thread.addComment({
       mode: CommentMode.Preview,
       author: {
@@ -88,7 +88,7 @@ describe('comment service test', () => {
 
   it('thread dispose', () => {
     const uri = URI.file('/test');
-    const thread = commentsService.createThread(uri, toRange(1));
+    const thread = commentsService.createThread(uri, positionToRange(1));
     thread.addComment({
       mode: CommentMode.Preview,
       author: {
@@ -108,12 +108,12 @@ describe('comment service test', () => {
 
   it('thread context service', () => {
     const uri = URI.file('/test');
-    const thread = commentsService.createThread(uri, toRange(1), {
+    const thread = commentsService.createThread(uri, positionToRange(1), {
       contextValue: 'aaa',
     });
     expect(thread.contextKeyService.getContextValue('thread')).toBe('aaa');
     expect(thread.contextKeyService.getContextValue('threadsLength')).toBe(1);
-    commentsService.createThread(uri, toRange(2));
+    commentsService.createThread(uri, positionToRange(2));
     // 同一个 uri 的 threadsLength 会变为 2
     expect(thread.contextKeyService.getContextValue('threadsLength')).toBe(2);
   });

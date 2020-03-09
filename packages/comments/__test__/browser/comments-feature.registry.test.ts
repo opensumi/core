@@ -1,8 +1,8 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { CommentsModule } from '../../src/browser';
 import { Injector } from '@ali/common-di';
-import { ICommentsService, toRange, CommentMode, ICommentsFeatureRegistry } from '../../src/common';
-import { URI } from '@ali/ide-core-common';
+import { ICommentsService, CommentMode, ICommentsFeatureRegistry } from '../../src/common';
+import { URI, positionToRange } from '@ali/ide-core-common';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
@@ -70,7 +70,7 @@ describe('comment service test', () => {
       });
     });
     const uri = URI.file('/test');
-    commentsService.createThread(uri, toRange(1), {
+    commentsService.createThread(uri, positionToRange(1), {
       comments: [{
         mode: CommentMode.Editor,
         author: {
