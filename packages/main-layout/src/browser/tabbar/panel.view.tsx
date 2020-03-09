@@ -102,6 +102,8 @@ const NextPanelView: React.FC<{
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const viewStateManager = useInjectable<ViewUiStateManager>(ViewUiStateManager);
   const eventBus = useInjectable<IEventBus>(IEventBus);
+  // 注入自定义视图 or 通过views注入视图
+  const targetViewId = component.options!.component ? component.options!.containerId : component.views[0].id;
   // TODO 底部支持多个视图的渲染
   React.useEffect(() => {
     let lastFrame: number | null;
@@ -112,7 +114,7 @@ const NextPanelView: React.FC<{
         }
         lastFrame = window.requestAnimationFrame(() => {
           if (contentRef.current) {
-            viewStateManager.updateSize(component.views[0].id, contentRef.current.clientHeight, contentRef.current.clientWidth);
+            viewStateManager.updateSize(targetViewId, contentRef.current.clientHeight, contentRef.current.clientWidth);
           }
         });
       }
@@ -121,7 +123,7 @@ const NextPanelView: React.FC<{
       disposer.dispose();
     };
   }, [contentRef]);
-  const viewState = viewStateManager.getState(component.views[0].id);
+  const viewState = viewStateManager.getState(targetViewId);
 
   return (
     <div className={styles.panel_container}>
@@ -136,7 +138,7 @@ const NextPanelView: React.FC<{
         </div>
       </div>
       <div ref={(ele) =>  contentRef.current = ele} className={styles.panel_wrapper}>
-        <ComponentRenderer initialProps={{viewState, ...component.options!.initialProps}} Component={component.views[0].component!} />
+        <ComponentRenderer initialProps={{viewState, ...component.options!.initialProps}} Component={component.options!.component ? component.options!.component : component.views[0].component!} />
       </div>
     </div>
   );
