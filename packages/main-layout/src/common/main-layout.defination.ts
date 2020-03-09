@@ -1,4 +1,4 @@
-import { BasicEvent, SlotLocation, Event } from '@ali/ide-core-browser';
+import { BasicEvent, SlotLocation } from '@ali/ide-core-browser';
 import { ViewContainerOptions, View, SideStateManager } from '@ali/ide-core-browser/lib/layout';
 import { TabBarHandler } from '../browser/tabbar-handler';
 import { TabbarService } from '../browser/tabbar/tabbar.service';
@@ -13,7 +13,7 @@ export interface ComponentCollection {
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
   didMount(): void;
-  // 切换tabbar位置的slot，支持left、right、bottom，size能力暂未实现
+  // 切换tabbar位置的slot，支持left、right、bottom
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   restoreState(): void;
   /**
