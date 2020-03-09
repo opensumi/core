@@ -7,10 +7,16 @@ import {
   TreeNode,
   Event,
   BasicEvent,
+  positionToRange,
 } from '@ali/ide-core-common';
 import { IContextKeyService } from '@ali/ide-core-browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+
+/**
+ * @deprecated please use `positionToRange` from '@ali/ide-core-common`
+ */
+export const toRange = positionToRange;
 
 /**
  * 评论树的节点
