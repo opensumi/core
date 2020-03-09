@@ -1,9 +1,29 @@
 
 import { localize } from '@ali/ide-core-common';
 
-import { registerColor } from '../../color-registry';
+import { registerColor, transparent } from '../../color-registry';
 import { editorWarningForeground, editorErrorForeground, editorInfoForeground } from '../editor';
-import { iconForeground } from '../base';
+import { iconForeground, foreground } from '../base';
+
+// base custom colors
+// 强调色
+export const accentForeground = registerColor(
+  'kt.accentForeground',
+  { dark: foreground, light: foreground, hc: foreground },
+  localize('accentForeground', 'Accent foreground color. This color is only used if not overridden by a component.'),
+);
+
+export const disableForeground = registerColor(
+  'kt.disableForeground',
+  { light: transparent(foreground, 0.3), dark: transparent(foreground, 0.3), hc: transparent(foreground, 0.3) },
+  localize('disableForeground', 'Foreground color for text providing disabled information'),
+);
+
+export const iconSecondaryForeground = registerColor(
+  'kt.icon.secondaryForeground',
+  { dark: iconForeground, light: iconForeground, hc: iconForeground },
+  localize('secondaryForeground', 'The secondary color for icons in the workbench.'),
+);
 
 export const errorIconForeground = registerColor(
   'kt.errorIconForeground',

@@ -1,6 +1,6 @@
 import { localize } from '@ali/ide-core-common';
-import { registerColor, lighten, darken } from '../color-registry';
-import { Color, RGBA } from '../../common/color';
+import { registerColor } from '../color-registry';
+import { Color } from '../../common/color';
 
 /** default button */
 export const buttonForeground = registerColor('button.foreground', { dark: Color.white, light: Color.white, hc: Color.white }, localize('buttonForeground', 'Button foreground color.'));
