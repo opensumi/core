@@ -209,7 +209,10 @@ export class ViewModelContext extends Disposable {
   constructor() {
     super();
     this.scmProviderCtxKey = this.contextKeyService.createKey<string | undefined>('scmProvider', undefined);
+    this.start();
+  }
 
+  start() {
     this.scmService.onDidAddRepository((repo: ISCMRepository) => {
       this.addRepo(repo);
     }, this, this.disposables);
@@ -267,6 +270,11 @@ export class ViewModelContext extends Disposable {
     // cache SCMMenus for single repo
     const scmMenuService = this.injector.get(SCMMenus, [repo.provider]);
     this.scmMenuMap.set(repo.provider.id, scmMenuService);
+
+    // 兜底: 避免由于生命周期导致 start 方法里的监听后置导致数据更新不到
+    if (repo.selected && this.repoList.length === 1) {
+      this.changeSelectedRepos([repo]);
+    }
   }
 
   @action
