@@ -3,7 +3,7 @@
 stage:
   node-8-单元测试:
     env:
-      image: 'aone-base-global/alios7-nodejs-ci:1.0.0'
+      image: 'aone-base-global/alios7-nodejs-ci:1.0.0_large'
     plugin:
       -
         param:
