@@ -62,8 +62,7 @@ export class ThemeContribution implements NextMenuContribution, CommandContribut
           };
         });
         const defaultSelected = items.findIndex((opt) => opt.value === this.themeService.currentThemeId);
-
-        const prevThemeId = this.iconService.currentThemeId;
+        const prevThemeId = this.themeService.currentThemeId;
         const themeId = await this.showPickWithPreview(items, {
           selectIndex: () => defaultSelected,
           placeholder: localize('theme.quickopen.plh'),
