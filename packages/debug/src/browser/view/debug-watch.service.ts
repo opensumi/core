@@ -1,10 +1,9 @@
-import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { TreeNode, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, Emitter } from '@ali/ide-core-browser';
 import { DebugViewModel } from './debug-view-model';
 import { DebugWatch } from '../model';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
-import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspace-storage-service';
 
 @Injectable()
 export class DebugWatchService {

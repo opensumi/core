@@ -26,10 +26,12 @@ export class DebugWatch implements DebugWatchData {
 
   private nodes: any[] = [];
 
+  whenReady: Promise<any>;
+
   onDidChangeEmitter: Emitter<void> = new Emitter();
 
   constructor() {
-    this.init();
+    this.whenReady = this.init();
   }
 
   async init() {

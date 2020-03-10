@@ -105,7 +105,6 @@ export class DebugThread extends DebugThreadData {
         const frames = await this.doFetchFrames(start, levels);
         return this.doUpdateFrames(frames);
       } catch (e) {
-        console.error(e);
         return [];
       }
     });
@@ -154,9 +153,5 @@ export class DebugThread extends DebugThreadData {
     return Object.assign({}, arg, {
       threadId: this.raw.id,
     });
-  }
-
-  async open() {
-    // console.log('Do debug thread view open');
   }
 }
