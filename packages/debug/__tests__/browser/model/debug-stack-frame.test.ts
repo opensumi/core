@@ -14,12 +14,15 @@ describe('DebugStackFrame Model', () => {
       name: 'frame',
       line: 1,
       column: 1,
+      source: {},
     };
     const rawThread: DebugProtocol.Thread = {
       id: 0,
       name: 'thread',
     };
+    let openSource;
     beforeEach(() => {
+      openSource = jest.fn();
       session = {
         id: 'session',
         sendRequest: jest.fn((type) => {
@@ -36,6 +39,11 @@ describe('DebugStackFrame Model', () => {
             },
           };
         }),
+        getSource: jest.fn(() => {
+          return {
+            open: openSource,
+          };
+        }),
       } as any;
       debugThread = new DebugThread(session);
       debugThread.update({raw: rawThread});
@@ -44,11 +52,12 @@ describe('DebugStackFrame Model', () => {
     });
 
     afterEach(() => {
+      openSource.mockReset();
       session.sendRequest.mockReset();
     });
 
     it ('Should have enough values', () => {
-      expect(typeof debugStackFrame.source).toBe('undefined');
+      expect(typeof debugStackFrame.source).toBe('object');
     });
 
     it ('restart method should be work', async (done) => {
@@ -65,6 +74,12 @@ describe('DebugStackFrame Model', () => {
       expect(session.sendRequest).toBeCalledWith('scopes', {
         frameId: raw.id,
       });
+      done();
+    });
+
+    it ('open method should be work', async (done) => {
+      await debugStackFrame.open({});
+      expect(openSource).toBeCalledTimes(1);
       done();
     });
 
