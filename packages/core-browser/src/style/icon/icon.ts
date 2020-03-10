@@ -81,7 +81,7 @@ const typoIconMap = {
   'run-debug': 'rundebug',
   'toggle-breakpoints': 'deactivate-breakpoints',
   // new typos issue
-  'withdraw': 'close',
+  'withdraw': 'fallback',
   'terminate1': 'terminate',
   'stop1': 'stop',
   'add': 'plus',
