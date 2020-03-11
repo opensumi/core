@@ -127,9 +127,6 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
   @Autowired()
   fileSearchActionUpDown: FileSearchActionUpDown;
 
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-
   hasActions(): boolean {
     return true;
   }
@@ -138,8 +135,8 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
     return [this.fileSearchActionLeftRight];
   }
 
-  getValidateInput() {
-    return getValidateInput(this.injector.get(FileSearchQuickCommandHandler).currentLookFor);
+  getValidateInput(lookFor) {
+    return getValidateInput(lookFor);
   }
 }
 

@@ -240,7 +240,7 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     const entries: monaco.quickOpen.QuickOpenEntry[] = [];
 
     if (actionProvider && actionProvider.getValidateInput) {
-      lookFor = actionProvider.getValidateInput();
+      lookFor = actionProvider.getValidateInput(lookFor);
     }
 
     for (const item of items) {
