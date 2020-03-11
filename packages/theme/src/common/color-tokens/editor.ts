@@ -2,6 +2,7 @@ import { localize } from '@ali/ide-core-common';
 import { registerColor, transparent, lighten, darken, lessProminent } from '../color-registry';
 import { Color, RGBA } from '../../common/color';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
+import { backgroundColor, foregroundColor } from './basic-color';
 
 export const editorErrorForeground = registerColor('editorError.foreground', { dark: '#F48771', light: '#E51400', hc: null }, localize('editorError.foreground', 'Foreground color of error squigglies in the editor.'));
 export const editorErrorBorder = registerColor('editorError.border', { dark: null, light: null, hc: Color.fromHex('#E47777').transparent(0.8) }, localize('errorBorder', 'Border color of error boxes in the editor.'));
@@ -20,12 +21,12 @@ export const editorHintBorder = registerColor('editorHint.border', { dark: null,
  * Because of bug https://monacotools.visualstudio.com/DefaultCollection/Monaco/_workitems/edit/13254
  * we are *not* using the color white (or #ffffff, rgba(255,255,255)) but something very close to white.
  */
-export const editorBackground = registerColor('editor.background', { light: '#fffffe', dark: '#1E1E1E', hc: Color.black }, localize('editorBackground', 'Editor background color.'));
+export const editorBackground = registerColor('editor.background', { light: '#fffffe', dark: '#1E1E1E', hc: backgroundColor }, localize('editorBackground', 'Editor background color.'));
 
 /**
  * Editor foreground color.
  */
-export const editorForeground = registerColor('editor.foreground', { light: '#333333', dark: '#BBBBBB', hc: Color.white }, localize('editorForeground', 'Editor default foreground color.'));
+export const editorForeground = registerColor('editor.foreground', { light: '#333333', dark: '#BBBBBB', hc: foregroundColor }, localize('editorForeground', 'Editor default foreground color.'));
 
 /**
  * Editor widgets

@@ -3,6 +3,7 @@ import { registerColor, transparent } from '../color-registry';
 import { Color } from '../../common/color';
 import { contrastBorder } from './base';
 import { editorBackground } from './editor';
+import { hcActiveBorderColor, hcBorderColor } from './basic-color';
 
 // < --- Tabs --- >
 
@@ -45,7 +46,7 @@ export const TAB_BORDER = registerColor('tab.border', {
 export const TAB_ACTIVE_BORDER = registerColor('tab.activeBorder', {
   dark: editorBackground,
   light: editorBackground,
-  hc: editorBackground,
+  hc: contrastBorder,
 }, localize('tabActiveBorder', 'Border on the bottom of an active tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_UNFOCUSED_ACTIVE_BORDER = registerColor('tab.unfocusedActiveBorder', {
@@ -57,7 +58,7 @@ export const TAB_UNFOCUSED_ACTIVE_BORDER = registerColor('tab.unfocusedActiveBor
 export const TAB_ACTIVE_BORDER_TOP = registerColor('tab.activeBorderTop', {
   dark: TAB_BORDER,
   light: TAB_BORDER,
-  hc: null,
+  hc: '#000000',
 }, localize('tabActiveBorderTop', 'Border to the top of an active tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_UNFOCUSED_ACTIVE_BORDER_TOP = registerColor('tab.unfocusedActiveBorderTop', {
@@ -93,7 +94,7 @@ export const TAB_UNFOCUSED_INACTIVE_MODIFIED_BORDER = registerColor('tab.unfocus
 export const TAB_HOVER_BORDER = registerColor('tab.hoverBorder', {
   dark: '#00000000',
   light: '#00000000',
-  hc: '#00000000',
+  hc: hcBorderColor,
 }, localize('tabHoverBorder', 'Border to highlight tabs when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_UNFOCUSED_HOVER_BORDER = registerColor('tab.unfocusedHoverBorder', {
@@ -105,7 +106,7 @@ export const TAB_UNFOCUSED_HOVER_BORDER = registerColor('tab.unfocusedHoverBorde
 export const TAB_ACTIVE_FOREGROUND = registerColor('tab.activeForeground', {
   dark: Color.white,
   light: '#333333',
-  hc: Color.white,
+  hc: hcActiveBorderColor,
 }, localize('tabActiveForeground', 'Active tab foreground color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_INACTIVE_FOREGROUND = registerColor('tab.inactiveForeground', {
