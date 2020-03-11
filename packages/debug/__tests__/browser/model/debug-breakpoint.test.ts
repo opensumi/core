@@ -81,13 +81,13 @@ describe('DebugBreakpoint Model', () => {
       expect(breakpoint.verified).toBe(true);
     });
 
-    it('Should setEnable method be work', () => {
+    it('setEnable method should be work', () => {
       breakpoint.setEnabled(false);
       expect(breakpointManager.getBreakpoints).toBeCalledTimes(1);
       expect(breakpoint.enabled).toBe(false);
     });
 
-    it('Should open method be work while source does not existed', async (done) => {
+    it('open method should be work while source does not existed', async (done) => {
       breakpoint.update({raw});
       await breakpoint.open({} as any);
       expect(workbenchEditorService.open).toBeCalledTimes(1);
@@ -105,7 +105,7 @@ describe('DebugBreakpoint Model', () => {
       done();
     });
 
-    it('Should open method be work while source existed', async (done) => {
+    it('open method should be work while source existed', async (done) => {
       const newRaw: DebugProtocol.Breakpoint = {
         ...raw,
         source: {},
@@ -126,7 +126,7 @@ describe('DebugBreakpoint Model', () => {
       done();
     });
 
-    it('Should updateOrigins method be work', () => {
+    it('updateOrigins method should be work', () => {
       const newOrigin = {line: 2, column: 2, condition: 'condition2', hitCondition: 'hitCondition2', logMessage: 'log2'};
       breakpoint.updateOrigins(newOrigin);
       expect(breakpoint.origin.raw.line).toBe(newOrigin.line);
@@ -219,7 +219,7 @@ describe('DebugExceptionBreakpoint Model', () => {
       expect(breakpoint.enabled).toBe(meta.default);
     });
 
-    it ('Should setEnabled method be work', () => {
+    it ('setEnabled method should be work', () => {
       breakpoint.setEnabled(true);
       expect(breakpoint.enabled).toBe(true);
       expect(breakpointManager.updateExceptionBreakpoints).toBeCalledWith(meta.filter, true);
