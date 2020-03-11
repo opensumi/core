@@ -42,6 +42,8 @@ export const ExplorerResourcePanel = observer(({
     indent,
     filterMode,
     filter,
+    treeFilter,
+    pathFilter,
     onFilterChange,
     onClearClicked,
   }: ExplorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
@@ -49,6 +51,7 @@ export const ExplorerResourcePanel = observer(({
   const leftPadding = React.useMemo(() => {
     return indent;
   }, [indent]);
+
   const defaultLeftPadding = React.useMemo(() => {
     return baseIndent;
   }, [baseIndent]);
@@ -74,7 +77,7 @@ export const ExplorerResourcePanel = observer(({
           style={{ top: filterMode ? filterAreaHeight : 0 }}
           width={ viewState.width }
           height={ viewState.height - (filterMode ? filterAreaHeight : 0) }
-          filter={filter}
+          filter={ pathFilter ? '' : treeFilter}
           files={ files }
           onSelect={ onSelect }
           onTwistieClick={ onTwistieClick }

@@ -33,6 +33,7 @@ import { Directory, File } from './file-tree-item';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { FileContextKey } from './file-contextkey';
 import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
+import throttle = require('lodash.throttle');
 import * as styles from './index.module.less';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
@@ -195,8 +196,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   private _contextMenuResourceContext: ResourceContextKey;
 
-  private filterTimer;
-
   private decorationChangeEmitter = new Emitter<any>();
   decorationChangeEvent: Event<any> = this.decorationChangeEmitter.event;
 
@@ -225,9 +224,20 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   // 筛选模式开关
   filterMode: boolean = false;
 
+  // 这里分离出三个值是为了分离input值变化以及其余两种搜索
+  // 解决搜索及赋值同时操作存在卡顿问题
+  // 前置赋值，后置筛选逻辑
   @observable
   // 筛选关键字
   filter: string = '';
+
+  @observable
+  // 路径筛选关键字
+  treeFilter: string = '';
+
+  @observable
+  // 路径筛选关键字
+  pathFilter: string = '';
 
   private _selectTimer;
   private _selectTimes: number = 0;
@@ -298,12 +308,29 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   }
 
   getFiles = () => {
+    let files;
     if (this.filetreeService.isMutiWorkspace) {
-      return extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status);
+      files = extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status);
     } else {
       // 非多工作区不显示跟路径
-      return extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status).slice(1);
+      files = extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status).slice(1);
     }
+    if (this.pathFilter) {
+      const filterFilesUris = files
+        .filter((file: File | Directory) => {
+          return file.uri.toString().indexOf(this.pathFilter) >= 0;
+        })
+        .map((file) => file.uri);
+      files = files.filter((file: File | Directory) => {
+        for (const uri of filterFilesUris) {
+          if (file.uri.isEqualOrParent(uri)) {
+            return true;
+          }
+        }
+        return false;
+      });
+    }
+    return files;
   }
 
   get root(): URI {
@@ -346,7 +373,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       if (this.filter) {
         this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
       }
-      this.filter = '';
+      this.resetFilter();
     }
   }
 
@@ -643,23 +670,44 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
   }
 
+  protected filterFilesWithPath = throttle(this.doFilterFilesWithPath, 200);
+
+  protected filterFiles = throttle(this.doFilterFiles, 200);
+
   onFilterChange = (filter: string) => {
+    this.filter = filter;
     // 当存在搜索条件时，展开所有存在缓存的文件夹进行匹配
-    // throttle
-    if (this.filterTimer) {
-      clearTimeout(this.filterTimer);
+    const isPathFilter = /\//.test(filter);
+    if (isPathFilter) {
+      this.filterFilesWithPath();
+    } else {
+      this.filterFiles();
     }
-    this.filterTimer = setTimeout(() => {
-      this.doFilterFiles(filter);
-    }, 100);
   }
 
   @action
-  async doFilterFiles(filter: string) {
-    if (filter) {
+  resetFilter() {
+    this.filter = '';
+    this.treeFilter = '';
+    this.pathFilter = '';
+  }
+
+  @action
+  async doFilterFilesWithPath() {
+    if (this.filter) {
       await this.filetreeService.expandCachedFolder();
     }
-    this.filter = filter;
+    this.pathFilter = this.filter;
+  }
+
+  @action
+  async doFilterFiles() {
+    // 当利用树组件筛选能力时，需清空pathFilter保证树组件获取到树全集
+    this.pathFilter = '';
+    if (this.filter) {
+      await this.filetreeService.expandCachedFolder();
+    }
+    this.treeFilter = this.filter;
   }
 
   @action
