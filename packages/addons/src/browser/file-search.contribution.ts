@@ -38,6 +38,32 @@ export const quickFileOpen: Command = {
   label: 'Open File...',
 };
 
+const matchLineReg = /(\S+)\(\s*(\d*)\s*,*\s*(\d*)\s*\)*\s*$/;
+
+function getRangeByInput(input: string): monaco.Range | undefined {
+  const matchList = (input || '').match(matchLineReg) || [];
+
+  if (matchList.length < 2) {
+    return;
+  }
+
+  const lineInfo = {
+    line: Number(matchList[2] || 0),
+    start: Number(matchList[3] || 0),
+  };
+
+  return new monaco.Range(
+    lineInfo.line,
+    lineInfo.start,
+    lineInfo.line,
+    lineInfo.start,
+  );
+}
+
+function getValidateInput(input: string) {
+  return input.replace(matchLineReg, '$1');
+}
+
 @Injectable()
 class FileSearchActionLeftRight extends QuickOpenBaseAction {
 
@@ -59,7 +85,8 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
     await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
       preview: false,
       split: EditorGroupSplitAction.Right,
-      // groupIndex: 1,
+      range: getRangeByInput(this.injector.get(FileSearchQuickCommandHandler).currentLookFor),
+      focus: true,
     });
     // 隐藏 quickopen
     // 目前需要主动调用，后面改为失去焦点自动 @蛋总
@@ -97,7 +124,6 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
   @Autowired()
   fileSearchActionLeftRight: FileSearchActionLeftRight;
 
-  // FIXME: 这个貌似并没有使用？@墨蛰
   @Autowired()
   fileSearchActionUpDown: FileSearchActionUpDown;
 
@@ -107,6 +133,10 @@ class FileSearchActionProvider implements QuickOpenActionProvider {
 
   getActions() {
     return [this.fileSearchActionLeftRight];
+  }
+
+  getValidateInput(lookFor) {
+    return getValidateInput(lookFor);
   }
 }
 
@@ -135,10 +165,11 @@ export class FileSearchQuickCommandHandler {
   private readonly preferenceService: PreferenceService;
 
   private cancelIndicator = new CancellationTokenSource();
-  private currentLookFor: string = '';
   readonly default: boolean = true;
   readonly prefix: string = '...';
   readonly description: string = localize('file-search.command.fileOpen.description');
+
+  currentLookFor: string = '';
 
   getModel(): QuickOpenModel {
     return {
@@ -149,13 +180,14 @@ export class FileSearchQuickCommandHandler {
         const alreadyCollected = new Set<string>();
         let findResults: QuickOpenGroupItem[] = [];
 
-        lookFor = lookFor = lookFor.trim().replace(/\s/g, '');
+        lookFor = lookFor.trim().replace(/\s/g, '');
         this.currentLookFor = lookFor;
-        const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, lookFor, token);
+        const validLookFor = getValidateInput(lookFor);
+        const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, validLookFor, token);
 
         if (lookFor) {
-          this.logger.debug('lookFor', lookFor);
-          findResults = await this.getFindOutItems(alreadyCollected, lookFor, token);
+          this.logger.debug('lookFor', lookFor, validLookFor);
+          findResults = await this.getFindOutItems(alreadyCollected, validLookFor, token);
         }
         acceptor(recentlyResultList.concat(findResults), this.fileSearchActionProvider);
       },
@@ -277,8 +309,9 @@ export class FileSearchQuickCommandHandler {
   }
 
   private openFile(uri: URI) {
+    const range = getRangeByInput(this.currentLookFor);
     this.currentLookFor = '';
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { preview: false });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { preview: false, range, focus: true });
   }
 
   /**
@@ -304,7 +337,7 @@ export class FileSearchQuickCommandHandler {
     }
 
     // Normalize the user query.
-    const query: string = normalize(this.currentLookFor);
+    const query: string = normalize(getValidateInput(this.currentLookFor));
 
     /**
      * Score a given string.
