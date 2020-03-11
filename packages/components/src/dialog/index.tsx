@@ -35,8 +35,8 @@ export interface IDialogProps extends IOverlayProps {
 
 const DefaultButtons = ({ onCancel, onOk, cancelText, okText }) => (
   <>
-    <Button onClick={onCancel} type='secondary'>{cancelText || '取消'}</Button>
-    <Button onClick={onOk}>{okText || '确定'}</Button>
+    <Button size='large' onClick={onCancel} type='secondary'>{cancelText || '取消'}</Button>
+    <Button size='large' onClick={onOk}>{okText || '确定'}</Button>
   </>
 );
 
@@ -62,7 +62,7 @@ export const Dialog: React.FC<IDialogProps> = ({
       visible={visible}
       onClose={onClose}
       title={type === 'basic' ? title : null}
-      closable={false}
+      closable={type === 'basic'}
       footer={type === 'basic' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : undefined}
       afterClose={afterClose}>
       <>
@@ -72,7 +72,7 @@ export const Dialog: React.FC<IDialogProps> = ({
             {type !== 'basic' && title && <p className={styles.content_title}>{title}</p>}
             {typeof message === 'string' ? (<span className={styles.message}>{ message }</span>) : message}
           </div>
-          {closable && <button className={clx(styles.closex, getIcon('close'))} onClick={onClose}></button>}
+          {closable && type !== 'basic' && <button className={clx(styles.closex, getIcon('close'))} onClick={onClose}></button>}
         </div>
         {messageType !== MessageType.Empty && type !== 'basic' && <div className={styles.buttonWrap}>
           {type === 'confirm' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : <Button size='large' onClick={onClose}>知道了</Button>}
