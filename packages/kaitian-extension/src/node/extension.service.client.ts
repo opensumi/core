@@ -125,7 +125,6 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     const storagePath = await this.extensionStoragePathServer.getLastStoragePath() || DEFAULT_NLS_CONFIG_DIR;
     this.logger.log(`find ${languageId}， storagePath：${storagePath}`);
     const languagePath = Uri.file(path.join(storagePath, 'languagepacks.json')).toString();
-
     if (await this.fileService.exists(languagePath)) {
       const rawLanguagePacks = await this.fileService.resolveContent(languagePath);
       try {
@@ -148,7 +147,7 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     if (packageJson?.contributes && packageJson?.contributes?.localizations) {
       languagePacks = {
         ...languagePacks,
-        ...this.convertLanguagePack(packageJson, languagePath),
+        ...this.convertLanguagePack(packageJson, languagePack),
       };
     }
 
