@@ -221,7 +221,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }, 50, {maxWait: 200, leading: true, trailing: true})));
     this.addDispose(this.eventBus.on(EditorConfigurationChangedEvent, (e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);
-      if (e.payload.group.currentEditor) {
+      if (e.payload.group.currentEditor && (e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor.getModel()) {
         this.proxy.$acceptPropertiesChange({
           id: editorId,
           options: getEditorOption((e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor),
