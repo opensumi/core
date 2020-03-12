@@ -41,9 +41,3 @@ export const ktSideBarListSelectionBackground = registerColor('kt.sideBarList.se
   light: listInactiveSelectionBackground,
   hc: listInactiveSelectionBackground,
 }, localize('ktSideBarListSelectionBackground', 'SideBarList Select background'));
-
-export const ktSideBarSectionHeaderArrowForeground = registerColor('kt.sideBarSectionHeaderArrow.foreground', {
-  dark: foreground,
-  light: foreground,
-  hc: foreground,
-}, localize('ktSideBarSectionHeaderArrowForeground', 'SideBar section header arrow color'));
