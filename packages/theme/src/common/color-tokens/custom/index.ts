@@ -26,7 +26,6 @@ export * from './menu';
 export * from './notification';
 export * from './panel';
 export * from './settings';
-export * from './sidebar';
 export * from './statusbar';
 
 // WARNING: 自定义颜色请放到独立文件中，不要继续往这个文件添加了
