@@ -3,7 +3,7 @@ import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions,
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
@@ -171,7 +171,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return handler;
   }
 
-  getExtraMenu() {
+  getExtraMenu(): IContextMenu {
     return this.contextmenuService.createMenu({
       id: MenuId.ActivityBarExtra,
     });
