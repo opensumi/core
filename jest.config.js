@@ -32,7 +32,9 @@ module.exports = {
     '/tools/candidate-ext/',
     '/packages/status-bar/entry',
     '/packages/startup/entry',
-    '/packages/quick-open/entry'
+    '/packages/quick-open/entry',
+    // 终端渲染测试暂时不跟随单元测试
+    '/packages/terminal-next/__tests__/browser/render.test.ts',
   ],
   coveragePathIgnorePatterns: [
     '/dist/',
