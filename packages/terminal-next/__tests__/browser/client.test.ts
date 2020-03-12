@@ -3,6 +3,7 @@
  */
 import * as WebSocket from 'ws';
 import * as httpProxy from 'http-proxy';
+import * as os from 'os';
 import { createProxyServer, createWsServer } from './proxy';
 import {
   defaultName,
@@ -108,8 +109,8 @@ describe('Terminal Client', () => {
   });
 
   it('Terminal Find Next', async () => {
-    const searched = '/User';
-    client.findNext('/User');
+    const searched = os.platform() === 'linux' ? 'root' : 'User';
+    client.findNext(searched);
     expect(client.term.getSelection()).toEqual(searched);
   });
 
