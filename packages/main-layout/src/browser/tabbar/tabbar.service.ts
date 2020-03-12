@@ -12,6 +12,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
   hidden: boolean;
+  // 排序位置，小的在前 （考虑改成 index 语义更好？ @寻壑）
   priority: number;
 }
 const INIT_PANEL_SIZE = 280;
@@ -145,6 +146,7 @@ export class TabbarService extends WithEventBus {
     // tslint:disable-next-line:no-unused-variable
     const size = this.state.size; // 监听state长度
     // 排序策略：默认根据priority来做一次排序，后续根据存储的index来排序，未存储过的（新插入的，比如插件）在渲染后（时序控制）始终放在最后
+    // 排序为 state的 priority 从小到大 (注意和 componentInfo 中的 options 的 priority的含义不同，为了不breaking change，保留这种语义)
     return components.sort((pre, next) =>
       this.getContainerState(pre.options!.containerId).priority - this.getContainerState(next.options!.containerId).priority);
   }
@@ -191,11 +193,21 @@ export class TabbarService extends WithEventBus {
       // 渲染后状态已恢复，使用状态内的顺序或插到最后
       if (!this.storedState[containerId]) {
         // kaitian拓展都在渲染后注册
-        const insertIndex = componentInfo.options!.priority ? Math.max(Math.min(componentInfo.options!.priority, this.sortedContainers.length), 0) : 0;
+        // 注册策略： 此时 componnentInfo 的 priority 代表的是从后往前的 index;
+        // 比如 priority 如果为 0, 则会在最后
+        // 如果已有元素长度为 9, priority为 8， 则会在第1个元素之后
+        let insertIndex = Math.floor(this.sortedContainers.length - (componentInfo.options!.priority || 0));
+        if (insertIndex > this.sortedContainers.length) {
+          insertIndex = this.sortedContainers.length;
+        } else if (insertIndex < 0) {
+          insertIndex = 0;
+        }
         this.sortedContainers.splice(insertIndex, 0, componentInfo);
         for (let i = insertIndex; i < this.sortedContainers.length; i++) {
           const info = this.sortedContainers[i];
-          this.state.set(info.options!.containerId, {hidden: false, priority: i});
+          const containerId = info.options!.containerId;
+          const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
+          this.state.set(info.options!.containerId, {hidden: prevState.hidden , priority: i});
         }
       } else {
         this.state.set(componentInfo.options!.containerId, this.storedState[containerId]);
@@ -209,7 +221,8 @@ export class TabbarService extends WithEventBus {
       this.sortedContainers.splice(insertIndex, 0, componentInfo);
       for (let i = insertIndex; i < this.sortedContainers.length; i++) {
         const info = this.sortedContainers[i];
-        this.state.set(info.options!.containerId, {hidden: false, priority: i});
+        const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
+        this.state.set(info.options!.containerId, {hidden: prevState.hidden, priority: i});
       }
     }
     disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
