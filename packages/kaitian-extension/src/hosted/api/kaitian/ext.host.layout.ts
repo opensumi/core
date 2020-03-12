@@ -1,6 +1,6 @@
 import { IExtHostCommands } from '../../../common/vscode';
 import { ITabbarHandler, IMainThreadLayout, IExtHostLayout } from '../../../common/kaitian/layout';
-import { Disposable, Emitter, stringify } from '@ali/ide-core-common';
+import { Emitter } from '@ali/ide-core-common';
 import { MainThreadKaitianAPIIdentifier } from '../../../common/kaitian';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtension } from '../../../common';
@@ -62,20 +62,20 @@ export function createLayoutAPIFactory(
   extension: IExtension,
 ) {
   return {
-    toggleBottomPanel: async () => {
-      return await extHostCommands.executeCommand('main-layout.bottom-panel.toggle');
+    toggleBottomPanel: async (size?: number) => {
+      return await extHostCommands.executeCommand('main-layout.bottom-panel.toggle', undefined, size);
     },
-    toggleLeftPanel: async () => {
-      return await extHostCommands.executeCommand('activity-bar.left.toggle');
+    toggleLeftPanel: async (size?: number) => {
+      return await extHostCommands.executeCommand('main-layout.left-panel.toggle', undefined, size);
     },
-    toggleRightPanel: async () => {
-      return await extHostCommands.executeCommand('activity-bar.right.toggle');
+    toggleRightPanel: async (size?: number) => {
+      return await extHostCommands.executeCommand('main-layout.right-panel.toggle', undefined, size);
     },
-    showRightPanel: async () => {
-      return await extHostCommands.executeCommand('activity-bar.right.toggle', true);
+    showRightPanel: async (size?: number) => {
+      return await extHostCommands.executeCommand('main-layout.right-panel.toggle', true, size);
     },
     hideRightPanel: async () => {
-      return await extHostCommands.executeCommand('activity-bar.right.toggle', false);
+      return await extHostCommands.executeCommand('main-layout.right-panel.toggle', false);
     },
     activatePanel: async (id) => {
       return await extHostCommands.executeCommand(`workbench.view.${id}`);
