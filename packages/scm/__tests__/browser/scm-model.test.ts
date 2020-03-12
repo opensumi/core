@@ -41,6 +41,8 @@ describe('test for scm.store.ts', () => {
       const repo1 = scmService.registerSCMProvider(provider1);
       const repo2 = scmService.registerSCMProvider(provider2);
 
+      repo1.setSelected(true);
+
       injector.addProviders(ViewModelContext);
       store = injector.get(ViewModelContext);
 
@@ -48,6 +50,9 @@ describe('test for scm.store.ts', () => {
       expect(store['scmProviderCtxKey'].get()).toBe('git');
       expect(store.repoList[0].provider).toEqual(provider1);
       expect(store.repoList[1].provider).toEqual(provider2);
+
+      expect(store.selectedRepos.length).toBe(1);
+      expect(store.selectedRepos[0]).toEqual(repo1);
 
       repo1.dispose();
       expect(store.repoList.length).toBe(1);
