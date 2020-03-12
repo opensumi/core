@@ -3,7 +3,10 @@
  */
 import * as WebSocket from 'ws';
 import * as httpProxy from 'http-proxy';
+<<<<<<< HEAD
 import * as os from 'os';
+=======
+>>>>>>> 948a11ec85ed0bd6e151ef06256d31664e298677
 import { createProxyServer, createWsServer } from './proxy';
 import {
   defaultName,
