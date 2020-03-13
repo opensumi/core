@@ -19,9 +19,8 @@ function getChangeType(change: IChange): ChangeType {
     return ChangeType.Add;
   } else if (change.modifiedEndLineNumber === 0) {
     return ChangeType.Delete;
-  } else {
-    return ChangeType.Modify;
   }
+  return ChangeType.Modify;
 }
 
 @Injectable()

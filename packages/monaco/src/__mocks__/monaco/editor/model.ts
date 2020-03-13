@@ -15,6 +15,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   _lines: string[];
   uri: monaco.Uri;
   language: string;
+  _isDisposed: boolean = false;
 
   _onDidChangeContent = new Emitter<monaco.editor.IModelContentChangedEvent>();
   onDidChangeContent = this._onDidChangeContent.event;
@@ -144,7 +145,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     return { startLineNumber: 4, startColumn: 1, endLineNumber: 9, endColumn: 8 } as monaco.Range;
   }
   isDisposed(): boolean {
-    throw new Error('Method not implemented.');
+    return this._isDisposed;
   }
 
   findMatches(searchString: any, searchScope: any, isRegex: any, matchCase: any, wordSeparators: any, captureMatches: any, limitResultCount?: any) {
