@@ -328,12 +328,11 @@ export class TabbarService extends WithEventBus {
   }
   handleDrop(e: React.DragEvent, target: string) {
     if (e.dataTransfer.getData('containerId')) {
-      const containerId = e.dataTransfer.getData('containerId');
-      const sourceState = this.getContainerState(containerId);
-      const targetState = this.getContainerState(target);
-      const sourcePriority = sourceState.priority;
-      sourceState.priority = targetState.priority;
-      targetState.priority = sourcePriority;
+      const source = e.dataTransfer.getData('containerId');
+      const containers = this.visibleContainers;
+      const sourceIndex = containers.findIndex((containerInfo) => source === containerInfo.options!.containerId);
+      const targetIndex = containers.findIndex((containerInfo) => target === containerInfo.options!.containerId);
+      this.doInsertTab(containers, sourceIndex, targetIndex);
       this.storeState();
     }
   }
@@ -345,6 +344,28 @@ export class TabbarService extends WithEventBus {
         this.state.set(containerId, this.storedState[containerId]);
       }
     }
+  }
+
+  protected doInsertTab(containers: ComponentRegistryInfo[], sourceIndex: number, targetIndex: number) {
+    const targetPriority = this.getContainerState(containers[targetIndex].options!.containerId).priority;
+    const changePriority = (sourceIndex: number, targetIndex: number) => {
+      const sourceState = this.getContainerState(containers[sourceIndex].options!.containerId);
+      const targetState = this.getContainerState(containers[targetIndex].options!.containerId);
+      sourceState.priority = targetState.priority;
+    };
+    let index: number;
+    if (sourceIndex > targetIndex) {
+      // 后往前拖，中间的tab依次下移
+      for (index = targetIndex; index < sourceIndex; index ++) {
+        changePriority(index, index + 1);
+      }
+    } else {
+      // 前往后拖，中间的上移
+      for (index = targetIndex; index > sourceIndex; index --) {
+        changePriority(index, index - 1);
+      }
+    }
+    this.getContainerState(containers[index].options!.containerId).priority = targetPriority;
   }
 
   protected storeState() {
