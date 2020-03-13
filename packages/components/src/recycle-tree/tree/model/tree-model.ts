@@ -1,6 +1,6 @@
 import { Event, Emitter } from '@ali/ide-core-common';
 import { ISerializableState, TreeStateManager, TreeStateWatcher } from './treeState';
-import { CompositeTreeNode } from '../tree-node';
+import { CompositeTreeNode } from '../TreeNode';
 import { ITree } from '../../types';
 
 export class TreeModel {
@@ -31,9 +31,6 @@ export class TreeModel {
    *  - 临时的输入框节点
    *
    */
-  public async loadTreeState(state: string);
-  // tslint:disable-next-line:unified-signatures
-  public async loadTreeState(state: ISerializableState);
   public async loadTreeState(state: ISerializableState | string) {
     if (typeof state === 'string') {
       state = JSON.parse(state);

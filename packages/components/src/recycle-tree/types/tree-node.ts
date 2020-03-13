@@ -55,3 +55,8 @@ export interface ICompositeTreeNode extends ITreeNode {
 }
 
 export type ITreeNodeOrCompositeTreeNode = ITreeNode | ICompositeTreeNode;
+
+export enum TreeNodeType {
+  TreeNode = 1,
+  CompositeTreeNode,
+}

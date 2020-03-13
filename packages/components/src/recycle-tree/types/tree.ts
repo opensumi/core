@@ -1,4 +1,4 @@
-import { CompositeTreeNode } from '../tree-node';
+import { CompositeTreeNode } from '../tree/TreeNode';
 import { ITreeNodeOrCompositeTreeNode } from './tree-node';
 
 export interface ITree {

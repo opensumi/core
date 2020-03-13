@@ -1,6 +1,6 @@
 import { Event, Emitter } from '@ali/ide-core-common';
 import { ISerializableState } from './types';
-import { CompositeTreeNode, TreeNode } from '../../tree-node';
+import { CompositeTreeNode, TreeNode } from '../../TreeNode';
 import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../../types';
 import { Path } from '@ali/ide-core-common/lib/path';
 
@@ -32,7 +32,7 @@ export class TreeStateManager {
   private expandedDirectories: Map<CompositeTreeNode, string> = new Map();
   private _scrollOffset: number = 0;
   private stashing: boolean = false;
-  private stashKeyframes: Map<number, StashKeyFrameFlag>;
+  private stashKeyframes: Map<number, StashKeyFrameFlag> | null;
   private stashLockingItems: Set<TreeNode> = new Set();
 
   private onDidChangeScrollOffsetEmitter: Emitter<number> = new Emitter();
@@ -105,8 +105,13 @@ export class TreeStateManager {
     }
   }
 
+  /**
+   * 处理展开状态的变更
+   * @private
+   * @memberof TreeStateManager
+   */
   private handleExpansionChange = (target: CompositeTreeNode, isExpanded: boolean, isVisibleAtSurface: boolean) => {
-    if (this.stashing) {
+    if (this.stashing && this.stashKeyframes) {
       this.stashKeyframes.set(target.id, isExpanded ? StashKeyFrameFlag.Expanded : StashKeyFrameFlag.Collapsed);
     }
     if (this.stashKeyframes && !this.stashing) {
@@ -155,6 +160,53 @@ export class TreeStateManager {
       const newPath = new Path(this.root.path).relative(new Path(target.path))?.toString() as string;
       this.expandedDirectories.set(target, newPath);
       this.onDidChangeRelativePathEmitter.fire({prevPath, newPath});
+    }
+  }
+
+  /**
+   * 开始记录点
+   */
+  public beginStashing() {
+    this.stashing = true;
+    this.stashKeyframes = new Map();
+  }
+
+  /**
+   * 结束记录点
+   */
+  public endStashing() {
+    this.stashing = false;
+    this.stashLockingItems.clear();
+  }
+
+  /**
+   * 反转记录的所有折叠/展开状态
+   * 用于实现一些临时的查看操作
+   * 例如：
+   * 调用beginStashing ==> 展开/折叠某个目录 ==> 调用endStashing ==> 处理完毕后调用reverseStash，回到原来的状态
+   */
+  public async reverseStash() {
+    if (!this.stashKeyframes) {
+      return;
+    }
+    this.endStashing();
+    const keyframes = Array.from(this.stashKeyframes);
+    this.stashKeyframes = null;
+    for (const [targetID, flags] of keyframes) {
+      // tslint:disable-next-line:no-bitwise
+      const frameDisabled = (flags & StashKeyFrameFlag.Disabled) === StashKeyFrameFlag.Disabled;
+      const target: CompositeTreeNode = TreeNode.getTreeNodeById(targetID) as CompositeTreeNode;
+      // 判断当前操作对象是否有效，无效则做下一步操作
+      if (!target || frameDisabled) {
+        continue;
+      }
+      // tslint:disable-next-line:no-bitwise
+      if ((flags & StashKeyFrameFlag.Expanded) === StashKeyFrameFlag.Expanded) {
+        target.setCollapsed();
+      // tslint:disable-next-line:no-bitwise
+      } else if ((flags & StashKeyFrameFlag.Collapsed) === StashKeyFrameFlag.Collapsed) {
+        await target.setExpanded();
+      }
     }
   }
 }

@@ -28,7 +28,11 @@ export class TreeNode implements ITreeNode {
     return () => id++;
   })();
 
-  public static getFileEntryById(id: number) {
+  public static is(node: any): node is ITreeNode {
+    return !!node && 'depth' in node && 'name' in node && 'path' in node && 'id' in node;
+  }
+
+  public static getTreeNodeById(id: number) {
     return TreeNode.idToTreeNode.get(id);
   }
 
@@ -192,6 +196,7 @@ export class TreeNode implements ITreeNode {
 }
 
 export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
+
   private static defaultSortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
     if (a.constructor === b.constructor) {
       return a.name > b.name ? 1
@@ -205,6 +210,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   public static is(node: any): node is ICompositeTreeNode {
     return !!node && 'children' in node;
+  }
+
+  public static isRoot(node: any): boolean {
+    return CompositeTreeNode.is(node) && !node.parent;
   }
 
   protected _children: ITreeNodeOrCompositeTreeNode[] = [];
@@ -600,4 +609,40 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
+  /**
+   * 根据节点获取节点ID下标位置
+   * @param {number} id
+   * @returns
+   * @memberof CompositeTreeNode
+   */
+  public getIndexAtTreeNodeId(id: number) {
+    if (this.flattenedBranch) {
+      return this.flattenedBranch.indexOf(id);
+    }
+    return -1;
+  }
+
+  /**
+   * 根据节点获取节点下标位置
+   * @param {ITreeNodeOrCompositeTreeNode} node
+   * @returns
+   * @memberof CompositeTreeNode
+   */
+  public getIndexAtTreeNode(node: ITreeNodeOrCompositeTreeNode) {
+    if (this.flattenedBranch) {
+      return this.flattenedBranch.indexOf(node.id);
+    }
+    return -1;
+  }
+
+  /**
+   * 根据下标位置获取节点
+   * @param {number} index
+   * @returns
+   * @memberof CompositeTreeNode
+   */
+  public getTreeNodeAtIndex(index: number) {
+    const id = this.flattenedBranch![index];
+    return TreeNode.getTreeNodeById(id);
+  }
 }
