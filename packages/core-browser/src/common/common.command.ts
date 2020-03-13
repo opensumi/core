@@ -492,6 +492,11 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.autoSave',
     category: CATEGORY,
   };
+
+  export const FOCUS_ACTIVE_EDITOR_GROUP: Command = {
+    id: 'editor.focusActiveEditorGroup',
+    category: CATEGORY,
+  };
 }
 
 export namespace SEARCH_COMMANDS {
