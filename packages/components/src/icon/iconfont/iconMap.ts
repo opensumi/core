@@ -1,4 +1,4 @@
-export default {
+export const defaultIconfont = {
   'doubleright': 'doubleright',
   'mobile': 'mobile',
   'retrieval': 'retrieval',

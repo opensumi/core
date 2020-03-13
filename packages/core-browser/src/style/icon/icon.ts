@@ -2,7 +2,7 @@ import { SymbolKind, getLogger } from '@ali/ide-core-common';
 import { warning } from '@ali/ide-core-common/lib/utils/warning';
 
 import { IDE_ICONFONT_CN_CSS } from './ide-iconfont';
-import iconfontMap from './iconfont/iconMap';
+import { defaultIconfont } from '@ali/ide-components/src/icon';
 
 export const DEFAULT_CDN_ICON = IDE_ICONFONT_CN_CSS;
 
@@ -87,7 +87,7 @@ const typoIconMap = {
   'add': 'plus',
 };
 
-const _defaultIconMap = Object.assign({}, iconfontMap, typoIconMap);
+const _defaultIconMap = Object.assign({}, defaultIconfont, typoIconMap);
 
 export const defaultIconMap = new Proxy(_defaultIconMap, {
   get(obj, prop: string) {
