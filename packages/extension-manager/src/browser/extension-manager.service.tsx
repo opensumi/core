@@ -279,6 +279,21 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return path;
   }
 
+  async installExtensionByReleaseId(releaseId: string) {
+    const path = await this.extensionManagerServer.installExtensionByReleaseId(releaseId);
+    // 在后台去启用插件
+    await this.extensionService.postChangedExtension(false, path);
+    const extensionProp = await this.extensionService.getExtensionProps(path);
+    if (extensionProp) {
+      const extension = await this.transformFromExtensionProp(extensionProp);
+      // 添加到 extensions，下次获取 rawExtension
+      runInAction(() => {
+        this.extensions.push(extension);
+      });
+    }
+    return path;
+  }
+
   /**
    * 安装插件后的后置处理
    * @param extensionId

@@ -481,6 +481,8 @@ export const localizationBundle = {
     'marketplace.extension.changelog': 'Changelog',
     'marketplace.extension.installed': 'Installed',
     'marketplace.quickopen.install': 'Install Extension',
+    'marketplace.quickopen.install.byReleaseId': 'Install Extension (ReleaseId)',
+    'marketplace.quickopen.install.releaseId': 'Extension ReleaseId',
     'marketplace.quickopen.install.id': 'Extension ID',
     'marketplace.quickopen.install.id.required': 'Extension ID is required',
     'marketplace.quickopen.install.version.required': 'Extension version is require',
