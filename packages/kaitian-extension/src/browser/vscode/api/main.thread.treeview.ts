@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { TreeViewItem, TreeViewNode, CompositeTreeViewNode, TreeViewOptions } from '../../../common/vscode';
+import { TreeViewItem, TreeViewNode, CompositeTreeViewNode, TreeViewBaseOptions } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { TreeNode, MenuPath, Emitter, DisposableStore, toDisposable } from '@ali/ide-core-browser';
@@ -35,7 +35,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     this.disposable.dispose();
   }
 
-  $registerTreeDataProvider(treeViewId: string, options: TreeViewOptions<any>): void {
+  $registerTreeDataProvider(treeViewId: string, options: TreeViewBaseOptions): void {
     if (!this.dataProviders.has(treeViewId)) {
       const disposable = new DisposableStore();
       const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.iconService);

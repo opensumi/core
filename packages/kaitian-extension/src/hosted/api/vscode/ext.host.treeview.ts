@@ -41,7 +41,12 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       throw new Error('Options with treeDataProvider is mandatory');
     }
 
-    const treeView = new ExtHostTreeView(treeViewId, options, this.proxy, this.extHostCommand);
+    const treeView = new ExtHostTreeView(
+      treeViewId,
+      options,
+      this.proxy,
+      this.extHostCommand,
+    );
     this.treeViews.set(treeViewId, treeView);
 
     return {
@@ -168,7 +173,14 @@ class ExtHostTreeView<T> implements IDisposable {
 
     this.treeDataProvider = this.options.treeDataProvider;
 
-    proxy.$registerTreeDataProvider(treeViewId, options);
+    // 将 options 直接取值，避免循环引用导致序列化异常
+    proxy.$registerTreeDataProvider(
+      treeViewId,
+      {
+        showCollapseAll: !!options.showCollapseAll,
+        canSelectMany: !!options.canSelectMany,
+      },
+    );
 
     if (this.treeDataProvider.onDidChangeTreeData) {
 
