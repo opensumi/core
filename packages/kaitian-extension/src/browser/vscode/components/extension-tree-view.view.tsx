@@ -13,11 +13,11 @@ import { useDisposable } from '@ali/ide-core-browser/lib/utils/react-hooks';
 
 import { ExtensionViewService } from './extension-view.service';
 import { ExtensionTreeViewModel, IExtensionTreeViewModel } from './extension-tree-view.model';
-import { TreeViewItem, TreeViewOptions } from '../../../common/vscode';
+import { TreeViewItem, TreeViewBaseOptions } from '../../../common/vscode';
 
 export interface ExtensionTabbarTreeViewProps {
   injector: Injector;
-  options: TreeViewOptions<any>;
+  options: TreeViewBaseOptions;
   dataProvider: TreeViewDataProviderMain;
   viewState: ViewState;
   rendered: boolean;
@@ -73,7 +73,7 @@ export const ExtensionTabbarTreeView = observer(({
   const { width, height } = viewState;
   const scrollContainerStyle = { width, height };
   const injector = useInjectable(INJECTOR_TOKEN);
-  const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId, options]);
+  const extensionViewService: ExtensionViewService = injector.get(ExtensionViewService, [viewId]);
   const menuRegistry: IMenuRegistry = useInjectable(IMenuRegistry);
   const commandRegistry: CommandRegistry = useInjectable(CommandRegistry);
   const { canSelectMany, showCollapseAll }  = options || {};

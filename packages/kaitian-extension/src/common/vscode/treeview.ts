@@ -9,7 +9,7 @@ import { ThemeType } from '@ali/ide-theme';
 
 export interface IMainThreadTreeView {
   $unregisterTreeDataProvider(treeViewId: string): void;
-  $registerTreeDataProvider<T>(treeViewId: string, options: TreeViewOptions<T>): void;
+  $registerTreeDataProvider<T>(treeViewId: string, options: TreeViewBaseOptions): void;
   $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): void;
   $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): void;
   $reveal(treeViewId: string, treeItemId: string): Promise<any>;
@@ -88,9 +88,7 @@ export interface TreeView<T> extends IDisposable {
   reveal(element: T, options?: { select?: boolean, focus?: boolean, expand?: boolean | number }): PromiseLike<void>;
 }
 
-export interface TreeViewOptions<T> {
-  treeDataProvider: vscode.TreeDataProvider<T>;
-
+export interface TreeViewBaseOptions {
   /**
    * 是否展示折叠所有功能（panel上功能）
    */
@@ -102,6 +100,10 @@ export interface TreeViewOptions<T> {
 
    */
   canSelectMany?: boolean;
+}
+
+export interface TreeViewOptions<T> extends TreeViewBaseOptions {
+  treeDataProvider: vscode.TreeDataProvider<T>;
 }
 
 export interface TreeViewNode extends SelectableTreeNode {
