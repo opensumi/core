@@ -31,9 +31,10 @@ export const Option: React.FC<React.PropsWithChildren<{
   children,
   disabled,
   onClick,
+  className,
   ...otherProps
 }) => (
-  <option {...otherProps} disabled={disabled} value={value}>{children}</option>
+  <span {...otherProps} className={classNames(className, { 'kt-option-disabled': disabled })} onClick={() => onClick && !disabled && onClick(value)}>{children}</span>
 );
 
 function noop(...args: any) { }
@@ -128,7 +129,7 @@ export const Select: React.FC<ISelectProps> = ({
 
   return (<div className={classNames('kt-select-container', className)}>
     <p className={selectClasses} onClick={toggleOpen} style={style}>
-      <option>{(children && getLabelWithChildrenProps(value, children)) || options && (React.isValidElement(options[0]) ? options[0].props?.value : options[0])}</option>
+      <span className={'kt-select-option'}>{(children && getLabelWithChildrenProps(value, children)) || options && (React.isValidElement(options[0]) ? options[0].props?.value : options[0])}</span>
       <Icon iconClass={getIcon('down')} />
     </p>
 
