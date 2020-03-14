@@ -6,6 +6,7 @@ import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
 import { EditorModule } from '@ali/ide-editor/lib/browser';
 import { ExplorerModule } from '@ali/ide-explorer/lib/browser';
 import { FileTreeModule } from '@ali/ide-file-tree/lib/browser';
+import { FileTreeNextModule } from '@ali/ide-file-tree-next/lib/browser';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
 import { SearchModule } from '@ali/ide-search/lib/browser';
@@ -58,6 +59,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     EditorModule,
     ExplorerModule,
     FileTreeModule,
+    FileTreeNextModule,
     FileServiceClientModule,
     StaticResourceModule,
     SearchModule,

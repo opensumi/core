@@ -1,8 +1,8 @@
-import { TreeNode, CompositeTreeNode } from './tree-node';
+import { TreeNode, CompositeTreeNode } from './TreeNode';
 import { Emitter, WaitUntilEvent, DisposableCollection, Mutable } from '@ali/ide-core-common';
 import { ITreeNodeOrCompositeTreeNode, ITree } from '../types';
 
-export class Tree implements ITree {
+export abstract class Tree implements ITree {
   protected _root: CompositeTreeNode | undefined;
   protected readonly onChangedEmitter = new Emitter<void>();
   protected readonly onNodeRefreshedEmitter = new Emitter<CompositeTreeNode & WaitUntilEvent>();
@@ -36,9 +36,7 @@ export class Tree implements ITree {
     this.onChangedEmitter.fire(undefined);
   }
 
-  async resolveChildren(parent: CompositeTreeNode): Promise<ITreeNodeOrCompositeTreeNode[] | null> {
-    return parent.children;
-  }
+  abstract async resolveChildren(parent?: CompositeTreeNode): Promise<ITreeNodeOrCompositeTreeNode[] | null>;
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
     if (a.constructor === b.constructor) {

@@ -79,13 +79,13 @@ export interface IRecycleTreeHandle {
   // 新建可折叠节点
   promptNewCompositeTreeNode(at: string | CompositeTreeNode): Promise<NewPromptHandle>;
   // 重命名节点
-  promptRename(pathOrTreeNode: string ｜ TreeNode | CompositeTreeNode): Promise<RenamePromptHandle>;
+  promptRename(pathOrTreeNode: string | TreeNode | CompositeTreeNode): Promise<RenamePromptHandle>;
   // 展开节点
   expandNode(pathOrTreeNode: string | CompositeTreeNode): Promise<void>;
   // 折叠节点
   collapseNode(pathOrTreeNode: string | CompositeTreeNode): Promise<void>;
   // 定位节点位置，滚动条将会滚动到对应可视区域
-  ensureVisible(pathOrTreeNode: string ｜ TreeNode | CompositeTreeNode, align?: Align): Promise<void>;
+  ensureVisible(pathOrTreeNode: string | TreeNode | CompositeTreeNode, align?: Align): Promise<void>;
   // 获取当前TreeModel
   getModel(): TreeModel;
   // TreeModel变更事件
@@ -253,7 +253,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (!TreeNode.is(node) || CompositeTreeNode.isRoot(node)) {
       throw new TypeError(`Object not a valid Node`);
     }
-    if (this.scrollIntoView(node, align)) {
+    if (this.scrollIntoView(node as TreeNode, align)) {
       state.excludeFromStash(node);
       return;
     }

@@ -39,7 +39,7 @@ export interface ITreeNode {
   /**
    * 是否处于焦点状态
    */
-  activated: boolean;
+  focused?: boolean;
   /**
    * 移动函数
    */

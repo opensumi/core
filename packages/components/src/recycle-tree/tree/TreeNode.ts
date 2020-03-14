@@ -50,7 +50,7 @@ export class TreeNode implements ITreeNode {
 
   protected isSelected: boolean = false;
 
-  protected isActivated: boolean = false;
+  protected isFocused: boolean = false;
 
   protected _tree: ITree;
   private resolvedPathCache: string;
@@ -73,8 +73,8 @@ export class TreeNode implements ITreeNode {
     return this.isSelected;
   }
 
-  get activated() {
-    return this.isActivated;
+  get focused() {
+    return this.isFocused;
   }
 
   /**
