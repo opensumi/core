@@ -101,7 +101,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     >
       <div
         className={cls(
-          styles.treenode,
+          styles.file_tree_node,
           {
             [styles.mod_focused]: isFocused,
             [styles.mod_selected]: !isFocused && isSelected,
