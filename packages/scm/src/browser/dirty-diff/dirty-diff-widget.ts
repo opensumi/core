@@ -1,7 +1,7 @@
 import { ZoneWidget } from '@ali/ide-monaco-enhance/lib/browser';
 import { basename } from '@ali/ide-core-common/lib/utils/paths';
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
-import { getIcon, ROTATE_TYPE } from '@ali/ide-core-browser';
+import { getIcon } from '@ali/ide-core-browser';
 import { URI, CommandService } from '@ali/ide-core-common';
 import { ScmChangeTitleCallback } from '@ali/ide-core-browser/lib/menu/next';
 
@@ -121,6 +121,11 @@ export class DirtyDiffWidget extends ZoneWidget {
 
   protected handleAction(type: DirtyDiffWidgetActionType) {
     let lineNumber: number;
+    /**
+     * FIXME: 这里命名一致性差
+     * 父组件内部的 currentRange
+     * 子组件内部有 _currentIndex, 但是方法却是 updateCurrent
+     */
     const current = this.currentRange;
 
     const args: Parameters<ScmChangeTitleCallback> = [

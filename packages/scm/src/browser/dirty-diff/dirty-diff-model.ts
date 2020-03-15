@@ -183,7 +183,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   }
 
   // 查找下一个changes
-  findNextClosestChange(lineNumber: number, inclusive = true): number {
+  private findNextClosestChange(lineNumber: number, inclusive = true): number {
     for (let i = 0; i < this.changes.length; i++) {
       const change = this.changes[i];
 
@@ -202,12 +202,13 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   }
 
   findNextClosestChangeLineNumber(lineNumber: number, inclusive = true) {
+    // FIXME: handle changes = []
     const index = this.findNextClosestChange(lineNumber, inclusive);
     return this.changes[index].modifiedStartLineNumber;
   }
 
   // 查找上一个changes
-  findPreviousClosestChange(lineNumber: number, inclusive = true): number {
+  private findPreviousClosestChange(lineNumber: number, inclusive = true): number {
     for (let i = this.changes.length - 1; i >= 0; i--) {
       const change = this.changes[i];
 
@@ -227,6 +228,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
   findPreviousClosestChangeLineNumber(lineNumber: number, inclusive = true) {
     const index = this.findPreviousClosestChange(lineNumber, inclusive);
+    // FIXME: handle changes = []
     return this.changes[index].modifiedStartLineNumber;
   }
 
