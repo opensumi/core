@@ -2,14 +2,15 @@ import { IDialogService } from '@ali/ide-overlay';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { DefaultUriLabelProvider } from '@ali/ide-core-browser/lib/services';
-import { Disposable, URI, localize, CorePreferences } from '@ali/ide-core-browser';
+import { Disposable, URI, localize, CorePreferences, ISchemaRegistry, ISchemaStore} from '@ali/ide-core-browser';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks/file-service-client';
 import { FileSystemResourceProvider } from '@ali/ide-file-scheme/lib/browser/file-scheme.contribution';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { FileSchemeDocNodeServicePath } from '@ali/ide-file-scheme';
 import md5 = require('md5');
-import { FileSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
+import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from '@ali/ide-file-scheme/lib/browser/file-doc';
+import { FileSchemeModule } from '../../src/browser';
 
 describe('file scheme tests', () => {
 
@@ -21,7 +22,7 @@ describe('file scheme tests', () => {
     (global as any).monaco = undefined;
   });
 
-  const injector = createBrowserInjector([]);
+  const injector = createBrowserInjector([FileSchemeModule]);
   injector.addProviders({
     token: IFileServiceClient,
     useClass: MockFileServiceClient,
@@ -33,6 +34,15 @@ describe('file scheme tests', () => {
     useValue: {},
   }, {
     token: CorePreferences,
+    useValue: {
+      'editor.readonlyFiles': ['.readonly.js'],
+    },
+    override: true,
+  }, {
+    token: ISchemaRegistry,
+    useValue: {},
+  }, {
+    token: ISchemaStore,
     useValue: {},
   });
   let dialogResult: string | undefined;
@@ -125,6 +135,27 @@ describe('file scheme tests', () => {
 
     expect(await documentProvider.provideEditorDocumentModelContent(new URI('file:///test.ts'), 'utf8')).toBe(docContentPrefix + 'file:///test.ts');
     expect(await documentProvider.provideEditorDocumentModelContentMd5(new URI('file:///test.ts'), 'utf8')).toBe(md5(docContentPrefix + 'file:///test.ts'));
+
+    expect(documentProvider.isReadonly(new URI('file:///a/b/c.readonly.js'))).toBeTruthy();
+    expect(documentProvider.isReadonly(new URI('file:///a/b/c.n.js'))).toBeFalsy();
+
+    const vscodeDoc = injector.get(VscodeSchemeDocumentProvider);
+
+    expect(vscodeDoc.handlesScheme('vscode')).toBeTruthy();
+    expect(vscodeDoc.isReadonly(new URI('vscode:///anyUri'))).toBeTruthy();
+    injector.mock(ISchemaRegistry, 'getSchemaContributions', jest.fn(() => {
+      return {
+        schemas: {
+          [new URI('vscode:///testuri').toString()] : {
+            testSchemaKey: 'string',
+          },
+        },
+      };
+    }));
+
+    expect(await vscodeDoc.provideEditorDocumentModelContent(new URI('vscode:///testuri'), 'utf-8')).toBe(JSON.stringify({
+      testSchemaKey: 'string',
+    }));
 
     done();
   });

@@ -4,6 +4,8 @@ import { WebviewServiceImpl } from '../../src/browser/webview.service';
 import { IThemeService, ITheme } from '@ali/ide-theme';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { Disposable } from '@ali/ide-core-common';
+import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 const injector = createBrowserInjector([]);
 
@@ -32,6 +34,13 @@ injector.addProviders({
       return uri;
     },
   },
+}, {
+  token: EditorComponentRegistry,
+  useValue: {},
+},
+{
+  token: WorkbenchEditorService,
+  useValue: {},
 });
 
 mockIframeAndElectronWebview();
@@ -65,6 +74,23 @@ describe('web platform webview service test suite', () => {
     }, 100);
   });
 
+  it('should be able to create electron webview webviewComponent', async (done ) => {
+    const registerFn = jest.fn(() => {
+      return new Disposable();
+    });
+    const registerFn2 = jest.fn(() => {
+      return new Disposable();
+    });
+    injector.mock(EditorComponentRegistry, 'registerEditorComponent', registerFn);
+    injector.mock(EditorComponentRegistry, 'registerEditorComponentResolver', registerFn2);
+    const service: IWebviewService = injector.get(IWebviewService);
+    const webview = service.createEditorPlainWebviewComponent();
+    expect(webview).toBeDefined();
+    expect(registerFn).toBeCalled();
+    expect(registerFn2).toBeCalled();
+    done();
+  });
+
 });
 
 describe('electron platform webview service test suite', () => {
@@ -91,6 +117,23 @@ describe('electron platform webview service test suite', () => {
     webview.appendTo(document.createElement('div'));
     await webview.loadURL('http://example.test.com');
     expect(webview.url).toBe('http://example.test.com');
+    done();
+  });
+
+  it('should be able to create electron webview webviewComponent', async (done ) => {
+    const registerFn = jest.fn(() => {
+      return new Disposable();
+    });
+    const registerFn2 = jest.fn(() => {
+      return new Disposable();
+    });
+    injector.mock(EditorComponentRegistry, 'registerEditorComponent', registerFn);
+    injector.mock(EditorComponentRegistry, 'registerEditorComponentResolver', registerFn2);
+    const service: IWebviewService = injector.get(IWebviewService);
+    const webview = service.createEditorPlainWebviewComponent();
+    expect(webview).toBeDefined();
+    expect(registerFn).toBeCalled();
+    expect(registerFn2).toBeCalled();
     done();
   });
 

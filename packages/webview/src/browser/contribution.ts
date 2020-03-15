@@ -1,8 +1,9 @@
+/* istanbul ignore file */
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { Domain, URI, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
 import { isElectronRenderer, localize } from '@ali/ide-core-common';
 import { ResourceService, IResource } from '@ali/ide-editor';
-import { EDITOR_WEBVIEW_SCHEME, IWebviewService, IWebview, IPlainWebview, IEditorWebviewMetaData } from './types';
+import { EDITOR_WEBVIEW_SCHEME, IWebviewService, IEditorWebviewMetaData } from './types';
 import { Autowired } from '@ali/common-di';
 import { WebviewServiceImpl } from './webview.service';
 
@@ -53,7 +54,7 @@ export class WebviewModuleContribution implements BrowserEditorContribution, Com
           try {
             elements[i].openDevTools();
           } catch (e) {
-            console.error(e);
+            // noop
           }
         }
       },
