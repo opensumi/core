@@ -362,7 +362,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     model.state.saveScrollOffset(scrollOffset);
   }
 
-  // 根据是否携带新建输入框挑战行数
+  // 根据是否携带新建输入框计算行数
   private get adjustedRowCount() {
     const { root } = this.props.model;
     return (

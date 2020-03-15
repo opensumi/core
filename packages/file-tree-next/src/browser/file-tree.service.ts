@@ -52,7 +52,11 @@ export class FileTreeService extends Tree {
     return this.statusChangeEmitter.event;
   }
 
-  get workpsaceRoot() {
+  get workspaceRootFileStat() {
+    return this._workspaceRoot;
+  }
+
+  get workspaceRoot() {
     if (this._workspaceRoot) {
       return new URI(this._workspaceRoot.uri);
     }
@@ -81,11 +85,13 @@ export class FileTreeService extends Tree {
       if (this.workspaceService.workspace) {
         return await this.fileTreeAPI.resolveChildren(this as ITree, this.workspaceService.workspace);
       }
-      return ;
     } else {
       // 加载子目录
-      return await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString());
+      if (parent.uri) {
+        return await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent);
+      }
     }
+    return [];
   }
 
   dispose() {

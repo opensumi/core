@@ -62,6 +62,11 @@ export class TreeNode implements ITreeNode {
     this._disposed = false;
     this._metadata = { ...(optionalMetadata || {}) };
     this._depth = parent ? parent.depth + 1 : 0;
+    if (watcher) {
+      this._watcher = watcher;
+    } else if (parent) {
+      this._watcher = (parent as any).watcher;
+    }
     TreeNode.idToTreeNode.set(this._uid, this);
   }
 
@@ -106,6 +111,10 @@ export class TreeNode implements ITreeNode {
 
   get description() {
     return this.getMetadata('description');
+  }
+
+  set description(description: string) {
+    this.addMetadata('description', description);
   }
 
   // 节点绝对路径
@@ -216,7 +225,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     return CompositeTreeNode.is(node) && !node.parent;
   }
 
-  protected _children: ITreeNodeOrCompositeTreeNode[] = [];
+  protected _children: ITreeNodeOrCompositeTreeNode[] | null = null;
   // 节点的分支数量
   protected _branchSize: number;
   protected flattenedBranch: Uint32Array | null;
@@ -259,6 +268,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       notifyDidChangeMetadata: (target: ITreeNode | ICompositeTreeNode, change: IMetadataChange)  => {
         emitter.fire({type: TreeNodeEvent.DidChangeMetadata, args: [target, change]});
       },
+      notifyDidUpdateBranch: () => {
+        emitter.fire({type: TreeNodeEvent.BranchDidUpdate, args: []});
+      },
       on: (event: TreeNodeEvent, callback: any) => {
         disposeCollection.push(onEventChanges((data) => {
           if (data.type === event) {
@@ -280,7 +292,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       // 为根节点创建监听器
       this._watcher = this.generatorWatcher();
     } else {
-      this._watcher = watcher as any;
+      this._watcher = (parent as any).watcher;
     }
   }
 
@@ -388,8 +400,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     const branchSizeIncrease = 1 + ((item instanceof CompositeTreeNode && item.expanded) ? item._branchSize : 0);
-    this._children.push(item);
-    this._children.sort(CompositeTreeNode.defaultSortComparator);
+    if (this._children) {
+      this._children.push(item);
+      this._children.sort(CompositeTreeNode.defaultSortComparator);
+    }
     this._branchSize += branchSizeIncrease;
     let master: CompositeTreeNode = this;
     // 如果该节点无叶子节点，则继续往上查找合适的插入位置
@@ -399,8 +413,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         master._branchSize += branchSizeIncrease;
       }
     }
-    let relativeInsertionIndex = this._children.indexOf(item);
-    const leadingSibling = this._children[relativeInsertionIndex - 1];
+    let relativeInsertionIndex = this._children!.indexOf(item);
+    const leadingSibling = this._children![relativeInsertionIndex - 1];
     if (leadingSibling) {
       const siblingIdx = master.flattenedBranch.indexOf(leadingSibling.id);
       relativeInsertionIndex = siblingIdx + ((leadingSibling instanceof CompositeTreeNode && leadingSibling.expanded) ? leadingSibling._branchSize : 0);
@@ -425,11 +439,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 直接调用此方法将不会触发onWillHandleWatchEvent和onDidHandleWatchEvent事件
    */
   public unlinkItem(item: ITreeNodeOrCompositeTreeNode, reparenting: boolean = false): void {
-    const idx = this._children.indexOf(item);
+    const idx = this._children!.indexOf(item);
     if (idx === -1) {
       return;
     }
-    this._children.splice(idx, 1);
+    this._children!.splice(idx, 1);
     const branchSizeDecrease = 1 + ((item instanceof CompositeTreeNode && item.expanded) ? item._branchSize : 0);
     this._branchSize -= branchSizeDecrease;
     // 如果该节点无叶子节点，则继续往上查找节点的父节点
@@ -472,6 +486,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    */
   protected setFlattenedBranch(leaves: Uint32Array | null) {
     this.flattenedBranch = leaves;
+    this.watcher.notifyDidUpdateBranch();
   }
 
   /**
@@ -592,7 +607,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     let next = this._children;
     let name;
     while (name = pathfrags.shift()) {
-      const item = next.find((c) => c.name === name);
+      const item = next!.find((c) => c.name === name);
       if (item && pathfrags.length === 0) {
         return item;
       }

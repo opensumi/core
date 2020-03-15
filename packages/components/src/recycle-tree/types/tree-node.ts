@@ -60,3 +60,9 @@ export enum TreeNodeType {
   TreeNode = 1,
   CompositeTreeNode,
 }
+
+export interface IOptionalMetaData {
+  name?: string;
+  description?: string;
+  [key: string]: any;
+}

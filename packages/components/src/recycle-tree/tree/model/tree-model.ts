@@ -1,12 +1,12 @@
 import { Event, Emitter } from '@ali/ide-core-common';
 import { ISerializableState, TreeStateManager, TreeStateWatcher } from './treeState';
 import { CompositeTreeNode } from '../TreeNode';
-import { ITree } from '../../types';
+import { ITree, IOptionalMetaData, ICompositeTreeNode, TreeNodeEvent } from '../../types';
 
 export class TreeModel {
 
-  public readonly state: TreeStateManager;
-  public readonly root: CompositeTreeNode;
+  private _state: TreeStateManager;
+  private _root: CompositeTreeNode;
 
   private onChangeEmitter: Emitter<void> = new Emitter();
 
@@ -14,9 +14,35 @@ export class TreeModel {
     return this.onChangeEmitter.event;
   }
 
-  constructor(tree: ITree) {
-    this.root = new CompositeTreeNode(tree, undefined);
-    this.state = new TreeStateManager(this.root);
+  get root() {
+    return this._root;
+  }
+
+  set root(root: CompositeTreeNode) {
+    this._root = root;
+    this.initState(root);
+  }
+
+  get state() {
+    return this._state;
+  }
+
+  set state(state: TreeStateManager) {
+    this._state = state;
+  }
+
+  init(tree: ITree, optionalMetaData: IOptionalMetaData) {
+    this.root = new CompositeTreeNode(tree, undefined, undefined, optionalMetaData);
+    // 分支更新时通知树刷新
+    this.root.watcher.on(TreeNodeEvent.BranchDidUpdate, this.dispatchChange);
+  }
+
+  initState(root: ICompositeTreeNode) {
+    this.state = new TreeStateManager(root as CompositeTreeNode);
+  }
+
+  dispatchChange = () => {
+    this.onChangeEmitter.fire();
   }
 
   /**

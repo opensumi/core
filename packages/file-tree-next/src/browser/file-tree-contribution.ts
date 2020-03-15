@@ -7,7 +7,7 @@ import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-cont
 import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
 import { FileTree } from './file-tree';
 
-export const ExplorerResourceViewId = 'file-explorer';
+export const ExplorerResourceViewId = 'file-explorer-next';
 
 @Domain(ClientAppContribution)
 export class FileTreeContribution implements ClientAppContribution {

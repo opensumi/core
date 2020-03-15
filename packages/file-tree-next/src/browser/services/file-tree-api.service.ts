@@ -31,18 +31,27 @@ export class FileTreeAPI implements IFileTreeAPI {
       file = await this.fileServiceClient.getFileStat(path);
     } else {
       file = await this.fileServiceClient.getFileStat(path.uri);
-      file = {
-        ...file,
-      } as FileStat;
     }
     if (file) {
-      const result = await this.toNode(tree, file, parent);
-      return [result];
+      return this.toNodes(tree, file, parent);
     } else {
       return [];
     }
   }
 
+  toNodes(tree: ITree, filestat: FileStat, parent?: Directory) {
+    // 如果为根目录，则返回其节点自身，否则返回子节点
+    if (!parent) {
+      return [this.toNode(tree, filestat, parent)];
+    } else {
+      if (filestat.children) {
+        return filestat.children.map((child) => {
+          return this.toNode(tree, child, parent);
+        });
+      }
+    }
+    return [];
+  }
   /**
    * 转换FileStat对象为TreeNode
    */
