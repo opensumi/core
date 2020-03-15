@@ -308,6 +308,8 @@ export const enum EOL {
  */
 export interface IThemeDecorationRenderOptions {
   backgroundColor?: string | IThemeColor;
+  backgroundIcon?: string;
+  backgroundIconSize?: string;
 
   outline?: string;
   outlineColor?: string | IThemeColor;
@@ -329,7 +331,7 @@ export interface IThemeDecorationRenderOptions {
   opacity?: string;
   letterSpacing?: string;
 
-  gutterIconPath?: UriComponents;
+  gutterIconPath?: UriComponents | string;
   gutterIconSize?: string;
 
   overviewRulerColor?: string | IThemeColor;

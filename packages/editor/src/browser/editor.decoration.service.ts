@@ -1,12 +1,9 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { ICSSStyleService } from '@ali/ide-theme/lib/common/style';
-import { ITextEditorDecorationType, IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions, IMarkdownString, IHoverMessage, IDecorationApplyOptions } from '../common';
-import { makeRandomHexString, URI , IDisposable, Disposable, IRange, Event, IEventBus, Emitter} from '@ali/ide-core-browser';
-import { IThemeColor } from '@ali/ide-theme/lib/common/color';
+import { IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions } from '../common';
+import { URI , IDisposable, Disposable, IEventBus } from '@ali/ide-core-browser';
 import { IEditorDecorationCollectionService, IBrowserTextEditorDecorationType, IDynamicModelDecorationProperty, IThemedCssStyle, IEditorDecorationProvider, EditorDecorationProviderRegistrationEvent, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent} from './types';
-import { IMonacoImplEditor } from './editor-collection.service';
 import { IThemeService } from '@ali/ide-theme';
-
 @Injectable()
 export class EditorDecorationCollectionService implements IEditorDecorationCollectionService {
 
@@ -86,6 +83,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     const disposer = new Disposable();
     let afterContentClassName;
     let beforeContentClassName;
+    let glyphMarginClassName;
     const styles = this.resolveCSSStyle(options);
 
     const inlineStyles = this.resolveInlineCSSStyle(options);
@@ -109,12 +107,21 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       beforeContentClassName = key + '-before';
       disposer.addDispose(this.cssManager.addClass(beforeContentClassName, {display: 'inline-block'} as any));
     }
+    if (options.gutterIconPath) {
+      const glyphMarginStyle = this.resolveCSSStyle({
+        backgroundIconSize: options.gutterIconSize,
+        backgroundIcon: options.gutterIconPath.toString(),
+      });
+      glyphMarginClassName = key + '-glyphMargin';
+      disposer.addDispose(this.cssManager.addClass(glyphMarginClassName, glyphMarginStyle));
+    }
 
     return {
       className,
       inlineClassName,
       afterContentClassName,
       beforeContentClassName,
+      glyphMarginClassName,
       overviewRulerColor: options.overviewRulerColor,
       dispose() {
         return disposer.dispose();
@@ -126,8 +133,8 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
 
     return {
       backgroundColor: this.themeService.getColorVar(styles.backgroundColor),
-      background: styles.gutterIconPath ? `background:url('${styles.gutterIconPath}') center center no-repeat` : undefined,
-      backgroundSize: styles.gutterIconSize ? `background-size:${styles.gutterIconSize}` : undefined,
+      background: styles.backgroundIcon ? `url('${styles.backgroundIcon}') center center no-repeat` : undefined,
+      backgroundSize: styles.backgroundIconSize ? `${styles.backgroundIconSize}` : undefined,
 
       outline: styles.outline,
       outlineColor: styles.outlineColor,

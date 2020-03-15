@@ -1,6 +1,6 @@
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, RenderLineNumbersType, TextEditorCursorStyle } from '../../../common/vscode';
-import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService } from '@ali/ide-editor';
+import { WorkbenchEditorService, IEditorGroup, IResource, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, EditorCollectionService, IDecorationRenderOptions, IThemeDecorationRenderOptions } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { WithEventBus, MaybeNull, IRange, ILineChange, URI, ISelection } from '@ali/ide-core-common';
 import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
@@ -9,6 +9,7 @@ import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } fro
 import debounce = require('lodash.debounce');
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
 import { ExtensionService } from '../../../common';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 @Injectable({multiple: true})
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -23,6 +24,9 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   @Autowired(ExtensionService)
   extensionService: ExtensionService;
+
+  @Autowired(StaticResourceService)
+  staticResourceService: StaticResourceService;
 
   private readonly proxy: IExtensionHostEditorService;
 
@@ -91,8 +95,26 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
   }
 
-  async $createTextEditorDecorationType(key, options) {
+  async $createTextEditorDecorationType(key, options: IDecorationRenderOptions) {
+    this.resolveIconPaths(options);
+    this.resolveIconPaths(options.dark);
+    this.resolveIconPaths(options.light);
     this.decorationService.createTextEditorDecorationType(options, key);
+  }
+
+  private resolveIconPaths(options?: IThemeDecorationRenderOptions) {
+    if (!options) {
+      return options;
+    }
+    if (options.gutterIconPath) {
+      let uri: URI;
+      if (typeof options.gutterIconPath === 'string') {
+        uri = URI.file(options.gutterIconPath);
+      } else {
+        uri = URI.from(options.gutterIconPath);
+      }
+      options.gutterIconPath = this.staticResourceService.resolveStaticResource(uri).toString();
+    }
   }
 
   async $deleteTextEditorDecorationType(key) {
@@ -284,6 +306,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       return Promise.reject(`No Such TextEditor: ${id}`);
     }
     this.getEditor(id)!.setSelections(selections);
+    this.getEditor(id)!.monacoEditor.focus();
     return Promise.resolve();
   }
 

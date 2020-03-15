@@ -135,6 +135,7 @@ export interface IDynamicModelDecorationProperty extends IDisposable {
 }
 
 export interface IThemedCssStyle extends IDisposable {
+  glyphMarginClassName?: string;
   className?: string;
   inlineClassName?: string;
   afterContentClassName?: string;
