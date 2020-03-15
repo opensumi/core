@@ -17,6 +17,9 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   language: string;
   _isDisposed: boolean = false;
 
+  // 获取上一个版本内容供 editorWorkerService 用
+  oldValue: string;
+
   _onDidChangeContent = new Emitter<monaco.editor.IModelContentChangedEvent>();
   onDidChangeContent = this._onDidChangeContent.event;
 
@@ -63,6 +66,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   }
   setValue(newValue: string): void {
     const oldValue = this.value;
+    this.oldValue = oldValue;
     this.value = newValue;
     this.versionId++;
 
@@ -91,7 +95,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   }
 
   getValueLength(eol?: monaco.editor.EndOfLinePreference | undefined, preserveBOM?: boolean | undefined): number {
-    return 0;
+    return this.value ? this.value.length : 0;
   }
   getValueInRange(range: monaco.IRange, eol?: monaco.editor.EndOfLinePreference | undefined): string {
     throw new Error('Method not implemented.');

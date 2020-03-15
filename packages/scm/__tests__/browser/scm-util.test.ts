@@ -1,5 +1,3 @@
-import { Uri } from '@ali/ide-core-common';
-
 import { SCMService } from '../../src';
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
@@ -25,18 +23,18 @@ describe('test for scm-util', () => {
 
     const repo = scmService.registerSCMProvider(mockSCMProvider);
     expect(getSCMRepositoryDesc(repo)).toEqual({
-      title: 'scm_label_0',
-      type: '',
+      title: 'workspace',
+      type: 'scm_label_0',
     });
 
     const mockSCMProvider1 = new MockSCMProvider(1);
-    mockSCMProvider1.rootUri = Uri.file('/test/workspace');
+    mockSCMProvider1.rootUri = undefined;
 
     const repo1 = scmService.registerSCMProvider(mockSCMProvider1);
 
     expect(getSCMRepositoryDesc(repo1)).toEqual({
-      title: 'workspace',
-      type: 'scm_label_1',
+      title: 'scm_label_1',
+      type: '',
     });
   });
 });

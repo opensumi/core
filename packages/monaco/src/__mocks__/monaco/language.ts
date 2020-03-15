@@ -1,4 +1,4 @@
-import { partialMock, quickEvent } from './common/util';
+import { partialMock } from './common/util';
 
 export type TokensProvider = monaco.languages.TokensProvider;
 export type EncodedTokensProvider = monaco.languages.EncodedTokensProvider;

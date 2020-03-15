@@ -23,16 +23,10 @@ class MockSCMPreferencesImpl {
   }
 }
 
-describe('test for packages/scm/src/browser/scm-activity.ts', () => {
+describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
   describe('test for DirtyDiffDecorator', () => {
     let injector: MockInjector;
     let editorModel: monaco.editor.ITextModel;
-
-    const fakeSetBadge = jest.fn();
-    const fakeGetTabbarHandler = jest.fn();
-    fakeGetTabbarHandler.mockReturnValue({
-      setBadge: fakeSetBadge,
-    });
 
     beforeEach(() => {
       injector = createBrowserInjector([], new MockInjector([
@@ -52,10 +46,6 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         URI.file('/test/workspace/abc.ts'),
         'test',
       ]).getMonacoModel();
-    });
-
-    afterEach(() => {
-      fakeSetBadge.mockReset();
     });
 
     it('ok for ChangeType#Add', () => {

@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 export class DirtyDiffController extends Disposable {

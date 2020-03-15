@@ -5,16 +5,18 @@ import { IDisposable, dispose, Disposable, DisposableStore, toDisposable } from 
 import { first } from '@ali/ide-core-common/lib/async';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { EditorCollectionService } from '@ali/ide-editor';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 import { SCMService, ISCMRepository, IDirtyDiffModel } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { DirtyDiffWidget } from './dirty-diff-widget';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   private _originalModel: monaco.editor.ITextModel | null;
   get original(): monaco.editor.ITextModel | null { return this._originalModel; }
+
+  private _editorModel: monaco.editor.ITextModel | null;
   get modified(): monaco.editor.ITextModel | null { return this._editorModel; }
 
   private diffDelayer: ThrottledDelayer<IChange[] | null> | null;
@@ -30,19 +32,16 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     return this._changes;
   }
 
-  private _editorModel: monaco.editor.ITextModel | null;
   private _widget: DirtyDiffWidget | null;
 
   @Autowired(SCMService)
-  scmService: SCMService;
+  private readonly scmService: SCMService;
 
   @Autowired(IEditorDocumentModelService)
-  documentModelManager: IEditorDocumentModelService;
+  private readonly documentModelManager: IEditorDocumentModelService;
 
   @Autowired(EditorCollectionService)
-  editorService: EditorCollectionService;
-
-  private changeIndex = 0;
+  private readonly editorService: EditorCollectionService;
 
   // TODO: dynamic
   static heightInLines = 18;
@@ -146,7 +145,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
         return originalUri;
       }
 
-      return this.documentModelManager.createModelReference(new URI(originalUri.toString()))
+      return this.documentModelManager.createModelReference(new URI(originalUri))
         .then((docModelRef) => {
           if (!this._editorModel) { // disposed
             return null;
@@ -179,6 +178,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     }
 
     const uri = this._editorModel.uri;
+    // find the first matched scm repository
     return first(this.scmService.repositories.map((r) => () => r.provider.getOriginalResource(uri)));
   }
 
@@ -287,34 +287,11 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     }
   }
 
-  getNextChangeLineNumber(): number {
-    if (this.changes.length === 0) {
-      return 0;
-    }
-    if (this.changeIndex + 1 === this.changes.length) {
-      this.changeIndex = -1;
-    }
-    const change = this.changes[++this.changeIndex];
-    return change.modifiedStartLineNumber;
-  }
-
-  getPreviousChangeLineNumber(): number {
-    if (this.changes.length === 0) {
-      return 0;
-    }
-    if (this.changeIndex - 1 < 0) {
-      this.changeIndex = this.changes.length;
-    }
-    const change = this.changes[--this.changeIndex];
-    return change.modifiedStartLineNumber;
-  }
-
   dispose(): void {
     super.dispose();
 
     this._editorModel = null;
     this._originalModel = null;
-    this.changeIndex = 0;
 
     if (this.diffDelayer) {
       this.diffDelayer.cancel();

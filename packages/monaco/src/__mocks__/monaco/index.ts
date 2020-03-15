@@ -1,13 +1,17 @@
+import { Uri } from '@ali/ide-core-common';
+
 import { createMockedMonacoEditorApi } from './editor';
 import { MockedMonacoUri } from './common/uri';
-import { createMockedMonacoLanguageApi, mockFeatureProviderRegistry } from './langauge';
+import { createMockedMonacoLanguageApi, mockFeatureProviderRegistry } from './language';
 import { createMockedMonacoRangeApi } from './range';
 import { createMockedMonacoPositionApi } from './position';
 import { createMockedMonacoTextModelApi } from './textModel';
 
 export function createMockedMonaco(): Partial<typeof monaco> {
+  const mockEditor = createMockedMonacoEditorApi();
+
   return {
-    editor: createMockedMonacoEditorApi(),
+    editor: mockEditor,
     languages: createMockedMonacoLanguageApi(),
     Uri: MockedMonacoUri as any,
     Range: createMockedMonacoRangeApi(),
@@ -51,6 +55,42 @@ export function createMockedMonaco(): Partial<typeof monaco> {
               };
             },
           }),
+        },
+        editorWorkerService: {
+          get(): any {
+            return {
+              canComputeDiff: (original: Uri, modified: Uri): boolean => true,
+              computeDiff: (original: MockedMonacoUri, modified: MockedMonacoUri, ignoreTrimWhitespace: boolean): Promise<monaco.commons.IDiffComputationResult | null> => {
+                const model = mockEditor.getModel(modified);
+                if (!model) {
+                  return Promise.resolve(null);
+                }
+                const oldValue = model['oldValue'];
+
+                return Promise.resolve({
+                  identical: false,
+                  changes: [{
+                    originalStartLineNumber: 1,
+                    originalEndLineNumber: 5,
+                    modifiedStartLineNumber: 0,
+                    modifiedEndLineNumber: model.getValue().length - oldValue.length,
+                    charChanges: [
+                      {
+                        modifiedEndColumn: 0,
+                        modifiedEndLineNumber: 0,
+                        modifiedStartColumn: 0,
+                        modifiedStartLineNumber: 0,
+                        originalEndColumn: 0,
+                        originalEndLineNumber: 0,
+                        originalStartColumn: 0,
+                        originalStartLineNumber: 0,
+                      },
+                    ],
+                  }],
+                });
+              },
+            };
+          },
         },
       },
     },
