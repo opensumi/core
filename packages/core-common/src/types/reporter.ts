@@ -11,7 +11,9 @@ export enum REPORT_NAME {
   FORMAT_ON_SAVE_TIMEOUT_ERROR = 'formatOnSaveTimeoutError',
   FORMAT_ON_SAVE = 'formatOnSave',
   NOT_FOUND_COMMAND = 'notFoundCommand',
-  INSTALL_EXTENSION_ERROR = 'installExtensionError'
+  INSTALL_EXTENSION_ERROR = 'installExtensionError',
+  EXTENSION_CRASH = 'extensionCrash',
+  EXTENSION_NOT_EXIST = 'extensionNotExist'
 }
 
 export enum REPORT_HOST {
@@ -47,12 +49,12 @@ export interface PerformanceData extends PointData {
 export const IReporterService = Symbol('IReporterService');
 
 export interface IReporterTimer {
-  timeEnd(msg?: string, extra?: any): void;
+  timeEnd(msg?: string, extra?: any): number;
 }
 
 export interface IReporterService {
-  time(name: REPORT_NAME): IReporterTimer;
-  point(name: REPORT_NAME, msg?: string, extra?: any): void;
+  time(name: REPORT_NAME | string): IReporterTimer;
+  point(name: REPORT_NAME | string, msg?: string, extra?: any): void;
 }
 
 // 集成方实现
