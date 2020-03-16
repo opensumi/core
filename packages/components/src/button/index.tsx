@@ -50,6 +50,7 @@ export const Button: React.FC<ButtonProps> = ({
   icon,
   more,
   moreIconClass,
+  title,
   ...otherProps
 }) => {
   const classes = classNames('kt-button', className, {
@@ -62,7 +63,7 @@ export const Button: React.FC<ButtonProps> = ({
   });
 
   if (type === 'icon') {
-    return <Icon disabled={disabled} icon={icon} onClick={(loading || disabled) ? noop : onClick} className={className} iconClass={iconClass} />;
+    return <Icon tooltip={title} disabled={disabled} icon={icon} onClick={(loading || disabled) ? noop : onClick} className={className} iconClass={iconClass} />;
   }
 
   const iconNode = iconClass ? <Icon iconClass={iconClass} disabled={disabled} /> : null;
