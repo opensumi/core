@@ -29,16 +29,19 @@
     border-color: transparent;
     cursor: pointer;
 
-    & > option {
+    & > span {
+      cursor: pointer;
+    }
+
+    .kt-select-option {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
       flex: 1;
       min-width: 0px;
-    }
-
-    & > span {
       cursor: pointer;
+      display: inline-block;
+      width: 100%;
     }
 
     .kt-select-value-active, &:hover {
@@ -58,19 +61,19 @@
     border-color: var(--kt-selectOption-activeBorder);
   }
 
-  .kt-select-value-large, .kt-select-value-large > option {
+  .kt-select-value-large, .kt-select-value-large > span {
     height: 30px;
     font-size: 14px;
     line-height: 30px;
   }
 
-  .kt-select-value-default, .kt-select-value-default > option {
+  .kt-select-value-default, .kt-select-value-default > span {
     height: 28px;
     font-size: 12px;
     line-height: 28px;
   }
 
-  .kt-select-value-small, .kt-select-value-small > option {
+  .kt-select-value-small, .kt-select-value-small > span {
     height: 22px;
     font-size: 12px;
     line-height: 22px;
@@ -92,7 +95,9 @@
 
     .kt-select-option-select {
 
-      option {
+      span {
+        display: inline-block;
+        width: 100%;
         background-color: var(--kt-selectDropdown-selectionBackground);
         &:hover {
           background-color: var(--kt-selectDropdown-selectionBackground);
@@ -100,7 +105,7 @@
       }
     }
 
-    option {
+    span {
       color: var(--kt-selectDropdown-foreground);
       background-color: var(--kt-selectDropdown-background);
       cursor: pointer;
@@ -110,15 +115,17 @@
       overflow: hidden;
       white-space: nowrap;
       line-height: 26px;
-
+      display: inline-block;
+      width: 100%;
       &:hover {
         background-color: var(--kt-selectDropdown-hoverBackground);
       }
+    }
 
-      &:disabled {
-        pointer-events: none;
-        color: var(--kt-select-disableForeground);
-      }
+    .kt-option-disabled {
+      pointer-events: none;
+      background-color: var(--kt-select-disableBackground);
+      color: var(--kt-select-disableForeground);
     }
 
     &.kt-select-options-visible {
@@ -129,7 +136,7 @@
   .kt-select-options-large {
     padding: 4px 0px;
 
-    & > option, & > div > option {
+    & > span, & > div > span {
       height: 30px;
       font-size: 14px;
       line-height: 30px;
@@ -139,7 +146,7 @@
   .kt-select-options-default {
     padding: 3px 0px;
 
-    & > option, & > div > option {
+    & > span, & > div > span {
       height: 26px;
       font-size: 12px;
       line-height: 26px;
@@ -149,7 +156,7 @@
   .kt-select-options-small {
     padding: 3px 0px;
 
-    & > option, & > div > option {
+    & > span, & > div > span {
       height: 26px;
       font-size: 12px;
       line-height: 26px;
