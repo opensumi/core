@@ -9,7 +9,7 @@ export class FileTreeModelService {
   private readonly injector: Injector;
 
   @Autowired(FileTreeService)
-  private readonly fileTreeService;
+  private readonly fileTreeService: FileTreeService;
 
   private _treeModel: TreeModel;
   constructor() {
@@ -19,7 +19,7 @@ export class FileTreeModelService {
       name: workspaceRoot.displayName,
       filestat: workspaceRootFileStat,
     };
-    this._treeModel = this.injector.get(FileTreeModel, [this.fileTreeService, fileTreeMetaData]);
+    this._treeModel = this.injector.get<any>(FileTreeModel, [this.fileTreeService, fileTreeMetaData]);
   }
 
   get treeModel() {

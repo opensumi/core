@@ -16,6 +16,8 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { Tree, ITree } from '@ali/ide-components';
 import { Directory } from './file-tree-nodes';
+import { FileTreeDecorationService } from './services/file-tree-decoration.service';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
 
 @Injectable()
 export class FileTreeService extends Tree {
@@ -43,6 +45,12 @@ export class FileTreeService extends Tree {
 
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
+
+  @Autowired(LabelService)
+  public readonly labelService: LabelService;
+
+  @Autowired(FileTreeDecorationService)
+  public readonly decorationService: FileTreeDecorationService;
 
   private _contextMenuContextKeyService: IContextKeyService;
 

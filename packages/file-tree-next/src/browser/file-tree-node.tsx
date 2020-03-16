@@ -5,11 +5,13 @@ import { TreeNode, CompositeTreeNode, NodeType, INodeRendererProps } from '@ali/
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { getIcon } from '@ali/ide-core-browser';
 import { Directory, File } from './file-tree-nodes';
+import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 
 export interface IFileTreeNodeProps {
   item: any;
   defaultLeftPadding?: number;
   leftPadding?: number;
+  decorationService: FileTreeDecorationService;
   labelService: LabelService;
   onTwistieClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
@@ -20,12 +22,13 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   item,
   onClick,
   itemType,
+  decorationService,
   labelService,
   leftPadding = 8,
   onTwistieClick,
   defaultLeftPadding = 8,
 }: FileTreeNodeRenderedProps) => {
-
+  const decoration = decorationService.getDecoration(item.uri, Directory.is(item));
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === NodeType.TreeNode || itemType === NodeType.CompositeTreeNode) {
       onClick(ev, item as File, itemType);
@@ -48,6 +51,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   const isSelected = item.selected;
 
   const fileTreeNodeStyle = {
+    color: decoration ? decoration.color : '',
     height: FILE_TREE_NODE_HEIGHT,
     lineHeight: `${FILE_TREE_NODE_HEIGHT}px`,
     paddingLeft: isDirectory ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 5}px`,
@@ -85,13 +89,17 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
 
   const renderStatusTail = (node: Directory | File) => {
     return <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_tail)}>
-      {renderBadge(node)}
+      {renderBadge()}
     </div>;
   };
 
   const renderBadge = () => {
-    // TODO: 装饰器逻辑
-    return null;
+    if (!decoration) {
+      return null;
+    }
+    return <div className={styles.file_tree_node_status}>
+      {decoration.badge.slice()}
+    </div>;
   };
 
   return (
@@ -125,3 +133,4 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
 };
 
 export const FILE_TREE_NODE_HEIGHT = 22;
+export const FILE_TREE_BADGE_LIMIT = 99;

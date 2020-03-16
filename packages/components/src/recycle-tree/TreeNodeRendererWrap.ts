@@ -44,7 +44,7 @@ export interface INodeRendererWrapProps {
 
 export class NodeRendererWrap extends React.Component<INodeRendererWrapProps> {
 
-  private lastItemPath: string;
+  // private lastItemPath: string;
 
   public render() {
     const { item, itemType, children } = this.props;
@@ -53,50 +53,32 @@ export class NodeRendererWrap extends React.Component<INodeRendererWrapProps> {
 
   public shouldComponentUpdate(nextProps: INodeRendererWrapProps) {
     // 判断节点需不需要更新
-    if (nextProps.item !== this.props.item ||
-      nextProps.expanded !== this.props.expanded ||
-      nextProps.depth !== this.props.depth ||
-      nextProps.itemType !== this.props.itemType ||
-      nextProps.children !== this.props.children) {
-      return true;
-    }
-
-    const nextItem: TreeNode | null = nextProps.itemType === NodeType.TreeNode || nextProps.itemType === NodeType.CompositeTreeNode
-      ? nextProps.item as TreeNode
-      : nextProps.itemType === NodeType.RenamePrompt
-        ? (nextProps.item as RenamePromptHandle).target
-        : nextProps.itemType === NodeType.NewPrompt
-          ? (nextProps.item as NewPromptHandle).parent
-          : null;
-
-    if ((nextItem && nextItem.path) !== this.lastItemPath) {
-      return true;
-    }
-    return false;
+    // TODO: 区分forceUpdate及普通更新，优化性能
+    return true;
   }
 
-  public componentDidMount() {
-    this.updateCachedItemPath();
-  }
+  // public componentDidMount() {
+  //   this.updateCachedItemPath();
+  // }
 
-  public componentDidUpdate(prevProps: INodeRendererWrapProps) {
-    this.updateCachedItemPath();
-  }
+  // public componentDidUpdate(prevProps: INodeRendererWrapProps) {
+  //   this.updateCachedItemPath();
+  // }
 
   public componentWillUnmount() {
     // do dispose
   }
 
-  private updateCachedItemPath() {
-    const thisItem: TreeNode | null = this.props.itemType === NodeType.TreeNode || this.props.itemType === NodeType.CompositeTreeNode
-      ? this.props.item as TreeNode
-      : this.props.itemType === NodeType.RenamePrompt
-        ? (this.props.item as RenamePromptHandle).target
-        : this.props.itemType === NodeType.NewPrompt
-          ? (this.props.item as NewPromptHandle).parent
-          : null;
-    if (thisItem && thisItem.path) {
-      this.lastItemPath = thisItem.path;
-    }
-  }
+  // private updateCachedItemPath() {
+  //   const thisItem: TreeNode | null = this.props.itemType === NodeType.TreeNode || this.props.itemType === NodeType.CompositeTreeNode
+  //     ? this.props.item as TreeNode
+  //     : this.props.itemType === NodeType.RenamePrompt
+  //       ? (this.props.item as RenamePromptHandle).target
+  //       : this.props.itemType === NodeType.NewPrompt
+  //         ? (this.props.item as NewPromptHandle).parent
+  //         : null;
+  //   if (thisItem && thisItem.path) {
+  //     this.lastItemPath = thisItem.path;
+  //   }
+  // }
 }

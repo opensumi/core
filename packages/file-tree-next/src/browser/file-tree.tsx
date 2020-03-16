@@ -4,9 +4,8 @@ import { ViewState, useInjectable } from '@ali/ide-core-browser';
 import * as styles from './file-tree.module.less';
 import { RecycleTree, INodeRendererProps, TreeModel, NodeType, IRecycleTreeHandle } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
-// import { FileTreeService } from './file-tree.service';
+import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Directory, File } from './file-tree-nodes';
 
 export const FileTree = observer(({
@@ -15,9 +14,9 @@ export const FileTree = observer(({
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [treeHandle, setTreeHandler] = React.useState<IRecycleTreeHandle>();
   const { width, height } = viewState;
-  // const fileTreeService = useInjectable<FileTreeService>(FileTreeService);
+  const { decorationService, labelService } = useInjectable<FileTreeService>(FileTreeService);
   const { treeModel } = useInjectable<FileTreeModelService>(FileTreeModelService);
-  const labelService = useInjectable<LabelService>(LabelService);
+
   const toggleDirectory = (item: Directory) => {
     if (treeHandle) {
       if (item.expanded) {
@@ -64,6 +63,7 @@ export const FileTree = observer(({
         {(props: INodeRendererProps) => <FileTreeNode
           item={props.item}
           itemType={props.itemType}
+          decorationService={decorationService}
           labelService={labelService}
           onClick={handleItemClicked}
         />}

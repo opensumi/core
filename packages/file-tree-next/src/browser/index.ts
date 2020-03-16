@@ -5,6 +5,7 @@ import { FileTreeService } from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
 import { BrowserModule, EffectDomain, ModuleDependencies } from '@ali/ide-core-browser';
 import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
+import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 
 const pkgJson = require('../../package.json');
 
@@ -16,6 +17,10 @@ export class FileTreeNextModule extends BrowserModule {
     {
       token: IFileTreeAPI,
       useClass: FileTreeAPI,
+    },
+    {
+      token: FileTreeDecorationService,
+      useClass: FileTreeDecorationService,
     },
     {
       token: FileTreeService,
