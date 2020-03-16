@@ -28,7 +28,7 @@ import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
 import { MonacoService } from '@ali/ide-monaco';
 import MonacoServiceImpl from '@ali/ide-monaco/lib/browser/monaco.service';
-import { MainThreadWebview } from '../../lib/browser/vscode/api/main.thread.api.webview';
+import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';

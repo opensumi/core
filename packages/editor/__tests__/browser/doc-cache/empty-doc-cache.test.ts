@@ -4,8 +4,8 @@ import { URI } from '@ali/ide-core-browser';
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import {  IDocPersistentCacheProvider } from '../../../lib/common';
-import { EditorDocumentModel } from '../../../lib/browser/doc-model/main';
+import { IDocPersistentCacheProvider } from '../../../src/common';
+import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
 import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
 import { EmptyDocCacheImpl } from '@ali/ide-editor/lib/browser/doc-cache';
 

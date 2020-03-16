@@ -1,19 +1,14 @@
-import { URI, Disposable, DisposableCollection, IFileServiceClient, IContextKeyService, createContributionProvider } from '@ali/ide-core-browser';
+import { DisposableCollection, createContributionProvider } from '@ali/ide-core-browser';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { DebugModule, DebugAdapterContributionRegistry } from '@ali/ide-debug/lib/node';
-import { DebugService } from '../../lib/browser/debug-service';
+import { DebugModule } from '@ali/ide-debug/lib/node';
 import { DebugServer, DebugAdapterContribution } from '@ali/ide-debug';
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error(reason);
-});
 
 describe('Debug Model', () => {
 
   let injector: MockInjector;
   let debugServer: DebugServer;
-  let registry: DebugAdapterContributionRegistry;
+  // let registry: DebugAdapterContributionRegistry;
 
   const toTearDown = new DisposableCollection();
 
@@ -24,7 +19,7 @@ describe('Debug Model', () => {
     ]);
     createContributionProvider(injector, DebugAdapterContribution);
     debugServer = injector.get(DebugServer);
-    registry = injector.get(DebugAdapterContributionRegistry);
+    // registry = injector.get(DebugAdapterContributionRegistry);
   };
 
   beforeEach(() => {

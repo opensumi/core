@@ -6,7 +6,7 @@ import { AppConfig, INodeLogger } from '@ali/ide-core-node';
 
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IExtensionNodeService, IExtensionNodeClientService } from '../../lib/common';
+import { IExtensionNodeService, IExtensionNodeClientService } from '../../src/common';
 import { ExtensionSeviceClientImpl } from '../../src/node/extension.service.client';
 
 describe('Extension Serivce', () => {
