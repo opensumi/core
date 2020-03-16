@@ -1,9 +1,9 @@
+import { Deferred  } from '@ali/ide-core-common/lib';
 import ExtensionHostServiceImpl from '../../src/hosted/ext.host';
 
 import { mockExtensionProps } from '../__mock__/extensions';
 import { initMockRPCProtocol } from '../__mock__/initRPCProtocol';
 import { MainthreadExtensionService } from '../__mock__/api/mainthread.extension.service';
-import { Deferred } from '../../../core-common/lib';
 import { MainThreadStorage } from '../__mock__/api/mathread.storage';
 import { MainThreadExtensionLog } from '../__mock__/api/mainthread.extension.log';
 
