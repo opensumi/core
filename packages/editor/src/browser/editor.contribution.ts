@@ -399,6 +399,15 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       },
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.FOCUS_ACTIVE_EDITOR_GROUP, {
+      execute: async () => {
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group) {
+          group.focus();
+        }
+      },
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_TOP, {
       execute: async (resource: ResourceArgs) => {
         resource = resource || {};

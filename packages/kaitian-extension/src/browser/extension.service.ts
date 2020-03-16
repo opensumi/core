@@ -901,6 +901,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     commandRegistry.registerCommand(VSCodeCommands.CLOSE_OTHER_EDITORS);
     commandRegistry.registerCommand(VSCodeCommands.REVERT_FILES);
     commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_FOCUS_FILES_EXPLORER);
+    commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_FOCUS_ACTIVE_EDITOR_GROUP);
 
     commandRegistry.registerCommand(VSCodeCommands.OPEN, {
       execute: (uriComponents: UriComponents, columnOrOptions?: ViewColumn | TextDocumentShowOptions, label?: string) => {
