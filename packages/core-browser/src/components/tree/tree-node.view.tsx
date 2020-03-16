@@ -5,9 +5,8 @@ import { TreeViewAction, isTreeViewActionComponent, isUndefined, isString } from
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../style/icon/icon';
-import Icon from '../icon';
 import Badge from '../badge';
-import { ValidateInput, InputSelection } from '@ali/ide-components';
+import { ValidateInput, InputSelection, Icon } from '@ali/ide-components';
 import { KeyCode, Key } from '../../keyboard';
 import { Loading } from '../loading';
 

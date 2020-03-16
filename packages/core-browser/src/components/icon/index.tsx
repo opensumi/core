@@ -18,7 +18,7 @@ const Icon: React.FC<{
 } & React.HTMLAttributes<HTMLDivElement>> = (
   { size = 'middle', loading, icon, iconClass, className, tooltip, ...restProps },
 ) => {
-  const iconClx = icon ? getIcon(icon) : iconClass;
+  const iconClx = icon ? getIcon(icon as string) : iconClass;
   return <span
     {...restProps}
     title={tooltip}

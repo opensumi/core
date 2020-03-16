@@ -26,6 +26,7 @@
     "@ali/ide-workspace": "1.7.16",
     "@ali/ide-overlay": "1.7.16",
     "@ali/ide-file-service": "1.7.16",
+    "@ali/ide-components": "1.7.16",
     "md5": "^2.2.1"
   },
   "devDependencies": {
