@@ -47,6 +47,11 @@ namespace ExtensionCommands {
     category,
     label: '%marketplace.quickopen.install%',
   };
+  export const INSTALL_EXTENSION_BY_RELEASE_ID: Command = {
+    id: 'extension.install.releaseId',
+    category,
+    label: '%marketplace.quickopen.install.byReleaseId%',
+  };
 }
 
 @Domain(ComponentContribution, MainLayoutContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
@@ -198,6 +203,32 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
           this.messageService.error(`${localize('marketplace.quickopen.install.error')} : ${e.message}`);
         } finally {
           this.statusBarService.removeElement(ExtensionCommands.INSTALL_EXTENSION_BY_ID.id);
+        }
+      },
+    });
+
+    commands.registerCommand(ExtensionCommands.INSTALL_EXTENSION_BY_RELEASE_ID, {
+      execute: async () => {
+        const releaseId = await this.quickInputService.open({
+          prompt: localize('marketplace.quickopen.install.releaseId'),
+          placeHolder: 'releaseId',
+        });
+        if (!releaseId) {
+          this.messageService.info(localize('marketplace.quickopen.install.id.required'));
+          return;
+        }
+        try {
+          this.statusBarService.addElement(ExtensionCommands.INSTALL_EXTENSION_BY_RELEASE_ID.id, {
+            text: `$(sync~spin) ${localize('marketplace.extension.installing')}`,
+            alignment: StatusBarAlignment.RIGHT,
+            priority: 10000,
+          });
+          await this.extensionManagerService.installExtensionByReleaseId(releaseId);
+          this.messageService.info(localize('marketplace.extension.installed'));
+        } catch (e) {
+          this.messageService.error(`${localize('marketplace.quickopen.install.error')} : ${e.message}`);
+        } finally {
+          this.statusBarService.removeElement(ExtensionCommands.INSTALL_EXTENSION_BY_RELEASE_ID.id);
         }
       },
     });
