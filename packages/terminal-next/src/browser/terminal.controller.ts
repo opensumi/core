@@ -335,6 +335,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.currentGroup.length > 0 &&
       this.currentGroup.last) {
       this.focusWidget(this.currentGroup.last.id);
+    } else {
+      this._focusedId = '';
     }
   }
 
