@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { ExtensionService, IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath } from '../../lib/common';
+import { ExtensionService, IExtensionNodeClientService, ExtraMetaData, IExtensionMetaData, IExtension, IExtensionProps, ExtensionNodeServiceServerPath } from '../../src/common';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ExtensionServiceImpl } from '../../src/browser/extension.service';
