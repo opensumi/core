@@ -469,6 +469,7 @@ export const localizationBundle = {
     'marketplace.tab.installed': 'Installed',
     'marketplace.panel.tab.placeholder.installed': 'Search from installed',
     'marketplace.extension.findUpdate': 'Find Extension {0} has new version {1}，Do you want to update？`',
+    'marketplace.extension.needreload': 'Updating extension {0} is completed. Do you want to reload window now?',
     'marketplace.extension.canupdate': 'Can update',
     'marketplace.extension.updating': 'Updating',
     'marketplace.extension.update': 'Update',
