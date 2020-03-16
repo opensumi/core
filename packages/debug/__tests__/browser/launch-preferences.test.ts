@@ -11,7 +11,7 @@ import { IMessageService } from '@ali/ide-overlay';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { LaunchPreferencesContribution } from '../../src/browser/preferences/launch-preferences-contribution';
 import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
-import { LaunchFolderPreferenceProvider } from '../../lib/browser/preferences/launch-folder-preference-provider';
+import { LaunchFolderPreferenceProvider } from '../../src/browser/preferences/launch-folder-preference-provider';
 import { injectPreferenceProviders, createPreferenceProviders } from '@ali/ide-preferences/lib/browser';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { IFileServiceClient, FileServicePath, FileStat } from '@ali/ide-file-service';

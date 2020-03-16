@@ -1,7 +1,7 @@
 import { DisposableCollection } from '@ali/ide-core-common/lib/disposable';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ToolBarViewService } from '../../src/browser/toolbar.view.service';
-import { IToolBarViewService, IToolBarAction } from '../../lib/browser';
+import { IToolBarViewService, IToolBarAction } from '../../src/browser';
 import { ToolbarModule } from '../../src/browser';
 
 describe('toolbar service test suite', () => {

@@ -6,7 +6,7 @@ import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { WorkbenchEditorService, ResourceDecorationChangeEvent } from '@ali/ide-editor';
 import { MockWorkbenchEditorService } from '@ali/ide-editor/lib/common/mocks/workbench-editor.service';
 import { IDecorationsService } from '@ali/ide-decoration';
-import { OpenedEditorModule } from '../../lib/browser';
+import { OpenedEditorModule } from '../../src/browser';
 import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorationsService';
 import { OpenedEditorData } from '@ali/ide-opened-editor/lib/browser/opened-editor.service';
 import { URI, IEventBus } from '@ali/ide-core-common';
