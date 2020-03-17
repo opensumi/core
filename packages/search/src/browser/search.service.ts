@@ -37,7 +37,6 @@ import {
   ContentSearchServerPath,
   ResultTotal,
   SendClientResult,
-  getRoot,
   anchorGlob,
   IContentSearchClientService,
   IUIState,
@@ -126,6 +125,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
   // Replace state
   @observable
   isReplaceDoing: boolean = false;
+
+  @observable
+  isSearchDoing: boolean = false;
 
   _searchHistory: SearchHistory;
 
@@ -281,6 +283,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     if (id > this.currentSearchId) {
       // 新的搜索开始了
+      this.isSearchDoing = true;
       this.currentSearchId = id;
       this.cleanOldSearch();
     }
@@ -294,12 +297,14 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this.searchState = searchState;
       if (searchState === SEARCH_STATE.done || searchState === SEARCH_STATE.error) {
         // 搜索结束清理ID
+        this.isSearchDoing = false;
         this.currentSearchId = -1;
       }
     }
 
     if (error) {
       // 搜索出错
+      this.isSearchDoing = false;
       this.searchError = error.toString();
     }
 

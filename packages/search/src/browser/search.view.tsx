@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
-// import { Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
+import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { Input, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-components';
 import { ViewState } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
@@ -62,6 +62,7 @@ export const Search = observer(({
   const updateUIState = searchBrowserService.updateUIState;
   const UIState = searchBrowserService.UIState;
   const searchError = searchBrowserService.searchError;
+  const isSearchDoing = searchBrowserService.isSearchDoing;
 
   React.useEffect(() => {
     setSearchPanelLayout({
@@ -72,11 +73,14 @@ export const Search = observer(({
 
   const collapsePanelContainerStyle = {
     width: viewState.width || '100%',
-    height: viewState.height,
+  height: viewState.height,
   };
 
   return (
     <div className={styles.wrap} style={collapsePanelContainerStyle}>
+      <div className={styles['loading-wrap']}>
+        <ProgressBar loading={isSearchDoing} />
+      </div>
       <div className={styles.search_options} ref={searchOptionRef}>
         <div className={styles.search_and_replace_container}>
           <div className={styles.search_and_replace_fields}>
