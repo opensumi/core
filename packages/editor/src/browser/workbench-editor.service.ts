@@ -808,11 +808,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if ((options && options.disableNavigate) || (options && options.backend)) {
         // no-op
       } else {
-        this.commands.executeCommand(FILE_COMMANDS.LOCATION.id, uri)
-          .catch((err) => {
-            // no-op: failed when command not found
-            getLogger().warn(err);
-          });
+        this.commands.tryExecuteCommand(FILE_COMMANDS.LOCATION.id, uri);
       }
       if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
         // 就是当前打开的resource

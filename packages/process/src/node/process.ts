@@ -20,7 +20,7 @@ export class ProcessFactory {
   ) {}
 
   @Autowired(IProcessManage)
-  readonly processManage: ProcessManage;
+  private readonly processManage: ProcessManage;
 
   create(options: ProcessOptions | ForkOptions): IProcess {
     return new Process(options, this.processManage);
@@ -33,7 +33,6 @@ export class Process extends Disposable implements IProcess {
   readonly outputStream: stream.Readable;
   readonly errorStream: stream.Readable;
   readonly inputStream: stream.Writable;
-  readonly processManage: ProcessManage;
   protected _killed: boolean = false;
 
   protected readonly startEmitter: Emitter<IProcessStartEvent> = new Emitter<IProcessStartEvent>();
@@ -42,10 +41,9 @@ export class Process extends Disposable implements IProcess {
 
   constructor(
     options: ProcessOptions | ForkOptions,
-    processManage: ProcessManage,
+    readonly processManage: ProcessManage,
   ) {
     super();
-    this.processManage = processManage;
     // About catching errors: spawn will sometimes throw directly
     // (EACCES on Linux), sometimes return a Process object with the pid
     // property undefined (ENOENT on Linux) and then emit an 'error' event.
