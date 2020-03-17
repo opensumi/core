@@ -218,6 +218,10 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
         }
       }
     });
+
+    if (!result || result.length === 0) {
+      return;
+    }
     this.sendResultToClient(result, searchInfo.searchId);
   }
 
