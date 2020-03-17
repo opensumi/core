@@ -183,8 +183,9 @@ export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, gr
         } else {
           return <Popover
             id={'editor_actions_tip_' + makeRandomHexString(5)}
+            title={item.tip}
             content={<div className={styles.editor_action_tip}>
-                {item.tip} <div className={classnames(styles.editor_action_tip_close, getIcon('close'))} onClick={() => visibleAction.closeTip()}></div>
+                <div className={classnames(styles.editor_action_tip_close, getIcon('close'))} onClick={() => visibleAction.closeTip()}></div>
               </div>}
             trigger={PopoverTriggerType.program}
             display={true}

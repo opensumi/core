@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
-import { Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
-import { Input, CheckBox } from '@ali/ide-components';
+// import { Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
+import { Input, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-components';
 import { ViewState } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
@@ -16,7 +16,6 @@ import { SearchTree } from './search-tree.view';
 function getIncludeRuleContent() {
   return (
     <div className={cls(styles.include_rule_content)}>
-      <p>{localize('search.help.supportRule')}</p>
       <ul>
         <li>, : {localize('search.help.concatRule')}</li>
         <li>* : {localize('search.help.matchOneOrMoreRule')}</li>
@@ -29,15 +28,9 @@ function getIncludeRuleContent() {
   );
 }
 
-function getExcludeRuleContent(excludeList: string[], openPreference) {
+function getExcludeRuleContent(excludeList: string[]) {
   return (
     <div className={cls(styles.exclude_rule_content)}>
-      <p>
-        {localize('search.help.excludeList')}
-        <span onClick={openPreference}>
-          {localize('search.help.modify')}
-        </span>
-      </p>
       <div>
         {excludeList.map((exclude, index) => {
           if (index === excludeList.length - 1) {
@@ -148,6 +141,7 @@ export const Search = observer(({
                   <span className={cls(styles.include_rule)}>
                     <Popover
                       id={'show_include_rule'}
+                      title={localize('search.help.supportRule')}
                       content={getIncludeRuleContent()}
                       trigger={PopoverTriggerType.hover}
                       delay={500}
@@ -176,9 +170,12 @@ export const Search = observer(({
                       onChange={() => { updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }); }}
                     />
                     <Popover
+                      title={localize('search.help.excludeList')}
                       insertClass={cls(styles.search_excludes_description)}
                       id={'search_excludes'}
-                      content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes(), searchBrowserService.openPreference)}
+                      action={localize('search.help.modify')}
+                      onClickAction={searchBrowserService.openPreference}
+                      content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes())}
                       trigger={PopoverTriggerType.hover}
                       delay={500}
                     >
