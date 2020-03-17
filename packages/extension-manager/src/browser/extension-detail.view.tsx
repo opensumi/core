@@ -11,10 +11,8 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
 import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
-import Dropdown from 'antd/lib/dropdown';
 import Menu from 'antd/lib/menu';
 import { Tabs } from '@ali/ide-components';
-import 'antd/lib/dropdown/style/index.less';
 import 'antd/lib/menu/style/index.less';
 
 const tabMap = [
@@ -182,10 +180,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               {!installed ? (
                 <Button className={styles.action} onClick={install} loading={isInstalling}>{isInstalling ? localize('marketplace.extension.installing') : localize('marketplace.extension.install')}</Button>
               ) : null}
-              {installed ? (
-                <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']}>
-                  <Button type='secondary' more moreIconClass={getIcon('down')} className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>
-                </Dropdown>) : null}
+              {installed &&
+                <Button menu={menu} type='secondary' more className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>}
               {installed && !extension.isBuiltin  && (
                 <Button ghost={true} type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling') : localize('marketplace.extension.uninstall')}</Button>
               )}
