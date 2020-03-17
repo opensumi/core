@@ -1,5 +1,5 @@
 import { WSChannel, MessageString } from '../common/ws-channel';
-import * as shorid from 'shortid';
+import * as shortid from 'shortid';
 import { stringify, parse } from '../common/utils';
 import { MultiWs } from './multi-ws';
 import { warning } from '@ali/ide-core-common/lib/utils/warning';
@@ -27,10 +27,11 @@ export class WSChannelHandler {
 
   constructor(public wsPath: string, logger: any, public protocols?: string[], useExperimentalMultiChannel?: boolean, clientId?: string) {
     this.logger = logger || this.logger;
-    this.clientId = clientId || `CLIENT_ID_${shorid.generate()}`;
+    this.clientId = clientId || `CLIENT_ID_${shortid.generate()}`;
     this.connection = useExperimentalMultiChannel ? new MultiWs(wsPath, protocols, this.clientId) as any : new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
-  setLogger(logger: any) {
+  // 为解决建立连接之后，替换成可落盘的 logger
+  replaceLogger(logger: any) {
     if (logger) {
       this.logger = logger;
     }

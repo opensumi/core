@@ -1,5 +1,5 @@
 import { IWebview, IWebviewContentOptions, IWebviewContentScrollPosition, IWebviewService } from './types';
-import { Event, URI, Disposable, DomListener, getLogger, IDisposable, Emitter, IEventBus, MaybeNull, isElectronRenderer } from '@ali/ide-core-browser';
+import { Event, URI, Disposable, IDisposable, Emitter, IEventBus, MaybeNull, isElectronRenderer } from '@ali/ide-core-browser';
 import { ITheme, IThemeService } from '@ali/ide-theme';
 import { Autowired, Injectable } from '@ali/common-di';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
@@ -85,23 +85,23 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
       this._onDidScroll.fire(data);
     });
 
-    this._onWebviewMessage('do-reload', (data) => {
+    this._onWebviewMessage('do-reload', () => {
       this.doUpdateContent();
     });
 
-    this._onWebviewMessage('load-resource', (data) => {
+    this._onWebviewMessage('load-resource', () => {
       // TODO 资源相关
     });
 
-    this._onWebviewMessage('load-localhost', (data) => {
+    this._onWebviewMessage('load-localhost', () => {
       // TODO 好像是消息转发
     });
 
-    this._onWebviewMessage('did-focus', (data) => {
+    this._onWebviewMessage('did-focus', () => {
       this.handleFocusChange(true);
     });
 
-    this._onWebviewMessage('did-blur', (data) => {
+    this._onWebviewMessage('did-blur', () => {
       this.handleFocusChange(false);
     });
 

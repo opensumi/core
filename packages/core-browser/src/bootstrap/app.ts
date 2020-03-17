@@ -189,7 +189,7 @@ export class ClientApp implements IClientApp {
 
         this.logger = this.getLogger();
          // 回写需要用到打点的 Logger 的地方
-        this.injector.get(WSChannelHandler).setLogger(this.logger);
+        this.injector.get(WSChannelHandler).replaceLogger(this.logger);
       }
     }
 

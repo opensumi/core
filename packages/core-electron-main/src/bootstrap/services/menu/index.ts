@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { INativeMenuTemplate, getLogger, Domain, IElectronMainMenuService, isOSX, isWindows } from '@ali/ide-core-common';
+import { INativeMenuTemplate, Domain, isWindows } from '@ali/ide-core-common';
 import { ElectronMainContribution, ElectronMainApiRegistry, ElectronMainApiProvider } from '../../types';
-import { Menu, MenuItemConstructorOptions, BrowserWindow, webContents } from 'electron';
+import { Menu, MenuItemConstructorOptions, BrowserWindow } from 'electron';
 
 @Injectable()
 export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {

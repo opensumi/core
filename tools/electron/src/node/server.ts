@@ -1,12 +1,11 @@
 
-import * as path from 'path';
+// tslint:disable no-console
 import * as net from 'net';
 import * as yargs from 'yargs';
-import { getLogger, ILogger, Deferred, uuid } from '@ali/ide-core-common';
+import { Deferred } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
-  const logger: ILogger = getLogger();
   const deferred = new Deferred<net.Server>();
   let opts: IServerAppOpts = {
     webSocketHandler: [],

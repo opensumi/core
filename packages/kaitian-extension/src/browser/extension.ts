@@ -24,9 +24,8 @@ export class Extension extends Disposable implements IExtension {
   private _activating: Promise<void> | null = null;
 
   private _enabled: boolean;
-  private _enabling: Promise<void> | null = null;
 
-  private logger = getLogger();
+  private readonly logger = getLogger();
 
   @Autowired(VSCodeMetaService)
   vscodeMetaService: VSCodeMetaService;

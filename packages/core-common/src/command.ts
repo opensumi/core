@@ -598,7 +598,7 @@ export class CommandServiceImpl implements CommandService {
 
   async tryExecuteCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
     try {
-      return await this.commandRegistry.executeCommand(commandId, ...args)
+      return await this.executeCommand(commandId, ...args)
     } catch(err) {
       // no-op: failed when command not found
       getLogger().warn(err);
