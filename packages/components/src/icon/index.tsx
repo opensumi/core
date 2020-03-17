@@ -34,7 +34,7 @@ const iconMap = {
   [ktIconPrefixes[0]]: defaultIconfont,
 };
 
-function getDefaultIcon(iconKey: string, options?: {
+export function getDefaultIcon(iconKey: string, options?: {
   rotate?: ROTATE_TYPE;
   anim?: ANIM_TYPE;
   fill?: boolean;

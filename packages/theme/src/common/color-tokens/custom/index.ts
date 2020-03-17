@@ -25,6 +25,7 @@ export * from './statusbar';
 export * from './tab';
 export * from './tooltip';
 export * from './tree';
+export * from './popover';
 
 // WARNING: 自定义颜色请放到独立文件中，不要继续往这个文件添加了
 
