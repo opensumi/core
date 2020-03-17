@@ -202,6 +202,13 @@ export class MonacoCommandRegistry {
    * 此处的活动编辑器和 workbenchEditorService.currentEditor 的概念不同，对于diffEditor，需要获取确实的那个editor而不是modifiedEditor
    */
   protected getActiveCodeEditor(): monaco.editor.ICodeEditor | undefined {
+
+    // 先从editor-collection的焦点追踪，contextMenu追踪中取
+    if (this.editorCollectionService.currentEditor) {
+      return this.editorCollectionService.currentEditor.monacoEditor;
+    }
+
+    // 使用当前 editorGroup.editor 兜底
     const editorGroup = this.workbenchEditorService.currentEditorGroup;
     if (editorGroup) {
       const editor = editorGroup.currentFocusedEditor || editorGroup.currentEditor;
@@ -209,8 +216,6 @@ export class MonacoCommandRegistry {
         return editor.monacoEditor;
       }
     }
-    // 如果不是在 workbenchEditorService 管理的 editor 中，可能是使用 React 组件创造的编辑器
-    return this.editorCollectionService.currentEditor && this.editorCollectionService.currentEditor.monacoEditor ;
   }
 }
 

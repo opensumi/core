@@ -88,6 +88,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
         editor.monacoEditor.onDidFocusEditorWidget(() => {
           this._currentEditor = editor;
         });
+        editor.monacoEditor.onContextMenu(() => {
+          this._currentEditor = editor;
+        });
       }
     });
     if (this._editors.size !== beforeSize) {
