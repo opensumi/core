@@ -10,7 +10,7 @@ describe('connection browser', () => {
     jest.setTimeout(20000);
 
     const mockServerList: Server[] = [];
-    const fakeWSURL = 'ws://localhost:8090';
+    const fakeWSURL = 'ws://localhost:9990';
     const connectPath = new ChildConnectPath();
 
     for (let i = 0; i < MultiWs.defaultLength; i++) {
