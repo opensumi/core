@@ -4,8 +4,6 @@ import {
   CommandService,
   IContextKeyService,
   URI,
-  Uri,
-  Emitter,
   EDITOR_COMMANDS,
   AppConfig,
 } from '@ali/ide-core-browser';
@@ -15,7 +13,7 @@ import { IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { Tree, ITree } from '@ali/ide-components';
-import { Directory } from './file-tree-nodes';
+import { Directory, File } from './file-tree-nodes';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 
@@ -54,11 +52,7 @@ export class FileTreeService extends Tree {
 
   private _contextMenuContextKeyService: IContextKeyService;
 
-  private statusChangeEmitter = new Emitter<Uri[]>();
-
-  get onStatusChange() {
-    return this.statusChangeEmitter.event;
-  }
+  private cacheNodesMap: Map<string, File | Directory> = new Map();
 
   get workspaceRootFileStat() {
     return this._workspaceRoot;
@@ -82,7 +76,7 @@ export class FileTreeService extends Tree {
 
     this.workspaceService.onWorkspaceChanged(async () => {
       this._workspaceRoot = this.workspaceService.workspace;
-      this.dispose();
+      this.clear();
     });
   }
 
@@ -91,22 +85,41 @@ export class FileTreeService extends Tree {
       // 加载根目录
       await this.workspaceService.roots;
       if (this.workspaceService.workspace) {
-        return await this.fileTreeAPI.resolveChildren(this as ITree, this.workspaceService.workspace);
+        const children = await this.fileTreeAPI.resolveChildren(this as ITree, this.workspaceService.workspace);
+        this.cacheNodes(children as (File | Directory)[]);
+        return children;
       }
     } else {
       // 加载子目录
       if (parent.uri) {
-        return await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent);
+        const children =  await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent);
+        this.cacheNodes(children as (File | Directory)[]);
+        return children;
       }
     }
     return [];
   }
 
-  dispose() {
-    super.dispose();
+  private cacheNodes(nodes: (File | Directory)[]) {
+    // 切换工作区的时候需清理
+    nodes.map((node) => {
+      this.cacheNodesMap.set(node.uri.toString(), node);
+    });
+  }
+
+  getNodeByUriString(path: string) {
+    return this.cacheNodesMap.get(path);
+  }
+
+  clear() {
     for (const watcher of Object.keys(this.fileServiceWatchers)) {
       this.fileServiceWatchers[watcher].dispose();
     }
+    this.cacheNodesMap.clear();
+  }
+
+  dispose() {
+    super.dispose();
   }
 
   get contextMenuContextKeyService() {
