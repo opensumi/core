@@ -1,7 +1,7 @@
 import { IDebugSessionManager } from '../../common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
-import { DisposableCollection, Emitter, Event, ILogger, TreeNode } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, Event, ILogger, TreeNode } from '@ali/ide-core-browser';
 import { ExpressionWatchItem } from '../console/debug-console-items';
 import throttle = require('lodash.throttle');
 

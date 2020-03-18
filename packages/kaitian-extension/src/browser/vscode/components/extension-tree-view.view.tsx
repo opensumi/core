@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as styles from './extension-view.module.less';
 import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
-import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined, CommandRegistry, Command, IDisposable, localize } from '@ali/ide-core-common';
+import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined, CommandRegistry, Command, IDisposable, localize } from '@ali/ide-core-browser';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
