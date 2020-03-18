@@ -7,14 +7,14 @@ import {
   RPCMessageConnection,
  } from '@ali/ide-connection';
 import { Injector, Provider } from '@ali/common-di';
-import { getLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, IEventBus } from '@ali/ide-core-common';
+import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, IEventBus } from '@ali/ide-core-common';
 import { BackService } from '@ali/ide-core-common/lib/module';
 
 import { ModuleConstructor } from './app';
 
 // 建立连接之前，无法使用落盘的 logger
 // 初始化时使用不落盘的 logger
-const initialLogger = getLogger();
+const initialLogger = getDebugLogger();
 
 export async function createClientConnection2(
   injector: Injector,

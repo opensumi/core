@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import { Event, isObject, Emitter, getLogger, isUndefined } from '@ali/ide-core-common';
+import { Event, isObject, Emitter, getDebugLogger, isUndefined } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { TerminalInfo } from '@ali/ide-terminal-next/lib/common';
 import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
 
-const debugLog = getLogger();
+const debugLog = getDebugLogger();
 
 export class ExtHostTerminal implements IExtHostTerminal {
   private proxy: IMainThreadTerminal;

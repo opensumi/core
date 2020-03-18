@@ -1,4 +1,4 @@
-import { SymbolKind, getLogger } from '@ali/ide-core-common';
+import { SymbolKind, getDebugLogger } from '@ali/ide-core-common';
 import { warning } from '@ali/ide-core-common/lib/utils/warning';
 import { defaultIconfont } from '@ali/ide-components/lib/icon';
 
@@ -43,7 +43,7 @@ export function getIcon(iconKey: string, options?: {
   }
   const iconValue = iconMap[iconPrefixes[lastIndex]][iconKey];
   if (!iconValue) {
-    getLogger().warn('图标库缺失图标:' + iconKey);
+    getDebugLogger().warn('图标库缺失图标:' + iconKey);
     return '';
   }
 

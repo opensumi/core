@@ -1,5 +1,5 @@
 import { IWebview, IWebviewContentOptions } from './types';
-import { Event, URI, Disposable, DomListener, getLogger, IDisposable, AppConfig, electronEnv } from '@ali/ide-core-browser';
+import { Disposable, DomListener, getDebugLogger, IDisposable, AppConfig, electronEnv } from '@ali/ide-core-browser';
 import { AbstractWebviewPanel } from './abstract-webview';
 import { Injectable, Autowired } from '@ali/common-di';
 
@@ -35,6 +35,7 @@ export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements
     this.clear();
     this._iframeDisposer = new Disposable();
     this._ready = new Promise((resolve) => {
+      // tslint:disable-next-line: no-unused-variable
       const disposer = this._onWebviewMessage('webview-ready', () => {
         if (this._isReady) {
           // 这种情况一般是由于iframe在dom中的位置变动导致了重载。
@@ -64,7 +65,7 @@ export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements
       }
       this.webview.send(channel, data);
     }).catch((err) => {
-      getLogger().error(err);
+      getDebugLogger().error(err);
     });
   }
 
@@ -122,7 +123,7 @@ export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements
   }
 
 }
-
+// tslint:disable-next-line: no-unused-variable
 const WebviewHTMLStr = `<!DOCTYPE html>
 <html lang="en" style="width: 100%; height: 100%;">
 

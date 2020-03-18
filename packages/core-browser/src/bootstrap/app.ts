@@ -18,7 +18,7 @@ import {
   ILoggerManagerClient,
   SupportLogNamespace,
   ILogServiceClient,
-  getLogger,
+  getDebugLogger,
   isElectronRenderer,
   setLanguageId,
   IReporterService,
@@ -366,7 +366,7 @@ export class ClientApp implements IClientApp {
             return true;
           }
         } catch (e) {
-          getLogger().error(e); // TODO 这里无法落日志
+          getDebugLogger().error(e); // TODO 这里无法落日志
         }
       }
     }
@@ -391,7 +391,7 @@ export class ClientApp implements IClientApp {
             return true;
           }
         } catch (e) {
-          getLogger().error(e); // TODO 这里无法落日志
+          getDebugLogger().error(e); // TODO 这里无法落日志
         }
       }
     }

@@ -1,7 +1,7 @@
 import { Injectable } from '@ali/common-di';
-import { Event, Emitter, equals, getLogger } from '@ali/ide-core-common';
+import { Event, Emitter, equals, getDebugLogger } from '@ali/ide-core-common';
 import { IDisposable, toDisposable } from '@ali/ide-core-common/lib/disposable';
-import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator, ISCMService } from './scm';
+import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm';
 import { observable, computed, action } from 'mobx';
 
 class SCMInput implements ISCMInput {
@@ -120,7 +120,7 @@ export class SCMService {
   private _onDidRemoveProvider = new Emitter<ISCMRepository>();
   readonly onDidRemoveRepository: Event<ISCMRepository> = this._onDidRemoveProvider.event;
 
-  private readonly logger = getLogger();
+  private readonly logger = getDebugLogger();
 
   registerSCMProvider(provider: ISCMProvider): ISCMRepository {
     this.logger.log('SCMService#registerSCMProvider');

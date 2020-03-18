@@ -1,6 +1,6 @@
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFileServiceClient } from '@ali/ide-file-service';
-import { localize, getLogger, URI, parseWithComments } from '@ali/ide-core-common';
+import { localize, getDebugLogger, URI, parseWithComments } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IIconTheme } from '../common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
@@ -80,7 +80,7 @@ async function loadIconThemeDocument(fileService: IFileServiceClient, location: 
     const contentValue = parseWithComments(content.content);
     return contentValue as IconThemeDocument;
   } catch (error) {
-    getLogger().log(localize('error.cannotparseicontheme', 'Icon Theme parse出错！'));
+    getDebugLogger().log(localize('error.cannotparseicontheme', 'Icon Theme parse出错！'));
     // TODO 返回默认主题信息
     return {} as any;
   }

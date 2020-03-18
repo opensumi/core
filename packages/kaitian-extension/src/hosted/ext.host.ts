@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
-import { getLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME } from '@ali/ide-core-common';
+import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME } from '@ali/ide-core-common';
 import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -259,7 +259,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.name);
           this.logger.log('activateExtension extension.extendConfig error ');
           this.logger.log(e);
-          getLogger().error(e);
+          getDebugLogger().error(e);
         }
       }
     }

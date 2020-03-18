@@ -1,5 +1,5 @@
 import { IDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
-import { Disposable, Emitter, Event, getLogger } from '@ali/ide-core-common';
+import { Disposable, Emitter, Event, getDebugLogger } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { observable, action } from 'mobx';
 import { Injector, INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
@@ -201,7 +201,7 @@ export class ViewModelContext extends Disposable {
 
   private scmProviderCtxKey: IContextKey<string | undefined>;
 
-  private logger = getLogger();
+  private logger = getDebugLogger();
 
   // maybe we must use repo provider id as key
   private scmMenuMap = observable.map<ISCMRepository['provider']['id'], SCMMenus>();

@@ -3,13 +3,13 @@
  */
 
 import * as React from 'react';
-import { getLogger, isDevelopment } from '@ali/ide-core-common';
+import { getDebugLogger, isDevelopment } from '@ali/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
 import { useInjectable } from '../react-hooks';
 import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
 import { AppConfig } from './config-provider';
 
-const logger = getLogger();
+const logger = getDebugLogger();
 export type SlotLocation = string;
 export const SlotLocation = {
   top: 'top',
@@ -37,7 +37,7 @@ export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {
       return location;
     }
   }
-  getLogger().warn(`没有找到${module}所对应的位置！`);
+  getDebugLogger().warn(`没有找到${module}所对应的位置！`);
   return '';
 }
 
@@ -140,13 +140,13 @@ export function SlotRenderer({ slot, ...props }: any) {
   const layoutConfig = useInjectable<AppConfig>(AppConfig).layoutConfig;
   const componentKeys = layoutConfig[slot].modules;
   if (!componentKeys) {
-    console.warn(`${slot}位置未声明任何视图`);
+    getDebugLogger().warn(`${slot}位置未声明任何视图`);
   }
   const componentInfos: ComponentRegistryInfo[] = [];
   componentKeys.forEach((token) => {
     const info = componentRegistry.getComponentRegistryInfo(token);
     if (!info) {
-      console.warn(`${token}对应的组件不存在，请检查`);
+      getDebugLogger().warn(`${token}对应的组件不存在，请检查`);
     } else {
       componentInfos.push(info);
     }

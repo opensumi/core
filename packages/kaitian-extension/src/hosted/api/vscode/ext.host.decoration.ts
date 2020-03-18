@@ -4,7 +4,7 @@ import { CancellationToken } from '@ali/ide-core-common';
 import { Disposable, toDisposable } from '@ali/ide-core-common/lib/disposable';
 import { asArray } from '@ali/ide-core-common/lib/utils/arrays';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { getLogger } from '@ali/ide-core-common';
+import { getDebugLogger } from '@ali/ide-core-common';
 
 import {
   IMainThreadDecorationsShape, DecorationRequest, DecorationReply,
@@ -19,7 +19,7 @@ interface ProviderData {
 
 export class ExtHostDecorations implements IExtHostDecorationsShape {
   protected readonly proxy: IMainThreadDecorationsShape;
-  protected readonly logger = getLogger();
+  protected readonly logger = getDebugLogger();
 
   private static _handlePool = 0;
 
@@ -58,7 +58,7 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
       const { provider, extensionId } = entry;
       return Promise.resolve(provider.provideDecoration(URI.revive(uri), token)).then((data) => {
         if (data && data.letter && data.letter.length !== 1) {
-          console.warn(`INVALID decoration from extension '${extensionId}'. The 'letter' must be set and be one character, not '${data.letter}'.`);
+          getDebugLogger().warn(`INVALID decoration from extension '${extensionId}'. The 'letter' must be set and be one character, not '${data.letter}'.`);
         }
         if (data) {
           result[id] = [
@@ -71,7 +71,7 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
           ] as DecorationData;
         }
       }, (err) => {
-        console.error(err);
+        getDebugLogger().error(err);
       });
 
     })).then(() => {
