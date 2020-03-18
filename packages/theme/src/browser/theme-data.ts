@@ -4,7 +4,7 @@ import { IRawThemeSetting } from 'vscode-textmate';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { parse as parsePList } from '../common/plistParser';
-import { localize, parseWithComments } from '@ali/ide-core-common';
+import { localize, parseWithComments, ILogger, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 import { convertSettings } from '../common/themeCompatibility';
 import { Color } from '../common/color';
 import URI from 'vscode-uri';
@@ -14,38 +14,32 @@ export class ThemeData implements IThemeData {
 
   id: string;
   name: string;
-  settingsId: string;
+  themeSettings: IRawThemeSetting[] = [];
   colors: IColors = {};
   encodedTokensColors: string[] = [];
   rules: ITokenThemeRule[] = [];
-  settings: IRawThemeSetting[] = [];
   base: BuiltinTheme = 'vs-dark';
   inherit = false;
 
   colorMap: IColorMap = {};
   private hasDefaultTokens = false;
+  private customSettings: IRawThemeSetting[] = [];
 
   @Autowired(IFileServiceClient)
   private fileServiceClient: IFileServiceClient;
 
-  private safeParseJSON(content) {
-    let json;
-    try {
-      json = parseWithComments(content);
-      return json;
-    } catch (error) {
-      return console.error('主题文件解析出错！', content);
-    }
-  }
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
+  @Autowired(IReporterService)
+  private reporter: IReporterService;
 
   public initializeFromData(data) {
     this.id = data.id;
     this.name = data.name;
-    this.settingsId = data.settingsId;
     this.colors = data.colors;
     this.encodedTokensColors = data.encodedTokensColors;
     this.rules = data.rules;
-    this.settings = data.settings;
     this.base = data.base;
     this.inherit = data.inherit;
   }
@@ -54,8 +48,37 @@ export class ThemeData implements IThemeData {
     this.id = id;
     this.name = name;
     this.base = base as BuiltinTheme;
-    await this.loadColorTheme(themeLocation, this.settings, this.colorMap);
-    for (const setting of this.settings) {
+    await this.loadColorTheme(themeLocation, this.themeSettings, this.colorMap);
+    // tslint:disable-next-line
+    for (const key in this.colorMap) {
+      this.colors[key] = Color.Format.CSS.formatHexA(this.colorMap[key]);
+    }
+  }
+
+  public loadCustomTokens(customSettings: ITokenColorizationRule[]) {
+    this.rules = [];
+    // const affectedScopes: string[] = customSettings.map((setting) => setting.scope).filter((t) => !!t);
+    this.doInitTokenRules();
+    for (const setting of customSettings) {
+      this.transform(setting, (rule) => {
+        const existIndex = this.rules.findIndex((item) => item.token === rule.token);
+        if (existIndex > -1) {
+          this.rules.splice(existIndex, 1, rule);
+        } else {
+          this.rules.push(rule);
+        }
+      });
+    }
+    this.customSettings = customSettings;
+  }
+
+  public get settings() {
+    return this.themeSettings.concat(this.customSettings);
+  }
+
+  // transform settings & init rules
+  protected doInitTokenRules() {
+    for (const setting of this.themeSettings) {
       this.transform(setting, (rule) => this.rules.push(rule));
     }
     if (!this.hasDefaultTokens) {
@@ -63,16 +86,22 @@ export class ThemeData implements IThemeData {
         this.transform(setting, (rule) => this.rules.push(rule));
       });
     }
-    // tslint:disable-next-line
-    for (const key in this.colorMap) {
-      this.colors[key] = Color.Format.CSS.formatHexA(this.colorMap[key]);
+  }
+
+  private safeParseJSON(content) {
+    let json;
+    try {
+      json = parseWithComments(content);
+      return json;
+    } catch (error) {
+      return this.logger.error('主题文件解析出错！', content);
     }
   }
 
   private async loadColorTheme(themeLocation: string, resultRules: ITokenColorizationRule[], resultColors: IColorMap): Promise<any> {
-    console.time('theme ' + themeLocation);
+    const timer = this.reporter.time(REPORT_NAME.THEME_LOAD);
     const themeContent = await this.fileServiceClient.resolveContent(URI.file(themeLocation).toString());
-    console.timeEnd('theme ' + themeLocation);
+    timer.timeEnd(themeLocation);
     if (/\.json$/.test(themeLocation)) {
       const theme = this.safeParseJSON(themeContent.content);
       let includeCompletes: Promise<any> = Promise.resolve(null);
@@ -130,7 +159,7 @@ export class ThemeData implements IThemeData {
       if (!Array.isArray(settings)) {
         return Promise.reject(new Error(localize('error.plist.invalidformat', "Problem parsing tmTheme file: {0}. 'settings' is not array.")));
       }
-      convertSettings(settings, this.settings, this.colorMap);
+      convertSettings(settings, this.themeSettings, this.colorMap);
       return Promise.resolve(settings);
     } catch (e) {
       return Promise.reject(new Error(localize('error.cannotparse', 'Problems parsing tmTheme file: {0}', e.message)));

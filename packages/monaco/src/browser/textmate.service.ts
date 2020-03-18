@@ -9,9 +9,9 @@ import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap, ILanguageConfiguration, IAutoClosingPairConditional, CommentRule } from '../common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { ThemeMix } from '@ali/ide-theme';
 import URI from 'vscode-uri';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IThemeData } from '@ali/ide-theme';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -79,7 +79,7 @@ export class TextmateService extends WithEventBus {
   preferenceService: PreferenceService;
 
   @Autowired(ILogger)
-  logger: ILogger;
+  private logger: ILogger;
 
   private grammarRegistry: Registry;
 
@@ -223,7 +223,7 @@ export class TextmateService extends WithEventBus {
     }
   }
 
-  public setTheme(themeData: ThemeMix) {
+  public setTheme(themeData: IThemeData) {
     const theme = themeData;
     this.grammarRegistry.setTheme(theme);
     monaco.editor.defineTheme(getLegalThemeName(theme.name), theme);
@@ -244,7 +244,7 @@ export class TextmateService extends WithEventBus {
       json = parseWithComments(content);
       return json;
     } catch (error) {
-      return console.error('语言配置文件解析出错！', content);
+      return this.logger.error('语言配置文件解析出错！', content);
     }
   }
 
@@ -335,7 +335,7 @@ export class TextmateService extends WithEventBus {
       return;
     }
     if (!Array.isArray(source)) {
-      console.warn(`[${languageId}: language configuration: expected \`surroundingPairs\` to be an array.`);
+      this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs\` to be an array.`);
       return;
     }
 
@@ -344,22 +344,22 @@ export class TextmateService extends WithEventBus {
       const pair = source[i];
       if (Array.isArray(pair)) {
         if (!isCharacterPair(pair as [string, string])) {
-          console.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
+          this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
           continue;
         }
         result = result || [];
         result.push({ open: pair[0], close: pair[1] });
       } else {
         if (typeof pair !== 'object') {
-          console.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
+          this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
           continue;
         }
         if (typeof pair.open !== 'string') {
-          console.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}].open\` to be a string.`);
+          this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}].open\` to be a string.`);
           continue;
         }
         if (typeof pair.close !== 'string') {
-          console.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}].close\` to be a string.`);
+          this.logger.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}].close\` to be a string.`);
           continue;
         }
         result = result || [];
@@ -375,7 +375,7 @@ export class TextmateService extends WithEventBus {
       return undefined;
     }
     if (!Array.isArray(source)) {
-      console.warn(`[${languageId}]: language configuration: expected \`brackets\` to be an array.`);
+      this.logger.warn(`[${languageId}]: language configuration: expected \`brackets\` to be an array.`);
       return undefined;
     }
 
@@ -383,7 +383,7 @@ export class TextmateService extends WithEventBus {
     for (let i = 0, len = source.length; i < len; i++) {
       const pair = source[i];
       if (!isCharacterPair(pair)) {
-        console.warn(`[${languageId}]: language configuration: expected \`brackets[${i}]\` to be an array of two strings.`);
+        this.logger.warn(`[${languageId}]: language configuration: expected \`brackets[${i}]\` to be an array of two strings.`);
         continue;
       }
 
@@ -399,7 +399,7 @@ export class TextmateService extends WithEventBus {
       return undefined;
     }
     if (!Array.isArray(source)) {
-      console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs\` to be an array.`);
+      this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs\` to be an array.`);
       return undefined;
     }
 
@@ -408,27 +408,27 @@ export class TextmateService extends WithEventBus {
       const pair = source[i];
       if (Array.isArray(pair)) {
         if (!isCharacterPair(pair)) {
-          console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
+          this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
           continue;
         }
         result = result || [];
         result.push({ open: pair[0], close: pair[1] });
       } else {
         if (typeof pair !== 'object') {
-          console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
+          this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
           continue;
         }
         if (typeof pair.open !== 'string') {
-          console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].open\` to be a string.`);
+          this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].open\` to be a string.`);
           continue;
         }
         if (typeof pair.close !== 'string') {
-          console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].close\` to be a string.`);
+          this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].close\` to be a string.`);
           continue;
         }
         if (typeof pair.notIn !== 'undefined') {
           if (!isStringArr(pair.notIn)) {
-            console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].notIn\` to be a string array.`);
+            this.logger.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].notIn\` to be a string array.`);
             continue;
           }
         }
@@ -445,14 +445,14 @@ export class TextmateService extends WithEventBus {
       return undefined;
     }
     if (typeof source !== 'object') {
-      console.warn(`[${languageId}]: language configuration: expected \`comments\` to be an object.`);
+      this.logger.warn(`[${languageId}]: language configuration: expected \`comments\` to be an object.`);
       return undefined;
     }
 
     let result: CommentRule | undefined;
     if (typeof source.lineComment !== 'undefined') {
       if (typeof source.lineComment !== 'string') {
-        console.warn(`[${languageId}]: language configuration: expected \`comments.lineComment\` to be a string.`);
+        this.logger.warn(`[${languageId}]: language configuration: expected \`comments.lineComment\` to be a string.`);
       } else {
         result = result || {};
         result.lineComment = source.lineComment;
@@ -460,7 +460,7 @@ export class TextmateService extends WithEventBus {
     }
     if (typeof source.blockComment !== 'undefined') {
       if (!isCharacterPair(source.blockComment)) {
-        console.warn(`[${languageId}]: language configuration: expected \`comments.blockComment\` to be an array of two strings.`);
+        this.logger.warn(`[${languageId}]: language configuration: expected \`comments.blockComment\` to be an array of two strings.`);
       } else {
         result = result || {};
         result.blockComment = source.blockComment;
@@ -534,11 +534,11 @@ export class TextmateService extends WithEventBus {
       scopeName, initialLanguage, configuration);
     let ruleStack = INITIAL;
     const lineTokens = grammar.tokenizeLine(line, ruleStack);
-    console.log(`\nTokenizing line: ${line}`);
+    this.logger.log(`\nTokenizing line: ${line}`);
     // tslint:disable-next-line: prefer-for-of
     for (let j = 0; j < lineTokens.tokens.length; j++) {
       const token = lineTokens.tokens[j];
-      console.log(` - token from ${token.startIndex} to ${token.endIndex} ` +
+      this.logger.log(` - token from ${token.startIndex} to ${token.endIndex} ` +
         `(${line.substring(token.startIndex, token.endIndex)}) ` +
         `with scopes ${token.scopes.join(', ')}`,
       );

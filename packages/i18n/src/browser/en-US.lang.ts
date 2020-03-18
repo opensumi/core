@@ -315,6 +315,8 @@ export const localizationBundle = {
 
     'preference.general.theme': 'Theme',
     'preference.general.icon': 'Icon Theme',
+    'preference.workbench.colorCustomizations': 'Overwrite colors of current color theme',
+    'preference.editor.tokenColorCustomizations': 'Overwrite token colors of current color theme',
     'preference.general.language': 'Language',
     'preference.general.language.change.refresh.info': 'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
     'preference.general.language.change.refresh.now': 'now',
