@@ -5,7 +5,7 @@ import antdNotification, { ArgsProps } from 'antd/lib/notification';
 import 'antd/lib/notification/style/index.css';
 
 import { Button } from '../button';
-import * as styles from './nitification.module.less';
+import * as styles from './notification.module.less';
 
 enum MessageType {
   Error,
