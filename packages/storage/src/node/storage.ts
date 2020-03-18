@@ -1,41 +1,59 @@
-import { IStorageServer, IUpdateRequest, IStoragePathServer, StorageChange } from '../common';
+import { IStorageServer, IUpdateRequest, IStoragePathServer, StorageChange, StringKeyToAnyValue } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileService } from '@ali/ide-file-service';
 import { Deferred, URI, Emitter, Event } from '@ali/ide-core-common';
+import { INodeLogger } from '@ali/ide-core-node';
 import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
-export class WorkspaceStorageServer implements IStorageServer {
-
+export abstract class StorageServer implements IStorageServer {
   @Autowired(IFileService)
   protected readonly fileSystem: IFileService;
 
   @Autowired(IStoragePathServer)
   protected readonly dataStoragePathServer: IStoragePathServer;
 
-  private deferredStorageDirPath = new Deferred<string>();
-  private databaseStorageDirPath: string | undefined;
+  @Autowired(INodeLogger)
+  protected readonly logger: INodeLogger;
 
-  private storageName: string;
+  public deferredStorageDirPath = new Deferred<string>();
+  public databaseStorageDirPath: string | undefined;
+
+  public storageName: string;
+  public _cache: any = {};
+
+  public onDidChangeEmitter = new Emitter<StorageChange>();
+  readonly onDidChange: Event<StorageChange> = this.onDidChangeEmitter.event;
+
+  abstract init(storageDirName?: string, workspaceNamespace?: string): Promise<string | undefined>;
+  abstract setupDirectories(storageDirName: string): Promise<string | undefined>;
+  abstract getStoragePath(storageName: string): Promise<string | undefined>;
+  abstract getItems(storageName: string): Promise<StringKeyToAnyValue>;
+  abstract updateItems(storageName: string, request: IUpdateRequest): Promise<void>;
+
+  async close(recovery?: () => Map<string, string>) {
+    // do nothing
+  }
+}
+
+@Injectable()
+export class WorkspaceStorageServer extends StorageServer {
+
   private workspaceNamespace: string | undefined;
-  private _cache: any = {};
-
-  private onDidChangeEmiter = new Emitter<StorageChange>();
-  readonly onDidChange: Event<StorageChange> = this.onDidChangeEmiter.event;
 
   public async init(storageDirName?: string, workspaceNamespace?: string) {
     this.workspaceNamespace = workspaceNamespace;
     return await this.setupDirectories(storageDirName);
   }
 
-  private async setupDirectories(storageDirName?: string) {
+  async setupDirectories(storageDirName?: string) {
     const storagePath = await this.dataStoragePathServer.provideWorkspaceStorageDirPath(storageDirName);
     this.deferredStorageDirPath.resolve(storagePath);
     this.databaseStorageDirPath = storagePath;
     return storagePath;
   }
 
-  private async getStoragePath(storageName: string): Promise<string | undefined> {
+  async getStoragePath(storageName: string): Promise<string | undefined> {
     if (!this.databaseStorageDirPath) {
       await this.deferredStorageDirPath.promise;
     }
@@ -61,7 +79,7 @@ export class WorkspaceStorageServer implements IStorageServer {
     const storagePath = await this.getStoragePath(storageName);
 
     if (!storagePath) {
-      console.error(`Storage [${this.storageName}] is invalid.`);
+      this.logger.error(`Storage [${this.storageName}] is invalid.`);
     } else {
       const uriString = new URI(storagePath).toString();
       if (await this.fileSystem.exists(uriString)) {
@@ -69,8 +87,8 @@ export class WorkspaceStorageServer implements IStorageServer {
         try {
           items = JSON.parse(data.content);
         } catch (error) {
+          this.logger.error(`Storage [${this.storageName}] content can not be parse. Error: ${error.stack}`);
           items = {};
-          console.error(error);
         }
       }
     }
@@ -138,45 +156,26 @@ export class WorkspaceStorageServer implements IStorageServer {
         path: storageFile.uri,
         data: JSON.stringify(raw),
       };
-      this.onDidChangeEmiter.fire(change);
+      this.onDidChangeEmitter.fire(change);
     }
-  }
-
-  async close(recovery?: () => Map<string, string>) {
-    // do nothing
   }
 }
 
 @Injectable()
-export class GlobalStorageServer implements IStorageServer {
-
-  @Autowired(IFileService)
-  protected readonly fileSystem: IFileService;
-
-  @Autowired(IStoragePathServer)
-  protected readonly dataStoragePathServer: IStoragePathServer;
-
-  private deferredStorageDirPath = new Deferred<string>();
-  private databaseStorageDirPath: string | undefined;
-
-  private storageName: string;
-  private _cache: any = {};
-
-  private onDidChangeEmitter = new Emitter<StorageChange>();
-  readonly onDidChange: Event<StorageChange> = this.onDidChangeEmitter.event;
+export class GlobalStorageServer extends StorageServer {
 
   public async init(storageDirName: string) {
     return await this.setupDirectories(storageDirName);
   }
 
-  private async setupDirectories(storageDirName: string) {
+  async setupDirectories(storageDirName: string) {
     const storagePath = await this.dataStoragePathServer.provideGlobalStorageDirPath(storageDirName);
     this.deferredStorageDirPath.resolve(storagePath);
     this.databaseStorageDirPath = storagePath;
     return storagePath;
   }
 
-  private async getStoragePath(storageName: string): Promise<string | undefined> {
+  async getStoragePath(storageName: string): Promise<string | undefined> {
     if (!this.databaseStorageDirPath) {
       await this.deferredStorageDirPath.promise;
     }
@@ -202,7 +201,7 @@ export class GlobalStorageServer implements IStorageServer {
     const storagePath = await this.getStoragePath(storageName);
 
     if (!storagePath) {
-      console.error(`Storage [${this.storageName}] is invalid.`);
+      this.logger.error(`Storage [${this.storageName}] is invalid.`);
     } else {
       const uriString = new URI(storagePath).toString();
       if (await this.fileSystem.exists(uriString)) {
@@ -210,8 +209,8 @@ export class GlobalStorageServer implements IStorageServer {
         try {
           items = JSON.parse(data.content);
         } catch (error) {
+          this.logger.error(`Storage [${this.storageName}] content can not be parse. Error: ${error.stack}`);
           items = {};
-          console.error(error);
         }
       }
     }
@@ -259,9 +258,5 @@ export class GlobalStorageServer implements IStorageServer {
       };
       this.onDidChangeEmitter.fire(change);
     }
-  }
-
-  async close(recovery?: () => Map<string, string>) {
-    // do nothing
   }
 }

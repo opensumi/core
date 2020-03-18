@@ -30,9 +30,13 @@ export class Storage implements IStorage {
 
   private _init: Promise<any>;
 
-  private readonly logger = getDebugLogger();
-
-  constructor(private readonly database: IStorageServer, private readonly workspace: IWorkspaceService, private readonly appConfig: AppConfig, storageName: string) {
+  constructor(
+    private readonly database: IStorageServer,
+    private readonly workspace: IWorkspaceService,
+    private readonly appConfig: AppConfig,
+    storageName: string,
+    private readonly logger = getDebugLogger(),
+  ) {
     this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);
     this.flushDelayer = new ThrottledDelayer(Storage.DEFAULT_FLUSH_DELAY);
