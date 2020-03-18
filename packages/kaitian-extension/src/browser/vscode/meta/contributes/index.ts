@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
-import { Disposable, ConstructorOf, getDebugLogger, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize } from '@ali/ide-core-browser';
+import { Disposable, ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize, ILogger } from '@ali/ide-core-browser';
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../../common';
 
 import { CommandsSchema, CommandsContributionPoint } from './commands';
@@ -298,6 +298,9 @@ export class VSCodeContributeRunner extends Disposable {
   @Autowired(ISchemaRegistry)
   schemaRegistry: ISchemaRegistry;
 
+  @Autowired(ILogger)
+  private logger: ILogger;
+
   constructor(@Optional(CONTRIBUTES_SYMBOL) private extension: IExtensionMetaData) {
     super();
   }
@@ -327,7 +330,7 @@ export class VSCodeContributeRunner extends Disposable {
           await contributePoint.contribute();
 
         } catch (e) {
-          getDebugLogger().error(e);
+          this.logger.error(e);
         }
       }
     }

@@ -46,6 +46,7 @@ import {
 import { SearchPreferences } from './search-preferences';
 import { SearchHistory } from './search-history';
 import { replaceAll } from './replace';
+import { SearchResultCollection } from './search-result-collection';
 
 export interface SearchAllFromDocModelOptions {
   searchValue: string;
@@ -137,6 +138,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
   searchInputEl = createRef<HTMLInputElement>();
   replaceInputEl = createRef<HTMLInputElement>();
 
+  searchResultCollection: SearchResultCollection = new SearchResultCollection();
+
   constructor() {
     this.recoverUIState();
   }
@@ -197,7 +200,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     // 从服务端搜索
     this.contentSearchServer.search(value, rootDirs, searchOptions).then((id) => {
       this.currentSearchId = id;
-      this.onSearchResult({
+      this._onSearchResult({
         id,
         data: searchFromDocModelInfo.result,
         searchState: SEARCH_STATE.doing,
@@ -275,6 +278,14 @@ export class ContentSearchClientService implements IContentSearchClientService {
    * @param sendClientResult
    */
   onSearchResult(sendClientResult: SendClientResult) {
+    const resultList = this.searchResultCollection.pushAndGetResultList(sendClientResult);
+
+    resultList.forEach((result) => {
+      this._onSearchResult(result);
+    });
+  }
+
+  _onSearchResult(sendClientResult: SendClientResult) {
     const { id, data, searchState, error, docModelSearchedList } = sendClientResult;
 
     if (!data) {
