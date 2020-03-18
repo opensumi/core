@@ -5,29 +5,24 @@ import {
   IContextKeyService,
   URI,
   EDITOR_COMMANDS,
-  AppConfig,
+  // AppConfig,
+  Disposable,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI } from '../common';
-import { IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
+import { FileChange, IFileServiceClient, FileChangeType } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { FileStat } from '@ali/ide-file-service';
-import { Tree, ITree } from '@ali/ide-components';
+import { Tree, ITree, WatchEvent, ITreeNodeOrCompositeTreeNode, CompositeTreeNode, IWatcherEvent } from '@ali/ide-components';
 import { Directory, File } from './file-tree-nodes';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class FileTreeService extends Tree {
 
-  private _workspaceRoot: FileStat | undefined;
-
-  private fileServiceWatchers: {
-    [uri: string]: IFileServiceWatcher,
-  } = {};
-
-  @Autowired(AppConfig)
-  private readonly config: AppConfig;
+  // @Autowired(AppConfig)
+  // private readonly config: AppConfig;
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
@@ -50,44 +45,53 @@ export class FileTreeService extends Tree {
   @Autowired(FileTreeDecorationService)
   public readonly decorationService: FileTreeDecorationService;
 
+  @Autowired(IFileServiceClient)
+  private readonly fileServiceClient: IFileServiceClient;
+
   private _contextMenuContextKeyService: IContextKeyService;
 
   private cacheNodesMap: Map<string, File | Directory> = new Map();
 
-  get workspaceRootFileStat() {
-    return this._workspaceRoot;
-  }
-
-  get workspaceRoot() {
-    if (this._workspaceRoot) {
-      return new URI(this._workspaceRoot.uri);
-    }
-    return URI.file(this.config.workspaceDir);
-  }
-
-  constructor() {
-    super();
-  }
+  // 用于记录文件系统Change事件的定时器
+  private eventFlushTimeout: number;
+  // 文件系统Change事件队列
+  private changeEventDispatchQueue: string[] = [];
 
   async init() {
     await this.workspaceService.roots;
-
-    this._workspaceRoot = this.workspaceService.workspace;
-
     this.workspaceService.onWorkspaceChanged(async () => {
-      this._workspaceRoot = this.workspaceService.workspace;
-      this.clear();
+      this.dispose();
     });
+
+    this.toDispose.push(Disposable.create(() => {
+      this.cacheNodesMap.clear();
+    }));
   }
 
   async resolveChildren(parent?: Directory) {
     if (!parent) {
       // 加载根目录
-      await this.workspaceService.roots;
-      if (this.workspaceService.workspace) {
-        const children = await this.fileTreeAPI.resolveChildren(this as ITree, this.workspaceService.workspace);
-        this.cacheNodes(children as (File | Directory)[]);
+      const roots = await this.workspaceService.roots;
+
+      if (this.isMutiWorkspace) {
+        // 创建Root节点并引入root文件目录
+        const children: any[] = [];
+        for (const root of roots) {
+          const child = await this.fileTreeAPI.resolveChildren(this as ITree, root);
+          this.watchFilesChange(new URI(root.uri));
+          this.cacheNodes(children as (File | Directory)[]);
+          children.concat(child);
+        }
+        // TODO: 根据workspace生成临时root托管子目录
         return children;
+      } else {
+        if (roots.length > 0) {
+          const children = await this.fileTreeAPI.resolveChildren(this as ITree, roots[0]);
+          this.watchFilesChange(new URI(roots[0].uri));
+          this.cacheNodes(children as (File | Directory)[]);
+          this.root = children[0];
+          return children[0];
+        }
       }
     } else {
       // 加载子目录
@@ -98,6 +102,90 @@ export class FileTreeService extends Tree {
       }
     }
     return [];
+  }
+
+  async watchFilesChange(uri: URI) {
+    const watcher = await this.fileServiceClient.watchFileChanges(uri);
+    this.toDispose.push(watcher);
+    watcher.onFilesChanged((changes: FileChange[]) => {
+      this.onFilesChanged(changes);
+    });
+  }
+
+  private isContentFile(node: any | undefined) {
+    return !!node && 'filestat' in node && !node.fileStat.isDirectory;
+  }
+
+  private isFileStatNode(node: object | undefined) {
+    return !!node && 'filestat' in node;
+  }
+
+  private isFileContentChanged(change: FileChange): boolean {
+    return change.type === FileChangeType.UPDATED && this.isContentFile(this.getNodeByUriString(change.uri));
+  }
+
+  private getAffectedUris(changes: FileChange[]): URI[] {
+    return changes.filter((change) => !this.isFileContentChanged(change)).map((change) => new URI(change.uri));
+  }
+
+  private isRootAffected(changes: FileChange[]): boolean {
+    const root = this.root;
+    if (this.isFileStatNode(root)) {
+      return changes.some((change) =>
+        change.type < FileChangeType.DELETED && change.uri.toString() === (root as Directory)!.uri.toString(),
+      );
+    }
+    return false;
+  }
+
+  private getDeletedUris(changes: FileChange[]): URI[] {
+    return changes.filter((change) => change.type === FileChangeType.DELETED).map((change) => new URI(change.uri));
+  }
+
+  private onFilesChanged(changes: FileChange[]): void {
+    if (this.deleteAffectedNodes(this.getDeletedUris(changes))) {
+      // 当全部变动均为文件删除时，无需后续刷新操作
+      return ;
+    }
+    if (!this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
+      this.refresh();
+    }
+  }
+
+  private deleteAffectedNodes(uris: URI[]) {
+    const nodes = uris.map((uri) => this.getNodeByUriString(uri.toString())).filter((node) => !!node);
+    for (const node of nodes) {
+      this.dispatchWatchEvent(node!.parent!.path, { type: WatchEvent.Removed,  path: node!.path });
+    }
+    return uris.length > 0 && nodes.length === uris.length;
+  }
+
+  private dispatchWatchEvent(path: string, event: IWatcherEvent) {
+    const watcher = this.root?.watchEvents.get(path);
+    if (watcher && watcher.callback) {
+      watcher.callback(event);
+    }
+  }
+
+  refreshAffectedNodes(uris: URI[]) {
+    const nodes = this.getAffectedNodes(uris);
+    for (const node of nodes) {
+      this.refresh(node);
+    }
+    return nodes.length !== 0;
+  }
+
+  private getAffectedNodes(uris: URI[]): Directory[] {
+    const nodes: Directory[] = [];
+    for (const uri of uris) {
+      const node = this.getNodeByUriString(uri.parent.toString());
+      if (node && Directory.is(node)) {
+        nodes.push(node as Directory);
+      } else {
+
+      }
+    }
+    return nodes;
   }
 
   private cacheNodes(nodes: (File | Directory)[]) {
@@ -111,15 +199,14 @@ export class FileTreeService extends Tree {
     return this.cacheNodesMap.get(path);
   }
 
-  clear() {
-    for (const watcher of Object.keys(this.fileServiceWatchers)) {
-      this.fileServiceWatchers[watcher].dispose();
+  sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
+    if (a.constructor === b.constructor) {
+      // numeric 参数确保数字为第一排序优先级
+      return a.name.localeCompare(b.name, 'kn', { numeric: true }) as any;
     }
-    this.cacheNodesMap.clear();
-  }
-
-  dispose() {
-    super.dispose();
+    return CompositeTreeNode.is(a) ? -1
+      : CompositeTreeNode.is(b)  ? 1
+        : 0;
   }
 
   get contextMenuContextKeyService() {
@@ -153,11 +240,44 @@ export class FileTreeService extends Tree {
   }
 
   /**
-   * 刷新所有节点
+   * 刷新指定下的所有子节点
    */
-  @action
-  async refresh() {
-   // todo
+  async refresh(node: Directory = this.root as Directory) {
+    if (!Directory.is(node) && node.parent) {
+      node = node.parent as Directory;
+    }
+    this.queueChangeEvent(node.path);
+  }
+
+  // 队列化Changed事件
+  private queueChangeEvent(path: string) {
+    clearTimeout(this.eventFlushTimeout);
+    this.eventFlushTimeout = setTimeout(() => this.flushEventQueue(), 150) as any;
+
+    if (this.changeEventDispatchQueue.indexOf(path) === -1) {
+      this.changeEventDispatchQueue.push(path);
+    }
+  }
+
+  public async flushEventQueue() {
+    const result: any[] = [];
+    if (this.changeEventDispatchQueue.length === 0) {
+      return;
+    }
+    this.changeEventDispatchQueue.sort((pathA, pathB) => {
+      const pathADepth = Path.pathDepth(pathA);
+      const pathBDepth = Path.pathDepth(pathB);
+      return pathADepth - pathBDepth;
+    });
+    for (const path of this.changeEventDispatchQueue) {
+      const watcher = this.root?.watchEvents.get(path);
+      if (watcher && typeof watcher.callback === 'function') {
+        result.push(await watcher.callback({ type: WatchEvent.Changed, path }));
+      }
+    }
+    // 重置更新队列
+    this.changeEventDispatchQueue = [];
+    return result;
   }
 
   // @OnEvent(ResourceLabelOrIconChangedEvent)

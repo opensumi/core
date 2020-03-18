@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TreeModel } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
-import { FileTreeModel, IFileTreeMetaData } from '../file-tree-model';
+import { FileTreeModel } from '../file-tree-model';
 
 @Injectable()
 export class FileTreeModelService {
@@ -12,14 +12,21 @@ export class FileTreeModelService {
   private readonly fileTreeService: FileTreeService;
 
   private _treeModel: TreeModel;
+
+  private _whenReady: Promise<void>;
+
   constructor() {
-    const { workspaceRoot, workspaceRootFileStat } = this.fileTreeService;
-    const fileTreeMetaData: IFileTreeMetaData = {
-      uri: workspaceRoot,
-      name: workspaceRoot.displayName,
-      filestat: workspaceRootFileStat,
-    };
-    this._treeModel = this.injector.get<any>(FileTreeModel, [this.fileTreeService, fileTreeMetaData]);
+    this._whenReady = this.initTreeModel();
+  }
+
+  get whenReady() {
+    return this._whenReady;
+  }
+
+  async initTreeModel() {
+    // 根据是否为多工作区创建不同根节点
+    const root = await this.fileTreeService.resolveChildren();
+    this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
   }
 
   get treeModel() {

@@ -38,9 +38,9 @@ export enum WatchEvent {
 export interface IWatcherChangeEvent {
   type: WatchEvent.Changed;
   /**
-   * 改变的节点ID
+   * 改变的节点路径
    */
-  id: number;
+  path: string;
 }
 
 export interface IWatcherAddEvent {
@@ -58,21 +58,21 @@ export interface IWatcherAddEvent {
 export interface IWatcherRemoveEvent {
   type: WatchEvent.Removed;
   /**
-   * 移除的节点ID
+   * 移除的节点路径
    */
-  id: number;
+  path: string;
 }
 
 export interface IWatcherMoveEvent {
   type: WatchEvent.Moved;
   /**
-   * 旧父节点ID
+   * 旧父节点路径
    */
-  oldId: string;
+  oldPath: string;
   /**
-   * 新父节点ID
+   * 新父节点路径
    */
-  newId: string;
+  newPath: string;
 }
 
 export enum MetadataChangeType {
@@ -88,6 +88,13 @@ export interface IMetadataChange {
   value: any;
 }
 
+export interface IWatcherInfo {
+  terminator: IWatchTerminator;
+  callback: IWatcherCallback;
+}
+
+export type IWatchTerminator = (path?: string) => void;
+
 export type IWatcherCallback = (event: IWatcherEvent) => void;
 
 export type IWatcherEvent = IWatcherChangeEvent | IWatcherAddEvent | IWatcherRemoveEvent | IWatcherMoveEvent;
@@ -98,8 +105,9 @@ export type IWatcherEvent = IWatcherChangeEvent | IWatcherAddEvent | IWatcherRem
  * 其存在是为了便于事件委派发生在树中某处以及其他共享内容（在树中共享，但对于每个“根”都是唯一的）事件
  */
 export interface ITreeWatcher {
-
-  // 监听函数
+  // 监听watcheEvent事件，如节点移动，新建，删除
+  onWatchEvent(path: string, callback: IWatcherCallback): IWatchTerminator;
+  // 监听所有事件
   on(event: TreeNodeEvent, callback: any);
 
   // 事件分发

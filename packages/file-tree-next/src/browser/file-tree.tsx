@@ -15,7 +15,7 @@ export const FileTree = observer(({
   const [treeHandle, setTreeHandler] = React.useState<IRecycleTreeHandle>();
   const { width, height } = viewState;
   const { decorationService, labelService } = useInjectable<FileTreeService>(FileTreeService);
-  const { treeModel } = useInjectable<FileTreeModelService>(FileTreeModelService);
+  const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
   const toggleDirectory = (item: Directory) => {
     if (treeHandle) {
@@ -39,15 +39,17 @@ export const FileTree = observer(({
   }, []);
 
   const ensureIsReady = async () => {
+    await fileTreeModelService.whenReady;
     // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-    await treeModel.root.ensureLoaded;
+    // 这里需要重新取一下treeModel的值确保为最新的TreeModel
+    await fileTreeModelService.treeModel.root.ensureLoaded;
     setIsReady(true);
   };
 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
     setTreeHandler({
       ...handle,
-      getModel: () => treeModel,
+      getModel: () => fileTreeModelService.treeModel,
     });
   };
 
@@ -58,7 +60,7 @@ export const FileTree = observer(({
         width={width}
         itemHeight={FILE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
-        model={treeModel}
+        model={fileTreeModelService.treeModel}
       >
         {(props: INodeRendererProps) => <FileTreeNode
           item={props.item}

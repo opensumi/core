@@ -34,6 +34,9 @@ export class Path {
     return path.startsWith(Path.separator);
   }
 
+  static pathDepth(path: string): number {
+    return path.split(Path.separator).length;
+  }
   /**
    * vscode-uri always normalizes drive letters to lower case:
    * https://github.com/Microsoft/vscode-uri/blob/b1d3221579f97f28a839b6f996d76fc45e9964d8/src/index.ts#L1025

@@ -1,4 +1,4 @@
-import { ITree, TreeModel, IOptionalMetaData, TreeNodeEvent } from '@ali/ide-components';
+import { TreeModel, IOptionalMetaData, TreeNodeEvent, CompositeTreeNode } from '@ali/ide-components';
 import { Injectable, Optional, Autowired} from '@ali/common-di';
 import { Directory } from './file-tree-nodes';
 import { URI } from '@ali/ide-core-node';
@@ -16,13 +16,13 @@ export class FileTreeModel extends TreeModel {
   @Autowired(FileTreeDecorationService)
   public readonly decorationService: FileTreeDecorationService;
 
-  constructor(@Optional() tree: ITree, @Optional() optionalMetaData: IFileTreeMetaData) {
+  constructor(@Optional() root: Directory) {
     super();
-    this.init(tree, optionalMetaData);
+    this.init(root);
   }
 
-  init(tree: ITree, optionalMetaData: IFileTreeMetaData) {
-    this.root = new Directory(tree, undefined, optionalMetaData.uri, optionalMetaData.name, optionalMetaData.fiestat);
+  init(root: CompositeTreeNode) {
+    this.root = root;
     // 分支更新时通知树刷新
     this.root.watcher.on(TreeNodeEvent.BranchDidUpdate, this.dispatchChange);
     // 主题或装饰器更新时，更新树

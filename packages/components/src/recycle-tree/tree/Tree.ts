@@ -12,11 +12,6 @@ export abstract class Tree implements ITree {
     [id: string]: Mutable<TreeNode> | undefined,
   } = {};
 
-  constructor() {
-    this.toDispose.push(this.onChangedEmitter);
-    this.toDispose.push(this.onNodeRefreshedEmitter);
-  }
-
   dispose(): void {
     this.toDispose.dispose();
   }

@@ -6,4 +6,6 @@ export interface ITree {
   resolveChildren: (parent: CompositeTreeNode) =>  Promise<ITreeNodeOrCompositeTreeNode[] | null > ;
   // 节点排序函数
   sortComparator?: (a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) => number;
+  // 根节点
+  root?: CompositeTreeNode;
 }

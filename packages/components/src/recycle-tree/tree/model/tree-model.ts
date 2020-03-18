@@ -1,7 +1,7 @@
 import { Event, Emitter } from '@ali/ide-core-common';
 import { ISerializableState, TreeStateManager, TreeStateWatcher } from './treeState';
 import { CompositeTreeNode } from '../TreeNode';
-import { ITree, IOptionalMetaData, ICompositeTreeNode, TreeNodeEvent } from '../../types';
+import { ICompositeTreeNode, TreeNodeEvent } from '../../types';
 
 export class TreeModel {
 
@@ -31,8 +31,8 @@ export class TreeModel {
     this._state = state;
   }
 
-  init(tree: ITree, optionalMetaData: IOptionalMetaData) {
-    this.root = new CompositeTreeNode(tree, undefined, undefined, optionalMetaData);
+  init(root: CompositeTreeNode) {
+    this.root = root;
     // 分支更新时通知树刷新
     this.root.watcher.on(TreeNodeEvent.BranchDidUpdate, this.dispatchChange);
   }

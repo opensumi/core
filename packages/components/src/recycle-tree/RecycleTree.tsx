@@ -336,7 +336,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         }
       } else {
         const item = root.getTreeNodeAtIndex(index);
-        // 检查重命名节点
+        // 检查是否为重命名节点
         if (item && item.id === this.promptTargetID &&
           this.promptHandle && this.promptHandle.constructor === RenamePromptHandle &&
           (this.promptHandle as RenamePromptHandle).originalFileName === item.name &&
