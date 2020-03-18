@@ -9,7 +9,7 @@ import { getIcon, MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEv
 // TODO editor 不应该依赖main-layout
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent, IEditorActionRegistry } from './types';
-import { Popover, PopoverTriggerType, PopoverPosition } from '@ali/ide-core-browser/lib/components';
+import { Popover, PopoverTriggerType, PopoverPosition } from '@ali/ide-components';
 
 const pkgName = require('../../package.json').name;
 
@@ -185,8 +185,8 @@ export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, gr
             id={'editor_actions_tip_' + makeRandomHexString(5)}
             title={item.tip}
             content={<div className={styles.editor_action_tip}>
-                <div className={classnames(styles.editor_action_tip_close, getIcon('close'))} onClick={() => visibleAction.closeTip()}></div>
-              </div>}
+              <div className={classnames(styles.editor_action_tip_close, getIcon('close'))} onClick={() => visibleAction.closeTip()}></div>
+            </div>}
             trigger={PopoverTriggerType.program}
             display={true}
             popoverClass={classnames(styles.editor_action_tip_wrapper, item.tipClass)}
