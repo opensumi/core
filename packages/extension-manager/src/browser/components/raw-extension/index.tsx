@@ -67,7 +67,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
 
   return (
     <div className={className} onContextMenu={handleCtxMenu}>
-      <div onClick={handleClick} className={styles.wrap}>
+      <div onClick={handleClick} className={clx(styles.wrap, 'kt-extension-raw')}>
         <div>
           <img className={styles.icon} src={extension.icon}></img>
         </div>
@@ -78,16 +78,16 @@ export const RawExtensionView: React.FC<RawExtensionProps> = observer(({
               {extension.isBuiltin ? (<span className={commonStyles.tag}>{localize('marketplace.extension.builtin')}</span>) : null}
             </div>
               <span style={{display: 'flex', flexShrink: 0}} onClick={(e) => e.stopPropagation()}>
-                {extension.reloadRequire && <Button className={styles.button} type='secondary' ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
+                {extension.reloadRequire && <Button size='small' type='primary' ghost={true} style={{marginRight: 4}} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequire')}</Button>}
                 {extension.installed ? (
                   <InlineActionBar
                   menus={extensionManagerService.contextMenu}
                   context={[extension]} />
                 ) : null}
               </span>
-            {!extension.installed ? <Button className={styles.button} type='secondary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button> : null}
+            {!extension.installed ? <Button size='small' type='primary' loading={isInstalling} onClick={handleInstall} ghost={true} style={{flexShrink: 0}}>{localize('marketplace.extension.install')}</Button> : null}
           </div>
-          <div className={clx(styles.extension_props, 'kt-extension-raw-description')}>
+          <div className={styles.extension_props}>
             {extension.downloadCount ? (<span><i className={clx(commonStyles.icon, getIcon('download'))}></i> {extension.downloadCount}</span>) : null}
             <span>V {extension.version}</span>
             <span>{extension.publisher}</span>
