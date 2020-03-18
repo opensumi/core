@@ -5,7 +5,7 @@ import * as extHostTypeConverter from '../../../common/vscode/converter';
 import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription } from '../../../common/vscode';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
-import { ILogger, getLogger, revive, toDisposable, DisposableStore, isNonEmptyArray } from '@ali/ide-core-common';
+import { ILogger, getDebugLogger, revive, toDisposable, DisposableStore, isNonEmptyArray } from '@ali/ide-core-common';
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ObjectIdentifier } from './language/util';
 import { CommandDto } from '../../../common/vscode/scm';
@@ -27,7 +27,7 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
       return extHostCommands.registerCommand(true, id, (...args: any[]): any => {
         const activeTextEditor = extHostEditors.activeEditor ? extHostEditors.activeEditor.textEditor : undefined;
         if (!activeTextEditor) {
-          console.warn('Cannot execute ' + id + ' because there is no active text editor.');
+          getDebugLogger().warn('Cannot execute ' + id + ' because there is no active text editor.');
           return undefined;
         }
 
@@ -37,10 +37,10 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
 
         }).then((result) => {
           if (!result) {
-            console.warn('Edits from command ' + id + ' were not applied.');
+            getDebugLogger().warn('Edits from command ' + id + ' were not applied.');
           }
         }, (err) => {
-          console.warn('An error occurred while running command ' + id, err);
+          getDebugLogger().warn('An error occurred while running command ' + id, err);
         });
       });
     },
@@ -48,7 +48,7 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
       return extHostCommands.registerCommand(true, id, async (...args: any[]): Promise<any> => {
         const activeTextEditor = extHostEditors.activeEditor;
         if (!activeTextEditor) {
-          console.warn('Cannot execute ' + id + ' because there is no active text editor.');
+          getDebugLogger().warn('Cannot execute ' + id + ' because there is no active text editor.');
           return undefined;
         }
 
@@ -64,7 +64,7 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
 export class ExtHostCommands implements IExtHostCommands {
   protected readonly proxy: IMainThreadCommands;
   protected readonly rpcProtocol: IRPCProtocol;
-  protected readonly logger: ILogger = getLogger();
+  protected readonly logger: ILogger = getDebugLogger();
   protected readonly commands = new Map<string, any & { handler: Handler }>();
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
   public converter: CommandsConverter;

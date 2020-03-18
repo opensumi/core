@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
-import { getLogger, getNodeRequire } from '@ali/ide-core-node';
+import { getDebugLogger, getNodeRequire } from '@ali/ide-core-node';
 import * as semver from 'semver';
 import { IExtensionMetaData, ExtraMetaData, getExtensionId } from '../common';
 
@@ -45,7 +45,7 @@ export class ExtensionScanner {
     return Array.from(this.availableExtensions.values());
   }
   private async scanDir(dir: string): Promise<void> {
-    getLogger().info('kaitian scanDir', dir);
+    getDebugLogger().info('kaitian scanDir', dir);
     try {
       const extensionDirArr = await fs.readdir(dir);
       await Promise.all(extensionDirArr.map((extensionDir) => {
@@ -53,7 +53,7 @@ export class ExtensionScanner {
         return this.getExtension(extensionPath, this.localization);
       }));
     } catch (e) {
-      getLogger().error(e);
+      getDebugLogger().error(e);
     }
   }
 
@@ -84,7 +84,7 @@ export class ExtensionScanner {
     try {
       await fs.stat(extensionPath);
     } catch (e) {
-      getLogger().error(`extension path ${extensionPath} does not exist`);
+      getDebugLogger().error(`extension path ${extensionPath} does not exist`);
       return;
     }
 
@@ -108,7 +108,7 @@ export class ExtensionScanner {
           pkgCheckResult = false;
         }
       } catch (e) {
-        getLogger().error(e);
+        getDebugLogger().error(e);
         pkgCheckResult = false;
       }
     }
@@ -147,7 +147,7 @@ export class ExtensionScanner {
         }
       }
     } catch (e) {
-      getLogger().error(e);
+      getDebugLogger().error(e);
       return;
     }
 
@@ -158,7 +158,7 @@ export class ExtensionScanner {
         delete getNodeRequire().cache[extendPath];
         extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
-        getLogger().error(e);
+        getDebugLogger().error(e);
       }
     }
 

@@ -4,7 +4,7 @@ import { Disposable, Event, Emitter, CancellationTokenSource, localize, isThenab
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { TernarySearchTree } from '@ali/ide-core-common/lib/map';
 import { LinkedList } from '@ali/ide-core-common/lib/linked-list';
-import { getLogger, isFalsyOrWhitespace, asArray } from '@ali/ide-core-common';
+import { getDebugLogger, isFalsyOrWhitespace, asArray } from '@ali/ide-core-common';
 
 import {
   IDecorationsService, IDecoration, IResourceDecorationChangeEvent,
@@ -178,7 +178,7 @@ function getDecorationRule(data: IDecorationData | IDecorationData[]): IDecorati
 
 @Injectable()
 export class FileDecorationsService extends Disposable implements IDecorationsService {
-  private readonly logger = getLogger();
+  private readonly logger = getDebugLogger();
 
   private readonly _data = new LinkedList<DecorationProviderWrapper>();
   private readonly _onDidChangeDecorationsDelayed = new Emitter<URI | URI[]>();

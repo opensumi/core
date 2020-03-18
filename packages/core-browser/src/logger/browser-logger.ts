@@ -4,10 +4,9 @@ import {
   SupportLogNamespace,
   ILogServiceClient,
   LogLevel,
-  ILogger,
 } from '@ali/ide-core-common';
 
-export { getLogger, ILogger } from '@ali/ide-core-common';
+export { ILogger } from '@ali/ide-core-common';
 
 @Injectable()
 export class Logger implements ILogServiceClient {

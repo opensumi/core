@@ -3,7 +3,7 @@ import { CancellationToken } from '@ali/vscode-jsonrpc';
 import URI, { UriComponents } from 'vscode-uri';
 import {
   asPromise, comparePaths, sortedDiff, debounce,
-  Event, Emitter, ILogger, getLogger,
+  Event, Emitter, ILogger, getDebugLogger,
   DisposableStore, MutableDisposable,
 } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
@@ -11,7 +11,6 @@ import { IRPCProtocol } from '@ali/ide-connection';
 // import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser';
 import { IExtension } from '../../../common';
 
-import { ExtensionIdentifier, IExtensionDescription } from '../../../common/vscode/extension';
 import { MainThreadAPIIdentifier } from '../../../common/vscode';
 import {
   SCMRawResourceSplices, SCMRawResource, SCMRawResourceSplice,
@@ -192,7 +191,7 @@ export class ExtHostSCMInputBox implements vscode.SourceControlInputBox {
     }
 
     if (fn && typeof fn !== 'function') {
-      console.warn('Invalid SCM input box validation function');
+      getDebugLogger().warn('Invalid SCM input box validation function');
       return;
     }
 
@@ -532,7 +531,7 @@ class ExtHostSourceControl implements vscode.SourceControl {
 }
 
 export class ExtHostSCM implements IExtHostSCMShape {
-  protected readonly logger: ILogger = getLogger();
+  protected readonly logger: ILogger = getDebugLogger();
 
   private static _handlePool: number = 0;
 

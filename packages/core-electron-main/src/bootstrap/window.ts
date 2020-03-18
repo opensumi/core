@@ -1,4 +1,4 @@
-import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri, Deferred } from '@ali/ide-core-common';
+import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
@@ -119,14 +119,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     this.clear();
     try {
       await this.startNode();
-      getLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
+      getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
       this.browser.loadURL(this.appConfig.browserUrl);
       this.browser.webContents.on('devtools-reload-page', () => {
         this.isReloading = true;
       });
       this.bindEvents();
     } catch (e) {
-      getLogger().error(e);
+      getDebugLogger().error(e);
     }
   }
 
@@ -238,7 +238,7 @@ export class KTNodeProcess {
   }
 
   dispose() {
-    const logger = getLogger();
+    const logger = getDebugLogger();
     logger.log('KTNodeProcess dispose', this._process);
     if (this._process) {
 

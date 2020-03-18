@@ -1,5 +1,5 @@
 import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle, IPlainWebviewWindow } from './types';
-import { isElectronRenderer, getLogger, localize, URI, IEventBus, Disposable, MaybeNull } from '@ali/ide-core-browser';
+import { isElectronRenderer, getDebugLogger, localize, URI, IEventBus, Disposable, MaybeNull } from '@ali/ide-core-browser';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFrameWebviewPanel } from './iframe-webview';
@@ -42,7 +42,7 @@ export class WebviewServiceImpl implements IWebviewService {
       return new ElectronPlainWebview();
     } else {
       if (options.preferredImpl && options.preferredImpl === 'webview') {
-        getLogger().warn(localize('webview.webviewTagUnavailable', '无法在非Electron环境使用Webview标签。回退至使用iframe。'));
+        getDebugLogger().warn(localize('webview.webviewTagUnavailable', '无法在非Electron环境使用Webview标签。回退至使用iframe。'));
       }
       return new IframePlainWebview();
     }

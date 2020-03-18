@@ -3,7 +3,7 @@ import { MaybePromise } from './async';
 import { ContributionProvider } from './contribution-provider';
 import { Disposable, IDisposable } from './disposable';
 import { replaceLocalizePlaceholder } from './localize';
-import { getLogger } from './log';
+import { getDebugLogger } from './log';
 
 type InterceptorFunction = (result: any) => MaybePromise<any>;
 
@@ -601,7 +601,7 @@ export class CommandServiceImpl implements CommandService {
       return await this.executeCommand(commandId, ...args)
     } catch(err) {
       // no-op: failed when command not found
-      getLogger().warn(err);
+      getDebugLogger().warn(err);
     }
   }
 }

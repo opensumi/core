@@ -1,9 +1,9 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as archiver from 'archiver';
-import { toLocalISOString, getLogger, Archive } from '@ali/ide-core-common';
+import { toLocalISOString, getDebugLogger, Archive } from '@ali/ide-core-common';
 
-const debugLog = getLogger('LogUtils');
+const debugLog = getDebugLogger('LogUtils');
 
 /**
  * @param date 不传则返回当天日志文件夹名

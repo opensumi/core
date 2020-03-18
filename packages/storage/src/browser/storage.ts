@@ -1,4 +1,4 @@
-import { getLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, DisposableCollection, isObject, isArray } from '@ali/ide-core-common';
+import { getDebugLogger, IStorage, ThrottledDelayer, isUndefinedOrNull, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IStorageServer, IUpdateRequest } from '../common';
 import { AppConfig } from '@ali/ide-core-browser';
@@ -30,7 +30,7 @@ export class Storage implements IStorage {
 
   private _init: Promise<any>;
 
-  private readonly logger = getLogger();
+  private readonly logger = getDebugLogger();
 
   constructor(private readonly database: IStorageServer, private readonly workspace: IWorkspaceService, private readonly appConfig: AppConfig, storageName: string) {
     this.storageName = storageName;
