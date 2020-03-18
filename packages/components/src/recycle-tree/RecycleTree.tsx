@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { FixedSizeList, Align } from 'react-window';
-import { TreeModel } from './tree/model/tree-model';
+import { TreeModel } from './tree/model/TreeModel';
 import { TreeNode, CompositeTreeNode } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
 import { DisposableCollection, Emitter, IDisposable } from '@ali/ide-core-common';
 import { INodeRendererProps, NodeType, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
+import * as styles from './recycle-tree.module.less';
+import * as cls from 'classnames';
 
 export interface IModelChange {
   preModel: TreeModel;
@@ -397,6 +399,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       style,
       className,
     } = this.props;
+    const listStyle = {
+      ...style,
+      // 让滚动条不占位
+      overflow: 'overlay',
+    } as React.CSSProperties;
     return (
       <FixedSizeList
         width={width}
@@ -409,8 +416,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         overscanCount={5}
         ref={this.listRef}
         onScroll={this.handleListScroll}
-        style={style}
-        className={className}>
+        style={listStyle}
+        className={cls(className, styles.recycle_tree)}>
         {this.renderItem}
       </FixedSizeList>);
   }
