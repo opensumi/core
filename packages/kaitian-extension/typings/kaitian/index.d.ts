@@ -23,7 +23,7 @@ declare module "kaitian" {
      * @param callback 事件订阅回调
      */
     export function subscribe(eventId: string, callback:(...args:any[]) => any): IDisposable
-    
+
     /**
      * 发送一个事件
      * @param eventId 事件id
@@ -50,7 +50,7 @@ declare module "kaitian" {
      * @param id tab id, 不限制在本插件注册的handle，需要自己进行字符串拼接
      */
     export function getExtensionTabbarHandler(id: string, extensionId?: string): ITabbarHandle;
-    
+
     /**
      * 切换左侧面板显示/隐藏
      */
@@ -73,7 +73,7 @@ declare module "kaitian" {
 
     /**
      * 激活指定 id 的面板，需在注册时指定 activateKeyBinding
-     * @param id 
+     * @param id
      */
     export function activatePanel(id: string): Promise<void>;
 
@@ -111,7 +111,7 @@ declare module "kaitian" {
     /**
      * 设置 IDE 所加载的额外插件列表，具体到插件路径
      * @param extensionCandidate 插件列表
-     * 
+     *
      * @example
      * ```typescript
      * lifecycle.setExtensionCandidate([
@@ -126,7 +126,7 @@ declare module "kaitian" {
    * 主题相关API
    */
   export namespace theme {
-    
+
     /**
      * 当主题被改变时的通知
      */
@@ -266,6 +266,8 @@ interface IComponentProps<N, W = any> {
 
 
 declare module 'kaitian-browser' {
+  export * from '@ali/ide-components';
+
   export enum VALIDATE_TYPE {
     INFO = 0,
     WRANING = 1,
@@ -355,40 +357,5 @@ declare module 'kaitian-browser' {
    * ```
    */
   export function getThemeColors(): {[key: string]: string}
-  
 
-  export const Button: React.FC<{
-    block?: boolean;
-    loading?: boolean;
-    ghost?: boolean;
-    type?: 'primary' | 'secondary' | 'danger';
-  } & React.HTMLAttributes<HTMLDivElement>>;
-  export const Portal: React.FC<{ id: string }>;
-  export enum PopoverTriggerType {
-    hover,
-    program, // 只遵守外层传入的display
-  }
-  export enum PopoverPosition {
-    top = 'top',
-    bottom = 'bottom',
-  }
-  export const Popover: React.FC<{
-    id: string;
-    insertClass?: string;
-    content?: React.ReactElement;
-    trigger?: PopoverTriggerType;
-    display?: boolean, // 使用程序控制的是否显示
-    [key: string]: any;
-    popoverClass?: string;
-    position?: PopoverPosition;
-  }>;
-  export const Icon: React.FC<{
-    title?: string;
-    icon?: string;
-    iconClass?: string;
-    tooltip?: string;
-    size?: 'small' | 'large';
-    loading?: boolean;
-    onClick?: React.MouseEventHandler<HTMLSpanElement>;
-  } & React.HTMLAttributes<HTMLDivElement>>;
 }
