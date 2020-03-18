@@ -3,7 +3,7 @@ import { RecycleTree, ValidateMessage } from '@ali/ide-core-browser/lib/componen
 import { IFileTreeItem } from '../common';
 import * as cls from 'classnames';
 import * as styles from './index.module.less';
-import { Event, FileDecorationsProvider, ThemeProvider } from '@ali/ide-core-common';
+import { Event, FileDecorationsProvider, ThemeProvider } from '@ali/ide-core-browser';
 import { IFileTreeServiceProps } from './file-tree.service';
 import { useDebounce } from '@ali/ide-core-browser/lib/utils';
 import { Directory, File } from './file-tree-item';

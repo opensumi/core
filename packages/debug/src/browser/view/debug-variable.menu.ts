@@ -1,7 +1,6 @@
-import { Domain, CommandContribution, CommandRegistry, localize, memoize, TreeNode } from '@ali/ide-core-common';
 import { NextMenuContribution, IMenuRegistry, AbstractMenuService, ICtxMenuRenderer, IMenu, generateMergedCtxMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { Autowired } from '@ali/common-di';
-import { IQuickInputService, IContextKeyService } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, localize, memoize, TreeNode, IQuickInputService, IContextKeyService } from '@ali/ide-core-browser';
 import { DebugVariableService } from './debug-variable.service';
 
 export enum MenuId {

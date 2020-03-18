@@ -1,6 +1,6 @@
 
 import { Injectable } from '@ali/common-di';
-import { TreeNode } from '@ali/ide-core-node';
+import { TreeNode } from '@ali/ide-core-browser';
 
 export interface IExtensionTreeViewModel {
   selected?: boolean;

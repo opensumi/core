@@ -8,8 +8,8 @@ import {
   Event,
   BasicEvent,
   positionToRange,
-} from '@ali/ide-core-common';
-import { IContextKeyService } from '@ali/ide-core-browser';
+  IContextKeyService,
+} from '@ali/ide-core-browser';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 

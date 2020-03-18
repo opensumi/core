@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TreeNode, isUndefined, ExpandableTreeNode } from '@ali/ide-core-common';
+import { TreeNode, isUndefined, ExpandableTreeNode } from '@ali/ide-core-browser';
 import { TreeContainer, PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 

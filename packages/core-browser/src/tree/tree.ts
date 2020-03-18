@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { URI } from '../../uri';
 
 export interface TreeNodeHighlightRange {
   start: number;
@@ -14,11 +13,11 @@ export interface IFileDecoration {
   weight?: number;
 }
 export interface FileDecorationsProvider {
-  getDecoration: (uri: any, hasChildren?: boolean) => IFileDecoration
+  getDecoration: (uri: any, hasChildren?: boolean) => IFileDecoration;
 }
 
 export interface ThemeProvider {
-  getColor: ({id: themeColorId }) => string
+  getColor: ({id: themeColorId }) => string;
 }
 
 export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
@@ -114,7 +113,7 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
    */
   readonly highLightRanges?: {
     name?: TreeNodeHighlightRange[],
-    description?: TreeNodeHighlightRange[]
+    description?: TreeNodeHighlightRange[],
   };
 
   /**
@@ -258,10 +257,9 @@ export namespace CompositeTreeNode {
   }
 }
 
-
 export function isTreeViewActionComponent(action: TreeViewAction): action is TreeViewActionComponent {
   return 'component' in action && React.isValidElement(action.component);
-};
+}
 
 export type TreeViewAction = TreeViewActionConfig | TreeViewActionComponent;
 

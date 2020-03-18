@@ -3,7 +3,7 @@ import {
   UriComponents,
   ICommand,
 } from './models';
-import { Event, IDisposable, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from '@ali/ide-core-common';
+import { Event, IDisposable } from '@ali/ide-core-common';
 import { TreeItemCollapsibleState } from './ext-types';
 import { ThemeType } from '@ali/ide-theme';
 
@@ -104,14 +104,6 @@ export interface TreeViewBaseOptions {
 
 export interface TreeViewOptions<T> extends TreeViewBaseOptions {
   treeDataProvider: vscode.TreeDataProvider<T>;
-}
-
-export interface TreeViewNode extends SelectableTreeNode {
-  contextValue?: string;
-  command?: ICommand;
-}
-
-export interface CompositeTreeViewNode extends TreeViewNode, ExpandableTreeNode, CompositeTreeNode {
 }
 
 export interface TreeViewSelection {

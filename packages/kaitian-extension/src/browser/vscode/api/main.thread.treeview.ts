@@ -1,15 +1,24 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { TreeViewItem, TreeViewNode, CompositeTreeViewNode, TreeViewBaseOptions } from '../../../common/vscode';
-import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
+import { TreeViewItem, TreeViewBaseOptions } from '../../../common/vscode';
+import { TreeItemCollapsibleState, ICommand } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { TreeNode, MenuPath, Emitter, DisposableStore, toDisposable } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabbarTreeView } from '../components';
 import { IIconService, IconType } from '@ali/ide-theme';
+import { SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from '@ali/ide-core-browser';
 
 export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];
 export const VIEW_ITEM_INLINE_MNUE: MenuPath = ['view-item-inline-menu'];
+
+export interface CompositeTreeViewNode extends TreeViewNode, ExpandableTreeNode, CompositeTreeNode {
+}
+
+export interface TreeViewNode extends SelectableTreeNode {
+  contextValue?: string;
+  command?: ICommand;
+}
 
 @Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {
