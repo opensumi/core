@@ -229,6 +229,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
         return;
       }
 
+      // 只搜索file协议内容
+      if (event.uri.scheme !== Schemas.file) {
+        return;
+      }
+
       const uriString = event.uri.toString();
 
       const docModel = this.documentModelManager.getModelReference(event.uri);
