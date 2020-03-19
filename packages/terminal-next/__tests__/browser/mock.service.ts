@@ -171,11 +171,13 @@ export class MockWorkspaceService {
 
 /** Mock MainLayout Service */
 export const MainLayoutTabbarOnActivate = new Emitter<any>();
+export const MainLayoutTabbarOnInActivate = new Emitter<any>();
 
 export class MockMainLayoutService {
   getTabbarHandler() {
     return {
       onActivate: MainLayoutTabbarOnActivate.event,
+      onInActivate: MainLayoutTabbarOnInActivate.event,
       isActivated: () => {
         return true;
       },
