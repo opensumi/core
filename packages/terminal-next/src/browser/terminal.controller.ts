@@ -268,6 +268,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           });
         }
       }));
+      this.addDispose(this.tabbarHandler.onInActivate(() => {
+        this.editorService.currentEditor && this.editorService.currentEditor.monacoEditor.focus();
+      }));
     }
 
     this.addDispose(this.themeService.onThemeChange((theme) => {
@@ -578,9 +581,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           client.hide();
           await client.show();
           client.layout();
+          client.focus();
          });
       } else {
         client.layout();
+        client.focus();
       }
     }
   }
