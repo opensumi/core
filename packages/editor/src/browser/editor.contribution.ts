@@ -877,14 +877,15 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(EDITOR_COMMANDS.AUTO_SAVE, {
       execute: () => {
-        const value = this.preferenceSettings.getPreference('files.autoSave', PreferenceScope.User).value as string || 'off';
+        const autoSavePreferenceField = 'editor.autoSave';
+        const value = this.preferenceSettings.getPreference(autoSavePreferenceField, PreferenceScope.User).value as string || 'off';
         const nextValue = [
           'afterDelay',
           'editorFocusChange',
           'windowLostFocus',
         ].includes(value) ? 'off' : 'afterDelay';
 
-        return this.preferenceSettings.setPreference('editor.autoSave', nextValue, PreferenceScope.User);
+        return this.preferenceSettings.setPreference(autoSavePreferenceField, nextValue, PreferenceScope.User);
       },
     });
   }
