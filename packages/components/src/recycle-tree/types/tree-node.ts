@@ -33,14 +33,6 @@ export interface ITreeNode {
    */
   readonly parent: ICompositeTreeNode | undefined;
   /**
-   * 是否选中
-   */
-  selected: boolean;
-  /**
-   * 是否处于焦点状态
-   */
-  focused?: boolean;
-  /**
    * 移动函数
    */
   mv: (to: ICompositeTreeNode | null, name?: string) => void;

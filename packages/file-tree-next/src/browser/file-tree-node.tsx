@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './file-tree-node.module.less';
-import { TreeNode, CompositeTreeNode, NodeType, INodeRendererProps } from '@ali/ide-components';
+import { TreeNode, CompositeTreeNode, NodeType, INodeRendererProps, ClasslistComposite } from '@ali/ide-components';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { getIcon } from '@ali/ide-core-browser';
 import { Directory, File } from './file-tree-nodes';
@@ -13,6 +13,7 @@ export interface IFileTreeNodeProps {
   leftPadding?: number;
   decorationService: FileTreeDecorationService;
   labelService: LabelService;
+  decorations?: ClasslistComposite;
   onTwistieClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
 }
@@ -26,6 +27,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   labelService,
   leftPadding = 8,
   onTwistieClick,
+  decorations,
   defaultLeftPadding = 8,
 }: FileTreeNodeRenderedProps) => {
   const decoration = decorationService.getDecoration(item.uri, Directory.is(item));
@@ -74,7 +76,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   };
 
   const renderIcon = (node: Directory | File) => {
-    const iconClass = labelService.getIcon(node.uri);
+    const iconClass = labelService.getIcon(node.uri, {isDirectory: node.filestat.isDirectory});
     return <div className={cls(styles.file_icon, iconClass, {expanded: isDirectory && (node as Directory).expanded})} style={{ height: FILE_TREE_NODE_HEIGHT, lineHeight: `${FILE_TREE_NODE_HEIGHT}px`}}>
     </div>;
   };
@@ -104,16 +106,15 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
 
   return (
     <div
-      key={item.id}
-      onClick={handleClick}
-    >
-      <div
+        key={item.id}
+        onClick={handleClick}
         className={cls(
           styles.file_tree_node,
           {
             [styles.mod_focused]: isFocused,
             [styles.mod_selected]: !isFocused && isSelected,
           },
+          decorations ? decorations.classlist : null,
         )}
         style={fileTreeNodeStyle}
       >
@@ -128,7 +129,6 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
           {renderStatusTail(item)}
         </div>
       </div>
-    </div>
   );
 };
 

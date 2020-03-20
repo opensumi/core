@@ -375,7 +375,14 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       : root.branchSize;
   }
 
-  private getItemKey = (index: number) => this.getItemAtIndex(index).item.id;
+  private getItemKey = (index: number) => {
+    const node = this.getItemAtIndex(index);
+    if (node) {
+      return node.item.id;
+    } else {
+      // console.error(`Index ${index} can not find`);
+    }
+  }
 
   private renderItem = ({ index, style }): JSX.Element => {
     const { children } = this.props;

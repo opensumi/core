@@ -49,10 +49,6 @@ export class TreeNode implements ITreeNode {
   private _disposed: boolean;
   protected _watcher: ITreeWatcher;
 
-  protected isSelected: boolean = false;
-
-  protected isFocused: boolean = false;
-
   protected _tree: ITree;
   private resolvedPathCache: string;
 
@@ -73,14 +69,6 @@ export class TreeNode implements ITreeNode {
 
   get disposed() {
     return this._disposed;
-  }
-
-  get selected() {
-    return this.isSelected;
-  }
-
-  get focused() {
-    return this.isFocused;
   }
 
   /**
@@ -300,7 +288,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   // parent 为undefined即表示该节点为根节点
   constructor(tree: ITree, parent: ICompositeTreeNode | undefined, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }) {
     super(tree, parent, watcher, optionalMetadata);
-    this.isExpanded = false;
+    this.isExpanded = !!parent ? false : true;
     this._branchSize = 0;
     if (!parent) {
       this.watchEvents = new Map();
@@ -352,6 +340,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   // 展开节点
   public async setExpanded(ensureVisible = true) {
+    // 根节点不可折叠
+    if (CompositeTreeNode.isRoot(this)) {
+      return;
+    }
     if (this.isExpanded) {
       return;
     }
@@ -378,6 +370,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   // 折叠节点
   public setCollapsed() {
+    // 根节点不可折叠
+    if (CompositeTreeNode.isRoot(this)) {
+      return;
+    }
     if (!this.isExpanded) {
       return;
     }
@@ -547,11 +543,12 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   /**
-   * 展开分支
+   * 展开分支节点
    * @param branch 分支节点
    */
   protected expandBranch(branch: CompositeTreeNode) {
     if (this !== branch) {
+      // 但节点为展开状态时进行裁剪
       this._branchSize += branch._branchSize;
     }
     // 当当前节点为折叠状态，更新分支信息
@@ -566,11 +563,12 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   /**
-   * 折叠分支
+   * 清理分支节点
    * @param branch 分支节点
    */
   protected shrinkBranch(branch: CompositeTreeNode) {
     if (this !== branch) {
+      // 这里的`this`实际上为父节点
       // `this`的分支大小没有改变，仍然具有相同数量的叶子，但是从父级参照系（即根节点）来看，其分支缩小了
       this._branchSize -= branch._branchSize;
     }
@@ -617,9 +615,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     this._branchSize = flatTree.length;
     this.setFlattenedBranch(flatTree);
-    if (!!this.parent && this.isParentVisible(this)) {
-      (this.parent as CompositeTreeNode).expandBranch(this);
-    }
     // 清理上一次监听函数
     if ( typeof this.watchTerminator === 'function') {
       this.watchTerminator(this.path);
@@ -672,11 +667,17 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
       }
       await this.hardReloadChildren();
+      // 如果当前变化的节点已在数据视图（并非滚动到不可见区域）中不可见，则将该节点折叠，待下次更新即可，
+      if (!this.isVisibleAtSurface(this)) {
+        this.isExpanded = false;
+      } else {
+        this.expandBranch(this);
+      }
     }
     this.watcher.notifyDidProcessWatchEvent(this, event);
   }
 
-  private isParentVisible(item: TreeNode) {
+  private isVisibleAtSurface(item: TreeNode) {
     let parent = item.parent;
     while (parent) {
       if (!parent.expanded) {

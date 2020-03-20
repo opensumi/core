@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState, useInjectable } from '@ali/ide-core-browser';
 import * as styles from './file-tree.module.less';
-import { RecycleTree, INodeRendererProps, TreeModel, NodeType, IRecycleTreeHandle } from '@ali/ide-components';
+import { RecycleTree, INodeRendererProps, NodeType, IRecycleTreeHandle } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -12,30 +12,23 @@ export const FileTree = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
-  const [treeHandle, setTreeHandler] = React.useState<IRecycleTreeHandle>();
+  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+
   const { width, height } = viewState;
   const { decorationService, labelService } = useInjectable<FileTreeService>(FileTreeService);
+
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
-  const toggleDirectory = (item: Directory) => {
-    if (treeHandle) {
-      if (item.expanded) {
-        treeHandle.collapseNode(item);
-      } else {
-        treeHandle.expandNode(item);
-      }
-    }
-  };
-
   const handleItemClicked = (ev: React.MouseEvent, item: File | Directory, type: NodeType) => {
-    // TODO: 使用装饰器逻辑来装饰激活项/选中态
-    if (type === NodeType.CompositeTreeNode) {
-      toggleDirectory(item as Directory);
-    }
+    const { handleItemClick } = fileTreeModelService;
+    handleItemClick(item, type);
   };
 
   React.useEffect(() => {
     ensureIsReady();
+    return () => {
+      fileTreeModelService.removeFileDecoration();
+    };
   }, []);
 
   const ensureIsReady = async () => {
@@ -47,10 +40,19 @@ export const FileTree = observer(({
   };
 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
-    setTreeHandler({
+    fileTreeModelService.handleTreeHandler({
       ...handle,
       getModel: () => fileTreeModelService.treeModel,
+      hasDirectFocus: () => wrapperRef.current === document.activeElement,
     });
+  };
+
+  const handleClick = (ev: React.MouseEvent) => {
+    // 空白区域点击，取消焦点状态
+    const { activeFileDecoration } = fileTreeModelService;
+    if (ev.currentTarget === ev.target) {
+      activeFileDecoration();
+    }
   };
 
   const renderFileTree = () => {
@@ -67,6 +69,7 @@ export const FileTree = observer(({
           itemType={props.itemType}
           decorationService={decorationService}
           labelService={labelService}
+          decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
           onClick={handleItemClicked}
         />}
       </RecycleTree>;
@@ -76,6 +79,8 @@ export const FileTree = observer(({
   return <div
     className={styles.file_tree}
     tabIndex={-1}
+    ref={wrapperRef}
+    onClick={handleClick}
   >
     {renderFileTree()}
   </div>;
