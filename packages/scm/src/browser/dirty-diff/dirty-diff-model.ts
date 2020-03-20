@@ -253,11 +253,10 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     if (this._originalModel && this._editorModel) {
       const originalUri = new URI(this._originalModel.uri);
       const editorUri = new URI(this._editorModel.uri);
-      this.editorService.createDiffEditor(widget.getContentNode(), { automaticLayout: true, renderSideBySide: false })
+      return this.editorService.createDiffEditor(widget.getContentNode(), { automaticLayout: true, renderSideBySide: false })
         .then(async (editor) => {
           const original = await this.documentModelManager.createModelReference(originalUri);
           const edit = await this.documentModelManager.createModelReference(editorUri);
-          const { change, count } = this.getChangeFromRange(range) || {};
 
           editor.compare(original, edit);
 
@@ -273,18 +272,25 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
           widget.addDispose(this.onDidChange(() => {
             const { change, count } = this.getChangeFromRange(range) || {};
-            widget.updateCurrent(count);
-            widget.show(positionToRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
+            refreshWidget(count, change);
           }));
+
+          const { change, count } = this.getChangeFromRange(range) || {};
+          if (count && change) {
+            refreshWidget(count, change);
+          }
+
+          function refreshWidget(current: number, currentChange: IChange) {
+            widget.updateCurrent(current);
+            widget.show(
+              positionToRange(currentChange.modifiedEndLineNumber || currentChange.modifiedStartLineNumber),
+              DirtyDiffModel.heightInLines,
+            );
+          }
 
           widget.onDispose(() => {
             this._widget = null;
           });
-
-          if (count && change) {
-            widget.updateCurrent(count);
-            widget.show(positionToRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
-          }
         });
     }
   }

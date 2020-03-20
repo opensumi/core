@@ -252,7 +252,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     return disposeCollection;
   }
 
-  getModel(editorModel: monaco.editor.ITextModel): DirtyDiffModel | null {
+  private getModel(editorModel: monaco.editor.ITextModel): DirtyDiffModel | null {
     const item = this.items[editorModel.id];
 
     if (!item) {
