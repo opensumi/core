@@ -89,7 +89,7 @@ export class FileTreeService extends Tree {
           const children = await this.fileTreeAPI.resolveChildren(this as ITree, roots[0]);
           this.watchFilesChange(new URI(roots[0].uri));
           this.cacheNodes(children as (File | Directory)[]);
-          this.root = children[0];
+          this.root = children[0] as Directory;
           return children[0];
         }
       }
@@ -214,6 +214,10 @@ export class FileTreeService extends Tree {
       this._contextMenuContextKeyService = this.contextKeyService.createScoped();
     }
     return this._contextMenuContextKeyService;
+  }
+
+  public reWatch() {
+    // 重连时重新监听文件变化
   }
 
   // @memoize get contributedContextMenu(): IContextMenu {

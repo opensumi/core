@@ -4,7 +4,7 @@ import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import * as styles from '../file-tree-node.module.less';
 import { File, Directory } from '../file-tree-nodes';
-import { CorePreferences, IContextKey } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKey, URI } from '@ali/ide-core-browser';
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
@@ -47,9 +47,12 @@ export class FileTreeModelService {
   private _focusedFile: File | Directory | undefined;
   // 选中态的节点，会可能有多个
   private _selectedFiles: (File | Directory)[] = [];
+  // 待粘贴的文件
+  private _pasteFiles: (File | Directory)[] = [];
 
   private clickTimes: number;
   private clickTimer: any;
+  private preContextMenuFocusedFile: File | Directory | null;
 
   // 右键菜单ContextKey，相对独立
   // TODO：后续需支持通过DOM获取context，这样无需耦合contextMenuService
@@ -59,6 +62,18 @@ export class FileTreeModelService {
 
   constructor() {
     this._whenReady = this.initTreeModel();
+  }
+
+  get fileTreeHandle() {
+    return this._fileTreeHandle;
+  }
+
+  get decorations() {
+    return this._decorations;
+  }
+
+  get treeModel() {
+    return this._treeModel;
   }
 
   get whenReady() {
@@ -72,6 +87,9 @@ export class FileTreeModelService {
   // 是选中态，非焦点态节点
   get selectedFiles() {
     return this._selectedFiles;
+  }
+  get pasteFiles() {
+    return this._pasteFiles;
   }
 
   get currentRelativeUriContextKey(): IContextKey<string> {
@@ -137,6 +155,7 @@ export class FileTreeModelService {
       // 根节点不能选中
       return ;
     }
+    this.preContextMenuFocusedFile = null;
     if (target) {
       if (this.selectedFiles.length > 0) {
         this.selectedFiles.forEach((file) => {
@@ -153,15 +172,30 @@ export class FileTreeModelService {
     }
   }
 
-  // 清空其他焦点态节点，更新当前焦点节点
-  activeFileFocusedDecoration = (target: File | Directory ) => {
+  // 清空其他焦点态节点，更新当前焦点节点，
+  // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
+  activeFileFocusedDecoration = (target: File | Directory, removePreFocusedDecoration: boolean = false) => {
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return ;
     }
+
     if (this.focusedFile !== target) {
       if (this.focusedFile) {
-        this.focusedDecoration.removeTarget(this.focusedFile);
+        if (removePreFocusedDecoration) {
+          // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
+          if (this.preContextMenuFocusedFile) {
+            this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
+            this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
+          } else {
+            // 多选情况下第一次切换焦点文件
+            this.focusedDecoration.removeTarget(this.focusedFile);
+          }
+          this.preContextMenuFocusedFile = target;
+        } else {
+          this.preContextMenuFocusedFile = null;
+          this.focusedDecoration.removeTarget(this.focusedFile);
+        }
       }
       if (target) {
         this.selectedDecoration.addTarget(target);
@@ -177,6 +211,7 @@ export class FileTreeModelService {
   // 选中范围内的所有节点
   activeFileDecorationByRange = (begin: number, end: number) => {
     this.clearFileSelectedDecoration();
+    this.preContextMenuFocusedFile = null;
     for (; begin <= end; begin ++) {
       const file = this.treeModel.root.getTreeNodeAtIndex(begin);
       if (file) {
@@ -213,7 +248,7 @@ export class FileTreeModelService {
   handleContextMenu = (ev: React.MouseEvent, file?: File | Directory) => {
     const { x, y } = ev.nativeEvent;
     if (file) {
-      this.activeFileFocusedDecoration(file);
+      this.activeFileFocusedDecoration(file, true);
     } else {
       this.enactiveFileDecoration();
     }
@@ -225,7 +260,6 @@ export class FileTreeModelService {
       nodes = [this.treeModel.root as Directory];
       node = this.treeModel.root as Directory;
     } else {
-      this.activeFileFocusedDecoration(file);
       if (this.focusedFile) {
         node = this.focusedFile;
       } else {
@@ -308,15 +342,59 @@ export class FileTreeModelService {
     }, 200);
   }
 
-  get fileTreeHandle() {
-    return this._fileTreeHandle;
+  // 命令调用
+  async collapseAll() {
+    const size = this.treeModel.root.branchSize;
+    for (let index = 0; index < size; index++) {
+      const file = this.treeModel.root.getTreeNodeAtIndex(index) as Directory;
+      if (Directory.is(file) && file.expanded) {
+        await file.setCollapsed();
+      }
+    }
   }
 
-  get decorations() {
-    return this._decorations;
+  async deleteFileByUris(uris: URI[]) {
+
   }
 
-  get treeModel() {
-    return this._treeModel;
+  async renameFileByUri(uri: URI) {
+
   }
+
+  async newFilePrompt(uri: URI) {
+
+  }
+
+  async newDirectoryPrompt(uri: URI) {
+
+  }
+
+  async renamePrompt(uri: URI) {
+
+  }
+
+  async mv(from: File | Directory, to?: Directory) {
+
+  }
+
+  async create(target: Directory, name: string) {
+
+  }
+
+  async compare(from: URI, to: URI) {
+
+  }
+
+  async copyFile(uris: URI[]) {
+
+  }
+
+  async pasteFile(uri: URI) {
+
+  }
+
+  async cutFile(uris: URI[]) {
+
+  }
+
 }
