@@ -4,7 +4,6 @@ import { Event, IEventBus, CommandService, positionToRange } from '@ali/ide-core
 import { Disposable, DisposableStore, DisposableCollection } from '@ali/ide-core-common/lib/disposable';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
-import { PreferenceService } from '@ali/ide-core-browser';
 import { IDirtyDiffWorkbenchController } from '../../common';
 
 import { SCMPreferences } from '../scm-preference';
@@ -14,7 +13,7 @@ import { DirtyDiffWidget } from './dirty-diff-widget';
 
 import './dirty-diff.module.less';
 
-class DirtyDiffItem {
+export class DirtyDiffItem {
 
   constructor(readonly model: DirtyDiffModel, readonly decorator: DirtyDiffDecorator) { }
 
@@ -36,9 +35,6 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   @Autowired(SCMPreferences)
   private readonly scmPreferences: SCMPreferences;
 
-  @Autowired(PreferenceService)
-  private readonly preferenceService: PreferenceService;
-
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorService;
 
@@ -59,11 +55,11 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   }
 
   public start() {
-    const onDidChangeConfiguration = Event.filter(this.preferenceService.onPreferenceChanged, (e) => e.affects('scm.diffDecorations'));
+    const onDidChangeConfiguration = Event.filter(this.scmPreferences.onPreferenceChanged, (e) => e.affects('scm.diffDecorations'));
     this.addDispose(onDidChangeConfiguration(this.onDidChangeConfiguration, this));
     this.onDidChangeConfiguration();
 
-    const onDidChangeDiffWidthConfiguration = Event.filter(this.preferenceService.onPreferenceChanged, (e) => e.affects('scm.diffDecorationsGutterWidth'));
+    const onDidChangeDiffWidthConfiguration = Event.filter(this.scmPreferences.onPreferenceChanged, (e) => e.affects('scm.diffDecorationsGutterWidth'));
     onDidChangeDiffWidthConfiguration(this.onDidChangeDiffWidthConfiguration, this);
     this.onDidChangeDiffWidthConfiguration();
 
@@ -178,7 +174,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       const dirtyModel = this.getModel(model);
       if (dirtyModel) {
         if (widget) {
-          const currentIndex = widget.currentIndex;
+          const { currentIndex } = widget;
           const { count: targetIndex } = dirtyModel.getChangeFromRange(positionToRange(position));
 
           widget.dispose();
@@ -189,6 +185,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
 
         // 每次都创建一个新的 widget
         widget = new DirtyDiffWidget(codeEditor, dirtyModel, this.commandService);
+        // FIXME: 这一行貌似不会触发 @木农
         widget.onDispose(() => {
           this.widgets.delete(codeEditor.getId());
         });

@@ -32,7 +32,6 @@ class MockEditorDocumentModelService {
 }
 
 const mockedMonaco = createMockedMonaco();
-
 (global as any).monaco = mockedMonaco;
 
 jest.useFakeTimers();
