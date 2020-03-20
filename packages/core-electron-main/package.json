@@ -23,8 +23,8 @@
   "dependencies": {
     "@ali/ide-connection": "1.7.17",
     "@ali/ide-core-common": "1.7.17",
-    "ps-tree": "^1.2.0",
-    "is-running": "^2.1.0"
+    "is-running": "^2.1.0",
+    "tree-kill": "^1.2.2"
   },
   "peerDependencies": {
     "electron": "*"
