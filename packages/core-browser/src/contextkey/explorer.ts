@@ -9,3 +9,5 @@ export const ExplorerResourceCut = new RawContextKey<boolean>('explorerResourceC
 export const FilesExplorerFocusedContext = new RawContextKey<boolean>('filesExplorerFocus', false);
 export const ExplorerFocusedContext = new RawContextKey<boolean>('explorerViewletFocus', false);
 export const ExplorerFilteredContext = new RawContextKey<boolean>('explorerViewletFilter', false);
+export const ExplorerCurrentContextUriContextKey = new RawContextKey<string>('filetreeContextUri', '');
+export const ExplorerCurrentRelativeUriContextKey = new RawContextKey<boolean>('filetreeContextRelativeUri', '');

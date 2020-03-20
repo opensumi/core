@@ -36,6 +36,9 @@ export class FileTreeService extends Tree {
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
 
+  @Autowired(CorePreferences)
+  private readonly corePreferences: CorePreferences;
+
   @Autowired(LabelService)
   public readonly labelService: LabelService;
 
@@ -44,9 +47,6 @@ export class FileTreeService extends Tree {
 
   @Autowired(IFileServiceClient)
   private readonly fileServiceClient: IFileServiceClient;
-
-  @Autowired(CorePreferences)
-  private readonly corePreferences: CorePreferences;
 
   private _contextMenuContextKeyService: IContextKeyService;
 
@@ -89,7 +89,7 @@ export class FileTreeService extends Tree {
           const children = await this.fileTreeAPI.resolveChildren(this as ITree, roots[0]);
           this.watchFilesChange(new URI(roots[0].uri));
           this.cacheNodes(children as (File | Directory)[]);
-          this.root = children[0] as Directory;
+          this.root = children[0];
           return children[0];
         }
       }

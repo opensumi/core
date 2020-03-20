@@ -92,8 +92,9 @@ export const FileTree = observer(({
 
   };
 
-  const handlerContextMenu = (ev: React.MouseEvent) => {
-
+  const handlerContextMenu = (ev: React.MouseEvent, node: File | Directory) => {
+    const { handleContextMenu } = fileTreeModelService;
+    handleContextMenu(ev, node);
   };
 
   const handlerDragStart = (ev: React.MouseEvent, node: File | Directory) => {

@@ -4,7 +4,10 @@ import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import * as styles from '../file-tree-node.module.less';
 import { File, Directory } from '../file-tree-nodes';
-import { CorePreferences } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKey } from '@ali/ide-core-browser';
+import { FileContextKey } from '../file-contextkey';
+import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
+import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface IFileTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -20,6 +23,15 @@ export class FileTreeModelService {
 
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
+
+  @Autowired(FileContextKey)
+  private readonly fileContextKey: FileContextKey;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly ctxMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(AbstractContextMenuService)
+  private readonly contextMenuService: AbstractContextMenuService;
 
   private _treeModel: TreeModel;
 
@@ -39,6 +51,12 @@ export class FileTreeModelService {
   private clickTimes: number;
   private clickTimer: any;
 
+  // 右键菜单ContextKey，相对独立
+  // TODO：后续需支持通过DOM获取context，这样无需耦合contextMenuService
+  private _currentRelativeUriContextKey: IContextKey<string>;
+  private _currentContextUriContextKey: IContextKey<string>;
+  private _contextMenuResourceContext: ResourceContextKey;
+
   constructor() {
     this._whenReady = this.initTreeModel();
   }
@@ -56,6 +74,27 @@ export class FileTreeModelService {
     return this._selectedFiles;
   }
 
+  get currentRelativeUriContextKey(): IContextKey<string> {
+    if (!this._currentRelativeUriContextKey) {
+      this._currentRelativeUriContextKey = this.fileTreeService.contextMenuContextKeyService.createKey('filetreeContextRelativeUri', '');
+    }
+    return this._currentRelativeUriContextKey;
+  }
+
+  get currentContextUriContextKey(): IContextKey<string> {
+    if (!this._currentContextUriContextKey) {
+      this._currentContextUriContextKey = this.fileTreeService.contextMenuContextKeyService.createKey('filetreeContextUri', '');
+    }
+    return this._currentContextUriContextKey;
+  }
+
+  get contextMenuResourceContext(): ResourceContextKey {
+    if (!this._contextMenuResourceContext) {
+      this._contextMenuResourceContext = new ResourceContextKey(this.fileTreeService.contextMenuContextKeyService);
+    }
+    return this._contextMenuResourceContext;
+  }
+
   async initTreeModel() {
     // 根据是否为多工作区创建不同根节点
     const root = await this.fileTreeService.resolveChildren();
@@ -67,6 +106,21 @@ export class FileTreeModelService {
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
+  }
+
+  /**
+   * 多选情况下，焦点节点只要一个，选中节点有多个
+   * 单选情况下，焦点节点与选中节点均只有一个
+   * 在文件树空白区域邮件时，焦点元素为根节点
+   * @param files 选中节点
+   * @param file 焦点节点
+   */
+  private setFileTreeContextKey(file: Directory | File, files: (Directory | File)[]) {
+    const isSingleFolder = !this.fileTreeService.isMutiWorkspace;
+    this.fileContextKey.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.is(file));
+    this.currentContextUriContextKey.set(file.uri.toString());
+    this.currentRelativeUriContextKey.set(((this.treeModel.root as Directory).uri.relative(file.uri) || '').toString());
+    this.contextMenuResourceContext.set(file.uri);
   }
 
   // 清空所有节点选中态
@@ -154,6 +208,45 @@ export class FileTreeModelService {
   removeFileDecoration() {
     this.decorations.removeDecoration(this.selectedDecoration);
     this.decorations.removeDecoration(this.focusedDecoration);
+  }
+
+  handleContextMenu = (ev: React.MouseEvent, file?: File | Directory) => {
+    const { x, y } = ev.nativeEvent;
+    if (file) {
+      this.activeFileFocusedDecoration(file);
+    } else {
+      this.enactiveFileDecoration();
+    }
+    let nodes: (File | Directory)[] = this.selectedFiles;
+    let node: File | Directory;
+
+    if (!file) {
+      // 空白区域右键菜单
+      nodes = [this.treeModel.root as Directory];
+      node = this.treeModel.root as Directory;
+    } else {
+      this.activeFileFocusedDecoration(file);
+      if (this.focusedFile) {
+        node = this.focusedFile;
+      } else {
+        node = nodes[0];
+      }
+    }
+
+    this.setFileTreeContextKey(node, nodes);
+
+    const menus = this.contextMenuService.createMenu({
+      id: MenuId.ExplorerContext,
+      contextKeyService: this.fileTreeService.contextMenuContextKeyService,
+    });
+    const menuNodes = menus.getMergedMenuNodes();
+    menus.dispose();
+
+    this.ctxMenuRenderer.show({
+      anchor: { x, y },
+      menuNodes,
+      args: [node.uri, nodes.map((node) => node.uri)],
+    });
   }
 
   handleTreeHandler(handle: IFileTreeHandle) {
