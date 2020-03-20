@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ViewState, useInjectable } from '@ali/ide-core-browser';
+import { ViewState, useInjectable, isOSX } from '@ali/ide-core-browser';
 import * as styles from './file-tree.module.less';
 import { RecycleTree, INodeRendererProps, NodeType, IRecycleTreeHandle } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
@@ -12,6 +12,7 @@ export const FileTree = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
+  const [isEdited ] = React.useState<boolean>(false);
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { width, height } = viewState;
@@ -19,9 +20,36 @@ export const FileTree = observer(({
 
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
+  const hasShiftMask = (event): boolean => {
+    // Ctrl/Cmd 权重更高
+    if (hasCtrlCmdMask(event)) {
+      return false;
+    }
+    return event.shiftKey;
+  };
+
+  const hasCtrlCmdMask = (event): boolean => {
+    const { metaKey, ctrlKey } = event;
+    return (isOSX && metaKey) || ctrlKey;
+  };
+
   const handleItemClicked = (ev: React.MouseEvent, item: File | Directory, type: NodeType) => {
-    const { handleItemClick } = fileTreeModelService;
-    handleItemClick(item, type);
+    // 阻止点击事件冒泡
+    ev.stopPropagation();
+
+    const { handleItemClick, handleItemToggleClick, handlerItemRangeClick } = fileTreeModelService;
+    if (!item || isEdited) {
+      return;
+    }
+    const shiftMask = hasShiftMask(event);
+    const ctrlCmdMask = hasCtrlCmdMask(event);
+    if (shiftMask) {
+      handlerItemRangeClick(item, type);
+    } else if (ctrlCmdMask) {
+      handleItemToggleClick(item, type);
+    } else {
+      handleItemClick(item, type);
+    }
   };
 
   React.useEffect(() => {
@@ -47,12 +75,49 @@ export const FileTree = observer(({
     });
   };
 
-  const handleClick = (ev: React.MouseEvent) => {
+  const handleOuterClick = (ev: React.MouseEvent) => {
     // 空白区域点击，取消焦点状态
-    const { activeFileDecoration } = fileTreeModelService;
-    if (ev.currentTarget === ev.target) {
-      activeFileDecoration();
-    }
+    const { enactiveFileDecoration } = fileTreeModelService;
+    enactiveFileDecoration();
+  };
+
+  const handleBlur = (ev: React.MouseEvent) => {
+    // 文件树失去焦点
+    const { enactiveFileDecoration } = fileTreeModelService;
+    enactiveFileDecoration();
+  };
+
+  const handleOuterContextMenu = (ev: React.MouseEvent) => {
+    // 空白区域右键菜单
+
+  };
+
+  const handlerContextMenu = (ev: React.MouseEvent) => {
+
+  };
+
+  const handlerDragStart = (ev: React.MouseEvent, node: File | Directory) => {
+
+  };
+
+  const handlerDragEnd = (ev: React.MouseEvent, node: File | Directory) => {
+
+  };
+
+  const handlerDragOver = (ev: React.MouseEvent, node: File | Directory) => {
+
+  };
+
+  const handlerDragEnter = (ev: React.MouseEvent, node: File | Directory) => {
+
+  };
+
+  const handlerDragLeave = (ev: React.MouseEvent, node: File | Directory) => {
+
+  };
+
+  const handlerDrop = (ev: React.MouseEvent, node: File | Directory) => {
+
   };
 
   const renderFileTree = () => {
@@ -71,6 +136,13 @@ export const FileTree = observer(({
           labelService={labelService}
           decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
           onClick={handleItemClicked}
+          onContextMenu={handlerContextMenu}
+          onDragStart={handlerDragStart}
+          onDragOver={handlerDragOver}
+          onDragEnter={handlerDragEnter}
+          onDragLeave={handlerDragLeave}
+          onDragEnd={handlerDragEnd}
+          onDrop={handlerDrop}
         />}
       </RecycleTree>;
     }
@@ -80,7 +152,9 @@ export const FileTree = observer(({
     className={styles.file_tree}
     tabIndex={-1}
     ref={wrapperRef}
-    onClick={handleClick}
+    onClick={handleOuterClick}
+    onBlur={handleBlur}
+    onContextMenu={handleOuterContextMenu}
   >
     {renderFileTree()}
   </div>;

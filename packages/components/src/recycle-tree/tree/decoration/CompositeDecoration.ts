@@ -168,25 +168,23 @@ export class CompositeDecoration {
     this.targetedDecorations = new Set();
     this.negatedDecorations = new Set();
 
-    // first process all the inherited decorations
+    // 首先处理所有继承的装饰器
     for (const [inheritedDecoration] of parent.renderedDecorations) {
-      // fate of the decoration (second arg) will be decided in `#recursiveRefresh`
       if (inheritedDecoration !== decoration) {
         this.processCompositeAlteration(ChangeReason.TargetDecoration, inheritedDecoration);
       }
     }
 
-    // perhaps negation is why this composite branched off
+    // 当触发的为:not类型装饰器变化
     if (reason === ChangeReason.UnTargetDecoration &&
-      // parent had it
+      // 父节点装饰器拥有此装饰器
       this.parent.renderedDecorations.has(decoration) &&
-      // this one won't
+      // 本身不包含此装饰器
       !this.renderedDecorations.has(decoration)) {
-      // announce the change
+      // 通知ClassList变化
       this.notifyClasslistChange(false);
     }
 
-    // then move on to main business
     this.recursiveRefresh(this, true, reason, decoration);
   }
 

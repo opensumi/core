@@ -16,12 +16,27 @@ export interface IFileTreeNodeProps {
   decorations?: ClasslistComposite;
   onTwistieClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
+  onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
+  onDragStart: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
+  onDragEnter: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
+  onDragEnd: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
+  onDrop: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
+  onDragOver: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
+  onDragLeave: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: NodeType) => void;
 }
+
 export type FileTreeNodeRenderedProps = IFileTreeNodeProps & INodeRendererProps;
 
 export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   item,
   onClick,
+  onContextMenu,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDragEnter,
+  onDragLeave,
+  onDrop,
   itemType,
   decorationService,
   labelService,
@@ -47,10 +62,52 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     }
   };
 
-  const isDirectory = itemType === NodeType.CompositeTreeNode;
+  const handleContextMenu = (ev: React.MouseEvent) => {
+    if (ev.nativeEvent.which === 0) {
+        return;
+    }
+    if (itemType ===  NodeType.TreeNode || itemType === NodeType.CompositeTreeNode) {
+        onContextMenu(ev, item as TreeNode, itemType);
+    }
+  };
 
-  const isFocused = item.focused;
-  const isSelected = item.selected;
+  const handleDragStart = (ev: React.DragEvent) => {
+    if (itemType ===  NodeType.TreeNode || itemType === NodeType.CompositeTreeNode) {
+      onDragStart(ev, item as TreeNode, itemType);
+    }
+  };
+
+  const handleDragEnd = (ev: React.DragEvent) => {
+    if (itemType ===  NodeType.TreeNode || itemType === NodeType.CompositeTreeNode) {
+      onDragEnd(ev, item as TreeNode, itemType);
+    }
+  };
+
+  const handleDragLeave = (ev: React.DragEvent) => {
+    if (itemType ===  NodeType.TreeNode || itemType === NodeType.CompositeTreeNode) {
+      onDragLeave(ev, item as TreeNode, itemType);
+    }
+  };
+
+  const handleDragEnter = (ev: React.DragEvent) => {
+    if (itemType ===  NodeType.TreeNode || itemType === NodeType.CompositeTreeNode) {
+      onDragEnter(ev, item as TreeNode, itemType);
+    }
+  };
+
+  const handleDrop = (ev: React.DragEvent) => {
+    if (itemType ===  NodeType.TreeNode || itemType === NodeType.CompositeTreeNode) {
+      onDrop(ev, item as TreeNode, itemType);
+    }
+  };
+
+  const handleDragOver = (ev: React.DragEvent) => {
+    if (itemType ===  NodeType.TreeNode || itemType === NodeType.CompositeTreeNode) {
+      onDragOver(ev, item as TreeNode, itemType);
+    }
+  };
+
+  const isDirectory = itemType === NodeType.CompositeTreeNode;
 
   const fileTreeNodeStyle = {
     color: decoration ? decoration.color : '',
@@ -89,7 +146,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       </div>;
   };
 
-  const renderStatusTail = (node: Directory | File) => {
+  const renderStatusTail = () => {
     return <div className={cls(styles.file_tree_node_segment, styles.file_tree_node_tail)}>
       {renderBadge()}
     </div>;
@@ -108,15 +165,19 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     <div
         key={item.id}
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         className={cls(
           styles.file_tree_node,
-          {
-            [styles.mod_focused]: isFocused,
-            [styles.mod_selected]: !isFocused && isSelected,
-          },
           decorations ? decorations.classlist : null,
         )}
         style={fileTreeNodeStyle}
+        draggable={itemType === NodeType.TreeNode || itemType === NodeType.CompositeTreeNode}
       >
         <div className={cls(styles.file_tree_node_content)}>
           {(isDirectory && renderFolderToggle(item, handlerTwistieClick))}

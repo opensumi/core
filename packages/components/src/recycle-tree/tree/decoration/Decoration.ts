@@ -122,6 +122,20 @@ export class Decoration {
     this.onDidRemoveCSSClassnameEmitter.fire({decoration: this, classname: className});
   }
 
+  /**
+   * 判断当前装饰器是否包含指定的对象绑定
+   * @param target
+   */
+  public hasTarget(target: TreeNode | CompositeTreeNode) {
+    const existingFlags = this._appliedTargets.get(target);
+    return !!existingFlags;
+  }
+
+  /**
+   * 为当前装饰器绑定对象
+   * @param target
+   * @param flags
+   */
   public addTarget(target: TreeNode | CompositeTreeNode, flags: TargetMatchMode = TargetMatchMode.Self): IDisposable | undefined {
     const existingFlags = this._appliedTargets.get(target);
     if (existingFlags === flags) { return; }
@@ -135,6 +149,11 @@ export class Decoration {
     return dispose;
   }
 
+  /**
+   * 为当前装饰器移除对象绑定
+   * @param target
+   * @param flags
+   */
   public removeTarget(target: TreeNode | CompositeTreeNode): void {
     if (this._appliedTargets.delete(target)) {
       const disposable = this.appliedTargetsDisposables.get(target);
@@ -145,8 +164,13 @@ export class Decoration {
     }
   }
 
-  // negater 表示 :not修饰符
-  // 如active，则可以定义:not .active样式
+  /**
+   * 否定装饰器绑定
+   * negate 表示 :not修饰符
+   * 定义节点不应用样式
+   * @param target
+   * @param flags
+   */
   public negateTarget(target: TreeNode | CompositeTreeNode, flags: TargetMatchMode = TargetMatchMode.Self): IDisposable | undefined {
     const existingFlags =   this._negatedTargets.get(target);
     if (existingFlags === flags) { return; }
@@ -160,6 +184,10 @@ export class Decoration {
     return dispose;
   }
 
+  /**
+   * 取消否定装饰器绑定
+   * @param target
+   */
   public unNegateTarget(target: TreeNode | CompositeTreeNode): void {
     if ( this._negatedTargets.delete(target)) {
       const disposable =   this.negatedTargetsDisposables.get(target);
