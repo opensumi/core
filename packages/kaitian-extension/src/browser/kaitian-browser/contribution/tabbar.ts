@@ -59,6 +59,7 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
         title: component.title,
         priority: component.priority,
         noResize: component.noResize,
+        expanded: component.expanded,
       },
       position,
     );

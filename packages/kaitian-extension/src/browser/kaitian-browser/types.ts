@@ -82,6 +82,11 @@ export interface ITabBarComponentContribution {
    * 禁止面板的resize功能
    */
   noResize?: boolean;
+
+  /**
+   * 是否全部展开
+   */
+  expanded?: boolean;
 }
 
 export interface IEditorComponentContribution {
