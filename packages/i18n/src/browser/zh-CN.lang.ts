@@ -304,6 +304,8 @@ export const localizationBundle = {
 
     'preference.general.theme': '主题',
     'preference.general.icon': '图标主题',
+    'preference.workbench.colorCustomizations': '覆盖当前所选颜色主题的颜色',
+    'preference.editor.tokenColorCustomizations': '覆盖当前所选颜色主题中的编辑器颜色和字体样式',
     'preference.general.language': '语言',
     'preference.general.language.change.refresh.info': '更改语言后需重启后生效，是否立即刷新?',
     'preference.general.language.change.refresh.now': '立即刷新',

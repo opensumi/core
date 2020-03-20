@@ -1,7 +1,7 @@
 import { Color, IThemeColor } from './color';
-import { IRawTheme } from 'vscode-textmate';
-import {vs, vs_dark, hc_black} from './default-themes';
+import { vs, vs_dark, hc_black } from './default-themes';
 import { Event, URI } from '@ali/ide-core-common';
+import { IRawThemeSetting } from 'vscode-textmate';
 
 export const ThemeServicePath = 'themeServicePath';
 
@@ -43,9 +43,12 @@ export interface IIconService {
   getAvailableThemeInfos(): IconThemeInfo[];
 }
 
-export interface IThemeData extends ThemeMix {
+export interface IThemeData extends IStandaloneThemeData {
+  name: string;
   id: string;
   colorMap: IColorMap;
+  themeSettings: IRawThemeSetting[];
+  settings: IRawThemeSetting[];
   initializeFromData(data): void;
   initializeThemeData(id, name, base, themeLocation: string): Promise<void>;
 }
@@ -117,8 +120,16 @@ export interface ITokenThemeRule {
   fontStyle?: string;
 }
 
-export interface ThemeMix extends IRawTheme, IStandaloneThemeData {
-  name: string;
+export interface ITokenColorCustomizations {
+  [groupIdOrThemeSettingsId: string]: string | ITokenColorizationSetting | ITokenColorCustomizations | undefined | ITokenColorizationRule[];
+  comments?: string | ITokenColorizationSetting;
+  strings?: string | ITokenColorizationSetting;
+  numbers?: string | ITokenColorizationSetting;
+  keywords?: string | ITokenColorizationSetting;
+  types?: string | ITokenColorizationSetting;
+  functions?: string | ITokenColorizationSetting;
+  variables?: string | ITokenColorizationSetting;
+  textMateRules?: ITokenColorizationRule[];
 }
 
 const VS_THEME_NAME = 'vs';
@@ -185,6 +196,10 @@ export interface ITheme {
    * default color will be used.
    */
   defines(color: ColorIdentifier): boolean;
+}
+
+export interface IColorCustomizations {
+  [colorIdOrThemeSettingsId: string]: string | IColorCustomizations;
 }
 
 export interface ColorContribution {

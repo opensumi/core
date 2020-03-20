@@ -13,7 +13,8 @@ export enum REPORT_NAME {
   NOT_FOUND_COMMAND = 'notFoundCommand',
   INSTALL_EXTENSION_ERROR = 'installExtensionError',
   EXTENSION_CRASH = 'extensionCrash',
-  EXTENSION_NOT_EXIST = 'extensionNotExist'
+  EXTENSION_NOT_EXIST = 'extensionNotExist',
+  THEME_LOAD = 'themeLoad',
 }
 
 export enum REPORT_HOST {

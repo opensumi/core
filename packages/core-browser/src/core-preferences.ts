@@ -70,6 +70,16 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 'vs-minimal',
       description: '%preference.description.general.icon%',
     },
+    'workbench.colorCustomizations': {
+      type: 'object',
+      description: '%preference.workbench.colorCustomizations%',
+      default: {},
+    },
+    'editor.tokenColorCustomizations': {
+      type: 'object',
+      description: '%preference.editor.tokenColorCustomizations%',
+      default: {},
+    },
     // 是否允许打开文件夹
     'application.supportsOpenFolder': {
       type: 'boolean',
