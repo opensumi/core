@@ -339,6 +339,12 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     expect(dirtyDiffWorkbenchController['items'][textModel1.id]).not.toBeUndefined();
 
     editorService.editorGroups.pop();
+    // old models
+    dirtyDiffWorkbenchController['models'].push(injector.get(EditorDocumentModel, [
+      URI.file('/test/workspace/def.ts'),
+      'test',
+    ]).getMonacoModel());
+
     const docModel2 = injector.get(EditorDocumentModel, [
       URI.file('/test/workspace/def.ts'),
       'test',
@@ -357,6 +363,11 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       },
     } as any);
 
+    editorService.editorGroups.push({
+      currentOpenType: { type: 'code' },
+      currentEditor: null,
+    } as any);
+
     // eventBus.fire(new EditorGroupChangeEvent({} as any));
     dirtyDiffWorkbenchController['enable']();
 
@@ -369,6 +380,28 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     expect(dirtyDiffWorkbenchController['enabled']).toBeFalsy();
     expect(dirtyDiffWorkbenchController['models']).toEqual([]);
     expect(dirtyDiffWorkbenchController['items']).toEqual({});
+
+    dirtyDiffWorkbenchController['models'].push(injector.get(EditorDocumentModel, [
+      URI.file('/test/workspace/def.ts'),
+      'test',
+    ]).getMonacoModel());
+    dirtyDiffWorkbenchController['disable']();
+    expect(dirtyDiffWorkbenchController['models'].length).toBe(1);
+  });
+
+  it('dispose', () => {
+    dirtyDiffWorkbenchController.start();
+
+    const disableSpy = jest.spyOn<any, any>(dirtyDiffWorkbenchController, 'disable');
+    const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
+    const dirtyDiffWidget = injector.get(DirtyDiffWidget, [monacoEditor, dirtyDiffModel, commandService]);
+    dirtyDiffWorkbenchController['widgets'].set(monacoEditor.getId(), dirtyDiffWidget);
+    const disposeSpy = jest.spyOn(dirtyDiffWidget, 'dispose');
+
+    dirtyDiffWorkbenchController.dispose();
+    expect(disableSpy).toBeCalledTimes(1);
+    expect(dirtyDiffWorkbenchController['widgets'].size).toBe(0);
+    expect(disposeSpy).toBeCalledTimes(1);
   });
 
   describe('toggleDirtyDiffWidget', () => {

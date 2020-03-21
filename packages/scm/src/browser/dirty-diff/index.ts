@@ -116,7 +116,12 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     }
 
     this.transientDisposables.clear();
-    this.models.forEach((m) => this.items[m.id].dispose());
+    this.models.forEach((m) => {
+      const item = this.items[m.id];
+      if (item) {
+        item.dispose();
+      }
+    });
     this.models = [];
     this.items = Object.create(null);
     this.enabled = false;
