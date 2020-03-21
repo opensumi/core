@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { IExtensionProps, IExtension } from '../../lib/common';
+import { IExtensionProps, IExtension } from '../../src/common';
 
 export const mockExtensionProps: IExtensionProps = {
   name: 'kaitian-extension',
