@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { CommandService, positionToRange, DisposableStore, URI } from '@ali/ide-core-common';
+import { Event, CommandService, positionToRange, URI } from '@ali/ide-core-common';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
 import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
@@ -41,8 +41,8 @@ jest.mock('@ali/ide-core-common/src/async', () => ({
   ...jest.requireActual('@ali/ide-core-common/src/async'),
   ThrottledDelayer: class {
     constructor() {}
-    trigger(value) {
-      return Promise.resolve(value);
+    trigger(promiseFactory: () => Promise<any>) {
+      return promiseFactory();
     }
     cancel() {}
   },
@@ -51,16 +51,16 @@ jest.mock('@ali/ide-core-common/src/async', () => ({
 describe('test for packages/scm/src/browser/scm-activity.ts', () => {
   describe('test for DirtyDiffDecorator', () => {
     let injector: MockInjector;
-    let editorModel: monaco.editor.ITextModel;
+    let fileTextModel: monaco.editor.ITextModel;
+    let gitTextModel: monaco.editor.ITextModel;
     let scmService: SCMService;
     let repo: ISCMRepository;
     let commandService: CommandService;
     let provider: MockSCMProvider;
-    const disposables = new DisposableStore();
-
-    const mockComputeDiff = jest.fn();
+    let codeEditor: monaco.editor.ICodeEditor;
 
     let computeDiffRet: monaco.commons.IDiffComputationResult | null = null;
+    const mockComputeDiff = jest.fn();
 
     beforeEach(() => {
       mockedMonaco.services!.StaticServices.editorWorkerService.get = (() => {
@@ -92,8 +92,17 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         SCMService,
       ]));
 
-      editorModel = injector.get(EditorDocumentModel, [
+      fileTextModel = injector.get(EditorDocumentModel, [
         URI.file('/test/workspace/abc.ts'),
+        'test',
+      ]).getMonacoModel();
+
+      gitTextModel = injector.get(EditorDocumentModel, [
+        URI.from({
+          scheme: 'git',
+          path: 'test/workspace/abc.ts',
+          query: 'ref=""',
+        }),
         'test',
       ]).getMonacoModel();
 
@@ -101,16 +110,21 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       provider = new MockSCMProvider(1);
       repo = scmService.registerSCMProvider(provider);
       commandService = injector.get(CommandService);
+
+      codeEditor = mockedMonaco.editor!.create(document.createElement('div'));
+      codeEditor.setModel(fileTextModel);
     });
 
     afterEach(() => {
-      editorModel.dispose();
+      codeEditor.setModel(null);
+      codeEditor.dispose();
+      fileTextModel.dispose();
       mockComputeDiff.mockRestore();
     });
 
     it('ok: check basic property', () => {
-      const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
-      expect(dirtyDiffModel.modified).toEqual(editorModel);
+      const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
+      expect(dirtyDiffModel.modified).toEqual(fileTextModel);
       expect(dirtyDiffModel.original).toBeUndefined();
       expect(dirtyDiffModel.changes).toEqual([]);
 
@@ -121,8 +135,11 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     });
 
     it('ok for one repo', () => {
-      const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
-      expect(dirtyDiffModel.modified).toEqual(editorModel);
+      const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
+      expect(dirtyDiffModel.modified).toEqual(fileTextModel);
+
+      dirtyDiffModel['_originalModel'] = gitTextModel;
+      expect(dirtyDiffModel.original).toEqual(gitTextModel);
 
       // mock computeDiff compute a diff changes
       const change0 = {
@@ -136,20 +153,21 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         identical: false,
         changes: [change0],
       };
-      editorModel.setValue('insert some content for testing');
+      fileTextModel.setValue('insert some content for testing');
 
-      disposables.add(dirtyDiffModel.onDidChange((changes) => {
-        expect(changes).toEqual({
+      return Event.toPromise(dirtyDiffModel.onDidChange).then((changes) => {
+        expect(changes).toEqual([{
           start: 0,
           deleteCount: 0,
           toInsert: [change0],
-        });
+        }]);
         expect(dirtyDiffModel.original?.uri.scheme).toBe('git');
-      }));
+      });
     });
 
     it('ok when repo#onDidChange', () => {
-      const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
+      const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
+      dirtyDiffModel['_originalModel'] = gitTextModel;
 
       // mock computeDiff compute a diff changes
       const change0 = {
@@ -166,18 +184,19 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       };
       provider.onDidChangeEmitter.fire();
 
-      disposables.add(dirtyDiffModel.onDidChange((changes) => {
-        expect(changes).toEqual({
+      return Event.toPromise(dirtyDiffModel.onDidChange).then((changes) => {
+        expect(changes).toEqual([{
           start: 0,
           deleteCount: 0,
           toInsert: [change0],
-        });
+        }]);
         expect(dirtyDiffModel.original?.uri.scheme).toBe('git');
-      }));
+      });
     });
 
     it('ok when repo#onDidChangeResources', () => {
-      const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
+      const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
+      dirtyDiffModel['_originalModel'] = gitTextModel;
 
       // mock computeDiff compute a diff changes
       const change0 = {
@@ -194,26 +213,27 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       };
       provider.onDidChangeResourcesEmitter.fire();
 
-      disposables.add(dirtyDiffModel.onDidChange((changes) => {
-        expect(changes).toEqual({
+      return Event.toPromise(dirtyDiffModel.onDidChange).then((changes) => {
+        expect(changes).toEqual([{
           start: 0,
           deleteCount: 0,
           toInsert: [change0],
-        });
+        }]);
         expect(dirtyDiffModel.original?.uri.scheme).toBe('git');
-      }));
+      });
     });
 
     it('ok for no repo', () => {
       repo.dispose();
-      const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
+      const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
+      dirtyDiffModel['_originalModel'] = gitTextModel;
 
       // no repo matched so won't trigger any onDidChange event
       const eventSpy = jest.spyOn(dirtyDiffModel['_onDidChange'], 'fire');
       const triggerDiffSpy = jest.spyOn<DirtyDiffModel, any>(dirtyDiffModel, 'triggerDiff');
 
-      expect(dirtyDiffModel.modified).toEqual(editorModel);
-      editorModel.setValue('insert some content for testing');
+      expect(dirtyDiffModel.modified).toEqual(fileTextModel);
+      fileTextModel.setValue('insert some content for testing');
       jest.runAllTimers();
 
       expect(eventSpy).toHaveBeenCalledTimes(0);
@@ -224,7 +244,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     });
 
     it('find changes', () => {
-      const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
+      const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
+      dirtyDiffModel['_originalModel'] = gitTextModel;
       const change0 = {
         originalStartLineNumber: 11,
         originalEndLineNumber: 11,
@@ -291,9 +312,8 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     });
 
     it('dispose', () => {
-      const codeEditor = mockedMonaco.editor!.create(document.createElement('div'));
-      const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
-      codeEditor.setModel(editorModel);
+      const dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
+      dirtyDiffModel['_originalModel'] = gitTextModel;
 
       dirtyDiffModel['_originalModel'] = injector.get(EditorDocumentModel, [
         URI.from({
@@ -321,15 +341,36 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
     });
 
     describe('onClickDecoration', () => {
-      const codeEditor = mockedMonaco.editor!.create(document.createElement('div'));
-      const diffEditor = mockedMonaco.editor!.createDiffEditor(document.createElement('div'));
+      let mockCompare: jest.Mock;
+      let originalMonacoEditor: monaco.editor.ICodeEditor;
+      let modifiedMonacoEditor: monaco.editor.ICodeEditor;
 
       let dirtyDiffModel: DirtyDiffModel;
       let dirtyDiffWidget: DirtyDiffWidget;
 
       beforeEach(() => {
-        dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
-        codeEditor.setModel(editorModel);
+        const diffEditor = mockedMonaco.editor!.createDiffEditor(document.createElement('div'));
+        originalMonacoEditor = diffEditor.getOriginalEditor();
+        modifiedMonacoEditor = diffEditor.getModifiedEditor();
+
+        mockCompare = jest.fn();
+        injector.overrideProviders({
+          token: EditorCollectionService,
+          useValue: {
+            createDiffEditor: async () => {
+              return {
+                compare: mockCompare,
+                originalEditor: { monacoEditor: originalMonacoEditor },
+                modifiedEditor: { monacoEditor: modifiedMonacoEditor },
+              };
+            },
+          },
+        });
+
+        DirtyDiffModel.prototype['triggerDiff'] = jest.fn(); // avoid `changes` changed
+        dirtyDiffModel = injector.get(DirtyDiffModel, [fileTextModel]);
+        dirtyDiffModel['_originalModel'] = gitTextModel;
+        // dirtyDiffModel['triggerDiff'] = jest.fn(); // avoid `changes` changed
         dirtyDiffWidget = injector.get(DirtyDiffWidget, [codeEditor, dirtyDiffModel, commandService]);
       });
 
@@ -378,25 +419,9 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
           modifiedEndLineNumber: 15,
         };
 
-        const originalMonacoEditor = diffEditor.getOriginalEditor();
-        const modifiedMonacoEditor = diffEditor.getModifiedEditor();
-        const mockCompare = jest.fn();
-
-        injector.overrideProviders({
-          token: EditorCollectionService,
-          useValue: {
-            createDiffEditor: async () => {
-              return {
-                compare: mockCompare,
-                originalEditor: { monacoEditor: originalMonacoEditor },
-                modifiedEditor: { monacoEditor: modifiedMonacoEditor },
-              };
-            },
-          },
-        });
+        dirtyDiffModel['_changes'].push(change1, change2, change3);
 
         const editorService = injector.get(EditorCollectionService);
-
         const spyList: jest.SpyInstance[] = [];
         const createDiffEditorSpy = jest.spyOn(editorService, 'createDiffEditor');
         const updateOptionsSpy1 = jest.spyOn(originalMonacoEditor, 'updateOptions');
@@ -410,17 +435,6 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
           revealLineInCenterSpy,
           relayoutSpy,
         );
-
-        dirtyDiffModel['triggerDiff'] = jest.fn();
-        dirtyDiffModel['_changes'] = [change1, change2, change3];
-        dirtyDiffModel['_originalModel'] = injector.get(EditorDocumentModel, [
-          URI.from({
-            scheme: 'git',
-            path: 'test/workspace/abc.ts',
-            query: 'ref=""',
-          }),
-          'test',
-        ]).getMonacoModel();
 
         const range = positionToRange(12);
         await dirtyDiffModel.onClickDecoration(dirtyDiffWidget, range);
