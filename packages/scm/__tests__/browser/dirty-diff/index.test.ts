@@ -57,7 +57,7 @@ class MockPreferenceService {
   'scm.diffDecorationsGutterWidth' = 3;
 }
 
-describe('test for packages/scm/src/browser/scm-activity.ts', () => {
+describe('scm/src/browser/dirty-diff/index.ts', () => {
   let injector: MockInjector;
 
   let dirtyDiffWorkbenchController: DirtyDiffWorkbenchController;

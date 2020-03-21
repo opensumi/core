@@ -44,7 +44,7 @@ jest.mock('@ali/ide-core-common/src/async', () => ({
   },
 }));
 
-describe('test for packages/scm/src/browser/scm-activity.ts', () => {
+describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
   describe('test for DirtyDiffDecorator', () => {
     let injector: MockInjector;
     let editorModel: monaco.editor.ITextModel;

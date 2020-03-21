@@ -1,4 +1,4 @@
-import { Event } from '@ali/ide-core-common';
+import { DisposableCollection, Event } from '@ali/ide-core-common';
 import { Injector } from '@ali/common-di';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
@@ -11,6 +11,10 @@ import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource, ISCMReposito
 import { ViewModelContext, ResourceGroupSplicer } from '../../src/browser/scm-model';
 
 describe('test for scm.store.ts', () => {
+  const toTearDown = new DisposableCollection();
+
+  afterEach(() => toTearDown.dispose());
+
   describe('ViewModelContext', () => {
     let provider1: ISCMProvider;
     let provider2: ISCMProvider;
@@ -165,11 +169,11 @@ describe('test for scm.store.ts', () => {
     it('ok with empty repo', () => {
       const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repo);
 
-      repoOnDidSplice(({ index, deleteCount, elements }) => {
+      toTearDown.push(repoOnDidSplice(({ index, deleteCount, elements }) => {
         expect(index).toBe(0);
         expect(deleteCount).toBe(0);
         expect(elements.length).toBe(0);
-      });
+      }));
 
       resourceGroup.run();
     });
@@ -178,7 +182,7 @@ describe('test for scm.store.ts', () => {
       const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repo);
 
       const spliceListener = jest.fn();
-      repoOnDidSplice(spliceListener);
+      toTearDown.push(repoOnDidSplice(spliceListener));
 
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
@@ -204,7 +208,7 @@ describe('test for scm.store.ts', () => {
       const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repo);
 
       const spliceListener = jest.fn();
-      repoOnDidSplice(spliceListener);
+      toTearDown.push(repoOnDidSplice(spliceListener));
 
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
@@ -229,7 +233,7 @@ describe('test for scm.store.ts', () => {
       const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repo);
 
       const spliceListener = jest.fn();
-      repoOnDidSplice(spliceListener);
+      toTearDown.push(repoOnDidSplice(spliceListener));
 
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);

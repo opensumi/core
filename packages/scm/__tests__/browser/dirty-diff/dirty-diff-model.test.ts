@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Event, CommandService, positionToRange, URI } from '@ali/ide-core-common';
+import { toDisposable, Event, CommandService, positionToRange, URI } from '@ali/ide-core-common';
 import { IDocPersistentCacheProvider } from '@ali/ide-editor';
 import { EditorDocumentModel } from '@ali/ide-editor/src/browser/doc-model/main';
 import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@ali/ide-editor/src/browser';
@@ -14,7 +14,6 @@ import { MockSCMProvider } from '../../scm-test-util';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
 import { SCMService, ISCMRepository } from '../../../src';
-import { toDisposable } from '../../../../core-common/lib';
 
 @Injectable()
 class MockEditorDocumentModelService {
@@ -48,7 +47,7 @@ jest.mock('@ali/ide-core-common/src/async', () => ({
   },
 }));
 
-describe('test for packages/scm/src/browser/scm-activity.ts', () => {
+describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
   describe('test for DirtyDiffDecorator', () => {
     let injector: MockInjector;
     let fileTextModel: monaco.editor.ITextModel;
