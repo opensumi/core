@@ -1,7 +1,7 @@
 # 不要修改该文件，会自动生成，详见 https://gitlab.alibaba-inc.com/node/ci
 
 stage:
-  node-8-单元测试:
+  node-10-单元测试:
     env:
       image: 'aone-base-global/alios7-nodejs-ci:1.0.0_large'
     plugin:
@@ -15,7 +15,7 @@ stage:
         pos: front
       -
         param:
-          version: node-8
+          version: node-10
           source: '${source_root}'
           cpp: 'true'
         name: node_envs
@@ -26,4 +26,4 @@ stage:
       - 'echo $PATH'
       - 'tnpm run ci && alicov-report'
 pipeline:
-  - 'node-8-单元测试'
+  - 'node-10-单元测试'
