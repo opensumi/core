@@ -80,6 +80,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
   (props, ref) => {
     const {
       defaultValue,
+      style,
       className,
       size = 'default',
       controls,
@@ -199,7 +200,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
     });
 
     return (
-      <div className={inputClx}>
+      <div className={inputClx} style={style}>
         {addonRender(addonBefore, 'kt-input-addon-before')}
         <div className='kt-input-box'>
           <input

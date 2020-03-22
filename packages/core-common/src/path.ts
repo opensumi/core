@@ -27,11 +27,11 @@ export class Path {
   }
 
   static splitPath(path: string): string[] {
-    return path.split(Path.separator);
+    return path.split(Path.separator).filter(path => !!path);
   }
 
   static isRelative(path: string): boolean {
-    return path.startsWith(Path.separator);
+    return !path.startsWith(Path.separator);
   }
 
   static pathDepth(path: string): number {

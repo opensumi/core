@@ -5,7 +5,8 @@ import { TreeNode, CompositeTreeNode } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
 import { DisposableCollection, Emitter, IDisposable } from '@ali/ide-core-common';
-import { INodeRendererProps, NodeType, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
+import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
+import { TreeNodeType } from './types';
 import * as styles from './recycle-tree.module.less';
 import * as cls from 'classnames';
 
@@ -77,7 +78,7 @@ export interface IRecycleTreeProps {
 export interface IRecycleTreeHandle {
   // 新建节点, 相关API在调用前需确保节点无再发生变化，否则易出错
   // 如：文件树中外部文件变化同步到Tree中事件还未处理结束，此时需等待事件处理结束
-  promptNewTreeNode(at: string | CompositeTreeNode): Promise<NewPromptHandle>;
+  promptNewTreeNode(at: string | CompositeTreeNode, type: TreeNodeType): Promise<NewPromptHandle>;
   // 新建可折叠节点
   promptNewCompositeTreeNode(at: string | CompositeTreeNode): Promise<NewPromptHandle>;
   // 重命名节点
@@ -126,8 +127,19 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         this.promptHandle.parent.expanded && root.isItemVisibleAtSurface(this.promptHandle.parent) &&
         !this.promptHandle.destroyed) {
         const idx = root.getIndexAtTreeNodeId(this.promptTargetID);
-        if (idx > -1 || this.promptHandle.parent === root) {
-          newFilePromptInsertionIndex = idx + 1;
+        if (idx > -1 || this.promptHandle.parent === root ) {
+          // 如果新建节点类型为普通节点，则在可折叠节点后插入
+          if (this.promptHandle.type === TreeNodeType.TreeNode) {
+            const parent = this.promptHandle.parent;
+            if (parent) {
+              const compositeTreeNodes = parent.getAllTreeNodeByType(TreeNodeType.CompositeTreeNode);
+              newFilePromptInsertionIndex = idx + compositeTreeNodes.length + 1;
+            } else {
+              newFilePromptInsertionIndex = idx + 1;
+            }
+          } else {
+            newFilePromptInsertionIndex = idx + 1;
+          }
         } else {
           this.promptTargetID = -1;
         }
@@ -168,20 +180,23 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private async promptNew(pathOrTreeNode: string | CompositeTreeNode, type: NodeType): Promise<NewPromptHandle> {
+  private async promptNew(pathOrTreeNode: string | CompositeTreeNode, type: TreeNodeType): Promise<NewPromptHandle> {
     const { root } = this.props.model;
-    const node = typeof pathOrTreeNode === 'string'
+    let node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
       : pathOrTreeNode;
 
-    if (!CompositeTreeNode.is(pathOrTreeNode)) {
-      throw new TypeError(`Cannot create new prompt at object of type ${typeof node}`);
+    if (type !== TreeNodeType.TreeNode && type !== TreeNodeType.CompositeTreeNode) {
+      throw new TypeError(`Invalid type supplied. Expected 'TreeNodeType.TreeNode' or 'TreeNodeType.CompositeTreeNode', got ${type}`);
     }
 
-    if (type !== NodeType.TreeNode && type !== NodeType.CompositeTreeNode) {
-      throw new TypeError(`Invalid type supplied. Expected 'NodeType.TreeNode' or 'NodeType.CompositeTreeNode', got ${type}`);
+    if (!!node && !CompositeTreeNode.is(node)) {
+      // 获取的子节点如果不是CompositeTreeNode，尝试获取父级节点
+      node = node.parent;
+      if (!CompositeTreeNode.is(node)) {
+        throw new TypeError(`Cannot create new prompt at object of type ${typeof node}`);
+      }
     }
-
     const promptHandle = new NewPromptHandle(type, node as CompositeTreeNode);
     this.promptHandle = promptHandle;
     this.promptTargetID = node!.id;
@@ -195,12 +210,12 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   // 使用箭头函数绑定当前this
-  private promptNewTreeNode = (pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle> => {
-    return this.promptNew(pathOrTreeNode, NodeType.TreeNode);
+  private promptNewTreeNode = (pathOrTreeNode: string | CompositeTreeNode, type: TreeNodeType): Promise<NewPromptHandle> => {
+    return this.promptNew(pathOrTreeNode, type);
   }
 
   private promptNewCompositeTreeNode = (pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle> => {
-    return this.promptNew(pathOrTreeNode, NodeType.CompositeTreeNode);
+    return this.promptNew(pathOrTreeNode, TreeNodeType.CompositeTreeNode);
   }
 
   private promptRename = async (pathOrTreeNode: string | TreeNode): Promise<RenamePromptHandle> => {
@@ -326,13 +341,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         !this.promptHandle.destroyed) {
         if (index === promptInsertionIdx) {
           cached = {
-            itemType: NodeType.NewPrompt,
+            itemType: TreeNodeType.NewPrompt,
             item: this.promptHandle as NewPromptHandle,
           } as any;
         } else {
           const item = root.getTreeNodeAtIndex(index - (index >= promptInsertionIdx ? 1 : 0));
           cached = {
-            itemType: CompositeTreeNode.is(item) ? NodeType.CompositeTreeNode : NodeType.TreeNode,
+            itemType: CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode,
             item,
           } as any;
         }
@@ -344,12 +359,12 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           (this.promptHandle as RenamePromptHandle).originalFileName === item.name &&
           !this.promptHandle.destroyed) {
           cached = {
-            itemType: NodeType.RenamePrompt,
+            itemType: TreeNodeType.RenamePrompt,
             item: this.promptHandle as RenamePromptHandle,
           };
         } else {
           cached = {
-            itemType: CompositeTreeNode.is(item) ? NodeType.CompositeTreeNode : NodeType.TreeNode,
+            itemType: CompositeTreeNode.is(item) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode,
             item,
           } as any;
         }

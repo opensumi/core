@@ -8,6 +8,10 @@ export interface ITreeNode {
    */
   readonly depth: number;
   /**
+   * 节点类型
+   */
+  readonly type: TreeNodeType;
+  /**
    * 节点名称
    */
   readonly name: string;
@@ -51,6 +55,8 @@ export type ITreeNodeOrCompositeTreeNode = ITreeNode | ICompositeTreeNode;
 export enum TreeNodeType {
   TreeNode = 1,
   CompositeTreeNode,
+  NewPrompt,
+  RenamePrompt,
 }
 
 export interface IOptionalMetaData {

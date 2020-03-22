@@ -12,7 +12,7 @@ import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI } from '../common';
 import { FileChange, IFileServiceClient, FileChangeType } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { Tree, ITree, WatchEvent, ITreeNodeOrCompositeTreeNode, CompositeTreeNode, IWatcherEvent } from '@ali/ide-components';
+import { Tree, ITree, WatchEvent, ITreeNodeOrCompositeTreeNode, IWatcherEvent, TreeNodeType } from '@ali/ide-components';
 import { Directory, File } from './file-tree-nodes';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -74,23 +74,24 @@ export class FileTreeService extends Tree {
       const roots = await this.workspaceService.roots;
 
       if (this.isMutiWorkspace) {
-        // 创建Root节点并引入root文件目录
-        const children: any[] = [];
-        for (const root of roots) {
-          const child = await this.fileTreeAPI.resolveChildren(this as ITree, root);
-          this.watchFilesChange(new URI(root.uri));
-          this.cacheNodes(children as (File | Directory)[]);
-          children.concat(child);
-        }
-        // TODO: 根据workspace生成临时root托管子目录
-        return children;
+        // // 创建Root节点并引入root文件目录
+        // const children: any[] = [];
+        // for (const root of roots) {
+        //   const child = await this.fileTreeAPI.resolveChildren(this as ITree, root);
+        //   this.watchFilesChange(new URI(root.uri));
+        //   this.cacheNodes(children as (File | Directory)[]);
+        //   children.concat(child);
+        // }
+        // // TODO: 根据workspace生成临时root托管子目录
+        // return children;
+        return [];
       } else {
         if (roots.length > 0) {
           const children = await this.fileTreeAPI.resolveChildren(this as ITree, roots[0]);
           this.watchFilesChange(new URI(roots[0].uri));
           this.cacheNodes(children as (File | Directory)[]);
           this.root = children[0] as Directory;
-          return children[0];
+          return children;
         }
       }
     } else {
@@ -143,18 +144,21 @@ export class FileTreeService extends Tree {
   }
 
   private onFilesChanged(changes: FileChange[]): void {
+    if (!this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
+      this.refresh();
+    }
     if (this.deleteAffectedNodes(this.getDeletedUris(changes))) {
       // 当全部变动均为文件删除时，无需后续刷新操作
       return ;
-    }
-    if (!this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
-      this.refresh();
     }
   }
 
   private deleteAffectedNodes(uris: URI[]) {
     const nodes = uris.map((uri) => this.getNodeByUriString(uri.toString())).filter((node) => !!node);
     for (const node of nodes) {
+      if (node?.parent && this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
+        continue ;
+      }
       this.dispatchWatchEvent(node!.parent!.path, { type: WatchEvent.Removed,  path: node!.path });
     }
     return uris.length > 0 && nodes.length === uris.length;
@@ -204,9 +208,9 @@ export class FileTreeService extends Tree {
       // numeric 参数确保数字为第一排序优先级
       return a.name.localeCompare(b.name, 'kn', { numeric: true }) as any;
     }
-    return CompositeTreeNode.is(a) ? -1
-      : CompositeTreeNode.is(b)  ? 1
-        : 0;
+    return a.type === TreeNodeType.CompositeTreeNode ? -1
+      : b.type === TreeNodeType.CompositeTreeNode  ? 1
+      : 0;
   }
 
   get contextMenuContextKeyService() {
@@ -219,13 +223,6 @@ export class FileTreeService extends Tree {
   public reWatch() {
     // 重连时重新监听文件变化
   }
-
-  // @memoize get contributedContextMenu(): IContextMenu {
-  //   return this.registerDispose(this.ctxMenuService.createMenu({
-  //     id: MenuId.ExplorerContext,
-  //     contextKeyService: this.contextMenuContextKeyService,
-  //   }));
-  // }
 
   get isMutiWorkspace(): boolean {
     return !!this.workspaceService.workspace && !this.workspaceService.workspace.isDirectory;

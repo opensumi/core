@@ -1,4 +1,4 @@
-import { bindInputElement, IProxiedInputProps } from '../../input';
+import { bindInputElement, ProxiedInputProp } from '../../input';
 import { DisposableCollection, Emitter, Event, IAsyncResult } from '@ali/ide-core-common';
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -9,7 +9,7 @@ const delay = (ms) => new Promise((res) => setTimeout(res, ms));
  */
 export abstract class PromptHandle {
   public readonly $: HTMLInputElement;
-  public readonly ProxiedInput: (props: IProxiedInputProps) => JSX.Element;
+  public readonly ProxiedInput: (props: ProxiedInputProp) => JSX.Element;
   private disposables: DisposableCollection = new DisposableCollection();
   private isInPendingCommitState: boolean = false;
   private _destroyed: boolean = false;

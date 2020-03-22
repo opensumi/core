@@ -6,7 +6,10 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { ITree } from '@ali/ide-components';
 import { Directory, File } from '../file-tree-nodes';
 import { IFileTreeAPI } from '../../common';
-import { URI } from '@ali/ide-core-common';
+import { URI, localize, CommandService } from '@ali/ide-core-common';
+import { IMessageService } from '@ali/ide-overlay';
+import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
+import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 
 @Injectable()
 export class FileTreeAPI implements IFileTreeAPI {
@@ -16,6 +19,15 @@ export class FileTreeAPI implements IFileTreeAPI {
 
   @Autowired()
   private labelService: LabelService;
+
+  @Autowired(IMessageService)
+  private messageService: IMessageService;
+
+  @Autowired(IWorkspaceEditService)
+  private workspaceEditService: IWorkspaceEditService;
+
+  @Autowired(CommandService)
+  private commandService: CommandService;
 
   private userhomePath: URI;
 
@@ -52,6 +64,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     }
     return [];
   }
+
   /**
    * 转换FileStat对象为TreeNode
    */
@@ -75,5 +88,37 @@ export class FileTreeAPI implements IFileTreeAPI {
         filestat,
       );
     }
+  }
+
+  async mv(from: URI, to: URI, isDirectory: boolean = false) {
+    const exists = await this.fileServiceClient.exists(to.toString());
+    if (exists) {
+      this.messageService.error(localize('file.move.existMessage'));
+      return;
+    }
+    await this.workspaceEditService.apply({
+      edits: [
+        {
+          newUri: to,
+          oldUri: from,
+          options: {
+            isDirectory,
+            overwrite: true,
+          },
+        },
+      ],
+    });
+  }
+
+  async create(uri: URI) {
+    await this.workspaceEditService.apply({
+      edits: [
+        {
+          newUri: uri,
+          options: {},
+        },
+      ],
+    });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
   }
 }

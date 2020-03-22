@@ -1,13 +1,12 @@
 import * as React from 'react';
+import { IInputBaseProps, Input as BaseInput } from './Input';
 
-export interface IProxiedInputProps {
+export interface ProxiedInputProp extends IInputBaseProps {
   innerRef?: React.Ref<HTMLInputElement>;
-  className?: string;
   id?: string;
-  style?: React.CSSProperties;
 }
 
-interface IPersistentInputPropsInternal extends IProxiedInputProps {
+interface IPersistentInputPropsInternal extends ProxiedInputProp {
   inputElement: HTMLInputElement;
 }
 
@@ -15,7 +14,13 @@ class ProxiedInput extends React.Component<IPersistentInputPropsInternal> {
   private placeholderInputRef: React.RefObject<HTMLInputElement> = React.createRef<HTMLInputElement>();
 
   public render() {
-    return <input type='text' className={this.props.className} id={this.props.id} style={this.props.style} ref={this.placeholderInputRef} />;
+    const props = {
+      ...this.props,
+    };
+    // 移除两个无效的属性
+    delete props.inputElement;
+    delete props.innerRef;
+    return <BaseInput {...props} type='text' id={this.props.id} ref={this.placeholderInputRef} />;
   }
 
   public componentDidMount() {
@@ -69,5 +74,5 @@ const Input = React.forwardRef((props: IPersistentInputPropsInternal, ref: React
 ));
 
 export function bindInputElement(el: HTMLInputElement) {
-  return (props: IProxiedInputProps) => <Input {...props} inputElement={el} />;
+  return (props: ProxiedInputProp) => <Input {...props} inputElement={el} />;
 }

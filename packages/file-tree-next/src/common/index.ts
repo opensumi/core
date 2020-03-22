@@ -1,11 +1,14 @@
 import { URI, BasicEvent } from '@ali/ide-core-common';
-import { ITree, ICompositeTreeNode, ITreeNodeOrCompositeTreeNode, ITreeNode } from '@ali/ide-components';
+import { ITree, ITreeNode } from '@ali/ide-components';
 import { FileStat } from '@ali/ide-file-service';
+import { Directory, File } from '../browser/file-tree-nodes';
 
 export const IFileTreeAPI = Symbol('IFileTreeAPI');
 
 export interface IFileTreeAPI {
-  resolveChildren(tree: ITree, path: string | FileStat, parent?: ICompositeTreeNode): Promise<ITreeNodeOrCompositeTreeNode[]>;
+  create(newUri: URI);
+  mv(oldUri: URI, newUri: URI, isDirectory?: boolean);
+  resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory): Promise<(File | Directory)[]>;
 }
 
 export class FileTreeExpandedStatusUpdateEvent extends BasicEvent<{uri: URI, expanded: boolean}> {}

@@ -1,33 +1,26 @@
 import * as React from 'react';
 import { TreeNode, CompositeTreeNode } from './tree/TreeNode';
 import { RenamePromptHandle, NewPromptHandle } from './prompt';
-
-// 新增了新的Input节点类型
-export enum NodeType {
-  TreeNode = 1,
-  CompositeTreeNode,
-  NewPrompt,
-  RenamePrompt,
-}
+import { TreeNodeType } from './types';
 
 interface ITreeNodeRendererProps {
   item: TreeNode;
-  itemType: NodeType.TreeNode;
+  itemType: TreeNodeType.TreeNode;
 }
 
 interface ICompositeTreeNodeRendererProps {
   item: CompositeTreeNode;
-  itemType: NodeType.CompositeTreeNode;
+  itemType: TreeNodeType.CompositeTreeNode;
 }
 
 interface INewPromptRendererProps {
   item: NewPromptHandle;
-  itemType: NodeType.NewPrompt;
+  itemType: TreeNodeType.NewPrompt;
 }
 
 interface IRenamePromptRendererProps {
   item: RenamePromptHandle;
-  itemType: NodeType.RenamePrompt;
+  itemType: TreeNodeType.RenamePrompt;
 }
 
 export type INodeRendererProps = ITreeNodeRendererProps | ICompositeTreeNodeRendererProps | INewPromptRendererProps | IRenamePromptRendererProps;
@@ -36,7 +29,7 @@ export type INodeRenderer = (props: INodeRendererProps) => JSX.Element;
 
 export interface INodeRendererWrapProps {
   item: TreeNode | CompositeTreeNode | NewPromptHandle | RenamePromptHandle;
-  itemType: NodeType;
+  itemType: TreeNodeType;
   depth: number;
   expanded?: boolean;
   children: INodeRenderer;
@@ -70,11 +63,11 @@ export class NodeRendererWrap extends React.Component<INodeRendererWrapProps> {
   }
 
   // private updateCachedItemPath() {
-  //   const thisItem: TreeNode | null = this.props.itemType === NodeType.TreeNode || this.props.itemType === NodeType.CompositeTreeNode
+  //   const thisItem: TreeNode | null = this.props.itemType === TreeNodeType.TreeNode || this.props.itemType === TreeNodeType.CompositeTreeNode
   //     ? this.props.item as TreeNode
-  //     : this.props.itemType === NodeType.RenamePrompt
+  //     : this.props.itemType === TreeNodeType.RenamePrompt
   //       ? (this.props.item as RenamePromptHandle).target
-  //       : this.props.itemType === NodeType.NewPrompt
+  //       : this.props.itemType === TreeNodeType.NewPrompt
   //         ? (this.props.item as NewPromptHandle).parent
   //         : null;
   //   if (thisItem && thisItem.path) {

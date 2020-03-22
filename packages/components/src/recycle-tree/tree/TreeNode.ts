@@ -1,4 +1,4 @@
-import { ITreeNodeOrCompositeTreeNode, ITreeNode, ICompositeTreeNode, TreeNodeEvent, IWatcherEvent, MetadataChangeType, ITreeWatcher, IMetadataChange, ITree, WatchEvent  } from '../types';
+import { ITreeNodeOrCompositeTreeNode, ITreeNode, ICompositeTreeNode, TreeNodeEvent, IWatcherEvent, MetadataChangeType, ITreeWatcher, IMetadataChange, ITree, WatchEvent, TreeNodeType  } from '../types';
 import { Event, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IWatcherCallback, IWatchTerminator, IWatcherInfo } from '../types';
@@ -84,6 +84,10 @@ export class TreeNode implements ITreeNode {
 
   set parent(node: ICompositeTreeNode | undefined) {
     this._parent = node;
+  }
+
+  get type() {
+    return TreeNodeType.TreeNode;
   }
 
   get id() {
@@ -304,6 +308,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     return this._watcher;
   }
 
+  get type() {
+    return TreeNodeType.CompositeTreeNode;
+  }
+
   get children() {
     return this._children ? this._children.slice() : null;
   }
@@ -420,7 +428,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     const branchSizeIncrease = 1 + ((item instanceof CompositeTreeNode && item.expanded) ? item._branchSize : 0);
     if (this._children) {
       this._children.push(item);
-      this._children.sort(CompositeTreeNode.defaultSortComparator);
+      this._children.sort(this._tree.sortComparator || CompositeTreeNode.defaultSortComparator);
     }
     this._branchSize += branchSizeIncrease;
     let master: CompositeTreeNode = this;
@@ -646,8 +654,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       if (!TreeNode.is(node)) {
         throw new TypeError(`Expected node to be a TreeNode`);
       }
-      const newItem = new (CompositeTreeNode.is(node) ? CompositeTreeNode : TreeNode)(this._tree, this, this.watcher, (node as any).metadata);
-      this.insertItem(newItem);
+      this.insertItem(node);
     } else if (event.type === WatchEvent.Removed) {
       const { path } = event;
       const pathObject  = new Path(path);
@@ -702,18 +709,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     return !!this.flattenedBranch && this.flattenedBranch.indexOf(item.id) > -1;
   }
 
-  private walkPathTillRelative(path: string): string[] {
+  private transformToRelativePath(path: string): string[] {
     const { splitPath } = Path;
-    const pathfrags = splitPath(path);
-    const rootPrefix = splitPath(this.path);
-    let nextRootFrag;
-    const matched: string[] = [];
-    while (nextRootFrag = rootPrefix.shift()) {
-      if (nextRootFrag === pathfrags[0]) {
-        matched.push(pathfrags.shift() as string);
-      }
-    }
-    return pathfrags;
+    const pathFlag = splitPath(path);
+    pathFlag.shift();
+    return pathFlag;
   }
 
   /**
@@ -721,19 +721,19 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * @param path
    */
   public findTreeNodeInLoadedTree(path: string): ITreeNodeOrCompositeTreeNode | undefined {
-    const pathfrags = Path.isRelative(path) ? Path.splitPath(path) : this.walkPathTillRelative(path);
-    if (pathfrags.length === 0) {
+    const pathFlag = Path.isRelative(path) ? Path.splitPath(path) : this.transformToRelativePath(path);
+    if (pathFlag.length === 0) {
       return this;
     }
     let next = this._children;
     let name;
-    while (!!next && (name = pathfrags.shift())) {
+    while (!!next && (name = pathFlag.shift())) {
       const item = next.find((c) => c.name === name);
-      if (item && pathfrags.length === 0) {
+      if (item && pathFlag.length === 0) {
         return item;
       }
       // 异常情况
-      if (!item || (!CompositeTreeNode.is(item) && pathfrags.length > 0)) {
+      if (!item || (!CompositeTreeNode.is(item) && pathFlag.length > 0)) {
         throw new Error(`'${path}' not found`);
       }
       if (CompositeTreeNode.is(item)) {
@@ -751,20 +751,20 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    */
   public async forceLoadTreeNodeAtPath(path: string): Promise<ITreeNodeOrCompositeTreeNode | undefined> {
     const { splitPath, isRelative } = Path;
-    const pathfrags = isRelative(path) ? splitPath(path) : this.walkPathTillRelative(path);
-    if (pathfrags.length === 0) {
+    const pathFlag = isRelative(path) ? splitPath(path) : this.transformToRelativePath(path);
+    if (pathFlag.length === 0) {
       return this;
     }
     await this.ensureLoaded();
     let next = this._children;
     let name;
-    while (name = pathfrags.shift()) {
+    while (name = pathFlag.shift()) {
       const item = next!.find((c) => c.name === name);
-      if (item && pathfrags.length === 0) {
+      if (item && pathFlag.length === 0) {
         return item;
       }
       // 异常情况
-      if (!item || (!CompositeTreeNode.is(item) && pathfrags.length > 0)) {
+      if (!item || (!CompositeTreeNode.is(item) && pathFlag.length > 0)) {
         throw new Error(`'${path}' not found`);
       }
       if (CompositeTreeNode.is(item)) {
@@ -800,6 +800,26 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return this.flattenedBranch.indexOf(node.id);
     }
     return -1;
+  }
+
+  public getAllTreeNodeByType(type: TreeNodeType) {
+    const nodes: CompositeTreeNode[] = [];
+    let isSpecialNode;
+    if (!this.flattenedBranch) {
+      return nodes;
+    }
+    if (type === TreeNodeType.CompositeTreeNode) {
+      isSpecialNode = (node) => CompositeTreeNode.is(node);
+    } else {
+      isSpecialNode = (node) => !CompositeTreeNode.is(node);
+    }
+    for (const branchId of this.flattenedBranch) {
+      const node = TreeNode.getTreeNodeById(branchId);
+      if (isSpecialNode(node)) {
+        nodes.push(node as CompositeTreeNode);
+      }
+    }
+    return nodes;
   }
 
   /**

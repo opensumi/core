@@ -112,6 +112,9 @@
 .file_tree_node_inputbox {
   display: inline-block;
   width: 100%;
+  input {
+    font-size: 14px;
+  }
 }
 
 .file_tree_node_description {
@@ -127,6 +130,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: left;
+}
+
+.file_tree_node_prompt_wrap {
+  flex: 1;
 }
 
 .file_tree_node_flex_wrap {
@@ -212,21 +219,4 @@
   line-height: normal;
   color: rgb(204, 204, 204);
   position: relative;
-}
-
-.input_box {
-  height: 100%;
-  width: 100%;
-  background-color: rgb(60, 60, 60);
-  color: rgb(204, 204, 204);
-  padding: 0;
-  outline: 0;
-
-  &:focus {
-    border: 1px solid rgba(14, 99, 156, 0.8);
-  }
-
-  &.error {
-    border: 1px solid rgb(235, 61, 84);
-  }
 }

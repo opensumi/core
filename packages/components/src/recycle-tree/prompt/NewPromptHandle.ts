@@ -1,10 +1,11 @@
 import { PromptHandle } from './PromptHandle';
 import { TreeNode, CompositeTreeNode } from '../tree';
-import { NodeType } from '../TreeNodeRendererWrap';
+import { TreeNodeType } from '../types';
 
 export class NewPromptHandle extends PromptHandle {
   private _id: number = TreeNode.nextId();
-  constructor(public readonly type: NodeType, public readonly parent: CompositeTreeNode) {
+
+  constructor(public readonly type: TreeNodeType, public readonly parent: CompositeTreeNode) {
     super();
   }
 

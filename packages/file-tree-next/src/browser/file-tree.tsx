@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState, useInjectable, isOSX } from '@ali/ide-core-browser';
 import * as styles from './file-tree.module.less';
-import { RecycleTree, INodeRendererProps, NodeType, IRecycleTreeHandle } from '@ali/ide-components';
+import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -19,6 +19,7 @@ export const FileTree = observer(({
   const { decorationService, labelService } = useInjectable<FileTreeService>(FileTreeService);
 
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
+  const { validateMessage } = fileTreeModelService;
 
   const hasShiftMask = (event): boolean => {
     // Ctrl/Cmd 权重更高
@@ -33,7 +34,7 @@ export const FileTree = observer(({
     return (isOSX && metaKey) || ctrlKey;
   };
 
-  const handleItemClicked = (ev: React.MouseEvent, item: File | Directory, type: NodeType) => {
+  const handleItemClicked = (ev: React.MouseEvent, item: File | Directory, type: TreeNodeType) => {
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
@@ -81,7 +82,7 @@ export const FileTree = observer(({
     enactiveFileDecoration();
   };
 
-  const handleBlur = (ev: React.MouseEvent) => {
+  const handleBlur = () => {
     // 文件树失去焦点
     const { enactiveFileDecoration } = fileTreeModelService;
     enactiveFileDecoration();
@@ -135,6 +136,7 @@ export const FileTree = observer(({
           itemType={props.itemType}
           decorationService={decorationService}
           labelService={labelService}
+          validateMessage={validateMessage}
           decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
           onClick={handleItemClicked}
           onContextMenu={handlerContextMenu}
