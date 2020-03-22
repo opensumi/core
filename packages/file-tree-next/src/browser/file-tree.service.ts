@@ -1,4 +1,3 @@
-import { action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   CommandService,
@@ -125,8 +124,12 @@ export class FileTreeService extends Tree {
     return change.type === FileChangeType.UPDATED && this.isContentFile(this.getNodeByUriString(change.uri));
   }
 
+  private isFileDeleted(change: FileChange): boolean {
+    return change.type === FileChangeType.DELETED;
+  }
+
   private getAffectedUris(changes: FileChange[]): URI[] {
-    return changes.filter((change) => !this.isFileContentChanged(change)).map((change) => new URI(change.uri));
+    return changes.filter((change) => !this.isFileContentChanged(change) && !this.isFileDeleted(change)).map((change) => new URI(change.uri));
   }
 
   private isRootAffected(changes: FileChange[]): boolean {
@@ -143,25 +146,27 @@ export class FileTreeService extends Tree {
     return changes.filter((change) => change.type === FileChangeType.DELETED).map((change) => new URI(change.uri));
   }
 
-  private onFilesChanged(changes: FileChange[]): void {
-    if (!this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
-      this.refresh();
+  private async onFilesChanged(changes: FileChange[]) {
+    if (await this.deleteAffectedNodes(this.getDeletedUris(changes), changes)) {
+      // 如果均为删除操作，则不需要刷新节点
+      return;
     }
-    if (this.deleteAffectedNodes(this.getDeletedUris(changes))) {
-      // 当全部变动均为文件删除时，无需后续刷新操作
-      return ;
+    if (!await this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
+      await this.refresh();
     }
+
   }
 
-  private deleteAffectedNodes(uris: URI[]) {
+  private async deleteAffectedNodes(uris: URI[], changes: FileChange[]) {
     const nodes = uris.map((uri) => this.getNodeByUriString(uri.toString())).filter((node) => !!node);
     for (const node of nodes) {
+      // 一旦更新队列中已包含该文件，临时剔除删除事件传递
       if (node?.parent && this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
         continue ;
       }
       this.dispatchWatchEvent(node!.parent!.path, { type: WatchEvent.Removed,  path: node!.path });
     }
-    return uris.length > 0 && nodes.length === uris.length;
+    return uris.length > 0 && nodes.length === changes.length;
   }
 
   private dispatchWatchEvent(path: string, event: IWatcherEvent) {
@@ -171,10 +176,10 @@ export class FileTreeService extends Tree {
     }
   }
 
-  refreshAffectedNodes(uris: URI[]) {
+  async refreshAffectedNodes(uris: URI[]) {
     const nodes = this.getAffectedNodes(uris);
     for (const node of nodes) {
-      this.refresh(node);
+      await this.refresh(node);
     }
     return nodes.length !== 0;
   }
@@ -233,14 +238,6 @@ export class FileTreeService extends Tree {
   }
 
   /**
-   * 折叠所有节点
-   */
-  @action
-  collapseAll() {
-    // todo
-  }
-
-  /**
    * 刷新指定下的所有子节点
    */
   async refresh(node: Directory = this.root as Directory) {
@@ -252,17 +249,17 @@ export class FileTreeService extends Tree {
 
   // 队列化Changed事件
   private queueChangeEvent(path: string) {
-    clearTimeout(this.eventFlushTimeout);
-    this.eventFlushTimeout = setTimeout(() => this.flushEventQueue(), 150) as any;
-
     if (this.changeEventDispatchQueue.indexOf(path) === -1) {
       this.changeEventDispatchQueue.push(path);
     }
+
+    clearTimeout(this.eventFlushTimeout);
+    this.eventFlushTimeout = setTimeout(this.flushEventQueue, 150) as any;
   }
 
-  public async flushEventQueue() {
-    const result: any[] = [];
-    if (this.changeEventDispatchQueue.length === 0) {
+  public flushEventQueue() {
+    let promise: Promise<any>;
+    if (!this.changeEventDispatchQueue || this.changeEventDispatchQueue.length === 0) {
       return;
     }
     this.changeEventDispatchQueue.sort((pathA, pathB) => {
@@ -270,15 +267,16 @@ export class FileTreeService extends Tree {
       const pathBDepth = Path.pathDepth(pathB);
       return pathADepth - pathBDepth;
     });
-    for (const path of this.changeEventDispatchQueue) {
+    promise = Promise.all(this.changeEventDispatchQueue.map(async (path) => {
       const watcher = this.root?.watchEvents.get(path);
       if (watcher && typeof watcher.callback === 'function') {
-        result.push(await watcher.callback({ type: WatchEvent.Changed, path }));
+        await watcher.callback({ type: WatchEvent.Changed, path });
       }
-    }
+      return null;
+    }));
     // 重置更新队列
     this.changeEventDispatchQueue = [];
-    return result;
+    return promise;
   }
 
   // @OnEvent(ResourceLabelOrIconChangedEvent)
@@ -286,11 +284,6 @@ export class FileTreeService extends Tree {
   //   // labelService发生改变时，更新icon和名称
   //   this.updateItemMeta(e.payload);
   // }
-
-  @action
-  updateItemMeta() {
-    // todo
-  }
 
   /**
    * 打开文件

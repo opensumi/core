@@ -832,4 +832,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     const id = this.flattenedBranch![index];
     return TreeNode.getTreeNodeById(id);
   }
+
+  /**
+   * 根据节点ID获取节点
+   * @param {number} id
+   * @returns
+   * @memberof CompositeTreeNode
+   */
+  public getTreeNodeById(id: number) {
+    return TreeNode.getTreeNodeById(id);
+  }
 }

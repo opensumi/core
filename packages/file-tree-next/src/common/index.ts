@@ -7,7 +7,8 @@ export const IFileTreeAPI = Symbol('IFileTreeAPI');
 
 export interface IFileTreeAPI {
   create(newUri: URI);
-  mv(oldUri: URI, newUri: URI, isDirectory?: boolean);
+  mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<boolean>;
+  mv(oldUri: URI , newUri: URI, isDirectory?: boolean): Promise<boolean>;
   resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory): Promise<(File | Directory)[]>;
 }
 

@@ -10,8 +10,9 @@ import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-c
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { observable, runInAction } from 'mobx';
-import * as styles from '../file-tree-node.module.less';
 import { IFileTreeAPI } from '../../common';
+import * as styles from '../file-tree-node.module.less';
+import { DragAndDropService } from './file-tree-dnd.service';
 
 export interface IFileTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -44,6 +45,7 @@ export class FileTreeModelService {
   private readonly fileTreeAPI: IFileTreeAPI;
 
   private _treeModel: TreeModel;
+  private _dndService: DragAndDropService;
 
   private _whenReady: Promise<void>;
 
@@ -89,6 +91,10 @@ export class FileTreeModelService {
     return this._treeModel;
   }
 
+  get dndService() {
+    return this._dndService;
+  }
+
   get whenReady() {
     return this._whenReady;
   }
@@ -131,6 +137,8 @@ export class FileTreeModelService {
     const root = (await this.fileTreeService.resolveChildren())[0];
     this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
     this.initDecorations(root);
+    // _dndService依赖装饰器逻辑加载
+    this._dndService = this.injector.get<any>(DragAndDropService, [this]);
   }
 
   initDecorations(root) {
@@ -313,7 +321,7 @@ export class FileTreeModelService {
     this._fileTreeHandle = handle;
   }
 
-  handlerItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
+  handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
     if (!this.focusedFile) {
       this.handleItemClick(item, type);
     } else if (this.focusedFile && this.focusedFile !== item) {

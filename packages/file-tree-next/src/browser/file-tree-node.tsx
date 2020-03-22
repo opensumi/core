@@ -6,6 +6,7 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { getIcon, URI } from '@ali/ide-core-browser';
 import { Directory, File } from './file-tree-nodes';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
+import { DragAndDropService } from './services/file-tree-dnd.service';
 
 export interface IFileTreeNodeProps {
   item: any;
@@ -14,16 +15,11 @@ export interface IFileTreeNodeProps {
   decorationService: FileTreeDecorationService;
   labelService: LabelService;
   decorations?: ClasslistComposite;
+  dndService: DragAndDropService;
   validateMessage?: ValidateMessage;
   onTwistieClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onDragStart: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onDragEnter: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onDragEnd: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onDrop: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onDragOver: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onDragLeave: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
 }
 
 export type FileTreeNodeRenderedProps = IFileTreeNodeProps & INodeRendererProps;
@@ -32,12 +28,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   item,
   onClick,
   onContextMenu,
-  onDragStart,
-  onDragEnd,
-  onDragOver,
-  onDragEnter,
-  onDragLeave,
-  onDrop,
+  dndService,
   itemType,
   decorationService,
   labelService,
@@ -78,38 +69,46 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   };
 
   const handleDragStart = (ev: React.DragEvent) => {
+    const { handleDragStart } = dndService;
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onDragStart(ev, item as TreeNode, itemType);
+      handleDragStart(ev, item);
     }
   };
 
   const handleDragEnd = (ev: React.DragEvent) => {
+    const { handleDragEnd } = dndService;
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onDragEnd(ev, item as TreeNode, itemType);
+      handleDragEnd(ev, item);
     }
   };
 
   const handleDragLeave = (ev: React.DragEvent) => {
+    const { handleDragLeave } = dndService;
+
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onDragLeave(ev, item as TreeNode, itemType);
+      handleDragLeave(ev, item);
     }
   };
 
   const handleDragEnter = (ev: React.DragEvent) => {
+    const { handleDragEnter } = dndService;
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onDragEnter(ev, item as TreeNode, itemType);
+      handleDragEnter(ev, item);
     }
   };
 
   const handleDrop = (ev: React.DragEvent) => {
+    const { handleDrop } = dndService;
+
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onDrop(ev, item as TreeNode, itemType);
+      handleDrop(ev, item);
     }
   };
 
   const handleDragOver = (ev: React.DragEvent) => {
+    const { handleDragOver } = dndService;
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onDragOver(ev, item as TreeNode, itemType);
+      handleDragOver(ev, item);
     }
   };
 

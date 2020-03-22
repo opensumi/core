@@ -6,10 +6,10 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { ITree } from '@ali/ide-components';
 import { Directory, File } from '../file-tree-nodes';
 import { IFileTreeAPI } from '../../common';
-import { URI, localize, CommandService } from '@ali/ide-core-common';
-import { IMessageService } from '@ali/ide-overlay';
+import { URI, localize, CommandService, formatLocalize } from '@ali/ide-core-common';
+import { IMessageService, IDialogService } from '@ali/ide-overlay';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
-import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
 
 @Injectable()
 export class FileTreeAPI implements IFileTreeAPI {
@@ -28,6 +28,13 @@ export class FileTreeAPI implements IFileTreeAPI {
 
   @Autowired(CommandService)
   private commandService: CommandService;
+
+  @Autowired(CorePreferences)
+  private readonly corePreferences: CorePreferences;
+
+  @Autowired(IDialogService)
+  private readonly dialogService: IDialogService;
+  private cacheFileStat: Map<string, FileStat> = new Map();
 
   private userhomePath: URI;
 
@@ -71,6 +78,9 @@ export class FileTreeAPI implements IFileTreeAPI {
   toNode(tree: ITree, filestat: FileStat, parent?: Directory): Directory | File {
     const uri = new URI(filestat.uri);
     const name = this.labelService.getName(uri);
+    if (!this.cacheFileStat.has(filestat.uri)) {
+      this.cacheFileStat.set(filestat.uri, filestat);
+    }
     if (filestat.isDirectory && filestat.children) {
       return new Directory(
         tree,
@@ -90,11 +100,35 @@ export class FileTreeAPI implements IFileTreeAPI {
     }
   }
 
+  async mvFiles(fromFiles: URI[], targetDir: URI) {
+    for (const from of fromFiles) {
+      if (from.isEqualOrParent(targetDir)) {
+        return false;
+      }
+    }
+    if (this.corePreferences['explorer.confirmMove']) {
+      const ok = localize('file.confirm.move.ok');
+      const cancel = localize('file.confirm.move.cancel');
+      const confirm = await this.dialogService.warning(formatLocalize('file.confirm.move', `[${fromFiles.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
+      if (confirm !== ok) {
+        return false;
+      }
+    }
+    for (const from of fromFiles) {
+      const filestat = this.cacheFileStat.get(from.toString());
+      const res = await this.mv(from, targetDir.resolve(from.displayName), filestat && filestat.isDirectory);
+      if (!res) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   async mv(from: URI, to: URI, isDirectory: boolean = false) {
     const exists = await this.fileServiceClient.exists(to.toString());
     if (exists) {
       this.messageService.error(localize('file.move.existMessage'));
-      return;
+      return false;
     }
     await this.workspaceEditService.apply({
       edits: [
@@ -108,6 +142,7 @@ export class FileTreeAPI implements IFileTreeAPI {
         },
       ],
     });
+    return true;
   }
 
   async create(uri: URI) {

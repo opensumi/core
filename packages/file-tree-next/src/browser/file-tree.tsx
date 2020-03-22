@@ -38,14 +38,14 @@ export const FileTree = observer(({
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
-    const { handleItemClick, handleItemToggleClick, handlerItemRangeClick } = fileTreeModelService;
+    const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = fileTreeModelService;
     if (!item || isEdited) {
       return;
     }
     const shiftMask = hasShiftMask(event);
     const ctrlCmdMask = hasCtrlCmdMask(event);
     if (shiftMask) {
-      handlerItemRangeClick(item, type);
+      handleItemRangeClick(item, type);
     } else if (ctrlCmdMask) {
       handleItemToggleClick(item, type);
     } else {
@@ -89,37 +89,14 @@ export const FileTree = observer(({
   };
 
   const handleOuterContextMenu = (ev: React.MouseEvent) => {
+    const { handleContextMenu } = fileTreeModelService;
     // 空白区域右键菜单
-
+    handleContextMenu(ev);
   };
 
   const handlerContextMenu = (ev: React.MouseEvent, node: File | Directory) => {
     const { handleContextMenu } = fileTreeModelService;
     handleContextMenu(ev, node);
-  };
-
-  const handlerDragStart = (ev: React.MouseEvent, node: File | Directory) => {
-
-  };
-
-  const handlerDragEnd = (ev: React.MouseEvent, node: File | Directory) => {
-
-  };
-
-  const handlerDragOver = (ev: React.MouseEvent, node: File | Directory) => {
-
-  };
-
-  const handlerDragEnter = (ev: React.MouseEvent, node: File | Directory) => {
-
-  };
-
-  const handlerDragLeave = (ev: React.MouseEvent, node: File | Directory) => {
-
-  };
-
-  const handlerDrop = (ev: React.MouseEvent, node: File | Directory) => {
-
   };
 
   const renderFileTree = () => {
@@ -137,15 +114,10 @@ export const FileTree = observer(({
           decorationService={decorationService}
           labelService={labelService}
           validateMessage={validateMessage}
+          dndService={fileTreeModelService.dndService}
           decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
           onClick={handleItemClicked}
           onContextMenu={handlerContextMenu}
-          onDragStart={handlerDragStart}
-          onDragOver={handlerDragOver}
-          onDragEnter={handlerDragEnter}
-          onDragLeave={handlerDragLeave}
-          onDragEnd={handlerDragEnd}
-          onDrop={handlerDrop}
         />}
       </RecycleTree>;
     }
