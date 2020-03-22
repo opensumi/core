@@ -85,6 +85,7 @@ import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ExtensionCandiDate, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
 import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution';
+import { viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
 const LOAD_FAILED_CODE = 'load';
 
@@ -925,13 +926,16 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     });
 
     commandRegistry.registerCommand(VSCodeCommands.DIFF, {
-      execute: (left: UriComponents, right: UriComponents, title: string, options: any) => {
+      execute: (left: UriComponents, right: UriComponents, title: string, options: any = {}) => {
+        const openOptions: IResourceOpenOptions = {
+          ...viewColumnToResourceOpenOptions(options.viewColumn),
+          revealFirstDiff: true,
+        };
         return commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
           original: URI.from(left),
           modified: URI.from(right),
           name: title,
-          options,
-        });
+        }, openOptions);
       },
     });
   }

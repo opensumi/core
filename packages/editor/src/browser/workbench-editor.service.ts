@@ -911,7 +911,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         const diffResource = resource as IDiffResource;
         await this.diffEditorReady.promise;
         const [original, modified] = await Promise.all([this.getDocumentModelRef(diffResource.metadata!.original), this.getDocumentModelRef(diffResource.metadata!.modified)]);
-        await this.diffEditor.compare(original, modified);
+        await this.diffEditor.compare(original, modified, options);
         if (options.focus || options.preserveFocus) {
           this.diffEditor.focus();
         }

@@ -231,7 +231,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
 
     commands.registerCommand(EDITOR_COMMANDS.COMPARE, {
-      execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }) => {
+      execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }, options: IResourceOpenOptions = {}) => {
         name = name || `${original.displayName} <=> ${modified.displayName}`;
         return this.workbenchEditorService.open(
           URI.from({
@@ -242,7 +242,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
               modified,
             }),
           }),
-        );
+          options);
       },
     });
 

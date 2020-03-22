@@ -92,7 +92,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
  */
 export interface IDiffEditor extends IDisposable {
 
-  compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef);
+  compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef, options?: IResourceOpenOptions);
 
   originalEditor: IEditor;
 
@@ -238,6 +238,11 @@ export interface IResourceOpenOptions {
    * 如果是undefined，使用editor.previewMode配置作为默认值
    */
   preview?: boolean;
+
+  /**
+   * 对于DiffEditor，是否跳转到第一个diff
+   */
+  revealFirstDiff?: boolean;
 }
 
 export interface Position {
