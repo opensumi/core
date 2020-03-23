@@ -88,8 +88,11 @@ export const Button: React.FC<ButtonProps> = ({
     ['ghost-button']: ghost && type !== 'link',
     ['block-button']: block,
   });
+  const iconClesses = classNames(className, {
+    ['kt-clickable-icon']: !!onClick,
+  });
   if (type === 'icon') {
-    return <Icon tooltip={title} disabled={disabled} icon={icon} onClick={(loading || disabled) ? noop : onClick} className={className} iconClass={iconClass} />;
+    return <Icon tooltip={title} disabled={disabled} icon={icon} onClick={(loading || disabled) ? noop : onClick} className={iconClesses} iconClass={iconClass} />;
   }
 
   const iconNode = iconClass ? <Icon iconClass={iconClass} disabled={disabled} /> : null;
