@@ -23,7 +23,7 @@ function getChangeType(change: IChange): ChangeType {
   return ChangeType.Modify;
 }
 
-@Injectable()
+@Injectable({ multiple: true })
 export class DirtyDiffDecorator extends Disposable {
   static createDecoration(
     className: string,
