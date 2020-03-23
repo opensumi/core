@@ -7,8 +7,8 @@ import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNod
 import { Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData, REPORT_NAME } from '@ali/ide-core-node';
 import * as shellPath from 'shell-path';
 import * as cp from 'child_process';
-import * as psTree from 'ps-tree';
 import * as isRunning from 'is-running';
+import treeKill = require('tree-kill');
 
 import {
   commonChannelPathHandler,
@@ -408,30 +408,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       if (killProcess) {
         await new Promise((resolve) => {
-
-          psTree(extProcess.pid, (err: Error, childProcesses) => {
-            childProcesses.forEach((p: psTree.PS) => {
-              this.logger.log('psTree child process', p.PID);
-              try {
-                const pid = parseInt(p.PID, 10);
-                if (isRunning(pid)) {
-                  process.kill(pid);
-                }
-              } catch (e) {
-                this.logger.error(e);
-              }
-            });
+          treeKill(extProcess.pid, (err) => {
+            if (err) {
+              this.logger.error(`tree kill error: \n ${err.message}`);
+              return;
+            }
+            this.logger.log('extProcess killed', extProcess.pid);
             resolve();
           });
         });
-      }
-
-      this.logger.log('killProcess', killProcess, 'extProcess.pid', extProcess.pid);
-      // kill
-      if (killProcess) {
-        extProcess.kill();
-
-        this.logger.log('extProcess killed', extProcess.pid);
       }
 
       if (info) {
