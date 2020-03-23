@@ -21,7 +21,17 @@ const MenubarItem = observer<IExtendMenubarItem & {
   const handleClick = React.useCallback(() => {
     menubarStore.handleMenubarClick(id);
     onClick();
+    if (focusMode) {
+      setMenuOpen(true);
+    } else {
+      setMenuOpen((r) => !r);
+    }
   }, [ id ]);
+
+  const handleMenuItemClick = () => {
+    onClick();
+    setMenuOpen(false);
+  };
 
   const handleMouseOver = React.useCallback(() => {
     // 只有 focus mode 下才会 hover 时重新生成数据
@@ -45,7 +55,7 @@ const MenubarItem = observer<IExtendMenubarItem & {
       }}
       visible={menuOpen}
       onVisibleChange={triggerMenuVisibleChange}
-      overlay={<MenuActionList data={data} afterClick={onClick} />}
+      overlay={<MenuActionList data={data} afterClick={handleMenuItemClick} />}
       trigger={focusMode ? ['click', 'hover'] : ['click']}>
       <div
         className={clx(styles.menubar, { [styles['menu-open']]: menuOpen })}
