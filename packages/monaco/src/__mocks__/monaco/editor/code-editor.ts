@@ -1,13 +1,17 @@
 import { Emitter, Disposable } from '@ali/ide-core-common';
 
 export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeEditor {
+  static ID = 0;
 
   private position: any;
   private selections: any[];
   model: monaco.editor.ITextModel | null;
 
+  id: number;
+
   constructor(public dom, public options, public override) {
     super();
+    this.id = (++MockedCodeEditor.ID);
   }
 
   _onDidChangeModelContent = new Emitter<monaco.editor.IModelContentChangedEvent>();
@@ -250,11 +254,14 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   onDidDispose = this._onDidDispose.event;
 
   getId(): string {
-    throw new Error('Method not implemented.');
+    return this.getEditorType() + ':' + this.id;
   }
+
   getEditorType(): string {
-    throw new Error('Method not implemented.');
+    return 'vs.editor.ICodeEditor';
+    // return 'vs.editor.IDiffEditor;
   }
+
   updateOptions(newOptions): void {
     this.options = newOptions;
     this._onDidChangeConfiguration.fire(newOptions as monaco.editor.IConfigurationChangedEvent);

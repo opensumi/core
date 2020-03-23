@@ -20,7 +20,7 @@ import {
   MockWorkspaceService,
   MockTerminalWidget,
 } from './mock.service';
-import { TerminalClient } from '../../lib/browser/terminal.client';
+import { TerminalClient } from '../../src/browser/terminal.client';
 
 export function createTerminalController() {
   const injector = new Injector([

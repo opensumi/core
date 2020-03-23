@@ -20,8 +20,7 @@ export class MockedMonacoService implements MonacoService {
   public async createCodeEditor(monacoContainer: HTMLElement, options?: monaco.editor.IEditorConstructionOptions | undefined): Promise<monaco.editor.IStandaloneCodeEditor> {
     return this.mockedMonaco.editor.create(monacoContainer, options);
   }
-  public async  loadMonaco(): Promise<void> {
-
+  public async loadMonaco(): Promise<void> {
   }
   public async createDiffEditor(monacoContainer: HTMLElement, options?: monaco.editor.IDiffEditorConstructionOptions | undefined): Promise<monaco.editor.IDiffEditor> {
     return this.mockedMonaco.editor.createDiffEditor(monacoContainer, options);

@@ -77,14 +77,14 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       const mockProvider0 = new MockSCMProvider(0);
       mockProvider0.count = 1;
       const repo0 = scmService.registerSCMProvider(mockProvider0);
-      mockProvider0.didChangeEmitter.fire();
+      mockProvider0.onDidChangeEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledTimes(1);
 
       fakeGetTabbarHandler.mockReturnValueOnce(undefined);
       const mockProvider1 = new MockSCMProvider(1);
       mockProvider1.count = 2;
       scmService.registerSCMProvider(mockProvider1);
-      mockProvider0.didChangeEmitter.fire();
+      mockProvider0.onDidChangeEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledTimes(1);
 
       fakeGetTabbarHandler.mockReturnValueOnce(undefined);
@@ -100,11 +100,11 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       const mockProvider0 = new MockSCMProvider(0);
       mockProvider0.count = 1;
       const repo0 = scmService.registerSCMProvider(mockProvider0);
-      mockProvider0.didChangeEmitter.fire();
+      mockProvider0.onDidChangeEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledWith('1');
 
       mockProvider0.count = 2;
-      mockProvider0.didChangeResourcesEmitter.fire();
+      mockProvider0.onDidChangeResourcesEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledWith('2');
 
       // remove repo
@@ -121,7 +121,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       expect(fakeSetBadge).toHaveBeenCalledWith('1'); // initial invoked
 
       mockProvider0.count = 3;
-      mockProvider0.didChangeResourcesEmitter.fire();
+      mockProvider0.onDidChangeResourcesEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledWith('3');
 
       // remove repo
@@ -140,11 +140,11 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
 
       mockProvider0.groups.splice(mockProvider0.groups.elements.length, 0, [mockSCMResourceGroup0]);
       const repo0 = scmService.registerSCMProvider(mockProvider0);
-      mockProvider0.didChangeResourcesEmitter.fire();
+      mockProvider0.onDidChangeResourcesEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledWith('1');
 
       mockSCMResourceGroup0.splice(mockSCMResourceGroup0.elements.length, 0, [new MockSCMResource(mockSCMResourceGroup0)]);
-      mockProvider0.didChangeEmitter.fire();
+      mockProvider0.onDidChangeEmitter.fire();
       expect(fakeSetBadge).toHaveBeenCalledWith('2');
 
       // remove repo
@@ -243,7 +243,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         arguments: undefined,
         alignment: StatusBarAlignment.LEFT,
         command: 'fake.command.id.0',
-        tooltip: 'scm_label_0 - fake.command.tooltip.0',
+        tooltip: 'workspace (scm_label_0) - fake.command.tooltip.0',
       });
 
       // fake command 1
@@ -254,7 +254,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         alignment: StatusBarAlignment.LEFT,
         command: 'fake.command.id.1',
         arguments: [1, 2, 3],
-        tooltip: 'scm_label_0 - fake.command.title.1',
+        tooltip: 'workspace (scm_label_0) - fake.command.title.1',
       });
 
       // remove repo0
@@ -311,7 +311,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         arguments: undefined,
         alignment: StatusBarAlignment.LEFT,
         command: 'fake.command.id.0',
-        tooltip: 'scm_label_0 - fake.command.tooltip.0',
+        tooltip: 'workspace (scm_label_0) - fake.command.tooltip.0',
       });
 
       mockProvider0.statusBarCommands = [{
@@ -319,7 +319,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         title: 'fake.command.title.1',
         arguments: [1, 2, 3],
       }];
-      mockProvider0.didChangeStatusBarCommandsEmitter.fire(mockProvider0.statusBarCommands);
+      mockProvider0.onDidChangeStatusBarCommandsEmitter.fire(mockProvider0.statusBarCommands);
 
       // fake command 1
       // statusbar elements 的 uid 不变
@@ -330,17 +330,17 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
         alignment: StatusBarAlignment.LEFT,
         command: 'fake.command.id.1',
         arguments: [1, 2, 3],
-        tooltip: 'scm_label_0 - fake.command.title.1',
+        tooltip: 'workspace (scm_label_0) - fake.command.title.1',
       });
 
       // statusBarCommands 为 []
       mockProvider0.statusBarCommands = [];
-      mockProvider0.didChangeStatusBarCommandsEmitter.fire([]);
+      mockProvider0.onDidChangeStatusBarCommandsEmitter.fire([]);
       expect(fakeAddElement).toHaveBeenCalledTimes(2); // 不再调用
 
       // statusBarCommands 为 undefined
       mockProvider0.statusBarCommands = undefined;
-      mockProvider0.didChangeStatusBarCommandsEmitter.fire([]);
+      mockProvider0.onDidChangeStatusBarCommandsEmitter.fire([]);
       expect(fakeAddElement).toHaveBeenCalledTimes(2); // 不再调用
     });
 
@@ -359,6 +359,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
 
       // scm provider0 without rootUri
       const mockProvider0 = new MockSCMProvider(0);
+      mockProvider0.rootUri = undefined;
       mockProvider0.statusBarCommands!.push({
         id: 'fake.command.id.0',
         title: 'fake.command.title.0',
@@ -433,6 +434,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
 
       // scm provider0 without rootUri
       const mockProvider0 = new MockSCMProvider(0);
+      mockProvider0.rootUri = undefined;
       mockProvider0.statusBarCommands!.push({
         id: 'fake.command.id.0',
         title: 'fake.command.title.0',

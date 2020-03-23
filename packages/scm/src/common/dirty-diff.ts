@@ -2,11 +2,7 @@ import { IChange, Command } from '@ali/ide-core-common';
 
 export interface IDirtyDiffModel {
   changes: IChange[];
-  getNextChangeLineNumber(): number;
-  getPreviousChangeLineNumber(): number;
-  findNextClosestChange(lineNumber: number, inclusive?: boolean): number;
   findNextClosestChangeLineNumber(lineNumber: number, inclusive?: boolean): number;
-  findPreviousClosestChange(lineNumber: number, inclusive?: boolean): number;
   findPreviousClosestChangeLineNumber(lineNumber: number, inclusive?: boolean): number;
 }
 

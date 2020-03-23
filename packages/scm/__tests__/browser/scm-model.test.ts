@@ -1,4 +1,4 @@
-import { Event } from '@ali/ide-core-common';
+import { DisposableCollection, Event } from '@ali/ide-core-common';
 import { Injector } from '@ali/common-di';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
@@ -11,6 +11,10 @@ import { SCMService, ISCMProvider, ISCMResourceGroup, ISCMResource, ISCMReposito
 import { ViewModelContext, ResourceGroupSplicer } from '../../src/browser/scm-model';
 
 describe('test for scm.store.ts', () => {
+  const toTearDown = new DisposableCollection();
+
+  afterEach(() => toTearDown.dispose());
+
   describe('ViewModelContext', () => {
     let provider1: ISCMProvider;
     let provider2: ISCMProvider;
@@ -41,6 +45,8 @@ describe('test for scm.store.ts', () => {
       const repo1 = scmService.registerSCMProvider(provider1);
       const repo2 = scmService.registerSCMProvider(provider2);
 
+      repo1.setSelected(true);
+
       injector.addProviders(ViewModelContext);
       store = injector.get(ViewModelContext);
 
@@ -48,6 +54,9 @@ describe('test for scm.store.ts', () => {
       expect(store['scmProviderCtxKey'].get()).toBe('git');
       expect(store.repoList[0].provider).toEqual(provider1);
       expect(store.repoList[1].provider).toEqual(provider2);
+
+      expect(store.selectedRepos.length).toBe(1);
+      expect(store.selectedRepos[0]).toEqual(repo1);
 
       repo1.dispose();
       expect(store.repoList.length).toBe(1);
@@ -160,11 +169,11 @@ describe('test for scm.store.ts', () => {
     it('ok with empty repo', () => {
       const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repo);
 
-      repoOnDidSplice(({ index, deleteCount, elements }) => {
+      toTearDown.push(repoOnDidSplice(({ index, deleteCount, elements }) => {
         expect(index).toBe(0);
         expect(deleteCount).toBe(0);
         expect(elements.length).toBe(0);
-      });
+      }));
 
       resourceGroup.run();
     });
@@ -173,7 +182,7 @@ describe('test for scm.store.ts', () => {
       const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repo);
 
       const spliceListener = jest.fn();
-      repoOnDidSplice(spliceListener);
+      toTearDown.push(repoOnDidSplice(spliceListener));
 
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
@@ -199,7 +208,7 @@ describe('test for scm.store.ts', () => {
       const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repo);
 
       const spliceListener = jest.fn();
-      repoOnDidSplice(spliceListener);
+      toTearDown.push(repoOnDidSplice(spliceListener));
 
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
@@ -224,7 +233,7 @@ describe('test for scm.store.ts', () => {
       const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repo);
 
       const spliceListener = jest.fn();
-      repoOnDidSplice(spliceListener);
+      toTearDown.push(repoOnDidSplice(spliceListener));
 
       resourceGroup.run();
       expect(spliceListener).toHaveBeenCalledTimes(1);
