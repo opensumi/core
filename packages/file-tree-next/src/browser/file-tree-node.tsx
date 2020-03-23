@@ -190,7 +190,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
           className={cls(styles.file_tree_node_segment, styles.file_tree_node_inputbox)}
         >
           <div className='input-box'>
-            <node.ProxiedInput style={{height: FILE_TREE_NODE_HEIGHT}}/>
+            <node.ProxiedInput wrapperStyle={{height: FILE_TREE_NODE_HEIGHT}}/>
             {renderValidateMessage()}
           </div>
         </div>;

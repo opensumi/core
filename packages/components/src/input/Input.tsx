@@ -19,6 +19,7 @@ export interface IInputBaseProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   className?: string;
   autoFocus?: boolean;
   defaultValue?: string;
+  wrapperStyle?: React.CSSProperties;
   value?: string;
   onValueChange?: (value: string) => void;
   size?: 'default' | 'large' | 'small';
@@ -82,6 +83,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
       defaultValue,
       style,
       className,
+      wrapperStyle,
       size = 'default',
       controls,
       onChange,
@@ -200,7 +202,7 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
     });
 
     return (
-      <div className={inputClx} style={style}>
+      <div className={inputClx} style={wrapperStyle}>
         {addonRender(addonBefore, 'kt-input-addon-before')}
         <div className='kt-input-box'>
           <input
