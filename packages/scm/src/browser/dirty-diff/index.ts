@@ -200,31 +200,33 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     }
   }
 
-  private _doMouseDown(codeEditor: monaco.editor.ICodeEditor, event: monaco.editor.IEditorMouseEvent) {
-    if (event.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS && event.target.element && event.target.element.className.indexOf('dirty-diff-glyph') > -1) {
+  private _doMouseDown(codeEditor: monaco.editor.ICodeEditor, { target }: monaco.editor.IEditorMouseEvent) {
+    if (!target) {
+      return;
+    }
 
-      const { target } = event;
+    const { position, detail, type, element } = target;
+    if (
+      type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS
+      && element
+      && element.className.indexOf('dirty-diff-glyph') > -1
+      && position
+    ) {
+      const offsetLeftInGutter = (element as HTMLElement).offsetLeft;
+      const gutterOffsetX = detail.offsetX - offsetLeftInGutter;
 
-      if (target && target.position) {
-        const { position } = target;
-
-        const data = event.target.detail;
-        const offsetLeftInGutter = (event.target.element as HTMLElement).offsetLeft;
-        const gutterOffsetX = data.offsetX - offsetLeftInGutter;
-
-        /**
-         * 这段逻辑来自于 vscode 的源代码，由于 folding 的 icon 和 decorations 是父子关系，
-         * 而且 folding 的事件是通过 decorations 的 dom 事件转发过去的，
-         * 无法通过事件 target 来区分事件源，vscode 通过点击的 px 像素差来解决这个问题的。
-         */
-        if (gutterOffsetX < 5) {
-          this.toggleDirtyDiffWidget(codeEditor, position);
-        } else {
-          const widget = this.widgets.get(codeEditor.getId());
-          if (widget) {
-            widget.dispose();
-            this.widgets.delete(codeEditor.getId());
-          }
+      /**
+       * 这段逻辑来自于 vscode 的源代码，由于 folding 的 icon 和 decorations 是父子关系，
+       * 而且 folding 的事件是通过 decorations 的 dom 事件转发过去的，
+       * 无法通过事件 target 来区分事件源，vscode 通过点击的 px 像素差来解决这个问题的。
+       */
+      if (gutterOffsetX < 5) {
+        this.toggleDirtyDiffWidget(codeEditor, position);
+      } else {
+        const widget = this.widgets.get(codeEditor.getId());
+        if (widget) {
+          widget.dispose();
+          this.widgets.delete(codeEditor.getId());
         }
       }
     }
