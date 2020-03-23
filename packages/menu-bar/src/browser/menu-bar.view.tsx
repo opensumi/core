@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
@@ -15,6 +16,8 @@ const MenubarItem = observer<IExtendMenubarItem & {
   onClick: () => void;
 }>(({ id, label, focusMode, onClick }) => {
   const menubarStore = useInjectable<MenubarStore>(MenubarStore);
+  const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
+
   const handleClick = React.useCallback(() => {
     menubarStore.handleMenubarClick(id);
     onClick();
@@ -27,6 +30,10 @@ const MenubarItem = observer<IExtendMenubarItem & {
     }
   }, [ id, focusMode ]);
 
+  const triggerMenuVisibleChange = (visible: boolean) => {
+    setMenuOpen(visible);
+  };
+
   const data = menubarStore.menuItems.get(id) || [];
 
   return (
@@ -36,10 +43,12 @@ const MenubarItem = observer<IExtendMenubarItem & {
       align={{
         offset: [0, 0],
       }}
+      visible={menuOpen}
+      onVisibleChange={triggerMenuVisibleChange}
       overlay={<MenuActionList data={data} afterClick={onClick} />}
       trigger={focusMode ? ['click', 'hover'] : ['click']}>
       <div
-        className={styles.menubar}
+        className={clx(styles.menubar, { [styles['menu-open']]: menuOpen })}
         onMouseOver={handleMouseOver}
         onClick={handleClick}>{label}</div>
     </Dropdown>
