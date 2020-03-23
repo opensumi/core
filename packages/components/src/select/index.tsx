@@ -3,14 +3,12 @@ import { useState, useEffect } from 'react';
 import * as classNames from 'classnames';
 
 import './style.less';
-import { Icon, IconContext } from '../icon';
+import { Icon, getDefaultIcon } from '../icon';
 
 interface ISelectProps {
   className?: string;
   size?: 'large' | 'default' | 'small';
-  opem?: boolean;
   loading?: boolean;
-  placeholder?: string;
   options?: Array<React.ReactNode>;
   value?: string;
   disabled?: boolean;
@@ -77,7 +75,6 @@ function getLabelWithChildrenProps(value: string | undefined, children: React.Re
 }
 
 export const Select: React.FC<ISelectProps> = ({
-  placeholder,
   disabled,
   options,
   size = 'default',
@@ -88,7 +85,6 @@ export const Select: React.FC<ISelectProps> = ({
   style,
   className,
 }) => {
-  const { getIcon } = React.useContext(IconContext);
   const [open, setOpen] = useState(false);
   const [select, setSelect] = useState(value);
 
@@ -130,7 +126,7 @@ export const Select: React.FC<ISelectProps> = ({
   return (<div className={classNames('kt-select-container', className)}>
     <p className={selectClasses} onClick={toggleOpen} style={style}>
       <span className={'kt-select-option'}>{(children && getLabelWithChildrenProps(value, children)) || options && (React.isValidElement(options[0]) ? options[0].props?.value : options[0])}</span>
-      <Icon iconClass={getIcon('down')} />
+      <Icon iconClass={getDefaultIcon('down')} />
     </p>
 
     <div className={optionsContainerClasses}>

@@ -3,7 +3,7 @@ import * as clx from 'classnames';
 
 import { Overlay, IOverlayProps } from '../overlay';
 import * as styles from './styles.module.less';
-import { IconContext } from '../icon';
+import { IconContext, getDefaultIcon } from '../icon';
 import { Button } from '../button';
 
 export enum MessageType {
@@ -67,12 +67,12 @@ export const Dialog: React.FC<IDialogProps> = ({
       afterClose={afterClose}>
       <>
         <div className={styles.content}>
-          {icon && <div style={{ color: icon.color }} className={clx(styles.icon, getIcon(icon.className))}/>}
+          {icon && <div style={{ color: icon.color }} className={clx(styles.icon, getDefaultIcon(icon.className) || getIcon(icon.className))}/>}
           <div className={styles.content_area}>
             {type !== 'basic' && title && <p className={styles.content_title}>{title}</p>}
             {typeof message === 'string' ? (<span className={styles.message}>{ message }</span>) : message}
           </div>
-          {closable && type !== 'basic' && <button className={clx(styles.closex, getIcon('close'))} onClick={onClose}></button>}
+          {closable && type !== 'basic' && <button className={clx(styles.closex, getDefaultIcon('close'))} onClick={onClose}></button>}
         </div>
         {messageType !== MessageType.Empty && type !== 'basic' && <div className={styles.buttonWrap}>
           {type === 'confirm' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : <Button size='large' onClick={onClose}>知道了</Button>}
