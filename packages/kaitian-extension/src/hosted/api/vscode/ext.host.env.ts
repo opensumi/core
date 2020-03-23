@@ -34,7 +34,7 @@ export class Env {
   }
 }
 
-const envValue = new Env();
+export const envValue = new Env();
 
 export function createEnvApiFactory(
   rpcProtocol: IRPCProtocol,
