@@ -1,17 +1,19 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ViewState, useInjectable, isOSX } from '@ali/ide-core-browser';
-import * as styles from './file-tree.module.less';
 import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory, File } from './file-tree-nodes';
+import * as cls from 'classnames';
+import * as styles from './file-tree.module.less';
 
 export const FileTree = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
+  const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
   const [isEdited ] = React.useState<boolean>(false);
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
@@ -94,6 +96,26 @@ export const FileTree = observer(({
     handleContextMenu(ev);
   };
 
+  const handleOuterDragStart = (ev: React.DragEvent) => {
+    ev.stopPropagation();
+    ev.preventDefault();
+  };
+
+  const handleOuterDragOver = (ev: React.DragEvent) => {
+    ev.preventDefault();
+    setOuterDragOver(true);
+  };
+
+  const handleOuterDragLeave = (ev: React.DragEvent) => {
+    setOuterDragOver(false);
+  };
+
+  const handleOuterDrop = (ev: React.DragEvent) => {
+    const { handleDrop } = fileTreeModelService.dndService;
+    setOuterDragOver(false);
+    handleDrop(ev);
+  };
+
   const handlerContextMenu = (ev: React.MouseEvent, node: File | Directory) => {
     const { handleContextMenu } = fileTreeModelService;
     handleContextMenu(ev, node);
@@ -122,14 +144,20 @@ export const FileTree = observer(({
       </RecycleTree>;
     }
   };
-
   return <div
-    className={styles.file_tree}
+    className={
+      cls(styles.file_tree, outerDragOver && styles.outer_drag_over)
+    }
     tabIndex={-1}
     ref={wrapperRef}
     onClick={handleOuterClick}
     onBlur={handleBlur}
     onContextMenu={handleOuterContextMenu}
+    draggable={true}
+    onDragStart={handleOuterDragStart}
+    onDragLeave={handleOuterDragLeave}
+    onDragOver={handleOuterDragOver}
+    onDrop={handleOuterDrop}
   >
     {renderFileTree()}
   </div>;

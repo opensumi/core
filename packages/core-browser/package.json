@@ -41,6 +41,7 @@
     "mock-socket": "^9.0.2",
     "native-keymap": "^2.1.1",
     "onigasm": "2.2.2",
+    "p-series": "^2.1.0",
     "rc-menu": "^7.4.30",
     "react": "^16.8.6",
     "react-autosize-textarea": "^7.0.0",

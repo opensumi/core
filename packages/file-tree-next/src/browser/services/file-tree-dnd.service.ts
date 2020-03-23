@@ -139,7 +139,7 @@ export class DragAndDropService {
 
   }
 
-  handleDrop = (ev: React.DragEvent, node: File | Directory) => {
+  handleDrop = (ev: React.DragEvent, node?: File | Directory) => {
     try {
       ev.preventDefault();
       ev.stopPropagation();
@@ -158,7 +158,9 @@ export class DragAndDropService {
           this.fileTreeAPI.mvFiles(resources.map((res) => res.uri), containing.uri);
         }
       }
-      this.beingDraggedDec.removeTarget(node);
+      if (node) {
+        this.beingDraggedDec.removeTarget(node);
+      }
       if (this.potentialParent) {
         this.draggedOverDec.removeTarget(this.potentialParent);
       }

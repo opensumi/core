@@ -16,7 +16,7 @@ import { Directory, File } from './file-tree-nodes';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Path } from '@ali/ide-core-common/lib/path';
-
+import pSeries = require('p-series');
 @Injectable()
 export class FileTreeService extends Tree {
 
@@ -249,15 +249,15 @@ export class FileTreeService extends Tree {
 
   // 队列化Changed事件
   private queueChangeEvent(path: string) {
+    clearTimeout(this.eventFlushTimeout);
+    this.eventFlushTimeout = setTimeout(this.flushEventQueue, 150) as any;
+
     if (this.changeEventDispatchQueue.indexOf(path) === -1) {
       this.changeEventDispatchQueue.push(path);
     }
-
-    clearTimeout(this.eventFlushTimeout);
-    this.eventFlushTimeout = setTimeout(this.flushEventQueue, 150) as any;
   }
 
-  public flushEventQueue() {
+  public flushEventQueue = () => {
     let promise: Promise<any>;
     if (!this.changeEventDispatchQueue || this.changeEventDispatchQueue.length === 0) {
       return;
@@ -267,7 +267,7 @@ export class FileTreeService extends Tree {
       const pathBDepth = Path.pathDepth(pathB);
       return pathADepth - pathBDepth;
     });
-    promise = Promise.all(this.changeEventDispatchQueue.map(async (path) => {
+    promise = pSeries(this.changeEventDispatchQueue.map((path) => async () => {
       const watcher = this.root?.watchEvents.get(path);
       if (watcher && typeof watcher.callback === 'function') {
         await watcher.callback({ type: WatchEvent.Changed, path });
