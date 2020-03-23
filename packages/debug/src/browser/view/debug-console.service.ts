@@ -4,9 +4,10 @@ import { observable, action } from 'mobx';
 import { DebugContribution } from '../debug-contribution';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import throttle = require('lodash.throttle');
-import { URI, Emitter } from '@ali/ide-core-common';
+import { URI, Emitter, CommandRegistry } from '@ali/ide-core-common';
 import { MonacoService } from '@ali/ide-monaco';
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
+import { EditorCollectionService } from '@ali/ide-editor';
 
 const options: monaco.editor.IEditorOptions = {
   lineNumbers: 'off',
@@ -43,11 +44,18 @@ export class DebugConsoleService {
   @Autowired(IEditorDocumentModelService)
   protected readonly documentService: IEditorDocumentModelService;
 
+  @Autowired(EditorCollectionService)
+  protected readonly editorService: EditorCollectionService;
+
+  @Autowired(CommandRegistry)
+  protected readonly commands: CommandRegistry;
+
   @observable.shallow
   nodes: any[] = [];
 
   protected _consoleModel: monaco.editor.ITextModel;
-  protected _consoleEditor: monaco.editor.IStandaloneCodeEditor;
+  protected _consoleEditor: monaco.editor.ICodeEditor;
+  protected _isCommandOrCtrl: boolean = false;
 
   constructor() {
     this.debugConsole.onDidChange(() => {
@@ -85,6 +93,21 @@ export class DebugConsoleService {
     return new URI('walkThroughSnippet://debug/console');
   }
 
+  private _handleKeyDown(e: monaco.IKeyboardEvent, model: monaco.editor.ITextModel) {
+    switch (e.code) {
+      case 'Enter':
+        e.preventDefault();
+        this.execute(model.getValue());
+        break;
+      default:
+        break;
+    }
+  }
+
+  private _handleKeyUp() {
+    this._isCommandOrCtrl = false;
+  }
+
   @action.bound
   async createConsoleInput(container: HTMLDivElement) {
     const docModel = await this.documentService.createModelReference(this.consoleInputUri);
@@ -96,13 +119,14 @@ export class DebugConsoleService {
       }
       this._onValueChange.fire(this.consoleInputUri);
     });
-    this.monacoService.createCodeEditor(container, { model, ...options }).then((editor) => {
+    this.editorService.createCodeEditor(container, { model, ...options }).then((codeEditor) => {
+      const editor = codeEditor.monacoEditor;
       editor.layout();
       editor.onKeyDown((e) => {
-        if (e.code === 'Enter') {
-          e.preventDefault();
-          this.execute(model.getValue());
-        }
+        this._handleKeyDown(e, model);
+      });
+      editor.onKeyUp(() => {
+        this._handleKeyUp();
       });
       this._consoleEditor = editor;
     });
