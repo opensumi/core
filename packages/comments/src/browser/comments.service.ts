@@ -24,7 +24,7 @@ import {
   ICommentsFeatureRegistry,
 } from '../common';
 import { CommentsThread } from './comments-thread';
-import { observable, computed } from 'mobx';
+import { observable, computed, action } from 'mobx';
 import * as flattenDeep from 'lodash.flattendeep';
 import * as groupBy from 'lodash.groupby';
 import { dirname } from '@ali/ide-core-common/lib/path';
@@ -62,6 +62,9 @@ export class CommentsService extends Disposable implements ICommentsService {
   private threadsChangeEmitter = new Emitter<ICommentsThread>();
 
   private threadsCreatedEmitter = new Emitter<ICommentsThread>();
+
+  @observable
+  private forceUpdateCount = 0;
 
   @computed
   get commentsThreads() {
@@ -179,6 +182,11 @@ export class CommentsService extends Disposable implements ICommentsService {
       .sort((a, b) => a.range.startLineNumber -  b.range.startLineNumber);
   }
 
+  @action
+  public forceUpdateTreeNodes() {
+    this.forceUpdateCount++;
+  }
+
   @computed
   get commentsTreeNodes(): ICommentsTreeNode[] {
     let treeNodes: ICommentsTreeNode[] = [];
@@ -203,6 +211,8 @@ export class CommentsService extends Disposable implements ICommentsService {
           expanded: true,
           children: [],
         },
+        // 跳过 mobx computed， 强制在走一次 getCommentsPanelTreeNodeHandlers 逻辑
+        _forceUpdateCount: this.forceUpdateCount,
       };
       treeNodes.push(rootNode);
       threads.forEach((thread) => {
