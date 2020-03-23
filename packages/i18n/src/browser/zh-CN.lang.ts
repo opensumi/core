@@ -452,6 +452,7 @@ export const localizationBundle = {
     'terminal.maximum': '最大化面板大小',
     'terminal.or': '或者',
     'terminal.search': '搜索',
+    'terminal.search.next': '搜索下一个匹配项',
 
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分',

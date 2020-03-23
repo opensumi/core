@@ -14,7 +14,7 @@ import {
 import { Autowired } from '@ali/common-di';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ITerminalController, ITerminalRestore, terminalFocusContextKey } from '../common';
-import { terminalClear, terminalSplit, terminalSearch } from './terminal.command';
+import { terminalClear, terminalSplit, terminalSearch, terminalSearchNext } from './terminal.command';
 import TerminalView from './terminal.view';
 import TerminalTabs from './component/tab/view';
 
@@ -86,6 +86,22 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       },
     });
 
+    registry.registerCommand(terminalSearchNext, {
+      execute: (...args: any[]) => {
+        if (this.terminalController.searchState.show) {
+          this.terminalController.search();
+        } else {
+          this.terminalController.openSearchInput();
+        }
+      },
+      isEnabled: () => {
+        return true;
+      },
+      isVisible: () => {
+        return true;
+      },
+    });
+
     /*
     registry.registerCommand(terminalIndepend, {
       execute: (...args: any[]) => {
@@ -134,6 +150,11 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     keybindings.registerKeybinding({
       command: terminalClear.id,
       keybinding: 'ctrlcmd+k',
+      when: terminalFocusContextKey,
+    });
+    keybindings.registerKeybinding({
+      command: terminalSearchNext.id,
+      keybinding: 'ctrlcmd+g',
       when: terminalFocusContextKey,
     });
   }
