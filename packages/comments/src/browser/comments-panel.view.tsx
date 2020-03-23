@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, isUndefined, ViewState, IEventBus } from '@ali/ide-core-browser';
-import { ICommentsService, ICommentsTreeNode, CommentPanelCollapse } from '../common';
+import { useInjectable, isUndefined, ViewState, IEventBus, localize } from '@ali/ide-core-browser';
+import { ICommentsService, ICommentsTreeNode, CommentPanelCollapse, ICommentsFeatureRegistry } from '../common';
 import * as styles from './comments.module.less';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as clx from 'classnames';
@@ -26,6 +26,7 @@ function getRenderTree(nodes: ICommentsTreeNode[]) {
 export const CommentsPanel = observer<{ viewState: ViewState; className?: string}>((props) => {
   const commentsService = useInjectable<ICommentsService>(ICommentsService);
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
+  const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
   const [ treeNodes, setTreeNodes ] = React.useState<ICommentsTreeNode[]>([]);
   const eventBus: IEventBus = useInjectable(IEventBus);
 
@@ -45,6 +46,11 @@ export const CommentsPanel = observer<{ viewState: ViewState; className?: string
   }, [commentsService.commentsTreeNodes]);
 
   const handleSelect = React.useCallback(([item]: [ ICommentsTreeNode ]) => {
+    // 可能点击到空白位置
+    if (!item) {
+      return;
+    }
+
     if (!isUndefined(item.expanded)) {
       const newNodes = treeNodes.map((node) => {
         if (node.id === item.id) {
@@ -64,16 +70,35 @@ export const CommentsPanel = observer<{ viewState: ViewState; className?: string
     }
   }, [workbenchEditorService, treeNodes]);
 
+  const commentsPanelOptions = React.useMemo(() => {
+    return commentsFeatureRegistry.getCommentsPanelOptions();
+  }, []);
+
+  const headerComponent = React.useMemo(() => {
+    return commentsPanelOptions.header;
+  }, [commentsPanelOptions]);
+
+  const defaultPlaceholder = React.useMemo(() => {
+    return commentsPanelOptions.defaultPlaceholder;
+  }, [commentsPanelOptions]);
+
+  const nodes = getRenderTree(treeNodes);
+
   return (
     <div className={clx(props.className, styles.comment_panel)}>
-      <RecycleTree
-        containerHeight={props.viewState.height}
-        scrollContainerStyle={scrollContainerStyle}
-        nodes={getRenderTree(treeNodes)}
-        foldable={true}
-        outline={false}
-        onSelect={(item) => handleSelect(item)}
-      />
+      {headerComponent?.component}
+      {nodes.length ? (
+        <RecycleTree
+          containerHeight={props.viewState.height - (headerComponent?.height || 0)}
+          scrollContainerStyle={scrollContainerStyle}
+          nodes={nodes}
+          foldable={true}
+          outline={false}
+          onSelect={(item) => handleSelect(item)}
+        />
+      ) : (
+        (!defaultPlaceholder || typeof defaultPlaceholder === 'string') ? <div className={styles.panel_placeholder}>{defaultPlaceholder || localize('comments.panel.placeholder')}</div> : defaultPlaceholder
+      )}
     </div>
   );
 });

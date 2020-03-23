@@ -188,13 +188,36 @@ export interface IThreadComment extends IComment {
 }
 
 export interface CommentsPanelOptions {
+  /**
+   * panel icon class name
+   */
   iconClass?: string;
   priority?: number;
+  /**
+   * panel title
+   */
   title?: string;
+  /**
+   * is hidden
+   */
   hidden?: boolean;
   badge?: string;
+  /**
+   * title component
+   */
   titleComponent?: React.FunctionComponent;
   initialProps?: object;
+  /**
+   * header component
+   */
+  header?: {
+    component: React.ReactNode;
+    height: number;
+  };
+  /**
+   * 无内容显示的文案
+   */
+  defaultPlaceholder?: React.ReactNode | string;
 }
 
 export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];
@@ -349,6 +372,10 @@ export interface ICommentsService {
    * threads 创建的事件
    */
   onThreadsCreated: Event<ICommentsThread>;
+  /**
+   * 强制更新 tree node，再走一次 TreeNodeHandler 逻辑
+   */
+  forceUpdateTreeNodes(): void;
 }
 
 export const CollapseId = 'comments.panel.action.collapse';

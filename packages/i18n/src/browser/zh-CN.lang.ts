@@ -552,6 +552,7 @@ export const localizationBundle = {
     'comments.zone.title': '开始讨论',
     'comments.panel.action.collapse': '全部折叠',
     'comments.thread.action.close': '关闭面板',
+    'comments.panel.placeholder': '暂无评论',
 
     'treeview.command.action.collapse': '全部折叠',
   },
