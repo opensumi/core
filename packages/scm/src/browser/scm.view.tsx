@@ -119,7 +119,7 @@ export const SCMPanel: React.FC<{ viewState: ViewState }> = observer((props) => 
 
   const repoList = viewModel.repoList;
   const hasMultiRepos = viewModel.repoList.length > 1;
-  const selectedRepo: ISCMRepository | undefined = viewModel.selectedRepos[0];
+  const selectedRepo: ISCMRepository | undefined = viewModel.selectedRepo;
 
   // title for scm panel
   const panelTitle = React.useMemo(() => {

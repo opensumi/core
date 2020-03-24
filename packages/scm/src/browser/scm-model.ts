@@ -237,6 +237,9 @@ export class ViewModelContext extends Disposable {
   public selectedRepos = observable.array<ISCMRepository>([]);
 
   @observable
+  public selectedRepo: ISCMRepository | undefined;
+
+  @observable
   public scmList = observable.array<ISCMDataItem>([]);
 
   public titleMenu: IMenu | null;
@@ -300,6 +303,7 @@ export class ViewModelContext extends Disposable {
   private changeSelectedRepos(repos: ISCMRepository[]) {
     this.selectedRepos.replace(repos);
     const selectedRepo = repos[0];
+    this.selectedRepo = selectedRepo;
     // set context key
     this.setContextKey(selectedRepo);
   }
