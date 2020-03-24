@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
-import { useInjectable, ViewState, URI } from '@ali/ide-core-browser';
+import { useInjectable, ViewState } from '@ali/ide-core-browser';
 import * as styles from './debug-breakpoints.module.less';
 import * as cls from 'classnames';
 import { CheckBox } from '@ali/ide-components';
 import { observer } from 'mobx-react-lite';
 import { DebugBreakpoint, DebugExceptionBreakpoint } from '../model';
 import { RecycleList } from '@ali/ide-core-browser/lib/components';
-import Badge from '@ali/ide-core-browser/lib/components/badge';
+import { Badge } from '@ali/ide-components';
 
 export interface BreakpointItem {
   name: string;
