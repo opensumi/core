@@ -3,7 +3,8 @@
   height:100%;
   font-size: 12px;
   overflow: hidden;
-  margin: 16px 64px 24px 64px;
+  padding: 16px 60px 0 60px;
+  box-sizing: border-box;
   .preference_noResults{
     font-size:13px;
     padding:20px;
@@ -14,12 +15,16 @@
     position: relative;
     justify-content: space-between;
     align-items: center;
-    padding-right:20px;
 
     height: 40px;
     .search_pref {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-grow:1;
-      max-width: 500px;
+      align-self: flex-end;
+      max-width: 400px;
       input {
         width:100%;
       }
@@ -39,20 +44,25 @@
   .preferences_body {
     height:calc(100% - 40px);
     position: relative;
-    padding-left: 150px;
+    padding-left: 155px;
     .preferences_indexes {
-      border-right:1px solid var(--editorGroupHeader-tabsBorder);
       position: absolute;
-      width: 150px;
+      width: 155px;
+      padding-top: 10px;
       height: 100%;
       left: 0;
+      .index_item_wrapper {
+        margin-bottom: 2px;
+      }
       .index_item {
-        padding: 7px 45px 7px 15px;
+        height: 22px;
+        line-height: 22px;
+        padding-left: 9px;
         cursor: pointer;
         white-space: nowrap;
 
         > span {
-          margin-right:10px;
+          margin-right:5px;
           display:inline-block;
           font-size: 1em;
         }
@@ -68,6 +78,7 @@
       .preference_section_link {
         > div {
           padding: 5px 5px 5px 20px;
+          padding-left: 25px;
           color: var(--titleBar-inactiveForeground);
           overflow: hidden;
           white-space: nowrap;
@@ -86,7 +97,7 @@
       user-select: text;
     }
     .preference_section{
-      padding:15px 20px 0 5px;
+      padding:15px 20px 0 10px;
       .section_title{
         font-size:14px;
         font-weight:bold;
