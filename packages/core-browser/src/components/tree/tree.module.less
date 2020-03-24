@@ -42,13 +42,19 @@
   }
 
   &.mod_selected {
-    color: var(--kt-tree-inactiveSelectionForeground);
+    color: var(--kt-tree-inactiveSelectionForeground) !important;
     background: var(--kt-tree-inactiveSelectionBackground);
+    .expansion_toggle, .treenode_description {
+      color: var(--kt-tree-inactiveSelectionForeground) !important;
+    }
   }
 
   &.mod_focused {
-    color: var(--kt-tree-activeSelectionForeground);
+    color: var(--kt-tree-activeSelectionForeground) !important;
     background: var(--kt-tree-activeSelectionBackground);
+    .expansion_toggle, .treenode_description {
+      color: var(--kt-tree-activeSelectionForeground) !important;
+    }
   }
 
   &.mod_invalid {
