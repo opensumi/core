@@ -393,6 +393,7 @@ export const localizationBundle = {
     'terminal.maximum': 'Maximum Terminal Panel',
     'terminal.or': 'Or',
     'terminal.search': 'Search',
+    'terminal.search.next': 'Search Next',
 
     'terminal.menu.search': 'Search',
     'terminal.menu.split': 'Split',
