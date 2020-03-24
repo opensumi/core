@@ -112,7 +112,7 @@ export const PreferencesIndexes = ({groups, scope, search}: {groups: ISettingGro
 
           const sections = preferenceService.getSections(id, scope, search);
 
-          return (<div key={`${id} - ${title}`}>
+          return (<div key={`${id} - ${title}`} className={styles.index_item_wrapper}>
             <div key={`${id} - ${title}`} className={classnames({
               [styles.index_item]: true,
               [styles.activated]: preferenceService.currentGroup === id,
