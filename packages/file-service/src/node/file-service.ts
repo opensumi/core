@@ -460,7 +460,6 @@ export class FileService extends RPCService implements IFileService {
    * Current policy: sends * all * Provider onDidChangeFile events to * all * clients and listeners
    */
   fireFilesChange(e: FileChangeEvent) {
-    console.log('fireFilesChange', e)
     e = (e || []).filter(file => {
       const uri = new URI(file.uri);
       const uriString = uri.withoutScheme().toString();
@@ -478,8 +477,6 @@ export class FileService extends RPCService implements IFileService {
       changes: e,
     });
       if (this.rpcClient) {
-      console.log('this.rpcClient', this.rpcClient)
-      console.log('filesChange msg', e)
       this.rpcClient.forEach((client) => {
         client.onDidFilesChanged({
           changes: e
