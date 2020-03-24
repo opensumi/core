@@ -1,7 +1,7 @@
 import * as React from 'react';
 import clx from 'classnames';
 
-import * as styles from './style.module.less';
+import './styles.less';
 
 import { defaultIconfont } from './iconfont/iconMap';
 
@@ -128,14 +128,14 @@ export function Icon<T>(
     title={tooltip}
     onClick={onClick}
     className={clx(
-      styles.icon,
+      'kt-icon',
       iconClx,
       className,
       {
-        [styles.loading]: loading,
-        [styles.disabled]: !!disabled,
-        [styles[size]]: !!size,
-        [styles.clickable]: !!onClick,
+        'kt-icon-loading': loading,
+        'kt-icon-disabled': !!disabled,
+        [`kt-icon-${size}`]: !!size,
+        'kt-icon-clickable': !!onClick,
       },
     )}
     />;
