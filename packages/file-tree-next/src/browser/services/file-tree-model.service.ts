@@ -3,7 +3,7 @@ import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNode
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
-import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@ali/ide-core-browser';
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
@@ -11,8 +11,8 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { observable, runInAction } from 'mobx';
 import { IFileTreeAPI } from '../../common';
-import * as styles from '../file-tree-node.module.less';
 import { DragAndDropService } from './file-tree-dnd.service';
+import * as styles from '../file-tree-node.module.less';
 
 export interface IFileTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -20,6 +20,9 @@ export interface IFileTreeHandle extends IRecycleTreeHandle {
 
 @Injectable()
 export class FileTreeModelService {
+
+  static FILE_TREE_SNAPSHOT_KEY = 'FILE_TREE_SNAPSHOT';
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -43,6 +46,9 @@ export class FileTreeModelService {
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
+
+  @Autowired(StorageProvider)
+  private readonly storageProvider: StorageProvider;
 
   private _treeModel: TreeModel;
   private _dndService: DragAndDropService;
@@ -71,6 +77,8 @@ export class FileTreeModelService {
   private _currentRelativeUriContextKey: IContextKey<string>;
   private _currentContextUriContextKey: IContextKey<string>;
   private _contextMenuResourceContext: ResourceContextKey;
+
+  private disposableCollection: DisposableCollection = new DisposableCollection();
 
   @observable.shallow
   validateMessage: ValidateMessage | undefined;
@@ -136,9 +144,26 @@ export class FileTreeModelService {
     // 根据是否为多工作区创建不同根节点
     const root = (await this.fileTreeService.resolveChildren())[0];
     this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
+    const explorerStorage: IStorage =  await this.storageProvider(STORAGE_NAMESPACE.EXPLORER);
+    // 获取上次文件树的状态
+    const snapshot = explorerStorage.get(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    if (snapshot) {
+      this._treeModel.loadTreeState(snapshot);
+    }
     this.initDecorations(root);
     // _dndService依赖装饰器逻辑加载
     this._dndService = this.injector.get<any>(DragAndDropService, [this]);
+    const treeStateWatcher = this._treeModel.getTreeStateWatcher();
+    this.disposableCollection.push(treeStateWatcher.onDidChange(() => {
+      explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, treeStateWatcher.toString());
+    }));
+    this.disposableCollection.push(this.fileTreeService.onNodeRefreshed(() => {
+      // 尝试恢复树
+      const snapshot = explorerStorage.get(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+      if (snapshot) {
+        this._treeModel.loadTreeState(snapshot);
+      }
+    }));
   }
 
   initDecorations(root) {
@@ -191,7 +216,11 @@ export class FileTreeModelService {
       // 根节点不能选中
       return;
     }
-    this.preContextMenuFocusedFile = null;
+    if (this.preContextMenuFocusedFile) {
+      this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
+      this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
+      this.preContextMenuFocusedFile = null;
+    }
     if (target) {
       if (this.selectedFiles.length > 0) {
         this.selectedFiles.forEach((file) => {
@@ -236,10 +265,10 @@ export class FileTreeModelService {
         this.focusedDecoration.addTarget(target);
         this._focusedFile = target;
         this._selectedFiles.push(target);
-        // 通知视图更新
-        this.treeModel.dispatchChange();
       }
     }
+    // 通知视图更新
+    this.treeModel.dispatchChange();
   }
 
   // 选中范围内的所有节点
@@ -280,6 +309,8 @@ export class FileTreeModelService {
   }
 
   handleContextMenu = (ev: React.MouseEvent, file?: File | Directory) => {
+    ev.stopPropagation();
+
     const { x, y } = ev.nativeEvent;
     if (file) {
       this.activeFileFocusedDecoration(file, true);
@@ -294,11 +325,7 @@ export class FileTreeModelService {
       nodes = [this.treeModel.root as Directory];
       node = this.treeModel.root as Directory;
     } else {
-      if (this.focusedFile) {
-        node = this.focusedFile;
-      } else {
-        node = nodes[0];
-      }
+      node = file;
     }
 
     this.setFileTreeContextKey(node);
@@ -483,7 +510,7 @@ export class FileTreeModelService {
 
   private proxyPrompt = (promptHandle: RenamePromptHandle | NewPromptHandle) => {
     const commit = async (newName) => {
-      if (newName.trim() === '' && !!this.validateMessage) {
+      if (newName.trim() === '' || !!this.validateMessage) {
         return true;
       }
       if (promptHandle instanceof RenamePromptHandle) {
@@ -534,14 +561,14 @@ export class FileTreeModelService {
   async newFilePrompt(uri: URI) {
     const path = await this.getFileTreeNodePathByUri(uri);
     if (path) {
-      this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(path, TreeNodeType.TreeNode));
+      this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(path));
     }
   }
 
   async newDirectoryPrompt(uri: URI) {
     const path = await this.getFileTreeNodePathByUri(uri);
     if (path) {
-      this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(path, TreeNodeType.CompositeTreeNode));
+      this.proxyPrompt(await this.fileTreeHandle.promptNewCompositeTreeNode(path));
     }
   }
 
@@ -560,7 +587,7 @@ export class FileTreeModelService {
 
   }
 
-  async compare() {
+  async compare(pre: URI, next: URI) {
 
   }
 

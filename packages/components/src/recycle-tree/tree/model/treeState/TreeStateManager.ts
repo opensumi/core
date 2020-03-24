@@ -35,7 +35,6 @@ export class TreeStateManager {
   private stashKeyframes: Map<number, StashKeyFrameFlag> | null;
   private stashLockingItems: Set<TreeNode> = new Set();
 
-  private onDidChangeScrollOffsetEmitter: Emitter<number> = new Emitter();
   private onDidLoadStateEmitter: Emitter<void> = new Emitter();
   private onChangeScrollOffsetEmitter: Emitter<number> = new Emitter();
   private onDidChangeExpansionStateEmitter: Emitter<IExpansionStateChange> = new Emitter();
@@ -54,7 +53,7 @@ export class TreeStateManager {
 
   public saveScrollOffset(scrollOffset: number) {
     this._scrollOffset = scrollOffset;
-    this.onDidChangeScrollOffsetEmitter.fire(scrollOffset);
+    this.onChangeScrollOffsetEmitter.fire(scrollOffset);
   }
 
   get onDidLoadState(): Event<void> {

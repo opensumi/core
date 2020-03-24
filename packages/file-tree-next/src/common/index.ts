@@ -10,6 +10,7 @@ export interface IFileTreeAPI {
   mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<boolean>;
   mv(oldUri: URI , newUri: URI, isDirectory?: boolean): Promise<boolean>;
   resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory): Promise<(File | Directory)[]>;
+  resolveNodeByPath(tree: ITree, path: string, parent?: Directory): Promise<File | Directory | undefined>;
 }
 
 export class FileTreeExpandedStatusUpdateEvent extends BasicEvent<{uri: URI, expanded: boolean}> {}

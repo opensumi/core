@@ -1,4 +1,4 @@
-import { ITreeNodeOrCompositeTreeNode, ITreeNode, ICompositeTreeNode, TreeNodeEvent, IWatcherEvent, MetadataChangeType, ITreeWatcher, IMetadataChange, ITree, WatchEvent, TreeNodeType  } from '../types';
+import { ITreeNodeOrCompositeTreeNode, ITreeNode, ICompositeTreeNode, TreeNodeEvent, IWatcherEvent, MetadataChangeType, ITreeWatcher, IMetadataChange, ITree, WatchEvent, TreeNodeType, TopDownIteratorCallback  } from '../types';
 import { Event, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IWatcherCallback, IWatchTerminator, IWatcherInfo } from '../types';
@@ -22,6 +22,8 @@ function spliceTypedArray(arr: Uint32Array, start: number, deleteCount: number =
   a.set(arr.slice(start + deleteCount, arr.length), (start + (items ? items.length : 0)));
   return a;
 }
+
+export type TreeNodeOrCompositeTreeNode = TreeNode | CompositeTreeNode;
 
 export class TreeNode implements ITreeNode {
   public static nextId = (() => {
@@ -605,10 +607,12 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     });
 
     const rawItems = await this._tree.resolveChildren(this) || [];
+
     if (this._children) {
       // 重置节点分支
       this.shrinkBranch(this);
     }
+
     const flatTree = new Uint32Array(rawItems.length);
     this._children = Array(rawItems.length);
     for (let i = 0; i < rawItems.length; i++) {
@@ -628,7 +632,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       this.watchTerminator(this.path);
     }
     this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
-
     if (this.hardReloadPResolver) {
       this.hardReloadPResolver();
     }
@@ -673,26 +676,24 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           (child as CompositeTreeNode).dispose();
         }
       }
-      await this.hardReloadChildren();
       // 如果当前变化的节点已在数据视图（并非滚动到不可见区域）中不可见，则将该节点折叠，待下次更新即可，
-      if (!this.isVisibleAtSurface(this)) {
+      if (!this.isItemVisibleAtRootSurface(this)) {
         this.isExpanded = false;
+        this._children = null;
       } else {
+        await this.hardReloadChildren();
         this.expandBranch(this);
       }
     }
     this.watcher.notifyDidProcessWatchEvent(this, event);
   }
 
-  private isVisibleAtSurface(item: TreeNode) {
-    let parent = item.parent;
-    while (parent) {
-      if (!parent.expanded) {
-        return false;
-      }
+  private isItemVisibleAtRootSurface(node: TreeNode) {
+    let parent: ITreeNodeOrCompositeTreeNode = node;
+    while (parent.parent) {
       parent = parent.parent;
     }
-    return true;
+    return (parent as CompositeTreeNode).isItemVisibleAtSurface(node);
   }
 
   /**
@@ -842,4 +843,47 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   public getTreeNodeById(id: number) {
     return TreeNode.getTreeNodeById(id);
   }
+
+  /**
+   * 从指定节点开始遍历所有节点
+   * @param {TopDownIteratorCallback} callback
+   * @param {CompositeTreeNode} [startingPoint=this]
+   * @memberof CompositeTreeNode
+   */
+  public async iterateTopDown(callback: TopDownIteratorCallback, startingPoint: CompositeTreeNode = this) {
+    const stack: Array<IterableIterator<(TreeNodeOrCompositeTreeNode)>> = [];
+    let curIterable: IterableIterator<TreeNodeOrCompositeTreeNode>;
+    let curItem: TreeNodeOrCompositeTreeNode = startingPoint;
+    let exited = false;
+    const exit = () => exited = true;
+
+    const stepIn = async () => {
+      if (curItem.type !== TreeNodeType.CompositeTreeNode) {
+        throw new Error(`stepIn can only be called on CompositeTreeNode`);
+      }
+      if (!(curItem as CompositeTreeNode)._children) {
+        await (curItem as CompositeTreeNode).ensureLoaded();
+      }
+      curIterable = (curItem as CompositeTreeNode)._children!.values() as IterableIterator<TreeNodeOrCompositeTreeNode>;
+      stack.push(curIterable);
+      next();
+    };
+
+    const stepOut = async () => {
+      if (stack.length === 1) {
+        throw new Error('Cannot stepOut of startingPoint');
+      }
+      curIterable = stack.pop() as IterableIterator<TreeNodeOrCompositeTreeNode>;
+      await next();
+    };
+
+    const next = async () => {
+      curItem = curIterable.next().value;
+      if (exited) { return; }
+      await callback(curItem, next, stepIn, stepOut, exit);
+    };
+
+    await stepIn();
+  }
+
 }

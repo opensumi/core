@@ -78,7 +78,7 @@ export interface IRecycleTreeProps {
 export interface IRecycleTreeHandle {
   // 新建节点, 相关API在调用前需确保节点无再发生变化，否则易出错
   // 如：文件树中外部文件变化同步到Tree中事件还未处理结束，此时需等待事件处理结束
-  promptNewTreeNode(at: string | CompositeTreeNode, type: TreeNodeType): Promise<NewPromptHandle>;
+  promptNewTreeNode(at: string | CompositeTreeNode): Promise<NewPromptHandle>;
   // 新建可折叠节点
   promptNewCompositeTreeNode(at: string | CompositeTreeNode): Promise<NewPromptHandle>;
   // 重命名节点
@@ -103,7 +103,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private _promptHandle: NewPromptHandle | RenamePromptHandle;
 
-  private idxTorendererPropsCache: Map<number, INodeRendererProps> = new Map();
+  private idxToRendererPropsCache: Map<number, INodeRendererProps> = new Map();
   private listRef = React.createRef<FixedSizeList>();
   private disposables: DisposableCollection = new DisposableCollection();
 
@@ -145,7 +145,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         }
       }
       this.newPromptInsertionIndex = newFilePromptInsertionIndex;
-      this.idxTorendererPropsCache.clear();
+      this.idxToRendererPropsCache.clear();
       // 更新React组件
       this.forceUpdate(resolver);
     };
@@ -180,7 +180,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private async promptNew(pathOrTreeNode: string | CompositeTreeNode, type: TreeNodeType): Promise<NewPromptHandle> {
+  private async promptNew(pathOrTreeNode: string | CompositeTreeNode, type: TreeNodeType = TreeNodeType.TreeNode): Promise<NewPromptHandle> {
     const { root } = this.props.model;
     let node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
@@ -210,8 +210,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   // 使用箭头函数绑定当前this
-  private promptNewTreeNode = (pathOrTreeNode: string | CompositeTreeNode, type: TreeNodeType): Promise<NewPromptHandle> => {
-    return this.promptNew(pathOrTreeNode, type);
+  private promptNewTreeNode = (pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle> => {
+    return this.promptNew(pathOrTreeNode);
   }
 
   private promptNewCompositeTreeNode = (pathOrTreeNode: string | CompositeTreeNode): Promise<NewPromptHandle> => {
@@ -331,7 +331,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   private getItemAtIndex = (index: number): INodeRendererProps => {
-    let cached = this.idxTorendererPropsCache.get(index);
+    let cached = this.idxToRendererPropsCache.get(index);
     if (!cached) {
       const promptInsertionIdx = this.newPromptInsertionIndex;
       const { root } = this.props.model;
@@ -369,7 +369,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           } as any;
         }
       }
-      this.idxTorendererPropsCache.set(index, cached!);
+      this.idxToRendererPropsCache.set(index, cached!);
     }
     return cached!;
   }

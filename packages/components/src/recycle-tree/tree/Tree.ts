@@ -1,16 +1,20 @@
 import { TreeNode, CompositeTreeNode } from './TreeNode';
-import { Emitter, WaitUntilEvent, DisposableCollection, Mutable } from '@ali/ide-core-common';
+import { Emitter, DisposableCollection, Mutable } from '@ali/ide-core-common';
 import { ITreeNodeOrCompositeTreeNode, ITree } from '../types';
 
 export abstract class Tree implements ITree {
   protected _root: CompositeTreeNode | undefined;
   protected readonly onChangedEmitter = new Emitter<void>();
-  protected readonly onNodeRefreshedEmitter = new Emitter<CompositeTreeNode & WaitUntilEvent>();
+  protected readonly onNodeRefreshedEmitter = new Emitter<CompositeTreeNode>();
   protected readonly toDispose = new DisposableCollection();
 
   protected nodes: {
     [id: string]: Mutable<TreeNode> | undefined,
   } = {};
+
+  get onNodeRefreshed() {
+    return this.onNodeRefreshedEmitter.event;
+  }
 
   dispose(): void {
     this.toDispose.dispose();

@@ -58,6 +58,13 @@ export class FileTreeAPI implements IFileTreeAPI {
     }
   }
 
+  async resolveNodeByPath(tree: ITree, path: string, parent?: Directory) {
+    const  file = await this.fileServiceClient.getFileStat(path);
+    if (file) {
+      return this.toNode(tree, file, parent);
+    }
+  }
+
   toNodes(tree: ITree, filestat: FileStat, parent?: Directory) {
     // 如果为根目录，则返回其节点自身，否则返回子节点
     if (!parent) {
