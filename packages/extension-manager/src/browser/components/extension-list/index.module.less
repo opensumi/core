@@ -8,13 +8,16 @@
 }
 
 .selected {
-  background: var(--list-activeSelectionBackground);
+  :global(.kt-extension-raw) {
+    background: var(--list-activeSelectionBackground);
+  }
+
   :global(.kt-button) {
-    color: var(--kt-whiteGhostButton-foreground);
+    color: currentColor;
   }
   :global(.kt-extension-raw-description),
   :global(.kt-extension-raw) {
-    color: var(--kt-whiteGhostButton-foreground);
+    color: var(--list-activeSelectionForeground);
   }
 }
 
