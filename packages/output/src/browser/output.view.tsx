@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, localize, CommandService, EDITOR_COMMANDS, isElectronRenderer } from '@ali/ide-core-browser';
+import { useInjectable, localize, CommandService, EDITOR_COMMANDS, isElectronRenderer, ViewState } from '@ali/ide-core-browser';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
 import { OutputService } from './output.service';
@@ -27,10 +27,14 @@ const OutputTemplate: React.FC<{ data: IOutputItem; index: number }> = ({ data: 
   );
 };
 
-export const Output = observer(() => {
+export const Output = observer(({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);
   const commandService = useInjectable<CommandService>(CommandService);
   const [rawLines, setRawLines] = React.useState(outputService.getChannels()[0]?.getLines() || []);
+
+  useEffect(() => {
+    outputService.viewHeight = String(viewState.height);
+  }, [viewState.height]);
 
   useEffect(() => {
     setRawLines(outputService.selectedChannel?.getLines());
@@ -127,6 +131,7 @@ export const ChannelSelector = observer(() => {
       value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
       className={styles.select}
       size='small'
+      maxHeight={outputService.viewHeight}
       onChange={handleChange}
     >{channelOptionElements}</Select>
   );

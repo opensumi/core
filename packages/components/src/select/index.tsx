@@ -13,6 +13,7 @@ interface ISelectProps {
   value?: string;
   disabled?: boolean;
   onChange?: (value: string) => void;
+  maxHeight?: string;
   [prop: string]: any;
 }
 
@@ -84,10 +85,10 @@ export const Select: React.FC<ISelectProps> = ({
   optionLabelProp,
   style,
   className,
+  maxHeight,
 }) => {
   const [open, setOpen] = useState(false);
   const [select, setSelect] = useState(value);
-
   useEffect(() => {
     if (onChange && select && select !== value) {
       onChange(select);
@@ -129,7 +130,7 @@ export const Select: React.FC<ISelectProps> = ({
       <Icon iconClass={getDefaultIcon('down')} />
     </p>
 
-    <div className={optionsContainerClasses}>
+    <div className={optionsContainerClasses} style={{ maxHeight: `${maxHeight}px` }}>
       {options && options.map((v) => {
         if (typeof v === 'string') {
           return <Option value={v} key={v} className={classNames({
