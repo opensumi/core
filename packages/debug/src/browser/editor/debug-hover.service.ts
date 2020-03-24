@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { DebugHoverSource, ExpressionVariable } from './debug-hover-source';
 import { ExpressionItem, DebugVariable } from '../console/debug-console-items';
-import { TreeNode } from '@ali/ide-core-browser';
+import { TreeNode, uuid } from '@ali/ide-core-browser';
 
 @Injectable()
 export class DebugHoverService {
@@ -15,6 +15,9 @@ export class DebugHoverService {
 
   @observable.shallow
   elements: DebugVariable[] = [];
+
+  @observable.shallow
+  stringElements: string[] = [];
 
   @observable.shallow
   nodes: TreeNode[] = [];
@@ -117,15 +120,39 @@ export class DebugHoverService {
     if (!expression) {
       return;
     }
-    this.value = expression.name;
-    this.elements = await expression.getChildren() as DebugVariable[];
+
+    if (expression.name.startsWith('\"')) {
+      this.value = '';
+      this.elements = [];
+      this.stringElements = observable.array(expression.name.split('\n'));
+    } else {
+      this.value = expression.name;
+      this.elements = await expression.getChildren() as DebugVariable[];
+    }
+
     this.resetStatus();
-    this.initNodes(this.elements, 0);
+
+    if (this.elements.length > 0) {
+      this.initNodes(this.elements, 0);
+    } else {
+      this.initStringNodes(this.stringElements);
+    }
   }
 
   @action
   initNodes(elements: DebugVariable[], depth: number) {
     this.nodes = this.extractNodes(elements, 0, depth);
+  }
+
+  @action
+  initStringNodes(elements: string[]) {
+    this.nodes = elements.map((value) => {
+      return {
+        id: uuid(),
+        name: value,
+        parent: undefined,
+      };
+    });
   }
 
   @action
