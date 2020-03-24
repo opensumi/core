@@ -1,13 +1,13 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema, localize, URI } from '@ali/ide-core-common';
-import { Logger, ClientAppContribution, IContextKeyService, PreferenceContribution } from '@ali/ide-core-browser';
+import { ClientAppContribution, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCMPanel } from './scm.view';
-import { SCMService, scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE } from '../common';
+import { scmContainerId, IDirtyDiffWorkbenchController, OPEN_DIRTY_DIFF_WIDGET, GOTO_NEXT_CHANGE, GOTO_PREVIOUS_CHANGE } from '../common';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
@@ -21,32 +21,23 @@ export const SCM_ACCEPT_INPUT: Command = {
 
 @Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution)
 export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution {
-  @Autowired()
-  protected readonly logger: Logger;
-
-  @Autowired(IContextKeyService)
-  protected readonly contextService: IContextKeyService;
-
   @Autowired(CommandService)
-  protected readonly commandService: CommandService;
-
-  @Autowired(SCMService)
-  protected readonly scmService: SCMService;
+  private readonly commandService: CommandService;
 
   @Autowired(SCMBadgeController)
-  protected readonly statusUpdater: SCMBadgeController;
+  private readonly statusUpdater: SCMBadgeController;
 
   @Autowired(SCMStatusBarController)
-  protected readonly statusBarController: SCMStatusBarController;
+  private readonly statusBarController: SCMStatusBarController;
 
   @Autowired(WorkbenchEditorService)
-  editorService: WorkbenchEditorService;
+  private readonly editorService: WorkbenchEditorService;
 
   @Autowired(IDirtyDiffWorkbenchController)
-  protected readonly dirtyDiffWorkbenchController: DirtyDiffWorkbenchController;
+  private readonly dirtyDiffWorkbenchController: DirtyDiffWorkbenchController;
 
   @Autowired(EditorCollectionService)
-  editorCollectionService: EditorCollectionService;
+  private readonly editorCollectionService: EditorCollectionService;
 
   private toDispose = new Disposable();
 

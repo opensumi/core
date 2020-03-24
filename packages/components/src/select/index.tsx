@@ -3,18 +3,17 @@ import { useState, useEffect } from 'react';
 import * as classNames from 'classnames';
 
 import './style.less';
-import { Icon, IconContext } from '../icon';
+import { Icon, getDefaultIcon } from '../icon';
 
 interface ISelectProps {
   className?: string;
   size?: 'large' | 'default' | 'small';
-  opem?: boolean;
   loading?: boolean;
-  placeholder?: string;
   options?: Array<React.ReactNode>;
   value?: string;
   disabled?: boolean;
   onChange?: (value: string) => void;
+  maxHeight?: string;
   [prop: string]: any;
 }
 
@@ -77,7 +76,6 @@ function getLabelWithChildrenProps(value: string | undefined, children: React.Re
 }
 
 export const Select: React.FC<ISelectProps> = ({
-  placeholder,
   disabled,
   options,
   size = 'default',
@@ -87,11 +85,10 @@ export const Select: React.FC<ISelectProps> = ({
   optionLabelProp,
   style,
   className,
+  maxHeight,
 }) => {
-  const { getIcon } = React.useContext(IconContext);
   const [open, setOpen] = useState(false);
   const [select, setSelect] = useState(value);
-
   useEffect(() => {
     if (onChange && select && select !== value) {
       onChange(select);
@@ -130,10 +127,10 @@ export const Select: React.FC<ISelectProps> = ({
   return (<div className={classNames('kt-select-container', className)}>
     <p className={selectClasses} onClick={toggleOpen} style={style}>
       <span className={'kt-select-option'}>{(children && getLabelWithChildrenProps(value, children)) || options && (React.isValidElement(options[0]) ? options[0].props?.value : options[0])}</span>
-      <Icon iconClass={getIcon('down')} />
+      <Icon iconClass={getDefaultIcon('down')} />
     </p>
 
-    <div className={optionsContainerClasses}>
+    <div className={optionsContainerClasses} style={{ maxHeight: `${maxHeight}px` }}>
       {options && options.map((v) => {
         if (typeof v === 'string') {
           return <Option value={v} key={v} className={classNames({

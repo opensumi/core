@@ -1,3 +1,4 @@
+// tslint:disable:no-console
 import { MockedMonacoUri } from '../common/uri';
 import { Disposable, Emitter } from '@ali/ide-core-common';
 import { EOL, EndOfLineSequence } from '@ali/ide-editor';
@@ -5,16 +6,19 @@ import { EOL, EndOfLineSequence } from '@ali/ide-editor';
 let id = 1;
 
 const eolStringMap = new Map<number, string>([
-  [ EndOfLineSequence.LF, EOL.LF ],
-  [ EndOfLineSequence.CRLF, EOL.CRLF ],
+  [EndOfLineSequence.LF, EOL.LF],
+  [EndOfLineSequence.CRLF, EOL.CRLF],
 ]);
 
 export class MockedMonacoModel extends Disposable implements monaco.editor.ITextModel {
-
   id: string;
   _lines: string[];
   uri: monaco.Uri;
   language: string;
+  _isDisposed: boolean = false;
+
+  // 获取上一个版本内容供 editorWorkerService 用
+  oldValue: string;
 
   _onDidChangeContent = new Emitter<monaco.editor.IModelContentChangedEvent>();
   onDidChangeContent = this._onDidChangeContent.event;
@@ -62,6 +66,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   }
   setValue(newValue: string): void {
     const oldValue = this.value;
+    this.oldValue = oldValue;
     this.value = newValue;
     this.versionId++;
 
@@ -90,7 +95,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   }
 
   getValueLength(eol?: monaco.editor.EndOfLinePreference | undefined, preserveBOM?: boolean | undefined): number {
-    return 0;
+    return this.value ? this.value.length : 0;
   }
   getValueInRange(range: monaco.IRange, eol?: monaco.editor.EndOfLinePreference | undefined): string {
     throw new Error('Method not implemented.');
@@ -144,7 +149,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     return { startLineNumber: 4, startColumn: 1, endLineNumber: 9, endColumn: 8 } as monaco.Range;
   }
   isDisposed(): boolean {
-    throw new Error('Method not implemented.');
+    return this._isDisposed;
   }
 
   findMatches(searchString: any, searchScope: any, isRegex: any, matchCase: any, wordSeparators: any, captureMatches: any, limitResultCount?: any) {
@@ -167,8 +172,14 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     throw new Error('Method not implemented.');
   }
   deltaDecorations(oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[], ownerId?: number | undefined): string[] {
-    throw new Error('Method not implemented.');
+    console.log('deltaDecorations was called');
+    if (oldDecorations.length === 0 && newDecorations.length === 0) {
+      // nothing to do
+      return [];
+    }
+    return newDecorations.map((_, i) => 'deco_IntervalNode' + i);
   }
+
   getDecorationOptions(id: string): monaco.editor.IModelDecorationOptions | null {
     throw new Error('Method not implemented.');
   }
@@ -202,7 +213,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     this._onDidChangeOptions.fire(this.options);
   }
   detectIndentation(defaultInsertSpaces: boolean, defaultTabSize: number): void {
-    return ;
+    return;
   }
   pushStackElement = jest.fn();
 

@@ -38,7 +38,7 @@ import { TestEditorDocumentProvider, TestResourceResolver } from '../../../edito
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser/types';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
-import { IResource, IEditorOpenType } from '../../../editor/lib';
+import { IResource, IEditorOpenType } from '@ali/ide-editor';
 import { TypeConverts } from '@ali/ide-kaitian-extension/lib/common/vscode/converter';
 
 const emitterA = new Emitter<any>();

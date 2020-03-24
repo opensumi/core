@@ -1,5 +1,5 @@
 import { Disposable, IDisposable, debounce } from '@ali/ide-core-common';
-import * as styles from './styles.module.less';
+// import * as styles from './styles.module.less';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
   public domNode: HTMLElement;
@@ -207,8 +207,6 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
   private wrap: HTMLDivElement;
 
   protected _isShow = false;
-
-  private init = false;
 
   constructor(
     protected readonly editor: monaco.editor.ICodeEditor,

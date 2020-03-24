@@ -1,3 +1,5 @@
+import { DisposableCollection } from '@ali/ide-core-common';
+
 import { MockSCMProvider } from '../scm-test-util';
 
 import { SCMService, InputValidationType } from '../../src/common';
@@ -5,9 +7,13 @@ import { SCMService, InputValidationType } from '../../src/common';
 describe('scm service', () => {
   let scmService: SCMService;
 
+  const toTearDown = new DisposableCollection();
+
   beforeEach(() => {
     scmService = new SCMService();
   });
+
+  afterEach(() => toTearDown.dispose());
 
   describe('registerSCMProvider', () => {
     it('single repository works', async () => {
@@ -27,7 +33,7 @@ describe('scm service', () => {
 
       // repo selection
       const repoSelectListner = jest.fn();
-      repo.onDidChangeSelection(repoSelectListner);
+      toTearDown.push(repo.onDidChangeSelection(repoSelectListner));
 
       repo.setSelected(false);
       expect(repo.selected).toBeFalsy();
@@ -38,7 +44,7 @@ describe('scm service', () => {
 
       // repo focus
       const repoFocusListener = jest.fn();
-      repo.onDidFocus(repoFocusListener);
+      toTearDown.push(repo.onDidFocus(repoFocusListener));
 
       repo.focus();
       // test for SCMRepository#onDidFocus
@@ -71,7 +77,7 @@ describe('scm service', () => {
 
       // repo0 selection
       const repoSelectListner = jest.fn();
-      scmService.onDidChangeSelectedRepositories(repoSelectListner);
+      toTearDown.push(scmService.onDidChangeSelectedRepositories(repoSelectListner));
       // re-select
       repo0.setSelected(true);
       expect(repo0.selected).toBeTruthy();
@@ -96,7 +102,7 @@ describe('scm service', () => {
       // input value
       expect(scmInput.value).toBe('');
       const inputChangeListener = jest.fn();
-      scmInput.onDidChange(inputChangeListener);
+      toTearDown.push(scmInput.onDidChange(inputChangeListener));
 
       scmInput.value = 'input-value';
       expect(scmInput.value).toBe('input-value');
@@ -107,7 +113,7 @@ describe('scm service', () => {
       // input placeholder
       expect(scmInput.placeholder).toBe('');
       const inputPlacholderChangeListener = jest.fn();
-      scmInput.onDidChangePlaceholder(inputPlacholderChangeListener);
+      toTearDown.push(scmInput.onDidChangePlaceholder(inputPlacholderChangeListener));
 
       scmInput.placeholder = 'input-placeholder';
       expect(scmInput.placeholder).toBe('input-placeholder');
@@ -118,7 +124,7 @@ describe('scm service', () => {
       // input visible
       expect(scmInput.visible).toBeTruthy();
       const inputVisibleListener = jest.fn();
-      scmInput.onDidChangeVisibility(inputVisibleListener);
+      toTearDown.push(scmInput.onDidChangeVisibility(inputVisibleListener));
 
       scmInput.visible = false;
       expect(scmInput.visible).toBeFalsy();
@@ -129,7 +135,7 @@ describe('scm service', () => {
       // input validateInput
       expect(scmInput.validateInput('abc', 0)).resolves.toBeUndefined();
       const inputValidatorListener = jest.fn();
-      scmInput.onDidChangeValidateInput(inputValidatorListener);
+      toTearDown.push(scmInput.onDidChangeValidateInput(inputValidatorListener));
 
       // test for input validator
       const invalidRet = {
@@ -151,10 +157,10 @@ describe('scm service', () => {
       const scmProvider2 = new MockSCMProvider(2);
 
       const addRepoListener = jest.fn();
-      scmService.onDidAddRepository(addRepoListener);
+      toTearDown.push(scmService.onDidAddRepository(addRepoListener));
 
       const changeSelectedRepoListener = jest.fn();
-      scmService.onDidChangeSelectedRepositories(changeSelectedRepoListener);
+      toTearDown.push(scmService.onDidChangeSelectedRepositories(changeSelectedRepoListener));
 
       const repo1 = scmService.registerSCMProvider(scmProvider1);
       const repo2 = scmService.registerSCMProvider(scmProvider2);
@@ -182,7 +188,7 @@ describe('scm service', () => {
       expect(changeSelectedRepoListener.mock.calls[1][0][0].provider).toEqual(scmProvider2);
 
       const removeRepoListener = jest.fn();
-      scmService.onDidRemoveRepository(removeRepoListener);
+      toTearDown.push(scmService.onDidRemoveRepository(removeRepoListener));
 
       // 2rd repo disposed
       scmService.repositories[1].dispose();
