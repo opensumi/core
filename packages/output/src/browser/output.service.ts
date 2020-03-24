@@ -25,6 +25,17 @@ export class OutputService extends WithEventBus {
     super();
   }
 
+  @observable
+  private _viewHeight: string;
+
+  set viewHeight(value: string) {
+    this._viewHeight = value;
+  }
+
+  get viewHeight() {
+    return this._viewHeight;
+  }
+
   getChannel(name: string): OutputChannel {
     const existing = this.channels.get(name);
     if (existing) {
