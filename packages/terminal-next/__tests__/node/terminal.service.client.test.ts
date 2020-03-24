@@ -16,12 +16,12 @@ describe('TerminalServiceClientImpl', () => {
     terminalService = injector.get(ITerminalService);
   });
 
-  it('setConnectionClientId 需要正确设置id', () => {
+  it('setConnectionClientId, should be set the id correctly.', () => {
     terminalServiceClient.setConnectionClientId(mockClientId);
     expect((terminalService as any).serviceClientMap.get(mockClientId)).not.toBeUndefined();
   });
 
-  it('可以创建 pty，及常规操作', async () => {
+  it('Should be create pty, and other operations.', async () => {
     const mockId = '1';
     terminalServiceClient.create(mockId, 200, 200, { name: 'test'} );
     const terminal: IPty = (terminalService as any).getTerminal(mockId);
@@ -48,7 +48,7 @@ describe('TerminalServiceClientImpl', () => {
     expect(terminal.cols).toEqual(400);
   });
 
-  it('dispose 可以正常销毁', async () => {
+  it('Should be  disposed.', async () => {
     (process as any).env.IS_DEV = 0;
     const mockId = '2';
     terminalServiceClient.create(mockId, 200, 200, { name: 'test'} );
