@@ -25,12 +25,13 @@ export abstract class PromptHandle {
   constructor() {
     this.$ = document.createElement('input');
     this.$.setAttribute('type', 'text');
+    this.$.setAttribute('name', 'no_keybinding');
     this.ProxiedInput = bindInputElement(this.$);
     this.$.addEventListener('click', this.handleClick);
     this.$.addEventListener('keyup', this.handleKeyup);
     this.$.addEventListener('keydown', this.handleKeydown);
     this.$.addEventListener('focus', this.handleFocus);
-    this.$.addEventListener('blur', this.handleBlur);
+    // this.$.addEventListener('blur', this.handleBlur);
 
     // 可能存在PromptHandle创建后没被使用的情况
   }

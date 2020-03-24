@@ -88,7 +88,7 @@ export interface IRecycleTreeHandle {
   // 折叠节点
   collapseNode(pathOrTreeNode: string | CompositeTreeNode): Promise<void>;
   // 定位节点位置，滚动条将会滚动到对应可视区域
-  ensureVisible(pathOrTreeNode: string | TreeNode | CompositeTreeNode, align?: Align): Promise<void>;
+  ensureVisible(pathOrTreeNode: string | TreeNode | CompositeTreeNode, align?: Align): Promise<TreeNode | undefined>;
   // 获取当前TreeModel
   getModel(): TreeModel;
   // TreeModel变更事件
@@ -132,8 +132,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           if (this.promptHandle.type === TreeNodeType.TreeNode) {
             const parent = this.promptHandle.parent;
             if (parent) {
-              const compositeTreeNodes = parent.getAllTreeNodeByType(TreeNodeType.CompositeTreeNode);
-              newFilePromptInsertionIndex = idx + compositeTreeNodes.length + 1;
+              newFilePromptInsertionIndex = this.getNewPromptInsertIndex(idx, parent);
             } else {
               newFilePromptInsertionIndex = idx + 1;
             }
@@ -163,6 +162,25 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return onePromise;
     };
   })();
+
+  private getNewPromptInsertIndex(startIndex: number, parent: CompositeTreeNode) {
+    let insertIndex: number = startIndex + 1;
+    // 合并文件夹以及深层级子节点
+    for (; insertIndex < parent.branchSize; insertIndex++) {
+      const node = parent.getTreeNodeAtIndex(insertIndex);
+      if (!node) {
+        return insertIndex;
+      }
+      if (CompositeTreeNode.is(node)) {
+        continue;
+      } else if (node?.depth > parent.depth + 1) {
+        continue;
+      } else {
+        return insertIndex;
+      }
+    }
+    return insertIndex;
+  }
 
   public componentDidUpdate(prevProps: IRecycleTreeProps) {
     if (this.props.model !== prevProps.model) {
@@ -261,22 +279,24 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'auto'): Promise<void> => {
+  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'auto'): Promise<TreeNode | undefined> => {
     const { root, state } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
       : pathOrTreeNode;
 
     if (!TreeNode.is(node) || CompositeTreeNode.isRoot(node)) {
-      throw new TypeError(`Object not a valid Node`);
+      // 异常
+      return;
     }
     if (this.scrollIntoView(node as TreeNode, align)) {
       state.excludeFromStash(node);
-      return;
+      return node as TreeNode;
     }
     state.reverseStash();
     await (node.parent as CompositeTreeNode).setExpanded(true);
     this.listRef.current.scrollToItem(root.getIndexAtTreeNode(node), align);
+    return node as TreeNode;
   }
 
   private scrollIntoView(node: TreeNode | CompositeTreeNode, align: Align = 'center'): boolean {

@@ -6,11 +6,14 @@ import { Directory, File } from '../browser/file-tree-nodes';
 export const IFileTreeAPI = Symbol('IFileTreeAPI');
 
 export interface IFileTreeAPI {
-  create(newUri: URI);
+  createFile(newUri: URI): Promise<boolean>;
+  createDirectory(newUri: URI): Promise<boolean>;
+  delete(uri: URI): Promise<boolean>;
   mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<boolean>;
   mv(oldUri: URI , newUri: URI, isDirectory?: boolean): Promise<boolean>;
   resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory): Promise<(File | Directory)[]>;
   resolveNodeByPath(tree: ITree, path: string, parent?: Directory): Promise<File | Directory | undefined>;
+  toNode(tree: ITree, filestat: FileStat, parent?: Directory): Directory | File;
 }
 
 export class FileTreeExpandedStatusUpdateEvent extends BasicEvent<{uri: URI, expanded: boolean}> {}

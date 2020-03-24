@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './file-tree-node.module.less';
-import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, ValidateMessage, VALIDATE_TYPE, RenamePromptHandle } from '@ali/ide-components';
+import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, ValidateMessage, VALIDATE_TYPE, RenamePromptHandle, NewPromptHandle } from '@ali/ide-components';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { getIcon, URI } from '@ali/ide-core-browser';
 import { Directory, File } from './file-tree-nodes';
@@ -118,22 +118,23 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     color: decoration ? decoration.color : '',
     height: FILE_TREE_NODE_HEIGHT,
     lineHeight: `${FILE_TREE_NODE_HEIGHT}px`,
-    paddingLeft: isDirectory ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 5}px`,
+    paddingLeft: isDirectory || (isPrompt && item.type === TreeNodeType.CompositeTreeNode) ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 5}px`,
   } as React.CSSProperties;
 
-  const renderFolderToggle = (node: Directory, clickHandler: any) => {
+  const renderFolderToggle = (node: Directory | PromptHandle, clickHandler: any) => {
     // TODO: loading
     // if (node.isLoading) {
     //   return <Loading />;
     // }
     if (isPrompt && node instanceof PromptHandle) {
-      const isDirectory: boolean = node.type === TreeNodeType.CompositeTreeNode;
+      const isDirectory: boolean = (node as NewPromptHandle).type === TreeNodeType.CompositeTreeNode;
       if (isDirectory) {
         return <div
           className={cls(
             styles.file_tree_node_segment,
             styles.expansion_toggle,
             getIcon('arrow-right'),
+            styles.mod_collapsed,
           )}
         />;
       }
@@ -144,7 +145,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
           styles.file_tree_node_segment,
           styles.expansion_toggle,
           getIcon('arrow-right'),
-          { [`${styles.mod_collapsed}`]: !node.expanded },
+          { [`${styles.mod_collapsed}`]: !(node as Directory).expanded },
         )}
       />;
     }
@@ -217,6 +218,14 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     </div>;
   };
 
+  const renderTwice = (item) => {
+    if (isDirectory) {
+      return renderFolderToggle(item, handlerTwistieClick);
+    } else if (isPrompt) {
+      return renderFolderToggle(item, () => {});
+    }
+  };
+
   return (
     <div
         key={item.id}
@@ -236,7 +245,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
       >
         <div className={cls(styles.file_tree_node_content)}>
-          {(isDirectory && renderFolderToggle(item, handlerTwistieClick))}
+          {renderTwice(item)}
           {renderIcon(item)}
           <div
             className={isPrompt ? styles.file_tree_node_prompt_wrap : styles.file_tree_node_overflow_wrap}

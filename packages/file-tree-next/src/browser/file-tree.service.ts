@@ -9,7 +9,7 @@ import {
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI } from '../common';
-import { FileChange, IFileServiceClient, FileChangeType } from '@ali/ide-file-service/lib/common';
+import { FileChange, IFileServiceClient, FileChangeType, FileStat } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Tree, ITree, WatchEvent, ITreeNodeOrCompositeTreeNode, IWatcherEvent, TreeNodeType } from '@ali/ide-components';
 import { Directory, File } from './file-tree-nodes';
@@ -164,11 +164,15 @@ export class FileTreeService extends Tree {
       if (change?.type === FileChangeType.DELETED) {
         source = change;
         target = changes.find((change) => change.type === FileChangeType.ADDED && new URI(change.uri).displayName === new URI(source.uri).displayName);
-        moveChange.push({source, target});
+        if (target) {
+          moveChange.push({source, target});
+        }
       } else if (change?.type === FileChangeType.ADDED) {
         target = change;
         source = changes.find((change) => change.type === FileChangeType.DELETED && new URI(change.uri).displayName === new URI(target.uri).displayName);
-        moveChange.push({source, target});
+        if (source) {
+          moveChange.push({source, target});
+        }
       }
     }
     return {
@@ -178,7 +182,7 @@ export class FileTreeService extends Tree {
   }
 
   private async onFilesChanged(changes: FileChange[]) {
-    let restChange = this.moveAffectedNodes(changes);
+    let restChange: FileChange[] = await this.moveAffectedNodes(changes);
     // 移除节点
     restChange = this.deleteAffectedNodes(this.getDeletedUris(restChange), restChange);
     // 添加节点, 需要获取节点类型
@@ -192,25 +196,51 @@ export class FileTreeService extends Tree {
     }
   }
 
-  private moveAffectedNodes(changes: FileChange[]) {
+  private async moveAffectedNodes(changes: FileChange[]) {
     const data = this.getMoveChange(changes);
     const { moveChange, restChange } = data;
 
     for (const change of moveChange) {
       const node = this.getNodeByUriString(new URI(change.source.uri).parent.toString());
       if (node) {
-        if (!this.isMutiWorkspace) {
-          const oldRelativePath = new URI(this.workspaceService.workspace!.uri).relative(new URI(change.source.uri))!;
-          const oldPath = new Path(this.root!.path).join(oldRelativePath?.toString()).toString();
-          const newRelativePath = new URI(this.workspaceService.workspace!.uri).relative(new URI(change.target.uri))!;
-          const newPath = new Path(this.root!.path).join(newRelativePath?.toString()).toString();
-          this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
-        } else {
-          // 多工作区处理
-        }
+        await this.moveNode(node, change.source.uri, change.target.uri);
       }
     }
     return restChange;
+  }
+
+  public async moveNode(node: File | Directory, source: string, target: string) {
+    let rootUri;
+    if (!this.isMutiWorkspace) {
+      rootUri = this.workspaceService.workspace?.uri;
+    } else {
+      // 多工作区处理
+      rootUri = (await this.workspaceService.roots).find((root) => {
+        return new URI(root.uri).isEqualOrParent(node.uri);
+      })?.uri;
+    }
+    if (!rootUri) {
+      return;
+    }
+    const oldRelativePath = new URI(rootUri).relative(new URI(source))!;
+    const oldPath = new Path(this.root!.path).join(oldRelativePath?.toString()).toString();
+    const newRelativePath = new URI(rootUri).relative(new URI(target))!;
+    const newPath = new Path(this.root!.path).join(newRelativePath?.toString()).toString();
+    this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
+  }
+
+  public async addNode(node: Directory, newName: string, type: TreeNodeType) {
+    const tempFileStat: FileStat = {
+      uri: node.uri.resolve(newName).toString(),
+      isDirectory: type === TreeNodeType.CompositeTreeNode,
+      isSymbolicLink: false,
+      lastModification: new Date().getTime(),
+    };
+    const addNode = await this.fileTreeAPI.toNode(this as ITree, tempFileStat, node as Directory);
+    if (!!addNode) {
+      // 节点创建失败时，不需要添加
+      this.dispatchWatchEvent(node.path, { type: WatchEvent.Added,  node: addNode, id: node.id});
+    }
   }
 
   private async addAffectedNodes(uris: URI[], changes: FileChange[]) {
@@ -221,11 +251,8 @@ export class FileTreeService extends Tree {
       };
     }).filter((node) => !!node.parent);
     for (const node of nodes) {
-      if (!node.parent) {
-        continue;
-      }
       // 一旦更新队列中已包含该文件，临时剔除删除事件传递
-      if (this.changeEventDispatchQueue.indexOf(node.parent.path) >= 0) {
+      if (!node.parent || this.changeEventDispatchQueue.indexOf(node.parent.path) >= 0) {
         continue ;
       }
       const addNode = await this.fileTreeAPI.resolveNodeByPath(this as ITree, node.uri.toString(), node.parent as Directory);
@@ -237,11 +264,11 @@ export class FileTreeService extends Tree {
     return changes.filter((change) => change.type !== FileChangeType.ADDED);
   }
 
-  private deleteAffectedNodes(uris: URI[], changes: FileChange[]) {
+  public deleteAffectedNodes(uris: URI[], changes: FileChange[] = []) {
     const nodes = uris.map((uri) => this.getNodeByUriString(uri.toString())).filter((node) => !!node);
     for (const node of nodes) {
       // 一旦更新队列中已包含该文件，临时剔除删除事件传递
-      if (node?.parent && this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
+      if (!node?.parent || this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
         continue ;
       }
       this.dispatchWatchEvent(node!.parent!.path, { type: WatchEvent.Removed,  path: node!.path });

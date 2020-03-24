@@ -200,7 +200,6 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
       [`kt-input-${size}`]: size,
       ['kt-input-disabled']: props.disabled,
     });
-
     return (
       <div className={inputClx} style={wrapperStyle}>
         {addonRender(addonBefore, 'kt-input-addon-before')}

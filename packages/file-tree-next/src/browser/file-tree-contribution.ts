@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, KeybindingRegistry, ToolbarRegistry } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, localize, CommandContribution, KeybindingContribution, TabBarToolbarContribution, FILE_COMMANDS, CommandRegistry, CommandService, SEARCH_COMMANDS, isWindows, IElectronNativeDialogService, ToolbarRegistry } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -80,7 +80,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
     if (handler) {
       handler.onActivate(() => {
-        // this.fileTreeModelService.performLocationOnHandleShow();
+        this.fileTreeModelService.performLocationOnHandleShow();
       });
     }
   }
@@ -223,9 +223,9 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (locationUri && this.isRendered) {
           const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
           if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
-            // this.fileTreeModelService.locationOnShow(locationUri);
+            this.fileTreeModelService.locationOnShow(locationUri);
           } else {
-            // this.fileTreeModelService.location(locationUri);
+            this.fileTreeModelService.location(locationUri);
           }
         }
       },
@@ -267,13 +267,37 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
-      execute: async (uri) => {
-        this.fileTreeModelService.newFilePrompt(uri);
+      execute: async (uri, uris) => {
+        if (uri) {
+          this.fileTreeModelService.newFilePrompt(uri);
+        } else if (uris && uris.length > 0) {
+          this.fileTreeModelService.newFilePrompt(uris[0]);
+        } else {
+          let rootUri: URI;
+          if (!this.fileTreeService.isMutiWorkspace) {
+            rootUri = new URI(this.workspaceService.workspace?.uri);
+          } else {
+            rootUri = new URI((await this.workspaceService.roots)[0].uri);
+          }
+          this.fileTreeModelService.newFilePrompt(rootUri);
+        }
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
-      execute: async (uri) => {
-        this.fileTreeModelService.newDirectoryPrompt(uri);
+      execute: async (uri, uris) => {
+        if (uri) {
+          this.fileTreeModelService.newDirectoryPrompt(uri);
+        } else if (uris && uris.length > 0) {
+          this.fileTreeModelService.newDirectoryPrompt(uris[0]);
+        } else {
+          let rootUri: URI;
+          if (!this.fileTreeService.isMutiWorkspace) {
+            rootUri = new URI(this.workspaceService.workspace?.uri);
+          } else {
+            rootUri = new URI((await this.workspaceService.roots)[0].uri);
+          }
+          this.fileTreeModelService.newDirectoryPrompt(rootUri);
+        }
       },
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COMPARE_SELECTED, {
@@ -281,7 +305,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (uris && uris.length) {
           const currentEditor = this.editorService.currentEditor;
           if (currentEditor && currentEditor.currentUri) {
-            this.fileTreeModelService.compare(uris[0], currentEditor.currentUri);
+            this.fileTreeService.compare(uris[0], currentEditor.currentUri);
           }
         }
       },
@@ -421,44 +445,44 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
   }
 
-  registerKeybindings(bindings: KeybindingRegistry) {
+  // registerKeybindings(bindings: KeybindingRegistry) {
 
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.COPY_FILE.id,
-      keybinding: 'ctrlcmd+c',
-      when: 'filesExplorerFocus && !inputFocus',
-    });
+  //   bindings.registerKeybinding({
+  //     command: FILE_COMMANDS.COPY_FILE.id,
+  //     keybinding: 'ctrlcmd+c',
+  //     when: 'filesExplorerFocus && !inputFocus',
+  //   });
 
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.PASTE_FILE.id,
-      keybinding: 'ctrlcmd+v',
-      when: 'filesExplorerFocus && !inputFocus',
-    });
+  //   bindings.registerKeybinding({
+  //     command: FILE_COMMANDS.PASTE_FILE.id,
+  //     keybinding: 'ctrlcmd+v',
+  //     when: 'filesExplorerFocus && !inputFocus',
+  //   });
 
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.CUT_FILE.id,
-      keybinding: 'ctrlcmd+x',
-      when: 'filesExplorerFocus && !inputFocus',
-    });
+  //   bindings.registerKeybinding({
+  //     command: FILE_COMMANDS.CUT_FILE.id,
+  //     keybinding: 'ctrlcmd+x',
+  //     when: 'filesExplorerFocus && !inputFocus',
+  //   });
 
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.RENAME_FILE.id,
-      keybinding: 'enter',
-      when: 'filesExplorerFocus && !inputFocus',
-    });
+  //   bindings.registerKeybinding({
+  //     command: FILE_COMMANDS.RENAME_FILE.id,
+  //     keybinding: 'enter',
+  //     when: 'filesExplorerFocus && !inputFocus',
+  //   });
 
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.DELETE_FILE.id,
-      keybinding: 'ctrlcmd+backspace',
-      when: 'filesExplorerFocus && !inputFocus',
-    });
+  //   bindings.registerKeybinding({
+  //     command: FILE_COMMANDS.DELETE_FILE.id,
+  //     keybinding: 'ctrlcmd+backspace',
+  //     when: 'filesExplorerFocus && !inputFocus',
+  //   });
 
-    bindings.registerKeybinding({
-      command: FILE_COMMANDS.FILTER_OPEN.id,
-      keybinding: 'ctrlcmd+f',
-      when: 'filesExplorerFocus && !inputFocus',
-    });
-  }
+  //   bindings.registerKeybinding({
+  //     command: FILE_COMMANDS.FILTER_OPEN.id,
+  //     keybinding: 'ctrlcmd+f',
+  //     when: 'filesExplorerFocus && !inputFocus',
+  //   });
+  // }
 
   registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({

@@ -13,6 +13,7 @@ import { observable, runInAction } from 'mobx';
 import { IFileTreeAPI } from '../../common';
 import { DragAndDropService } from './file-tree-dnd.service';
 import * as styles from '../file-tree-node.module.less';
+import { IDialogService } from '@ali/ide-overlay';
 
 export interface IFileTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -50,6 +51,9 @@ export class FileTreeModelService {
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
 
+  @Autowired(IDialogService)
+  private readonly dialogService: IDialogService;
+
   private _treeModel: TreeModel;
   private _dndService: DragAndDropService;
 
@@ -71,6 +75,7 @@ export class FileTreeModelService {
   private clickTimes: number;
   private clickTimer: any;
   private preContextMenuFocusedFile: File | Directory | null;
+  private _nextLocationTarget: URI | undefined;
 
   // 右键菜单ContextKey，相对独立
   // TODO：后续需支持通过DOM获取context，这样无需耦合contextMenuService
@@ -155,7 +160,7 @@ export class FileTreeModelService {
     this._dndService = this.injector.get<any>(DragAndDropService, [this]);
     const treeStateWatcher = this._treeModel.getTreeStateWatcher();
     this.disposableCollection.push(treeStateWatcher.onDidChange(() => {
-      explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, treeStateWatcher.toString());
+      explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, treeStateWatcher.snapshot());
     }));
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed(() => {
       // 尝试恢复树
@@ -197,7 +202,7 @@ export class FileTreeModelService {
         return new URI(root.uri).isEqualOrParent(uri);
       })?.uri;
     }
-    if (rootUri) {
+    if (rootUri && this.treeModel) {
       return new Path(this.treeModel.root.path).join(new URI(rootUri).relative(uri)!.toString()).toString();
     }
   }
@@ -414,8 +419,25 @@ export class FileTreeModelService {
     }
   }
 
-  async deleteFileByUris() {
+  async deleteFileByUris(uris: URI[]) {
+    if (this.corePreferences['explorer.confirmDelete']) {
+      const ok = localize('file.confirm.delete.ok');
+      const cancel = localize('file.confirm.delete.cancel');
+      const deleteFilesMessage = `[${uris.map((uri) => uri.displayName).join(',')}]`;
+      const confirm = await this.dialogService.warning(formatLocalize('file.confirm.delete', deleteFilesMessage), [cancel, ok]);
+      if (confirm !== ok) {
+        return;
+      }
+    }
+    // 移除文件
+    this.fileTreeService.deleteAffectedNodes(uris);
+    uris.forEach(async (uri: URI) => {
+      await this.deleteFile(uri);
+    });
+  }
 
+  async deleteFile(uri: URI) {
+    await this.fileTreeAPI.delete(uri);
   }
 
   async renameFileByUri() {
@@ -500,42 +522,63 @@ export class FileTreeModelService {
     return null;
   }
 
-  // private dispatchWatchEvent(path: string, event: IWatcherEvent) {
-  //   const { root } = this.treeModel;
-  //   const watcher = root.watchEvents.get(path);
-  //   if (watcher && watcher.callback) {
-  //     watcher.callback(event);
-  //   }
-  // }
-
   private proxyPrompt = (promptHandle: RenamePromptHandle | NewPromptHandle) => {
-    const commit = async (newName) => {
+    let isCommit = false;
+    const blurCommit = async (newName) => {
+      if (isCommit) {
+        return true;
+      }
+      isCommit = true;
       if (newName.trim() === '' || !!this.validateMessage) {
+        this.validateMessage = undefined;
+        return true;
+      }
+      this.validateMessage = undefined;
+      if (promptHandle instanceof RenamePromptHandle) {
+        const target = promptHandle.target as (File | Directory);
+        const from = target.uri;
+        const to = target.uri.parent.resolve(newName);
+        this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
+        await this.fileTreeService.moveNode(target, from.toString(), to.toString());
+      } else if (promptHandle instanceof NewPromptHandle) {
+        const parent = promptHandle.parent as Directory;
+        const newUri = parent.uri.resolve(newName);
+        this.fileTreeService.addNode(parent, newName, promptHandle.type);
+        if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
+          this.fileTreeAPI.createDirectory(newUri);
+        } else {
+          this.fileTreeAPI.createFile(newUri);
+        }
+      }
+      // 返回true时，输入框会隐藏
+      return true;
+    };
+    const enterCommit = async (newName) => {
+      if (!!this.validateMessage) {
+        return false;
+      }
+      isCommit = true;
+      if (newName.trim() === '') {
+        this.validateMessage = undefined;
         return true;
       }
       if (promptHandle instanceof RenamePromptHandle) {
         const target = promptHandle.target as (File | Directory);
         const from = target.uri;
         const to = target.uri.parent.resolve(newName);
-        await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
-        // const oldPath = target.path;
-        // const newPath = new Path(target.path).dir.join(newName).toString();
-        // this.dispatchWatchEvent(target.path, {
-        //   type: WatchEvent.Moved,
-        //   oldPath,
-        //   newPath,
-        // });
+        this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
+        await this.fileTreeService.moveNode(target, from.toString(), to.toString());
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;
         const newUri = parent.uri.resolve(newName);
-        await this.fileTreeAPI.create(newUri);
-
-        // this.dispatchWatchEvent(parent.path, {
-        //   type: WatchEvent.Added,
-        //   directory: ,
-        //   node: ,
-        // });
+        this.fileTreeService.addNode(parent, newName, promptHandle.type);
+        if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
+          this.fileTreeAPI.createDirectory(newUri);
+        } else {
+          this.fileTreeAPI.createFile(newUri);
+        }
       }
+      this.validateMessage = undefined;
       // 返回true时，输入框会隐藏
       return true;
     };
@@ -553,8 +596,8 @@ export class FileTreeModelService {
         }
       });
 
-      promptHandle.onCommit(commit);
-      promptHandle.onBlur(commit);
+      promptHandle.onCommit(enterCommit);
+      promptHandle.onBlur(blurCommit);
     }
   }
 
@@ -579,18 +622,6 @@ export class FileTreeModelService {
     }
   }
 
-  async mv() {
-
-  }
-
-  async create() {
-
-  }
-
-  async compare(pre: URI, next: URI) {
-
-  }
-
   async copyFile() {
 
   }
@@ -603,4 +634,24 @@ export class FileTreeModelService {
 
   }
 
+  async location(uri: URI) {
+    const path = await this.getFileTreeNodePathByUri(uri);
+    if (path) {
+      const node = await this.fileTreeHandle.ensureVisible(path);
+      if (node) {
+        this.activeFileDecoration(node as File);
+      }
+    }
+  }
+
+  public locationOnShow(uri: URI) {
+    this._nextLocationTarget = uri;
+  }
+
+  public performLocationOnHandleShow() {
+    if (this._nextLocationTarget) {
+      this.location(this._nextLocationTarget);
+      this._nextLocationTarget = undefined;
+    }
+  }
 }

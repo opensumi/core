@@ -88,7 +88,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     if (!this.cacheFileStat.has(filestat.uri)) {
       this.cacheFileStat.set(filestat.uri, filestat);
     }
-    if (filestat.isDirectory && filestat.children) {
+    if (filestat.isDirectory) {
       return new Directory(
         tree,
         parent,
@@ -152,15 +152,45 @@ export class FileTreeAPI implements IFileTreeAPI {
     return true;
   }
 
-  async create(uri: URI) {
-    await this.workspaceEditService.apply({
-      edits: [
-        {
-          newUri: uri,
-          options: {},
-        },
-      ],
-    });
+  async createFile(uri: URI) {
+    try {
+      await this.workspaceEditService.apply({
+        edits: [
+          {
+            newUri: uri,
+            options: {},
+          },
+        ],
+      });
+    } catch (e) {
+      return false;
+    }
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
+    return true;
+  }
+
+  async createDirectory(uri: URI) {
+    try {
+      await this.fileServiceClient.createFolder(uri.toString());
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
+  async delete(uri: URI) {
+    try {
+      await this.workspaceEditService.apply({
+        edits: [
+          {
+            oldUri: uri,
+            options: {},
+          },
+        ],
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

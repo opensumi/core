@@ -424,8 +424,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       item.mv(this, item.name);
       return;
     }
-    if (this.children && this.children.indexOf(item) > -1) {
-      return;
+    if (this.children) {
+      for (let i = 0; i < this.children.length; i++) {
+        if (this.children[i].name === item.name) {
+          this.children[i] = item;
+          return;
+        }
+      }
     }
     const branchSizeIncrease = 1 + ((item instanceof CompositeTreeNode && item.expanded) ? item._branchSize : 0);
     if (this._children) {
@@ -735,7 +740,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
       // 异常情况
       if (!item || (!CompositeTreeNode.is(item) && pathFlag.length > 0)) {
-        throw new Error(`'${path}' not found`);
+        return;
       }
       if (CompositeTreeNode.is(item)) {
         if (!(item as CompositeTreeNode)._children) {
@@ -766,7 +771,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
       // 异常情况
       if (!item || (!CompositeTreeNode.is(item) && pathFlag.length > 0)) {
-        throw new Error(`'${path}' not found`);
+        return ;
       }
       if (CompositeTreeNode.is(item)) {
         if (!(item as CompositeTreeNode)._children) {
@@ -801,26 +806,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return this.flattenedBranch.indexOf(node.id);
     }
     return -1;
-  }
-
-  public getAllTreeNodeByType(type: TreeNodeType) {
-    const nodes: CompositeTreeNode[] = [];
-    let isSpecialNode;
-    if (!this.flattenedBranch) {
-      return nodes;
-    }
-    if (type === TreeNodeType.CompositeTreeNode) {
-      isSpecialNode = (node) => CompositeTreeNode.is(node);
-    } else {
-      isSpecialNode = (node) => !CompositeTreeNode.is(node);
-    }
-    for (const branchId of this.flattenedBranch) {
-      const node = TreeNode.getTreeNodeById(branchId);
-      if (isSpecialNode(node)) {
-        nodes.push(node as CompositeTreeNode);
-      }
-    }
-    return nodes;
   }
 
   /**

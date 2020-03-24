@@ -5,7 +5,7 @@ import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import * as styles from './keymaps.module.less';
 import { RecycleList } from '@ali/ide-core-browser/lib/components';
 import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-components';
-import { localize, useInjectable, KeybindingScope, noKeybidingInputName, KeyCode, Key, formatLocalize } from '@ali/ide-core-browser';
+import { localize, useInjectable, KeybindingScope, NO_KEYBINDING_NAME, KeyCode, Key, formatLocalize } from '@ali/ide-core-browser';
 import { KeymapService } from './keymaps.service';
 import { IKeymapService, KeybindingItem } from '../common';
 import { getIcon } from '@ali/ide-core-browser';
@@ -173,7 +173,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
             className={styles.keybinding_key_input}
             size='small'
             autoFocus={true}
-            name={noKeybidingInputName}
+            name={NO_KEYBINDING_NAME}
             value={value}
             onKeyDown={keydownHandler}
             onBlur={blurHandler} />
@@ -311,7 +311,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         placeholder={localize(activeKeyboardSearch ? 'keymaps.search.keyboard.placeholder' : 'keymaps.search.placeholder')}
         type='text'
         value={search}
-        name={noKeybidingInputName}
+        name={NO_KEYBINDING_NAME}
         onChange={onChangeHandler}
         onKeyDown={onKeyDownHandler}
       />
