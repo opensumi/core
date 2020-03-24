@@ -4,7 +4,6 @@ import {
   FileChangeType,
   FileChangeEvent,
   VSCFileChangeType,
-  FileSystemProvider,
   FileStat,
   FileType,
 } from '@ali/ide-file-service';
@@ -25,7 +24,6 @@ import {
   IMainThreadFileSystem,
   ExtFileChangeEventInfo,
   ExtFileSystemWatcherOptions,
-  VSCFileStat,
   VSCFileType,
 } from '@ali/ide-file-service/lib/common/ext-file-system';
 
@@ -201,10 +199,10 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadFileSystem);
-    this.initUsedSchems();
+    this.initUsedSchemas();
   }
 
-  private initUsedSchems() {
+  private initUsedSchemas() {
     this.usedSchemes.add(Schemas.file);
     this.usedSchemes.add(Schemas.untitled);
     this.usedSchemes.add(Schemas.vscode);
