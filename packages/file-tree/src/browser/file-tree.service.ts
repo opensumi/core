@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable, action, transaction } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   WithEventBus,
@@ -1050,10 +1050,12 @@ export class FileTreeService extends WithEventBus {
   }
 
   private onFilesChanged(changes: FileChange[]): void {
-    if (!this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
-      this.refresh(this.root);
-    }
-    this.deleteAffectedNodes(this.getDeletedUris(changes));
+    transaction(async () => {
+      if (!await this.refreshAffectedNodes(this.getAffectedUris(changes)) && this.isRootAffected(changes)) {
+        this.refresh(this.root);
+      }
+      this.deleteAffectedNodes(this.getDeletedUris(changes));
+    });
   }
 
   public async reWatch() {
