@@ -231,7 +231,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
     });
 
     commands.registerCommand(EDITOR_COMMANDS.COMPARE, {
-      execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }) => {
+      execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }, options: IResourceOpenOptions = {}) => {
         name = name || `${original.displayName} <=> ${modified.displayName}`;
         return this.workbenchEditorService.open(
           URI.from({
@@ -242,7 +242,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
               modified,
             }),
           }),
-        );
+          options);
       },
     });
 
@@ -361,7 +361,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
           uri = group && group.currentResource && group.currentResource.uri,
         } = resource;
         if (group && uri) {
-          await group.split(EditorGroupSplitAction.Left, uri);
+          await group.split(EditorGroupSplitAction.Left, uri, { focus: true });
         }
       },
     });
@@ -374,7 +374,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
           uri = group && group.currentResource && group.currentResource.uri,
         } = resource;
         if (group && uri) {
-          await group.split(EditorGroupSplitAction.Right, uri);
+          await group.split(EditorGroupSplitAction.Right, uri, { focus: true });
         }
       },
     });
@@ -416,7 +416,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
           uri = group && group.currentResource && group.currentResource.uri,
         } = resource;
         if (group && uri) {
-          await group.split(EditorGroupSplitAction.Top, uri);
+          await group.split(EditorGroupSplitAction.Top, uri, { focus: true });
         }
       },
     });
@@ -429,7 +429,7 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
           uri = group && group.currentResource && group.currentResource.uri,
         } = resource;
         if (group && uri) {
-          await group.split(EditorGroupSplitAction.Bottom, uri);
+          await group.split(EditorGroupSplitAction.Bottom, uri, { focus: true });
         }
       },
     });
