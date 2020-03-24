@@ -1,3 +1,4 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
 
 .popover {
   position: relative;
@@ -30,9 +31,7 @@
     background: var(--kt-popover-background);
     border-color: var(--kt-popover-border);
     border-radius: 2px;
-    box-shadow: 0px 6px 16px -8px rgba(0,0,0,0.24),
-    0px 9px 28px 0px rgba(0,0,0,0.15),
-    0px 12px 48px 16px rgba(0,0,0,0.09);
+    .overlay-shadow();
     padding: 5px 10px;
     z-index: 10001;
     margin-top: -5px;

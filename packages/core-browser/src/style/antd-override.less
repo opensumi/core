@@ -1,3 +1,4 @@
+@import "./variable.less";
 // 覆盖 antd/react-component 组件的样式
 
 .overrideAntdMenu(@n, @i: 1) when (@i =< @n) {
@@ -9,7 +10,7 @@
       color: var(--menu-foreground) !important;
       background-color: var(--menu-background) !important;
       border: none !important;
-      box-shadow: 0px 2px 4px var(--kt-menu-shadow) !important;
+      .overlay-shadow(var(--kt-menu-shadow)) !important;
       border-radius: 0 !important;
       min-width: 120px;
 
