@@ -110,7 +110,7 @@ function getLocalizationRegistry(scope: string): LocalizationRegistry {
  */
 export function replaceLocalizePlaceholder(label?: string, env?: string): string | undefined {
   if (label) {
-    return label.replace(/%(.*?)%/g, (_, p) => localize(p, undefined, env)) ;
+    return label.replace(/%(.*?)%/g, (_, p) => localize(p, undefined, env).replace(/\"/g,'\\"')) ;
   }
 }
 
