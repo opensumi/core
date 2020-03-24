@@ -8,7 +8,7 @@ import {
 import { convertToVSCFileStat, VSCFileSystem, FileSystemWatcher, ExtHostFileSystem } from '../../src/hosted/api/vscode/ext.host.file-system';
 
 describe('convertToVSCFileStat', () => {
-  it('需要返回正常转换到 VSCode 格式结果', () => {
+  it('Should return normal conversion to VSCode format results.', () => {
     expect(convertToVSCFileStat({
       uri: 'uri',
       lastModification: 0,
@@ -26,7 +26,7 @@ describe('convertToVSCFileStat', () => {
 });
 
 describe('VSCFileSystem', () => {
-  it('需要正确的将参数传递到 innerFs', () => {
+  it('The parameters should be passed to innerFs correctly', () => {
     const fs = new VSCFileSystem();
     const calledMap: Map<string, any[]> = new Map();
     const uri = URI.file('/root/test.txt').codeUri;
@@ -113,11 +113,11 @@ describe('FileSystemWatcher', () => {
 
   const fsWatcherId = (fsWatcher as any).id;
 
-  it('需要完成初始化', () => {
+  it('Should complete initialization.', () => {
     expect((typeof fsWatcherId)).toEqual('number');
   });
 
-  it('增删改事件需要正常', () => {
+  it('Addition, deletion and modification events should be normal.', () => {
     const uri = URI.file('/root/test.txt');
     let changedUri;
     let deletedUri;
@@ -170,7 +170,7 @@ describe('FileSystemWatcher', () => {
     expect(createdUri.fsPath).toEqual(uri.codeUri.fsPath);
   });
 
-  it ('dispose 需要收到 id', () => {
+  it ('Dispose should receive id.', () => {
     fsWatcher.dispose();
     expect(calledMap.get('unsubscribeWatcher')![0]).toEqual(fsWatcherId);
   });
@@ -211,7 +211,7 @@ describe('ExtHostFileSystem', () => {
   };
   const extHostFs = new ExtHostFileSystem(mockRpcProtocol as any);
 
-  it('watchEmitter 需要正常收发消息', () => {
+  it('WatchEmitter should send and receive messages normally.', () => {
     const uri = URI.file('/root/test.txt');
     let changeEvent;
 
@@ -235,7 +235,7 @@ describe('ExtHostFileSystem', () => {
     });
   });
 
-  it('需要正常调用代理函数及传递参数', () => {
+  it('Should normally call the proxy function and pass parameters.', () => {
     extHostFs.subscribeWatcher(mockOptions);
     extHostFs.unsubscribeWatcher(mockId);
 
@@ -243,13 +243,13 @@ describe('ExtHostFileSystem', () => {
     expect(calledMap.get('$unsubscribeWatcher')![0]).toEqual(mockId);
   });
 
-  it('需要正确注册上 fs provider', async () => {
+  it('Fs provider should be registered correctly.', async () => {
     extHostFs.registerFileSystemProvider('testIt', mockFsProvider);
     expect(extHostFs.haveProvider('testIt')).toEqual(true);
     expect(await extHostFs.$haveProvider('testIt')).toEqual(true);
   });
 
-  it ('getStat 需要将 VSCode格式的 stat 转换成 kt 格式的', async () => {
+  it ('getStat needs to convert VSCode format stat to kt format.', async () => {
     extHostFs.registerFileSystemProvider(
       'testStat',
       mockFsProvider,
