@@ -7,7 +7,7 @@ import { SourceTree } from '@ali/ide-core-browser/lib/components';
 import * as cls from 'classnames';
 
 export const DebugHoverView = observer(() => {
-  const { value, nodes, onSelect }: DebugHoverService = useInjectable(DebugHoverService);
+  const { value, elements, nodes, onSelect }: DebugHoverService = useInjectable(DebugHoverService);
 
   const mouseWheelHandler = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -27,13 +27,13 @@ export const DebugHoverView = observer(() => {
   const renderContent = () => {
     if (nodes && nodes.length > 0) {
       return <div
-        onWheel={mouseWheelHandler}
-        className={styles.debug_hover_content}
+        onWheel={ mouseWheelHandler }
+        className={ styles.debug_hover_content }
       >
         <SourceTree
-          nodes={nodes}
-          onSelect={onSelect}
-          outline={false}
+          nodes={ nodes }
+          onSelect={ onSelect }
+          outline={ false }
           scrollContainerStyle={
             scrollContainerStyle
           }
@@ -43,12 +43,31 @@ export const DebugHoverView = observer(() => {
     return null;
   };
 
-  if (value) {
-    return <div className={styles.debug_hover}>
-      <div className={cls(styles.debug_hover_title, nodes.length > 0 && styles.has_complex_value)}>{value}</div>
-      {renderContent()}
-    </div>;
-  } else {
-    return null;
-  }
+  return (
+    <div className={ styles.debug_hover }>
+      {
+        value &&
+        <div className={ cls(styles.debug_hover_title, nodes.length > 0 && styles.has_complex_value) }>
+          { value }
+        </div>
+      }
+      {
+        elements.length > 0 ?
+          renderContent() :
+          <div className={ styles.debug_hover_string }>
+            <div className={ styles.debug_hover_string_overflow }>
+              {
+                nodes.map(({ name }, index) => {
+                  if (index > 0) {
+                    return (<div key={ index }>&nbsp;&nbsp;{ name }</div>);
+                  } else {
+                    return (<div key={ index }>{ name }</div>);
+                  }
+                })
+              }
+            </div>
+          </div>
+      }
+    </div>
+  );
 });
