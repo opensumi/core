@@ -2,13 +2,15 @@ export * from './scrollbar';
 export * from './recycle-tree';
 export * from './source-tree';
 export * from './tree';
-export * from './input';
 export * from './portal';
-export * from './popover';
 export * from './recycle-list';
 export * from './list';
-export * from './button';
 export * from './resize/resize';
 export * from './layout';
 export * from './variables-tree';
-export { default as Icon } from './icon';
+export { Select as NativeSelect } from './select';
+
+/**
+ * re exports from ide-components
+ */
+export * from '@ali/ide-components';
