@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './file-tree-node.module.less';
-import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, ValidateMessage, VALIDATE_TYPE, RenamePromptHandle, NewPromptHandle } from '@ali/ide-components';
+import { TreeNode, CompositeTreeNode, INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle } from '@ali/ide-components';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { getIcon, URI } from '@ali/ide-core-browser';
 import { Directory, File } from './file-tree-nodes';
@@ -16,7 +16,6 @@ export interface IFileTreeNodeProps {
   labelService: LabelService;
   decorations?: ClasslistComposite;
   dndService: DragAndDropService;
-  validateMessage?: ValidateMessage;
   onTwistieClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
@@ -35,7 +34,6 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   leftPadding = 8,
   onTwistieClick,
   decorations,
-  validateMessage,
   defaultLeftPadding = 8,
 }: FileTreeNodeRenderedProps) => {
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
@@ -172,27 +170,13 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     </div>;
   };
 
-  const renderValidateMessage = () => {
-    const validateClx = cls({
-      'validate-error': validateMessage && validateMessage.type === VALIDATE_TYPE.ERROR,
-      'validate-warning': validateMessage && validateMessage.type === VALIDATE_TYPE.WARNING,
-      'validate-info': validateMessage && validateMessage.type === VALIDATE_TYPE.INFO,
-    });
-    if (validateMessage && validateMessage.message) {
-      return <div className={cls('validate-message', validateClx, 'popup')}>
-        {validateMessage.message}
-      </div>;
-    }
-  };
-
   const renderDisplayName = (node: Directory | File) => {
     if (isPrompt && node instanceof PromptHandle) {
       return <div
           className={cls(styles.file_tree_node_segment, styles.file_tree_node_inputbox)}
         >
-          <div className='input-box'>
-            <node.ProxiedInput wrapperStyle={{height: FILE_TREE_NODE_HEIGHT}}/>
-            {renderValidateMessage()}
+          <div className={cls('input-box', styles.file_tree_node_prompt_box)}>
+            <node.ProxiedInput  wrapperStyle={{height: FILE_TREE_NODE_HEIGHT, padding: 0, textIndent: 5}}/>
           </div>
         </div>;
     }

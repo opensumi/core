@@ -3,16 +3,30 @@ import { DisposableCollection, Emitter, Event, IAsyncResult } from '@ali/ide-cor
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+export enum PROMPT_VALIDATE_TYPE {
+  INFO = 1,
+  ERROR = 2,
+  WARNING = 3,
+}
+
+export interface PromptValidateMessage {
+  message: string | void;
+  type: PROMPT_VALIDATE_TYPE;
+}
+
 /**
  * 输入输出框需要在外部手动进行管理，由于我们使用的是虚拟的react节点渲染，一旦用户向上或向下滚动超出渲染访问，相关的React组件会被回收
  * 故这里在外部手动维护输入框对象
  */
 export abstract class PromptHandle {
   public readonly $: HTMLInputElement;
+  public readonly $validate: HTMLDivElement;
   public readonly ProxiedInput: (props: ProxiedInputProp) => JSX.Element;
   private disposables: DisposableCollection = new DisposableCollection();
   private isInPendingCommitState: boolean = false;
   private _destroyed: boolean = false;
+  private _hasValidateElement: boolean = false;
+  private _validateClassName: string;
 
   // event
   private onChangeEmitter: Emitter<string> = new Emitter();
@@ -31,8 +45,9 @@ export abstract class PromptHandle {
     this.$.addEventListener('keyup', this.handleKeyup);
     this.$.addEventListener('keydown', this.handleKeydown);
     this.$.addEventListener('focus', this.handleFocus);
-    // this.$.addEventListener('blur', this.handleBlur);
-
+    this.$.addEventListener('blur', this.handleBlur);
+    this.$validate = document.createElement('div');
+    this.$validate.setAttribute('style', 'width: calc(100% + 2px);left: -1px;');
     // 可能存在PromptHandle创建后没被使用的情况
   }
 
@@ -84,6 +99,34 @@ export abstract class PromptHandle {
     this.$.classList.remove(classname);
   }
 
+  public updateValidateMessage(validateMessage: PromptValidateMessage) {
+    if (!this._hasValidateElement && !this._destroyed) {
+      this.$.parentElement?.appendChild(this.$validate);
+      this._hasValidateElement = true;
+    }
+    let validateBoxClassName = 'validate-message popup ';
+    if (validateMessage && validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR) {
+      this._validateClassName = 'validate-error';
+    } else if (validateMessage && validateMessage.type === PROMPT_VALIDATE_TYPE.WARNING) {
+      this._validateClassName = 'validate-warning';
+    } else {
+      this._validateClassName = 'validate-info';
+    }
+    validateBoxClassName += this._validateClassName;
+
+    this.$validate.classList.value = validateBoxClassName;
+    this.$validate.innerText = validateMessage.message || '';
+    this.$.parentElement!.parentElement!.classList.add(this._validateClassName);
+  }
+
+  public destroyValidateMessage() {
+    if (this._hasValidateElement) {
+      this.$.parentElement?.removeChild(this.$validate);
+      this._hasValidateElement = false;
+      this.$.parentElement!.parentElement!.classList.remove(this._validateClassName);
+    }
+  }
+
   public destroy(): void {
     if (this._destroyed) {
       return;
@@ -94,6 +137,7 @@ export abstract class PromptHandle {
     this.$.removeEventListener('keydown', this.handleKeydown);
     this.$.removeEventListener('focus', this.handleFocus);
     this.$.removeEventListener('blur', this.handleBlur);
+    this.destroyValidateMessage();
     this.$.disabled = false;
     this.onDestroyEmitter.fire(this.$.value);
     this.disposables.dispose();

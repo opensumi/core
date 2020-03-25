@@ -30,8 +30,27 @@
     background: var(--kt-tree-hoverBackground);
   }
 
-  .file_tree_node_title {
-    width: 100%;
+  .file_tree_node_prompt_box {
+    padding-right: 10px;
+    :global(input) {
+      &.validate-error {
+        color: var(--inputValidation-errorForeground);
+        background-color: var(--inputValidation-errorBackground);
+        border: 1px solid var(--inputValidation-errorBorder);
+      }
+
+      &.validate-info {
+        background-color: var(--inputValidation-infoBackground);
+        border: 1px solid var(--inputValidation-infoBorder);
+        color: var(--inputValidation-infoForeground);
+      }
+
+      &.validate-warning {
+        background-color: var(--inputValidation-warningBackground);
+        border: 1px solid var(--inputValidation-warningBorder);
+        color: var(--inputValidation-warningForeground);
+      }
+    }
   }
 
   &.mod_selected {

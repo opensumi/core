@@ -21,7 +21,6 @@ export const FileTree = observer(({
   const { decorationService, labelService } = useInjectable<FileTreeService>(FileTreeService);
 
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
-  const { validateMessage } = fileTreeModelService;
 
   const hasShiftMask = (event): boolean => {
     // Ctrl/Cmd 权重更高
@@ -86,8 +85,8 @@ export const FileTree = observer(({
 
   const handleBlur = () => {
     // 文件树失去焦点
-    const { enactiveFileDecoration } = fileTreeModelService;
-    enactiveFileDecoration();
+    const { handleTreeBlur } = fileTreeModelService;
+    handleTreeBlur();
   };
 
   const handleOuterContextMenu = (ev: React.MouseEvent) => {
@@ -135,7 +134,6 @@ export const FileTree = observer(({
           itemType={props.itemType}
           decorationService={decorationService}
           labelService={labelService}
-          validateMessage={validateMessage}
           dndService={fileTreeModelService.dndService}
           decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
           onClick={handleItemClicked}
