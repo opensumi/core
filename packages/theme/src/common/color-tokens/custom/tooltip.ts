@@ -5,14 +5,14 @@ import { NOTIFICATIONS_FOREGROUND, NOTIFICATIONS_BACKGROUND } from '../notificat
 
 /* --- kt tooltip --- */
 export const ktTooltipForeground = registerColor('kt.tooltip.foreground', {
-  dark: NOTIFICATIONS_FOREGROUND,
-  light: NOTIFICATIONS_FOREGROUND,
+  dark: '#D7DBDE',
+  light: '#4D4D4D',
   hc: NOTIFICATIONS_FOREGROUND,
 }, localize('tooltipForeground', 'Tooltip foreground color. Tooltips when hover a icon or link to show some informations'));
 
 export const ktTooltipBackground = registerColor('kt.tooltip.background', {
-  dark: NOTIFICATIONS_BACKGROUND,
-  light: NOTIFICATIONS_BACKGROUND,
+  dark: '#35393D',
+  light: '#FFFFFF',
   hc: NOTIFICATIONS_BACKGROUND,
 }, localize('tooltipBackground', 'Tooltip background color. Tooltips when hover a icon or link to show some informations'));
 
