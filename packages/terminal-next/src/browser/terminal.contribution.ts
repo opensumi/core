@@ -15,10 +15,11 @@ import {
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
-import { ITerminalController, ITerminalRestore, terminalFocusContextKey } from '../common';
+import { ITerminalController, ITerminalRestore } from '../common';
 import { terminalClear, terminalSplit, terminalSearch, terminalSearchNext } from './terminal.command';
 import TerminalView from './terminal.view';
 import TerminalTabs from './component/tab/view';
+import { IsTerminalFocused } from '@ali/ide-core-browser/lib/contextkey';
 
 @Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution, KeybindingContribution)
 export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution, KeybindingContribution {
@@ -140,12 +141,12 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     keybindings.registerKeybinding({
       command: terminalClear.id,
       keybinding: 'ctrlcmd+k',
-      when: terminalFocusContextKey,
+      when: IsTerminalFocused.raw,
     });
     keybindings.registerKeybinding({
       command: terminalSearchNext.id,
       keybinding: 'ctrlcmd+g',
-      when: terminalFocusContextKey,
+      when: IsTerminalFocused.raw,
     });
   }
   onDidRender() {
