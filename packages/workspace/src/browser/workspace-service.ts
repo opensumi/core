@@ -211,6 +211,7 @@ export class WorkspaceService implements IWorkspaceService {
   protected async updateWorkspace(): Promise<void> {
     if (this._workspace) {
       this.toFileStat(this._workspace.uri).then((stat) => this._workspace = stat);
+      this.setMostRecentlyUsedWorkspace(this._workspace.uri);
     }
     await this.updateRoots();
     this.watchRoots();
