@@ -1,6 +1,7 @@
 import { localize } from '@ali/ide-core-common';
 import { registerColor, transparent, foreground, TAB_INACTIVE_BACKGROUND, PANEL_BACKGROUND, ACTIVITY_BAR_BACKGROUND, lighten, PANEL_INACTIVE_TITLE_FOREGROUND } from '../../color-registry';
 import { EDITOR_GROUP_HEADER_TABS_BACKGROUND } from '../editor';
+import { textLinkActiveForeground } from '../text';
 
 /* --- panel --- */
 export const ktPanelTitleBackground = registerColor('kt.panelTitle.background', {
@@ -16,9 +17,9 @@ export const ktPanelTabInactiveForeground = registerColor('kt.panelTab.inactiveF
 }, localize('panelTab.inactiveForeground', 'Panel tab inactive forground color.'));
 
 export const ktPanelTabActiveForeground = registerColor('kt.panelTab.activeForeground', {
-  dark: foreground,
-  light: foreground,
-  hc: foreground,
+  dark: textLinkActiveForeground,
+  light: textLinkActiveForeground,
+  hc: textLinkActiveForeground,
 }, localize('panelTab.activeForeground', 'Panel tab active forground color.'));
 
 export const ktPanelTabInactiveBackground = registerColor('kt.panelTab.inactiveBackground', {
