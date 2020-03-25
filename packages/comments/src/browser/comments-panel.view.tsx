@@ -12,17 +12,6 @@ const scrollContainerStyle = {
   height: '100%',
 };
 
-function getRenderTree(nodes: ICommentsTreeNode[]) {
-  return nodes.filter((node) => {
-    if (node && node.parent) {
-      if (node.parent.expanded === false || node.parent.parent?.expanded === false) {
-        return false;
-      }
-    }
-    return true;
-  });
-}
-
 export const CommentsPanel = observer<{ viewState: ViewState; className?: string}>((props) => {
   const commentsService = useInjectable<ICommentsService>(ICommentsService);
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
@@ -41,6 +30,17 @@ export const CommentsPanel = observer<{ viewState: ViewState; className?: string
     });
   }, []);
 
+  const getRenderTree = React.useCallback((nodes: ICommentsTreeNode[]) => {
+    return nodes.filter((node) => {
+      if (node && node.parent) {
+        if (node.parent.expanded === false || node.parent.parent?.expanded === false) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, []);
+
   React.useEffect(() => {
     setTreeNodes(commentsService.commentsTreeNodes);
   }, [commentsService.commentsTreeNodes]);
@@ -56,6 +56,13 @@ export const CommentsPanel = observer<{ viewState: ViewState; className?: string
         if (node.id === item.id) {
           node.expanded = !node.expanded;
         }
+        node.selected = node.id === item.id;
+        return node;
+      });
+      setTreeNodes(newNodes);
+    } else {
+      const newNodes = treeNodes.map((node) => {
+        node.selected = node.id === item.id;
         return node;
       });
       setTreeNodes(newNodes);
