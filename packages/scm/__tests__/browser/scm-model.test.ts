@@ -114,11 +114,13 @@ describe('test for scm.store.ts', () => {
         repo1.setSelected(false);
         repo2.setSelected(true);
         expect(store.selectedRepos).toEqual([repo2]);
+        expect(store.selectedRepo).toEqual(repo2);
         expect(store['scmProviderCtxKey'].get()).toBe('svn');
 
         repo2.setSelected(false);
         repo1.setSelected(true);
         expect(store.selectedRepos).toEqual([repo1]);
+        expect(store.selectedRepo).toEqual(repo1);
         expect(store['scmProviderCtxKey'].get()).toBe('git');
       });
 
