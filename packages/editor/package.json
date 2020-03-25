@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.7.17",
+    "@ali/ide-core-components": "1.7.17",
     "@ali/ide-dev-tool": "^1.1.0",
     "@ali/ide-main-layout": "1.7.17",
     "@ali/ide-toolbar": "1.7.17",
