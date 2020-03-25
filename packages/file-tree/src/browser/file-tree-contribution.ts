@@ -113,13 +113,6 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: TERMINAL_COMMANDS.OPEN_WITH_PATH.id,
-      when: IsTerminalViewInitialized.raw,
-      order: 3,
-      group: '0_new',
-    });
-
-    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.OPEN_RESOURCES.id,
       order: 1,
       group: '1_open',
@@ -128,6 +121,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.OPEN_TO_THE_SIDE.id,
       order: 2,
+      group: '1_open',
+    });
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.OPEN_WITH_PATH.id,
+      when: IsTerminalViewInitialized.raw,
+      order: 3,
       group: '1_open',
     });
 
@@ -178,6 +178,21 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(FILE_COMMANDS.OPEN_WITH_PATH, {
+      execute: (uri?: URI) => {
+        let directory = uri;
+
+        if (!directory) {
+          return;
+        }
+        const statusKey = this.filetreeService.getStatutsKey(directory?.toString());
+        const status = this.filetreeService.status.get(statusKey);
+        if (!status?.file.filestat.isDirectory) {
+          directory = directory.parent;
+        }
+        this.commandService.executeCommand(TERMINAL_COMMANDS.OPEN_WITH_PATH.id, directory);
+      },
+    });
     commands.registerCommand(FILE_COMMANDS.SEARCH_ON_FOLDER, {
       execute: (uri?: URI) => {
         let searchFolder = uri;

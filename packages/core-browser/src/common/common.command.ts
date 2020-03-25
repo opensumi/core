@@ -137,6 +137,12 @@ export namespace FILE_COMMANDS {
     id: 'filetree.files.filter_open',
     category: CATEGORY,
   };
+
+  export const OPEN_WITH_PATH: Command = {
+    id: 'filetree.openWithPath',
+    category: CATEGORY,
+    label: '%file.filetree.openWithPath%',
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {
