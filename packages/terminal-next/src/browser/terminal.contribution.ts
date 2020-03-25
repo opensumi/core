@@ -74,7 +74,8 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     registry.registerCommand(TERMINAL_COMMANDS.OPEN_WITH_PATH, {
       execute: (uri: URI) => {
         if (uri) {
-          this.terminalController.createTerminal({ cwd: uri.codeUri.fsPath });
+          const client = this.terminalController.createTerminal({ cwd: uri.codeUri.fsPath });
+          client.show();
         }
       },
     });
