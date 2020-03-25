@@ -137,6 +137,12 @@ export namespace FILE_COMMANDS {
     id: 'filetree.files.filter_open',
     category: CATEGORY,
   };
+
+  export const OPEN_WITH_PATH: Command = {
+    id: 'filetree.openWithPath',
+    category: CATEGORY,
+    label: '%file.filetree.openWithPath%',
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {
@@ -573,5 +579,15 @@ export namespace SEARCH_COMMANDS {
     id: 'search.menu.copyPath',
     category: CATEGORY,
     label: '%file.copy.path%',
+  };
+}
+
+export namespace TERMINAL_COMMANDS {
+  const CATEGORY = 'terminal';
+
+  export const OPEN_WITH_PATH: Command = {
+    id: 'terminal.openWithPath',
+    category: CATEGORY,
+    label: '%terminal.openWithPath%',
   };
 }

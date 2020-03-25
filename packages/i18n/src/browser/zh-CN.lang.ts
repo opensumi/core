@@ -52,6 +52,7 @@ export const localizationBundle = {
     'file.focus.files': '在资源管理器中聚焦文件',
     'file.filetree.filter': '在展开文件中查找',
     'file.filetree.filter.placeholder': '输入关键字或路径查找',
+    'file.filetree.openWithPath': '在终端中打开',
 
     'menu-bar.title.file': '文件',
     'menu-bar.title.edit': '编辑',
@@ -453,7 +454,7 @@ export const localizationBundle = {
     'terminal.or': '或者',
     'terminal.search': '搜索',
     'terminal.search.next': '搜索下一个匹配项',
-
+    'terminal.openWithPath': '在终端中打开',
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分',
     'terminal.menu.rename': '重命名',

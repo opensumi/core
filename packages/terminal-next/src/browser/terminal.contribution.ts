@@ -10,13 +10,16 @@ import {
   ClientAppContribution,
   KeybindingRegistry,
   KeybindingContribution,
+  TERMINAL_COMMANDS,
+  URI,
 } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
-import { ITerminalController, ITerminalRestore, terminalFocusContextKey } from '../common';
+import { ITerminalController, ITerminalRestore } from '../common';
 import { terminalClear, terminalSplit, terminalSearch, terminalSearchNext } from './terminal.command';
 import TerminalView from './terminal.view';
 import TerminalTabs from './component/tab/view';
+import { IsTerminalFocused } from '@ali/ide-core-browser/lib/contextkey';
 
 @Domain(ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution, KeybindingContribution)
 export class TerminalBrowserContribution implements ComponentContribution, CommandContribution, TabBarToolbarContribution, ClientAppContribution, MainLayoutContribution, KeybindingContribution {
@@ -52,12 +55,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       execute: (...args: any[]) => {
         this.terminalController.openSearchInput();
       },
-      isEnabled: () => {
-        return true;
-      },
-      isVisible: () => {
-        return true;
-      },
     });
 
     registry.registerCommand(terminalSplit, {
@@ -66,23 +63,20 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
         this.terminalController.focus();
         this.terminalController.focusWidget(id);
       },
-      isEnabled: () => {
-        return true;
-      },
-      isVisible: () => {
-        return true;
-      },
     });
 
     registry.registerCommand(terminalClear, {
       execute: (...args: any[]) => {
         this.terminalController.clearCurrentWidget();
       },
-      isEnabled: () => {
-        return true;
-      },
-      isVisible: () => {
-        return true;
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.OPEN_WITH_PATH, {
+      execute: (uri: URI) => {
+        if (uri) {
+          const client = this.terminalController.createTerminal({ cwd: uri.codeUri.fsPath });
+          client.show();
+        }
       },
     });
 
@@ -150,12 +144,12 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     keybindings.registerKeybinding({
       command: terminalClear.id,
       keybinding: 'ctrlcmd+k',
-      when: terminalFocusContextKey,
+      when: IsTerminalFocused.raw,
     });
     keybindings.registerKeybinding({
       command: terminalSearchNext.id,
       keybinding: 'ctrlcmd+g',
-      when: terminalFocusContextKey,
+      when: IsTerminalFocused.raw,
     });
   }
   onDidRender() {

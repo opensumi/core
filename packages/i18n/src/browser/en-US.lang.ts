@@ -48,6 +48,7 @@ export const localizationBundle = {
     'file.focus.files': 'Focus on Files Explorer',
     'file.filetree.filter': 'Filter on opened files',
     'file.filetree.filter.placeholder': 'Enter a keyword or path to filter',
+    'file.filetree.openWithPath': 'Open In The Terminal',
 
     'menu-bar.title.file': 'File',
     'menu-bar.title.edit': 'Edit',
@@ -394,6 +395,7 @@ export const localizationBundle = {
     'terminal.or': 'Or',
     'terminal.search': 'Search',
     'terminal.search.next': 'Search Next',
+    'terminal.openWithPath': 'Open In The Terminal',
 
     'terminal.menu.search': 'Search',
     'terminal.menu.split': 'Split',

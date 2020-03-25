@@ -1,4 +1,4 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, TERMINAL_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
@@ -15,6 +15,7 @@ import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } 
 import { IWindowService } from '@ali/ide-window';
 import { IWindowDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
 import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { IsTerminalViewInitialized } from '@ali/ide-core-browser/lib/contextkey';
 
 export const ExplorerResourceViewId = 'file-explorer';
 
@@ -124,6 +125,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.OPEN_WITH_PATH.id,
+      when: IsTerminalViewInitialized.raw,
+      order: 3,
+      group: '1_open',
+    });
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.SEARCH_ON_FOLDER.id,
       order: 1,
       group: '2_search',
@@ -170,6 +178,21 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(FILE_COMMANDS.OPEN_WITH_PATH, {
+      execute: (uri?: URI) => {
+        let directory = uri;
+
+        if (!directory) {
+          return;
+        }
+        const statusKey = this.filetreeService.getStatutsKey(directory?.toString());
+        const status = this.filetreeService.status.get(statusKey);
+        if (!status?.file.filestat.isDirectory) {
+          directory = directory.parent;
+        }
+        this.commandService.executeCommand(TERMINAL_COMMANDS.OPEN_WITH_PATH.id, directory);
+      },
+    });
     commands.registerCommand(FILE_COMMANDS.SEARCH_ON_FOLDER, {
       execute: (uri?: URI) => {
         let searchFolder = uri;

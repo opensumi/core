@@ -2,9 +2,10 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable, Domain, CommandContribution, CommandRegistry, CommandService } from '@ali/ide-core-common';
 import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMenuRegistry, generateMergedCtxMenu, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { memoize, IContextKeyService, localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, COMMON_COMMANDS, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
-import { ITerminalController, terminalFocusContextKey, TerminalSupportType } from '../common';
+import { ITerminalController } from '../common';
 import { TerminalClient } from './terminal.client';
 import { TabManager } from './component/tab/manager';
+import { IsTerminalFocused } from '@ali/ide-core-browser/lib/contextkey';
 
 export enum MenuId {
   TermTab = 'TermTab',
@@ -38,22 +39,22 @@ export const more2 = 'more_2';
 export class TerminalMenuContribution implements NextMenuContribution, CommandContribution, KeybindingContribution {
 
   @Autowired(ITerminalController)
-  terminalController: ITerminalController;
+  private readonly terminalController: ITerminalController;
 
   @Autowired()
-  tabManager: TabManager;
+  private readonly tabManager: TabManager;
 
   @Autowired(PreferenceService)
-  preference: PreferenceService;
+  private readonly preference: PreferenceService;
 
   @Autowired(IPreferenceSettingsService)
-  settingService: IPreferenceSettingsService;
+  private readonly settingService: IPreferenceSettingsService;
 
   @Autowired(CommandService)
-  commands: CommandService;
+  private readonly commands: CommandService;
 
   @Autowired(AppConfig)
-  config: AppConfig;
+  private readonly config: AppConfig;
 
   registerCommands(registry: CommandRegistry) {
 
@@ -140,7 +141,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
     registry.registerKeybinding({
       command: SimpleCommonds.search,
       keybinding: 'ctrlcmd+f',
-      when: terminalFocusContextKey,
+      when: IsTerminalFocused.raw,
     });
   }
 
