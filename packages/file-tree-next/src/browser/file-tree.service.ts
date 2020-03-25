@@ -241,6 +241,7 @@ export class FileTreeService extends Tree {
       // 节点创建失败时，不需要添加
       this.dispatchWatchEvent(node.path, { type: WatchEvent.Added,  node: addNode, id: node.id});
     }
+    return addNode;
   }
 
   private async addAffectedNodes(uris: URI[], changes: FileChange[]) {

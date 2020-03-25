@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, MaybePromise, DataUri, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ali/ide-core-common';
+import { URI, DataUri, Emitter, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ali/ide-core-common';
 import classnames from 'classnames';
 import { getIcon } from '../style/icon/icon';
 
@@ -81,9 +81,15 @@ export class LabelService extends WithEventBus {
 
   private cachedProviderMap: Map<string, ILabelProvider> = new LRUMap<string, ILabelProvider>(300, 200);
 
+  private onDidChangeEmitter: Emitter<URI> = new Emitter();
+
   constructor() {
     super();
     this.registerLabelProvider(this.defaultLabelProvider);
+  }
+
+  get onDidChange() {
+    return this.onDidChangeEmitter.event;
   }
 
   private getProviderForUri(uri: URI, options?: ILabelOptions): ILabelProvider | undefined {
@@ -110,7 +116,7 @@ export class LabelService extends WithEventBus {
     const disposer = new Disposable();
     if (provider.onDidChange) {
       disposer.addDispose(provider.onDidChange((uri) => {
-        this.eventBus.fire(new ResourceLabelOrIconChangedEvent(uri));
+        this.onDidChangeEmitter.fire(uri);
       }));
     }
     disposer.addDispose(addElement(this.providers, provider, true));

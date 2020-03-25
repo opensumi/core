@@ -1,19 +1,19 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, ValidateMessage, VALIDATE_TYPE } from '@ali/ide-components';
+import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
-import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event } from '@ali/ide-core-browser';
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { observable, runInAction } from 'mobx';
 import { IFileTreeAPI } from '../../common';
 import { DragAndDropService } from './file-tree-dnd.service';
-import * as styles from '../file-tree-node.module.less';
 import { IDialogService } from '@ali/ide-overlay';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
+import * as styles from '../file-tree-node.module.less';
 
 export interface IFileTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -33,9 +33,6 @@ export class FileTreeModelService {
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
 
-  @Autowired(FileContextKey)
-  private readonly fileContextKey: FileContextKey;
-
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
 
@@ -53,6 +50,12 @@ export class FileTreeModelService {
 
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
+
+  @Autowired(LabelService)
+  private readonly labelService: LabelService;
+
+  @Autowired(FileContextKey)
+  private readonly fileTreeContextKey: FileContextKey;
 
   private _treeModel: TreeModel;
   private _dndService: DragAndDropService;
@@ -85,8 +88,7 @@ export class FileTreeModelService {
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
-  @observable.shallow
-  validateMessage: ValidateMessage | undefined;
+  private validateMessage: PromptValidateMessage | undefined;
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -169,6 +171,10 @@ export class FileTreeModelService {
         this._treeModel.loadTreeState(snapshot);
       }
     }));
+    this.disposableCollection.push(this.labelService.onDidChange(() => {
+      // 当labelService注册的对应节点图标变化时，通知视图更新
+      this.treeModel.dispatchChange();
+    }));
   }
 
   initDecorations(root) {
@@ -186,13 +192,16 @@ export class FileTreeModelService {
    */
   private setFileTreeContextKey(file: Directory | File) {
     const isSingleFolder = !this.fileTreeService.isMutiWorkspace;
-    this.fileContextKey.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.is(file));
+    this.fileTreeContextKey.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.is(file));
     this.currentContextUriContextKey.set(file.uri.toString());
     this.currentRelativeUriContextKey.set(((this.treeModel.root as Directory).uri.relative(file.uri) || '').toString());
     this.contextMenuResourceContext.set(file.uri);
   }
 
   private async getFileTreeNodePathByUri(uri: URI) {
+    if (!uri) {
+      return;
+    }
     const isSingleFolder = !this.fileTreeService.isMutiWorkspace;
     let rootUri;
     if (isSingleFolder) {
@@ -221,6 +230,9 @@ export class FileTreeModelService {
       // 根节点不能选中
       return;
     }
+    // 更新当前焦点context
+    this.fileTreeContextKey.filesExplorerFocused.set(true);
+
     if (this.preContextMenuFocusedFile) {
       this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
       this.selectedDecoration.removeTarget(this.preContextMenuFocusedFile);
@@ -245,6 +257,9 @@ export class FileTreeModelService {
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
   activeFileFocusedDecoration = (target: File | Directory, removePreFocusedDecoration: boolean = false) => {
+    // 激活元素时同时激活面板
+    this.fileTreeContextKey.filesExplorerFocused.set(true);
+
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -351,6 +366,12 @@ export class FileTreeModelService {
 
   handleTreeHandler(handle: IFileTreeHandle) {
     this._fileTreeHandle = handle;
+  }
+
+  handleTreeBlur = () => {
+    this.fileTreeContextKey.filesExplorerFocused.set(false);
+    // 情况焦点状态
+    this.enactiveFileDecoration();
   }
 
   handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
@@ -467,7 +488,7 @@ export class FileTreeModelService {
     return name;
   }
 
-  validateFileName = (promptHandle: RenamePromptHandle | NewPromptHandle, name: string): ValidateMessage | null => {
+  validateFileName = (promptHandle: RenamePromptHandle | NewPromptHandle, name: string): PromptValidateMessage | null => {
     // 转换为合适的名称
     name = this.getWellFormedFileName(name);
 
@@ -475,7 +496,7 @@ export class FileTreeModelService {
     if (!name || name.length === 0 || /^\s+$/.test(name)) {
       return {
         message: localize('validate.tree.emptyFileeError'),
-        type: VALIDATE_TYPE.ERROR,
+        type: PROMPT_VALIDATE_TYPE.ERROR,
       };
     }
 
@@ -483,7 +504,7 @@ export class FileTreeModelService {
     if (name[0] === '/' || name[0] === '\\') {
       return {
         message: localize('validate.tree.fileNameStartsWithSlashError'),
-        type: VALIDATE_TYPE.ERROR,
+        type: PROMPT_VALIDATE_TYPE.ERROR,
       };
     }
 
@@ -506,7 +527,7 @@ export class FileTreeModelService {
       if (child) {
         return {
           message: formatLocalize('validate.tree.fileNameExistsError', name),
-          type: VALIDATE_TYPE.ERROR,
+          type: PROMPT_VALIDATE_TYPE.ERROR,
         };
       }
     }
@@ -515,7 +536,7 @@ export class FileTreeModelService {
     if (names.some((folderName) => !isValidBasename(folderName))) {
       return {
         message: formatLocalize('validate.tree.invalidFileNameError', this.trimLongName(name)),
-        type: VALIDATE_TYPE.ERROR,
+        type: PROMPT_VALIDATE_TYPE.ERROR,
       };
     }
 
@@ -525,6 +546,8 @@ export class FileTreeModelService {
   private proxyPrompt = (promptHandle: RenamePromptHandle | NewPromptHandle) => {
     let isCommit = false;
     const blurCommit = async (newName) => {
+      this.fileTreeContextKey.filesExplorerInputFocused.set(false);
+
       if (isCommit) {
         return true;
       }
@@ -539,13 +562,18 @@ export class FileTreeModelService {
         const from = target.uri;
         const to = target.uri.parent.resolve(newName);
         this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
-        await this.fileTreeService.moveNode(target, from.toString(), to.toString());
+        this.fileTreeService.moveNode(target.parent as Directory, from.toString(), to.toString());
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;
         const newUri = parent.uri.resolve(newName);
-        this.fileTreeService.addNode(parent, newName, promptHandle.type);
+        const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
           this.fileTreeAPI.createDirectory(newUri);
+          // 文件夹首次创建需要将焦点设到新建的文件夹上
+          Event.once(this.treeModel.onChange)(async () => {
+            await this.fileTreeHandle.ensureVisible(addNode);
+            this.activeFileDecoration(addNode);
+          });
         } else {
           this.fileTreeAPI.createFile(newUri);
         }
@@ -554,54 +582,33 @@ export class FileTreeModelService {
       return true;
     };
     const enterCommit = async (newName) => {
-      if (!!this.validateMessage) {
+      if (this.validateMessage && this.validateMessage.message) {
         return false;
       }
-      isCommit = true;
-      if (newName.trim() === '') {
-        this.validateMessage = undefined;
-        return true;
-      }
-      if (promptHandle instanceof RenamePromptHandle) {
-        const target = promptHandle.target as (File | Directory);
-        const from = target.uri;
-        const to = target.uri.parent.resolve(newName);
-        this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
-        await this.fileTreeService.moveNode(target, from.toString(), to.toString());
-      } else if (promptHandle instanceof NewPromptHandle) {
-        const parent = promptHandle.parent as Directory;
-        const newUri = parent.uri.resolve(newName);
-        this.fileTreeService.addNode(parent, newName, promptHandle.type);
-        if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
-          this.fileTreeAPI.createDirectory(newUri);
-        } else {
-          this.fileTreeAPI.createFile(newUri);
-        }
-      }
-      this.validateMessage = undefined;
-      // 返回true时，输入框会隐藏
-      return true;
+      return blurCommit(newName);
+    };
+    const handleFocus = async () => {
+      this.fileTreeContextKey.filesExplorerInputFocused.set(true);
     };
     if (!promptHandle.destroyed) {
       promptHandle.onChange((currentValue) => {
         const validateMessage = this.validateFileName(promptHandle, currentValue);
         if (!!validateMessage) {
-          runInAction(() => {
-            this.validateMessage = validateMessage!;
-          });
+          this.validateMessage = validateMessage;
+          promptHandle.updateValidateMessage(validateMessage);
         } else {
-          runInAction(() => {
-            this.validateMessage = undefined;
-          });
+          promptHandle.destroyValidateMessage();
         }
       });
 
       promptHandle.onCommit(enterCommit);
       promptHandle.onBlur(blurCommit);
+      promptHandle.onFocus(handleFocus);
     }
   }
 
   async newFilePrompt(uri: URI) {
+    await this.fileTreeService.flushEventQueue();
     const path = await this.getFileTreeNodePathByUri(uri);
     if (path) {
       this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(path));
@@ -609,6 +616,7 @@ export class FileTreeModelService {
   }
 
   async newDirectoryPrompt(uri: URI) {
+    await this.fileTreeService.flushEventQueue();
     const path = await this.getFileTreeNodePathByUri(uri);
     if (path) {
       this.proxyPrompt(await this.fileTreeHandle.promptNewCompositeTreeNode(path));
@@ -616,6 +624,7 @@ export class FileTreeModelService {
   }
 
   async renamePrompt(uri: URI) {
+    await this.fileTreeService.flushEventQueue();
     const path = await this.getFileTreeNodePathByUri(uri);
     if (path) {
       this.proxyPrompt(await this.fileTreeHandle.promptRename(path));

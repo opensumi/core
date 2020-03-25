@@ -116,7 +116,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   // 批量更新Tree节点
   private batchUpdate = (() => {
-    let onePromise: Promise<void>;
+    let onePromise: Promise<void> | null;
     let resolver;
     let timer: number;
     const commitUpdate = () => {
@@ -152,6 +152,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       if (!onePromise) {
         onePromise = new Promise((res) => resolver = res);
         onePromise.then(() => {
+          onePromise = null;
           resolver = null;
           this.onDidUpdateEmitter.fire();
         });

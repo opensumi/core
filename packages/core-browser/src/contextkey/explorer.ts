@@ -6,6 +6,8 @@ import { RawContextKey } from '../raw-context-key';
 export const ExplorerFolderContext = new RawContextKey<boolean>('explorerResourceIsFolder', false);
 
 export const ExplorerResourceCut = new RawContextKey<boolean>('explorerResourceCut', false);
-export const FilesExplorerFocusedContext = new RawContextKey<boolean>('filesExplorerFocus', false);
 export const ExplorerFocusedContext = new RawContextKey<boolean>('explorerViewletFocus', false);
 export const ExplorerFilteredContext = new RawContextKey<boolean>('explorerViewletFilter', false);
+
+export const FilesExplorerFocusedContext = new RawContextKey<boolean>('filesExplorerFocus', false);
+export const FilesExplorerInputFocusedContext = new RawContextKey<boolean>('filesExplorerInputFocus', false);
