@@ -23,9 +23,9 @@ export function getMockAmdLoader(injector) {
   const _require = (request: string) => {
     if (request === 'React') {
       return React;
-    } else if ('ReactDOM') {
+    } else if (request === 'ReactDOM') {
       return ReactDOM;
-    } else if ('kaitian-browser') {
+    } else if (request === 'kaitian-browser') {
       return createBrowserApi(injector);
     }
   };
