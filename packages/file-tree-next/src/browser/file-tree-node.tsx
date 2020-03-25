@@ -16,7 +16,7 @@ export interface IFileTreeNodeProps {
   labelService: LabelService;
   decorations?: ClasslistComposite;
   dndService: DragAndDropService;
-  onTwistieClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
+  onTwistierClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
 }
@@ -32,7 +32,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   decorationService,
   labelService,
   leftPadding = 8,
-  onTwistieClick,
+  onTwistierClick,
   decorations,
   defaultLeftPadding = 8,
 }: FileTreeNodeRenderedProps) => {
@@ -49,8 +49,8 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
 
   const handlerTwistieClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      if (onTwistieClick) {
-        onTwistieClick(ev, item as File, itemType);
+      if (onTwistierClick) {
+        onTwistierClick(ev, item as File, itemType);
       } else {
         onClick(ev, item as File, itemType);
       }

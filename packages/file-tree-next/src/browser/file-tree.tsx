@@ -54,6 +54,16 @@ export const FileTree = observer(({
     }
   };
 
+  const handleTwistierClick = (ev: React.MouseEvent, item: Directory) => {
+    // 阻止点击事件冒泡
+    ev.stopPropagation();
+
+    const { toggleDirectory } = fileTreeModelService;
+
+    toggleDirectory(item);
+
+  };
+
   React.useEffect(() => {
     ensureIsReady();
     return () => {
@@ -137,6 +147,7 @@ export const FileTree = observer(({
           dndService={fileTreeModelService.dndService}
           decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
           onClick={handleItemClicked}
+          onTwistierClick={handleTwistierClick}
           onContextMenu={handlerContextMenu}
         />}
       </RecycleTree>;
