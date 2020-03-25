@@ -1,3 +1,5 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
 // --- validate input
 .input-box {
   width: 100%;
@@ -53,7 +55,7 @@
     &.popup {
       border: none;
       background-color: transparent;
-      box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36);
+      .overlay-shadow();
 
       &.validate-error {
         color: var(--inputValidation-errorForeground);

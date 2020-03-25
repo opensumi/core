@@ -3,3 +3,18 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+// a11y 提示弹层/快捷键表单弹层/搜索弹层
+.overlay-shadow(@color: var(--widget-shadow)) {
+  box-shadow: 0 2px 8px @color;
+}
+
+// quick-open/debug toolbar
+.modal-shadow(@color: var(--widget-shadow)) {
+  box-shadow: 0 5px 8px @color;
+}
+
+// notification/feedback
+.message-shadow(@color: var(--widget-shadow)) {
+  box-shadow: 0 0px 8px @color;
+}
