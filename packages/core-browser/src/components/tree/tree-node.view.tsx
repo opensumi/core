@@ -2,11 +2,12 @@ import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
 import { isUndefined, isString } from '@ali/ide-core-common';
+import { Badge } from '@ali/ide-components';
+
 import {  TreeViewAction, isTreeViewActionComponent } from '../../tree';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../style/icon/icon';
-import Badge from '../badge';
 import { ValidateInput, InputSelection, Icon } from '@ali/ide-components';
 import { KeyCode, Key } from '../../keyboard';
 import { Loading } from '../loading';

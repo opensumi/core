@@ -3,9 +3,9 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { ViewState } from '@ali/ide-core-browser';
 import { IStatusBarService } from '@ali/ide-status-bar';
 import clx from 'classnames';
-import Badge from '@ali/ide-core-browser/lib/components/badge';
+import { Badge } from '@ali/ide-components';
 import { StatusBarItem } from '@ali/ide-status-bar/lib/browser/status-bar-item.view';
-import { AbstractMenuService, ICtxMenuRenderer, generateMergedCtxMenu, MenuId, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { ICtxMenuRenderer, MenuId, AbstractContextMenuService } from '@ali/ide-core-browser/lib/menu/next';
 
 import { ISCMRepository } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';
@@ -64,7 +64,7 @@ export const SCMRepoSelect: React.FC<{
   repositoryList: ISCMRepository[];
   selectedRepository?: ISCMRepository;
   viewState: ViewState;
-}> = function SCMRepoSelect({ repositoryList, selectedRepository, viewState }) {
+}> = function SCMRepoSelect({ repositoryList, selectedRepository }) {
   if (!selectedRepository) {
     return null;
   }

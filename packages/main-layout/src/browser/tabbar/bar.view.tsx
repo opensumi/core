@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
+import { Badge } from '@ali/ide-components';
 import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
@@ -113,14 +114,14 @@ export const TabbarViewBase: React.FC<{
 export const IconTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ component }) => {
   return <div className={styles.icon_tab}>
     <div className={clsx(component.options!.iconClass, 'activity-icon')} title={component.options!.title}></div>
-    {component.options!.badge && <div className={styles.tab_badge}>{component.options!.badge}</div>}
+    {component.options!.badge && <Badge className={styles.tab_badge}>{component.options!.badge}</Badge>}
   </div>;
 });
 
 export const TextTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ component }) => {
   return <div className={styles.text_tab}>
     <div className={styles.bottom_tab_title}>{component.options!.title}</div>
-    {component.options!.badge && <div className={styles.tab_badge}>{component.options!.badge}</div>}
+    {component.options!.badge && <Badge className={styles.tab_badge}>{component.options!.badge}</Badge>}
   </div>;
 });
 
