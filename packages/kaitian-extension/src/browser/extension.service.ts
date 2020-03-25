@@ -18,7 +18,6 @@ import {
   EXTENSION_ENABLE,
   IExtensionHostService,
   IExtensionWorkerHost,
-  /*Extension*/
 } from '../common';
 import {
   MainThreadAPIIdentifier,
@@ -86,42 +85,11 @@ import { ExtensionCandiDate, localize, OnEvent, WithEventBus } from '@ali/ide-co
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
 import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution';
 import { viewColumnToResourceOpenOptions } from '../common/vscode/converter';
+import { getShadowRoot } from './shadowRoot';
+import { createProxiedWindow, createProxiedDocument } from './proxies';
+import { getAMDDefine, getMockAmdLoader, getAMDRequire, getWorkerBootstrapUrl } from './loader';
 
 const LOAD_FAILED_CODE = 'load';
-
-function getAMDRequire() {
-  if (isElectronEnv()) {
-    return (global as any).amdLoader.require;
-  } else {
-    (global as any).amdLoader.require.config({
-      onError: (err) => {
-        throw err;
-      },
-    });
-    return (global as any).amdLoader.require;
-  }
-}
-
-function getWorkerBootstrapUrl(scriptPath: string, label: string): string {
-  if (/^(http:)|(https:)|(file:)/.test(scriptPath)) {
-    const currentUrl = String(window.location);
-    const currentOrigin = currentUrl.substr(0, currentUrl.length - window.location.hash.length - window.location.search.length - window.location.pathname.length);
-    if (scriptPath.substring(0, currentOrigin.length) !== currentOrigin) {
-      const js = `/*${label}*/importScripts('${scriptPath}');/*${label}*/`;
-      const url = `data:text/javascript;charset=utf-8,${encodeURIComponent(js)}`;
-      return url;
-    }
-  }
-  return scriptPath + '#' + label;
-}
-
-function getAMDDefine(): any {
-  if (isElectronEnv()) {
-    return (global as any).amdLoader.require.define;
-  } else {
-    return (global as any).amdLoader.define;
-  }
-}
 
 @Injectable()
 export class ExtensionServiceImpl extends WithEventBus implements ExtensionService {
@@ -688,8 +656,26 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (extendConfig.browser && extendConfig.browser.main) {
       const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
       try {
-        const browserExported = await this.loadBrowser(browserScriptURI.toString());
-        this.registerBrowserComponent(browserExported, this.extensionMap.get(extension.path)!);
+        const rawExtension = this.extensionMap.get(extension.path);
+        if (this.appConfig.useExperimentalShadowDom) {
+          const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader(browserScriptURI.toString());
+          this.registerBrowserComponent(
+            Object.keys(moduleExports).reduce((pre, cur) => {
+              pre[cur] = {
+                component: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
+                  ...other,
+                  id,
+                  panel: (props) => getShadowRoot(panel, extension, props, id, proxiedHead),
+                })),
+              };
+              return pre;
+            }, {}),
+            rawExtension!,
+          );
+        } else {
+          const browserExported = await this.loadBrowser(browserScriptURI.toString());
+          this.registerBrowserComponent(browserExported, this.extensionMap.get(extension.path)!);
+        }
       } catch (err) {
         if (err.errorCode === LOAD_FAILED_CODE) {
           this.logger.error(`[Extension-Host] failed to load ${extension.name} - browser module, path: \n\n ${err.moduleId}`);
@@ -698,7 +684,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         }
       }
     }
-
   }
 
   /**
@@ -841,6 +826,23 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       getExtensionExtendService: this.getExtensionExtendService.bind(this),
     }));
 
+  }
+
+  private async loadBrowserScriptByMockLoader(browerPath: string): Promise<{ moduleExports: any, proxiedHead: HTMLHeadElement }> {
+    const pendingFetch = await fetch(decodeURIComponent(browerPath));
+    const { _module, _exports, _require } = getMockAmdLoader(this.injector);
+    const _stylesCollection = [];
+    const proxiedHead = document.createElement('head');
+    const proxiedDocument = createProxiedDocument(proxiedHead);
+    const proxiedWindow = createProxiedWindow(proxiedDocument, proxiedHead);
+
+    const initFn = new Function('module', 'exports', 'require', 'styles', 'document', 'window', await pendingFetch.text());
+
+    initFn(_module, _exports, _require, _stylesCollection, proxiedDocument, proxiedWindow);
+    return {
+      moduleExports: _module.exports.default,
+      proxiedHead,
+    };
   }
 
   private async loadBrowser(browserPath: string): Promise<any> {
