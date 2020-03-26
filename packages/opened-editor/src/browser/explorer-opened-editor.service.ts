@@ -1,10 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import {
-  OpenedEditorTreeDataProvider,
-  EditorGroupTreeItem,
-  OpenedResourceTreeItem,
-} from './opened-editor.service';
 import { IResource, IResourceDecorationChangeEventPayload, IEditorGroup, WorkbenchEditorService } from '@ali/ide-editor';
 import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig, memoize, OPEN_EDITORS_COMMANDS } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeNode } from '@ali/ide-core-browser/lib/components';
@@ -12,8 +7,17 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { getIcon } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
-import * as styles from './index.module.less';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IContextMenu, AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
+
+import {
+  OpenedEditorTreeDataProvider,
+  EditorGroupTreeItem,
+  OpenedResourceTreeItem,
+} from './opened-editor.service';
+
+import * as styles from './index.module.less';
 
 export interface IOpenEditorStatus {
   focused?: boolean;
@@ -40,6 +44,9 @@ export class ExplorerOpenedEditorService {
 
   @Autowired(ICtxMenuRenderer)
   private readonly ctxMenuRenderer: ICtxMenuRenderer;
+
+  @Autowired(IMainLayoutService)
+  private readonly layoutService: IMainLayoutService;
 
   @Autowired(IDecorationsService)
   public decorationsService: IDecorationsService;
@@ -88,12 +95,15 @@ export class ExplorerOpenedEditorService {
 
   async init() {
     await this.getTreeDatas();
+    this.setExplorerTarbarBadge();
     this.openEditorTreeDataProvider.onDidChange(async (element) => {
       await this.getTreeDatas();
+      this.setExplorerTarbarBadge();
     });
     this.openEditorTreeDataProvider.onDidDecorationChange(async (payload) => {
       if (payload) {
         await this.updateDecorations(payload);
+        this.setExplorerTarbarBadge();
       }
     });
     this.workbenchEditorService.onActiveResourceChange((payload) => {
@@ -102,6 +112,7 @@ export class ExplorerOpenedEditorService {
       }
       if (this.activeUri) {
         this.updateSelected(this.activeUri, this.activeGroup);
+        this.setExplorerTarbarBadge();
       }
     });
     this.openEditorTreeDataProvider.onDidActiveChange(async (payload) => {
@@ -158,7 +169,7 @@ export class ExplorerOpenedEditorService {
         };
         treeData.push(parent);
         children.forEach((child: any) => {
-          let node: TreeNode = {
+          const node: TreeNode = {
             id: child.id,
             label: child.label,
             tooltip: child.tooltip,
@@ -174,15 +185,10 @@ export class ExplorerOpenedEditorService {
           const statusKey = this.getStatusKey(node);
           if (this.status.has(statusKey)) {
             const status = this.status.get(statusKey)!;
-            if (status.dirty) {
-              node  = {
-                ...node,
-                headIconClass: styles.dirty_icon,
-              };
-            }
             treeData.push({
               ...node,
               ...status,
+              headIconClass: status.dirty ? styles.dirty_icon : '',
             });
           } else {
             treeData.push(node);
@@ -224,12 +230,14 @@ export class ExplorerOpenedEditorService {
     this.nodes = this.nodes.map((node) => {
       const statusKey = this.getStatusKey(node);
       if (node.uri.toString() === payload.uri.toString()) {
-        this.status.set(statusKey, {
+        const status = {
           ...this.status.get(statusKey),
           dirty: payload.decoration.dirty,
-        });
+        };
+        this.status.set(statusKey, status);
         return {
           ...node,
+          ...status,
           headIconClass: payload.decoration.dirty ? styles.dirty_icon : '',
         };
       }
@@ -385,6 +393,14 @@ export class ExplorerOpenedEditorService {
     const group = groups[id] as IEditorGroup;
     if (group) {
       group.saveAll();
+    }
+  }
+
+  private setExplorerTarbarBadge() {
+    const dirtyCount = this.nodes.filter((node) => !!node.dirty).length;
+    const handler = this.layoutService.getTabbarHandler(ExplorerContainerId);
+    if (handler) {
+      handler.setBadge(dirtyCount > 0 ? dirtyCount.toString() : '');
     }
   }
 }
