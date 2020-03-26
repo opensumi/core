@@ -3,7 +3,7 @@ import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { observer } from 'mobx-react-lite';
 import { ExplorerOpenedEditorService } from './explorer-opened-editor.service';
 import { ViewState } from '@ali/ide-core-browser';
-import { ThemeProvider, localize, MenuPath } from '@ali/ide-core-browser';
+import { ThemeProvider, localize } from '@ali/ide-core-browser';
 import * as styles from './index.module.less';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 

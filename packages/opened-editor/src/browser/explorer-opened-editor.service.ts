@@ -204,10 +204,12 @@ export class ExplorerOpenedEditorService {
           parent: undefined,
         };
         const statusKey = this.getStatusKey(node);
-        if (this.status.has(statusKey)) {
+        const status = this.status.get(statusKey);
+        if (status) {
           treeData.push({
             ...node,
-            ...this.status.get(statusKey),
+            ...status,
+            headIconClass: status.dirty ? styles.dirty_icon : '',
           });
         } else {
           treeData.push(node);
@@ -272,10 +274,12 @@ export class ExplorerOpenedEditorService {
     });
     this.nodes = this.nodes.map((node) => {
       const statusKey = this.getStatusKey(node);
-      if (this.status.has(statusKey)) {
+      const status = this.status.get(statusKey);
+      if (status) {
         return {
           ...node,
-          ...this.status.get(statusKey),
+          ...status,
+          headIconClass: status.dirty ? styles.dirty_icon : '',
         };
       } else {
         return node;
