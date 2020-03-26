@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
-import { IToolbarActionService, IToolbarActionGroup } from '@ali/ide-core-browser/lib/menu/next';
-import { Button, Select, Option } from '@ali/ide-components';
+import { IToolbarActionGroup } from '@ali/ide-core-browser/lib/menu/next';
+import { Button, Select, Option, Tooltip } from '@ali/ide-components';
 
 import { IToolbarActionStore } from './toolbar-action.store';
 import * as styles from './toolbar-action.module.less';
@@ -12,7 +12,10 @@ const ActionGroup = observer(({ group, id }: { group: IToolbarActionGroup; id: s
     {group.map((action) => {
       switch (action.type) {
         case 'action':
-          return <Button key={`${id}-${action.title}`} onClick={action.click} className={styles.action} type='icon' title={action.title} iconClass={action.iconClass} />;
+          return (
+            <Tooltip title={action.title}>
+              <Button key={`${id}-${action.title}`} onClick={action.click} className={styles.action} type='icon' iconClass={action.iconClass} />
+            </Tooltip>);
         case 'enum':
           return (<Select
             key={`${id}-${action.title}`}
