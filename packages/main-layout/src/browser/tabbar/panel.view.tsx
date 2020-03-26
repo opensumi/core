@@ -25,7 +25,11 @@ export const BaseTabPanelView: React.FC<{
       {tabbarService.visibleContainers.map((component) => {
         const containerId = component.options!.containerId;
         const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
-        return <div key={containerId} className={clsx(styles.panel_wrap, containerId)} style={currentContainerId === containerId ? panelVisible : panelInVisible}>
+        return <div
+          key={containerId}
+          className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
+          data-viewlet-id={containerId}
+          style={currentContainerId === containerId ? panelVisible : panelInVisible}>
           <PanelView titleMenu={titleMenu} side={side} component={component} />
         </div>;
       })}

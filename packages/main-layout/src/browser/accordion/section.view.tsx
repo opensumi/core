@@ -108,7 +108,7 @@ export const AccordionSection = (
   } as React.CSSProperties;
   const Component: any = children;
   return  (
-    <div className={ styles.kt_split_panel } >
+    <div className={ styles.kt_split_panel } data-view-id={viewId}>
       {!noHeader && <div
       onFocus={ headerFocusHandler }
       onBlur={ headerBlurHandler }
