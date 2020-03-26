@@ -31,6 +31,11 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
     this.commentsService.init();
   }
 
+  get panelBadge() {
+    const length = this.commentsService.commentsThreads.length;
+    return length ? length + '' : '';
+  }
+
   registerCommands(registry: CommandRegistry) {
     registry.registerCommand({
       id: CollapseId,
@@ -88,12 +93,18 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
         id: CommentPanelId,
         component: CommentsPanel,
       }], {
+        badge: this.panelBadge,
         containerId: CommentPanelId,
         title: localize('comments').toUpperCase(),
         hidden: false,
         activateKeyBinding: 'shift+ctrlcmd+c',
         ...this.commentsFeatureRegistry.getCommentsPanelOptions(),
       }, 'bottom');
+    });
+
+    this.commentsService.onThreadsChanged(() => {
+      const handler = this.layoutService.getTabbarHandler(CommentPanelId);
+      handler?.setBadge(this.panelBadge);
     });
   }
 
