@@ -13,11 +13,19 @@ import { URI, IEventBus } from '@ali/ide-core-common';
 import { IThemeService } from '@ali/ide-theme';
 import { MockThemeService } from '@ali/ide-theme/lib/common/mocks/theme.service';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 describe('ExplorerOpenedEditorService should be work', () => {
   let openEditorService: ExplorerOpenedEditorService;
   let injector: MockInjector;
   const testFileUri = new URI('file://test0.js');
+
+  const fakeSetBadge = jest.fn();
+  const fakeGetTabbarHandler = jest.fn();
+  fakeGetTabbarHandler.mockReturnValue({
+    setBadge: fakeSetBadge,
+  });
+
   beforeEach(async (done) => {
     injector = createBrowserInjector([
       OpenedEditorModule,
@@ -44,7 +52,12 @@ describe('ExplorerOpenedEditorService should be work', () => {
         token: ExplorerOpenedEditorService,
         useClass: ExplorerOpenedEditorService,
       },
-
+      {
+        token: IMainLayoutService,
+        useValue: {
+          getTabbarHandler: fakeGetTabbarHandler,
+        },
+      },
     );
     const baseMockGroup = {
 
@@ -98,6 +111,10 @@ describe('ExplorerOpenedEditorService should be work', () => {
     done();
   });
 
+  afterEach(() => {
+    fakeSetBadge.mockReset();
+  });
+
   describe('01 #Init', () => {
     it('should have enough API', async () => {
       expect(typeof openEditorService.overrideFileDecorationService).toBe('object');
@@ -122,10 +139,12 @@ describe('ExplorerOpenedEditorService should be work', () => {
   describe('02 #API should be worked.', () => {
     it('The tree data should no be empty', async (done) => {
       expect(openEditorService.nodes.length > 0).toBeTruthy();
+      expect(fakeSetBadge).toBeCalledTimes(1);
+      expect(fakeSetBadge).toBeCalledWith('');
       done();
     });
 
-    it('Status should be dirty while file change', async (done) => {
+    it('Status should be dirty while file change', async () => {
       const eventBus = injector.get(IEventBus);
       eventBus.fire(new ResourceDecorationChangeEvent({
         uri: testFileUri,
@@ -137,7 +156,6 @@ describe('ExplorerOpenedEditorService should be work', () => {
       const node = openEditorService.nodes[0];
       const status = openEditorService.status.get(openEditorService.getStatusKey(node));
       expect(status?.dirty).toBeTruthy();
-      done();
     });
 
     it('Select file should be work', async (done) => {
