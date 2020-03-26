@@ -245,6 +245,12 @@ export class TabbarService extends WithEventBus {
       toggledWhen: `${getTabbarCtxKey(this.location)} == ${containerId}`,
     }));
     disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
+    const containerExistKey = this.contextKeyService.createKey(`workbench.container.${containerId}.exist`, true);
+    disposables.push({
+      dispose: () => {
+        containerExistKey.set(false);
+      },
+    });
     this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
     if (containerId === this.currentContainerId) {
       // 需要重新触发currentChange副作用

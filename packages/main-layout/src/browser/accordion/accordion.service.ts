@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, IContextKey, OnEvent, WithEventBus, ResizeEvent } from '@ali/ide-core-browser';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -55,7 +55,7 @@ export class AccordionService extends WithEventBus {
   private headerSize: number;
   private minSize: number;
   private menuId = `accordion/${this.containerId}`;
-  private toDispose: Map<string, IDisposable> = new Map();
+  private toDispose: Map<string, DisposableCollection> = new Map();
 
   private topViewKey: IContextKey<string>;
   private scopedCtxKeyService = this.contextKeyService.createScoped();
@@ -134,7 +134,8 @@ export class AccordionService extends WithEventBus {
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
     this.viewContextKeyRegistry.registerContextKeyService(view.id, this.scopedCtxKeyService.createScoped()).createKey('view', view.id);
-    this.toDispose.set(view.id, this.menuRegistry.registerMenuItem(this.menuId, {
+    const disposables = new DisposableCollection();
+    disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(view.id),
         label: view.name || view.id,
@@ -142,6 +143,13 @@ export class AccordionService extends WithEventBus {
       group: '1_widgets',
       // TODO order计算
     }));
+    const existViewKey = this.contextKeyService.createKey(`workbench.view.${view.id}.exist`, true);
+    disposables.push({
+      dispose: () => {
+        existViewKey.set(false);
+      },
+    });
+    this.toDispose.set(view.id, disposables);
     this.popViewKeyIfOnlyOneViewVisible();
   }
 
