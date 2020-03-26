@@ -17,6 +17,7 @@ import { IWindowService } from '@ali/ide-window';
 import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
 import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { PasteTypes } from '../common';
 
 export const ExplorerResourceViewId = 'file-explorer-next';
 
@@ -374,7 +375,14 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_FILE, {
       execute: (_, uris) => {
-        this.fileTreeModelService.copyFile(uris);
+        if (uris && uris.length) {
+          this.fileTreeModelService.copyFile(uris);
+        } else {
+          const selectedUris = this.fileTreeModelService.selectedFiles.map((file) => file.uri);
+          if (selectedUris && selectedUris.length) {
+            this.fileTreeModelService.copyFile(selectedUris);
+          }
+        }
       },
       isVisible: () => {
         return this.fileTreeModelService.selectedFiles.length >= 1;
@@ -382,7 +390,14 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
       execute: (_, uris) => {
-        this.fileTreeModelService.cutFile(uris);
+        if (uris && uris.length) {
+          this.fileTreeModelService.cutFile(uris);
+        } else {
+          const selectedUris = this.fileTreeModelService.selectedFiles.map((file) => file.uri);
+          if (selectedUris && selectedUris.length) {
+            this.fileTreeModelService.cutFile(selectedUris);
+          }
+        }
       },
       isVisible: () => {
         return this.fileTreeModelService.selectedFiles.length >= 1;
@@ -390,14 +405,18 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
       execute: (uri) => {
-        this.fileTreeModelService.pasteFile(uri);
-
+        if (uri) {
+          this.fileTreeModelService.pasteFile(uri);
+        } else  if (this.fileTreeModelService.focusedFile) {
+          const focusedUri = this.fileTreeModelService.focusedFile.uri;
+          this.fileTreeModelService.pasteFile(focusedUri);
+        }
       },
       isVisible: () => {
         return !!this.fileTreeModelService.focusedFile && Directory.is(this.fileTreeModelService.focusedFile);
       },
       isEnabled: () => {
-        return this.fileTreeModelService.pasteFiles.length > 0;
+        return this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE;
       },
     });
     commands.registerCommand(FILE_COMMANDS.OPEN_FOLDER, {

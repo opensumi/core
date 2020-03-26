@@ -10,6 +10,7 @@ import { URI, localize, CommandService, formatLocalize } from '@ali/ide-core-com
 import { IMessageService, IDialogService } from '@ali/ide-overlay';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
+import * as paths from '@ali/ide-core-common/lib/path';
 
 @Injectable()
 export class FileTreeAPI implements IFileTreeAPI {
@@ -192,5 +193,30 @@ export class FileTreeAPI implements IFileTreeAPI {
     } catch (e) {
       return false;
     }
+  }
+
+  async copyFile(from: URI, to: URI) {
+    let idx = 1;
+    let exists;
+    try {
+      exists = await this.fileServiceClient.exists(to.toString());
+    } catch (e) {
+      return ;
+    }
+    while (exists) {
+      const name = to.displayName.replace(/\Wcopy\W\d+/, '');
+      const extname = paths.extname(name);
+      const basename = paths.basename(name, extname);
+      const newFileName = `${basename} copy ${idx}${extname}`;
+      to = to.parent.resolve(newFileName);
+      idx++;
+      try {
+        exists = await this.fileServiceClient.exists(to.toString());
+      } catch (e) {
+        return;
+      }
+    }
+    this.fileServiceClient.copy(from.toString(), to.toString());
+    return to;
   }
 }

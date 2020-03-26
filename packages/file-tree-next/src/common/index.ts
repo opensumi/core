@@ -6,6 +6,7 @@ import { Directory, File } from '../browser/file-tree-nodes';
 export const IFileTreeAPI = Symbol('IFileTreeAPI');
 
 export interface IFileTreeAPI {
+  copyFile(from: URI, to: URI): Promise<URI | void>;
   createFile(newUri: URI): Promise<boolean>;
   createDirectory(newUri: URI): Promise<boolean>;
   delete(uri: URI): Promise<boolean>;
@@ -37,4 +38,10 @@ export namespace FileStatNode {
     }
     return undefined;
   }
+}
+
+export enum PasteTypes {
+  NONE,
+  COPY,
+  CUT,
 }

@@ -9,11 +9,16 @@ import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resourc
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { IFileTreeAPI } from '../../common';
+import { IFileTreeAPI, PasteTypes } from '../../common';
 import { DragAndDropService } from './file-tree-dnd.service';
 import { IDialogService } from '@ali/ide-overlay';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import * as styles from '../file-tree-node.module.less';
+
+export interface IParseStore {
+  files: (File|Directory)[];
+  type: PasteTypes;
+}
 
 export interface IFileTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -68,12 +73,11 @@ export class FileTreeModelService {
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
+  private cutDecoration: Decoration = new Decoration(styles.mod_cut); // 焦点态
   // 即使选中态也是焦点态的节点，全局仅会有一个
   private _focusedFile: File | Directory | undefined;
   // 选中态的节点，会可能有多个
   private _selectedFiles: (File | Directory)[] = [];
-  // 待粘贴的文件
-  private _pasteFiles: (File | Directory)[] = [];
 
   private clickTimes: number;
   private clickTimer: any;
@@ -89,6 +93,7 @@ export class FileTreeModelService {
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   private validateMessage: PromptValidateMessage | undefined;
+  private _pasteStore: IParseStore;
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -122,8 +127,8 @@ export class FileTreeModelService {
   get selectedFiles() {
     return this._selectedFiles;
   }
-  get pasteFiles() {
-    return this._pasteFiles;
+  get pasteStore() {
+    return this._pasteStore;
   }
 
   get currentRelativeUriContextKey(): IContextKey<string> {
@@ -181,6 +186,7 @@ export class FileTreeModelService {
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
+    this._decorations.addDecoration(this.cutDecoration);
   }
 
   /**
@@ -461,10 +467,6 @@ export class FileTreeModelService {
     await this.fileTreeAPI.delete(uri);
   }
 
-  async renameFileByUri() {
-
-  }
-
   private getWellFormedFileName(filename: string): string {
     if (!filename) {
       return filename;
@@ -631,21 +633,88 @@ export class FileTreeModelService {
     }
   }
 
-  async copyFile() {
-
+  async copyFile(from: URI[]) {
+    if (this.pasteStore && this.pasteStore.type === PasteTypes.CUT) {
+      this._pasteStore.files.forEach((file) => {
+        if (file) {
+          this.cutDecoration.removeTarget(file as File);
+        }
+      });
+    }
+    // 通知视图更新
+    this.treeModel.dispatchChange();
+    this._pasteStore = {
+      files: from.map((uri) => this.fileTreeService.getNodeByUriString(uri.toString())).filter((node) => !!node) as (File | Directory)[],
+      type: PasteTypes.COPY,
+    };
   }
 
-  async pasteFile() {
-
+  async pasteFile(to: URI) {
+    let parent = this.fileTreeService.getNodeByUriString(to.toString());
+    if (!parent || !this.pasteStore) {
+      return;
+    }
+    if (!Directory.is(parent)) {
+      parent = parent.parent as Directory;
+    }
+    if (this.pasteStore.type === PasteTypes.CUT) {
+      this.pasteStore.files.forEach(async (file) => {
+        if (file) {
+          this.cutDecoration.removeTarget(file);
+        }
+        const to = (parent as Directory).uri.resolve(file.uri.displayName);
+        if (!(parent as Directory).expanded) {
+          await (parent as Directory).setExpanded(true);
+        }
+        this.fileTreeAPI.mv(file.uri, to);
+        this.fileTreeService.moveNode((parent as Directory), file.uri.toString(), to.toString());
+      });
+      this._pasteStore = {
+        files: [],
+        type: PasteTypes.NONE,
+      };
+      this.fileTreeContextKey.explorerResourceCut.set(false);
+      // 更新视图
+      this.treeModel.dispatchChange();
+    } else if (this.pasteStore.type === PasteTypes.COPY) {
+      this.pasteStore.files.forEach(async (file) => {
+        const to = (parent as Directory).uri.resolve(file.uri.displayName);
+        if (!(parent as Directory).expanded) {
+          await (parent as Directory).setExpanded(true);
+        }
+        const copyFile = await this.fileTreeAPI.copyFile(file.uri, to);
+        if (copyFile) {
+          this.fileTreeService.addNode((parent as Directory), copyFile.displayName, Directory.is(file) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
+        }
+      });
+    }
   }
 
-  async cutFile() {
+  async cutFile(from: URI[]) {
+    if (from.length > 0) {
+      this.fileTreeContextKey.explorerResourceCut.set(true);
+    }
+    const files = from.map((uri) => this.fileTreeService.getNodeByUriString(uri.toString())).filter((node) => !!node) as (File | Directory)[];
+    this._pasteStore = {
+      files,
+      type: PasteTypes.CUT,
+    };
 
+    for (const file of files) {
+      if (file) {
+        this.cutDecoration.addTarget(file);
+      }
+    }
+    // 通知视图更新
+    this.treeModel.dispatchChange();
   }
 
   async location(uri: URI) {
     const path = await this.getFileTreeNodePathByUri(uri);
     if (path) {
+      if (!this.fileTreeHandle) {
+        return;
+      }
       const node = await this.fileTreeHandle.ensureVisible(path);
       if (node) {
         this.activeFileDecoration(node as File);
