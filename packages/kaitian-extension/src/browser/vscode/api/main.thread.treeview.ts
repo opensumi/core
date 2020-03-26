@@ -87,6 +87,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   }
 
   async $reveal(treeViewId: string, treeItemId: string) {
+    this.mainLayoutService.revealView(treeViewId);
     const dataProvider = this.dataProviders.get(treeViewId);
     if (dataProvider) {
       dataProvider.reveal(treeItemId);
