@@ -61,7 +61,7 @@ export const localizationBundle = {
     'menu-bar.title.go': '前往',
     'menu-bar.title.debug': '调试',
     'menu-bar.title.terminal': '终端',
-    'menu-bar.title.window': '视窗',
+    'menu-bar.title.window': '窗口',
     'menu-bar.title.help': '帮助',
 
     'menu-bar.file.open': '打开文件',
