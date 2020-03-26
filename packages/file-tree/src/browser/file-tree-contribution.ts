@@ -15,7 +15,6 @@ import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } 
 import { IWindowService } from '@ali/ide-window';
 import { IWindowDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
 import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
-import { IsTerminalViewInitialized } from '@ali/ide-core-browser/lib/contextkey';
 
 export const ExplorerResourceViewId = 'file-explorer';
 
@@ -126,7 +125,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.OPEN_WITH_PATH.id,
-      when: IsTerminalViewInitialized.raw,
+      when: 'workbench.panel.terminal',
       order: 3,
       group: '1_open',
     });
