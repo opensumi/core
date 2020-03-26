@@ -143,12 +143,6 @@ export class AccordionService extends WithEventBus {
       group: '1_widgets',
       // TODO order计算
     }));
-    const existViewKey = this.contextKeyService.createKey(`workbench.view.${view.id}.exist`, true);
-    disposables.push({
-      dispose: () => {
-        existViewKey.set(false);
-      },
-    });
     this.toDispose.set(view.id, disposables);
     this.popViewKeyIfOnlyOneViewVisible();
   }

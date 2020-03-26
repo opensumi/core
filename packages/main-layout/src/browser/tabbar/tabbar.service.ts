@@ -16,6 +16,11 @@ export interface TabState {
   priority: number;
 }
 const INIT_PANEL_SIZE = 280;
+const CONTAINER_NAME_MAP = {
+  left: 'view',
+  right: 'extendView',
+  bottom: 'panel',
+};
 
 @Injectable({multiple: true})
 export class TabbarService extends WithEventBus {
@@ -245,7 +250,7 @@ export class TabbarService extends WithEventBus {
       toggledWhen: `${getTabbarCtxKey(this.location)} == ${containerId}`,
     }));
     disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
-    const containerExistKey = this.contextKeyService.createKey(`workbench.container.${containerId}.exist`, true);
+    const containerExistKey = this.contextKeyService.createKey(`workbench.${CONTAINER_NAME_MAP[this.location] || 'view'}.${containerId}`, true);
     disposables.push({
       dispose: () => {
         containerExistKey.set(false);
