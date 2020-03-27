@@ -79,17 +79,18 @@ export class FileTreeService extends Tree {
       const roots = await this.workspaceService.roots;
 
       if (this.isMutiWorkspace) {
-        // // 创建Root节点并引入root文件目录
-        // const children: any[] = [];
-        // for (const root of roots) {
-        //   const child = await this.fileTreeAPI.resolveChildren(this as ITree, root);
-        //   this.watchFilesChange(new URI(root.uri));
-        //   this.cacheNodes(children as (File | Directory)[]);
-        //   children.concat(child);
-        // }
-        // // TODO: 根据workspace生成临时root托管子目录
-        // return children;
-        return [];
+        const rootUri = new URI(this.workspaceService.workspace?.uri);
+        let rootName = rootUri.displayName;
+        rootName = rootName.slice(0, rootName.lastIndexOf('.'));
+        const fileStat = {
+          ...this.workspaceService.workspace,
+          isDirectory: true,
+        } as FileStat;
+        const root = new Directory(this as ITree, undefined, rootUri, rootName, fileStat);
+        // 创建Root节点并引入root文件目录
+        this.cacheNodes([root]);
+        this.root = root;
+        return [root];
       } else {
         if (roots.length > 0) {
           const children = await this.fileTreeAPI.resolveChildren(this as ITree, roots[0]);
@@ -100,6 +101,19 @@ export class FileTreeService extends Tree {
         }
       }
     } else {
+      // 根节点加载子节点
+      if (Directory.isRoot(parent) && this.isMutiWorkspace) {
+        // 加载根目录
+        const roots = await this.workspaceService.roots;
+        let children: any[] = [];
+        for (const fileStat of roots) {
+          const child = this.fileTreeAPI.toNode(this as ITree, fileStat, parent);
+          this.watchFilesChange(new URI(fileStat.uri));
+          children = children.concat(child);
+        }
+        this.cacheNodes(children as (File | Directory)[]);
+        return children;
+      }
       // 加载子目录
       if (parent.uri) {
         const children =  await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent);
@@ -391,12 +405,6 @@ export class FileTreeService extends Tree {
     this.changeEventDispatchQueue = [];
     return promise;
   }
-
-  // @OnEvent(ResourceLabelOrIconChangedEvent)
-  // onResourceLabelOrIconChangedEvent(e: ResourceLabelOrIconChangedEvent) {
-  //   // labelService发生改变时，更新icon和名称
-  //   this.updateItemMeta(e.payload);
-  // }
 
   /**
    * 打开文件
