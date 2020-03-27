@@ -144,6 +144,7 @@ export const localizationBundle = {
     'search.help.modify': '修改',
     'search.replace.buttonOK': '替换',
     'search.replace.buttonCancel': '取消',
+    'search.too.many.results': '由于您的搜索条件过于疏松，我们仅展示了部分搜索结果',
     'file-search.quickOpen.leftRight': '在侧边打开',
     'file-search.quickOpen.upDown': '在底部打开',
     'search.fileReplaceChanges': '{0} ↔ {1} (替换预览)',

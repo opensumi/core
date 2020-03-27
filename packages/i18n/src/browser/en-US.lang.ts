@@ -161,6 +161,7 @@ export const localizationBundle = {
     'search.help.modify': 'Modify',
     'search.replace.buttonOK': 'Replace',
     'search.replace.buttonCancel': 'Cancel',
+    'search.too.many.results': 'Because your search terms are too loose, we only show some search results',
     'file-search.quickOpen.leftRight': 'Open on the side',
     'file-search.quickOpen.upDown': 'Open at the bottom',
     'search.fileReplaceChanges': '{0} ↔ {1} (Replace Preview)',
