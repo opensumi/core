@@ -271,7 +271,11 @@ export interface TreeViewActionConfig {
   title: string;
   command: string;
   location: TreeViewActionTypes;
-  paramsKey?: string;
+  /**
+   * paramsKey 支持从 node 直接取指定的 key
+   * 同时也支持从 node 变换成一个新的格式
+   */
+  paramsKey?: string | ((node: TreeNode) => any);
 }
 
 export interface TreeViewActionComponent {
