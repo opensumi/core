@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
-import { Input, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-components';
+import { Input, ValidateInput, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-components';
 import { ViewState } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
@@ -63,6 +63,8 @@ export const Search = observer(({
   const UIState = searchBrowserService.UIState;
   const searchError = searchBrowserService.searchError;
   const isSearchDoing = searchBrowserService.isSearchDoing;
+  const validateMessage = searchBrowserService.validateMessage;
+  const isShowValidateMessage = searchBrowserService.isShowValidateMessage;
 
   React.useEffect(() => {
     setSearchPanelLayout({
@@ -73,7 +75,7 @@ export const Search = observer(({
 
   const collapsePanelContainerStyle = {
     width: viewState.width || '100%',
-  height: viewState.height,
+    height: viewState.height,
   };
 
   return (
@@ -96,7 +98,7 @@ export const Search = observer(({
                 />
               </p>
               <div className={cls(styles.search_field, { [styles.focus]: UIState.isSearchFocus })}>
-                <Input
+                <ValidateInput
                   id='search-input-field'
                   title={localize('search.input.placeholder')}
                   type='text'
@@ -107,6 +109,7 @@ export const Search = observer(({
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchInputChange}
                   ref={searchBrowserService.searchInputEl}
+                  validateMessage={isShowValidateMessage ? validateMessage : undefined }
                   addonAfter={[
                     <span
                     key={localize('caseDescription')}

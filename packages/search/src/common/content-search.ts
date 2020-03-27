@@ -1,5 +1,5 @@
 import { endsWith, startsWith, Command, URI } from '@ali/ide-core-common';
-import { TreeNode } from '@ali/ide-core-browser/lib/components';
+import { TreeNode, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
@@ -67,6 +67,10 @@ export interface IContentSearchClientService {
   replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
 
   isSearchDoing: boolean;
+
+  isShowValidateMessage: boolean;
+
+  validateMessage: ValidateMessage | undefined;
 
   updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent);
 }

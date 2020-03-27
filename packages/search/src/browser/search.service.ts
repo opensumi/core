@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { createRef } from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Emitter, IEventBus, trim, isUndefined } from '@ali/ide-core-common';
+import { Emitter, IEventBus, trim, isUndefined, localize } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
   Key,
@@ -28,6 +28,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
+import { VALIDATE_TYPE, ValidateMessage } from '@ali/ide-components';
 import { observable, transaction, action } from 'mobx';
 import {
   ContentSearchResult,
@@ -42,6 +43,7 @@ import {
   IUIState,
   cutShortSearchResult,
   FilterFileWithGlobRelativePath,
+  DEFAULT_SEARCH_IN_WORKSPACE_LIMIT,
 } from '../common';
 import { SearchPreferences } from './search-preferences';
 import { SearchHistory } from './search-history';
@@ -130,6 +132,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @observable
   isSearchDoing: boolean = false;
 
+  @observable
+  isShowValidateMessage: boolean = true;
+
   _searchHistory: SearchHistory;
 
   docModelSearchedList: string[] = [];
@@ -173,6 +178,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     // 记录搜索历史
     this.searchHistory.setSearchHistory(value);
+
+    this.isShowValidateMessage = true;
 
     // Stop old search
     if (this.currentSearchId) {
@@ -390,6 +397,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   onSearchInputChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
+    this.isShowValidateMessage = false;
   }
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -445,6 +453,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (!isUndefined(obj.isSearchFocus) && (obj.isSearchFocus !== this.UIState.isSearchFocus)) {
       // 搜索框状态发现变化，重置搜索历史的当前位置
       this.searchHistory.reset();
+      this.isShowValidateMessage = false;
     }
     const newUIState = Object.assign({}, this.UIState, obj);
     this.UIState = newUIState;
@@ -476,6 +485,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this._searchHistory = new SearchHistory(this, this.workspaceService);
     }
     return this._searchHistory;
+  }
+
+  get validateMessage(): ValidateMessage | undefined {
+    if (this.resultTotal.resultNum >= DEFAULT_SEARCH_IN_WORKSPACE_LIMIT) {
+      return {
+        message: localize('search.too.many.results'),
+        type: VALIDATE_TYPE.WARNING,
+      };
+    }
   }
 
   doReplaceAll = () => {
