@@ -21,11 +21,13 @@ export interface PromptValidateMessage {
 export abstract class PromptHandle {
   public readonly $: HTMLInputElement;
   public readonly $validate: HTMLDivElement;
+  public readonly $addonAfter: HTMLDivElement;
   public readonly ProxiedInput: (props: ProxiedInputProp) => JSX.Element;
   private disposables: DisposableCollection = new DisposableCollection();
   private isInPendingCommitState: boolean = false;
   private _destroyed: boolean = false;
   private _hasValidateElement: boolean = false;
+  private _hasAddonAfter: boolean = false;
   private _validateClassName: string;
 
   // event
@@ -47,7 +49,9 @@ export abstract class PromptHandle {
     this.$.addEventListener('focus', this.handleFocus);
     this.$.addEventListener('blur', this.handleBlur);
     this.$validate = document.createElement('div');
-    this.$validate.setAttribute('style', 'width: calc(100% + 2px);left: -1px;');
+    this.$validate.setAttribute('style', 'top: calc(100% - 1px);');
+    this.$addonAfter = document.createElement('div');
+    this.$addonAfter.setAttribute('class', 'kt-input-addon-after');
     // 可能存在PromptHandle创建后没被使用的情况
   }
 
@@ -99,9 +103,28 @@ export abstract class PromptHandle {
     this.$.classList.remove(classname);
   }
 
-  public updateValidateMessage(validateMessage: PromptValidateMessage) {
+  public addAddonAfter(classname: string) {
+    if (!this._hasAddonAfter && !this._destroyed) {
+      this.$.parentElement?.parentElement?.appendChild(this.$addonAfter);
+      this._hasAddonAfter = true;
+    }
+    const addElement = document.createElement('div');
+    addElement.setAttribute('class', classname);
+    this.$addonAfter.appendChild(addElement);
+  }
+
+  public removeAddonAfter() {
+    if (this._hasAddonAfter) {
+      this.$addonAfter.firstChild?.remove();
+      this.$.parentElement?.parentElement?.removeChild(this.$addonAfter);
+      this._hasAddonAfter = false;
+    }
+  }
+
+  public addValidateMessage(validateMessage: PromptValidateMessage) {
     if (!this._hasValidateElement && !this._destroyed) {
-      this.$.parentElement?.appendChild(this.$validate);
+      // 移动到与input-box同级别
+      this.$.parentElement?.parentElement?.parentElement?.appendChild(this.$validate);
       this._hasValidateElement = true;
     }
     let validateBoxClassName = 'validate-message popup ';
@@ -119,9 +142,9 @@ export abstract class PromptHandle {
     this.$.parentElement!.parentElement!.classList.add(this._validateClassName);
   }
 
-  public destroyValidateMessage() {
+  public removeValidateMessage() {
     if (this._hasValidateElement) {
-      this.$.parentElement?.removeChild(this.$validate);
+      this.$.parentElement?.parentElement?.parentElement?.removeChild(this.$validate);
       this._hasValidateElement = false;
       this.$.parentElement!.parentElement!.classList.remove(this._validateClassName);
     }

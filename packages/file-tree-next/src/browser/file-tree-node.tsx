@@ -155,8 +155,8 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     let isDirectory: boolean;
     if (isPrompt && node instanceof PromptHandle) {
       if (node instanceof RenamePromptHandle) {
-        nodeUri = (node.target! as (File | Directory)).uri.resolve(node.$.value);
-        isDirectory = Directory.is(node.target);
+        nodeUri = ((node as RenamePromptHandle).target! as (File | Directory)).uri.resolve(node.$.value);
+        isDirectory = Directory.is((node as RenamePromptHandle).target);
       } else {
         nodeUri = (node.parent! as Directory).uri.resolve(node.$.value);
         isDirectory = node.type === TreeNodeType.CompositeTreeNode;
@@ -176,7 +176,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
           className={cls(styles.file_tree_node_segment, styles.file_tree_node_inputbox)}
         >
           <div className={cls('input-box', styles.file_tree_node_prompt_box)}>
-            <node.ProxiedInput  wrapperStyle={{height: FILE_TREE_NODE_HEIGHT, padding: 0, textIndent: 5}}/>
+            <node.ProxiedInput  wrapperStyle={{height: FILE_TREE_NODE_HEIGHT, padding: '0 5px'}}/>
           </div>
         </div>;
     }

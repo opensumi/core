@@ -6,12 +6,12 @@ import { Directory, File } from '../browser/file-tree-nodes';
 export const IFileTreeAPI = Symbol('IFileTreeAPI');
 
 export interface IFileTreeAPI {
-  copyFile(from: URI, to: URI): Promise<URI | void>;
-  createFile(newUri: URI): Promise<boolean>;
-  createDirectory(newUri: URI): Promise<boolean>;
-  delete(uri: URI): Promise<boolean>;
-  mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<boolean>;
-  mv(oldUri: URI , newUri: URI, isDirectory?: boolean): Promise<boolean>;
+  copyFile(from: URI, to: URI): Promise<FileStat | string | void>;
+  createFile(newUri: URI): Promise<string | void>;
+  createDirectory(newUri: URI): Promise<string | void>;
+  delete(uri: URI): Promise<string | void>;
+  mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<string[] | void>;
+  mv(oldUri: URI , newUri: URI, isDirectory?: boolean): Promise<string | void>;
   resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory): Promise<(File | Directory)[]>;
   resolveNodeByPath(tree: ITree, path: string, parent?: Directory): Promise<File | Directory | undefined>;
   toNode(tree: ITree, filestat: FileStat, parent?: Directory): Directory | File;

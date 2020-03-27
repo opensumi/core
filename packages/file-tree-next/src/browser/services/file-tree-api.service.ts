@@ -7,7 +7,7 @@ import { ITree } from '@ali/ide-components';
 import { Directory, File } from '../file-tree-nodes';
 import { IFileTreeAPI } from '../../common';
 import { URI, localize, CommandService, formatLocalize } from '@ali/ide-core-common';
-import { IMessageService, IDialogService } from '@ali/ide-overlay';
+import { IDialogService } from '@ali/ide-overlay';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
 import * as paths from '@ali/ide-core-common/lib/path';
@@ -20,9 +20,6 @@ export class FileTreeAPI implements IFileTreeAPI {
 
   @Autowired()
   private labelService: LabelService;
-
-  @Autowired(IMessageService)
-  private messageService: IMessageService;
 
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;
@@ -109,9 +106,10 @@ export class FileTreeAPI implements IFileTreeAPI {
   }
 
   async mvFiles(fromFiles: URI[], targetDir: URI) {
+    const error: string[] = [];
     for (const from of fromFiles) {
       if (from.isEqualOrParent(targetDir)) {
-        return false;
+        return;
       }
     }
     if (this.corePreferences['explorer.confirmMove']) {
@@ -119,38 +117,41 @@ export class FileTreeAPI implements IFileTreeAPI {
       const cancel = localize('file.confirm.move.cancel');
       const confirm = await this.dialogService.warning(formatLocalize('file.confirm.move', `[${fromFiles.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
       if (confirm !== ok) {
-        return false;
+        return;
       }
     }
     for (const from of fromFiles) {
       const filestat = this.cacheFileStat.get(from.toString());
       const res = await this.mv(from, targetDir.resolve(from.displayName), filestat && filestat.isDirectory);
       if (!res) {
-        return false;
+        error.push(res);
       }
     }
-    return true;
+    return error;
   }
 
   async mv(from: URI, to: URI, isDirectory: boolean = false) {
     const exists = await this.fileServiceClient.exists(to.toString());
     if (exists) {
-      this.messageService.error(localize('file.move.existMessage'));
-      return false;
+      return localize('file.move.existMessage');
     }
-    await this.workspaceEditService.apply({
-      edits: [
-        {
-          newUri: to,
-          oldUri: from,
-          options: {
-            isDirectory,
-            overwrite: true,
+    try {
+      await this.workspaceEditService.apply({
+        edits: [
+          {
+            newUri: to,
+            oldUri: from,
+            options: {
+              isDirectory,
+              overwrite: true,
+            },
           },
-        },
-      ],
-    });
-    return true;
+        ],
+      });
+    } catch (e) {
+      return e.message;
+    }
+    return;
   }
 
   async createFile(uri: URI) {
@@ -164,19 +165,19 @@ export class FileTreeAPI implements IFileTreeAPI {
         ],
       });
     } catch (e) {
-      return false;
+      return e.message;
     }
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
-    return true;
+    return;
   }
 
   async createDirectory(uri: URI) {
     try {
       await this.fileServiceClient.createFolder(uri.toString());
     } catch (e) {
-      return false;
+      return e.message;
     }
-    return true;
+    return;
   }
 
   async delete(uri: URI) {
@@ -189,9 +190,9 @@ export class FileTreeAPI implements IFileTreeAPI {
           },
         ],
       });
-      return true;
+      return;
     } catch (e) {
-      return false;
+      return e.message;
     }
   }
 
@@ -201,7 +202,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     try {
       exists = await this.fileServiceClient.exists(to.toString());
     } catch (e) {
-      return ;
+      return e.message;
     }
     while (exists) {
       const name = to.displayName.replace(/\Wcopy\W\d+/, '');
@@ -216,7 +217,10 @@ export class FileTreeAPI implements IFileTreeAPI {
         return;
       }
     }
-    this.fileServiceClient.copy(from.toString(), to.toString());
-    return to;
+    try {
+      return await this.fileServiceClient.copy(from.toString(), to.toString());
+    } catch (e) {
+      return e.message;
+    }
   }
 }

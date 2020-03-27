@@ -267,8 +267,11 @@ export class ResourceFileEdit implements IResourceFileEdit {
         return; // not overwriting, but ignoring, and the target file exists
       }
 
-      await fileSystemService.move(this.oldUri.toString(), this.newUri.toString(), options);
-
+      try {
+        await fileSystemService.move(this.oldUri.toString(), this.newUri.toString(), options);
+      } catch (e) {
+        throw new Error(e);
+      }
       await this.notifyEditor(editorService, documentModelService);
 
       // TODO 文件夹rename应该带传染性, 但是遍历实现比较坑，先不实现
@@ -280,7 +283,11 @@ export class ResourceFileEdit implements IResourceFileEdit {
         // 默认recursive
         await editorService.close(this.oldUri, true);
         // electron windows下moveToTrash大量文件会导致IDE卡死，如果检测到这个情况就不使用moveToTrash
-        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
+        try {
+          await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: !(isWindows && this.oldUri.path.name === 'node_modules') });
+        } catch (e) {
+          throw new Error(e);
+        }
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldUri}));
       } else if (!options.ignoreIfNotExists) {
         throw new Error(`${this.oldUri} 不存在`);
@@ -290,7 +297,11 @@ export class ResourceFileEdit implements IResourceFileEdit {
       if (options.overwrite === undefined && options.ignoreIfExists && await fileSystemService.exists(this.newUri.toString())) {
         return; // not overwriting, but ignoring, and the target file exists
       }
-      await fileSystemService.createFile(this.newUri.toString(), { content: '', overwrite: options.overwrite });
+      try {
+        await fileSystemService.createFile(this.newUri.toString(), { content: '', overwrite: options.overwrite });
+      } catch (e) {
+        throw new Error(e);
+      }
       if (options.showInEditor) {
         editorService.open(this.newUri);
       }
