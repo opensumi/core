@@ -13,6 +13,8 @@ export enum TreeNodeEvent {
   DidProcessWatchEvent,
   WillProcessWatchEvent,
   DidChangeMetadata,
+  DidResolveChildren,
+  WillResolveChildren,
 }
 
 export enum WatchEvent {
@@ -50,7 +52,7 @@ export interface IWatcherAddEvent {
    */
   id: number;
   /**
-   * 添加的节点id
+   * 添加的节点
    */
   node: ITreeNode;
 }
@@ -123,6 +125,9 @@ export interface ITreeWatcher {
 
   notifyWillChangeExpansionState(target: ICompositeTreeNode, nowExpanded: boolean);
   notifyDidChangeExpansionState(target: ICompositeTreeNode, nowExpanded: boolean);
+
+  notifyWillResolveChildren(target: ICompositeTreeNode, nowExpanded: boolean);
+  notifyDidResolveChildren(target: ICompositeTreeNode, nowExpanded: boolean);
 
   notifyDidChangePath(target: ITreeNodeOrCompositeTreeNode);
   notifyDidChangeMetadata(target: ITreeNodeOrCompositeTreeNode, change: IMetadataChange);

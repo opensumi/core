@@ -25,10 +25,6 @@ export interface ITreeNode {
    */
   readonly icon?: string;
   /**
-   * 节点描述
-   */
-  readonly description?: string;
-  /**
    * 描述节点是否可见，这里的可见表示的是否在展示数据内，并不是代表是否在用户视窗范围内
    */
   readonly visible?: boolean;
@@ -61,7 +57,6 @@ export enum TreeNodeType {
 
 export interface IOptionalMetaData {
   name?: string;
-  description?: string;
   [key: string]: any;
 }
 

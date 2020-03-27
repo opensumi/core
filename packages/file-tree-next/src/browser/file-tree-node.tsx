@@ -7,6 +7,7 @@ import { getIcon, URI } from '@ali/ide-core-browser';
 import { Directory, File } from './file-tree-nodes';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { DragAndDropService } from './services/file-tree-dnd.service';
+import { Loading } from '@ali/ide-core-browser/lib/components/loading';
 
 export interface IFileTreeNodeProps {
   item: any;
@@ -120,10 +121,9 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   } as React.CSSProperties;
 
   const renderFolderToggle = (node: Directory | PromptHandle, clickHandler: any) => {
-    // TODO: loading
-    // if (node.isLoading) {
-    //   return <Loading />;
-    // }
+    if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
+      return <Loading />;
+    }
     if (isPrompt && node instanceof PromptHandle) {
       const isDirectory: boolean = (node as NewPromptHandle).type === TreeNodeType.CompositeTreeNode;
       if (isDirectory) {

@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE } from '@ali/ide-components';
+import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, RenamePromptHandle, NewPromptHandle, PromptValidateMessage, PROMPT_VALIDATE_TYPE, TreeNodeEvent } from '@ali/ide-components';
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
@@ -73,6 +73,7 @@ export class FileTreeModelService {
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
+  private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 焦点态
   private cutDecoration: Decoration = new Decoration(styles.mod_cut); // 焦点态
   // 即使选中态也是焦点态的节点，全局仅会有一个
   private _focusedFile: File | Directory | undefined;
@@ -180,6 +181,16 @@ export class FileTreeModelService {
       // 当labelService注册的对应节点图标变化时，通知视图更新
       this.treeModel.dispatchChange();
     }));
+    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+      this.loadingDecoration.addTarget(target);
+      // // 当labelService注册的对应节点图标变化时，通知视图更新
+      // this.treeModel.dispatchChange();
+    }));
+    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+      this.loadingDecoration.removeTarget(target);
+      // 当labelService注册的对应节点图标变化时，通知视图更新
+      // this.treeModel.dispatchChange();
+    }));
   }
 
   initDecorations(root) {
@@ -187,6 +198,7 @@ export class FileTreeModelService {
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
     this._decorations.addDecoration(this.cutDecoration);
+    this._decorations.addDecoration(this.loadingDecoration);
   }
 
   /**

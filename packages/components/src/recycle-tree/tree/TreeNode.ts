@@ -104,14 +104,6 @@ export class TreeNode implements ITreeNode {
     this.addMetadata('name', name);
   }
 
-  get description() {
-    return this.getMetadata('description');
-  }
-
-  set description(description: string) {
-    this.addMetadata('description', description);
-  }
-
   // 节点绝对路径
   get path(): string {
     if (!this.parent) {
@@ -270,6 +262,12 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       notifyDidUpdateBranch: () => {
         emitter.fire({type: TreeNodeEvent.BranchDidUpdate, args: []});
       },
+      notifyWillResolveChildren: (target: ICompositeTreeNode, nowExpanded: boolean) => {
+        emitter.fire({type: TreeNodeEvent.WillResolveChildren, args: [target, nowExpanded]});
+      },
+      notifyDidResolveChildren: (target: ICompositeTreeNode, nowExpanded: boolean) => {
+        emitter.fire({type: TreeNodeEvent.DidResolveChildren, args: [target, nowExpanded]});
+      },
       // 监听所有事件
       on: (event: TreeNodeEvent, callback: any) => {
         const dispose = onEventChanges((data) => {
@@ -359,7 +357,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     this.isExpanded = true;
     if (this._children === null) {
+      this._watcher.notifyWillResolveChildren(this, this.isExpanded);
       await this.hardReloadChildren();
+      this._watcher.notifyDidResolveChildren(this, this.isExpanded);
       // 检查其是否展开；可能同时执行了setCollapsed方法
       if (!this.isExpanded) {
         return;
