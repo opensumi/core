@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { CancellationToken } from '@ali/ide-core-common';
-import { Disposable, toDisposable } from '@ali/ide-core-common/lib/disposable';
+import { toDisposable, IDisposable } from '@ali/ide-core-common/lib/disposable';
 import { asArray } from '@ali/ide-core-common/lib/utils/arrays';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { getDebugLogger } from '@ali/ide-core-common';
@@ -29,7 +29,7 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
     this.proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadDecorations);
   }
 
-  registerDecorationProvider(provider: vscode.DecorationProvider, extensionId: string): vscode.Disposable {
+  registerDecorationProvider(provider: vscode.DecorationProvider, extensionId: string): IDisposable {
     this.logger.verbose('ExtHostDecoration#registerDecorationProvider', extensionId);
     const handle = ExtHostDecorations._handlePool++;
     this._provider.set(handle, { provider, extensionId });
@@ -39,11 +39,11 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
       this.proxy.$onDidChange(handle, !e ? null : asArray(e));
     });
 
-    return new Disposable(toDisposable(() => {
+    return toDisposable(() => {
       listener.dispose();
       this.proxy.$unregisterDecorationProvider(handle);
       this._provider.delete(handle);
-    }));
+    });
   }
 
   $provideDecorations(requests: DecorationRequest[], token: CancellationToken): Promise<DecorationReply> {
