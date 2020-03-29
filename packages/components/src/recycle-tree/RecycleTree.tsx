@@ -6,9 +6,10 @@ import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
 import { DisposableCollection, Emitter, IDisposable } from '@ali/ide-core-common';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
-import { TreeNodeType } from './types';
+import { TreeNodeType, TreeNodeEvent } from './types';
 import * as styles from './recycle-tree.module.less';
 import * as cls from 'classnames';
+import * as fuzzy from 'fuzzy';
 
 export interface IModelChange {
   preModel: TreeModel;
@@ -17,24 +18,6 @@ export interface IModelChange {
 
 export interface IRecycleTreeProps {
   model: TreeModel;
-  /**
-   * 缩进大小
-   * @type {number}
-   * @memberof RecycleTreeProps
-   */
-  leftPadding?: number;
-  /**
-   * 搜索字符串
-   * @type {string}
-   * @memberof RecycleTreeProps
-   */
-  search?: string;
-  /**
-   * 替换的字符串，需配合search字段使用
-   * @type {string}
-   * @memberof RecycleTreeProps
-   */
-  replace?: string;
   /**
    * 容器高度
    * height 计算出可视区域渲染数量
@@ -72,7 +55,14 @@ export interface IRecycleTreeProps {
    * @memberof IRecycleTreeProps
    */
   onReady?: (handle: IRecycleTreeHandle) => void;
-
+  /**
+   * 筛选节点字段
+   * 1. 路径匹配，如app/test
+   * 2. 模糊匹配
+   * @type {string}
+   * @memberof IRecycleTreeProps
+   */
+  filter?: string;
 }
 
 export interface IRecycleTreeHandle {
@@ -97,9 +87,22 @@ export interface IRecycleTreeHandle {
   onDidUpdate(callback: () => void): IDisposable;
 }
 
+interface IFilterNodeRendererProps {
+  item: TreeNode;
+  itemType: TreeNodeType;
+  template?: React.JSXElementConstructor<any>;
+}
+
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private static BATCHED_UPDATE_MAX_DEBOUNCE_MS: number = 4;
+  private static FILTER_FUZZY_OPTIONS = {
+    pre: '<match>',
+    post: '</match>',
+    extract: (node: TreeNode) => {
+      return node.name;
+    },
+  };
 
   private _promptHandle: NewPromptHandle | RenamePromptHandle;
 
@@ -113,6 +116,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private newPromptInsertionIndex: number = -1;
   // 目标索引
   private promptTargetID: number;
+
+  private idToFilterRendererPropsCache: Map<number, IFilterNodeRendererProps> = new Map();
+  private filterFlattenBranch: Uint32Array;
 
   // 批量更新Tree节点
   private batchUpdate = (() => {
@@ -181,6 +187,12 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       }
     }
     return insertIndex;
+  }
+
+  public componentWillUpdate(prevProps: IRecycleTreeProps) {
+    if (this.props.filter !== prevProps.filter) {
+      this.filterItems(prevProps.filter!);
+    }
   }
 
   public componentDidUpdate(prevProps: IRecycleTreeProps) {
@@ -352,6 +364,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   }
 
   private getItemAtIndex = (index: number): INodeRendererProps => {
+    const { filter } = this.props;
+    if (!!filter && this.filterFlattenBranch.length > 0) {
+      return this.idToFilterRendererPropsCache.get(this.filterFlattenBranch[index])! as INodeRendererProps;
+    }
     let cached = this.idxToRendererPropsCache.get(index);
     if (!cached) {
       const promptInsertionIdx = this.newPromptInsertionIndex;
@@ -403,6 +419,16 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   // 根据是否携带新建输入框计算行数
   private get adjustedRowCount() {
     const { root } = this.props.model;
+    const { filter } = this.props;
+    if (!!filter) {
+      // 根据当前数据源变更裁剪过滤节点
+      // const nodes: number[] = [];
+      // for (let idx = 0; idx < root.branchSize; idx ++) {
+      //   nodes.push(root.getTreeNodeAtIndex(idx)!.id);
+      // }
+      // this.idxToFilterRendererPropsCache.forEach;
+      return this.filterFlattenBranch.length;
+    }
     return (
       this.newPromptInsertionIndex > -1 &&
       this.promptHandle && this.promptHandle.constructor === NewPromptHandle &&
@@ -413,21 +439,99 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private getItemKey = (index: number) => {
     const node = this.getItemAtIndex(index);
-    if (node) {
+    if (node && node.item) {
       return node.item.id;
     } else {
       // console.error(`Index ${index} can not find`);
     }
   }
 
+  // 过滤Root节点展示
+  private filterItems = (filter: string) => {
+    const { root } = this.props.model;
+    this.idToFilterRendererPropsCache.clear();
+    if (!filter) {
+      return;
+    }
+    const isPathFilter = /\//.test(filter);
+    const idSets: Set<number> = new Set();
+    const idToRenderTemplate: Map<number, any> = new Map();
+    const nodes: TreeNode[] = [];
+    for (let idx = 0; idx < root.branchSize; idx ++) {
+      nodes.push(root.getTreeNodeAtIndex(idx)!);
+    }
+    if (isPathFilter) {
+      nodes.forEach((node) => {
+        if (node && node.path.indexOf(filter) > -1) {
+          idSets.add(node.id);
+          let parent = node.parent;
+          while (parent) {
+            idSets.add(parent.id);
+            parent  = parent.parent;
+          }
+        }
+      });
+    } else {
+      const fuzzyLists = fuzzy.filter(filter, nodes, RecycleTree.FILTER_FUZZY_OPTIONS);
+      fuzzyLists.forEach((item) => {
+        const node = (item as any).original as TreeNode;
+        idSets.add(node.id);
+        let parent = node.parent;
+        idToRenderTemplate.set(node.id, () => {
+          return <div style={{
+            flex: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }} dangerouslySetInnerHTML={{ __html: item.string || ''}}></div>;
+        });
+        while (parent) {
+          idSets.add(parent.id);
+          parent  = parent.parent;
+        }
+      });
+    }
+
+    this.filterFlattenBranch = new Uint32Array(idSets.size - 1);
+    for (let flatTreeIdx = 0, idx = 0; idx < root.branchSize; idx ++) {
+      const node = root.getTreeNodeAtIndex(idx);
+      if (node && idSets.has(node.id)) {
+        this.filterFlattenBranch[flatTreeIdx] = node.id;
+        if (CompositeTreeNode.is(node)) {
+          this.idToFilterRendererPropsCache.set(node.id, {
+            item: node as CompositeTreeNode,
+            itemType: TreeNodeType.CompositeTreeNode,
+            template: idToRenderTemplate.has(node.id) ? idToRenderTemplate.get(node.id) : undefined,
+          });
+        } else {
+          this.idToFilterRendererPropsCache.set(node.id, {
+            item: node,
+            itemType: TreeNodeType.TreeNode,
+            template: idToRenderTemplate.has(node.id) ? idToRenderTemplate.get(node.id) : undefined,
+          });
+        }
+        flatTreeIdx ++;
+      }
+    }
+    // 根据折叠情况变化裁剪filterFlattenBranch
+    root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (event) => {
+
+    });
+  }
+
   private renderItem = ({ index, style }): JSX.Element => {
     const { children } = this.props;
-    const { item, itemType: type } = this.getItemAtIndex(index);
+    const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
+    if (!node) {
+      // console.error(`Index ${index} not found`);
+    }
+    const { item, itemType: type, template } = node;
     return <div style={style}>
       <NodeRendererWrap
         item={item}
         depth={item.depth}
         itemType={type}
+        template={template}
         expanded={CompositeTreeNode.is(item) ? (item as CompositeTreeNode).expanded : void 0}>
         {children as INodeRenderer}
       </NodeRendererWrap>
@@ -447,6 +551,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       // 让滚动条不占位
       overflow: 'overlay',
     } as React.CSSProperties;
+
     return (
       <FixedSizeList
         width={width}
@@ -456,7 +561,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         itemSize={itemHeight}
         itemKey={this.getItemKey}
         itemCount={this.adjustedRowCount}
-        overscanCount={5}
+        overscanCount={10}
         ref={this.listRef}
         onScroll={this.handleListScroll}
         style={listStyle}

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ViewState, useInjectable, isOSX } from '@ali/ide-core-browser';
-import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@ali/ide-components';
+import { ViewState, useInjectable, isOSX, localize } from '@ali/ide-core-browser';
+import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType, Input, Icon } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
@@ -9,17 +9,18 @@ import { Directory, File } from './file-tree-nodes';
 import * as cls from 'classnames';
 import * as styles from './file-tree.module.less';
 
+export const FILTER_AREA_HEIGHT = 30;
+
 export const FileTree = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = React.useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
-  const [isEdited ] = React.useState<boolean>(false);
+  const [filter, setFilter ] = React.useState<string>('');
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { width, height } = viewState;
-  const { decorationService, labelService } = useInjectable<FileTreeService>(FileTreeService);
-
+  const { decorationService, labelService, filterMode, locationToCurrentFile } = useInjectable<FileTreeService>(FileTreeService);
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
   const hasShiftMask = (event): boolean => {
@@ -40,7 +41,7 @@ export const FileTree = observer(({
     ev.stopPropagation();
 
     const { handleItemClick, handleItemToggleClick, handleItemRangeClick } = fileTreeModelService;
-    if (!item || isEdited) {
+    if (!item) {
       return;
     }
     const shiftMask = hasShiftMask(event);
@@ -133,15 +134,17 @@ export const FileTree = observer(({
   const renderFileTree = () => {
     if (isReady) {
       return <RecycleTree
-        height={height}
+        height={filterMode ? height - FILTER_AREA_HEIGHT : height}
         width={width}
         itemHeight={FILE_TREE_NODE_HEIGHT}
         onReady={handleTreeReady}
         model={fileTreeModelService.treeModel}
+        filter={filter}
       >
         {(props: INodeRendererProps) => <FileTreeNode
           item={props.item}
           itemType={props.itemType}
+          template={(props as any).template}
           decorationService={decorationService}
           labelService={labelService}
           dndService={fileTreeModelService.dndService}
@@ -153,6 +156,34 @@ export const FileTree = observer(({
       </RecycleTree>;
     }
   };
+
+  const renderFilterView = () => {
+    const { expandAllCacheDirectory } = fileTreeModelService;
+    const handleFilterChange = async (value: string) => {
+      if (!!value) {
+        await expandAllCacheDirectory();
+      }
+      setFilter(value);
+    };
+    const handleAfterClear = () => {
+      locationToCurrentFile();
+    };
+
+    if (filterMode) {
+      return <div className={styles.filter_wrapper} style={{ height: FILTER_AREA_HEIGHT }}>
+      <Input
+        hasClear
+        autoFocus
+        size='small'
+        onValueChange={handleFilterChange}
+        className={styles.filter_input}
+        afterClear={handleAfterClear}
+        placeholder={localize('file.filetree.filter.placeholder')}
+        addonBefore={<Icon className={styles.filterIcon} icon='retrieval' />} />
+      </div>;
+    }
+  };
+
   return <div
     className={
       cls(styles.file_tree, outerDragOver && styles.outer_drag_over)
@@ -168,6 +199,7 @@ export const FileTree = observer(({
     onDragOver={handleOuterDragOver}
     onDrop={handleOuterDrop}
   >
+    {renderFilterView()}
     {renderFileTree()}
   </div>;
 });

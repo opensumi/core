@@ -20,6 +20,7 @@ export interface IFileTreeNodeProps {
   onTwistierClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
   onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
+  template?: React.JSXElementConstructor<any>;
 }
 
 export type FileTreeNodeRenderedProps = IFileTreeNodeProps & INodeRendererProps;
@@ -36,6 +37,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   onTwistierClick,
   decorations,
   defaultLeftPadding = 8,
+  template: Template,
 }: FileTreeNodeRenderedProps) => {
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;
@@ -48,7 +50,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     }
   };
 
-  const handlerTwistieClick = (ev: React.MouseEvent) => {
+  const handlerTwistierClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       if (onTwistierClick) {
         onTwistierClick(ev, item as File, itemType);
@@ -171,6 +173,9 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   };
 
   const renderDisplayName = (node: Directory | File) => {
+    if (Template) {
+      return <Template />;
+    }
     if (isPrompt && node instanceof PromptHandle) {
       return <div
           className={cls(styles.file_tree_node_segment, styles.file_tree_node_inputbox)}
@@ -204,7 +209,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
 
   const renderTwice = (item) => {
     if (isDirectory) {
-      return renderFolderToggle(item, handlerTwistieClick);
+      return renderFolderToggle(item, handlerTwistierClick);
     } else if (isPrompt) {
       return renderFolderToggle(item, () => {});
     }

@@ -462,6 +462,17 @@ export class FileTreeModelService {
     }
   }
 
+  public expandAllCacheDirectory = async () => {
+    await this.fileTreeService.flushEventQueue();
+    const size = this.treeModel.root.branchSize;
+    for (let index = 0; index < size; index++) {
+      const file = this.treeModel.root.getTreeNodeAtIndex(index) as Directory;
+      if (Directory.is(file) && !file.expanded && file.branchSize > 0) {
+        await file.setExpanded();
+      }
+    }
+  }
+
   async deleteFileByUris(uris: URI[]) {
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
@@ -509,7 +520,7 @@ export class FileTreeModelService {
     return name;
   }
 
-  validateFileName = (promptHandle: RenamePromptHandle | NewPromptHandle, name: string): FileTreeValidateMessage | null => {
+  private validateFileName = (promptHandle: RenamePromptHandle | NewPromptHandle, name: string): FileTreeValidateMessage | null => {
     // 转换为合适的名称
     name = this.getWellFormedFileName(name);
 

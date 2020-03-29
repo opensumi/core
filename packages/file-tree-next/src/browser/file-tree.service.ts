@@ -6,6 +6,7 @@ import {
   EDITOR_COMMANDS,
   // AppConfig,
   Disposable,
+  FILE_COMMANDS,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI } from '../common';
@@ -16,7 +17,9 @@ import { Directory, File } from './file-tree-nodes';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Path } from '@ali/ide-core-common/lib/path';
+import { observable, action } from 'mobx';
 import pSeries = require('p-series');
+import { FileContextKey } from './file-contextkey';
 
 export interface IMoveChange {
   source: FileChange;
@@ -53,6 +56,9 @@ export class FileTreeService extends Tree {
   @Autowired(IFileServiceClient)
   private readonly fileServiceClient: IFileServiceClient;
 
+  @Autowired(FileContextKey)
+  private readonly fileTreeContextKey: FileContextKey;
+
   private _contextMenuContextKeyService: IContextKeyService;
 
   private cacheNodesMap: Map<string, File | Directory> = new Map();
@@ -61,6 +67,14 @@ export class FileTreeService extends Tree {
   private eventFlushTimeout: number;
   // 文件系统Change事件队列
   private changeEventDispatchQueue: string[] = [];
+
+  @observable
+  // 筛选模式开关
+  filterMode: boolean = false;
+
+  get cacheFiles() {
+    return Array.from(this.cacheNodesMap.values());
+  }
 
   async init() {
     await this.workspaceService.roots;
@@ -410,7 +424,7 @@ export class FileTreeService extends Tree {
    * 打开文件
    * @param uri
    */
-  openFile(uri: URI) {
+  public openFile(uri: URI) {
     // 当打开模式为双击同时预览模式生效时，默认单击为预览文件
     const preview = this.corePreferences['editor.previewMode'];
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview });
@@ -420,7 +434,7 @@ export class FileTreeService extends Tree {
    * 打开并固定文件
    * @param uri
    */
-  openAndFixedFile(uri: URI) {
+  public openAndFixedFile(uri: URI) {
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false });
   }
 
@@ -429,7 +443,7 @@ export class FileTreeService extends Tree {
    * @param {URI} uri
    * @memberof FileTreeService
    */
-  openToTheSide(uri: URI) {
+  public openToTheSide(uri: URI) {
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, split: 4 /** right */ });
   }
 
@@ -438,10 +452,36 @@ export class FileTreeService extends Tree {
    * @param original
    * @param modified
    */
-  compare(original: URI, modified: URI) {
+  public compare(original: URI, modified: URI) {
     this.commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
       original,
       modified,
     });
+  }
+
+  /**
+   * 开关筛选输入框
+   */
+  @action
+  public toggleFilterMode = () => {
+    this.filterMode = !this.filterMode;
+    this.fileTreeContextKey.filesExplorerFocused.set(!!this.filterMode);
+    // 清理掉输入值
+    if (this.filterMode === false) {
+      // 退出时若需要做 filter 值清理则做聚焦操作
+      this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
+    }
+  }
+
+  /**
+   * 开启筛选模式
+   */
+  @action
+  public enableFilterMode = () => {
+    this.filterMode = true;
+  }
+
+  public locationToCurrentFile = () => {
+    this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
   }
 }

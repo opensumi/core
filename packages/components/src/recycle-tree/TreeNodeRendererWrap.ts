@@ -25,11 +25,12 @@ interface IRenamePromptRendererProps {
 
 export type INodeRendererProps = ITreeNodeRendererProps | ICompositeTreeNodeRendererProps | INewPromptRendererProps | IRenamePromptRendererProps;
 
-export type INodeRenderer = (props: INodeRendererProps) => JSX.Element;
+export type INodeRenderer = (props: any) => JSX.Element;
 
 export interface INodeRendererWrapProps {
   item: TreeNode | CompositeTreeNode | NewPromptHandle | RenamePromptHandle;
   itemType: TreeNodeType;
+  template?: React.JSXElementConstructor<any>;
   depth: number;
   expanded?: boolean;
   children: INodeRenderer;
@@ -37,11 +38,9 @@ export interface INodeRendererWrapProps {
 
 export class NodeRendererWrap extends React.Component<INodeRendererWrapProps> {
 
-  // private lastItemPath: string;
-
   public render() {
-    const { item, itemType, children } = this.props;
-    return React.createElement(children, {item, itemType});
+    const { item, itemType, children, template } = this.props;
+    return React.createElement(children, {item, itemType, template});
   }
 
   public shouldComponentUpdate(nextProps: INodeRendererWrapProps) {
@@ -49,29 +48,4 @@ export class NodeRendererWrap extends React.Component<INodeRendererWrapProps> {
     // TODO: 区分forceUpdate及普通更新，优化性能
     return true;
   }
-
-  // public componentDidMount() {
-  //   this.updateCachedItemPath();
-  // }
-
-  // public componentDidUpdate(prevProps: INodeRendererWrapProps) {
-  //   this.updateCachedItemPath();
-  // }
-
-  public componentWillUnmount() {
-    // do dispose
-  }
-
-  // private updateCachedItemPath() {
-  //   const thisItem: TreeNode | null = this.props.itemType === TreeNodeType.TreeNode || this.props.itemType === TreeNodeType.CompositeTreeNode
-  //     ? this.props.item as TreeNode
-  //     : this.props.itemType === TreeNodeType.RenamePrompt
-  //       ? (this.props.item as RenamePromptHandle).target
-  //       : this.props.itemType === TreeNodeType.NewPrompt
-  //         ? (this.props.item as NewPromptHandle).parent
-  //         : null;
-  //   if (thisItem && thisItem.path) {
-  //     this.lastItemPath = thisItem.path;
-  //   }
-  // }
 }

@@ -460,13 +460,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     // filter in filetree
     commands.registerCommand(FILE_COMMANDS.FILTER_TOGGLE, {
       execute: () => {
-        // return this.explorerResourceService.toggleFilterMode();
+        return this.fileTreeService.toggleFilterMode();
       },
     });
 
     commands.registerCommand(FILE_COMMANDS.FILTER_OPEN, {
       execute: () => {
-        // return this.explorerResourceService.enableFilterMode();
+        return this.fileTreeService.enableFilterMode();
       },
     });
   }
