@@ -1,5 +1,6 @@
+/* istanbul ignore file */
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import { WorkbenchEditorService, EditorCollectionService } from '../common';
+import { WorkbenchEditorService } from '../common';
 import { URI, IRange } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { IMonacoImplEditor, BrowserCodeEditor } from './editor-collection.service';
@@ -48,9 +49,6 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
 
 @Injectable()
 export class MonacoContextViewService extends monaco.services.ContextViewService {
-
-  @Autowired(EditorCollectionService)
-  private editorCollectionService: EditorCollectionService;
 
   private menuContainer: HTMLDivElement;
 

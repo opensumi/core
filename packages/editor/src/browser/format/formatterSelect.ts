@@ -16,7 +16,7 @@ export class FormattingSelector {
   @Autowired(IEditorDocumentModelService)
   private modelService: IEditorDocumentModelService;
 
-  async select(formatters: Array<monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider>, document: monaco.editor.ITextModel, mode: 1 | 2) {
+  async select(formatters: Array<monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider>, document: monaco.editor.ITextModel) {
     const docRef = this.modelService.getModelReference(URI.from(document.uri.toJSON()));
     if (!docRef) {
       return;

@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService, IResourceProvider, EditorGroupSplitAction } from '@ali/ide-editor/lib/common';
+import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService, EditorGroupSplitAction} from '@ali/ide-editor/lib/common';
 import { EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
@@ -7,7 +7,7 @@ import { EditorComponentRegistry, IEditorDecorationCollectionService, IEditorDoc
 import { IDocPersistentCacheProvider } from '@ali/ide-editor/lib/common';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
-import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from '@ali/ide-editor/lib/browser/doc-model/main';
+import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl, SaveTask } from '@ali/ide-editor/lib/browser/doc-model/main';
 import { LanguageService } from '@ali/ide-editor/lib/browser/language/language.service';
 import { MonacoService } from '@ali/ide-monaco';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
@@ -20,6 +20,7 @@ import { CorePreferences, IContextKeyService } from '@ali/ide-core-browser';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { isEditStack, isEOLStack } from '@ali/ide-editor/lib/browser/doc-model/editor-is-fn';
 
 const injector = createBrowserInjector([]);
 
@@ -119,7 +120,6 @@ describe('workbench editor service tests', () => {
   const resourceService: ResourceService = injector.get(ResourceService);
   const editorComponentRegistry: EditorComponentRegistry = injector.get(EditorComponentRegistry);
   const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
-  const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
 
   const disposer = new Disposable();
   beforeAll(() => {
@@ -207,4 +207,53 @@ describe('workbench editor service tests', () => {
     disposer.dispose();
   });
 
+});
+
+describe('utils test', () => {
+
+  it('util tests', () => {
+    expect(isEditStack({editOperations: []} as any)).toBeTruthy();
+    expect(isEditStack({} as any)).toBeFalsy();
+
+    expect(isEOLStack({eol: []} as any)).toBeTruthy();
+    expect(isEOLStack({} as any)).toBeFalsy();
+
+  });
+
+  it('save task', async (done) => {
+    const service: any = {
+      saveEditorDocumentModel: jest.fn((uri, content) => {
+        if (content.indexOf('fail') > -1) {
+          throw new Error('test fail');
+        } else {
+          return {
+            state: 'success',
+          };
+        }
+      }),
+    };
+    const saveTask1 = new SaveTask(
+      new URI('file:///test/test.js'),
+      1,
+      1,
+      'test success',
+      true,
+    );
+
+    const res1 = await saveTask1.run(service, 'test begin', [] );
+
+    expect(res1.state).toBe('success');
+
+    const saveTask2 = new SaveTask(
+      new URI('file:///test/test.js'),
+      1,
+      1,
+      'test fail',
+      true,
+    );
+    const res2 = await saveTask2.run(service, 'test begin', [] );
+
+    expect(res2.state).toBe('error');
+    done();
+  });
 });
