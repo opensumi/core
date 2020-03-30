@@ -465,6 +465,7 @@ export class FileTreeService extends Tree {
   @action
   public toggleFilterMode = () => {
     this.filterMode = !this.filterMode;
+    this.fileTreeContextKey.filesExplorerFilteredContext.set(this.filterMode);
     this.fileTreeContextKey.filesExplorerFocused.set(!!this.filterMode);
     // 清理掉输入值
     if (this.filterMode === false) {
@@ -478,6 +479,7 @@ export class FileTreeService extends Tree {
    */
   @action
   public enableFilterMode = () => {
+    this.fileTreeContextKey.filesExplorerFilteredContext.set(true);
     this.filterMode = true;
   }
 

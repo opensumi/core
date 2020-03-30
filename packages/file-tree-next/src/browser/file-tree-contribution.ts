@@ -15,7 +15,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as copy from 'copy-to-clipboard';
 import { IWindowService } from '@ali/ide-window';
 import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@ali/ide-overlay';
-import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { FilesExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { PasteTypes } from '../common';
 
@@ -113,12 +113,14 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       command: FILE_COMMANDS.NEW_FILE.id,
       order: 1,
       group: '0_new',
+      when: `!${FilesExplorerFilteredContext.raw}`,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.NEW_FOLDER.id,
       order: 2,
       group: '0_new',
+      when: `!${FilesExplorerFilteredContext.raw}`,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -143,11 +145,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       command: FILE_COMMANDS.DELETE_FILE.id,
       order: 1,
       group: '2_operator',
+      when: `!${FilesExplorerFilteredContext.raw}`,
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.RENAME_FILE.id,
       order: 3,
       group: '2_operator',
+      when: `!${FilesExplorerFilteredContext.raw}`,
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.COMPARE_SELECTED.id,
@@ -168,6 +172,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       command: FILE_COMMANDS.PASTE_FILE.id,
       order: 3,
       group: '3_copy',
+      when: `!${FilesExplorerFilteredContext.raw}`,
     });
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.COPY_PATH.id,
@@ -482,27 +487,27 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.PASTE_FILE.id,
       keybinding: 'ctrlcmd+v',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`    });
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`    });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
       keybinding: 'ctrlcmd+x',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`    });
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`});
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.RENAME_FILE.id,
       keybinding: 'enter',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`    });
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`});
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.DELETE_FILE.id,
       keybinding: 'ctrlcmd+backspace',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`    });
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`});
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.FILTER_OPEN.id,
       keybinding: 'ctrlcmd+f',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`    });
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`});
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
@@ -510,25 +515,28 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       id: FILE_COMMANDS.NEW_FILE.id,
       command: FILE_COMMANDS.NEW_FILE.id,
       viewId: ExplorerResourceViewId,
+      when: `view == '${ExplorerResourceViewId}' && !${FilesExplorerFilteredContext.raw}`,
       order: 1,
     });
     registry.registerItem({
       id: FILE_COMMANDS.NEW_FOLDER.id,
       command: FILE_COMMANDS.NEW_FOLDER.id,
       viewId: ExplorerResourceViewId,
+      when: `view == '${ExplorerResourceViewId}' && !${FilesExplorerFilteredContext.raw}`,
       order: 2,
     });
     registry.registerItem({
       id: FILE_COMMANDS.FILTER_TOGGLE.id,
       command: FILE_COMMANDS.FILTER_TOGGLE.id,
       viewId: ExplorerResourceViewId,
+      toggledWhen: `${FilesExplorerFilteredContext.raw}`,
       order: 3,
-      toggledWhen: ExplorerFilteredContext.raw,
     });
     registry.registerItem({
       id: FILE_COMMANDS.REFRESH_ALL.id,
       command: FILE_COMMANDS.REFRESH_ALL.id,
       viewId: ExplorerResourceViewId,
+      when: `view == '${ExplorerResourceViewId}' && !${FilesExplorerFilteredContext.raw}`,
       order: 4,
     });
     registry.registerItem({

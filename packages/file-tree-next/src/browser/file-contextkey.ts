@@ -1,6 +1,6 @@
 import { Optional, Injectable, Autowired } from '@ali/common-di';
 import { IContextKeyService, IContextKey } from '@ali/ide-core-browser';
-import { ExplorerFolderContext, ExplorerFocusedContext, ExplorerResourceCut, FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+import { ExplorerFolderContext, ExplorerFocusedContext, ExplorerResourceCut, FilesExplorerFocusedContext, FilesExplorerInputFocusedContext, FilesExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 
 @Injectable()
 export class FileContextKey {
@@ -13,6 +13,7 @@ export class FileContextKey {
   public readonly explorerResourceCut: IContextKey<boolean>;
   public readonly filesExplorerFocused: IContextKey<boolean>;
   public readonly filesExplorerInputFocused: IContextKey<boolean>;
+  public readonly filesExplorerFilteredContext: IContextKey<boolean>;
 
   constructor(@Optional() contextKeyService: IContextKeyService) {
     contextKeyService = contextKeyService || this.globalContextKeyService;
@@ -22,5 +23,6 @@ export class FileContextKey {
 
     this.filesExplorerFocused = FilesExplorerFocusedContext.bind(contextKeyService);
     this.filesExplorerInputFocused = FilesExplorerInputFocusedContext.bind(contextKeyService);
+    this.filesExplorerFilteredContext = FilesExplorerFilteredContext.bind(contextKeyService);
   }
 }
