@@ -8,6 +8,7 @@ import { LayoutConfig } from '../bootstrap';
 import { useInjectable } from '../react-hooks';
 import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
 import { AppConfig } from './config-provider';
+import { Button } from '@ali/ide-components/src';
 
 const logger = getDebugLogger();
 export type SlotLocation = string;
@@ -71,6 +72,10 @@ export class ErrorBoundary extends React.Component {
     logger.error(errorInfo);
   }
 
+  update() {
+    this.setState({error: null, errorInfo: null});
+  }
+
   render() {
     if (this.state.errorInfo) {
       if (isDevelopment()) {
@@ -82,11 +87,15 @@ export class ErrorBoundary extends React.Component {
               <br />
               {(this.state.errorInfo as any).componentStack}
             </details>
+            <Button onClick={() => this.update()}>重新加载</Button>
           </div>
         );
       } else {
         return (
-          <div>模块渲染异常</div>
+          <div>
+            <p>模块渲染异常</p>
+            <Button onClick={() => this.update()}>重新加载</Button>
+          </div>
         );
       }
     }
