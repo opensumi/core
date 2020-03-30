@@ -462,8 +462,8 @@ export class FileTreeService extends Tree {
   /**
    * 开关筛选输入框
    */
-  @action
-  public toggleFilterMode = () => {
+  @action.bound
+  public toggleFilterMode() {
     this.filterMode = !this.filterMode;
     this.fileTreeContextKey.filesExplorerFilteredContext.set(this.filterMode);
     this.fileTreeContextKey.filesExplorerFocused.set(!!this.filterMode);
@@ -477,8 +477,8 @@ export class FileTreeService extends Tree {
   /**
    * 开启筛选模式
    */
-  @action
-  public enableFilterMode = () => {
+  @action.bound
+  public enableFilterMode() {
     this.fileTreeContextKey.filesExplorerFilteredContext.set(true);
     this.filterMode = true;
   }

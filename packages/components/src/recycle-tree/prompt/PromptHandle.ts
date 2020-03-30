@@ -160,7 +160,8 @@ export abstract class PromptHandle {
     this.$.removeEventListener('keydown', this.handleKeydown);
     this.$.removeEventListener('focus', this.handleFocus);
     this.$.removeEventListener('blur', this.handleBlur);
-    this.destroyValidateMessage();
+    this.removeValidateMessage();
+    this.removeAddonAfter();
     this.$.disabled = false;
     this.onDestroyEmitter.fire(this.$.value);
     this.disposables.dispose();

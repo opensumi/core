@@ -539,7 +539,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.filterFlattenBranch = spliceTypedArray(this.filterFlattenBranch, expandItemIndex + 1, 0, spliceUint32Array);
           this.filterFlattenBranchChildrenCache.delete(target.id);
         }
-
       }
     }));
   }
