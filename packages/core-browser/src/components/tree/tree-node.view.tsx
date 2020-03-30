@@ -265,11 +265,14 @@ export const TreeContainerNode = (
       const clickHandler = (event: React.MouseEvent) => {
         event.stopPropagation();
         event.preventDefault();
-        commandActuator(action.command, action.paramsKey ? node[action.paramsKey] : node.id);
+        const params = action.paramsKey
+          ? (typeof action.paramsKey === 'string' ? node[action.paramsKey] : action.paramsKey(node))
+          : node.id;
+        commandActuator(action.command, params);
       };
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
       return <Icon
-        key={`${node.id}-${action.paramsKey ? node[action.paramsKey] : node.id}-${action.command}`}
+        key={`${node.id}-${typeof action.paramsKey === 'string' ? node[action.paramsKey] : node.id}-${action.command}`}
         iconClass={cls(styles.action_icon, icon)}
         title={action.title}
         onClick={clickHandler} />;

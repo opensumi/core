@@ -66,7 +66,7 @@ export class ExplorerOpenedEditorService {
       title: localize('file.close'),
       command: EDITOR_COMMANDS.CLOSE.id,
       location: TreeViewActionTypes.TreeNode_Left,
-      paramsKey: 'uri',
+      paramsKey: (obj) => ({ uri: obj.uri }),
     },
     {
       icon: getIcon('save-all'),
