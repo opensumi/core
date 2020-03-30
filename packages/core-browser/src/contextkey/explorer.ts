@@ -7,6 +7,8 @@ export const ExplorerFolderContext = new RawContextKey<boolean>('explorerResourc
 
 export const ExplorerResourceCut = new RawContextKey<boolean>('explorerResourceCut', false);
 export const ExplorerFocusedContext = new RawContextKey<boolean>('explorerViewletFocus', false);
+// TODO: 移除，该contextKey为旧版本FileTree依赖
+export const ExplorerFilteredContext = new RawContextKey<boolean>('explorerViewletFilter', false);
 
 export const FilesExplorerFocusedContext = new RawContextKey<boolean>('filesExplorerFocus', false);
 export const FilesExplorerInputFocusedContext = new RawContextKey<boolean>('filesExplorerInputFocus', false);

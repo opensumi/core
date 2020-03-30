@@ -423,12 +423,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const { root } = this.props.model;
     const { filter } = this.props;
     if (!!filter) {
-      // 根据当前数据源变更裁剪过滤节点
-      // const nodes: number[] = [];
-      // for (let idx = 0; idx < root.branchSize; idx ++) {
-      //   nodes.push(root.getTreeNodeAtIndex(idx)!.id);
-      // }
-      // this.idxToFilterRendererPropsCache.forEach;
       return this.filterFlattenBranch.length;
     }
     return (

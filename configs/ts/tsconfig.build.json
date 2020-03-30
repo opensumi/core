@@ -97,6 +97,9 @@
       "path": "./references/tsconfig.file-tree.json"
     },
     {
+      "path": "./references/tsconfig.file-tree-next.json"
+    },
+    {
       "path": "./references/tsconfig.opened-editor.json"
     },
     {
@@ -161,9 +164,6 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
-    },
-    {
-      "path": "./references/tsconfig.file-tree-next.json"
     }
   ]
 }

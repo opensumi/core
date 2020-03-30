@@ -762,7 +762,8 @@ export class FileTreeModelService {
         const res = await this.fileTreeAPI.copyFile(file.uri, to);
         if (res) {
           if ((res as FileStat).uri) {
-            this.fileTreeService.addNode((parent as Directory), copyFile.displayName, Directory.is(file) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
+            const copyUri = new URI((res as FileStat).uri);
+            this.fileTreeService.addNode((parent as Directory), copyUri.displayName, Directory.is(file) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode);
           } else {
             this.messageService.error(res);
           }

@@ -1,7 +1,7 @@
 import { Event, Emitter } from '@ali/ide-core-common';
 import { ISerializableState, TreeStateManager, TreeStateWatcher } from './treeState';
 import { CompositeTreeNode, TreeNode } from '../TreeNode';
-import { ICompositeTreeNode, TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../types';
+import { ICompositeTreeNode, TreeNodeEvent } from '../../types';
 
 export class TreeModel {
 
@@ -85,40 +85,8 @@ export class TreeModel {
     return new TreeStateWatcher(this.state, atSurfaceExpandedDirsOnly);
   }
 
-  public async refresh(parent: CompositeTreeNode) {
-    if (!CompositeTreeNode.is(parent)) {
-      parent = this.root;
-    }
-    const children = await this.resolveChildren(parent);
-    const result = await this.setChildren(parent, children);
-    this.dispatchChange();
-    return result;
-  }
-
   protected resolveChildren(parent: CompositeTreeNode): Promise<TreeNode[]> {
     return Promise.resolve(Array.from(parent.children!) as TreeNode[]);
   }
 
-  protected setChildren(parent: CompositeTreeNode, children: TreeNode[]) {
-    this.removeNode(parent);
-
-  }
-
-  protected removeNode(node: TreeNode) {
-    if (CompositeTreeNode.is(node) && !!node.children) {
-      node.children.forEach((child) => this.removeNode(child as TreeNode));
-    }
-    if (node) {
-      (child as TreeNode).dispose();
-      delete this.nodes[node.id];
-    }
-  }
-
-  protected getRootNode(node: ITreeNodeOrCompositeTreeNode) {
-    if (!node.parent) {
-      return node;
-    } else {
-      return this.getRootNode(node.parent);
-    }
-  }
 }
