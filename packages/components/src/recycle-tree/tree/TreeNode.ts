@@ -4,7 +4,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { IWatcherCallback, IWatchTerminator, IWatcherInfo } from '../types';
 
 /**
- * 除了此方法不会抛出RangeError当项很多的时候，其余表现与Array.prototype.splice一样，
+ * 除了此方法不会抛出RangeError错误，其余表现与Array.prototype.splice一样，
  *
  * 性能与Array.prototype.splice大致相同，某些场景如safari下表现更好
  *
@@ -13,7 +13,7 @@ import { IWatcherCallback, IWatchTerminator, IWatcherInfo } from '../types';
  * @param deleteCount 删除或替换位置
  * @param items 插入的数组
  */
-function spliceTypedArray(arr: Uint32Array, start: number, deleteCount: number = 0, items?: Uint32Array | null) {
+export function spliceTypedArray(arr: Uint32Array, start: number, deleteCount: number = 0, items?: Uint32Array | null) {
   const a = new Uint32Array((arr.length - deleteCount) + (items ? items.length : 0));
   a.set(arr.slice(0, start));
   if (items) {

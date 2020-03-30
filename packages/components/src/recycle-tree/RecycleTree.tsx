@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FixedSizeList, Align } from 'react-window';
 import { TreeModel } from './tree/model/TreeModel';
-import { TreeNode, CompositeTreeNode } from './tree';
+import { TreeNode, CompositeTreeNode, spliceTypedArray } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
 import { DisposableCollection, Emitter, IDisposable } from '@ali/ide-core-common';
@@ -119,6 +119,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private idToFilterRendererPropsCache: Map<number, IFilterNodeRendererProps> = new Map();
   private filterFlattenBranch: Uint32Array;
+  private filterFlattenBranchChildrenCache: Map<number, Uint32Array> = new Map();
+  private filterWatcherDisposeCollection = new DisposableCollection();
 
   // 批量更新Tree节点
   private batchUpdate = (() => {
@@ -449,6 +451,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   // 过滤Root节点展示
   private filterItems = (filter: string) => {
     const { root } = this.props.model;
+    this.filterWatcherDisposeCollection.dispose();
     this.idToFilterRendererPropsCache.clear();
     if (!filter) {
       return;
@@ -514,9 +517,31 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       }
     }
     // 根据折叠情况变化裁剪filterFlattenBranch
-    root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (event) => {
+    this.filterWatcherDisposeCollection.push(root.watcher.on(TreeNodeEvent.DidChangeExpansionState, (target, nowExpanded) => {
+      const expandItemIndex = this.filterFlattenBranch.indexOf(target.id);
+      if (!nowExpanded) {
+        const spliceArray: number[] = [];
+        let spliceUint32Array: Uint32Array;
+        for (let i = expandItemIndex + 1; i < this.filterFlattenBranch.length; i++) {
+          const node = root.getTreeNodeById(this.filterFlattenBranch[i]);
+          if (node && node.depth > target.depth) {
+            spliceArray.push(node.id);
+          } else {
+            break;
+          }
+        }
+        spliceUint32Array = Uint32Array.from(spliceArray);
+        this.filterFlattenBranchChildrenCache.set(target.id, spliceUint32Array);
+        this.filterFlattenBranch = spliceTypedArray(this.filterFlattenBranch, expandItemIndex + 1, spliceUint32Array.length);
+      } else {
+        const  spliceUint32Array = this.filterFlattenBranchChildrenCache.get(target.id);
+        if (spliceUint32Array && spliceUint32Array.length > 0) {
+          this.filterFlattenBranch = spliceTypedArray(this.filterFlattenBranch, expandItemIndex + 1, 0, spliceUint32Array);
+          this.filterFlattenBranchChildrenCache.delete(target.id);
+        }
 
-    });
+      }
+    }));
   }
 
   private renderItem = ({ index, style }): JSX.Element => {
