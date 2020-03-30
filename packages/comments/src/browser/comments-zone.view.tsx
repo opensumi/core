@@ -95,7 +95,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
             <InlineActionBar<ICommentReply>
               className={styles.comment_reply_actions}
               separator='inline'
-              type='button'
+              type='secondary'
               context={[
                 {
                   text: replyText,
