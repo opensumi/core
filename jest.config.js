@@ -51,7 +51,7 @@ module.exports = {
   ],
   transform: {
     "^.+\\.(css|less)$": "<rootDir>/mocks/style-mock.js"
-   },
+  },
   testMatch: [ "**/__tests__/**/*.test.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)" ],
   coverageThreshold: {
     global: {

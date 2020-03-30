@@ -357,12 +357,12 @@ export class FileTreeService extends Tree {
   private cacheNodes(nodes: (File | Directory)[]) {
     // 切换工作区的时候需清理
     nodes.map((node) => {
-      this.cacheNodesMap.set(node.uri.toString(), node);
+      this._cacheNodesMap.set(node.uri.toString(), node);
     });
   }
 
   getNodeByUriString(path: string) {
-    return this.cacheNodesMap.get(path);
+    return this._cacheNodesMap.get(path);
   }
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
