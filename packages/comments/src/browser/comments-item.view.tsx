@@ -80,8 +80,7 @@ export const CommentItem: React.FC<{
           thread,
           comment,
         }]}
-        separator='inline'
-        type='button'
+        type='secondary'
       />
     )}
   </div>

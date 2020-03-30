@@ -49,12 +49,6 @@
   // FIXME: selectable 区分开
   border: 1px solid transparent;
 
-  // hover/active 时选中图标不变大
-  &:not(.selected):hover,
-  &:not(.selected):active {
-    transform: scale(1.2);
-  }
-
   &.disabled {
     color: var(--kt-actionbar-disableForeground);
   }
@@ -63,6 +57,10 @@
     background-color: var(--kt-actionbar-selectionBackground);
     border-color: var(--kt-actionbar-selectionBorder);
   }
+}
+
+.btnAction :global(.kt-icon) {
+  color: inherit;
 }
 
 .btnAction + .btnAction,
