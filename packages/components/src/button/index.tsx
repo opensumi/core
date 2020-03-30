@@ -28,6 +28,7 @@ interface MoreActionProps {
   more?: boolean;
   moreIconClass?: string;
   menu?: React.ReactNode;
+  onVisibleChange?: (visible: boolean) => void;
 }
 
 export type ButtonProps<T> = {
@@ -82,6 +83,7 @@ export function Button<T>({
   moreIconClass,
   menu,
   title,
+  onVisibleChange,
   ...otherProps
 }: ButtonProps<T>): React.ReactElement<ButtonProps<T>> {
   const classes = classNames('kt-button', className, {
@@ -102,7 +104,7 @@ export function Button<T>({
   const iconNode = iconClass ? <Icon iconClass={iconClass} disabled={disabled} /> : null;
 
   if (more) {
-    return (<Dropdown className={'kt-menu'} overlay={menu} trigger={['click']}>
+    return (<Dropdown className={'kt-menu'} overlay={menu} trigger={['click']} onVisibleChange={onVisibleChange}>
       <button {...otherProps} disabled={disabled} className={classes} type={htmlType} onClick={(loading || disabled) ? noop : onClick}>
         {(loading && type !== 'link') && <LoadingCircle />}
         {iconNode && iconNode}
