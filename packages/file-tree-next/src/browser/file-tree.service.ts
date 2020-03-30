@@ -4,7 +4,6 @@ import {
   IContextKeyService,
   URI,
   EDITOR_COMMANDS,
-  // AppConfig,
   Disposable,
   FILE_COMMANDS,
 } from '@ali/ide-core-browser';
@@ -17,7 +16,7 @@ import { Directory, File } from './file-tree-nodes';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { observable, action } from 'mobx';
+import { observable, action, runInAction } from 'mobx';
 import pSeries = require('p-series');
 import { FileContextKey } from './file-contextkey';
 
@@ -28,9 +27,6 @@ export interface IMoveChange {
 
 @Injectable()
 export class FileTreeService extends Tree {
-
-  // @Autowired(AppConfig)
-  // private readonly config: AppConfig;
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
@@ -72,18 +68,40 @@ export class FileTreeService extends Tree {
   // 筛选模式开关
   filterMode: boolean = false;
 
+  @observable
+  baseIndent: number;
+
+  @observable
+  indent: number;
+
   get cacheFiles() {
     return Array.from(this.cacheNodesMap.values());
   }
 
   async init() {
     await this.workspaceService.roots;
-    this.workspaceService.onWorkspaceChanged(async () => {
+
+    this.baseIndent = this.corePreferences['explorer.fileTree.baseIndent'] || 8;
+    this.indent = this.corePreferences['explorer.fileTree.indent'] || 8;
+
+    this.toDispose.push(this.workspaceService.onWorkspaceChanged(async () => {
       this.dispose();
-    });
+    }));
 
     this.toDispose.push(Disposable.create(() => {
       this.cacheNodesMap.clear();
+    }));
+
+    this.toDispose.push(this.corePreferences.onPreferenceChanged((change) => {
+      if (change.preferenceName === 'explorer.fileTree.baseIndent') {
+        runInAction(() => {
+          this.baseIndent = change.newValue as number || 8;
+        });
+      } else if (change.preferenceName === 'explorer.fileTree.indent') {
+        runInAction(() => {
+          this.indent = change.newValue as number || 8;
+        });
+      }
     }));
   }
 

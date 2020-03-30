@@ -20,7 +20,7 @@ export const FileTree = observer(({
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const { width, height } = viewState;
-  const { decorationService, labelService, filterMode, locationToCurrentFile } = useInjectable<FileTreeService>(FileTreeService);
+  const { decorationService, labelService, filterMode, locationToCurrentFile, indent, baseIndent } = useInjectable<FileTreeService>(FileTreeService);
   const fileTreeModelService = useInjectable<FileTreeModelService>(FileTreeModelService);
 
   const hasShiftMask = (event): boolean => {
@@ -152,6 +152,8 @@ export const FileTree = observer(({
           onClick={handleItemClicked}
           onTwistierClick={handleTwistierClick}
           onContextMenu={handlerContextMenu}
+          defaultLeftPadding={baseIndent}
+          leftPadding={indent}
         />}
       </RecycleTree>;
     }
