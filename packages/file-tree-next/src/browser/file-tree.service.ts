@@ -9,7 +9,7 @@ import {
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IFileTreeAPI } from '../common';
-import { FileChange, IFileServiceClient, FileChangeType, FileStat } from '@ali/ide-file-service/lib/common';
+import { FileChange, IFileServiceClient, FileChangeType, FileStat, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Tree, ITree, WatchEvent, ITreeNodeOrCompositeTreeNode, IWatcherEvent, TreeNodeType } from '@ali/ide-components';
 import { Directory, File } from './file-tree-nodes';
@@ -57,7 +57,9 @@ export class FileTreeService extends Tree {
 
   private _contextMenuContextKeyService: IContextKeyService;
 
-  private cacheNodesMap: Map<string, File | Directory> = new Map();
+  private _cacheNodesMap: Map<string, File | Directory> = new Map();
+
+  private _fileServiceWatchers: Map<string, IFileServiceWatcher> = new Map();
 
   // 用于记录文件系统Change事件的定时器
   private eventFlushTimeout: number;
@@ -75,7 +77,7 @@ export class FileTreeService extends Tree {
   indent: number;
 
   get cacheFiles() {
-    return Array.from(this.cacheNodesMap.values());
+    return Array.from(this._cacheNodesMap.values());
   }
 
   async init() {
@@ -89,7 +91,7 @@ export class FileTreeService extends Tree {
     }));
 
     this.toDispose.push(Disposable.create(() => {
-      this.cacheNodesMap.clear();
+      this._cacheNodesMap.clear();
     }));
 
     this.toDispose.push(this.corePreferences.onPreferenceChanged((change) => {
@@ -159,9 +161,10 @@ export class FileTreeService extends Tree {
   async watchFilesChange(uri: URI) {
     const watcher = await this.fileServiceClient.watchFileChanges(uri);
     this.toDispose.push(watcher);
-    watcher.onFilesChanged((changes: FileChange[]) => {
+    this.toDispose.push(watcher.onFilesChanged((changes: FileChange[]) => {
       this.onFilesChanged(changes);
-    });
+    }));
+    this._fileServiceWatchers.set(uri.toString(), watcher);
   }
 
   private isContentFile(node: any | undefined) {
@@ -381,6 +384,10 @@ export class FileTreeService extends Tree {
 
   public reWatch() {
     // 重连时重新监听文件变化
+    for (const [uri, watcher] of this._fileServiceWatchers) {
+      watcher.dispose();
+      this.watchFilesChange(new URI(uri));
+    }
   }
 
   get isMutiWorkspace(): boolean {
