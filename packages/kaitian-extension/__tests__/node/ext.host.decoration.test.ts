@@ -1,5 +1,5 @@
 // tslint:disable:new-parens
-import { Uri, URI, Emitter, CancellationTokenSource, CancellationToken } from '@ali/ide-core-common';
+import { Event, Uri, URI, Emitter, CancellationTokenSource, CancellationToken } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 import { UriComponents } from 'vscode-uri';
 
@@ -36,8 +36,14 @@ describe('ExtHostFileSystem', () => {
 
   let service: ExtHostDecorations;
 
+  let errorSpy: jest.SpyInstance;
+  let warnSpy: jest.SpyInstance;
   beforeEach(() => {
+    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     service = new ExtHostDecorations(mockRpcProtocol as any);
+
+    process.env.KTLOG_SHOW_DEBUG = '1';
   });
 
   afterEach(() => {
@@ -45,6 +51,11 @@ describe('ExtHostFileSystem', () => {
     $decoProviders.clear();
     service['_provider'].clear();
     ExtHostDecorations['_handlePool'] = 0; // reset _handlePool
+
+    errorSpy.mockRestore();
+    warnSpy.mockRestore();
+
+    process.env.KTLOG_SHOW_DEBUG = undefined;
   });
 
   it('empty result', async () => {
@@ -280,5 +291,75 @@ describe('ExtHostFileSystem', () => {
       await service.$provideDecorations([request1, request2, request3], new CancellationTokenSource().token),
     ).toEqual({});
     expect(service['_provider'].size).toBe(0);
+  });
+
+  it('decoration letter length !== 1', async () => {
+    const extDecoProvider = new class implements vscode.DecorationProvider {
+      onDidChangeDecorations = Event.None;
+      provideDecoration(uri: Uri, token: CancellationToken) {
+        return {
+          letter: 'TWO',
+          title: 'Modified changes',
+          color: { id: 'green' },
+          priority: 1,
+          bubble: false,
+          source: 'sync',
+        };
+      }
+    };
+
+    service.registerDecorationProvider(
+      extDecoProvider,
+      'mock-ext-sync-id',
+    );
+
+    const uri = Uri.file('file://workspace/test/a.ts');
+    const request = {
+      id: 121,
+      handle: 0,
+      uri: URI2UriComponents(new URI(uri)),
+    };
+
+    const result = await service.$provideDecorations([request], new CancellationTokenSource().token);
+    // trigger -> sync
+    expect(result).toEqual({
+      121: [
+        1,
+        false,
+        'Modified changes',
+        'TWO',
+        { id: 'green' },
+        'sync',
+      ],
+    });
+    expect(warnSpy.mock.calls[0][1]).toBe(
+      `INVALID decoration from extension 'mock-ext-sync-id'. The 'letter' must be set and be one character, not 'TWO'.`,
+    );
+  });
+
+  it('provideDecoration rejection', async () => {
+    const extDecoProvider = new class implements vscode.DecorationProvider {
+      onDidChangeDecorations = Event.None;
+      provideDecoration(uri: Uri, token: CancellationToken) {
+        return Promise.reject('provideDecoration throws');
+      }
+    };
+
+    service.registerDecorationProvider(
+      extDecoProvider,
+      'mock-ext-sync-id',
+    );
+
+    const uri = Uri.file('file://workspace/test/a.ts');
+    const request = {
+      id: 121,
+      handle: 0,
+      uri: URI2UriComponents(new URI(uri)),
+    };
+
+    const result = await service.$provideDecorations([request], new CancellationTokenSource().token);
+    // trigger -> sync
+    expect(result).toEqual({});
+    expect(errorSpy.mock.calls[0][1]).toBe('provideDecoration throws');
   });
 });
