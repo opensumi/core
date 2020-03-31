@@ -76,7 +76,7 @@ export const FileTree = observer(({
     await fileTreeModelService.whenReady;
     // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
     // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-    await fileTreeModelService.treeModel.root.ensureLoaded;
+    await fileTreeModelService.treeModel.root.ensureLoaded();
     setIsReady(true);
   };
 

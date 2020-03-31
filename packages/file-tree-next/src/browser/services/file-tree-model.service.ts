@@ -180,8 +180,8 @@ export class FileTreeModelService {
     }));
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed(() => {
       // 尝试恢复树
-      const snapshot = explorerStorage.get(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
-      if (snapshot) {
+      const snapshot = explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+      if (snapshot && snapshot.specVersion) {
         this._treeModel.loadTreeState(snapshot);
       }
     }));

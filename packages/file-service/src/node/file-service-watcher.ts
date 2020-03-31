@@ -3,8 +3,8 @@ import * as nsfw from 'nsfw';
 import * as paths from 'path';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 // import { IMinimatch, Minimatch } from 'minimatch';
-import { IDisposable, Disposable, DisposableCollection, isWindows, isLinux, isOSX } from '@ali/ide-core-common';
-import { FileUri, AppConfig } from '@ali/ide-core-node';
+import { IDisposable, Disposable, DisposableCollection, isWindows, isLinux } from '@ali/ide-core-common';
+import { FileUri } from '@ali/ide-core-node';
 import {
   FileChangeType,
   FileSystemWatcherClient,
@@ -20,6 +20,13 @@ import { Watcher } from 'efsw';
 export interface WatcherOptions {
   excludesPattern: ParsedPattern[];
   excludes: string[];
+}
+
+export interface NsfwFileSystemWatcherOption {
+  verbose?: boolean;
+  info?: (message: string, ...args: any[]) => void;
+  error?: (message: string, ...args: any[]) => void;
+  useExperimentalEfsw?: boolean;
 }
 
 export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
@@ -43,12 +50,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     useExperimentalEfsw?: boolean,
   };
 
-  constructor(options?: {
-    verbose?: boolean,
-    info?: (message: string, ...args: any[]) => void
-    error?: (message: string, ...args: any[]) => void,
-    useExperimentalEfsw?: boolean,
-  }) {
+  constructor(options?: NsfwFileSystemWatcherOption) {
     this.options = {
       verbose: false,
       info: (message, ...args) => console.info(message, ...args),
@@ -67,7 +69,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
    */
   checkIsParentWatched(watcherPath: string): number {
     let watcherId;
-    this.watchers.forEach((watcher, id) => {
+    this.watchers.forEach((watcher) => {
       if (watcherId) {
         return;
       }
@@ -128,7 +130,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
     let renameEvent: INsfw.ChangeEvent;
 
-    events = events.filter((event: INsfw.ChangeEvent, index) => {
+    events = events.filter((event: INsfw.ChangeEvent) => {
       if (event.file) {
         if (/\.\d{7}\d+$/.test(event.file)) {
           // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434, 视为 xxx.xx;

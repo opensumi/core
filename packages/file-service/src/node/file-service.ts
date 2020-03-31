@@ -1,4 +1,4 @@
-import { Injectable, Inject, Autowired } from '@ali/common-di';
+import { Injectable, Inject, Autowired, Optional } from '@ali/common-di';
 import * as drivelist from 'drivelist';
 import * as paths from 'path';
 import * as fs from 'fs-extra';
@@ -39,6 +39,7 @@ import {
   FileCopyOptions,
 } from '../common';
 import { ExtensionFileSystemManage } from './extension-file-system-manage';
+import { NsfwFileSystemWatcherOption } from './file-service-watcher';
 
 export abstract class FileSystemNodeOptions {
 
@@ -80,6 +81,7 @@ export class FileService extends RPCService implements IFileService {
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
+    @Optional() private watcherOption?: NsfwFileSystemWatcherOption
   ) {
     super();
     this.initProvider();
@@ -565,7 +567,10 @@ export class FileService extends RPCService implements IFileService {
   }
 
   private initProvider() {
-    this.registerProvider(Schemas.file, new DiskFileSystemProvider({ useExperimentalEfsw: this.appConfig.useExperimentalEfsw }));
+    this.registerProvider(Schemas.file, new DiskFileSystemProvider({
+      useExperimentalEfsw: this.appConfig.useExperimentalEfsw,
+      ...this.watcherOption,
+    }));
     this.registerProvider('debug', new ShadowFileSystemProvider());
   }
 
