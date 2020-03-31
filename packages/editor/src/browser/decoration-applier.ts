@@ -3,7 +3,7 @@ import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IT
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
 import { Disposable, URI, IEventBus } from '@ali/ide-core-common';
 import { IThemeService } from '@ali/ide-theme';
-import clsx from 'clsx';
+import * as clsx from 'classnames';
 
 @Injectable({multiple: true})
 export class MonacoEditorDecorationApplier extends Disposable {
@@ -58,8 +58,8 @@ export class MonacoEditorDecorationApplier extends Disposable {
         return;
       }
 
-      for (const [key, value] of Object.entries(decs)) {
-        this.deltaDecoration(key, value);
+      for (const key of Object.keys(decs)) {
+        this.deltaDecoration(key, decs[key]);
       }
     }
   }

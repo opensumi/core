@@ -1,7 +1,13 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ResourceService, IResourceProvider, ResourceDecorationChangeEvent, ResourceNeedUpdateEvent, ResourceDidUpdateEvent } from '../../src';
+import { ResourceService, IResourceProvider, ResourceDecorationChangeEvent, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, WorkbenchEditorService } from '../../src';
 import { ResourceServiceImpl } from '../../src/browser/resource.service';
-import { URI, IEventBus } from '@ali/ide-core-common';
+import { URI, IEventBus, Schemas } from '@ali/ide-core-common';
+import { IEditorDocumentModelService, ICompareService } from '@ali/ide-editor/lib/browser';
+import { UntitledSchemeDocumentProvider } from '@ali/ide-editor/lib/browser/untitled-resource';
+import { AppConfig, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { DiffResourceProvider, DefaultDiffEditorContribution } from '@ali/ide-editor/lib/browser/diff';
+import { CompareService } from '@ali/ide-editor/lib/browser/diff/compare';
 
 describe('resource service tests', () => {
 
@@ -181,4 +187,132 @@ describe('resource service tests', () => {
 
   });
 
+  it('untitled resource test', async (done) => {
+    injector.mockService(IEditorDocumentModelService);
+    injector.mockService(WorkbenchEditorService);
+    injector.mockService(AppConfig, {
+      workspaceDir: '/TEST_WORKSPACE',
+    });
+    const mockSave = jest.fn(() => {
+      return new URI('file:///test/test-untitled.saved.js');
+    });
+    injector.mockCommand('file.save', mockSave);
+
+    const provider = injector.get(UntitledSchemeDocumentProvider);
+
+    const untitledURI = URI.from({
+      scheme: Schemas.untitled,
+      authority: 'test',
+      path: '/test.js',
+      query: 'name=test.js',
+    });
+
+    expect(provider.isReadonly(untitledURI)).toBeFalsy();
+
+    expect(provider.isAlwaysDirty(untitledURI)).toBeTruthy();
+
+    expect(provider.handlesScheme(Schemas.untitled)).toBeTruthy();
+    expect(provider.handlesScheme(Schemas.file)).toBeFalsy();
+
+    expect(await provider.provideEditorDocumentModelContent(untitledURI)).toBe('');
+
+    expect(await provider.closeAutoSave(untitledURI)).toBe(true);
+
+    await provider.saveDocumentModel(untitledURI, 'test document', '', [], 'utf8');
+
+    expect(mockSave).toBeCalled();
+
+    done();
+
+  });
+
+  it('diff resource tests', async (done) => {
+    injector.mockService(LabelService, {
+      getIcon: jest.fn((uri) => {
+        return uri.toString();
+      }),
+    });
+
+    const provider = injector.get(DiffResourceProvider);
+
+    expect(provider.scheme).toBe('diff');
+    const diffUri = new URI('diff://?name=a.ts(on disk)<>a.ts&original=file://path/to/a.ts&modified=fileOnDisk://path/to/a.ts');
+    const res = await provider.provideResource(diffUri);
+    expect(res.name).toBe('a.ts(on disk)<>a.ts');
+    expect(res.icon).toBe('file://path/to/a.ts');
+    expect(res.metadata!.original.toString()).toBe('file://path/to/a.ts');
+    expect(res.metadata!.modified.toString()).toBe('fileOnDisk://path/to/a.ts');
+
+    injector.mock(ResourceService, 'shouldCloseResource', jest.fn(() => {
+      return true;
+    }));
+
+    injector.mock(ResourceService, 'getResource', jest.fn(() => {
+      return {};
+    }));
+
+    const resourceService: ResourceService = injector.get(ResourceService);
+
+    expect(await provider.shouldCloseResource(res, [[]])).toBe(true);
+    expect(resourceService.getResource).toBeCalled();
+    expect(resourceService.shouldCloseResource).toBeCalled();
+
+    const eventBus: IEventBus = injector.get(IEventBus);
+
+    let diffDirtyChanged = false;
+    const listener = (e: ResourceDecorationChangeEvent) => {
+      if (e.payload.uri.toString() === diffUri.toString()) {
+        diffDirtyChanged = true;
+      }
+    };
+    eventBus.on(ResourceDecorationChangeEvent, listener);
+
+    eventBus.fire(new ResourceDecorationChangeEvent({
+      uri: new URI('fileOnDisk://path/to/a.ts'),
+      decoration: {
+        dirty: true,
+      },
+    }));
+
+    expect(diffDirtyChanged).toBeTruthy();
+
+    const contribution = injector.get(DefaultDiffEditorContribution);
+
+    contribution.registerResource(resourceService);
+
+    const schemes = new Map<string, any>();
+
+    contribution.registerEditorComponent({
+      registerEditorComponentResolver: (scheme, v) => {
+        schemes.set(scheme, v);
+      },
+    } as any);
+
+    expect(schemes.has('diff')).toBeTruthy();
+
+    injector.mockCommand(EDITOR_COMMANDS.CLOSE_ALL.id, jest.fn());
+    let openingResource: URI | null = null;
+    injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, jest.fn((uri) => {
+      openingResource = uri;
+    }));
+
+    injector.addProviders({
+      token: ICompareService,
+      useClass: CompareService,
+    });
+
+    const compareService: ICompareService = injector.get(ICompareService);
+
+    compareService.compare(res.metadata!.original, res.metadata!.modified, 'compare test');
+    expect(openingResource).toBeDefined();
+    const res2 = await provider.provideResource(openingResource!);
+    expect(res2.metadata!.original.toString()).toBe('file://path/to/a.ts');
+    expect(res2.metadata!.modified.toString()).toBe('fileOnDisk://path/to/a.ts');
+
+    done();
+  });
+
+  afterAll(() => {
+    injector.disposeAll();
+  });
 });

@@ -164,9 +164,10 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   getLineDecorations(lineNumber: number): monaco.editor.IModelDecoration[] | null {
     return null;
   }
-  deltaDecorations(oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]): string[] {
+  deltaDecorations = jest.fn((oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]) => {
     return [];
-  }
+  });
+
   getLayoutInfo(): monaco.editor.EditorLayoutInfo {
     return {
       height: 0,
@@ -262,16 +263,14 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     // return 'vs.editor.IDiffEditor;
   }
 
-  updateOptions(newOptions): void {
+  updateOptions = jest.fn((newOptions) => {
     this.options = newOptions;
     this._onDidChangeConfiguration.fire(newOptions as monaco.editor.IConfigurationChangedEvent);
-  }
+  });
   layout(dimension?: monaco.editor.IDimension | undefined): void {
     return;
   }
-  focus(): void {
-    return;
-  }
+  focus =  jest.fn();
   hasTextFocus(): boolean {
     return false;
   }
@@ -305,14 +304,15 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   revealPositionInCenterIfOutsideViewport(position: monaco.IPosition, scrollType?: monaco.editor.ScrollType | undefined): void {
     return;
   }
-  getSelection(): monaco.Selection | null {
+  getSelection = jest.fn(() => {
     return this.selections[0];
-  }
-  getSelections(): monaco.Selection[] | null {
-    return this.selections;
-  }
+  });
 
-  setSelection(selection: any) {
+  getSelections = jest.fn(() => {
+    return this.selections;
+  });
+
+  setSelection = jest.fn((selection: any) => {
     this.selections = [selection];
     this._onDidChangeCursorSelection.fire({
       selection,
@@ -320,10 +320,11 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
       reason: 0,
       source: 'api',
     });
-  }
-  setSelections(selections: monaco.ISelection[]): void {
+  });
+  setSelections =  jest.fn((selections: monaco.ISelection[]) => {
     this.selections = selections;
-  }
+  });
+
   revealLines(startLineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
     return;
   }

@@ -1,11 +1,11 @@
 import { Injectable } from '@ali/common-di';
-import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange } from '@ali/ide-core-common';
+import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange, IPosition } from '@ali/ide-core-common';
 import { IResource } from './resource';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
 
 export interface CursorStatus {
-  position: MaybeNull<monaco.Position>;
+  position: MaybeNull<IPosition>;
   selectionLength: number;
 }
 

@@ -57,4 +57,26 @@ export class MockInjector extends Injector {
         },
       });
   }
+
+  public mockService(token: Token, proxyObj: any = {}) {
+    this.addProviders({
+      token,
+      useValue: mockService(proxyObj),
+      override: true,
+    });
+  }
+}
+
+function mockService(target) {
+  return new Proxy(target, {
+    get: (t, p) => {
+      if (p === 'hasOwnProperty') {
+        return t[p];
+      }
+      if (!t.hasOwnProperty(p)) {
+        t[p] = jest.fn();
+      }
+      return t[p];
+    },
+  });
 }
