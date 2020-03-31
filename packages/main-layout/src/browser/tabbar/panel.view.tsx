@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ViewUiStateManager, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ViewUiStateManager, IEventBus, ResizeEvent, ErrorBoundary } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
@@ -30,7 +30,9 @@ export const BaseTabPanelView: React.FC<{
           className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
           data-viewlet-id={containerId}
           style={currentContainerId === containerId ? panelVisible : panelInVisible}>
-          <PanelView titleMenu={titleMenu} side={side} component={component} />
+            <ErrorBoundary>
+              <PanelView titleMenu={titleMenu} side={side} component={component} />
+            </ErrorBoundary>
         </div>;
       })}
     </div>
