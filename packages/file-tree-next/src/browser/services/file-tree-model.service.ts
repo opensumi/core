@@ -630,6 +630,7 @@ export class FileTreeModelService {
         }
       }
       this.fileTreeContextKey.filesExplorerInputFocused.set(false);
+      return true;
     };
     const blurCommit = async (newName) => {
       if (isCommit) {
