@@ -268,7 +268,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   async save(force: boolean = false, reason: SaveReason = SaveReason.Manual): Promise<boolean> {
-    await this.formatOnSave();
+    await this.formatOnSave(reason);
     // 发送willSave并等待完成
     await this.eventBus.fireAndAwait(new EditorDocumentModelWillSaveEvent({
       uri: this.uri,
@@ -465,10 +465,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     });
   }
 
-  protected async formatOnSave() {
+  protected async formatOnSave(reason: SaveReason) {
     const formatOnSave = this.corePreferences['editor.formatOnSave'];
 
-    if (formatOnSave) {
+    // 和 vscode 逻辑保持一致，如果是 AfterDelay 则不执行 formatOnSave
+    if (formatOnSave && reason !== SaveReason.AfterDelay) {
       const formatOnSaveTimeout = this.corePreferences['editor.formatOnSaveTimeout'];
       const timer = this.reporter.time(REPORT_NAME.FORMAT_ON_SAVE);
       try {
