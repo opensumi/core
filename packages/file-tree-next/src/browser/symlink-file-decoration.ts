@@ -1,6 +1,6 @@
 import { Optinal } from '@ali/common-di';
 import { IDecorationsProvider, IDecorationData } from '@ali/ide-decoration';
-import { Uri, Emitter } from '@ali/ide-core-browser';
+import { Uri, Emitter, localize } from '@ali/ide-core-browser';
 import { FileTreeService } from './file-tree.service';
 
 export class SymlinkDecorationsProvider implements IDecorationsProvider {
@@ -22,7 +22,7 @@ export class SymlinkDecorationsProvider implements IDecorationsProvider {
           letter: '⤷',
           source: node.filestat.uri,
           color: 'gitDecoration.ignoredResourceForeground',
-          tooltip: 'Symbolic Link',
+          tooltip: localize('file.tooltip.symbolicLink'),
           // 保证单文件的情况下也可以取到对应的decoration
           weight: -1,
           bubble: !node.filestat.isDirectory,

@@ -93,6 +93,7 @@ export class FileTreeAPI implements IFileTreeAPI {
         uri,
         name,
         filestat,
+        this.getReadableTooltip(uri),
       );
     } else {
       return new File(
@@ -101,6 +102,7 @@ export class FileTreeAPI implements IFileTreeAPI {
         uri,
         name,
         filestat,
+        this.getReadableTooltip(uri),
       );
     }
   }
@@ -222,5 +224,25 @@ export class FileTreeAPI implements IFileTreeAPI {
     } catch (e) {
       return e.message;
     }
+  }
+
+  /**
+   * 替换用户目录为 ~
+   * 移除协议头文本 file://
+   *
+   * @param {URI} path
+   * @returns
+   * @memberof FileTreeAPI
+   */
+  public getReadableTooltip(path: URI) {
+    const pathStr = path.toString();
+    const userhomePathStr = this.userhomePath && this.userhomePath.toString();
+    if (!this.userhomePath) {
+      return decodeURIComponent(path.withScheme('').toString());
+    }
+    if (this.userhomePath.isEqualOrParent(path)) {
+      return decodeURIComponent(pathStr.replace(userhomePathStr, '~'));
+    }
+    return decodeURIComponent(path.withScheme('').toString());
   }
 }

@@ -49,6 +49,7 @@ export const localizationBundle = {
     'file.filetree.filter': 'Filter on opened files',
     'file.filetree.filter.placeholder': 'Enter a keyword or path to filter',
     'file.filetree.openWithPath': 'Open In The Terminal',
+    'file.tooltip.symbolicLink': 'Symbolic Link',
 
     'menu-bar.title.file': 'File',
     'menu-bar.title.edit': 'Edit',

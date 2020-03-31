@@ -215,6 +215,14 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     }
   };
 
+  const getItemTooltip = () => {
+    let tooltip = item.tooltip;
+    if (decoration && decoration.badge) {
+      tooltip += ` • ${decoration.tooltip}`;
+    }
+    return tooltip;
+  };
+
   return (
     <div
         key={item.id}
@@ -226,6 +234,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        title={getItemTooltip()}
         className={cls(
           styles.file_tree_node,
           decorations ? decorations.classlist : null,

@@ -120,7 +120,7 @@ export class FileTreeService extends Tree {
           ...this.workspaceService.workspace,
           isDirectory: true,
         } as FileStat;
-        const root = new Directory(this as ITree, undefined, rootUri, rootName, fileStat);
+        const root = new Directory(this as ITree, undefined, rootUri, rootName, fileStat, this.fileTreeAPI.getReadableTooltip(rootUri));
         // 创建Root节点并引入root文件目录
         this.cacheNodes([root]);
         this.root = root;
