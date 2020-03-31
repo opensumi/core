@@ -1,6 +1,6 @@
 import { Injector } from '@ali/common-di';
 import { FileServiceModule } from '../../src/node';
-import { IFileService } from '../../src/common';
+import { IFileService, FileChangeType } from '../../src/common';
 import { URI, FileUri, AppConfig } from '@ali/ide-core-node';
 import { isWindows } from '../../../core-common';
 import * as temp from 'temp';
@@ -658,6 +658,68 @@ describe('FileService', () => {
       expect(await fileService.getCurrentUserHome()).toBeDefined();
     });
 
+  });
+
+  describe('watch', () => {
+    it('Should return id and dispose', async () => {
+      const watchId = await fileService.watchFileChanges(root.toString());
+      expect(typeof watchId).toEqual('number');
+      fileService.unwatchFileChanges(watchId);
+    });
+
+    it('Should set and get Excludes', () => {
+      fileService.setWatchFileExcludes(['test']);
+      expect(fileService.getWatchFileExcludes()).toEqual(['test']);
+
+      fileService.setFilesExcludes(['test'], ['/root']);
+      expect(fileService.getFilesExcludes()).toEqual(['test']);
+    });
+
+  });
+
+  describe('getFsPath', () => {
+    it('Should return fsPath', async () => {
+      expect(await fileService.getFsPath(root.resolve('test').toString())).toEqual(root.resolve('test').codeUri.fsPath);
+    });
+  });
+
+  describe('getFileType', () => {
+    it ('Should return file type', async () => {
+      const uri = root.resolve('foo.txt');
+      fs.writeFileSync(FileUri.fsPath(uri), 'foo');
+
+      expect(await fileService.getFileType(uri.toString())).toEqual('text');
+    });
+  });
+
+  describe('getUri', () => {
+    it('Should return uri', async () => {
+      const uri = root.resolve('foo.txt');
+      fs.writeFileSync(FileUri.fsPath(uri), 'foo');
+
+      expect((await fileService.getUri(uri.toString())).toString()).toEqual(uri.toString());
+    });
+  });
+
+  describe('fireFilesChange', () => {
+    it('Should fireFilesChange event', () => {
+      let changes;
+      (fileService as any).rpcClient = [{
+        onDidFilesChanged(args) {
+          changes = args.changes;
+        },
+      }];
+      const uri = root.resolve('foo.txt');
+      fileService.fireFilesChange([{ uri: uri.toString(), type: FileChangeType.UPDATED}]);
+
+      expect(changes).toEqual([{ uri: uri.toString(), type: FileChangeType.UPDATED}]);
+    });
+  });
+
+  describe('dispose', () => {
+    it('Should no error', async () => {
+      expect(fileService.dispose()).toBeUndefined();
+    });
   });
 });
 
