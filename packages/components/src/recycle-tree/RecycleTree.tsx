@@ -173,10 +173,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   })();
 
   private getNewPromptInsertIndex(startIndex: number, parent: CompositeTreeNode) {
+    const { root } = this.props.model;
     let insertIndex: number = startIndex + 1;
     // 合并文件夹以及深层级子节点
     for (; insertIndex < parent.branchSize; insertIndex++) {
-      const node = parent.getTreeNodeAtIndex(insertIndex);
+      const node = root.getTreeNodeAtIndex(insertIndex);
       if (!node) {
         return insertIndex;
       }
