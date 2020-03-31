@@ -56,14 +56,14 @@ export const TAB_UNFOCUSED_ACTIVE_BORDER = registerColor('tab.unfocusedActiveBor
 }, localize('tabActiveUnfocusedBorder', 'Border on the bottom of an active tab in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_ACTIVE_BORDER_TOP = registerColor('tab.activeBorderTop', {
-  dark: TAB_BORDER,
-  light: TAB_BORDER,
+  dark: 'transparent',
+  light: 'transparent',
   hc: '#000000',
 }, localize('tabActiveBorderTop', 'Border to the top of an active tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 
 export const TAB_UNFOCUSED_ACTIVE_BORDER_TOP = registerColor('tab.unfocusedActiveBorderTop', {
-  dark: TAB_BORDER,
-  light: TAB_BORDER,
+  dark: 'transparent',
+  light: 'transparent',
   hc: null,
 }, localize('tabActiveUnfocusedBorderTop', 'Border to the top of an active tab in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.'));
 

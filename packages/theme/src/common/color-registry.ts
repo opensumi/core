@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Color, RGBA } from '../common/color';
+import { Color } from '../common/color';
 import { ITheme, ColorIdentifier, ColorDefaults, ColorContribution, ColorValue, ColorFunction } from '../common/theme.service';
 
 //  ------ API types
@@ -178,6 +178,8 @@ export function lessProminent(colorValue: ColorValue, backgroundColorValue: Colo
 function resolveColorValue(colorValue: ColorValue | null, theme: ITheme): Color | undefined {
   if (colorValue === null) {
     return undefined;
+  } else if (colorValue === 'transparent') {
+    return Color.fromHex('#00000000');
   } else if (typeof colorValue === 'string') {
     if (colorValue[0] === '#') {
       return Color.fromHex(colorValue);
