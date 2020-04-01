@@ -114,7 +114,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
         ...viewColumnToResourceOpenOptions(columnOrOptions.viewColumn),
         preserveFocus: columnOrOptions.preserveFocus,
         range: typeof columnOrOptions.selection === 'object' ? TypeConverts.Range.from(columnOrOptions.selection) : undefined,
-        // TODO pinned: typeof columnOrOptions.preview === 'boolean' ? !columnOrOptions.preview : undefined
+        preview: typeof columnOrOptions.preview === 'boolean' ? columnOrOptions.preview : undefined,
       };
     } else {
       options = {
