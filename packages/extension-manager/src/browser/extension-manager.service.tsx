@@ -187,7 +187,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     try {
       const current = await this.getDetailById(e.extensionId);
       const latest = await this.getDetailFromMarketplace(e.extensionId);
-      if (!latest) {
+      if (!latest || !current) {
         this.logger.warn(`Can not find extension ${current?.displayName} from marketplace.`);
         return;
       }
@@ -196,17 +196,17 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
       const delayReload = localize('marketplace.extension.reload.delay');
       const nowReload = localize('marketplace.extension.reload.now');
-      if (compareVersions(current!.version, latest!.version) === -1) {
+      if (compareVersions(current.version, latest.version) === -1) {
         this.messageService.info(
-          formatLocalize('marketplace.extension.findUpdate', latest?.displayName || latest?.name, latest!.version), [delayUpdate, nowUpdate],
+          formatLocalize('marketplace.extension.findUpdate', latest.displayName || latest.name, latest.version), [delayUpdate, nowUpdate],
         )
         .then((message) => {
           if (message === nowUpdate) {
-            const oldExtensionPath = current!.path;
-            this.updateExtension(current!, latest!.version)
+            const oldExtensionPath = current.path;
+            this.updateExtension(current, latest.version)
               .then((newPath) => {
                 this.onUpdateExtension(newPath, oldExtensionPath);
-                return this.messageService.info(formatLocalize('marketplace.extension.needreload', latest?.displayName || latest?.name), [delayReload, nowReload]);
+                return this.messageService.info(formatLocalize('marketplace.extension.needreload', latest.displayName || latest.name), [delayReload, nowReload]);
               })
               .then((value) => {
                 if (value === nowReload) {
@@ -478,8 +478,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
     });
   }
 
-  getRawExtensionById(extensionId: string): RawExtension {
-    return this.rawExtension.find((extension) => this.equalExtensionId(extension, extensionId))!;
+  getRawExtensionById(extensionId: string): RawExtension | undefined {
+    return this.rawExtension.find((extension) => this.equalExtensionId(extension, extensionId));
   }
 
   @action
@@ -522,6 +522,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   async getDetailById(extensionId: string): Promise<ExtensionDetail | undefined> {
     const extension = this.getRawExtensionById(extensionId);
+    if (!extension) {
+      return;
+    }
     const extensionDetail = await this.extensionService.getExtensionProps(extension.path, {
       readme: './README.md',
       changelog: './CHANGELOG.md',
