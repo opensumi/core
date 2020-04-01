@@ -85,12 +85,8 @@
     ],
     "ide-framework": [
       {
-        "name": "init",
+        "name": "extend-sample",
         "version": "0.0.1"
-      },
-      {
-        "name": "fsprovider-sample",
-        "version": "0.0.3"
       }
     ],
     "kaitian": [

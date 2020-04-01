@@ -23,9 +23,12 @@ export class ExtensionLogger2 {
   injectLogService() {
     if (this.config.extLogServiceClassPath) {
       let LogServiceClass = __non_webpack_require__(this.config.extLogServiceClassPath);
+
+      // console.log('ExtensionLogger2 injectLogService LogServiceClass', LogServiceClass)
       if (LogServiceClass.default) {
         LogServiceClass = LogServiceClass.default;
       }
+      // console.log('ExtensionLogger2 LogServiceClass', LogServiceClass)
       this.injector.overrideProviders({
         token: AppConfig,
         useValue: Object.assign({}, this.config, {LogServiceClass}),

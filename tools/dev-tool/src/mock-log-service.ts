@@ -18,4 +18,8 @@ export default class LogServiceClass {
   log(...args) {
     console.log('LogServiceClass log', args);
   }
+
+  warn(...args) {
+    console.log('LogServiceClass warn', args);
+  }
 }

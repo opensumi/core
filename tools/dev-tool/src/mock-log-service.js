@@ -13,6 +13,9 @@ class LogServiceClass {
     log(...args) {
         console.log('LogServiceClass log', args);
     }
+    warn(...args){
+        console.log('LogServiceClass warn', args);
+    }
 }
 exports.default = LogServiceClass;
 //# sourceMappingURL=mock-log-service.js.map
