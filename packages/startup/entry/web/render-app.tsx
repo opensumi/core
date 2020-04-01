@@ -18,7 +18,6 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.editorBackgroudImage = 'https://img.alicdn.com/tfs/TB1Y6vriuL2gK0jSZFmXXc7iXXa-200-200.png';
   // 定制Layout
   opts.layoutComponent = DefaultLayout;
-  opts.useExperimentalMultiChannel = true;
 
   const app = new ClientApp(opts);
 
@@ -34,6 +33,5 @@ export async function renderApp(opts: IClientAppOpts) {
     await new Promise((resolve) => setTimeout(resolve, 500));
     loadingDom.remove();
   }
-  console.log('app.start done at workspace:', opts.workspaceDir);
 
 }

@@ -28,7 +28,6 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     staticAllowPath: [
       path.join(__dirname, '../../../packages/kaitian-extension'),
     ],
-    useExperimentalMultiChannel: true,
     extLogServiceClassPath: path.join(__dirname, './mock-log-service.js'),
   };
   if (Array.isArray(arg1)) {
