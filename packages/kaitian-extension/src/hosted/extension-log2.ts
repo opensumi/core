@@ -1,6 +1,7 @@
 import { LogServiceManager } from '@ali/ide-logs/lib/node/log-manager';
 import { Injector } from '@ali/common-di';
-import { SupportLogNamespace, ILogService, LogLevel, AppConfig } from '@ali/ide-core-node';
+import { getNodeRequire, SupportLogNamespace, ILogService, LogLevel } from '@ali/ide-core-common';
+import { AppConfig } from '@ali/ide-core-node';
 
 declare var __non_webpack_require__: any;
 
@@ -29,7 +30,7 @@ export class ExtensionLogger2 {
         useValue: Object.assign({}, this.config, {LogServiceClass}),
       });
     } else if (this.config.extLogServiceClassPath) {
-      let LogServiceClass = __non_webpack_require__(this.config.extLogServiceClassPath);
+      let LogServiceClass = getNodeRequire()(this.config.extLogServiceClassPath);
 
       // console.log('ExtensionLogger2 injectLogService LogServiceClass', LogServiceClass)
       if (LogServiceClass.default) {
