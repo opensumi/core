@@ -313,6 +313,17 @@ export class FileTreeModelService {
     this.treeModel.dispatchChange();
   }
 
+  // 选中当前指定节点，添加装饰器属性
+  activeFileSelectedDecoration = (target: File | Directory) => {
+    if (this.selectedFiles.indexOf(target) > -1) {
+      return ;
+    }
+    this.selectedFiles.push(target);
+    this.selectedDecoration.addTarget(target);
+    // 通知视图更新
+    this.treeModel.dispatchChange();
+  }
+
   // 选中范围内的所有节点
   activeFileDecorationByRange = (begin: number, end: number) => {
     this.clearFileSelectedDecoration();
@@ -411,9 +422,19 @@ export class FileTreeModelService {
   }
 
   handleItemToggleClick = (item: File | Directory, type: TreeNodeType) => {
-    // 单选操作默认先更新选中状态
-    if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
-      this.activeFileFocusedDecoration(item);
+    if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
+      return;
+    }
+    // 选中的节点不是选中状态时，默认先更新节点为选中状态
+    // 后续点击切换焦点状态
+    if (this.selectedFiles.indexOf(item) > -1) {
+      if (this.focusedFile === item) {
+        this.enactiveFileDecoration();
+      } else {
+        this.activeFileFocusedDecoration(item);
+      }
+    } else {
+      this.activeFileSelectedDecoration(item);
     }
   }
 
@@ -707,13 +728,14 @@ export class FileTreeModelService {
     }
   }
 
-  async copyFile(from: URI[]) {
+  public copyFile = async (from: URI[]) => {
     if (this.pasteStore && this.pasteStore.type === PasteTypes.CUT) {
       this._pasteStore.files.forEach((file) => {
         if (file) {
           this.cutDecoration.removeTarget(file as File);
         }
       });
+      this.fileTreeContextKey.explorerResourceCut.set(false);
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
@@ -723,7 +745,7 @@ export class FileTreeModelService {
     };
   }
 
-  async pasteFile(to: URI) {
+  public pasteFile = async (to: URI) => {
     let parent = this.fileTreeService.getNodeByUriString(to.toString());
     if (!parent || !this.pasteStore) {
       return;
@@ -732,7 +754,7 @@ export class FileTreeModelService {
       parent = parent.parent as Directory;
     }
     if (this.pasteStore.type === PasteTypes.CUT) {
-      this.pasteStore.files.forEach(async (file) => {
+      for (const file of this.pasteStore.files) {
         if (file) {
           this.cutDecoration.removeTarget(file);
         }
@@ -746,16 +768,12 @@ export class FileTreeModelService {
           this.messageService.error(error);
           this.fileTreeService.refresh();
         }
-      });
-      this._pasteStore = {
-        files: [],
-        type: PasteTypes.NONE,
-      };
+      }
       this.fileTreeContextKey.explorerResourceCut.set(false);
       // 更新视图
       this.treeModel.dispatchChange();
     } else if (this.pasteStore.type === PasteTypes.COPY) {
-      this.pasteStore.files.forEach(async (file) => {
+      for (const file of this.pasteStore.files) {
         const to = (parent as Directory).uri.resolve(file.uri.displayName);
         if (!(parent as Directory).expanded) {
           await (parent as Directory).setExpanded(true);
@@ -769,11 +787,15 @@ export class FileTreeModelService {
             this.messageService.error(res);
           }
         }
-      });
+      }
     }
+    this._pasteStore = {
+      files: [],
+      type: PasteTypes.NONE,
+    };
   }
 
-  async cutFile(from: URI[]) {
+  public cutFile = async (from: URI[]) => {
     if (from.length > 0) {
       this.fileTreeContextKey.explorerResourceCut.set(true);
     }
@@ -792,7 +814,7 @@ export class FileTreeModelService {
     this.treeModel.dispatchChange();
   }
 
-  async location(uri: URI) {
+  public location = async (uri: URI) => {
     const path = await this.getFileTreeNodePathByUri(uri);
     if (path) {
       if (!this.fileTreeHandle) {
@@ -805,13 +827,13 @@ export class FileTreeModelService {
     }
   }
 
-  public locationOnShow(uri: URI) {
+  public locationOnShow = (uri: URI) => {
     this._nextLocationTarget = uri;
   }
 
-  public performLocationOnHandleShow() {
+  public performLocationOnHandleShow = async () => {
     if (this._nextLocationTarget) {
-      this.location(this._nextLocationTarget);
+      await this.location(this._nextLocationTarget);
       this._nextLocationTarget = undefined;
     }
   }
