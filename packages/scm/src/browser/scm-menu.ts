@@ -53,6 +53,12 @@ export class SCMMenus implements IDisposable {
     this.disposables.push(this.titleMenu);
   }
 
+  dispose(): void {
+    dispose(this.disposables);
+    dispose(this.resourceGroupMenuEntries);
+    this.resourceGroupMenus.clear();
+  }
+
   /**
    * scm/title toolbar
    */
@@ -75,26 +81,6 @@ export class SCMMenus implements IDisposable {
   }
 
   /**
-   * 获取 scm 文件列表中的 ctx-menu
-   */
-  private getCtxMenuNodes(menuId: MenuId, resource: ISCMResourceGroup | ISCMResource): MenuNode[] {
-    const contextKeyService = this.scopedCtxKeyService.createScoped();
-    contextKeyService.createKey('scmResourceGroup', getSCMResourceContextKey(resource));
-
-    const menus = this.contextMenuService.createMenu({
-      id: menuId,
-      contextKeyService,
-      config: { separator: 'inline' },
-    });
-    const result = menus.getGroupedMenuNodes();
-
-    menus.dispose();
-    contextKeyService.dispose();
-
-    return result[1];
-  }
-
-  /**
    * 获取 resource group 的 inline actions
    */
   getResourceGroupInlineActions(group: ISCMResourceGroup): IMenu | undefined {
@@ -114,6 +100,26 @@ export class SCMMenus implements IDisposable {
     }
 
     return this.resourceGroupMenus.get(group)!.resourceMenu;
+  }
+
+  /**
+   * 获取 scm 文件列表中的 ctx-menu
+   */
+  private getCtxMenuNodes(menuId: MenuId, resource: ISCMResourceGroup | ISCMResource): MenuNode[] {
+    const contextKeyService = this.scopedCtxKeyService.createScoped();
+    contextKeyService.createKey('scmResourceGroup', getSCMResourceContextKey(resource));
+
+    const menus = this.contextMenuService.createMenu({
+      id: menuId,
+      contextKeyService,
+      config: { separator: 'inline' },
+    });
+    const result = menus.getGroupedMenuNodes();
+
+    menus.dispose();
+    contextKeyService.dispose();
+
+    return result[1];
   }
 
   // 监听 scm group 的 slice 事件并创建 resource 和 group 的 inline actions
@@ -144,11 +150,5 @@ export class SCMMenus implements IDisposable {
       this.resourceGroupMenus.delete(entry.group);
       entry.dispose();
     }
-  }
-
-  dispose(): void {
-    dispose(this.disposables);
-    dispose(this.resourceGroupMenuEntries);
-    this.resourceGroupMenus.clear();
   }
 }

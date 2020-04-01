@@ -1,7 +1,6 @@
-import * as React from 'react';
 import { Provider, Injectable } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
-import { ThemeServicePath, IThemeService, IIconTheme, IIconService } from '../common/theme.service';
+import { ThemeServicePath, IThemeService, IIconService } from '../common/theme.service';
 import { WorkbenchThemeService } from './workbench.theme.service';
 import { ICSSStyleService } from '../common/style';
 import { CSSStyleService } from './style.service';

@@ -1,5 +1,5 @@
 import { URI, MaybePromise, IRef, IDisposable, Event, IRange, BasicEvent, IEditOperation, IEditorDocumentChange, IEditorDocumentModelSaveResult} from '@ali/ide-core-browser';
-import { EOL, EndOfLineSequence } from '../../common';
+import { EOL, EndOfLineSequence, IEditorDocumentModelContentChange, SaveReason } from '../../common';
 /**
  * editorDocumentModel is a wrapped concept for monaco's textModel
  */
@@ -59,7 +59,7 @@ export interface IEditorDocumentModel {
    *  保存文档, 如果文档不可保存，则不会有任何反应
    *  @param force 强制保存, 不管diff
    */
-  save(force?: boolean): Promise<boolean>;
+  save(force?: boolean, reason?: SaveReason): Promise<boolean>;
 
   /**
    * 恢复文件内容
@@ -153,6 +153,12 @@ export interface IEditorDocumentModelContentProvider {
 
 }
 
+export interface IPreferredModelOptions {
+  encoding?: string;
+  languageId?: string;
+  eol?: EOL;
+}
+
 export type IEditorDocumentModelRef = IRef<IEditorDocumentModel>;
 
 export interface IEditorDocumentModelService {
@@ -171,11 +177,11 @@ export interface IEditorDocumentModelService {
   getAllModels(): IEditorDocumentModel[];
 
   /**
-   * 修改某个uri的encoding （会存储在偏好内）
+   * 修改某个uri的option （会存储在偏好内）
    * @param uri
-   * @param encoding
+   * @param options
    */
-  changeModelEncoding(uri: URI, encoding: string);
+  changeModelOptions(uri: URI, options: IPreferredModelOptions);
 
   saveEditorDocumentModel(uri: URI, content: string, baseContent: string, changes: IEditorDocumentChange[], encoding?: string, ignoreDiff?: boolean): MaybePromise<IEditorDocumentModelSaveResult>;
 
@@ -219,13 +225,7 @@ export interface IEditorDocumentModelOptionChangedEventPayload {
   uri: URI;
   encoding?: string;
   languageId?: string;
-}
-
-export interface IEditorDocumentModelContentChange {
-  range: IRange;
-  text: string;
-  rangeLength: number;
-  rangeOffset: number;
+  eol?: EOL;
 }
 
 export class EditorDocumentModelCreationEvent extends BasicEvent<IEditorDocumentModelCreationEventPayload> {}
@@ -244,6 +244,10 @@ export class EditorDocumentModelRemovalEvent extends BasicEvent<URI> {}
 
 export class EditorDocumentModelSavedEvent extends BasicEvent<URI> {}
 
+export class EditorDocumentModelWillSaveEvent extends BasicEvent<{
+  uri: URI,
+  reason: SaveReason,
+}> {}
 export interface IStackElement {
   readonly beforeVersionId: number;
   readonly beforeCursorState: Selection[] | null;

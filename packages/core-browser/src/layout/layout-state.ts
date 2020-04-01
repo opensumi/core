@@ -8,15 +8,17 @@ export class LayoutState {
   private getStorage: StorageProvider;
 
   private layoutStorage: IStorage;
+  private globalLayoutStorage: IStorage;
 
   async initStorage() {
     this.layoutStorage = await this.getStorage(STORAGE_NAMESPACE.LAYOUT);
+    this.globalLayoutStorage = await this.getStorage(STORAGE_NAMESPACE.GLOBAL_LAYOUT);
   }
 
   getState<T>(key: string, defaultState: T): T {
     let storedState: T;
     try {
-      storedState = this.layoutStorage.get<any>(key, defaultState);
+      storedState = LAYOUT_STATE.isScoped(key) ? this.layoutStorage.get<any>(key, defaultState) : this.globalLayoutStorage.get<any>(key, defaultState);
     } catch (err) {
       console.warn('Layout state parse出错，使用默认state');
       storedState = defaultState;
@@ -29,7 +31,7 @@ export class LayoutState {
   }
 
   private debounceSave = debounce((key, state) => {
-    this.layoutStorage.set(key, state);
+    LAYOUT_STATE.isScoped(key) ? this.layoutStorage.set(key, state) : this.globalLayoutStorage.set(key, state);
   }, 60);
 }
 
@@ -39,6 +41,10 @@ export namespace LAYOUT_STATE {
 
   export function getContainerSpace(containerId: string) {
     return `view/${containerId}`;
+  }
+
+  export function isScoped(key: string) {
+    return key.startsWith('view/');
   }
 
   export function getTabbarSpace(location: string) {

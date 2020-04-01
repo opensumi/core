@@ -1,22 +1,22 @@
 import { Autowired, Injectable, Optional } from '@ali/common-di';
+import { Emitter, Event, sortedDiff, ThrottledDelayer, IChange, positionToRange } from '@ali/ide-core-common';
 import { Uri, URI } from '@ali/ide-core-common/lib/uri';
-import { Emitter, Event, sortedDiff } from '@ali/ide-core-common';
 import { IDisposable, dispose, Disposable, DisposableStore, toDisposable } from '@ali/ide-core-common/lib/disposable';
 import { first } from '@ali/ide-core-common/lib/async';
-import { ThrottledDelayer, IChange } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { EditorCollectionService } from '@ali/ide-editor';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 import { SCMService, ISCMRepository, IDirtyDiffModel } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { DirtyDiffWidget } from './dirty-diff-widget';
-import { toRange } from './utils';
 
-@Injectable()
+@Injectable({ multiple: true })
 export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   private _originalModel: monaco.editor.ITextModel | null;
   get original(): monaco.editor.ITextModel | null { return this._originalModel; }
+
+  private _editorModel: monaco.editor.ITextModel | null;
   get modified(): monaco.editor.ITextModel | null { return this._editorModel; }
 
   private diffDelayer: ThrottledDelayer<IChange[] | null> | null;
@@ -32,17 +32,16 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     return this._changes;
   }
 
-  private _editorModel: monaco.editor.ITextModel | null;
   private _widget: DirtyDiffWidget | null;
 
   @Autowired(SCMService)
-  scmService: SCMService;
+  private readonly scmService: SCMService;
 
   @Autowired(IEditorDocumentModelService)
-  documentModelManager: IEditorDocumentModelService;
+  private readonly documentModelManager: IEditorDocumentModelService;
 
   @Autowired(EditorCollectionService)
-  editorService: EditorCollectionService;
+  private readonly editorService: EditorCollectionService;
 
   // TODO: dynamic
   static heightInLines = 18;
@@ -146,7 +145,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
         return originalUri;
       }
 
-      return this.documentModelManager.createModelReference(new URI(originalUri.toString()))
+      return this.documentModelManager.createModelReference(new URI(originalUri))
         .then((docModelRef) => {
           if (!this._editorModel) { // disposed
             return null;
@@ -179,11 +178,12 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     }
 
     const uri = this._editorModel.uri;
+    // find the first matched scm repository
     return first(this.scmService.repositories.map((r) => () => r.provider.getOriginalResource(uri)));
   }
 
   // 查找下一个changes
-  findNextClosestChange(lineNumber: number, inclusive = true): number {
+  private findNextClosestChange(lineNumber: number, inclusive = true): number {
     for (let i = 0; i < this.changes.length; i++) {
       const change = this.changes[i];
 
@@ -202,12 +202,13 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   }
 
   findNextClosestChangeLineNumber(lineNumber: number, inclusive = true) {
+    // FIXME: handle changes = []
     const index = this.findNextClosestChange(lineNumber, inclusive);
     return this.changes[index].modifiedStartLineNumber;
   }
 
   // 查找上一个changes
-  findPreviousClosestChange(lineNumber: number, inclusive = true): number {
+  private findPreviousClosestChange(lineNumber: number, inclusive = true): number {
     for (let i = this.changes.length - 1; i >= 0; i--) {
       const change = this.changes[i];
 
@@ -227,6 +228,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
   findPreviousClosestChangeLineNumber(lineNumber: number, inclusive = true) {
     const index = this.findPreviousClosestChange(lineNumber, inclusive);
+    // FIXME: handle changes = []
     return this.changes[index].modifiedStartLineNumber;
   }
 
@@ -251,11 +253,10 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     if (this._originalModel && this._editorModel) {
       const originalUri = new URI(this._originalModel.uri);
       const editorUri = new URI(this._editorModel.uri);
-      this.editorService.createDiffEditor(widget.getContentNode(), { automaticLayout: true, renderSideBySide: false })
+      return this.editorService.createDiffEditor(widget.getContentNode(), { automaticLayout: true, renderSideBySide: false })
         .then(async (editor) => {
           const original = await this.documentModelManager.createModelReference(originalUri);
           const edit = await this.documentModelManager.createModelReference(editorUri);
-          const { change, count } = this.getChangeFromRange(range) || {};
 
           editor.compare(original, edit);
 
@@ -271,18 +272,25 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
           widget.addDispose(this.onDidChange(() => {
             const { change, count } = this.getChangeFromRange(range) || {};
-            widget.updateCurrent(count);
-            widget.show(toRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
+            refreshWidget(count, change);
           }));
+
+          const { change, count } = this.getChangeFromRange(range) || {};
+          if (count && change) {
+            refreshWidget(count, change);
+          }
+
+          function refreshWidget(current: number, currentChange: IChange) {
+            widget.updateCurrent(current);
+            widget.show(
+              positionToRange(currentChange.modifiedEndLineNumber || currentChange.modifiedStartLineNumber),
+              DirtyDiffModel.heightInLines,
+            );
+          }
 
           widget.onDispose(() => {
             this._widget = null;
           });
-
-          if (count && change) {
-            widget.updateCurrent(count);
-            widget.show(toRange(change.modifiedEndLineNumber || change.modifiedStartLineNumber), DirtyDiffModel.heightInLines);
-          }
         });
     }
   }

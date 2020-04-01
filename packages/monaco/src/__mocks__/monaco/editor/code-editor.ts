@@ -1,13 +1,17 @@
 import { Emitter, Disposable } from '@ali/ide-core-common';
 
 export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeEditor {
+  static ID = 0;
 
   private position: any;
   private selections: any[];
   model: monaco.editor.ITextModel | null;
 
+  id: number;
+
   constructor(public dom, public options, public override) {
     super();
+    this.id = (++MockedCodeEditor.ID);
   }
 
   _onDidChangeModelContent = new Emitter<monaco.editor.IModelContentChangedEvent>();
@@ -101,10 +105,15 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     this.model = model;
   }
   getConfiguration(): monaco.editor.InternalEditorOptions {
-    return {} as any;
+    return {
+      viewInfo: {
+        renderLineHighlight: 'line',
+        renderLineNumbers: 1,
+      },
+    } as any;
   }
   getValue(options?: { preserveBOM: boolean; lineEnding: string; } | undefined): string {
-    return '';
+    return this.model?.getValue() || '';
   }
   setValue(newValue: string): void {
     return;
@@ -140,6 +149,13 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     return true;
   }
   executeEdits(source: string, edits: monaco.editor.IIdentifiedSingleEditOperation[], endCursorState?: monaco.Selection[] | undefined): boolean {
+    switch (source) {
+      case 'MainThreadTextEditor':
+        this.model?.applyEdits(edits);
+        break;
+      default:
+        break;
+    }
     return true;
   }
   executeCommands(source: string, commands: (monaco.editor.ICommand | null)[]): void {
@@ -148,9 +164,10 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   getLineDecorations(lineNumber: number): monaco.editor.IModelDecoration[] | null {
     return null;
   }
-  deltaDecorations(oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]): string[] {
+  deltaDecorations = jest.fn((oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]) => {
     return [];
-  }
+  });
+
   getLayoutInfo(): monaco.editor.EditorLayoutInfo {
     return {
       height: 0,
@@ -182,7 +199,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     };
   }
   getVisibleRanges(): monaco.Range[] {
-    return [];
+    return [new monaco.Range(1, 12, 1, 12)];
   }
   getTopForLineNumber(lineNumber: number): number {
     return 0;
@@ -238,20 +255,22 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   onDidDispose = this._onDidDispose.event;
 
   getId(): string {
-    throw new Error('Method not implemented.');
+    return this.getEditorType() + ':' + this.id;
   }
+
   getEditorType(): string {
-    throw new Error('Method not implemented.');
+    return 'vs.editor.ICodeEditor';
+    // return 'vs.editor.IDiffEditor;
   }
-  updateOptions(newOptions: monaco.editor.IEditorOptions): void {
+
+  updateOptions = jest.fn((newOptions) => {
     this.options = newOptions;
-  }
+    this._onDidChangeConfiguration.fire(newOptions as monaco.editor.IConfigurationChangedEvent);
+  });
   layout(dimension?: monaco.editor.IDimension | undefined): void {
     return;
   }
-  focus(): void {
-    return;
-  }
+  focus =  jest.fn();
   hasTextFocus(): boolean {
     return false;
   }
@@ -285,19 +304,27 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   revealPositionInCenterIfOutsideViewport(position: monaco.IPosition, scrollType?: monaco.editor.ScrollType | undefined): void {
     return;
   }
-  getSelection(): monaco.Selection | null {
+  getSelection = jest.fn(() => {
     return this.selections[0];
-  }
-  getSelections(): monaco.Selection[] | null {
-    return this.selections;
-  }
+  });
 
-  setSelection(selection: any) {
+  getSelections = jest.fn(() => {
+    return this.selections;
+  });
+
+  setSelection = jest.fn((selection: any) => {
     this.selections = [selection];
-  }
-  setSelections(selections: monaco.ISelection[]): void {
+    this._onDidChangeCursorSelection.fire({
+      selection,
+      secondarySelections: [],
+      reason: 0,
+      source: 'api',
+    });
+  });
+  setSelections =  jest.fn((selections: monaco.ISelection[]) => {
     this.selections = selections;
-  }
+  });
+
   revealLines(startLineNumber: number, endLineNumber: number, scrollType?: monaco.editor.ScrollType | undefined): void {
     return;
   }
@@ -346,6 +373,14 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor implements mona
   }
   setDecorationsFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
     throw new Error('Method not implemented.');
+  }
+  revealLineInCenter(line: number) {
+    // tslint:disable-next-line:no-console
+    console.log('revealLineInCenter called');
+  }
+  setPosition(position: monaco.Position) {
+    // tslint:disable-next-line:no-console
+    console.log('setPosition called');
   }
 
   _instantiationService: monaco.instantiation.IInstantiationService;

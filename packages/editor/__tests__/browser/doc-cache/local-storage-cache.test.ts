@@ -8,8 +8,8 @@ import { IWorkspaceStorageService } from '@ali/ide-workspace';
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import {  IDocPersistentCacheProvider } from '../../../lib/common';
-import { EditorDocumentModel } from '../../../lib/browser/doc-model/main';
+import { IDocPersistentCacheProvider } from '../../../src/common';
+import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
 
 describe('LocalStorageDocCacheImpl', () => {
   let injector: MockInjector;

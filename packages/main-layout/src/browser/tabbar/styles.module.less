@@ -4,20 +4,10 @@
 .tab_badge {
   background-color: var(--activityBarBadge-background);
   color: var(--activityBarBadge-foreground);
-  border: 1px solid var(--kt-activityBarBadge-border);
+  border-color: var(--kt-activityBarBadge-border);
   position: absolute;
-  top: 26px;
+  top: 22px;
   right: 8px;
-  font-size: 11px;
-  min-width: 8px;
-  height: 18px;
-  line-height: 18px;
-  padding: 0 5px;
-  border-radius: 20px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 .icon_tab {
   padding: 0 0;
@@ -70,7 +60,8 @@
   background-color: var(--activityBar-background);
   border-right: 1px solid var(--activityBar-border);
   .tab_bar {
-    height: auto;
+    flex: 1;
+    overflow: hidden;
   }
 }
 li {
@@ -88,7 +79,7 @@ li {
 :global(.left-slot) {
   height: 100%;
   .panel_wrap{
-    border-right: 1px solid var(--activityBar-border);
+    border-right: 1px solid var(--sideBar-border);
   }
 }
 :global(.right-slot) {
@@ -96,6 +87,7 @@ li {
   background-color: var(--activityBar-background);
   .tab_bar {
     border-left: 1px solid var(--activityBar-border);
+    height: 100%;
     .icon_tab {
       width: 40px;
       height: 44px;
@@ -110,7 +102,7 @@ li {
     }
   }
   .panel_wrap{
-    border-left: 1px solid var(--activityBar-border);
+    border-left: 1px solid var(--sideBar-border);
   }
 }
 .view_container {
@@ -150,7 +142,7 @@ li {
   h1 {
     margin: 0;
     font-size: 12px;
-    line-height: 28px;
+    line-height: 24px;
     font-weight: 400;
     padding: 0 12px;
     color: var(--kt-panel-secondaryForeground);
@@ -160,7 +152,7 @@ li {
   height: 100%;
   .tab_bar {
     background-color: var(--kt-panelTitle-background);
-    height: 28px;
+    height: 24px;
     color: var(--panelTitle-inactiveForeground);
     font-size: 12px;
     align-items: center;
@@ -223,13 +215,23 @@ li {
     background-color: var(--activityBar-dropBackground);
   }
   &:global(.active) {
-    .icon_tab::before {
-      content: '';
-      display: block;
-      position: absolute;
-      left: 0;
-      height: 100%;
-      border-left: 3px solid var(--kt-activityBar-activeBorder);
+    .icon_tab {
+      &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        left: 0;
+        height: 100%;
+        border-left: 3px solid var(--activityBar-activeBorder);
+      }
+      :global {
+        div.activity-icon {
+          color: var(--activityBar-foreground);
+          &.mask-mode {
+            background-color: var(--activityBar-foreground);
+          }
+        }
+      }
     }
   }
 }
@@ -249,8 +251,8 @@ li {
   margin: 0 4px;
   padding: 0 8px;
   position: relative;
-  height: 28px;
-  line-height: 28px;
+  height: 24px;
+  line-height: 24px;
   display: inline-block;
   font-size: 12px;
   background-color: var(--kt-panelTitle-background);
@@ -299,6 +301,7 @@ li {
 }
 .bottom_tab_title {
   display: inline-block;
+  white-space: no-wrap;
 }
 .bottom_bar_container {
   display: flex;
@@ -316,14 +319,14 @@ li {
   height: fit-content;
   flex-direction: column;
   >span {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--activityBar-inactiveForeground);
-    margin: 10px auto;
+    margin: 8px auto;
     background-size: cover;
     &:hover {
       transform: scale(1);

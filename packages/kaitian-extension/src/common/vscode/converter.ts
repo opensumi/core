@@ -4,9 +4,10 @@ import * as model from './model.api';
 import { URI, ISelection, IRange, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity } from '@ali/ide-core-common';
 import { RenderLineNumbersType } from './editor';
 import { EndOfLineSequence, IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
-import { SymbolInformation, Range as R, Position as P, SymbolKind as S, Location as L } from 'vscode-languageserver-types';
+import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 import { ExtensionDocumentDataManager } from './doc';
 import { WorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ITextEdit } from './workspace';
+import { ViewColumn } from './enums';
 
 export function toPosition(position: model.Position): types.Position {
   return new types.Position(position.lineNumber - 1, position.column - 1);
@@ -768,4 +769,18 @@ export function toCompletionItemKind(kind: model.CompletionItemKind): types.Comp
     case model.CompletionItemKind.TypeParameter: return types.CompletionItemKind.TypeParameter;
   }
   return types.CompletionItemKind.Property;
+}
+
+export function viewColumnToResourceOpenOptions(viewColumn?: ViewColumn): { groupIndex?: number, relativeGroupIndex?: number } {
+  const result: { groupIndex?: number, relativeGroupIndex?: number } = {};
+  if (viewColumn) {
+    if (viewColumn === ViewColumn.Beside) {
+      result.relativeGroupIndex = 1;
+    } else if (viewColumn === ViewColumn.Active) {
+      result.relativeGroupIndex = 0;
+    } else {
+      result.groupIndex = viewColumn - 1;
+    }
+  }
+  return result;
 }

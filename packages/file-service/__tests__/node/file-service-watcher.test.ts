@@ -1,6 +1,7 @@
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import * as mv from 'mv';
+import { execSync } from 'child_process';
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
@@ -10,6 +11,7 @@ import { DidFilesChangedParams, FileChangeType } from '../../src/common/file-ser
 function createNsfwFileSystemWatcherServer() {
   return new NsfwFileSystemWatcherServer({
     verbose: false,
+    useExperimentalEfsw: true, // now only for linux
   });
 }
 
@@ -27,8 +29,6 @@ describe('nsfw-filesystem-watcher', () => {
 
   beforeEach(async () => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
-    fs.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
-    fs.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     watcherServer = createNsfwFileSystemWatcherServer();
     watcherId = await watcherServer.watchFileChanges(root.toString());
     await sleep(sleepTime);
@@ -105,86 +105,9 @@ describe('nsfw-filesystem-watcher', () => {
     expect(actualUris.size).toEqual(0);
   });
 
-  it('重命名文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
-    const addUris = new Set<string>();
-    const deleteUris = new Set<string>();
-
-    const watcherClient = {
-      onDidFilesChanged(event: DidFilesChangedParams) {
-        event.changes.forEach((c) => {
-          if (c.type === FileChangeType.ADDED) {
-            addUris.add(c.uri);
-          }
-          if (c.type === FileChangeType.DELETED) {
-            deleteUris.add(c.uri);
-          }
-        });
-      },
-    };
-
-    watcherServer.setClient(watcherClient);
-
-    const expectedAddUris = [
-      root.resolve('for_rename_renamed').toString(),
-    ];
-
-    const expectedDeleteUris = [
-      root.resolve('for_rename').toString(),
-    ];
-
-    fs.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
-    await sleep(sleepTime);
-
-    expect(expectedAddUris).toEqual([...addUris]);
-    expect(expectedDeleteUris).toEqual([...deleteUris]);
-  });
-
-  it('移动文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
-    const addUris = new Set<string>();
-    const deleteUris = new Set<string>();
-
-    const watcherClient = {
-      onDidFilesChanged(event: DidFilesChangedParams) {
-        event.changes.forEach((c) => {
-          if (c.type === FileChangeType.ADDED) {
-            addUris.add(c.uri);
-          }
-          if (c.type === FileChangeType.DELETED) {
-            deleteUris.add(c.uri);
-          }
-        });
-      },
-    };
-
-    watcherServer.setClient(watcherClient);
-
-    const expectedAddUris = [
-      root.resolve('for_rename_folder').resolve('for_rename').toString(),
-    ];
-
-    const expectedDeleteUris = [
-      root.resolve('for_rename').toString(),
-    ];
-
-    await new Promise((resolve) => {
-      mv(
-        FileUri.fsPath(root.resolve('for_rename')),
-        FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
-        { mkdirp: true, clobber: true },
-        () => {
-          resolve();
-        },
-      );
-    });
-    await sleep(sleepTime);
-
-    expect(expectedAddUris).toEqual([...addUris]);
-    expect(expectedDeleteUris).toEqual([...deleteUris]);
-  });
-
 });
 
-describe('测试重命名、移动相关', () => {
+describe('测试重命名、移动、新建相关', () => {
   const track = temp.track();
   const sleepTime = 1500;
   let root: URI;
@@ -236,8 +159,8 @@ describe('测试重命名、移动相关', () => {
     fs.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
     await sleep(sleepTime);
 
-    expect(expectedAddUris).toEqual([...addUris]);
-    expect(expectedDeleteUris).toEqual([...deleteUris]);
+    expect([...addUris]).toEqual(expectedAddUris);
+    expect([...deleteUris]).toEqual(expectedDeleteUris);
   });
 
   it('移动文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
@@ -279,8 +202,88 @@ describe('测试重命名、移动相关', () => {
     });
     await sleep(sleepTime);
 
-    expect(expectedAddUris).toEqual([...addUris]);
-    expect(expectedDeleteUris).toEqual([...deleteUris]);
+    expect([...addUris]).toEqual(expectedAddUris);
+    expect([...deleteUris]).toEqual(expectedDeleteUris);
+  });
+
+  it('同目录移动文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
+    const addUris = new Set<string>();
+    const deleteUris = new Set<string>();
+
+    const watcherClient = {
+      onDidFilesChanged(event: DidFilesChangedParams) {
+        event.changes.forEach((c) => {
+          if (c.type === FileChangeType.ADDED) {
+            addUris.add(c.uri);
+          }
+          if (c.type === FileChangeType.DELETED) {
+            deleteUris.add(c.uri);
+          }
+        });
+      },
+    };
+
+    watcherServer.setClient(watcherClient);
+
+    const expectedAddUris = [
+      root.resolve('for_rename_1').toString(),
+    ];
+
+    const expectedDeleteUris = [
+      root.resolve('for_rename').toString(),
+    ];
+
+    await new Promise((resolve) => {
+      mv(
+        FileUri.fsPath(root.resolve('for_rename')),
+        FileUri.fsPath(root.resolve('for_rename_1')),
+        { mkdirp: true, clobber: true },
+        () => {
+          resolve();
+        },
+      );
+    });
+    await sleep(sleepTime);
+
+    expect([...addUris]).toEqual(expectedAddUris);
+    expect([...deleteUris]).toEqual(expectedDeleteUris);
+  });
+
+  it('新建中文文件，需要收到新文件的ADDED', async () => {
+    const addUris = new Set<string>();
+    const deleteUris = new Set<string>();
+
+    const watcherClient = {
+      onDidFilesChanged(event: DidFilesChangedParams) {
+        event.changes.forEach((c) => {
+          if (c.type === FileChangeType.ADDED) {
+            addUris.add(c.uri);
+          }
+          if (c.type === FileChangeType.DELETED) {
+            deleteUris.add(c.uri);
+          }
+        });
+      },
+    };
+
+    watcherServer.setClient(watcherClient);
+
+    const expectedAddUris = [
+      root.resolve('中文.md').toString(),
+    ];
+
+    const expectedDeleteUris = [];
+
+    await new Promise((resolve) => {
+      execSync('touch 中文.md', {
+        cwd: FileUri.fsPath(root),
+      });
+      resolve();
+    });
+    await sleep(sleepTime);
+
+    expect([...addUris]).toEqual(expectedAddUris);
+    expect([...deleteUris]).toEqual(expectedDeleteUris);
   });
 
 });

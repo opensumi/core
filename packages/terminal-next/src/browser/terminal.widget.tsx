@@ -14,6 +14,37 @@ export interface IProps {
   error: ITerminalError | undefined;
 }
 
+function renderError(error: ITerminalError, id: string, controller: ITerminalController) {
+
+  const onRemoveClick = () => {
+    controller.removeWidget(id);
+  };
+
+  const onRetryClick = () => {
+    controller.retryTerminalClient(id);
+  };
+
+  return (
+    error.stopped ?
+      <div className={ styles.terminalCover }>
+        <div>{ localize('terminal.disconnected') }</div>
+        <div>
+          { localize('terminal.can.not.reconnect') }
+          <a onClick={ onRetryClick }>{ localize('terminal.try.reconnect') }</a>
+        </div>
+      </div>
+      :
+      <div className={ styles.terminalCover }>
+        <div>{ localize('terminal.disconnected') }</div>
+        <div>
+          <a onClick={ onRemoveClick }>{ localize('terminal.stop') }</a>
+          { localize('terminal.or') }
+          <a onClick={ onRetryClick }>{ localize('terminal.try.reconnect') }</a>
+        </div>
+      </div>
+  );
+}
+
 export default ({ id, dynamic, error, show }: IProps) => {
   const content = React.createRef<HTMLDivElement>();
   const controller = useInjectable<ITerminalController>(ITerminalController);
@@ -41,26 +72,10 @@ export default ({ id, dynamic, error, show }: IProps) => {
     controller.focusWidget(id);
   };
 
-  const onRemoveClick = () => {
-    controller.removeWidget(id);
-  };
-
-  const onRetryClick = () => {
-    controller.retryTerminalClient(id);
-  };
-
   return (
     <div className={ styles.terminalContainer }>
       {
-        error ?
-          <div className={ styles.terminalCover }>
-            <div>{ localize('terminal.disconnected') }</div>
-            <div>
-              <a onClick={ onRemoveClick }>{ localize('terminal.stop') }</a>
-              { localize('terminal.or') }
-              <a onClick={ onRetryClick }>{ localize('terminal.try.reconnect') }</a>
-            </div>
-          </div> : null
+        error ? renderError(error, id, controller) : null
       }
       <div
         className={ clx({

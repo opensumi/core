@@ -2,10 +2,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   KAITIAN_MUTI_WORKSPACE_EXT,
-  getTemporaryWorkspaceFileUri,
   IWorkspaceService,
   WorkspaceData,
   WorkspaceInput,
+  WORKSPACE_USER_STORAGE_FOLDER_NAME,
+  UNTITLED_WORKSPACE,
 } from '../common';
 import {
   ClientAppConfigProvider,
@@ -19,7 +20,6 @@ import {
   PreferenceScope,
   IDisposable,
   Disposable,
-  Command,
   AppConfig,
   IClientApp,
 } from '@ali/ide-core-browser';
@@ -106,6 +106,10 @@ export class WorkspaceService implements IWorkspaceService {
         }
       });
     }
+  }
+
+  protected getTemporaryWorkspaceFileUri(home: URI): URI {
+    return home.resolve(this.appConfig.storageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MUTI_WORKSPACE_EXT}`).withScheme('file');
   }
 
   protected async setFilesPreferences() {
@@ -207,6 +211,7 @@ export class WorkspaceService implements IWorkspaceService {
   protected async updateWorkspace(): Promise<void> {
     if (this._workspace) {
       this.toFileStat(this._workspace.uri).then((stat) => this._workspace = stat);
+      this.setMostRecentlyUsedWorkspace(this._workspace.uri);
     }
     await this.updateRoots();
     this.watchRoots();
@@ -521,7 +526,7 @@ export class WorkspaceService implements IWorkspaceService {
 
   protected async getUntitledWorkspace(): Promise<URI | undefined> {
     const home = await this.fileSystem.getCurrentUserHome();
-    return home && getTemporaryWorkspaceFileUri(new URI(home.uri));
+    return home && this.getTemporaryWorkspaceFileUri(new URI(home.uri));
   }
 
   private async writeWorkspaceFile(workspaceFile: FileStat | undefined, workspaceData: WorkspaceData): Promise<FileStat | undefined> {

@@ -15,16 +15,17 @@ export interface IOverlayProps {
   onClose: ModalProps['onCancel'];
   closable?: ModalProps['closable'];
   title?: ModalProps['title'];
-  footer?: React.ReactNode[];
+  footer?: JSX.Element[] | JSX.Element;
 }
 
-export const Overlay: React.FC<IOverlayProps> = (({ maskClosable = false, closable = true, className, onClose, children, footer, ...restProps }) => {
+export const Overlay: React.FC<IOverlayProps> = (({ maskClosable = false, closable = true, className, onClose, children, footer, title, ...restProps }) => {
   return (
     <Modal
       footer={footer ? footer : null}
       maskClosable={maskClosable}
       closable={closable}
       onCancel={onClose}
+      title={title}
       className={clsx(styles.overlay, className)}
       {...restProps}
     >

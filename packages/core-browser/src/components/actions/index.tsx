@@ -5,7 +5,7 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 
-import { Button, Icon } from '@ali/ide-components';
+import { Button, ButtonType, Icon } from '@ali/ide-components';
 import {
   MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode,
   IContextMenu, IMenu, IMenuSeparator,
@@ -125,6 +125,23 @@ export const MenuActionList: React.FC<{
   );
 };
 
+const EllipsisWidget: React.FC<{
+  type?: InlineActionType;
+  onClick?: React.MouseEventHandler<HTMLElement>;
+}> = ({ type = 'icon', onClick }) => {
+  if (type === 'icon') {
+    return <Icon icon='ellipsis' className={styles.iconAction} onClick={onClick} />;
+  }
+
+  return (
+    <Button size='small' type={type} className={styles.btnAction} onClick={onClick}>
+      <Icon icon='ellipsis' />
+    </Button>
+  );
+};
+
+EllipsisWidget.displayName = 'EllipsisWidget';
+
 const InlineActionWidget: React.FC<{
   data: MenuNode;
   context?: any[];
@@ -146,34 +163,36 @@ const InlineActionWidget: React.FC<{
     }
   }, [ data, context ]);
 
-  if (type === 'button') {
+  if (type === 'icon') {
     return (
       <Button
-        className={clsx(className, styles.btnAction)}
-        disabled={data.disabled}
-        onClick={handleClick}
+        type='icon'
+        className={clsx(styles.iconAction, className, { [styles.disabled]: data.disabled })}
         title={data.tooltip || data.label}
-        {...restProps}>
-        {data.label}
-      </Button>
+        iconClass={data.icon}
+        onClick={handleClick}
+        {...restProps}
+      />
     );
   }
 
   return (
-    <Icon
-      className={clsx(styles.iconAction, className, { [styles.disabled]: data.disabled })}
-      title={data.label}
-      iconClass={data.icon}
+    <Button
+      className={clsx(className, styles.btnAction)}
+      disabled={data.disabled}
       onClick={handleClick}
-      tooltip={data.tooltip || data.label}
-      {...restProps}
-    />
+      size='small'
+      type={type}
+      title={data.tooltip || data.label}
+      {...restProps}>
+      {data.label}
+    </Button>
   );
 };
 
 InlineActionWidget.displayName = 'InlineAction';
 
-type InlineActionType = 'button' | 'icon';
+type InlineActionType = ButtonType;
 
 interface BaseActionListProps {
   /**
@@ -211,7 +230,7 @@ const TitleActionList: React.FC<{
   more?: MenuNode[];
   className?: string;
 } & BaseActionListProps> = ({
-  type,
+  type = 'icon', // 默认为 icon 类型的 Button
   nav: primary = [],
   more: secondary = [],
   context = [],
@@ -241,7 +260,7 @@ const TitleActionList: React.FC<{
   }
 
   const moreAction = secondary.length > 0
-    ? <Icon icon='ellipsis' className={styles.iconAction} onClick={handleShowMore} />
+    ? <EllipsisWidget type={type} onClick={handleShowMore} />
     : null;
 
   return (

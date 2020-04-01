@@ -1,6 +1,6 @@
 import * as ws from 'ws';
 import * as events from 'events';
-import { stringify, parse } from '../common/utils';
+import { parse } from '../common/utils';
 
 interface ExtendWs extends ws {
   sending?: boolean;
@@ -256,7 +256,7 @@ export class MultiWsServer extends events.EventEmitter {
    */
   private clientMap: Map<string, MultiConnect> = new Map();
 
-  private onConnectionCallback: (args: any) => void;
+  // private onConnectionCallback: (args: any) => void;
 
   handleUpgrade(wsPathname: string, request: any, socket: any, head: any) {
     const clientId = request.headers['sec-websocket-protocol'];

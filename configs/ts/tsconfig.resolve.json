@@ -51,12 +51,6 @@
       "@ali/ide-menu-bar/lib/*": [
         "../packages/menu-bar/src/*"
       ],
-      "@ali/ide-activation-event": [
-        "../packages/activation-event/src/index.ts"
-      ],
-      "@ali/ide-activation-event/lib/*": [
-        "../packages/activation-event/src/*"
-      ],
       "@ali/ide-monaco": [
         "../packages/monaco/src/index.ts"
       ],
@@ -104,6 +98,12 @@
       ],
       "@ali/ide-language/lib/*": [
         "../packages/language/src/*"
+      ],
+      "@ali/ide-file-search": [
+        "../packages/file-search/src/index.ts"
+      ],
+      "@ali/ide-file-search/lib/*": [
+        "../packages/file-search/src/*"
       ],
       "@ali/ide-search": [
         "../packages/search/src/index.ts"
@@ -212,12 +212,6 @@
       ],
       "@ali/ide-toolbar/lib/*": [
         "../packages/toolbar/src/*"
-      ],
-      "@ali/ide-navigation-bar": [
-        "../packages/navigation-bar/src/index.ts"
-      ],
-      "@ali/ide-navigation-bar/lib/*": [
-        "../packages/navigation-bar/src/*"
       ],
       "@ali/ide-markers": [
         "../packages/markers/src/index.ts"
@@ -329,6 +323,18 @@
       ],
       "@ali/ide-components": [
         "../packages/components/src/index.ts"
+      ],
+      "@ali/ide-addons": [
+        "../packages/addons/src/index.ts"
+      ],
+      "@ali/ide-addons/lib/*": [
+        "../packages/addons/src/*"
+      ],
+      "@ali/ide-comments": [
+        "../packages/comments/src/index.ts"
+      ],
+      "@ali/ide-comments/lib/*": [
+        "../packages/comments/src/*"
       ]
     }
   }

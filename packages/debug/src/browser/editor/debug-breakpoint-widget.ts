@@ -1,27 +1,8 @@
-import { Disposable, Emitter } from '@ali/ide-core-common';
+import { Disposable, Emitter, positionToRange } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { DebugEditor, IDebugModel } from '../../common';
+import { DebugEditor } from '../../common';
 import { DebugBreakpointZoneWidget, BreakpointChangeData, DebugBreakpointWidgetContext } from './debug-breakpoint-zone-widget';
 import { BreakpointWidgetInputFocus } from '../contextkeys';
-
-export function toRange(position: monaco.IPosition | number): monaco.IRange {
-  if (typeof position === 'number') {
-    return {
-      startLineNumber: position,
-      endLineNumber: position,
-      startColumn: 1,
-      endColumn: 1,
-    };
-  } else {
-    const { lineNumber }  = position;
-    return {
-      startLineNumber: lineNumber,
-      endLineNumber: lineNumber,
-      startColumn: 1,
-      endColumn: 1,
-    };
-  }
-}
 
 export enum TopStackType {
   exception,
@@ -75,7 +56,7 @@ export class DebugBreakpointWidget extends Disposable {
       this._position = undefined;
       this.breakpointWidgetInputFocus.set(false);
     }));
-    this.zone.show(toRange(position), DebugBreakpointWidget.LINE_HEIGHT_NUMBER);
+    this.zone.show(positionToRange(position), DebugBreakpointWidget.LINE_HEIGHT_NUMBER);
   }
 
   hide() {

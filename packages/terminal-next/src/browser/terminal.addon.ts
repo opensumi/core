@@ -4,8 +4,8 @@ import { URI } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 
-const linuxFilePathRegex = /((\/$|(\/?[\w\.\@\-\_]+)?(\/[\w\.\@\~\-\_]+)+))/;
-const windowsFilePathRegex = new RegExp('(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\(?:[\w]+\\)*\w([\w.])+');
+const linuxFilePathRegex = /((\/$|(\/?[\w\.\@\-\_]+)?(\/[\w\.\@\~\-\_]+)+(:[0-9]*:[0-9]*)?)+)/;
+const windowsFilePathRegex = new RegExp('(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\(?:[\w]+\\)*\w([\w.])+(:[0-9]*:[0-9]*)?');
 
 export class TerminalFilePathAddon implements ITerminalAddon {
   private _linuxLinkMatcherId: number | undefined;
@@ -38,7 +38,8 @@ export class TerminalFilePathAddon implements ITerminalAddon {
   }
 
   private _checkPathValid(uri: string, callback: (valid: boolean) => void) {
-    const absolute = this._absolutePath(uri);
+    const uriArray = uri.split(':');
+    const absolute = this._absolutePath(uriArray[0]);
 
     this._fileService.getFileStat(URI.file(absolute).toString())
       .then((stat) => {
@@ -51,14 +52,22 @@ export class TerminalFilePathAddon implements ITerminalAddon {
   }
 
   private async _openFile(_, uri: string) {
-    const absolute = this._absolutePath(uri);
+    const uriArray = uri.split(':');
+    const absolute = this._absolutePath(uriArray[0]);
 
     if (absolute) {
       const fileUri = URI.file(absolute);
       if (fileUri && fileUri.scheme === 'file') {
         const stat = await this._fileService.getFileStat(fileUri.toString());
         if (stat && !stat.isDirectory) {
-          this._editorService.open(new URI(stat.uri));
+          this._editorService.open(new URI(stat.uri), (uriArray[1] && uriArray[2]) ? {
+            range: {
+              startLineNumber: parseInt(uriArray[1], 10),
+              endLineNumber: parseInt(uriArray[1], 10),
+              startColumn: parseInt(uriArray[2], 10) + 1,
+              endColumn: parseInt(uriArray[2], 10) + 1,
+            },
+          } : {});
         }
       }
     }

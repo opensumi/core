@@ -2,6 +2,7 @@ import { localize } from '@ali/ide-core-common';
 import { registerColor, transparent, lighten, darken, lessProminent } from '../color-registry';
 import { Color, RGBA } from '../../common/color';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
+import { backgroundColor, foregroundColor } from './basic-color';
 
 export const editorErrorForeground = registerColor('editorError.foreground', { dark: '#F48771', light: '#E51400', hc: null }, localize('editorError.foreground', 'Foreground color of error squigglies in the editor.'));
 export const editorErrorBorder = registerColor('editorError.border', { dark: null, light: null, hc: Color.fromHex('#E47777').transparent(0.8) }, localize('errorBorder', 'Border color of error boxes in the editor.'));
@@ -20,12 +21,12 @@ export const editorHintBorder = registerColor('editorHint.border', { dark: null,
  * Because of bug https://monacotools.visualstudio.com/DefaultCollection/Monaco/_workitems/edit/13254
  * we are *not* using the color white (or #ffffff, rgba(255,255,255)) but something very close to white.
  */
-export const editorBackground = registerColor('editor.background', { light: '#fffffe', dark: '#202224', hc: Color.black }, localize('editorBackground', 'Editor background color.'));
+export const editorBackground = registerColor('editor.background', { light: '#fffffe', dark: '#1E1E1E', hc: backgroundColor }, localize('editorBackground', 'Editor background color.'));
 
 /**
  * Editor foreground color.
  */
-export const editorForeground = registerColor('editor.foreground', { light: '#333333', dark: '#BBBBBB', hc: Color.white }, localize('editorForeground', 'Editor default foreground color.'));
+export const editorForeground = registerColor('editor.foreground', { light: '#333333', dark: '#BBBBBB', hc: foregroundColor }, localize('editorForeground', 'Editor default foreground color.'));
 
 /**
  * Editor widgets
@@ -108,9 +109,9 @@ export const editorBracketMatchBackground = registerColor('editorBracketMatch.ba
 export const editorBracketMatchBorder = registerColor('editorBracketMatch.border', { dark: '#888', light: '#B9B9B9', hc: '#fff' }, localize('editorBracketMatchBorder', 'Color for matching brackets boxes'));
 
 export const editorOverviewRulerBorder = registerColor('editorOverviewRuler.border', { dark: '#7f7f7f4d', light: '#7f7f7f4d', hc: '#7f7f7f4d' }, localize('editorOverviewRulerBorder', 'Color of the overview ruler border.'));
-
+const overviewRulerDefault = new Color(new RGBA(197, 197, 197, 1));
 export const editorGutter = registerColor('editorGutter.background', { dark: editorBackground, light: editorBackground, hc: editorBackground }, localize('editorGutter', 'Background color of the editor gutter. The gutter contains the glyph margins and the line numbers.'));
-
+export const overviewRulerCommentingRangeForeground = registerColor('editorGutter.commentRangeForeground', { dark: overviewRulerDefault, light: overviewRulerDefault, hc: overviewRulerDefault }, localize('editorGutterCommentRangeForeground', 'Editor gutter decoration color for commenting ranges.'));
 export const editorUnnecessaryCodeBorder = registerColor('editorUnnecessaryCode.border', { dark: null, light: null, hc: Color.fromHex('#fff').transparent(0.8) }, localize('unnecessaryCodeBorder', 'Border color of unnecessary (unused) source code in the editor.'));
 export const editorUnnecessaryCodeOpacity = registerColor('editorUnnecessaryCode.opacity', { dark: Color.fromHex('#000a'), light: Color.fromHex('#0007'), hc: null }, localize('unnecessaryCodeOpacity', 'Opacity of unnecessary (unused) source code in the editor. For example, "#000000c0" will render the code with 75% opacity. For high contrast themes, use the  \'editorUnnecessaryCode.border\' theme color to underline unnecessary code instead of fading it out.'));
 
@@ -147,7 +148,7 @@ export const EDITOR_GROUP_FOCUSED_EMPTY_BORDER = registerColor('editorGroup.focu
 }, localize('editorGroupFocusedEmptyBorder', 'Border color of an empty editor group that is focused. Editor groups are the containers of editors.'));
 
 export const EDITOR_GROUP_HEADER_TABS_BACKGROUND = registerColor('editorGroupHeader.tabsBackground', {
-  dark: '#2C3033',
+  dark: '#252526',
   light: '#F3F3F3',
   hc: null,
 }, localize('tabsContainerBackground', 'Background color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.'));
@@ -159,7 +160,7 @@ export const EDITOR_GROUP_HEADER_NO_TABS_BACKGROUND = registerColor('editorGroup
 }, localize('editorGroupHeaderBackground', 'Background color of the editor group title header when tabs are disabled (`"workbench.editor.showTabs": false`). Editor groups are the containers of editors.'));
 
 export const EDITOR_GROUP_BORDER = registerColor('editorGroup.border', {
-  dark: '#2C3033',
+  dark: '#444444',
   light: '#E7E7E7',
   hc: contrastBorder,
 }, localize('editorGroupBorder', 'Color to separate multiple editor groups from each other. Editor groups are the containers of editors.'));

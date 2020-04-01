@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { BrowserModule, createContributionProvider, Domain, ClientAppContribution, ContributionProvider, MonacoContribution, IContextKeyService } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, ClientAppContribution, ContributionProvider, MonacoContribution, IContextKeyService } from '@ali/ide-core-browser';
 import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
@@ -16,7 +15,7 @@ import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from
 import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from './doc-model/main';
 import { EditorActionRegistryImpl } from './menu/editor.menu';
 import { IDocPersistentCacheProvider } from '../common/doc-cache';
-import { EmptyDocCacheImpl, LocalStorageDocCacheImpl } from './doc-cache';
+import { EmptyDocCacheImpl } from './doc-cache';
 import { CompareService, CompareEditorContribution } from './diff/compare';
 import { BreadCrumbServiceImpl } from './breadcrumb';
 import { EditorContextMenuBrowserEditorContribution } from './menu/editor.context';
@@ -26,6 +25,7 @@ export * from './types';
 export * from './doc-model/types';
 export * from './doc-cache';
 export * from './editor.less';
+export * from './view/editor.react';
 
 @Injectable()
 export class EditorModule extends BrowserModule {

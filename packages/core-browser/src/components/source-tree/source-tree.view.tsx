@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TreeProps, TreeContainer, TreeNode } from '../tree';
+import { TreeProps, TreeContainer } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
 
 export interface SourceTreeProps extends TreeProps {

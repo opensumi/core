@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IContextKey, IContextKeyService } from '../../context-key';
+import { IContextKeyService } from '../../context-key';
 import { Emitter } from '@ali/ide-core-common';
 
 @Injectable()

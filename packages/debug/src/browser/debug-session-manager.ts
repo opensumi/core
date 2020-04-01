@@ -80,6 +80,7 @@ export class DebugSessionManager {
 
   protected debugTypeKey: IContextKey<string>;
   protected inDebugModeKey: IContextKey<boolean>;
+  protected debugStopped: IContextKey<boolean>;
 
   @Autowired(LabelService)
   labelProvider: LabelService;
@@ -118,6 +119,7 @@ export class DebugSessionManager {
   protected init(): void {
     this.debugTypeKey = this.contextKeyService.createKey<string>('debugType', undefined);
     this.inDebugModeKey = this.contextKeyService.createKey<boolean>('inDebugMode', this.inDebugMode);
+    this.debugStopped = this.contextKeyService.createKey<boolean>('debugStopped', false);
     this.breakpoints.onDidChangeMarkers((uri) => this.fireDidChangeBreakpoints({ uri }));
   }
 
@@ -140,7 +142,8 @@ export class DebugSessionManager {
       }
 
       this.messageService.error('There was an error starting the debug session, check the logs for more details.');
-      console.error('Error starting the debug session', e);
+      // TODO
+      // console.error('Error starting the debug session', e);
       throw e;
     }
   }
@@ -191,6 +194,9 @@ export class DebugSessionManager {
         state = session.state;
         if (state === DebugState.Stopped) {
           this.onDidStopDebugSessionEmitter.fire(session);
+          this.debugStopped.set(true);
+        } else {
+          this.debugStopped.set(false);
         }
       }
       this.updateCurrentSession(session);

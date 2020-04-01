@@ -2,9 +2,9 @@ import { Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-browser';
 import { PreferenceScope } from '@ali/ide-core-browser/lib/preferences';
 import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
-import { UserStorageUri } from '@ali/ide-userstorage/lib/browser';
+import { USER_STORAGE_SCHEME } from '../common';
 
-export const USER_PREFERENCE_URI = new URI().withScheme(UserStorageUri.SCHEME).withPath('settings.json');
+export const USER_PREFERENCE_URI = new URI().withScheme(USER_STORAGE_SCHEME).withPath('settings.json');
 
 @Injectable()
 export class UserPreferenceProvider extends AbstractResourcePreferenceProvider {

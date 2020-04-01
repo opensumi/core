@@ -7,13 +7,14 @@ import {
   RPCMessageConnection,
  } from '@ali/ide-connection';
 import { Injector, Provider } from '@ali/common-di';
-import { getLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, IEventBus } from '@ali/ide-core-common';
+import { getDebugLogger, IReporterService, BasicModule, BrowserConnectionCloseEvent, BrowserConnectionOpenEvent, IEventBus } from '@ali/ide-core-common';
 import { BackService } from '@ali/ide-core-common/lib/module';
 
 import { ModuleConstructor } from './app';
 
 // 建立连接之前，无法使用落盘的 logger
-const logger = getLogger();
+// 初始化时使用不落盘的 logger
+const initialLogger = getDebugLogger();
 
 export async function createClientConnection2(
   injector: Injector,
@@ -26,7 +27,7 @@ export async function createClientConnection2(
   const reporterService: IReporterService = injector.get(IReporterService);
   const eventBus = injector.get(IEventBus);
 
-  const wsChannelHandler = new WSChannelHandler(wsPath, logger, protocols, useExperimentalMultiChannel, clientId);
+  const wsChannelHandler = new WSChannelHandler(wsPath, initialLogger, protocols, useExperimentalMultiChannel, clientId);
   wsChannelHandler.setReporter(reporterService);
   wsChannelHandler.connection.addEventListener('open', () => {
     eventBus.fire(new BrowserConnectionOpenEvent());

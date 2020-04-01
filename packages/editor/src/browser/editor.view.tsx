@@ -5,7 +5,7 @@ import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.serv
 import * as styles from './editor.module.less';
 import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
-import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode } from './types';
+import { IEditorComponent, EditorComponentRegistry, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode } from './types';
 import { Tabs } from './tab.view';
 import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry, PreferenceService } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';

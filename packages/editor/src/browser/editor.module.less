@@ -1,3 +1,4 @@
+@import "~@ali/ide-components/lib/style/mixins.less";
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 @TAB_HEIGHT: var(--tabBar-height);
 
@@ -48,6 +49,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  background-color: var(--editorGroup-emptyBackground);
 
   .kt_editor_background {
     background-position: center;
@@ -107,6 +109,9 @@
     display:flex;
     background: var(--editorGroupHeader-tabsBackground);
     position: relative;
+    &.kt_on_drag_over {
+      background-color: var(--editorGroup-dropBackground);
+    }
     &::before {
       content: '';
       height:1px;
@@ -136,6 +141,10 @@
       background: var(--tab-inactiveBackground);
       border-bottom: 1px solid var(--tab-border);
       z-index: 1;
+      &:hover {
+        background-color: var(--tab-hoverBackground);
+        border-bottom-color: var(--tab-hoverBorder) !important;
+      }
       div:first-child {
         margin-right:5px;
         flex-shrink: 0;
@@ -183,6 +192,8 @@
         color: var(--tab-activeForeground);
         border-bottom: 1px solid var(--tab-activeBackground);
         border-bottom-color: var(--tab-activeBorder);
+        border-top: 1px solid var(--tab-activeBackground);
+        border-top-color: var(--tab-activeBorderTop);
         .dirty {
           &::before {
             background-color: var(--kt-dirtyDot-foreground);
@@ -190,7 +201,7 @@
         }
       }
       &.kt_on_drag_over {
-        background: rgba(0,0,0,.5);
+        background-color: var(--editorGroup-dropBackground);
       }
       .close_tab {
         display:none;
@@ -321,7 +332,7 @@
   right: 10px;
   z-index: 100;
   background: var(--editorWidget-background);
-  box-shadow: 0 2px 8px var(--widget-shadow);
+  .overlay-shadow();
   display:flex;
   > .option {
     padding: 5px 10px;

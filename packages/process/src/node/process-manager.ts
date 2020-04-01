@@ -1,9 +1,9 @@
 import { Injectable } from '@ali/common-di';
-import { Disposable, getLogger, Emitter, Event } from '@ali/ide-core-common';
+import { Disposable, getDebugLogger, Emitter, Event } from '@ali/ide-core-common';
 import { Process } from './process';
 import { IProcessManage } from '../common/index';
 
-const logger = getLogger();
+const logger = getDebugLogger();
 
 @Injectable()
 export class ProcessManage extends Disposable implements IProcessManage {

@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { createRef } from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Emitter, IEventBus, trim, isUndefined } from '@ali/ide-core-common';
+import { Emitter, IEventBus, trim, isUndefined, localize } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
   Key,
@@ -28,6 +28,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
+import { VALIDATE_TYPE, ValidateMessage } from '@ali/ide-components';
 import { observable, transaction, action } from 'mobx';
 import {
   ContentSearchResult,
@@ -37,16 +38,17 @@ import {
   ContentSearchServerPath,
   ResultTotal,
   SendClientResult,
-  getRoot,
   anchorGlob,
   IContentSearchClientService,
   IUIState,
   cutShortSearchResult,
   FilterFileWithGlobRelativePath,
+  DEFAULT_SEARCH_IN_WORKSPACE_LIMIT,
 } from '../common';
 import { SearchPreferences } from './search-preferences';
 import { SearchHistory } from './search-history';
 import { replaceAll } from './replace';
+import { SearchResultCollection } from './search-result-collection';
 
 export interface SearchAllFromDocModelOptions {
   searchValue: string;
@@ -127,6 +129,12 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @observable
   isReplaceDoing: boolean = false;
 
+  @observable
+  isSearchDoing: boolean = false;
+
+  @observable
+  isShowValidateMessage: boolean = true;
+
   _searchHistory: SearchHistory;
 
   docModelSearchedList: string[] = [];
@@ -134,6 +142,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   searchInputEl = createRef<HTMLInputElement>();
   replaceInputEl = createRef<HTMLInputElement>();
+
+  searchResultCollection: SearchResultCollection = new SearchResultCollection();
 
   constructor() {
     this.recoverUIState();
@@ -169,6 +179,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
     // 记录搜索历史
     this.searchHistory.setSearchHistory(value);
 
+    this.isShowValidateMessage = true;
+
     // Stop old search
     if (this.currentSearchId) {
       this.contentSearchServer.cancel(this.currentSearchId);
@@ -195,7 +207,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     // 从服务端搜索
     this.contentSearchServer.search(value, rootDirs, searchOptions).then((id) => {
       this.currentSearchId = id;
-      this.onSearchResult({
+      this._onSearchResult({
         id,
         data: searchFromDocModelInfo.result,
         searchState: SEARCH_STATE.doing,
@@ -221,6 +233,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
       const event: IEditorDocumentModelContentChangedEventPayload = data.payload;
 
       if (!this.searchResults || this.isReplaceDoing) {
+        return;
+      }
+
+      // 只搜索file协议内容
+      if (event.uri.scheme !== Schemas.file) {
         return;
       }
 
@@ -273,6 +290,14 @@ export class ContentSearchClientService implements IContentSearchClientService {
    * @param sendClientResult
    */
   onSearchResult(sendClientResult: SendClientResult) {
+    const resultList = this.searchResultCollection.pushAndGetResultList(sendClientResult);
+
+    resultList.forEach((result) => {
+      this._onSearchResult(result);
+    });
+  }
+
+  _onSearchResult(sendClientResult: SendClientResult) {
     const { id, data, searchState, error, docModelSearchedList } = sendClientResult;
 
     if (!data) {
@@ -281,6 +306,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     if (id > this.currentSearchId) {
       // 新的搜索开始了
+      this.isSearchDoing = true;
       this.currentSearchId = id;
       this.cleanOldSearch();
     }
@@ -294,12 +320,14 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this.searchState = searchState;
       if (searchState === SEARCH_STATE.done || searchState === SEARCH_STATE.error) {
         // 搜索结束清理ID
+        this.isSearchDoing = false;
         this.currentSearchId = -1;
       }
     }
 
     if (error) {
       // 搜索出错
+      this.isSearchDoing = false;
       this.searchError = error.toString();
     }
 
@@ -369,6 +397,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   onSearchInputChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
+    this.isShowValidateMessage = false;
   }
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -424,6 +453,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (!isUndefined(obj.isSearchFocus) && (obj.isSearchFocus !== this.UIState.isSearchFocus)) {
       // 搜索框状态发现变化，重置搜索历史的当前位置
       this.searchHistory.reset();
+      this.isShowValidateMessage = false;
     }
     const newUIState = Object.assign({}, this.UIState, obj);
     this.UIState = newUIState;
@@ -455,6 +485,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this._searchHistory = new SearchHistory(this, this.workspaceService);
     }
     return this._searchHistory;
+  }
+
+  get validateMessage(): ValidateMessage | undefined {
+    if (this.resultTotal.resultNum >= DEFAULT_SEARCH_IN_WORKSPACE_LIMIT) {
+      return {
+        message: localize('search.too.many.results'),
+        type: VALIDATE_TYPE.WARNING,
+      };
+    }
   }
 
   doReplaceAll = () => {

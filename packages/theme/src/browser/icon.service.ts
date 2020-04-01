@@ -1,7 +1,7 @@
-import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId } from '@ali/ide-core-browser';
+import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId, ILogger } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType, getThemeTypeSelector, IconType, IconShape } from '../common';
+import { ThemeType, IIconService, ThemeContribution, getThemeId, IIconTheme, getThemeTypeSelector, IconType, IconShape, IconThemeInfo } from '../common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
 
@@ -23,6 +23,9 @@ export class IconService implements IIconService {
 
   @Autowired(IPreferenceSettingsService)
   private preferenceSettings: IPreferenceSettingsService;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   private themeChangeEmitter: Emitter<IIconTheme> = new Emitter();
 
@@ -75,16 +78,24 @@ export class IconService implements IIconService {
     return `icon-${Math.random().toString(36).slice(-8)}`;
   }
 
+  protected getMaskStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
+    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url("${iconUrl}") no-repeat 50% 50% / 24px;}`;
+    return cssRule;
+  }
+
   protected getMaskStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
-    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50% / 24px;}`;
+    return this.getMaskStyleSheet(iconUrl, className, baseTheme);
+  }
+
+  protected getBackgroundStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
+    const cssRule = `${baseTheme || ''} .${className} {background: url("${iconUrl}") no-repeat 50% 50%;background-size:contain;}`;
     return cssRule;
   }
 
   protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl = path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
-    const cssRule = `${baseTheme || ''} .${className} {background: url(${iconUrl}) no-repeat 50% 50%;background-size:contain;}`;
-    return cssRule;
+    return this.getBackgroundStyleSheet(iconUrl, className, baseTheme);
   }
 
   fromIcon(basePath: string = '', icon?: { [index in ThemeType]: string } | string, type: IconType = IconType.Mask, shape: IconShape = IconShape.Square): string | undefined {
@@ -93,11 +104,20 @@ export class IconService implements IIconService {
     }
     const randomClass = this.getRandomIconClass();
     if (typeof icon === 'string') {
-      const targetPath = this.getPath(basePath, icon);
-      if (type === IconType.Mask) {
-        this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass));
+      /**
+       * 处理 data:image 格式，/^data:image\//
+       * 如 data:image/svg+xml or data:image/gif;base64,
+       * 此时无需 static service
+       */
+      if (type === IconType.Base64) {
+        this.appendStyleSheet(this.getBackgroundStyleSheet(icon, randomClass));
       } else {
-        this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass));
+        const targetPath = this.getPath(basePath, icon);
+        if (type === IconType.Mask) {
+          this.appendStyleSheet(this.getMaskStyleSheetWithStaticService(targetPath, randomClass));
+        } else {
+          this.appendStyleSheet(this.getBackgroundStyleSheetWithStaticService(targetPath, randomClass));
+        }
       }
     } else {
       // tslint:disable-next-line: forin
@@ -111,10 +131,15 @@ export class IconService implements IIconService {
         }
       }
     }
+
     return [
       'kaitian-icon',
       randomClass,
-      (type === IconType.Mask ? 'mask-mode' : 'background-mode'),
+      ({
+        [IconType.Background]: 'background-mode',
+        [IconType.Base64]: 'background-mode',
+        [IconType.Mask]: 'mask-mode',
+      })[type],
       (shape === IconShape.Circle ? 'circle' : ''),
     ].join(' ');
   }
@@ -140,8 +165,8 @@ export class IconService implements IIconService {
     this.preferenceSettings.setEnumLabels('general.icon', map);
   }
 
-  getAvailableThemeInfos(): ThemeInfo[] {
-    const themeInfos: ThemeInfo[] = [];
+  getAvailableThemeInfos(): IconThemeInfo[] {
+    const themeInfos: IconThemeInfo[] = [];
     for (const {contribution} of this.iconContributionRegistry.values()) {
       const {
         label,
@@ -178,7 +203,7 @@ export class IconService implements IIconService {
     }
     const iconThemeData = await this.getIconTheme(themeId);
     if (!iconThemeData) {
-      console.warn('没有检测到目标图标主题插件，使用内置图标！');
+      this.logger.warn('没有检测到目标图标主题插件，使用内置图标！');
       document.getElementsByTagName('body')[0].classList.add('default-file-icons');
       return;
     }

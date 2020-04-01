@@ -11,6 +11,8 @@ html {
   .iconfont {
     font-size: 14px;
   }
+  /* 防止mac上的回退手势 */
+  overscroll-behavior-x: none;
 }
 
 body, html {
@@ -124,14 +126,6 @@ pre {
   color: var(--textLink-foreground) !important;
 }
 
-.monaco-keybinding-key {
-  background-color: var(--activityBar-background) !important;
-  border: none !important;
-  border-bottom-color: var(--activityBar-inactiveForeground) !important;
-  font-size: 12px !important;
-  color: var(--activityBar-inactiveForeground) !important;
-}
-
 [tabindex='-1'] {
   &:focus {
     outline-width: 1px;
@@ -148,6 +142,12 @@ pre {
 .monaco-action-bar.vertical .action-label.separator {
   margin-left: 0;
   margin-right: 0;
+}
+
+.monaco-editor .peekview-widget .head .peekview-title {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .context-view.monaco-menu-container {

@@ -85,12 +85,11 @@ export interface ITerminalExternalService {
   onError(handler: (error: ITerminalError) => void): IDisposable;
 }
 
-export const terminalFocusContextKey = 'isTerminalFocused';
-
 export const TerminalSupportType = {
   'terminal.fontFamily': 'fontFamily',
   'terminal.fontSize': 'fontSize',
   'terminal.fontWeight': 'fontWeight',
   'terminal.lineHeight': 'lineHeight',
   'terminal.cursorBlink': 'cursorBlink',
+  'terminal.scrollback': 'scrollback',
 };

@@ -1,4 +1,4 @@
-import { IDisposable, Disposable } from './disposable';
+import { Disposable } from './disposable';
 import { MaybePromise } from './async';
 import { Emitter, Event } from './event';
 
@@ -42,7 +42,13 @@ export class ReferenceManager<T> {
         })());
         this._creating.set(key, promise);
       }
-      await this._creating.get(key)!;
+      try {
+        await this._creating.get(key)!;
+      } catch(e) {
+        // 出错时需要清除创建中状态
+        this._creating.delete(key);
+        throw e;
+      }
     }
     const ref =  this.createRef(key, reason);
     // 需要在ref被创建后再结束creating状态，否则如果在onInstanceCreated事件中触发了removeRef至0,

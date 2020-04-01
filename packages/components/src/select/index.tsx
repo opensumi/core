@@ -3,18 +3,17 @@ import { useState, useEffect } from 'react';
 import * as classNames from 'classnames';
 
 import './style.less';
-import { Icon, IconContext } from '../icon';
+import { Icon, getDefaultIcon } from '../icon';
 
 interface ISelectProps {
   className?: string;
   size?: 'large' | 'default' | 'small';
-  opem?: boolean;
   loading?: boolean;
-  placeholder?: string;
   options?: Array<React.ReactNode>;
   value?: string;
   disabled?: boolean;
   onChange?: (value: string) => void;
+  maxHeight?: string;
   [prop: string]: any;
 }
 
@@ -31,9 +30,10 @@ export const Option: React.FC<React.PropsWithChildren<{
   children,
   disabled,
   onClick,
+  className,
   ...otherProps
 }) => (
-  <option {...otherProps} disabled={disabled} value={value}>{children}</option>
+  <span {...otherProps} className={classNames(className, { 'kt-option-disabled': disabled })} onClick={() => onClick && !disabled && onClick(value)}>{children}</span>
 );
 
 function noop(...args: any) { }
@@ -76,7 +76,6 @@ function getLabelWithChildrenProps(value: string | undefined, children: React.Re
 }
 
 export const Select: React.FC<ISelectProps> = ({
-  placeholder,
   disabled,
   options,
   size = 'default',
@@ -86,13 +85,12 @@ export const Select: React.FC<ISelectProps> = ({
   optionLabelProp,
   style,
   className,
+  maxHeight,
 }) => {
-  const { getIcon } = React.useContext(IconContext);
   const [open, setOpen] = useState(false);
-  const [select, setSelect] = useState<string | undefined>(value);
-
+  const [select, setSelect] = useState(value);
   useEffect(() => {
-    if (onChange && select) {
+    if (onChange && select && select !== value) {
       onChange(select);
     }
     setOpen(false);
@@ -121,21 +119,21 @@ export const Select: React.FC<ISelectProps> = ({
       node = <Option value={node} label={String(node)}>{node}</Option>;
     }
     const disabled = (node as React.ReactElement).props?.disabled || false;
-    return <div className={classNames({
+    return <div key={(node as React.ReactElement).props.value} className={classNames({
       ['kt-select-option-select']: select === (node as React.ReactElement).props.value,
     })} onClick={disabled ? noop : () => setSelect(getValueWithProps((node as React.ReactElement), optionLabelProp))}>{node}</div>;
   }
 
   return (<div className={classNames('kt-select-container', className)}>
     <p className={selectClasses} onClick={toggleOpen} style={style}>
-      <option>{(children && getLabelWithChildrenProps(value, children)) || options && (React.isValidElement(options[0]) ? options[0].props?.value : options[0])}</option>
-      <Icon iconClass={getIcon('down')} />
+      <span className={'kt-select-option'}>{(children && getLabelWithChildrenProps(value, children)) || options && (React.isValidElement(options[0]) ? options[0].props?.value : options[0])}</span>
+      <Icon iconClass={getDefaultIcon('down')} />
     </p>
 
-    <div className={optionsContainerClasses}>
+    <div className={optionsContainerClasses} style={{ maxHeight: `${maxHeight}px` }}>
       {options && options.map((v) => {
         if (typeof v === 'string') {
-          return <Option value={v} className={classNames({
+          return <Option value={v} key={v} className={classNames({
             ['kt-select-option-select']: select === v,
           })} onClick={() => setSelect(v)}>{v}</Option>;
         }

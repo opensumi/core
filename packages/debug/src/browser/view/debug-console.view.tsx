@@ -2,38 +2,21 @@ import * as React from 'react';
 import * as cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import * as styles from './debug-console.module.less';
-import { ViewState } from '@ali/ide-core-browser';
-import { useInjectable, KeyCode, Key, TreeNode, ExpandableTreeNode } from '@ali/ide-core-browser';
+import { useInjectable, TreeNode } from '@ali/ide-core-browser';
 import { DebugConsoleService } from './debug-console.service';
-import { VariablesTree, Input, RecycleList } from '@ali/ide-core-browser/lib/components';
+import { VariablesTree, RecycleList } from '@ali/ide-core-browser/lib/components';
 import { DebugVariable, ExpressionItem } from '../console/debug-console-items';
 
-export const DebugConsoleView = observer(({
-  viewState,
-}: React.PropsWithChildren<{ viewState: ViewState }>) => {
-  const {
-    nodes,
-    execute,
-  }: DebugConsoleService = useInjectable(DebugConsoleService);
-  // TODO：待Layout实现宽高注入后替换该逻辑
+export const DebugConsoleView = observer(() => {
+  const { nodes, createConsoleInput } = useInjectable<DebugConsoleService>(DebugConsoleService);
   const debugConsoleRef = React.createRef<HTMLDivElement>();
+  const debugInputRef = React.createRef<HTMLDivElement>();
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState({});
 
-  const [value, setValue] = React.useState('');
-
-  const onChangeHandler = (event) => {
-    setValue(event.target.value);
-  };
-
-  const onKeydownHandler = (event: React.KeyboardEvent) => {
-    const { key } = KeyCode.createKeyCode(event.nativeEvent);
-    if (key && Key.ENTER.keyCode === key.keyCode) {
-      event.stopPropagation();
-      event.preventDefault();
-      execute(value);
-      setValue('');
-    }
-  };
+  React.useEffect(() => {
+    const container = debugInputRef.current;
+    createConsoleInput(container!);
+  }, [debugInputRef.current]);
 
   React.useEffect(() => {
     setScrollContainerStyle({
@@ -41,7 +24,7 @@ export const DebugConsoleView = observer(({
     });
   }, [debugConsoleRef.current]);
 
-  const template = ({data}: {
+  const template = ({ data }: {
     data: TreeNode<any>,
   }) => {
     const renderContent = (data: TreeNode<any>) => {
@@ -57,39 +40,33 @@ export const DebugConsoleView = observer(({
       if (data instanceof DebugVariable || data instanceof ExpressionItem) {
         return <div>
           <VariablesTree
-            node={data}
-            leftPadding={8}
-            defaultLeftPadding={0}
-            itemLineHeight={itemLineHeight}
+            node={ data }
+            leftPadding={ 8 }
+            defaultLeftPadding={ 0 }
+            itemLineHeight={ itemLineHeight }
           />
         </div>;
       } else {
-        return <NameTemplate/>;
+        return <NameTemplate />;
       }
     };
-    return <div className={styles.debug_console_item}>
-      <div className={cls(styles.debug_console_item_content, data.labelClass)}>
-        {renderContent(data)}
+    return <div className={ styles.debug_console_item }>
+      <div className={ cls(styles.debug_console_item_content, data.labelClass) }>
+        { renderContent(data) }
       </div>
     </div>;
   };
 
-  return <div className={styles.debug_console} ref={debugConsoleRef}>
+  return <div className={ styles.debug_console } ref={ debugConsoleRef }>
     <RecycleList
-      data = {nodes}
-      template = {template}
-      sliceSize = {100}
-      style={scrollContainerStyle}
-      scrollBottomIfActive={true}
+      data={ nodes }
+      template={ template }
+      sliceSize={ 100 }
+      style={ scrollContainerStyle }
+      scrollBottomIfActive={ true }
     />
-    <div className={styles.variable_repl_bar}>
-      <Input
-        type='text' placeholder=''
-        className={styles.variable_repl_bar_input}
-        value={value}
-        onChange={onChangeHandler}
-        onKeyDown={onKeydownHandler}
-      />
+    <div className={ styles.variable_repl_bar }>
+      <div className={ styles.variable_repl_editor } ref={ debugInputRef }></div>
     </div>
   </div>;
 });

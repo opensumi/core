@@ -1,15 +1,16 @@
-import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle } from './types';
-import { isElectronRenderer, getLogger, localize, URI, IEventBus, Disposable, MaybeNull } from '@ali/ide-core-browser';
+import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData, IPlainWebviewComponentHandle, IPlainWebviewWindow } from './types';
+import { isElectronRenderer, getDebugLogger, localize, URI, IEventBus, Disposable, MaybeNull } from '@ali/ide-core-browser';
 import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFrameWebviewPanel } from './iframe-webview';
-import { ITheme, IThemeService } from '@ali/ide-theme';
+import { ITheme } from '@ali/ide-theme';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
-import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource, ResourceService } from '@ali/ide-editor';
+import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource } from '@ali/ide-editor';
 import { EditorComponentRegistry, EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 import { EditorWebviewComponentView } from './editor-webview';
 import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
+import { ElectronPlainWebviewWindow } from './webview-window';
 
 @Injectable()
 export class WebviewServiceImpl implements IWebviewService {
@@ -28,9 +29,6 @@ export class WebviewServiceImpl implements IWebviewService {
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
 
-  @Autowired(IThemeService)
-  private themeService: IThemeService;
-
   constructor() {
 
   }
@@ -44,7 +42,7 @@ export class WebviewServiceImpl implements IWebviewService {
       return new ElectronPlainWebview();
     } else {
       if (options.preferredImpl && options.preferredImpl === 'webview') {
-        getLogger().warn(localize('webview.webviewTagUnavailable', '无法在非Electron环境使用Webview标签。回退至使用iframe。'));
+        getDebugLogger().warn(localize('webview.webviewTagUnavailable', '无法在非Electron环境使用Webview标签。回退至使用iframe。'));
       }
       return new IframePlainWebview();
     }
@@ -124,6 +122,13 @@ export class WebviewServiceImpl implements IWebviewService {
   getPlainWebviewComponent(id: string): IPlainWebviewComponentHandle | undefined {
     return this.plainWebviewsComponents.get(id);
   }
+
+  createWebviewWindow(options?: Electron.BrowserWindowConstructorOptions, env?: {[key: string]: string}): IPlainWebviewWindow {
+    if (isElectronRenderer()) {
+      return this.injector.get(ElectronPlainWebviewWindow, [options,  env]);
+    }
+    throw new Error('not supported!');
+  }
 }
 
 enum ApiThemeClassName {
@@ -160,8 +165,8 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
 
   private _webview: MaybeNull<T>;
 
-  open(groupIndex?: number | undefined) {
-    return this.workbenchEditorService.open(this.webviewUri, {groupIndex: groupIndex ? groupIndex - 1 : 0, preview: false});
+  open(options: { groupIndex?: number, relativeGroupIndex?: number}) {
+    return this.workbenchEditorService.open(this.webviewUri, {...options, preview: false});
   }
 
   close() {

@@ -2,11 +2,11 @@ import { Autowired, Injectable } from '@ali/common-di';
 import { CommandService, CorePreferences, Disposable, formatLocalize, IEventBus, ILogger, IRange, IReporterService, isThenable, isUndefinedOrNull, localize, PreferenceService, REPORT_NAME, URI } from '@ali/ide-core-browser';
 import { IMessageService } from '@ali/ide-overlay';
 import * as md5 from 'md5';
-import { EndOfLineSequence, EOL, IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom } from '../../common';
+import { EndOfLineSequence, EOL, IDocCache, IDocPersistentCacheProvider, isDocContentCache, parseRangeFrom, SaveReason, IEditorDocumentModelContentChange } from '../../common';
 import { CompareResult, ICompareService } from '../types';
 import { EditorDocumentError } from './editor-document-error';
 import { IEditorDocumentModelServiceImpl, SaveTask } from './save-task';
-import { EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModel, IEditorDocumentModelContentChange, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, ORIGINAL_DOC_SCHEME } from './types';
+import { EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, ORIGINAL_DOC_SCHEME, EditorDocumentModelWillSaveEvent } from './types';
 
 import debounce = require('lodash.debounce');
 
@@ -90,6 +90,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   private _tryAutoSaveAfterDelay: (() => any) | undefined;
 
+  private _isInitOption = true;
+
   constructor(public readonly uri: URI, content: string, options: EditorDocumentModelConstructionOptions = {}) {
     super();
     this.onDispose(() => {
@@ -113,6 +115,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this._persistVersionId = this.monacoModel.getAlternativeVersionId();
     this.baseContent = content;
 
+    this._isInitOption = false;
     this.listenTo(this.monacoModel);
     this.readCacheToApply();
   }
@@ -226,6 +229,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   set eol(eol) {
     this.monacoModel.setEOL(eol === EOL.LF ? EndOfLineSequence.LF : EndOfLineSequence.CRLF as any);
+    if (!this._isInitOption) {
+      this.eventBus.fire(new EditorDocumentModelOptionChangedEvent({
+        uri: this.uri,
+        eol,
+      }));
+    }
   }
 
   get eol() {
@@ -246,7 +255,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     monaco.editor.setModelLanguage(this.monacoModel, languageId);
     this.eventBus.fire(new EditorDocumentModelOptionChangedEvent({
       uri: this.uri,
-      encoding: languageId,
+      languageId,
     }));
   }
 
@@ -258,8 +267,13 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     return this.monacoModel;
   }
 
-  async save(force: boolean = false): Promise<boolean> {
-    await this.formatOnSave();
+  async save(force: boolean = false, reason: SaveReason = SaveReason.Manual): Promise<boolean> {
+    await this.formatOnSave(reason);
+    // 发送willSave并等待完成
+    await this.eventBus.fireAndAwait(new EditorDocumentModelWillSaveEvent({
+      uri: this.uri,
+      reason,
+    }));
     if (!this.preferenceService.get<boolean>('editor.askIfDiff')) {
       force = true;
     }
@@ -406,11 +420,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   get tryAutoSaveAfterDelay() {
     if (!this._tryAutoSaveAfterDelay) {
       this._tryAutoSaveAfterDelay = debounce(() => {
-        this.save();
+        this.save(undefined, SaveReason.AfterDelay);
       }, this.corePreferences['editor.autoSaveDelay'] || 1000);
       this.addDispose(this.corePreferences.onPreferenceChanged((change) => {
         this._tryAutoSaveAfterDelay = debounce(() => {
-          this.save();
+          this.save(undefined, SaveReason.AfterDelay);
         }, this.corePreferences['editor.autoSaveDelay'] || 1000);
       }));
     }
@@ -451,10 +465,11 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     });
   }
 
-  protected async formatOnSave() {
+  protected async formatOnSave(reason: SaveReason) {
     const formatOnSave = this.corePreferences['editor.formatOnSave'];
 
-    if (formatOnSave) {
+    // 和 vscode 逻辑保持一致，如果是 AfterDelay 则不执行 formatOnSave
+    if (formatOnSave && reason !== SaveReason.AfterDelay) {
       const formatOnSaveTimeout = this.corePreferences['editor.formatOnSaveTimeout'];
       const timer = this.reporter.time(REPORT_NAME.FORMAT_ON_SAVE);
       try {

@@ -4,7 +4,7 @@ import * as http from 'http';
 import * as https from 'https';
 import * as net from 'net';
 import { MaybePromise, ContributionProvider, createContributionProvider, isWindows } from '@ali/ide-core-common';
-import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
+import { createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
 import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@ali/ide-core-common';
@@ -62,6 +62,11 @@ interface Config {
    * 是否使用试验性多通道通信能力
    */
   useExperimentalMultiChannel?: boolean;
+  /**
+  * 是否使用试验性 efsw 作为文件监听底层依赖
+  * 目前开启则 *仅* 作用于 *linux* 平台
+  */
+  useExperimentalEfsw?: boolean;
   /**
    * 启用插件进程的最大个数
    */
@@ -172,6 +177,7 @@ export class ServerApp implements IServerApp {
       staticAllowPath: opts.staticAllowPath,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
       extLogServiceClassPath: opts.extLogServiceClassPath,
+      useExperimentalEfsw: opts.useExperimentalEfsw,
       maxExtProcessCount: opts.maxExtProcessCount,
     };
     this.bindProcessHandler();

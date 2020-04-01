@@ -84,7 +84,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
 
   static getDerivedStateFromProps(props, state) {
     const { prevProps } = state;
-    const { data, sliceSize } = props;
+    const { data, sliceSize, scrollBottomIfActive } = props;
     const { data: prevData } = prevProps;
 
     const slices = getSlices(data, sliceSize);
@@ -94,21 +94,38 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
       return null;
     }
 
-    // 数据更新或被裁剪
-    if (
-      (prevData[0] && data[0] && prevData[0] !== data[0]) ||
-      data.length < prevData.length
-    ) {
+    // 当新数据大小小于分片数据大小时，清空状态
+    if (slices.length < VISIBLE_SLICE_COUNT) {
       return {
         slices,
         currentSliceIndex: 0,
         topSpaces: [],
+        bottomSpaces: [],
         prevProps: {
           data,
         },
       };
     }
-
+    // 数据更新或被裁剪
+    if (data.length !== prevData.length) {
+      if (scrollBottomIfActive) {
+        return {
+          slices,
+          currentSliceIndex: slices.length - VISIBLE_SLICE_COUNT,
+          prevProps: {
+            data,
+          },
+        };
+      } else {
+        return {
+          slices,
+          currentSliceIndex: 0,
+          prevProps: {
+            data,
+          },
+        };
+      }
+    }
     // 记录数据源
     return {
       slices,
@@ -120,8 +137,9 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
 
   private listEl: any;
   private rootEl: any;
+  private scrollBarEl: any;
   private topBoundary: any;
-  private bottomBoundary: any;
+  private nextBoundary: any;
   private placeholderEl: any;
 
   private processing: boolean = false;
@@ -131,6 +149,10 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
   readonly state: InfinityListState = defaultInfinityListState;
 
   private scrollToBottom = throttle(() => {
+    // 滚动到底部前预先更新滚动条
+    if (this.scrollBarEl && this.scrollBarEl.updateScroll) {
+      this.scrollBarEl.updateScroll();
+    }
     this.containerEl.scrollTop = this.containerEl.scrollHeight;
   }, 500);
 
@@ -225,7 +247,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     const { slices, currentSliceIndex } = this.state;
     const nodeList = this.listEl.childNodes;
     this.topBoundary = nodeList[slices[currentSliceIndex].amount];
-    this.bottomBoundary =
+    this.nextBoundary =
       nodeList[
       slices[currentSliceIndex].amount +
       slices[currentSliceIndex + 1].amount -
@@ -235,15 +257,15 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
 
   unbindBoundaryEls = () => {
     this.topBoundary = null;
-    this.bottomBoundary = null;
+    this.nextBoundary = null;
   }
 
-  handleScroll = () => {
+  handleScroll = (event) => {
     if (!this.shouldOptimize || this.processing) {
       return;
     }
 
-    if (!this.topBoundary || !this.bottomBoundary) {
+    if (!this.topBoundary || !this.nextBoundary) {
       return;
     }
 
@@ -251,28 +273,42 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
     const { slices, currentSliceIndex, topSpaces, bottomSpaces } = this.state;
 
     const topBoundaryLoc = this.topBoundary.getBoundingClientRect().top;
-    const bottomBoundaryLoc = this.bottomBoundary.getBoundingClientRect().top;
+    const nextBoundaryLoc = this.nextBoundary.getBoundingClientRect().bottom;
 
     const containerTop = this.containerEl.getBoundingClientRect().top;
 
-    if (
-      bottomBoundaryLoc - containerTop < sliceThreshold &&
-      currentSliceIndex + VISIBLE_SLICE_COUNT < slices.length
-    ) {
+    if (nextBoundaryLoc - containerTop < sliceThreshold) {
       this.processing = true;
-      const startY = this.listEl.firstChild.getBoundingClientRect().top;
-      const topSpace = topBoundaryLoc - startY;
-      this.setState(
-        {
-          currentSliceIndex: currentSliceIndex + 1,
-          topSpaces: topSpaces.concat(topSpace),
-          bottomSpaces: bottomSpaces.slice(0, bottomSpaces.length - 1),
-        },
-        () => {
-          this.bindBoundaryEls();
-          this.processing = false;
-        },
-      );
+      if (currentSliceIndex + VISIBLE_SLICE_COUNT < slices.length) {
+        const startY = this.listEl.firstChild.getBoundingClientRect().top;
+        const topSpace = topBoundaryLoc - startY;
+        this.setState(
+          {
+            currentSliceIndex: currentSliceIndex + 1,
+            topSpaces: topSpaces.concat(topSpace),
+            bottomSpaces: bottomSpaces.slice(0, bottomSpaces.length - 1),
+          },
+          () => {
+            this.bindBoundaryEls();
+            this.processing = false;
+          },
+        );
+      } else {
+        // FIXME: 假定每个List分片高度都是均匀的, 单个分片高度如下
+        const sliceHeight = nextBoundaryLoc - topBoundaryLoc;
+        // list已加载到最大长度，固定顶部及底部
+        this.setState(
+          {
+            topSpaces: new Array(slices.length - VISIBLE_SLICE_COUNT).fill(sliceHeight),
+            bottomSpaces: [],
+          },
+          () => {
+            this.bindBoundaryEls();
+            this.processing = false;
+          },
+        );
+      }
+
       return;
     }
 
@@ -351,6 +387,7 @@ export class InfinityList extends React.Component<InfinityListProp, InfinityList
         className={cls(styles.infinity_container, className)}
         style={style}
         onScrollY={this.handleScroll}
+        ref={(el) => (this.scrollBarEl = el)}
         containerRef={(el) => (this.rootEl = el)}
         options = {scorllerBarOptions}
       >

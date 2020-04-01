@@ -3,7 +3,6 @@ import * as net from 'net';
 import { NodeModule } from './node-module';
 import { WebSocketServerRoute, WebSocketHandler, WSChannel } from '@ali/ide-connection';
 import { Injector, ClassCreator } from '@ali/common-di';
-import { getLogger } from '@ali/ide-core-common';
 import * as ws from 'ws';
 
 import {
@@ -17,9 +16,7 @@ import {
 } from '@ali/ide-connection';
 import { INodeLogger } from './logger/node-logger';
 
-export {RPCServiceCenter};
-
-// const logger = getLogger();
+export { RPCServiceCenter };
 
 export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[], useExperimentalMultiChannel?: boolean) {
   const logger = injector.get(INodeLogger);
@@ -72,7 +69,7 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
       serviceCenter.removeConnection(serverConnection);
       serviceChildInjector.disposeAll();
 
-      console.log('remove net rpc connection');
+      logger.log('remove net rpc connection');
     });
   });
 

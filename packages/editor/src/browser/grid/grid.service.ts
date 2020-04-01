@@ -2,7 +2,6 @@ import { IEditorGroup, IEditorGroupState, Direction } from '../../common';
 import { observable, runInAction } from 'mobx';
 import { IDisposable, IEventBus, MaybeNull } from '@ali/ide-core-browser';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { Autowired } from '@ali/common-di';
 import { GridResizeEvent } from '../types';
 
 export const editorGridUid = new Set();

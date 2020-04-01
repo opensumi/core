@@ -1,0 +1,120 @@
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { CommentsModule } from '../../src/browser';
+import { Injector } from '@ali/common-di';
+import { ICommentsService, CommentMode } from '../../src/common';
+import { URI, positionToRange } from '@ali/ide-core-common';
+import { IContextKeyService } from '@ali/ide-core-browser';
+import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { IIconService } from '@ali/ide-theme';
+import { IconService } from '@ali/ide-theme/lib/browser';
+
+describe('comment service test', () => {
+  let injector: MockInjector;
+  let commentsService: ICommentsService;
+  beforeAll(() => {
+    (global as any).monaco = createMockedMonaco() as any;
+    injector = createBrowserInjector([ CommentsModule ], new Injector([{
+      token: IContextKeyService,
+      useClass: MockContextKeyService,
+    }, {
+      token: IIconService,
+      useClass: IconService,
+    }]));
+    commentsService = injector.get<ICommentsService>(ICommentsService);
+  });
+
+  afterAll(() => {
+    (global as any).monaco = undefined;
+  });
+
+  it('basic props', () => {
+    const uri = URI.file('/test');
+    const thread = commentsService.createThread(uri, positionToRange(1), {
+      comments: [{
+        mode: CommentMode.Editor,
+        author: {
+          name: '蛋总',
+        },
+        body: '评论内容1',
+      }],
+    });
+    expect(thread.id).toBe(`${uri}#${1}`);
+    expect(thread.uri.isEqual(uri));
+    expect(thread.range.startLineNumber).toBe(1);
+  });
+
+  it('thread and comment data', () => {
+    const uri = URI.file('/test');
+    const thread = commentsService.createThread(uri, positionToRange(1), {
+      comments: [{
+        mode: CommentMode.Editor,
+        author: {
+          name: '蛋总',
+        },
+        body: '评论内容1',
+        data: {
+          b: 1,
+        },
+      }],
+      data: {
+        a: 1,
+      },
+    });
+    expect(thread.data).toEqual({ a: 1 });
+    expect(thread.comments[0].data).toEqual({ b: 1 });
+  });
+
+  it('thread add comment', () => {
+    const uri = URI.file('/test');
+    const thread = commentsService.createThread(uri, positionToRange(1));
+    thread.addComment({
+      mode: CommentMode.Preview,
+      author: {
+        name: '蛋总',
+      },
+      body: '评论内容1',
+    }, {
+      mode: CommentMode.Editor,
+      author: {
+        name: '蛋总',
+      },
+      body: '评论内容2',
+    });
+    expect(thread.comments.length).toBe(2);
+    expect(thread.comments[1].mode).toBe(CommentMode.Editor);
+  });
+
+  it('thread dispose', () => {
+    const uri = URI.file('/test');
+    const thread = commentsService.createThread(uri, positionToRange(1));
+    thread.addComment({
+      mode: CommentMode.Preview,
+      author: {
+        name: '蛋总',
+      },
+      body: '评论内容1',
+    }, {
+      mode: CommentMode.Editor,
+      author: {
+        name: '蛋总',
+      },
+      body: '评论内容2',
+    });
+    thread.dispose();
+    expect(thread.comments.length).toBe(0);
+  });
+
+  it('thread context service', () => {
+    const uri = URI.file('/test');
+    const thread = commentsService.createThread(uri, positionToRange(1), {
+      contextValue: 'aaa',
+    });
+    expect(thread.contextKeyService.getContextValue('thread')).toBe('aaa');
+    expect(thread.contextKeyService.getContextValue('threadsLength')).toBe(1);
+    commentsService.createThread(uri, positionToRange(2));
+    // 同一个 uri 的 threadsLength 会变为 2
+    expect(thread.contextKeyService.getContextValue('threadsLength')).toBe(2);
+  });
+});

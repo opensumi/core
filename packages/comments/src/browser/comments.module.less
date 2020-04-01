@@ -1,0 +1,150 @@
+:global {
+  .monaco-editor {
+    .comments-glyph {
+      margin-left: 15px;
+      width: 4px !important;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .comments-glyph::before {
+      position: absolute;
+      content: '';
+      height: 100%;
+      width: 0;
+      left: -2px;
+      transition: width 80ms linear, left 80ms linear;
+    }
+
+    .comment-thread:before,
+    .margin-view-overlays>div:hover>.comment-diff-added:not(.comment-thread):before {
+      position: absolute;
+      content: '+';
+      height: 100%;
+      width: 8px;
+      left: -6px;
+      color: var(--editorGutter-background);
+      text-align: center;
+    }
+
+    .comment-diff-added,
+    .comment-thread {
+      border-left: 3px solid var(--editorGutter-commentRangeForeground);
+
+      &:before {
+        background: var(--editorGutter-commentRangeForeground);
+      }
+    }
+
+    .comment-thread:before {
+      content: '◆';
+    }
+  }
+
+  /* 修改monaco-diffEditor的 +/- 号装饰位置 */
+  .monaco-diff-editor .insert-sign, .monaco-diff-editor .delete-sign {
+    background-position: 2px center;
+  }
+}
+
+.comment_container {
+  background-color: var(--peekViewResult-background);
+  border-top: 2px solid var(--peekView-border);
+  border-bottom: 2px solid var(--peekView-border);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  height: 22px;
+  line-height: 22px;
+  padding: 0 2px 0 20px;
+  border-bottom: 1px solid var(--foreground);
+}
+
+.review_title {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow:ellipsis;
+  white-space: nowrap;
+}
+
+.comment_reply_container {
+  margin: 10px 20px;
+}
+
+.textarea_container {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.textarea {
+  flex: 1;
+  border-color: transparent;
+  resize: none;
+  outline: none;
+  background-color: var(--peekViewEditor-background);
+  padding: 0 6px;
+}
+
+.comment_reply_actions {
+  justify-content: flex-end;
+}
+
+.comment_item {
+  padding: 6px 22px;
+  &:hover {
+    .comment_item_title_context {
+      visibility: visible;
+    }
+  }
+}
+
+.comment_item_head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.comment_item_author {
+  display: flex;
+}
+
+.comment_item_author_name {
+  font-weight: bold;
+  line-height: 26px;
+}
+
+.comment_item_label {
+  margin-left: 5px;
+  color: var(--descriptionForeground);
+}
+
+.comment_item_icon {
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+}
+
+.comment_item_title_context {
+  visibility: hidden;
+}
+
+.comment_item_context {
+  justify-content: flex-end;
+}
+
+.comment_panel {
+  width: 100%;
+  height: 100%;
+}
+
+.panel_placeholder {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  font-size: 12px;
+  color: var(--kt-panel-secondaryForeground);
+}

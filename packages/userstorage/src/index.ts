@@ -1,2 +1,1 @@
-export * from './common';
-export * from './node';
+throw new Error ('Package @ali/ide-userstorage was deprecated.');

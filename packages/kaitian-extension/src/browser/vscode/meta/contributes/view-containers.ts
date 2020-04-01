@@ -1,7 +1,7 @@
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { URI, DisposableCollection } from '@ali/ide-core-common';
+import { DisposableCollection } from '@ali/ide-core-common';
 import { IIconService } from '@ali/ide-theme';
 
 export interface ViewContainersContribution {
@@ -42,7 +42,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
         for (const container of this.json[location]) {
           const handlerId = this.mainlayoutService.collectTabbarComponent([], {
             iconClass: this.iconService.fromIcon(this.extension.path, container.icon),
-            title: container.title,
+            title: this.getLocalizeFromNlsJSON(container.title),
             containerId: container.id,
             // 插件注册的视图默认在最后
             priority: 0,
@@ -75,7 +75,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
         }
       }
     }
-    console.log(map, '>>>>>');
+
     return map;
   }
 }

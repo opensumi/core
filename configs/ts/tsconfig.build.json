@@ -1,10 +1,10 @@
 {
   "references": [
     {
-      "path": "./references/tsconfig.components.json"
+      "path": "./references/tsconfig.core-common.json"
     },
     {
-      "path": "./references/tsconfig.core-common.json"
+      "path": "./references/tsconfig.components.json"
     },
     {
       "path": "./references/tsconfig.connection.json"
@@ -47,9 +47,6 @@
     },
     {
       "path": "./references/tsconfig.status-bar.json"
-    },
-    {
-      "path": "./references/tsconfig.activation-event.json"
     },
     {
       "path": "./references/tsconfig.main-layout.json"
@@ -106,6 +103,9 @@
       "path": "./references/tsconfig.search.json"
     },
     {
+      "path": "./references/tsconfig.file-search.json"
+    },
+    {
       "path": "./references/tsconfig.quick-open.json"
     },
     {
@@ -125,9 +125,6 @@
     },
     {
       "path": "./references/tsconfig.electron-basic.json"
-    },
-    {
-      "path": "./references/tsconfig.navigation-bar.json"
     },
     {
       "path": "./references/tsconfig.terminal-next.json"
@@ -157,7 +154,13 @@
       "path": "./references/tsconfig.outline.json"
     },
     {
-      "path": "./references/tsconfig.startup.json"
+      "path": "./references/tsconfig.addons.json"
     },
+    {
+      "path": "./references/tsconfig.comments.json"
+    },
+    {
+      "path": "./references/tsconfig.startup.json"
+    }
   ]
 }

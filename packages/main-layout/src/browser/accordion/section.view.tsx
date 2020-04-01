@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './styles.module.less';
-import { getIcon } from '@ali/ide-core-browser';
+import { getIcon, ErrorBoundary } from '@ali/ide-core-browser';
 import { Layout, PanelContext } from '@ali/ide-core-browser/lib/components';
 import { useInjectable, ViewUiStateManager } from '@ali/ide-core-browser';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
@@ -108,7 +108,7 @@ export const AccordionSection = (
   } as React.CSSProperties;
   const Component: any = children;
   return  (
-    <div className={ styles.kt_split_panel } >
+    <div className={ styles.kt_split_panel } data-view-id={viewId}>
       {!noHeader && <div
       onFocus={ headerFocusHandler }
       onBlur={ headerBlurHandler }
@@ -120,7 +120,7 @@ export const AccordionSection = (
       >
         <div className={styles.label_wrap}>
           <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
-          <div className={styles.section_label}>{header}</div>
+          <div className={styles.section_label} style={{lineHeight: headerSize + 'px'}}>{header}</div>
         </div>
         {expanded && <div className={styles.actions_wrap}>
           <InlineActionBar menus={titleMenu} context={titleMenuContext} />
@@ -131,7 +131,9 @@ export const AccordionSection = (
         style={ bodyStyle }
         ref={(ele) =>  contentRef.current = ele}
       >
-        <Component {...initialProps} viewState={viewState} />
+        <ErrorBoundary>
+          <Component {...initialProps} viewState={viewState} />
+        </ErrorBoundary>
       </div>
     </div>
   );

@@ -11,18 +11,25 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
 import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
-import Dropdown from 'antd/lib/dropdown';
 import Menu from 'antd/lib/menu';
-import Tabs from 'antd/lib/tabs';
-import 'antd/lib/tabs/style/index.less';
-import 'antd/lib/dropdown/style/index.less';
+import { Tabs } from '@ali/ide-components';
 import 'antd/lib/menu/style/index.less';
 
-const { TabPane } = Tabs;
+const tabMap = [
+  {
+    key: 'readme',
+    label: localize('marketplace.extension.readme'),
+  },
+  {
+    key: 'changelog',
+    label: localize('marketplace.extension.changelog'),
+  },
+];
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
-  const { extensionId } = props.resource.uri.getParsedQuery();
+  const { extensionId, version } = props.resource.uri.getParsedQuery();
+  const [tabIndex, setTabIndex] = React.useState(0);
   const [currentExtension, setCurrentExtension] = React.useState<ExtensionDetail | null>(null);
   const [latestExtension, setLatestExtension] = React.useState<ExtensionDetail | null>(null);
   const [updated, setUpdated] = React.useState(false);
@@ -47,7 +54,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       let remote;
       try {
         // 获取最新的插件信息，用来做更新提示
-        remote = await extensionManagerService.getDetailFromMarketplace(extensionId);
+        remote = await extensionManagerService.getDetailFromMarketplace(extensionId, isLocal ? '' : version);
         if (remote) {
           setLatestExtension(remote);
         }
@@ -173,10 +180,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               {!installed ? (
                 <Button className={styles.action} onClick={install} loading={isInstalling}>{isInstalling ? localize('marketplace.extension.installing') : localize('marketplace.extension.install')}</Button>
               ) : null}
-              {installed ? (
-                <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']}>
-                  <Button type='secondary' more moreIconClass={getIcon('down')} className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>
-                </Dropdown>) : null}
+              {installed &&
+                <Button menu={menu} type='secondary' more className={styles.action}>{extension.enable ? localize('marketplace.extension.disable') : localize('marketplace.extension.enable')}</Button>}
               {installed && !extension.isBuiltin  && (
                 <Button ghost={true} type='danger' className={styles.action} onClick={uninstall} loading={isUnInstalling}>{isUnInstalling ? localize('marketplace.extension.uninstalling') : localize('marketplace.extension.uninstall')}</Button>
               )}
@@ -184,14 +189,20 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           </div>
         </div>)}
         {currentExtension && (<div className={styles.body}>
-          <Tabs tabBarStyle={{marginBottom: 0}}>
-            <TabPane className={styles.content} tab={localize('marketplace.extension.readme')} key='readme'>
+          <Tabs
+            className={styles.tabs}
+            value={tabIndex}
+            onChange={(index: number) => setTabIndex(index)}
+            tabs={tabMap.map((tab) => tab.label)}
+            />
+            <div className={styles.content}>
+            {tabMap[tabIndex].key === 'readme' && (
               <Markdown content={currentExtension.readme ? currentExtension.readme : `# ${currentExtension.displayName}\n${currentExtension.description}`}/>
-            </TabPane>
-            <TabPane tab={localize('marketplace.extension.changelog')} key='changelog'>
+            )}
+            {tabMap[tabIndex].key === 'changelog' && (
               <Markdown content={currentExtension.changelog ? currentExtension.changelog : 'no changelog'}/>
-            </TabPane>
-          </Tabs>
+            )}
+            </div>
         </div>)}
     </div>
   );

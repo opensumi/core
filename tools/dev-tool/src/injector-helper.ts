@@ -1,7 +1,7 @@
 import { ConstructorOf, ILoggerManagerClient } from '@ali/ide-core-common';
 import { Injector, Injectable } from '@ali/common-di';
 import { BrowserModule, ClientApp } from '@ali/ide-core-browser';
-import { NodeModule } from '@ali/ide-core-node';
+import { NodeModule, INodeLogger } from '@ali/ide-core-node';
 import { MockInjector } from './mock-injector';
 import { MainLayout } from './mock-main';
 
@@ -36,9 +36,22 @@ export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule
   return app.injector as MockInjector;
 }
 
-export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>, inj?: MockInjector) {
+export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
   // TODO: 等 Node 这边的加载器写好之后，再把这里改一下
   const injector = inj || new MockInjector();
+
+  // Mock logger
+  injector.addProviders({
+    token: INodeLogger,
+    useValue: {
+      log() {},
+      error() {},
+      warn() {},
+      verbose() {},
+      critical() {},
+      debug() {},
+    },
+  });
 
   for (const item of constructors) {
     const instance = injector.get(item);
@@ -47,5 +60,5 @@ export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>
     }
   }
 
-  return injector;
+  return injector as MockInjector;
 }

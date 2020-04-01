@@ -17,7 +17,7 @@ export interface IMainThreadTerminal {
 }
 
 export interface IExtHostTerminal {
-  activeTerminal: vscode.Terminal;
+  activeTerminal: vscode.Terminal | undefined;
   terminals: vscode.Terminal[];
 
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal;

@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import * as fs from 'fs';
 import * as path from 'path';
-import { uuid } from '@ali/ide-core-node';
+import { uuid, INodeLogger, Uri } from '@ali/ide-core-node';
 import * as os from 'os';
 import { createHash } from 'crypto';
 
@@ -9,6 +8,7 @@ import { ExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNod
 import { RPCService } from '@ali/ide-connection';
 import * as lp from './languagePack';
 import { IExtensionStoragePathServer } from '@ali/ide-extension-storage';
+import { IFileService } from '@ali/ide-file-service';
 
 export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.kaitian');
 
@@ -20,6 +20,12 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
 
   @Autowired(IExtensionStoragePathServer)
   private extensionStoragePathServer: IExtensionStoragePathServer;
+
+  @Autowired(IFileService)
+  private fileService: IFileService;
+
+  @Autowired(INodeLogger)
+  logger: INodeLogger;
 
   private clientId: string;
 
@@ -81,48 +87,74 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     return await this.extensionService.disposeClientExtProcess(clientId, info);
   }
 
+  /**
+   * 将 packageJson 中声明的语言信息转换
+   * @param packageJson package.json
+   * @param languagePackPath language pack path
+   */
+  private convertLanguagePack(packageJson, languagePackPath: string) {
+    const { contributes: { localizations }, publisher, name, version } = packageJson;
+    const languagePacks: { [key: string]: any } = {};
+    for (const localization of localizations) {
+      const md5 = createHash('md5');
+      // 这里需要添加languagePack路径作为id一部分，因为可能存在多个
+      const id = `${languagePackPath}-${publisher.toLocaleLowerCase()}.${name.toLocaleLowerCase()}`;
+      const _uuid = uuid();
+      md5.update(id).update(version);
+      const hash = md5.digest('hex');
+      languagePacks[localization.languageId] = {
+        hash,
+        extensions: [{
+          version,
+          extensionIdentifier: {
+            id,
+            uuid: _uuid,
+          },
+        }],
+        translations: localization.translations.reduce((pre, translation) => {
+          pre[translation.id] = path.join(languagePackPath, translation.path);
+          return pre;
+        }, {}),
+      };
+    }
+    return languagePacks;
+  }
+
   public async updateLanguagePack(languageId: string, languagePack: string): Promise<void> {
     let languagePacks: { [key: string]: any } = {};
     const storagePath = await this.extensionStoragePathServer.getLastStoragePath() || DEFAULT_NLS_CONFIG_DIR;
-    if (fs.existsSync(path.join(storagePath, 'languagepacks.json'))) {
-      const rawLanguagePacks = fs.readFileSync(path.join(storagePath, 'languagepacks.json')).toString();
+    this.logger.log(`find ${languageId}， storagePath：${storagePath}`);
+    const languagePath = Uri.file(path.join(storagePath, 'languagepacks.json')).toString();
+    if (await this.fileService.exists(languagePath)) {
+      const rawLanguagePacks = await this.fileService.resolveContent(languagePath);
       try {
-        languagePacks = JSON.parse(rawLanguagePacks);
+        languagePacks = JSON.parse(rawLanguagePacks.content);
       } catch (err) {
-        console.error(err.message);
+        this.logger.error(err.message);
       }
-    }
-    const rawPkgJson = fs.readFileSync(path.join(languagePack, 'package.json')).toString();
-    const packageJson = JSON.parse(rawPkgJson);
-
-    if (packageJson.contributes && packageJson.contributes.localizations) {
-      for (const localization of packageJson.contributes.localizations) {
-        const md5 = createHash('md5');
-        // 这里需要添加languagePack路径作为id一部分，因为可能存在多个
-        const id = `${languagePack}-${packageJson.publisher.toLocaleLowerCase()}.${packageJson.name.toLocaleLowerCase()}`;
-        const _uuid = uuid();
-        md5.update(id).update(packageJson.version);
-        const hash = md5.digest('hex');
-        languagePacks[localization.languageId] = {
-          hash,
-          extensions: [{
-            extensionIdentifier: {
-              id,
-              uuid: _uuid,
-            },
-            version: packageJson.version,
-          }],
-          translations: localization.translations.reduce((pre, translation) => {
-            pre[translation.id] = path.join(languagePack, translation.path);
-            return pre;
-          }, {}),
-        };
-      }
+    } else {
+      await this.fileService.createFile(languagePath);
     }
 
-    fs.writeFileSync(path.join(storagePath, 'languagepacks.json'), JSON.stringify(languagePacks));
+    const rawPkgJson = (await this.fileService.resolveContent(Uri.file(path.join(languagePack, 'package.json')).toString())).content;
+    let packageJson;
+    try {
+      packageJson = JSON.parse(rawPkgJson);
+    } catch (err) {
+      this.logger.error(err.message);
+    }
 
-    const nlsConfig = await lp.getNLSConfiguration('f06011ac164ae4dc8e753a3fe7f9549844d15e35', path.join(os.homedir(), '.kaitian'), languageId.toLowerCase());
+    if (packageJson?.contributes && packageJson?.contributes?.localizations) {
+      languagePacks = {
+        ...languagePacks,
+        ...this.convertLanguagePack(packageJson, languagePack),
+      };
+    }
+
+    const languagePackJson = await this.fileService.getFileStat(languagePath);
+    this.fileService.setContent(languagePackJson!, JSON.stringify(languagePacks));
+
+    const nlsConfig = await lp.getNLSConfiguration('f06011ac164ae4dc8e753a3fe7f9549844d15e35', storagePath, languageId.toLowerCase());
     // tslint:disable-next-line: no-string-literal
     nlsConfig['_languagePackSupport'] = true;
     process.env.VSCODE_NLS_CONFIG = JSON.stringify(nlsConfig);

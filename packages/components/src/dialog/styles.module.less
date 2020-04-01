@@ -1,11 +1,16 @@
 .wrapper :global(.ant-modal-body) {
   background: var(--kt-modal-background);
   border-color: var(--notifications-border);
-  padding: 24px 24px 10px 24px;
 
   .kticon-info-circle {
     color: var(--kt-modalInfoIcon-foreground);
   }
+}
+
+.wrapper :global(.ant-modal-footer) {
+  align-items: center;
+  justify-content: flex-end;
+  display: flex;
 }
 
 .wrapper {
@@ -23,6 +28,18 @@
 
 .content {
   display: flex;
+
+  .content_area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    .content_title {
+      line-height: 22px;
+      font-size: 14px;
+      margin: 0px 0px 8px 0px;
+    }
+  }
 }
 
 .footer {
@@ -37,22 +54,34 @@
   }
 }
 
+.closex {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  padding: 0px;
+  cursor: pointer;
+}
+
 .buttonWrap {
   display: flex;
   flex-wrap: wrap;
   margin-top: 14px;
   justify-content: flex-end;
-}
 
-.button {
-  margin: 10px 0 0 8px;
+  button {
+    margin: 10px 0 0 8px;
+  }
 }
 
 .message {
-  margin-top: 3px;
   color: var(--kt-modal-foreground);
   line-height: 22px;
   font-size: 14px;
   word-wrap: break-word;
   overflow: hidden;
+  flex: 1;
+  align-items: center;
+  display: inline-flex;
 }

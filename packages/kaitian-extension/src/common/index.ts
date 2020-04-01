@@ -1,7 +1,5 @@
-import { Injectable } from '@ali/common-di';
-import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred } from '@ali/ide-core-common';
-import * as cp from 'child_process';
-import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
+import { Disposable, IJSONSchema, IDisposable, ReporterProcessMessage, Deferred, localize, Event } from '@ali/ide-core-common';
+import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { VSCExtension } from '../hosted/vscode.extension';
 import { ExtensionsActivator } from '../hosted/ext.host.activator';
@@ -35,6 +33,7 @@ export interface IExtensionNodeService {
   createProcess2(clientId: string): Promise<void>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
+  getExtServerListenPath(clientId: string);
   resolveConnection();
   resolveProcessInit();
   getExtension(extensionPath: string, localization: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
@@ -78,6 +77,7 @@ export abstract class ExtensionService {
   abstract async postUninstallExtension(path: string): Promise<void>;
   abstract getExtensions(): IExtension[];
   abstract async activateExtensionByExtPath(extensionPath: string): Promise<void>;
+  onDidExtensionActivated: Event<IExtensionProps>;
   eagerExtensionsActivated: Deferred<void>;
 }
 
@@ -129,6 +129,15 @@ export abstract class VSCodeContributePoint< T extends JSONType = JSONType > ext
   schema?: IJSONSchema;
 
   abstract async contribute();
+
+  protected getLocalizeFromNlsJSON(title: string) {
+    const nlsRegx = /^%([\w\d.-]+)%$/i;
+    const result = nlsRegx.exec(title);
+    if (result) {
+      return localize(result[1], undefined, this.extension.id);
+    }
+    return title;
+  }
 }
 
 export const CONTRIBUTE_NAME_KEY = 'contribute_name';
@@ -182,3 +191,7 @@ export enum EXTENSION_ENABLE {
 export const EMIT_EXT_HOST_EVENT = {
   id: 'kaitian-extension:ext-host-event',
 };
+
+export function getExtensionId(extensionId: string) {
+  return extensionId.toLowerCase();
+}

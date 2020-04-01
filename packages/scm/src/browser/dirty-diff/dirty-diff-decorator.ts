@@ -1,20 +1,17 @@
-import { IEditorDecorationCollectionService } from '@ali/ide-editor/lib/browser';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
-import { WorkbenchEditorService, OverviewRulerLane } from '@ali/ide-editor';
-import { PreferenceService } from '@ali/ide-core-browser';
+import { OverviewRulerLane } from '@ali/ide-editor';
 import { IChange } from '@ali/ide-core-common';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { themeColorFromId } from '@ali/ide-theme';
 
 import { overviewRulerModifiedForeground, overviewRulerDeletedForeground, overviewRulerAddedForeground } from '../scm-color';
-import { SCMService } from '../../common';
 import { SCMPreferences } from '../scm-preference';
 import { DirtyDiffModel } from './dirty-diff-model';
 
 enum ChangeType {
-  Modify,
-  Add,
-  Delete,
+  Modify = 'Modify',
+  Add = 'Add',
+  Delete = 'Delete',
 }
 
 function getChangeType(change: IChange): ChangeType {
@@ -22,12 +19,11 @@ function getChangeType(change: IChange): ChangeType {
     return ChangeType.Add;
   } else if (change.modifiedEndLineNumber === 0) {
     return ChangeType.Delete;
-  } else {
-    return ChangeType.Modify;
   }
+  return ChangeType.Modify;
 }
 
-@Injectable()
+@Injectable({ multiple: true })
 export class DirtyDiffDecorator extends Disposable {
   static createDecoration(
     className: string,
@@ -58,20 +54,8 @@ export class DirtyDiffDecorator extends Disposable {
   private decorations: string[] = [];
   private editorModel: monaco.editor.ITextModel | null;
 
-  @Autowired(IEditorDecorationCollectionService)
-  editorDecorationService: IEditorDecorationCollectionService;
-
-  @Autowired(SCMService)
-  scmService: SCMService;
-
-  @Autowired(WorkbenchEditorService)
-  editorService: WorkbenchEditorService;
-
-  @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
-
   @Autowired(SCMPreferences)
-  scmPreferenceService: SCMPreferences;
+  private readonly scmPreferences: SCMPreferences;
 
   constructor(
     @Optional() editorModel: monaco.editor.ITextModel,
@@ -79,7 +63,7 @@ export class DirtyDiffDecorator extends Disposable {
   ) {
     super();
     this.editorModel = editorModel;
-    const decorations = this.scmPreferenceService['scm.diffDecorations'];
+    const decorations = this.scmPreferences['scm.diffDecorations'];
     const gutter = decorations === 'all' || decorations === 'gutter';
     const overview = decorations === 'all' || decorations === 'overview';
     const options = { gutter, overview, isWholeLine: true };

@@ -1,34 +1,31 @@
 import * as React from 'react';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IMainLayoutService, MainLayoutContribution } from '../../src';
-import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, IEventBus, RenderedEvent, ViewContainerOptions } from '@ali/ide-core-browser';
+import { createBrowserInjector, createBrowserApp } from '../../../../tools/dev-tool/src/injector-helper';
+import { ComponentRegistryImpl, ComponentRegistry, SlotLocation, AppConfig, IContextKeyService, CommandRegistry, ILoggerManagerClient, ViewContainerOptions } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { useMockStorage } from '@ali/ide-core-browser/lib/mocks/storage';
-import { MainLayoutModuleContribution } from '../../src/browser/main-layout.contribution';
-import { ActivationEventService } from '@ali/ide-activation-event';
-import { ActivationEventServiceImpl } from '@ali/ide-activation-event/lib/browser/activation.service';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
-import { LayoutService } from '../../src/browser/layout.service';
-import { autorun } from 'mobx';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
+import { MainLayoutModule } from '@ali/ide-main-layout/lib/browser';
+import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
+import { IMainLayoutService } from '@ali/ide-main-layout';
+import { MainLayoutModuleContribution } from '@ali/ide-main-layout/lib/browser/main-layout.contribution';
+import { act } from 'react-dom/test-utils';
 
-const MockView = () => <div>Test view</div>;
+const MockView = (props) => <div>Test view{props.message && <p id='test-unique-id'>has prop.message</p>}</div>;
+jest.useFakeTimers();
 
 describe('main layout test', () => {
   let service: LayoutService;
   let injector: MockInjector;
   const testToken = 'componentToken';
+  const uniqueToken = 'unique_component_token';
+  const testContainerId = 'unique_container_id';
   const layoutNode = document.createElement('div');
   document.getElementById('main')!.appendChild(layoutNode);
 
-  const mockLayoutContribution: MainLayoutContribution = {
-    onDidRender() {
-      console.log('layout contribution');
-    },
-  };
   const config: Partial<AppConfig> = {
     layoutConfig: {
       [SlotLocation.main]: {
@@ -40,30 +37,10 @@ describe('main layout test', () => {
       [SlotLocation.left]: {
         modules: [testToken],
       },
-      [SlotLocation.leftBar]: {
-        modules: [testToken],
-      },
-      [SlotLocation.leftPanel]: {
-        modules: [testToken],
-      },
       [SlotLocation.right]: {
-        modules: [testToken],
-      },
-      [SlotLocation.rightBar]: {
-        modules: [testToken],
-        size: 0,
-      },
-      [SlotLocation.rightPanel]: {
-        modules: [testToken],
+        modules: [uniqueToken],
       },
       [SlotLocation.bottom]: {
-        modules: [testToken],
-      },
-      [SlotLocation.bottomBar]: {
-        modules: [testToken],
-        size: 0,
-      },
-      [SlotLocation.bottomPanel]: {
         modules: [testToken],
       },
       [SlotLocation.statusBar]: {
@@ -73,7 +50,7 @@ describe('main layout test', () => {
   };
   const timeoutIds: Set<NodeJS.Timer> = new Set();
 
-  beforeAll(() => {
+  beforeAll(async (done) => {
     let timeCount = 0;
     window.requestAnimationFrame = (cb) => {
       const cancelToken = 111;
@@ -84,6 +61,16 @@ describe('main layout test', () => {
       }, 30);
       timeoutIds.add(timeoutId);
       return cancelToken;
+    };
+    window.cancelAnimationFrame = () => {
+      // mock cancelAnimationFrame
+    };
+    // tslint:disable-next-line: only-arrow-functions
+    (window as any).ResizeObserver = function() {
+      this.observe = () => {};
+      this.disconnect = () => {};
+      this.unobserve = () => {};
+      return this;
     };
 
     injector = createBrowserInjector([]);
@@ -113,18 +100,8 @@ describe('main layout test', () => {
         useClass: MockWorkspaceService,
       },
       {
-        token: MainLayoutContribution,
-        useValue: {
-          getContributions: () => [mockLayoutContribution],
-        },
-      },
-      {
         token: MainLayoutModuleContribution,
         useClass: MainLayoutModuleContribution,
-      },
-      {
-        token: ActivationEventService,
-        useClass: ActivationEventServiceImpl,
       },
       {
         token: ILoggerManagerClient,
@@ -132,31 +109,10 @@ describe('main layout test', () => {
       },
     );
     useMockStorage(injector);
-    service = injector.get(IMainLayoutService);
-  });
-  afterAll(() => {
-    if (timeoutIds.size > 0) {
-      timeoutIds.forEach((t) => clearTimeout(t));
-      timeoutIds.clear();
-    }
-  });
-
-  it('should be able to collect tabbar component at any time', () => {
-    service.collectTabbarComponent([{
-      component: MockView,
-      id: 'test-view-id',
-    }], {
-      containerId: 'container-before-render',
-      title: 'test title',
-    }, 'bottom');
-    expect(service.getTabbarHandler('container-before-render')).toBeDefined();
-  });
-
-  it('should be able to register component', () => {
     const registry: ComponentRegistry = injector.get(ComponentRegistry);
     registry.register(testToken, [{
       component: MockView,
-      id: 'test-view-id2',
+      id: 'test-view-id',
     }], {
       containerId: 'containerId',
       iconClass: 'testicon iconfont',
@@ -165,12 +121,59 @@ describe('main layout test', () => {
       expanded: false,
       size: 300,
       initialProps: {},
-      activateKeyBinding: 'cmd+1',
+      activateKeyBinding: 'ctrlcmd+1',
       hidden: false,
     });
-    const info = registry.getComponentRegistryInfo(testToken);
-    expect(info).toBeDefined();
-    expect(info!.options!.containerId).toEqual('containerId');
+    registry.register(uniqueToken, [{
+      component: MockView,
+      id: 'test-view-id1',
+    }, {
+      component: MockView,
+      id: 'test-view-id2',
+    }], {
+      containerId: testContainerId,
+      iconClass: 'testicon iconfont',
+      priority: 10,
+      title: 'test title',
+      expanded: false,
+      size: 300,
+      activateKeyBinding: 'ctrlcmd+1',
+      hidden: false,
+    });
+    await act(async () => {
+      await createBrowserApp([
+        MainLayoutModule,
+      ], injector);
+      service = injector.get(IMainLayoutService);
+      done();
+    });
+  });
+  afterAll(() => {
+    if (timeoutIds.size > 0) {
+      timeoutIds.forEach((t) => clearTimeout(t));
+      timeoutIds.clear();
+    }
+  });
+
+  // main logic test
+  it('containers in layout config should be registed', () => {
+    const rightTabbarService = service.getTabbarService('right');
+    expect(rightTabbarService.visibleContainers.length).toEqual(1);
+    const accordionService = service.getAccordionService(testContainerId);
+    expect(accordionService.visibleViews.length).toEqual(2);
+  });
+
+  // container api test start
+
+  it('should be able to collect tabbar component at any time', () => {
+    service.collectTabbarComponent([{
+      component: MockView,
+      id: 'test-view-id3',
+    }], {
+      containerId: 'container-before-render',
+      title: 'test title',
+    }, 'bottom');
+    expect(service.getTabbarHandler('container-before-render')).toBeDefined();
   });
 
   it('should be able to init layout state storage & restore state & register toggle commands', async (done) => {
@@ -182,10 +185,10 @@ describe('main layout test', () => {
     done();
   });
 
-  it('should be able to collect component as side container & get handler', async (done) => {
-    expect(service.getTabbarHandler('container-before-render')).toBeDefined();
+  it('should be able to collect component as side container & get handler & manualy dispose', () => {
+    const testContainerId2 = 'unique_container_id_2';
     const options: ViewContainerOptions = {
-      containerId: 'testContainerId',
+      containerId: testContainerId2,
       iconClass: 'testicon iconfont',
       priority: 10,
       title: 'test title',
@@ -193,58 +196,127 @@ describe('main layout test', () => {
       size: 300,
       badge: '9',
       initialProps: {hello: 'world'},
-      activateKeyBinding: 'cmd+1',
+      activateKeyBinding: 'ctrlcmd+1',
       hidden: false,
     };
     const handlerId = service.collectTabbarComponent([{
       component: MockView,
-      id: 'test-view-id',
+      id: 'test-view-id4',
+    }, {
+      component: MockView,
+      id: 'test-view-id5',
     }], options, 'left');
     const handler = service.getTabbarHandler(handlerId)!;
+    const tabbarService = service.getTabbarService('left');
     expect(handler).toBeDefined();
-    const disposer = autorun(() => {
-      const info = service.getTabbarService('left');
-      const opt = info.getContainer('testContainerId')!.options!;
-      console.log('autorun:', opt.badge, opt.title, opt.initialProps);
-      if (opt.title === 'gggggggg') {
-        done();
-      }
-    });
+    const mockCb = jest.fn();
+    handler.onActivate(mockCb);
+    handler.onInActivate(mockCb);
+    handler.activate();
+    expect(tabbarService.currentContainerId).toEqual(testContainerId2);
+    expect(handler.isActivated()).toBeTruthy();
+    handler.deactivate();
+    expect(handler.isActivated()).toBeFalsy();
+    expect(tabbarService.currentContainerId).toEqual('');
+    handler.disposeView('test-view-id4');
+    expect(handler.accordionService.views.length).toEqual(1);
+    handler.hide();
+    expect(tabbarService.getContainerState(testContainerId2).hidden).toEqual(true);
+    handler.show();
+    expect(tabbarService.getContainerState(testContainerId2).hidden).toEqual(false);
+    expect(handler.isCollapsed('test-view-id5')).toBeFalsy();
+    expect(mockCb).toBeCalledTimes(2);
     handler.setBadge('20');
     handler.updateTitle('gggggggg');
-    disposer();
+    jest.advanceTimersByTime(20);
+    expect(tabbarService.getContainer(testContainerId2)!.options!.title).toEqual('gggggggg');
+    handler.updateViewTitle('test-view-id5', 'new title');
+    expect(handler.accordionService.views.find((view) => view.id === 'test-view-id5')?.name === 'new title');
+    handler.toggleViews(['test-view-id5'], false);
+    expect(handler.accordionService.getViewState('test-view-id5').hidden).toBeTruthy();
+    handler.dispose();
+    expect(tabbarService.getContainer(testContainerId2)).toBeUndefined();
   });
 
   it('should be able to register React components as container directly', () => {
     const handlerId = service.collectTabbarComponent([], {
       containerId: 'container-use-react',
       title: 'test title',
+      component: MockView,
+      initialProps: {
+        message: 'hello world',
+      },
     }, 'bottom');
     const accordionService = service.getAccordionService('container-use-react');
     expect(accordionService.views.length).toEqual(0);
     const handler = service.getTabbarHandler(handlerId);
     expect(handler).toBeDefined();
+    const testDom = document.getElementById('test-unique-id');
+    expect(testDom).toBeDefined();
   });
 
-  // it('toggle slot should work', async (done) => {
-  //   const eventBus: IEventBus = injector.get(IEventBus);
-  //   eventBus.on(RenderedEvent, async () => {
-  //     const leftTabbarService = service.getTabbarService('left');
-  //     // currentContainerId undefined默认会使用第一个tab
-  //     expect(leftTabbarService.currentContainerId).toBeUndefined();
-  //     const bottomTabbarService = service.getTabbarService('bottom');
-  //     expect(bottomTabbarService.currentContainerId).toBeUndefined();
-  //     const rightTabbarService = service.getTabbarService('right');
-  //     // currentContainerId 空字符串表示当前未选中任何tab
-  //     expect(rightTabbarService.currentContainerId).toEqual('');
+  // view api test start
 
-  //     await service.toggleSlot('left');
-  //     expect(leftTabbarService.currentContainerId).toBeFalsy();
-  //     await service.toggleSlot('bottom');
-  //     expect(bottomTabbarService.currentContainerId).toBeFalsy();
-  //     await service.toggleSlot('right');
-  //     expect(rightTabbarService.currentContainerId).toBeTruthy();
-  //     done();
-  //   });
+  it('should be able to collect view into existing container and replace & dispose existing view', async (done) => {
+    const tmpViewId = 'test-view-id5';
+    const tmpDomId = 'test-dom-5';
+    service.collectViewComponent({
+      id: tmpViewId,
+      component: MockView,
+    }, testContainerId, { message: 'yes' });
+    act(() => { jest.advanceTimersByTime(10); });
+    const accordionService = service.getAccordionService(testContainerId);
+    expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeDefined();
+    service.replaceViewComponent({
+      id: tmpViewId,
+      component: (props) => <h1 id={tmpDomId}>{props.id || 'no props'}</h1>,
+    }, { id: 'hello world' });
+    act(() => { jest.advanceTimersByTime(10); });
+    // await wait(200);
+    const newDom = document.getElementById(tmpDomId);
+    expect(newDom).toBeDefined();
+    expect(newDom!.innerHTML).toEqual('hello world');
+    service.disposeViewComponent(tmpViewId);
+    act(() => { jest.advanceTimersByTime(10); });
+    expect(accordionService.views.find((val) => val.id === tmpViewId)).toBeUndefined();
+    done();
+  });
+
+  // toggle / expand api test
+
+  it('toggle slot should work', () => {
+    const rightTabbarService = service.getTabbarService('right');
+    // currentContainerId 空字符串表示当前未选中任何tab
+    expect(rightTabbarService.currentContainerId).toEqual('');
+    service.toggleSlot('right');
+    act(() => { jest.advanceTimersByTime(10); });
+    // await wait(200);
+    expect(rightTabbarService.currentContainerId).toBeTruthy();
+    act(() => { jest.advanceTimersByTime(10); });
+    // panel visible
+    expect((document.getElementsByClassName(testContainerId)[0] as HTMLDivElement).style.zIndex).toEqual('1');
+  });
+
+  // TODO jest has no style
+  // it('should be able to expand bottom panel', () => {
+  //   expect(service.bottomExpanded).toBeFalsy();
+  //   service.expandBottom(true);
+  //   act(() => { jest.advanceTimersByTime(10); });
+  //   expect(service.bottomExpanded).toBeTruthy();
   // });
+  // it('accordion height calculate test', () => {
+  // });
+
+  it('should be able to judge whether a tab panel is visible', () => {
+    expect(service.isVisible('right')).toBeTruthy();
+    service.toggleSlot('right', false);
+    act(() => { jest.advanceTimersByTime(10); });
+    expect(service.isVisible('right')).toBeFalsy();
+  });
+
+  // TODO mock ContextKey event
+  // it('should be able to responde to context key change', () => {
+
+  // });
+
 });

@@ -1,5 +1,5 @@
-import { Disposable } from '@ali/ide-core-common';
-import * as styles from './styles.module.less';
+import { Disposable, IDisposable, debounce } from '@ali/ide-core-common';
+// import * as styles from './styles.module.less';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
   public domNode: HTMLElement;
@@ -193,5 +193,73 @@ export abstract class ZoneWidget extends Disposable {
     }
     this._container.remove();
     super.dispose();
+  }
+}
+
+/**
+ * 可以自适应高度的 ZoneWidget
+ */
+export abstract class ResizeZoneWidget extends ZoneWidget {
+
+  private preWrapperHeight: number;
+  private heightInLines: number;
+  private lineHeight: number;
+  private wrap: HTMLDivElement;
+
+  protected _isShow = false;
+
+  constructor(
+    protected readonly editor: monaco.editor.ICodeEditor,
+    private range: monaco.IRange,
+  ) {
+    super(editor);
+    this.lineHeight = this.editor.getConfiguration().lineHeight;
+    this.addDispose(this.editor.onDidChangeConfiguration((e) => {
+      if (e.lineHeight) {
+        this.lineHeight = this.editor.getConfiguration().lineHeight;
+        if (this.wrap) {
+          this.resizeZoneWidget();
+        }
+      }
+    }));
+  }
+
+  protected observeContainer(dom: HTMLDivElement): IDisposable {
+    this.wrap = dom;
+    const mutationObserver = new MutationObserver((mutation) => {
+      this.resizeZoneWidget();
+    });
+    mutationObserver.observe(this.wrap, {childList: true, subtree: true});
+    return {
+      dispose() {
+        mutationObserver.disconnect();
+      },
+    };
+  }
+
+  @debounce(100)
+  protected resizeZoneWidget() {
+    let wrapperHeight = this.wrap.offsetHeight;
+    // 可能在设置页设置的时候 editor 不可见，获取的高度为 0
+    if (!wrapperHeight && this.preWrapperHeight) {
+      wrapperHeight = this.preWrapperHeight;
+    }
+    if (wrapperHeight) {
+      const heightInLines = Math.ceil(wrapperHeight / this.lineHeight);
+      if (this._isShow && this.heightInLines !== heightInLines) {
+        this.heightInLines = heightInLines;
+        this.show();
+        this.preWrapperHeight = wrapperHeight;
+      }
+    }
+  }
+
+  public show() {
+    const needResize = !this.wrap.offsetHeight && !this.preWrapperHeight;
+    super.show(this.range, this.heightInLines);
+    // 如果默认为隐藏，打开后是没有 this.heightInLines 的，需要显示后再计算一下
+    if (needResize) {
+      this.resizeZoneWidget();
+    }
   }
 }

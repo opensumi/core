@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig, PreferenceService } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient, formatLocalize, ILogger, AppConfig, PreferenceService, isElectronRenderer } from '@ali/ide-core-browser';
 import { PreferenceSettingsService } from './preference.service';
 import './index.less';
 import * as styles from './preferences.module.less';
@@ -10,20 +10,39 @@ import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { ISettingGroup, IPreferenceSettingsService, ISettingSection } from '@ali/ide-core-browser';
 import throttle = require('lodash.throttle');
 import debounce = require('lodash.debounce');
-import { IWorkspaceService } from '@ali/ide-workspace';
 import * as cls from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
-import { CheckBox, Input, Button } from '@ali/ide-components';
-import { Select } from '@ali/ide-core-browser/lib/components/select';
+import { CheckBox, Input, Button, IconContextProvider } from '@ali/ide-components';
+import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
+import { Select, Option, Tabs } from '@ali/ide-components';
 import { toPreferenceReadableName, toNormalCase } from '../common';
+
+const WorkspaceScope = {
+  id: PreferenceScope.Workspace ,
+  label: 'preference.tab.workspace',
+};
+
+const UserScope = {
+  id: PreferenceScope.User ,
+  label: 'preference.tab.user',
+};
 
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
-  const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
-  const preferences: PreferenceService  = useInjectable(PreferenceService);
+  const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const preferences: PreferenceService = useInjectable(PreferenceService);
   const appConfig: AppConfig = useInjectable(AppConfig);
 
-  const [currentScope, setCurrentScope] = React.useState(preferences.get<boolean>('settings.userBeforeWorkspace') ? PreferenceScope.User : PreferenceScope.Workspace);
+  const userBeforeWorkspace = preferences.get<boolean>('settings.userBeforeWorkspace');
+  const tabList = userBeforeWorkspace
+    ? [ UserScope, WorkspaceScope ]
+    : [ WorkspaceScope, UserScope ];
+
+  const [ tabIndex, setTabIndex ] = React.useState<number>(0);
+  const currentScope = React.useMemo<PreferenceScope>(() => {
+    return (tabList[tabIndex] || tabList[0]).id;
+  }, [ tabList, tabIndex ]);
+
   const [currentSearch, setCurrentSearch] = React.useState('');
 
   const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
@@ -36,43 +55,39 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     setCurrentSearch(value);
   }, 100, {maxWait: 1000});
 
-  const headers = <div className = {styles.preferences_scopes}>
-    {
-      preferences.get<boolean>('settings.userBeforeWorkspace')  ?
-      <React.Fragment>
-        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
-        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
-      </React.Fragment>
-      :
-      <React.Fragment>
-      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
-      <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
-    </React.Fragment>
-    }
-  </div>;
+  const headers = (
+    <Tabs
+      className={styles.tabs}
+      value={tabIndex}
+      onChange={(index: number) => setTabIndex(index)}
+      tabs={tabList.map((n) => localize(n.label))} />
+  );
 
   return (
-    <div className = {styles.preferences}>
-      <div className = {styles.preferences_header}>
-        {appConfig.isSyncPreference ? <div /> : headers}
-        <div className = {styles.search_pref}>
-          <Input placeholder={localize('preference.searchPlaceholder')} onChange={(e) => {
-              debouncedSearch((e.target as HTMLInputElement).value);
-          }}/>
+    <IconContextProvider value={{ getIcon }}>
+      <div className = {styles.preferences}>
+        <div className = {styles.preferences_header}>
+          {appConfig.isSyncPreference ? <div /> : headers}
+          <div className = {styles.search_pref}>
+            <Input
+              placeholder={localize('preference.searchPlaceholder')}
+              onValueChange={debouncedSearch}
+            />
+          </div>
         </div>
+        { groups.length > 0 ?
+        <div className = {styles.preferences_body}>
+          <PreferencesIndexes groups={groups} scope={currentScope} search={currentSearch}></PreferencesIndexes>
+          <div className = {styles.preferences_items}>
+            <PreferenceBody groupId={preferenceService.currentGroup} scope={currentScope} search={currentSearch}></PreferenceBody>
+          </div>
+        </div> :
+          <div className = {styles.preference_noResults}>
+            {formatLocalize('preference.noResults', currentSearch)}
+          </div>
+        }
       </div>
-      { groups.length > 0 ?
-      <div className = {styles.preferences_body}>
-        <PreferencesIndexes groups={groups} scope={currentScope} search={currentSearch}></PreferencesIndexes>
-        <div className = {styles.preferences_items}>
-          <PreferenceBody groupId={preferenceService.currentGroup} scope={currentScope} search={currentSearch}></PreferenceBody>
-        </div>
-      </div> :
-        <div className = {styles.preference_noResults}>
-          {formatLocalize('preference.noResults', currentSearch)}
-        </div>
-      }
-    </div>
+    </IconContextProvider>
   );
 });
 
@@ -97,7 +112,7 @@ export const PreferencesIndexes = ({groups, scope, search}: {groups: ISettingGro
 
           const sections = preferenceService.getSections(id, scope, search);
 
-          return (<div key={`${id} - ${title}`}>
+          return (<div key={`${id} - ${title}`} className={styles.index_item_wrapper}>
             <div key={`${id} - ${title}`} className={classnames({
               [styles.index_item]: true,
               [styles.activated]: preferenceService.currentGroup === id,
@@ -327,9 +342,13 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     // enum 本身为 string[] | number[]
     const labels = preferenceService.getEnumLabels(preferenceName);
     const options = optionEnum && optionEnum.map((item, idx) =>
+      isElectronRenderer() ?
       <option value={item} key={`${idx} - ${item}`}>{
         replaceLocalizePlaceholder((labels[item] || item).toString())
-      }</option>);
+      }</option> :
+      <Option value={item} label={replaceLocalizePlaceholder((labels[item] || item).toString())} key={`${idx} - ${item}`}>{
+        replaceLocalizePlaceholder((labels[item] || item).toString())
+      }</Option>);
 
     return (
       <div className={styles.preference_line} key={key}>
@@ -338,14 +357,20 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
         </div>
         {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
         <div className={styles.control_wrap}>
-          <Select onChange={(event) => {
+          {isElectronRenderer() ?
+          <NativeSelect onChange={(event) => {
               changeValue(key, event.target.value);
             }}
             className={styles.select_control}
             value={value}
           >
             {options}
-          </Select>
+          </NativeSelect> :
+          <Select onChange={(value) => {
+            changeValue(key, value);
+          }} value={value} className={styles.select_control}>
+            {options}
+          </Select>}
         </div>
       </div>
     );

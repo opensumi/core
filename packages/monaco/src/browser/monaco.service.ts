@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { Disposable } from '@ali/ide-core-browser';
 import { loadMonaco } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';
-import { Emitter as EventEmitter, Event, ISelection } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import { TextmateService } from './textmate.service';
 
 @Injectable()
@@ -60,7 +60,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       renderLineHighlight: 'none',
       ignoreTrimWhitespace: false,
       ...options,
-    }, { ...this.overrideServices, ...overrides});
+    } as any, { ...this.overrideServices, ...overrides});
     return editor;
   }
 

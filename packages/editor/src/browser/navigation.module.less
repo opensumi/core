@@ -1,3 +1,5 @@
+@import "~@ali/ide-components/lib/style/mixins.less";
+
 .navigation_container {
   display: flex;
   align-items: center;
@@ -46,6 +48,7 @@
   background: var(--breadcrumb-background);
   width: 200px;
   box-shadow: 1px 1px 3px #000;
+  .overlay-shadow();
   .navigation_menu_items {
     > div {
       overflow: hidden;

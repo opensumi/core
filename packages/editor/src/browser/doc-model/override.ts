@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService } from './types';

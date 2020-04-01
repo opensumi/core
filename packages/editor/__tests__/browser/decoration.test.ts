@@ -1,7 +1,11 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IEditorDecorationCollectionService, EditorDecorationChangeEvent } from '@ali/ide-editor/lib/browser';
+import { IEditorDecorationCollectionService, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent } from '@ali/ide-editor/lib/browser';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
-import { URI, Emitter, IEventBus } from '@ali/ide-core-browser';
+import { URI, Emitter, IEventBus, Disposable } from '@ali/ide-core-browser';
+import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { IThemeService } from '@ali/ide-theme';
+import { MonacoEditorDecorationApplier } from '../../src/browser/decoration-applier';
+import { ICSSStyleService } from '@ali/ide-theme/lib/common/style';
 
 describe('editor decoration service test', () => {
 
@@ -40,6 +44,8 @@ describe('editor decoration service test', () => {
     },
     onDidDecorationChange: _decorationChange.event,
   };
+
+  const mockedMonaco = createMockedMonaco();
 
   it('should be able to register decoration providers', () => {
     const disposer = decorationService.registerDecorationProvider(provider);
@@ -81,6 +87,85 @@ describe('editor decoration service test', () => {
     });
     className = 'testDecoration2';
     _decorationChange.fire(uri);
+
+    disposer.dispose();
+    done();
+  });
+
+  it('decoration applier test', async (done) => {
+
+    injector.mockService(IThemeService, {
+      getCurrentThemeSync: jest.fn(() => {
+        return {
+          type: 'dark',
+        };
+      }),
+    });
+    injector.mockService(ICSSStyleService, ({
+      addClass: jest.fn(() => {
+        return new Disposable();
+      }),
+    }));
+
+    const disposer = decorationService.createTextEditorDecorationType({
+      backgroundColor: 'black',
+      after: {
+        backgroundColor: 'red',
+      },
+      before: {
+        backgroundColor: 'green',
+      },
+    }, 'test2');
+    const disposer2 = decorationService.registerDecorationProvider(provider);
+
+    const editor = mockedMonaco.editor!.create(document.createElement('div'));
+
+    editor.setModel(mockedMonaco.editor!.createModel('', undefined , mockedMonaco.Uri!.parse('file:///test/test.js')));
+
+    const applier = injector.get(MonacoEditorDecorationApplier, [editor]);
+
+    applier.applyDecoration('test2', [
+      {
+        range: {
+          startLineNumber: 1,
+          endColumn: 1,
+          startColumn: 1,
+          endLineNumber: 1,
+        },
+        hoverMessage: 'testHoverMessage',
+      },
+    ]);
+
+    expect(editor.deltaDecorations).toBeCalled();
+    (editor.deltaDecorations as any).mockClear();
+
+    const eventBus: IEventBus = injector.get(IEventBus);
+
+    await eventBus.fireAndAwait(new EditorDecorationTypeRemovedEvent('test2'));
+
+    expect(editor.deltaDecorations).toBeCalled();
+    (editor.deltaDecorations as any).mockClear();
+
+    (editor as any)._onDidChangeModel.fire();
+
+    expect(editor.deltaDecorations).toBeCalled();
+    (editor.deltaDecorations as any).mockClear();
+
+    await eventBus.fireAndAwait(new EditorDecorationChangeEvent({
+      uri: new URI('file:///test/test.js'),
+      key: 'test',
+    }));
+
+    expect(editor.deltaDecorations).toBeCalled();
+    (editor.deltaDecorations as any).mockClear();
+
+    disposer.dispose();
+    disposer2.dispose();
+    done();
+  });
+
+  afterAll(() => {
+    injector.disposeAll();
   });
 
 });

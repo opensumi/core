@@ -1,12 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import * as fs from 'fs-extra';
-import * as path from 'path';
 import { IExtensionManagerServer, PREFIX, RequestHeaders, BaseExtension, IExtensionManager, IExtensionManagerRequester } from '../common';
 import * as urllib from 'urllib';
 import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
 import * as pkg from '@ali/ide-core-node/package.json';
 import * as qs from 'querystring';
-import { ExtensionInstaller } from '@ali/ide-extension-installer';
+import { ExtensionInstaller, IExtensionInstaller, Extension as InstallerExtension, ExtensionRelease as InstallerExtensionRelease } from '@ali/ide-extension-installer';
 
 @Injectable()
 export class ExtensionManagerRequester implements IExtensionManagerRequester {
@@ -69,13 +68,9 @@ export class ExtensionManagerRequester implements IExtensionManagerRequester {
 }
 
 @Injectable()
-export class ExtensionManager implements IExtensionManager {
-
+class IDEExtensionInstaller implements IExtensionInstaller {
   @Autowired(IExtensionManagerRequester)
   extensionManagerRequester: IExtensionManagerRequester;
-
-  @Autowired(INodeLogger)
-  private logger: INodeLogger;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
@@ -109,10 +104,30 @@ export class ExtensionManager implements IExtensionManager {
     });
   }
 
+  public install(extension: InstallerExtension): Promise<string> {
+    return this.installer.install(extension);
+  }
+
+  public installByRelease(release: InstallerExtensionRelease): Promise<string> {
+    return this.installer.installByRelease(release);
+  }
+}
+
+@Injectable()
+export class ExtensionManager implements IExtensionManager {
+
+  @Autowired(INodeLogger)
+  private logger: INodeLogger;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
+  @Autowired(IDEExtensionInstaller)
+  private installer: IDEExtensionInstaller;
+
   async installExtension(extension: BaseExtension, version?: string | undefined): Promise<string> {
     const currentVersion = version || extension.version;
-    const extensionDirName = `${extension.publisher}.${extension.name}-${currentVersion}`;
-    const dist = await this.getUnpressExtensionDir(extensionDirName, extension);
+    const dist = await this.getUnpressExtensionDir(extension);
     return this.installer.install({
       publisher: extension.publisher,
       name: extension.name,
@@ -137,8 +152,8 @@ export class ExtensionManager implements IExtensionManager {
     }
   }
 
-  public async getUnpressExtensionDir(extensionDirName: string, extension: BaseExtension): Promise<string> {
-    return path.join(this.appConfig.marketplace.extensionDir, extensionDirName);
+  protected async getUnpressExtensionDir(extension: BaseExtension): Promise<string> {
+    return this.appConfig.marketplace.extensionDir;
   }
 }
 
@@ -156,6 +171,9 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   @Autowired(IExtensionManagerRequester)
   extensionManagerRequester: IExtensionManagerRequester;
+
+  @Autowired(IDEExtensionInstaller)
+  private installer: IDEExtensionInstaller;
 
   async search(query: string, ignoreId: string[] = []) {
     const ignoreIdList = [...ignoreId, ...this.appConfig.marketplace.ignoreId].map((id) => `&ignoreId=${id}`).join('');
@@ -216,8 +234,19 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * 通过插件 id 下载插件
    * @param extension 插件
    */
-  async installExtension(extension: BaseExtension, version?: string): Promise<string> {
-    return await this.extensionManager.installExtension(extension, version);
+  installExtension(extension: BaseExtension, version?: string): Promise<string> {
+    return this.extensionManager.installExtension(extension, version);
+  }
+
+  /**
+   * 通过插件 release id 下载插件
+   * @param extension 插件
+   */
+  installExtensionByReleaseId(releaseId: string): Promise<string> {
+    return this.installer.installByRelease({
+      releaseId,
+      dist: this.appConfig.marketplace.extensionDir,
+    });
   }
 
   /**
@@ -225,16 +254,16 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param extension 插件
    * @param version 要更新的版本
    */
-  async updateExtension(extension: BaseExtension, version: string): Promise<string> {
-    return await this.extensionManager.updateExtension(extension, version);
+  updateExtension(extension: BaseExtension, version: string): Promise<string> {
+    return this.extensionManager.updateExtension(extension, version);
   }
 
   /**
    * 卸载插件
    * @param extension 插件
    */
-  async uninstallExtension(extension: BaseExtension) {
-    return await this.extensionManager.uninstallExtension(extension);
+  uninstallExtension(extension: BaseExtension) {
+    return this.extensionManager.uninstallExtension(extension);
   }
 
   /**

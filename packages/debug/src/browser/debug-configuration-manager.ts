@@ -24,8 +24,7 @@ import { DebugConfigurationModel } from './debug-configuration-model';
 import { DebugSessionOptions } from '../common';
 import { FileSystemError } from '@ali/ide-file-service';
 import { DebugConfiguration } from '../common';
-import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspace-storage-service';
-import { WorkbenchEditorService, ICodeEditor, IEditor } from '@ali/ide-editor';
+import { WorkbenchEditorService, ICodeEditor } from '@ali/ide-editor';
 import debounce = require('lodash.debounce');
 import { DebugPreferences } from './debug-preferences';
 

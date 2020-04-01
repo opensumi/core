@@ -1,7 +1,7 @@
 import { Color, IThemeColor } from './color';
-import { IRawTheme } from 'vscode-textmate';
-import {vs, vs_dark, hc_black} from './default-themes';
+import { vs, vs_dark, hc_black } from './default-themes';
 import { Event, URI } from '@ali/ide-core-common';
+import { IRawThemeSetting } from 'vscode-textmate';
 
 export const ThemeServicePath = 'themeServicePath';
 
@@ -18,6 +18,7 @@ export const IIconService = Symbol('IIconTheme');
 export enum IconType {
   Mask = 'mask',
   Background = 'background',
+  Base64 = 'base64',
 }
 
 export enum IconShape {
@@ -39,12 +40,15 @@ export interface IIconService {
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string, type?: IconType, shape?: IconShape): string | undefined;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
-  getAvailableThemeInfos(): ThemeInfo[];
+  getAvailableThemeInfos(): IconThemeInfo[];
 }
 
-export interface IThemeData extends ThemeMix {
+export interface IThemeData extends IStandaloneThemeData {
+  name: string;
   id: string;
   colorMap: IColorMap;
+  themeSettings: IRawThemeSetting[];
+  settings: IRawThemeSetting[];
   initializeFromData(data): void;
   initializeThemeData(id, name, base, themeLocation: string): Promise<void>;
 }
@@ -82,6 +86,21 @@ export interface IColorMap {
 
 export type BuiltinTheme = 'vs' | 'vs-dark' | 'hc-black';
 
+export function getThemeTypeName(base: BuiltinTheme) {
+  const map = {
+    'vs': 'theme.base.vs',
+    'vs-dark': 'theme.base.vs-dark',
+    'hc-black': 'theme.base.hc-black',
+  };
+  return map[base];
+}
+
+export enum BuiltinThemeComparator {
+  'vs',
+  'vs-dark',
+  'hc-black',
+}
+
 export interface IStandaloneThemeData {
   base: BuiltinTheme;
   inherit: boolean;
@@ -101,8 +120,16 @@ export interface ITokenThemeRule {
   fontStyle?: string;
 }
 
-export interface ThemeMix extends IRawTheme, IStandaloneThemeData {
-  name: string;
+export interface ITokenColorCustomizations {
+  [groupIdOrThemeSettingsId: string]: string | ITokenColorizationSetting | ITokenColorCustomizations | undefined | ITokenColorizationRule[];
+  comments?: string | ITokenColorizationSetting;
+  strings?: string | ITokenColorizationSetting;
+  numbers?: string | ITokenColorizationSetting;
+  keywords?: string | ITokenColorizationSetting;
+  types?: string | ITokenColorizationSetting;
+  functions?: string | ITokenColorizationSetting;
+  variables?: string | ITokenColorizationSetting;
+  textMateRules?: ITokenColorizationRule[];
 }
 
 const VS_THEME_NAME = 'vs';
@@ -112,6 +139,7 @@ const HC_BLACK_THEME_NAME = 'hc-black';
 export interface ThemeContribution {
   id?: string;
   label: string;
+  // default to be vs
   uiTheme?: BuiltinTheme;
   path: string;
 }
@@ -170,6 +198,10 @@ export interface ITheme {
   defines(color: ColorIdentifier): boolean;
 }
 
+export interface IColorCustomizations {
+  [colorIdOrThemeSettingsId: string]: string | IColorCustomizations;
+}
+
 export interface ColorContribution {
   readonly id: ColorIdentifier;
   readonly description: string;
@@ -199,9 +231,14 @@ export type ColorValue = Color | string | ColorIdentifier | ColorFunction;
 
 export interface ThemeInfo {
   name: string;
-  base?: BuiltinTheme;
+  base: BuiltinTheme;
   themeId: string;
   inherit?: boolean;
+}
+
+export interface IconThemeInfo {
+  name: string;
+  themeId: string;
 }
 
 export function themeColorFromId(id: ColorIdentifier) {

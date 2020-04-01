@@ -63,7 +63,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
     return this.getContents(_currentLanguageId)[key as keyof ILocalizationContents] || defaultMessage || defaultLabel || '';
   }
 
-  private getContents(languageId: string): ILocalizationContents {
+  private getContents(languageId: string = 'zh-CN'): ILocalizationContents {
     languageId = languageId.toLowerCase();
     if (!this.localizationMap.has(languageId)) {
       this.localizationMap.set(languageId, {})
@@ -110,7 +110,7 @@ function getLocalizationRegistry(scope: string): LocalizationRegistry {
  */
 export function replaceLocalizePlaceholder(label?: string, env?: string): string | undefined {
   if (label) {
-    return label.replace(/%(.*?)%/g, (_, p) => localize(p, undefined, env)) ;
+    return label.replace(/%(.*?)%/g, (_, p) => localize(p, undefined, env).replace(/\"/g,'\\"')) ;
   }
 }
 

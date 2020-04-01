@@ -39,6 +39,7 @@ import { ICtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
 import { ElectronCtxMenuRenderer, ElectronMenuBarService, IElectronMenuFactory, IElectronMenuBarService, ElectronMenuFactory } from '../menu/next/renderer/ctxmenu/electron';
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
 import { SlotRendererContribution } from '../react-providers';
+import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolbar-action.service';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -111,6 +112,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IMenuRegistry,
       useClass: MenuRegistryImpl,
+    },
+    {
+      token: IToolbarActionService,
+      useClass: ToolbarActionService,
     },
     {
       token: ICtxMenuRenderer,

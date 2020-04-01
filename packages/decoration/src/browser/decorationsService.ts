@@ -1,10 +1,10 @@
 import URI from 'vscode-uri';
 import { Injectable } from '@ali/common-di';
-import { Event, Emitter, CancellationTokenSource, localize, isThenable, IDisposable, toDisposable, dispose } from '@ali/ide-core-common';
+import { Disposable, Event, Emitter, CancellationTokenSource, localize, isThenable, IDisposable, toDisposable, dispose } from '@ali/ide-core-common';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { TernarySearchTree } from '@ali/ide-core-common/lib/map';
 import { LinkedList } from '@ali/ide-core-common/lib/linked-list';
-import { getLogger, isFalsyOrWhitespace, asArray } from '@ali/ide-core-common';
+import { getDebugLogger, isFalsyOrWhitespace, asArray } from '@ali/ide-core-common';
 
 import {
   IDecorationsService, IDecoration, IResourceDecorationChangeEvent,
@@ -160,6 +160,8 @@ function keyOfDecorationRule(data: IDecorationData | IDecorationData[]): string 
 function getDecorationRule(data: IDecorationData | IDecorationData[]): IDecoration | undefined {
   const list = asArray(data);
   if (!list.length) {
+    // 前置拦截(目前代码逻辑是不会进来的)
+    /* istanbul ignore next */
     return;
   }
 
@@ -175,8 +177,8 @@ function getDecorationRule(data: IDecorationData | IDecorationData[]): IDecorati
 }
 
 @Injectable()
-export class FileDecorationsService implements IDecorationsService {
-  private readonly logger = getLogger();
+export class FileDecorationsService extends Disposable implements IDecorationsService {
+  private readonly logger = getDebugLogger();
 
   private readonly _data = new LinkedList<DecorationProviderWrapper>();
   private readonly _onDidChangeDecorationsDelayed = new Emitter<URI | URI[]>();

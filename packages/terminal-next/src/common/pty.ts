@@ -1,7 +1,5 @@
 import { Terminal as XTerm } from 'xterm';
 import Uri from 'vscode-uri';
-import * as React from 'react';
-import { Event } from '@ali/ide-core-common';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalService = Symbol('ITerminalService');

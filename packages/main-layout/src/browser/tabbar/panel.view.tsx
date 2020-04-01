@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, localize, getIcon, CommandService } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ViewUiStateManager, IEventBus, ResizeEvent, ErrorBoundary } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
@@ -25,8 +25,14 @@ export const BaseTabPanelView: React.FC<{
       {tabbarService.visibleContainers.map((component) => {
         const containerId = component.options!.containerId;
         const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
-        return <div key={containerId} className={clsx(styles.panel_wrap)} style={currentContainerId === containerId ? panelVisible : panelInVisible}>
-          <PanelView titleMenu={titleMenu} side={side} component={component} />
+        return <div
+          key={containerId}
+          className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
+          data-viewlet-id={containerId}
+          style={currentContainerId === containerId ? panelVisible : panelInVisible}>
+            <ErrorBoundary>
+              <PanelView titleMenu={titleMenu} side={side} component={component} />
+            </ErrorBoundary>
         </div>;
       })}
     </div>
@@ -100,9 +106,33 @@ const NextPanelView: React.FC<{
   const contentRef = React.useRef<HTMLDivElement | null>();
   const titleComponent = component.options && component.options.titleComponent;
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const viewStateManager = useInjectable<ViewUiStateManager>(ViewUiStateManager);
+  const eventBus = useInjectable<IEventBus>(IEventBus);
+  // 注入自定义视图 or 通过views注入视图
+  const targetViewId = component.options!.component ? component.options!.containerId : component.views[0].id;
+  // TODO 底部支持多个视图的渲染
+  React.useEffect(() => {
+    let lastFrame: number | null;
+    const disposer = eventBus.on(ResizeEvent, (e) => {
+      if (e.payload.slotLocation === side) {
+        if (lastFrame) {
+          window.cancelAnimationFrame(lastFrame);
+        }
+        lastFrame = window.requestAnimationFrame(() => {
+          if (contentRef.current) {
+            viewStateManager.updateSize(targetViewId, contentRef.current.clientHeight, contentRef.current.clientWidth);
+          }
+        });
+      }
+    });
+    return () => {
+      disposer.dispose();
+    };
+  }, [contentRef]);
+  const viewState = viewStateManager.getState(targetViewId);
 
   return (
-    <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
+    <div className={styles.panel_container}>
       <div className={styles.panel_title_bar}>
         <h1>{component.options!.title}</h1>
         <div className={styles.title_component_container}>
@@ -113,8 +143,8 @@ const NextPanelView: React.FC<{
           <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>
       </div>
-      <div className={styles.panel_wrapper}>
-        <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={component.views[0].component!} />
+      <div ref={(ele) =>  contentRef.current = ele} className={styles.panel_wrapper}>
+        <ComponentRenderer initialProps={{viewState, ...component.options!.initialProps}} Component={component.options!.component ? component.options!.component : component.views[0].component!} />
       </div>
     </div>
   );

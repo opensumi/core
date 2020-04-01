@@ -1,4 +1,4 @@
-import { Event, Emitter } from '@ali/ide-core-common';
+import { Event, Emitter, ILogger } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { TabbarService } from './tabbar/tabbar.service';
 import { IMainLayoutService } from '../common';
@@ -8,6 +8,9 @@ export class TabBarHandler {
   @Autowired(IMainLayoutService)
   private layoutService: IMainLayoutService;
 
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   protected readonly onActivateEmitter = new Emitter<void>();
   readonly onActivate: Event<void> = this.onActivateEmitter.event;
 
@@ -16,7 +19,7 @@ export class TabBarHandler {
 
   // @deprecated
   protected readonly onCollapseEmitter = new Emitter<void>();
-  readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
+  protected readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
 
   public isVisible: boolean = false;
   public accordionService = this.layoutService.getAccordionService(this.containerId);
@@ -63,7 +66,7 @@ export class TabBarHandler {
   }
 
   setTitleComponent(Fc: React.FunctionComponent) {
-    console.warn(`method setTitleComponent of TabBarHandler is deprecated!`);
+    this.logger.warn(`method setTitleComponent of TabBarHandler is deprecated!`);
     const componentInfo = this.tabbarService.getContainer(this.containerId);
     if (componentInfo) {
       componentInfo.options!.titleComponent = Fc;
@@ -97,13 +100,14 @@ export class TabBarHandler {
     const targetView = this.accordionService.views.find((view) => view.id === viewId);
     if (targetView) {
       targetView.name = title;
+      this.accordionService.forceUpdate ++;
     } else {
-      console.error('没有找到目标视图，无法更新手风琴标题!');
+      this.logger.error('没有找到目标视图，无法更新手风琴标题!');
     }
   }
 
   refreshTitle() {
-    console.warn(`method refreshTitle of TabBarHandler is deprecated!`);
+    this.logger.warn(`method refreshTitle of TabBarHandler is deprecated!`);
   }
 
   updateTitle(label: string) {

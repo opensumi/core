@@ -7,7 +7,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkbenchEditorService, TrackedRangeStickiness } from '@ali/ide-editor';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { IDialogService } from '@ali/ide-overlay';
-import { AbstractContextMenuService, IMenu, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 import { replaceAll, replace } from './replace';
 import { ContentSearchClientService } from './search.service';
@@ -221,6 +221,15 @@ export class SearchTreeService {
   }
 
   set nodes(data: ISearchTreeItem[]) {
+    // 同步展开状态
+    data.forEach((newNode) => {
+      this._nodes.some((oldNode) => {
+        if (oldNode.id === newNode.id) {
+          newNode.expanded = oldNode.expanded;
+          return true;
+        }
+      });
+    });
     this._setNodes(data);
     this._nodes = data;
   }

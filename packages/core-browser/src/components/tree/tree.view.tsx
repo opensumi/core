@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { TreeNode, TreeViewActionConfig, SelectableTreeNode } from './';
+import { TreeNode, SelectableTreeNode } from './';
 import { TreeContainerNode, CommandActuator } from './tree-node.view';
-import { isOSX, Event, FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode, TreeViewAction } from '@ali/ide-core-common';
+import { isOSX, Event } from '@ali/ide-core-common';
+import { FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode, TreeViewAction } from '../../tree';
 import * as cls from 'classnames';
 import * as styles from './tree.module.less';
-import { ValidateMessage } from '../input';
+import { ValidateMessage } from '@ali/ide-components';
 
 export const TEMP_FILE_NAME = 'kt_template_file';
 export interface TreeProps extends React.PropsWithChildren<any> {
@@ -49,9 +50,21 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   readonly selected?: boolean;
 
   /**
+   * 纯普通节点节点与包含可折叠节点在样式上存在左侧下拉展开图标占位
+   * 需要通过判断处理掉折叠图标带来的边距影响，时上下Tree组件的基础边距达到对齐效果
+   * 当isComplex值为True时，默认添加5px边距，否则为0
+   */
+  readonly isComplex?: boolean;
+
+  /**
    * 选择事件回调
    */
   onSelect?: any;
+
+  /**
+   * 显示事件回调
+   */
+  onReveal?: any;
 
   /**
    * 折叠箭头点击回调
@@ -79,6 +92,10 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 节点中替换文本，需在node节点中存在hightlightRange时可用
    */
   replace?: string;
+  /**
+   * 筛选条件
+   */
+  filter?: string;
   /**
    * 节点高度
    */
@@ -127,7 +144,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
 export const defaultTreeProps: TreeProps = {
   nodes: [],
   leftPadding: 8,
-  defaultLeftPadding: 10,
+  defaultLeftPadding: 8,
 };
 
 export const TreeContainer = (
@@ -149,6 +166,7 @@ export const TreeContainer = (
     onChange,
     onBlur,
     onFocus,
+    onReveal,
     draggable,
     foldable = true,
     editable,
@@ -164,6 +182,7 @@ export const TreeContainer = (
     style,
     outline,
     validate,
+    isComplex,
   }: TreeProps,
 ) => {
   const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
@@ -172,10 +191,6 @@ export const TreeContainer = (
 
   const isEdited = editable && !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
     return !!node.isTemporary;
-  });
-
-  const isComplex = !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
-    return ExpandableTreeNode.is(node);
   });
 
   const innerContextMenuHandler = (node, event: React.MouseEvent) => {

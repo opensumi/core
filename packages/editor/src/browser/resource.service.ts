@@ -1,6 +1,6 @@
 import { ResourceService, IResource, IResourceProvider, ResourceNeedUpdateEvent, ResourceDidUpdateEvent, IResourceDecoration, ResourceDecorationChangeEvent } from '../common';
-import { Injectable, Autowired } from '@ali/common-di';
-import { URI, IDisposable, getLogger, WithEventBus, OnEvent } from '@ali/ide-core-browser';
+import { Injectable } from '@ali/common-di';
+import { URI, IDisposable, getDebugLogger, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { observable } from 'mobx';
 import { Schemas } from '@ali/ide-core-common';
 
@@ -50,7 +50,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   async doGetResource(uri: URI): Promise<IResource<any> | null> {
     const provider = this.providers.get(uri.scheme);
     if (!provider) {
-      getLogger().error('URI has no resource provider: ' + uri);
+      getDebugLogger().error('URI has no resource provider: ' + uri);
       return null; // no provider
     } else {
       const r = await provider.provideResource(uri);
@@ -90,7 +90,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   getResourceSubname(resource: IResource<any>, groupResources: IResource<any>[]): string | null {
     const provider = this.providers.get(resource.uri.scheme) || this.providers.get(Schemas.file);
     if (!provider) {
-      getLogger().error('URI has no resource provider: ' + resource.uri);
+      getDebugLogger().error('URI has no resource provider: ' + resource.uri);
       return null; // no provider
     } else if (!provider.provideResourceSubname) {
       return null;

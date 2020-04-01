@@ -5,12 +5,12 @@ import { foreground } from '../base';
 
 export const ktEditorBreadcrumbBorderDown = registerColor('kt.editorBreadcrumb.borderDown', {
   dark: '#2C3033',
-  light: TAB_BORDER,
+  light: '#F2F2F2',
   hc: TAB_BORDER,
 }, localize('kt.editorBreadcrumb.borderDown', 'editor Breadcrumb\'s bottom border color.'));
 
 export const ktDirtyDotForeground = registerColor('kt.dirtyDot.foreground', {
-  dark: '#BBC0C4',
-  light: foreground,
+  dark: '#868C91',
+  light: '#999999',
   hc: foreground,
 }, localize('kt.dirtyDot.foreground', 'color for dirty mark.'));

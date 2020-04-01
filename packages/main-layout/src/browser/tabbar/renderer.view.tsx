@@ -2,10 +2,9 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
-import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
 import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer, NextBottomTabbarRenderer } from './bar.view';
 import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer, NextBottomTabPanelRenderer } from './panel.view';
-import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TabbarServiceFactory, TabbarService } from './tabbar.service';
 import { PanelContext } from '@ali/ide-core-browser/lib/components';
 
@@ -13,9 +12,11 @@ import { PanelContext } from '@ali/ide-core-browser/lib/components';
 export const TabbarConfig = React.createContext<{
   side: string;
   direction: Layout.direction;
+  fullSize: number;
 }>({
   side: 'left',
   direction: 'left-to-right',
+  fullSize: 0,
 });
 
 export const TabRendererBase: React.FC<{
@@ -28,18 +29,37 @@ export const TabRendererBase: React.FC<{
   noAccordion?: boolean;
 }> = (({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView, noAccordion, ...restProps }) => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side, noAccordion);
+  const eventBus = useInjectable<IEventBus>(IEventBus);
   const resizeHandle = React.useContext(PanelContext);
-  React.useEffect(() => {
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const [fullSize, setFullSize] = React.useState(0);
+  React.useLayoutEffect(() => {
+    components.forEach((component) => {
+      tabbarService.registerContainer(component.options!.containerId, component);
+    });
     tabbarService.registerResizeHandle(resizeHandle);
     tabbarService.updatePanelVisibility(components.length > 0);
   }, []);
-  components.forEach((component) => {
-    tabbarService.registerContainer(component.options!.containerId, component);
-  });
+  React.useEffect(() => {
+    if (rootRef.current) {
+      setFullSize(rootRef.current[Layout.getDomSizeProperty(direction)]);
+      let lastFrame: number | null;
+      eventBus.on(ResizeEvent, (e) => {
+        if (e.payload.slotLocation === side) {
+          if (lastFrame) {
+            window.cancelAnimationFrame(lastFrame);
+          }
+          lastFrame = window.requestAnimationFrame(() => {
+            setFullSize(rootRef.current![Layout.getDomSizeProperty(direction)]);
+          });
+        }
+      });
+    }
+  }, []);
 
   return (
-    <div className={clsx( styles.tab_container, className )} style={{flexDirection: Layout.getFlexDirection(direction)}}>
-      <TabbarConfig.Provider value={{side, direction}}>
+    <div ref={rootRef} className={clsx( styles.tab_container, className )} style={{flexDirection: Layout.getFlexDirection(direction)}}>
+      <TabbarConfig.Provider value={{side, direction, fullSize}}>
         <TabbarView />
         <TabpanelView />
       </TabbarConfig.Provider>

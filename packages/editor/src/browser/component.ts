@@ -1,11 +1,14 @@
-import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode } from './types';
-import { IDisposable, Schemas } from '@ali/ide-core-common';
+import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode, RegisterEditorComponentResolverEvent } from './types';
+import { IDisposable, IEventBus } from '@ali/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import * as ReactDOM from 'react-dom';
 
 @Injectable()
 export class EditorComponentRegistryImpl implements EditorComponentRegistry {
+
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
 
   private components: Map<string, IEditorComponent> = new Map();
 
@@ -33,6 +36,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
 
   public registerEditorComponentResolver<T>(scheme: string, resolver: IEditorComponentResolver<any>): IDisposable {
     this.getResolvers(scheme).unshift(resolver); // 后来的resolver先处理
+    this.eventBus.fire(new RegisterEditorComponentResolverEvent(scheme));
     return {
       dispose: () => {
         const index = this.getResolvers(scheme).indexOf(resolver);

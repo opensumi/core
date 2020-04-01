@@ -1,4 +1,4 @@
-import { Event, IJSONSchema, IContextKeyService, IDisposable, ISelection } from '..';
+import { Event, IJSONSchema, IContextKeyService, IDisposable } from '..';
 
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',

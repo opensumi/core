@@ -42,13 +42,14 @@ export class DiskFileSystemProvider implements FileSystemProvider {
   private watcherServer: NsfwFileSystemWatcherServer;
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
 
-  constructor() {
-    this.initWatcher();
+  constructor(options?: ConstructorParameters<typeof NsfwFileSystemWatcherServer>[0]) {
+    this.initWatcher(options);
   }
 
-  protected initWatcher() {
+  protected initWatcher(options: ConstructorParameters<typeof NsfwFileSystemWatcherServer>[0] = {}) {
     this.watcherServer = new NsfwFileSystemWatcherServer({
       verbose: true,
+      ...options,
     });
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {

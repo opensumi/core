@@ -1,18 +1,19 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { uuid, CommandService, OnEvent, WithEventBus, Emitter, Event, ILogger } from '@ali/ide-core-common';
-import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation, IContextKeyService, IContextKey, PreferenceService, Delayer } from '@ali/ide-core-browser';
+import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation, IContextKeyService, PreferenceService, Delayer } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IThemeService } from '@ali/ide-theme/lib/common';
 import { TerminalClient } from './terminal.client';
 import { WidgetGroup, Widget } from './component/resize.control';
-import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient, terminalFocusContextKey } from '../common';
+import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
 import { ITerminalTheme } from './terminal.theme';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { TabManager } from './component/tab/manager';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
+import { TerminalContextKey } from './terminal-contextkey';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
@@ -47,35 +48,37 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   private termTheme: ITerminalTheme;
 
   @Autowired(IMainLayoutService)
-  layoutService: IMainLayoutService;
+  protected readonly layoutService: IMainLayoutService;
 
   @Autowired(PreferenceService)
-  preference: PreferenceService;
+  protected readonly preference: PreferenceService;
 
   @Autowired(ILogger)
-  logger: ILogger;
+  protected readonly logger: ILogger;
 
   @Autowired(IThemeService)
-  themeService: IThemeService;
+  protected readonly themeService: IThemeService;
 
   @Autowired(WorkbenchEditorService)
-  editorService: WorkbenchEditorService;
+  protected readonly editorService: WorkbenchEditorService;
 
   @Autowired(IFileServiceClient)
-  fileService: IFileServiceClient;
+  protected readonly fileService: IFileServiceClient;
 
   @Autowired(IWorkspaceService)
-  workspace: IWorkspaceService;
+  protected readonly workspace: IWorkspaceService;
 
   @Autowired()
-  tabManager: TabManager;
+  protected readonly tabManager: TabManager;
+
+  @Autowired(TerminalContextKey)
+  protected readonly terminalContextKey: TerminalContextKey;
 
   tabbarHandler: TabBarHandler | undefined;
 
   private _clientsMap = new Map<string, TerminalClient>();
   private _focusedId: string;
   private _focus: boolean;
-  private _focusKey: IContextKey<boolean>;
 
   private _onDidOpenTerminal = new Emitter<TerminalInfo>();
   private _onDidCloseTerminal = new Emitter<string>();
@@ -216,7 +219,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   firstInitialize() {
     this.tabbarHandler = this.layoutService.getTabbarHandler('terminal')!;
     this.themeBackground = this.termTheme.terminalTheme.background || '';
-    this._focusKey = this.contextKeyService.createKey(terminalFocusContextKey, this._focus);
+    // 设置contextKey
+    this.terminalContextKey.isTerminalFocused.set(this._focus);
+    this.terminalContextKey.isTerminalViewInitialized.set(true);
 
     if (this._isActivated()) {
       if (this._checkIfNeedInitialize()) {
@@ -267,6 +272,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
             this.layoutTerminalClient(widget.id);
           });
         }
+      }));
+      this.addDispose(this.tabbarHandler.onInActivate(() => {
+        this.editorService.currentEditor && this.editorService.currentEditor.monacoEditor.focus();
       }));
     }
 
@@ -335,6 +343,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.currentGroup.length > 0 &&
       this.currentGroup.last) {
       this.focusWidget(this.currentGroup.last.id);
+    } else {
+      this._focusedId = '';
     }
   }
 
@@ -576,9 +586,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           client.hide();
           await client.show();
           client.layout();
+          client.focus();
          });
       } else {
         client.layout();
+        client.focus();
       }
     }
   }
@@ -644,6 +656,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.createGroup(true);
     const widgetId = this.addWidget(undefined, options);
     const client = this._clientsMap.get(widgetId);
+    this.tabManager.create(true, true);
 
     if (!client) {
       throw new Error('session not find');
@@ -699,6 +712,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         client.focus();
       }
     }
+
+    if (this.tabbarHandler) {
+      this.tabbarHandler.activate();
+    }
   }
 
   isTermActive(clientId: string) {
@@ -717,7 +734,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   sendText(id: string, text: string, addNewLine = true) {
-    this.service.sendText(id, `${text}${addNewLine ? '\r\n' : ''}`);
+    this.service.sendText(id, `${text}${addNewLine ? '\r' : ''}`);
   }
 
   /** end */
@@ -770,12 +787,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   focus() {
     this._focus = true;
-    this._focusKey.set(this._focus);
+    this.terminalContextKey.isTerminalFocused.set(this._focus);
   }
 
   blur() {
     this._focus = false;
-    this._focusKey.set(this._focus);
+    this.terminalContextKey.isTerminalFocused.set(this._focus);
   }
 
   /** end */

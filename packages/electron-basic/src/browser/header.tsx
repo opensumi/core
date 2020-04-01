@@ -1,15 +1,16 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import * as styles from './header.module.less';
-import { useInjectable, IEventBus, MaybeNull, isWindows, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv } from '@ali/ide-core-browser';
+import { useInjectable, MaybeNull, isWindows, ComponentRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv, isOSX } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IWindowService } from '@ali/ide-window';
 import { getIcon } from '@ali/ide-core-browser';
 import { observable } from 'mobx';
+import { basename } from '@ali/ide-core-common/lib/utils/paths';
 
 const state = observable({
-  maximized: (global as any).electronEnv.isMaximized(),
+  maximized: (global as any).electronEnv && (global as any).electronEnv.isMaximized(),
 });
 
 export const ElectronHeaderBar = observer(() => {
@@ -18,6 +19,25 @@ export const ElectronHeaderBar = observer(() => {
   const windowService: IWindowService = useInjectable(IWindowService);
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
 
+  const [isFullScreen, setFullScreen] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    uiService.isFullScreen(electronEnv.currentWindowId).then((res) => {
+      setFullScreen(res);
+    });
+    const listener = uiService.on('fullScreenStatusChange', (windowId, res) => {
+      if (windowId === electronEnv.currentWindowId) {
+        setFullScreen(res);
+      }
+    });
+    return () => {
+      listener.dispose();
+    };
+  }, []);
+  // 在 Mac 下，如果是全屏状态，隐藏顶部标题栏
+  if (isOSX && isFullScreen) {
+    return <div><TitleInfo hidden={true}/></div>;
+  }
   return <div className={styles.header} onDoubleClick={() => {
     uiService.maximize((global as any).currentWindowId);
     state.maximized = (global as any).electronEnv.isMaximized();
@@ -51,10 +71,10 @@ export const ElectronHeaderBar = observer(() => {
 
 declare const ResizeObserver: any;
 
-export const TitleInfo = observer(() => {
+export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
 
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
-  const [currentResource, setCurrentResource] = React.useState<MaybeNull<IResource>>(undefined);
+  const [currentResource, setCurrentResource] = React.useState<MaybeNull<IResource>>(editorService.currentResource);
   const ref = React.useRef<HTMLDivElement>();
   const spanRef = React.useRef<HTMLSpanElement>();
   const appConfig: AppConfig = useInjectable(AppConfig);
@@ -94,5 +114,18 @@ export const TitleInfo = observer(() => {
     }
   }
 
-  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{ currentResource ? currentResource.name + ' -- ' : null} {replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE'}</span></div>;
+  const dirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : undefined;
+
+  const title = (currentResource ? currentResource.name + ' — ' : '') + (dirname ? dirname + ' — '  : '') + (replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE');
+
+  // 同时更新 Html Title
+  React.useEffect(() => {
+    document.title = title;
+  }, [title]);
+
+  if (hidden) {
+    return null;
+  }
+
+  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{title}</span></div>;
 });

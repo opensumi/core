@@ -1,13 +1,14 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeViewAction, isTreeViewActionComponent, isUndefined, isString } from '@ali/ide-core-common';
+import { isUndefined, isString } from '@ali/ide-core-common';
+import { Badge } from '@ali/ide-components';
+
+import {  TreeViewAction, isTreeViewActionComponent } from '../../tree';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../style/icon/icon';
-import Icon from '../icon';
-import Badge from '../badge';
-import { ValidateInput, InputSelection } from '@ali/ide-components';
+import { ValidateInput, InputSelection, Icon } from '@ali/ide-components';
 import { KeyCode, Key } from '../../keyboard';
 import { Loading } from '../loading';
 
@@ -57,12 +58,12 @@ const renderWithRangeAndReplace = (template: any, ranges?: TreeNodeHighlightRang
       if (rangeLen > 0) {
         const content: any = [];
         for (let i = 0; i < rangeLen; i ++) {
-          content.push(<span>
+          content.push(<span key={`${i}-highlight-start`}>
             { i === 0 ? template.slice(0, ranges[i].start) : template.slice(ranges[i - 1].end, ranges[i].start)}
-            <span className={cls(styles.search_match, replace && styles.replace)}>
+            <span className={cls(styles.search_match, replace && styles.replace)} key={`${i}-highlight-content`}>
               {template.slice(ranges[i].start, ranges[i].end)}
             </span>
-            <span className={replace && styles.search_replace}>
+            <span className={replace && styles.search_replace} key={`${i}--highlight-end`}>
               {replace}
             </span>
             { i + 1 < rangeLen ? template.slice(ranges[i + 1].start) : template.slice(ranges[i].end) }
@@ -94,7 +95,7 @@ const renderDescription = (node: any, replace: string) => {
   if (!isString(node.description) && !isUndefined(node.description)) {
     const Template = node.description as React.JSXElementConstructor<any>;
     return <Template />;
-  } else {
+  } else if (!isUndefined(node.description)) {
     return <div className={cls(styles.treenode_segment_grow, styles.treenode_description, node.descriptionClass)}>
       {renderWithRangeAndReplace(node.description, node.highLightRanges && node.highLightRanges.description, replace)}
     </div>;
@@ -264,11 +265,14 @@ export const TreeContainerNode = (
       const clickHandler = (event: React.MouseEvent) => {
         event.stopPropagation();
         event.preventDefault();
-        commandActuator(action.command, action.paramsKey ? node[action.paramsKey] : node.uri);
+        const params = action.paramsKey
+          ? (typeof action.paramsKey === 'string' ? node[action.paramsKey] : action.paramsKey(node))
+          : node.id;
+        commandActuator(action.command, params);
       };
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
       return <Icon
-        key={`${node.id}-${action.paramsKey ? node[action.paramsKey] : node.uri}-${action.command}`}
+        key={`${node.id}-${typeof action.paramsKey === 'string' ? node[action.paramsKey] : node.id}-${action.command}`}
         iconClass={cls(styles.action_icon, icon)}
         title={action.title}
         onClick={clickHandler} />;
@@ -335,7 +339,7 @@ export const TreeContainerNode = (
 
   const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { }) => {
     const isComponent = !isString(node.name);
-    const [value, setValue] = React.useState<string>(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : !isComponent && node.name === TEMP_FILE_NAME ? '' : isComponent ? '' : node.name as string);
+    const [value, setValue] = React.useState<string>(!isComponent && node.name === TEMP_FILE_NAME ? '' : isComponent ? '' : node.name as string);
 
     const changeHandler = (event) => {
       const newValue = event.target.value;
@@ -495,7 +499,7 @@ export const TreeContainerNode = (
         className={cls(
           styles.treenode,
           {
-            [styles.alwaysShowActions]: alwaysShowActions,
+            [styles.alwaysShowActions]: alwaysShowActions || node.alwaysShowActions,
             [styles.mod_focused]: SelectableTreeNode.hasFocus(node),
             [styles.mod_selected]: !SelectableTreeNode.hasFocus(node) && !!SelectableTreeNode.isSelected(node),
           },

@@ -18,7 +18,6 @@ import {
   EXTENSION_ENABLE,
   IExtensionHostService,
   IExtensionWorkerHost,
-  /*Extension*/
 } from '../common';
 import {
   MainThreadAPIIdentifier,
@@ -26,12 +25,15 @@ import {
   ExtHostAPIIdentifier,
   IMainThreadCommands,
   isLanguagePackExtension,
+  ViewColumn,
+  TextDocumentShowOptions,
 } from '../common/vscode';
 
 import {
   AppConfig,
   isElectronEnv,
   Emitter,
+  Event,
   IContextKeyService,
   CommandService,
   CommandRegistry,
@@ -46,8 +48,8 @@ import {
   getPreferenceLanguageId,
   isElectronRenderer,
   IDisposable,
-  PreferenceService,
   CorePreferences,
+  ExtensionActivateEvent,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { Extension } from './extension';
@@ -55,8 +57,8 @@ import { createApiFactory as createVSCodeAPIFactory } from './vscode/api/main.th
 import { createKaitianApiFactory } from './kaitian/main.thread.api.impl';
 import { createExtensionLogFactory } from './extension-log';
 
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ActivationEventService } from '@ali/ide-activation-event';
+import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
+import { IActivationEventService } from './types';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
@@ -77,52 +79,20 @@ import { UriComponents } from '../common/vscode/ext-types';
 import { IThemeService, IIconService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
-import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
 import { createBrowserApi } from './kaitian-browser';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
-import { ExtensionCandiDate, localize } from '@ali/ide-core-common';
+import { ExtensionCandiDate, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { IKaitianBrowserContributions } from './kaitian-browser/types';
 import { KaitianBrowserContributionRunner } from './kaitian-browser/contribution';
+import { viewColumnToResourceOpenOptions } from '../common/vscode/converter';
+import { getShadowRoot } from './shadowRoot';
+import { createProxiedWindow, createProxiedDocument } from './proxies';
+import { getAMDDefine, getMockAmdLoader, getAMDRequire, getWorkerBootstrapUrl } from './loader';
 
-const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 const LOAD_FAILED_CODE = 'load';
 
-function getAMDRequire() {
-  if (isElectronEnv()) {
-    return (global as any).amdLoader.require;
-  } else {
-    (global as any).amdLoader.require.config({
-      onError: (err) => {
-        throw err;
-      },
-    });
-    return (global as any).amdLoader.require;
-  }
-}
-
-function getWorkerBootstrapUrl(scriptPath: string, label: string): string {
-  if (/^(http:)|(https:)|(file:)/.test(scriptPath)) {
-    const currentUrl = String(window.location);
-    const currentOrigin = currentUrl.substr(0, currentUrl.length - window.location.hash.length - window.location.search.length - window.location.pathname.length);
-    if (scriptPath.substring(0, currentOrigin.length) !== currentOrigin) {
-      const js = `/*${label}*/importScripts('${scriptPath}');/*${label}*/`;
-      const url = `data:text/javascript;charset=utf-8,${encodeURIComponent(js)}`;
-      return url;
-    }
-  }
-  return scriptPath + '#' + label;
-}
-
-function getAMDDefine(): any {
-  if (isElectronEnv()) {
-    return (global as any).amdLoader.require.define;
-  } else {
-    return (global as any).amdLoader.define;
-  }
-}
-
 @Injectable()
-export class ExtensionServiceImpl implements ExtensionService {
+export class ExtensionServiceImpl extends WithEventBus implements ExtensionService {
 
   private extensionScanDir: string[] = [];
   private extensionCandidate: string[] = [];
@@ -147,8 +117,8 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(CommandRegistry)
   private commandRegistry: CommandRegistry;
 
-  @Autowired()
-  private activationEventService: ActivationEventService;
+  @Autowired(IActivationEventService)
+  private activationEventService: IActivationEventService;
 
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
@@ -183,16 +153,8 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
 
-  @Autowired(PreferenceService)
-  private readonly preferenceService: PreferenceService;
-
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
-
-  // @Autowired()
-  // viewRegistry: ViewRegistry;
-  @Autowired(IToolBarViewService)
-  private toolBarViewService: IToolBarViewService;
 
   @Autowired()
   editorComponentRegistry: EditorComponentRegistry;
@@ -215,6 +177,14 @@ export class ExtensionServiceImpl implements ExtensionService {
   private kaitianAPIFactoryDisposer: () => void;
 
   private workerProtocol: RPCProtocol | undefined;
+
+  private _onDidExtensionActivated: Emitter<IExtensionProps> = new Emitter<IExtensionProps>();
+  public onDidExtensionActivated: Event<IExtensionProps> = this._onDidExtensionActivated.event;
+
+  @OnEvent(ExtensionActivateEvent)
+  onActivateExtension(e) {
+    this.activationEventService.fireEvent(e.payload.topic, e.payload.data);
+  }
 
   public async activate(): Promise<void> {
     this.contextKeyService = this.injector.get(IContextKeyService);
@@ -250,7 +220,9 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     await this.initBrowserDependency();
 
-    await this.startProcess(true);
+    if (!this.appConfig.noExtHost) {
+      await this.startProcess(true);
+    }
 
     // this.ready.resolve();
 
@@ -275,6 +247,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         this,
         await this.checkExtensionEnable(extensionMetadata),
         this.appConfig.extensionDir ? extensionMetadata.realPath.startsWith(this.appConfig.extensionDir) : false,
+        this._onDidExtensionActivated,
       ]);
 
       this.extensionMap.set(path, extension);
@@ -490,6 +463,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
         isBuiltin,
+        this._onDidExtensionActivated,
       ]);
 
       this.extensionMap.set(extensionMetaData.path, extension);
@@ -682,8 +656,26 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (extendConfig.browser && extendConfig.browser.main) {
       const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
       try {
-        const browserExported = await this.loadBrowser(browserScriptURI.toString());
-        this.registerBrowserComponent(browserExported, this.extensionMap.get(extension.path)!);
+        const rawExtension = this.extensionMap.get(extension.path);
+        if (this.appConfig.useExperimentalShadowDom) {
+          const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader(browserScriptURI.toString());
+          this.registerBrowserComponent(
+            Object.keys(moduleExports).reduce((pre, cur) => {
+              pre[cur] = {
+                component: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
+                  ...other,
+                  id,
+                  panel: (props) => getShadowRoot(panel, extension, props, id, proxiedHead),
+                })),
+              };
+              return pre;
+            }, {}),
+            rawExtension!,
+          );
+        } else {
+          const browserExported = await this.loadBrowser(browserScriptURI.toString());
+          this.registerBrowserComponent(browserExported, this.extensionMap.get(extension.path)!);
+        }
       } catch (err) {
         if (err.errorCode === LOAD_FAILED_CODE) {
           this.logger.error(`[Extension-Host] failed to load ${extension.name} - browser module, path: \n\n ${err.moduleId}`);
@@ -692,7 +684,6 @@ export class ExtensionServiceImpl implements ExtensionService {
         }
       }
     }
-
   }
 
   /**
@@ -700,6 +691,7 @@ export class ExtensionServiceImpl implements ExtensionService {
    * @param extension
    * @param componentId
    */
+  // tslint:disable-next-line:no-unused-variable
   private createExtensionExtendProtocol(extension: IExtension, componentId: string) {
     const { id: extensionId } = extension;
     const rpcProtocol = this.protocol;
@@ -836,6 +828,23 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   }
 
+  private async loadBrowserScriptByMockLoader(browerPath: string): Promise<{ moduleExports: any, proxiedHead: HTMLHeadElement }> {
+    const pendingFetch = await fetch(decodeURIComponent(browerPath));
+    const { _module, _exports, _require } = getMockAmdLoader(this.injector);
+    const _stylesCollection = [];
+    const proxiedHead = document.createElement('head');
+    const proxiedDocument = createProxiedDocument(proxiedHead);
+    const proxiedWindow = createProxiedWindow(proxiedDocument, proxiedHead);
+
+    const initFn = new Function('module', 'exports', 'require', 'styles', 'document', 'window', await pendingFetch.text());
+
+    initFn(_module, _exports, _require, _stylesCollection, proxiedDocument, proxiedWindow);
+    return {
+      moduleExports: _module.exports.default,
+      proxiedHead,
+    };
+  }
+
   private async loadBrowser(browserPath: string): Promise<any> {
     return await new Promise((resolve, reject) => {
       this.logger.verbose('extend browser load', browserPath);
@@ -895,22 +904,40 @@ export class ExtensionServiceImpl implements ExtensionService {
     commandRegistry.registerCommand(VSCodeCommands.CLOSE_OTHER_EDITORS);
     commandRegistry.registerCommand(VSCodeCommands.REVERT_FILES);
     commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_FOCUS_FILES_EXPLORER);
+    commandRegistry.registerCommand(VSCodeCommands.WORKBENCH_FOCUS_ACTIVE_EDITOR_GROUP);
 
     commandRegistry.registerCommand(VSCodeCommands.OPEN, {
-      execute: (uriComponents: UriComponents) => {
+      execute: (uriComponents: UriComponents, columnOrOptions?: ViewColumn | TextDocumentShowOptions, label?: string) => {
         const uri = URI.from(uriComponents);
-        return workbenchEditorService.open(uri);
+        const options: IResourceOpenOptions = {};
+        if (columnOrOptions) {
+          if (typeof columnOrOptions === 'number') {
+            options.groupIndex = columnOrOptions;
+          } else {
+            options.groupIndex = columnOrOptions.viewColumn;
+            options.preserveFocus = columnOrOptions.preserveFocus;
+            options.range = columnOrOptions.selection;
+            options.preview = columnOrOptions.preview;
+          }
+        }
+        if (label) {
+          options.label = label;
+        }
+        return workbenchEditorService.open(uri, options);
       },
     });
 
     commandRegistry.registerCommand(VSCodeCommands.DIFF, {
-      execute: (left: UriComponents, right: UriComponents, title: string, options: any) => {
+      execute: (left: UriComponents, right: UriComponents, title: string, options: any = {}) => {
+        const openOptions: IResourceOpenOptions = {
+          ...viewColumnToResourceOpenOptions(options.viewColumn),
+          revealFirstDiff: true,
+        };
         return commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
           original: URI.from(left),
           modified: URI.from(right),
           name: title,
-          options,
-        });
+        }, openOptions);
       },
     });
   }

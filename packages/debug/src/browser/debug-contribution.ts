@@ -1,10 +1,10 @@
-import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, IContextKeyService } from '@ali/ide-core-browser';
-import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry, PreferenceSchema, PreferenceContribution, CommandService } from '@ali/ide-core-browser';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
 import { DebugStackFrameView } from './view/debug-stack-frames.view';
 import { DebugVariableView } from './view/debug-variable.view';
 import { DebubgConfigurationView } from './view/debug-configuration.view';
-import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
@@ -22,11 +22,10 @@ import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { IDebugSessionManager, launchSchemaUri } from '../common';
-import { DebugConsoleService } from './view/debug-console.service';
-import { IStatusBarService } from '@ali/ide-status-bar';
+import { DebugConsoleService, DebugConsoleDocumentProvider } from './view/debug-console.service';
 import { DebugToolbarService } from './view/debug-toolbar.service';
 import { NextMenuContribution, MenuId, IMenuRegistry } from '@ali/ide-core-browser/lib/menu/next';
-import { BrowserEditorContribution, IEditorFeatureRegistry } from '@ali/ide-editor/lib/browser';
+import { BrowserEditorContribution, IEditorFeatureRegistry, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
 import { EditorHoverContribution } from './editor/editor-hover-contribution';
 
 export namespace DEBUG_COMMANDS {
@@ -48,7 +47,7 @@ export namespace DEBUG_COMMANDS {
   };
   export const TOGGLE_BREAKPOINTS = {
     id: 'debug.breakpoints.toggle',
-    iconClass: getIcon('toggle-breakpoints'),
+    iconClass: getIcon('deactivate-breakpoints'),
   };
   export const START = {
     id: 'debug.start',
@@ -161,14 +160,17 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
   @Autowired(IDebugSessionManager)
   protected readonly sessionManager: DebugSessionManager;
 
-  @Autowired(IStatusBarService)
-  protected readonly statusBar: IStatusBarService;
+  @Autowired(CommandService)
+  protected readonly commandService: CommandService;
 
   @Autowired(DebugToolbarService)
   protected readonly debugToolbarService: DebugToolbarService;
 
   @Autowired()
   private editorHoverContribution: EditorHoverContribution;
+
+  @Autowired()
+  private debugConsoleDocProvider: DebugConsoleDocumentProvider;
 
   private firstSessionStart: boolean = true;
 
@@ -225,8 +227,8 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
         this.debugModel.init(session);
       }
       this.firstSessionStart = false;
-      this.statusBar.setBackgroundColor('var(--statusBar-debuggingBackground)');
-      this.statusBar.setColor('var(--statusBar-debuggingForeground)');
+      this.commandService.tryExecuteCommand('statusbar.changeBackgroundColor', 'var(--statusBar-debuggingBackground)');
+      this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-debuggingForeground)');
     });
     this.sessionManager.onDidStopDebugSession((session) => {
       const { openDebug } = session.configuration;
@@ -236,8 +238,8 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
     });
     this.sessionManager.onDidDestroyDebugSession((session) => {
       if (this.sessionManager.sessions.length === 0) {
-        this.statusBar.setBackgroundColor('var(--statusBar-background)');
-        this.statusBar.setColor('var(--statusBar-foreground)');
+        this.commandService.tryExecuteCommand('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
+        this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-foreground)');
       }
     });
     this.debugEditorController.init();
@@ -617,5 +619,9 @@ export class DebugContribution implements ComponentContribution, TabBarToolbarCo
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
     registry.registerEditorFeatureContribution(this.editorHoverContribution);
+  }
+
+  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
+    registry.registerEditorDocumentModelContentProvider(this.debugConsoleDocProvider);
   }
 }

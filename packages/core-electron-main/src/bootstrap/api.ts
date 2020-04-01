@@ -1,5 +1,5 @@
 import { ElectronMainApiRegistry, IElectronMainApiProvider, IElectronMainApp } from './types';
-import { IDisposable, Disposable, getLogger } from '@ali/ide-core-common';
+import { IDisposable, Disposable, getDebugLogger } from '@ali/ide-core-common';
 import { ipcMain } from 'electron';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
@@ -21,7 +21,7 @@ export class ElectronMainApiRegistryImpl implements ElectronMainApiRegistry {
       this.apis.get(name)!.dispose();
     }
     const proxy = this.injector.get(ElectronMainApiProxy, [name, api]);
-    getLogger().log('注册Electron Main Api: ' + name);
+    getDebugLogger().log('注册Electron Main Api: ' + name);
     this.apis.set(name, proxy);
 
     return {
@@ -53,7 +53,7 @@ export class ElectronMainApiProxy extends Disposable {
         const result = await target[method].apply(target, args);
         event.sender.send('response:' + name, requestId, undefined, result);
       } catch (e) {
-        getLogger().error(e);
+        getDebugLogger().error(e);
         const err = {
           message: e.message || e.toString(),
           stack: e.stack,

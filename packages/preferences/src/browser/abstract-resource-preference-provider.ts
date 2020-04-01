@@ -56,7 +56,8 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     if (!resourceUri) {
       return this.getUri();
     }
-    return this.loaded && this.contains(resourceUri) ? this.getUri() : undefined;
+    // 获取configUri不需要等待配置读取完应该就可以读取
+    return this.contains(resourceUri) ? this.getUri() : undefined;
   }
 
   contains(resourceUri: string | undefined): boolean {
@@ -136,7 +137,6 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     if (typeof jsonData !== 'object') {
       return preferences;
     }
-    const uri = this.getUri();
     // tslint:disable-next-line:forin
     for (const preferenceName in jsonData) {
       const preferenceValue = jsonData[preferenceName];

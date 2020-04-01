@@ -1,17 +1,12 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, Position, Range, Location, ThemeColor } from '../../../common/vscode/ext-types';
-import * as extHostTypeConverter from '../../../common/vscode/converter';
-import { MainThreadAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar, Handler, ArgumentProcessor } from '../../../common/vscode';
-import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
-import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
-import { ILogger, getLogger, revive } from '@ali/ide-core-common';
+import { Disposable, ThemeColor } from '../../../common/vscode/ext-types';
+import { MainThreadAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar, ArgumentProcessor } from '../../../common/vscode';
 import { v4 } from 'uuid';
 import * as types from '../../../common/vscode/ext-types';
 
 export class ExtHostStatusBar implements IExtHostStatusBar {
   protected readonly proxy: IMainThreadStatusBar;
   protected readonly rpcProtocol: IRPCProtocol;
-  protected readonly logger: ILogger = getLogger();
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;

@@ -1,14 +1,13 @@
-import { observable, computed } from 'mobx';
+import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import { OnEvent, EventBusImpl, IEventBus } from '@ali/ide-core-common';
-import { getSlotLocation, AppConfig, ResizeEvent } from '@ali/ide-core-browser';
+import { OnEvent, WithEventBus } from '@ali/ide-core-common';
+import { AppConfig } from '@ali/ide-core-browser';
+
 import { OutputChannel } from './output.channel';
 import { ContentChangeEvent } from '../common';
-const pkgName = require('../../package.json').name;
 
 @Injectable()
-export class OutputService extends Themable {
+export class OutputService extends WithEventBus {
 
   @Autowired(AppConfig)
   private config: AppConfig;
@@ -26,29 +25,37 @@ export class OutputService extends Themable {
     super();
   }
 
+  @observable
+  private _viewHeight: string;
+
+  set viewHeight(value: string) {
+    this._viewHeight = value;
+  }
+
+  get viewHeight() {
+    return this._viewHeight;
+  }
+
   getChannel(name: string): OutputChannel {
-      const existing = this.channels.get(name);
-      if (existing) {
-          return existing;
-      }
-      const channel = this.config.injector.get(OutputChannel, [name]);
-      this.channels.set(name, channel);
-      // this.channelAddedEmitter.fire(channel);
-      return channel;
+    const existing = this.channels.get(name);
+    if (existing) {
+      return existing;
+    }
+    const channel = this.config.injector.get(OutputChannel, [name]);
+    this.channels.set(name, channel);
+    return channel;
   }
 
   deleteChannel(name: string): void {
-      this.channels.delete(name);
-      // this.channelDeleteEmitter.fire({channelName: name});
+    this.channels.delete(name);
   }
 
   getChannels(): OutputChannel[] {
-      return Array.from(this.channels.values());
+    return Array.from(this.channels.values());
   }
 
   @OnEvent(ContentChangeEvent)
-  OnContentChange(e: ContentChangeEvent) {
+  OnContentChange() {
     this.keys = '' + Math.random();
   }
-
 }

@@ -1,5 +1,5 @@
 import { ElectronMainContribution } from '../types';
-import { Domain, URI, getLogger } from '@ali/ide-core-common';
+import { Domain, URI, getDebugLogger } from '@ali/ide-core-common';
 import { protocol } from 'electron';
 import { readFile } from 'fs-extra';
 
@@ -17,7 +17,7 @@ export class ProtocolElectronMainContribution implements ElectronMainContributio
         const data = await readFile(fsPath);
         callback({ mimeType: getWebviewContentMimeType(uri), data});
       } catch (e) {
-        getLogger().error(e);
+        getDebugLogger().error(e);
         callback({ error: -2});
       }
     });

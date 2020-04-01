@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
-import { Disposable, ConstructorOf, getLogger, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize } from '@ali/ide-core-browser';
+import { Disposable, ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize, ILogger } from '@ali/ide-core-browser';
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../../common';
 
 import { CommandsSchema, CommandsContributionPoint } from './commands';
@@ -18,6 +18,7 @@ import { ViewsSchema, ViewsContributionPoint } from './views';
 import { DebuggersContributionScheme, DebuggersContributionPoint } from './debuggers';
 import { BreakpointsContributionScheme, BreakpointsContributionPoint } from './breakpoints';
 import { IconThemesContributionPoint } from './icon';
+import { ActionContributionSchema, ActionsContributionPoint } from './actions';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9\-A-Z]*)\\.([a-z0-9A-Z][a-z0-9\-A-Z]*)$';
 
@@ -261,6 +262,7 @@ export interface ContributesSchema {
   views: ViewsSchema;
   debuggers: DebuggersContributionScheme;
   breakpoints: BreakpointsContributionScheme;
+  actions: ActionContributionSchema;
 }
 
 const CONTRIBUTES_SYMBOL = Symbol();
@@ -287,6 +289,7 @@ export class VSCodeContributeRunner extends Disposable {
     ViewsContributionPoint,
     BreakpointsContributionPoint,
     DebuggersContributionPoint,
+    ActionsContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)
@@ -294,6 +297,9 @@ export class VSCodeContributeRunner extends Disposable {
 
   @Autowired(ISchemaRegistry)
   schemaRegistry: ISchemaRegistry;
+
+  @Autowired(ILogger)
+  private logger: ILogger;
 
   constructor(@Optional(CONTRIBUTES_SYMBOL) private extension: IExtensionMetaData) {
     super();
@@ -324,7 +330,7 @@ export class VSCodeContributeRunner extends Disposable {
           await contributePoint.contribute();
 
         } catch (e) {
-          getLogger().error(e);
+          this.logger.error(e);
         }
       }
     }

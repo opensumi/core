@@ -45,8 +45,8 @@ export function setToString<K>(set: Set<K>): string {
 	return `Set(${set.size}) {${entries.join(', ')}}`;
 }
 
-export function mapToSerializable(map: Map<string, string>): [string, string][] {
-	const serializable: [string, string][] = [];
+export function mapToSerializable<T = string>(map: Map<string, T>): [string, T][] {
+	const serializable: [string, T][] = [];
 
 	map.forEach((value, key) => {
 		serializable.push([key, value]);
@@ -55,8 +55,8 @@ export function mapToSerializable(map: Map<string, string>): [string, string][] 
 	return serializable;
 }
 
-export function serializableToMap(serializable: [string, string][]): Map<string, string> {
-	const items = new Map<string, string>();
+export function serializableToMap<T = string>(serializable: [string, T][]): Map<string, T> {
+	const items = new Map<string, T>();
 
 	for (const [key, value] of serializable) {
 		items.set(key, value);

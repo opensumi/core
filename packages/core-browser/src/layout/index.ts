@@ -1,6 +1,6 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, BasicEvent, MaybeNull } from '@ali/ide-core-common';
+import { BasicEvent, MaybeNull } from '@ali/ide-core-common';
 import { IMenu } from '../menu/next';
 
 export class VisibleChangedPayload {

@@ -1,6 +1,6 @@
-import {Injectable, Optional, Autowired, Inject} from '@ali/common-di';
+import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
-import { getLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo } from '@ali/ide-core-common';
+import { getDebugLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo, Emitter } from '@ali/ide-core-common';
 import { VSCodeMetaService } from './vscode/meta';
 
 const metaDataSymbol = Symbol.for('metaDataSymbol');
@@ -24,9 +24,8 @@ export class Extension extends Disposable implements IExtension {
   private _activating: Promise<void> | null = null;
 
   private _enabled: boolean;
-  private _enabling: Promise<void> | null = null;
 
-  private logger = getLogger();
+  private readonly logger = getDebugLogger();
 
   @Autowired(VSCodeMetaService)
   vscodeMetaService: VSCodeMetaService;
@@ -35,7 +34,9 @@ export class Extension extends Disposable implements IExtension {
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
     @Optional(extensionServiceSymbol) private extensionService: ExtensionService,
     @Optional(Symbol()) public isUseEnable: boolean,
-    @Optional(Symbol()) public isBuiltin: boolean) {
+    @Optional(Symbol()) public isBuiltin: boolean,
+    private didActivated: Emitter<IExtensionProps>,
+  ) {
     super();
 
     this._enabled = isUseEnable;
@@ -115,6 +116,7 @@ export class Extension extends Disposable implements IExtension {
 
     this._activating = this.extensionService.activeExtension(this).then(() => {
       this._activated = true;
+      this.didActivated.fire(this.toJSON());
     }).catch((e) => {
       this.logger.error(e);
     });

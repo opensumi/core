@@ -4,5 +4,10 @@
   "packages": [
     "packages/*",
     "tools/dev-tool"
-  ]
+  ],
+  "command": {
+    "bootstrap": {
+      "npmClientArgs": ["--no-package-lock"]
+    }
+  }
 }

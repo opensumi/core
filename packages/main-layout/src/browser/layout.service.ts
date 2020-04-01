@@ -1,16 +1,13 @@
-import * as React from 'react';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, OnEvent, RenderedEvent, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
+import { ContextKeyChangeEvent, Event, WithEventBus, View, ViewContainerOptions, ContributionProvider, SlotLocation, IContextKeyService, ExtensionActivateEvent } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService } from '../common';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-import { IMenuRegistry, AbstractContextMenuService, MenuId, generateCtxMenu, AbstractMenuService } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, AbstractContextMenuService, MenuId, AbstractMenuService, IContextMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import './main-layout.less';
 import { AccordionService } from './accordion/accordion.service';
 import debounce = require('lodash.debounce');
-import { ActivationEventService } from '@ali/ide-activation-event';
-import { ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {
@@ -23,20 +20,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(IMenuRegistry)
   menus: IMenuRegistry;
 
-  @Autowired(AbstractContextMenuService)
-  private readonly ctxMenuService: AbstractContextMenuService;
-
-  @Autowired(ICtxMenuRenderer)
-  private readonly contextMenuRenderer: ICtxMenuRenderer;
-
   @Autowired()
   private layoutState: LayoutState;
 
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
-
-  @Autowired(ActivationEventService)
-  private activationEventService: ActivationEventService;
 
   private handleMap: Map<string, TabBarHandler> = new Map();
 
@@ -79,12 +67,6 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       }
     }
     this.restoreState();
-    for (const service of this.services.values()) {
-      const {currentId, size} = this.state[service.location] || {};
-      service.prevSize = size;
-      service.currentContainerId = currentId !== undefined ? (service.containersMap.has(currentId) ? currentId : '') : service.containersMap.keys().next().value;
-    }
-
     this.addDispose(Event.debounce<ContextKeyChangeEvent, boolean>(
       this.contextKeyService.onDidChangeContext,
       (last, event) =>  last || event.payload.affectsSome(this.viewWhenContextkeys),
@@ -117,6 +99,11 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         size: undefined,
       },
     });
+    for (const service of this.services.values()) {
+      const {currentId, size} = this.state[service.location] || {};
+      service.prevSize = size;
+      service.currentContainerId = currentId !== undefined ? (service.containersMap.has(currentId) ? currentId : '') : service.visibleContainers[0].options!.containerId;
+    }
   }
 
   isVisible(location: string) {
@@ -127,6 +114,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
     const tabbarService = this.getTabbarService(location);
     if (!tabbarService) {
+      // tslint:disable-next-line no-console
       console.error(`没有找到${location}对应位置的TabbarService，无法切换面板`);
       return;
     }
@@ -142,19 +130,20 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     }
   }
 
+  // TODO: noAccordion应该由视图决定，service不需要关心
   getTabbarService(location: string, noAccordion?: boolean) {
     const service = this.services.get(location) || this.injector.get(TabbarService, [location, noAccordion]);
     if (!this.services.get(location)) {
-      service.onCurrentChange(({previousId, currentId}) => {
+      service.onCurrentChange(({currentId}) => {
         this.storeState(service, currentId);
         if (currentId && !service.noAccordion) {
           const accordionService = this.getAccordionService(currentId);
           accordionService.expandedViews.forEach((view) => {
-            this.activationEventService.fireEvent(`onView:${view.id}`);
+            this.eventBus.fire(new ExtensionActivateEvent({ topic: `onView:${view.id}` }));
           });
         }
       });
-      service.onSizeChange(({size}) => debounce(() => this.storeState(service, service.currentContainerId), 200)());
+      service.onSizeChange(() => debounce(() => this.storeState(service, service.currentContainerId), 200)());
       this.services.set(location, service);
     }
     return service;
@@ -174,6 +163,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     if (!handler) {
       const containerId = this.viewToContainerMap.get(viewOrContainerId);
       if (!containerId) {
+        // tslint:disable-next-line no-console
         console.warn(`没有找到${viewOrContainerId}对应的tabbar！`);
       }
       handler = this.doGetTabbarHandler(containerId || '');
@@ -181,7 +171,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return handler;
   }
 
-  getExtraMenu() {
+  getExtraMenu(): IContextMenu {
     return this.contextmenuService.createMenu({
       id: MenuId.ActivityBarExtra,
     });
@@ -207,6 +197,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string, Fc?: any): string {
     if (Fc) {
+      // tslint:disable-next-line no-console
       console.warn('collectTabbarComponent api warning: Please move react component into options.component!');
     }
     const tabbarService = this.getTabbarService(side);
@@ -238,6 +229,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   replaceViewComponent(view: View, props?: any) {
     const containerId = this.viewToContainerMap.get(view.id);
     if (!containerId) {
+      // tslint:disable-next-line no-console
       console.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
       return;
     }
@@ -252,11 +244,29 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   disposeViewComponent(viewId: string) {
     const containerId = this.viewToContainerMap.get(viewId);
     if (!containerId) {
+      // tslint:disable-next-line no-console
       console.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
       return;
     }
     const accordionService: AccordionService = this.getAccordionService(containerId);
     accordionService.disposeView(viewId);
+  }
+
+  disposeContainer(containerId: string) {
+    let location: string | undefined;
+    for (const service of this.services.values()) {
+      if (service.getContainer(containerId)) {
+        location = service.location;
+        break;
+      }
+    }
+    if (location) {
+      const tabbarService = this.getTabbarService(location);
+      tabbarService.disposeContainer(containerId);
+    } else {
+      // tslint:disable-next-line no-console
+      console.warn('没有找到containerId所属Tabbar!');
+    }
   }
 
   // TODO 这样很耦合，不能做到tab renderer自由拆分

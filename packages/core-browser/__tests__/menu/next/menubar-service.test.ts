@@ -4,7 +4,7 @@ import { Injector } from '@ali/common-di';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-import { AbstractMenubarService, MenubarServiceImpl, AbstractMenuService, MenuRegistryImpl, MenuServiceImpl, IMenuRegistry, MenuId, isIMenuItem, generateMergedCtxMenu } from '../../../src/menu/next';
+import { AbstractMenubarService, MenubarServiceImpl, AbstractMenuService, MenuRegistryImpl, MenuServiceImpl, IMenuRegistry } from '../../../src/menu/next';
 import { IContextKeyService } from '../../../src/context-key';
 
 jest.useFakeTimers();
@@ -13,11 +13,8 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
   let injector: MockInjector;
 
   let menuRegistry: IMenuRegistry;
-  let menuService: AbstractMenuService;
   let menubarService: AbstractMenubarService;
-  let commandRegistry: CommandRegistry;
   const disposables = new DisposableStore();
-  const testMenuId = 'mock/test/menu';
   const testMenubarId = 'mock/test/menubar';
 
   beforeEach(() => {
@@ -42,9 +39,7 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
       useClass: MenubarServiceImpl,
     });
 
-    commandRegistry = injector.get(CommandRegistry);
     menuRegistry = injector.get(IMenuRegistry);
-    menuService = injector.get(AbstractMenuService);
     menubarService = injector.get(AbstractMenubarService);
 
     disposables.clear();
@@ -55,14 +50,16 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
   });
 
   it('basic check for onDidMenuChange', () => {
-    menubarService.onDidMenubarChange(() => {
-      jest.runAllTimers();
-      const menubarItems = menubarService.getMenubarItems();
+    disposables.add(
+      menubarService.onDidMenubarChange(() => {
+        jest.runAllTimers();
+        const menubarItems = menubarService.getMenubarItems();
 
-      expect(menubarItems.length).toBe(1);
-      expect(menubarItems[0].label).toBe('a1');
-      expect(menubarItems[0].id).toBe(testMenubarId);
-    });
+        expect(menubarItems.length).toBe(1);
+        expect(menubarItems[0].label).toBe('a1');
+        expect(menubarItems[0].id).toBe(testMenubarId);
+      }),
+    );
 
     disposables.add(menuRegistry.registerMenubarItem(testMenubarId, {
       label: 'a1',
@@ -70,13 +67,15 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
   });
 
   it('basic check for onDidMenuChange', () => {
-    menubarService.onDidMenuChange(() => {
-      jest.runAllTimers();
-      const menuNodes = menubarService.getMenuNodes(testMenubarId);
+    disposables.add(
+      menubarService.onDidMenuChange(() => {
+        jest.runAllTimers();
+        const menuNodes = menubarService.getMenuNodes(testMenubarId);
 
-      expect(menuNodes.length).toBe(1);
-      expect(menuNodes[0].label).toBe('hello');
-    });
+        expect(menuNodes.length).toBe(1);
+        expect(menuNodes[0].label).toBe('hello');
+      }),
+    );
 
     disposables.add(menuRegistry.registerMenubarItem(testMenubarId, {
       label: 'a1',
@@ -91,18 +90,20 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
   });
 
   it('submenu', () => {
-    menubarService.onDidMenuChange(() => {
-      jest.runAllTimers();
+    disposables.add(
+      menubarService.onDidMenuChange(() => {
+        jest.runAllTimers();
 
-      const menubarItems = menubarService.getMenubarItems();
-      expect(menubarItems[0].label).toBe('test menubar');
+        const menubarItems = menubarService.getMenubarItems();
+        expect(menubarItems[0].label).toBe('test menubar');
 
-      const menuNodes = menubarService.getMenuNodes(testMenubarId);
-      expect(menuNodes.length).toBe(2);
-      expect(menuNodes[0].label).toBe('test submenu');
-      expect(menuNodes[0].children.length).toBe(2);
-      expect(menuNodes[0].children.map((n) => n.label)).toEqual(['hello', 'world']);
-    });
+        const menuNodes = menubarService.getMenuNodes(testMenubarId);
+        expect(menuNodes.length).toBe(2);
+        expect(menuNodes[0].label).toBe('test submenu');
+        expect(menuNodes[0].children.length).toBe(2);
+        expect(menuNodes[0].children.map((n) => n.label)).toEqual(['hello', 'world']);
+      }),
+    );
 
     disposables.add(menuRegistry.registerMenubarItem(testMenubarId, {
       label: 'test menubar',
@@ -157,7 +158,7 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
 
   it('register menubar menus must with existed menubarItem', () => {
     const fakeListener = jest.fn();
-    menubarService.onDidMenuChange(fakeListener);
+    disposables.add(menubarService.onDidMenuChange(fakeListener));
 
     disposables.add(menuRegistry.registerMenuItem(testMenubarId, {
       command: {
@@ -183,29 +184,33 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
       }));
     }, 100);
 
-    menubarService.onDidMenuChange(() => {
-      jest.advanceTimersByTime(100);
+    disposables.add(
+      menubarService.onDidMenuChange(() => {
+        jest.advanceTimersByTime(100);
 
-      const menubarItems = menubarService.getMenubarItems();
-      const menuNodes = menubarService.getMenuNodes(testMenubarId);
+        const menubarItems = menubarService.getMenubarItems();
+        const menuNodes = menubarService.getMenuNodes(testMenubarId);
 
-      expect(menubarItems.length).toBe(1);
-      expect(menubarItems[0].label).toBe('a1');
-      expect(menuNodes.length).toBe(1);
-      expect(menuNodes[0].label).toBe('hello');
-    });
+        expect(menubarItems.length).toBe(1);
+        expect(menubarItems[0].label).toBe('a1');
+        expect(menuNodes.length).toBe(1);
+        expect(menuNodes[0].label).toBe('hello');
+      }),
+    );
   });
 
   it('sorting by order', () => {
-    menubarService.onDidMenubarChange(() => {
-      jest.runAllTimers();
+    disposables.add(
+      menubarService.onDidMenubarChange(() => {
+        jest.runAllTimers();
 
-      const menubarItems = menubarService.getMenubarItems();
+        const menubarItems = menubarService.getMenubarItems();
 
-      expect(menubarItems.length).toBe(3);
-      expect(menubarItems[0].label).toBe('a3');
-      expect(menubarItems.map((n) => n.label)).toEqual(['a3', 'a2', 'a1']);
-    });
+        expect(menubarItems.length).toBe(3);
+        expect(menubarItems[0].label).toBe('a3');
+        expect(menubarItems.map((n) => n.label)).toEqual(['a3', 'a2', 'a1']);
+      }),
+    );
 
     disposables.add(menuRegistry.registerMenubarItem('testMenubarId1', {
       label: 'a1',

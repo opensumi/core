@@ -3,7 +3,7 @@
  */
 
 import { BaseLogService, DEFAULT_LOG_FOLDER } from './log.service';
-import { IBaseLogService, BaseLogServiceOptions, getLogger } from '../common';
+import { IBaseLogService, BaseLogServiceOptions } from '../common';
 import { getLogFolder } from './utils';
 
 export * from './utils';

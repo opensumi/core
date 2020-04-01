@@ -5,6 +5,9 @@ export const defaultConfig: LayoutConfig = {
   [SlotLocation.top]: {
     modules: ['@ali/ide-menu-bar'],
   },
+  [SlotLocation.action]: {
+    modules: ['@ali/ide-toolbar-action'],
+  },
   [SlotLocation.left]: {
     modules: ['@ali/ide-explorer', '@ali/ide-search', '@ali/ide-scm', '@ali/ide-extension-manager', '@ali/ide-debug'],
   },

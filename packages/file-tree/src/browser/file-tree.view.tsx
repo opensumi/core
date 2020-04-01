@@ -3,7 +3,7 @@ import { RecycleTree, ValidateMessage } from '@ali/ide-core-browser/lib/componen
 import { IFileTreeItem } from '../common';
 import * as cls from 'classnames';
 import * as styles from './index.module.less';
-import { MenuPath, Event, FileDecorationsProvider, ThemeProvider } from '@ali/ide-core-common';
+import { Event, FileDecorationsProvider, ThemeProvider } from '@ali/ide-core-browser';
 import { IFileTreeServiceProps } from './file-tree.service';
 import { useDebounce } from '@ali/ide-core-browser/lib/utils';
 import { Directory, File } from './file-tree-item';
@@ -30,8 +30,8 @@ export interface FileTreeProps extends IFileTreeServiceProps {
   // 搜索文本
   search?: string;
   /**
- * 文件装饰器函数
- */
+   * 文件装饰器函数
+   */
   fileDecorationProvider?: FileDecorationsProvider;
   /**
    * 主题颜色函数
@@ -58,9 +58,15 @@ export interface FileTreeProps extends IFileTreeServiceProps {
    * 文件树基础缩进
    */
   defaultLeftPadding?: number;
+  /**
+   * 样式属性
+   */
+  style?: React.CSSProperties;
+  /**
+   * 筛选关键字
+   */
+  filter?: string;
 }
-
-export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
 
 export const FileTree = ({
   width,
@@ -91,6 +97,8 @@ export const FileTree = ({
   validate,
   leftPadding,
   defaultLeftPadding,
+  style,
+  filter,
 }: FileTreeProps) => {
   const FILETREE_LINE_HEIGHT = treeNodeHeight || 22;
   const fileTreeRef = React.createRef<HTMLDivElement>();
@@ -104,7 +112,8 @@ export const FileTree = ({
   const nodes = React.useMemo(() => {
     return files;
   }, [files]);
-  const FileTreeStyle = {
+
+  const fileTreeStyle = {
     position: 'absolute',
     overflow: 'hidden',
     top: 0,
@@ -159,7 +168,7 @@ export const FileTree = ({
   };
 
   return (
-    <div className={cls(styles.filetree)} style={FileTreeStyle}>
+    <div className={cls(styles.filetree)} style={{ ...fileTreeStyle, ...(style || {}) }}>
       <div className={styles.filetree_container} {...fileTreeAttrs} >
         <RecycleTree
           nodes={nodes}
@@ -192,7 +201,8 @@ export const FileTree = ({
           validate={validate}
           leftPadding={leftPadding}
           defaultLeftPadding={defaultLeftPadding}
-        ></RecycleTree>
+          filter={filter}
+        />
       </div>
     </div>
   );

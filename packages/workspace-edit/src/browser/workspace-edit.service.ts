@@ -229,7 +229,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     let dirtyEOL: EOL | undefined;
     if (docRef && docRef.instance.dirty) {
       dirtyContent = docRef.instance.getText();
-      dirtyEOL = docRef.instance  .eol;
+      dirtyEOL = docRef.instance.eol;
       await docRef.instance.revert(true);
     }
     if (docRef) {

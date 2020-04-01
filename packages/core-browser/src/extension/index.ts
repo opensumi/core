@@ -21,3 +21,10 @@ export interface IExtensionProps {
 }
 
 export class ExtensionEnabledEvent extends BasicEvent<IExtensionProps> {}
+
+export interface IExtensionActivateEventPayload {
+  topic: string;
+  data?: any;
+}
+
+export class ExtensionActivateEvent extends BasicEvent<IExtensionActivateEventPayload> {}

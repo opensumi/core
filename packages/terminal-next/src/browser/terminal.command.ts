@@ -8,6 +8,12 @@ export const terminalSearch: Command = {
   category: 'terminal',
 };
 
+export const terminalSearchNext: Command = {
+  id: 'terminal.search.next',
+  label: localize('terminal.search.next'),
+  category: 'terminal',
+};
+
 export const terminalAdd: Command = {
   id: 'terminal.add',
   label: 'add terminal',

@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 
-import { JSONUtils, Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI, isUndefined } from '@ali/ide-core-common';
+import { Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI, isUndefined } from '@ali/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';
 import { PreferenceSchemaProvider, OverridePreferenceName } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
@@ -318,11 +318,8 @@ export class PreferenceServiceImpl implements PreferenceService {
     return { value };
   }
 
-  public resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): {
-    configUri?: URI,
-    value?: T,
-  } {
-    const { value, configUri } = this.doResolve(preferenceName, defaultValue, resourceUri);
+  public resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T> {
+    const { value, configUri, scope } = this.doResolve(preferenceName, defaultValue, resourceUri);
     if (typeof value === 'undefined') {
       const overridden = this.overriddenPreferenceName(preferenceName);
       if (overridden) {
@@ -331,7 +328,7 @@ export class PreferenceServiceImpl implements PreferenceService {
         return this.lookUp(preferenceName);
       }
     }
-    return { value, configUri };
+    return { value, configUri, scope };
   }
 
   public async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
@@ -452,7 +449,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     const result: PreferenceResolveResult<T> = { scope: PreferenceScope.Default };
     const externalProvider = getExternalPreferenceProvider(preferenceName);
     if (externalProvider) {
-      return getExternalPreference(preferenceName, this.schema.getPreferenceProperty(preferenceName));
+      return getExternalPreference(preferenceName, this.schema.getPreferenceProperty(preferenceName), untilScope);
     }
     const scopes = untilScope ? PreferenceScope.getScopes().filter((s) => s <= untilScope) : PreferenceScope.getScopes();
     for (const scope of scopes) {

@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ILineChange, URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection, Disposable } from '@ali/ide-core-common';
-import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions } from '../common';
-import { IRange, MonacoService, PreferenceService, corePreferenceSchema } from '@ali/ide-core-browser';
+import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, EditorType, IResourceOpenOptions } from '../common';
+import { IRange, MonacoService, PreferenceService } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, IEditorDocumentModelService } from './doc-model/types';
 import { Emitter } from '@ali/vscode-jsonrpc';
@@ -24,8 +24,6 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   @Autowired(IEditorFeatureRegistry)
   editorFeatureRegistry: EditorFeatureRegistryImpl;
 
-  private collection: Map<string, ICodeEditor> = new Map();
-
   private _editors: Set<IMonacoImplEditor> = new Set();
   private _diffEditors: Set<IDiffEditor> = new Set();
 
@@ -37,6 +35,12 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   @Autowired(IEditorDocumentModelService)
   documentModelService: IEditorDocumentModelService;
+
+  private _currentEditor: IEditor | undefined;
+
+  get currentEditor() {
+    return this._currentEditor;
+  }
 
   constructor() {
     super();
@@ -54,6 +58,11 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
           (editor as BrowserDiffEditor).updateDiffOptions(optionsDelta.diffOptions);
         });
       }
+    });
+    this.editorFeatureRegistry.onDidRegisterFeature((contribution) => {
+      this._editors.forEach((editor) => {
+        this.editorFeatureRegistry.runOneContribution(editor, contribution);
+      });
     });
   }
 
@@ -76,6 +85,12 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
       if (!this._editors.has(editor)) {
         this._editors.add(editor);
         this.editorFeatureRegistry.runContributions(editor);
+        editor.monacoEditor.onDidFocusEditorWidget(() => {
+          this._currentEditor = editor;
+        });
+        editor.monacoEditor.onContextMenu(() => {
+          this._currentEditor = editor;
+        });
       }
     });
     if (this._editors.size !== beforeSize) {
@@ -87,6 +102,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     const beforeSize = this._editors.size;
     editors.forEach((editor) => {
       this._editors.delete(editor);
+      if (this._currentEditor === editor) {
+        this._currentEditor = undefined;
+      }
     });
     if (this._editors.size !== beforeSize) {
       // fire event;
@@ -206,6 +224,10 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
     return this.monacoEditor.getId();
   }
 
+  getType() {
+    return EditorType.CODE;
+  }
+
   getSelections() {
     return this.monacoEditor.getSelections() || [];
   }
@@ -245,6 +267,11 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
         selectionLength: selection ? this.currentDocumentModel.getMonacoModel().getValueInRange(selection).length : 0,
       });
     }));
+    this.addDispose({
+      dispose: () => {
+        this.monacoEditor.dispose();
+      },
+    });
   }
 
   layout(): void {
@@ -263,7 +290,6 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
     super.dispose();
     this.saveCurrentState();
     this.collectionService.removeEditors([this]);
-    this.monacoEditor.dispose();
     this._disposed = true;
     this.toDispose.forEach((disposable) => disposable.dispose());
   }
@@ -393,12 +419,36 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
 
+  private editorState: Map<string, monaco.editor.IDiffEditorViewState> = new Map();
+
+  private currentUri: URI | undefined;
+
+  protected saveCurrentState() {
+    if (this.currentUri) {
+      const state = this.monacoDiffEditor.saveViewState();
+      if (state) {
+        this.editorState.set(this.currentUri.toString(), state);
+        // TODO store in storage
+      }
+    }
+  }
+
+  protected restoreState() {
+    if (this.currentUri) {
+      const state = this.editorState.get(this.currentUri.toString());
+      if (state) {
+        this.monacoDiffEditor.restoreViewState(state);
+      }
+    }
+  }
+
   constructor(public readonly monacoDiffEditor: monaco.editor.IDiffEditor) {
     super();
     this.wrapEditors();
   }
 
-  async compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef) {
+  async compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef, options: IResourceOpenOptions = {}) {
+    this.saveCurrentState(); // 保存上一个状态
     this.originalDocModelRef = originalDocModelRef;
     this.modifiedDocModelRef = modifiedDocModelRef;
     this.monacoDiffEditor.setModel({
@@ -412,6 +462,41 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         this.updateReadonly();
       }
     }));
+
+    this.currentUri = URI.from({
+      scheme: 'diff',
+      query: URI.stringifyQuery({
+        name,
+        original: this.originalDocModel!.uri.toString(),
+        modified: this.modifiedDocModel!.uri.toString(),
+      }),
+    });
+
+    if (options.range) {
+      this.monacoDiffEditor.revealRangeInCenter(options.range);
+      this.monacoDiffEditor.setSelection(options.range);
+    } else {
+      this.restoreState();
+    }
+
+    if (options.revealFirstDiff) {
+      const diffs = this.monacoDiffEditor.getLineChanges();
+      if (diffs && diffs.length > 0) {
+        this.showFirstDiff();
+      } else {
+        const disposer = this.monacoDiffEditor.onDidUpdateDiff(() => {
+          this.showFirstDiff();
+          disposer.dispose();
+        });
+      }
+    }
+  }
+
+  showFirstDiff() {
+    const diffs = this.monacoDiffEditor.getLineChanges();
+    if (diffs && diffs.length > 0) {
+      this.monacoDiffEditor.revealLineInCenter(diffs[0].modifiedStartLineNumber);
+    }
   }
 
   updateReadonly() {
@@ -427,7 +512,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   }
 
   getLineChanges(): ILineChange[] | null {
-    throw new Error('Method not implemented.');
+    return this.monacoDiffEditor.getLineChanges();
   }
 
   private wrapEditors() {
@@ -436,6 +521,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     this.originalEditor = {
       getId() {
         return diffEditor.monacoDiffEditor.getOriginalEditor().getId();
+      },
+      getType() {
+        return EditorType.ORIGINAL_DIFF;
       },
       get currentDocumentModel() {
         return diffEditor.originalDocModel;
@@ -503,6 +591,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     this.modifiedEditor = {
       getId() {
         return diffEditor.monacoDiffEditor.getModifiedEditor().getId();
+      },
+      getType() {
+        return EditorType.MODIFIED_DIFF;
       },
       get currentDocumentModel() {
         return diffEditor.modifiedDocModel;

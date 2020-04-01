@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, MaybePromise, DataUri, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ali/ide-core-common';
+import { URI, DataUri, addElement, IDisposable, LRUMap, Event, WithEventBus, BasicEvent, Disposable } from '@ali/ide-core-common';
 import classnames from 'classnames';
 import { getIcon } from '../style/icon/icon';
 

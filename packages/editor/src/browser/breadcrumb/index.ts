@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IBreadCrumbService, IBreadCrumbPart, IBreadCrumbProvider } from '../types';
-import { IDisposable, URI, addElement, Emitter, MaybeNull } from '@ali/ide-core-browser';
+import { IDisposable, URI, addElement, MaybeNull } from '@ali/ide-core-browser';
 import { observable } from 'mobx';
 import { DefaultBreadCrumbProvider } from './default';
 import { IEditor } from '../../common';

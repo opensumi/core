@@ -1,6 +1,5 @@
-import { URI, ClientAppContribution, FILE_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, isElectronRenderer, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
+import { URI, ClientAppContribution, FILE_COMMANDS, TERMINAL_COMMANDS, CommandRegistry, KeybindingRegistry, ToolbarRegistry, CommandContribution, KeybindingContribution, TabBarToolbarContribution, localize, IElectronNativeDialogService, ILogger, SEARCH_COMMANDS, CommandService, isWindows } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { CONTEXT_MENU } from './file-tree.view';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileTreeService } from './file-tree.service';
 import { IDecorationsService } from '@ali/ide-decoration';
@@ -15,19 +14,7 @@ import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } fro
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
 import { IWindowService } from '@ali/ide-window';
 import { IWindowDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
-
-export namespace FileTreeContextMenu {
-  // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
-  export const OPEN = [...CONTEXT_MENU, '1_open'];
-  export const SEARCH = [...CONTEXT_MENU, '2_search'];
-  export const OPERATOR = [...CONTEXT_MENU, '3_operator'];
-  export const COPY = [...CONTEXT_MENU, '4_copy'];
-  export const PATH = [...CONTEXT_MENU, '5_path'];
-}
-
-export interface FileUri {
-  uris: URI[];
-}
+import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 
 export const ExplorerResourceViewId = 'file-explorer';
 
@@ -66,7 +53,8 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   private rendered = false;
 
-  onStart() {
+  async onStart() {
+    await this.filetreeService.init();
     this.mainLayoutService.collectViewComponent({
       id: ExplorerResourceViewId,
       name: this.getWorkspaceTitle(),
@@ -79,7 +67,6 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     this.workspaceService.onWorkspaceChanged(() => {
       const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
       if (handler) {
-        // TODO: 寻壑处理一下，更新方法失效
         handler.updateViewTitle(ExplorerResourceViewId, this.getWorkspaceTitle());
       }
     });
@@ -113,25 +100,33 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
 
   registerNextMenus(menuRegistry: IMenuRegistry): void {
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.NEW_FILE.id,
+      order: 1,
+      group: '0_new',
+    });
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.NEW_FOLDER.id,
+      order: 2,
+      group: '0_new',
+    });
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.OPEN_RESOURCES.id,
-      order: 4,
+      order: 1,
       group: '1_open',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.OPEN_TO_THE_SIDE.id,
-      order: 3,
+      order: 2,
       group: '1_open',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.NEW_FILE.id,
-      order: 1,
-      group: '1_open',
-    });
-    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
-      command: FILE_COMMANDS.NEW_FOLDER.id,
-      order: 2,
+      command: FILE_COMMANDS.OPEN_WITH_PATH.id,
+      when: 'workbench.panel.terminal',
+      order: 3,
       group: '1_open',
     });
 
@@ -182,6 +177,21 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(FILE_COMMANDS.OPEN_WITH_PATH, {
+      execute: (uri?: URI) => {
+        let directory = uri;
+
+        if (!directory) {
+          return;
+        }
+        const statusKey = this.filetreeService.getStatutsKey(directory?.toString());
+        const status = this.filetreeService.status.get(statusKey);
+        if (!status?.file.filestat.isDirectory) {
+          directory = directory.parent;
+        }
+        this.commandService.executeCommand(TERMINAL_COMMANDS.OPEN_WITH_PATH.id, directory);
+      },
+    });
     commands.registerCommand(FILE_COMMANDS.SEARCH_ON_FOLDER, {
       execute: (uri?: URI) => {
         let searchFolder = uri;
@@ -465,6 +475,19 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         return this.windowDialogService.showSaveDialog(options);
       },
     });
+
+    // filter in filetree
+    commands.registerCommand(FILE_COMMANDS.FILTER_TOGGLE, {
+      execute: () => {
+        return this.explorerResourceService.toggleFilterMode();
+      },
+    });
+
+    commands.registerCommand(FILE_COMMANDS.FILTER_OPEN, {
+      execute: () => {
+        return this.explorerResourceService.enableFilterMode();
+      },
+    });
   }
 
   registerKeybindings(bindings: KeybindingRegistry) {
@@ -498,6 +521,12 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       keybinding: 'ctrlcmd+backspace',
       when: 'filesExplorerFocus && !inputFocus',
     });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.FILTER_OPEN.id,
+      keybinding: 'ctrlcmd+f',
+      when: 'filesExplorerFocus && !inputFocus',
+    });
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
@@ -514,16 +543,23 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       order: 2,
     });
     registry.registerItem({
-      id: FILE_COMMANDS.COLLAPSE_ALL.id,
-      command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      id: FILE_COMMANDS.FILTER_TOGGLE.id,
+      command: FILE_COMMANDS.FILTER_TOGGLE.id,
       viewId: ExplorerResourceViewId,
-      order: 4,
+      order: 3,
+      toggledWhen: ExplorerFilteredContext.raw,
     });
     registry.registerItem({
       id: FILE_COMMANDS.REFRESH_ALL.id,
       command: FILE_COMMANDS.REFRESH_ALL.id,
       viewId: ExplorerResourceViewId,
-      order: 3,
+      order: 4,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.COLLAPSE_ALL.id,
+      command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      viewId: ExplorerResourceViewId,
+      order: 5,
     });
   }
 

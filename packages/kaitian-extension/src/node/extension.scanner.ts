@@ -1,9 +1,9 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
-import { getLogger, getNodeRequire } from '@ali/ide-core-node';
+import { getDebugLogger, getNodeRequire } from '@ali/ide-core-node';
 import * as semver from 'semver';
-import { IExtensionMetaData, ExtraMetaData } from '../common';
+import { IExtensionMetaData, ExtraMetaData, getExtensionId } from '../common';
 
 function resolvePath(path) {
   if (path[0] === '~') {
@@ -45,7 +45,7 @@ export class ExtensionScanner {
     return Array.from(this.availableExtensions.values());
   }
   private async scanDir(dir: string): Promise<void> {
-    getLogger().info('kaitian scanDir', dir);
+    getDebugLogger().info('kaitian scanDir', dir);
     try {
       const extensionDirArr = await fs.readdir(dir);
       await Promise.all(extensionDirArr.map((extensionDir) => {
@@ -53,7 +53,7 @@ export class ExtensionScanner {
         return this.getExtension(extensionPath, this.localization);
       }));
     } catch (e) {
-      getLogger().error(e);
+      getDebugLogger().error(e);
     }
   }
 
@@ -84,7 +84,7 @@ export class ExtensionScanner {
     try {
       await fs.stat(extensionPath);
     } catch (e) {
-      getLogger().error(`extension path ${extensionPath} does not exist`);
+      getDebugLogger().error(`extension path ${extensionPath} does not exist`);
       return;
     }
 
@@ -108,7 +108,7 @@ export class ExtensionScanner {
           pkgCheckResult = false;
         }
       } catch (e) {
-        getLogger().error(e);
+        getDebugLogger().error(e);
         pkgCheckResult = false;
       }
     }
@@ -147,7 +147,7 @@ export class ExtensionScanner {
         }
       }
     } catch (e) {
-      getLogger().error(e);
+      getDebugLogger().error(e);
       return;
     }
 
@@ -158,14 +158,13 @@ export class ExtensionScanner {
         delete getNodeRequire().cache[extendPath];
         extendConfig = getNodeRequire()(extendPath);
       } catch (e) {
-        console.error(extendPath, e);
-        getLogger().error(e);
+        getDebugLogger().error(e);
       }
     }
 
     const extension = {
       // vscode 规范
-      id: `${packageJSON.publisher}.${packageJSON.name}`,
+      id: getExtensionId(`${packageJSON.publisher}.${packageJSON.name}`),
       // 使用插件市场的 id
       // 从插件市场下载的插件命名规范为 ${publiser}.${name}-${version}
       extensionId: this.getExtensionIdByExtensionPath(extensionPath, packageJSON.version),
@@ -200,7 +199,7 @@ export class ExtensionScanner {
     }
 
     const [, publisher, name] = match;
-    return `${publisher}.${name}`;
+    return getExtensionId(`${publisher}.${name}`);
   }
 
   private isLatestVersion(extension: IExtensionMetaData): boolean {

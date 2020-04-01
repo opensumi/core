@@ -137,7 +137,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   getPreference(preferenceName: string, scope: PreferenceScope, inherited: boolean = false): {value: any, effectingScope: PreferenceScope} {
-    const { value, scope: resolvedScope } = (this.preferenceService as any).doResolve(preferenceName, undefined, undefined, scope) || { value: undefined, scope: PreferenceScope.Default};
+    const { value } = (this.preferenceService as any).doResolve(preferenceName, undefined, undefined, scope) || { value: undefined, scope: PreferenceScope.Default};
     const { scope: effectingScope } = (this.preferenceService as any).doResolve(preferenceName, undefined, undefined) || { value: undefined, scope: PreferenceScope.Default};
     return {
       value,
@@ -175,22 +175,22 @@ export const defaultSettingGroup: ISettingGroup[] = [
   {
     id: 'general',
     title: '%settings.group.general%',
-    iconClass: getIcon('setting-general'),
+    iconClass: getIcon('setting'),
   },
   {
     id: 'editor',
     title: '%settings.group.editor%',
-    iconClass: getIcon('setting-editor'),
+    iconClass: getIcon('codelibrary-fill'),
   },
   {
     id: 'terminal',
     title: '%settings.group.terminal%',
-    iconClass: getIcon('setting-editor'),
+    iconClass: getIcon('codelibrary-fill'),
   },
   {
     id: 'feature',
     title: '%settings.group.feature%',
-    iconClass: getIcon('setting-file'),
+    iconClass: getIcon('file-text'),
   },
   {
     id: 'view',
@@ -249,6 +249,7 @@ export const defaultSettingSections: {
         { id: 'terminal.fontWeight', localized: 'preference.terminal.fontWeight' },
         { id: 'terminal.lineHeight', localized: 'preference.terminal.lineHeight' },
         { id: 'terminal.cursorBlink', localized: 'preference.terminal.cursorBlink' },
+        { id: 'terminal.scrollback', localized: 'preference.terminal.scrollback' },
       ],
     },
   ],

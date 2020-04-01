@@ -1,5 +1,5 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IDisposable, DisposableCollection, DisposableStore, IContextKey, OnEvent, RenderedEvent, WithEventBus, ResizeEvent } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ali/common-di';
+import { View, CommandRegistry, ViewContextKeyRegistry, IContextKeyService, localize, IContextKey, OnEvent, WithEventBus, ResizeEvent, DisposableCollection } from '@ali/ide-core-browser';
 import { action, observable } from 'mobx';
 import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/components/layout/split-panel.service';
 import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
@@ -47,13 +47,15 @@ export class AccordionService extends WithEventBus {
   @observable.shallow views: View[] = [];
 
   @observable state: {[containerId: string]: SectionState} = {};
+  // 提供给Mobx强刷，有没有更好的办法？
+  @observable forceUpdate: number = 0;
 
   rendered = false;
 
   private headerSize: number;
   private minSize: number;
   private menuId = `accordion/${this.containerId}`;
-  private toDispose: Map<string, IDisposable> = new Map();
+  private toDispose: Map<string, DisposableCollection> = new Map();
 
   private topViewKey: IContextKey<string>;
   private scopedCtxKeyService = this.contextKeyService.createScoped();
@@ -131,11 +133,9 @@ export class AccordionService extends WithEventBus {
     }
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
-    if (view.name === undefined) {
-      console.warn(view.id + '视图未传入标题，请检查！');
-    }
     this.viewContextKeyRegistry.registerContextKeyService(view.id, this.scopedCtxKeyService.createScoped()).createKey('view', view.id);
-    this.toDispose.set(view.id, this.menuRegistry.registerMenuItem(this.menuId, {
+    const disposables = new DisposableCollection();
+    disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(view.id),
         label: view.name || view.id,
@@ -143,6 +143,7 @@ export class AccordionService extends WithEventBus {
       group: '1_widgets',
       // TODO order计算
     }));
+    this.toDispose.set(view.id, disposables);
     this.popViewKeyIfOnlyOneViewVisible();
   }
 
@@ -205,7 +206,7 @@ export class AccordionService extends WithEventBus {
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {
-      execute: ({forceShow}: {forceShow?: boolean}) => {
+      execute: ({forceShow}: {forceShow?: boolean} = {}) => {
         this.doToggleView(viewId, forceShow);
       },
       isToggled: () => {
@@ -260,7 +261,7 @@ export class AccordionService extends WithEventBus {
   get expandedViews(): View[] {
     return this.views.filter((view) => {
       const viewState = this.state[view.id];
-      return !viewState || viewState && !viewState.collapsed;
+      return !viewState || (viewState && !viewState.hidden && !viewState.collapsed);
     });
   }
 
@@ -302,25 +303,21 @@ export class AccordionService extends WithEventBus {
       // 仅有一个视图展开时独占
       sizeIncrement = this.setSize(index, this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize, false, noAnimation);
     }
-    // 下方视图被影响的情况下，上方视图不会同时变化
-    let effected = false;
+    // 下方视图被影响的情况下，上方视图不会同时变化，该情况会在sizeIncrement=0上体现
     // 从视图下方最后一个展开的视图起依次减去对应的高度
     for (let i = this.visibleViews.length - 1; i > index; i--) {
       if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
         sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
-        effected = true;
-        if (sizeIncrement === 0) {
-          break;
-        }
+      } else {
+        this.setSize(i, 0, false, noAnimation);
       }
     }
-    if (!effected) {
-      // 找到视图上方首个展开的视图减去对应的高度
-      for (let i = index - 1; i >= 0; i--) {
-        if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
-          sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
-          break;
-        }
+    // 找到视图上方首个展开的视图减去对应的高度
+    for (let i = index - 1; i >= 0; i--) {
+      if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
+        sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
+      } else {
+        this.setSize(i, 0, false, noAnimation);
       }
     }
   }
@@ -331,7 +328,7 @@ export class AccordionService extends WithEventBus {
     if (!noAnimation) {
       panel.classList.add('resize-ease');
     }
-    if (!targetSize) {
+    if (!targetSize && !isIncrement) {
       targetSize = this.headerSize;
       panel.classList.add(RESIZE_LOCK);
     } else {
@@ -345,16 +342,24 @@ export class AccordionService extends WithEventBus {
     if (isIncrement) {
       calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
     }
+    if (index === this.expandedViews.length - 1 && (calcTargetSize + index * this.minSize > fullHeight)) {
+      // 最后一个视图需要兼容最大高度超出总视图高度的情况，
+      calcTargetSize -= ((calcTargetSize + index * this.minSize) - fullHeight);
+    }
     if (this.rendered) {
+      let toSaveSize: number;
       if (targetSize === this.headerSize) {
         // 当前视图即将折叠且不是唯一展开的视图时，存储当前高度
-        viewState.size = prevSize;
+        toSaveSize = prevSize;
       } else {
-        viewState.size = calcTargetSize;
+        toSaveSize = calcTargetSize;
+      }
+      if (toSaveSize !== this.headerSize) {
+        // 视图折叠高度不做存储
+        viewState.size = toSaveSize;
       }
     }
     this.storeState();
-    // panel.style.height = calcTargetSize / fullHeight * 100 + '%';
     viewState.nextSize = calcTargetSize;
     if (!noAnimation) {
       setTimeout(() => {

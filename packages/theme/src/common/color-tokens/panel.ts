@@ -3,6 +3,7 @@ import { registerColor, transparent } from '../color-registry';
 import { Color } from '../../common/color';
 import { editorBackground } from './editor';
 import { contrastBorder } from './base';
+import { textLinkActiveForeground } from './text';
 
 // < --- Panels --- >
 export const PANEL_BACKGROUND = registerColor('panel.background', {
@@ -30,8 +31,8 @@ export const PANEL_INACTIVE_TITLE_FOREGROUND = registerColor('panelTitle.inactiv
 }, localize('panelInactiveTitleForeground', 'Title color for the inactive panel. Panels are shown below the editor area and contain views like output and integrated terminal.'));
 
 export const PANEL_ACTIVE_TITLE_BORDER = registerColor('panelTitle.activeBorder', {
-  dark: PANEL_BORDER,
-  light: PANEL_BORDER,
+  dark: textLinkActiveForeground,
+  light: textLinkActiveForeground,
   hc: contrastBorder,
 }, localize('panelActiveTitleBorder', 'Border color for the active panel title. Panels are shown below the editor area and contain views like output and integrated terminal.'));
 

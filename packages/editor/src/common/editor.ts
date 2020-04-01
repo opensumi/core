@@ -1,13 +1,27 @@
 import { Injectable } from '@ali/common-di';
-import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange } from '@ali/ide-core-common';
+import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection, ILineChange, IPosition } from '@ali/ide-core-common';
 import { IResource } from './resource';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
-import { IContextKeyService } from '@ali/ide-core-browser';
 
 export interface CursorStatus {
-  position: MaybeNull<monaco.Position>;
+  position: MaybeNull<IPosition>;
   selectionLength: number;
+}
+
+export enum EditorType {
+  /**
+   * 普通编辑器
+   */
+  CODE,
+  /**
+   * 原始对比编辑器(左侧)
+   */
+  ORIGINAL_DIFF,
+  /**
+   * 修改对比编辑器(右侧)
+   */
+  MODIFIED_DIFF,
 }
 
 /**
@@ -16,6 +30,8 @@ export interface CursorStatus {
 export interface IEditor {
 
   getId(): string;
+
+  getType(): EditorType;
   /**
    * editor中打开的documentModel
    */
@@ -40,7 +56,7 @@ export interface IEditor {
 
   setSelection(selection: IRange | ISelection);
 
-  updateOptions(editorOptions: any, modelOptions: any);
+  updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions);
 
   save(): Promise<void>;
 
@@ -76,7 +92,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
  */
 export interface IDiffEditor extends IDisposable {
 
-  compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef);
+  compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef, options?: IResourceOpenOptions);
 
   originalEditor: IEditor;
 
@@ -91,6 +107,7 @@ export interface IDiffEditor extends IDisposable {
 
 @Injectable()
 export abstract class EditorCollectionService {
+  public readonly currentEditor: IEditor | undefined;
   public abstract async createCodeEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<ICodeEditor>;
   public abstract async createDiffEditor(dom: HTMLElement, options?: any, overrides?: {[key: string]: any}): Promise<IDiffEditor>;
   public abstract listEditors(): IEditor[];
@@ -194,6 +211,12 @@ export interface IResourceOpenOptions {
 
   groupIndex?: number;
 
+  // 相对于当前活跃的 groupIndex
+  relativeGroupIndex?: number;
+
+  // 强制使用这个作为tab名称
+  label?: string;
+
   split?: EditorGroupSplitAction;
 
   /**
@@ -215,6 +238,11 @@ export interface IResourceOpenOptions {
    * 如果是undefined，使用editor.previewMode配置作为默认值
    */
   preview?: boolean;
+
+  /**
+   * 对于DiffEditor，是否跳转到第一个diff
+   */
+  revealFirstDiff?: boolean;
 }
 
 export interface Position {
@@ -285,6 +313,8 @@ export const enum EOL {
  */
 export interface IThemeDecorationRenderOptions {
   backgroundColor?: string | IThemeColor;
+  backgroundIcon?: string;
+  backgroundIconSize?: string;
 
   outline?: string;
   outlineColor?: string | IThemeColor;
@@ -306,7 +336,7 @@ export interface IThemeDecorationRenderOptions {
   opacity?: string;
   letterSpacing?: string;
 
-  gutterIconPath?: UriComponents;
+  gutterIconPath?: UriComponents | string;
   gutterIconSize?: string;
 
   overviewRulerColor?: string | IThemeColor;
@@ -431,4 +461,20 @@ export enum Direction {
   DOWN = 'down',
   LEFT = 'left',
   RIGHT = 'right',
+}
+
+export enum SaveReason {
+
+  Manual = 1,
+
+  AfterDelay = 2,
+
+  FocusOut = 3,
+}
+
+export interface IEditorDocumentModelContentChange {
+  range: IRange;
+  text: string;
+  rangeLength: number;
+  rangeOffset: number;
 }

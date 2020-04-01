@@ -19,11 +19,11 @@ export function getExternalPreferenceProvider(name) {
 }
 
 export function getPreferenceThemeId(): string {
-  return getExternalPreference<string>('general.theme').value;
+  return getExternalPreference<string>('general.theme').value as string;
 }
 
 export function getPreferenceIconThemeId(): string {
-  return getExternalPreference<string>('general.icon').value;
+  return getExternalPreference<string>('general.icon').value as string;
 }
 
 export function getPreferenceLanguageId(): string {
@@ -34,6 +34,10 @@ export function getPreferenceLanguageId(): string {
 function registerLocalStorageProvider(key: string) {
   registerExternalPreferenceProvider<string>(key, {
     set: (value, scope) => {
+      if (scope >= PreferenceScope.Folder) {
+        // earlyPreference不支持针对作用域大于Folder的值设置
+        return;
+      }
       if ((global as any).localStorage) {
         if (value !== undefined) {
           localStorage.setItem(scope + `:${key}`, value);
@@ -54,8 +58,9 @@ registerLocalStorageProvider('general.theme');
 registerLocalStorageProvider('general.icon');
 registerLocalStorageProvider('general.language');
 
-export function getExternalPreference<T>(preferenceName: string, schema?: PreferenceItem): {value: T, scope: PreferenceScope } {
-  for (const scope of PreferenceScope.getReversedScopes()) {
+export function getExternalPreference<T>(preferenceName: string, schema?: PreferenceItem, untilScope?: PreferenceScope): {value: T | undefined, scope: PreferenceScope } {
+  const scopes = untilScope ? PreferenceScope.getReversedScopes().filter((s) => s <= untilScope) : PreferenceScope.getReversedScopes();
+  for (const scope of scopes) {
     const value = providers.get(preferenceName)!.get(scope);
     if (value !== undefined) {
       return {

@@ -1,6 +1,6 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { FileSystemWatcherServer, FileChangeEvent, DidFilesChangedParams, WatchOptions } from './file-service-watcher-protocol'
-import { ApplicationError, Event, IDisposable, Uri } from '@ali/ide-core-common';
+import { ApplicationError, Event, IDisposable, Uri, URI } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
 
 export const IFileService = Symbol('IFileService');
@@ -145,6 +145,12 @@ export interface IFileService extends FileSystemWatcherServer {
   getFilesExcludes(): string[];
 
   setWorkspaceRoots(roots: string[]);
+
+  registerProvider(scheme: string, provider: FileSystemProvider): IDisposable;
+
+  getUri(uri: string | Uri): URI;
+
+  dispose():void;
 }
 
 export namespace FileAccess {

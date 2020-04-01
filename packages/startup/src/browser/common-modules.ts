@@ -15,13 +15,10 @@ import { QuickOpenModule } from '@ali/ide-quick-open/lib/browser';
 import { ClientCommonModule, BrowserModule, ConstructorOf } from '@ali/ide-core-browser';
 import { ThemeModule } from '@ali/ide-theme/lib/browser';
 
-import { ActivationEventModule } from '@ali/ide-activation-event';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/lib/browser';
 import { OutlineModule } from '@ali/ide-outline/lib/browser';
 import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
-import { UserstorageModule } from '@ali/ide-userstorage/lib/browser';
 import { ToolbarModule } from '@ali/ide-toolbar/lib/browser';
-// import { NavigationBarModule } from '@ali/ide-navigation-bar/lib/browser';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
 import { StorageModule } from '@ali/ide-storage/lib/browser';
@@ -46,6 +43,9 @@ import { MonacoEnhanceModule } from '@ali/ide-monaco-enhance/lib/browser/module'
 
 import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
 import { TerminalNextModule } from '@ali/ide-terminal-next/lib/browser';
+import { CommentsModule } from '@ali/ide-comments/lib/browser';
+
+import { ClientAddonModule } from '@ali/ide-addons/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
@@ -67,13 +67,11 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MarkersModule,
 
     ThemeModule,
-    ActivationEventModule,
     WorkspaceModule,
     ExtensionStorageModule,
     StorageModule,
     OpenedEditorModule,
     OutlineModule,
-    UserstorageModule,
     PreferencesModule,
     ToolbarModule,
     WindowModule,
@@ -92,4 +90,8 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     // FeatureExtensionModule,
     ExtensionManagerModule,
     MonacoEnhanceModule,
+
+    // addons
+    ClientAddonModule,
+    CommentsModule,
 ];

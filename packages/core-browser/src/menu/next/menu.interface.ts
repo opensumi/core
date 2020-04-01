@@ -2,13 +2,12 @@ import { CommandRegistry, CommandService, Command, isOSX } from '@ali/ide-core-c
 import { IDisposable } from '@ali/ide-core-common/lib/disposable';
 import { Event } from '@ali/ide-core-common/lib/event';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
-import { warning } from '@ali/ide-core-common/lib/utils/warning';
 
 import { IContextKeyService } from '../../context-key';
 import { ISubmenuItem, MenuNode } from './base';
 import { MenuId } from './menu-id';
 import { KeybindingRegistry } from '../../keybinding';
-import { ICtxMenuRenderer, CtxMenuRenderParams } from './renderer/ctxmenu/base';
+import { ICtxMenuRenderer } from './renderer/ctxmenu/base';
 
 export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
 

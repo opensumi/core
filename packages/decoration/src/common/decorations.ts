@@ -1,4 +1,4 @@
-import { Uri, Event, CancellationToken, IDisposable } from '@ali/ide-core-common';
+import { Disposable, Uri, Event, CancellationToken, IDisposable } from '@ali/ide-core-common';
 
 type ColorIdentifier = string;
 
@@ -28,7 +28,7 @@ export interface IDecoration {
   color?: string; // color id
 }
 
-export abstract class IDecorationsService {
+export abstract class IDecorationsService extends Disposable {
   readonly onDidChangeDecorations: Event<IResourceDecorationChangeEvent>;
 
   abstract registerDecorationsProvider(provider: IDecorationsProvider): IDisposable;

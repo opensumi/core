@@ -1,13 +1,13 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
 import { Domain, IEventBus, ContributionProvider, localize, OnEvent, WithEventBus } from '@ali/ide-core-common';
-import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry } from '@ali/ide-core-browser';
+import { IContextKeyService, ClientAppContribution, SlotLocation, SlotRendererContribution, SlotRendererRegistry, slotRendererRegistry, KeybindingRegistry } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../common';
 import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
-import { IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenuRegistry, NextMenuContribution as MenuContribution, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -60,8 +60,8 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   iconClass: getIcon('shrink'),
 };
 
-@Domain(CommandContribution, ClientAppContribution, SlotRendererContribution)
-export class MainLayoutModuleContribution extends WithEventBus implements CommandContribution, ClientAppContribution, SlotRendererContribution {
+@Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution)
+export class MainLayoutModuleContribution extends WithEventBus implements CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution {
 
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
@@ -93,8 +93,8 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
   @Autowired()
   private toolBarRegistry: ToolbarRegistry;
 
-  @Autowired(IMenuRegistry)
-  protected menuRegistry: IMenuRegistry;
+  @Autowired(KeybindingRegistry)
+  protected keybindingRegistry: KeybindingRegistry;
 
   async initialize() {
     const componentContributions = this.contributionProvider.getContributions();
@@ -114,13 +114,7 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
   async onStart() {
     // 全局只要初始化一次
     await this.layoutState.initStorage();
-    this.menuRegistry.registerMenuItem(MenuId.ActivityBarExtra, {
-      submenu: MenuId.SettingsIconMenu,
-      iconClass: getIcon('setting'),
-      label: localize('layout.tabbar.setting', '打开偏好设置'),
-      order: 1,
-      group: 'navigation',
-    });
+    this.registerSideToggleKey();
   }
 
   registerRenderer(registry: SlotRendererRegistry) {
@@ -215,10 +209,97 @@ export class MainLayoutModuleContribution extends WithEventBus implements Comman
         this.mainLayoutService.expandBottom(false);
       },
     });
+
+    commands.registerCommand({
+      id: 'view.outward.right-panel.hide',
+    }, {
+      execute: () => {
+        this.commandService.executeCommand('main-layout.right-panel.toggle', false);
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.right-panel.show',
+    }, {
+      execute: (size?: number) => {
+        this.commandService.executeCommand('main-layout.right-panel.toggle', true, size);
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.left-panel.hide',
+    }, {
+      execute: () => {
+        this.commandService.executeCommand('main-layout.left-panel.toggle', false);
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.left-panel.show',
+    }, {
+      execute: (size?: number) => {
+        this.commandService.executeCommand('main-layout.left-panel.toggle', true, size);
+      },
+    });
+  }
+
+  registerNextMenus(menus: IMenuRegistry) {
+    menus.registerMenuItem(MenuId.ActivityBarExtra, {
+      submenu: MenuId.SettingsIconMenu,
+      iconClass: getIcon('setting'),
+      label: localize('layout.tabbar.setting', '打开偏好设置'),
+      order: 1,
+      group: 'navigation',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.right-panel.hide',
+        label: localize('menu-bar.view.outward.right-panel.hide'),
+      },
+      when: 'rightPanelVisible',
+      group: '5_panel',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.right-panel.show',
+        label: localize('menu-bar.view.outward.right-panel.show'),
+      },
+      when: '!rightPanelVisible',
+      group: '5_panel',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.left-panel.hide',
+        label: localize('menu-bar.view.outward.left-panel.hide'),
+      },
+      when: 'leftPanelVisible',
+      group: '5_panel',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: 'view.outward.left-panel.show',
+        label: localize('menu-bar.view.outward.left-panel.show'),
+      },
+      when: '!leftPanelVisible',
+      group: '5_panel',
+    });
   }
 
   @OnEvent(RenderedEvent)
   didMount() {
     this.mainLayoutService.didMount();
   }
+
+  protected registerSideToggleKey() {
+    this.keybindingRegistry.registerKeybinding({
+      keybinding: 'ctrlcmd+b',
+      command: TOGGLE_LEFT_PANEL_COMMAND.id,
+    });
+    this.keybindingRegistry.registerKeybinding({
+      keybinding: 'ctrlcmd+j',
+      command: TOGGLE_BOTTOM_PANEL_COMMAND.id,
+    });
+  }
+
 }

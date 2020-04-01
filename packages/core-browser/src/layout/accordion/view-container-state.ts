@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable  } from '@ali/common-di';
-import { SlotLocation, Disposable } from '../..';
+import { Disposable } from '../..';
 import { ViewState } from '../';
 
 @Injectable()

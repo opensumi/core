@@ -1,25 +1,7 @@
-import { KeybindingScope } from '@ali/ide-core-browser';
+// 快捷键相关功能为纯前端模块，这里直接从browser引入定义
+import { Keybinding } from '@ali/ide-core-browser';
 
 export const IKeymapService = Symbol('IKeymapService');
-
-export interface KeybindingJson {
-  /**
-   * 命令ID
-   */
-  command: string;
-  /**
-   * 可视化的快捷键
-   */
-  keybinding: string;
-  /**
-   * when条件语句
-   */
-  when: string;
-  /**
-   * context条件语句
-   */
-  context: string;
-}
 
 export interface KeybindingItem {
   id: string;
@@ -47,12 +29,16 @@ export interface KeybindingItem {
 
 export interface IKeymapService {
   /**
+   * 初始化快捷键注册信息
+   */
+  init(): Promise<void>;
+  /**
    * 设置快捷键
-   * @param {KeybindingJson} keybindingJson
+   * @param {Keybinding} keybinding
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  setKeybinding(keybindingJson: KeybindingJson): Promise<void>;
+  setKeybinding(keybinding: Keybinding): void;
 
   /**
    * 移除给定ID的快捷键绑定
@@ -67,7 +53,7 @@ export interface IKeymapService {
    * @returns {Promise<KeybindingJson[]>}
    * @memberof KeymapsService
    */
-  getKeybindings(): Promise<KeybindingJson[]>;
+  getKeybindings(): Promise<Keybinding[]>;
 
   /**
    * 打开快捷键面板

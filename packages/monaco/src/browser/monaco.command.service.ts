@@ -1,10 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, localize, CommandService, isElectronRenderer, IReporterService, REPORT_NAME } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, CommandService, isElectronRenderer, IReporterService, REPORT_NAME } from '@ali/ide-core-browser';
 
 import ICommandEvent = monaco.commands.ICommandEvent;
 import ICommandService = monaco.commands.ICommandService;
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
+import { WorkbenchEditorService, EditorCollectionService } from '@ali/ide-editor';
 import { SELECT_ALL_COMMAND } from './monaco-menu';
 
 /**
@@ -60,6 +59,7 @@ export class MonacoCommandService implements ICommandService {
 
   @Autowired(IReporterService)
   reporterService: IReporterService;
+
   /**
    * 设置委托对象
    * @param delegate 真正要执行 monaco 内部 command 的 commandSerice
@@ -108,6 +108,9 @@ export class MonacoCommandRegistry {
 
   @Autowired(WorkbenchEditorService)
   protected workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(EditorCollectionService)
+  editorCollectionService: EditorCollectionService;
 
   /**
    * 给命令加入 monaco 前缀，防止全局被污染
@@ -172,7 +175,7 @@ export class MonacoCommandRegistry {
   protected execute(monacoHandler: MonacoEditorCommandHandler, ...args: any[]): any {
     const editor = this.getActiveCodeEditor();
     if (editor) {
-      editor.focus();
+      // editor.focus();
       return Promise.resolve(monacoHandler.execute(editor, ...args));
     }
     return Promise.resolve();
@@ -199,9 +202,19 @@ export class MonacoCommandRegistry {
    * 此处的活动编辑器和 workbenchEditorService.currentEditor 的概念不同，对于diffEditor，需要获取确实的那个editor而不是modifiedEditor
    */
   protected getActiveCodeEditor(): monaco.editor.ICodeEditor | undefined {
+
+    // 先从editor-collection的焦点追踪，contextMenu追踪中取
+    if (this.editorCollectionService.currentEditor) {
+      return this.editorCollectionService.currentEditor.monacoEditor;
+    }
+
+    // 使用当前 editorGroup.editor 兜底
     const editorGroup = this.workbenchEditorService.currentEditorGroup;
     if (editorGroup) {
-      return ((editorGroup.currentFocusedEditor || editorGroup.currentEditor)! as IMonacoImplEditor).monacoEditor;
+      const editor = editorGroup.currentFocusedEditor || editorGroup.currentEditor;
+      if (editor) {
+        return editor.monacoEditor;
+      }
     }
   }
 }
@@ -228,6 +241,7 @@ export class MonacoActionRegistry {
    */
   protected static readonly EXCLUDE_ACTIONS = [
     'editor.action.quickCommand',
+    'editor.action.toggleHighContrast',
   ];
 
   /**

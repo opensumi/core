@@ -15,7 +15,7 @@ export const AccordionContainer: React.FC<{
   minSize?: number;
   noRestore?: boolean;
   className?: string;
-}> = observer(({ alignment = 'vertical', views, containerId, initState = new Map(), headerSize = 22, minSize = 120, className, noRestore }) => {
+}> = observer(({ alignment = 'vertical', views, containerId, initState = new Map(), headerSize = 24, minSize = 120, className, noRestore }) => {
   const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore);
   React.useEffect(() => {
     // 解决视图在渲染前注册的问题
@@ -32,6 +32,8 @@ export const AccordionContainer: React.FC<{
     const viewState: SectionState = accordionService.getViewState(view.id);
     return !viewState.collapsed;
   });
+  // tslint:disable-next-line:no-unused-variable
+  const forceUpdate = accordionService.forceUpdate;
   return <SplitPanel
     className={className}
     dynamicTarget={true}

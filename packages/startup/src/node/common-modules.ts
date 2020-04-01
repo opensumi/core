@@ -6,6 +6,7 @@ import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/node';
 
 import { ProcessModule } from '@ali/ide-process';
 
+import { FileSearchModule } from '@ali/ide-file-search';
 import { SearchModule } from '@ali/ide-search';
 import { TerminalNodePtyModule } from '@ali/ide-terminal-next/lib/node';
 import { LogServiceModule } from '@ali/ide-logs/lib/node';
@@ -20,6 +21,7 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   ExtensionStorageModule,
   StorageModule,
   ProcessModule,
+  FileSearchModule,
   SearchModule,
   TerminalNodePtyModule,
   DebugModule,

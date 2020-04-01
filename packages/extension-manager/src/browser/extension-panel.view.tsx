@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-// import Tabs from 'antd/lib/tabs';
-// import 'antd/lib/tabs/style/index.less';
-import { useInjectable, localize, CommandRegistry, IEventBus, ResizeEvent } from '@ali/ide-core-browser';
+import { useInjectable, localize, CommandRegistry } from '@ali/ide-core-browser';
 import { enableExtensionsContainerId, hotExtensionsContainerId, enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsFromMarketplaceTarbarHandlerId, searchExtensionsFromInstalledTarbarHandlerId, IExtensionManagerService, hotExtensionsFromMarketplaceTarbarHandlerId, TabActiveKey, SearchFromMarketplaceCommandId } from '../common';
 import { ExtensionHotAccordion, ExtensionEnableAccordion, ExtensionDisableAccordion, ExtensionSearchInstalledAccordion, ExtensionSearchMarketplaceAccordion } from './extension-panel-accordion.view';
 import { ExtensionSearch } from './components/extension-search';
@@ -89,6 +87,7 @@ export default observer(() => {
   return (
     <div className={styles.panel}>
       <Tabs
+        mini
         className={styles.tabs}
         value={selectedTabIndex}
         onChange={(index: number) => {

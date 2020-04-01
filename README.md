@@ -132,7 +132,7 @@ Electron的运行时每一个进程都会单独打包成js， 需要进行构建
 npm run build:electron
 ````
 
-启动electron
+启动 electron
 
 ````
 npm run start:electron

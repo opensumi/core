@@ -1,15 +1,14 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
-import { Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
-import { Input, CheckBox } from '@ali/ide-components';
+import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
+import { Input, ValidateInput, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-components';
 import { ViewState } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
   SEARCH_STATE,
-  ResultTotal,
 } from '../common/';
 import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
@@ -17,7 +16,6 @@ import { SearchTree } from './search-tree.view';
 function getIncludeRuleContent() {
   return (
     <div className={cls(styles.include_rule_content)}>
-      <p>{localize('search.help.supportRule')}</p>
       <ul>
         <li>, : {localize('search.help.concatRule')}</li>
         <li>* : {localize('search.help.matchOneOrMoreRule')}</li>
@@ -30,15 +28,9 @@ function getIncludeRuleContent() {
   );
 }
 
-function getExcludeRuleContent(excludeList: string[], openPreference) {
+function getExcludeRuleContent(excludeList: string[]) {
   return (
     <div className={cls(styles.exclude_rule_content)}>
-      <p>
-        {localize('search.help.excludeList')}
-        <span onClick={openPreference}>
-          {localize('search.help.modify')}
-        </span>
-      </p>
       <div>
         {excludeList.map((exclude, index) => {
           if (index === excludeList.length - 1) {
@@ -70,6 +62,9 @@ export const Search = observer(({
   const updateUIState = searchBrowserService.updateUIState;
   const UIState = searchBrowserService.UIState;
   const searchError = searchBrowserService.searchError;
+  const isSearchDoing = searchBrowserService.isSearchDoing;
+  const validateMessage = searchBrowserService.validateMessage;
+  const isShowValidateMessage = searchBrowserService.isShowValidateMessage;
 
   React.useEffect(() => {
     setSearchPanelLayout({
@@ -79,12 +74,15 @@ export const Search = observer(({
   }, [UIState, searchOptionRef.current, searchResults.size > 0]);
 
   const collapsePanelContainerStyle = {
-    width: viewState.width,
+    width: viewState.width || '100%',
     height: viewState.height,
   };
 
   return (
     <div className={styles.wrap} style={collapsePanelContainerStyle}>
+      <div className={styles['loading-wrap']}>
+        <ProgressBar loading={isSearchDoing} />
+      </div>
       <div className={styles.search_options} ref={searchOptionRef}>
         <div className={styles.search_and_replace_container}>
           <div className={styles.search_and_replace_fields}>
@@ -100,7 +98,7 @@ export const Search = observer(({
                 />
               </p>
               <div className={cls(styles.search_field, { [styles.focus]: UIState.isSearchFocus })}>
-                <Input
+                <ValidateInput
                   id='search-input-field'
                   title={localize('search.input.placeholder')}
                   type='text'
@@ -111,7 +109,8 @@ export const Search = observer(({
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchInputChange}
                   ref={searchBrowserService.searchInputEl}
-                  controls={[
+                  validateMessage={isShowValidateMessage ? validateMessage : undefined }
+                  addonAfter={[
                     <span
                     key={localize('caseDescription')}
                     className={cls(getIcon('ab'), styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
@@ -145,10 +144,11 @@ export const Search = observer(({
             <div className='glob_field-container'>
               <div className={cls(styles.glob_field)}>
                 <div className={cls(styles.label)}>
-                  {localize('search.includes')}
+                  <span className={styles.limit}>{localize('search.includes')}</span>
                   <span className={cls(styles.include_rule)}>
                     <Popover
                       id={'show_include_rule'}
+                      title={localize('search.help.supportRule')}
                       content={getIncludeRuleContent()}
                       trigger={PopoverTriggerType.hover}
                       delay={500}
@@ -166,24 +166,30 @@ export const Search = observer(({
                 />
               </div>
               <div className={cls(styles.glob_field, styles.search_excludes)}>
-                <div className={cls(styles.label)}>
-                  {localize('search.excludes')}
-                  <Popover
-                    insertClass={cls(styles.search_excludes_description)}
-                    id={'search_excludes'}
-                    content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes(), searchBrowserService.openPreference)}
-                    trigger={PopoverTriggerType.hover}
-                    delay={500}
-                  >
-                    <span className={cls(getIcon('question-circle'))}></span>
-                  </Popover>
-                  <CheckBox
-                    insertClass={cls(styles.checkbox)}
-                    label={localize('search.excludes.default.enable')}
-                    checked={!UIState.isIncludeIgnored}
-                    id='search-input-isIncludeIgnored'
-                    onChange={() => { updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }); }}
-                  />
+                <div className={styles.label}>
+                  <span className={styles.limit}>{localize('search.excludes')}</span>
+                  <div className={styles.checkbox_wrap}>
+                    <CheckBox
+                      insertClass={cls(styles.checkbox)}
+                      label={localize('search.excludes.default.enable')}
+                      checked={!UIState.isIncludeIgnored}
+                      id='search-input-isIncludeIgnored'
+                      onChange={() => { updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }); }}
+                    />
+                    <Popover
+                      title={localize('search.help.excludeList')}
+                      insertClass={cls(styles.search_excludes_description)}
+                      id={'search_excludes'}
+                      action={localize('search.help.modify')}
+                      onClickAction={searchBrowserService.openPreference}
+                      content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes())}
+                      trigger={PopoverTriggerType.hover}
+                      delay={500}
+                    >
+                      <span className={cls(getIcon('question-circle'))}></span>
+                    </Popover>
+                  </div>
+
                 </div>
                 <Input
                   type='text'

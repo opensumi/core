@@ -2,7 +2,7 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer, IDebuggerContribution } from '@ali/ide-debug';
-import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSchemaUpdater, DebugBreakpoint, DebugSessionContributionRegistry, DebugModelManager, SourceBreakpoint } from '@ali/ide-debug/lib/browser';
+import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSessionContributionRegistry, DebugModelManager, SourceBreakpoint } from '@ali/ide-debug/lib/browser';
 import { IRPCProtocol, WSChannelHandler } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
@@ -11,7 +11,7 @@ import { IMessageService } from '@ali/ide-overlay';
 import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry } from './debug';
 import { ExtensionDebugService } from './debug/extension-debug-service';
 import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
-import { ActivationEventService } from '@ali/ide-activation-event';
+import { IActivationEventService } from '../../types';
 import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
@@ -63,8 +63,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(IDebugServer)
   protected readonly adapterContributionRegistrator: ExtensionDebugService;
 
-  @Autowired(ActivationEventService)
-  protected readonly activationEventService: ActivationEventService;
+  @Autowired(IActivationEventService)
+  protected readonly activationEventService: IActivationEventService;
 
   @Autowired(DebugSessionContributionRegistry)
   sessionContributionRegistrator: ExtensionDebugSessionContributionRegistry;

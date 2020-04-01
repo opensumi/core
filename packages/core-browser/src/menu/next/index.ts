@@ -7,3 +7,4 @@ export * from './menu.contrib.interface';
 export * from './renderer/ctxmenu/base';
 export * from './menubar-service';
 export * from './ctxmenu-service';
+export * from './toolbar-action.service';

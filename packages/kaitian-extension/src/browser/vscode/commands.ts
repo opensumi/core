@@ -138,6 +138,12 @@ export namespace VSCodeCommands {
     delegate: FILE_COMMANDS.FOCUS_FILES.id,
   };
 
+  // 打开激活的编辑器组
+  export const WORKBENCH_FOCUS_ACTIVE_EDITOR_GROUP: Command = {
+    id: 'workbench.action.focusActiveEditorGroup',
+    delegate: EDITOR_COMMANDS.FOCUS_ACTIVE_EDITOR_GROUP.id,
+  };
+
   // 打开内容
   export const OPEN: Command = {
     id: 'vscode.open',

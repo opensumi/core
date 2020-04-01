@@ -1732,3 +1732,11 @@ export class QuickInputButtons {
     tooltip: 'Back',
   };
 }
+
+export enum TextDocumentSaveReason {
+  Manual = 1,
+  AfterDelay = 2,
+  FocusOut = 3,
+}
+
+export { TextEditorRevealType } from './editor';

@@ -1,7 +1,7 @@
 import { IDebugSessionManager } from '../../common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
-import { DisposableCollection, Emitter, Event, ILogger, TreeNode } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, Event, ILogger, TreeNode } from '@ali/ide-core-browser';
 import { ExpressionWatchItem } from '../console/debug-console-items';
 import throttle = require('lodash.throttle');
 
@@ -26,10 +26,12 @@ export class DebugWatch implements DebugWatchData {
 
   private nodes: any[] = [];
 
+  whenReady: Promise<any>;
+
   onDidChangeEmitter: Emitter<void> = new Emitter();
 
   constructor() {
-    this.init();
+    this.whenReady = this.init();
   }
 
   async init() {

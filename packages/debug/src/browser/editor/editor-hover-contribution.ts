@@ -7,7 +7,7 @@ import { IContextKeyService } from '@ali/ide-core-browser';
 @Injectable()
 export class EditorHoverContribution implements IEditorFeatureContribution {
 
-  static keySet = new Set(['inDebugMode']);
+  static keySet = new Set(['debugStopped']);
 
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
@@ -27,7 +27,7 @@ export class EditorHoverContribution implements IEditorFeatureContribution {
   }
 
   updateHoverEnabled(editor: IEditor) {
-    const inDebugMode = this.contextKeyService.match('inDebugMode');
+    const inDebugMode = this.contextKeyService.match('debugStopped');
     // monaco 内置hover选项
     editor.monacoEditor.updateOptions({
       hover: {

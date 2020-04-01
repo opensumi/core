@@ -7,7 +7,7 @@
   position: absolute;
 
   .search_options {
-    padding: 0 10px;
+    padding: 0 8px;
     display: block;
 
     input {
@@ -165,15 +165,24 @@
     .glob_field {
       display: flex;
       flex-direction: column;
+      white-space: nowrap;
 
       .label {
         margin: 12px 0 4px 0;
         user-select: none;
         font-size: @kt-ui-font-size0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .checkbox_wrap {
+        display: flex;
+        align-items: center;
       }
 
       input[type="text"] {
-        width: auto;
+        // width: auto;
       }
 
       .include_rule {
@@ -186,15 +195,9 @@
     font-size: @kt-ui-font-size1;
   }
 
-  .checkbox {
-    float: right;
-  }
-
   .search_excludes_description {
-    float: right;
-    margin-top: 0px;
+    line-height: 1;
     margin-left: 5px;
-    margin-bottom: -10px;
   }
 }
 
@@ -301,4 +304,16 @@
     max-width: 200px;
     color: var(--descriptionForeground);
   }
+}
+
+.limit {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.loading-wrap {
+  position: relative;
+  width: calc(100% - 16px);
+  margin-left: 8px;
 }

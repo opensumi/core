@@ -1,4 +1,4 @@
-import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType, IEditor } from '../common';
+import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, IEditorOpenType, IEditor } from '../common';
 import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
@@ -27,6 +27,11 @@ export enum EditorComponentRenderMode {
   ONE_PER_WORKBENCH = 3, // 整个IDE只有一个, 视图会被重用
 }
 
+/**
+ * 注册编辑器组件 Resolver 时触发
+ */
+export class RegisterEditorComponentResolverEvent extends BasicEvent<string> {}
+
 export abstract class EditorComponentRegistry {
 
   abstract registerEditorComponent<T>(component: IEditorComponent<T>, initialProps?: any): IDisposable;
@@ -49,7 +54,7 @@ export abstract class EditorComponentRegistry {
  * @param resolve 调用这个函数，传入结果可结束责任链直接返回支持的打开方式
  */
 export type IEditorComponentResolver<MetaData = any> =
-  (resource: IResource<MetaData>, results: IEditorOpenType[], resolve?: (results: IEditorOpenType[]) => void) => MaybePromise<void>;
+  (resource: IResource<MetaData>, results: IEditorOpenType[], resolve: (results: IEditorOpenType[]) => void) => MaybePromise<void>;
 
 export const BrowserEditorContribution = Symbol('BrowserEditorContribution');
 
@@ -130,6 +135,7 @@ export interface IDynamicModelDecorationProperty extends IDisposable {
 }
 
 export interface IThemedCssStyle extends IDisposable {
+  glyphMarginClassName?: string;
   className?: string;
   inlineClassName?: string;
   afterContentClassName?: string;
@@ -307,3 +313,5 @@ export interface IEditorFeatureContribution {
   contribute(editor: IEditor): IDisposable;
 
 }
+
+export class ResourceOpenTypeChangedEvent extends BasicEvent<URI> {}

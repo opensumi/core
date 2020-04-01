@@ -3,6 +3,7 @@ import { MaybePromise } from './async';
 import { ContributionProvider } from './contribution-provider';
 import { Disposable, IDisposable } from './disposable';
 import { replaceLocalizePlaceholder } from './localize';
+import { getDebugLogger } from './log';
 
 type InterceptorFunction = (result: any) => MaybePromise<any>;
 
@@ -39,6 +40,11 @@ export interface Command {
    * 在任意语言下都相同的别名
    */
   alias?: string;
+  /**
+   * 是否启用该命令，值为 when 表达式
+   * 这个值只影响 UI 是否展示 （命令面板或者菜单）
+   */
+  enablement?: string;
 }
 
 /**
@@ -127,6 +133,10 @@ export const CommandRegistry = Symbol('CommandRegistry');
  */
 export interface CommandService {
   executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined>;
+  /**
+   * 执行命令将报错 catch 并 log 输出
+   */
+  tryExecuteCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined>;
 }
 /**
  * 命令注册和管理模块
@@ -584,5 +594,14 @@ export class CommandServiceImpl implements CommandService {
 
   executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
     return this.commandRegistry.executeCommand(commandId, ...args);
+  }
+
+  async tryExecuteCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
+    try {
+      return await this.executeCommand(commandId, ...args)
+    } catch(err) {
+      // no-op: failed when command not found
+      getDebugLogger().warn(err);
+    }
   }
 }

@@ -1,5 +1,5 @@
 import { FileStat } from '@ali/ide-file-service';
-import { Emitter, Command, URI, Deferred } from '@ali/ide-core-common';
+import { Emitter, URI, Deferred } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
 import { IWorkspaceService } from '../../common';
 
@@ -58,6 +58,7 @@ export class MockWorkspaceService implements IWorkspaceService {
     this._roots = [root];
     this.deferredRoots = new Deferred<FileStat[]>();
     this.deferredRoots.resolve(this._roots);
+    this._onWorkspaceChanged.fire(this._roots);
   }
 
   _onWorkspaceChanged: Emitter<FileStat[]> = new Emitter();
@@ -94,7 +95,8 @@ export class MockWorkspaceService implements IWorkspaceService {
     throw new Error('Method not implemented.');
   }
   spliceRoots(start: number, deleteCount?: number | undefined, workspaceName?: {[key: string]: string}, ...rootsToAdd: URI[]): Promise<URI[]> {
-    throw new Error('Method not implemented.');
+    this._roots = rootsToAdd.map((root) => ({ isDirectory: true, uri: root.toString(), lastModification: 0 }));
+    return Promise.resolve(rootsToAdd);
   }
   asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean | undefined): Promise<string | undefined> {
     throw new Error('Method not implemented.');

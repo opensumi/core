@@ -3,7 +3,8 @@
   "compilerOptions": {
     "sourceMap": true,
     "skipLibCheck": false,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "noUnusedLocals": false,
   },
   "include": [
     "./packages",
@@ -16,5 +17,6 @@
     "./tools/workspace/**/*",
     "./tools/extensions/**/*",
     "./tools/candidate-ext/**/*"
-  ]
+  ],
+  "tslint.configFile": "./tslint.yml"
 }

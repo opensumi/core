@@ -118,5 +118,21 @@ describe('event-bus', () => {
     expect(spy).toBeCalledTimes(2);
     expect(spy).toBeCalledWith(resizeEvent);
   });
-  
+
+  it('event bus once 只能触发一次', () => {
+    const eventBus = new EventBusImpl();
+    const spy = jest.fn();
+    eventBus.once(AEvent, spy);
+
+    const a1 = new AEvent(1);
+    eventBus.fire(a1);
+
+    const a2 = new AEvent(2);
+    eventBus.fire(a2);
+
+
+    expect(spy).toBeCalledTimes(1);
+    expect(spy).toBeCalledWith(a1);
+  });
+
 });

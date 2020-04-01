@@ -1,13 +1,14 @@
 import * as React from 'react';
 import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
-import { Button } from '@ali/ide-components';
-import * as styles from './file-dialog.module.less';
 import { useInjectable, localize, URI, TreeNode } from '@ali/ide-core-browser';
+import { Button, Input, Select } from '@ali/ide-components';
+import * as path from '@ali/ide-core-common/lib/utils/paths';
+
 import { FileDialogService } from './file-dialog.service';
 import { FileDialogTree } from './file-dialog.tree';
-import { Select } from '@ali/ide-core-browser/lib/components/select';
-import { Input } from '@ali/ide-components';
-import * as path from '@ali/ide-core-common/lib/utils/paths';
+import { Directory, File } from '../file-tree-item';
+
+import * as styles from './file-dialog.module.less';
 
 export const FileDialog = (
   { options }: React.PropsWithChildren<{
@@ -20,7 +21,7 @@ export const FileDialog = (
     getFiles,
     getDirectoryList,
   }: FileDialogService = useInjectable<FileDialogService>(FileDialogService);
-  const [node, setNode] = React.useState();
+  const [node, setNode] = React.useState<Directory | File | undefined>();
   const [saveOrOpenValue, setSaveOrOpenValue] = React.useState<string[]>([]);
   const [ fileName, setFileName] = React.useState<string>((options as ISaveDialogOptions).defaultFileName || '');
 
@@ -59,7 +60,6 @@ export const FileDialog = (
   };
 
   const isSaveDialog = !IOpenDialogOptions.is(options) && ISaveDialogOptions.is(options);
-  const isOpenDialog = IOpenDialogOptions.is(options) && !ISaveDialogOptions.is(options);
   const isNormalDialog = !IOpenDialogOptions.is(options) && !ISaveDialogOptions.is(options);
 
   const directoryOptions = getDirectoryList().map((item, idx) =>

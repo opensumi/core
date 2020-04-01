@@ -1,15 +1,14 @@
 import { Injector } from '@ali/common-di';
-import { FileSystemNodeOptions, FileServiceModule } from '../../src/node';
-import { IFileService } from '../../src/common';
-import { URI, FileUri } from '@ali/ide-core-node';
+import { FileServiceModule } from '../../src/node';
+import { IFileService, FileChangeType } from '../../src/common';
+import { URI, FileUri, AppConfig } from '@ali/ide-core-node';
 import { isWindows } from '../../../core-common';
-// import * as os from 'os';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 // import { servicePath as FileTreeServicePath } from '@ali/ide-file-tree'
 // import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
+// import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
 
 // tslint:disable:variable-name
 
@@ -23,7 +22,10 @@ describe('FileService', () => {
   beforeEach(() => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
 
-    injector = createNodeInjector([FileServiceModule]);
+    injector = createNodeInjector([FileServiceModule], new Injector([{
+      token: AppConfig,
+      useValue: { useExperimentalEfsw: true },
+    }]));
 
     // injector = new Injector([{
     //   token: 'FileServiceOptions',
@@ -656,6 +658,68 @@ describe('FileService', () => {
       expect(await fileService.getCurrentUserHome()).toBeDefined();
     });
 
+  });
+
+  describe('watch', () => {
+    it('Should return id and dispose', async () => {
+      const watchId = await fileService.watchFileChanges(root.toString());
+      expect(typeof watchId).toEqual('number');
+      fileService.unwatchFileChanges(watchId);
+    });
+
+    it('Should set and get Excludes', () => {
+      fileService.setWatchFileExcludes(['test']);
+      expect(fileService.getWatchFileExcludes()).toEqual(['test']);
+
+      fileService.setFilesExcludes(['test'], ['/root']);
+      expect(fileService.getFilesExcludes()).toEqual(['test']);
+    });
+
+  });
+
+  describe('getFsPath', () => {
+    it('Should return fsPath', async () => {
+      expect(await fileService.getFsPath(root.resolve('test').toString())).toEqual(root.resolve('test').codeUri.fsPath);
+    });
+  });
+
+  describe('getFileType', () => {
+    it ('Should return file type', async () => {
+      const uri = root.resolve('foo.txt');
+      fs.writeFileSync(FileUri.fsPath(uri), 'foo');
+
+      expect(await fileService.getFileType(uri.toString())).toEqual('text');
+    });
+  });
+
+  describe('getUri', () => {
+    it('Should return uri', async () => {
+      const uri = root.resolve('foo.txt');
+      fs.writeFileSync(FileUri.fsPath(uri), 'foo');
+
+      expect((await fileService.getUri(uri.toString())).toString()).toEqual(uri.toString());
+    });
+  });
+
+  describe('fireFilesChange', () => {
+    it('Should fireFilesChange event', () => {
+      let changes;
+      (fileService as any).rpcClient = [{
+        onDidFilesChanged(args) {
+          changes = args.changes;
+        },
+      }];
+      const uri = root.resolve('foo.txt');
+      fileService.fireFilesChange([{ uri: uri.toString(), type: FileChangeType.UPDATED}]);
+
+      expect(changes).toEqual([{ uri: uri.toString(), type: FileChangeType.UPDATED}]);
+    });
+  });
+
+  describe('dispose', () => {
+    it('Should no error', async () => {
+      expect(fileService.dispose()).toBeUndefined();
+    });
   });
 });
 

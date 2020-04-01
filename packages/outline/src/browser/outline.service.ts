@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, OnEvent, TreeNode, CompositeTreeNode, URI, MaybeNull, IPosition, IdleValue, compareRangesUsingStarts, IContextKeyService, IStorage, MarkerManager, MarkerSeverity, IRange } from '@ali/ide-core-browser';
+import { WithEventBus, OnEvent, URI, MaybeNull, IdleValue, compareRangesUsingStarts, IContextKeyService, IStorage, MarkerManager, MarkerSeverity, IRange } from '@ali/ide-core-browser';
 import { DocumentSymbolChangedEvent, DocumentSymbolStore, DocumentSymbol, INormalizedDocumentSymbol } from '@ali/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { observable, action } from 'mobx';
 import { getSymbolIcon } from '@ali/ide-core-browser';
@@ -33,9 +33,9 @@ export class OutLineService extends WithEventBus {
   }
 
   set sortType(type: OutlineSortOrder) {
+    this._sortType = type;
     this.doUpdate(this.currentUri);
     this.ctxKeyService.createKey('outlineSortType', type);
-    this._sortType = type;
     this.state.set('sortType', type);
   }
 
@@ -167,7 +167,7 @@ export class OutLineService extends WithEventBus {
     const clonedSymbols = symbols && symbols.map((i) => i) || [];
     const diagnosisInfo: IOutlineMarker[] = uri ? this.markerManager.getMarkers({ resource: uri.toString(), opened: true }) : [];
     // 为了后续使用折半查找
-    diagnosisInfo.sort(monaco.Range.compareRangesUsingStarts);
+    diagnosisInfo.sort(compareRangesUsingStarts);
     this.sortSymbolTree(clonedSymbols);
     this.currentUri = uri;
     if (clonedSymbols.length) {

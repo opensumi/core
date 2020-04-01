@@ -1,9 +1,9 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle, EditorDecorationChangeEvent, EditorDecorationTypeRemovedEvent } from './types';
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
-import { Disposable, URI, CancellationTokenSource, IEventBus } from '@ali/ide-core-common';
+import { Disposable, URI, IEventBus } from '@ali/ide-core-common';
 import { IThemeService } from '@ali/ide-theme';
-import clsx from 'clsx';
+import * as clsx from 'classnames';
 
 @Injectable({multiple: true})
 export class MonacoEditorDecorationApplier extends Disposable {
@@ -58,8 +58,8 @@ export class MonacoEditorDecorationApplier extends Disposable {
         return;
       }
 
-      for (const [key, value] of Object.entries(decs)) {
-        this.deltaDecoration(key, value);
+      for (const key of Object.keys(decs)) {
+        this.deltaDecoration(key, decs[key]);
       }
     }
   }
@@ -191,6 +191,9 @@ function assignModelDecorationStyle(target: monaco.editor.IModelDecorationOption
   }
   if (style.beforeContentClassName) {
     target.beforeContentClassName = clsx(target.beforeContentClassName, style.beforeContentClassName);
+  }
+  if (style.glyphMarginClassName) {
+    target.glyphMarginClassName = clsx(target.glyphMarginClassName, style.glyphMarginClassName);
   }
   if (style.overviewRulerColor) {
     if (target.overviewRuler) {

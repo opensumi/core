@@ -1,4 +1,4 @@
-import { ServerAppContribution, Domain, IServerApp, AppConfig} from '@ali/ide-core-node';
+import { ServerAppContribution, Domain, IServerApp, AppConfig } from '@ali/ide-core-node';
 import { Autowired } from '@ali/common-di';
 import { ALLOW_MIME } from '../common';
 import * as mount from 'koa-mount';

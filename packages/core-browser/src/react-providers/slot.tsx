@@ -3,13 +3,14 @@
  */
 
 import * as React from 'react';
-import { getLogger, isDevelopment } from '@ali/ide-core-common';
+import { getDebugLogger, isDevelopment } from '@ali/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
 import { useInjectable } from '../react-hooks';
 import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
 import { AppConfig } from './config-provider';
+import { Button } from '@ali/ide-components/src';
 
-const logger = getLogger();
+const logger = getDebugLogger();
 export type SlotLocation = string;
 export const SlotLocation = {
   top: 'top',
@@ -20,6 +21,7 @@ export const SlotLocation = {
   bottom: 'bottom',
   extra: 'extra',
   float: 'float',
+  action: 'action',
   // @deprecated ->
   bottomBar: 'bottomBar',
   bottomPanel: 'bottomPanel',
@@ -36,7 +38,7 @@ export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {
       return location;
     }
   }
-  getLogger().warn(`没有找到${module}所对应的位置！`);
+  getDebugLogger().warn(`没有找到${module}所对应的位置！`);
   return '';
 }
 
@@ -70,6 +72,10 @@ export class ErrorBoundary extends React.Component {
     logger.error(errorInfo);
   }
 
+  update() {
+    this.setState({error: null, errorInfo: null});
+  }
+
   render() {
     if (this.state.errorInfo) {
       if (isDevelopment()) {
@@ -81,11 +87,15 @@ export class ErrorBoundary extends React.Component {
               <br />
               {(this.state.errorInfo as any).componentStack}
             </details>
+            <Button onClick={() => this.update()}>重新加载</Button>
           </div>
         );
       } else {
         return (
-          <div>模块渲染异常</div>
+          <div>
+            <p>模块渲染异常</p>
+            <Button onClick={() => this.update()}>重新加载</Button>
+          </div>
         );
       }
     }
@@ -95,7 +105,7 @@ export class ErrorBoundary extends React.Component {
 
 export const allSlot: {slot: string, dom: HTMLElement}[] = [];
 
-export const SlotDecorator: React.FC<{slot: string}> = ({slot, ...props}) => {
+export const SlotDecorator: React.FC<{slot: string }> = ({slot, ...props}) => {
   const ref = React.useRef<HTMLElement>();
   React.useEffect(() => {
     if (ref.current) {
@@ -139,13 +149,13 @@ export function SlotRenderer({ slot, ...props }: any) {
   const layoutConfig = useInjectable<AppConfig>(AppConfig).layoutConfig;
   const componentKeys = layoutConfig[slot].modules;
   if (!componentKeys) {
-    console.warn(`${slot}位置未声明任何视图`);
+    getDebugLogger().warn(`${slot}位置未声明任何视图`);
   }
   const componentInfos: ComponentRegistryInfo[] = [];
   componentKeys.forEach((token) => {
     const info = componentRegistry.getComponentRegistryInfo(token);
     if (!info) {
-      console.warn(`${token}对应的组件不存在，请检查`);
+      getDebugLogger().warn(`${token}对应的组件不存在，请检查`);
     } else {
       componentInfos.push(info);
     }

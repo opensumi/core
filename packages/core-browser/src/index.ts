@@ -11,6 +11,7 @@ export * from './keybinding';
 export * from './keyboard';
 export * from './application';
 export * from './layout';
+export * from './tree';
 
 // 前端工具方法
 export * from './logger';

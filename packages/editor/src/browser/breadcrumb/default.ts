@@ -1,19 +1,16 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { IBreadCrumbService, IBreadCrumbPart, IBreadCrumbProvider, EditorSelectionChangeEvent } from '../types';
-import { IDisposable, URI, addElement, Emitter, CommandService, localize, WithEventBus, CancellationToken, CancellationTokenSource, MaybeNull, IRange, BasicEvent, OnEvent, EDITOR_COMMANDS, IPosition } from '@ali/ide-core-browser';
-import { observable } from 'mobx';
+import { IBreadCrumbPart, IBreadCrumbProvider, EditorSelectionChangeEvent } from '../types';
+import { URI, Emitter, CommandService, WithEventBus, MaybeNull, IRange, OnEvent, EDITOR_COMMANDS, IPosition } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common/file-service-client';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
-import { workspace } from 'vscode';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { FileStat } from '@ali/ide-file-service/lib/common';
-import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
-import { WorkbenchEditorService, IEditor } from '../../common';
-import { DocumentSymbolChangedEvent, DocumentSymbol, DocumentSymbolStore, INormalizedDocumentSymbol } from './document-symbol';
+import { IEditor } from '../../common';
+import { DocumentSymbolChangedEvent, DocumentSymbolStore, INormalizedDocumentSymbol } from './document-symbol';
 import debounce = require('lodash.debounce');
-import { getIcon, getSymbolIcon } from '@ali/ide-core-browser';
+import { getSymbolIcon } from '@ali/ide-core-browser';
 
 @Injectable()
 export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCrumbProvider {

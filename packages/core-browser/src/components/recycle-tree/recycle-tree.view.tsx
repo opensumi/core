@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { TreeProps, TreeContainer, TreeNode } from '../tree';
+import { TreeProps, TreeContainer, TreeNode, ExpandableTreeNode, TEMP_FILE_NAME } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
+import * as fuzzy from 'fuzzy';
 
 export interface RecycleTreeProps extends TreeProps {
   /**
@@ -100,6 +101,8 @@ export const RecycleTree = (
     onSelect,
     onBlur,
     onFocus,
+    onReveal,
+    filter,
     onTwistieClick,
     scrollTop,
     prerenderNumber = 10,
@@ -112,6 +115,7 @@ export const RecycleTree = (
     notifyFileDecorationsChange,
     notifyThemeChange,
     validate,
+    alwaysShowActions,
   }: RecycleTreeProps,
 ) => {
   const noop = () => { };
@@ -123,6 +127,38 @@ export const RecycleTree = (
   // 预加载因子
   const preFactor = 3 / 4;
   const upPrerenderNumber = Math.floor(prerenderNumber * preFactor);
+  const fuzzyOptions = {
+    pre: '<match>',
+    post: '</match>',
+    extract: (node: TreeNode) => {
+      if (typeof node.name === 'string') {
+        return node.name;
+      }
+      return '';
+    },
+  };
+
+  const isEqualOrParent = (node1: TreeNode, node2: TreeNode) => {
+    if (node1.id === node2.id) {
+      return true;
+    }
+    let parent = node2.parent;
+    while (parent) {
+      if (parent.id === node1.id) {
+        return true;
+      }
+      parent = parent.parent;
+    }
+    return false;
+  };
+
+  const isEqual  = (node1: TreeNode, node2: TreeNode) => {
+    if (node1.id === node2.id) {
+      return true;
+    }
+    return false;
+  };
+
   React.useEffect(() => {
     if (typeof scrollTop === 'number' && scrollRef) {
       scrollRef.scrollTop = scrollTop;
@@ -131,7 +167,38 @@ export const RecycleTree = (
   }, [scrollTop]);
 
   React.useEffect(() => {
-    let renderedFileItems = nodes!.filter((item: TreeNode, index: number) => {
+    let renderedFileItems;
+    if (filter) {
+      const fuzzyLists = fuzzy.filter(filter, nodes, fuzzyOptions);
+      const tempNode = nodes.find((node: TreeNode) => node.name === TEMP_FILE_NAME);
+      renderedFileItems = nodes.map((node: TreeNode) => {
+        for (const item of fuzzyLists) {
+          if (isEqual(node, (item as any).original)) {
+            // 匹配，存在高亮
+            return {
+              ...node,
+              name: () => {
+                return <div style={{
+                  flex: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }} dangerouslySetInnerHTML={{ __html: item.string || ''}}></div>;
+              },
+            };
+          } else if (isEqualOrParent(node, (item as any).original) || (tempNode && isEqualOrParent(node, tempNode))) {
+            // 子节点存在匹配，不高亮但需展示
+            return  node;
+          } else if (node.name === TEMP_FILE_NAME) {
+            // 如果为新建节点的节点，直接返回展示
+            return node;
+          }
+        }
+      }).filter((node: TreeNode) => !!node);
+    } else {
+      renderedFileItems = nodes;
+    }
+    renderedFileItems = renderedFileItems!.filter((item: TreeNode, index: number) => {
       return renderedStart <= index && index <= renderedEnd;
     });
     renderedFileItems = renderedFileItems.map((item: TreeNode, index: number) => {
@@ -180,6 +247,13 @@ export const RecycleTree = (
     setRenderNodes(renderedFileItems);
   }, [nodes, renderedStart, scrollContainerStyle]);
 
+  React.useEffect(() => {
+    if (scrollRef) {
+      scrollRef.scrollTop = 0;
+    }
+    setRenderedStart(0);
+  }, [filter]);
+
   const scrollUpHandler = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
     if (positionIndex > upPrerenderNumber) {
@@ -224,6 +298,10 @@ export const RecycleTree = (
     minScrollbarLength: 20,
   };
 
+  const isComplex = !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
+    return ExpandableTreeNode.is(node);
+  });
+
   return <React.Fragment>
     <PerfectScrollbar
       style={scrollContainerStyle}
@@ -255,6 +333,7 @@ export const RecycleTree = (
         onChange={onChange || noop}
         onDrop={onDrop || noop}
         onSelect={onSelect || noop}
+        onReveal={onReveal || noop}
         onTwistieClick={onTwistieClick}
         draggable={draggable}
         foldable={foldable}
@@ -264,7 +343,9 @@ export const RecycleTree = (
         themeProvider={themeProvider}
         notifyFileDecorationsChange={notifyFileDecorationsChange}
         notifyThemeChange={notifyThemeChange}
-        validate={validate} />
+        validate={validate}
+        isComplex={isComplex}
+        alwaysShowActions={alwaysShowActions} />
     </PerfectScrollbar>
   </React.Fragment>;
 };

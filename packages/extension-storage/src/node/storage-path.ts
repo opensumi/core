@@ -1,10 +1,10 @@
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, URI, Deferred, AppConfig } from '@ali/ide-core-node';
+import { isWindows, URI, Deferred } from '@ali/ide-core-node';
 import { StoragePaths } from '@ali/ide-core-common';
 import { IExtensionStoragePathServer } from '../common';
-import { KAITIAN_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '@ali/ide-workspace';
+import { KAITIAN_MUTI_WORKSPACE_EXT, WORKSPACE_USER_STORAGE_FOLDER_NAME, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 import { ILogServiceManager } from '@ali/ide-logs';
 
@@ -26,9 +26,6 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
 
   @Autowired(ILogServiceManager)
   private readonly loggerManager: ILogServiceManager;
-
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
 
   constructor() {
     this.deferredWorkspaceStoragePath = new Deferred<string>();
@@ -69,7 +66,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       await this.fileSystem.createFolder(URI.file(parentStorageDir).toString());
     }
 
-    const storageDirName = await this.buildWorkspaceId(workspace, roots);
+    const storageDirName = await this.buildWorkspaceId(workspace, roots, extensionStorageDirName);
     const storageDirPath = path.join(parentStorageDir, storageDirName);
     if (!await this.fileSystem.exists(URI.file(storageDirPath).toString())) {
       await this.fileSystem.createFolder(URI.file(storageDirPath).toString());
@@ -110,8 +107,11 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
    * @returns {Promise<string>}
    * @memberof ExtensionStoragePathImpl
    */
-  async buildWorkspaceId(workspace: FileStat, roots: FileStat[]): Promise<string> {
+  async buildWorkspaceId(workspace: FileStat, roots: FileStat[], extensionStorageDirName: string): Promise<string> {
     const homeDir = await this.getUserHomeDir();
+    const getTemporaryWorkspaceFileUri = (home: URI): URI => {
+      return home.resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`${UNTITLED_WORKSPACE}.${KAITIAN_MUTI_WORKSPACE_EXT}`).withScheme('file');
+    };
     const untitledWorkspace = getTemporaryWorkspaceFileUri(new URI(homeDir));
 
     if (untitledWorkspace.toString() === workspace.uri) {

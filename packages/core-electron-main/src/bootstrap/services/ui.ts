@@ -1,15 +1,40 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
 import { BrowserWindow, dialog, shell, webContents } from 'electron';
-import { ElectronMainMenuService } from './menu';
-import { Domain, isWindows } from '@ali/ide-core-common';
+import { Domain, isWindows, IEventBus } from '@ali/ide-core-common';
 import { stat } from 'fs-extra';
 import { dirname } from 'path';
 import { spawn } from 'child_process';
 import * as semver from 'semver';
+import { WindowCreatedEvent } from './events';
+import { IElectronMainUIServiceShape } from '@ali/ide-core-common/lib/electron';
 
 @Injectable()
-export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {
+export class ElectronMainUIService extends ElectronMainApiProvider<'fullScreenStatusChange' | 'windowClosed'> implements IElectronMainUIServiceShape {
+
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
+
+  constructor() {
+    super();
+    this.eventBus.on(WindowCreatedEvent, (e) => {
+      const window = e.payload;
+      window.getBrowserWindow().on('enter-full-screen', () => {
+        this.fireFullScreenChangedEvent(window.getBrowserWindow().id, true);
+      });
+      window.getBrowserWindow().on('leave-full-screen', () => {
+        this.fireFullScreenChangedEvent(window.getBrowserWindow().id, false);
+      });
+    });
+  }
+
+  fireFullScreenChangedEvent(windowId, isFullScreen) {
+    this.eventEmitter.fire('fullScreenStatusChange', windowId, isFullScreen);
+  }
+
+  async isFullScreen(windowId) {
+    return BrowserWindow.fromId(windowId).isFullScreen();
+  }
 
   async maximize(windowId) {
     BrowserWindow.fromId(windowId).maximize();
@@ -100,6 +125,66 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' |
         reject(e);
       }
     });
+  }
+
+  async createBrowserWindow(options?: Electron.BrowserWindowConstructorOptions | undefined): Promise<number> {
+    const window = new BrowserWindow(options);
+    const windowId = window.id;
+    window.once('closed', () => {
+      this.eventEmitter.fire('windowClosed', windowId);
+    });
+    return window.id;
+  }
+
+  async browserWindowLoadUrl(windowId: number, url: string): Promise<void> {
+    const window = BrowserWindow.fromId(windowId);
+    if (!window) {
+      throw new Error('window with windowId ' + windowId + ' does not exist!');
+    }
+    window.loadURL(url);
+    return new Promise((resolve, reject) => {
+      const resolved = () => {
+        resolve();
+        window.webContents.removeListener('did-finish-load', resolved);
+        window.webContents.removeListener('did-fail-load', rejected);
+      };
+      const rejected = (_event, _errorCode, desc: string) => {
+        reject(new Error(desc));
+        window.webContents.removeListener('did-finish-load', resolved);
+        window.webContents.removeListener('did-fail-load', rejected);
+      };
+      window.webContents.once('did-finish-load', resolved);
+      window.webContents.once('did-fail-load', rejected);
+    });
+  }
+
+  async closeBrowserWindow(windowId: number): Promise<void> {
+    const window = BrowserWindow.fromId(windowId);
+    if (!window) {
+      throw new Error('window with windowId ' + windowId + ' does not exist!');
+    }
+    window.close();
+    return new Promise((resolve) => {
+      window.once('closed', () => {
+        resolve();
+      });
+    });
+  }
+
+  async postMessageToBrowserWindow(windowId: number, channel: string , message: any): Promise<void> {
+    const window = BrowserWindow.fromId(windowId);
+    if (!window) {
+      throw new Error('window with windowId ' + windowId + ' does not exist!');
+    }
+    window.webContents.send(channel, message);
+  }
+
+  async showBrowserWindow(windowId: number): Promise<void> {
+    const window = BrowserWindow.fromId(windowId);
+    if (!window) {
+      throw new Error('window with windowId ' + windowId + ' does not exist!');
+    }
+    window.show();
   }
 
 }

@@ -41,7 +41,12 @@ export class ExtHostTreeViews implements IExtHostTreeView {
       throw new Error('Options with treeDataProvider is mandatory');
     }
 
-    const treeView = new ExtHostTreeView(treeViewId, options.treeDataProvider, this.proxy, this.extHostCommand);
+    const treeView = new ExtHostTreeView(
+      treeViewId,
+      options,
+      this.proxy,
+      this.extHostCommand,
+    );
     this.treeViews.set(treeViewId, treeView);
 
     return {
@@ -157,17 +162,29 @@ class ExtHostTreeView<T> implements IDisposable {
 
   private disposable: DisposableStore = new DisposableStore();
 
+  private treeDataProvider: vscode.TreeDataProvider<T>;
+
   constructor(
     private treeViewId: string,
-    private treeDataProvider: vscode.TreeDataProvider<T>,
+    private options: TreeViewOptions<T>,
     private proxy: IMainThreadTreeView,
     private commands: ExtHostCommands,
   ) {
-    proxy.$registerTreeDataProvider(treeViewId);
 
-    if (treeDataProvider.onDidChangeTreeData) {
+    this.treeDataProvider = this.options.treeDataProvider;
 
-      const dispose = treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
+    // 将 options 直接取值，避免循环引用导致序列化异常
+    proxy.$registerTreeDataProvider(
+      treeViewId,
+      {
+        showCollapseAll: !!options.showCollapseAll,
+        canSelectMany: !!options.canSelectMany,
+      },
+    );
+
+    if (this.treeDataProvider.onDidChangeTreeData) {
+
+      const dispose = this.treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
         // TODO: 处理单独的Item刷新
         proxy.$refresh<T>(treeViewId);
       });

@@ -23,7 +23,7 @@ import { SourceBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { ITerminalController, TerminalOptions, Terminal} from '@ali/ide-terminal-next';
+import { ITerminalController, TerminalOptions} from '@ali/ide-terminal-next';
 
 export enum DebugState {
   Inactive,

@@ -1,32 +1,66 @@
 import { Sequence, ISplice } from '@ali/ide-core-common/lib/sequence';
-import { Event, Emitter } from '@ali/ide-core-common/lib/event';
-import Uri from 'vscode-uri';
+import { URI, Uri, Event, Emitter } from '@ali/ide-core-common';
 
-import { ISCMProvider, ISCMResourceGroup, ISCMResource } from '../src/common';
+import { ISCMProvider, ISCMResourceGroup, ISCMResource, VSCommand } from '../src/common';
+
+// use the `git scheme` from vscode.git
+export function toGitUri(uri: Uri, ref: string): Uri {
+  return uri.with({
+    scheme: 'git',
+    path: uri.path,
+    query: JSON.stringify({
+      path: uri.fsPath,
+      ref,
+    }),
+  });
+}
 
 export class MockSCMProvider implements ISCMProvider {
-  readonly groups = new Sequence<ISCMResourceGroup>();
+  public groups = new Sequence<ISCMResourceGroup>();
 
   private _label: string;
   private _id: string;
   private _contextValue: string;
 
-  public rootUri: Uri;
+  public rootUri: Uri | undefined;
 
-  constructor(id: number) {
+  constructor(
+    id: number,
+    scheme = 'git',
+    rootUri = Uri.file('/test/workspace'),
+  ) {
     this._label = 'scm_label_' + id;
     this._id = 'scm_id_' + id;
-    this._contextValue = 'scm_contextValue_' + id;
+    this._contextValue = scheme;
+    this.rootUri = rootUri;
   }
 
   get label() { return this._label; }
   get id() { return this._id; }
   get contextValue() { return this._contextValue; }
 
-  readonly onDidChangeResources: Event<void> = Event.None;
-  readonly onDidChange: Event<void> = Event.None;
+  public count: number;
+  public statusBarCommands: VSCommand[] | undefined = [];
 
-  async getOriginalResource() { return null; }
+  public onDidChangeStatusBarCommandsEmitter = new Emitter<VSCommand[]>();
+  readonly onDidChangeStatusBarCommands: Event<VSCommand[]> = this.onDidChangeStatusBarCommandsEmitter.event;
+
+  public onDidChangeEmitter = new Emitter<void>();
+  readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
+
+  public onDidChangeResourcesEmitter = new Emitter<void>();
+  readonly onDidChangeResources: Event<void> = this.onDidChangeResourcesEmitter.event;
+
+  async getOriginalResource(uri: Uri): Promise<Uri | null> {
+    const rootURI = new URI(this.rootUri);
+    if (rootURI.isEqualOrParent(new URI(uri))) {
+      // convert it to git uri
+      // ref# head
+      return toGitUri(uri, '');
+    }
+    return null;
+  }
+
   toJSON() { return { $mid: 5 }; }
 
   registerGroup(group: ISCMResourceGroup) {
@@ -43,7 +77,7 @@ export class MockSCMResourceGroup implements ISCMResourceGroup {
   readonly provider: ISCMProvider;
 
   private _hideWhenEmpty: boolean = false;
-  readonly elements: ISCMResource[] = [];
+  public elements: ISCMResource[] = [];
 
   private _onDidSplice = new Emitter<ISplice<ISCMResource>>();
   readonly onDidSplice = this._onDidSplice.event;
@@ -56,7 +90,8 @@ export class MockSCMResourceGroup implements ISCMResourceGroup {
   get label() { return this._label; }
   get id() { return this._id; }
 
-  constructor(id) {
+  constructor(provider: ISCMProvider, id: number) {
+    this.provider = provider;
     this._label = 'test_scm_resource_group_' + id;
     this._id = 'scm_resource_group_' + id;
   }
@@ -76,7 +111,7 @@ export class MockSCMResourceGroup implements ISCMResourceGroup {
 
 export class MockSCMResource implements ISCMResource {
   private _resourceGroup: ISCMResourceGroup;
-  readonly sourceUri = Uri.file('/test/workspace');
+  readonly sourceUri = Uri.file('/test/workspace/src/a.ts');
   readonly decorations: {};
 
   get resourceGroup() { return this._resourceGroup; }

@@ -2,51 +2,16 @@
   height: 100%;
 }
 
-.body :global(.ant-tabs-bar) {
-  border-color: var(--kt-sideBarTitle-border);
-}
-
-.body :global(.ant-tabs),
-.body :global(.ant-tabs-content) {
-  height: 100%;
-}
-
-.body :global(.ant-tabs) {
-  color: var(--foreground);
-}
-
-.body :global(.ant-tabs-nav .ant-tabs-tab) {
-  border-color: transparent;
-  &:hover {
-    color: var(--foreground);
+.tabs {
+  line-height: 20px;
+  padding-left: 24px;
+  :global(.kt-tab) {
     font-weight: 500;
   }
 }
 
-.body :global(.ant-tabs-nav .ant-tabs-tab) {
-  padding: 8px 0 5px 0;
-  line-height: 20px;
-  margin-right: 24px;
-  &:first-child {
-    margin-left: 24px;
-  }
-}
-
-.body :global(.ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active) {
-  color: var(--sideBarTitle-foreground);
-}
-
-.body :global(.ant-tabs-ink-bar) {
-  background-color: var(--kt-sideBarTitle-activeBorder);
-}
-
 .content {
-  // 43 为 tab 的高度
-  height: calc(100% - 43px);
-}
-
-.body :global(.ant-tabs-tabpane):nth-child(2) {
-  height: calc(100% - 36px);
+  height: calc(100% - 40px);
 }
 
 .header {
@@ -119,11 +84,12 @@
 
 .actions {
   margin-top: 12px;
+  display: flex;
+  align-items: center;
 }
 
 .body {
-  // 160 为 header 的高度
-  height: calc(100% - 160px);
+  height: calc(100% - 165px);
   overflow: hidden;
 }
 

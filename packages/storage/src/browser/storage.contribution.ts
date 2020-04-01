@@ -1,4 +1,4 @@
-import { Domain, StorageResolverContribution, URI, IStorage, ClientAppContribution, STORAGE_SCHEMA, AppConfig } from '@ali/ide-core-browser';
+import { Domain, StorageResolverContribution, URI, IStorage, ClientAppContribution, STORAGE_SCHEMA, AppConfig, ILogger } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import { Storage } from './storage';
 import { WorkspaceStorageServerPath, GlobalStorageServerPath, IStorageServer } from '../common';
@@ -19,15 +19,18 @@ export class DatabaseStorageContribution implements StorageResolverContribution,
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
+  @Autowired(ILogger)
+  private logger: ILogger;
+
   storage: IStorage;
 
   async resolve(storageId: URI) {
     const storageName = storageId.path.toString();
     let storage: IStorage;
     if (storageId.scheme === STORAGE_SCHEMA.SCOPE) {
-      storage = new Storage(this.workspaceStorage, this.workspaceService, this.appConfig, storageName);
+      storage = new Storage(this.workspaceStorage, this.workspaceService, this.appConfig, storageName, this.logger);
     } else if (storageId.scheme === STORAGE_SCHEMA.GLOBAL) {
-      storage = new Storage(this.globalStorage, this.workspaceService, this.appConfig, storageName);
+      storage = new Storage(this.globalStorage, this.workspaceService, this.appConfig, storageName, this.logger);
     } else {
       return;
     }

@@ -1,11 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
-import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, DisposableCollection, KeybindingService } from '@ali/ide-core-browser';
+import { KeybindingRegistry, ResourceProvider, URI, Resource, Emitter, Keybinding, KeybindingScope, CommandService, EDITOR_COMMANDS, CommandRegistry, localize, KeySequence, DisposableCollection, KeybindingService, ILogger } from '@ali/ide-core-browser';
 import { KeymapsParser } from './keymaps-parser';
-import { UserStorageUri } from '@ali/ide-userstorage/lib/browser';
-import * as jsoncparser from 'jsonc-parser';
 import * as fuzzy from 'fuzzy';
-import { KEYMAPS_FILE_NAME, IKeymapService, KeybindingJson, KEYMAPS_SCHEME, KeybindingItem } from '../common';
+import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem } from '../common';
+import { USER_STORAGE_SCHEME } from '@ali/ide-preferences';
 
 // monaco.contextkey.ContextKeyExprType 引入
 export const enum ContextKeyExprType {
@@ -43,6 +42,11 @@ export class KeymapService implements IKeymapService {
   @Autowired(KeybindingService)
   protected readonly keybindingService: KeybindingService;
 
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
+  private currentSearchValue: string;
+
   protected resource: Resource;
 
   protected readonly keymapChangeEmitter = new Emitter<void>();
@@ -63,38 +67,60 @@ export class KeymapService implements IKeymapService {
     pre: '<match>',
     post: '</match>',
   };
+  private _storeKeybindings: Keybinding[];
+
+  get storeKeybindings() {
+    return this._storeKeybindings;
+  }
+
+  set storeKeybindings(value: Keybinding[]) {
+    this._storeKeybindings = value;
+  }
 
   @observable.shallow
   keybindings: KeybindingItem[] = [];
 
-  constructor() {
-    this.init();
-  }
-
   async init() {
-    this.resource = await this.resourceProvider(new URI().withScheme(UserStorageUri.SCHEME).withPath(KEYMAPS_FILE_NAME));
+    this.resource = await this.resourceProvider(new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME));
     await this.reconcile();
-    if (this.resource.onDidChangeContents) {
-      this.resource.onDidChangeContents(async () => {
-        await this.reconcile();
-      });
-    }
-    this.keyBindingRegistry.onKeybindingsChanged(() => this.keymapChangeEmitter.fire(undefined));
-    this.keybindings = this.getKeybindingItems();
-    this.onDidKeymapChanges(() => {
-      this.keybindings = this.getKeybindingItems();
-    });
   }
 
   dispose() {
     this.toDisposeOnDetach.dispose();
   }
 
-  // 重新加载并设置Keymap定义的快捷键
-  async reconcile() {
-    const keybindings = await this.parseKeybindings();
-    this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keybindings);
-    this.keymapChangeEmitter.fire(undefined);
+  /**
+   * 重新加载并设置Keymap定义的快捷键
+   * @param keybindings
+   */
+  async reconcile(keybindings?: Keybinding[]) {
+    const keymap = keybindings ? keybindings.slice(0) : await this.parseKeybindings();
+    // 重新注册快捷键前取消注册先前的快捷键
+    // TODO: 差量注册，差量移除
+    this.dispose();
+    this.toDisposeOnDetach.push(this.keyBindingRegistry.setKeymap(KeybindingScope.USER, keymap.map((kb) => {
+      // 清洗存入keymap数据
+      return {
+        when: kb.when,
+        command: kb.command,
+        context: kb.context,
+        keybinding: kb.keybinding,
+      };
+    })));
+
+    this.updateKeybindings();
+  }
+
+  /**
+   * 更新keybindings列表
+   */
+  @action
+  private updateKeybindings() {
+    if (this.currentSearchValue) {
+      this.doSearchKeybindings(this.currentSearchValue);
+    } else {
+      this.keybindings = this.getKeybindingItems();
+    }
   }
 
   /**
@@ -105,8 +131,11 @@ export class KeymapService implements IKeymapService {
    */
   protected async parseKeybindings(): Promise<Keybinding[]> {
     try {
-      const content = await this.resource.readContents();
-      return this.parser.parse(content);
+      if (!this.storeKeybindings) {
+        const content = await this.resource.readContents();
+        this.storeKeybindings = this.parser.parse(content);
+      }
+      return this.storeKeybindings;
     } catch (error) {
       return error;
     }
@@ -114,28 +143,50 @@ export class KeymapService implements IKeymapService {
 
   /**
    * 设置快捷键
-   * @param {KeybindingJson} keybindingJson
+   * @param {Keybinding} keybindings
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  setKeybinding = async (keybindingJson: KeybindingJson): Promise<void> => {
-    if (!this.resource.saveContents) {
-      return;
-    }
-    const content = await this.resource.readContents();
-    const keybindings: KeybindingJson[] = content ? jsoncparser.parse(content) : [];
+  @action
+  setKeybinding = (keybinding: Keybinding) => {
+    const keybindings: Keybinding[] = this.storeKeybindings;
     let updated = false;
-    for (const keybinding of keybindings) {
-      if (keybinding.command === keybindingJson.command) {
+    for (const kb of keybindings) {
+      if (kb.command === keybinding.command) {
         updated = true;
-        keybinding.keybinding = keybindingJson.keybinding;
+        kb.keybinding = keybinding.keybinding;
       }
     }
     if (!updated) {
-      const item: KeybindingJson = { ...keybindingJson };
+      // 不能额外传入keybinding的resolved值
+      const item: Keybinding = {
+        when: keybinding.when,
+        command: keybinding.command,
+        context: keybinding.context,
+        keybinding: keybinding.keybinding,
+      };
       keybindings.push(item);
     }
-    await this.resource.saveContents(JSON.stringify(keybindings, undefined, 4));
+    // 后置存储流程
+    this.saveKeybinding(keybindings);
+  }
+
+  private async saveKeybinding(keybindings: Keybinding[]) {
+    if (!this.resource.saveContents) {
+      return;
+    }
+    this.storeKeybindings = keybindings;
+    // 存储前配置化当前快捷键
+    this.reconcile(keybindings);
+    // 存储前清理多余属性
+    await this.resource.saveContents(JSON.stringify(keybindings.map((kb) => {
+      return {
+        when: kb.when,
+        command: kb.command,
+        context: kb.context,
+        keybinding: kb.keybinding,
+      };
+    }), undefined, 2));
   }
 
   covert = (event: KeyboardEvent) => {
@@ -156,23 +207,18 @@ export class KeymapService implements IKeymapService {
     if (!this.resource.saveContents) {
       return;
     }
-    const content = await this.resource.readContents();
-    const keybindings: KeybindingJson[] = content ? jsoncparser.parse(content) : [];
+    const keybindings: Keybinding[] = this.storeKeybindings;
     const filtered = keybindings.filter((a) => a.command !== commandId);
-    await this.resource.saveContents(JSON.stringify(filtered, undefined, 4));
+    this.saveKeybinding(filtered);
   }
 
   /**
    * 从keymaps.json获取快捷键列表
-   * @returns {Promise<KeybindingJson[]>}
+   * @returns {Promise<Keybinding[]>}
    * @memberof KeymapsService
    */
-  async getKeybindings(): Promise<KeybindingJson[]> {
-    if (!this.resource.saveContents) {
-      return [];
-    }
-    const content = await this.resource.readContents();
-    return content ? jsoncparser.parse(content) : [];
+  async getKeybindings(): Promise<Keybinding[]> {
+    return this.storeKeybindings;
   }
 
   /**
@@ -202,12 +248,12 @@ export class KeymapService implements IKeymapService {
       when = when as monaco.contextkey.ContextKeyAndExpr | monaco.contextkey.ContextKeyOrExpr;
     } else {
       when = when as monaco.contextkey.ContextKeyDefinedExpr
-      | monaco.contextkey.ContextKeyEqualsExpr
-      | monaco.contextkey.ContextKeyNotEqualsExpr
-      | monaco.contextkey.ContextKeyNotExpr
-      | monaco.contextkey.ContextKeyNotRegexExpr
-      | monaco.contextkey.ContextKeyOrExpr
-      | monaco.contextkey.ContextKeyRegexExpr;
+        | monaco.contextkey.ContextKeyEqualsExpr
+        | monaco.contextkey.ContextKeyNotEqualsExpr
+        | monaco.contextkey.ContextKeyNotExpr
+        | monaco.contextkey.ContextKeyNotRegexExpr
+        | monaco.contextkey.ContextKeyOrExpr
+        | monaco.contextkey.ContextKeyRegexExpr;
     }
     if (!when.expr) {
       switch (when.getType()) {
@@ -268,15 +314,29 @@ export class KeymapService implements IKeymapService {
     const items: KeybindingItem[] = [];
     for (const command of commands) {
       const keybindings = this.keybindingRegistry.getKeybindingsForCommand(command.id);
-      const item: KeybindingItem = {
-        id: command.id,
-        command: command.label || command.id,
-        keybinding: (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
-        when: this.getWhen((keybindings && keybindings[0])),
-        context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
-        source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')
-          ? this.getScope(keybindings[0].scope!) : '',
-      };
+      let item: KeybindingItem;
+
+      if (this.storeKeybindings) {
+        const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
+        item = {
+          id: command.id,
+          command: command.label || command.id,
+          keybinding: isUserKeybinding ? isUserKeybinding.keybinding : (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
+          context: isUserKeybinding ? isUserKeybinding.context : (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
+          when: isUserKeybinding ? this.getWhen(isUserKeybinding) : this.getWhen((keybindings && keybindings[0])),
+          source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
+        };
+      } else {
+        item = {
+          id: command.id,
+          command: command.label || command.id,
+          keybinding: (keybindings && keybindings[0]) ? this.keybindingRegistry.acceleratorFor(keybindings[0], '+').join(' ') : '',
+          when: this.getWhen((keybindings && keybindings[0])),
+          context: (keybindings && keybindings[0]) ? (keybindings && keybindings[0]).context : '',
+          source: (keybindings && keybindings[0] && typeof keybindings[0].scope !== 'undefined')
+            ? this.getScope(keybindings[0].scope!) : '',
+        };
+      }
       items.push(item);
     }
 
@@ -300,14 +360,14 @@ export class KeymapService implements IKeymapService {
    * 搜索快捷键
    */
   @action
-  searchKeybindings = (event) => {
-    const searchValue = event.target && event.target.value ? event.target.value.toLocaleLowerCase() : '';
-    // debounce
+  searchKeybindings = (search: string) => {
+    this.currentSearchValue = search;
+    // throttle
     if (this.searchTimer) {
       clearTimeout(this.searchTimer);
     }
     this.searchTimer = setTimeout(() => {
-      this.doSearchKeybindings(searchValue);
+      this.doSearchKeybindings(this.currentSearchValue);
     }, 100);
   }
 
@@ -315,6 +375,7 @@ export class KeymapService implements IKeymapService {
    * 模糊搜索匹配的快捷键
    * @protected
    */
+  @action
   protected readonly doSearchKeybindings = (search) => {
     const items = this.getKeybindingItems();
     const result: KeybindingItem[] = [];
@@ -424,17 +485,46 @@ export class KeymapService implements IKeymapService {
         context: keybindingItem.context,
         keybinding,
       };
-      KeySequence.parse(keybinding);
       if (keybindingItem.keybinding === keybinding) {
         return ' ';
       }
-      if (this.keybindingRegistry.containsKeybindingInScope(binding)) {
-        return localize('keymaps.keybinding.collide');
-      }
-      return '';
+      return this.keybindingRegistry.validateKeybindingInScope(binding);
     } catch (error) {
       return error;
     }
+  }
+
+  detectKeybindings = (keybindingItem: KeybindingItem, keybinding: string): KeybindingItem[] => {
+    if (!keybinding) {
+      return [];
+    }
+    try {
+      if (keybindingItem.keybinding === keybinding) {
+        return [];
+      }
+      // 可能匹配了高亮结果，需要还原部分数据
+      const keybindings = this.keybindings.filter((kb) => this.getRaw(kb.keybinding) === keybinding );
+      // 只返回全匹配快捷键，不返回包含关系快捷键（包含关系会在保存前提示冲突）
+      if (keybindings.length > 0) {
+        return keybindings.map((binding) => {
+
+          const command = this.commandRegistry.getCommand(this.getRaw(binding.command));
+          const isUserKeybinding = this.storeKeybindings.find((kb) => command && kb.command === command.id);
+          binding.when = this.getRaw(binding.when);
+          binding.keybinding = this.getRaw(binding.keybinding);
+          return {
+            id: command ? command.id : this.getRaw(binding.command),
+            command: (command ? command.label || command.id : binding.command) || '',
+            when: typeof binding.when === 'string' ? binding.when : this.serialize(binding.when),
+            keybinding: this.getRaw(binding.keybinding),
+            source: isUserKeybinding ? this.getScope(KeybindingScope.USER) : this.getScope(KeybindingScope.DEFAULT),
+          };
+        });
+      }
+    } catch (error) {
+      this.logger.error(error);
+    }
+    return [];
   }
 
   /**
@@ -445,6 +535,6 @@ export class KeymapService implements IKeymapService {
     if (!keybinding) {
       return '';
     }
-    return keybinding.replace(new RegExp(/<match>(.*?)<\/match>/g), '$1');
+    return keybinding.replace(new RegExp(/<(\/)?match>/ig), '');
   }
 }

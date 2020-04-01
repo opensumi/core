@@ -1,7 +1,6 @@
-import { IRunParam, IKaitianBrowserContributions, AbstractKaitianBrowserContributionRunner, ITabBarComponentContribution } from '../types';
+import { IRunParam, AbstractKaitianBrowserContributionRunner, ITabBarComponentContribution } from '../types';
 import { IDisposable, Disposable } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { IExtension } from '../../../common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { getIcon } from '@ali/ide-core-browser';
 import { IIconService } from '@ali/ide-theme';
@@ -17,7 +16,6 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
 
   run(param: IRunParam): IDisposable {
     const disposer = new Disposable();
-
     if (this.contribution.left) {
       this.contribution.left.component.forEach((component) => {
         disposer.addDispose(this.registerTabBar(component, 'left', param));
@@ -59,6 +57,7 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
         title: component.title,
         priority: component.priority,
         noResize: component.noResize,
+        expanded: component.expanded,
       },
       position,
     );

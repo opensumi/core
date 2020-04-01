@@ -2,6 +2,7 @@ import { localize } from '@ali/ide-core-common';
 import { registerColor, transparent } from '../color-registry';
 import { Color } from '../../common/color';
 import { contrastBorder } from './base';
+import { hcActiveBorderColor } from './basic-color';
 
 // < --- Activity Bar --- >
 
@@ -47,14 +48,8 @@ export const ACTIVITY_BAR_BADGE_FOREGROUND = registerColor('activityBarBadge.for
   hc: Color.white,
 }, localize('activityBarBadgeForeground', 'Activity notification badge foreground color. The activity bar is showing on the far left or right and allows to switch between views of the side bar.'));
 
-// extend tokens
-export const KT_ACTIVITY_BAR_ACTIVE_BORDER = registerColor('kt.activityBar.activeBorder', {
-  dark: '#167CDB',
-  light: '#167CDB',
-  hc: '#167CDB',
-}, localize('kt.activityBar.activeBorder', 'Active icon left/right border color'));
 export const ACTIVITY_BAR_ACTIVE_BORDER = registerColor('activityBar.activeBorder', {
   dark: ACTIVITY_BAR_FOREGROUND,
   light: ACTIVITY_BAR_FOREGROUND,
-  hc: null,
+  hc: hcActiveBorderColor,
 }, localize('activityBarActiveBorder', 'Activity bar border color for the active item. The activity bar is showing on the far left or right and allows to switch between views of the side bar.'));

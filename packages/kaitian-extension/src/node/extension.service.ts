@@ -1,15 +1,14 @@
 import * as path from 'path';
-import * as os from 'os';
 import * as net from 'net';
 import * as fs from 'fs-extra';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService, ProcessMessageType } from '../common';
-import { getLogger, Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData } from '@ali/ide-core-node';
+import { Deferred, isDevelopment, INodeLogger, AppConfig, isWindows, isElectronNode, ReporterProcessMessage, IReporter, IReporterService, REPORT_TYPE, PerformanceData, REPORT_NAME } from '@ali/ide-core-node';
 import * as shellPath from 'shell-path';
 import * as cp from 'child_process';
-import * as psTree from 'ps-tree';
 import * as isRunning from 'is-running';
+import treeKill = require('tree-kill');
 
 import {
   commonChannelPathHandler,
@@ -23,8 +22,6 @@ import {
 } from '@ali/ide-connection';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 
-const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
-
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
@@ -37,6 +34,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
+
+  @Autowired(IReporterService)
+  reporterService: IReporterService;
 
   @Autowired(IReporter)
   reporter: IReporter;
@@ -54,11 +54,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   // 待废弃
   private extServer: net.Server;
   private electronMainThreadServer: net.Server;
-  private extConnection;
   private connectionDeffered: Deferred<void>;
   private initDeferred: Deferred<void>;
-  private clientId;
-  private clientProcessMap: Map<string, cp.ChildProcess>;
 
   private extensionScanner: ExtensionScanner;
 
@@ -102,7 +99,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (this.connectionDeffered) {
       await this.connectionDeffered.promise;
     } else {
-      getLogger().log(`not found connectionDeferred`);
+      this.logger.log(`not found connectionDeferred`);
     }
 
   }
@@ -110,12 +107,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (this.initDeferred) {
       await this.initDeferred.promise;
     } else {
-      getLogger().log(`not found initDeferred`);
+      this.logger.log(`not found initDeferred`);
     }
   }
 
   public async setExtProcessConnectionForward() {
-    getLogger().log('setExtProcessConnectionForward', this.instanceId);
+    this.logger.log('setExtProcessConnectionForward', this.instanceId);
     const self = this;
     this._setMainThreadConnection((connectionResult) => {
       const { connection: mainThreadConnection, clientId } = connectionResult;
@@ -128,7 +125,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         // 进程未调用启动直接连接
         this.logger.log(`${clientId} clientId process connection set error`, self.clientExtProcessMap.has(clientId), self.clientExtProcessMap.has(clientId) ? isRunning((this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid) : false, this.clientExtProcessExtConnection.has(clientId));
         this.infoProcessNotExist(clientId);
-
+        this.reporterService.point(REPORT_NAME.EXTENSION_NOT_EXIST, clientId);
         return;
       }
 
@@ -156,25 +153,27 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         clearTimeout(timer);
       }
 
-      console.log(`setExtProcessConnectionForward clientId ${clientId}`);
+      this.logger.log(`setExtProcessConnectionForward clientId ${clientId}`);
 
     });
 
   }
 
   public async createProcess2(clientId: string) {
-    console.log('createProcess2', this.instanceId);
+    this.logger.log('createProcess2', this.instanceId);
     if (this.pendingClientExtProcessDisposer) {
-      console.log('Waiting for disposer to complete.');
+      this.logger.log('Waiting for disposer to complete.');
       await this.pendingClientExtProcessDisposer;
     }
 
     this.logger.log('createProcess2 clientId', clientId);
 
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
-    if (processClientIdArr.length >= (this.appConfig.maxExtProcessCount || ExtensionNodeServiceImpl.MaxExtProcessCount)) {
+    const maxExtProcessCount = this.appConfig.maxExtProcessCount || ExtensionNodeServiceImpl.MaxExtProcessCount;
+    if (processClientIdArr.length >= maxExtProcessCount) {
       const killProcessClientId = processClientIdArr[0];
       await this.disposeClientExtProcess(killProcessClientId);
+      this.logger.error(`Process count is over limit, max count is ${maxExtProcessCount}`);
     }
 
     let preloadPath;
@@ -224,25 +223,28 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       forkOptions.execArgv.push('--inspect=9889');
     }
 
-    console.time(`${clientId} fork ext process`);
-    const startForkTime = Date.now();
+    const forkTimer = this.reporterService.time(`${clientId} fork ext process`);
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.logger.log('extProcess.pid', extProcess.pid);
 
     extProcess.on('exit', async (code, signal) => {
-      console.log('extProcess.pid exit', extProcess.pid, 'code', code, 'signal', signal);
-
+      this.logger.log('extProcess.pid exit', extProcess.pid, 'code', code, 'signal', signal);
       if (this.clientExtProcessMap.has(clientId)) {
+        this.logger.error('extProcess crash', extProcess.pid, 'code', code, 'signal', signal);
         await this.disposeClientExtProcess(clientId, false, false);
         this.infoProcessCrash(clientId);
+        this.reporterService.point(REPORT_NAME.EXTENSION_CRASH, clientId, {
+          code,
+          signal,
+        });
       } else {
-        console.log('extProcess.pid exit by dispose', extProcess.pid);
+        this.logger.log('extProcess.pid exit by dispose', extProcess.pid);
       }
     });
 
     this.clientExtProcessMap.set(clientId, extProcess);
 
-    console.log('createProcess2', this.clientExtProcessMap.keys());
+    this.logger.log('createProcess2', this.clientExtProcessMap.keys());
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
 
@@ -251,8 +253,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     await new Promise((resolve) => {
       const initHandler = (msg) => {
         if (msg === 'ready') {
-          console.timeEnd(`${clientId} fork ext process`);
-          this.logger.log(`extension,fork,${clientId},${Date.now() - startForkTime}ms`);
+          const duration = forkTimer.timeEnd();
+          this.logger.log(`extension,fork,${clientId},${duration}ms`);
           extProcessInitDeferred.resolve();
           this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
           resolve();
@@ -282,25 +284,25 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       const mainThreadServer: net.Server = net.createServer();
       this.electronMainThreadServer = mainThreadServer;
       const mainThreadListenPath = this.getElectronMainThreadListenPath2(clientId);
-      console.log('mainThreadListenPath', mainThreadListenPath);
+      this.logger.log('mainThreadListenPath', mainThreadListenPath);
 
       try {
         if (!isWindows) {
           await fs.unlink(mainThreadListenPath);
         }
       } catch (e) {
-        getLogger().error(e);
+        this.logger.error(e);
       }
 
       await new Promise((resolve) => {
         mainThreadServer.listen(mainThreadListenPath, () => {
-          getLogger().log(`electron mainThread listen on ${mainThreadListenPath}`);
+          this.logger.log(`electron mainThread listen on ${mainThreadListenPath}`);
           resolve();
         });
       });
 
       mainThreadServer.on('connection', (connection) => {
-        getLogger().log(`kaitian electron ext main connected ${clientId}`);
+        this.logger.log(`kaitian electron ext main connected ${clientId}`);
 
         handler({
           connection: {
@@ -311,7 +313,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         });
 
         connection.on('close', () => {
-          getLogger().log('close disposeClientExtProcess clientId', clientId);
+          this.logger.log('close disposeClientExtProcess clientId', clientId);
           this.disposeClientExtProcess(clientId);
         });
 
@@ -320,7 +322,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     } else {
       commonChannelPathHandler.register('ExtMainThreadConnection', {
         handler: (connection: WSChannel, connectionClientId: string) => {
-          getLogger().log(`kaitian ext main connected ${connectionClientId}`);
+          this.logger.log(`kaitian ext main connected ${connectionClientId}`);
 
           const reader = new WebSocketMessageReader(connection);
           const writer = new WebSocketMessageWriter(connection);
@@ -335,7 +337,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           connection.onClose(() => {
             reader.dispose();
             writer.dispose();
-            console.log(`remove ext mainConnection ${connectionClientId} `);
+            this.logger.log(`remove ext mainConnection ${connectionClientId} `);
 
             if (this.clientExtProcessExtConnection.has(connectionClientId)) {
               const extConnection: any = this.clientExtProcessExtConnection.get(connectionClientId);
@@ -364,7 +366,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     if (this.clientExtProcessMap.has(connectionClientId)) {
       const timer = setTimeout(() => {
-        getLogger().log('close disposeClientExtProcess clientId', connectionClientId);
+        this.logger.log('close disposeClientExtProcess clientId', connectionClientId);
         const disposer = this.disposeClientExtProcess(connectionClientId);
         if (isDevelopment()) {
           this.pendingClientExtProcessDisposer = disposer;
@@ -374,12 +376,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
   }
 
-  /**
-   * 定制插件进程检查、清理任务
-   */
-  private clearCheckTask() {
-
-  }
   private infoProcessNotExist(clientId: string) {
     if (this.clientServiceMap.has(clientId)) {
       (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).infoProcessNotExist();
@@ -419,30 +415,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       if (killProcess) {
         await new Promise((resolve) => {
-
-          psTree(extProcess.pid, (err: Error, childProcesses) => {
-            childProcesses.forEach((p: psTree.PS) => {
-              console.log('psTree child process', p.PID);
-              try {
-                const pid = parseInt(p.PID, 10);
-                if (isRunning(pid)) {
-                  process.kill(pid);
-                }
-              } catch (e) {
-                console.error(e);
-              }
-            });
+          treeKill(extProcess.pid, (err) => {
+            if (err) {
+              this.logger.error(`tree kill error: \n ${err.message}`);
+              return;
+            }
+            this.logger.log('extProcess killed', extProcess.pid);
             resolve();
           });
         });
-      }
-
-      console.log('killProcess', killProcess, 'extProcess.pid', extProcess.pid);
-      // kill
-      if (killProcess) {
-        extProcess.kill();
-
-        console.log('extProcess killed', extProcess.pid);
       }
 
       if (info) {
@@ -465,12 +446,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           await fs.unlink(listenPath);
         }
       } catch (e) {
-        getLogger().error(e);
+        this.logger.error(e);
       }
 
       await new Promise((resolve) => {
         server.listen(listenPath, () => {
-          getLogger().log(`electron mainThread listen on ${listenPath}`);
+          this.logger.log(`electron mainThread listen on ${listenPath}`);
           resolve();
         });
       });
@@ -478,7 +459,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       return new Promise((resolve) => {
 
         const connectionHandler = (connection) => {
-          getLogger().log('electron ext main connected');
+          this.logger.log('electron ext main connected');
 
           resolve({
             reader: new SocketMessageReader(connection),
@@ -486,7 +467,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           });
 
           connection.on('close', () => {
-            getLogger().log('remove electron ext main');
+            this.logger.log('remove electron ext main');
             server.removeListener('connection', connectionHandler);
             this._disposeConnection(clientId);
           });
@@ -499,7 +480,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       return new Promise((resolve) => {
         const channelHandler = {
           handler: (connection, connectionClientId: string) => {
-            getLogger().log('kaitian ext main connected');
+            this.logger.log('kaitian ext main connected');
 
             resolve({
               reader: new WebSocketMessageReader(connection),
@@ -507,7 +488,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
             });
           },
           dispose: () => {
-            getLogger().log('remove _getMainThreadConnection handler');
+            this.logger.log('remove _getMainThreadConnection handler');
             // Dispose 连接操作
             this._disposeConnection(clientId);
             commonChannelPathHandler.removeHandler(clientId, channelHandler);
@@ -522,7 +503,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private async _disposeConnection(clientId: string) {
     if (this.extProcess) {
       this.extProcess.kill(); // TODO: cache 保存
-      getLogger().log(`kaitian ext ${clientId} connected killed`);
+      this.logger.log(`kaitian ext ${clientId} connected killed`);
     }
 
     if (this.extServer) {
@@ -548,17 +529,16 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     const extConnection = await new Promise((resolve) => {
       extServer.on('connection', (connection) => {
-        console.log('kaitian ext host connected');
+        this.logger.log('kaitian ext host connected');
 
         const connectionObj = {
           reader: new SocketMessageReader(connection),
           writer: new SocketMessageWriter(connection),
         };
-        this.extConnection = connectionObj;
         resolve(connectionObj);
       });
       extServer.listen(extServerListenPath, () => {
-        getLogger().log(`kaitian ext server listen on ${extServerListenPath}`);
+        this.logger.log(`kaitian ext server listen on ${extServerListenPath}`);
       });
       this.extServer = extServer;
 
@@ -582,7 +562,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     const extConnection = await new Promise((resolve) => {
       extServer.on('connection', (connection) => {
-        getLogger().log('kaitian _getExtHostConnection2 ext host connected');
+        this.logger.log('kaitian _getExtHostConnection2 ext host connected');
 
         const connectionObj = {
           // reader: new SocketMessageReader(connection),
@@ -592,7 +572,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         resolve(connectionObj);
       });
       extServer.listen(extServerListenPath, () => {
-        getLogger().log(`${clientId} kaitian ext server listen on ${extServerListenPath}`);
+        this.logger.log(`${clientId} kaitian ext server listen on ${extServerListenPath}`);
       });
     });
 

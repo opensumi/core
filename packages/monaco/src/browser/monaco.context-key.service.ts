@@ -1,6 +1,6 @@
 import {
   IContextKey, IContextKeyService, Event, IEventBus,
-  ContextKeyChangeEvent, getLogger, Emitter, IScopedContextKeyService,
+  ContextKeyChangeEvent, getDebugLogger, Emitter, IScopedContextKeyService,
 } from '@ali/ide-core-browser';
 
 const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';
@@ -99,7 +99,7 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
       const keyContext = this.contextKeyService.getContext(ctx);
       return monaco.keybindings.KeybindingResolver.contextMatchesRules(keyContext, parsed);
     } catch (e) {
-      getLogger().error(e);
+      getDebugLogger().error(e);
       return false;
     }
   }
@@ -128,7 +128,7 @@ class ScopedContextKeyService extends BaseContextKeyService implements IScopedCo
 
       return this.contextKeyService.contextMatchesRules(parsed);
     } catch (e) {
-      getLogger().error(e);
+      getDebugLogger().error(e);
       return false;
     }
   }

@@ -125,6 +125,24 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
     label: '%file.focus.files%',
   };
+
+  export const FILTER_TOGGLE: Command = {
+    id: 'filetree.files.filter_toggle',
+    category: CATEGORY,
+    label: '%file.filetree.filter%',
+    iconClass: getIcon('retrieval'),
+  };
+
+  export const FILTER_OPEN: Command = {
+    id: 'filetree.files.filter_open',
+    category: CATEGORY,
+  };
+
+  export const OPEN_WITH_PATH: Command = {
+    id: 'filetree.openWithPath',
+    category: CATEGORY,
+    label: '%file.filetree.openWithPath%',
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {
@@ -475,6 +493,16 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
     label: '%editor.tokenize.test%',
   };
+
+  export const AUTO_SAVE: Command = {
+    id: 'editor.autoSave',
+    category: CATEGORY,
+  };
+
+  export const FOCUS_ACTIVE_EDITOR_GROUP: Command = {
+    id: 'editor.focusActiveEditorGroup',
+    category: CATEGORY,
+  };
 }
 
 export namespace SEARCH_COMMANDS {
@@ -503,7 +531,7 @@ export namespace SEARCH_COMMANDS {
   export const FOLD: Command = {
     id: 'file-search.fold',
     label: 'fold search',
-    iconClass: getIcon('fold'),
+    iconClass: getIcon('collapse-all'),
     category: CATEGORY,
   };
 
@@ -551,5 +579,15 @@ export namespace SEARCH_COMMANDS {
     id: 'search.menu.copyPath',
     category: CATEGORY,
     label: '%file.copy.path%',
+  };
+}
+
+export namespace TERMINAL_COMMANDS {
+  const CATEGORY = 'terminal';
+
+  export const OPEN_WITH_PATH: Command = {
+    id: 'terminal.openWithPath',
+    category: CATEGORY,
+    label: '%terminal.openWithPath%',
   };
 }

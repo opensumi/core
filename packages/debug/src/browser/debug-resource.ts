@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Autowired } from '@ali/common-di';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugSource } from './model/debug-source';
 import { URI, ResourceResolverContribution, Resource, Domain } from '@ali/ide-core-browser';

@@ -1,6 +1,4 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import * as styles from './index.module.less';
-import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
 import { TEMP_FILE_NAME, VALIDATE_TYPE, ValidateMessage } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
 import {
@@ -22,14 +20,21 @@ import {
   isValidBasename,
   trim,
   PreferenceService,
+  FILE_COMMANDS,
 } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
-import { Directory, File } from './file-tree-item';
-import { IFileTreeItemRendered } from './file-tree.view';
+import { CommandService, memoize } from '@ali/ide-core-common';
 import { MenuId, AbstractContextMenuService, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
+import { ExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
+
+import { Directory, File } from './file-tree-item';
+import { IFileTreeItemRendered } from './file-tree.view';
 import { FileContextKey } from './file-contextkey';
+import { IFileTreeServiceProps, FileTreeService, IFileTreeItemStatus } from './file-tree.service';
+import throttle = require('lodash.throttle');
+import * as styles from './index.module.less';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -131,9 +136,9 @@ const extractFileItemShouldBeRendered = (
         filestat: {
           ...status.file.filestat,
         },
-        style: isCuted ? {opacity: .5} as React.CSSProperties : {},
+        style: isCuted ? { opacity: .5 } as React.CSSProperties : {},
         // 设置拖拽底色
-        background: isDropping ? themeService.getColor({id: 'sideBar.dropBackground'}) || '' : 'inherit',
+        background: isDropping ? themeService.getColor({ id: 'sideBar.dropBackground' }) || '' : 'inherit',
         depth,
         selected: isSelected,
         expanded: isExpanded,
@@ -178,6 +183,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(AbstractContextMenuService)
   private readonly contextMenuService: AbstractContextMenuService;
 
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
   private _locationTarget: URI | undefined = undefined;
 
   private _nextLocationTarget: URI | undefined = undefined;
@@ -211,6 +219,25 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     x?: number;
     y?: number;
   } = {};
+
+  @observable
+  // 筛选模式开关
+  filterMode: boolean = false;
+
+  // 这里分离出三个值是为了分离input值变化以及其余两种搜索
+  // 解决搜索及赋值同时操作存在卡顿问题
+  // 前置赋值，后置筛选逻辑
+  @observable
+  // 筛选关键字
+  filter: string = '';
+
+  @observable
+  // 路径筛选关键字
+  treeFilter: string = '';
+
+  @observable
+  // 路径筛选关键字
+  pathFilter: string = '';
 
   private _selectTimer;
   private _selectTimes: number = 0;
@@ -261,6 +288,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     });
   }
 
+  @memoize
+  get filesExplorerFocused(): IContextKey<boolean> {
+    const explorerFocused = ExplorerFilteredContext.bind(this.contextKeyService);
+    return explorerFocused;
+  }
+
   get status() {
     return this.filetreeService.status;
   }
@@ -275,12 +308,29 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   }
 
   getFiles = () => {
+    let files;
     if (this.filetreeService.isMutiWorkspace) {
-      return extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status);
+      files = extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status);
     } else {
       // 非多工作区不显示跟路径
-      return extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status).slice(1);
+      files = extractFileItemShouldBeRendered(this.filetreeService, this.themeService, this.filetreeService.files, this.status).slice(1);
     }
+    if (this.pathFilter) {
+      const filterFilesUris = files
+        .filter((file: File | Directory) => {
+          return file.uri.toString().indexOf(this.pathFilter) >= 0;
+        })
+        .map((file) => file.uri);
+      files = files.filter((file: File | Directory) => {
+        for (const uri of filterFilesUris) {
+          if (file.uri.isEqualOrParent(uri)) {
+            return true;
+          }
+        }
+        return false;
+      });
+    }
+    return files;
   }
 
   get root(): URI {
@@ -311,6 +361,24 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private setContextKeys(file: Directory | File) {
     const isSingleFolder = !this.filetreeService.isMutiWorkspace;
     this.fileContextKey.explorerFolder.set((isSingleFolder && !file) || !!file && Directory.isDirectory(file));
+  }
+
+  // 切换 filter 模式，会通过
+  toggleFilterMode = () => {
+    this.filterMode = !this.filterMode;
+    this.filesExplorerFocused.set(!!this.filterMode);
+    // 清理掉输入值
+    if (this.filterMode === false) {
+      // 退出时若需要做 filter 值清理则做聚焦操作
+      if (this.filter) {
+        this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
+      }
+      this.resetFilter();
+    }
+  }
+
+  enableFilterMode = () => {
+    this.filterMode = true;
   }
 
   onSelect = (files: (Directory | File)[]) => {
@@ -486,7 +554,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [ uris[0], uris ],
+      args: [uris[0], uris],
     });
   }
 
@@ -598,6 +666,50 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return true;
   }
 
+  onClearClicked = () => {
+    this.commandService.executeCommand(FILE_COMMANDS.LOCATION.id);
+  }
+
+  protected filterFilesWithPath = throttle(this.doFilterFilesWithPath, 200);
+
+  protected filterFiles = throttle(this.doFilterFiles, 200);
+
+  onFilterChange = (filter: string) => {
+    this.filter = filter;
+    // 当存在搜索条件时，展开所有存在缓存的文件夹进行匹配
+    const isPathFilter = /\//.test(filter);
+    if (isPathFilter) {
+      this.filterFilesWithPath();
+    } else {
+      this.filterFiles();
+    }
+  }
+
+  @action
+  resetFilter() {
+    this.filter = '';
+    this.treeFilter = '';
+    this.pathFilter = '';
+  }
+
+  @action
+  async doFilterFilesWithPath() {
+    if (this.filter) {
+      await this.filetreeService.expandCachedFolder();
+    }
+    this.pathFilter = this.filter;
+  }
+
+  @action
+  async doFilterFiles() {
+    // 当利用树组件筛选能力时，需清空pathFilter保证树组件获取到树全集
+    this.pathFilter = '';
+    if (this.filter) {
+      await this.filetreeService.expandCachedFolder();
+    }
+    this.treeFilter = this.filter;
+  }
+
   @action
   updatePosition(position) {
     this.position = position;
@@ -619,7 +731,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return filename;
   }
 
-  trimLongName(name: string): string  {
+  trimLongName(name: string): string {
     if (name && name.length > 255) {
       return `${name.substr(0, 255)}...`;
     }

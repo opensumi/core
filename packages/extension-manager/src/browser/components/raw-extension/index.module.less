@@ -2,12 +2,11 @@
   display: flex;
   flex-direction: row;
   padding: 8px 12px 8px 8px;
-
+  color: var(--foreground);
   &:hover {
-    background: var(--kt-sideBarList-hoverForeground);
+    background: var(--list-hoverBackground);
     :global(.kt-button) {
-      color: var(--kt-whiteGhostButton-foreground);
-      border-color: var(--kt-whiteGhostButton-border);
+      border-color: currentColor;
     }
   }
 }
@@ -43,15 +42,19 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  color: var(--kt-sideBarList-foreground);
   margin-right: 8px;
   font-size: 14px;
+}
+
+.extension_props {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .extension_props span{
   font-size: 12px;
   margin-right: 12px;
-  color: var(--kt-sideBarList-foreground);
 }
 
 .description {
@@ -62,10 +65,6 @@
   -webkit-box-orient: vertical;
   padding-right: 11px;
   font-size: 12px;
-  color: var(--kt-sideBarList-secondaryForeground);
+  color: var(--descriptionForeground);
 }
 
-.button {
-  font-size: 14px;
-  border-color: transparent;
-}

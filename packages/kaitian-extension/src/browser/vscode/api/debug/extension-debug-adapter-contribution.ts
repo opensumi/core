@@ -1,13 +1,13 @@
 import { DebuggerDescription, DebugConfiguration } from '@ali/ide-debug';
 import { MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-browser';
 import { IExtHostDebug } from '../../../../common/vscode';
-import { ActivationEventService } from '@ali/ide-activation-event';
+import { IActivationEventService } from '../../../types';
 
 export class ExtensionDebugAdapterContribution {
   constructor(
     protected readonly description: DebuggerDescription,
     protected readonly extDebug: IExtHostDebug,
-    protected readonly activationEventService: ActivationEventService ) { }
+    protected readonly activationEventService: IActivationEventService ) { }
 
   get type(): string {
     return this.description.type;

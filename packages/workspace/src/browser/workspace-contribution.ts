@@ -3,7 +3,6 @@ import { Autowired } from '@ali/common-di';
 import {
   CommandRegistry,
   ClientAppContribution,
-  Command,
   Domain,
   PreferenceContribution,
   PreferenceSchema,
@@ -40,9 +39,7 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
 
   // 关闭前存储工作区
   async onStop() {
-    if (this.workspaceService.workspace) {
-      await this.workspaceService.setMostRecentlyUsedWorkspace(this.workspaceService.workspace.uri);
-    }
+    // Do nothing
   }
 
 }

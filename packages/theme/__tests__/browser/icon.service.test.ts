@@ -1,7 +1,7 @@
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IconService } from '../../src/browser';
-import { IIconService } from '../../src';
+import { IIconService, IconType } from '../../src';
 import { PreferenceSchemaProvider, IPreferenceSettingsService, ILoggerManagerClient, IFileServiceClient, URI } from '@ali/ide-core-browser';
 import { MockPreferenceSchemaProvider, MockPreferenceSettingsService } from '@ali/ide-core-browser/lib/mocks/preference';
 import { MockLoggerManageClient } from '@ali/ide-core-browser/lib/mocks/logger';
@@ -225,6 +225,21 @@ describe('icon theme test', () => {
 
     const randomIconClass1 = multiIconClass!.replace(/(kaitian-icon|mask-mode|background-mode)/g, '').trim();
     expect(extraIconNode!.innerHTML.includes('.vs .' + randomIconClass1)).toBeTruthy();
+  });
+
+  it('should be able to generate iconClass from base64 image', () => {
+    // base64 gif
+    const iconClass = service.fromIcon('', 'data:image/gif;base64,R0Ow==', IconType.Base64);
+    expect(iconClass).toBeDefined();
+    const extraIconNode = document.getElementById('plugin-icons');
+    expect(extraIconNode).toBeDefined();
+    const randomIconClass = iconClass!.replace(/(kaitian-icon|mask-mode|background-mode)/g, '').trim();
+    expect(extraIconNode!.innerHTML.includes(randomIconClass)).toBeTruthy();
+
+    // base64 svg
+    const iconClass1 = service.fromIcon('', `data:image/svg+xml,%3Csvg width='30' height='30'%3E%3Ctext x='10' y='20' %3Ehello%3C/text%3E%3C/svg%3E`, IconType.Base64);
+    const randomIconClass1 = iconClass1!.replace(/(kaitian-icon|mask-mode|background-mode)/g, '').trim();
+    expect(extraIconNode!.innerHTML.includes(randomIconClass1)).toBeTruthy();
   });
 
   it('should be able to load font icons', async (done) => {

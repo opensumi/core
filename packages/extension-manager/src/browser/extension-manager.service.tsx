@@ -3,9 +3,10 @@ import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManag
 import { ExtensionService, IExtensionProps, EXTENSION_ENABLE } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
+import * as compareVersions from 'compare-versions';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, CorePreferences } from '@ali/ide-core-browser';
-import { memoize, IDisposable, dispose, getLanguageId, IReporterService, REPORT_NAME } from '@ali/ide-core-common';
+import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, CorePreferences, IClientApp } from '@ali/ide-core-browser';
+import { IDisposable, dispose, getLanguageId, IReporterService, REPORT_NAME, formatLocalize } from '@ali/ide-core-common';
 import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -91,6 +92,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @Autowired(IReporterService)
   reporterService: IReporterService;
 
+  @Autowired(IClientApp)
+  clientApp: IClientApp;
+
   @observable
   isInit: boolean = false;
 
@@ -108,6 +112,11 @@ export class ExtensionManagerService implements IExtensionManagerService {
     // 创建 contextMenu
     this.contextMenu = this.menuService.createMenu(MenuId.ExtensionContext, this.contextKeyService);
     this.disposables.push(this.contextMenu);
+    this.disposables.push(this.extensionService.onDidExtensionActivated(async (e) => {
+      if (!e.isBuiltin) {
+        await this.checkExtensionUpdates(e);
+      }
+    }));
   }
 
   dispose(): void {
@@ -174,6 +183,44 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
+  private async checkExtensionUpdates(e: IExtensionProps) {
+    try {
+      const current = await this.getDetailById(e.extensionId);
+      const latest = await this.getDetailFromMarketplace(e.extensionId);
+      if (!latest) {
+        this.logger.warn(`Can not find extension ${current?.displayName} from marketplace.`);
+        return;
+      }
+      const delayUpdate = localize('marketplace.extension.update.delay');
+      const nowUpdate = localize('marketplace.extension.update.now');
+
+      const delayReload = localize('marketplace.extension.reload.delay');
+      const nowReload = localize('marketplace.extension.reload.now');
+      if (compareVersions(current!.version, latest!.version) === -1) {
+        this.messageService.info(
+          formatLocalize('marketplace.extension.findUpdate', latest?.displayName || latest?.name, latest!.version), [delayUpdate, nowUpdate],
+        )
+        .then((message) => {
+          if (message === nowUpdate) {
+            const oldExtensionPath = current!.path;
+            this.updateExtension(current!, latest!.version)
+              .then((newPath) => {
+                this.onUpdateExtension(newPath, oldExtensionPath);
+                return this.messageService.info(formatLocalize('marketplace.extension.needreload', latest?.displayName || latest?.name), [delayReload, nowReload]);
+              })
+              .then((value) => {
+                if (value === nowReload) {
+                  this.clientApp.fireOnReload();
+                }
+              });
+          }
+        });
+      }
+    } catch (err) {
+      this.logger.warn(err.message);
+    }
+  }
+
   /**
    * 安装插件
    * @param extension 插件基础信息
@@ -229,6 +276,21 @@ export class ExtensionManagerService implements IExtensionManagerService {
     });
     // 安装插件后默认为全局启用、工作区间启用
     await this.enableExtensionToStorage(extensionId);
+    return path;
+  }
+
+  async installExtensionByReleaseId(releaseId: string) {
+    const path = await this.extensionManagerServer.installExtensionByReleaseId(releaseId);
+    // 在后台去启用插件
+    await this.extensionService.postChangedExtension(false, path);
+    const extensionProp = await this.extensionService.getExtensionProps(path);
+    if (extensionProp) {
+      const extension = await this.transformFromExtensionProp(extensionProp);
+      // 添加到 extensions，下次获取 rawExtension
+      runInAction(() => {
+        this.extensions.push(extension);
+      });
+    }
     return path;
   }
 

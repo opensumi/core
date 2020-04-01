@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
-import { TreeViewActionTypes, SelectableTreeNode, URI } from '@ali/ide-core-common';
+import { TreeViewActionTypes, SelectableTreeNode, URI } from '@ali/ide-core-browser';
 import * as paths from '@ali/ide-core-common/lib/path';
 import { IThemeService } from '@ali/ide-theme';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -45,7 +45,7 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
 
   constructor(
     @Optional() item: ISCMResourceGroup,
-    @Optional() private readonly scmMenu?: IMenu,
+    @Optional() scmMenu?: IMenu,
   ) {
     this.id = item.id;
     this.name = item.label;
@@ -93,7 +93,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
 
   constructor(
     @Optional() item: ISCMResource,
-    @Optional() private readonly scmMenu?: IMenu,
+    @Optional() scmMenu?: IMenu,
   ) {
     this.id = item.resourceGroup.id + item.sourceUri;
     this.name = paths.basename(item.sourceUri.path);

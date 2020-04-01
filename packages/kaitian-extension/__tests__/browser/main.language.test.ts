@@ -1,3 +1,4 @@
+/* tslint:disable no-console */
 import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
 import { MainThreadLanguages } from '../../src/browser/vscode/api/main.thread.language';
 import URI from 'vscode-uri';
@@ -6,14 +7,14 @@ import * as types from '../../src/common/vscode/ext-types';
 import * as modes from '../../src/common/vscode/model.api';
 
 import { RPCProtocol } from '@ali/ide-connection';
-import { Emitter, CancellationToken, MonacoService, CommandRegistry, CommandRegistryImpl, DisposableCollection } from '@ali/ide-core-browser';
+import { Emitter, CancellationToken, MonacoService, DisposableCollection } from '@ali/ide-core-browser';
 import { ExtensionDocumentDataManagerImpl } from '../../src/hosted/api/vscode/doc';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.service.mock';
-import { mockFeatureProviderRegistry, CodeLensProvider, DefinitionProvider, ImplementationProvider, TypeDefinitionProvider, ReferenceProvider, DocumentHighlightProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider, DocumentColorProvider, LinkProvider, SelectionRangeProvider, HoverProvider, CodeActionProvider, RenameProvider, SignatureHelpProvider, CompletionItemProvider } from '@ali/ide-monaco/lib/__mocks__/monaco/langauge';
+import { mockFeatureProviderRegistry, CodeLensProvider, DefinitionProvider, ImplementationProvider, TypeDefinitionProvider, ReferenceProvider, DocumentHighlightProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider, DocumentColorProvider, LinkProvider, SelectionRangeProvider, HoverProvider, CodeActionProvider, RenameProvider, SignatureHelpProvider, CompletionItemProvider } from '@ali/ide-monaco/lib/__mocks__/monaco/language';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

@@ -1,25 +1,35 @@
+// tslint:disable:new-parens
 import URI from 'vscode-uri';
-import { Event, Emitter, CancellationToken } from '@ali/ide-core-common';
+import { DisposableCollection, Event, Emitter, CancellationToken } from '@ali/ide-core-common';
 
-import { FileDecorationsService } from '../../src/browser/decorationsService';
-import { IDecorationsProvider, IDecorationData } from '../../src';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+
+import { DecorationModule } from '../../src/browser';
+import { IDecorationsService, IDecorationsProvider, IDecorationData } from '../../src';
 
 describe('DecorationsService', () => {
-  let service: FileDecorationsService;
+  let injector: MockInjector;
+  let service: IDecorationsService;
+  const toTearDown = new DisposableCollection();
 
   beforeEach(() => {
-    if (service) {
-      service.dispose();
-    }
-    service = new FileDecorationsService();
+    injector = createBrowserInjector([ DecorationModule ]);
+    service = injector.get(IDecorationsService);
+    toTearDown.push(service);
   });
 
-  test('Async provider, async/evented result', () => {
+  afterEach(() => toTearDown.dispose());
 
+  it('empty result', () => {
+    const uri = URI.parse('/workspace/test');
+    expect(service.getDecoration(uri, false)).toBe(undefined);
+  });
+
+  it('Async provider, async/evented result', () => {
     const uri = URI.parse('foo:bar');
     let callCounter = 0;
 
-    // tslint:disable-next-line:new-parens
     service.registerDecorationsProvider(new class implements IDecorationsProvider {
       readonly label: string = 'Test';
       readonly onDidChange: Event<URI[]> = Event.None;
@@ -28,7 +38,8 @@ describe('DecorationsService', () => {
         return new Promise<IDecorationData>((resolve) => {
           setTimeout(() => resolve({
             color: 'someBlue',
-            tooltip: 'T',
+            tooltip: 'Tooltip',
+            letter: 'L',
           }));
         });
       }
@@ -43,16 +54,16 @@ describe('DecorationsService', () => {
       expect(e.affectsResource(uri)).toBeTruthy();
 
       // sync result
-      expect(service.getDecoration(uri, false)!.tooltip).toBe('T');
+      expect(service.getDecoration(uri, false)!.tooltip).toBe('Tooltip');
+      expect(service.getDecoration(uri, false)!.badge).toBe('L');
       expect(callCounter).toBe(1);
     });
   });
 
-  test('Sync provider, sync result', () => {
+  it('Sync provider, sync result', () => {
     const uri = URI.parse('foo:bar');
     let callCounter = 0;
 
-    // tslint:disable-next-line:new-parens
     service.registerDecorationsProvider(new class implements IDecorationsProvider {
       readonly label: string = 'Test';
       readonly onDidChange: Event<URI[]> = Event.None;
@@ -67,11 +78,10 @@ describe('DecorationsService', () => {
     expect(callCounter).toBe(1);
   });
 
-  test('Clear decorations on provider dispose', async () => {
+  it('Clear decorations on provider dispose', async () => {
     const uri = URI.parse('foo:bar');
     let callCounter = 0;
 
-    // tslint:disable-next-line:new-parens
     const reg = service.registerDecorationsProvider(new class implements IDecorationsProvider {
       readonly label: string = 'Test';
       readonly onDidChange: Event<URI[]> = Event.None;
@@ -101,7 +111,7 @@ describe('DecorationsService', () => {
     expect(didSeeEvent).toBeTruthy();
   });
 
-  test('No default bubbling', () => {
+  it('No default bubbling', () => {
     let reg = service.registerDecorationsProvider({
       label: 'Test',
       onDidChange: Event.None,
@@ -139,12 +149,10 @@ describe('DecorationsService', () => {
     expect(typeof deco.tooltip).toBe('string');
   });
 
-  test('Decorations not showing up for second root folder #48502', async () => {
+  it('Decorations not showing up for second root folder #48502', async () => {
     let cancelCount = 0;
-    const winjsCancelCount = 0;
     let callCount = 0;
 
-    // tslint:disable-next-line:new-parens
     const provider = new class implements IDecorationsProvider {
       _onDidChange = new Emitter<URI[]>();
       onDidChange: Event<URI[]> = this._onDidChange.event;
@@ -175,13 +183,12 @@ describe('DecorationsService', () => {
     service.getDecoration(uri, false);
 
     expect(cancelCount).toBe(1);
-    expect(winjsCancelCount).toBe(0);
     expect(callCount).toBe(2);
 
     reg.dispose();
   });
 
-  test('Decorations not bubbling... #48745', () => {
+  it('Decorations not bubbling... #48745', () => {
 
     const reg = service.registerDecorationsProvider({
       label: 'Test',
@@ -207,7 +214,7 @@ describe('DecorationsService', () => {
     reg.dispose();
   });
 
-  test('Folder decorations don\'t go away when file with problems is deleted #61919 (part1)', () => {
+  it('Folder decorations don\'t go away when file with problems is deleted #61919 (part1)', () => {
 
     const emitter = new Emitter<URI[]>();
     let gone = false;
@@ -242,7 +249,7 @@ describe('DecorationsService', () => {
     reg.dispose();
   });
 
-  test('Folder decorations don\'t go away when file with problems is deleted #61919 (part2)', () => {
+  it('Folder decorations don\'t go away when file with problems is deleted #61919 (part2)', () => {
 
     const emitter = new Emitter<URI[]>();
     let gone = false;
@@ -281,5 +288,101 @@ describe('DecorationsService', () => {
       gone = true;
       emitter.fire([uri]);
     });
+  });
+
+  it('Initial flush/Flush all', async () => {
+    let callCount = 0;
+
+    const provider = new class implements IDecorationsProvider {
+      _onDidChange = new Emitter<URI[]>();
+      onDidChange: Event<URI[]> = this._onDidChange.event;
+
+      label: string = 'foo';
+
+      provideDecorations(_uri: URI): IDecorationData {
+        callCount += 1;
+        return {
+          letter: 'foo',
+        };
+      }
+    };
+
+    const uri = URI.file('/test/workspace');
+    service.getDecoration(uri, false);
+
+    const reg = service.registerDecorationsProvider(provider);
+
+    // test for flush
+    const event1 = service.onDidChangeDecorations((e) => {
+      event1.dispose();
+      expect(e.affectsResource(uri)).toBeTruthy();
+      expect(e.affectsResource(URI.parse('git://aa.ts'))).toBeTruthy();
+      expect(e.affectsResource(undefined as any)).toBeTruthy();
+    });
+
+    provider._onDidChange.fire([uri]);
+    service.getDecoration(uri, false);
+
+    expect(callCount).toBe(1);
+
+    // test for flush
+    const event2 = service.onDidChangeDecorations((e) => {
+      event2.dispose();
+      expect(e.affectsResource(uri)).toBeTruthy();
+      expect(e.affectsResource(URI.parse('git://aa.ts'))).toBeTruthy();
+      expect(e.affectsResource(undefined as any)).toBeTruthy();
+      reg.dispose();
+    });
+
+    // force flush data
+    provider._onDidChange.fire(undefined as any);
+  });
+
+  it('Multi decorations', async () => {
+    const uri = URI.parse('foo:bar');
+    let callCounter = 0;
+
+    toTearDown.push(
+      service.registerDecorationsProvider(new class implements IDecorationsProvider {
+        readonly label: string = 'TestSync';
+        readonly onDidChange: Event<URI[]> = Event.None;
+        provideDecorations(_uri: URI) {
+          callCounter += 1;
+          return {
+            color: 'someBlue',
+            tooltip: 'Z',
+            letter: 'A',
+          };
+        }
+      }),
+    );
+
+    // trigger -> sync
+    expect(service.getDecoration(uri, false)!.tooltip).toBe('Z');
+    expect(service.getDecoration(uri, false)!.color).toBe('someBlue');
+    expect(service.getDecoration(uri, false)!.badge).toBe('A');
+    expect(callCounter).toBe(1);
+
+    toTearDown.push(
+      service.registerDecorationsProvider(new class implements IDecorationsProvider {
+        readonly label: string = 'TestSync1';
+        readonly onDidChange: Event<URI[]> = Event.None;
+        provideDecorations(_uri: URI) {
+          callCounter += 1;
+          return {
+            color: 'someGreen',
+            tooltip: 'Tooltip',
+            letter: 'L',
+            weight: 1,
+          };
+        }
+      }),
+    );
+
+    // trigger -> sync
+    expect(service.getDecoration(uri, false)!.tooltip).toBe('Tooltip • Z');
+    expect(service.getDecoration(uri, false)!.color).toBe('someGreen');
+    expect(service.getDecoration(uri, false)!.badge).toBe('L,A');
+    expect(callCounter).toBe(2);
   });
 });

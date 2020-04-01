@@ -1,5 +1,5 @@
-import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey } from '@ali/ide-core-browser';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { WithEventBus, ComponentRegistryInfo, Emitter, Event, OnEvent, ResizeEvent, RenderedEvent, SlotLocation, CommandRegistry, localize, KeybindingRegistry, ViewContextKeyRegistry, IContextKeyService, getTabbarCtxKey, IContextKey, DisposableCollection, IScopedContextKeyService } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action, observe, computed } from 'mobx';
 import { AbstractContextMenuService, AbstractMenuService, IContextMenu, IMenuRegistry, ICtxMenuRenderer, generateCtxMenu, IMenu, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
@@ -12,9 +12,15 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
   hidden: boolean;
+  // 排序位置，小的在前 （考虑改成 index 语义更好？ @寻壑）
   priority: number;
 }
 const INIT_PANEL_SIZE = 280;
+const CONTAINER_NAME_MAP = {
+  left: 'view',
+  right: 'extendView',
+  bottom: 'panel',
+};
 
 @Injectable({multiple: true})
 export class TabbarService extends WithEventBus {
@@ -25,6 +31,8 @@ export class TabbarService extends WithEventBus {
   // 由于 observable.map （即使是deep:false) 会把值转换成observableValue，不希望这样
   containersMap: Map<string, ComponentRegistryInfo> = new Map();
   @observable state: Map<string, TabState> = new Map();
+
+  private storedState: {[containerId: string]: TabState} = {};
 
   public prevSize?: number;
   public commonTitleMenu: IContextMenu;
@@ -38,9 +46,6 @@ export class TabbarService extends WithEventBus {
     setMaxSize: (lock: boolean | undefined) => void,
     hidePanel: (show?: boolean) => void,
   };
-
-  @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
 
   @Autowired(AbstractMenuService)
   protected menuService: AbstractMenuService;
@@ -58,7 +63,7 @@ export class TabbarService extends WithEventBus {
   private readonly contextMenuRenderer: ICtxMenuRenderer;
 
   @Autowired(KeybindingRegistry)
-  keybindingRegistry: KeybindingRegistry;
+  private keybindingRegistry: KeybindingRegistry;
 
   @Autowired()
   private viewContextKeyRegistry: ViewContextKeyRegistry;
@@ -82,12 +87,15 @@ export class TabbarService extends WithEventBus {
 
   public barSize: number;
   private menuId = `tabbar/${this.location}`;
+  private moreMenuId = `tabbar/${this.location}/more`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
   private activatedKey: IContextKey<string>;
   private rendered = false;
   private sortedContainers: Array<ComponentRegistryInfo> = [];
+  private disposableMap: Map<string, DisposableCollection> = new Map();
+  private tabInMoreKeyMap: Map<string, IContextKey<boolean>> = new Map();
 
-  private scopedCtxKeyService = this.contextKeyService.createScoped();
+  private scopedCtxKeyService: IScopedContextKeyService = this.contextKeyService.createScoped();
 
   constructor(public location: string, public noAccordion?: boolean) {
     super();
@@ -103,6 +111,8 @@ export class TabbarService extends WithEventBus {
     this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
     if (this.location === 'bottom') {
       this.registerPanelMenus();
+      // TODO: 底部支持多视图
+      this.noAccordion = true;
     }
   }
 
@@ -121,6 +131,13 @@ export class TabbarService extends WithEventBus {
     this.updatePanel(show);
   }
 
+  public updateTabInMoreKey(containerId: string, value: boolean) {
+    const ctxKey = this.tabInMoreKeyMap.get(containerId);
+    if (ctxKey) {
+      ctxKey.set(value);
+    }
+  }
+
   @computed({equals: visibleContainerEquals})
   get visibleContainers() {
     const components: ComponentRegistryInfo[] = [];
@@ -131,10 +148,12 @@ export class TabbarService extends WithEventBus {
       }
     });
     // TODO 使用object来存state的话，初始containersMap为空，貌似就无法实现这个监听（无法引用到一个observable的属性）
+    // tslint:disable-next-line:no-unused-variable
     const size = this.state.size; // 监听state长度
     // 排序策略：默认根据priority来做一次排序，后续根据存储的index来排序，未存储过的（新插入的，比如插件）在渲染后（时序控制）始终放在最后
+    // 排序为 state的 priority 从小到大 (注意和 componentInfo 中的 options 的 priority的含义不同，为了不breaking change，保留这种语义)
     return components.sort((pre, next) =>
-      this.getContainerState(next.options!.containerId).priority - this.getContainerState(pre.options!.containerId).priority);
+      this.getContainerState(pre.options!.containerId).priority - this.getContainerState(next.options!.containerId).priority);
   }
 
   registerResizeHandle(resizeHandle: ResizeHandle) {
@@ -156,6 +175,7 @@ export class TabbarService extends WithEventBus {
     if (this.containersMap.has(containerId)) {
       return;
     }
+    const disposables = new DisposableCollection();
     let options = componentInfo.options;
     if (!options) {
       options = {
@@ -167,38 +187,90 @@ export class TabbarService extends WithEventBus {
       views: componentInfo.views,
       options: observable.object(options, undefined, {deep: false}),
     });
+    disposables.push({ dispose: () => {
+      this.containersMap.delete(containerId);
+      this.state.delete(containerId);
+    } });
     this.updatePanelVisibility(this.containersMap.size > 0);
     // 需要立刻设置state，lazy 逻辑会导致computed 的 visibleContainers 可能在计算时触发变更，抛出mobx invariant错误
     // 另外由于containersMap不是observable, 这边setState来触发visibaleContainers更新
     if (this.rendered) {
       // 渲染后状态已恢复，使用状态内的顺序或插到最后
-      if (!this.getContainerState(containerId)) {
-        this.state.set(containerId, {hidden: false, priority: this.sortedContainers.length});
-        this.sortedContainers.push(componentInfo);
+      if (!this.storedState[containerId]) {
+        // kaitian拓展都在渲染后注册
+        // 注册策略： 此时 componnentInfo 的 priority 代表的是从后往前的 index;
+        // 比如 priority 如果为 0, 则会在最后
+        // 如果已有元素长度为 9, priority为 8， 则会在第1个元素之后
+        let insertIndex = Math.floor(this.sortedContainers.length - (componentInfo.options!.priority || 0));
+        if (insertIndex > this.sortedContainers.length) {
+          insertIndex = this.sortedContainers.length;
+        } else if (insertIndex < 0) {
+          insertIndex = 0;
+        }
+        this.sortedContainers.splice(insertIndex, 0, componentInfo);
+        for (let i = insertIndex; i < this.sortedContainers.length; i++) {
+          const info = this.sortedContainers[i];
+          const containerId = info.options!.containerId;
+          const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
+          this.state.set(info.options!.containerId, {hidden: prevState.hidden , priority: i});
+        }
+      } else {
+        this.state.set(componentInfo.options!.containerId, this.storedState[containerId]);
       }
     } else {
       // 渲染前根据priority排序
-      const insertIndex = this.sortedContainers.findIndex((item) => (item.options!.priority || 1) <= (componentInfo.options!.priority || 1)) + 1;
+      let insertIndex = this.sortedContainers.findIndex((item) => (item.options!.priority || 1) <= (componentInfo.options!.priority || 1));
+      if (insertIndex === -1) {
+        insertIndex = this.sortedContainers.length;
+      }
       this.sortedContainers.splice(insertIndex, 0, componentInfo);
       for (let i = insertIndex; i < this.sortedContainers.length; i++) {
         const info = this.sortedContainers[i];
-        this.state.set(info.options!.containerId, {hidden: false, priority: i});
+        const prevState = this.getContainerState(containerId) || {}; // 保留原有的hidden状态
+        this.state.set(info.options!.containerId, {hidden: prevState.hidden, priority: i});
       }
     }
-    this.menuRegistry.registerMenuItem(this.menuId, {
+    disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(containerId),
         label: componentInfo.options!.title || '',
       },
       group: '1_widgets',
+    }));
+    // 注册溢出后的菜单
+    const tabInMoreKey = this.scopedCtxKeyService.createKey(this.getTabInMoreCtxKey(containerId), false);
+    this.tabInMoreKeyMap.set(containerId, tabInMoreKey);
+    disposables.push({
+      dispose: () => this.tabInMoreKeyMap.delete(containerId),
     });
-    this.registerActivateKeyBinding(componentInfo, options.fromExtension);
+    disposables.push(this.menuRegistry.registerMenuItem(this.moreMenuId, {
+      command: this.registerMoreToggleCommand(componentInfo),
+      group: 'inline',
+      when: `${this.getTabInMoreCtxKey(containerId)} == true`,
+      toggledWhen: `${getTabbarCtxKey(this.location)} == ${containerId}`,
+    }));
+    disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
+    const containerExistKey = this.contextKeyService.createKey(`workbench.${CONTAINER_NAME_MAP[this.location] || 'view'}.${containerId}`, true);
+    disposables.push({
+      dispose: () => {
+        containerExistKey.set(false);
+      },
+    });
     this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
     if (containerId === this.currentContainerId) {
       // 需要重新触发currentChange副作用
       this.handleChange(containerId, '');
     }
     this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped()).createKey('view', containerId);
+    this.disposableMap.set(containerId, disposables);
+  }
+
+  @action
+  disposeContainer(containerId: string) {
+    const disposables = this.disposableMap.get(containerId);
+    if (disposables) {
+      disposables.dispose();
+    }
   }
 
   getContainer(containerId: string) {
@@ -252,29 +324,59 @@ export class TabbarService extends WithEventBus {
     } });
   }
 
+  showMoreMenu(event: React.MouseEvent, lastContainerId?: string) {
+    const menus = this.menuService.createMenu(this.moreMenuId, this.scopedCtxKeyService);
+    const menuNodes = generateCtxMenu({ menus, args: [{lastContainerId}] });
+    this.contextMenuRenderer.show({ menuNodes: menuNodes[1], anchor: {
+      x: event.clientX,
+      y: event.clientY,
+    } });
+  }
+
   // drag & drop
   handleDragStart(e: React.DragEvent, containerId: string) {
     e.dataTransfer.setData('containerId', containerId);
   }
   handleDrop(e: React.DragEvent, target: string) {
     if (e.dataTransfer.getData('containerId')) {
-      const containerId = e.dataTransfer.getData('containerId');
-      const sourceState = this.getContainerState(containerId);
-      const targetState = this.getContainerState(target);
-      const sourcePriority = sourceState.priority;
-      sourceState.priority = targetState.priority;
-      targetState.priority = sourcePriority;
+      const source = e.dataTransfer.getData('containerId');
+      const containers = this.visibleContainers;
+      const sourceIndex = containers.findIndex((containerInfo) => source === containerInfo.options!.containerId);
+      const targetIndex = containers.findIndex((containerInfo) => target === containerInfo.options!.containerId);
+      this.doInsertTab(containers, sourceIndex, targetIndex);
       this.storeState();
     }
   }
 
   restoreState() {
-    const storedState: {[containerId: string]: TabState} = this.layoutState.getState(LAYOUT_STATE.getTabbarSpace(this.location), {});
+    this.storedState = this.layoutState.getState(LAYOUT_STATE.getTabbarSpace(this.location), {});
     for (const containerId of this.state.keys()) {
-      if (storedState[containerId]) {
-        this.state.set(containerId, storedState[containerId]);
+      if (this.storedState[containerId]) {
+        this.state.set(containerId, this.storedState[containerId]);
       }
     }
+  }
+
+  protected doInsertTab(containers: ComponentRegistryInfo[], sourceIndex: number, targetIndex: number) {
+    const targetPriority = this.getContainerState(containers[targetIndex].options!.containerId).priority;
+    const changePriority = (sourceIndex: number, targetIndex: number) => {
+      const sourceState = this.getContainerState(containers[sourceIndex].options!.containerId);
+      const targetState = this.getContainerState(containers[targetIndex].options!.containerId);
+      sourceState.priority = targetState.priority;
+    };
+    let index: number;
+    if (sourceIndex > targetIndex) {
+      // 后往前拖，中间的tab依次下移
+      for (index = targetIndex; index < sourceIndex; index ++) {
+        changePriority(index, index + 1);
+      }
+    } else {
+      // 前往后拖，中间的上移
+      for (index = targetIndex; index > sourceIndex; index --) {
+        changePriority(index, index - 1);
+      }
+    }
+    this.getContainerState(containers[index].options!.containerId).priority = targetPriority;
   }
 
   protected storeState() {
@@ -289,27 +391,28 @@ export class TabbarService extends WithEventBus {
   private registerActivateKeyBinding(component: ComponentRegistryInfo, fromExtension?: boolean) {
     const options = component.options!;
     const containerId = options.containerId;
-    if (!options.activateKeyBinding) {
-      return;
-    }
     // vscode内插件注册的是workbench.view.extension.containerId
     const activateCommandId = fromExtension ? `workbench.view.extension.${containerId}` : `workbench.view.${containerId}`;
-    this.commandRegistry.registerCommand({
+    const disposables = new DisposableCollection();
+    disposables.push(this.commandRegistry.registerCommand({
       id: activateCommandId,
     }, {
-      execute: () => {
+      execute: ({forceShow}: {forceShow?: boolean} = {}) => {
         // 支持toggle
-        if (this.location === 'bottom') {
+        if (this.location === 'bottom' && !forceShow) {
           this.currentContainerId = this.currentContainerId === containerId ? '' : containerId;
         } else {
           this.currentContainerId = containerId;
         }
       },
-    });
-    this.keybindingRegistry.registerKeybinding({
-      command: activateCommandId,
-      keybinding: options.activateKeyBinding,
-    });
+    }));
+    if (options.activateKeyBinding) {
+      disposables.push(this.keybindingRegistry.registerKeybinding({
+        command: activateCommandId,
+        keybinding: options.activateKeyBinding!,
+      }));
+    }
+    return disposables;
   }
 
   private registerGlobalToggleCommand() {
@@ -333,7 +436,7 @@ export class TabbarService extends WithEventBus {
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {
-      execute: ({forceShow}: {forceShow?: boolean}) => {
+      execute: ({forceShow}: {forceShow?: boolean} = {}) => {
         this.doToggleTab(containerId, forceShow);
       },
       isToggled: () => {
@@ -346,6 +449,36 @@ export class TabbarService extends WithEventBus {
       },
     });
     return commandId;
+  }
+
+  private registerMoreToggleCommand(component: ComponentRegistryInfo): string {
+    const { options } = component;
+    const { containerId, title, iconClass } = options!;
+    const commandId = `activity.bar.activate.more.${containerId}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+      label: title || containerId,
+      iconClass,
+    }, {
+      execute: ({lastContainerId}: {lastContainerId?: string}) => {
+        // 切换激活tab
+        this.currentContainerId = containerId;
+        if (lastContainerId) {
+          // 替换最后一个可见tab
+          const sourceState = this.getContainerState(containerId);
+          const targetState = this.getContainerState(lastContainerId);
+          const sourcePriority = sourceState.priority;
+          sourceState.priority = targetState.priority;
+          targetState.priority = sourcePriority;
+          this.storeState();
+        }
+      },
+    });
+    return commandId;
+  }
+
+  private getTabInMoreCtxKey(containerId: string) {
+    return `${containerId}.isInMore`;
   }
 
   protected registerPanelMenus() {

@@ -94,9 +94,9 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
     const handler = this._createCustomWebSocket(sessionId);
     attachMethod(handler as any);
     const info = await this.service.create(sessionId, term.rows, term.cols, {
-      ...options,
       cwd: this.config.workspaceDir,
       shellPath: type ? `/bin/${type}` : undefined,
+      ...options,
     });
     this._info.set(sessionId, info);
   }
