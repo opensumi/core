@@ -85,8 +85,8 @@
     ],
     "ide-framework": [
       {
-        "name": "extend-sample",
-        "version": "0.0.1"
+        "name": "kaitian-sample",
+        "version": "0.0.2"
       }
     ],
     "kaitian": [
