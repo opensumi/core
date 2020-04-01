@@ -124,7 +124,7 @@ export interface IExtensionManagerService  {
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string, version?: string): Promise<ExtensionDetail | undefined>;
-  getRawExtensionById(extensionId: string): RawExtension;
+  getRawExtensionById(extensionId: string): RawExtension | undefined;
   toggleActiveExtension(extension: BaseExtension, active: boolean, scope: EnableScope): Promise<void>;
   searchFromMarketplace(query: string): void;
   searchFromInstalled(query: string): void;
