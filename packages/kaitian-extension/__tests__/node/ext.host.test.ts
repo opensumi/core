@@ -6,6 +6,7 @@ import { initMockRPCProtocol } from '../__mock__/initRPCProtocol';
 import { MainthreadExtensionService } from '../__mock__/api/mainthread.extension.service';
 import { MainThreadStorage } from '../__mock__/api/mathread.storage';
 import { MainThreadExtensionLog } from '../__mock__/api/mainthread.extension.log';
+import { MockLoggerManagerClient } from '../__mock__/loggermanager';
 
 const enum MessageType {
   Request = 1,
@@ -13,6 +14,7 @@ const enum MessageType {
   ReplyErr = 3,
   Cancel = 4,
 }
+const mockLoggger = (new MockLoggerManagerClient()).getLogger();
 
 describe('Extension process test', () => {
   describe('RPCProtocol', () => {
@@ -21,7 +23,7 @@ describe('Extension process test', () => {
     beforeAll((done) => {
       initMockRPCProtocol(mockClient)
         .then((value) => {
-          extHostImpl = new ExtensionHostServiceImpl(value);
+          extHostImpl = new ExtensionHostServiceImpl(value, mockLoggger);
           return extHostImpl.init();
         })
         .then((res) => {
@@ -46,6 +48,7 @@ describe('Extension process test', () => {
             (await fn)(raw);
           }
         } else {
+          // tslint:disable-next-line
           console.log(`lost proxy ${message.proxyId} - ${message.method}`);
         }
       },
