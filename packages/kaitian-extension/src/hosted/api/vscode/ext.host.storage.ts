@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { Emitter, IDisposable } from '@ali/ide-core-common';
 import { IMainThreadStorage, IExtHostStorage, KeysToAnyValues, KeysToKeysToAnyValue, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';

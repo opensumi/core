@@ -1,5 +1,5 @@
-import { IDisposable, Event, Uri } from '@ali/ide-core-common';
-import { FileSystemProvider, FileChangeEvent } from '../common/';
+import { IDisposable } from '@ali/ide-core-common';
+import { FileSystemProvider } from '../common/';
 
 export class FileSystemManage {
   readonly providers = new Map<string, FileSystemProvider>();

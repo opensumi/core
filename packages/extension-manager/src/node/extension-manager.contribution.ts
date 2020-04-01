@@ -1,4 +1,4 @@
-import { ServerAppContribution, Domain, IServerApp, AppConfig, INodeLogger } from '@ali/ide-core-node';
+import { ServerAppContribution, Domain, AppConfig, INodeLogger } from '@ali/ide-core-node';
 import * as fs from 'fs-extra';
 import { Autowired } from '@ali/common-di';
 

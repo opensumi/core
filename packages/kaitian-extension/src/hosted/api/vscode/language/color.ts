@@ -17,8 +17,7 @@
 import URI from 'vscode-uri/lib/umd';
 import * as vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
-import { Definition, DefinitionLink, Location, Position, ColorPresentation, RawColorInfo } from '../../../../common/vscode/model.api';
-import { isDefinitionLinkArray, isLocationArray } from '../../../../common/vscode/utils';
+import { ColorPresentation, RawColorInfo } from '../../../../common/vscode/model.api';
 import * as types from '../../../../common/vscode/ext-types';
 import * as Converter from '../../../../common/vscode/converter';
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@ali/ide-core-browser';
+import { useInjectable, Disposable, CancellationTokenSource } from '@ali/ide-core-browser';
 import { IMarkdownService } from '../common';
 
 export const Markdown = ({content, onLoaded}: {content: string, onLoaded?: () => void}) => {

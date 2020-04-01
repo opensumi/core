@@ -3,7 +3,7 @@ import { IMarkdownService } from '../common';
 import * as marked from 'marked';
 import { markdownCss } from './mardown.style';
 import { IWebviewService } from '@ali/ide-webview';
-import { URI, IDisposable, Disposable, CancellationToken, Event } from '@ali/ide-core-browser';
+import { IDisposable, Disposable, CancellationToken, Event } from '@ali/ide-core-browser';
 
 @Injectable()
 export class MarkdownServiceImpl implements IMarkdownService {

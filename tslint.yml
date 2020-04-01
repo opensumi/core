@@ -39,4 +39,5 @@ linterOptions:
     - '**/tools/extensions/**'
     - '**/typings/**'
     - '**/typings-pending/**'
+    - '**/scripts/**'
 

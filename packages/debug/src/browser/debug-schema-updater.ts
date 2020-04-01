@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { InMemoryResourceResolver, deepClone, IJSONSchema, URI, ISchemaRegistry } from '@ali/ide-core-browser';
+import { InMemoryResourceResolver, deepClone, IJSONSchema, ISchemaRegistry } from '@ali/ide-core-browser';
 import { DebugServer, IDebugServer } from '../common/debug-service';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { launchSchemaUri } from '../common';

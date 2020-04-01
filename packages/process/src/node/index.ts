@@ -2,7 +2,7 @@ import { Provider, Injectable } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
 import { ProcessManage  } from './process-manager';
 import { ProcessFactory } from './process';
-import { IProcessManage, processManageServicePath, IProcessFactory, IProcess } from '../common/';
+import { IProcessManage, processManageServicePath, IProcessFactory } from '../common/';
 
 @Injectable()
 export class ProcessModule extends NodeModule {

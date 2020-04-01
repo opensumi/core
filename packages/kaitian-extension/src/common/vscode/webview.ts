@@ -1,4 +1,4 @@
-import { UriComponents, Uri } from './ext-types';
+import { Uri } from './ext-types';
 import { URI, Event } from '@ali/ide-core-common';
 import { ViewColumn } from './editor';
 

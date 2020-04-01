@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Emitter } from '@ali/ide-core-common';
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 // import { VSCodeExtensionService } from '../browser/types';
-import { IMainThreadDocumentsShape, ExtensionDocumentDataManager, IExtensionHostDocService } from './doc';
+import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput, IExtHostWindowState, IExtHostWindow, IMainThreadWindow } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';

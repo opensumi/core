@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from './debug-view-model';
 import { DebugState, DebugSession } from '../debug-session';

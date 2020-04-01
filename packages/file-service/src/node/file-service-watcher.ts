@@ -3,8 +3,8 @@ import * as nsfw from 'nsfw';
 import * as paths from 'path';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 // import { IMinimatch, Minimatch } from 'minimatch';
-import { IDisposable, Disposable, DisposableCollection, isWindows, isLinux, isOSX } from '@ali/ide-core-common';
-import { FileUri, AppConfig } from '@ali/ide-core-node';
+import { IDisposable, Disposable, DisposableCollection, isWindows, isLinux } from '@ali/ide-core-common';
+import { FileUri } from '@ali/ide-core-node';
 import {
   FileChangeType,
   FileSystemWatcherClient,

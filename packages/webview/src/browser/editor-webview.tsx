@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { IWebview, IPlainWebview, IEditorWebviewComponent, IEditorWebviewMetaData, IWebviewService } from './types';
-import { IDisposable, Disposable, DomListener, useInjectable } from '@ali/ide-core-browser';
+import { IWebview, IPlainWebview, IEditorWebviewMetaData, IWebviewService } from './types';
+import { Disposable, DomListener, useInjectable } from '@ali/ide-core-browser';
 
 declare const ResizeObserver: any;
 declare const MutationObserver: any;

@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import { IDisposable, IRange } from '@ali/ide-core-common';
 import { Uri, UriComponents} from './ext-types';
 import { FileStat } from '@ali/ide-file-service';
-import { illegalArgument } from '@ali/ide-core-common/lib/errors';
 import { EndOfLineSequence } from '@ali/ide-editor/lib/common';
 
 export interface IMainThreadWorkspace extends IDisposable {
