@@ -2,8 +2,8 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from './layout';
-
-type ChildComponent = React.ReactElement<{ flex?: number; id: string; }>;
+// TODO: 类型标准化
+type ChildComponent = React.ReactElement<{ flex?: number; id: string; overflow: string; }>;
 
 export const BoxPanel: React.FC<{
   children?: ChildComponent | ChildComponent[];
