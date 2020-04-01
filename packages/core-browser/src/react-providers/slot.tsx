@@ -8,7 +8,7 @@ import { LayoutConfig } from '../bootstrap';
 import { useInjectable } from '../react-hooks';
 import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
 import { AppConfig } from './config-provider';
-import { Button } from '@ali/ide-components/src';
+import { Button } from '@ali/ide-components';
 
 const logger = getDebugLogger();
 export type SlotLocation = string;
