@@ -80,10 +80,14 @@ export const SCMResouceList: React.FC<{
     if (_selectTimes) {
       _selectTimes.current = _selectTimes.current + 1;
     }
-    // 控制选中状态
-    setSelectedNodeId(file.id);
 
     const item: ISCMDataItem = file.item;
+
+    // 只有 scm resource 有选中态
+    if (isSCMResource(item)) {
+      // 控制选中状态
+      setSelectedNodeId(file.id);
+    }
 
     if (!isSCMResource(item)) {
       return;

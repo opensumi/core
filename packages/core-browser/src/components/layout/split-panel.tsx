@@ -36,6 +36,7 @@ interface SplitChildProps {
   maxSize?: number;
   minResize?: number;
   flex?: number;
+  overflow?: string;
   flexGrow?: number;
   slot?: string;
   noResize?: boolean;

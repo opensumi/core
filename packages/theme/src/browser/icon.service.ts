@@ -38,6 +38,8 @@ export class IconService implements IIconService {
   public currentThemeId: string;
   public currentTheme: IIconTheme;
 
+  private iconMap: Map<string, string> = new Map();
+
   private getPath(basePath: string, relativePath: string): URI {
     if (relativePath.startsWith('./')) {
       return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
@@ -102,6 +104,11 @@ export class IconService implements IIconService {
     if (!icon) {
       return;
     }
+    const iconPath = typeof icon === 'string' ? icon : icon.dark;
+    const iconId = `${basePath}-${iconPath}-${type}-${shape}`;
+    if (this.iconMap.get(iconId)) {
+      return this.iconMap.get(iconId);
+    }
     const randomClass = this.getRandomIconClass();
     if (typeof icon === 'string') {
       /**
@@ -131,8 +138,7 @@ export class IconService implements IIconService {
         }
       }
     }
-
-    return [
+    const targetIconClass = [
       'kaitian-icon',
       randomClass,
       ({
@@ -142,6 +148,8 @@ export class IconService implements IIconService {
       })[type],
       (shape === IconShape.Circle ? 'circle' : ''),
     ].join(' ');
+    this.iconMap.set(iconId, targetIconClass);
+    return targetIconClass;
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {

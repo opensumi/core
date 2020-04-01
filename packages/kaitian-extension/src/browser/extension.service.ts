@@ -932,6 +932,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         const openOptions: IResourceOpenOptions = {
           ...viewColumnToResourceOpenOptions(options.viewColumn),
           revealFirstDiff: true,
+          ...options,
         };
         return commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
           original: URI.from(left),

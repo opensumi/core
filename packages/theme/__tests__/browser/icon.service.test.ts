@@ -141,7 +141,6 @@ describe('icon theme test', () => {
   let injector: MockInjector;
   beforeAll(() => {
     injector = createBrowserInjector([]);
-
     injector.addProviders(
       {
         token: IIconService,
@@ -168,6 +167,7 @@ describe('icon theme test', () => {
         useClass: MockStaticResourceService,
       },
     );
+    service = injector.get(IIconService);
   });
 
   // @ts-ignore
@@ -176,7 +176,6 @@ describe('icon theme test', () => {
   };
 
   it('should be able to register icon theme', () => {
-    service = injector.get(IIconService);
     service.registerIconThemes([{
       id: 'test-icon-theme',
       label: 'Test IconTheme',
@@ -195,6 +194,8 @@ describe('icon theme test', () => {
     await service.applyTheme('test-icon-theme');
     expect(service.currentThemeId).toEqual('test-icon-theme');
     expect(bodyNode.classList.contains('default-file-icons')).toBeFalsy();
+    const iconThemeNode = document.getElementById('icon-style')!;
+    expect(iconThemeNode.innerHTML.indexOf('.vs .show-file-icons .folder-icon')).toBeGreaterThan(-1);
     done();
   });
 
@@ -217,7 +218,7 @@ describe('icon theme test', () => {
     expect(extraIconNode).toBeDefined();
     const randomIconClass = iconClass!.replace(/(kaitian-icon|mask-mode|background-mode)/g, '').trim();
     expect(extraIconNode!.innerHTML.includes(randomIconClass)).toBeTruthy();
-    const multiIconClass = service.fromIcon('file:///mock/base/path', {
+    const multiIconClass = service.fromIcon('file:///mock/base/path2', {
       dark: './testIcon.svg',
       light: './testIcon2.svg',
       hc: './testIcon3.svg',
