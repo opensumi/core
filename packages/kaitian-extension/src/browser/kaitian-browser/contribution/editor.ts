@@ -1,4 +1,4 @@
-import { IRunParam, AbstractKaitianBrowserContributionRunner, IEditorComponentContribution } from '../types';
+import { IRunTimeParams, AbstractKaitianBrowserContributionRunner, IEditorViewContribution } from '../types';
 import { IDisposable, Disposable, URI } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -21,11 +21,11 @@ export class EditorBrowserContributionRunner extends AbstractKaitianBrowserContr
   @Autowired(IIconService)
   iconService: IIconService;
 
-  run(param: IRunParam): IDisposable {
+  run(param: IRunTimeParams): IDisposable {
     const disposer = new Disposable();
 
     if (this.contribution.editor) {
-      this.contribution.editor.component.forEach((component) => {
+      this.contribution.editor.view.forEach((component) => {
         disposer.addDispose(this.registerEditorComponent(component, param));
       });
     }
@@ -34,7 +34,7 @@ export class EditorBrowserContributionRunner extends AbstractKaitianBrowserContr
 
   }
 
-  registerEditorComponent(component: IEditorComponentContribution, runParam: IRunParam): IDisposable {
+  registerEditorComponent(component: IEditorViewContribution, runParam: IRunTimeParams): IDisposable {
     const disposer = new Disposable();
     const { extendProtocol, extendService } = runParam.getExtensionExtendService(this.extension, component.id);
     const scheme = component.scheme || 'file';

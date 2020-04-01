@@ -6,6 +6,7 @@ import { IActivationEventService } from '../../types';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
 import { getDebugLogger, IEventBus, ExtensionEnabledEvent } from '@ali/ide-core-browser';
+import { KaitianContributesRunner } from './kaitianContributes';
 
 @Injectable({multiple: true})
 export class VSCodeMetaService extends Disposable {
@@ -31,9 +32,12 @@ export class VSCodeMetaService extends Disposable {
   public async run(extension: IExtension) {
     try {
       const runner = this.injector.get(VSCodeContributeRunner, [extension]);
+      const ktRunner = this.injector.get(KaitianContributesRunner, [extension]);
       this.addDispose(runner);
+      this.addDispose(ktRunner);
       this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
       await runner.run();
+      await ktRunner.run();
       await this.registerActivationEvent(extension);
       this.activateByWorkspaceContains(extension);
     } catch (e) {

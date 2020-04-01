@@ -1,4 +1,4 @@
-import { AbstractKaitianBrowserContributionRunner, IRunParam, IKaitianBrowserContributions } from '../types';
+import { AbstractKaitianBrowserContributionRunner, IRunTimeParams } from '../types';
 import { IDisposable, Disposable } from '@ali/ide-core-common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { TabbarBrowserContributionRunner } from './tabbar';
@@ -11,7 +11,7 @@ export class KaitianBrowserContributionRunner extends AbstractKaitianBrowserCont
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  run(param: IRunParam): IDisposable {
+  run(param: IRunTimeParams): IDisposable {
     const disposer = new Disposable();
     disposer.addDispose(this.injector.get(TabbarBrowserContributionRunner, [this.extension, this.contribution]).run(param));
     disposer.addDispose(this.injector.get(EditorBrowserContributionRunner, [this.extension, this.contribution]).run(param));

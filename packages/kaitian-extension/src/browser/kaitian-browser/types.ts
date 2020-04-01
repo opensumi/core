@@ -1,30 +1,33 @@
 import { IExtension } from '../..';
 import { ProxyIdentifier } from '@ali/ide-connection/lib/common/rpcProtocol';
-import { IDisposable, URI, Uri } from '@ali/ide-core-common';
+import { IDisposable, Uri } from '@ali/ide-core-common';
 import { EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { ToolBarPosition } from '@ali/ide-toolbar/lib/browser';
 
 export interface IKaitianBrowserContributions {
   left?: {
-    component: ITabBarComponentContribution[],
+    type: 'replace' | 'add',
+    view: ITabBarViewContribution[],
   };
   right?: {
-    component: ITabBarComponentContribution[],
+    type: 'replace' | 'add',
+    view: ITabBarViewContribution[],
   };
   bottom?: {
-    component: ITabBarComponentContribution[],
+    type: 'replace' | 'add',
+    view: ITabBarViewContribution[],
   };
   editor?: {
-    component: IEditorComponentContribution[];
+    view: IEditorViewContribution[];
   };
   toolBar?: {
     position?: ToolBarPosition // @deprecated
-    component: IToolBarComponentContribution[];
+    view: IToolBarViewContribution[];
   };
 }
 
-export interface IToolBarComponentContribution {
+export interface IToolBarViewContribution {
 
   /**
    * id
@@ -33,7 +36,7 @@ export interface IToolBarComponentContribution {
   /**
    * ToolBar 组件主体
    */
-  panel: React.FC;
+  component: React.FC;
 
   /**
    * 位置
@@ -42,7 +45,7 @@ export interface IToolBarComponentContribution {
 
 }
 
-export interface ITabBarComponentContribution {
+export interface ITabBarViewContribution {
 
   /**
    * id
@@ -51,7 +54,7 @@ export interface ITabBarComponentContribution {
   /**
    * Tabbar组件主体
    */
-  panel: React.FC;
+  component: React.FC;
 
   /**
    * 内置icon名称
@@ -89,7 +92,7 @@ export interface ITabBarComponentContribution {
   expanded?: boolean;
 }
 
-export interface IEditorComponentContribution {
+export interface IEditorViewContribution {
 
   /**
    * id
@@ -152,7 +155,7 @@ export interface IEditorComponentContribution {
   tabIconPath?: string;
 }
 
-export interface IRunParam {
+export interface IRunTimeParams {
   getExtensionExtendService: (extension: IExtension, componentId: string) => {
     extendProtocol: {
       getProxy: (identifier: ProxyIdentifier<any>) => {
@@ -169,6 +172,6 @@ export abstract class AbstractKaitianBrowserContributionRunner {
 
   constructor(protected extension: IExtension, protected contribution: IKaitianBrowserContributions) {}
 
-  abstract run(param: IRunParam): IDisposable;
+  abstract run(param: IRunTimeParams): IDisposable;
 
 }

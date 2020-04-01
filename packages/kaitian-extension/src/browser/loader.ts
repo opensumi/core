@@ -17,8 +17,8 @@ export function getAMDRequire() {
   }
 }
 
-export function getMockAmdLoader(injector) {
-  const _exports: { default?: any } = {};
+export function getMockAmdLoader<T>(injector) {
+  const _exports: { default?: any } | T = {};
   const _module = { exports: _exports };
   const _require = (request: string) => {
     if (request === 'React') {

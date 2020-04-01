@@ -139,7 +139,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         if (currentId && !service.noAccordion) {
           const accordionService = this.getAccordionService(currentId);
           accordionService.expandedViews.forEach((view) => {
-            this.eventBus.fire(new ExtensionActivateEvent({ topic: `onView:${view.id}` }));
+            this.eventBus.fire(new ExtensionActivateEvent({ topic: 'onView', data: view.id }));
           });
         }
       });
