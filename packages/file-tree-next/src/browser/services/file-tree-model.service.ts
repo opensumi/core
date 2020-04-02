@@ -505,9 +505,10 @@ export class FileTreeModelService {
       }
     }
     // 移除文件
-    this.fileTreeService.deleteAffectedNodes(uris);
     uris.forEach(async (uri: URI) => {
-      await this.deleteFile(uri);
+      if (await this.deleteFile(uri)) {
+        this.fileTreeService.deleteAffectedNodes([uri]);
+      }
     });
   }
 
@@ -515,7 +516,9 @@ export class FileTreeModelService {
     const error = await this.fileTreeAPI.delete(uri);
     if (error) {
       this.messageService.error(error);
+      return false;
     }
+    return true;
   }
 
   private getWellFormedFileName(filename: string): string {
