@@ -21,7 +21,7 @@ export interface ITabsProps {
   onClose: (resource: IResource) => void;
   onDragStart?: (event: React.DragEvent, resource: IResource) => void;
   onContextMenu: (event: React.MouseEvent, resource: IResource) => void;
-  onDrop?: (event: React.DragEvent, targetResource?: IResource) => void; // targetResource为undefined表示扔在空白处
+  onDrop?: (event: React.DragEvent, targetIndex: number, targetResource?: IResource ) => void; // targetResource为undefined表示扔在空白处
   gridId: () => string;
   hasFocus: boolean;
   previewUri: URI | null;
@@ -96,7 +96,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
           contentRef.current.classList.remove(styles.kt_on_drag_over);
         }
         if (onDrop) {
-          onDrop(e);
+          onDrop(e, -1);
         }
       }}
     >
@@ -132,7 +132,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                       ref.classList.remove(styles.kt_on_drag_over);
                     }
                     if (onDrop) {
-                      onDrop(e, resource);
+                      onDrop(e, i , resource);
                     }
                   }}
                   onDoubleClick={(e) => onDbClick(resource, i)}

@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, IElectronMainMenuService, localize, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder, URI, ILogger, formatLocalize } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, IElectronMainMenuService, localize, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv, replaceLocalizePlaceholder, URI, ILogger, formatLocalize, IEventBus } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ElectronHeaderBar } from './header';
 import { WelcomeContribution } from './welcome/contribution';
@@ -8,6 +8,8 @@ import { IMenuRegistry, NextMenuContribution, MenuId } from '@ali/ide-core-brows
 import { IElectronMenuBarService } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { IMessageService } from '@ali/ide-overlay/lib/common';
+import { EditorGroupFileDropEvent, DragOverPosition, getSplitActionFromDragDrop } from '@ali/ide-editor/lib/browser';
+import { IResourceOpenOptions } from '@ali/ide-editor';
 
 @Injectable()
 export class ElectronBasicModule extends BrowserModule {
@@ -67,6 +69,9 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
 
   @Autowired(IElectronMenuBarService)
   private electronMenuBarService: IElectronMenuBarService;
@@ -271,5 +276,29 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     if (isOSX) {
       this.electronMenuBarService.start();
     }
+
+    // 注册drag drop file的行为
+    this.eventBus.on(EditorGroupFileDropEvent, async (event) => {
+      const payload = event.payload;
+      const filesToOpen: URI[] = [];
+      // fileList 只能这样遍历
+      // tslint:disable-next-line: prefer-for-of
+      for (let i = 0; i < payload.files.length; i++) {
+        const file = payload.files[0];
+        if (file.path) {
+          filesToOpen.push(URI.file(file.path));
+        }
+      }
+      const group = event.payload.group;
+      for (const fileURI of filesToOpen) {
+        const options: IResourceOpenOptions = {
+          index: event.payload.tabIndex !== -1 ? event.payload.tabIndex : undefined,
+        };
+        if (event.payload.position && event.payload.position !== DragOverPosition.CENTER) {
+          options.split = getSplitActionFromDragDrop(event.payload.position);
+        }
+        await group.open(fileURI, options);
+      }
+    });
   }
 }
