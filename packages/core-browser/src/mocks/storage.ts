@@ -53,8 +53,8 @@ export class MockedStorage extends Disposable implements IStorage {
     return parseInt(value, 10);
   }
 
-  async set(key: string, value: string | number | boolean | null | undefined): Promise<void> {
-   this.items.set(key, String(value));
+  async set(key: string, value: any): Promise<void> {
+   this.items.set(key, value);
    this._onDidChangeStorage.fire(key);
   }
 

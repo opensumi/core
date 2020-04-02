@@ -2,7 +2,7 @@ import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
-import { KeybindingRegistry, KeybindingService, noKeybidingInputName } from '../keybinding';
+import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
 import {
   CommandRegistry,
   isOSX, ContributionProvider,
@@ -480,7 +480,7 @@ export class ClientApp implements IClientApp {
       // 浏览器resize事件
     });
     window.addEventListener('keydown', (event: any) => {
-      if (event && event.target!.name !== noKeybidingInputName) {
+      if (event && event.target!.name !== NO_KEYBINDING_NAME) {
         this.keybindingService.run(event);
       }
     }, true);

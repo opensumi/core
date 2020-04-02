@@ -53,6 +53,7 @@ export const localizationBundle = {
     'file.filetree.filter': '在展开文件中查找',
     'file.filetree.filter.placeholder': '输入关键字或路径查找',
     'file.filetree.openWithPath': '在终端中打开',
+    'file.tooltip.symbolicLink': '符号链接',
 
     'menu-bar.title.file': '文件',
     'menu-bar.title.edit': '编辑',

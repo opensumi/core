@@ -42,6 +42,7 @@
     "@ali/ide-file-search": "1.7.18",
     "@ali/ide-file-service": "1.7.18",
     "@ali/ide-file-tree": "1.7.18",
+    "@ali/ide-file-tree-next": "1.7.18",
     "@ali/ide-kaitian-extension": "1.7.18",
     "@ali/ide-logs": "1.7.18",
     "@ali/ide-main-layout": "1.7.18",

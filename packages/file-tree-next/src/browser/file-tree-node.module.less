@@ -1,0 +1,251 @@
+
+.file_tree_node {
+  height: 22px;
+  line-height: 22px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  cursor: pointer;
+
+  &.alwaysShowActions,
+  &:hover {
+    .file_tree_node_head_icon {
+      display: none;
+    }
+    .left_actions,
+    .right_actions,
+    .container_actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      .action_icon {
+        margin-left: 6px;
+      }
+    }
+  }
+
+  &:hover {
+    color: var(--kt-tree-hoverForeground);
+    background: var(--kt-tree-hoverBackground);
+  }
+
+  .file_tree_node_prompt_box {
+    :global(input) {
+      &.validate-error {
+        color: var(--inputValidation-errorForeground);
+        background-color: var(--inputValidation-errorBackground);
+        border: 1px solid var(--inputValidation-errorBorder);
+      }
+
+      &.validate-info {
+        background-color: var(--inputValidation-infoBackground);
+        border: 1px solid var(--inputValidation-infoBorder);
+        color: var(--inputValidation-infoForeground);
+      }
+
+      &.validate-warning {
+        background-color: var(--inputValidation-warningBackground);
+        border: 1px solid var(--inputValidation-warningBorder);
+        color: var(--inputValidation-warningForeground);
+      }
+    }
+  }
+
+  &.mod_selected {
+    color: var(--kt-tree-inactiveSelectionForeground) !important;
+    background: var(--kt-tree-inactiveSelectionBackground);
+    .expansion_toggle {
+      color: var(--kt-tree-inactiveSelectionForeground) !important;
+    }
+  }
+
+  &.mod_focused {
+    color: var(--kt-tree-activeSelectionForeground) !important;;
+    background: var(--kt-tree-activeSelectionBackground);
+    .expansion_toggle {
+      color: var(--kt-tree-activeSelectionForeground) !important;;
+    }
+  }
+
+  &.mod_invalid {
+    color: var(--kt-tree-invalidItemForeground)
+  }
+
+  &.mod_dragging {
+    background: var(--list-dropBackground);
+  }
+
+  &.mod_dragover {
+    background: var(--list-dropBackground);
+  }
+
+  &.mod_loading {
+    opacity: .8;
+  }
+
+  &.mod_cut {
+    opacity: .5;
+  }
+}
+
+.file_tree_node_content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  match {
+    background-color: var(--editor-findMatchHighlightBackground);
+  }
+}
+
+.file_tree_node_head {
+  position: absolute;
+  z-index: 10;
+  right: 100%;
+  top: 0;
+  .left_actions {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 21px;
+    span {
+      color: var(--foreground);
+      font-size: 12px;
+    }
+
+  }
+}
+
+.file_tree_node_status {
+  opacity: .75;
+  min-width: 20px;
+  text-align: center;
+  font-size: 12px;
+  padding-right: 0;
+}
+
+.file_tree_node_segment {
+  flex-grow: 0;
+  white-space: nowrap;
+  color: inherit;
+}
+
+.file_tree_node_displayname {
+  margin-right: 6px;
+  display: inline;
+}
+
+.file_tree_node_inputbox {
+  display: inline-block;
+  width: 100%;
+  input {
+    font-size: 14px;
+  }
+}
+
+.file_tree_node_description {
+  display: inline;
+  transform: scale(0.96);
+  color: var(--descriptionForeground);
+}
+
+.file_tree_node_overflow_wrap {
+  flex: 1;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.file_tree_node_prompt_wrap {
+  flex: 1;
+}
+
+.file_tree_node_flex_wrap {
+  display: flex;
+  flex-direction: row;
+}
+
+.file_tree_node_edit_wrap {
+  display: flex;
+  width: calc(100% - 50px);
+  .file_tree_node_displayname {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.file_tree_node_segment_grow {
+  flex-grow: 1 !important;
+  text-align: left;
+  z-index: 10;
+  padding-right: 5px;
+
+  &.overflow_visible {
+    overflow: visible !important;
+  }
+}
+
+.expansion_toggle {
+  min-width: 20px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  &.mod_collapsed {
+    &:before {
+      display: block;
+    }
+  }
+
+  &:not(.mod_collapsed) {
+    &:before {
+      display: block;
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.file_icon {
+  position: relative;
+  color: var(--icon-foreground);
+  margin-right: 4px;
+  &:before {
+    font-size: 16px;
+    text-align: center;
+  }
+}
+
+.file_icon:global(&.fileIcon:before) {
+  font-size: 18px;
+}
+
+.file_tree_node_tail {
+  text-align: center;
+  margin-right: 10px;
+  position: relative;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  .right_actions,
+  .container_actions {
+    display: none;
+    line-height: 22px;
+    height: 22px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}
+
+.input_wrapper {
+  height: 100%;
+  width: 100%;
+  line-height: normal;
+  color: rgb(204, 204, 204);
+  position: relative;
+}
