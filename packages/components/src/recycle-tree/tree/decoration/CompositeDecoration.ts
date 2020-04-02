@@ -190,8 +190,8 @@ export class CompositeDecoration {
 
   private parentOwn(newParent?: CompositeDecoration, reason?: ChangeReason, decoration?: Decoration) {
     this.selfOwned = false;
-    this.targetedDecorations.clear();
-    this.negatedDecorations.clear();
+    this.targetedDecorations && this.targetedDecorations.clear();
+    this.negatedDecorations && this.negatedDecorations.clear();
     if (newParent && this.parent !== newParent) {
       if (this.parent) {
         this.parent.linkedComposites.delete(this);

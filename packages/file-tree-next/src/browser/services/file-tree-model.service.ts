@@ -766,20 +766,25 @@ export class FileTreeModelService {
         if (file) {
           this.cutDecoration.removeTarget(file);
         }
-        const to = (parent as Directory).uri.resolve(file.uri.displayName);
         if (!(parent as Directory).expanded) {
           await (parent as Directory).setExpanded(true);
         }
-        this.fileTreeService.moveNode((parent as Directory), file.uri.toString(), to.toString());
-        const error = await this.fileTreeAPI.mv(file.uri, to);
-        if (error) {
+      }
+      const to = (parent as Directory).uri;
+      const errors = await this.fileTreeAPI.mvFiles(this.pasteStore.files.map((file) => file.uri), to);
+      if (errors && errors.length > 0) {
+        errors.forEach((error) => {
           this.messageService.error(error);
-          this.fileTreeService.refresh();
-        }
+        });
+        this.fileTreeService.refresh();
       }
       this.fileTreeContextKey.explorerResourceCut.set(false);
       // 更新视图
       this.treeModel.dispatchChange();
+      this._pasteStore = {
+        files: [],
+        type: PasteTypes.NONE,
+      };
     } else if (this.pasteStore.type === PasteTypes.COPY) {
       for (const file of this.pasteStore.files) {
         const to = (parent as Directory).uri.resolve(file.uri.displayName);
@@ -797,10 +802,6 @@ export class FileTreeModelService {
         }
       }
     }
-    this._pasteStore = {
-      files: [],
-      type: PasteTypes.NONE,
-    };
   }
 
   public cutFile = async (from: URI[]) => {
@@ -808,12 +809,11 @@ export class FileTreeModelService {
       this.fileTreeContextKey.explorerResourceCut.set(true);
     }
     // 清理上一次剪切文件
-    if (this._pasteStore.type === PasteTypes.CUT) {
+    if (this._pasteStore && this._pasteStore.type === PasteTypes.CUT) {
       this._pasteStore.files.forEach((file) => {
-        this.cutDecoration.addTarget(file);
+        this.cutDecoration.removeTarget(file);
       });
     }
-
     const files = from.map((uri) => this.fileTreeService.getNodeByUriString(uri.toString())).filter((node) => !!node) as (File | Directory)[];
     this._pasteStore = {
       files,

@@ -3,6 +3,7 @@ import { FileTreeModelService } from './file-tree-model.service';
 import { Directory, File } from '../file-tree-nodes';
 import { DisposableCollection, Disposable, ILogger } from '@ali/ide-core-browser';
 import { IFileTreeAPI } from '../../common';
+import { IMessageService } from '@ali/ide-overlay';
 import { Decoration, TargetMatchMode } from '@ali/ide-components';
 import * as styles from '../file-tree.module.less';
 import * as treeNodeStyles from '../file-tree-node.module.less';
@@ -17,6 +18,9 @@ export class DragAndDropService {
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
+
+  @Autowired(IMessageService)
+  private readonly messageService: IMessageService;
 
   private toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
 
@@ -139,7 +143,7 @@ export class DragAndDropService {
 
   }
 
-  handleDrop = (ev: React.DragEvent, node?: File | Directory) => {
+  handleDrop = async (ev: React.DragEvent, node?: File | Directory) => {
     try {
       ev.preventDefault();
       ev.stopPropagation();
@@ -155,7 +159,12 @@ export class DragAndDropService {
         const resources = this.beingDraggedNodes;
         if (resources.length > 0) {
           // 最小化移动文件
-          this.fileTreeAPI.mvFiles(resources.map((res) => res.uri), containing.uri);
+          const errors = await this.fileTreeAPI.mvFiles(resources.map((res) => res.uri), containing.uri);
+          if (errors && errors.length > 0) {
+            errors.forEach((error) => {
+              this.messageService.error(error);
+            });
+          }
         }
       }
       if (node) {

@@ -212,14 +212,16 @@ export class FileTreeService extends Tree {
       let source;
       if (change?.type === FileChangeType.DELETED) {
         source = change;
-        target = changes.find((change) => change.type === FileChangeType.ADDED && new URI(change.uri).displayName === new URI(source.uri).displayName);
+        target = deleteOrAddChanges.find((change) => change.type === FileChangeType.ADDED && new URI(change.uri).displayName === new URI(source.uri).displayName);
         if (target) {
+          deleteOrAddChanges.splice(deleteOrAddChanges.indexOf(target), 1);
           moveChange.push({source, target});
         }
       } else if (change?.type === FileChangeType.ADDED) {
         target = change;
-        source = changes.find((change) => change.type === FileChangeType.DELETED && new URI(change.uri).displayName === new URI(target.uri).displayName);
+        source = deleteOrAddChanges.find((change) => change.type === FileChangeType.DELETED && new URI(change.uri).displayName === new URI(target.uri).displayName);
         if (source) {
+          deleteOrAddChanges.splice(deleteOrAddChanges.indexOf(source), 1);
           moveChange.push({source, target});
         }
       }
@@ -287,6 +289,7 @@ export class FileTreeService extends Tree {
     };
     const addNode = await this.fileTreeAPI.toNode(this as ITree, tempFileStat, node as Directory);
     if (!!addNode) {
+      this.cacheNodes([addNode]);
       // 节点创建失败时，不需要添加
       this.dispatchWatchEvent(node.path, { type: WatchEvent.Added,  node: addNode, id: node.id});
     }

@@ -151,8 +151,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.promptTargetID = -1;
         }
       }
-      this.newPromptInsertionIndex = newFilePromptInsertionIndex;
       this.idxToRendererPropsCache.clear();
+      this.newPromptInsertionIndex = newFilePromptInsertionIndex;
       // 更新React组件
       this.forceUpdate(resolver);
     };

@@ -125,7 +125,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     for (const from of fromFiles) {
       const filestat = this.cacheFileStat.get(from.toString());
       const res = await this.mv(from, targetDir.resolve(from.displayName), filestat && filestat.isDirectory);
-      if (!res) {
+      if (!!res) {
         error.push(res);
       }
     }
