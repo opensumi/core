@@ -81,7 +81,6 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>(
   (props, ref) => {
     const {
       defaultValue,
-      style,
       className,
       wrapperStyle,
       size = 'default',
