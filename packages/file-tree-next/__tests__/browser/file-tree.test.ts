@@ -328,7 +328,8 @@ describe('FileTree should be work while on single workspace model', () => {
       // try to paste files while type is copy
       await pasteFile(directoryNode.uri);
       expect(directoryNode.expanded).toBeTruthy();
-      expect(fileTreeModelService.pasteStore.type).toBe(PasteTypes.NONE);
+      // paste type should be COPY after paste
+      expect(fileTreeModelService.pasteStore.type).toBe(PasteTypes.COPY);
       expect(mockFileTreeApi.copyFile).toBeCalled();
       done();
     });
