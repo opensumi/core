@@ -4,8 +4,6 @@ import { FileUri, URI, IFileServiceClient, Disposable, StorageProvider } from '@
 import { FileTreeNextModule } from '../../src';
 import { IFileTreeAPI } from '../../src/common';
 import { FileTreeService } from '../../src/browser/file-tree.service';
-import * as temp from 'temp';
-import * as fs from 'fs-extra';
 import { MockWorkspaceService } from '@ali/ide-workspace/lib/common/mocks';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat, FileServicePath } from '@ali/ide-file-service';
@@ -21,12 +19,13 @@ import { TreeNodeType } from '@ali/ide-components';
 import { MockContextKeyService } from '@ali/ide-core-browser/lib/mocks/context-key';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IContextKeyService, CorePreferences, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import * as styles from '../browser/file-tree-node.module.less';
 import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorationsService';
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
 import { PasteTypes } from '../../src';
+import * as temp from 'temp';
+import * as fs from 'fs-extra';
+import * as styles from '../browser/file-tree-node.module.less';
 
-jest.setTimeout(100000000);
 describe('FileTree should be work while on single workspace model', () => {
   let track;
   let injector: MockInjector;
@@ -380,6 +379,87 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(fileDecoration?.classlist).toEqual([styles.mod_dragging]);
       expect(mockEvent.stopPropagation).toBeCalled();
       expect(mockEvent.dataTransfer.setDragImage).toBeCalled();
+      done();
+    });
+
+    it('Dragging Enter should be work', async (done) => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const { dndService } = fileTreeModelService;
+      const fileNode = rootNode.getTreeNodeAtIndex(2) as File;
+      const mockEvent = {
+        preventDefault: jest.fn(),
+      };
+      dndService.handleDragEnter(mockEvent as any, fileNode);
+      expect(mockEvent.preventDefault).toBeCalled();
+      done();
+    });
+
+    it('Dragging Leave should be work', async (done) => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const { dndService } = fileTreeModelService;
+      const fileNode = rootNode.getTreeNodeAtIndex(2) as File;
+      const mockEvent = {
+        preventDefault: jest.fn(),
+        stopPropagation: jest.fn(),
+      };
+      dndService.handleDragLeave(mockEvent as any, fileNode);
+      expect(mockEvent.stopPropagation).toBeCalled();
+      expect(mockEvent.preventDefault).toBeCalled();
+      done();
+    });
+
+    it('Dragging Over should be work', async (done) => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const { dndService, decorations } = fileTreeModelService;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as File;
+      const mockEvent = {
+        preventDefault: jest.fn(),
+        stopPropagation: jest.fn(),
+      };
+      dndService.handleDragOver(mockEvent as any, directoryNode);
+      expect(mockEvent.stopPropagation).toBeCalled();
+      expect(mockEvent.preventDefault).toBeCalled();
+      const directoryDecoration = decorations.getDecorations(directoryNode);
+      // loading first, then dragover all the child
+      expect(directoryDecoration?.classlist).toEqual([styles.mod_loading, styles.mod_dragover]);
+      done();
+    });
+
+    it('Dragging End should be work', async (done) => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const { dndService, decorations } = fileTreeModelService;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as File;
+      const mockEvent = {};
+      dndService.handleDragEnd(mockEvent as any, directoryNode);
+      const directoryDecoration = decorations.getDecorations(directoryNode);
+      // loading decoration is effect by dragover
+      expect(directoryDecoration?.classlist).toEqual([styles.mod_loading]);
+      done();
+    });
+
+    it('Drop should be work', async (done) => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const { dndService, decorations } = fileTreeModelService;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as File;
+      const mockEvent = {
+        preventDefault: jest.fn(),
+        stopPropagation: jest.fn(),
+        dataTransfer: {
+          dropEffect: '',
+        },
+      };
+      dndService.handleDrop(mockEvent as any, directoryNode);
+      expect(mockEvent.stopPropagation).toBeCalled();
+      expect(mockEvent.preventDefault).toBeCalled();
+      expect(mockEvent.dataTransfer.dropEffect).toBe('copy');
+      const directoryDecoration = decorations.getDecorations(directoryNode);
+      // loading decoration is effect by dragover
+      expect(directoryDecoration?.classlist).toEqual([styles.mod_loading]);
       done();
     });
   });

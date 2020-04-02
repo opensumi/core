@@ -26,7 +26,7 @@ export class DragAndDropService {
   // 上一次拖拽进入的目录
   private potentialParent: Directory | null;
   // 开始拖拽的节点
-  private beingDraggedNodes: (File | Directory)[];
+  private beingDraggedNodes: (File | Directory)[] = [];
   // 拖拽进入的节点
   private draggedOverNode: Directory | File;
 
