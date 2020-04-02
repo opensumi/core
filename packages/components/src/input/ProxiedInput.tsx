@@ -36,7 +36,7 @@ class ProxiedInput extends React.Component<IPersistentInputPropsInternal> {
     }
   }
 
-  public componentWillUnmount() {
+  public UNSAFE_componentWillUnmount() {
     const { innerRef, inputElement } = this.props;
     const parent = inputElement.parentElement;
     parent!.replaceChild(this.placeholderInputRef.current!, inputElement);

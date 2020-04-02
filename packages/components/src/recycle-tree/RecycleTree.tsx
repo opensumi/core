@@ -192,7 +192,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     return insertIndex;
   }
 
-  public componentWillUpdate(prevProps: IRecycleTreeProps) {
+  public UNSAFE_componentWillUpdate(prevProps: IRecycleTreeProps) {
     if (this.props.filter !== prevProps.filter) {
       this.filterItems(prevProps.filter!);
     }
