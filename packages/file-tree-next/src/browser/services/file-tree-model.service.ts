@@ -103,6 +103,7 @@ export class FileTreeModelService {
 
   private validateMessage: FileTreeValidateMessage | undefined;
   private _pasteStore: IParseStore;
+  private _isMutiSelected: boolean = false;
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -370,7 +371,7 @@ export class FileTreeModelService {
     } else {
       this.enactiveFileDecoration();
     }
-    let nodes: (File | Directory)[] = this.selectedFiles;
+    let nodes: (File | Directory)[];
     let node: File | Directory;
 
     if (!file) {
@@ -379,6 +380,7 @@ export class FileTreeModelService {
       node = this.treeModel.root as Directory;
     } else {
       node = file;
+      nodes = this._isMutiSelected ? this.selectedFiles : [node];
     }
 
     this.setFileTreeContextKey(node);
@@ -411,6 +413,7 @@ export class FileTreeModelService {
     if (!this.focusedFile) {
       this.handleItemClick(item, type);
     } else if (this.focusedFile && this.focusedFile !== item) {
+      this._isMutiSelected = true;
       const targetIndex = this.treeModel.root.getIndexAtTreeNode(item);
       const preFocusedFileIndex = this.treeModel.root.getIndexAtTreeNode(this.focusedFile);
       if (preFocusedFileIndex > targetIndex) {
@@ -422,6 +425,7 @@ export class FileTreeModelService {
   }
 
   handleItemToggleClick = (item: File | Directory, type: TreeNodeType) => {
+    this._isMutiSelected = true;
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
       return;
     }
@@ -439,6 +443,7 @@ export class FileTreeModelService {
   }
 
   handleItemClick = (item: File | Directory, type: TreeNodeType) => {
+    this._isMutiSelected = false;
     this.clickTimes++;
     // 单选操作默认先更新选中状态
     if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
@@ -802,6 +807,13 @@ export class FileTreeModelService {
     if (from.length > 0) {
       this.fileTreeContextKey.explorerResourceCut.set(true);
     }
+    // 清理上一次剪切文件
+    if (this._pasteStore.type === PasteTypes.CUT) {
+      this._pasteStore.files.forEach((file) => {
+        this.cutDecoration.addTarget(file);
+      });
+    }
+
     const files = from.map((uri) => this.fileTreeService.getNodeByUriString(uri.toString())).filter((node) => !!node) as (File | Directory)[];
     this._pasteStore = {
       files,
