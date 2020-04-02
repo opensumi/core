@@ -280,24 +280,30 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     // 注册drag drop file的行为
     this.eventBus.on(EditorGroupFileDropEvent, async (event) => {
       const payload = event.payload;
-      const filesToOpen: URI[] = [];
       // fileList 只能这样遍历
       // tslint:disable-next-line: prefer-for-of
       for (let i = 0; i < payload.files.length; i++) {
-        const file = payload.files[0];
+        const file = payload.files[i];
+        let group = event.payload.group;
         if (file.path) {
-          filesToOpen.push(URI.file(file.path));
+          const fileURI = URI.file(file.path);
+          const options: IResourceOpenOptions = {
+            index: event.payload.tabIndex !== -1 ? event.payload.tabIndex : undefined,
+          };
+          // 只有第一个才split
+          if (i === 0 && event.payload.position && event.payload.position !== DragOverPosition.CENTER) {
+            options.split = getSplitActionFromDragDrop(event.payload.position);
+          }
+          // 只有最后一个才可能为 preview
+          if (i < payload.files.length - 1) {
+            options.preview = false;
+          }
+          const res = await group.open(fileURI, options);
+          if (res) {
+            // split后当前group会变动
+            group = res.group;
+          }
         }
-      }
-      const group = event.payload.group;
-      for (const fileURI of filesToOpen) {
-        const options: IResourceOpenOptions = {
-          index: event.payload.tabIndex !== -1 ? event.payload.tabIndex : undefined,
-        };
-        if (event.payload.position && event.payload.position !== DragOverPosition.CENTER) {
-          options.split = getSplitActionFromDragDrop(event.payload.position);
-        }
-        await group.open(fileURI, options);
       }
     });
   }
