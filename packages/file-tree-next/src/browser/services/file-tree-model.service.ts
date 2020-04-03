@@ -105,6 +105,8 @@ export class FileTreeModelService {
   private _pasteStore: IParseStore;
   private _isMutiSelected: boolean = false;
 
+  private _loadSnapshotReady: Promise<void>;
+
   constructor() {
     this._whenReady = this.initTreeModel();
   }
@@ -170,7 +172,7 @@ export class FileTreeModelService {
     // 获取上次文件树的状态
     const snapshot = explorerStorage.get(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     if (snapshot) {
-      this._treeModel.loadTreeState(snapshot);
+      this._loadSnapshotReady = this._treeModel.loadTreeState(snapshot);
     }
     this.initDecorations(root);
     // _dndService依赖装饰器逻辑加载
@@ -183,7 +185,7 @@ export class FileTreeModelService {
       // 尝试恢复树
       const snapshot = explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
       if (snapshot && snapshot.specVersion) {
-        this._treeModel.loadTreeState(snapshot);
+        this._loadSnapshotReady = this._treeModel.loadTreeState(snapshot);
       }
     }));
     this.disposableCollection.push(this.labelService.onDidChange(() => {
@@ -830,6 +832,9 @@ export class FileTreeModelService {
   }
 
   public location = async (uri: URI) => {
+    if (this._loadSnapshotReady) {
+      await this._loadSnapshotReady;
+    }
     const path = await this.getFileTreeNodePathByUri(uri);
     if (path) {
       if (!this.fileTreeHandle) {
