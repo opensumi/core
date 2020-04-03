@@ -113,7 +113,18 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                     onContextMenu(e, resource);
                   }}
                   key={resource.uri.toString()}
-                  onMouseDown={(e) => onActivate(resource)}
+                  onMouseUp={(e) => {
+                    if (e.nativeEvent.which === 2) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onClose(resource);
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    if (e.nativeEvent.which === 1) {
+                      onActivate(resource);
+                    }
+                  }}
                   onDragOver={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
