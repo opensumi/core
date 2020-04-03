@@ -306,7 +306,6 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       return Promise.reject(`No Such TextEditor: ${id}`);
     }
     this.getEditor(id)!.setSelections(selections);
-    this.getEditor(id)!.monacoEditor.focus();
     return Promise.resolve();
   }
 
