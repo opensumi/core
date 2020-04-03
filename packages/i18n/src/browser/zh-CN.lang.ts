@@ -555,6 +555,10 @@ export const localizationBundle = {
     'comments.zone.title': '开始讨论',
     'comments.panel.action.collapse': '全部折叠',
     'comments.thread.action.close': '关闭面板',
+    'comments.thread.action.openFile': '打开文件',
+    'comments.thread.action.next': '下一个评论',
+    'comments.thread.action.previous': '上一个评论',
+    'comments.thread.action.reply': '回复',
     'comments.panel.placeholder': '暂无评论',
 
     'treeview.command.action.collapse': '全部折叠',

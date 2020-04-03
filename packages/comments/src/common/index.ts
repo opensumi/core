@@ -107,7 +107,7 @@ export interface ICommentsZoneWidget {
   /**
    * widget 所在的 editor
    */
-  coreEditor: monaco.editor.ICodeEditor;
+  coreEditor: IEditor;
   /**
    * 是否在展示
    */
@@ -284,8 +284,9 @@ export interface ICommentsThread extends IDisposable {
   addComment(...comment: IComment[]): void;
   /**
    * 显示 zone widget
+   * @param editor 指定在某一个 editor 中打开
    */
-  show(): void;
+  show(editor?: IEditor): void;
   /**
    * 切换 zone widget
    */

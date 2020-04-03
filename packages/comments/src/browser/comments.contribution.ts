@@ -52,7 +52,9 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       label: '%comments.thread.action.close%',
       iconClass: getIcon('up'),
     }, {
-      execute: ({ widget }: ICommentThreadTitle) => {
+      execute: (threadTitle: ICommentThreadTitle) => {
+        // console.log('threadTitle', threadTitle);
+        const { widget } = threadTitle;
         widget.toggle();
       },
     });

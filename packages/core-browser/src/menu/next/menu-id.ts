@@ -45,9 +45,15 @@ export enum MenuId {
   GlobalActivity = 'global/activity',
   ExtensionContext = 'extension/context', // 插件市场 item
   SettingsIconMenu = 'settings/icon/menu', // 右下角 setting menu
+  // Below the comment panel text box
   CommentsCommentThreadContext = 'comments/commentThread/context',
+  // In the comment panel head
   CommentsCommentThreadTitle = 'comments/commentThread/title',
+  // In the comment panel comment
+  CommentsCommentThreadComment = 'comments/commentThread/comment',
+  // In the comment panel comment reply
   CommentsCommentTitle = 'comments/comment/title',
+  // Below the comment panel reply text box
   CommentsCommentContext = 'comments/comment/context',
 }
 

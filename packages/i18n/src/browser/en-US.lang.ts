@@ -544,6 +544,10 @@ export const localizationBundle = {
     'comments.zone.title': 'Start discussion',
     'comments.panel.action.collapse': 'Collapse All',
     'comments.thread.action.close': 'Close Panel',
+    'comments.thread.action.openFile': 'Open file',
+    'comments.thread.action.next': 'Next Comment',
+    'comments.thread.action.previous': 'Previous Comment',
+    'comments.thread.action.reply': 'Reply',
     'comments.panel.placeholder': 'No Comments',
 
     'treeview.command.action.collapse': 'Collapse ALL',

@@ -11,6 +11,7 @@ import * as clx from 'classnames';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
 import { CommentsThread } from './comments-thread';
+import { IEditor } from '@ali/ide-editor';
 
 export interface ICommentProps {
   thread: CommentsThread;
@@ -21,49 +22,33 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   const {
     commentThreadTitle,
     commentThreadContext,
-    readOnly,
+    contextKeyService,
     comments,
+    threadHeaderTitle,
   } = thread;
-  const [isFocusReply] = React.useState(true);
-  const [rows] = React.useState(5);
+  const [showReply, setShowReply] = React.useState(true);
+  const textRef = React.useRef<HTMLTextAreaElement>(null);
   const [replyText, setReplyText] = React.useState('');
+  const commentIsEmptyContext = React.useRef(contextKeyService.createKey('commentIsEmpty', !replyText));
 
-  function onBlurReply(event: React.FocusEvent<HTMLTextAreaElement>) {
-    // TODO: 和 ResizeZone Widget 配合使用会抖动，先注释掉
-    // setFocusReply(false);
-    // if (replyText === '') {
-    //   setRows(1);
-    // }
-  }
-
-  function onFocusReply(event: React.FocusEvent<HTMLTextAreaElement>) {
-    // setFocusReply(true);
-    // if (replyText === '') {
-    //   setRows(5);
-    // }
-  }
+  React.useEffect(() => {
+    if (showReply) {
+      // FIXME 立马执行 focus 会无效
+      setTimeout(() => {
+        textRef?.current?.focus();
+      }, 200);
+    }
+  }, [showReply]);
 
   function onChangeReply(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    commentIsEmptyContext.current.set(!event.target.value);
     setReplyText(event.target.value);
   }
-
-  const commentTitleWithAuthor = React.useMemo(() => {
-    const commentAuthors = new Set<string>(comments.map((comment) => `@${comment.author.name}`));
-    return `${localize('comments.participants')}: ` + [...commentAuthors].join(' ');
-  }, [ comments ]);
-
-  const placeholder = React.useMemo(() => {
-    return localize('comments.reply.placeholder');
-  }, []);
-
-  const startReview = React.useMemo(() => {
-    return localize('comments.zone.title');
-  }, []);
 
   return (
     <div className={clx(thread.options.threadClassName, styles.comment_container)}>
       <div className={clx(thread.options.threadHeadClassName, styles.head)}>
-        <div className={styles.review_title}>{comments.length > 0 ? commentTitleWithAuthor : startReview}</div>
+        <div className={styles.review_title}>{threadHeaderTitle}</div>
         <InlineActionBar<ICommentThreadTitle>
           menus={commentThreadTitle}
           context={[{
@@ -72,26 +57,22 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
           }]}
           separator='inline'
           type='icon'
+          afterClick={() => {
+            // console.log('thread', thread);
+          }}
           />
       </div>
-      {comments.map((comment) => (
-        <CommentItem
-          key={comment.id}
-          thread={thread}
-          comment={comment} />
-      ))}
-      {!readOnly && (
-        <div className={clx(styles.comment_reply_container)}>
+      <div className={styles.comment_body}>
+      { comments.length > 0 ?
+        <CommentItem thread={thread} /> : (
+        <div>
           <CommentsTextArea
+            ref={textRef}
             value={replyText}
-            autoFocus={true}
-            onFocus={onFocusReply}
-            onBlur={onBlurReply}
             onChange={onChangeReply}
-            placeholder={`${placeholder}...`}
-            rows={rows}
+            placeholder={`${localize('comments.reply.placeholder')}...`}
           />
-          {(isFocusReply || replyText) && (
+          <div className={styles.comment_bottom_actions}>
             <InlineActionBar<ICommentReply>
               className={styles.comment_reply_actions}
               separator='inline'
@@ -105,11 +86,12 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
               menus={commentThreadContext}
               afterClick={() => {
                 setReplyText('');
-              }}
-            />
-          )}
+                setShowReply(false);
+              }}/>
+          </div>
         </div>
       )}
+      </div>
     </div>
   );
 });
@@ -122,7 +104,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
 
   private _wrapper: HTMLDivElement;
 
-  constructor(protected editor: monaco.editor.ICodeEditor, thread: CommentsThread) {
+  constructor(protected editor: monaco.editor.ICodeEditor, thread: CommentsThread, public readonly coreEditor: IEditor) {
     super(editor, thread.range);
     this._wrapper = document.createElement('div');
     this._isShow = !thread.isCollapsed;
@@ -134,10 +116,6 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
       </ConfigProvider>,
       this._wrapper,
     );
-  }
-
-  get coreEditor() {
-    return this.editor;
   }
 
   get isShow() {
