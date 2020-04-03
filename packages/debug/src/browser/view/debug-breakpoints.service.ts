@@ -3,7 +3,7 @@ import { observable, action } from 'mobx';
 import { DebugViewModel } from './debug-view-model';
 import { DebugBreakpoint, DebugExceptionBreakpoint } from '../model';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { URI, WithEventBus, OnEvent, localize, IContextKeyService } from '@ali/ide-core-browser';
+import { URI, WithEventBus, OnEvent, IContextKeyService } from '@ali/ide-core-browser';
 import { BreakpointItem } from './debug-breakpoints.view';
 import { BreakpointManager } from '../breakpoint';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@ali/ide-workspace-edit';

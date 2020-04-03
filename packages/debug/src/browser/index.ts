@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Provider, Injectable, Injector } from '@ali/common-di';
 import { BrowserModule, IContextKeyService } from '@ali/ide-core-browser';
 import { injectDebugPreferences } from './debug-preferences';

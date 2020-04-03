@@ -4,7 +4,7 @@ import * as http from 'http';
 import * as https from 'https';
 import * as net from 'net';
 import { MaybePromise, ContributionProvider, createContributionProvider, isWindows } from '@ali/ide-core-common';
-import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
+import { createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
 import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@ali/ide-core-common';
@@ -71,6 +71,10 @@ interface Config {
    * 启用插件进程的最大个数
    */
   maxExtProcessCount?: number;
+  /**
+   * 插件日志自定义实现路径
+   */
+  extLogServiceClassPath?: string;
   /**
    * 插件进程关闭时间，默认断连后5秒退出
    * 开发环境断连后立即关闭
@@ -172,6 +176,7 @@ export class ServerApp implements IServerApp {
       staticAllowOrigin: opts.staticAllowOrigin,
       staticAllowPath: opts.staticAllowPath,
       useExperimentalMultiChannel: opts.useExperimentalMultiChannel,
+      extLogServiceClassPath: opts.extLogServiceClassPath,
       useExperimentalEfsw: opts.useExperimentalEfsw,
       maxExtProcessCount: opts.maxExtProcessCount,
     };

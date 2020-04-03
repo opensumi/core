@@ -1,5 +1,4 @@
 import { UriComponents } from './uri';
-import { IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
 
 export interface Range {
   /**

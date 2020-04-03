@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { Event, IDisposable } from '@ali/ide-core-common';
 import { FileChange, FileChangeEvent } from './file-service-watcher-protocol';
-import { FileSystemProvider } from './files';
 
 export interface IMainThreadFileSystem {
   $subscribeWatcher(options: ExtFileSystemWatcherOptions): number;

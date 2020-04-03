@@ -2,7 +2,7 @@ import { Autowired } from '@ali/common-di';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { localize, ComponentContribution, ComponentRegistry, Logger } from '@ali/ide-core-browser';
 import { DebugConsoleView } from '../view/debug-console.view';
-import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import { DebugConsoleToolbarView } from '../view/debug-console-toolbar.view';
 import { DebugContribution } from '../debug-contribution';
 import { getIcon } from '@ali/ide-core-browser';

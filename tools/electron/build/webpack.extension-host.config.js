@@ -6,7 +6,7 @@ const tsConfigPath = path.join(__dirname, '../tsconfig.json');
 const distDir = path.join(__dirname, '../app/dist/extension')
 
 module.exports = {
-  entry: require.resolve('@ali/ide-kaitian-extension/lib/hosted/ext.process.js'),
+  entry: path.join(__dirname, '../src/extension/index'), //require.resolve('@ali/ide-kaitian-extension/lib/hosted/ext.process.js'),
   target: "node",
   output: {
     filename: 'index.js',

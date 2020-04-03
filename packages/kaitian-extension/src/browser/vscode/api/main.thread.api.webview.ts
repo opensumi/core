@@ -50,6 +50,10 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     this.initEvents();
   }
 
+  async init() {
+    await this.proxy.$init();
+  }
+
   initEvents() {
     this.addDispose(this.editorService.onActiveResourceChange(() => {
       this.onChange();

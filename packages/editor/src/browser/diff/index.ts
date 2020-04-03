@@ -1,6 +1,5 @@
 import { IResourceProvider, IDiffResource, ResourceService, ResourceDecorationChangeEvent } from '../../common';
-import { URI, MaybePromise, Domain, WithEventBus, OnEvent } from '@ali/ide-core-browser';
-import * as url from 'url';
+import { URI, Domain, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { BrowserEditorContribution, EditorComponentRegistry } from '../types';

@@ -26,6 +26,7 @@
     "pack": "npm run build && node build/pack.js",
     "rebuild-native": "node ./scripts/rebuild-native.js --target=electron",
     "start": "electron --inspect=9229 .",
+    "start:no-dev": "electron .",
     "download-extension": "node scripts/download.js"
   },
   "repository": {
@@ -45,14 +46,6 @@
     "getmac": "^1.4.6"
   },
   "devDependencies": {
-    "@alipay/cloud-ide-ext-vscode-extension-builder": "^3.0.0",
-    "@ali/ide-core-electron-main": "1.6.3",
-    "@ali/ide-electron-basic": "1.6.3",
-    "@ali/ide-workspace": "1.6.3",
-    "@ali/ide-kaitian-extension": "1.6.3",
-    "@ali/ide-webview": "1.6.3",
-    "@ali/ide-i18n": "1.6.3",
-    "@ali/ide-startup": "1.6.3",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.0.3",
     "css-loader": "^2.1.1",

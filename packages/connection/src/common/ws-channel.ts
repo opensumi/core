@@ -1,6 +1,4 @@
-import * as ws from 'ws';
 import { stringify } from './utils';
-import { IDisposable } from '@ali/ide-core-common';
 
 export interface IWebSocket {
   send(content: string): void;
@@ -45,7 +43,6 @@ export class WSChannel implements IWebSocket {
   public channelPath: string;
 
   private connectionSend: (content: string) => void;
-  private connection: ws;
   private fireMessage: (data: any) => void;
   private fireOpen: (id: number) => void;
   public fireReOpen: () => void;

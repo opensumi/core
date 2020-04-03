@@ -3,7 +3,6 @@ import { UriComponents } from 'vscode-uri';
 import * as vscode from 'vscode';
 
 import { ThemeColor } from './ext-types';
-import { ExtensionIdentifier } from './extension';
 
 export interface DecorationRequest {
   readonly id: number;

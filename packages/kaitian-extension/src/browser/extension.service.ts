@@ -528,7 +528,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await this.initExtProtocol();
     this.initWorkerHost();
 
-    this.setVSCodeMainThreadAPI();
+    await this.setVSCodeMainThreadAPI();
 
     // await this.extensionNodeService.resolveConnection();
     this.setExtensionLogThread();
@@ -596,8 +596,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     this.protocol = mainThreadProtocol;
   }
 
-  public setVSCodeMainThreadAPI() {
-    this.vscodeAPIFactoryDisposer = createVSCodeAPIFactory(this.protocol, this.injector, this);
+  public async setVSCodeMainThreadAPI() {
+    this.vscodeAPIFactoryDisposer = await createVSCodeAPIFactory(this.protocol, this.injector, this);
     this.kaitianAPIFactoryDisposer = createKaitianApiFactory(this.protocol, this.injector);
     this.mainThreadCommands.set('node', this.protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
     // 注册 worker 环境的响应 API

@@ -2,7 +2,6 @@ import { Autowired, Injectable } from '@ali/common-di';
 
 import {
   ClientAppContribution,
-  InMemoryResourceResolver,
   PreferenceSchemaProvider,
   URI,
   Domain,

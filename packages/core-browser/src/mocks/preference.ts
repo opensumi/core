@@ -1,4 +1,4 @@
-import { IPreferenceSettingsService, PreferenceScope, ISettingGroup, IDisposable, ISettingSection } from '..';
+import { PreferenceScope, ISettingGroup, ISettingSection } from '..';
 import { Injectable, Injector } from '@ali/common-di';
 import { PreferenceProvider } from '../preferences';
 

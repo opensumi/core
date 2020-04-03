@@ -5,8 +5,6 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { IDebugSessionManager, DebugModelFactory, IDebugModel } from '../../common';
 import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
-import { DebugBreakpoint } from '../model';
-import { DebugModel } from './debug-model';
 
 export enum DebugModelSupportedEventType {
   down = 'Down',

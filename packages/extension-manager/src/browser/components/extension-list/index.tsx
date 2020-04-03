@@ -5,8 +5,7 @@ import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import { RawExtensionView } from '../raw-extension';
 import { RawExtension, IExtensionManagerService } from '../../../common';
 import * as styles from './index.module.less';
-import { useInjectable, URI, CorePreferences } from '@ali/ide-core-browser';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { useInjectable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 
 interface ExtensionListProps {

@@ -260,7 +260,10 @@ export class ExtHostWebviewService implements IExtHostWebview {
   constructor(private rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWebview);
-    this.init();
+  }
+
+  async $init() {
+    return await this.init();
   }
 
   async init() {

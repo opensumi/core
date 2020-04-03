@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 // import { IExtension } from '../common'
 import {IExtensionHostService} from '../common';
-import { ProxyIdentifier } from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../common/vscode';
 
 export class VSCExtension<T> implements vscode.Extension<T> {

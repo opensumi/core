@@ -45,7 +45,9 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
   protected readonly options: {
     verbose: boolean,
+    // tslint:disable-next-line
     info: (message: string, ...args: any[]) => void,
+    // tslint:disable-next-line
     error: (message: string, ...args: any[]) => void,
     useExperimentalEfsw?: boolean,
   };
@@ -53,7 +55,9 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   constructor(options?: NsfwFileSystemWatcherOption) {
     this.options = {
       verbose: false,
+      // tslint:disable-next-line
       info: (message, ...args) => console.info(message, ...args),
+      // tslint:disable-next-line
       error: (message, ...args) => console.error(message, ...args),
       ...options,
     };
@@ -182,6 +186,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
         }
       });
       watcher.on('error', (error) => {
+        // tslint:disable-next-line
         console.warn(`Failed to watch "${basePath}":`, error);
         this.unwatchFileChanges(watcherId);
       });
@@ -211,6 +216,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       }, {
           errorCallback: (error: any) => {
             // see https://github.com/atom/github/issues/342
+            // tslint:disable-next-line
             console.warn(`Failed to watch "${basePath}":`, error);
             this.unwatchFileChanges(watcherId);
           },

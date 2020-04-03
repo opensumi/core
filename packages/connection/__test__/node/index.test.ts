@@ -2,7 +2,6 @@ import {
   RPCServiceCenter,
   initRPCService,
   createWebSocketConnection,
-  createSocketConnection,
   RPCMessageConnection,
   WebSocketServerRoute,
   CommonChannelHandler,
@@ -11,11 +10,10 @@ import {
 import {
   RPCProtocol,
   createMainContextProxyIdentifier,
-  createExtHostContextProxyIdentifier,
 } from '../../src/common/rpcProtocol';
 import { RPCService } from '../../src';
 import { WSChannel } from '../../src/common/ws-channel';
-import { stringify, parse } from '../../src/common/utils';
+import { parse } from '../../src/common/utils';
 
 import { Emitter, Uri } from '@ali/ide-core-common';
 

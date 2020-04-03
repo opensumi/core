@@ -20,11 +20,9 @@ export {
 };
 import {
   RPCProxy,
-  RPCService as IRPCService,
   NOTREGISTERMETHOD,
 } from './proxy';
 import * as net from 'net';
-import * as ws from 'ws';
 
 export type RPCServiceMethod = (...args: any[]) => any;
 export type ServiceProxy = any;

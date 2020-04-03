@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IWindowsKeyMapping } from 'native-keymap';
 import { isWindows, Emitter } from '@ali/ide-core-common';
-import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 import { KeyCode, Key } from './keys';
 
 export interface KeyboardLayout {

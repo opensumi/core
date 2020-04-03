@@ -4,8 +4,6 @@ import { IWorkspaceStorageService } from '@ali/ide-workspace';
 import { SourceBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
 import { MarkerManager, Marker } from '../markers';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { DebugSession } from '../debug-session';
-import { DebugExceptionBreakpoint } from '../model';
 import { DebugModel } from '../editor';
 
 export interface BreakpointsChangeEvent {

@@ -2,7 +2,7 @@ import { CommandRegistry, Disposable, Event, Emitter } from '@ali/ide-core-commo
 import { Autowired, Injectable, Optional, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
-import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
+import { IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry } from './base';
 import { MenuId } from './menu-id';
 import { AbstractMenuService, IMenu, IMenuNodeOptions, SubmenuItemNode, MenuItemNode } from './menu.interface';
 

@@ -1,6 +1,6 @@
-import { BasicModule, CommandRegistry, Event } from '@ali/ide-core-common';
+import { BasicModule, CommandRegistry } from '@ali/ide-core-common';
 import { AppConfig } from './react-providers';
-import { Injector, Autowired, Provider, ConstructorOf } from '@ali/common-di';
+import { Injector, Autowired } from '@ali/common-di';
 
 export const IClientApp = Symbol('CLIENT_APP_TOKEN');
 

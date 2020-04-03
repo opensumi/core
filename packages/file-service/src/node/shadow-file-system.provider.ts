@@ -8,10 +8,6 @@ import {
     FileChangeEvent,
     FileStat,
     FileType,
-    DidFilesChangedParams,
-    FileSystemError,
-    FileMoveOptions,
-    FileAccess,
     FileSystemProvider,
   } from '../common/';
 
