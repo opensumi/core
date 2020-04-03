@@ -1,7 +1,8 @@
-import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, IEditorOpenType, IEditor } from '../common';
+import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, IEditorOpenType, IEditor, DragOverPosition } from '../common';
 import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
+export * from '../common';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
 
@@ -71,6 +72,7 @@ export interface BrowserEditorContribution {
   onDidRestoreState?(): void;
 
   registerEditorFeature?(registry: IEditorFeatureRegistry);
+
 }
 
 export interface IGridResizeEventPayload {
@@ -78,14 +80,6 @@ export interface IGridResizeEventPayload {
 }
 
 export class GridResizeEvent extends BasicEvent<IGridResizeEventPayload> {}
-
-export enum DragOverPosition {
-  LEFT = 'left',
-  RIGHT = 'right',
-  TOP = 'top',
-  BOTTOM = 'bottom',
-  CENTER= 'center',
-}
 
 export class EditorGroupOpenEvent extends BasicEvent<{group: IEditorGroup, resource: IResource}> {}
 export class EditorGroupCloseEvent extends BasicEvent<{group: IEditorGroup, resource: IResource}> {}
@@ -105,6 +99,26 @@ export interface IEditorGroupChangePayload {
 
   newOpenType: MaybeNull<IEditorOpenType>;
 
+}
+
+export class EditorGroupFileDropEvent extends BasicEvent<IEditorGroupFileDropPayload> {}
+
+export interface IEditorGroupFileDropPayload {
+
+  files: FileList;
+
+  group: IEditorGroup;
+
+  /**
+   * 如果目标在tab上, drop目标tab的位置
+   * -1表示在tab的空位置
+   */
+  tabIndex?: number;
+
+  /**
+   * 如果扔在编辑器主体，扔的位置
+   */
+  position?: DragOverPosition;
 }
 
 export interface IEditorDecorationCollectionService {
