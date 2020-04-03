@@ -87,6 +87,7 @@ export class AccordionService extends WithEventBus {
     this.visibleViews.forEach((view) => defaultState[view.id] = { collapsed: false, hidden: false });
     const restoredState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     this.state = restoredState;
+    this.popViewKeyIfOnlyOneViewVisible();
     this.restoreSize();
     this.rendered = true;
   }
