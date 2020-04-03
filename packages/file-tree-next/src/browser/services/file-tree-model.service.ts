@@ -364,6 +364,7 @@ export class FileTreeModelService {
 
   handleContextMenu = (ev: React.MouseEvent, file?: File | Directory) => {
     ev.stopPropagation();
+    ev.preventDefault();
 
     const { x, y } = ev.nativeEvent;
     if (file) {
