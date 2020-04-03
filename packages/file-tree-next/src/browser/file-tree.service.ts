@@ -494,7 +494,6 @@ export class FileTreeService extends Tree {
   public toggleFilterMode() {
     this.filterMode = !this.filterMode;
     this.fileTreeContextKey.filesExplorerFilteredContext.set(this.filterMode);
-    this.fileTreeContextKey.filesExplorerFocused.set(!!this.filterMode);
     // 清理掉输入值
     if (this.filterMode === false) {
       // 退出时若需要做 filter 值清理则做聚焦操作
