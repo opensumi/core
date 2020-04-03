@@ -253,8 +253,6 @@ export class FileTreeModelService {
       // 根节点不能选中
       return;
     }
-    // 更新当前焦点context
-    this.fileTreeContextKey.filesExplorerFocused.set(true);
 
     if (this.preContextMenuFocusedFile) {
       this.focusedDecoration.removeTarget(this.preContextMenuFocusedFile);
@@ -280,9 +278,6 @@ export class FileTreeModelService {
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
   activeFileFocusedDecoration = (target: File | Directory, removePreFocusedDecoration: boolean = false) => {
-    // 激活元素时同时激活面板
-    this.fileTreeContextKey.filesExplorerFocused.set(true);
-
     if (target === this.treeModel.root) {
       // 根节点不能选中
       return;
@@ -407,6 +402,11 @@ export class FileTreeModelService {
     this.fileTreeContextKey.filesExplorerFocused.set(false);
     // 情况焦点状态
     this.enactiveFileDecoration();
+  }
+
+  handleTreeFocus = () => {
+    // 激活面板
+    this.fileTreeContextKey.filesExplorerFocused.set(true);
   }
 
   handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {

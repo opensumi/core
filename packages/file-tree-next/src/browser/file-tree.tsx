@@ -100,6 +100,12 @@ export const FileTree = observer(({
     handleTreeBlur();
   };
 
+  const handleFocus = () => {
+    // 文件树焦点
+    const { handleTreeFocus } = fileTreeModelService;
+    handleTreeFocus();
+  };
+
   const handleOuterContextMenu = (ev: React.MouseEvent) => {
     const { handleContextMenu } = fileTreeModelService;
     // 空白区域右键菜单
@@ -194,6 +200,7 @@ export const FileTree = observer(({
     ref={wrapperRef}
     onClick={handleOuterClick}
     onBlur={handleBlur}
+    onFocus={handleFocus}
     onContextMenu={handleOuterContextMenu}
     draggable={true}
     onDragStart={handleOuterDragStart}
