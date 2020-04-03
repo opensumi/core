@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "1.7.18",
+  "version": "1.8.0",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -19,9 +19,9 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-components": "1.7.18",
-    "@ali/ide-connection": "1.7.18",
-    "@ali/ide-core-common": "1.7.18",
+    "@ali/ide-components": "1.8.0",
+    "@ali/ide-connection": "1.8.0",
+    "@ali/ide-core-common": "1.8.0",
     "ajv": "^6.10.0",
     "ansi-to-react": "^5.0.0",
     "antd": "^3.20.3",
@@ -41,12 +41,14 @@
     "mock-socket": "^9.0.2",
     "native-keymap": "^2.1.1",
     "onigasm": "2.2.2",
+    "p-series": "^2.1.0",
     "rc-menu": "^7.4.30",
     "react": "^16.8.6",
     "react-autosize-textarea": "^7.0.0",
     "react-ctxmenu-trigger": "^1.0.0",
     "react-perfect-scrollbar": "^1.5.2",
     "react-sticky": "^6.0.3",
+    "react-window": "^1.8.5",
     "reconnecting-websocket": "^4.2.0",
     "resize-observer-polyfill": "1.5.1",
     "socket.io-client": "^2.2.0",

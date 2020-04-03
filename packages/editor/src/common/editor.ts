@@ -440,6 +440,14 @@ export interface IEditorOpenType {
 
 }
 
+export enum DragOverPosition {
+  LEFT = 'left',
+  RIGHT = 'right',
+  TOP = 'top',
+  BOTTOM = 'bottom',
+  CENTER= 'center',
+}
+
 export enum EditorGroupSplitAction {
   Top = 1,
   Bottom = 2,

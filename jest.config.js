@@ -18,6 +18,8 @@ module.exports = {
     "!packages/startup/**/*.ts",
     "!packages/core-electron-main/**/*.ts",
     "!packages/*/src/electron-main/**/*.ts",
+    "!packages/userstorage/**/*.ts",
+    "!packages/file-tree/**/*.ts",
   ],
   moduleNameMapper: {
     ...tsModuleNameMapper,
@@ -49,7 +51,7 @@ module.exports = {
   ],
   transform: {
     "^.+\\.(css|less)$": "<rootDir>/mocks/style-mock.js"
-   },
+  },
   testMatch: [ "**/__tests__/**/*.test.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)" ],
   coverageThreshold: {
     global: {

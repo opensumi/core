@@ -324,6 +324,9 @@
       "@ali/ide-components": [
         "../packages/components/src/index.ts"
       ],
+      "@ali/ide-components/lib/*": [
+        "../packages/components/src/*"
+      ],
       "@ali/ide-addons": [
         "../packages/addons/src/index.ts"
       ],
@@ -335,6 +338,12 @@
       ],
       "@ali/ide-comments/lib/*": [
         "../packages/comments/src/*"
+      ],
+      "@ali/ide-file-tree-next": [
+        "../packages/file-tree-next/src/index.ts"
+      ],
+      "@ali/ide-file-tree-next/lib/*": [
+        "../packages/file-tree-next/src/*"
       ]
     }
   }

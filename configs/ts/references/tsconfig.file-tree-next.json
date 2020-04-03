@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/file-tree-next/src",
+    "outDir": "../../../packages/file-tree-next/lib"
+  },
+  "include": [
+    "../../../packages/file-tree-next/src"
+  ]
+}

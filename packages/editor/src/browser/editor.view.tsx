@@ -5,7 +5,7 @@ import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.serv
 import * as styles from './editor.module.less';
 import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
-import { IEditorComponent, EditorComponentRegistry, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode } from './types';
+import { IEditorComponent, EditorComponentRegistry, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode, EditorGroupFileDropEvent } from './types';
 import { Tabs } from './tab.view';
 import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig, ErrorBoundary, ComponentRegistry, PreferenceService } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
@@ -134,6 +134,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   const tabTitleMenuService = useInjectable(TabTitleMenuService) as TabTitleMenuService;
   const preferenceService = useInjectable(PreferenceService) as PreferenceService;
+  const eventBus = useInjectable(IEventBus) as IEventBus;
 
   const appConfig = useInjectable(AppConfig);
   const { editorBackgroudImage } = appConfig;
@@ -206,7 +207,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               e.dataTransfer.setData('uri-source-group', group.name);
             }}
             group={group}
-            onDrop={(e, target) => {
+            onDrop={(e, index, target) => {
               if (e.dataTransfer.getData('uri')) {
                 const uri = new URI(e.dataTransfer.getData('uri'));
                 let sourceGroup: EditorGroup | undefined;
@@ -214,6 +215,13 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
                   sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
                 }
                 group.dropUri(uri, DragOverPosition.CENTER, sourceGroup, target);
+              }
+              if (e.dataTransfer.files.length > 0) {
+                eventBus.fire(new EditorGroupFileDropEvent({
+                  group,
+                  tabIndex: index,
+                  files: e.dataTransfer.files,
+                }));
               }
             }}
             onContextMenu={(event, target) => {
@@ -248,6 +256,13 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
                 sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
               }
               group.dropUri(uri, getDragOverPosition(e.nativeEvent, editorBodyRef.current), sourceGroup);
+            }
+            if (e.dataTransfer.files.length > 0) {
+              eventBus.fire(new EditorGroupFileDropEvent({
+                group,
+                files: e.dataTransfer.files,
+                position: getDragOverPosition(e.nativeEvent, editorBodyRef.current),
+              }));
             }
           }
         }}

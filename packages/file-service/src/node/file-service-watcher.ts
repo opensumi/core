@@ -22,6 +22,13 @@ export interface WatcherOptions {
   excludes: string[];
 }
 
+export interface NsfwFileSystemWatcherOption {
+  verbose?: boolean;
+  info?: (message: string, ...args: any[]) => void;
+  error?: (message: string, ...args: any[]) => void;
+  useExperimentalEfsw?: boolean;
+}
+
 export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
   protected client: FileSystemWatcherClient | undefined;
@@ -38,20 +45,19 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
   protected readonly options: {
     verbose: boolean,
+    // tslint:disable-next-line
     info: (message: string, ...args: any[]) => void,
+    // tslint:disable-next-line
     error: (message: string, ...args: any[]) => void,
     useExperimentalEfsw?: boolean,
   };
 
-  constructor(options?: {
-    verbose?: boolean,
-    info?: (message: string, ...args: any[]) => void
-    error?: (message: string, ...args: any[]) => void,
-    useExperimentalEfsw?: boolean,
-  }) {
+  constructor(options?: NsfwFileSystemWatcherOption) {
     this.options = {
       verbose: false,
+      // tslint:disable-next-line
       info: (message, ...args) => console.info(message, ...args),
+      // tslint:disable-next-line
       error: (message, ...args) => console.error(message, ...args),
       ...options,
     };
@@ -67,7 +73,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
    */
   checkIsParentWatched(watcherPath: string): number {
     let watcherId;
-    this.watchers.forEach((watcher, id) => {
+    this.watchers.forEach((watcher) => {
       if (watcherId) {
         return;
       }
@@ -128,7 +134,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
     let renameEvent: INsfw.ChangeEvent;
 
-    events = events.filter((event: INsfw.ChangeEvent, index) => {
+    events = events.filter((event: INsfw.ChangeEvent) => {
       if (event.file) {
         if (/\.\d{7}\d+$/.test(event.file)) {
           // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434, 视为 xxx.xx;
@@ -180,6 +186,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
         }
       });
       watcher.on('error', (error) => {
+        // tslint:disable-next-line
         console.warn(`Failed to watch "${basePath}":`, error);
         this.unwatchFileChanges(watcherId);
       });
@@ -209,6 +216,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       }, {
           errorCallback: (error: any) => {
             // see https://github.com/atom/github/issues/342
+            // tslint:disable-next-line
             console.warn(`Failed to watch "${basePath}":`, error);
             this.unwatchFileChanges(watcherId);
           },

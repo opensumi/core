@@ -1,4 +1,4 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent, IUntitledOptions, SaveReason, getSplitActionFromDragDrop } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction } from 'mobx';
 import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE, ContributionProvider } from '@ali/ide-core-common';
@@ -1330,13 +1330,4 @@ function findSuitableOpenType(currentAvailable: IEditorOpenType[], prev: IEditor
 
 function openTypeSimilar(a: IEditorOpenType, b: IEditorOpenType) {
   return a.type === b.type && (a.type !== 'component' || a.componentId === b.componentId);
-}
-
-function getSplitActionFromDragDrop(position: DragOverPosition): EditorGroupSplitAction {
-  return {
-    [DragOverPosition.LEFT]: EditorGroupSplitAction.Left,
-    [DragOverPosition.RIGHT]: EditorGroupSplitAction.Right,
-    [DragOverPosition.BOTTOM]: EditorGroupSplitAction.Bottom,
-    [DragOverPosition.TOP]: EditorGroupSplitAction.Top,
-  }[position];
 }

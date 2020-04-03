@@ -5,6 +5,7 @@ import { OutputService } from '../../src/browser/output.service';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser';
 import { OutputPreferences } from '../../src/browser/output-preference';
+import { OutputModule } from '../../src/browser';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -31,7 +32,7 @@ class MockMainLayoutService {
 describe('Output.service.ts', () => {
   // let mockPreferenceVal = false;
 
-  const injector: Injector = createBrowserInjector([], new Injector([
+  const injector: Injector = createBrowserInjector([OutputModule], new Injector([
     {
       token: ILoggerManagerClient,
       useClass: MockLoggerManagerClient,
