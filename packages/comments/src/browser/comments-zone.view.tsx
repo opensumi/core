@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import * as styles from './comments.module.less';
-import { ConfigProvider, localize, AppConfig } from '@ali/ide-core-browser';
+import { ConfigProvider, localize, AppConfig, useInjectable } from '@ali/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
 import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle } from '../common';
@@ -12,6 +12,7 @@ import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
 import { CommentsThread } from './comments-thread';
 import { IEditor } from '@ali/ide-editor';
+import { AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 
 export interface ICommentProps {
   thread: CommentsThread;
@@ -20,28 +21,30 @@ export interface ICommentProps {
 
 const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   const {
-    commentThreadTitle,
-    commentThreadContext,
     contextKeyService,
     comments,
     threadHeaderTitle,
   } = thread;
-  const [showReply, setShowReply] = React.useState(true);
-  const textRef = React.useRef<HTMLTextAreaElement>(null);
   const [replyText, setReplyText] = React.useState('');
-  const commentIsEmptyContext = React.useRef(contextKeyService.createKey('commentIsEmpty', !replyText));
-
-  React.useEffect(() => {
-    if (showReply) {
-      // FIXME 立马执行 focus 会无效
-      setTimeout(() => {
-        textRef?.current?.focus();
-      }, 200);
-    }
-  }, [showReply]);
+  const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
+  const commentIsEmptyContext = React.useMemo(() => {
+    return contextKeyService.createKey('commentIsEmpty', !replyText);
+  }, []);
+  const commentThreadTitle = React.useMemo(() => {
+    return menuService.createMenu(
+      MenuId.CommentsCommentThreadTitle,
+      contextKeyService,
+    );
+  }, []);
+  const commentThreadContext = React.useMemo(() => {
+    return menuService.createMenu(
+      MenuId.CommentsCommentThreadContext,
+      contextKeyService,
+    );
+  }, []);
 
   function onChangeReply(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    commentIsEmptyContext.current.set(!event.target.value);
+    commentIsEmptyContext.set(!event.target.value);
     setReplyText(event.target.value);
   }
 
@@ -56,18 +59,14 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
             widget,
           }]}
           separator='inline'
-          type='icon'
-          afterClick={() => {
-            // console.log('thread', thread);
-          }}
-          />
+          type='icon'/>
       </div>
       <div className={styles.comment_body}>
       { comments.length > 0 ?
-        <CommentItem thread={thread} /> : (
+        <CommentItem commentThreadContext={commentThreadContext} thread={thread} /> : (
         <div>
           <CommentsTextArea
-            ref={textRef}
+            focusDelay={100}
             value={replyText}
             onChange={onChangeReply}
             placeholder={`${localize('comments.reply.placeholder')}...`}
@@ -75,7 +74,6 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
           <div className={styles.comment_bottom_actions}>
             <InlineActionBar<ICommentReply>
               className={styles.comment_reply_actions}
-              separator='inline'
               type='secondary'
               context={[
                 {
@@ -86,7 +84,6 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
               menus={commentThreadContext}
               afterClick={() => {
                 setReplyText('');
-                setShowReply(false);
               }}/>
           </div>
         </div>

@@ -49,8 +49,6 @@ export enum MenuId {
   CommentsCommentThreadContext = 'comments/commentThread/context',
   // In the comment panel head
   CommentsCommentThreadTitle = 'comments/commentThread/title',
-  // In the comment panel comment
-  CommentsCommentThreadComment = 'comments/commentThread/comment',
   // In the comment panel comment reply
   CommentsCommentTitle = 'comments/comment/title',
   // Below the comment panel reply text box

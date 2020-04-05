@@ -56,7 +56,7 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private decorationChangeEmitter = new Emitter<URI>();
 
-  @observable.deep
+  @observable
   private threads = new Map<string, ICommentsThread>();
 
   private threadsChangeEmitter = new Emitter<ICommentsThread>();

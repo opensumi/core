@@ -145,6 +145,10 @@ export interface ICommentsCommentTitle {
   comment: IComment;
 }
 
+export interface ICommentsCommentContext extends ICommentsCommentTitle {
+  body: string;
+}
+
 /**
  * 评论
  */
@@ -278,10 +282,15 @@ export interface ICommentsThread extends IDisposable {
    */
   contextKeyService: IContextKeyService;
   /**
-   * 添加一条评论
+   * 添加评论
    * @param comment
    */
   addComment(...comment: IComment[]): void;
+  /**
+   * 移除评论
+   * @param comment
+   */
+  removeComment(comment: IComment): void;
   /**
    * 显示 zone widget
    * @param editor 指定在某一个 editor 中打开

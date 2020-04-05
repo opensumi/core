@@ -10,19 +10,11 @@ import {
 } from '@ali/ide-core-browser';
 import { CommentsZoneWidget } from './comments-zone.view';
 import { ICommentsThread, IComment, ICommentsThreadOptions, ICommentsService, IThreadComment } from '../common';
-import {
-  MenuId,
-  AbstractMenuService,
-  IMenu,
-} from '@ali/ide-core-browser/lib/menu/next';
 import { IEditor, EditorCollectionService } from '@ali/ide-editor';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 
 @Injectable({ multiple: true })
 export class CommentsThread extends Disposable implements ICommentsThread {
-
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
 
   @Autowired(ICommentsService)
   commentsService: ICommentsService;
@@ -42,9 +34,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   public comments: IThreadComment[];
 
   private widgets = new Map<IEditor, CommentsZoneWidget>();
-  private _commentThreadContext: IMenu;
-  private _commentThreadTitle: IMenu;
-  private _commentThreadComment: IMenu;
 
   static getId(uri: URI, range: IRange): string {
     return `${uri}#${range.startLineNumber}`;
@@ -69,7 +58,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     this._contextKeyService.createKey<boolean>('readOnly', !!options.readOnly);
     const threadsLengthContext = this._contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
     const commentsLengthContext = this._contextKeyService.createKey<number>('commentsLength', this.comments.length);
-    this.initMenuContext();
     // 监听 comments 的变化
     autorun(() => {
       commentsLengthContext.set(this.comments.length);
@@ -93,18 +81,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   get contextKeyService() {
     return this._contextKeyService;
-  }
-
-  get commentThreadContext() {
-    return this._commentThreadContext;
-  }
-
-  get commentThreadTitle() {
-    return this._commentThreadTitle;
-  }
-
-  get commentThreadComment() {
-    return this._commentThreadComment;
   }
 
   get readOnly() {
@@ -133,21 +109,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   private getEditorsByUri(uri: URI): IEditor[] {
     return this.editorCollectionService.listEditors()
       .filter((editor) => editor.currentUri?.isEqual(uri));
-  }
-
-  private initMenuContext() {
-    this._commentThreadContext = this.registerDispose(this.menuService.createMenu(
-      MenuId.CommentsCommentThreadContext,
-      this.contextKeyService,
-    ));
-    this._commentThreadTitle = this.registerDispose(this.menuService.createMenu(
-      MenuId.CommentsCommentThreadTitle,
-      this.contextKeyService,
-    ));
-    this._commentThreadComment = this.registerDispose(this.menuService.createMenu(
-      MenuId.CommentsCommentThreadComment,
-      this.contextKeyService,
-    ));
   }
 
   private addWidgetByEditor(editor: IEditor) {
@@ -226,5 +187,12 @@ export class CommentsThread extends Disposable implements ICommentsThread {
       ...comment,
       id: uuid(),
     })));
+  }
+
+  public removeComment(comment: IComment) {
+    const index = this.comments.findIndex((c) => c === comment );
+    if (index !== -1) {
+      this.comments.splice(index, 1);
+    }
   }
 }
