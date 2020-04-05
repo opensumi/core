@@ -132,7 +132,7 @@ const ReplyItem: React.FC<{
                 body: textValue,
               },
             ]}
-            type='secondary'
+            type='button'
             afterClick={() => {
               // restore textarea value
               setTextValue(body);
@@ -206,7 +206,7 @@ export const CommentItem: React.FC<{
                 comment,
               },
             ]}
-            type='secondary'
+            type='button'
           />
           </div>
         </div>
@@ -230,7 +230,7 @@ export const CommentItem: React.FC<{
                   body: textValue,
                 },
               ]}
-              type='secondary'
+              type='button'
               afterClick={() => {
                 // restore textarea value
                 setTextValue(body);
@@ -256,7 +256,7 @@ export const CommentItem: React.FC<{
                     thread,
                     text: replyText,
                   }]}
-                  type='secondary'
+                  type='button'
                   afterClick={() => {
                     setReplyText('');
                     setShowReply(false);

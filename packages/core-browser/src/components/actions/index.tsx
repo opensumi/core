@@ -5,7 +5,7 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import Menu, { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.less';
 
-import { Button, ButtonType, Icon } from '@ali/ide-components';
+import { Button, CheckBox, Icon } from '@ali/ide-components';
 import {
   MenuNode, ICtxMenuRenderer, SeparatorMenuItemNode,
   IContextMenu, IMenu, IMenuSeparator,
@@ -126,15 +126,19 @@ export const MenuActionList: React.FC<{
 };
 
 const EllipsisWidget: React.FC<{
-  type?: InlineActionType;
+  type?: ActionListType;
   onClick?: React.MouseEventHandler<HTMLElement>;
-}> = ({ type = 'icon', onClick }) => {
+}> = ({ type, onClick }) => {
   if (type === 'icon') {
     return <Icon icon='ellipsis' className={styles.iconAction} onClick={onClick} />;
   }
 
   return (
-    <Button size='small' type={type} className={styles.btnAction} onClick={onClick}>
+    <Button
+      size='small'
+      type='secondary'
+      className={styles.btnAction}
+      onClick={onClick}>
       <Icon icon='ellipsis' />
     </Button>
   );
@@ -145,17 +149,19 @@ EllipsisWidget.displayName = 'EllipsisWidget';
 const InlineActionWidget: React.FC<{
   data: MenuNode;
   context?: any[];
-  type?: InlineActionType;
+  type?: ActionListType;
   afterClick?: () => void;
 } & React.HTMLAttributes<HTMLElement>> = ({ type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
-  const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (data.id === SubmenuItemNode.ID) {
-      const anchor = { x: e.clientX, y: e.clientY };
-      data.execute(anchor, ...context);
+  const handleClick = React.useCallback((event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (data.id === SubmenuItemNode.ID && event) {
+      const anchor = { x: event.clientX, y: event.clientY };
+      data.execute([anchor, ...context]);
     } else if (typeof data.execute === 'function') {
-      data.execute(context);
+      data.execute([...context, ...extraArgs]);
     }
 
     if (typeof afterClick === 'function') {
@@ -163,14 +169,31 @@ const InlineActionWidget: React.FC<{
     }
   }, [ data, context ]);
 
+  const title = data.tooltip || data.label;
+
   if (type === 'icon') {
     return (
       <Button
         type='icon'
         className={clsx(styles.iconAction, className, { [styles.disabled]: data.disabled })}
-        title={data.tooltip || data.label}
+        title={title}
         iconClass={data.icon}
         onClick={handleClick}
+        {...restProps}
+      />
+    );
+  }
+
+  // Button 类型需要额外处理来自 MenuNode 上的类型
+  if (data.type === 'checkbox') {
+    return (
+      <CheckBox
+        className={clsx(className, styles.btnAction)}
+        disabled={data.disabled}
+        label={data.label}
+        title={title}
+        value={data.checked}
+        onChange={(e) => handleClick(undefined, e.target.value)}
         {...restProps}
       />
     );
@@ -182,8 +205,8 @@ const InlineActionWidget: React.FC<{
       disabled={data.disabled}
       onClick={handleClick}
       size='small'
-      type={type}
-      title={data.tooltip || data.label}
+      type={data.type}
+      title={title}
       {...restProps}>
       {data.label}
     </Button>
@@ -192,7 +215,7 @@ const InlineActionWidget: React.FC<{
 
 InlineActionWidget.displayName = 'InlineAction';
 
-type InlineActionType = ButtonType;
+type ActionListType = 'icon' | 'button';
 
 interface BaseActionListProps {
   /**
@@ -213,9 +236,10 @@ interface BaseActionListProps {
   className?: string;
   /**
    * menu 的类型, 默认为 icon
+   * icon：显示为一排 icon 图标，图标带有 toggle 效果
+   * button：显示为一排 button 按钮, 每个按钮可以自定义 Button#type, toggle 效果为 checkbox 组件
    */
-  type?: InlineActionType;
-
+  type?: ActionListType;
   /**
    * InlineAction 点击之后的回调
    */
@@ -230,7 +254,7 @@ const TitleActionList: React.FC<{
   more?: MenuNode[];
   className?: string;
 } & BaseActionListProps> = ({
-  type = 'icon', // 默认为 icon 类型的 Button
+  type = 'icon', // ActionListType 默认为 icon 类型
   nav: primary = [],
   more: secondary = [],
   context = [],
