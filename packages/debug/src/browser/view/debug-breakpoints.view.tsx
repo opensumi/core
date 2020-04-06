@@ -69,7 +69,7 @@ export const BreakpointItem = ({
 
   return <div className={cls(styles.debug_breakpoints_item)}>
     <div className={cls(isDebugBreakpoint ? !verified ? 'kaitian-debug-breakpoint-unverified' : enabled ? 'kaitian-debug-breakpoint' : 'kaitian-debug-breakpoint-disabled' : '', styles.debug_breakpoints_icon)}></div>
-    <CheckBox size='default' id={data.id} defaultChecked={enabled} onChange={changeHandler}></CheckBox>
+    <CheckBox id={data.id} defaultChecked={enabled} onChange={changeHandler}></CheckBox>
     <div className={styles.debug_breakpoints_wrapper} onClick={clickHandler}>
       <span className={styles.debug_breakpoints_name}>{data.name}</span>
       <span className={styles.debug_breakpoints_description}>{data.description}</span>
