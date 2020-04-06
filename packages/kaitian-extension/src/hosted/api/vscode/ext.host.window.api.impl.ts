@@ -33,6 +33,7 @@ export function createWindowApiFactory(
     withProgress(options, task) {
       return Promise.resolve(task({
         report(value) {
+          /* tslint:disable:no-console */
           console.log(options, value);
         },
       }));
@@ -80,7 +81,7 @@ export function createWindowApiFactory(
       return extHostEditors.showTextDocument(arg0, arg1, arg2);
     },
     createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
-      return extHostEditors.createTextEditorDecorationType(options);
+      return extHostEditors.createTextEditorDecorationType(extension.id, options);
     },
     showQuickPick(items: any, options: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined> {
       return extHostQuickOpen.showQuickPick(items, options, token);
@@ -105,6 +106,7 @@ export function createWindowApiFactory(
     }),
     registerUriHandler() {
        // TODO git
+       /* tslint:disable:no-console */
        console.log('registerUriHandler is not implemented');
 
        return {
