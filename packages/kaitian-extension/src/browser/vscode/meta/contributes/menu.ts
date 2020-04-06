@@ -7,8 +7,11 @@ import { IEditorGroup } from '@ali/ide-editor';
 
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 
-// tslint:disable-next-line: no-empty-interface
-export interface MenuActionFormat extends IMenuItem {}
+export interface MenuActionFormat extends IMenuItem {
+  command: string;
+  when?: string;
+  alt?: string;
+}
 
 export interface MenusSchema {
   [MenuPosition: string]: MenuActionFormat[];
