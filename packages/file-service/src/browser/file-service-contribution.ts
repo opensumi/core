@@ -8,6 +8,7 @@ import {
   Event,
   Emitter,
   ResourceError,
+  getDebugLogger,
 } from '@ali/ide-core-browser';
 import { FileStat, FileSystemError, IFileServiceClient } from '../common';
 import { FileChangeEvent } from '../common/file-service-watcher-protocol';
@@ -17,6 +18,8 @@ export class FileResource implements Resource {
 
   protected readonly toDispose = new DisposableCollection();
   protected readonly onDidChangeContentsEmitter = new Emitter<void>();
+  private readonly logger = getDebugLogger();
+
   readonly onDidChangeContents: Event<void> = this.onDidChangeContentsEmitter.event;
 
   protected stat: FileStat | undefined;
@@ -50,7 +53,7 @@ export class FileResource implements Resource {
         this.toDispose.push(await this.fileSystem.watchFileChanges(this.uri));
       }
     } catch (e) {
-      console.error(e);
+      this.logger.error(e);
     }
   }
 
@@ -115,12 +118,14 @@ export class FileResource implements Resource {
   }
 
   protected async getFileStat(): Promise<FileStat | undefined> {
-    if (!await this.fileSystem.exists(this.uriString)) {
+    const exist = await this.fileSystem.exists(this.uriString);
+    if (!exist) {
       return undefined;
     }
     try {
       return this.fileSystem.getFileStat(this.uriString);
-    } catch {
+    } catch (e) {
+      this.logger.error(e);
       return undefined;
     }
   }
