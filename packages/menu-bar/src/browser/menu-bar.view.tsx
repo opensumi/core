@@ -11,10 +11,10 @@ import 'antd/lib/dropdown/style/index.less';
 import { MenubarStore } from './menu-bar.store';
 import * as styles from './menu-bar.module.less';
 
-const MenubarItem = observer<IExtendMenubarItem & {
+const MenubarItem = observer<IExtendMenubarItem & Pick<React.HTMLProps<HTMLElement>, 'className'> & {
   focusMode: boolean;
   onClick: () => void;
-}>(({ id, label, focusMode, onClick }) => {
+}>(({ id, label, focusMode, onClick, className }) => {
   const menubarStore = useInjectable<MenubarStore>(MenubarStore);
   const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
 
@@ -58,7 +58,7 @@ const MenubarItem = observer<IExtendMenubarItem & {
       overlay={<MenuActionList data={data} afterClick={handleMenuItemClick} />}
       trigger={focusMode ? ['click', 'hover'] : ['click']}>
       <div
-        className={clx(styles.menubar, { [styles['menu-open']]: menuOpen })}
+        className={clx(styles.menubar, { [styles['menu-open']]: menuOpen }, className)}
         onMouseOver={handleMouseOver}
         onClick={handleClick}>{label}</div>
     </Dropdown>

@@ -1,20 +1,19 @@
 import * as React from 'react';
+import * as clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import * as styles from './toolbar.module.less';
-import { IToolBarElement, IToolBarComponent, IToolBarAction, IToolBarViewService, ToolBarPosition } from './types';
+import { IToolBarComponent, IToolBarAction, IToolBarViewService, ToolBarPosition } from './types';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ToolBarViewService } from './toolbar.view.service';
 
-export const ToolBar = observer(() => {
-
+export const ToolBar = observer<Pick<React.HTMLProps<HTMLElement>, 'className'>>(({ className }) => {
   const toolBarService = useInjectable(IToolBarViewService) as ToolBarViewService;
 
-  return <div className={styles['tool-bar']} >
+  return <div className={clx(styles['tool-bar'], className)}>
     <ToolBarElementContainer className={styles.left} elements={toolBarService.getVisibleElements(ToolBarPosition.LEFT)}/>
     <ToolBarElementContainer className={styles.center} elements={toolBarService.getVisibleElements(ToolBarPosition.CENTER)}/>
     <ToolBarElementContainer className={styles.right} elements={toolBarService.getVisibleElements(ToolBarPosition.RIGHT)}/>
   </div>;
-
 });
 
 export const ToolBarElementContainer = ({elements, className}: {elements: (IToolBarComponent | IToolBarAction)[], className?: string}) => {
@@ -22,10 +21,9 @@ export const ToolBarElementContainer = ({elements, className}: {elements: (ITool
   return <div className={className}>
     {
       elements.map((e, i) => {
-        if (e.type === 'component') {
-          const C = e.component;
+        if (e.type === 'component' && e.component) {
           return <div key= {'element-' + i}>
-            <C {...e.initialProps || {}} />
+            {React.createElement(e.component, {...e.initialProps || {}})}
           </div>;
         } else if (e.type === 'action') {
           return <ToolBarAction key= {'element-' + i} action={e}></ToolBarAction>;
