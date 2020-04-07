@@ -1,9 +1,13 @@
 import { WorkbenchEditorService, IResourceOpenOptions, IUntitledOptions, IOpenResourceResult } from '../editor';
-import { URI } from '@ali/ide-core-common';
+import { URI, Emitter, MaybeNull, Event } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
+import { IResource } from '../resource';
 
 @Injectable()
 export class MockWorkbenchEditorService extends WorkbenchEditorService {
+
+  private readonly _onActiveResourceChange = new Emitter<MaybeNull<IResource>>();
+  public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 
   async closeAll(uri?: URI, force?: boolean): Promise<void> {
     throw new Error('Method not implemented.');
