@@ -275,7 +275,11 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.RENAME_FILE, {
       execute: (uri) => {
         if (!uri) {
-          uri = this.fileTreeModelService.focusedFile!.uri;
+          if (!this.fileTreeModelService.focusedFile) {
+            return;
+          } else {
+            uri = this.fileTreeModelService.focusedFile!.uri;
+          }
         }
         this.fileTreeModelService.renamePrompt(uri);
       },
