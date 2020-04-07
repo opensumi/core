@@ -6,7 +6,7 @@ export interface IStatusBarService {
   getBackgroundColor(): string | undefined;
   setBackgroundColor(color?: string): void;
   setColor(color?: string): void;
-  addElement(id: string, entry: StatusBarEntry): IDisposable;
+  addElement(id: string, entry: StatusBarEntry): StatusBarEntryAccessor;
   setElement(id: string, fields: object): void;
   removeElement(id: string): void;
   leftEntries: StatusBarEntry[];
@@ -29,6 +29,13 @@ export interface StatusBarEntry {
   priority?: number;
   iconClass?: string;
   onClick?: (e: any) => void;
+}
+
+export interface StatusBarEntryAccessor extends IDisposable {
+  /**
+	 * Allows to update an existing status bar entry.
+	 */
+  update(properties: StatusBarEntry): void;
 }
 
 export enum StatusBarAlignment {
