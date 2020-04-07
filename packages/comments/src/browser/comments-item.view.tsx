@@ -123,7 +123,7 @@ const ReplyItem: React.FC<{
             rows={2}
           />
           <InlineActionBar<ICommentsCommentContext>
-            className={styles.comment_item_context}
+            className={styles.comment_item_reply}
             menus={commentContext}
             context={[
               {

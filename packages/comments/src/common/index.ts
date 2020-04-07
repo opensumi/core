@@ -240,7 +240,7 @@ export interface CommentsContribution {
    * 提供可评论的 range
    * @param editor 当前 editor 实例
    */
-  provideCommentingRanges(editor: IEditor): MaybePromise<IRange[] | undefined>;
+  provideCommentingRanges(uri: URI): MaybePromise<IRange[] | undefined>;
   /**
    * 扩展评论模块的能力
    * @param registry

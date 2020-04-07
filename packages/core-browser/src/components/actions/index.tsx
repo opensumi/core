@@ -192,8 +192,8 @@ const InlineActionWidget: React.FC<{
         disabled={data.disabled}
         label={data.label}
         title={title}
-        value={data.checked}
-        onChange={(e) => handleClick(undefined, e.target.value)}
+        checked={data.checked}
+        onChange={(e) => handleClick(undefined, (e.target as HTMLInputElement).checked)}
         {...restProps}
       />
     );

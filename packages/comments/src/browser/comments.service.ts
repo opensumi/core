@@ -12,7 +12,7 @@ import {
   ContributionProvider,
   AppConfig,
 } from '@ali/ide-core-browser';
-import { WorkbenchEditorService, IEditor, EditorType } from '@ali/ide-editor';
+import { IEditor, EditorType } from '@ali/ide-editor';
 import { IEditorDecorationCollectionService } from '@ali/ide-editor/lib/browser';
 import {
   ICommentsService,
@@ -42,17 +42,14 @@ export class CommentsService extends Disposable implements ICommentsService {
   @Autowired(IEditorDecorationCollectionService)
   private readonly editorDecorationCollectionService: IEditorDecorationCollectionService;
 
-  @Autowired(WorkbenchEditorService)
-  private readonly workbenchEditorService: WorkbenchEditorService;
-
   @Autowired(CommentsContribution)
   private readonly contributions: ContributionProvider<CommentsContribution>;
 
   @Autowired(IIconService)
-  iconService: IIconService;
+  private readonly iconService: IIconService;
 
   @Autowired(ICommentsFeatureRegistry)
-  commentsFeatureRegistry: ICommentsFeatureRegistry;
+  private readonly commentsFeatureRegistry: ICommentsFeatureRegistry;
 
   private decorationChangeEmitter = new Emitter<URI>();
 
@@ -166,6 +163,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     thread.onDispose(() => {
       this.threads.delete(thread.id);
       this.threadsChangeEmitter.fire(thread);
+      this.decorationChangeEmitter.fire(uri);
     });
     this.threads.set(thread.id, thread);
     this.addDispose(thread);
@@ -269,10 +267,9 @@ export class CommentsService extends Disposable implements ICommentsService {
     return treeNodes;
   }
 
-  private async getContributionRanges(): Promise<IRange[]> {
-    const editor = this.workbenchEditorService.currentEditor!;
+  private async getContributionRanges(uri: URI): Promise<IRange[]> {
     const res = await Promise.all(this.contributions.getContributions().map((contribution) => {
-      return contribution.provideCommentingRanges(editor);
+      return contribution.provideCommentingRanges(uri);
     }));
     // 拍平，去掉 undefined
     return flattenDeep(res).filter(Boolean);
@@ -286,7 +283,7 @@ export class CommentsService extends Disposable implements ICommentsService {
         onDidDecorationChange: this.decorationChangeEmitter.event,
         provideEditorDecoration: async (uri: URI) => {
           const decorations: monaco.editor.IModelDeltaDecoration[] = [];
-          const ranges = await this.getContributionRanges();
+          const ranges = await this.getContributionRanges(uri);
           if (ranges && ranges.length) {
             decorations.push(
               ...ranges.map((range) => ({
