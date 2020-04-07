@@ -263,7 +263,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
       <div className={styles.preference_line} key={key}>
         <div className={classnames(styles.check, styles.key) }>
         <CheckBox label={localizedName} checked={value} onChange={(event) => {
-          changeValue(key, event.target.checked);
+          changeValue(key, (event.target as HTMLInputElement).checked);
         }}/>
           {status}
         </div>
