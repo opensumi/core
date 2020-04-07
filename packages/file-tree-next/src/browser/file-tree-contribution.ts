@@ -227,12 +227,16 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         if (!locationUri) {
           locationUri = this.fileTreeModelService.selectedFiles[0].uri;
         }
-        if (locationUri && this.isRendered) {
-          const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-          if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
-            this.fileTreeModelService.locationOnShow(locationUri);
+        if (locationUri) {
+          if (this.isRendered) {
+            const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+            if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
+              this.fileTreeModelService.locationOnShow(locationUri);
+            } else {
+              this.fileTreeModelService.location(locationUri);
+            }
           } else {
-            this.fileTreeModelService.location(locationUri);
+            this.fileTreeModelService.locationOnShow(locationUri);
           }
         }
       },
