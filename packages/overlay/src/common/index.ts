@@ -16,6 +16,8 @@ export interface Icon {
   className: string;
 }
 
+export const MAX_MESSAGE_LENGTH = 1000;
+
 export const IDialogService = Symbol('IDialogService');
 export interface IDialogService extends IMessageService {
   closable?: boolean;
