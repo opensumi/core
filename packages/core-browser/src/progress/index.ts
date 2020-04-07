@@ -69,10 +69,9 @@ export interface IProgressStep {
   total?: number;
 }
 
-// TODO 需要重新设计下以满足进度、文案两种需求场景
 export interface IProgressRunner {
-  total(value: number, title?: string): void;
-  worked(value: number, message?: string): void;
+  total(value: number): void;
+  worked(value: number): void;
   done(): void;
 }
 

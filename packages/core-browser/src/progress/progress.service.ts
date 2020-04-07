@@ -10,12 +10,11 @@ export class ProgressService implements IProgressService {
   @Autowired(IStatusBarService)
   statusbarService: IStatusBarService;
 
-  private progressIndicatorRegistry: Map<number | string, IProgressIndicator> = new Map();
+  // 不同的视图会有不同的IProgressIndicator实例
+  private progressIndicatorRegistry: Map<string, IProgressIndicator> = new Map();
 
-  getIndicator(location: number | string) {
-    const indicator = this.progressIndicatorRegistry.get(location);
-    // TODO: 提供默认实现
-    return indicator;
+  registerProgressIndicator(location: string, indicator: IProgressIndicator) {
+    this.progressIndicatorRegistry.set(location, indicator);
   }
 
   withProgress<R>(
@@ -28,12 +27,12 @@ export class ProgressService implements IProgressService {
       // 	return this.withNotificationProgress({ ...options, location }, task, onDidCancel);
       case ProgressLocation.Window:
         return this.withWindowProgress({ ...options, location }, task);
-      // case ProgressLocation.Explorer:
-      // 	return this.withViewletProgress('workbench.view.explorer', task, { ...options, location });
-      // case ProgressLocation.Scm:
-      // 	return this.withViewletProgress('workbench.view.scm', task, { ...options, location });
-      // case ProgressLocation.Extensions:
-      // 	return this.withViewletProgress('workbench.view.extensions', task, { ...options, location });
+      case ProgressLocation.Explorer:
+        return this.withCompositeProgress('workbench.view.explorer', task, { ...options, location });
+      case ProgressLocation.Scm:
+        return this.withCompositeProgress('workbench.view.scm', task, { ...options, location });
+      case ProgressLocation.Extensions:
+        return this.withCompositeProgress('workbench.view.extensions', task, { ...options, location });
       // case ProgressLocation.Dialog:
       // 	return this.withDialogProgress(options, task, onDidCancel);
       default:
@@ -77,7 +76,7 @@ export class ProgressService implements IProgressService {
 
       const progressTitle = options.title;
       const progressMessage = progress.value && progress.value.message;
-      const progressCommand = ( options as IProgressWindowOptions).command;
+      const progressCommand = (options as IProgressWindowOptions).command;
       let text: string;
       let title: string;
 
@@ -122,7 +121,8 @@ export class ProgressService implements IProgressService {
   }
 
   // tslint:disable-next-line
-  private withCompositeProgress<P extends Promise<R>, R = unknown>(progressIndicator: IProgressIndicator | undefined, task: (progress: IProgress<IProgressStep>) => P, options: IProgressCompositeOptions): P {
+  private withCompositeProgress<P extends Promise<R>, R = unknown>(location: string, task: (progress: IProgress<IProgressStep>) => P, options: IProgressCompositeOptions): P {
+    const progressIndicator: IProgressIndicator | undefined = this.progressIndicatorRegistry.get(location);
     let progressRunner: IProgressRunner | undefined;
 
     const promise = task({
@@ -131,13 +131,12 @@ export class ProgressService implements IProgressService {
           return;
         }
 
-        // TODO 必须透传message以支持window的能力
         if (typeof progress.increment === 'number') {
-          progressRunner.worked(progress.increment, progress.message);
+          progressRunner.worked(progress.increment);
         }
 
         if (typeof progress.total === 'number') {
-          progressRunner.total(progress.total, progress.message);
+          progressRunner.total(progress.total);
         }
       },
     });
