@@ -10,6 +10,7 @@ import * as cls from 'classnames';
 import * as styles from './file-tree.module.less';
 
 export const FILTER_AREA_HEIGHT = 30;
+export const FILE_TREE_FIELD_ID = 'FILE_TREE_FIELD';
 
 export const FileTree = observer(({
   viewState,
@@ -92,12 +93,6 @@ export const FileTree = observer(({
     // 空白区域点击，取消焦点状态
     const { enactiveFileDecoration } = fileTreeModelService;
     enactiveFileDecoration();
-  };
-
-  const handleBlur = () => {
-    // 文件树失去焦点
-    const { handleTreeBlur } = fileTreeModelService;
-    handleTreeBlur();
   };
 
   const handleFocus = () => {
@@ -199,7 +194,6 @@ export const FileTree = observer(({
     tabIndex={-1}
     ref={wrapperRef}
     onClick={handleOuterClick}
-    onBlur={handleBlur}
     onFocus={handleFocus}
     onContextMenu={handleOuterContextMenu}
     draggable={true}
@@ -207,6 +201,7 @@ export const FileTree = observer(({
     onDragLeave={handleOuterDragLeave}
     onDragOver={handleOuterDragOver}
     onDrop={handleOuterDrop}
+    id={FILE_TREE_FIELD_ID}
   >
     {renderFilterView()}
     {renderFileTree()}

@@ -403,7 +403,7 @@ export class FileTreeModelService {
 
   handleTreeBlur = () => {
     this.fileTreeContextKey.filesExplorerFocused.set(false);
-    // 情况焦点状态
+    // 清空焦点状态
     this.enactiveFileDecoration();
   }
 

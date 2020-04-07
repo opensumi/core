@@ -5,7 +5,7 @@ import { FileTreeService } from './file-tree.service';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
-import { FileTree } from './file-tree';
+import { FileTree, FILE_TREE_FIELD_ID } from './file-tree';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
@@ -85,6 +85,21 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
         this.fileTreeModelService.performLocationOnHandleShow();
       });
     }
+    // Cause react's onBlur handle not firing during unmount.
+    // We should use native blur listener to make sure update contextKey correctly.
+    // https://github.com/facebook/react/issues/12363
+    // https://stackoverflow.com/questions/10035564/is-there-a-cross-browser-solution-for-monitoring-when-the-document-activeelement
+    this.attachEvents();
+  }
+
+  private detectBlur = (event) => {
+    if (event.target?.id === FILE_TREE_FIELD_ID) {
+      this.fileTreeModelService.handleTreeBlur();
+    }
+  }
+
+  private attachEvents() {
+    window.addEventListener('blur', this.detectBlur, true);
   }
 
   getWorkspaceTitle() {
@@ -264,7 +279,11 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: (_, uris) => {
         if (!uris) {
-          uris = this.fileTreeModelService.selectedFiles.map((file) => file.uri);
+          if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
+            uris = this.fileTreeModelService.selectedFiles.map((file) => file.uri);
+          } else {
+            return;
+          }
         }
         this.fileTreeModelService.deleteFileByUris(uris);
       },
@@ -275,7 +294,11 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.RENAME_FILE, {
       execute: (uri) => {
         if (!uri) {
-          uri = this.fileTreeModelService.focusedFile!.uri;
+          if (!this.fileTreeModelService.focusedFile) {
+            return;
+          } else {
+            uri = this.fileTreeModelService.focusedFile!.uri;
+          }
         }
         this.fileTreeModelService.renamePrompt(uri);
       },
@@ -416,7 +439,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
       execute: (uri) => {
         if (uri) {
           this.fileTreeModelService.pasteFile(uri);
-        } else  if (this.fileTreeModelService.focusedFile) {
+        } else if (this.fileTreeModelService.focusedFile) {
           const focusedUri = this.fileTreeModelService.focusedFile.uri;
           this.fileTreeModelService.pasteFile(focusedUri);
         }
