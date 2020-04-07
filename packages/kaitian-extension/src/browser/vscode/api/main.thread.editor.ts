@@ -10,6 +10,7 @@ import debounce = require('lodash.debounce');
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
 import { ExtensionService } from '../../../common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
 
 @Injectable({multiple: true})
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -294,6 +295,11 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   async $openResource(uri: string, options: IResourceOpenOptions): Promise<string> {
     options.forceOpenType = { type: 'code' };
+    options.focus = true;
+    options = {
+      ...options,
+      ...viewColumnToResourceOpenOptions((options as any).viewColumn),
+    };
     const result = await this.editorService.open(new URI(uri), options);
     if (result) {
       return getTextEditorId(result.group, result.resource);
@@ -306,7 +312,6 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       return Promise.reject(`No Such TextEditor: ${id}`);
     }
     this.getEditor(id)!.setSelections(selections);
-    this.getEditor(id)!.monacoEditor.focus();
     return Promise.resolve();
   }
 
