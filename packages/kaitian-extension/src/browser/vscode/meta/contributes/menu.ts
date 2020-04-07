@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, replaceLocalizePlaceholder, IContextKeyService, isUndefined } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, replaceLocalizePlaceholder, IContextKeyService, isUndefined, URI } from '@ali/ide-core-browser';
 import { ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
@@ -184,6 +184,13 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             when: item.when,
           }));
         } else {
+          let argsTransformer: ((...args: any[]) => any[]) | undefined;
+          if (menuId === MenuId.EditorTitleContext) {
+            argsTransformer = ({uri, group}: {uri: URI, group: IEditorGroup}) => {
+              return [uri.codeUri];
+            };
+          }
+
           this.addDispose(this.newMenuRegistry.registerMenuItem(
             menuId,
             {
@@ -192,6 +199,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
               group,
               order,
               when: item.when,
+              argsTransformer,
             } as IMenuItem,
           ));
         }

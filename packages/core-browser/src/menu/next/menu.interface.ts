@@ -43,6 +43,7 @@ export class MenuItemNode extends MenuNode {
     @Optional() disabled: boolean,
     @Optional() checked: boolean,
     @Optional() nativeRole?: string,
+    @Optional() private argsTransformer?: (...args: any[]) => any[],
   ) {
     super({
       id: item.id,
@@ -65,11 +66,17 @@ export class MenuItemNode extends MenuNode {
     this.item = item;
   }
 
-  execute(args?: any[]): Promise<any> {
-    const runArgs = [
+  execute(args: any[] = []): Promise<any> {
+
+    let runArgs = [
       ...(this._options.args || []),
       ...(args || []),
     ];
+    // args 为 createMenu 时提供，同一个menu所有的都是同一 args
+    // argsTransformer 每个 action 不同，所以先合并 args，然后再经过 transformer
+    if (this.argsTransformer) {
+      runArgs = this.argsTransformer(...runArgs);
+    }
 
     return this.commandService.executeCommand(this.item.id, ...runArgs);
   }

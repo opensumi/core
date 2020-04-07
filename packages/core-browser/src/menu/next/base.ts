@@ -16,6 +16,7 @@ export interface MenuCommandDesc {
 }
 
 export interface IMenuItem {
+
   command: string | MenuCommandDesc;
   /**
    * 决定是否在视图层展示
@@ -32,6 +33,9 @@ export interface IMenuItem {
   group?: 'navigation' | string;
   order?: number;
   nativeRole?: string; // electron native 菜单使用
+
+  // 单独变更此 action 的 args
+  argsTransformer?: ((...args: any[]) => any[]);
 }
 
 export interface ISubmenuItem {
