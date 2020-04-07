@@ -151,7 +151,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.promptTargetID = -1;
         }
       }
-      this.idxToRendererPropsCache.clear();
       this.newPromptInsertionIndex = newFilePromptInsertionIndex;
       // 更新React组件
       this.forceUpdate(resolver);
@@ -165,6 +164,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.onDidUpdateEmitter.fire();
         });
       }
+      this.idxToRendererPropsCache.clear();
       // 更新批量更新返回的promise对象
       clearTimeout(timer);
       timer = setTimeout(commitUpdate, RecycleTree.BATCHED_UPDATE_MAX_DEBOUNCE_MS) as any;
