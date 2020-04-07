@@ -4,7 +4,7 @@ import { TreeModel } from './tree/model/TreeModel';
 import { TreeNode, CompositeTreeNode, spliceTypedArray } from './tree';
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
-import { DisposableCollection, Emitter, IDisposable } from '@ali/ide-core-common';
+import { DisposableCollection, Emitter, IDisposable, Event } from '@ali/ide-core-common';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
 import * as styles from './recycle-tree.module.less';
@@ -132,8 +132,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       let newFilePromptInsertionIndex: number = -1;
       if (this.promptTargetID > -1 &&
         this.promptHandle instanceof NewPromptHandle &&
-        this.promptHandle.parent.expanded && root.isItemVisibleAtSurface(this.promptHandle.parent) &&
-        !this.promptHandle.destroyed) {
+        this.promptHandle.parent &&
+        this.promptHandle.parent.expanded &&
+        root.isItemVisibleAtSurface(this.promptHandle.parent) &&
+        !this.promptHandle.destroyed
+      ) {
         const idx = root.getIndexAtTreeNodeId(this.promptTargetID);
         if (idx > -1 || this.promptHandle.parent === root ) {
           // 如果新建节点类型为普通节点，则在可折叠节点后插入
@@ -231,15 +234,22 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         throw new TypeError(`Cannot create new prompt at object of type ${typeof node}`);
       }
     }
+    if (!node) {
+      throw new Error(`Cannot find node at ${pathOrTreeNode}`);
+    }
     const promptHandle = new NewPromptHandle(type, node as CompositeTreeNode);
     this.promptHandle = promptHandle;
     this.promptTargetID = node!.id;
     if (node !== root && (!(node as CompositeTreeNode).expanded || !root.isItemVisibleAtSurface(node as CompositeTreeNode))) {
+      // 调用setExpanded即会在之后调用batchUpdate函数
       await (node as CompositeTreeNode).setExpanded(true);
     } else {
       await this.batchUpdate();
     }
-    this.listRef.current.scrollToItem(this.newPromptInsertionIndex);
+    // 在model收到change事件后再调用scrollToItem方法可确保新建位置的准确性
+    Event.once( this.props.model.onChange)(() => {
+      this.listRef.current.scrollToItem(this.newPromptInsertionIndex);
+    });
     return this.promptHandle as NewPromptHandle;
   }
 
