@@ -119,7 +119,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     color: decoration ? decoration.color : '',
     height: FILE_TREE_NODE_HEIGHT,
     lineHeight: `${FILE_TREE_NODE_HEIGHT}px`,
-    paddingLeft: isDirectory || (isPrompt && item.type === TreeNodeType.CompositeTreeNode) ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 5}px`,
+    paddingLeft: isDirectory || (isPrompt && item.type === TreeNodeType.CompositeTreeNode) ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 10}px`,
   } as React.CSSProperties;
 
   const renderFolderToggle = (node: Directory | PromptHandle, clickHandler: any) => {
