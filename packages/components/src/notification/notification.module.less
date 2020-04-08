@@ -1,12 +1,27 @@
 .wrapper {
-  background: var(--notifications-background);
-  border-color: var(--notifications-border);
+  background: var(--notifications-background) !important;
+  border-color: var(--notifications-border) !important;
   word-break: break-word;
+  padding: 12px !important;
+  position: relative;
+}
+
+.wrapper :global(.anticon) {
+  font-size: 12px;
 }
 
 .wrapper :global(.ant-notification-notice-close),
-.wrapper :global(.ant-notification-notice-message) {
-  color: var(--notifications-foreground);
+.wrapper :global(.ant-notification-notice-message),
+.wrapper :global(.ant-notification-notice-description) {
+  color: var(--notifications-foreground) !important;
+  font-size: 12px !important;
+  margin-left: 22px !important;
+  line-height: 20px !important;
+}
+
+.wrapper :global(.ant-notification-notice-close) {
+  right: 14px;
+  top: 12px;
 }
 
 .wrapper.error :global(.anticon.ant-notification-notice-icon-info) {
@@ -21,6 +36,8 @@
   color: var(--notificationsWarningIcon-foreground);
 }
 
-.button {
-  margin: 0 0 10px 10px;
+.wrapper :global(.ant-notification-notice-btn) {
+  .button {
+    margin: 0 0 0 10px;
+  }
 }

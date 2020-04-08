@@ -6,12 +6,13 @@ import { Event } from '@ali/ide-core-common';
 import { UriComponents } from './ext-types';
 
 export interface IMainThreadMessage {
-  $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<number | undefined>;
+  $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[], from?: string): Promise<number | undefined>;
 }
 
 export interface IExtHostMessage {
   showMessage(type: MessageType, message: string,
               optionsOrFirstItem?: vscode.MessageOptions | string | vscode.MessageItem,
+              from?: string,
               ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined>;
 }
 

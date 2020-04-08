@@ -43,6 +43,7 @@ export function open<T = string>(
   key: string,
   buttons?: string[],
   deferred?: Deferred<T>,
+  description?: string | React.ReactNode,
 ): Promise<T | undefined> | undefined {
   const args: ArgsProps = {
     key,
@@ -55,12 +56,15 @@ export function open<T = string>(
     onClose: () => deferred?.resolve(),
     btn: buttons ? buttons.map((button, index) => (<Button
       className={clx(styles.button)}
+      size='small'
+      ghost={index === 0}
       onClick={() => {
         deferred?.resolve(button as any);
         antdNotification.close(key);
       }}
       key={button}>{button}</Button>)) : null,
     message,
+    description,
   };
 
   // closable 为 false 时，不展示 closeIcon

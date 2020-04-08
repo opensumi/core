@@ -3,6 +3,20 @@ import { Injectable } from '@ali/common-di';
 import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@ali/ide-components';
 import { Deferred, MessageType, uuid } from '@ali/ide-core-common';
+import * as styles from './message.module.less';
+
+const OriginalMessage = ({ message, from }: { message: string | React.ReactNode; from: string }) => {
+  return (
+    <>
+      <div className={styles.message_origin}>
+        {message}
+      </div>
+      <span className={styles.origin}>
+        来源: {from}
+      </span>
+    </>
+  );
+};
 
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
@@ -23,17 +37,28 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     [MessageType.Error]: 20000,
   };
 
-  open<T = string>(rawMessage: string | React.ReactNode, type: MessageType, buttons?: string[], closable: boolean = true): Promise<T | undefined> {
+  /**
+   *
+   * @param rawMessage messgae
+   * @param type MessageType
+   * @param buttons buttons
+   * @param closable true | false
+   * @param from from extension
+   */
+  open<T = string>(rawMessage: string | React.ReactNode, type: MessageType, buttons?: string[], closable: boolean = true, from?: string): Promise<T | undefined> {
     let message = rawMessage;
     if (typeof rawMessage === 'string' && rawMessage.length > MAX_MESSAGE_LENGTH) {
       message = `${rawMessage.substr(0, MAX_MESSAGE_LENGTH)}...`;
     }
-
+    console.log(from);
+    if (from && typeof from === 'string') {
+      message = <OriginalMessage message={message} from={from} />;
+    }
     // 如果两秒内提示信息相同，则直接返回上一个提示
     if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message) {
       return Promise.resolve(undefined);
     }
-
+    console.log(message);
     this.preMessage = message;
     this.showTime = Date.now();
     const key = uuid();

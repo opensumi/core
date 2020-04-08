@@ -7,7 +7,7 @@ export interface IMessageService {
   info(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
   warning(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
   error(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
-  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[], closable?: boolean): Promise<T | undefined>;
+  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[], closable?: boolean, from?: string): Promise<T | undefined>;
   hide<T = string>(value?: T): void;
 }
 
