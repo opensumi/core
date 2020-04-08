@@ -6,7 +6,7 @@ export class Directory extends CompositeTreeNode {
   constructor(
     tree: ITree,
     public readonly parent: CompositeTreeNode | undefined,
-    public readonly uri: URI = new URI(''),
+    public uri: URI = new URI(''),
     public name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
@@ -23,7 +23,7 @@ export class File extends TreeNode {
   constructor(
     tree: ITree,
     public readonly parent: CompositeTreeNode | undefined,
-    public readonly uri: URI = new URI(''),
+    public uri: URI = new URI(''),
     public name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
