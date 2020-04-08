@@ -22,8 +22,8 @@ export class MainThreadMessage implements IMainThreadMessage {
 
   public dispose() {}
 
-  async $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<number | undefined> {
-    const action = options.modal ? await this.dialogService.open(message, type, actions) : await this.messageService.open(message, type, actions);
+  async $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[], from): Promise<number | undefined> {
+    const action = options.modal ? await this.dialogService.open(message, type, actions) : await this.messageService.open(message, type, actions, true, from);
     return action ? actions.indexOf(action) : undefined;
   }
 
