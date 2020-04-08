@@ -41,21 +41,14 @@ export function useDisposable(callback: () => IDisposable[] | void, deps: Depend
 }
 
 export function useMenus(
-  menuInitializer: IMenu | (() => IMenu),
+  menus: IMenu,
   separator?: IMenuSeparator,
   args?: any[],
 ) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
 
-  const initializer = useCallback(() => {
-    return typeof menuInitializer === 'function'
-      ? menuInitializer()
-      : menuInitializer;
-  }, []);
-
   useDisposable(() => {
     // initialize
-    const menus = initializer();
     updateMenuConfig(menus, args);
 
     function updateMenuConfig(menuArg: IMenu, argList?: any[]) {
@@ -74,7 +67,7 @@ export function useMenus(
         updateMenuConfig(menus, args);
       }),
     ];
-  }, [ initializer, args ]);
+  }, [ menus, args ]);
 
   return menuConfig;
 }

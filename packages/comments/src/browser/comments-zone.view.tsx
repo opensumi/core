@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Injectable, Autowired } from '@ali/common-di';
+import { INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import * as styles from './comments.module.less';
@@ -12,7 +12,7 @@ import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
 import { CommentsThread } from './comments-thread';
 import { IEditor } from '@ali/ide-editor';
-import { AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { CommentsZoneService } from './comments-zone.service';
 
 export interface ICommentProps {
   thread: CommentsThread;
@@ -21,31 +21,20 @@ export interface ICommentProps {
 
 const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   const {
-    contextKeyService,
     comments,
     threadHeaderTitle,
   } = thread;
+  const injector = useInjectable(INJECTOR_TOKEN);
+  const commentsZoneService: CommentsZoneService = injector.get(CommentsZoneService, [ thread ]);
   const [replyText, setReplyText] = React.useState('');
-  const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
-  const commentIsEmptyContext = React.useMemo(() => {
-    return contextKeyService.createKey('commentIsEmpty', !replyText);
-  }, []);
-  const commentThreadTitle = React.useMemo(() => {
-    return menuService.createMenu(
-      MenuId.CommentsCommentThreadTitle,
-      contextKeyService,
-    );
-  }, []);
-  const commentThreadContext = React.useMemo(() => {
-    return menuService.createMenu(
-      MenuId.CommentsCommentThreadContext,
-      contextKeyService,
-    );
-  }, []);
+
+  const commentThreadTitle = commentsZoneService.commentThreadTitle;
+  const commentThreadContext = commentsZoneService.commentThreadContext;
 
   function onChangeReply(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    commentIsEmptyContext.set(!event.target.value);
-    setReplyText(event.target.value);
+    const { value } = event.target;
+    setReplyText(value);
+    commentsZoneService.updateReplyText(value);
   }
 
   return (

@@ -1,14 +1,23 @@
 import {
-  IContextKey, IContextKeyService, Event, IEventBus,
-  ContextKeyChangeEvent, getDebugLogger, Emitter, IScopedContextKeyService,
+  IContextKey, IContextKeyService, Event,
+  ContextKeyChangeEvent, getDebugLogger, Emitter,
+  IScopedContextKeyService,
 } from '@ali/ide-core-browser';
+import { Disposable } from '@ali/ide-core-common';
 
 const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';
-abstract class BaseContextKeyService implements IContextKeyService {
+abstract class BaseContextKeyService extends Disposable implements IContextKeyService {
   protected _onDidChangeContext = new Emitter<ContextKeyChangeEvent>();
   readonly onDidChangeContext: Event<ContextKeyChangeEvent> = this._onDidChangeContext.event;
 
-  constructor(protected contextKeyService: monaco.contextKeyService.ContextKeyService) {}
+  constructor(protected contextKeyService: monaco.contextKeyService.ContextKeyService) {
+    super();
+    this.addDispose(
+      this.contextKeyService.onDidChangeContext((payload) => {
+        this._onDidChangeContext.fire(new ContextKeyChangeEvent(payload));
+      }),
+    );
+  }
 
   activeContext?: HTMLElement;
 
@@ -58,18 +67,6 @@ abstract class BaseContextKeyService implements IContextKeyService {
 }
 
 export class MonacoContextKeyService extends BaseContextKeyService implements IContextKeyService {
-  constructor(protected contextKeyService: monaco.contextKeyService.ContextKeyService, eventBus: IEventBus) {
-    super(contextKeyService);
-    this.contextKeyService.onDidChangeContext((payload) => {
-      this._onDidChangeContext.fire(new ContextKeyChangeEvent(payload));
-      /**
-       * @deprecated
-       * todo: 将 electron menu renderer 部分修改下，监听 this.onDidChangeContext 即可
-       */
-      eventBus.fire(new ContextKeyChangeEvent(payload));
-    });
-  }
-
   match(expression: string | monaco.contextkey.ContextKeyExpr | undefined, context?: HTMLElement): boolean {
     try {
       // 这里存在手动管理 context 的使用，可以直接在 contextService 上挂载 context 完成 context 传递
@@ -110,13 +107,6 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
 }
 
 class ScopedContextKeyService extends BaseContextKeyService implements IScopedContextKeyService {
-  constructor(protected contextKeyService: monaco.contextKeyService.ContextKeyService) {
-    super(contextKeyService);
-    this.contextKeyService.onDidChangeContext((payload) => {
-      this._onDidChangeContext.fire(new ContextKeyChangeEvent(payload));
-    });
-  }
-
   match(expression: string | monaco.contextkey.ContextKeyExpr | undefined): boolean {
     try {
       let parsed: monaco.contextkey.ContextKeyExpr | undefined;
