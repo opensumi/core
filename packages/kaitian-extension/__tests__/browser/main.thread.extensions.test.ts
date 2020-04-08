@@ -164,7 +164,7 @@ describe('MainThreadExtensions Test Suites', () => {
   beforeAll(async (done) => {
     injector.get(WorkbenchEditorService);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
-    extensionHostService = new ExtensionHostServiceImpl(rpcProtocolExt);
+    extensionHostService = new ExtensionHostServiceImpl(rpcProtocolExt, new MockLoggerManagerClient().getLogger());
     mainthreadService = injector.get(ExtensionService);
     rpcProtocolMain.set(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog, []));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [rpcProtocolMain]));
