@@ -107,6 +107,8 @@ export class FileTreeModelService {
 
   private _loadSnapshotReady: Promise<void>;
 
+  private _explorerStorage: IStorage;
+
   constructor() {
     this._whenReady = this.initTreeModel();
   }
@@ -143,6 +145,10 @@ export class FileTreeModelService {
     return this._pasteStore;
   }
 
+  get explorerStorage() {
+    return this._explorerStorage;
+  }
+
   get currentRelativeUriContextKey(): IContextKey<string> {
     if (!this._currentRelativeUriContextKey) {
       this._currentRelativeUriContextKey = this.fileTreeService.contextMenuContextKeyService.createKey('filetreeContextRelativeUri', '');
@@ -168,9 +174,9 @@ export class FileTreeModelService {
     // 根据是否为多工作区创建不同根节点
     const root = (await this.fileTreeService.resolveChildren())[0];
     this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
-    const explorerStorage: IStorage =  await this.storageProvider(STORAGE_NAMESPACE.EXPLORER);
+    this._explorerStorage =  await this.storageProvider(STORAGE_NAMESPACE.EXPLORER);
     // 获取上次文件树的状态
-    const snapshot = explorerStorage.get(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    const snapshot = this.explorerStorage.get(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     if (snapshot) {
       this._loadSnapshotReady = this._treeModel.loadTreeState(snapshot);
     }
@@ -179,11 +185,11 @@ export class FileTreeModelService {
     this._dndService = this.injector.get<any>(DragAndDropService, [this]);
     const treeStateWatcher = this._treeModel.getTreeStateWatcher();
     this.disposableCollection.push(treeStateWatcher.onDidChange(() => {
-      explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, treeStateWatcher.snapshot());
+      this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, treeStateWatcher.snapshot());
     }));
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed(() => {
       // 尝试恢复树
-      const snapshot = explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+      const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
       if (snapshot && snapshot.specVersion) {
         this._loadSnapshotReady = this._treeModel.loadTreeState(snapshot);
       }
@@ -264,9 +270,11 @@ export class FileTreeModelService {
     if (target) {
       if (this.selectedFiles.length > 0) {
         this.selectedFiles.forEach((file) => {
-          this.focusedDecoration.removeTarget(file);
           this.selectedDecoration.removeTarget(file);
         });
+      }
+      if (this.focusedFile) {
+        this.focusedDecoration.removeTarget(this.focusedFile);
       }
       this.selectedDecoration.addTarget(target);
       this.focusedDecoration.addTarget(target);
@@ -482,11 +490,23 @@ export class FileTreeModelService {
 
   // 命令调用
   async collapseAll() {
-    const size = this.treeModel.root.branchSize;
-    for (let index = 0; index < size; index++) {
-      const file = this.treeModel.root.getTreeNodeAtIndex(index) as Directory;
-      if (Directory.is(file) && file.expanded) {
-        await file.setCollapsed();
+    const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    if (snapshot && snapshot.expandedDirectories) {
+      // 查找当前状态下所有展开的目录
+      let buriedDir = snapshot.expandedDirectories.buried;
+      if (buriedDir.length > 0) {
+        // 排序，先从最深的目录开始折叠
+        buriedDir = buriedDir.sort((a, b) => {
+          return Path.pathDepth(a) - Path.pathDepth(b);
+        });
+        let path;
+        while (buriedDir.length > 0) {
+          path = buriedDir.pop();
+          const item = await this.treeModel.root.forceLoadTreeNodeAtPath(path);
+          if (item) {
+            await (item as Directory).setCollapsed();
+          }
+        }
       }
     }
   }
