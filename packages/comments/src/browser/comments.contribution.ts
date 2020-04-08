@@ -54,7 +54,13 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
     }, {
       execute: (threadTitle: ICommentThreadTitle) => {
         const { thread, widget } = threadTitle;
-        thread.toggle(widget.coreEditor);
+        if (!thread.comments.length) {
+          thread.dispose();
+        } else {
+          if (widget.isShow) {
+            widget.toggle();
+          }
+        }
       },
     });
   }
