@@ -5,7 +5,7 @@ const path = require('path');
 const tsConfigPath = path.join(__dirname, '../tsconfig.json');
 const distDir = path.join(__dirname, '../app/dist/extension')
 
-module.exports = {
+const nodeTarget = {
   entry: path.join(__dirname, '../src/extension/index'), //require.resolve('@ali/ide-kaitian-extension/lib/hosted/ext.process.js'),
   target: "node",
   output: {
@@ -51,3 +51,55 @@ module.exports = {
     moduleExtensions: ['-loader'],
   },
 };
+
+
+const workerTarget = {
+  entry: path.join(__dirname, '../src/extension/index.worker'), //require.resolve('@ali/ide-kaitian-extension/lib/hosted/ext.process.js'),
+  target: "webworker",
+  output: {
+    filename: 'index.worker.js',
+    path: distDir,
+  },
+  node: {
+    net: "empty"
+  },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
+    plugins: [new TsconfigPathsPlugin({
+      configFile: tsConfigPath,
+    })]
+  },
+  mode: 'development',
+  devtool: 'source-map',
+  module: {
+    // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
+    exprContextCritical: false,
+    rules: [{
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+        options: {
+          configFile: tsConfigPath,
+          compilerOptions: {
+            target: 'es5'
+          }
+        }
+      },
+    ],
+  },
+  externals:[
+    function(context, request, callback) {
+      if (['node-pty','oniguruma','nsfw', 'efsw', 'spdlog', 'getmac'].indexOf(request) !== -1){
+        return callback(null, 'commonjs ' + request);
+      }
+      callback();
+    }
+  ],
+  resolveLoader: {
+    modules: [path.join(__dirname, '../node_modules')],
+    extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
+    mainFields: ['loader', 'main'],
+    moduleExtensions: ['-loader'],
+  },
+}
+
+module.exports = [nodeTarget, workerTarget];

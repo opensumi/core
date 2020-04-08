@@ -6,6 +6,7 @@ import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 import { ExtensionCandiDate } from '@ali/ide-core-common';
 import treeKill = require('tree-kill');
+import { app } from 'electron';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
@@ -82,6 +83,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
           ...this.metadata,
           windowClientId: this.windowClientId,
           rpcListenPath: this.rpcListenPath,
+          workerHostEntry: this.appConfig.extensionWorkerEntry,
+          appPath: app.getAppPath(),
         });
       }
     };
