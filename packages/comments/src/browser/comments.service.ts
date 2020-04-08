@@ -191,7 +191,7 @@ export class CommentsService extends Disposable implements ICommentsService {
   @computed
   get commentsTreeNodes(): ICommentsTreeNode[] {
     let treeNodes: ICommentsTreeNode[] = [];
-    const commentThreads = [...this.threads.values()];
+    const commentThreads = [...this.threads.values()].filter((thread) => thread.comments.length);
     const threadUris = groupBy(commentThreads, (thread: ICommentsThread) => thread.uri);
     Object.keys(threadUris).forEach((uri) => {
       const threads: ICommentsThread[] = threadUris[uri];
