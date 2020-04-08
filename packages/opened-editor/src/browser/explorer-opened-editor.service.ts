@@ -10,6 +10,7 @@ import { IThemeService } from '@ali/ide-theme';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { IContextMenu, AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
+import uniq = require('lodash/uniq');
 
 import {
   OpenedEditorTreeDataProvider,
@@ -397,7 +398,8 @@ export class ExplorerOpenedEditorService {
   }
 
   private setExplorerTarbarBadge() {
-    const dirtyCount = this.nodes.filter((node) => !!node.dirty).length;
+    const dirtyNodes = this.nodes.filter((node) => !!node.dirty);
+    const dirtyCount = uniq(dirtyNodes.map((n) => n.uri.toString())).length;
     const handler = this.layoutService.getTabbarHandler(ExplorerContainerId);
     if (handler) {
       handler.setBadge(dirtyCount > 0 ? dirtyCount.toString() : '');
