@@ -53,9 +53,8 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       iconClass: getIcon('up'),
     }, {
       execute: (threadTitle: ICommentThreadTitle) => {
-        // console.log('threadTitle', threadTitle);
-        const { widget } = threadTitle;
-        widget.toggle();
+        const { thread, widget } = threadTitle;
+        thread.toggle(widget.coreEditor);
       },
     });
   }

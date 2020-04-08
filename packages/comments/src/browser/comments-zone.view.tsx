@@ -99,8 +99,11 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
 
   private _wrapper: HTMLDivElement;
 
-  constructor(protected editor: monaco.editor.ICodeEditor, thread: CommentsThread, public readonly coreEditor: IEditor) {
-    super(editor, thread.range);
+  private _editor: IEditor;
+
+  constructor(editor: IEditor, thread: CommentsThread) {
+    super(editor.monacoEditor, thread.range);
+    this._editor = editor;
     this._wrapper = document.createElement('div');
     this._isShow = !thread.isCollapsed;
     this._container.appendChild(this._wrapper);
@@ -111,6 +114,10 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
       </ConfigProvider>,
       this._wrapper,
     );
+  }
+
+  get coreEditor() {
+    return this._editor;
   }
 
   get isShow() {
