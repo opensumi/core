@@ -8,6 +8,7 @@ import debounce = require('lodash.debounce');
 import { TabBarRegistrationEvent, IMainLayoutService } from '../../common';
 import { AccordionService } from '../accordion/accordion.service';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
 export interface TabState {
@@ -76,6 +77,9 @@ export class TabbarService extends WithEventBus {
 
   @Autowired()
   private layoutState: LayoutState;
+
+  @Autowired(IProgressService)
+  private progressService: IProgressService;
 
   private accordionRestored: Set<string> = new Set();
 
@@ -230,6 +234,7 @@ export class TabbarService extends WithEventBus {
         this.state.set(info.options!.containerId, {hidden: prevState.hidden, priority: i});
       }
     }
+    // 注册切换tab显隐的菜单
     disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(containerId),
@@ -249,13 +254,18 @@ export class TabbarService extends WithEventBus {
       when: `${this.getTabInMoreCtxKey(containerId)} == true`,
       toggledWhen: `${getTabbarCtxKey(this.location)} == ${containerId}`,
     }));
+    // 注册激活快捷键
     disposables.push(this.registerActivateKeyBinding(componentInfo, options.fromExtension));
+    // 注册视图是否存在的contextKey
     const containerExistKey = this.contextKeyService.createKey(`workbench.${CONTAINER_NAME_MAP[this.location] || 'view'}.${containerId}`, true);
     disposables.push({
       dispose: () => {
         containerExistKey.set(false);
       },
     });
+    // 注册progressIndicator
+    disposables.push(this.progressService.registerProgressIndicator(containerId));
+
     this.eventBus.fire(new TabBarRegistrationEvent({tabBarId: containerId}));
     if (containerId === this.currentContainerId) {
       // 需要重新触发currentChange副作用

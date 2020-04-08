@@ -11,6 +11,8 @@ import { InlineActionBar, InlineMenuBar } from '@ali/ide-core-browser/lib/compon
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
 import { TitleBar } from '../accordion/titlebar.view';
 import { AccordionServiceFactory, AccordionService } from '../accordion/accordion.service';
+import { IProgressService } from '@ali/ide-core-browser/lib/progress';
+import { ProgressBar } from '@ali/ide-core-browser/lib/progress/progress-bar';
 
 export const BaseTabPanelView: React.FC<{
   PanelView: React.FC<{ component: ComponentRegistryInfo, side: string, titleMenu: IMenu }>;
@@ -52,6 +54,8 @@ const ContainerView: React.FC<{
     const accordionService: AccordionService = injector.get(AccordionServiceFactory)(containerId);
     accordionService.handleContextMenu(e);
   };
+  const progressService: IProgressService = useInjectable(IProgressService);
+  const indicator = progressService.getIndicator(containerId)!;
 
   return (
     <div className={styles.view_container}>
@@ -67,6 +71,7 @@ const ContainerView: React.FC<{
         </div>}
       </div>}
       <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
+        <ProgressBar progressModel={indicator.progressModel} />
         {CustomComponent ? <ConfigProvider value={configContext} >
           <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={CustomComponent} />
         </ConfigProvider> : <AccordionContainer views={component.views} containerId={component.options!.containerId} />}
@@ -82,7 +87,6 @@ const PanelView: React.FC<{
 }> = (({ component, titleMenu, side }) => {
   const contentRef = React.useRef<HTMLDivElement | null>();
   const titleComponent = component.options && component.options.titleComponent;
-
   return (
     <div className={styles.panel_container} ref={(ele) =>  contentRef.current = ele}>
       <div className={styles.float_container}>
@@ -110,6 +114,8 @@ const NextPanelView: React.FC<{
   const eventBus = useInjectable<IEventBus>(IEventBus);
   // 注入自定义视图 or 通过views注入视图
   const targetViewId = component.options!.component ? component.options!.containerId : component.views[0].id;
+  const progressService: IProgressService = useInjectable(IProgressService);
+  const indicator = progressService.getIndicator(component.options!.containerId)!;
   // TODO 底部支持多个视图的渲染
   React.useEffect(() => {
     let lastFrame: number | null;
@@ -143,7 +149,8 @@ const NextPanelView: React.FC<{
           <InlineMenuBar menus={tabbarService.commonTitleMenu} moreAtFirst />
         </div>
       </div>
-      <div ref={(ele) =>  contentRef.current = ele} className={styles.panel_wrapper}>
+      <div ref={(ele) => contentRef.current = ele} className={styles.panel_wrapper}>
+        <ProgressBar progressModel={indicator.progressModel} />
         <ComponentRenderer initialProps={{viewState, ...component.options!.initialProps}} Component={component.options!.component ? component.options!.component : component.views[0].component!} />
       </div>
     </div>

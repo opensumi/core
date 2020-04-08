@@ -40,6 +40,8 @@ import { ElectronCtxMenuRenderer, ElectronMenuBarService, IElectronMenuFactory, 
 import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
 import { SlotRendererContribution } from '../react-providers';
 import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolbar-action.service';
+import { IProgressService } from '../progress';
+import { ProgressService } from '../progress/progress.service';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -138,6 +140,10 @@ export function injectInnerProviders(injector: Injector) {
       useValue: {
         host: REPORT_HOST.BROWSER,
       },
+    },
+    {
+      token: IProgressService,
+      useClass: ProgressService,
     },
   ];
   injector.addProviders(...providers);

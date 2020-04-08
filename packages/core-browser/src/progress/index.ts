@@ -1,9 +1,19 @@
 import { IDisposable } from '..';
 
+export interface IProgressModel {
+  show: boolean;
+  fade: boolean;
+  worked: number;
+  total: number | undefined;
+}
+
+export const IProgressService = Symbol('IProgressService');
 /**
  * A progress service that can be used to report progress to various locations of the UI.
  */
 export interface IProgressService {
+  registerProgressIndicator(location: string, indicator?: IProgressIndicator): IDisposable;
+  getIndicator(location: string): IProgressIndicator | undefined;
   withProgress<R>(
     options: IProgressOptions | IProgressNotificationOptions | IProgressWindowOptions | IProgressCompositeOptions,
     task: (progress: IProgress<IProgressStep>) => Promise<R>,
@@ -12,7 +22,7 @@ export interface IProgressService {
 }
 
 export interface IProgressIndicator {
-
+  progressModel: IProgressModel;
   /**
 	 * Show progress customized with the provided flags.
 	 */

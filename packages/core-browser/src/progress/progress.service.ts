@@ -1,8 +1,9 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IProgressService, IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgressCompositeOptions, IProgress, IProgressStep, ProgressLocation, IProgressIndicator, IProgressRunner } from '.';
 import { Progress } from './progress';
-import { timeout, formatLocalize } from '..';
+import { timeout, formatLocalize, IDisposable } from '..';
 import { StatusBarEntry, StatusBarAlignment, IStatusBarService, StatusBarEntryAccessor } from '../services';
+import { ProgressIndicator } from './progress-indicator';
 
 @Injectable()
 export class ProgressService implements IProgressService {
@@ -10,11 +11,22 @@ export class ProgressService implements IProgressService {
   @Autowired(IStatusBarService)
   statusbarService: IStatusBarService;
 
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
   // 不同的视图会有不同的IProgressIndicator实例
   private progressIndicatorRegistry: Map<string, IProgressIndicator> = new Map();
 
-  registerProgressIndicator(location: string, indicator: IProgressIndicator) {
-    this.progressIndicatorRegistry.set(location, indicator);
+  registerProgressIndicator(location: string, indicator?: IProgressIndicator): IDisposable {
+    const targetIndicator = indicator || this.injector.get(ProgressIndicator);
+    this.progressIndicatorRegistry.set(location, targetIndicator);
+    return {
+      dispose: () => this.progressIndicatorRegistry.delete(location),
+    };
+  }
+
+  getIndicator(location: string) {
+    return this.progressIndicatorRegistry.get(location);
   }
 
   withProgress<R>(
@@ -22,6 +34,12 @@ export class ProgressService implements IProgressService {
     task: (progress: IProgress<IProgressStep>) => Promise<R>,
     onDidCancel?: ((choice?: number | undefined) => void) | undefined): Promise<R> {
     const location = options.location;
+    if (typeof location === 'string') {
+      if (this.progressIndicatorRegistry.get(location)) {
+        return this.withCompositeProgress(location, task, { ...options, location });
+      }
+      throw new Error(`Bad progress location: ${location}`);
+    }
     switch (location) {
       // case ProgressLocation.Notification:
       // 	return this.withNotificationProgress({ ...options, location }, task, onDidCancel);
@@ -120,7 +138,6 @@ export class ProgressService implements IProgressService {
     }
   }
 
-  // tslint:disable-next-line
   private withCompositeProgress<P extends Promise<R>, R = unknown>(location: string, task: (progress: IProgress<IProgressStep>) => P, options: IProgressCompositeOptions): P {
     const progressIndicator: IProgressIndicator | undefined = this.progressIndicatorRegistry.get(location);
     let progressRunner: IProgressRunner | undefined;

@@ -1,17 +1,14 @@
 import { Injectable } from '@ali/common-di';
-import { IProgressIndicator, IProgressRunner } from '.';
-
-export interface IProgressModel {
-  show: boolean;
-  worked: number;
-  total: number | undefined;
-}
+import { IProgressIndicator, IProgressRunner, IProgressModel } from '.';
+import { observable, action } from 'mobx';
 
 @Injectable({ multiple: true })
 export class ProgressIndicator implements IProgressIndicator {
 
-  progressModel: IProgressModel = {
+  @observable
+  public progressModel: IProgressModel = {
     show: false,
+    fade: false,
     worked: 0,
     total: undefined,
   };
@@ -35,7 +32,7 @@ export class ProgressIndicator implements IProgressIndicator {
         this.progressModel.show = true;
       },
       done: () => {
-        this.doDone(false);
+        this.doDone(true);
       },
     };
   }
@@ -43,45 +40,50 @@ export class ProgressIndicator implements IProgressIndicator {
   async showWhile(promise: Promise<unknown>, delay?: number | undefined): Promise<void> {
     this.progressModel.total = undefined;
     this.showOnceScheduler(delay);
-    this.progressModel.show = true;
     await promise;
-    this.doDone(true);
+    this.doDone(false);
   }
 
   private scheduled: NodeJS.Timeout;
   private showOnceScheduler(delay?: number) {
     if (typeof delay === 'number') {
       clearTimeout(this.scheduled);
-      this.scheduled = setTimeout(() => {
-        this.progressModel.show = true;
-      }, delay);
+      this.scheduled = setTimeout(this.on, delay);
     } else {
-      this.progressModel.show = true;
+      this.on();
     }
   }
 
   private doDone(delayed?: boolean) {
+    this.progressModel.fade = true;
     if (this.progressModel.total) {
       // 进度100%随后隐藏
       this.progressModel.worked = this.progressModel.total;
       if (delayed) {
-        setTimeout(() => this.off(), 200);
+        setTimeout(this.off, 800);
       } else {
         this.off();
       }
     } else {
       // 通过css淡出隐藏
       if (delayed) {
-        setTimeout(() => this.off(), 200);
+        setTimeout(this.off, 800);
       } else {
         this.off();
       }
     }
   }
 
+  @action.bound
   private off() {
     this.progressModel.total = undefined;
     this.progressModel.worked = 0;
     this.progressModel.show = false;
+    this.progressModel.fade = false;
+  }
+
+  @action.bound
+  private on() {
+    this.progressModel.show = true;
   }
 }
