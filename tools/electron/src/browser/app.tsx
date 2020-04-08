@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { App, BrowserModule, ClientApp, IClientAppOpts, electronEnv } from '@ali/ide-core-browser';
+import { App, BrowserModule, ClientApp, IClientAppOpts, electronEnv, URI } from '@ali/ide-core-browser';
 import { Injector, Domain } from '@ali/common-di';
 import { createSocketConnection } from '@ali/ide-connection';
 
@@ -30,6 +30,10 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   opts.coreExtensionDir = electronEnv.env.CORE_EXTENSION_DIR;
   opts.extensionDir = electronEnv.metadata.extensionDir;
   opts.injector = injector;
+  if (electronEnv.metadata.workerHostEntry) {
+    opts.extWorkerHost = URI.file(electronEnv.metadata.workerHostEntry).toString();
+  }
+
   const app = new ClientApp(opts);
 
   // 拦截reload行为

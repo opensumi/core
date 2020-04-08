@@ -39,6 +39,7 @@ export interface ElectronAppConfig {
    * extension-host入口
    */
   extensionEntry: string;
+  extensionWorkerEntry?: string;
 
   /**
    * webviewPreload入口

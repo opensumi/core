@@ -11,6 +11,7 @@ const electronApp = new ElectronMainApp({
   ],
   nodeEntry: join(__dirname, '../node/index.js'),
   extensionEntry: join(__dirname, '../extension/index.js'),
+  extensionWorkerEntry: join(__dirname, '../extension/index.worker.js'),
   webviewPreload: join(__dirname, '../webview/host-preload.js'),
   plainWebviewPreload: join(__dirname, '../webview/plain-preload.js'),
   browserPreload: join(__dirname, '../browser/preload.js'),
