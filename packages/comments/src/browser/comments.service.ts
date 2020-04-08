@@ -13,7 +13,7 @@ import {
   AppConfig,
 } from '@ali/ide-core-browser';
 import { IEditor, EditorType } from '@ali/ide-editor';
-import { IEditorDecorationCollectionService } from '@ali/ide-editor/lib/browser';
+import { IEditorDecorationCollectionService, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import {
   ICommentsService,
   CommentGutterType,
@@ -50,6 +50,9 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   @Autowired(ICommentsFeatureRegistry)
   private readonly commentsFeatureRegistry: ICommentsFeatureRegistry;
+
+  @Autowired(IEditorDocumentModelService)
+  private readonly documentService: IEditorDocumentModelService;
 
   private decorationChangeEmitter = new Emitter<URI>();
 
@@ -268,9 +271,13 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   private async getContributionRanges(uri: URI): Promise<IRange[]> {
+    const model = this.documentService.getModelReference(uri);
     const res = await Promise.all(this.contributions.getContributions().map((contribution) => {
-      return contribution.provideCommentingRanges(uri);
+      // 如果执行了 provideEditorDecoration, document model 肯定存在
+      return contribution.provideCommentingRanges(model?.instance!);
     }));
+    // 消除 document 引用
+    model?.dispose();
     // 拍平，去掉 undefined
     return flattenDeep(res).filter(Boolean);
   }
