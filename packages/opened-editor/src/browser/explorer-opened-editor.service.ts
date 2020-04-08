@@ -23,7 +23,6 @@ import * as styles from './index.module.less';
 export interface IOpenEditorStatus {
   focused?: boolean;
   selected?: boolean;
-  dirty?: boolean;
 }
 
 @Injectable()
@@ -153,7 +152,19 @@ export class ExplorerOpenedEditorService {
       if (treeItem instanceof EditorGroupTreeItem) {
         const editorGroupTreeItem = treeItem as EditorGroupTreeItem;
         const children = editorGroupTreeItem.group.resources.map((resource: IResource) => {
-          return this.openEditorTreeDataProvider.getTreeItem(resource, roots);
+          const node = this.openEditorTreeDataProvider.getTreeItem(resource, roots) as OpenedResourceTreeItem;
+          return {
+            id: node.id,
+            uri: node.uri,
+            label: node.label,
+            iconClass: node.icon,
+            depth: node.depth,
+            name: node.name,
+            order: node.order,
+            tooltip: node.tooltip,
+            parent: node.parent,
+            headIconClass: (node as OpenedResourceTreeItem).dirty ? styles.dirty_icon : '',
+          };
         });
         const parent = {
           id: editorGroupTreeItem.id,
@@ -171,16 +182,7 @@ export class ExplorerOpenedEditorService {
         treeData.push(parent);
         children.forEach((child: any) => {
           const node: TreeNode = {
-            id: child.id,
-            label: child.label,
-            tooltip: child.tooltip,
-            description: child.description,
-            icon: child.icon,
-            command: child.command,
-            uri: child.uri,
-            depth: child.depth,
-            order: child.order,
-            name: child.name,
+            ...child,
             parent,
           };
           const statusKey = this.getStatusKey(node);
@@ -189,7 +191,6 @@ export class ExplorerOpenedEditorService {
             treeData.push({
               ...node,
               ...status,
-              headIconClass: status.dirty ? styles.dirty_icon : '',
             });
           } else {
             treeData.push(node);
@@ -208,19 +209,10 @@ export class ExplorerOpenedEditorService {
           depth: openedResourceTreeItem.depth,
           order: openedResourceTreeItem.order,
           name: openedResourceTreeItem.name,
+          headIconClass: openedResourceTreeItem.dirty ? styles.dirty_icon : '',
           parent: undefined,
         };
-        const statusKey = this.getStatusKey(node);
-        const status = this.status.get(statusKey);
-        if (status) {
-          treeData.push({
-            ...node,
-            ...status,
-            headIconClass: status.dirty ? styles.dirty_icon : '',
-          });
-        } else {
-          treeData.push(node);
-        }
+        treeData.push(node);
       }
     });
     this.nodes = treeData;
@@ -229,16 +221,9 @@ export class ExplorerOpenedEditorService {
   @action
   async updateDecorations(payload: IResourceDecorationChangeEventPayload) {
     this.nodes = this.nodes.map((node) => {
-      const statusKey = this.getStatusKey(node);
       if (node.uri.toString() === payload.uri.toString()) {
-        const status = {
-          ...this.status.get(statusKey),
-          dirty: payload.decoration.dirty,
-        };
-        this.status.set(statusKey, status);
         return {
           ...node,
-          ...status,
           headIconClass: payload.decoration.dirty ? styles.dirty_icon : '',
         };
       }
@@ -288,7 +273,6 @@ export class ExplorerOpenedEditorService {
         return {
           ...node,
           ...status,
-          headIconClass: status.dirty ? styles.dirty_icon : '',
         };
       } else {
         return node;

@@ -14,6 +14,8 @@ import { IThemeService } from '@ali/ide-theme';
 import { MockThemeService } from '@ali/ide-theme/lib/common/mocks/theme.service';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import * as styles from '../src/browser/index.module.less';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 describe('ExplorerOpenedEditorService should be work', () => {
   let openEditorService: ExplorerOpenedEditorService;
@@ -56,6 +58,17 @@ describe('ExplorerOpenedEditorService should be work', () => {
         token: IMainLayoutService,
         useValue: {
           getTabbarHandler: fakeGetTabbarHandler,
+        },
+      },
+      {
+        token: IEditorDocumentModelService,
+        useValue: {
+          getModelReference: jest.fn(() => ({
+            instance: {
+              dirty: false,
+            },
+            dispose: () => {},
+          })),
         },
       },
     );
@@ -154,8 +167,7 @@ describe('ExplorerOpenedEditorService should be work', () => {
       }));
       // ts-jest 测试无法获取less的样式对象，用status来做额外判断
       const node = openEditorService.nodes[0];
-      const status = openEditorService.status.get(openEditorService.getStatusKey(node));
-      expect(status?.dirty).toBeTruthy();
+      expect(node?.headIconClass).toBe(styles.dirty_icon);
     });
 
     it('Select file should be work', async (done) => {
