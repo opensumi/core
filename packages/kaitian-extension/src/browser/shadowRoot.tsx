@@ -17,7 +17,7 @@ const ShadowRoot = ({ id, children, proxiedHead, shouldClone }: { id: string, ch
 
   useEffect(() => {
     if (shadowRootRef.current) {
-      const shadowRootElement = shadowRootRef.current.attachShadow({ mode: 'closed' });
+      const shadowRootElement = shadowRootRef.current.attachShadow({ mode: 'open' });
       if (proxiedHead) {
         // 如果是一个插件注册了多个视图，节点需要被 clone 才能生效，否则第一个视图 appendChild 之后节点就没了
         shadowRootElement.appendChild(shouldClone ? cloneNode(proxiedHead) : proxiedHead);
