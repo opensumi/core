@@ -652,6 +652,9 @@ export class FileTreeModelService {
           return false;
         }
         this.fileTreeService.moveNode(target.parent as Directory, from.toString(), to.toString());
+        // Cause the treeNode move event just changing path and name by default.
+        // We should update target uri to new uri by ourself.
+        target.uri = to;
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;
         const newUri = parent.uri.resolve(newName);
