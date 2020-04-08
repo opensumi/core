@@ -1,6 +1,6 @@
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
-import { MessageType, TreeNode, uuid } from '@ali/ide-core-browser';
+import { MessageType, TreeNode, uuid, getDebugLogger } from '@ali/ide-core-browser';
 import * as styles from '../editor/debug-hover.module.less';
 import * as debugConsoleStyles from '../view/debug-console.module.less';
 import * as React from 'react';
@@ -28,6 +28,8 @@ export class ExpressionContainer {
 
   public source: DebugProtocol.Source | undefined;
   public line: number | string | undefined;
+
+  public logger = getDebugLogger();
 
   constructor(options: ExpressionContainer.Options) {
     this.session = options.session;
@@ -249,7 +251,7 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
       this.indexedVariables = response.body.indexedVariables;
       this.session.fireDidChange();
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
     }
   }
 
@@ -284,10 +286,23 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
 
 export class DebugVirtualVariable extends ExpressionContainer {
 
+  private _id: string;
+  private _name: string;
+
+  get id(): string {
+    return this._id;
+  }
+
+  get name(): string {
+    return this._name;
+  }
+
   constructor(
     protected readonly options: VirtualVariableItem.Options,
   ) {
     super(options);
+    this._id = uuid();
+    this._name = options.name;
   }
 }
 
@@ -302,7 +317,7 @@ export class ExpressionItem extends ExpressionContainer {
   static notAvailable = 'not available';
 
   private _value = ExpressionItem.notAvailable;
-  private _id = '';
+  private _id;
 
   get name(): string {
     return this._value;
