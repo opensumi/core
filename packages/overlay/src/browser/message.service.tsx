@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Injectable } from '@ali/common-di';
-import { IMessageService, AbstractMessageService } from '../common';
+import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@ali/ide-components';
 import { Deferred, MessageType, uuid } from '@ali/ide-core-common';
 
@@ -23,7 +23,12 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     [MessageType.Error]: 20000,
   };
 
-  open<T = string>(message: string | React.ReactNode, type: MessageType, buttons?: string[], closable: boolean = true): Promise<T | undefined> {
+  open<T = string>(rawMessage: string | React.ReactNode, type: MessageType, buttons?: string[], closable: boolean = true): Promise<T | undefined> {
+    let message = rawMessage;
+    if (typeof rawMessage === 'string' && rawMessage.length > MAX_MESSAGE_LENGTH) {
+      message = `${rawMessage.substr(0, MAX_MESSAGE_LENGTH)}...`;
+    }
+
     // 如果两秒内提示信息相同，则直接返回上一个提示
     if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message) {
       return Promise.resolve(undefined);
