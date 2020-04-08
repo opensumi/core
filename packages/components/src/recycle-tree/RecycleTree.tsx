@@ -320,8 +320,16 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return node as TreeNode;
     }
     state.reverseStash();
-    await (node.parent as CompositeTreeNode).setExpanded(true);
-    this.listRef.current.scrollToItem(root.getIndexAtTreeNode(node), align);
+    let parent = node.parent;
+    while (parent) {
+      if (!(parent as CompositeTreeNode).expanded) {
+        await (parent as CompositeTreeNode).setExpanded(true);
+      }
+      parent = parent.parent;
+    }
+    Event.once(this.props.model.onChange)(() => {
+      this.listRef.current.scrollToItem(root.getIndexAtTreeNode(node), align);
+    });
     return node as TreeNode;
   }
 
