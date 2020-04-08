@@ -1,7 +1,7 @@
 import { Emitter, WithEventBus, OnEvent, EDITOR_COMMANDS, formatLocalize, uuid } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup, WorkbenchEditorService, ResourceDecorationChangeEvent, IResourceDecorationChangeEventPayload } from '@ali/ide-editor';
 import { Injectable, Autowired } from '@ali/common-di';
-import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent, EditorGroupChangeEvent, IEditorGroupChangePayload } from '@ali/ide-editor/lib/browser';
+import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent, EditorGroupChangeEvent, IEditorGroupChangePayload, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { TreeNode } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 
@@ -22,6 +22,9 @@ export class OpenedEditorTreeDataProvider extends WithEventBus {
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(IEditorDocumentModelService)
+  private editorDocumentModelService: IEditorDocumentModelService;
 
   constructor() {
     super();
@@ -65,7 +68,10 @@ export class OpenedEditorTreeDataProvider extends WithEventBus {
     if (isEditorGroup(element)) {
       return new EditorGroupTreeItem(element, this.id++, 0);
     } else {
-      return new OpenedResourceTreeItem(element, this.id++, 1, roots);
+      const docRef = this.editorDocumentModelService.getModelReference(element.uri);
+      const dirty = docRef?.instance.dirty;
+      docRef?.dispose();
+      return new OpenedResourceTreeItem(element, this.id++, 1, roots, !!dirty);
     }
   }
 
@@ -98,6 +104,7 @@ export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> 
     public order: number,
     public depth: number,
     public roots: FileStat[],
+    public dirty: boolean,
   ) {
     this.id = uuid();
   }

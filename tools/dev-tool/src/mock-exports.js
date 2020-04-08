@@ -5,4 +5,5 @@ module.exports = {
   'mod_cut' : 'mod_cut',
   'mod_dragging' : 'mod_dragging',
   'mod_dragover' : 'mod_dragover',
+  'dirty_icon': 'dirty_icon',
 };
