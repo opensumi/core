@@ -13,32 +13,26 @@ export class MainThreadExtensionLog implements IMainThreadExtensionLog {
   }
 
   $verbose(...args: any[]) {
-    console.log(args);
     return Promise.resolve();
   }
 
   $debug(...args: any[]) {
-    console.log(args);
     return Promise.resolve();
   }
 
   $log(...args: any[]) {
-    console.log(args);
     return Promise.resolve();
   }
 
   $warn(...args: any[]) {
-    console.log(args);
     return Promise.resolve();
   }
 
   $error(...args: any[]) {
-    console.log(args);
     return Promise.resolve();
   }
 
   $critical(...args: any[]) {
-    console.log(args);
     return Promise.resolve();
   }
 

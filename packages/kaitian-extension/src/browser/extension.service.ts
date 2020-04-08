@@ -638,8 +638,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   public async activeExtension(extension: IExtension) {
 
     // await this.ready.promise
-    const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
-    await proxy.$activateExtension(extension.id);
+    // only extension browser/worker extension when ext process has been disabled
+    if (!this.appConfig.noExtHost) {
+      const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
+      await proxy.$activateExtension(extension.id);
+    }
 
     const { extendConfig } = extension;
 
