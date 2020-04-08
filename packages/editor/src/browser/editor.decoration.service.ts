@@ -39,7 +39,8 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       key,
       property,
       dispose: () => {
-        if ( this.decorations.has(key!) ) {
+        if (key && this.decorations.has(key) ) {
+          property.dispose();
           this.decorations.delete(key!);
           this.eventBus.fire(new EditorDecorationTypeRemovedEvent(key!));
         }

@@ -158,9 +158,10 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     return 'textEditor-decoration-' + this.decorationIdCount;
   }
 
-  createTextEditorDecorationType(options: vscode.DecorationRenderOptions): vscode.TextEditorDecorationType {
+  createTextEditorDecorationType(extensionId: string, options: vscode.DecorationRenderOptions): vscode.TextEditorDecorationType {
     const resolved = TypeConverts.DecorationRenderOptions.from(options);
-    const key = this.getNextId();
+    // 添加 extensionId 以更好定位是哪个插件创建的decoration
+    const key = extensionId.replace(/\./g, '-') + '-' + this.getNextId();
     this._proxy.$createTextEditorDecorationType(key, resolved);
     return new ExtHostTextEditorDecorationType(key, this._proxy);
   }
