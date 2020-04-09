@@ -251,10 +251,12 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         emitter.fire({type: TreeNodeEvent.DidChangePath, args: [target]});
       },
       notifyWillChangeExpansionState: (target: ICompositeTreeNode, nowExpanded: boolean)   => {
-        emitter.fire({type: TreeNodeEvent.WillChangeExpansionState, args: [target, nowExpanded]});
+        const isVisible = this.isItemVisibleAtSurface(target);
+        emitter.fire({type: TreeNodeEvent.WillChangeExpansionState, args: [target, nowExpanded, isVisible]});
       },
       notifyDidChangeExpansionState: (target: ICompositeTreeNode, nowExpanded: boolean)  => {
-        emitter.fire({type: TreeNodeEvent.DidChangeExpansionState, args: [target, nowExpanded]});
+        const isVisible = this.isItemVisibleAtSurface(target);
+        emitter.fire({type: TreeNodeEvent.DidChangeExpansionState, args: [target, nowExpanded, isVisible]});
       },
       notifyDidChangeMetadata: (target: ITreeNode | ICompositeTreeNode, change: IMetadataChange)  => {
         emitter.fire({type: TreeNodeEvent.DidChangeMetadata, args: [target, change]});
@@ -446,6 +448,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         master._branchSize += branchSizeIncrease;
       }
     }
+    if (!this._children) {
+      return;
+    }
     let relativeInsertionIndex = this._children!.indexOf(item);
     const leadingSibling = this._children![relativeInsertionIndex - 1];
     if (leadingSibling) {
@@ -472,6 +477,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 直接调用此方法将不会触发onWillHandleWatchEvent和onDidHandleWatchEvent事件
    */
   public unlinkItem(item: ITreeNodeOrCompositeTreeNode, reparenting?: boolean): void {
+    if (!this._children) {
+      return;
+    }
     const idx = this._children!.indexOf(item);
     if (idx === -1) {
       return;
