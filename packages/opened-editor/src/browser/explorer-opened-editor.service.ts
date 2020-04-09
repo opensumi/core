@@ -25,6 +25,10 @@ export interface IOpenEditorStatus {
   selected?: boolean;
 }
 
+interface OpenedEditorTreeNode extends TreeNode {
+  dirty?: boolean;
+}
+
 @Injectable()
 export class ExplorerOpenedEditorService {
   @Autowired(OpenedEditorTreeDataProvider)
@@ -55,7 +59,7 @@ export class ExplorerOpenedEditorService {
   public themeService: IThemeService;
 
   @observable.shallow
-  nodes: any[] = [];
+  nodes: OpenedEditorTreeNode[] = [];
 
   @observable.shallow
   status: Map<string, IOpenEditorStatus> = new Map();
@@ -153,6 +157,7 @@ export class ExplorerOpenedEditorService {
         const editorGroupTreeItem = treeItem as EditorGroupTreeItem;
         const children = editorGroupTreeItem.group.resources.map((resource: IResource) => {
           const node = this.openEditorTreeDataProvider.getTreeItem(resource, roots) as OpenedResourceTreeItem;
+          const isDirty = (node as OpenedResourceTreeItem).dirty;
           return {
             id: node.id,
             uri: node.uri,
@@ -163,7 +168,8 @@ export class ExplorerOpenedEditorService {
             order: node.order,
             tooltip: node.tooltip,
             parent: node.parent,
-            headIconClass: (node as OpenedResourceTreeItem).dirty ? styles.dirty_icon : '',
+            dirty: isDirty,
+            headIconClass: isDirty ? styles.dirty_icon : '',
           };
         });
         const parent = {
@@ -198,6 +204,7 @@ export class ExplorerOpenedEditorService {
         });
       } else if (treeItem instanceof OpenedResourceTreeItem) {
         const openedResourceTreeItem = treeItem as OpenedResourceTreeItem;
+        const isDirty = openedResourceTreeItem.dirty;
         const node: TreeNode = {
           id: openedResourceTreeItem.id,
           label: openedResourceTreeItem.label,
@@ -209,7 +216,8 @@ export class ExplorerOpenedEditorService {
           depth: openedResourceTreeItem.depth,
           order: openedResourceTreeItem.order,
           name: openedResourceTreeItem.name,
-          headIconClass: openedResourceTreeItem.dirty ? styles.dirty_icon : '',
+          dirty: isDirty,
+          headIconClass: isDirty ? styles.dirty_icon : '',
           parent: undefined,
         };
         treeData.push(node);
@@ -222,8 +230,10 @@ export class ExplorerOpenedEditorService {
   async updateDecorations(payload: IResourceDecorationChangeEventPayload) {
     this.nodes = this.nodes.map((node) => {
       if (node.uri.toString() === payload.uri.toString()) {
+        const isDirty = payload.decoration.dirty;
         return {
           ...node,
+          dirty: isDirty,
           headIconClass: payload.decoration.dirty ? styles.dirty_icon : '',
         };
       }
