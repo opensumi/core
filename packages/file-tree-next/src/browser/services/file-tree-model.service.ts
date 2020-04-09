@@ -3,7 +3,7 @@ import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNode
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
-import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer } from '@ali/ide-core-browser';
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
@@ -29,6 +29,8 @@ export interface IFileTreeHandle extends IRecycleTreeHandle {
 export interface FileTreeValidateMessage extends PromptValidateMessage {
   value: string;
 }
+
+export const DEFAULT_FLUSH_DELAY = 200;
 
 @Injectable()
 export class FileTreeModelService {
@@ -109,6 +111,8 @@ export class FileTreeModelService {
   private _loadSnapshotReady: Promise<void>;
 
   private _explorerStorage: IStorage;
+
+  private flushLoadSnapshotDelayer = new ThrottledDelayer<void>(DEFAULT_FLUSH_DELAY);
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -194,10 +198,12 @@ export class FileTreeModelService {
     }));
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed(() => {
       // 尝试恢复树
-      const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
-      if (snapshot && snapshot.specVersion) {
-        this._loadSnapshotReady = this._treeModel.loadTreeState(snapshot);
-      }
+      this.flushLoadSnapshotDelayer.trigger(async () => {
+        const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+        if (snapshot && snapshot.specVersion) {
+          this._loadSnapshotReady = this._treeModel.loadTreeState(snapshot);
+        }
+      });
     }));
     this.disposableCollection.push(this.labelService.onDidChange(() => {
       // 当labelService注册的对应节点图标变化时，通知视图更新
@@ -208,6 +214,13 @@ export class FileTreeModelService {
     }));
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
       this.loadingDecoration.removeTarget(target);
+    }));
+    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.WillChangeExpansionState, (target) => {
+      // 确保文件折叠操作时不会受加载快照逻辑影响
+      // 影响主要来源于refresh操作
+      if (!this.flushLoadSnapshotDelayer.isTriggered()) {
+        this.flushLoadSnapshotDelayer.cancel();
+      }
     }));
   }
 
