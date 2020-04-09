@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Injectable } from '@ali/common-di';
 import { IMessageService, AbstractMessageService, MAX_MESSAGE_LENGTH } from '../common';
 import { notification, open } from '@ali/ide-components';
-import { Deferred, MessageType, uuid } from '@ali/ide-core-common';
+import { MessageType, uuid } from '@ali/ide-core-common';
 import * as styles from './message.module.less';
 
 const OriginalMessage = ({ message, from }: { message: string | React.ReactNode; from: string }) => {
@@ -50,7 +50,6 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     if (typeof rawMessage === 'string' && rawMessage.length > MAX_MESSAGE_LENGTH) {
       message = `${rawMessage.substr(0, MAX_MESSAGE_LENGTH)}...`;
     }
-    console.log(from);
     if (from && typeof from === 'string') {
       message = <OriginalMessage message={message} from={from} />;
     }
@@ -58,13 +57,11 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message) {
       return Promise.resolve(undefined);
     }
-    console.log(message);
     this.preMessage = message;
     this.showTime = Date.now();
     const key = uuid();
-    const deferred = new Deferred<T>();
-    const maybyDeferred = open(message, type, closable, key, buttons, deferred);
-    return maybyDeferred || Promise.resolve(undefined);
+    const promise = open<T>(message, type, closable, key, buttons);
+    return promise || Promise.resolve(undefined);
   }
 
   hide(): void {

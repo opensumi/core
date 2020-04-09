@@ -3,7 +3,7 @@ import * as clx from 'classnames';
 
 import './style.less';
 
-interface ITabsProps {
+export interface ITabsProps {
   className?: string;
   tabs: (string | React.ReactNode)[];
   value: number | string;
