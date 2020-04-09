@@ -36,18 +36,25 @@ textarea::placeholder {
 
 // 全局设置滚动条样式
 ::-webkit-scrollbar {
-  display: none;
-  height: @kt-scrollbar-width;
-  width: @kt-scrollbar-width;
+  background: transparent;
+  height: var(--kt-scrollbar-width);
+  width: var(--kt-scrollbar-width);
+}
+
+::-webkit-scrollbar:hover {
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbarSlider-background);
-  box-shadow: 1px 0 0 var(--scrollbar-shadow);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbarSlider-hoverBackground);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbarSlider-activeBackground);
 }
 
 ::-webkit-scrollbar-corner {
