@@ -1,13 +1,36 @@
 .recycle_tree {
+
   // 设置滚动条样式
-  &::-webkit-scrollbar {
-    display: block;
-    background: transparent;
+  &:hover {
+
+    .scrollbar_thumb_vertical,
+    .scrollbar_thumb_horizontal {
+      opacity: 1;
+    }
   }
-  &::-webkit-scrollbar-track-piece {
-    background: transparent;
+}
+
+.scrollbar_thumb_vertical,
+.scrollbar_thumb_horizontal {
+  opacity: 0;
+  transition: opacity .5s ease;
+  background: var(--scrollbarSlider-background);
+  width: var(--kt-scrollbar-width);
+
+  &:hover {
+    background: var(--scrollbarSlider-hoverBackground);
   }
-  &::-webkit-scrollbar-track {
-    background: transparent;
+
+  &:active {
+    background: var(--scrollbarSlider-activeBackground);
   }
+}
+
+.scrollbar_shadow_top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  box-shadow: var(--scrollbar-shadow) 0 5px 5px 1px;
 }
