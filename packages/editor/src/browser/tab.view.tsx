@@ -184,11 +184,11 @@ export const EditorActions = observer(({group, hasFocus}: {hasFocus: boolean, gr
 
   return <div className={styles.editor_actions}>
     {
-      hasFocus ? editorActionRegistry.getActions(group).map((visibleAction) => {
+      hasFocus ? editorActionRegistry.getActions(group).map((visibleAction, i) => {
         const item = visibleAction.item;
         const icon = <div className={classnames(styles.editor_action, item.iconClass)} title={item.title} key={item.title}
                     onClick={() => item.onClick(group.currentResource, group)} />;
-        return <div className={classnames(styles.editor_action_wrapper)} >
+        return <div className={classnames(styles.editor_action_wrapper)} key={'editor-action-' + i}>
           {icon}
           {
             (!item.tip || !visibleAction.tipVisible) ? null :
