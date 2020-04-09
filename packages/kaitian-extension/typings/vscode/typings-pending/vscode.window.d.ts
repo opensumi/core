@@ -12,8 +12,8 @@ declare module 'vscode' {
 	export namespace window {
 
 
-		
-		
+
+
 		/**
 		 * Shows a selection list of [workspace folders](#workspace.workspaceFolders) to pick from.
 		 * Returns `undefined` if no folder is open.
@@ -22,39 +22,6 @@ declare module 'vscode' {
 		 * @return A promise that resolves to the workspace folder or `undefined`.
 		 */
 		export function showWorkspaceFolderPick(options?: WorkspaceFolderPickOptions): Thenable<WorkspaceFolder | undefined>;
-
-		/**
-		 * ~~Show progress in the Source Control viewlet while running the given callback and while
-		 * its returned promise isn't resolve or rejected.~~
-		 *
-		 * @deprecated Use `withProgress` instead.
-		 *
-		 * @param task A callback returning a promise. Progress increments can be reported with
-		 * the provided [progress](#Progress)-object.
-		 * @return The thenable the task did return.
-		 */
-		export function withScmProgress<R>(task: (progress: Progress<number>) => Thenable<R>): Thenable<R>;
-
-		/**
-		 * Show progress in the editor. Progress is shown while running the given callback
-		 * and while the promise it returned isn't resolved nor rejected. The location at which
-		 * progress should show (and other details) is defined via the passed [`ProgressOptions`](#ProgressOptions).
-		 *
-		 * @param task A callback returning a promise. Progress state can be reported with
-		 * the provided [progress](#Progress)-object.
-		 *
-		 * To report discrete progress, use `increment` to indicate how much work has been completed. Each call with
-		 * a `increment` value will be summed up and reflected as overall progress until 100% is reached (a value of
-		 * e.g. `10` accounts for `10%` of work done).
-		 * Note that currently only `ProgressLocation.Notification` is capable of showing discrete progress.
-		 *
-		 * To monitor if the operation has been cancelled by the user, use the provided [`CancellationToken`](#CancellationToken).
-		 * Note that currently only `ProgressLocation.Notification` is supporting to show a cancel button to cancel the
-		 * long running operation.
-		 *
-		 * @return The thenable the task-callback returned.
-		 */
-		export function withProgress<R>(options: ProgressOptions, task: (progress: Progress<{ message?: string; increment?: number }>, token: CancellationToken) => Thenable<R>): Thenable<R>;
 
 		/**
 		 * Creates a [Terminal](#Terminal). The cwd of the terminal will be the workspace directory

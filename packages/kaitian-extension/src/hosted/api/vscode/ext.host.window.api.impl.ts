@@ -14,6 +14,7 @@ import { IExtension } from '../../../common';
 import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
 import { throwProposedApiError } from '../../../common/vscode/extension';
 import { IRPCProtocol } from '@ali/ide-connection';
+import { ExtHostProgress } from './ext.host.progress';
 
 export function createWindowApiFactory(
   extension: IExtension,
@@ -28,15 +29,18 @@ export function createWindowApiFactory(
   extHostOutput: IExtHostOutput,
   extHostTerminal: IExtHostTerminal,
   extHostWindow: ExtHostWindow,
+  extHostProgress: ExtHostProgress,
 ) {
   return {
-    withProgress(options, task) {
-      return Promise.resolve(task({
-        report(value) {
-          /* tslint:disable:no-console */
-          console.log(options, value);
-        },
-      }));
+    // @deprecated
+    withScmProgress<R>(task: (progress: vscode.Progress<number>) => Thenable<R>) {
+      return extHostProgress.withProgress(extension, { location: types.ProgressLocation.SourceControl }, (progress, token) => task({ report(n: number) { /*noop*/ } }));
+    },
+    withProgress<R>(options: vscode.ProgressOptions, task: (progress: vscode.Progress<{ message?: string; worked?: number }>, token: vscode.CancellationToken) => Thenable<R>) {
+      if (typeof options.location === 'object') {
+        throwProposedApiError(extension);
+      }
+      return extHostProgress.withProgress(extension, options, task);
     },
     createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem {
       return extHostStatusBar.createStatusBarItem(alignment, priority);

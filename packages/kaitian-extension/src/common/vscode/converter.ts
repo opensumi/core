@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
-import { URI, ISelection, IRange, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity } from '@ali/ide-core-common';
+import { URI, ISelection, IRange, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity, ProgressLocation as MainProgressLocation } from '@ali/ide-core-common';
 import { RenderLineNumbersType } from './editor';
 import { EndOfLineSequence, IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
@@ -279,10 +279,10 @@ export function toSelection(selection: model.Selection): types.Selection {
 export function fromSelection(selection: vscode.Selection): model.Selection {
   const { active, anchor } = selection;
   return {
-      selectionStartLineNumber: anchor.line + 1,
-      selectionStartColumn: anchor.character + 1,
-      positionLineNumber: active.line + 1,
-      positionColumn: active.character + 1,
+    selectionStartLineNumber: anchor.line + 1,
+    selectionStartColumn: anchor.character + 1,
+    positionLineNumber: active.line + 1,
+    positionColumn: active.character + 1,
   };
 }
 
@@ -553,16 +553,16 @@ export namespace TypeConverts {
     export function to(value: WorkspaceEditDto) {
       const result = new types.WorkspaceEdit();
       for (const edit of value.edits) {
-        if (Array.isArray(( edit as ResourceTextEditDto).edits)) {
+        if (Array.isArray((edit as ResourceTextEditDto).edits)) {
           result.set(
-            URI.revive(( edit as ResourceTextEditDto).resource),
-            ( edit as ResourceTextEditDto).edits.map(TextEdit.to) as types.TextEdit[],
+            URI.revive((edit as ResourceTextEditDto).resource),
+            (edit as ResourceTextEditDto).edits.map(TextEdit.to) as types.TextEdit[],
           );
         } else {
           result.renameFile(
-            URI.revive(( edit as ResourceFileEditDto).oldUri!),
-            URI.revive(( edit as ResourceFileEditDto).newUri!),
-            ( edit as ResourceFileEditDto).options,
+            URI.revive((edit as ResourceFileEditDto).oldUri!),
+            URI.revive((edit as ResourceFileEditDto).newUri!),
+            (edit as ResourceFileEditDto).options,
           );
         }
       }
@@ -783,4 +783,19 @@ export function viewColumnToResourceOpenOptions(viewColumn?: ViewColumn): { grou
     }
   }
   return result;
+}
+
+export namespace ProgressLocation {
+  export function from(loc: vscode.ProgressLocation | { viewId: string }): MainProgressLocation | string {
+    if (typeof loc === 'object') {
+      return loc.viewId;
+    }
+
+    switch (loc) {
+      case types.ProgressLocation.SourceControl: return MainProgressLocation.Scm;
+      case types.ProgressLocation.Window: return MainProgressLocation.Window;
+      case types.ProgressLocation.Notification: return MainProgressLocation.Notification;
+    }
+    throw new Error(`Unknown 'ProgressLocation'`);
+  }
 }

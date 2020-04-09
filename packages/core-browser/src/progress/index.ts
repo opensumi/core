@@ -1,4 +1,4 @@
-import { IDisposable } from '..';
+import { IDisposable, IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgress, IProgressStep, IProgressCompositeOptions } from '@ali/ide-core-common';
 
 export interface IProgressModel {
   show: boolean;
@@ -37,48 +37,6 @@ export interface IProgressIndicator {
   showWhile(promise: Promise<unknown>, delay?: number): Promise<void>;
 }
 
-export const enum ProgressLocation {
-  Explorer = 1,
-  Scm = 3,
-  Extensions = 5,
-  Window = 10,
-  Notification = 15,
-  Dialog = 20,
-}
-
-export interface IProgressOptions {
-  readonly location: ProgressLocation | string;
-  readonly title?: string;
-  readonly source?: string;
-  readonly total?: number;
-  readonly cancellable?: boolean;
-  readonly buttons?: string[];
-}
-
-export interface IProgressNotificationOptions extends IProgressOptions {
-  readonly location: ProgressLocation.Notification;
-  readonly primaryActions?: ReadonlyArray<IAction>;
-  readonly secondaryActions?: ReadonlyArray<IAction>;
-  readonly delay?: number;
-  readonly silent?: boolean;
-}
-
-export interface IProgressWindowOptions extends IProgressOptions {
-  readonly location: ProgressLocation.Window;
-  readonly command?: string;
-}
-
-export interface IProgressCompositeOptions extends IProgressOptions {
-  readonly location: ProgressLocation.Explorer | ProgressLocation.Extensions | ProgressLocation.Scm | ProgressLocation.Window | ProgressLocation.Notification | ProgressLocation.Dialog | string;
-  readonly delay?: number;
-}
-
-export interface IProgressStep {
-  message?: string;
-  increment?: number;
-  total?: number;
-}
-
 export interface IProgressRunner {
   total(value: number): void;
   worked(value: number): void;
@@ -90,17 +48,3 @@ export const emptyProgressRunner: IProgressRunner = Object.freeze({
   worked() { },
   done() { },
 });
-
-export interface IProgress<T> {
-  report(item: T): void;
-}
-
-export interface IAction extends IDisposable {
-  readonly id: string;
-  label: string;
-  tooltip: string;
-  class: string | undefined;
-  enabled: boolean;
-  checked: boolean;
-  run(event?: any): Promise<any>;
-}

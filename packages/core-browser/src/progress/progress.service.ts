@@ -1,7 +1,12 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IProgressService, IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgressCompositeOptions, IProgress, IProgressStep, ProgressLocation, IProgressIndicator, IProgressRunner } from '.';
-import { Progress } from './progress';
-import { timeout, formatLocalize, IDisposable } from '..';
+import { IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgressCompositeOptions, IProgress, IProgressStep, ProgressLocation, Progress, format } from '@ali/ide-core-common';
+import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
+import { timeout, IDisposable } from '..';
 import { StatusBarEntry, StatusBarAlignment, IStatusBarService, StatusBarEntryAccessor } from '../services';
 import { ProgressIndicator } from './progress-indicator';
 
@@ -46,11 +51,11 @@ export class ProgressService implements IProgressService {
       case ProgressLocation.Window:
         return this.withWindowProgress({ ...options, location }, task);
       case ProgressLocation.Explorer:
-        return this.withCompositeProgress('workbench.view.explorer', task, { ...options, location });
+        return this.withCompositeProgress('explorer', task, { ...options, location });
       case ProgressLocation.Scm:
-        return this.withCompositeProgress('workbench.view.scm', task, { ...options, location });
+        return this.withCompositeProgress('scm', task, { ...options, location });
       case ProgressLocation.Extensions:
-        return this.withCompositeProgress('workbench.view.extensions', task, { ...options, location });
+        return this.withCompositeProgress('extensions', task, { ...options, location });
       // case ProgressLocation.Dialog:
       // 	return this.withDialogProgress(options, task, onDidCancel);
       default:
@@ -100,18 +105,18 @@ export class ProgressService implements IProgressService {
 
       if (progressTitle && progressMessage) {
         // <title>: <message>
-        text = formatLocalize('progress.text2', '{0}: {1}', progressTitle, progressMessage);
-        title = options.source ? formatLocalize('progress.title3', '[{0}] {1}: {2}', options.source, progressTitle, progressMessage) : text;
+        text = format('{0}: {1}', progressTitle, progressMessage);
+        title = options.source ? format('[{0}] {1}: {2}', options.source, progressTitle, progressMessage) : text;
 
       } else if (progressTitle) {
         // <title>
         text = progressTitle;
-        title = options.source ? formatLocalize('progress.title2', '[{0}]: {1}', options.source, progressTitle) : text;
+        title = options.source ? format('[{0}]: {1}', options.source, progressTitle) : text;
 
       } else if (progressMessage) {
         // <message>
         text = progressMessage;
-        title = options.source ? formatLocalize('progress.title2', '[{0}]: {1}', options.source, progressMessage) : text;
+        title = options.source ? format('[{0}]: {1}', options.source, progressMessage) : text;
 
       } else {
         // no title, no message -> no progress. try with next on stack
