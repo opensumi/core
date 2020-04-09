@@ -15,6 +15,7 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import * as styles from '../file-tree-node.module.less';
 import { FileStat } from '@ali/ide-file-service';
+import { ISerializableState } from '@ali/ide-components/lib/recycle-tree/tree/model/treeState';
 
 export interface IParseStore {
   files: (File|Directory)[];
@@ -183,9 +184,13 @@ export class FileTreeModelService {
     this.initDecorations(root);
     // _dndService依赖装饰器逻辑加载
     this._dndService = this.injector.get<any>(DragAndDropService, [this]);
-    const treeStateWatcher = this._treeModel.getTreeStateWatcher();
+    // 等待初次加载完成后再初始化当前的treeStateWatcher, 只加载可见的节点
+    const treeStateWatcher = this._treeModel.getTreeStateWatcher(true);
     this.disposableCollection.push(treeStateWatcher.onDidChange(() => {
-      this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, treeStateWatcher.snapshot());
+      const currentSnapshot = treeStateWatcher.snapshot();
+      const surfaceDirSets = new Set(currentSnapshot.expandedDirectories.atSurface);
+      currentSnapshot.expandedDirectories.atSurface = Array.from(surfaceDirSets);
+      this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, currentSnapshot);
     }));
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed(() => {
       // 尝试恢复树
@@ -354,7 +359,8 @@ export class FileTreeModelService {
     this._focusedFile = undefined;
   }
 
-  toggleDirectory = (item: Directory) => {
+  toggleDirectory = async (item: Directory) => {
+    await this.fileTreeService.flushEventQueue();
     if (item.expanded) {
       this.fileTreeHandle.collapseNode(item);
     } else {
@@ -490,18 +496,19 @@ export class FileTreeModelService {
 
   // 命令调用
   async collapseAll() {
-    const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    await this.fileTreeService.flushEventQueue();
+    const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     if (snapshot && snapshot.expandedDirectories) {
       // 查找当前状态下所有展开的目录
-      let buriedDir = snapshot.expandedDirectories.buried;
-      if (buriedDir.length > 0) {
+      let surfaceDir = snapshot.expandedDirectories.atSurface;
+      if (surfaceDir.length > 0) {
         // 排序，先从最深的目录开始折叠
-        buriedDir = buriedDir.sort((a, b) => {
+        surfaceDir = surfaceDir.sort((a, b) => {
           return Path.pathDepth(a) - Path.pathDepth(b);
         });
         let path;
-        while (buriedDir.length > 0) {
-          path = buriedDir.pop();
+        while (surfaceDir.length > 0) {
+          path = surfaceDir.pop();
           const item = await this.treeModel.root.forceLoadTreeNodeAtPath(path);
           if (item) {
             await (item as Directory).setCollapsed();
@@ -509,6 +516,8 @@ export class FileTreeModelService {
         }
       }
     }
+    snapshot.expandedDirectories.atSurface = [];
+    this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, snapshot);
   }
 
   public expandAllCacheDirectory = async () => {
@@ -523,6 +532,7 @@ export class FileTreeModelService {
   }
 
   async deleteFileByUris(uris: URI[]) {
+    await this.fileTreeService.flushEventQueue();
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');

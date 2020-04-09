@@ -233,6 +233,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           this.onDidUpdateEmitter.fire();
         });
       }
+      // 清理cache，这里可以确保分支已更新完毕
       this.idxToRendererPropsCache.clear();
       // 更新批量更新返回的promise对象
       clearTimeout(timer);
@@ -626,11 +627,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private renderItem = ({ index, style }): JSX.Element => {
     const { children } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
-    if (!node) {
+    const { item, itemType: type, template } = node;
+    if (!item) {
       this.onErrorEmitter.fire({type: RenderErrorType.RENDER_ITEM, message: `RenderItem error at index ${index}`});
       return <div style={style}></div>;
     }
-    const { item, itemType: type, template } = node;
     return <div style={style}>
       <NodeRendererWrap
         item={item}
