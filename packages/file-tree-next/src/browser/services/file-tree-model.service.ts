@@ -864,6 +864,7 @@ export class FileTreeModelService {
       if (!this.fileTreeHandle) {
         return;
       }
+      await this.fileTreeService.flushEventQueue();
       const node = await this.fileTreeHandle.ensureVisible(path);
       if (node) {
         this.activeFileDecoration(node as File);
