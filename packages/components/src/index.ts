@@ -12,3 +12,4 @@ export * from './popover';
 export * from './message';
 export * from './tooltip';
 export * from './recycle-tree';
+export * from './common';

@@ -6,13 +6,7 @@ import 'antd/lib/notification/style/index.css';
 
 import { Button } from '../button';
 import * as styles from './notification.module.less';
-
-export enum MessageType {
-  Error,
-  Warning,
-  Info,
-  Empty,
-}
+import { MessageType } from '../common';
 
 const DURATION: { [type: number]: number } = {
   [MessageType.Info]: 15000,
