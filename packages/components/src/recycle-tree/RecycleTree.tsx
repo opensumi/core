@@ -66,6 +66,15 @@ export interface IRecycleTreeProps {
   filter?: string;
 }
 
+export interface IRecycleTreeError {
+  type: RenderErrorType;
+  message: string;
+}
+
+export enum RenderErrorType {
+  RENDER_ITEM,
+}
+
 export interface IRecycleTreeHandle {
   // 新建节点, 相关API在调用前需确保节点无再发生变化，否则易出错
   // 如：文件树中外部文件变化同步到Tree中事件还未处理结束，此时需等待事件处理结束
@@ -86,6 +95,8 @@ export interface IRecycleTreeHandle {
   onDidChangeModel(callback: (IModelChange) => void): IDisposable;
   // Tree更新事件
   onDidUpdate(callback: () => void): IDisposable;
+  // 监听渲染报错
+  onError(callback: (event: IRecycleTreeError) => void): IDisposable;
 }
 
 interface IFilterNodeRendererProps {
@@ -164,6 +175,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private listRef = React.createRef<FixedSizeList>();
   private disposables: DisposableCollection = new DisposableCollection();
 
+  private onErrorEmitter = new Emitter<IRecycleTreeError>();
   private onDidUpdateEmitter: Emitter<void> = new Emitter();
   private onDidModelChangeEmitter: Emitter<IModelChange> = new Emitter();
   // 索引应该比目标折叠节点索引+1，即位于折叠节点下的首个节点
@@ -415,6 +427,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         getModel: () => this.props.model,
         onDidChangeModel: this.onDidModelChangeEmitter.event,
         onDidUpdate: this.onDidUpdateEmitter.event,
+        onError: this.onErrorEmitter.event,
       };
 
       onReady(api);
@@ -511,7 +524,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (node && node.item) {
       return node.item.id;
     } else {
-      // console.error(`Index ${index} can not find`);
+      return index;
     }
   }
 
@@ -614,7 +627,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const { children } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
     if (!node) {
-      // console.error(`Index ${index} not found`);
+      this.onErrorEmitter.fire({type: RenderErrorType.RENDER_ITEM, message: `RenderItem error at index ${index}`});
+      return <div style={style}></div>;
     }
     const { item, itemType: type, template } = node;
     return <div style={style}>
