@@ -27,6 +27,7 @@ renderApp({
     }},
   },
   useCdnIcon: false,
+  useExperimentalShadowDom: true,
   // isSyncPreference: true,
   defaultPreferences: {
     'general.theme': 'ide-dark',
