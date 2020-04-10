@@ -306,7 +306,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderTextValue = () => {
-
     return (
       <div className={styles.preference_line} key={key}>
         <div className={styles.key}>
@@ -328,7 +327,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderEnumsValue = () => {
-
     if (!prop) {
       return <div></div>;
     }
@@ -377,13 +375,17 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderArrayValue = () => {
-
     let editEl;
     const addItem = () => {
       if (editEl.value) {
         const newValue = value.slice(0);
-        newValue.push(editEl.value);
+        const rawValue = editEl.value;
+        // FIXME: 这里的Input状态管理存在问题，后续修复，目前先解决样式问题
         editEl.value = '';
+        if (newValue.indexOf(rawValue) > -1) {
+          return;
+        }
+        newValue.push(rawValue);
         changeValue(key, newValue);
       }
     };
@@ -416,7 +418,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
           <ul className={styles.arr_list}>
             {items}
           </ul>
-          <div>
+          <div className={styles.preferences_flex_row}>
             <Input
               type='text'
               className={styles.text_control}
