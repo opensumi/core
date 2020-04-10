@@ -201,7 +201,6 @@ export class WorkspaceService implements IWorkspaceService {
     this._workspace = workspaceStat;
     if (this._workspace) {
       const uri = new URI(this._workspace.uri);
-      // TODO: 避免重复监听
       this.toDisposeOnWorkspace.push(await this.fileSystem.watchFileChanges(uri));
     }
     this.updateTitle();
@@ -214,7 +213,10 @@ export class WorkspaceService implements IWorkspaceService {
       this.setMostRecentlyUsedWorkspace(this._workspace.uri);
     }
     await this.updateRoots();
-    this.watchRoots();
+    if (!this._workspace?.isDirectory) {
+      // 工作区模式才需要额外监听根目录，否则会出现重复监听问题
+      this.watchRoots();
+    }
   }
 
   protected async updateRoots(): Promise<void> {
