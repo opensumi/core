@@ -8,6 +8,7 @@ export interface IWidget extends Disposable {
   shadowDynamic: number;
   element: HTMLDivElement;
   group: IWidgetGroup;
+  reuse: boolean;
   resize: (dynamic?: number) => void;
   increase: (increment: number) => void;
   dispose: () => void;

@@ -184,3 +184,10 @@ export function mixin(destination: any, source: any, overwrite: boolean = true):
   }
   return destination;
 }
+
+/**
+ * Converts null to undefined, passes all other values through.
+ */
+export function withNullAsUndefined<T>(x: T | null): T | undefined {
+	return x === null ? undefined : x;
+}

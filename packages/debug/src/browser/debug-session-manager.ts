@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
-import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection, IContextKeyService, formatLocalize } from '@ali/ide-core-browser';
+import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection, IContextKeyService, formatLocalize, Uri } from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
@@ -12,6 +12,7 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-session-contribution';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugModelManager } from './editor/debug-model-manager';
+import { ITaskService } from '@ali/ide-task';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillStartDebugSession extends WaitUntilEvent {
@@ -112,6 +113,9 @@ export class DebugSessionManager {
   @Autowired(DebugModelManager)
   protected readonly modelManager: DebugModelManager;
 
+  @Autowired(ITaskService)
+  protected readonly taskService: ITaskService;
+
   constructor() {
     this.init();
   }
@@ -133,6 +137,13 @@ export class DebugSessionManager {
     try {
       await this.fireWillStartDebugSession();
       const resolved = await this.resolveConfiguration(options);
+      if (resolved.configuration.preLaunchTask) {
+        const task = await this.taskService.getTask(Uri.parse(resolved.workspaceFolderUri!), resolved.configuration.preLaunchTask);
+        if (task) {
+          const result = await this.taskService.run(task);
+          console.log(result);
+        }
+      }
       const sessionId = await this.debug.createDebugSession(resolved.configuration);
       return this.doStart(sessionId, resolved);
     } catch (e) {

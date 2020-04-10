@@ -344,6 +344,12 @@
       ],
       "@ali/ide-file-tree-next/lib/*": [
         "../packages/file-tree-next/src/*"
+      ],
+      "@ali/ide-task": [
+        "../packages/task/src/index.ts"
+      ],
+      "@ali/ide-task/lib/*": [
+        "../packages/task/src/*"
       ]
     }
   }

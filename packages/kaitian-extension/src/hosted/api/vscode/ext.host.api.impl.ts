@@ -63,6 +63,7 @@ import { ExtHostConnection } from './ext.host.connection';
 import { ExtHostTerminal } from './ext.host.terminal';
 import { ExtHostProgress } from './ext.host.progress';
 import { ExtHostAppConfig } from '../../ext.process-base';
+import { ExtHostTasks, createTaskApiFactory } from './tasks/ext.host.tasks';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -97,6 +98,7 @@ export function createApiFactory(
   const extHostTerminal = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocol));
   const extHostProgress = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostProgress, new ExtHostProgress(rpcProtocol)) as ExtHostProgress;
 
+  const extHostTasks = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTasks, new ExtHostTasks(rpcProtocol, extHostTerminal, extHostWorkspace));
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension: IExtension) => {
@@ -108,14 +110,14 @@ export function createApiFactory(
         extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow, extHostProgress,
       ),
       languages: createLanguagesApiFactory(extHostLanguages, extension),
-      workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),
+      workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostTasks, extension),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
       debug: createDebugApiFactory(extHostDebug),
       version: '1.37.0',
       comment: {},
       languageServer: {},
       extensions: createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService),
-      tasks: {},
+      tasks: createTaskApiFactory(rpcProtocol, extensionService, extHostTasks, extension),
       scm: {
         get inputBox() {
           return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api

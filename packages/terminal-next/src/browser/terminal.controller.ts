@@ -295,7 +295,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const { group } = this._createOneGroup();
     // @ts-ignore
     this._clients.set(widgetId, undefined);
-    const widget = this.terminalView.createWidget(group, widgetId);
+    const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited);
     return this.clientFactory(widget, options, false);
   }
 

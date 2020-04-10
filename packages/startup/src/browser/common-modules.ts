@@ -47,6 +47,7 @@ import { TerminalNextModule } from '@ali/ide-terminal-next/lib/browser';
 import { CommentsModule } from '@ali/ide-comments/lib/browser';
 
 import { ClientAddonModule } from '@ali/ide-addons/lib/browser';
+import { TaskModule } from '@ali/ide-task/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
@@ -96,4 +97,5 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     // addons
     ClientAddonModule,
     CommentsModule,
+    TaskModule,
 ];

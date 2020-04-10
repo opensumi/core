@@ -333,7 +333,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     ) {
       return this.getExtensionViewModuleProxy(extension, extension.extendConfig.browser.componentId);
     } else {
-      this.logger.error(`Can not found any view component proxies config in extension ${extension.id}`);
+      this.logger.warn(`Can not found any view component proxies config in extension ${extension.id}`);
       return {};
     }
   }

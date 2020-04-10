@@ -139,6 +139,9 @@
       "path": "./references/tsconfig.markdown.json"
     },
     {
+      "path": "./references/tsconfig.task.json"
+    },
+    {
       "path": "./references/tsconfig.debug.json"
     },
     {
