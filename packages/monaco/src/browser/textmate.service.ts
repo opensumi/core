@@ -176,7 +176,15 @@ export class TextmateService extends WithEventBus {
           location: URI.file(grammar.path),
         };
       },
-      getInjections: (scopeName: string) => this.injections.get(scopeName)!,
+      getInjections: (scopeName: string) => {
+        const scopeParts = scopeName.split('.');
+        let injections: string[] = [];
+        for (let i = 1; i <= scopeParts.length; i++) {
+          const subScopeName = scopeParts.slice(0, i).join('.');
+          injections = [...injections, ...(this.injections.get(subScopeName) || [])];
+        }
+        return injections;
+      },
     });
     if (grammar.language) {
       this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName);
