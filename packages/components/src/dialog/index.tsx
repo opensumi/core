@@ -6,12 +6,7 @@ import * as styles from './styles.module.less';
 import { IconContext, getDefaultIcon } from '../icon';
 import { Button } from '../button';
 
-export enum MessageType {
-  Error,
-  Warning,
-  Info,
-  Empty,
-}
+import { MessageType } from '../common';
 
 export type ModalType = 'basic' | 'confirm' | 'info';
 

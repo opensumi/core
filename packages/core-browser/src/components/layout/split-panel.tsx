@@ -45,7 +45,7 @@ interface SplitChildProps {
   children?: ChildComponent | ChildComponent[];
 }
 
-interface SplitPanelProps extends SplitChildProps {
+export interface SplitPanelProps extends SplitChildProps {
   className?: string;
   direction?: Layout.direction;
   id: string;

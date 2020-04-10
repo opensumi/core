@@ -5,7 +5,7 @@ import * as classNames from 'classnames';
 import './style.less';
 import { Icon, getDefaultIcon } from '../icon';
 
-interface ISelectProps {
+export interface ISelectProps {
   className?: string;
   size?: 'large' | 'default' | 'small';
   loading?: boolean;

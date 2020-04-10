@@ -1,13 +1,15 @@
 
 import * as Components from '@ali/ide-core-browser/lib/components';
 
-import { URI, localize } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-core-browser';
+import { URI, localize, getIcon, ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-core-browser';
 
 import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
 
 import { PlainWebview } from '@ali/ide-webview';
+
+import { ToolBarPosition } from '@ali/ide-toolbar';
+import { EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 
 import { Injector } from '@ali/common-di';
 import { IThemeService, getColorRegistry } from '@ali/ide-theme';
@@ -18,7 +20,7 @@ import { IThemeService, getColorRegistry } from '@ali/ide-theme';
  * 1. browser只暴露getter，任何注册、调用等会产生副作用的行为全部放入逻辑层
  * @param injector
  */
-export function createBrowserApi(injector: Injector): any {
+export function createBrowserApi(injector: Injector) {
 
   return {
     // components
@@ -47,5 +49,11 @@ export function createBrowserApi(injector: Injector): any {
       }, {} as { [key: string]: string });
       return exportedColors;
     },
+
+    // enums
+    ROTATE_TYPE,
+    ANIM_TYPE,
+    ToolBarPosition,
+    EditorComponentRenderMode,
   };
 }
