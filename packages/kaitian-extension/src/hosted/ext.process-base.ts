@@ -52,7 +52,7 @@ export async function extProcessInit(config?: ExtProcessConfig) {
 
   extInjector.addProviders({
     token: AppConfig,
-    useValue: { extAppConfig, ...config},
+    useValue: { ...extAppConfig, ...config},
   });
 
   const {extProtocol: protocol, logger} = await initRPCProtocol(extInjector);
