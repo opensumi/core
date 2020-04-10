@@ -52,7 +52,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
       </div>
       <div className={styles.comment_body}>
       { comments.length > 0 ?
-        <CommentItem commentThreadContext={commentThreadContext} thread={thread} /> : (
+        <CommentItem widget={widget} commentThreadContext={commentThreadContext} thread={thread} /> : (
         <div>
           <CommentsTextArea
             focusDelay={100}
@@ -67,6 +67,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
               context={[
                 {
                   text: replyText,
+                  widget,
                   thread,
                 },
               ]}

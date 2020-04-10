@@ -102,6 +102,10 @@ export interface ICommentReply {
    * 回复里的内容
    */
   text: string;
+  /**
+   * 当前 widget
+   */
+  widget: ICommentsZoneWidget;
 }
 
 export interface ICommentsZoneWidget {

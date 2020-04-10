@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as styles from './comments.module.less';
-import { IThreadComment, ICommentsCommentTitle, CommentMode, ICommentReply, ICommentsCommentContext} from '../common';
+import { IThreadComment, ICommentsCommentTitle, CommentMode, ICommentReply, ICommentsCommentContext, ICommentsZoneWidget} from '../common';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { autorun } from 'mobx';
 import { observer } from 'mobx-react-lite';
@@ -147,7 +147,8 @@ const ReplyItem: React.FC<{
 export const CommentItem: React.FC<{
   thread: CommentsThread,
   commentThreadContext: IMenu,
-}> = observer(({ thread, commentThreadContext }) => {
+  widget: ICommentsZoneWidget,
+}> = observer(({ thread, commentThreadContext, widget }) => {
   const { readOnly, contextKeyService } = thread;
   const [ showReply, setShowReply ] = React.useState(false);
   const [ replyText, setReplyText ] = React.useState('');
@@ -255,6 +256,7 @@ export const CommentItem: React.FC<{
                   context={[{
                     thread,
                     text: replyText,
+                    widget,
                   }]}
                   type='button'
                   afterClick={() => {
