@@ -227,6 +227,10 @@ export interface CommentsPanelOptions {
    * 无内容显示的文案
    */
   defaultPlaceholder?: React.ReactNode | string;
+  /**
+   * 是否默认显示 底部 panel
+   */
+  defaultShow?: boolean;
 }
 
 export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];
