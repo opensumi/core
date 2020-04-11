@@ -2,7 +2,6 @@ import * as React from 'react';
 import * as styles from './comments.module.less';
 import { IThreadComment, ICommentsCommentTitle, CommentMode, ICommentReply, ICommentsCommentContext, ICommentsZoneWidget} from '../common';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
-import { autorun } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { CommentsTextArea } from './comments-textarea.view';
 import { AbstractMenuService, MenuId, IMenu } from '@ali/ide-core-browser/lib/menu/next';
@@ -14,7 +13,7 @@ const useCommentContext
   = (contextKeyService: IContextKeyService, comment: IThreadComment)
   : [ string,  React.Dispatch<React.SetStateAction<string>>, (event: React.ChangeEvent<HTMLTextAreaElement>) => void, IMenu, IMenu] => {
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
-  const { body } = comment;
+  const { body, contextValue } = comment;
   const [ textValue, setTextValue ] = React.useState('');
 
   // set textValue when body changed
@@ -45,11 +44,11 @@ const useCommentContext
     );
   }, []);
 
+  const itemCommentContext = React.useRef(commentContextService.createKey('comment', contextValue));
+
   React.useEffect(() => {
-    autorun(() => {
-      commentContextService.createKey('comment', comment.contextValue);
-    });
-  }, []);
+    itemCommentContext.current.set(contextValue);
+  }, [contextValue]);
 
   const onChangeTextArea = React.useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
     commentIsEmptyContext.set(!event.target.value);
