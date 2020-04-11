@@ -23,18 +23,21 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   const {
     comments,
     threadHeaderTitle,
+    contextKeyService,
   } = thread;
   const injector = useInjectable(INJECTOR_TOKEN);
   const commentsZoneService: CommentsZoneService = injector.get(CommentsZoneService, [ thread ]);
   const [replyText, setReplyText] = React.useState('');
-
+  const commentIsEmptyContext = React.useMemo(() => {
+    return contextKeyService.createKey<boolean>('commentIsEmpty', !replyText);
+  }, []);
   const commentThreadTitle = commentsZoneService.commentThreadTitle;
   const commentThreadContext = commentsZoneService.commentThreadContext;
 
   function onChangeReply(event: React.ChangeEvent<HTMLTextAreaElement>) {
     const { value } = event.target;
     setReplyText(value);
-    commentsZoneService.updateReplyText(value);
+    commentIsEmptyContext.set(!value);
   }
 
   return (
