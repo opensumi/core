@@ -11,6 +11,7 @@ import {
   IContextKeyService,
 } from '@ali/ide-core-browser';
 import { IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
+import { RecycleTreeProps } from '@ali/ide-core-browser/lib/components';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -231,6 +232,10 @@ export interface CommentsPanelOptions {
    * 是否默认显示 底部 panel
    */
   defaultShow?: boolean;
+  /**
+   * 评论列表默认设置
+   */
+  recycleTreeProps?: Partial<RecycleTreeProps>;
 }
 
 export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];

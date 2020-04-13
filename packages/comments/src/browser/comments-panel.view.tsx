@@ -108,6 +108,8 @@ export const CommentsPanel = observer<{ viewState: ViewState; className?: string
           foldable={true}
           outline={false}
           onSelect={(item) => handleSelect(item)}
+          leftPadding={20}
+          {...commentsPanelOptions.recycleTreeProps}
         />
       ) : (
         (!defaultPlaceholder || typeof defaultPlaceholder === 'string') ? <div className={styles.panel_placeholder}>{defaultPlaceholder || localize('comments.panel.placeholder')}</div> : defaultPlaceholder
