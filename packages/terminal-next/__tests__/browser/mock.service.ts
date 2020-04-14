@@ -117,7 +117,7 @@ export class MockSocketService implements ITerminalExternalService {
     const sock = new WebSocket(localhost(port));
     this._socks.set(sessionId, sock);
 
-    await delay(200);
+    await delay(1000);
 
     this._handleMethod(sessionId);
 
