@@ -743,6 +743,11 @@ export class FileTreeModelService {
     const handleFocus = async () => {
       this.fileTreeContextKey.filesExplorerInputFocused.set(true);
     };
+    const handleDestroy = () => {
+      // 在焦点元素销毁时，electron与chrome web上处理焦点的方式略有不同
+      // 这里需要明确将FileTree的explorerFocused设置为正确的false
+      this.fileTreeContextKey.explorerFocused.set(false);
+    };
     const handleChange = (currentValue) => {
       const validateMessage = this.validateFileName(promptHandle, currentValue);
       if (!!validateMessage) {
@@ -758,6 +763,9 @@ export class FileTreeModelService {
       promptHandle.onCommit(enterCommit);
       promptHandle.onBlur(blurCommit);
       promptHandle.onFocus(handleFocus);
+      promptHandle.onChange(handleChange);
+      promptHandle.onDestroy(handleDestroy);
+      promptHandle.onCancel(handleDestroy);
     }
   }
 
