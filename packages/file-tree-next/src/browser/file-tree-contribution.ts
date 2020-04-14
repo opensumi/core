@@ -514,7 +514,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.PASTE_FILE.id,
       keybinding: 'ctrlcmd+v',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`    });
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`});
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
