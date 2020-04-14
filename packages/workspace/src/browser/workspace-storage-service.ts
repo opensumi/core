@@ -12,8 +12,11 @@ export class WorkspaceStorageService implements IWorkspaceStorageService {
   private prefix: string;
   private initialized: Promise<void>;
 
-  @Autowired(LocalStorageService) protected localStorageService: LocalStorageService;
-  @Autowired(IWorkspaceService) protected workspaceService: IWorkspaceService;
+  @Autowired(LocalStorageService)
+  protected localStorageService: LocalStorageService;
+
+  @Autowired(IWorkspaceService)
+  protected workspaceService: IWorkspaceService;
 
   constructor() {
     this.init();

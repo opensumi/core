@@ -201,7 +201,6 @@ export class WorkspaceService implements IWorkspaceService {
     this._workspace = workspaceStat;
     if (this._workspace) {
       const uri = new URI(this._workspace.uri);
-      // TODO: 避免重复监听
       this.toDisposeOnWorkspace.push(await this.fileSystem.watchFileChanges(uri));
     }
     this.updateTitle();
@@ -214,7 +213,10 @@ export class WorkspaceService implements IWorkspaceService {
       this.setMostRecentlyUsedWorkspace(this._workspace.uri);
     }
     await this.updateRoots();
-    this.watchRoots();
+    if (!this._workspace?.isDirectory) {
+      // 工作区模式才需要额外监听根目录，否则会出现重复监听问题
+      this.watchRoots();
+    }
   }
 
   protected async updateRoots(): Promise<void> {
@@ -428,8 +430,8 @@ export class WorkspaceService implements IWorkspaceService {
    * @param {WorkspaceInput} [options]
    * @memberof WorkspaceService
    */
-  open(uri: URI, options?: WorkspaceInput): void {
-    this.doOpen(uri, options);
+  async open(uri: URI, options?: WorkspaceInput) {
+    await this.doOpen(uri, options);
   }
 
   /**
@@ -581,8 +583,8 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-  protected openWindow(uri: FileStat, options?: WorkspaceInput): void {
-    const workspacePath = new URI(uri.uri).path.toString();
+  protected openWindow(fileStat: FileStat, options?: WorkspaceInput): void {
+    const workspacePath = new URI(fileStat.uri).path.toString();
 
     if (this.shouldPreserveWindow(options)) {
       this.reloadWindow();
@@ -591,7 +593,7 @@ export class WorkspaceService implements IWorkspaceService {
         this.openNewWindow(workspacePath);
       } catch (error) {
         // Fall back to reloading the current window in case the browser has blocked the new window
-        this._workspace = uri;
+        this._workspace = fileStat;
         this.logger.error(error.toString());
       }
     }
@@ -741,6 +743,9 @@ export class WorkspaceService implements IWorkspaceService {
       const rootUri = root.uri;
       const isRelative = path && path.indexOf(rootUri) >= 0;
       if (isRelative) {
+        if (rootUri.slice(-1) === '/') {
+          return decodeURI(path.replace(rootUri, ''));
+        }
         return decodeURI(path.replace(rootUri + '/', ''));
       }
     }
