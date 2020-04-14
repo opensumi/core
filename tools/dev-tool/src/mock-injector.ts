@@ -67,7 +67,7 @@ export class MockInjector extends Injector {
   }
 }
 
-function mockService(target) {
+export function mockService(target) {
   return new Proxy(target, {
     get: (t, p) => {
       if (p === 'hasOwnProperty') {

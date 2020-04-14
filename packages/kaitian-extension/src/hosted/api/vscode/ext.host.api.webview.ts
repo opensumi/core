@@ -271,7 +271,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
   }
 
   public createWebview(
-    extensionLocation: Uri,
+    extensionLocation: Uri | undefined,
     viewType: string,
     title: string,
     showOptions: ViewColumn | { viewColumn: ViewColumn, preserveFocus?: boolean },
