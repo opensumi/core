@@ -241,7 +241,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     } else {
       clients.map((client) => {
         if (client) {
-          // TODO
+          client.attach();
         }
       });
     }
