@@ -6,7 +6,7 @@ import { WorkspaceModule } from '../../src/browser';
 import { FileStat } from '@ali/ide-file-service';
 import { LocalStorageService } from '@ali/ide-core-browser/lib/services';
 
-describe('WorkspaceService should be work while workspace was a single directory', () => {
+describe('WorkspaceStorageService should be work', () => {
   let workspaceStorageService: IWorkspaceStorageService;
   const workspaceUri = new URI('file://userhome/');
   const workspaceRoot = {
