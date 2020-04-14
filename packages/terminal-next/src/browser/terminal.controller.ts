@@ -1,60 +1,24 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { uuid, CommandService, OnEvent, WithEventBus, Emitter, Event, ILogger } from '@ali/ide-core-common';
-import { ResizeEvent, getSlotLocation, AppConfig, SlotLocation, IContextKeyService, PreferenceService, Delayer } from '@ali/ide-core-browser';
+import { WithEventBus, Emitter } from '@ali/ide-core-common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { IThemeService } from '@ali/ide-theme/lib/common';
-import { TerminalClient } from './terminal.client';
-import { WidgetGroup, Widget } from './component/resize.control';
-import { ITerminalExternalService, ITerminalController, ITerminalError, TerminalOptions, IWidget, TerminalInfo, ITerminalClient } from '../common';
-import { ITerminalTheme } from './terminal.theme';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
-import { TabManager } from './component/tab/manager';
-import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
-import { TerminalContextKey } from './terminal-contextkey';
+import { IThemeService } from '@ali/ide-theme';
+import { WorkbenchEditorService } from '@ali/ide-editor';
+import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, generate } from '../common';
+import { TerminalGroupViewService } from './terminal.view';
+import { TerminalContextKey } from './terminal.context-key';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
-  @observable
-  groups: WidgetGroup[] = [];
-
-  @observable
-  state: { index: number, focus: boolean } = { index: -1, focus: false };
-
-  @observable
-  searchState: { input: string, show: boolean } = { input: '', show: false };
-
-  @observable
-  errors: Map<string, ITerminalError> = new Map();
-
-  @observable
-  themeBackground: string;
-
-  @Autowired(ITerminalExternalService)
-  service: ITerminalExternalService;
-
-  @Autowired(CommandService)
-  commands: CommandService;
-
-  @Autowired(AppConfig)
-  private config: AppConfig;
-
-  @Autowired(IContextKeyService)
-  protected readonly contextKeyService: IContextKeyService;
-
-  @Autowired(ITerminalTheme)
-  private termTheme: ITerminalTheme;
+  protected _focus: boolean;
+  protected _tabbarHandler: TabBarHandler | undefined;
+  protected _clients: Map<string, ITerminalClient>;
+  protected _onDidOpenTerminal = new Emitter<ITerminalInfo>();
+  protected _onDidCloseTerminal = new Emitter<string>();
 
   @Autowired(IMainLayoutService)
   protected readonly layoutService: IMainLayoutService;
-
-  @Autowired(PreferenceService)
-  protected readonly preference: PreferenceService;
-
-  @Autowired(ILogger)
-  protected readonly logger: ILogger;
 
   @Autowired(IThemeService)
   protected readonly themeService: IThemeService;
@@ -62,572 +26,246 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(WorkbenchEditorService)
   protected readonly editorService: WorkbenchEditorService;
 
-  @Autowired(IFileServiceClient)
-  protected readonly fileService: IFileServiceClient;
+  @Autowired(ITerminalTheme)
+  protected readonly terminalTheme: ITerminalTheme;
 
-  @Autowired(IWorkspaceService)
-  protected readonly workspace: IWorkspaceService;
+  @Autowired(ITerminalGroupViewService)
+  protected readonly terminalView: TerminalGroupViewService;
 
-  @Autowired()
-  protected readonly tabManager: TabManager;
+  @Autowired(ITerminalClientFactory)
+  protected readonly clientFactory: ITerminalClientFactory;
+
+  @Autowired(ITerminalInternalService)
+  protected readonly service: ITerminalInternalService;
+
+  @Autowired(ITerminalErrorService)
+  protected readonly errorService: ITerminalErrorService;
 
   @Autowired(TerminalContextKey)
   protected readonly terminalContextKey: TerminalContextKey;
 
-  tabbarHandler: TabBarHandler | undefined;
+  @observable
+  themeBackground: string;
 
-  private _clientsMap = new Map<string, TerminalClient>();
-  private _focusedId: string;
-  private _focus: boolean;
-
-  private _onDidOpenTerminal = new Emitter<TerminalInfo>();
-  private _onDidCloseTerminal = new Emitter<string>();
-  private _onDidChangeActiveTerminal = new Emitter<string>();
-
-  get focusedTerm() {
-    return this._clientsMap.get(this._focusedId);
+  get clients() {
+    return this._clients;
   }
 
-  private _getGroup(index: number) {
-    if (index === -1 || index > (this.groups.length - 1)) {
-      return undefined;
-    }
-    return this.groups[index];
+  get focused() {
+    return this._focus;
   }
 
-  get currentGroup() {
-    return this._getGroup(this.state.index);
-  }
-
-  public async reconnect() {
-    let canReconnected = true;
-
-    if (this.service.check) {
-      canReconnected = await this.service.check(this.terminals.map((term) => term.id));
+  private _createClient(widget: IWidget, options = {}, autofocus = true) {
+    if (this._clients.has(widget.id)) {
+      return;
     }
 
-    if (!canReconnected) {
-      this.groups.forEach((_, index) => {
-        this._removeGroupByIndex(index);
-      });
+    const client = this.clientFactory(widget, options, autofocus);
+    this._clients.set(client.id, client);
 
-      this.groups = [];
-      this.createGroup(true);
-      this.addWidget();
-    } else {
-      this.terminals.map((term) => {
-        const client = this._clientsMap.get(term.id);
-        if (client) {
-          this.retryTerminalClient(client.widget.id);
-        }
-      });
-    }
-  }
-
-  private _createTerminalClientInstance(widget: IWidget, restoreId?: string, options = {}, autofocus = true) {
-    const client = new TerminalClient(
-      this.service,
-      this.workspace,
-      this.editorService,
-      this.fileService,
-      this.termTheme,
-      this.preference,
-      this,
-      widget, restoreId, options, autofocus,
-    );
     client.addDispose({
       dispose: () => {
+        this._clients.delete(client.id);
         this._onDidCloseTerminal.fire(client.id);
       },
     });
+
     this._onDidOpenTerminal.fire({
       id: client.id,
       name: client.name,
       isActive: false,
     });
+
+    this.terminalView.selectWidget(widget.id);
+
     return client;
   }
 
-  async recovery(history: any) {
+  private _disposeClient(widget: IWidget) {
+    const client = this.findClientFromWidgetId(widget.id);
+    client && client.dispose();
+  }
+
+  constructor() {
+    super();
+    this._focus = false;
+    this._clients = new Map();
+  }
+
+  private _createOneGroup() {
+    const index = this.terminalView.createGroup();
+    const group = this.terminalView.getGroup(index);
+    return { group, index };
+  }
+
+  private _reset() {
+    const { group } = this._createOneGroup();
+    const widget = this.terminalView.createWidget(group);
+    return widget;
+  }
+
+  async recovery(history: ITerminalBrowserHistory) {
     let currentWidgetId: string = '';
     const { groups, current } = history;
-    for (const widgets of (groups as any[])) {
-      const index = this.createGroup(false);
 
-      for (const item of (widgets as any[])) {
-        const widget = new Widget();
-        const client = this._createTerminalClientInstance(widget, item.clientId, {}, false);
-        try {
-          await client.attach(true, item.meta || '');
-          this._addWidgetToGroup(index, client);
+    for (const widgets of groups) {
+      const { group, index } = this._createOneGroup();
 
-          if (current === client.id) {
-            currentWidgetId = widget.id;
-          }
-        } catch { /** do nothing */ }
+      if (!widgets) {
+        continue;
       }
 
-      const group = this._getGroup(index);
+      for (const sessionId of widgets) {
+        if (!sessionId) {
+          continue;
+        }
 
-      if (group && group.length === 0) {
-        this._removeGroupByIndex(index);
-      } else {
-        this.tabManager.create();
+        /**
+         * widget 创建完成后会同时创建 client
+         */
+        const widget = this.terminalView.createWidget(group, sessionId);
+        const client = this.clientFactory(widget, {}, false);
+        this._clients.set(client.id, client);
+
+        /**
+         * 恢复旧的终端需要尝试预先连接后端
+         */
+        await client.attach();
+
+        /**
+         * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
+         */
+        if (!client.ready) {
+          this.terminalView.removeWidget(widget.id);
+        } else if (current === client.id) {
+          currentWidgetId = widget.id;
+        }
+      }
+
+      if (group.length === 0) {
+        this.terminalView.removeGroup(index);
       }
     }
 
     let selectedIndex = -1;
-    this.groups.forEach((group, index) =>
+    this.terminalView.groups.forEach((group, index) =>
       Array.from(group.widgetsMap.keys()).find((v) => v === currentWidgetId)
       && (selectedIndex = index));
 
     if (selectedIndex > -1 && currentWidgetId) {
-      this.selectGroup(selectedIndex);
-      this._focusedId = currentWidgetId;
-    }
-  }
-
-  private _checkIfNeedInitialize(): boolean {
-    let needed = true;
-    const group = this._getGroup(0);
-    if (group && group.length > 0) {
-      needed = false;
-    }
-    return needed;
-  }
-
-  private _isActivated() {
-    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal');
-    if (this.tabbarHandler) {
-      return this.tabbarHandler.isActivated();
-    } else {
-      return true;
-    }
-  }
-
-  private _getWidgetIdFromSession(sessionId: string): string {
-    const ret = Array.from(this._clientsMap.entries())
-      .filter(([_, client]) => client.id === sessionId);
-
-    if (ret && ret.length > 0) {
-      return ret[0][0];
-    } else {
-      throw new Error('session may not exist');
+      this.terminalView.selectWidget(currentWidgetId);
     }
   }
 
   firstInitialize() {
-    this.tabbarHandler = this.layoutService.getTabbarHandler('terminal')!;
-    this.themeBackground = this.termTheme.terminalTheme.background || '';
-    // 设置contextKey
+    this._tabbarHandler = this.layoutService.getTabbarHandler('terminal')!;
+    this.themeBackground = this.terminalTheme.terminalTheme.background || '';
     this.terminalContextKey.isTerminalFocused.set(this._focus);
     this.terminalContextKey.isTerminalViewInitialized.set(true);
 
-    if (this._isActivated()) {
-      if (this._checkIfNeedInitialize()) {
-        this.createGroup(true);
-        this.addWidget();
-        this.tabManager.create();
-      } else {
-        this.selectGroup(this.state.index > -1 ? this.state.index : 0);
-      }
-    }
-    this.tabManager.select(this.state.index);
-
-    this.addDispose(this.service.onError((error: ITerminalError) => {
-      const { id: sessionId, stopped, reconnected = true } = error;
-
-      this.logger.log('TermError: ', error);
-
-      if (!stopped) {
-        return;
-      }
-
-      let widgetId: string = '';
-      // 进行一次重试
-      try {
-        widgetId = this._getWidgetIdFromSession(sessionId);
-        if (reconnected) {
-          this.retryTerminalClient(widgetId);
-        } else {
-          this.errors.set(widgetId, error);
-        }
-      } catch {
-        if (widgetId) {
-          this.errors.set(widgetId, error);
-        }
-      }
+    this.addDispose(this.terminalView.onWidgetCreated((widget) => {
+      this._createClient(widget, {}, true);
     }));
 
-    if (this.tabbarHandler) {
-      this.addDispose(this.tabbarHandler.onActivate(() => {
-        if (!this.currentGroup) {
-          if (!this._getGroup(0)) {
-            this.tabManager.create();
-          } else {
-            this.selectGroup(0);
-          }
-        } else {
-          this.currentGroup.widgets.forEach((widget) => {
-            this.layoutTerminalClient(widget.id);
-          });
-        }
-      }));
-      this.addDispose(this.tabbarHandler.onInActivate(() => {
-        this.editorService.currentEditor && this.editorService.currentEditor.monacoEditor.focus();
-      }));
-    }
-
-    this.addDispose(this.themeService.onThemeChange((theme) => {
-      this._clientsMap.forEach((client) => {
-        client.updateTheme();
-        this.themeBackground = this.termTheme.terminalTheme.background || '';
-      });
-    }));
-
-    this.tabManager.onSelect(({ index }) => {
-      this.selectGroup(index);
-      if (this.currentGroup) {
-        this.focusWidget(this.currentGroup.widgets[0].id);
-      }
-    });
-
-    this.tabManager.onOpen(({ index }) => {
-      this.createGroup(true);
-      this.addWidget();
-      this.tabManager.select(index);
-      this.focus();
-    });
-
-    this.tabManager.onClose(({ index }) => {
-      const group = this._getGroup(index);
-      group && group.widgets.forEach((_, widgetIndex) => {
-        this._delWidgetByIndex(widgetIndex, index);
-      });
-      this._removeGroupByIndex(index);
-
-      if (this.groups.length - 1 > -1) {
-        this.tabManager.select(this.groups.length - 1);
-      } else {
-        this.state.index = -1;
-        this.layoutService.toggleSlot(SlotLocation.bottom);
-      }
-    });
-  }
-
-  private _removeWidgetFromWidgetId(widgetId: string) {
-    const group = this.currentGroup;
-
-    if (!group) {
-      throw new Error('group not found');
-    }
-
-    const widget = group.widgetsMap.get(widgetId);
-    const index = group.widgets.findIndex((w) => w === widget);
-    const term = this.focusedTerm;
-
-    if (term && widget) {
-      term.dispose();
-      this._delWidgetByIndex(index);
-
-      if (this.currentGroup && this.currentGroup.length === 0) {
-        this.tabManager.remove(this.state.index);
-      }
-    }
-  }
-
-  removeFocused() {
-    this._removeWidgetFromWidgetId(this._focusedId);
-
-    if (this.currentGroup &&
-      this.currentGroup.length > 0 &&
-      this.currentGroup.last) {
-      this.focusWidget(this.currentGroup.last.id);
-    } else {
-      this._focusedId = '';
-    }
-  }
-
-  snapshot(index: number) {
-    let name = '';
-    const group = this._getGroup(index);
-
-    if (group) {
-      const length = group.length;
-      group.widgets.forEach((widget, index) => {
-        const client = this._clientsMap.get(widget.id);
-        if (client) {
-          name += `${client.name}${index !== (length - 1) ? ', ' : ''}`;
-        }
-      });
-    }
-
-    return name || 'Terminal';
-  }
-
-  /** resize widget operations */
-
-  private _delWidgetByIndex(index: number, groupIndex: number = -1) {
-    const group = (groupIndex > -1) ? this._getGroup(groupIndex) : this.currentGroup;
-
-    if (!group) {
-      throw new Error('group not found');
-    }
-
-    const widget = group.widgets.find((_, i) => index === i);
-
-    if (!widget) {
-      throw new Error('widget not found');
-    }
-
-    const client = this._clientsMap.get(widget.id);
-
-    if (!client) {
-      throw new Error('session not found');
-    }
-
-    this._clientsMap.delete(widget.id);
-
-    client.dispose();
-    group.removeWidgetByIndex(index);
-  }
-
-  private _addWidgetToGroup(index: number, restoreClient?: TerminalClient, options?: TerminalOptions) {
-    const group = this._getGroup(index);
-
-    if (!group) {
-      throw new Error('group not found');
-    }
-
-    if (group.length === 4) {
-      throw new Error('group length maxium');
-    }
-
-    const widget = restoreClient ? (restoreClient.widget as Widget) : new Widget(uuid());
-    const client = restoreClient || this._createTerminalClientInstance(widget, undefined, options);
-    this._clientsMap.set(widget.id, client);
-    // 必须要延迟将 widget 添加到 group 的步骤
-    group.createWidget(widget);
-    return widget.id;
-  }
-
-  addWidget(restoreClient?: TerminalClient, options: TerminalOptions = {}) {
-    return this._addWidgetToGroup(this.state.index, restoreClient, options);
-  }
-
-  focusWidget(widgetId: string) {
-    const group = this.currentGroup;
-
-    if (!group) {
-      throw new Error('group not found');
-    }
-
-    const widget = group.widgetsMap.get(widgetId);
-    const client = this._clientsMap.get(widgetId);
-
-    if (client && widget) {
-      client.focus();
-      this._focusedId = widget.id;
-      this._onDidChangeActiveTerminal.fire(client.id);
-    }
-  }
-
-  removeWidget(widgetId: string) {
-    const group = this.currentGroup;
-
-    if (!group) {
-      throw new Error('group not found');
-    }
-
-    const widget = group.widgetsMap.get(widgetId);
-    const client = this._clientsMap.get(widgetId);
-
-    if (widget && client) {
-      this.focusWidget(widgetId);
-      this.removeFocused();
-      this._clientsMap.delete(widgetId);
-      client.dispose();
-    }
-  }
-
-  clearCurrentWidget() {
-    const client = this._clientsMap.get(this._focusedId);
-    if (client) {
-      client.clear();
-    }
-  }
-
-  /** end */
-
-  /** resize view group operation */
-
-  private _removeGroupByIndex(index: number) {
-    this.groups.splice(index, 1);
-  }
-
-  selectGroup(index: number) {
-    if (index < this.groups.length || index === -1) {
-      this.state.index = index;
-    }
-  }
-
-  createGroup(selected: boolean = true) {
-    const group = new WidgetGroup();
-    this.groups.push(group);
-    if (selected) {
-      this.selectGroup(this.groups.length - 1);
-    }
-    return this.groups.length - 1;
-  }
-
-  removeAllGroups() {
-    this.groups.forEach((group, groupIndex) => {
-      group.widgets.forEach((_, widgetIndex) => {
-        this._delWidgetByIndex(widgetIndex, groupIndex);
-      });
-    });
-    this.groups = observable.array([]);
-    this.state.index = -1;
-    this.tabManager.clear();
-    this.layoutService.toggleSlot(SlotLocation.bottom);
-  }
-
-  clearAllGroups() {
-    for (const [_, client] of this._clientsMap) {
-      client.clear();
-    }
-  }
-
-  /** end */
-
-  /** terminal client operations */
-
-  async drawTerminalClient(dom: HTMLDivElement, widgetId: string, restore: boolean = false, extra: string = '') {
-    let meta: string = extra;
-    const client = this._clientsMap.get(widgetId);
-
-    if (client) {
-      try {
-        meta = restore ? (meta || this.service.meta(widgetId)) : '';
-      } catch {
-        meta = '';
-        restore = false;
-      }
-      client.applyDomNode(dom);
-      try {
-        await client.attach(restore, meta);
-      } catch {
-        this.errors.set(widgetId, {
-          id: client.id,
-          stopped: true,
-          reconnected: false,
-          message: 'terminal attached error',
-        });
-      }
-    }
-  }
-
-  async retryTerminalClient(widgetId: string) {
-    let meta = '';
-    const last = this._clientsMap.get(widgetId);
-
-    if (!last) {
-      throw new Error('widget not found');
-    }
-
-    const widget = last.widget;
-    const dom = last.container.parentNode;
-
-    if (!dom) {
-      throw new Error('widget is not rendered');
-    }
-
-    const next = this._createTerminalClientInstance(widget, last.id, last.options);
-
-    try {
-      meta = this.service.meta(last.id);
-    } catch { /** do nothing */ }
-
-    /**
-     * 需要 retry 的时候，说明连接已经出现问题，
-     * 需要保留现场和 meta 信息方便重连
-     */
-    last.dispose(false);
-    this._clientsMap.set(widgetId, next);
-
-    /**
-     * 注意，这里先删除 widgetId 的原因是保证在后续渲染的时候，
-     * 这个 widget 不会是 display none 的状态，
-     * 防止 terminal fit 会出现错误。
-     */
-    this.errors.delete(widgetId);
-    await this.drawTerminalClient(dom as HTMLDivElement, widgetId, true, meta);
-
-    if (this._isActivated()) {
-      this.layoutTerminalClient(widgetId);
-    }
-  }
-
-  /**
-   * 对 layout terminal 的 canvas 高宽做更多的保护，
-   * 当这个终端不在视野重的时候，不做任何的 fit 操作，
-   * 避免当 dom 节点的高宽影响 xterm 的 fit 函数，
-   * 导致 canvas 渲染异常且无法恢复
-   *
-   * @param widgetId
-   */
-  async layoutTerminalClient(widgetId: string) {
-    const client = this._clientsMap.get(widgetId);
-    if (client && this._isActivated() &&
-      this.currentGroup && this.currentGroup.widgetsMap.has(widgetId)) {
-      if (client.notReadyToShow) {
-         const delayer = new Delayer<Promise<void>>(0);
-         await delayer.trigger(async () => {
-          client.hide();
-          await client.show();
-          client.layout();
+    this.addDispose(this.terminalView.onWidgetSelected(async (widget) => {
+      const client = this._clients.get(widget.id);
+      if (client) {
+        await client.attached.promise;
+        setTimeout(() => {
           client.focus();
-         });
-      } else {
-        client.layout();
-        client.focus();
+        }, 0);
+      }
+    }));
+
+    this.addDispose(this.terminalView.onWidgetDisposed((widget) => {
+      this._disposeClient(widget);
+    }));
+
+    this.addDispose(this.terminalView.onWidgetEmpty(() => {
+      this.hideTerminalPanel();
+    }));
+
+    this.addDispose(this.themeService.onThemeChange((_) => {
+      this._clients.forEach((client) => {
+        client.updateTheme();
+        this.themeBackground = this.terminalTheme.terminalTheme.background || '';
+      });
+    }));
+
+    if (this._tabbarHandler) {
+      this.addDispose(this._tabbarHandler.onActivate(() => {
+        if (this.terminalView.empty()) {
+          const current = this._reset();
+          this.terminalView.selectWidget(current.id);
+        } else {
+          const widget = this.terminalView.currentWidget;
+          this.terminalView.selectWidget(widget.id);
+        }
+      }));
+
+      this.addDispose(this._tabbarHandler.onInActivate(() => {
+        if (this.editorService.currentEditor) {
+          this.editorService.currentEditor.monacoEditor.focus();
+        }
+      }));
+
+      if (this._tabbarHandler.isActivated()) {
+        if (this.terminalView.empty()) {
+          const widget = this._reset();
+          this.terminalView.selectWidget(widget.id);
+        } else {
+          this.terminalView.selectGroup(this.terminalView.currentGroupIndex > -1 ? this.terminalView.currentGroupIndex : 0);
+        }
       }
     }
+
+    this.terminalContextKey.isTerminalViewInitialized.set(true);
   }
 
-  /** end */
+  async reconnect() {
+    const clients = Array.from(this._clients.values());
+    const canReconnected = await this.service.check(clients.map((client) => client.id));
 
-  /** layout resize event */
-
-  @OnEvent(ResizeEvent)
-  onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === getSlotLocation('@ali/ide-terminal-next', this.config.layoutConfig)) {
-      this.currentGroup && this.currentGroup.widgets.forEach((widget) => {
-        this.layoutTerminalClient(widget.id);
+    if (!canReconnected) {
+      this.terminalView.clear();
+      this._reset();
+    } else {
+      clients.map((client) => {
+        if (client) {
+          // TODO
+        }
       });
     }
   }
 
-  /** end */
+  focus() {
+    this._focus = true;
+    this.terminalContextKey.isTerminalFocused.set(true);
+  }
 
-  /** save widget ids and client ids */
+  blur() {
+    this._focus = false;
+    this.terminalContextKey.isTerminalFocused.set(false);
+  }
 
   toJSON() {
-    const cClient = this._clientsMap.get(this._focusedId);
-    const groups = this.groups.map((group) => {
-      return group.widgets.map((widget, index) => {
-        const client = this._clientsMap.get(widget.id);
+    const groups: string[][] = [];
+    const cClient = this._clients.get(this.terminalView.currentWidgetId);
+    this.terminalView.groups.forEach((wGroup) => {
+      const group: string[] = [];
+      wGroup.widgets.forEach((widget) => {
+        const client = this._clients.get(widget.id);
 
         if (!client) {
-          return null;
+          return;
         }
 
-        return {
-          clientId: client.id,
-          meta: this.service.meta(client.id),
-          order: index,
-        };
+        group.push(client.id);
       });
+
+      if (group.length > 0) {
+        groups.push(group);
+      }
     });
 
     return {
@@ -636,164 +274,28 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     };
   }
 
-  /** end */
-
-  /** terminal operation*/
-
-  get terminals() {
-    const infos: TerminalInfo[] = [];
-    this._clientsMap.forEach((client) => {
-      infos.push({
-        id: client.id,
-        name: client.name,
-        isActive: client.widget.id === this._focusedId,
-      });
-    });
-    return infos;
+  findClientFromWidgetId(widgetId: string) {
+    return this._clients.get(widgetId);
   }
 
-  createTerminal(options: TerminalOptions): ITerminalClient {
-    this.createGroup(true);
-    const widgetId = this.addWidget(undefined, options);
-    const client = this._clientsMap.get(widgetId);
-    this.tabManager.create(true, true);
-
-    if (!client) {
-      throw new Error('session not find');
-    }
-
-    const target = client;
-    const self = this;
-
-    return {
-      get id() { return target.id; },
-      get processId() { return target.pid; },
-      get name() { return target.name; },
-      show() {
-        if (self.tabbarHandler) {
-          self.tabbarHandler.activate();
-          self.showTerm(client.id, true);
-          self._focusedId = widgetId;
-        }
-      },
-      hide() { /** do nothing */ },
-      dispose() {
-        self._removeWidgetFromWidgetId(widgetId);
-      },
-    };
+  createClientWithWidget(options: TerminalOptions) {
+    const widgetId = generate();
+    const { group } = this._createOneGroup();
+    // @ts-ignore
+    this._clients.set(widgetId, undefined);
+    const widget = this.terminalView.createWidget(group, widgetId);
+    return this.clientFactory(widget, options, false);
   }
 
-  getProcessId(sessionId: string) {
-    return this.service.getProcessId(sessionId);
-  }
-
-  readonly onDidOpenTerminal: Event<TerminalInfo> = this._onDidOpenTerminal.event;
-  readonly onDidCloseTerminal: Event<string> = this._onDidCloseTerminal.event;
-  readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
-
-  showTerm(clientId: string, preserveFocus: boolean = true) {
-    let index: number = -1;
-
-    const widgetId = this._getWidgetIdFromSession(clientId);
-    const client = this._clientsMap.get(widgetId);
-
-    this.groups.forEach((group, i) => {
-      if (group.widgetsMap.has(widgetId)) {
-        index = i;
-      }
-    });
-
-    if (index > -1 && client) {
-      this._focusedId = widgetId;
-      this.selectGroup(index);
-
-      if (preserveFocus) {
-        client.attach();
-        client.focus();
-      }
-    }
-
-    if (this.tabbarHandler) {
-      this.tabbarHandler.activate();
+  showTerminalPanel() {
+    if (this._tabbarHandler) {
+      this._tabbarHandler.activate();
     }
   }
 
-  isTermActive(clientId: string) {
-    const current = this._clientsMap.get(this._focusedId);
-
-    return !!(current && (current.id === clientId));
-  }
-
-  hideTerm(_: string) {
-    // TODO: why should do this,
-  }
-
-  removeTerm(clientId: string) {
-    const widgetId = this._getWidgetIdFromSession(clientId);
-    this._removeWidgetFromWidgetId(widgetId);
-  }
-
-  sendText(id: string, text: string, addNewLine = true) {
-    this.service.sendText(id, `${text}${addNewLine ? '\r' : ''}`);
-  }
-
-  /** end */
-
-  /** search */
-
-  openSearchInput() {
-    this.searchState.show = true;
-  }
-
-  closeSearchInput() {
-    this.searchState.show = false;
-  }
-
-  clearSearchInput() {
-    this.searchState.input = '';
-  }
-
-  search() {
-    const group = this.currentGroup;
-
-    if (!group) {
-      throw new Error('group not found');
+  hideTerminalPanel() {
+    if (this._tabbarHandler && this._tabbarHandler.isActivated()) {
+      this._tabbarHandler.deactivate();
     }
-
-    const client = this._clientsMap.get(this._focusedId);
-
-    if (!client) {
-      throw new Error('client not found');
-    }
-
-    client.findNext(this.searchState.input);
   }
-
-  /** end */
-
-  /** client */
-
-  getCurrentClient<T>() {
-    return this._clientsMap.get(this._focusedId) as any;
-  }
-
-  /** end */
-
-  /** focus */
-
-  get isFocus() {
-    return this._focus;
-  }
-
-  focus() {
-    this._focus = true;
-    this.terminalContextKey.isTerminalFocused.set(this._focus);
-  }
-
-  blur() {
-    this._focus = false;
-    this.terminalContextKey.isTerminalFocused.set(this._focus);
-  }
-
-  /** end */
 }

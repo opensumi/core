@@ -6,7 +6,7 @@ import * as httpProxy from 'http-proxy';
 import { Terminal } from 'xterm';
 import { createProxyServer, createWsServer } from './proxy';
 import { TerminalController } from '../../src/browser/terminal.controller';
-import { createTerminalController } from './controller.inject';
+import { createTerminalController } from './inject';
 import { existPtyProcessId } from './proxy';
 import { TerminalClient } from '../../src/browser/terminal.client';
 

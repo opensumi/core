@@ -1,9 +1,9 @@
 import { Event } from '@ali/ide-core-common';
-import { IWidgetGroup } from './resize';
-import { ITerminalError } from './error';
-import { TerminalOptions, TerminalInfo } from './pty';
+import { IWidgetGroup, IWidget } from './resize';
+import { ITerminalClient } from './client';
+import { TerminalOptions } from './pty';
 
-export interface ITerminalClient {
+export interface ITerminalExternalClient {
   readonly id: string;
   readonly processId: number | undefined;
   readonly name: string;
@@ -14,56 +14,58 @@ export interface ITerminalClient {
 
 export const ITerminalController = Symbol('ITerminalController');
 export interface ITerminalController {
-  currentGroup: IWidgetGroup | undefined;
-  groups: IWidgetGroup[];
-  state: { index: number };
-  searchState: { input: string, show: boolean };
-  errors: Map<string, ITerminalError>;
-  reconnect(): Promise<void>;
-  recovery(history: any): Promise<void>;
+  focused: boolean;
+  clients: Map<string, ITerminalClient>;
   firstInitialize(): void;
-  removeFocused(): void;
-  snapshot(index: number): string;
-  themeBackground: string;
-
-  addWidget(client?: any): string;
-  focusWidget(widgetId: string): void;
-  removeWidget(widgetId: string): void;
-  clearCurrentWidget(): void;
-
-  createGroup(selected?: boolean): number;
-  selectGroup(index: number): void;
-  removeAllGroups(): void;
-  clearAllGroups(): void;
-
-  drawTerminalClient(dom: HTMLDivElement, termId: string, restore?: boolean, meta?: string): Promise<void>;
-  retryTerminalClient(widgetId: string): Promise<void>;
-  layoutTerminalClient(widgetId: string): Promise<void>;
-  toJSON(): { groups: any[] };
-
-  terminals: TerminalInfo[];
-
-  createTerminal(options: TerminalOptions): ITerminalClient;
-  getProcessId(sessionId: string): Promise<number>;
-
-  isTermActive(clientId: string): boolean;
-  showTerm(id: string, preserveFocus?: boolean): void;
-  hideTerm(id: string): void;
-  removeTerm(id?: string): void;
-  sendText(id: string, text: string, addNewLine?: boolean): void;
-
-  openSearchInput(): void;
-  closeSearchInput(): void;
-  clearSearchInput(): void;
-  search(): void;
-
-  onDidChangeActiveTerminal: Event<string>;
-  onDidCloseTerminal: Event<string>;
-  onDidOpenTerminal: Event<TerminalInfo>;
-
-  getCurrentClient<T>(): T | undefined;
-
-  isFocus: boolean;
+  recovery(history: ITerminalBrowserHistory): Promise<void>;
+  reconnect(): Promise<void>;
   focus(): void;
   blur(): void;
+  findClientFromWidgetId(widgetId: string): ITerminalClient | undefined;
+  createClientWithWidget(options: TerminalOptions): ITerminalClient;
+  showTerminalPanel(): void;
+  hideTerminalPanel(): void;
+  toJSON(): ITerminalBrowserHistory;
+}
+
+export const ITerminalSearchService = Symbol('ITerminalSearchService');
+export interface ITerminalSearchService {
+  show: boolean;
+  input: string;
+  open(): void;
+  clear(): void;
+  close(): void;
+  search(): void;
+}
+
+export const ITerminalGroupViewService = Symbol('ITerminalGroupViewService');
+export interface ITerminalGroupViewService {
+  currentGroupIndex: number;
+  currentGroupId: string;
+  currentWidgetId: string;
+  currentGroup: IWidgetGroup;
+  currentWidget: IWidget;
+  groups: IWidgetGroup[];
+
+  createGroup(): number;
+  getGroup(index: number): IWidgetGroup;
+  selectGroup(index: number): void;
+  removeGroup(index: number): void;
+
+  createWidget(group: IWidgetGroup, id?: string): IWidget;
+  getWidget(id: string): IWidget;
+  selectWidget(widgetId: string): void;
+  removeWidget(id: string): void;
+
+  onWidgetCreated: Event<IWidget>;
+  onWidgetSelected: Event<IWidget>;
+  onWidgetDisposed: Event<IWidget>;
+  onWidgetEmpty: Event<void>;
+
+  clear(): void;
+}
+
+export interface ITerminalBrowserHistory {
+  current: string | undefined;
+  groups: string[][];
 }

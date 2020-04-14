@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable } from '@ali/ide-core-browser';
-import { ITerminalController, TerminalInfo } from '@ali/ide-terminal-next/lib/common';
+import { ITerminalApiService, ITerminalInfo } from '@ali/ide-terminal-next';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 
 import { ILogger } from '@ali/ide-core-browser';
@@ -11,8 +11,9 @@ import { ILogger } from '@ali/ide-core-browser';
 export class MainThreadTerminal implements IMainThreadTerminal {
   private readonly proxy: IExtHostTerminal;
 
-  @Autowired(ITerminalController)
-  private controller: ITerminalController;
+  @Autowired(ITerminalApiService)
+  private terminalApi: ITerminalApiService;
+
   private disposable = new Disposable();
 
   @Autowired(ILogger)
@@ -29,20 +30,20 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   private bindEvent() {
-    this.disposable.addDispose(this.controller.onDidChangeActiveTerminal((id) => {
+    this.disposable.addDispose(this.terminalApi.onDidChangeActiveTerminal((id) => {
       this.proxy.$onDidChangeActiveTerminal(id);
     }));
-    this.disposable.addDispose(this.controller.onDidCloseTerminal((id) => {
+    this.disposable.addDispose(this.terminalApi.onDidCloseTerminal((id) => {
       this.proxy.$onDidCloseTerminal(id);
     }));
-    this.disposable.addDispose(this.controller.onDidOpenTerminal((info: TerminalInfo) => {
+    this.disposable.addDispose(this.terminalApi.onDidOpenTerminal((info: ITerminalInfo) => {
       this.proxy.$onDidOpenTerminal(info);
     }));
   }
 
   private initData() {
-    const terminals = this.controller.terminals;
-    const infoList: TerminalInfo[] = [];
+    const terminals = this.terminalApi.terminals;
+    const infoList: ITerminalInfo[] = [];
 
     terminals.forEach((term) => {
       infoList.push({
@@ -56,27 +57,27 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   $sendText(id: string, text: string, addNewLine?: boolean) {
-    return this.controller.sendText(id, text, addNewLine);
+    return this.terminalApi.sendText(id, text, addNewLine);
   }
 
   $show(id: string, preserveFocus?: boolean) {
-    return this.controller.showTerm(id, preserveFocus);
+    return this.terminalApi.showTerm(id, preserveFocus);
   }
 
   $hide(id: string) {
-    return this.controller.hideTerm(id);
+    return this.terminalApi.hideTerm(id);
   }
 
   $dispose(id: string) {
-    return this.controller.removeTerm(id);
+    return this.terminalApi.removeTerm(id);
   }
 
   $getProcessId(id: string) {
-    return this.controller.getProcessId(id);
+    return this.terminalApi.getProcessId(id);
   }
 
   async $createTerminal(options: vscode.TerminalOptions) {
-    const terminal = await this.controller.createTerminal(options);
+    const terminal = await this.terminalApi.createTerminal(options);
     if (!terminal) {
       return this.logger.error('创建终端失败');
     }

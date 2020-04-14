@@ -1,17 +1,55 @@
+import { Terminal } from 'xterm';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { isElectronEnv, uuid, Emitter, ILogger, Event } from '@ali/ide-core-common';
-import { Emitter as Dispatcher, Disposable as DispatcherDisposable } from 'event-kit';
+import { isElectronEnv, Emitter, ILogger, Event } from '@ali/ide-core-common';
+import { Emitter as Dispatcher } from 'event-kit';
 import { electronEnv, AppConfig } from '@ali/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
-import { Terminal } from 'xterm';
-import { ITerminalExternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath  } from '../common';
+import { generate, ITerminalExternalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection  } from '../common';
 
 export interface EventMessage {
   data: string;
 }
 
-function oneStringType(sessionId: string, type: string) {
-  return `${sessionId}/${type}`;
+@Injectable()
+export class TerminalInternalService implements ITerminalInternalService {
+  @Autowired(ITerminalExternalService)
+  service: ITerminalExternalService;
+
+  generateSessionId() {
+    return this.service.generateSessionId ? this.service.generateSessionId() : generate();
+  }
+
+  getOptions() {
+    return this.service.getOptions ? this.service.getOptions() : {};
+  }
+
+  check(sessionIds: string[]) {
+    return this.service.check ? this.service.check(sessionIds) : Promise.resolve(true);
+  }
+
+  attach(sessionId: string, xterm: Terminal, options = {}, type: string) {
+    return this.service.attach(sessionId, xterm, options, type);
+  }
+
+  sendText(id: string, message: string) {
+    return this.service.sendText(id, message);
+  }
+
+  resize(sessionId: string, cols: number, rows: number) {
+    return this.service.resize(sessionId, cols, rows);
+  }
+
+  disposeById(sessionId: string) {
+    return this.service.disposeById(sessionId);
+  }
+
+  getProcessId(sessionId: string) {
+    return this.service.getProcessId(sessionId);
+  }
+
+  onError(handler: (error: ITerminalError) => void) {
+    return this.service.onError(handler);
+  }
 }
 
 @Injectable()
@@ -35,70 +73,44 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
   public onError: Event<ITerminalError> = this._onError.event;
 
   private _dispatcher = new Dispatcher();
-  private _info = new Map<string, { pid: number, name: string }>();
+
+  generateSessionId() {
+    if (isElectronEnv()) {
+      return electronEnv.metadata.windowClientId + '|' + generate();
+    } else {
+      const WSChanneHandler = this.injector.get(IWSChanneHandler);
+      return WSChanneHandler.clientId + '|' + generate();
+    }
+  }
 
   async check(ids: string[]) {
     const ensureResult = await this.service.ensureTerminal(ids);
     return ensureResult;
   }
 
-  getOptions() {
-    return {};
-  }
-
-  intro(id: string) {
-    return this._info.get(id);
-  }
-
-  makeId(createdId?: string) {
-    if (isElectronEnv()) {
-      return electronEnv.metadata.windowClientId + '|' + (createdId || uuid());
-    } else {
-      const WSChanneHandler = this.injector.get(IWSChanneHandler);
-      return WSChanneHandler.clientId + '|' + (createdId || uuid());
-    }
-  }
-
-  meta() {
-    return '';
-  }
-
-  restore() {
-    return 'KAITIAN.RESTORE';
-  }
-
-  private _createCustomWebSocket(sessionId: string) {
-    const disposeMap = new Map<string, DispatcherDisposable>();
+  private _createCustomWebSocket(sessionId: string, name: string, pid: number): ITerminalConnection {
     return {
-      addEventListener: (type: string, handler: (value: any) => void) => {
-        const dispose = this._dispatcher.on(oneStringType(sessionId, type), handler);
-        disposeMap.set(type, dispose);
+      pid,
+      name,
+      readonly: false,
+      onData: (handler: (value: string | ArrayBuffer) => void) => {
+        return this._dispatcher.on(sessionId, handler);
       },
-      removeEventListener: (type: string) => {
-        const dispose = disposeMap.get(type);
-        if (dispose && !dispose.disposed) {
-          dispose.dispose();
-        }
-      },
-      send: (message: string) => {
+      sendData: (message: string) => {
         this.sendText(sessionId, message);
       },
-      readyState: 1,
     };
   }
 
-  async attach(sessionId: string, term: Terminal, restore: boolean, __: string, attachMethod: (s: WebSocket) => void, options = {}, type?: string) {
-    if (restore) {
-      throw new Error('default terminal service not support restore');
-    }
-    const handler = this._createCustomWebSocket(sessionId);
-    attachMethod(handler as any);
-    const info = await this.service.create(sessionId, term.rows, term.cols, {
+  async attach(sessionId: string, term: Terminal, options = {}, type?: string) {
+    const { name, pid } = await this.service.create(sessionId, term.rows, term.cols, {
       cwd: this.config.workspaceDir,
       shellPath: type ? `/bin/${type}` : undefined,
       ...options,
     });
-    this._info.set(sessionId, info);
+    const connection = this._createCustomWebSocket(sessionId, name, pid);
+
+    return connection;
   }
 
   private _sendMessage(sessionId: string, json: any, requestId?: number) {
@@ -123,12 +135,12 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
     });
   }
 
-  async getProcessId(sessionId: string) {
-    return this.service.getProcessId(sessionId);
-  }
-
   disposeById(sessionId: string) {
     this.service.disposeById(sessionId);
+  }
+
+  async getProcessId(sessionId: string) {
+    return this.service.getProcessId(sessionId);
   }
 
   /**
@@ -138,20 +150,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
    * @param type
    * @param message
    */
-  onMessage(sessionId: string, type: string, message: string) {
-    this._dispatcher.emit(oneStringType(sessionId, type), {
-      data: message,
-    });
-  }
-
-  dispose() {
-    Array.from(this._info.keys()).forEach((sessionId) => {
-      this._onError.fire({
-        id: sessionId,
-        reconnected: false,
-        stopped: true,
-        message: 'disconnected',
-      });
-    });
+  onMessage(sessionId: string, message: string) {
+    this._dispatcher.emit(sessionId, message);
   }
 }

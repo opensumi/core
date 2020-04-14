@@ -94,6 +94,9 @@
       "path": "./references/tsconfig.explorer.json"
     },
     {
+      "path": "./references/tsconfig.terminal-next.json"
+    },
+    {
       "path": "./references/tsconfig.file-tree.json"
     },
     {
@@ -128,9 +131,6 @@
     },
     {
       "path": "./references/tsconfig.electron-basic.json"
-    },
-    {
-      "path": "./references/tsconfig.terminal-next.json"
     },
     {
       "path": "./references/tsconfig.storage.json"

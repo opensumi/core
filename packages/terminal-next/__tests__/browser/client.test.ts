@@ -9,23 +9,45 @@ import {
   defaultName,
   defaultPid,
 } from './mock.service';
-import { TerminalClient } from '../../src/browser/terminal.client';
+import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient } from '../../src/common';
 import { delay } from './utils';
-import { createClient } from './controller.inject';
+import { injector } from './inject';
 
 describe('Terminal Client', () => {
-  let client: TerminalClient;
+  let client: ITerminalClient;
   let proxy: httpProxy;
   let server: WebSocket.Server;
+  let view: ITerminalGroupViewService;
+  let factory: ITerminalClientFactory;
 
   beforeAll(() => {
+    factory = injector.get(ITerminalClientFactory);
+    view = injector.get(ITerminalGroupViewService);
     server = createWsServer();
     proxy = createProxyServer();
-    client = createClient();
+    client = factory();
   });
 
   it('Not Ready To Show it', () => {
-    expect(client.notReadyToShow).toBeTruthy();
+    const index = view.createGroup();
+    const group = view.getGroup(index);
+    const widget = view.createWidget(group);
+    client = factory('', {}, false);
+    expect(client.attached).toBeFalsy();
+
+    client.addDispose(widget.onRender(async () => {
+      client.apply(widget.element);
+      await client.attach();
+      widget.name = client.name;
+      client.show();
+      client.layout();
+    }));
+
+    client.addDispose(widget.onResize(() => {
+      if (client.attached) {
+        client.layout();
+      }
+    }));
   });
 
   it('Apply DOM Node', () => {
@@ -79,15 +101,15 @@ describe('Terminal Client', () => {
 
   it('Ready To Show it', async () => {
     client.layout();
+    await delay(200);
     // JSDDOM 的 mock dom 的宽高一直为 0，所以这里无法完全测试渲染状态
-    // await delay(1000);
-    // expect(client.notReadyToShow).toBeFalsy();
+    expect(client.container.clientHeight).toEqual(0);
   });
 
   it('Focus Terminal which is activated', async () => {
     const res = await client.focus();
     expect(res).toBeUndefined();
-    // expect((client as any).focusPromiseResolve).toBeNull();
+    expect((client as any).focusPromiseResolve).toBeNull();
   });
 
   it('Terminal SelectAll', () => {
@@ -100,7 +122,7 @@ describe('Terminal Client', () => {
   it('Terminal Send Text', async () => {
     client.clear();
     client.sendText('pwd\r');
-    await delay(500);
+    await delay(200);
 
     const line = client.term.buffer.getLine(1);
     const lineText = (line && line.translateToString()) || '';

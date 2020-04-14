@@ -27,7 +27,7 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
 
   clientMessage(id: string, data: string) {
     if (this.rpcClient) {
-      this.rpcClient[0].onMessage(id, 'message', data);
+      this.rpcClient[0].onMessage(id, data);
     } else {
       this.logger.warn(`clientMessage ${id} rpcClient not found`);
     }
@@ -35,7 +35,6 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
 
   // 完成创建之后，前端进行状态同步
   ensureTerminal(terminalIdArr: string[]): boolean {
-    console.log('syncTerminal terminalIdArr', terminalIdArr);
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 

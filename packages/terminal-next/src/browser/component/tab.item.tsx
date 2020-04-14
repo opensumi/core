@@ -3,7 +3,7 @@ import * as clx from 'classnames';
 import { getIcon } from '@ali/ide-core-browser';
 import debouce = require('lodash.debounce');
 
-import * as styles from './index.module.less';
+import * as styles from './tab.module.less';
 
 export enum ItemType {
   info = 0,
