@@ -4,20 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgressCompositeOptions, IProgress, IProgressStep, ProgressLocation, Progress, format } from '@ali/ide-core-common';
+import { IProgressOptions, IProgressNotificationOptions, IProgressWindowOptions, IProgressCompositeOptions, IProgress, IProgressStep, ProgressLocation, Progress, format, CommandService } from '@ali/ide-core-common';
 import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
 import { timeout, IDisposable } from '..';
-import { StatusBarEntry, StatusBarAlignment, IStatusBarService, StatusBarEntryAccessor } from '../services';
+import { StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '../services';
 import { ProgressIndicator } from './progress-indicator';
 
 @Injectable()
 export class ProgressService implements IProgressService {
 
-  @Autowired(IStatusBarService)
-  statusbarService: IStatusBarService;
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   // 不同的视图会有不同的IProgressIndicator实例
   private progressIndicatorRegistry: Map<string, IProgressIndicator> = new Map();
@@ -134,7 +134,10 @@ export class ProgressService implements IProgressService {
       if (this.windowProgressStatusEntry) {
         this.windowProgressStatusEntry.update(statusEntryProperties);
       } else {
-        this.windowProgressStatusEntry = this.statusbarService.addElement('status.progress', statusEntryProperties);
+        this.commandService.executeCommand('statusbar.addElement', 'status.progress', statusEntryProperties).
+          then((accessor: any) => {
+            this.windowProgressStatusEntry = accessor;
+          });
       }
     } else {
       // Progress is done so we remove the status entry
