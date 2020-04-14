@@ -7,8 +7,14 @@ import * as WebSocket from 'ws';
 import * as httpProxy from 'http-proxy';
 import { uuid } from '@ali/ide-core-browser';
 
-export const port = 8090;
-export let proxyPort = 8091;
+function getRandomInt(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+export const port = getRandomInt(30000, 40000);
+export let proxyPort = port + getRandomInt(100, 200);
 export const existPtyProcessId = uuid();
 const cache = new Map<string, pty.IPty>();
 const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';

@@ -1,4 +1,4 @@
-import { Event } from '@ali/ide-core-common';
+import { Event, Disposable } from '@ali/ide-core-common';
 import { IWidgetGroup, IWidget } from './resize';
 import { ITerminalClient } from './client';
 import { TerminalOptions } from './pty';
@@ -13,7 +13,7 @@ export interface ITerminalExternalClient {
 }
 
 export const ITerminalController = Symbol('ITerminalController');
-export interface ITerminalController {
+export interface ITerminalController extends Disposable {
   focused: boolean;
   clients: Map<string, ITerminalClient>;
   firstInitialize(): void;

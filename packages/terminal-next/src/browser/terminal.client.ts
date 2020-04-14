@@ -237,7 +237,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (!this._term.element || this._term.element.clientHeight === 0 || this._term.element.clientWidth === 0) {
       this._container.innerHTML = '';
       this._term.open(this._container);
-      this._fitAddon.fit();
+
+      try {
+        this._fitAddon.fit();
+      } catch { /** nothing */ }
     } else {
       this._fitAddon.fit();
     }

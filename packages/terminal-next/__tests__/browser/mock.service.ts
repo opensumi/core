@@ -48,7 +48,7 @@ export class MockSocketService implements ITerminalExternalService {
     socket.addEventListener('message', ({ data }) => {
       const json = JSON.parse(data) as any;
       if (!json.method) {
-        handler(json);
+        handler(json.data);
       }
     });
   }
@@ -70,8 +70,8 @@ export class MockSocketService implements ITerminalExternalService {
           data: message,
         });
       },
-      pid: -1,
-      name: 'bash',
+      pid: defaultPid,
+      name: defaultName,
       readonly: false,
     };
   }

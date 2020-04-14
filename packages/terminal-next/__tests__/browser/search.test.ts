@@ -1,3 +1,0 @@
-describe('Terminal Search Test', () => {
-
-});
