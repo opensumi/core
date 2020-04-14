@@ -2,7 +2,7 @@ import * as WebSocket from 'ws';
 import { Terminal } from 'xterm';
 import { uuid, URI, Emitter } from '@ali/ide-core-common';
 import { Disposable } from '@ali/ide-core-browser';
-import { ITerminalExternalService, TerminalOptions } from '../../src/common';
+import { ITerminalExternalService, ITerminalConnection } from '../../src/common';
 import { port, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
 
@@ -53,16 +53,15 @@ export class MockSocketService implements ITerminalExternalService {
     });
   }
 
-  private _custommSocketEvent(sessionId: string) {
+  private _custommConnection(sessionId: string): ITerminalConnection {
     return {
-      // tslint:disable-next-line
-      addEventListener: (type: string, handler: (json: any) => void) => {
-        if (type === 'message') {
-          this._handleStdoutMessage(sessionId, handler);
-        }
+      onData: (handler: (json: any) => void) => {
+        this._handleStdoutMessage(sessionId, handler);
+        return {
+          dispose: () => {},
+        };
       },
-      removeEventListener: () => { /** do nothing */ },
-      send: (message: string) => {
+      sendData: (message: string) => {
         if (!message) {
           return;
         }
@@ -71,7 +70,9 @@ export class MockSocketService implements ITerminalExternalService {
           data: message,
         });
       },
-      readyState: 1,
+      pid: -1,
+      name: 'bash',
+      readonly: false,
     };
   }
 
@@ -112,7 +113,7 @@ export class MockSocketService implements ITerminalExternalService {
     socket.addEventListener('message', handleSocketMessage as any);
   }
 
-  async attach(sessionId: string, term: Terminal, restore: boolean, meta: string, attachMethod: (s) => void, options?: TerminalOptions, shellType?: string) {
+  async attach(sessionId: string, term: Terminal) {
     const sock = new WebSocket(localhost(port));
     this._socks.set(sessionId, sock);
 
@@ -123,10 +124,7 @@ export class MockSocketService implements ITerminalExternalService {
     await this._doMethod(sessionId, MessageMethod.create,
       { sessionId, cols: term.cols, rows: term.rows });
 
-    const event = this._custommSocketEvent(sessionId);
-    attachMethod(event as any);
-
-    return;
+    return this._custommConnection(sessionId);
   }
 
   async sendText(sessionId: string, data: string) {

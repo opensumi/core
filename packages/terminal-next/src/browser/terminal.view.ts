@@ -152,7 +152,10 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     const widget = this.widgets.splice(index, 1);
     this.widgetsMap.delete(widget[0].id);
     this._averageLayout();
-    this.selectWidget(this.last);
+
+    if (this.last) {
+      this.selectWidget(this.last);
+    }
 
     return widget[0];
   }

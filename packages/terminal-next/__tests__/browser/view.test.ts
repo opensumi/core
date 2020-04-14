@@ -1,11 +1,13 @@
 import { uuid } from '@ali/ide-core-common';
-import { TerminalGroupViewService, Widget, WidgetGroup } from '../../src/browser/terminal.view';
+import { injector } from './inject';
+import { ITerminalGroupViewService } from '../../src/common';
+import { Widget, WidgetGroup } from '../../src/browser/terminal.view';
 
 describe('Terminal View Test', () => {
-  let view: TerminalGroupViewService;
+  let view: ITerminalGroupViewService;
 
   beforeAll(() => {
-    view = new TerminalGroupViewService();
+    view = injector.get(ITerminalGroupViewService);
   });
 
   it('Create Group', () => {
@@ -48,7 +50,7 @@ describe('Terminal View Test', () => {
     view.getGroup(index2);
     const widget11 = view.createWidget(group1);
     const widget12 = view.createWidget(group1);
-    view.selectGroup(index1);
+    view.selectWidget(widget11.id);
     expect(view.currentWidgetId === widget11.id).toBeTruthy();
     view.selectWidget(widget12.id);
     expect(view.currentWidgetId === widget12.id).toBeTruthy();
@@ -76,8 +78,8 @@ describe('Terminal View Test', () => {
     });
 
     const index = view.createGroup();
-    view.selectGroup(index);
-    const widget = view.createWidget(view.currentGroup);
+    const group = view.getGroup(index);
+    const widget = view.createWidget(group);
     view.selectWidget(widget.id);
     view.removeWidget(view.currentWidgetId);
   });

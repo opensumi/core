@@ -62,6 +62,7 @@ export interface ITerminalGroupViewService {
   onWidgetDisposed: Event<IWidget>;
   onWidgetEmpty: Event<void>;
 
+  empty(): boolean;
   clear(): void;
 }
 

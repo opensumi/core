@@ -10,7 +10,7 @@ import { TerminalController } from '../../src/browser/terminal.controller';
 import { TerminalClientFactory } from '../../src/browser/terminal.client';
 import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import { TerminalInternalService } from '../../src/browser/terminal.service';
-import { ITerminalExternalService, ITerminalTheme, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService } from '../../src/common';
+import { ITerminalExternalService, ITerminalTheme, ITerminalClientFactory, ITerminalController, ITerminalGroupViewService, ITerminalInternalService, IWidget } from '../../src/common';
 import {
   MockMainLayoutService,
   MockTerminalThemeService,
@@ -77,8 +77,8 @@ export const injector = new Injector([
   },
   {
     token: ITerminalClientFactory,
-    useFactory: (injector) => () => {
-      return TerminalClientFactory.createClient(injector);
+    useFactory: (injector) => (widget: IWidget, options = {}, autofocus: boolean = false) => {
+      return TerminalClientFactory.createClient(injector, widget, options, autofocus);
     },
   },
   {
