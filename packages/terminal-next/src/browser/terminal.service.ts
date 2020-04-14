@@ -108,9 +108,12 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
       shellPath: type ? `/bin/${type}` : undefined,
       ...options,
     });
-    const connection = this._createCustomWebSocket(sessionId, name, pid);
 
-    return connection;
+    if (!pid || !name) {
+      return;
+    }
+
+    return this._createCustomWebSocket(sessionId, name, pid);
   }
 
   private _sendMessage(sessionId: string, json: any, requestId?: number) {

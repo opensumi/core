@@ -108,6 +108,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     let currentWidgetId: string = '';
     const { groups, current } = history;
 
+    const ids: string[] = [];
+
+    groups.forEach((widgets) => ids.concat(widgets));
+    const checked = await this.service.check(ids);
+
+    if (!checked) {
+      return;
+    }
+
     for (const widgets of groups) {
       const { group, index } = this._createOneGroup();
 
