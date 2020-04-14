@@ -508,33 +508,33 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     bindings.registerKeybinding({
       command: FILE_COMMANDS.COPY_FILE.id,
       keybinding: 'ctrlcmd+c',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} `,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.PASTE_FILE.id,
       keybinding: 'ctrlcmd+v',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`    });
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`    });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
       keybinding: 'ctrlcmd+x',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`});
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`});
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.RENAME_FILE.id,
       keybinding: 'enter',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`});
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`});
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.DELETE_FILE.id,
       keybinding: 'ctrlcmd+backspace',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`});
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw} && !editorFocus`});
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.FILTER_OPEN.id,
       keybinding: 'ctrlcmd+f',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`});
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !editorFocus`});
   }
 
   registerToolbarItems(registry: ToolbarRegistry) {
