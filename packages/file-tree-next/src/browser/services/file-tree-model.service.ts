@@ -212,8 +212,6 @@ export class FileTreeModelService {
     this.disposableCollection.push(treeStateWatcher.onDidChange(() => {
       const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
       const currentTreeSnapshot = treeStateWatcher.snapshot();
-      const surfaceDirSets = new Set(currentTreeSnapshot.expandedDirectories.atSurface);
-      currentTreeSnapshot.expandedDirectories.atSurface = Array.from(surfaceDirSets);
       this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, {
         ...snapshot,
         ...currentTreeSnapshot,

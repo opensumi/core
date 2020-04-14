@@ -27,18 +27,23 @@ export class TreeStateWatcher implements IDisposable {
     }));
     this.disposables.push(treeState.onDidChangeRelativePath(({prevPath, newPath}: IPathChange) => {
       let shouldNotify = false;
-      const atSurfaceIdx = this.currentState.expandedDirectories.atSurface.indexOf(prevPath);
-      if (atSurfaceIdx > -1) {
-        this.currentState.expandedDirectories.atSurface[atSurfaceIdx] = newPath;
+      const surfaceSets = new Set(this.currentState.expandedDirectories.atSurface);
+
+      if (surfaceSets.has(prevPath)) {
+        surfaceSets.delete(prevPath);
+        surfaceSets.add(newPath);
         shouldNotify = true;
       }
+      this.currentState.expandedDirectories.atSurface = Array.from(surfaceSets);
 
       if (atSurfaceExpandedDirsOnly) {
-        const buriedIdx = this.currentState.expandedDirectories.buried.indexOf(prevPath);
-        if (buriedIdx > -1) {
-          this.currentState.expandedDirectories.buried[buriedIdx] = newPath;
+        const buriedSets = new Set(this.currentState.expandedDirectories.buried);
+        if (buriedSets.has(prevPath)) {
+          surfaceSets.delete(prevPath);
+          surfaceSets.add(newPath);
           shouldNotify = true;
         }
+        this.currentState.expandedDirectories.buried = Array.from(buriedSets);
       }
       if (shouldNotify) {
         this.onDidTreeStateChangeEmitter.fire(TreeStateChangeType.PathsUpdated);
@@ -47,24 +52,26 @@ export class TreeStateWatcher implements IDisposable {
 
     this.disposables.push(treeState.onDidChangeExpansionState(({relativePath, isExpanded, isVisibleAtSurface}: IExpansionStateChange) => {
       let shouldNotify = false;
-      const atSurfaceIdx = this.currentState.expandedDirectories.atSurface.indexOf(relativePath);
-      if (atSurfaceIdx > -1 && (!isExpanded || !isVisibleAtSurface)) {
-        this.currentState.expandedDirectories.atSurface.splice(atSurfaceIdx, 1);
+      const surfaceSets = new Set(this.currentState.expandedDirectories.atSurface);
+      if (surfaceSets.has(relativePath) && (!isExpanded || !isVisibleAtSurface)) {
+        surfaceSets.delete(relativePath);
         shouldNotify = true;
       } else if (isExpanded && isVisibleAtSurface) {
-        this.currentState.expandedDirectories.atSurface.push(relativePath);
+        surfaceSets.add(relativePath);
         shouldNotify = true;
       }
+      this.currentState.expandedDirectories.atSurface = Array.from(surfaceSets);
 
       if (!atSurfaceExpandedDirsOnly) {
-        const buriedIdx = this.currentState.expandedDirectories.buried.indexOf(relativePath);
-        if (buriedIdx > -1 && (!isExpanded || isVisibleAtSurface)) {
-          this.currentState.expandedDirectories.buried.splice(buriedIdx, 1);
+        const buriedSets = new Set(this.currentState.expandedDirectories.buried);
+        if (buriedSets.has(relativePath) && (!isExpanded || isVisibleAtSurface)) {
+          buriedSets.delete(relativePath);
           shouldNotify = true;
         } else if (isExpanded && !isVisibleAtSurface) {
-          this.currentState.expandedDirectories.buried.push(relativePath);
+          buriedSets.add(relativePath);
           shouldNotify = true;
         }
+        this.currentState.expandedDirectories.buried = Array.from(buriedSets);
       }
       if (shouldNotify) {
         this.onDidTreeStateChangeEmitter.fire(TreeStateChangeType.DirExpansionState);
