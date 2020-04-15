@@ -23,6 +23,11 @@ export interface IToolBarElement {
 
   type: 'component' | 'action';
 
+  /**
+   * 排序因子，越小越靠前
+   */
+  order?: number;
+
 }
 
 export interface IToolBarAction extends IToolBarElement {
