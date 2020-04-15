@@ -60,7 +60,7 @@ export class MainThreadEnv implements IMainThreadEnv {
   }
 
   $openExternal(target: vscode.Uri): Thenable<boolean> {
-    window.open(target.toString());
+    window.open(target.toString(true));
     return Promise.resolve(true);
   }
 }
