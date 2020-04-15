@@ -23,7 +23,7 @@ import { SourceBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { ITerminalController, TerminalOptions} from '@ali/ide-terminal-next';
+import { ITerminalApiService, TerminalOptions} from '@ali/ide-terminal-next';
 
 export enum DebugState {
   Inactive,
@@ -60,7 +60,7 @@ export class DebugSession implements IDisposable {
     readonly id: string,
     readonly options: DebugSessionOptions,
     protected readonly connection: DebugSessionConnection,
-    protected readonly terminalService: ITerminalController,
+    protected readonly terminalService: ITerminalApiService,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
     protected readonly modelManager: DebugModelManager,
@@ -213,12 +213,12 @@ export class DebugSession implements IDisposable {
       } catch (error) {
         // could be error or promise rejection of DebugProtocol.SetBreakpointsResponse
         if (error instanceof Error) {
-          console.error(`Error setting breakpoints: ${error.message}`);
+          // console.error(`Error setting breakpoints: ${error.message}`);
         } else {
           // handle adapters that send failed DebugProtocol.SetBreakpointsResponse for invalid breakpoints
           const genericMessage: string = 'Breakpoint not valid for current debug session';
           const message: string = error.message ? `${error.message}` : genericMessage;
-          console.warn(`Could not handle breakpoints for ${affectedUri}: ${message}, disabling...`);
+          // console.warn(`Could not handle breakpoints for ${affectedUri}: ${message}, disabling...`);
           enabled.forEach((brkPoint: DebugBreakpoint) => {
             const debugBreakpointData: Partial<DebugBreakpointData> = {
               raw: {
@@ -470,7 +470,7 @@ export class DebugSession implements IDisposable {
         const threads = response && response.body && response.body.threads || [];
         this.doUpdateThreads(threads, stoppedDetails);
       } catch (e) {
-        console.error(e);
+        // console.error(e);
       }
     });
   }

@@ -1,27 +1,23 @@
 import * as React from 'react';
 import * as clx from 'classnames';
 import { useInjectable, localize, getIcon } from '@ali/ide-core-browser';
-import { TerminalClient } from './terminal.client';
-import { ITerminalController, IWidget, ITerminalError } from '../common';
+import { ITerminalController, ITerminalGroupViewService, IWidget, ITerminalError } from '../../common';
 
 import * as styles from './terminal.module.less';
 
 export interface IProps {
-  id: string;
-  dynamic: number;
   widget: IWidget;
-  show: boolean;
   error: ITerminalError | undefined;
 }
 
-function renderError(error: ITerminalError, id: string, controller: ITerminalController) {
+function renderError(error: ITerminalError, controller: ITerminalController, view: ITerminalGroupViewService) {
 
   const onRemoveClick = () => {
-    controller.removeWidget(id);
+    view.removeWidget(error.id);
   };
 
   const onRetryClick = () => {
-    controller.retryTerminalClient(id);
+    // controller.retry(error.id);
   };
 
   return (
@@ -45,37 +41,25 @@ function renderError(error: ITerminalError, id: string, controller: ITerminalCon
   );
 }
 
-export default ({ id, dynamic, error, show }: IProps) => {
+export default ({ widget, error }: IProps) => {
   const content = React.createRef<HTMLDivElement>();
   const controller = useInjectable<ITerminalController>(ITerminalController);
+  const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
 
   React.useEffect(() => {
     if (content.current) {
-      controller.drawTerminalClient(content.current, id)
-        .then(() => {
-          controller.layoutTerminalClient(id)
-            .then(() => {
-              const client = controller.getCurrentClient<TerminalClient>();
-              if (client && controller.isFocus && client.autofocus) {
-                client.focus();
-              }
-            });
-        });
+      widget.element = content.current;
     }
   }, []);
 
-  React.useEffect(() => {
-    controller.layoutTerminalClient(id);
-  }, [dynamic, show, error]);
-
   const onFocus = () => {
-    controller.focusWidget(id);
+    view.selectWidget(widget.id);
   };
 
   return (
     <div className={ styles.terminalContainer }>
       {
-        error ? renderError(error, id, controller) : null
+        error ? renderError(error, controller, view) : null
       }
       <div
         className={ clx({
@@ -83,12 +67,11 @@ export default ({ id, dynamic, error, show }: IProps) => {
           [styles.terimnalClose]: true,
         }) }
         onClick={ () => {
-          controller.focusWidget(id);
-          controller.removeFocused();
+          view.removeWidget(widget.id);
         } }
       ></div>
       <div
-        data-term-id={ id }
+        data-term-id={ widget.id }
         style={ { display: error ? 'none' : 'block' } }
         className={ styles.terminalContent }
         onFocus={ onFocus }

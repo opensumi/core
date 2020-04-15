@@ -152,7 +152,7 @@ export interface ITerminalServiceClient {
   ensureTerminal(terminalIdArr: string[]): boolean;
 }
 
-export interface TerminalInfo {
+export interface ITerminalInfo {
  id: string;
  name: string;
  isActive: boolean;

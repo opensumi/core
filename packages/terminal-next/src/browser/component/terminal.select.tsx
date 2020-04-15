@@ -1,26 +1,26 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
-import { ITerminalController } from '../common';
+import { ITerminalGroupViewService } from '../../common';
 
 import * as styles from './terminal.module.less';
 
 export default observer(() => {
 
-  const controller = useInjectable<ITerminalController>(ITerminalController);
+  const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
 
   const onChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const index = event.target.value;
-    controller.selectGroup(parseInt(index, 10));
+    view.selectGroup(parseInt(index, 10));
   };
 
-  const index = controller.state && controller.state.index;
+  const index = view.currentGroupIndex;
 
   return (
     <div className={styles.toolbarSelect}>
       <select value={ index || 0 } onChange={ onChange }>
         {
-          (controller.groups || []).map((group, index) => {
+          (view.groups || []).map((group, index) => {
             return <option key={ `${group}-${index}` } value={ index }>{ `${index + 1}: ${group.snapshot}` }</option>;
           })
         }

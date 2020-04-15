@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import * as styles from './resize.module.less';
 import ResizeDelegate from './resize.delegate';
 import { IWidget, IWidgetGroup } from '../../common/resize';
+
+import * as styles from './resize.module.less';
 
 export enum ResizeDirection {
   vertical,
@@ -72,10 +73,10 @@ export default observer((props: IResizeViewProps) => {
         className={ styles.resizePanel }
       >
         {
-          group && group.widgets.map((widget, index) => {
+          group && group.widgets.map((widget) => {
             return (
               <div
-                key={ `resize-group-${index}` }
+                key={ widget.id }
                 style={ { width: `${shadow ? widget.dynamic : widget.shadowDynamic}%` } }
                 className={ styles.resizeItem }
               >

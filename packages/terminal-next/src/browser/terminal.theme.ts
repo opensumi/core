@@ -1,16 +1,11 @@
-import { ITheme } from 'xterm';
 import { Injectable } from '@ali/common-di';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { Color } from '@ali/ide-theme/lib/common/color';
+import { ITerminalTheme } from '../common';
 import * as TERMINAL_COLOR from './terminal.color';
 
-export const ITerminalTheme = Symbol('ITerminalTheme');
-export interface ITerminalTheme  {
-  terminalTheme: ITheme;
-}
-
 @Injectable()
-export class DefaultTerminalTheme extends Themable implements ITerminalTheme {
+export class TerminalTheme extends Themable implements ITerminalTheme {
   get terminalTheme(): any {
     const termBgColor = this.getColorSync(TERMINAL_COLOR.TERMINAL_BACKGROUND_COLOR);
     const termFgColor = this.getColorSync(TERMINAL_COLOR.TERMINAL_FOREGROUND_COLOR);

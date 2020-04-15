@@ -43,10 +43,10 @@
     "lodash.omit": "^4.1.1",
     "event-kit": "^2.5.3",
     "node-pty": "^0.9.0",
-    "xterm": "^4.2.0",
+    "xterm": "4.5.0",
     "xterm-addon-attach": "^0.3.0",
     "xterm-addon-fit": "^0.3.0",
-    "xterm-addon-search": "^0.5.0",
+    "xterm-addon-search": "^0.6.0",
     "xterm-addon-web-links": "^0.2.1"
   },
   "devDependencies": {
@@ -58,6 +58,7 @@
     "npm-run-all": "^4.1.5",
     "puppeteer": "^2.0.0",
     "ts-node": "8.0.2",
+    "typescript": "^3.8.3",
     "webpack-dev-server": "^3.3.1"
   }
 }

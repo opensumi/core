@@ -581,13 +581,3 @@ export namespace SEARCH_COMMANDS {
     label: '%file.copy.path%',
   };
 }
-
-export namespace TERMINAL_COMMANDS {
-  const CATEGORY = 'terminal';
-
-  export const OPEN_WITH_PATH: Command = {
-    id: 'terminal.openWithPath',
-    category: CATEGORY,
-    label: '%terminal.openWithPath%',
-  };
-}

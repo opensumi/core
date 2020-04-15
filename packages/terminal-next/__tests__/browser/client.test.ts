@@ -9,60 +9,53 @@ import {
   defaultName,
   defaultPid,
 } from './mock.service';
-import { TerminalClient } from '../../src/browser/terminal.client';
+import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
 import { delay } from './utils';
-import { createClient } from './controller.inject';
+import { injector } from './inject';
+
+function createDOMContainer() {
+  const div = document.createElement('div');
+  div.style.width = '400px';
+  div.style.height = '400px';
+  document.body.appendChild(div);
+  return div;
+}
 
 describe('Terminal Client', () => {
-  let client: TerminalClient;
+  let client: ITerminalClient;
+  let widget: IWidget;
   let proxy: httpProxy;
   let server: WebSocket.Server;
+  let view: ITerminalGroupViewService;
+  let factory: ITerminalClientFactory;
 
   beforeAll(() => {
+    factory = injector.get(ITerminalClientFactory);
+    view = injector.get(ITerminalGroupViewService);
     server = createWsServer();
     proxy = createProxyServer();
-    client = createClient();
   });
 
-  it('Not Ready To Show it', () => {
-    expect(client.notReadyToShow).toBeTruthy();
+  it('Not Ready To Show it', async () => {
+    const index = view.createGroup();
+    const group = view.getGroup(index);
+    widget = view.createWidget(group);
+    client = factory(widget, {}, false);
+    expect(client.ready).toBeFalsy();
   });
 
-  it('Apply DOM Node', () => {
-    const div = document.getElementById('main') as HTMLDivElement;
-    if (div) {
-      client.applyDomNode(div);
+  it('Focus Terminal which is not ready', () => {
+    try {
+      client.focus();
+    } catch (e) {
+      expect(e).toBeInstanceOf(Error);
     }
   });
 
-  it('Focus Terminal which is not activated', () => {
-    const res = client.focus();
-    expect(res).toBeInstanceOf(Promise);
-    // expect((client as any).focusPromiseResolve).toBeInstanceOf(Function);
-  });
-
-  it('Show Terminal which is not attched', () => {
-    const res = client.show();
-    expect(res).toBeInstanceOf(Promise);
-    expect(client.activated).toBeFalsy();
-    expect((client as any).showPromiseResolve).toBeInstanceOf(Function);
-  });
-
-  it('Attach Terminal', async () => {
-    await client.attach();
-
-    expect(client.attached).toBeTruthy();
-    expect((client as any).attachPromise).toBeNull();
-
-    // 等待终端返回
-    await delay(500);
-
-    client.clear();
-
-    const line = client.term.buffer.getLine(0);
-    const lineText = (line && line.translateToString()) || '';
-
-    expect(lineText.trim().length).toBeGreaterThan(0);
+  it('Render Terminal', async () => {
+    widget.element = createDOMContainer();
+    await client.attached.promise;
+    expect(client.ready).toBeTruthy();
   });
 
   it('Terminal Pid And Name', () => {
@@ -70,24 +63,8 @@ describe('Terminal Client', () => {
     expect(client.pid).toEqual(defaultPid);
   });
 
-  it('Show Terminal which is attached', async () => {
-    const res = await client.show();
-    expect(res).toBeUndefined();
-    expect(client.activated).toBeTruthy();
-    expect((client as any).showPromiseResolve).toBeNull();
-  });
-
-  it('Ready To Show it', async () => {
-    client.layout();
-    // JSDDOM 的 mock dom 的宽高一直为 0，所以这里无法完全测试渲染状态
-    // await delay(1000);
-    // expect(client.notReadyToShow).toBeFalsy();
-  });
-
-  it('Focus Terminal which is activated', async () => {
-    const res = await client.focus();
-    expect(res).toBeUndefined();
-    // expect((client as any).focusPromiseResolve).toBeNull();
+  it('Focus Terminal which is ready', async () => {
+    client.focus();
   });
 
   it('Terminal SelectAll', () => {
@@ -100,16 +77,16 @@ describe('Terminal Client', () => {
   it('Terminal Send Text', async () => {
     client.clear();
     client.sendText('pwd\r');
-    await delay(500);
+    await delay(200);
 
-    const line = client.term.buffer.getLine(1);
+    const line = client.term.buffer.active.getLine(1);
     const lineText = (line && line.translateToString()) || '';
 
     expect(lineText.trim().length).toBeGreaterThan(0);
   });
 
   it('Terminal Find Next', async () => {
-    const searched = os.platform() === 'linux' ? 'root' : 'User';
+    const searched = (os.platform() === 'linux') ? 'root' : 'User';
     client.findNext(searched);
     expect(client.term.getSelection()).toEqual(searched);
   });
@@ -123,11 +100,11 @@ describe('Terminal Client', () => {
 
   it('After Terminal Dispose', async () => {
     await client.attach();
-    await client.show();
-    await client.focus();
     await client.sendText('pwd\r');
-    client.hide();
-    client.layout();
+    client.focus();
+    client.selectAll();
+    client.updateTheme();
+    client.clear();
   });
 
   afterAll(() => {

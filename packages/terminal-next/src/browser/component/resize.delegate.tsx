@@ -1,6 +1,7 @@
 import * as React from 'react';
-import * as styles from './resize.module.less';
 import { IWidget } from '../../common/resize';
+
+import * as styles from './resize.module.less';
 
 export interface IResizeDelegateProps {
   start: () => void;

@@ -602,7 +602,7 @@ export class FileTreeModelService {
     // 不存在文件名称
     if (!name || name.length === 0 || /^\s+$/.test(name)) {
       return {
-        message: localize('validate.tree.emptyFileeError'),
+        message: localize('validate.tree.emptyFileNameError'),
         type: PROMPT_VALIDATE_TYPE.ERROR,
         value: name,
       };
@@ -743,21 +743,29 @@ export class FileTreeModelService {
     const handleFocus = async () => {
       this.fileTreeContextKey.filesExplorerInputFocused.set(true);
     };
+    const handleDestroy = () => {
+      // 在焦点元素销毁时，electron与chrome web上处理焦点的方式略有不同
+      // 这里需要明确将FileTree的explorerFocused设置为正确的false
+      this.fileTreeContextKey.explorerFocused.set(false);
+    };
+    const handleChange = (currentValue) => {
+      const validateMessage = this.validateFileName(promptHandle, currentValue);
+      if (!!validateMessage) {
+        this.validateMessage = validateMessage;
+        promptHandle.addValidateMessage(validateMessage);
+      } else if (!validateMessage && this.validateMessage && this.validateMessage.value !== currentValue) {
+        this.validateMessage = undefined;
+        promptHandle.removeValidateMessage();
+      }
+    };
     if (!promptHandle.destroyed) {
-      promptHandle.onChange((currentValue) => {
-        const validateMessage = this.validateFileName(promptHandle, currentValue);
-        if (!!validateMessage) {
-          this.validateMessage = validateMessage;
-          promptHandle.addValidateMessage(validateMessage);
-        } else if (!validateMessage && this.validateMessage && this.validateMessage.value !== currentValue) {
-          this.validateMessage = undefined;
-          promptHandle.removeValidateMessage();
-        }
-      });
-
+      promptHandle.onChange(handleChange);
       promptHandle.onCommit(enterCommit);
       promptHandle.onBlur(blurCommit);
       promptHandle.onFocus(handleFocus);
+      promptHandle.onChange(handleChange);
+      promptHandle.onDestroy(handleDestroy);
+      promptHandle.onCancel(handleDestroy);
     }
   }
 
