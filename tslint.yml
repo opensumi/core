@@ -23,6 +23,7 @@ rules:
   no-namespace: false
   no-unused-expression: false
   no-string-literal: false
+  no-bitwise: false
 
 linterOptions:
   exclude:

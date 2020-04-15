@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Event, isObject, Emitter, getDebugLogger, isUndefined } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { TerminalInfo } from '@ali/ide-terminal-next/lib/common';
+import { ITerminalInfo } from '@ali/ide-terminal-next';
 import { IMainThreadTerminal, MainThreadAPIIdentifier, IExtHostTerminal } from '../../../common/vscode';
 
 const debugLog = getDebugLogger();
@@ -45,7 +45,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return this.closeTerminalEvent.event;
   }
 
-  $onDidOpenTerminal(info: TerminalInfo) {
+  $onDidOpenTerminal(info: ITerminalInfo) {
     let terminal = this.terminalsMap.get(info.id);
 
     if (!terminal) {
@@ -87,10 +87,10 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return terminal;
   }
 
-  $setTerminals(idList: TerminalInfo[]) {
+  $setTerminals(idList: ITerminalInfo[]) {
     this.terminalsMap.clear();
     this.activeTerminal = undefined;
-    idList.forEach((info: TerminalInfo) => {
+    idList.forEach((info: ITerminalInfo) => {
       if (this.terminalsMap.get(info.id)) {
         return;
       }

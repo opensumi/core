@@ -1,5 +1,5 @@
 import { Event } from 'vscode';
-import { TerminalInfo } from '@ali/ide-terminal-next/lib/common';
+import { ITerminalInfo } from '@ali/ide-terminal-next';
 import * as vscode from 'vscode';
 
 export interface IMainThreadTerminal {
@@ -29,13 +29,13 @@ export interface IExtHostTerminal {
 
   onDidOpenTerminal: Event<vscode.Terminal>;
 
-  $setTerminals(idList: TerminalInfo[]);
+  $setTerminals(idList: ITerminalInfo[]);
 
   $onDidChangeActiveTerminal(id: string);
 
   $onDidCloseTerminal(id: string);
 
-  $onDidOpenTerminal(info: TerminalInfo);
+  $onDidOpenTerminal(info: ITerminalInfo);
 
   dispose(): void;
 }

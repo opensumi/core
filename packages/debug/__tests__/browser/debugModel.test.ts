@@ -13,12 +13,12 @@ import { IMessageService } from '@ali/ide-overlay';
 import * as options from '@ali/ide-debug/lib/browser/editor/debug-styles.ts';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { ITerminalController } from '@ali/ide-terminal-next';
+import { ITerminalApiService } from '@ali/ide-terminal-next';
 
 disableJSDOM();
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error(reason);
+  // console.error(reason);
 });
 
 describe('Debug Model', () => {
@@ -105,7 +105,7 @@ describe('Debug Model', () => {
         on: (command: string, handler) => Disposable.create(() => {}),
         dispose: () => {},
       } as DebugSessionConnection,
-      {} as ITerminalController,
+      {} as ITerminalApiService,
       {} as WorkbenchEditorService,
       injector.get(BreakpointManager),
       injector.get(DebugModelManager),

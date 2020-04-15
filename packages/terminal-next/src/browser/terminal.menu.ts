@@ -1,10 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, Domain, CommandContribution, CommandRegistry, CommandService } from '@ali/ide-core-common';
+import { Disposable, Domain, CommandService } from '@ali/ide-core-common';
 import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMenuRegistry, generateMergedCtxMenu, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
-import { memoize, IContextKeyService, localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, COMMON_COMMANDS, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
-import { ITerminalController } from '../common';
-import { TerminalClient } from './terminal.client';
-import { TabManager } from './component/tab/manager';
+import { memoize, IContextKeyService, localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
+import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TERMINAL_COMMANDS } from '../common';
 import { IsTerminalFocused } from '@ali/ide-core-browser/lib/contextkey';
 
 export enum MenuId {
@@ -12,135 +10,49 @@ export enum MenuId {
   TermPanel = 'TermPanel',
 }
 
-export enum SimpleCommonds {
-  search = 'terminalsearch',
-  split = 'terminal:split',
-  rename = 'terminal:rename',
-  selectAll = 'terminal:selectAll',
-  copy = 'terminal:copy',
-  paste = 'terminal:paste',
-  clearGroups = 'terminal:clear',
-  stop = 'terminal:stop',
-  stopGroup = 'terminal:stopGroup',
-  stopGroups = 'terminal:stopGroups',
-  selectType = 'terminal:selectType',
-  moreSettings = 'terminal:moreSettings',
-  selectTypeZsh = 'terminal:selectTypeZsh',
-  selectTypeBash = 'terminal:selectTypeBash',
-  selectTypeSh = 'terminal:selectTypeSh',
-}
-
 export const group = 'panel_menu';
 export const more1 = 'more_1';
 export const more1Sub = 'more_1_sub';
 export const more2 = 'more_2';
 
-@Domain(NextMenuContribution, CommandContribution, KeybindingContribution)
-export class TerminalMenuContribution implements NextMenuContribution, CommandContribution, KeybindingContribution {
+@Domain(NextMenuContribution, KeybindingContribution)
+export class TerminalMenuContribution implements NextMenuContribution, KeybindingContribution {
 
   @Autowired(ITerminalController)
-  private readonly terminalController: ITerminalController;
+  protected readonly terminalController: ITerminalController;
 
-  @Autowired()
-  private readonly tabManager: TabManager;
+  @Autowired(ITerminalGroupViewService)
+  protected readonly view: ITerminalGroupViewService;
+
+  @Autowired(ITerminalSearchService)
+  protected readonly search: ITerminalSearchService;
 
   @Autowired(PreferenceService)
-  private readonly preference: PreferenceService;
+  protected readonly preference: PreferenceService;
 
   @Autowired(IPreferenceSettingsService)
-  private readonly settingService: IPreferenceSettingsService;
+  protected readonly settingService: IPreferenceSettingsService;
 
   @Autowired(CommandService)
-  private readonly commands: CommandService;
+  protected readonly commands: CommandService;
 
   @Autowired(AppConfig)
-  private readonly config: AppConfig;
-
-  registerCommands(registry: CommandRegistry) {
-
-    /** Tab 右键菜单和 Toolbar 使用的 command */
-    registry.registerCommand({ id: SimpleCommonds.split }, {
-      execute: async () => {
-        this.terminalController.addWidget();
-      },
-    });
-
-    registry.registerCommand({ id: SimpleCommonds.stopGroup }, {
-      execute: async (_: any, index: number) => {
-        if (index !== -1) {
-          this.tabManager.remove(index);
-        }
-      },
-    });
-
-    registry.registerCommand({ id: SimpleCommonds.rename }, {
-      execute: async (args: any) => {
-        if (args && args.id) {
-          this.tabManager.addEditable(args.id);
-        }
-      },
-    });
-
-    registry.registerCommand({ id: SimpleCommonds.search }, {
-      execute: async () => {
-        this.terminalController.openSearchInput();
-      },
-    });
-
-    registry.registerCommand({ id: SimpleCommonds.selectAll }, {
-      execute: async () => {
-        const client = this.terminalController.getCurrentClient() as TerminalClient;
-        if (client) {
-          client.selectAll();
-        }
-      },
-    });
-    /** end */
-
-    /** 更多菜单 command */
-    registry.registerCommand({ id: SimpleCommonds.clearGroups }, {
-      execute: async () => {
-        this.terminalController.clearAllGroups();
-      },
-    });
-
-    registry.registerCommand({ id: SimpleCommonds.stopGroups }, {
-      execute: async () => {
-        this.terminalController.removeAllGroups();
-      },
-    });
-
-    registry.registerCommand({ id: SimpleCommonds.selectTypeZsh }, {
-      execute: async () => {
-        this.preference.set('terminal.type', 'zsh');
-      },
-    });
-
-    registry.registerCommand({ id: SimpleCommonds.selectTypeBash }, {
-      execute: async () => {
-        this.preference.set('terminal.type', 'bash');
-      },
-    });
-
-    registry.registerCommand({ id: SimpleCommonds.selectTypeSh }, {
-      execute: async () => {
-        this.preference.set('terminal.type', 'sh');
-      },
-    });
-
-    registry.registerCommand({ id: SimpleCommonds.moreSettings }, {
-      execute: async () => {
-        this.commands.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id);
-        this.settingService.setCurrentGroup('terminal');
-      },
-    });
-    /** end */
-  }
+  protected readonly config: AppConfig;
 
   registerKeybindings(registry: KeybindingRegistry) {
     registry.registerKeybinding({
-      command: SimpleCommonds.search,
+      command: TERMINAL_COMMANDS.OPEN_SEARCH.id,
       keybinding: 'ctrlcmd+f',
+      when: IsTerminalFocused.raw,
+    });
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
+      keybinding: 'ctrlcmd+k',
+      when: IsTerminalFocused.raw,
+    });
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.SEARCH_NEXT.id,
+      keybinding: 'ctrlcmd+g',
       when: IsTerminalFocused.raw,
     });
   }
@@ -149,7 +61,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
     /** 终端 Tab 菜单 */
     menuRegistry.registerMenuItem(MenuId.TermTab, {
       command: {
-        id: SimpleCommonds.split,
+        id: TERMINAL_COMMANDS.SPLIT.id,
         label: localize('terminal.menu.split'),
       },
       order: 1,
@@ -158,7 +70,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
 
     menuRegistry.registerMenuItem(MenuId.TermTab, {
       command: {
-        id: SimpleCommonds.rename,
+        id: TERMINAL_COMMANDS.TAB_RENAME.id,
         label: localize('terminal.menu.rename'),
       },
       order: 2,
@@ -167,7 +79,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
 
     menuRegistry.registerMenuItem(MenuId.TermTab, {
       command: {
-        id: SimpleCommonds.stopGroup,
+        id: TERMINAL_COMMANDS.REMOVE.id,
         label: localize('terminal.menu.stopGroup'),
       },
       order: 3,
@@ -181,20 +93,14 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
     const when = `${tabbarCtxKey} == terminal`;
     /** 更多菜单 */
     menuRegistry.registerMenuItem(commonMenuId, {
-      command: {
-        id: SimpleCommonds.clearGroups,
-        label: localize('terminal.menu.clearGroups'),
-      },
+      command: TERMINAL_COMMANDS.CLEAR_CONTENT,
       order: 1,
       group: more1,
       when,
     });
 
     menuRegistry.registerMenuItem(commonMenuId, {
-      command: {
-        id: SimpleCommonds.stopGroups,
-        label: localize('terminal.menu.stopGroups'),
-      },
+      command: TERMINAL_COMMANDS.CLEAR,
       order: 1,
       group: more1,
       when,
@@ -209,28 +115,19 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
     });
 
     menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [{
-      command: {
-        id: SimpleCommonds.selectTypeZsh,
-        label: 'zsh',
-      },
+      command: TERMINAL_COMMANDS.SELECT_ZSH,
       order: 1,
       group: more1Sub,
       toggledWhen: 'config.terminal.type == zsh',
       when,
     }, {
-      command: {
-        id: SimpleCommonds.selectTypeBash,
-        label: 'bash',
-      },
+      command: TERMINAL_COMMANDS.SELECT_BASH,
       order: 2,
       group: more1Sub,
       toggledWhen: 'config.terminal.type == bash',
       when,
     }, {
-      command: {
-        id: SimpleCommonds.selectTypeSh,
-        label: 'sh',
-      },
+      command: TERMINAL_COMMANDS.SELECT_SH,
       order: 3,
       group: more1Sub,
       toggledWhen: 'config.terminal.type == sh',
@@ -238,10 +135,7 @@ export class TerminalMenuContribution implements NextMenuContribution, CommandCo
     }]);
 
     menuRegistry.registerMenuItem(commonMenuId, {
-      command: {
-        id: SimpleCommonds.moreSettings,
-        label: localize('terminal.menu.moreSettings'),
-      },
+      command: TERMINAL_COMMANDS.MORE_SETTINGS,
       order: 1,
       group: more2,
       when,
@@ -260,9 +154,6 @@ export class TerminalContextMenuService extends Disposable {
 
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
-
-  @Autowired()
-  tabManager: TabManager;
 
   @memoize get contextMenu(): IMenu {
     const contributedContextMenu = this.menuService.createMenu(MenuId.TermPanel, this.contextKeyService);

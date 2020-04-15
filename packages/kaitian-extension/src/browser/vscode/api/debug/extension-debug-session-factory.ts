@@ -5,7 +5,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMessageService } from '@ali/ide-overlay';
 import { IWebSocket } from '@ali/ide-connection';
 import { DebugSessionOptions } from '@ali/ide-debug';
-import { ITerminalController, TerminalOptions } from '@ali/ide-terminal-next';
+import { ITerminalApiService, TerminalOptions } from '@ali/ide-terminal-next';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
@@ -15,7 +15,7 @@ export class ExtensionDebugSession extends DebugSession {
     readonly id: string,
     readonly options: DebugSessionOptions,
     protected readonly connection: DebugSessionConnection,
-    protected readonly terminalService: ITerminalController,
+    protected readonly terminalService: ITerminalApiService,
     protected readonly editorService: WorkbenchEditorService,
     protected readonly breakpointManager: BreakpointManager,
     protected readonly modelManager: DebugModelManager,
@@ -38,7 +38,7 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
     protected readonly editorManager: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
     protected readonly modelManager: DebugModelManager,
-    protected readonly terminalService: ITerminalController,
+    protected readonly terminalService: ITerminalApiService,
     protected readonly labelService: LabelService,
     protected readonly messageService: IMessageService,
     protected readonly debugPreferences: DebugPreferences,

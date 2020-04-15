@@ -36,6 +36,7 @@
     "@ali/ide-decoration": "1.8.4",
     "@ali/ide-editor": "1.8.4",
     "@ali/ide-main-layout": "1.8.4",
+    "@ali/ide-terminal-next": "1.8.4",
     "@ali/ide-theme": "1.8.4",
     "@ali/ide-workspace": "1.8.4",
     "@ali/ide-window": "1.8.4",

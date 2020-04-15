@@ -1,13 +1,15 @@
 import { Terminal, ILinkMatcherOptions, ITerminalAddon } from 'xterm';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { URI } from '@ali/ide-core-common';
+import { URI, Disposable } from '@ali/ide-core-common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
+import { TerminalKeyBoardInputService } from './terminal.input';
+import { ITerminalConnection } from '../common';
 
 const linuxFilePathRegex = /((\/$|(\/?[\w\.\@\-\_]+)?(\/[\w\.\@\~\-\_]+)+(:[0-9]*:[0-9]*)?)+)/;
 const windowsFilePathRegex = new RegExp('(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\(?:[\w]+\\)*\w([\w.])+(:[0-9]*:[0-9]*)?');
 
-export class TerminalFilePathAddon implements ITerminalAddon {
+export class FilePathAddon extends Disposable implements ITerminalAddon {
   private _linuxLinkMatcherId: number | undefined;
   private _windowsLinkMatchId: number | undefined;
   private _terminal: Terminal | undefined;
@@ -16,8 +18,10 @@ export class TerminalFilePathAddon implements ITerminalAddon {
     private _workspace: IWorkspaceService,
     private _fileService: IFileServiceClient,
     private _editorService: WorkbenchEditorService,
+    private _keyboardService: TerminalKeyBoardInputService,
     private _options: ILinkMatcherOptions = {},
   ) {
+    super();
     this._options.matchIndex = 2;
     this._options.validationCallback = this._checkPathValid.bind(this);
   }
@@ -52,6 +56,10 @@ export class TerminalFilePathAddon implements ITerminalAddon {
   }
 
   private async _openFile(_, uri: string) {
+    if (!this._keyboardService.isCommandOrCtrl) {
+      return;
+    }
+
     const uriArray = uri.split(':');
     const absolute = this._absolutePath(uriArray[0]);
 
@@ -73,16 +81,52 @@ export class TerminalFilePathAddon implements ITerminalAddon {
     }
   }
 
-  public activate(terminal: Terminal): void {
+  activate(terminal: Terminal): void {
     this._terminal = terminal;
     this._linuxLinkMatcherId = this._terminal.registerLinkMatcher(linuxFilePathRegex, this._openFile.bind(this), this._options);
     this._windowsLinkMatchId = this._terminal.registerLinkMatcher(windowsFilePathRegex, this._openFile.bind(this), this._options);
+
+    this.addDispose({
+      dispose: () => {
+        if (this._linuxLinkMatcherId !== undefined && this._windowsLinkMatchId && this._terminal !== undefined) {
+          this._terminal.deregisterLinkMatcher(this._linuxLinkMatcherId);
+          this._terminal.deregisterLinkMatcher(this._windowsLinkMatchId);
+        }
+      },
+    });
+  }
+}
+
+export class AttachAddon extends Disposable implements ITerminalAddon {
+  private _connection: ITerminalConnection;
+
+  constructor(connection: ITerminalConnection) {
+    super();
+    this._connection = connection;
   }
 
-  public dispose(): void {
-    if (this._linuxLinkMatcherId !== undefined && this._windowsLinkMatchId && this._terminal !== undefined) {
-      this._terminal.deregisterLinkMatcher(this._linuxLinkMatcherId);
-      this._terminal.deregisterLinkMatcher(this._windowsLinkMatchId);
+  public activate(terminal: Terminal): void {
+    this.addDispose(
+      this._connection.onData((data: string | ArrayBuffer) => {
+        terminal.write(typeof data === 'string' ? data : new Uint8Array(data));
+      }),
+    );
+
+    if (!this._connection.readonly) {
+      this.addDispose(terminal.onData((data) => this._sendData(data)));
+      this.addDispose(terminal.onBinary((data) => this._sendBinary(data)));
     }
+  }
+
+  private _sendData(data: string): void {
+    this._connection.sendData(data);
+  }
+
+  private _sendBinary(data: string): void {
+    const buffer = new Uint8Array(data.length);
+    for (let i = 0; i < data.length; ++i) {
+      buffer[i] = data.charCodeAt(i) & 255;
+    }
+    this._connection.sendData(buffer);
   }
 }
