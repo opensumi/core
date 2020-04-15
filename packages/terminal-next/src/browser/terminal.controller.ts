@@ -108,10 +108,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     let currentWidgetId: string = '';
     const { groups, current } = history;
 
-    const ids: string[] = [];
+    const ids: (string | { clientId: string })[] = [];
 
     groups.forEach((widgets) => ids.concat(widgets));
-    const checked = await this.service.check(ids);
+    const checked = await this.service.check(ids.map((id) => typeof id === 'string' ? id : id.clientId));
 
     if (!checked) {
       return;
@@ -132,7 +132,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         /**
          * widget 创建完成后会同时创建 client
          */
-        const widget = this.terminalView.createWidget(group, sessionId);
+        const widget = this.terminalView.createWidget(group,
+          typeof sessionId === 'string' ? sessionId : sessionId.clientId);
         const client = this.clientFactory(widget, {}, false);
         this._clients.set(client.id, client);
 

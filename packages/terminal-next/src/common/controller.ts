@@ -70,5 +70,5 @@ export interface ITerminalGroupViewService {
 
 export interface ITerminalBrowserHistory {
   current: string | undefined;
-  groups: string[][];
+  groups: (string[] | { clientId: string }[])[];
 }

@@ -3,7 +3,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { Disposable, Deferred } from '@ali/ide-core-common';
+import { Disposable, Deferred, debounce } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
@@ -220,6 +220,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._ready = true;
   }
 
+  reset() {
+    this._ready = false;
+    this._attached = new Deferred<void>();
+  }
+
   async attach() {
     if (!this._ready) {
       return this._doAttach();
@@ -232,7 +237,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
   }
 
-  private _layout() {
+  @debounce(100)
+  layout() {
     this._checkReady();
     if (!this._term.element || this._term.element.clientHeight === 0 || this._term.element.clientWidth === 0) {
       this._container.innerHTML = '';
@@ -250,7 +256,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._widget.element.appendChild(this._container);
     await this.attach();
     this._widget.name = this.name;
-    this._layout();
+    this.layout();
   }
 
   private async _apply(widget: IWidget) {
@@ -260,7 +266,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     this.addDispose(widget.onResize(async () => {
       await this._attached.promise;
-      this._layout();
+      this.layout();
     }));
 
     this._widget = widget;
