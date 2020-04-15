@@ -9,7 +9,7 @@ import { ResizeEvent } from '../../layout';
 import { SplitPanelManager } from './split-panel.service';
 
 export interface ResizeHandle {
-  setSize: (targetSize: number, isLatter?: boolean) => void;
+  setSize: (targetSize?: number, isLatter?: boolean) => void;
   setRelativeSize: (prev: number, next: number, isLatter: boolean) => void;
   getSize: (isLatter: boolean) => number;
   getRelativeSize: (isLatter: boolean) => number[];
@@ -81,11 +81,11 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
 
   // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   const setSizeHandle = (index) => {
-    return (size: number, isLatter?: boolean) => {
+    return (size?: number, isLatter?: boolean) => {
       const targetIndex = isLatter ? index - 1 : index;
       const delegete = resizeDelegates.current[targetIndex];
       if (delegete) {
-        delegete.setAbsoluteSize(size || childList[index]!['props'].defaultSize, isLatter, resizeKeep);
+        delegete.setAbsoluteSize(size !== undefined ? size : childList[index]!['props'].defaultSize, isLatter, resizeKeep);
       }
     };
   };

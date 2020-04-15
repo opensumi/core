@@ -38,7 +38,7 @@ export class TabbarService extends WithEventBus {
   public commonTitleMenu: IContextMenu;
 
   resizeHandle: {
-    setSize: (targetSize: number) => void,
+    setSize: (targetSize?: number) => void,
     setRelativeSize: (prev: number, next: number) => void,
     getSize: () => number,
     getRelativeSize: () => number[],
@@ -586,7 +586,7 @@ export class TabbarService extends WithEventBus {
         if (previousId && currentId !== previousId) {
           this.prevSize = getSize();
         }
-        setSize(this.prevSize || 0);
+        setSize(this.prevSize);
         const containerInfo = this.getContainer(currentId);
         if (containerInfo && containerInfo.options!.noResize) {
           lockSize(true);
