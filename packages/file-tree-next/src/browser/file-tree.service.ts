@@ -411,7 +411,6 @@ export class FileTreeService extends Tree {
     this.queueChangeEvent(node.path, () => {
       this.onNodeRefreshedEmitter.fire(node);
     });
-
   }
 
   // 队列化Changed事件

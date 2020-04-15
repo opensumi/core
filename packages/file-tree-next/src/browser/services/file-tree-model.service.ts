@@ -3,7 +3,7 @@ import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNode
 import { FileTreeService } from '../file-tree.service';
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
-import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer } from '@ali/ide-core-browser';
+import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, formatLocalize, isValidBasename, DisposableCollection, StorageProvider, STORAGE_NAMESPACE, IStorage, Event, ThrottledDelayer, Emitter } from '@ali/ide-core-browser';
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
@@ -16,9 +16,10 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import * as styles from '../file-tree-node.module.less';
 import { FileStat } from '@ali/ide-file-service';
 import { ISerializableState } from '@ali/ide-components/lib/recycle-tree/tree/model/treeState';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 export interface IParseStore {
-  files: (File|Directory)[];
+  files: (File | Directory)[];
   type: PasteTypes;
 }
 
@@ -36,6 +37,8 @@ export const DEFAULT_FLUSH_DELAY = 200;
 export class FileTreeModelService {
 
   static FILE_TREE_SNAPSHOT_KEY = 'FILE_TREE_SNAPSHOT';
+  static DEFAULT_FLUSH_DELAY = 200;
+  static DEFAULT_LOCATION_FLUSH_DELAY = 500;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -72,6 +75,9 @@ export class FileTreeModelService {
 
   @Autowired(IMessageService)
   private readonly messageService: IMessageService;
+
+  @Autowired(WorkbenchEditorService)
+  private readonly editorService: WorkbenchEditorService;
 
   private _treeModel: TreeModel;
   private _dndService: DragAndDropService;
@@ -112,10 +118,22 @@ export class FileTreeModelService {
 
   private _explorerStorage: IStorage;
 
-  private flushLoadSnapshotDelayer = new ThrottledDelayer<void>(DEFAULT_FLUSH_DELAY);
+  private flushLoadSnapshotDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_FLUSH_DELAY);
+  private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
+  private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
+
+  private flushLocationDelayer =  new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LOCATION_FLUSH_DELAY);
 
   constructor() {
     this._whenReady = this.initTreeModel();
+  }
+
+  get onDidFocusedFileChange() {
+    return this.onDidFocusedFileChangeEmitter.event;
+  }
+
+  get onDidSelectedFileChange() {
+    return this.onDidSelectedFileChangeEmitter.event;
   }
 
   get fileTreeHandle() {
@@ -179,11 +197,12 @@ export class FileTreeModelService {
     // 根据是否为多工作区创建不同根节点
     const root = (await this.fileTreeService.resolveChildren())[0];
     this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
-    this._explorerStorage =  await this.storageProvider(STORAGE_NAMESPACE.EXPLORER);
+    this._explorerStorage = await this.storageProvider(STORAGE_NAMESPACE.EXPLORER);
     // 获取上次文件树的状态
-    const snapshot = this.explorerStorage.get(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     if (snapshot) {
-      this._loadSnapshotReady = this._treeModel.loadTreeState(snapshot);
+      // 初始化时。以右侧编辑器打开的文件进行定位
+      this._loadSnapshotReady = this.loadFileTreeSnapshot(snapshot);
     }
     this.initDecorations(root);
     // _dndService依赖装饰器逻辑加载
@@ -191,17 +210,26 @@ export class FileTreeModelService {
     // 等待初次加载完成后再初始化当前的treeStateWatcher, 只加载可见的节点
     const treeStateWatcher = this._treeModel.getTreeStateWatcher(true);
     this.disposableCollection.push(treeStateWatcher.onDidChange(() => {
-      const currentSnapshot = treeStateWatcher.snapshot();
-      const surfaceDirSets = new Set(currentSnapshot.expandedDirectories.atSurface);
-      currentSnapshot.expandedDirectories.atSurface = Array.from(surfaceDirSets);
-      this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, currentSnapshot);
+      const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+      const currentTreeSnapshot = treeStateWatcher.snapshot();
+      this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, {
+        ...snapshot,
+        ...currentTreeSnapshot,
+      });
     }));
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed(() => {
       // 尝试恢复树
       this.flushLoadSnapshotDelayer.trigger(async () => {
-        const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+        const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
         if (snapshot && snapshot.specVersion) {
-          this._loadSnapshotReady = this._treeModel.loadTreeState(snapshot);
+          this._loadSnapshotReady = this.loadFileTreeSnapshot(snapshot);
+          // 刷新操作后，在文件树上定位文件位置
+          this.flushLocationDelayer.trigger(async () => {
+            const currentEditor = this.editorService.currentEditor;
+            if (currentEditor && currentEditor.currentUri) {
+              await this.location(currentEditor.currentUri);
+            }
+          });
         }
       });
     }));
@@ -247,6 +275,10 @@ export class FileTreeModelService {
     this.contextMenuResourceContext.set(file.uri);
   }
 
+  private async loadFileTreeSnapshot(snapshot: ISerializableState) {
+    await this._treeModel.loadTreeState(snapshot);
+  }
+
   private async getFileTreeNodePathByUri(uri: URI) {
     if (!uri) {
       return;
@@ -271,6 +303,7 @@ export class FileTreeModelService {
       this.selectedDecoration.removeTarget(file);
     });
     this._selectedFiles = [];
+    this.onDidSelectedFileChangeEmitter.fire([]);
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
@@ -298,6 +331,9 @@ export class FileTreeModelService {
       this.focusedDecoration.addTarget(target);
       this._focusedFile = target;
       this._selectedFiles = [target];
+      // 选中及焦点文件变化
+      this.onDidFocusedFileChangeEmitter.fire(target.uri);
+      this.onDidSelectedFileChangeEmitter.fire([target.uri]);
       // 通知视图更新
       this.treeModel.dispatchChange();
     }
@@ -331,6 +367,9 @@ export class FileTreeModelService {
         this.focusedDecoration.addTarget(target);
         this._focusedFile = target;
         this._selectedFiles.push(target);
+        // 事件通知状态变化
+        this.onDidFocusedFileChangeEmitter.fire(target.uri);
+        this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
       }
     }
     // 通知视图更新
@@ -339,11 +378,13 @@ export class FileTreeModelService {
 
   // 选中当前指定节点，添加装饰器属性
   activeFileSelectedDecoration = (target: File | Directory) => {
-    if (this.selectedFiles.indexOf(target) > -1) {
-      return ;
+    if (this._selectedFiles.indexOf(target) > -1) {
+      return;
     }
-    this.selectedFiles.push(target);
+    this._selectedFiles.push(target);
     this.selectedDecoration.addTarget(target);
+    // 选中状态变化
+    this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
     // 通知视图更新
     this.treeModel.dispatchChange();
   }
@@ -359,6 +400,8 @@ export class FileTreeModelService {
         this.selectedDecoration.addTarget(file);
       }
     }
+    // 选中状态变化
+    this.onDidSelectedFileChangeEmitter.fire(this._selectedFiles.map((file) => file.uri));
     // 通知视图更新
     this.treeModel.dispatchChange();
   }
@@ -367,6 +410,7 @@ export class FileTreeModelService {
   enactiveFileDecoration = () => {
     if (this.focusedFile) {
       this.focusedDecoration.removeTarget(this.focusedFile);
+      this.onDidFocusedFileChangeEmitter.fire();
       this.treeModel.dispatchChange();
     }
     this._focusedFile = undefined;
@@ -905,6 +949,10 @@ export class FileTreeModelService {
 
   public locationOnShow = (uri: URI) => {
     this._nextLocationTarget = uri;
+  }
+
+  public locationWhenStatable = async (uri: URI) => {
+
   }
 
   public performLocationOnHandleShow = async () => {
