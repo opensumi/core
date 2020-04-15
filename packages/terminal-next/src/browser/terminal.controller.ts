@@ -141,6 +141,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
          * 恢复旧的终端需要尝试预先连接后端
          */
         await client.attach();
+        widget.name = client.name;
 
         /**
          * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
