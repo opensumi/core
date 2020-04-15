@@ -1,6 +1,8 @@
 declare module "kaitian" {
 
+  import { ExtensionContext as VSCodeExtensionContext } from 'vscode';
   export * from 'vscode';
+
   export namespace event {
 
     /**
@@ -220,7 +222,7 @@ declare module "kaitian" {
     [comonentIds: string]: IProxy;
   }
 
-  export interface ExtensionContext<T = IComponentProxy> {
+  export interface ExtensionContext<T = IComponentProxy> extends VSCodeExtensionContext {
     registerExtendModuleService<S>(service: S): void;
 
     componentProxy: T;
