@@ -225,6 +225,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     const forkTimer = this.reporterService.time(`${clientId} fork ext process`);
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
+
+    if (this.appConfig.onDidCreateExtensionHostProcess) {
+      this.appConfig.onDidCreateExtensionHostProcess(extProcess);
+    }
     this.logger.log('extProcess.pid', extProcess.pid);
 
     extProcess.on('exit', async (code, signal) => {

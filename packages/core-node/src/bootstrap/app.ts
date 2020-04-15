@@ -3,6 +3,7 @@ import * as Koa from 'koa';
 import * as http from 'http';
 import * as https from 'https';
 import * as net from 'net';
+import * as cp from 'child_process';
 import { MaybePromise, ContributionProvider, createContributionProvider, isWindows } from '@ali/ide-core-common';
 import { createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
@@ -57,7 +58,7 @@ interface Config {
   /**
    * 外部设置的 ILogService，替换默认的 logService
    */
-  LogServiceClass: ConstructorOf<ILogService>;
+  LogServiceClass?: ConstructorOf<ILogService>;
   /**
    * 是否使用试验性多通道通信能力
    */
@@ -92,6 +93,10 @@ interface Config {
    * 访问静态资源允许的 path
    */
   staticAllowPath?: string[];
+  /**
+   * 获取插件进程句柄方法
+   */
+  onDidCreateExtensionHostProcess?: (cp: cp.ChildProcess) => void;
 }
 
 export interface AppConfig extends Partial<Config> {
@@ -179,6 +184,7 @@ export class ServerApp implements IServerApp {
       extLogServiceClassPath: opts.extLogServiceClassPath,
       useExperimentalEfsw: opts.useExperimentalEfsw,
       maxExtProcessCount: opts.maxExtProcessCount,
+      onDidCreateExtensionHostProcess: opts.onDidCreateExtensionHostProcess,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
