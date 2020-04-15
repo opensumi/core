@@ -99,7 +99,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
     registry.registerCommand({
       ...TERMINAL_COMMANDS.CLEAR,
-      iconClass: getIcon('clear'),
     }, {
       execute: () => {
         this.view.clear();
@@ -145,8 +144,10 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       },
     });
 
-    registry.registerCommand(TERMINAL_COMMANDS.SELECT_ALL_CONTENT, {
-      execute: async () => {
+    registry.registerCommand({
+      ...TERMINAL_COMMANDS.SELECT_ALL_CONTENT,
+    }, {
+      execute: () => {
         const widgetId = this.view.currentWidgetId;
         const client = this.terminalController.findClientFromWidgetId(widgetId);
         if (client) {
@@ -155,9 +156,20 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       },
     });
 
-    registry.registerCommand(TERMINAL_COMMANDS.CLEAR_CONTENT, {
-      execute: async () => {
-        // this.terminalController.clearAllGroups();
+    registry.registerCommand({
+      ...TERMINAL_COMMANDS.CLEAR_CONTENT,
+      iconClass: getIcon('clear'),
+    }, {
+      execute: () => {
+        this.terminalController.clearCurrentGroup();
+      },
+    });
+
+    registry.registerCommand({
+      ...TERMINAL_COMMANDS.CLEAR_ALL_CONTENT,
+    }, {
+      execute: () => {
+        this.terminalController.clearAllGroups();
       },
     });
 
@@ -201,10 +213,10 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
       tooltip: localize('terminal.split'),
     });
     registry.registerItem({
-      id: TERMINAL_COMMANDS.CLEAR.id,
-      command: TERMINAL_COMMANDS.CLEAR.id,
-      viewId: TERMINAL_COMMANDS.CLEAR.category,
-      tooltip: localize('terminal.clear'),
+      id: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
+      command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
+      viewId: TERMINAL_COMMANDS.CLEAR_CONTENT.category,
+      tooltip: localize('terminal.menu.clearGroups'),
     });
   }
 

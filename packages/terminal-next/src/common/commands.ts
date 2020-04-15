@@ -47,7 +47,13 @@ export namespace TERMINAL_COMMANDS {
 
   export const CLEAR_CONTENT = {
     id: 'terminal.clearContent',
-    label: localize('terminal.menu.clearGroups'),
+    label: localize('terminal.menu.clearCurrentGroup'),
+    category: CATEGORY,
+  };
+
+  export const CLEAR_ALL_CONTENT = {
+    id: 'terminal.clearAllContent',
+    label: localize('terminal.menu.clearAllGroups'),
   };
 
   export const TAB_RENAME = {

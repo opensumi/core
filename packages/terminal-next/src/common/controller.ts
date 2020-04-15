@@ -23,6 +23,8 @@ export interface ITerminalController extends Disposable {
   blur(): void;
   findClientFromWidgetId(widgetId: string): ITerminalClient | undefined;
   createClientWithWidget(options: TerminalOptions): ITerminalClient;
+  clearCurrentGroup(): void;
+  clearAllGroups(): void;
   showTerminalPanel(): void;
   hideTerminalPanel(): void;
   toJSON(): ITerminalBrowserHistory;

@@ -352,5 +352,6 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   clear() {
     this.groups = observable.array([]);
     this._widgets.clear();
+    this._onWidgetEmpty.fire();
   }
 }
