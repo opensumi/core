@@ -6,7 +6,6 @@ import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL 
 import { ResizeHandle } from '@ali/ide-core-browser/lib/components';
 import debounce = require('lodash.debounce');
 import { TabBarRegistrationEvent, IMainLayoutService } from '../../common';
-import { AccordionService } from '../accordion/accordion.service';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 
@@ -39,7 +38,7 @@ export class TabbarService extends WithEventBus {
   public commonTitleMenu: IContextMenu;
 
   resizeHandle: {
-    setSize: (targetSize: number) => void,
+    setSize: (targetSize?: number) => void,
     setRelativeSize: (prev: number, next: number) => void,
     getSize: () => number,
     getRelativeSize: () => number[],
@@ -587,7 +586,7 @@ export class TabbarService extends WithEventBus {
         if (previousId && currentId !== previousId) {
           this.prevSize = getSize();
         }
-        setSize(this.prevSize || (INIT_PANEL_SIZE + this.barSize));
+        setSize(this.prevSize);
         const containerInfo = this.getContainer(currentId);
         if (containerInfo && containerInfo.options!.noResize) {
           lockSize(true);
