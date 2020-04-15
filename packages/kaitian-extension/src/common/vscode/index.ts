@@ -27,6 +27,7 @@ import { IExtHostDebug, IMainThreadDebug } from './debug';
 import { IExtHostConnection, IMainThreadConnection } from './connection';
 import { IExtHostTerminal, IMainThreadTerminal } from './terminal';
 import { IKaitianExtHostWebviews } from '../kaitian/webview';
+import { IExtHostProgress, IMainThreadProgress } from './progress';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -62,6 +63,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadConnection: createExtHostContextProxyIdentifier<IMainThreadConnection>('MainThreadConnection'),
   MainThreadTerminal: createExtHostContextProxyIdentifier<IMainThreadTerminal>('MainThreadTerminal'),
   MainThreadWindow: createExtHostContextProxyIdentifier<IMainThreadWindow>('MainThreadWindow'),
+  MainThreadProgress: createExtHostContextProxyIdentifier<IMainThreadProgress>('MainThreadProgress'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -89,6 +91,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostConnection: createExtHostContextProxyIdentifier<IExtHostConnection>('ExtHostConnection'),
   ExtHostTerminal: createExtHostContextProxyIdentifier<IExtHostTerminal>('ExtHostTerminal'),
   ExtHostWindow: createExtHostContextProxyIdentifier<IExtHostWindow>('ExtHostWindow'),
+  ExtHostProgress: createExtHostContextProxyIdentifier<IExtHostProgress>('ExtHostProgress'),
   KaitianExtHostWebview: createExtHostContextProxyIdentifier<IKaitianExtHostWebviews>('KaitianExtHostWebview'),
 };
 
@@ -129,3 +132,4 @@ export * from './connection';
 export * from './extension-message-reader';
 export * from './extension-message-writer';
 export * from './terminal';
+export * from './progress';

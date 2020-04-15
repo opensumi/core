@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { Layout } from '@ali/ide-core-browser/lib/components/layout/layout';
-import { Badge } from '@ali/ide-components';
+import { Badge, Icon } from '@ali/ide-components';
 import { ComponentRegistryInfo, useInjectable } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
@@ -10,6 +10,7 @@ import { TabbarConfig } from './renderer.view';
 import { getIcon } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '../../common';
 import { InlineMenuBar } from '@ali/ide-core-browser/lib/components/actions';
+import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 
 function splitVisibleTabs(containers: ComponentRegistryInfo[], tabSize: number, availableSize: number) {
   const visibleCount = Math.floor(availableSize / tabSize);
@@ -112,9 +113,11 @@ export const TabbarViewBase: React.FC<{
 });
 
 export const IconTabView: React.FC<{component: ComponentRegistryInfo}> = observer(({ component }) => {
+  const progressService: IProgressService = useInjectable(IProgressService);
+  const inProgress = progressService.getIndicator(component.options!.containerId)!.progressModel.show;
   return <div className={styles.icon_tab}>
     <div className={clsx(component.options!.iconClass, 'activity-icon')} title={component.options!.title}></div>
-    {component.options!.badge && <Badge className={styles.tab_badge}>{component.options!.badge}</Badge>}
+    {inProgress ? <Badge className={styles.tab_badge}><Icon icon='time-circle-fill' /></Badge> : (component.options!.badge && <Badge className={styles.tab_badge}>{component.options!.badge}</Badge>)}
   </div>;
 });
 

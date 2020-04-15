@@ -22,7 +22,6 @@ import {
   MarkdownString,
   CompletionItemKind,
   Location,
-  LogLevel,
   Position,
   ColorPresentation,
   Range,
@@ -47,9 +46,8 @@ import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
 import { createEnvApiFactory, ExtHostEnv } from './ext.host.env';
 import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
-import { createFileSystemApiFactory, ExtHostFileSystem } from './ext.host.file-system';
+import { ExtHostFileSystem } from './ext.host.file-system';
 import { OverviewRulerLane } from '@ali/ide-editor';
-import { ExtHostStorage } from './ext.host.storage';
 import { ExtHostMessage } from './ext.host.message';
 import { ExtHostTreeViews } from './ext.host.treeview';
 import { ExtHostWebviewService } from './ext.host.api.webview';
@@ -63,6 +61,7 @@ import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostDebug, createDebugApiFactory } from './debug';
 import { ExtHostConnection } from './ext.host.connection';
 import { ExtHostTerminal } from './ext.host.terminal';
+import { ExtHostProgress } from './ext.host.progress';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -93,6 +92,7 @@ export function createApiFactory(
   const extHostConnection = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostConnection, new ExtHostConnection(rpcProtocol)) as IExtHostConnectionService;
   const extHostDebug = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDebug, new ExtHostDebug(rpcProtocol, extHostConnection, extHostCommands)) as IExtHostDebugService;
   const extHostTerminal = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocol));
+  const extHostProgress = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostProgress, new ExtHostProgress(rpcProtocol)) as ExtHostProgress;
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
@@ -102,7 +102,7 @@ export function createApiFactory(
       window: createWindowApiFactory(
         extension, extHostEditors, extHostMessage, extHostWebview,
         extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,
-        extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow,
+        extHostQuickOpen, extHostOutput, extHostTerminal, extHostWindow, extHostProgress,
       ),
       languages: createLanguagesApiFactory(extHostLanguages, extension),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),

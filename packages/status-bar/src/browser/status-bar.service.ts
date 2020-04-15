@@ -1,29 +1,8 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, getIconClass } from '@ali/ide-core-browser';
-import { IStatusBarService, StatusBarEntry, StatusBarAlignment } from '@ali/ide-core-browser/lib/services';
-import { CommandService, IDisposable } from '@ali/ide-core-common';
-// import * as common from '../common';
-
-// /**
-//  * @deprecated import from `@ali/ide-status-bar` instead
-//  */
-// export const StatusBar = common.IStatusBarService;
-
-// /**
-//  * @deprecated import from `@ali/ide-status-bar` instead
-//  */
-// export type StatusBar = common.IStatusBarService;
-
-// /**
-//  * @deprecated import from `@ali/ide-status-bar` instead
-//  */
-// export const StatusBarAlignment = common.StatusBarAlignment;
-
-// /**
-//  * @deprecated import from `@ali/ide-status-bar` instead
-//  */
-// export type StatusBarEntry = common.StatusBarEntry;
+import { Disposable } from '@ali/ide-core-browser';
+import { IStatusBarService, StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '@ali/ide-core-browser/lib/services';
+import { CommandService } from '@ali/ide-core-common';
 
 @Injectable()
 export class StatusBarService extends Disposable implements IStatusBarService {
@@ -56,7 +35,7 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @param color
    */
   setColor(color?: string | undefined) {
-    for (const [key, value] of this.entries) {
+    for (const [, value] of this.entries) {
       value.color = color;
     }
   }
@@ -79,12 +58,15 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @param id
    * @param entry
    */
-  addElement(id: string, entry: StatusBarEntry): IDisposable {
+  addElement(id: string, entry: StatusBarEntry): StatusBarEntryAccessor {
     entry = this.getElementConfig(id, entry);
     this.entries.set(id, entry);
     return {
       dispose: () => {
         this.entries.delete(id);
+      },
+      update: (entry: StatusBarEntry) => {
+        this.setElement(id, entry);
       },
     };
   }

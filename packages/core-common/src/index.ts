@@ -32,3 +32,4 @@ export * from './reporter';
 export * from './connection';
 export * from './storage';
 export * from './range';
+export * from './progress';

@@ -11,10 +11,11 @@ import {
   IMainThreadOutput,
   IMainThreadWebview,
   IMainThreadTerminal,
+  IMainThreadProgress,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
-import { Injector, Injectable } from '@ali/common-di';
+import { Injector } from '@ali/common-di';
 import { VSCodeExtensionService } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadLanguages } from './main.thread.language';
@@ -37,6 +38,7 @@ import { MainThreadDebug } from './main.thread.debug';
 import { MainThreadConnection } from './main.thread.connection';
 import { MainThreadTerminal } from './main.thread.terminal';
 import { MainThreadWindow } from './main.thread.window';
+import { MainThreadProgress } from './main.thread.api.progress';
 
 export async function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -66,6 +68,7 @@ export async function createApiFactory(
   const MainThreadConnectionAPI = injector.get(MainThreadConnection, [rpcProtocol]);
   const MainThreadDebugAPI = injector.get(MainThreadDebug, [rpcProtocol, MainThreadConnectionAPI]);
   const MainThreadTerminalAPI = injector.get(MainThreadTerminal, [rpcProtocol]);
+  const MainThreadProgressAPI = injector.get(MainThreadProgress, [rpcProtocol]);
 
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -90,6 +93,7 @@ export async function createApiFactory(
   rpcProtocol.set<MainThreadConnection>(MainThreadAPIIdentifier.MainThreadConnection, MainThreadConnectionAPI);
   rpcProtocol.set<MainThreadDebug>(MainThreadAPIIdentifier.MainThreadDebug, MainThreadDebugAPI);
   rpcProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, MainThreadTerminalAPI);
+  rpcProtocol.set<IMainThreadProgress>(MainThreadAPIIdentifier.MainThreadProgress, MainThreadProgressAPI);
 
   await MainThreadWebviewAPI.init();
 
@@ -115,5 +119,6 @@ export async function createApiFactory(
     MainThreadWindowAPI.dispose();
     MainThreadDebugAPI.dispose();
     MainThreadTerminalAPI.dispose();
+    MainThreadProgressAPI.dispose();
   };
 }

@@ -6,6 +6,8 @@ import { Layout, PanelContext } from '@ali/ide-core-browser/lib/components';
 import { useInjectable, ViewUiStateManager } from '@ali/ide-core-browser';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { IProgressService } from '@ali/ide-core-browser/lib/progress';
+import { ProgressBar } from '@ali/ide-core-browser/lib/progress/progress-bar';
 
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // panel 头部标题
@@ -103,6 +105,9 @@ export const AccordionSection = (
 
   const viewState = viewStateManager.getState(viewId);
 
+  const progressService: IProgressService = useInjectable(IProgressService);
+  const indicator = progressService.getIndicator(viewId)!;
+
   const bodyStyle = {
     overflow : expanded ? 'auto' : 'hidden',
   } as React.CSSProperties;
@@ -131,6 +136,7 @@ export const AccordionSection = (
         style={ bodyStyle }
         ref={(ele) =>  contentRef.current = ele}
       >
+        <ProgressBar className={styles.progressBar} progressModel={indicator.progressModel} />
         <ErrorBoundary>
           <Component {...initialProps} viewState={viewState} />
         </ErrorBoundary>

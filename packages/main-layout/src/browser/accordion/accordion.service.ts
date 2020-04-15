@@ -5,6 +5,7 @@ import { SplitPanelManager, SplitPanelService } from '@ali/ide-core-browser/lib/
 import { AbstractContextMenuService, AbstractMenuService, IMenu, IMenuRegistry, ICtxMenuRenderer, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { RESIZE_LOCK } from '@ali/ide-core-browser/lib/components';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 
 export interface SectionState {
   collapsed: boolean;
@@ -41,6 +42,9 @@ export class AccordionService extends WithEventBus {
 
   @Autowired()
   private layoutState: LayoutState;
+
+  @Autowired(IProgressService)
+  private progressService: IProgressService;
 
   protected splitPanelService: SplitPanelService;
 
@@ -126,6 +130,8 @@ export class AccordionService extends WithEventBus {
   }
 
   appendView(view: View) {
+    const disposables = new DisposableCollection();
+    disposables.push(this.progressService.registerProgressIndicator(view.id));
     // 已存在的viewId直接替换
     const existIndex = this.views.findIndex((item) => item.id === view.id);
     if (existIndex !== -1) {
@@ -135,7 +141,6 @@ export class AccordionService extends WithEventBus {
     const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
     this.views.splice(index === -1 ? this.views.length : index, 0, view);
     this.viewContextKeyRegistry.registerContextKeyService(view.id, this.scopedCtxKeyService.createScoped()).createKey('view', view.id);
-    const disposables = new DisposableCollection();
     disposables.push(this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerVisibleToggleCommand(view.id),

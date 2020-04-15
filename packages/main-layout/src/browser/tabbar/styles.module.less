@@ -8,6 +8,9 @@
   position: absolute;
   top: 22px;
   right: 8px;
+  :global(.kt-icon) {
+    color: var(--activityBarBadge-foreground);
+  }
 }
 .icon_tab {
   padding: 0 0;
@@ -122,6 +125,7 @@ li {
 .container_wrap {
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 .bar_content {
   display: flex;
@@ -299,6 +303,7 @@ li {
 .panel_wrapper {
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 .bottom_tab_title {
   display: inline-block;

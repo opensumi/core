@@ -1,0 +1,34 @@
+.progressBar {
+  width: 100%;
+  height: 2px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 999;
+}
+.hide {
+  display: none;
+}
+.fade {
+  opacity: 0;
+  transition: opacity 800ms ease-out;
+}
+.progress {
+  height: 2px;
+  opacity: 1;
+  transition: width 100ms linear;
+  background-color: var(--progressBar-background);
+  &.infinite {
+    animation-name: progress;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    transform: translate3d(0px, 0px, 0px);
+  }
+}
+@keyframes progress {
+  from { transform: translateX(0%) scaleX(1) }
+  50% { transform: translateX(2500%) scaleX(3) }
+  to { transform: translateX(4950%) scaleX(1) }
+}
