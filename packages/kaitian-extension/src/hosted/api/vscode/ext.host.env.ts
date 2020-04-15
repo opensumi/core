@@ -18,8 +18,9 @@ export class Env {
   public sessionId: string;
 
   constructor() {
+    // TODO: address库不靠谱，是否考虑其他 machineId 方案
     address.mac((err, macAddress) => {
-      if (!err) {
+      if (!err && macAddress) {
         this.macMachineId = createHash('sha256').update(macAddress, 'utf8').digest('hex');
       } else {
         this.macMachineId = v4();
