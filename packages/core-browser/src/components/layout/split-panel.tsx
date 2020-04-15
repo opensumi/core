@@ -9,7 +9,7 @@ import { ResizeEvent } from '../../layout';
 import { SplitPanelManager } from './split-panel.service';
 
 export interface ResizeHandle {
-  setSize: (targetSize: number, isLatter: boolean) => void;
+  setSize: (targetSize: number, isLatter?: boolean) => void;
   setRelativeSize: (prev: number, next: number, isLatter: boolean) => void;
   getSize: (isLatter: boolean) => number;
   getRelativeSize: (isLatter: boolean) => number[];
@@ -85,7 +85,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
       const targetIndex = isLatter ? index - 1 : index;
       const delegete = resizeDelegates.current[targetIndex];
       if (delegete) {
-        delegete.setAbsoluteSize(size, isLatter, resizeKeep);
+        delegete.setAbsoluteSize(size || childList[index]!['props'].defaultSize, isLatter, resizeKeep);
       }
     };
   };
