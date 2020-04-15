@@ -451,6 +451,7 @@ export const localizationBundle = {
     'terminal.new': '新建终端',
     'terminal.split': '拆分终端',
     'terminal.clear': '终止所有终端',
+    'terminal.clear.content': '清空当前终端内容',
     'terminal.independ': '独立终端',
     'terminal.maximum': '最大化面板大小',
     'terminal.or': '或者',
@@ -466,7 +467,8 @@ export const localizationBundle = {
     'terminal.menu.clear': '清空',
     'terminal.menu.stop': '终止',
     'terminal.menu.stopGroup': '终止',
-    'terminal.menu.clearGroups': '清空所有日志',
+    'terminal.menu.clearCurrentGroup': '清空当前终端日志',
+    'terminal.menu.clearAllGroups': '清空所有终端日志',
     'terminal.menu.selectType': '默认终端类型',
     'terminal.menu.moreSettings': '更多设置',
 

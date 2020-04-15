@@ -391,7 +391,8 @@ export const localizationBundle = {
     'terminal.try.reconnect': 'Try To Reconnect The Terminal',
     'terminal.new': 'Create Terminal',
     'terminal.split': 'Split Terminal',
-    'terminal.clear': 'Clear Terminal',
+    'terminal.clear': 'Remove All Terminals',
+    'terminal.clear.content': 'Clear All Terminals',
     'terminal.independ': 'Independ Terminal',
     'terminal.maximum': 'Maximum Terminal Panel',
     'terminal.or': 'Or',
@@ -412,6 +413,8 @@ export const localizationBundle = {
     'terminal.menu.clearGroups': 'Clear All Terminals',
     'terminal.menu.selectType': 'Default Terminal Type',
     'terminal.menu.moreSettings': 'More Settings',
+    'terminal.menu.clearCurrentGroup': 'Clear Current Terminals',
+    'terminal.menu.clearAllGroups': 'Clear All Terminals',
 
     'deugger.menu.setValue': 'Set Value',
     'deugger.menu.setValue.param': 'Please input the value of this variable',

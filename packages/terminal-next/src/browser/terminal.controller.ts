@@ -296,6 +296,23 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this.clientFactory(widget, options, false);
   }
 
+  clearCurrentGroup() {
+    this.terminalView.currentGroup && this.terminalView.currentGroup.widgets.forEach((widget) => {
+      const client = this._clients.get(widget.id);
+      if (client) {
+        client.clear();
+      }
+    });
+  }
+
+  clearAllGroups() {
+    this._clients.forEach((client) => {
+      if (client) {
+        client.clear();
+      }
+    });
+  }
+
   showTerminalPanel() {
     if (this._tabbarHandler) {
       this._tabbarHandler.activate();
