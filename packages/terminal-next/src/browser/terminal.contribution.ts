@@ -102,7 +102,6 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
     }, {
       execute: () => {
         this.view.clear();
-        this.terminalController.hideTerminalPanel();
       },
     });
 
