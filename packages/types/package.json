@@ -1,13 +1,16 @@
 {
   "name": "@ali/kaitian",
   "version": "1.8.4",
+  "private": true,
+  "typings": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "http://registry.npm.alibaba-inc.com"
+    "registry": "https://registry.npm.alibaba-inc.com"
   },
-  "private": false,
-  "typings": "index.d.ts"
+  "dependencies": {
+    "@types/react": "^16.9.33"
+  }
 }
