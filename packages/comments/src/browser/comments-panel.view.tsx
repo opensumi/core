@@ -7,11 +7,6 @@ import * as styles from './comments.module.less';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as clx from 'classnames';
 
-const scrollContainerStyle = {
-  width: '100%',
-  height: '100%',
-};
-
 export const CommentsPanel = observer<{ viewState: ViewState; className?: string}>((props) => {
   const commentsService = useInjectable<ICommentsService>(ICommentsService);
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
@@ -85,6 +80,17 @@ export const CommentsPanel = observer<{ viewState: ViewState; className?: string
     return commentsPanelOptions.header;
   }, [commentsPanelOptions]);
 
+  const treeHeight = React.useMemo(() => {
+    return props.viewState.height - (headerComponent?.height || 0);
+  }, [props.viewState.height]);
+
+  const scrollContainerStyle = React.useMemo(() => {
+    return {
+      width: '100%',
+      height: treeHeight,
+    };
+  }, [treeHeight]);
+
   const defaultPlaceholder = React.useMemo(() => {
     return commentsPanelOptions.defaultPlaceholder;
   }, [commentsPanelOptions]);
@@ -96,12 +102,14 @@ export const CommentsPanel = observer<{ viewState: ViewState; className?: string
       {headerComponent?.component}
       {nodes.length ? (
         <RecycleTree
-          containerHeight={props.viewState.height - (headerComponent?.height || 0)}
+          containerHeight={treeHeight}
           scrollContainerStyle={scrollContainerStyle}
           nodes={nodes}
           foldable={true}
           outline={false}
           onSelect={(item) => handleSelect(item)}
+          leftPadding={20}
+          {...commentsPanelOptions.recycleTreeProps}
         />
       ) : (
         (!defaultPlaceholder || typeof defaultPlaceholder === 'string') ? <div className={styles.panel_placeholder}>{defaultPlaceholder || localize('comments.panel.placeholder')}</div> : defaultPlaceholder

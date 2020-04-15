@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Injectable, Autowired } from '@ali/common-di';
+import { INJECTOR_TOKEN, Injectable, Autowired } from '@ali/common-di';
 import * as ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import * as styles from './comments.module.less';
-import { ConfigProvider, localize, AppConfig } from '@ali/ide-core-browser';
+import { ConfigProvider, localize, AppConfig, useInjectable } from '@ali/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
 import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle } from '../common';
@@ -11,6 +11,8 @@ import * as clx from 'classnames';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
 import { CommentsThread } from './comments-thread';
+import { IEditor } from '@ali/ide-editor';
+import { CommentsZoneService } from './comments-zone.service';
 
 export interface ICommentProps {
   thread: CommentsThread;
@@ -19,51 +21,29 @@ export interface ICommentProps {
 
 const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   const {
-    commentThreadTitle,
-    commentThreadContext,
-    readOnly,
     comments,
+    threadHeaderTitle,
+    contextKeyService,
   } = thread;
-  const [isFocusReply] = React.useState(true);
-  const [rows] = React.useState(5);
+  const injector = useInjectable(INJECTOR_TOKEN);
+  const commentsZoneService: CommentsZoneService = injector.get(CommentsZoneService, [ thread ]);
   const [replyText, setReplyText] = React.useState('');
-
-  function onBlurReply(event: React.FocusEvent<HTMLTextAreaElement>) {
-    // TODO: 和 ResizeZone Widget 配合使用会抖动，先注释掉
-    // setFocusReply(false);
-    // if (replyText === '') {
-    //   setRows(1);
-    // }
-  }
-
-  function onFocusReply(event: React.FocusEvent<HTMLTextAreaElement>) {
-    // setFocusReply(true);
-    // if (replyText === '') {
-    //   setRows(5);
-    // }
-  }
+  const commentIsEmptyContext = React.useMemo(() => {
+    return contextKeyService.createKey<boolean>('commentIsEmpty', !replyText);
+  }, []);
+  const commentThreadTitle = commentsZoneService.commentThreadTitle;
+  const commentThreadContext = commentsZoneService.commentThreadContext;
 
   function onChangeReply(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    setReplyText(event.target.value);
+    const { value } = event.target;
+    setReplyText(value);
+    commentIsEmptyContext.set(!value);
   }
-
-  const commentTitleWithAuthor = React.useMemo(() => {
-    const commentAuthors = new Set<string>(comments.map((comment) => `@${comment.author.name}`));
-    return `${localize('comments.participants')}: ` + [...commentAuthors].join(' ');
-  }, [ comments ]);
-
-  const placeholder = React.useMemo(() => {
-    return localize('comments.reply.placeholder');
-  }, []);
-
-  const startReview = React.useMemo(() => {
-    return localize('comments.zone.title');
-  }, []);
 
   return (
     <div className={clx(thread.options.threadClassName, styles.comment_container)}>
       <div className={clx(thread.options.threadHeadClassName, styles.head)}>
-        <div className={styles.review_title}>{comments.length > 0 ? commentTitleWithAuthor : startReview}</div>
+        <div className={styles.review_title}>{threadHeaderTitle}</div>
         <InlineActionBar<ICommentThreadTitle>
           menus={commentThreadTitle}
           context={[{
@@ -71,45 +51,35 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
             widget,
           }]}
           separator='inline'
-          type='icon'
-          />
+          type='icon'/>
       </div>
-      {comments.map((comment) => (
-        <CommentItem
-          key={comment.id}
-          thread={thread}
-          comment={comment} />
-      ))}
-      {!readOnly && (
-        <div className={clx(styles.comment_reply_container)}>
+      <div className={styles.comment_body}>
+      { comments.length > 0 ?
+        <CommentItem widget={widget} commentThreadContext={commentThreadContext} thread={thread} /> : (
+        <div>
           <CommentsTextArea
+            focusDelay={100}
             value={replyText}
-            autoFocus={true}
-            onFocus={onFocusReply}
-            onBlur={onBlurReply}
             onChange={onChangeReply}
-            placeholder={`${placeholder}...`}
-            rows={rows}
+            placeholder={`${localize('comments.reply.placeholder')}...`}
           />
-          {(isFocusReply || replyText) && (
+          <div className={styles.comment_bottom_actions}>
             <InlineActionBar<ICommentReply>
               className={styles.comment_reply_actions}
-              separator='inline'
-              type='secondary'
+              type='button'
               context={[
                 {
                   text: replyText,
+                  widget,
                   thread,
                 },
               ]}
               menus={commentThreadContext}
-              afterClick={() => {
-                setReplyText('');
-              }}
             />
-          )}
+          </div>
         </div>
       )}
+      </div>
     </div>
   );
 });
@@ -122,8 +92,11 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
 
   private _wrapper: HTMLDivElement;
 
-  constructor(protected editor: monaco.editor.ICodeEditor, thread: CommentsThread) {
-    super(editor, thread.range);
+  private _editor: IEditor;
+
+  constructor(editor: IEditor, thread: CommentsThread) {
+    super(editor.monacoEditor, thread.range);
+    this._editor = editor;
     this._wrapper = document.createElement('div');
     this._isShow = !thread.isCollapsed;
     this._container.appendChild(this._wrapper);
@@ -137,7 +110,7 @@ export class CommentsZoneWidget extends ResizeZoneWidget implements ICommentsZon
   }
 
   get coreEditor() {
-    return this.editor;
+    return this._editor;
   }
 
   get isShow() {

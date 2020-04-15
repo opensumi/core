@@ -1,4 +1,4 @@
-import { Disposable, IDisposable, debounce } from '@ali/ide-core-common';
+import { Disposable, IDisposable } from '@ali/ide-core-common';
 // import * as styles from './styles.module.less';
 
 export class ViewZoneDelegate implements monaco.editor.IViewZone {
@@ -237,7 +237,6 @@ export abstract class ResizeZoneWidget extends ZoneWidget {
     };
   }
 
-  @debounce(100)
   protected resizeZoneWidget() {
     let wrapperHeight = this.wrap.offsetHeight;
     // 可能在设置页设置的时候 editor 不可见，获取的高度为 0

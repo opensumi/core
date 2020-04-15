@@ -3,15 +3,14 @@ import { CommandRegistry, CommandService, ILogger, formatLocalize, replaceLocali
 import { ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next';
 import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
-
-import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { IEditorGroup } from '@ali/ide-editor';
 
-export interface MenuActionFormat {
-  when: string;
+import { VSCodeContributePoint, Contributes } from '../../../../common';
+
+export interface MenuActionFormat extends IMenuItem {
   command: string;
-  alt: string;
-  group: string;
+  when?: string;
+  alt?: string;
 }
 
 export interface MenusSchema {
@@ -200,6 +199,10 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
               order,
               when: item.when,
               argsTransformer,
+              // 以下为 kaitian 扩展部分
+              type: item.type,
+              toggledWhen: item.toggledWhen,
+              enabledWhen: item.enabledWhen,
             } as IMenuItem,
           ));
         }

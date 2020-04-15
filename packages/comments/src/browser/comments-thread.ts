@@ -1,27 +1,20 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { observable } from 'mobx';
+import { observable, computed, autorun } from 'mobx';
 import {
   IRange,
   Disposable,
   URI,
   IContextKeyService,
   uuid,
+  localize,
 } from '@ali/ide-core-browser';
 import { CommentsZoneWidget } from './comments-zone.view';
 import { ICommentsThread, IComment, ICommentsThreadOptions, ICommentsService, IThreadComment } from '../common';
-import {
-  MenuId,
-  AbstractMenuService,
-  IMenu,
-} from '@ali/ide-core-browser/lib/menu/next';
 import { IEditor, EditorCollectionService } from '@ali/ide-editor';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 
 @Injectable({ multiple: true })
 export class CommentsThread extends Disposable implements ICommentsThread {
-
-  @Autowired(AbstractMenuService)
-  private readonly menuService: AbstractMenuService;
 
   @Autowired(ICommentsService)
   commentsService: ICommentsService;
@@ -32,7 +25,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   private readonly _contextKeyService: IContextKeyService;
 
   @Autowired(EditorCollectionService)
-  editorCollectionService: EditorCollectionService;
+  private readonly editorCollectionService: EditorCollectionService;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -41,8 +34,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   public comments: IThreadComment[];
 
   private widgets = new Map<IEditor, CommentsZoneWidget>();
-  private _commentThreadContext: IMenu;
-  private _commentThreadTitle: IMenu;
 
   static getId(uri: URI, range: IRange): string {
     return `${uri}#${range.startLineNumber}`;
@@ -58,17 +49,25 @@ export class CommentsThread extends Disposable implements ICommentsThread {
       ...comment,
       id: uuid(),
     })) : [];
+
     this._contextKeyService = this.registerDispose(this.globalContextKeyService.createScoped());
     // 设置 resource context key
     const resourceContext = new ResourceContextKey(this._contextKeyService);
     resourceContext.set(uri);
     options.contextValue && this._contextKeyService.createKey<string>('thread', options.contextValue);
+    this._contextKeyService.createKey<boolean>('readOnly', !!options.readOnly);
     const threadsLengthContext = this._contextKeyService.createKey<number>('threadsLength', this.commentsService.getThreadsByUri(uri).length);
-    this.initMenuContext();
-    // 监听每次 thread 的变化，重新设置 threadsLength
-    this.commentsService.onThreadsChanged(() => {
-      threadsLengthContext.set(this.commentsService.getThreadsByUri(uri).length);
+    const commentsLengthContext = this._contextKeyService.createKey<number>('commentsLength', this.comments.length);
+    // 监听 comments 的变化
+    autorun(() => {
+      commentsLengthContext.set(this.comments.length);
     });
+    // 监听每次 thread 的变化，重新设置 threadsLength
+    this.addDispose(this.commentsService.onThreadsChanged((thread) => {
+      if (thread.uri.isEqual(uri)) {
+        threadsLengthContext.set(this.commentsService.getThreadsByUri(uri).length);
+      }
+    }));
     this.addDispose({
       dispose: () => {
         this.comments = [];
@@ -84,14 +83,6 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     return this._contextKeyService;
   }
 
-  get commentThreadContext() {
-    return this._commentThreadContext;
-  }
-
-  get commentThreadTitle() {
-    return this._commentThreadTitle;
-  }
-
   get readOnly() {
     return !!this.options.readOnly;
   }
@@ -104,24 +95,24 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     return this.options.data;
   }
 
+  @computed
+  get threadHeaderTitle() {
+    if (this.comments.length) {
+      const commentAuthors = new Set<string>(this.comments.map((comment) => `@${comment.author.name}`));
+      return `${localize('comments.participants')}: ` + [...commentAuthors].join(' ');
+    } else {
+      return localize('comments.zone.title');
+    }
+
+  }
+
   private getEditorsByUri(uri: URI): IEditor[] {
     return this.editorCollectionService.listEditors()
       .filter((editor) => editor.currentUri?.isEqual(uri));
   }
 
-  private initMenuContext() {
-    this._commentThreadContext = this.registerDispose(this.menuService.createMenu(
-      MenuId.CommentsCommentThreadContext,
-      this.contextKeyService,
-    ));
-    this._commentThreadTitle = this.registerDispose(this.menuService.createMenu(
-      MenuId.CommentsCommentThreadTitle,
-      this.contextKeyService,
-    ));
-  }
-
   private addWidgetByEditor(editor: IEditor) {
-    const widget = this.injector.get(CommentsZoneWidget, [editor.monacoEditor, this]);
+    const widget = this.injector.get(CommentsZoneWidget, [editor, this]);
     this.widgets.set(editor, widget);
     this.addDispose(widget);
     editor.onDispose(() => {
@@ -142,19 +133,29 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     }
   }
 
-  public show() {
-    // 每次都拿所有的有这个 uri 的 editor
-    const editors = this.getEditorsByUri(this.uri);
-    editors.forEach((editor) => {
+  public show(editor?: IEditor) {
+    if (editor) {
       let widget = this.widgets.get(editor);
       // 说明是在新的 group 中打开
       if (!widget) {
         widget = this.addWidgetByEditor(editor);
       }
-      if (editor.currentUri?.isEqual(this.uri) && widget.isShow) {
-        widget.show();
-      }
-    });
+      widget.show();
+    } else {
+      // 每次都拿所有的有这个 uri 的 editor
+      const editors = this.getEditorsByUri(this.uri);
+      editors.forEach((editor) => {
+        let widget = this.widgets.get(editor);
+        // 说明是在新的 group 中打开
+        if (!widget) {
+          widget = this.addWidgetByEditor(editor);
+        }
+        // 如果标记之前是已经展示的 widget，则调用 show 方法
+        if (editor.currentUri?.isEqual(this.uri) && widget.isShow) {
+          widget.show();
+        }
+      });
+    }
   }
 
   public hide() {
@@ -186,5 +187,12 @@ export class CommentsThread extends Disposable implements ICommentsThread {
       ...comment,
       id: uuid(),
     })));
+  }
+
+  public removeComment(comment: IComment) {
+    const index = this.comments.findIndex((c) => c === comment );
+    if (index !== -1) {
+      this.comments.splice(index, 1);
+    }
   }
 }

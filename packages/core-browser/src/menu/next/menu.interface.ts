@@ -4,7 +4,7 @@ import { Event } from '@ali/ide-core-common/lib/event';
 import { Autowired, Injectable, Optional } from '@ali/common-di';
 
 import { IContextKeyService } from '../../context-key';
-import { ISubmenuItem, MenuNode } from './base';
+import { ISubmenuItem, MenuNode, IMenuActionDisplayType } from './base';
 import { MenuId } from './menu-id';
 import { KeybindingRegistry } from '../../keybinding';
 import { ICtxMenuRenderer } from './renderer/ctxmenu/base';
@@ -42,6 +42,7 @@ export class MenuItemNode extends MenuNode {
     @Optional() options: IMenuNodeOptions = {},
     @Optional() disabled: boolean,
     @Optional() checked: boolean,
+    @Optional() type?: IMenuActionDisplayType,
     @Optional() nativeRole?: string,
     @Optional() private argsTransformer?: (...args: any[]) => any[],
   ) {
@@ -49,6 +50,7 @@ export class MenuItemNode extends MenuNode {
       id: item.id,
       icon: item.iconClass,
       label: item.label!,
+      type,
       checked,
       disabled,
       nativeRole,
@@ -123,7 +125,7 @@ export class SubmenuItemNode extends MenuNode {
   }
 
   // 支持 submenu 点击展开
-  execute(...args: any[]): void {
+  execute(args: any[]): void {
     const [anchor, ...restArgs] = args;
     if (!anchor) {
       return;

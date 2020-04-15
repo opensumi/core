@@ -26,8 +26,8 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
   private readonly eventBus: IEventBus;
 
   onStart() {
-    this.listenToCreateCommentsPanel();
     this.registerCommentsFeature();
+    this.listenToCreateCommentsPanel();
     this.commentsService.init();
   }
 
@@ -52,8 +52,15 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
       label: '%comments.thread.action.close%',
       iconClass: getIcon('up'),
     }, {
-      execute: ({ widget }: ICommentThreadTitle) => {
-        widget.toggle();
+      execute: (threadTitle: ICommentThreadTitle) => {
+        const { thread, widget } = threadTitle;
+        if (!thread.comments.length) {
+          thread.dispose();
+        } else {
+          if (widget.isShow) {
+            widget.toggle();
+          }
+        }
       },
     });
   }
@@ -88,24 +95,32 @@ export class CommentsBrowserContribution extends Disposable implements ClientApp
    * @memberof CommentsBrowserContribution
    */
   private listenToCreateCommentsPanel() {
-    Event.once(this.commentsService.onThreadsCreated)(() => {
-      this.layoutService.collectTabbarComponent([{
-        id: CommentPanelId,
-        component: CommentsPanel,
-      }], {
-        badge: this.panelBadge,
-        containerId: CommentPanelId,
-        title: localize('comments').toUpperCase(),
-        hidden: false,
-        activateKeyBinding: 'shift+ctrlcmd+c',
-        ...this.commentsFeatureRegistry.getCommentsPanelOptions(),
-      }, 'bottom');
-    });
+    if (this.commentsFeatureRegistry.getCommentsPanelOptions().defaultShow) {
+      this.registerCommentPanel();
+    } else {
+      Event.once(this.commentsService.onThreadsCreated)(() => {
+        this.registerCommentPanel();
+      });
+    }
 
     this.commentsService.onThreadsChanged(() => {
       const handler = this.layoutService.getTabbarHandler(CommentPanelId);
       handler?.setBadge(this.panelBadge);
     });
+  }
+
+  private registerCommentPanel() {
+    this.layoutService.collectTabbarComponent([{
+      id: CommentPanelId,
+      component: CommentsPanel,
+    }], {
+      badge: this.panelBadge,
+      containerId: CommentPanelId,
+      title: localize('comments').toUpperCase(),
+      hidden: false,
+      activateKeyBinding: 'shift+ctrlcmd+c',
+      ...this.commentsFeatureRegistry.getCommentsPanelOptions(),
+    }, 'bottom');
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {

@@ -1,5 +1,6 @@
-import { ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
+import { ButtonType } from '@ali/ide-components';
+import { ILogger, Disposable, combinedDisposable, CommandRegistry, IDisposable, Event, Emitter, Command, ContributionProvider } from '@ali/ide-core-common';
 
 import { MenuId } from './menu-id';
 
@@ -22,20 +23,24 @@ export interface IMenuItem {
    * 决定是否在视图层展示
    */
   when?: string | monaco.contextkey.ContextKeyExpr;
+  group?: 'navigation' | string;
+  order?: number;
+  // 以下为 kaitian 拓展的属性
   /**
+   * 该属性为 kaitian 拓展的属性
    * 决定 toggled 状态, 主要表现为文字左侧有一个 ✅
    */
   toggledWhen?: string | monaco.contextkey.ContextKeyExpr;
   /**
+   * 该属性为 kaitian 拓展的属性
    * 决定 disabled 状态，主要表现为 menu item 颜色变灰
    */
   enabledWhen?: string | monaco.contextkey.ContextKeyExpr;
-  group?: 'navigation' | string;
-  order?: number;
   nativeRole?: string; // electron native 菜单使用
 
   // 单独变更此 action 的 args
   argsTransformer?: ((...args: any[]) => any[]);
+  type?: IMenuActionDisplayType;
 }
 
 export interface ISubmenuItem {
@@ -55,6 +60,7 @@ export interface ISubmenuItem {
   group?: 'navigation' | string;
   order?: number;
   nativeRole?: string; // electron native 菜单使用
+  type?: IMenuActionDisplayType;
 }
 
 export type ICommandsMap = Map<string, Command>;
@@ -259,19 +265,52 @@ export function isISubmenuItem(item: IMenuItem | ISubmenuItem): item is ISubmenu
   return (item as ISubmenuItem).submenu !== undefined;
 }
 
+/**
+ * 这里的 MenuAction 的展示类型拓展为支持 Button 组件的类型以及 checkbox
+ * 由于 Comment 模块的默认用的 Menu 的展示类型为 Button 类型
+ * 同时从设计角度更完善的展示 checked 属性，额外拓展了 checkbox 类型
+ * 用在 button 类型时 checked 状态的展示
+*/
+export type IMenuActionDisplayType = ButtonType | & 'checkbox';
+
 export interface IMenuAction {
-  readonly id: string; // command id
+  /**
+   * command id
+   */
+  readonly id: string;
   label: string;
-  icon?: string; // 标准的 vscode icon 是分两种主题的
+  /**
+   * 标准的 vscode icon 是分两种主题的
+   */
+  icon?: string;
   tooltip?: string;
   className?: string;
-  keybinding?: string; // 快捷键描述
+  /**
+   * 快捷键描述
+   */
+  keybinding?: string;
   rawKeybinding?: string;
-  isKeyCombination?: boolean; // 是否为组合键
-  disabled?: boolean; // disable 状态的 menu
-  checked?: boolean; // checked 状态 通过 toggledWhen 实现
-  nativeRole?: string; // electron menu 使用
+  /**
+   * 是否为组合键
+   */
+  isKeyCombination?: boolean;
+  /**
+   * disable 状态的 menu
+   */
+  disabled?: boolean;
+  /**
+   * checked 状态 通过 toggledWhen 实现
+   */
+  checked?: boolean;
+  /**
+   * electron menu 使用
+  */
+  nativeRole?: string;
   execute?: (...args: any[]) => any;
+  /**
+   * 默认值为 'icon'
+   */
+  type?: IMenuActionDisplayType;
 }
 
 export class MenuNode implements IMenuAction {
@@ -287,6 +326,7 @@ export class MenuNode implements IMenuAction {
   checked: boolean;
   nativeRole: string;
   children: MenuNode[] = [];
+  type?: IMenuActionDisplayType;
   protected _actionCallback?: (...args: any[]) => any;
 
   constructor(props: IMenuAction) {
@@ -300,6 +340,7 @@ export class MenuNode implements IMenuAction {
     this.disabled = Boolean(props.disabled);
     this.checked = Boolean(props.checked);
     this.nativeRole = props.nativeRole || '';
+    this.type = props.type;
     this._actionCallback = props.execute;
   }
 

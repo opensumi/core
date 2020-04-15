@@ -1,18 +1,17 @@
 import { useState, useEffect, DependencyList, useCallback } from 'react';
 import { DisposableStore, IDisposable } from '@ali/ide-core-common';
-import { equals } from '@ali/ide-core-common/lib/utils/arrays';
 
 import { MenuNode } from '../menu/next/base';
 import { IMenu, IMenuSeparator, IContextMenu } from '../menu/next/menu.interface';
 import { generateInlineActions } from '../menu/next/menu-util';
 
 export function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const [denouncedValue, setDenouncedValue] = useState(value);
 
   useEffect(
     () => {
       const handler = setTimeout(() => {
-        setDebouncedValue(value);
+        setDenouncedValue(value);
       }, delay);
 
       return () => {
@@ -22,7 +21,7 @@ export function useDebounce(value, delay) {
     [value, delay],
   );
 
-  return debouncedValue;
+  return denouncedValue;
 }
 
 export function useDisposable(callback: () => IDisposable[] | void, deps: DependencyList = []) {
@@ -41,26 +40,15 @@ export function useDisposable(callback: () => IDisposable[] | void, deps: Depend
   }, deps);
 }
 
-function menuNodeEquals(a: MenuNode, b: MenuNode): boolean {
-  return a.id === b.id;
-}
-
 export function useMenus(
-  menuInitalizer: IMenu | (() => IMenu),
+  menus: IMenu,
   separator?: IMenuSeparator,
   args?: any[],
 ) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
 
-  const initalizer = useCallback(() => {
-    return typeof menuInitalizer === 'function'
-      ? menuInitalizer()
-      : menuInitalizer;
-  }, []);
-
   useDisposable(() => {
     // initialize
-    const menus = initalizer();
     updateMenuConfig(menus, args);
 
     function updateMenuConfig(menuArg: IMenu, argList?: any[]) {
@@ -70,42 +58,34 @@ export function useMenus(
         args: argList,
       });
 
-      // menu nodes 对比
-      if (
-        equals(result[0], menuArg[0], menuNodeEquals)
-        && equals(result[1], menuArg[1], menuNodeEquals)
-      ) {
-        return;
-      }
-
       setMenuConfig(result);
     }
 
     return [
       menus,
       menus.onDidChange(() => {
-        updateMenuConfig(menus);
+        updateMenuConfig(menus, args);
       }),
     ];
-  }, [ initalizer, args ]);
+  }, [ menus, args ]);
 
   return menuConfig;
 }
 
 export function useContextMenus(
-  menuInitalizer: IContextMenu | (() => IContextMenu),
+  menuInitializer: IContextMenu | (() => IContextMenu),
 ) {
   const [menuConfig, setMenuConfig] = useState<[MenuNode[], MenuNode[]]>([[], []]);
 
-  const initalizer = useCallback(() => {
-    return typeof menuInitalizer === 'function'
-      ? menuInitalizer()
-      : menuInitalizer;
+  const initializer = useCallback(() => {
+    return typeof menuInitializer === 'function'
+      ? menuInitializer()
+      : menuInitializer;
   }, []);
 
   useDisposable(() => {
     // initialize
-    const menus = initalizer();
+    const menus = initializer();
     updateMenuConfig(menus);
 
     function updateMenuConfig(menuArg: IContextMenu) {
@@ -119,7 +99,7 @@ export function useContextMenus(
         updateMenuConfig(menus);
       }),
     ];
-  }, [ initalizer ]);
+  }, [ initializer ]);
 
   return menuConfig;
 }

@@ -10,6 +10,8 @@ import {
   positionToRange,
   IContextKeyService,
 } from '@ali/ide-core-browser';
+import { IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
+import { RecycleTreeProps } from '@ali/ide-core-browser/lib/components';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -101,13 +103,17 @@ export interface ICommentReply {
    * 回复里的内容
    */
   text: string;
+  /**
+   * 当前 widget
+   */
+  widget: ICommentsZoneWidget;
 }
 
 export interface ICommentsZoneWidget {
   /**
    * widget 所在的 editor
    */
-  coreEditor: monaco.editor.ICodeEditor;
+  coreEditor: IEditor;
   /**
    * 是否在展示
    */
@@ -143,6 +149,10 @@ export interface ICommentsCommentTitle {
    * 当前评论
    */
   comment: IComment;
+}
+
+export interface ICommentsCommentContext extends ICommentsCommentTitle {
+  body: string;
 }
 
 /**
@@ -218,6 +228,14 @@ export interface CommentsPanelOptions {
    * 无内容显示的文案
    */
   defaultPlaceholder?: React.ReactNode | string;
+  /**
+   * 是否默认显示 底部 panel
+   */
+  defaultShow?: boolean;
+  /**
+   * 评论列表默认设置
+   */
+  recycleTreeProps?: Partial<RecycleTreeProps>;
 }
 
 export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];
@@ -236,7 +254,7 @@ export interface CommentsContribution {
    * 提供可评论的 range
    * @param editor 当前 editor 实例
    */
-  provideCommentingRanges(editor: IEditor): MaybePromise<IRange[] | undefined>;
+  provideCommentingRanges(documentModel: IEditorDocumentModel): MaybePromise<IRange[] | undefined>;
   /**
    * 扩展评论模块的能力
    * @param registry
@@ -278,14 +296,20 @@ export interface ICommentsThread extends IDisposable {
    */
   contextKeyService: IContextKeyService;
   /**
-   * 添加一条评论
+   * 添加评论
    * @param comment
    */
   addComment(...comment: IComment[]): void;
   /**
-   * 显示 zone widget
+   * 移除评论
+   * @param comment
    */
-  show(): void;
+  removeComment(comment: IComment): void;
+  /**
+   * 显示 zone widget
+   * @param editor 指定在某一个 editor 中打开
+   */
+  show(editor?: IEditor): void;
   /**
    * 切换 zone widget
    */
