@@ -1,6 +1,6 @@
-import { IToolBarViewService, IToolBarElement, ToolBarPosition, IToolBarElementHandle, IToolBarAction, IToolBarComponent } from './types';
+import { IToolBarViewService, ToolBarPosition, IToolBarElementHandle, IToolBarAction, IToolBarComponent } from './types';
 import { removeObjectFromArray } from '@ali/ide-core-common/lib/functional';
-import { observable, computed } from 'mobx';
+import { observable } from 'mobx';
 import { Disposable } from '@ali/ide-core-browser';
 import { Injectable } from '@ali/common-di';
 
@@ -17,9 +17,10 @@ export class ToolBarViewService implements IToolBarViewService {
 
   registerToolBarElement(element: IToolBarAction | IToolBarComponent) {
 
-    // TODO 顺序
     const handle = new ToolBarElementHandle(element);
     this.elements[element.position].push(handle);
+    // sort elements
+    this.elements[element.position] = this.elements[element.position].sort((a, b) => (a.element.order || 0) - (b.element.order || 0));
     handle.addDispose({
       dispose: () => {
         removeObjectFromArray(this.elements[element.position], handle);
