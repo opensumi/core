@@ -37,11 +37,22 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   constructor() {
     super();
+    this.listen();
+  }
+
+  protected listen() {
     this.fileServiceClient.onFilesChanged((e) => {
       e.forEach((change) => {
         if (change.type === FileChangeType.ADDED || change.type === FileChangeType.DELETED) {
-          this.cachedFileStat.delete(change.uri.toString());
+          this.cachedFileStat.delete(change.uri);
           this.eventBus.fire(new ResourceNeedUpdateEvent(new URI(change.uri)));
+        } else {
+          // Linux下，可能 update 事件代表了 create
+          // 此时如果 cached 是undefined，就更新
+          if (this.cachedFileStat.has(change.uri) && this.cachedFileStat.get(change.uri) === undefined) {
+            this.cachedFileStat.delete(change.uri);
+            this.eventBus.fire(new ResourceNeedUpdateEvent(new URI(change.uri)));
+          }
         }
       });
     });
@@ -131,6 +142,10 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 @Injectable()
 export class DebugResourceProvider extends FileSystemResourceProvider {
   readonly scheme: string = 'debug';
+
+  listen() {
+    return; // 不继承 file 的监听逻辑
+  }
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
