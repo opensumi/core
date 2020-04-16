@@ -89,6 +89,8 @@ export const Select: React.FC<ISelectProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [select, setSelect] = useState(value);
+  const selectRef = React.useRef<HTMLDivElement | null>(null);
+  const overlayRef = React.useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (onChange && select && select !== value) {
       onChange(select);
@@ -124,13 +126,20 @@ export const Select: React.FC<ISelectProps> = ({
     })} onClick={disabled ? noop : () => setSelect(getValueWithProps((node as React.ReactElement), optionLabelProp))}>{node}</div>;
   }
 
-  return (<div className={classNames('kt-select-container', className)}>
+  useEffect(() => {
+    if (selectRef.current && overlayRef.current) {
+      const boxRect = selectRef.current.getBoundingClientRect();
+      overlayRef.current.style.width = `${boxRect.width}px`;
+    }
+  }, [open]);
+
+  return (<div className={classNames('kt-select-container', className)} ref={selectRef}>
     <p className={selectClasses} onClick={toggleOpen} style={style}>
       <span className={'kt-select-option'}>{(children && getLabelWithChildrenProps(value, children)) || options && (React.isValidElement(options[0]) ? options[0].props?.value : options[0])}</span>
       <Icon iconClass={getDefaultIcon('down')} />
     </p>
 
-    <div className={optionsContainerClasses} style={{ maxHeight: `${maxHeight}px` }}>
+    <div className={optionsContainerClasses} style={{ maxHeight: `${maxHeight}px` }} ref={overlayRef}>
       {options && options.map((v) => {
         if (typeof v === 'string') {
           return <Option value={v} key={v} className={classNames({
