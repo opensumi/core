@@ -237,7 +237,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
   }
 
-  @debounce(100)
   layout() {
     this._checkReady();
     if (!this._term.element || this._term.element.clientHeight === 0 || this._term.element.clientWidth === 0) {
@@ -259,6 +258,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.layout();
   }
 
+  @debounce(100)
+  private _debouceResize() {
+    this.layout();
+  }
+
   private async _apply(widget: IWidget) {
     this.addDispose(widget.onRender(async () => {
       await this._firstOnRender();
@@ -266,7 +270,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     this.addDispose(widget.onResize(async () => {
       await this._attached.promise;
-      this.layout();
+      this._debouceResize();
     }));
 
     this._widget = widget;

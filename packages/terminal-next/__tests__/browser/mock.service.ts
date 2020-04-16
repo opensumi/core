@@ -7,7 +7,7 @@ import { port, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
 
 export const defaultPid = -1;
-export const defaultName = 'Bash';
+export const defaultName = 'bash';
 
 export class MockSocketService implements ITerminalExternalService {
   static resId = 1;
