@@ -117,7 +117,12 @@ export const IconTabView: React.FC<{component: ComponentRegistryInfo}> = observe
   const inProgress = progressService.getIndicator(component.options!.containerId)!.progressModel.show;
   return <div className={styles.icon_tab}>
     <div className={clsx(component.options!.iconClass, 'activity-icon')} title={component.options!.title}></div>
-    {inProgress ? <Badge className={styles.tab_badge}><Icon icon='time-circle-fill' /></Badge> : (component.options!.badge && <Badge className={styles.tab_badge}>{component.options!.badge}</Badge>)}
+    {
+      inProgress
+        ? <Badge className={styles.tab_badge}>
+            <span className={styles.icon_wrapper}><Icon icon='time-circle' /></span>
+          </Badge>
+        : (component.options!.badge && <Badge className={styles.tab_badge}>{component.options!.badge}</Badge>)}
   </div>;
 });
 

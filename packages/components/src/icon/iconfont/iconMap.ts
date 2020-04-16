@@ -1,7 +1,7 @@
 export const defaultIconfont = {
   'Gitlab-fill': 'Gitlab-fill',
+  'LinkE': 'LinkE',
   'PR': 'PR',
-  'Path': 'Path',
   'ab': 'ab',
   'abl': 'abl',
   'add-comments': 'add-comments',
@@ -133,7 +133,9 @@ export const defaultIconfont = {
   'team': 'team',
   'terminal': 'terminal',
   'terminate': 'terminate',
+  'time-circle': 'time-circle',
   'time-circle-fill': 'time-circle-fill',
+  'tree': 'tree',
   'undock': 'undock',
   'unorderedlist': 'unorderedlist',
   'up': 'up',
