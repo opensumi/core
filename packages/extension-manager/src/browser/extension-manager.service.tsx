@@ -471,7 +471,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         reloadRequire: extension.reloadRequire,
         enableScope: extension.enableScope,
         engines: {
-          vscode: extension.packageJSON.engines.vscode,
+          vscode: extension.packageJSON.engines?.vscode,
           kaitian: '',
         },
       };
