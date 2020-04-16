@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-components",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "@ali/ide-components",
   "main": "lib/index.js",
   "files": [
@@ -17,6 +17,6 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "1.8.4"
+    "@ali/ide-core-common": "1.8.5"
   }
 }
