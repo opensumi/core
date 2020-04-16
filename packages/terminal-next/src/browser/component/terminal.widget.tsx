@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as clx from 'classnames';
 import { useInjectable, localize, getIcon } from '@ali/ide-core-browser';
-import { ITerminalController, ITerminalGroupViewService, IWidget, ITerminalError } from '../../common';
+import { ITerminalGroupViewService, IWidget, ITerminalError, ITerminalErrorService } from '../../common';
 
 import * as styles from './terminal.module.less';
 
@@ -10,14 +10,14 @@ export interface IProps {
   error: ITerminalError | undefined;
 }
 
-function renderError(error: ITerminalError, controller: ITerminalController, view: ITerminalGroupViewService) {
+function renderError(error: ITerminalError, eService: ITerminalErrorService, view: ITerminalGroupViewService) {
 
   const onRemoveClick = () => {
     view.removeWidget(error.id);
   };
 
   const onRetryClick = () => {
-    // controller.retry(error.id);
+    eService.fix(error.id);
   };
 
   return (
@@ -43,7 +43,7 @@ function renderError(error: ITerminalError, controller: ITerminalController, vie
 
 export default ({ widget, error }: IProps) => {
   const content = React.createRef<HTMLDivElement>();
-  const controller = useInjectable<ITerminalController>(ITerminalController);
+  const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
 
   React.useEffect(() => {
@@ -59,7 +59,7 @@ export default ({ widget, error }: IProps) => {
   return (
     <div className={ styles.terminalContainer }>
       {
-        error ? renderError(error, controller, view) : null
+        error ? renderError(error, errorService, view) : null
       }
       <div
         className={ clx({

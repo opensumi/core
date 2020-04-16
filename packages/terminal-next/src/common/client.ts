@@ -70,6 +70,16 @@ export interface ITerminalClient extends Disposable {
   clear(): void;
 
   /**
+   * 重置
+   */
+  reset(): void;
+
+  /**
+   * 重新计算宽高
+   */
+  layout(): void;
+
+  /**
    * 全选内容
    */
   selectAll(): void;
