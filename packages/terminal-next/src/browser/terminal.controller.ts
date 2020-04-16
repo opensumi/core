@@ -183,6 +183,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       if (client) {
         await client.attached.promise;
         setTimeout(() => {
+          client.layout();
           client.focus();
         }, 0);
       }
