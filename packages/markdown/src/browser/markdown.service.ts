@@ -32,7 +32,7 @@ export class MarkdownServiceImpl implements IMarkdownService {
       }
       // Whitelist supported schemes for links
       if (['http', 'https', 'mailto'].indexOf(link.scheme) >= 0 || (link.scheme === 'command')) {
-        window.open(link.toString());
+        window.open(link.toString(true));
       }
     }));
     disposer.addDispose(webviewElement);

@@ -150,7 +150,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
       }
     }});
     editorWebview.webview.onDidClickLink((e) => {
-      window.open(e.toString());
+      window.open(e.toString(true));
     });
     const editorOpenOptions = viewColumnToResourceOpenOptions(showOptions.viewColumn);
     editorWebview.open(editorOpenOptions);
