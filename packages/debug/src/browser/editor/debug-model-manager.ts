@@ -167,7 +167,7 @@ export class DebugModelManager extends Disposable {
   handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent, monacoEditor: monaco.editor.ICodeEditor) {
     const debugModel = this.models.get(uri.toString());
     if (!debugModel) {
-      throw new Error('Not find debug model');
+      return;
     }
     // 同一个uri可能对应多个打开的monacoEditor，这里只需要验证其中一个即可
     const canSetBreakpoints = this.debugConfigurationManager.canSetBreakpointsIn(debugModel[0].editor.getModel());
