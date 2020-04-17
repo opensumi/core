@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import * as styles from './styles.module.less';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ViewUiStateManager, IEventBus, ResizeEvent, ErrorBoundary } from '@ali/ide-core-browser';
+import { ComponentRegistryInfo, useInjectable, ComponentRenderer, ConfigProvider, AppConfig, ViewUiStateManager, IEventBus, ResizeEvent, ErrorBoundary, ViewState } from '@ali/ide-core-browser';
 import { TabbarService, TabbarServiceFactory } from './tabbar.service';
 import { observer } from 'mobx-react-lite';
 import { TabbarConfig } from './renderer.view';
@@ -45,9 +45,11 @@ const ContainerView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
-}> = (({ component, titleMenu }) => {
+}> = (({ component, titleMenu, side }) => {
   const ref = React.useRef<HTMLElement | null>();
+  const containerRef = React.useRef<HTMLElement | null>();
   const configContext = useInjectable<AppConfig>(AppConfig);
+  const targetViewId = component.options!.component && component.options!.containerId;
   const { title, titleComponent, component: CustomComponent, containerId } = component.options!;
   const injector: Injector = useInjectable(INJECTOR_TOKEN);
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -56,9 +58,10 @@ const ContainerView: React.FC<{
   };
   const progressService: IProgressService = useInjectable(IProgressService);
   const indicator = progressService.getIndicator(containerId)!;
+  const viewState = useViewState(side, containerRef, targetViewId);
 
   return (
-    <div className={styles.view_container}>
+    <div ref={(ele) => containerRef.current = ele} className={styles.view_container}>
       {!CustomComponent && <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
         <TitleBar
           title={title!}
@@ -73,7 +76,7 @@ const ContainerView: React.FC<{
       <div className={styles.container_wrap} ref={(ele) => ref.current = ele}>
         <ProgressBar progressModel={indicator.progressModel} />
         {CustomComponent ? <ConfigProvider value={configContext} >
-          <ComponentRenderer initialProps={component.options && component.options.initialProps} Component={CustomComponent} />
+          <ComponentRenderer initialProps={{viewState, ...component.options!.initialProps}} Component={CustomComponent} />
         </ConfigProvider> : <AccordionContainer views={component.views} containerId={component.options!.containerId} />}
       </div>
     </div>
@@ -110,32 +113,11 @@ const NextPanelView: React.FC<{
   const contentRef = React.useRef<HTMLDivElement | null>();
   const titleComponent = component.options && component.options.titleComponent;
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-  const viewStateManager = useInjectable<ViewUiStateManager>(ViewUiStateManager);
-  const eventBus = useInjectable<IEventBus>(IEventBus);
   // 注入自定义视图 or 通过views注入视图
   const targetViewId = component.options!.component ? component.options!.containerId : component.views[0].id;
   const progressService: IProgressService = useInjectable(IProgressService);
   const indicator = progressService.getIndicator(component.options!.containerId)!;
-  // TODO 底部支持多个视图的渲染
-  React.useEffect(() => {
-    let lastFrame: number | null;
-    const disposer = eventBus.on(ResizeEvent, (e) => {
-      if (e.payload.slotLocation === side) {
-        if (lastFrame) {
-          window.cancelAnimationFrame(lastFrame);
-        }
-        lastFrame = window.requestAnimationFrame(() => {
-          if (contentRef.current) {
-            viewStateManager.updateSize(targetViewId, contentRef.current.clientHeight, contentRef.current.clientWidth);
-          }
-        });
-      }
-    });
-    return () => {
-      disposer.dispose();
-    };
-  }, [contentRef]);
-  const viewState = viewStateManager.getState(targetViewId);
+  const viewState = useViewState(side, contentRef, targetViewId);
 
   return (
     <div className={styles.panel_container}>
@@ -164,3 +146,29 @@ export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView=
 export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;
 
 export const NextBottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={NextPanelView} />;
+
+const useViewState = (side: string, domRef: React.MutableRefObject<HTMLElement | null | undefined>, viewId?: string): ViewState => {
+  if (!viewId) { return {width: 0, height: 0}; }
+  const eventBus = useInjectable<IEventBus>(IEventBus);
+  const viewStateManager = useInjectable<ViewUiStateManager>(ViewUiStateManager);
+  React.useEffect(() => {
+    let lastFrame: number | null;
+    const disposer = eventBus.on(ResizeEvent, (e) => {
+      if (e.payload.slotLocation === side) {
+        if (lastFrame) {
+          window.cancelAnimationFrame(lastFrame);
+        }
+        lastFrame = window.requestAnimationFrame(() => {
+          if (domRef.current) {
+            viewStateManager.updateSize(viewId, domRef.current.clientHeight, domRef.current.clientWidth);
+          }
+        });
+      }
+    });
+    return () => {
+      disposer.dispose();
+    };
+  }, [domRef]);
+  const viewState = viewStateManager.getState(viewId);
+  return viewState;
+};
