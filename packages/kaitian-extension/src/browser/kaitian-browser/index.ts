@@ -1,7 +1,7 @@
 
 import * as Components from '@ali/ide-core-browser/lib/components';
 
-import { URI, localize, getIcon, ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-core-browser';
+import { URI, localize, getIcon } from '@ali/ide-core-browser';
 
 import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from '@ali/ide-core-browser/lib/components';
@@ -50,9 +50,6 @@ export function createBrowserApi(injector: Injector) {
       return exportedColors;
     },
 
-    // enums
-    ROTATE_TYPE,
-    ANIM_TYPE,
     ToolBarPosition,
     EditorComponentRenderMode,
   };

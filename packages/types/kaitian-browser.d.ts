@@ -18,30 +18,7 @@ declare module 'kaitian-browser' {
   import * as vscode from 'vscode';
   import * as React from 'react';
 
-  export enum VALIDATE_TYPE {
-    INFO = 0,
-    WRANING = 1,
-    ERROR = 2,
-  }
-  export interface ValidateMessage {
-    message: string | void;
-    type: VALIDATE_TYPE;
-  }
-  export interface ValidateInputProp extends React.InputHTMLAttributes<HTMLInputElement> {
-    validate: (value: string) => ValidateMessage;
-  }
-  // export const Input: React.ForwardRefExoticComponent<React.InputHTMLAttributes<HTMLInputElement> & React.RefAttributes<HTMLInputElement>>;
-  export enum CheckBoxSize {
-    SMALL = 0,
-    NORMAL = 1,
-  }
-  export const CheckBox: React.FC<{
-    id: string;
-    insertClass?: string;
-    label?: string;
-    size?: CheckBoxSize;
-    [key: string]: any;
-  }>;
+  import { ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-components';
 
   export interface ScrollAreaProps {
     className?: string;
@@ -50,6 +27,7 @@ declare module 'kaitian-browser' {
     style?: any;
     containerStyle?: any;
   }
+
   export interface ScrollPosition {
     top: number;
     left: number;
@@ -73,27 +51,11 @@ declare module 'kaitian-browser' {
   export const ResizeHandleHorizontal: React.FunctionComponent<ResizeHandleProps>;
   export const ResizeHandleVertical: React.FunctionComponent<ResizeHandleProps>;
 
-  export const ValidateInput: React.FC<ValidateInputProp>;
-
   export const PlainWebview: React.FunctionComponent<{ id: string }>;
 
   export function localize(key: string, defaultMessage?: string, env?: string): string;
 
   export function getIcon(iconKey: string, options?: { rotate?: ROTATE_TYPE, anim?: ANIM_TYPE }): string;
-
-  export enum ROTATE_TYPE {
-    rotate_90,
-    rotate_180,
-    rotate_270,
-    flip_horizontal,
-    flip_vertical,
-    flip_both,
-  }
-
-  export enum ANIM_TYPE {
-    spin,
-    pulse,
-  }
 
   /**
    * 获得当前主题的颜色值

@@ -1,26 +1,12 @@
 import { SymbolKind, getDebugLogger } from '@ali/ide-core-common';
 import { warning } from '@ali/ide-core-common/lib/utils/warning';
-import { defaultIconfont } from '@ali/ide-components/lib/icon';
+import { defaultIconfont, ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-components/lib/icon';
 
 import { IDE_ICONFONT_CN_CSS } from './ide-iconfont';
 
 export const DEFAULT_CDN_ICON = IDE_ICONFONT_CN_CSS;
 
 const iconPrefixes = ['kaitian-icon kticon-'];
-
-export enum ROTATE_TYPE {
-  rotate_90,
-  rotate_180,
-  rotate_270,
-  flip_horizontal,
-  flip_vertical,
-  flip_both,
-}
-
-export enum ANIM_TYPE {
-  spin,
-  pulse,
-}
 
 const ROTATE_CLASS_NAME = ['rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both'];
 const ANIM_CLASS_NAME = ['spin', 'pulse'];
