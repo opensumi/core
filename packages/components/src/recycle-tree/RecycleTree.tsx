@@ -148,7 +148,7 @@ const CustomScrollbars = ({ onScroll, forwardedRef, style, children, className }
       >
       <div
         ref={(ref) => { shadowTopRef = ref; }}
-        className={styles.scrollbar_shadow_top}/>
+        className={styles.scrollbar_decoration}/>
       {children}
     </Scrollbars>
   );
