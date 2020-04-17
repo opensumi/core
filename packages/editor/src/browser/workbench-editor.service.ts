@@ -897,10 +897,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         currentOpenType: activeOpenType,
       };
 
+      if (options.preserveFocus) {
+        options.focus = false;
+      }
+
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range);
-        if (options.focus || options.preserveFocus) {
+        if (options.focus) {
           this.codeEditor.focus();
         }
         // 可能在diff Editor中修改导致为脏
@@ -912,7 +916,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         await this.diffEditorReady.promise;
         const [original, modified] = await Promise.all([this.getDocumentModelRef(diffResource.metadata!.original), this.getDocumentModelRef(diffResource.metadata!.modified)]);
         await this.diffEditor.compare(original, modified, options);
-        if (options.focus || options.preserveFocus) {
+        if (options.focus) {
           this.diffEditor.focus();
         }
       } else if (activeOpenType.type === 'component') {
