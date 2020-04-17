@@ -284,16 +284,20 @@ export class FileTreeModelService {
       return;
     }
     const isSingleFolder = !this.fileTreeService.isMutiWorkspace;
-    let rootUri;
+    let rootStr;
     if (isSingleFolder) {
-      rootUri = this.workspaceService.workspace?.uri;
+      rootStr = this.workspaceService.workspace?.uri;
     } else {
-      rootUri = (await this.workspaceService.roots).find((root) => {
+      rootStr = (await this.workspaceService.roots).find((root) => {
         return new URI(root.uri).isEqualOrParent(uri);
       })?.uri;
     }
-    if (rootUri && this.treeModel) {
-      return new Path(this.treeModel.root.path).join(new URI(rootUri).relative(uri)!.toString()).toString();
+    if (rootStr && this.treeModel) {
+      const rootUri = new URI(rootStr);
+      if (rootUri.isEqualOrParent(uri)) {
+        return new Path(this.treeModel.root.path).join(rootUri.relative(uri)!.toString()).toString();
+      }
+      // 可能为当前工作区外的文件
     }
   }
 
