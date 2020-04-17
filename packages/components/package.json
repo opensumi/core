@@ -17,6 +17,7 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "1.8.5"
+    "@ali/ide-core-common": "1.8.5",
+    "fuzzy": "^0.1.3"
   }
 }
