@@ -30,7 +30,7 @@ declare module 'kaitian-browser' {
   export interface ValidateInputProp extends React.InputHTMLAttributes<HTMLInputElement> {
     validate: (value: string) => ValidateMessage;
   }
-  export const Input: React.ForwardRefExoticComponent<React.InputHTMLAttributes<HTMLInputElement> & React.RefAttributes<HTMLInputElement>>;
+  // export const Input: React.ForwardRefExoticComponent<React.InputHTMLAttributes<HTMLInputElement> & React.RefAttributes<HTMLInputElement>>;
   export enum CheckBoxSize {
     SMALL = 0,
     NORMAL = 1,
