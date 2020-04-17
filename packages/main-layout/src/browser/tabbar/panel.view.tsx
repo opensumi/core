@@ -14,6 +14,11 @@ import { AccordionServiceFactory, AccordionService } from '../accordion/accordio
 import { IProgressService } from '@ali/ide-core-browser/lib/progress';
 import { ProgressBar } from '@ali/ide-core-browser/lib/progress/progress-bar';
 
+const NoUpdateBoundary: React.FC<{visible: boolean, children: React.ReactElement}> = React.memo(
+  ({children}) => children,
+  (prev, next) => !(prev.visible || next.visible),
+);
+
 export const BaseTabPanelView: React.FC<{
   PanelView: React.FC<{ component: ComponentRegistryInfo, side: string, titleMenu: IMenu }>;
 }> = observer(({ PanelView }) => {
@@ -33,7 +38,9 @@ export const BaseTabPanelView: React.FC<{
           data-viewlet-id={containerId}
           style={currentContainerId === containerId ? panelVisible : panelInVisible}>
             <ErrorBoundary>
-              <PanelView titleMenu={titleMenu} side={side} component={component} />
+              <NoUpdateBoundary visible={currentContainerId === containerId}>
+                <PanelView titleMenu={titleMenu} side={side} component={component} />
+              </NoUpdateBoundary>
             </ErrorBoundary>
         </div>;
       })}
