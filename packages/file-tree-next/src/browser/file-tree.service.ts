@@ -175,12 +175,19 @@ export class FileTreeService extends Tree {
     return !!node && 'filestat' in node;
   }
 
-  private isFileContentChanged(change: FileChange): boolean {
-    return change.type === FileChangeType.UPDATED && this.isContentFile(this.getNodeByUriString(change.uri));
+  private async isFileContentChanged(change: FileChange): Promise<boolean> {
+    return change.type === FileChangeType.UPDATED && this.isContentFile(await this.getNodeByPathOrUri(change.uri));
   }
 
-  private getAffectedUris(changes: FileChange[]): URI[] {
-    return changes.filter((change) => !this.isFileContentChanged(change)).map((change) => new URI(change.uri));
+  private async getAffectedUris(changes: FileChange[]): Promise<URI[]> {
+    const uris: URI[] = [];
+    for (const change of changes) {
+      const isFile = await this.isFileContentChanged(change);
+      if (!isFile) {
+        uris.push(new URI(change.uri));
+      }
+    }
+    return uris;
   }
 
   private isRootAffected(changes: FileChange[]): boolean {
@@ -235,14 +242,14 @@ export class FileTreeService extends Tree {
   private async onFilesChanged(changes: FileChange[]) {
     let restChange: FileChange[] = await this.moveAffectedNodes(changes);
     // 移除节点
-    restChange = this.deleteAffectedNodes(this.getDeletedUris(restChange), restChange);
+    restChange = await this.deleteAffectedNodes(this.getDeletedUris(restChange), restChange);
     // 添加节点, 需要获取节点类型
     restChange = await this.addAffectedNodes(this.getAddedUris(restChange), restChange);
     if (restChange.length === 0) {
       return ;
     }
     // 处理除了删除/添加/移动事件外的异常事件
-    if (!await this.refreshAffectedNodes(this.getAffectedUris(restChange)) && this.isRootAffected(restChange)) {
+    if (!await this.refreshAffectedNodes(await this.getAffectedUris(restChange)) && this.isRootAffected(restChange)) {
       await this.refresh();
     }
   }
@@ -252,12 +259,33 @@ export class FileTreeService extends Tree {
     const { moveChange, restChange } = data;
 
     for (const change of moveChange) {
-      const node = this.getNodeByUriString(new URI(change.source.uri).parent.toString());
+      const node = await this.getNodeByPathOrUri(new URI(change.source.uri).parent.toString());
       if (node) {
         await this.moveNode(node, change.source.uri, change.target.uri);
       }
     }
     return restChange;
+  }
+
+  public async getFileTreeNodePathByUri(uri: URI) {
+    if (!uri) {
+      return;
+    }
+    let rootStr;
+    if (!this.isMutiWorkspace) {
+      rootStr = this.workspaceService.workspace?.uri;
+    } else {
+      rootStr = (await this.workspaceService.roots).find((root) => {
+        return new URI(root.uri).isEqualOrParent(uri);
+      })?.uri;
+    }
+    if (rootStr && this.root) {
+      const rootUri = new URI(rootStr);
+      if (rootUri.isEqualOrParent(uri)) {
+        return new Path(this.root.path).join(rootUri.relative(uri)!.toString()).toString();
+      }
+      // 可能为当前工作区外的文件
+    }
   }
 
   public async moveNode(node: File | Directory, source: string, target: string) {
@@ -273,11 +301,18 @@ export class FileTreeService extends Tree {
     if (!rootUri) {
       return;
     }
-    const oldRelativePath = new URI(rootUri).relative(new URI(source))!;
-    const oldPath = new Path(this.root!.path).join(oldRelativePath?.toString()).toString();
-    const newRelativePath = new URI(rootUri).relative(new URI(target))!;
-    const newPath = new Path(this.root!.path).join(newRelativePath?.toString()).toString();
-    this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
+    const oldPath = await this.getFileTreeNodePathByUri(new URI(source));
+    const newPath = await this.getFileTreeNodePathByUri(new URI(target));
+    if (oldPath && newPath && newPath !== oldPath) {
+      this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
+    }
+  }
+
+  // 软链接目录下，文件节点路径不能通过uri去获取，存在偏差
+  public async moveNodeByPath(node: File | Directory, oldPath: string, newPath: string) {
+    if (oldPath && newPath && newPath !== oldPath) {
+      this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
+    }
   }
 
   public async addNode(node: Directory, newName: string, type: TreeNodeType) {
@@ -297,12 +332,16 @@ export class FileTreeService extends Tree {
   }
 
   private async addAffectedNodes(uris: URI[], changes: FileChange[]) {
-    const nodes = uris.map((uri) => {
-      return {
-        parent: this.getNodeByUriString(uri.parent.toString()),
-        uri,
-      };
-    }).filter((node) => !!node.parent);
+    const nodes: any[] = [];
+    for (const uri of uris) {
+      const parent = await this.getNodeByPathOrUri(uri.parent.toString());
+      if (!!parent) {
+        nodes.push({
+          parent,
+          uri,
+        });
+      }
+    }
     for (const node of nodes) {
       // 一旦更新队列中已包含该文件，临时剔除删除事件传递
       if (!node.parent || this.changeEventDispatchQueue.indexOf(node.parent.path) >= 0) {
@@ -317,8 +356,22 @@ export class FileTreeService extends Tree {
     return changes.filter((change) => change.type !== FileChangeType.ADDED);
   }
 
-  public deleteAffectedNodes(uris: URI[], changes: FileChange[] = []) {
-    const nodes = uris.map((uri) => this.getNodeByUriString(uri.toString())).filter((node) => !!node);
+  // 用于精准删除节点，软连接目录下的文件删除
+  public async deleteAffectedNodeByPath(path: string) {
+    const node  = await this.getNodeByPathOrUri(path);
+    if (node && node.parent) {
+      this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed,  path: node.path });
+    }
+  }
+
+  public async deleteAffectedNodes(uris: URI[], changes: FileChange[] = []) {
+    const nodes: File[] = [];
+    for (const uri of uris) {
+      const node = await this.getNodeByPathOrUri(uri);
+      if (!!node) {
+        nodes.push(node as File);
+      }
+    }
     for (const node of nodes) {
       // 一旦更新队列中已包含该文件，临时剔除删除事件传递
       if (!node?.parent || this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
@@ -337,17 +390,17 @@ export class FileTreeService extends Tree {
   }
 
   async refreshAffectedNodes(uris: URI[]) {
-    const nodes = this.getAffectedNodes(uris);
+    const nodes = await this.getAffectedNodes(uris);
     for (const node of nodes) {
       await this.refresh(node);
     }
     return nodes.length !== 0;
   }
 
-  private getAffectedNodes(uris: URI[]): Directory[] {
+  private async getAffectedNodes(uris: URI[]): Promise<Directory[]> {
     const nodes: Directory[] = [];
     for (const uri of uris) {
-      const node = this.getNodeByUriString(uri.parent.toString());
+      const node = await this.getNodeByPathOrUri(uri.parent);
       if (node && Directory.is(node)) {
         nodes.push(node as Directory);
       } else {
@@ -360,12 +413,47 @@ export class FileTreeService extends Tree {
   private cacheNodes(nodes: (File | Directory)[]) {
     // 切换工作区的时候需清理
     nodes.map((node) => {
-      this._cacheNodesMap.set(node.uri.toString(), node);
+      // node.path 不会重复，node.uri在软连接情况下可能会重复
+      this._cacheNodesMap.set(node.path, node);
     });
   }
 
-  getNodeByUriString(path: string) {
-    return this._cacheNodesMap.get(path);
+  private isFileURI(str: string) {
+    return /^file:\/\//.test(str);
+  }
+
+  async getNodeByPathOrUri(pathOrUri: string | URI) {
+    let path: string | undefined;
+    let pathURI: URI | undefined;
+    if (typeof pathOrUri === 'string' && !this.isFileURI(pathOrUri)) {
+      return this._cacheNodesMap.get(pathOrUri);
+    }
+    if (typeof pathOrUri !== 'string') {
+      pathURI = pathOrUri;
+      pathOrUri = pathOrUri.toString();
+    } else if (this.isFileURI(pathOrUri)) {
+      pathURI = new URI(pathOrUri);
+    }
+    if (this.isFileURI(pathOrUri) && !!pathURI) {
+      let rootStr;
+      if (!this.isMutiWorkspace) {
+        rootStr = this.workspaceService.workspace?.uri;
+      } else {
+        rootStr = (await this.workspaceService.roots).find((root) => {
+          return new URI(root.uri).isEqualOrParent(pathURI!);
+        })?.uri;
+      }
+      if (this.root && rootStr) {
+        const rootUri = new URI(rootStr);
+        if (rootUri.isEqualOrParent(pathURI)) {
+          path = new Path(this.root.path).join(rootUri.relative(pathURI)!.toString()).toString();
+        }
+      }
+    }
+
+    if (!!path) {
+      return this._cacheNodesMap.get(path);
+    }
   }
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
