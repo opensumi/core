@@ -56,12 +56,16 @@ export interface SplitPanelProps extends SplitChildProps {
   useDomSize?: boolean;
 }
 
+const getProp = (child: React.ReactNode, prop: string) => {
+  return child && child['props'] && child['props'][prop];
+};
+
 export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children = [], direction = 'left-to-right', resizeKeep = true, flexGrow, dynamicTarget, minResize, useDomSize, ...restProps }) => {
   const ResizeHandle = Layout.getResizeHandle(direction);
   // convert children to list
   const childList = React.Children.toArray(children);
-  const totalFlexNum = childList.reduce((accumulator, item) => accumulator + (item['props'].flex !== undefined ? item['props'].flex : 1), 0);
-  let totalSize: number = useDomSize ? 0 : childList.reduce((accumulator, item) => accumulator + (item['props'].savedSize !== undefined ? item['props'].savedSize : 0), 0);
+  const totalFlexNum = childList.reduce((accumulator, item) => accumulator + (getProp(item, 'flex') !== undefined ? item['props'].flex : 1), 0);
+  let totalSize: number = useDomSize ? 0 : childList.reduce((accumulator, item) => accumulator + (getProp(item, 'savedSize') !== undefined ? item['props'].savedSize : 0), 0);
   const elements: React.ReactNodeArray = [];
   const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
@@ -85,7 +89,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
       const targetIndex = isLatter ? index - 1 : index;
       const delegete = resizeDelegates.current[targetIndex];
       if (delegete) {
-        delegete.setAbsoluteSize(size !== undefined ? size : childList[index]!['props'].defaultSize, isLatter, resizeKeep);
+        delegete.setAbsoluteSize(size !== undefined ? size : getProp(childList[index], 'defaultSize'), isLatter, resizeKeep);
       }
     };
   };
@@ -143,6 +147,8 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
     return (show?: boolean) => {
       const newHideState = hideState.current.map((state, idx) => idx === index ? (show !== undefined ? !show : !state) : state);
       hideState.current = newHideState;
+      const location = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
+      if (location) { fireResizeEvent(location); }
       setHides(newHideState);
     };
   };
@@ -157,17 +163,17 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
     if (index !== 0) {
       const targetElement = index === 1 ? childList[index - 1] : childList[index];
       let flexMode: ResizeFlexMode | undefined;
-      if (element['props'] && element['props'].flexGrow) {
+      if (getProp(element, 'flexGrow')) {
         flexMode = ResizeFlexMode.Prev;
-      } else if (childList[index - 1] && childList[index - 1]['props'] && childList[index - 1]['props'].flexGrow) {
+      } else if (getProp(childList[index - 1], 'flexGrow')) {
         flexMode = ResizeFlexMode.Next;
       }
       elements.push(
         <ResizeHandle
-          className={targetElement['props'] && targetElement['props'].noResize || locks[index - 1] ? 'no-resize' : ''}
+          className={getProp(targetElement, 'noResize') || locks[index - 1] ? 'no-resize' : ''}
           onResize={(prev, next) => {
-            const prevLocation = childList[index - 1]['props'] && childList[index - 1]['props'].slot || childList[index - 1]['props'] && childList[index - 1]['props'].id;
-            const nextLocation = childList[index]['props'] && childList[index]['props'].slot || childList[index]['props'] && childList[index]['props'].id;
+            const prevLocation = getProp(childList[index - 1], 'slot') || getProp(childList[index - 1], 'id');
+            const nextLocation = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
             fireResizeEvent(prevLocation!);
             fireResizeEvent(nextLocation!);
           }}
@@ -193,19 +199,19 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
           hidePanel: hidePanelHandle(index),
         }}>
         <div
-          data-min-resize={element['props'] && element['props'].minResize}
+          data-min-resize={getProp(element, 'minResize')}
           ref={(ele) => {
             if (ele && splitPanelService.panels.indexOf(ele) === -1) {
               splitPanelService.panels.push(ele);
             }
           }}
-          id={element['props'] && element['props'].id /* @deprecated: query by data-view-id */}
+          id={getProp(element, 'id') /* @deprecated: query by data-view-id */}
           style={{
             [Layout.getSizeProperty(direction)]: getElementSize(element),
             // 相对尺寸带来的问题，必须限制最小最大尺寸
-            [Layout.getMinSizeProperty(direction)]: element['props'] && element['props'].minSize ? element['props'].minSize + 'px' : '-1px',
-            [Layout.getMaxSizeProperty(direction)]: maxLocks[index] ? element['props'].minSize + 'px' : 'unset',
-            flexGrow: element['props'] && element['props'].flexGrow !== undefined ? element['props'].flexGrow : 'unset',
+            [Layout.getMinSizeProperty(direction)]: getProp(element, 'minSize') ? element['props'].minSize + 'px' : '-1px',
+            [Layout.getMaxSizeProperty(direction)]: maxLocks[index] && getProp(element, 'minSize') ? element['props'].minSize + 'px' : 'unset',
+            flexGrow: getProp(element, 'flexGrow') !== undefined ? element['props'].flexGrow : 'unset',
             display: hides[index] ? 'none' : 'block',
           }}>
           {element}
@@ -233,7 +239,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = (({ id, className, children
     const disposer = eventBus.on(ResizeEvent, (e) => {
       if (e.payload.slotLocation === id) {
         childList.forEach((c) => {
-          fireResizeEvent(c['props'] && c['props'].slot || c['props'] && c['props'].id);
+          fireResizeEvent(getProp(c, 'slot') || getProp(c, 'id'));
         });
       }
     });
