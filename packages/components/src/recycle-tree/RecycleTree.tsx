@@ -188,10 +188,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private filterFlattenBranchChildrenCache: Map<number, Uint32Array> = new Map();
   private filterWatcherDisposeCollection = new DisposableCollection();
 
+  private batchUpdatePromise: Promise<void> | null = null;
+  private batchUpdateResolver: any;
+
   // 批量更新Tree节点
   private batchUpdate = (() => {
-    let onePromise: Promise<void> | null;
-    let resolver;
     let timer: number;
     const commitUpdate = () => {
       const { root } = this.props.model;
@@ -222,23 +223,25 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       }
       this.newPromptInsertionIndex = newFilePromptInsertionIndex;
       // 更新React组件
-      this.forceUpdate(resolver);
+      this.forceUpdate(this.batchUpdateResolver);
     };
     return () => {
-      if (!onePromise) {
-        onePromise = new Promise((res) => resolver = res);
-        onePromise.then(() => {
-          onePromise = null;
-          resolver = null;
-          this.onDidUpdateEmitter.fire();
-        });
-      }
       // 清理cache，这里可以确保分支已更新完毕
       this.idxToRendererPropsCache.clear();
+      if (!this.batchUpdatePromise) {
+        this.batchUpdatePromise = new Promise((res) => this.batchUpdateResolver = res);
+        this.batchUpdatePromise.then(() => {
+          this.batchUpdatePromise = null;
+          this.batchUpdateResolver = null;
+          this.onDidUpdateEmitter.fire();
+        });
+      } else {
+        return this.batchUpdatePromise;
+      }
       // 更新批量更新返回的promise对象
       clearTimeout(timer);
       timer = setTimeout(commitUpdate, RecycleTree.BATCHED_UPDATE_MAX_DEBOUNCE_MS) as any;
-      return onePromise;
+      return this.batchUpdatePromise;
     };
   })();
 
