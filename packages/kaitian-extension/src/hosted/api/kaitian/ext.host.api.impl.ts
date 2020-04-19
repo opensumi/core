@@ -12,6 +12,7 @@ import { ExtHostTheme, createThemeApi } from './ext.host.theme';
 import { ExtHostCommon, createEventAPIFactory } from './ext.host.common';
 import { createCommandsApiFactory } from './ext.host.command';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
+import { ExtHostToolbarActionService, createToolbarAPIFactory } from './ext.host.toolbar';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -31,6 +32,7 @@ export function createAPIFactory(
   const kaitianLayout = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostLayout, new KaitianExtHostLayout(rpcProtocol));
   const kaitianExtHostTheme = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostTheme, new ExtHostTheme(rpcProtocol)) as  ExtHostTheme;
   const kaitianExtHostCommon = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostCommon, new ExtHostCommon(rpcProtocol)) as ExtHostCommon;
+  const kaitianExtHostToolbar = new ExtHostToolbarActionService(extHostCommands, kaitianExtHostCommon);
 
   return (extension: IExtension) => {
     const reporter = new ExtensionReporterService(reporterEmitter, {
@@ -47,6 +49,7 @@ export function createAPIFactory(
       event: createEventAPIFactory(extHostCommands, kaitianExtHostCommon, extension),
       reporter,
       commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
+      toolbar: createToolbarAPIFactory(extension, kaitianExtHostToolbar),
     };
   };
 }

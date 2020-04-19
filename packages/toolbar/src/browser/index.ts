@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, SlotLocation, ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, AppConfig, ClientAppContribution, ContributionProvider, ToolBarActionContribution, IToolbarRegistry } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ToolBar } from './toolbar.view';
 import { IToolBarViewService, ToolBarContribution } from './types';
@@ -18,8 +18,8 @@ export class ToolbarModule extends BrowserModule {
   contributionProvider = ToolBarContribution;
 }
 
-@Domain(ComponentContribution, ClientAppContribution)
-export class ToolBarModuleContribution implements ComponentContribution, ClientAppContribution {
+@Domain(ComponentContribution, ClientAppContribution, ToolBarActionContribution)
+export class ToolBarModuleContribution implements ComponentContribution, ClientAppContribution, ToolBarActionContribution {
 
   @Autowired(AppConfig)
   config: AppConfig;
@@ -34,8 +34,6 @@ export class ToolBarModuleContribution implements ComponentContribution, ClientA
     registry.register('toolbar', {
       id: 'toolbar',
       component: ToolBar,
-    }, {
-      size: 27,
     });
   }
 
@@ -43,6 +41,12 @@ export class ToolBarModuleContribution implements ComponentContribution, ClientA
     this.contributions.getContributions().forEach((c)  => {
       c.registerToolBarElement(this.injector.get(IToolBarViewService));
     });
+  }
+
+  registerToolbarActions(registry: IToolbarRegistry) {
+    registry.addLocation('toolbar-left');
+    registry.addLocation('toolbar-center');
+    registry.addLocation('toolbar-right');
   }
 
 }

@@ -10,6 +10,7 @@ export const BoxPanel: React.FC<{
   className?: string;
   direction?: Layout.direction;
   flex?: number;
+  zIndex?: number
 }> = (({ className, children = [], direction = 'left-to-right', ...restProps }) => {
     // convert children to list
   const arrayChildren = React.Children.toArray(children);
@@ -26,8 +27,8 @@ export const BoxPanel: React.FC<{
             className={clsx(styles.wrapper)}
             style={child['props'] ? {
               flex: child['props'].flex,
-              overflow: child['props']?.overflow,
-              zIndex: child['props']?.zIndex,
+              overflow: child['props'].overflow,
+              zIndex: child['props'].zIndex || child['props']['z-index'],
               } : {}}>
             {child}
           </div>

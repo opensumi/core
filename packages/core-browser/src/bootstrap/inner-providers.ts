@@ -42,6 +42,8 @@ import { SlotRendererContribution } from '../react-providers';
 import { ToolbarActionService, IToolbarActionService } from '../menu/next/toolbar-action.service';
 import { IProgressService } from '../progress';
 import { ProgressService } from '../progress/progress.service';
+import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
+import { IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -56,6 +58,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, PreferenceContribution);
   createContributionProvider(injector, VariableContribution);
   createContributionProvider(injector, TabBarToolbarContribution);
+  createContributionProvider(injector, ToolBarActionContribution);
 
   // 一些内置抽象实现
   const providers: Provider[] = [
@@ -145,6 +148,11 @@ export function injectInnerProviders(injector: Injector) {
       token: IProgressService,
       useClass: ProgressService,
     },
+    {
+      token: IToolbarRegistry,
+      useClass: NextToolbarRegistryImpl,
+    },
+    ToolbarClientAppContribution,
   ];
   injector.addProviders(...providers);
 

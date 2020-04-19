@@ -1,6 +1,6 @@
 import { Injector } from '@ali/common-di';
 import { ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
-import { DefaultLayout } from '@ali/ide-core-browser/lib/components';
+import { ToolbarActionBasedLayout } from '@ali/ide-core-browser/lib/components';
 
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
@@ -17,7 +17,7 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.webviewEndpoint = `http://${anotherHostName}:9090`;
   opts.editorBackgroudImage = 'https://img.alicdn.com/tfs/TB1Y6vriuL2gK0jSZFmXXc7iXXa-200-200.png';
   // 定制Layout
-  opts.layoutComponent = DefaultLayout;
+  opts.layoutComponent = ToolbarActionBasedLayout;
 
   const app = new ClientApp(opts);
 

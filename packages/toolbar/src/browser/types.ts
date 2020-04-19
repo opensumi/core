@@ -19,6 +19,8 @@ export interface IToolBarElementHandle extends IDisposable {
 
 export interface IToolBarElement {
 
+  id?: string;
+
   position: ToolBarPosition;
 
   type: 'component' | 'action';

@@ -263,7 +263,7 @@ declare module 'kaitian' {
      */
     readonly extensionId: string;
     /**
-     * 是否为内置插件
+   * 是否为内置插件
      */
     readonly isBuiltin: boolean;
   }
@@ -274,4 +274,89 @@ declare module 'kaitian' {
     export function registerCommandWithPermit(id: string, command: <T>(...args: any[]) => T | Promise<T>, isPermitted: PermittedHandler): Disposable;
   }
 
+  export namespace toolbar {
+
+    export interface IToolbarButtonActionHandle {
+
+      /**
+       * 当按钮被点击时触发
+       */
+      onClick: Event<void>;
+
+       /**
+       * 设置 Button 的 State
+       * state 需要对应在 kaitianContributes 中配置
+       * @param state
+       * @param 额外改变的 title
+       */
+      setState(state: string, title?: string): Promise<void>;
+
+      /**
+       * State 改变时触发
+       */
+      onStateChanged: Event<{from: string, to: string}>;
+
+      /**
+       * 显示 button 元素对应的 popover 元素，需要在 kaitianContributes 中配置
+       * // TODO: 未完成
+       */
+      showPopover(): Promise<void>;
+    }
+
+    export interface IToolbarSelectActionHandle<T> {
+
+      /**
+       * 设置 Select 的 State
+       * state 需要对应在 kaitianContributes 中配置
+       * @param state
+       */
+      setState(state: string): Promise<void>;
+
+      /**
+       * 修改可用 options
+       * 注意：如果修改过后的options变更，会导致当前选中变更（原有选中如果在新的options中找不到，默认使用第一个），
+       * 那么它会引起 onSelect 被触发
+       * @param options
+       */
+      setOptions(options: {
+        iconPath?: string,
+        iconMaskMode?: boolean,
+        label?: string,
+        value: T,
+      }[]): void;
+
+      /**
+       * Select 值改变时触发
+       */
+      onSelect: Event<T>;
+
+      /**
+       * State 改变时触发
+       */
+      onStateChanged: Event<{from: string, to: string}>;
+
+      /**
+       * 使用代码更改选择
+       * @param value
+       */
+      setSelect(value: T): Promise<void>;
+
+      /**
+       * 获得当前选择值
+       */
+      getValue(): T;
+    }
+
+    /**
+     * 获得一个 toolbar action 的 handle， 用于操作和响应 toolbar 上的 button
+     * @param id
+     */
+    export function getToolbarActionButtonHandle(id: string): Promise<IToolbarButtonActionHandle>;
+
+    /**
+     * 获得一个 toolbar action 的 handle， 用于操作和响应 toolbar 上的 select
+     * @param id
+     */
+    export function getToolbarActionSelectHandle<T = any>(id: string): Promise<IToolbarSelectActionHandle<T>>;
+  }
 }
