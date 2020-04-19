@@ -17,6 +17,8 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
   const disposables = new DisposableStore();
   const testMenubarId = 'mock/test/menubar';
 
+  let warnSpy: jest.SpyInstance;
+
   beforeEach(() => {
     injector = createBrowserInjector([], new Injector([
       {
@@ -42,11 +44,14 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
     menuRegistry = injector.get(IMenuRegistry);
     menubarService = injector.get(AbstractMenubarService);
 
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
     disposables.clear();
   });
 
   afterEach(() => {
     disposables.clear();
+    warnSpy.mockReset();
   });
 
   it('basic check for onDidMenuChange', () => {
@@ -66,7 +71,7 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
     }));
   });
 
-  it('basic check for onDidMenuChange', () => {
+  it('basic check for onDidMenuChange', async () => {
     disposables.add(
       menubarService.onDidMenuChange(() => {
         jest.runAllTimers();
@@ -170,23 +175,24 @@ describe('test for packages/core-browser/src/menu/next/menubar-service.ts', () =
     expect(fakeListener).not.toBeCalled();
   });
 
-  it('registerMenubarItem and then registerMenuItem in next tick', () => {
+  it('registerMenubarItem and then registerMenuItem again', () => {
     disposables.add(menuRegistry.registerMenubarItem(testMenubarId, {
       label: 'a1',
     }));
 
-    setTimeout(() => {
-      disposables.add(menuRegistry.registerMenuItem(testMenubarId, {
-        command: {
-          id: 'a',
-          label: 'hello',
-        },
-      }));
-    }, 100);
+    disposables.add(menuRegistry.registerMenuItem(testMenubarId, {
+      command: {
+        id: 'a',
+        label: 'hello',
+      },
+    }));
 
     disposables.add(
       menubarService.onDidMenuChange(() => {
-        jest.advanceTimersByTime(100);
+
+        expect(warnSpy.mock.calls[0][1]).toBe(
+          `this menuId ${testMenubarId} already existed`,
+        );
 
         const menubarItems = menubarService.getMenubarItems();
         const menuNodes = menubarService.getMenuNodes(testMenubarId);
