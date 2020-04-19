@@ -588,11 +588,11 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
     displayName = replaceLocalizePlaceholder(extension.packageJSON.displayName, extension.id) ||
       extension.packageNlsJSON && extension.packageNlsJSON.displayName ||
-      extension.deafaultPkgNlsJSON && extension.deafaultPkgNlsJSON.displayName ||
+      extension.defaultPkgNlsJSON && extension.defaultPkgNlsJSON.displayName ||
       extension.packageJSON.displayName;
     description = replaceLocalizePlaceholder(extension.packageJSON.description, extension.id) ||
       extension.packageNlsJSON && extension.packageNlsJSON.description ||
-      extension.deafaultPkgNlsJSON && extension.deafaultPkgNlsJSON.description ||
+      extension.defaultPkgNlsJSON && extension.defaultPkgNlsJSON.description ||
       extension.packageJSON.description;
 
     return {

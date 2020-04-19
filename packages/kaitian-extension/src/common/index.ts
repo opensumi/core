@@ -10,7 +10,7 @@ export interface IExtensionMetaData {
   extensionId: string;
   path: string;
   packageJSON: {[key: string]: any};
-  deafaultPkgNlsJSON: { [key: string]: any } | undefined;
+  defaultPkgNlsJSON: { [key: string]: any } | undefined;
   packageNlsJSON: {[key: string]: any} | undefined;
   extraMetadata: JSONType;
   realPath: string; // 真实路径，用于去除symbolicLink
@@ -97,7 +97,7 @@ export interface IExtensionProps {
   readonly activated: boolean;
   readonly enabled: boolean;
   readonly packageJSON: JSONType;
-  readonly deafaultPkgNlsJSON: JSONType | undefined;
+  readonly defaultPkgNlsJSON: JSONType | undefined;
   readonly packageNlsJSON: JSONType | undefined;
   readonly path: string;
   readonly realPath: string;
@@ -122,7 +122,7 @@ export abstract class VSCodeContributePoint< T extends JSONType = JSONType > ext
     protected contributes: any,
     protected extension: IExtensionMetaData,
     protected packageNlsJSON: JSONType | undefined,
-    protected deafaultPkgNlsJSON: JSONType | undefined,
+    protected defaultPkgNlsJSON: JSONType | undefined,
   ) {
     super();
   }
@@ -131,8 +131,8 @@ export abstract class VSCodeContributePoint< T extends JSONType = JSONType > ext
   abstract async contribute();
 
   protected getLocalizeFromNlsJSON(title: string) {
-    const nlsRegx = /^%([\w\d.-]+)%$/i;
-    const result = nlsRegx.exec(title);
+    const nlsRegex = /^%([\w\d.-]+)%$/i;
+    const result = nlsRegex.exec(title);
     if (result) {
       return localize(result[1], undefined, this.extension.id);
     }
@@ -162,7 +162,7 @@ export interface IExtensionHostService {
   getExtensionExports(id: string): any;
   getExtendExports(id: string): any;
   isActivated(id: string): boolean;
-  extentionsActivator: ExtensionsActivator;
+  extensionsActivator: ExtensionsActivator;
   extensionsChangeEmitter: Emitter<void>;
 }
 

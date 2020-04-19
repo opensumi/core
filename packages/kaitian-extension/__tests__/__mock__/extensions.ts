@@ -23,7 +23,7 @@ export const mockExtensionProps: IExtensionProps = {
   },
   extraMetadata: {},
   packageNlsJSON: {},
-  deafaultPkgNlsJSON: {},
+  defaultPkgNlsJSON: {},
 };
 
 export const mockExtensions: IExtension[] = [{

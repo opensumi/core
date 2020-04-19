@@ -144,7 +144,7 @@ const mockExtensionProps: IExtensionProps = {
   },
   extraMetadata: {},
   packageNlsJSON: {},
-  deafaultPkgNlsJSON: {},
+  defaultPkgNlsJSON: {},
 };
 
 (global as any).Worker = class {

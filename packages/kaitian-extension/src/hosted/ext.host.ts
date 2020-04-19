@@ -36,7 +36,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private kaitianAPIFactory: any;
   private kaitianExtAPIImpl: Map<string, any>;
 
-  public extentionsActivator: ExtensionsActivator;
+  public extensionsActivator: ExtensionsActivator;
   public storage: ExtHostStorage;
 
   readonly extensionsChangeEmitter: Emitter<void> = new Emitter<void>();
@@ -74,7 +74,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.getExtensions();
   }
   public async close() {
-    this.extentionsActivator.deactivated();
+    this.extensionsActivator.deactivated();
   }
   public async init() {
     /*
@@ -84,7 +84,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return extension.packageJSON.name;
     }));
     */
-  this.extentionsActivator = new ExtensionsActivator(this.logger);
+  this.extensionsActivator = new ExtensionsActivator(this.logger);
   this.defineAPI();
   }
 
@@ -108,7 +108,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return extensionId === extension.id;
     });
     if (extension) {
-      const activateExtension = this.extentionsActivator.get(extension.id);
+      const activateExtension = this.extensionsActivator.get(extension.id);
       return new VSCExtension(
         extension,
         this,
@@ -174,21 +174,21 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public getExtensionExports(extensionId: string) {
-    const activateExtension = this.extentionsActivator.get(extensionId);
+    const activateExtension = this.extensionsActivator.get(extensionId);
     if (activateExtension) {
       return activateExtension.exports;
     }
   }
 
   public getExtendExports(extensionId: string) {
-    const activatedExtension = this.extentionsActivator.get(extensionId);
+    const activatedExtension = this.extensionsActivator.get(extensionId);
     if (activatedExtension) {
       return activatedExtension.extendExports;
     }
   }
 
   public isActivated(extensionId: string) {
-    return this.extentionsActivator.has(extensionId);
+    return this.extensionsActivator.has(extensionId);
   }
 
   // TODO: 插件销毁流程
@@ -206,7 +206,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return;
     }
 
-    if (this.extentionsActivator.get(id)) {
+    if (this.extensionsActivator.get(id)) {
       this.logger.warn(`extension ${id} is already activated.`);
       return;
     }
@@ -263,7 +263,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         }
       }
     }
-    this.extentionsActivator.set(id, new ActivatedExtension(
+    this.extensionsActivator.set(id, new ActivatedExtension(
       activationFailed,
       activationFailedError,
       extensionModule,

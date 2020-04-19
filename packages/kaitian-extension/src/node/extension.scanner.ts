@@ -118,9 +118,9 @@ export class ExtensionScanner {
       pkgNlsJSON = await fs.readJSON(pkgNlsPath);
     }
 
-    let deafaultPkgNlsJSON: { [key: string]: string } | undefined;
+    let defaultPkgNlsJSON: { [key: string]: string } | undefined;
     if (defaultPkgNlsPathExist) {
-      deafaultPkgNlsJSON = await fs.readJSON(defaultPkgNlsPath);
+      defaultPkgNlsJSON = await fs.readJSON(defaultPkgNlsPath);
     }
 
     if ( !(pkgCheckResult || extendCheckResult) ) {
@@ -171,7 +171,7 @@ export class ExtensionScanner {
       extendConfig,
       path: extensionPath,
       packageJSON,
-      deafaultPkgNlsJSON,
+      defaultPkgNlsJSON,
       packageNlsJSON: pkgNlsJSON,
       extraMetadata: extensionExtraMetaData,
       realPath: await fs.realpath(extensionPath),

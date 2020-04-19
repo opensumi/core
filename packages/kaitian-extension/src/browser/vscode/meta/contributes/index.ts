@@ -319,7 +319,7 @@ export class VSCodeContributeRunner extends Disposable {
             contributes,
             this.extension,
             this.extension.packageNlsJSON,
-            this.extension.deafaultPkgNlsJSON,
+            this.extension.defaultPkgNlsJSON,
           ]);
 
           if (contributePoint.schema) {
