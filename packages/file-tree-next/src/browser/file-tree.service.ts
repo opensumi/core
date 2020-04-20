@@ -66,6 +66,8 @@ export class FileTreeService extends Tree {
   // 文件系统Change事件队列
   private changeEventDispatchQueue: string[] = [];
 
+  private roots: FileStat[] | null;
+
   @observable
   // 筛选模式开关
   filterMode: boolean = false;
@@ -81,17 +83,20 @@ export class FileTreeService extends Tree {
   }
 
   async init() {
-    await this.workspaceService.roots;
+    this.roots = await this.workspaceService.roots;
 
     this.baseIndent = this.corePreferences['explorer.fileTree.baseIndent'] || 8;
     this.indent = this.corePreferences['explorer.fileTree.indent'] || 8;
 
     this.toDispose.push(this.workspaceService.onWorkspaceChanged(async () => {
       this.dispose();
+      this.roots = await this.workspaceService.roots;
+      // TODO: 切换工作区时更新文件树
     }));
 
     this.toDispose.push(Disposable.create(() => {
       this._cacheNodesMap.clear();
+      this.roots = null;
     }));
 
     this.toDispose.push(this.corePreferences.onPreferenceChanged((change) => {
@@ -110,8 +115,9 @@ export class FileTreeService extends Tree {
   async resolveChildren(parent?: Directory) {
     if (!parent) {
       // 加载根目录
-      const roots = await this.workspaceService.roots;
-
+      if (!this.roots) {
+        this.roots = await this.workspaceService.roots;
+      }
       if (this.isMutiWorkspace) {
         const rootUri = new URI(this.workspaceService.workspace?.uri);
         let rootName = rootUri.displayName;
@@ -126,9 +132,9 @@ export class FileTreeService extends Tree {
         this.root = root;
         return [root];
       } else {
-        if (roots.length > 0) {
-          const children = await this.fileTreeAPI.resolveChildren(this as ITree, roots[0]);
-          this.watchFilesChange(new URI(roots[0].uri));
+        if (this.roots.length > 0) {
+          const children = await this.fileTreeAPI.resolveChildren(this as ITree, this.roots[0]);
+          this.watchFilesChange(new URI(this.roots[0].uri));
           this.cacheNodes(children as (File | Directory)[]);
           this.root = children[0] as Directory;
           return children;
@@ -176,11 +182,18 @@ export class FileTreeService extends Tree {
   }
 
   private isFileContentChanged(change: FileChange): boolean {
-    return change.type === FileChangeType.UPDATED && this.isContentFile(this.getNodeByUriString(change.uri));
+    return change.type === FileChangeType.UPDATED && this.isContentFile(this.getNodeByPathOrUri(change.uri));
   }
 
   private getAffectedUris(changes: FileChange[]): URI[] {
-    return changes.filter((change) => !this.isFileContentChanged(change)).map((change) => new URI(change.uri));
+    const uris: URI[] = [];
+    for (const change of changes) {
+      const isFile = this.isFileContentChanged(change);
+      if (!isFile) {
+        uris.push(new URI(change.uri));
+      }
+    }
+    return uris;
   }
 
   private isRootAffected(changes: FileChange[]): boolean {
@@ -252,7 +265,7 @@ export class FileTreeService extends Tree {
     const { moveChange, restChange } = data;
 
     for (const change of moveChange) {
-      const node = this.getNodeByUriString(new URI(change.source.uri).parent.toString());
+      const node = this.getNodeByPathOrUri(new URI(change.source.uri).parent.toString());
       if (node) {
         await this.moveNode(node, change.source.uri, change.target.uri);
       }
@@ -260,24 +273,43 @@ export class FileTreeService extends Tree {
     return restChange;
   }
 
-  public async moveNode(node: File | Directory, source: string, target: string) {
-    let rootUri;
-    if (!this.isMutiWorkspace) {
-      rootUri = this.workspaceService.workspace?.uri;
-    } else {
-      // 多工作区处理
-      rootUri = (await this.workspaceService.roots).find((root) => {
-        return new URI(root.uri).isEqualOrParent(node.uri);
-      })?.uri;
-    }
-    if (!rootUri) {
+  public async getFileTreeNodePathByUri(uri: URI) {
+    if (!uri) {
       return;
     }
-    const oldRelativePath = new URI(rootUri).relative(new URI(source))!;
-    const oldPath = new Path(this.root!.path).join(oldRelativePath?.toString()).toString();
-    const newRelativePath = new URI(rootUri).relative(new URI(target))!;
-    const newPath = new Path(this.root!.path).join(newRelativePath?.toString()).toString();
-    this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
+    let rootStr;
+    if (!this.isMutiWorkspace) {
+      rootStr = this.workspaceService.workspace?.uri;
+    } else {
+      if (!this.roots) {
+        this.roots = await this.workspaceService.roots;
+      }
+      rootStr = this.roots.find((root) => {
+        return new URI(root.uri).isEqualOrParent(uri);
+      })?.uri;
+    }
+    if (rootStr && this.root) {
+      const rootUri = new URI(rootStr);
+      if (rootUri.isEqualOrParent(uri)) {
+        return new Path(this.root.path).join(rootUri.relative(uri)!.toString()).toString();
+      }
+      // 可能为当前工作区外的文件
+    }
+  }
+
+  public async moveNode(node: File | Directory, source: string, target: string) {
+    const oldPath = await this.getFileTreeNodePathByUri(new URI(source));
+    const newPath = await this.getFileTreeNodePathByUri(new URI(target));
+    if (oldPath && newPath && newPath !== oldPath) {
+      this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
+    }
+  }
+
+  // 软链接目录下，文件节点路径不能通过uri去获取，存在偏差
+  public moveNodeByPath(node: File | Directory, oldPath: string, newPath: string) {
+    if (oldPath && newPath && newPath !== oldPath) {
+      this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
+    }
   }
 
   public async addNode(node: Directory, newName: string, type: TreeNodeType) {
@@ -297,12 +329,16 @@ export class FileTreeService extends Tree {
   }
 
   private async addAffectedNodes(uris: URI[], changes: FileChange[]) {
-    const nodes = uris.map((uri) => {
-      return {
-        parent: this.getNodeByUriString(uri.parent.toString()),
-        uri,
-      };
-    }).filter((node) => !!node.parent);
+    const nodes: any[] = [];
+    for (const uri of uris) {
+      const parent = this.getNodeByPathOrUri(uri.parent.toString());
+      if (!!parent) {
+        nodes.push({
+          parent,
+          uri,
+        });
+      }
+    }
     for (const node of nodes) {
       // 一旦更新队列中已包含该文件，临时剔除删除事件传递
       if (!node.parent || this.changeEventDispatchQueue.indexOf(node.parent.path) >= 0) {
@@ -317,8 +353,22 @@ export class FileTreeService extends Tree {
     return changes.filter((change) => change.type !== FileChangeType.ADDED);
   }
 
+  // 用于精准删除节点，软连接目录下的文件删除
+  public deleteAffectedNodeByPath(path: string) {
+    const node  = this.getNodeByPathOrUri(path);
+    if (node && node.parent) {
+      this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed,  path: node.path });
+    }
+  }
+
   public deleteAffectedNodes(uris: URI[], changes: FileChange[] = []) {
-    const nodes = uris.map((uri) => this.getNodeByUriString(uri.toString())).filter((node) => !!node);
+    const nodes: File[] = [];
+    for (const uri of uris) {
+      const node = this.getNodeByPathOrUri(uri);
+      if (!!node) {
+        nodes.push(node as File);
+      }
+    }
     for (const node of nodes) {
       // 一旦更新队列中已包含该文件，临时剔除删除事件传递
       if (!node?.parent || this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
@@ -337,17 +387,17 @@ export class FileTreeService extends Tree {
   }
 
   async refreshAffectedNodes(uris: URI[]) {
-    const nodes = this.getAffectedNodes(uris);
+    const nodes = await this.getAffectedNodes(uris);
     for (const node of nodes) {
       await this.refresh(node);
     }
     return nodes.length !== 0;
   }
 
-  private getAffectedNodes(uris: URI[]): Directory[] {
+  private async getAffectedNodes(uris: URI[]): Promise<Directory[]> {
     const nodes: Directory[] = [];
     for (const uri of uris) {
-      const node = this.getNodeByUriString(uri.parent.toString());
+      const node = this.getNodeByPathOrUri(uri.parent);
       if (node && Directory.is(node)) {
         nodes.push(node as Directory);
       } else {
@@ -360,12 +410,47 @@ export class FileTreeService extends Tree {
   private cacheNodes(nodes: (File | Directory)[]) {
     // 切换工作区的时候需清理
     nodes.map((node) => {
-      this._cacheNodesMap.set(node.uri.toString(), node);
+      // node.path 不会重复，node.uri在软连接情况下可能会重复
+      this._cacheNodesMap.set(node.path, node);
     });
   }
 
-  getNodeByUriString(path: string) {
-    return this._cacheNodesMap.get(path);
+  private isFileURI(str: string) {
+    return /^file:\/\//.test(str);
+  }
+
+  getNodeByPathOrUri(pathOrUri: string | URI) {
+    let path: string | undefined;
+    let pathURI: URI | undefined;
+    if (typeof pathOrUri === 'string' && !this.isFileURI(pathOrUri)) {
+      return this._cacheNodesMap.get(pathOrUri);
+    }
+    if (typeof pathOrUri !== 'string') {
+      pathURI = pathOrUri;
+      pathOrUri = pathOrUri.toString();
+    } else if (this.isFileURI(pathOrUri)) {
+      pathURI = new URI(pathOrUri);
+    }
+    if (this.isFileURI(pathOrUri) && !!pathURI) {
+      let rootStr;
+      if (!this.isMutiWorkspace) {
+        rootStr = this.workspaceService.workspace?.uri;
+      } else if (!!this.roots) {
+        rootStr = this.roots.find((root) => {
+          return new URI(root.uri).isEqualOrParent(pathURI!);
+        })?.uri;
+      }
+      if (this.root && rootStr) {
+        const rootUri = new URI(rootStr);
+        if (rootUri.isEqualOrParent(pathURI)) {
+          path = new Path(this.root.path).join(rootUri.relative(pathURI)!.toString()).toString();
+        }
+      }
+    }
+
+    if (!!path) {
+      return this._cacheNodesMap.get(path);
+    }
   }
 
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {

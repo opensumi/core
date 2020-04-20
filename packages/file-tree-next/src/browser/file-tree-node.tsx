@@ -114,12 +114,21 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   };
 
   const isDirectory = itemType === TreeNodeType.CompositeTreeNode;
-
+  let paddingLeft;
+  if (isPrompt) {
+    if (isNewPrompt) {
+      paddingLeft = `${defaultLeftPadding + ((item as NewPromptHandle).parent.depth + 1 || 0) * (leftPadding || 0)}px`;
+    } else {
+      paddingLeft = `${defaultLeftPadding + ((item as RenamePromptHandle).target.depth || 0) * (leftPadding || 0)}px`;
+    }
+  } else {
+    paddingLeft = isDirectory ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 8}px`;
+  }
   const fileTreeNodeStyle = {
     color: decoration ? decoration.color : '',
     height: FILE_TREE_NODE_HEIGHT,
     lineHeight: `${FILE_TREE_NODE_HEIGHT}px`,
-    paddingLeft: isDirectory || (isPrompt && item.type === TreeNodeType.CompositeTreeNode) ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 10}px`,
+    paddingLeft,
   } as React.CSSProperties;
 
   const renderFolderToggle = (node: Directory | PromptHandle, clickHandler: any) => {
@@ -127,14 +136,22 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       return <Loading />;
     }
     if (isPrompt && node instanceof PromptHandle) {
-      const isDirectory: boolean = (node as NewPromptHandle).type === TreeNodeType.CompositeTreeNode;
+      let isDirectory: boolean = false;
+      if (isRenamePrompt) {
+        isDirectory = ((node as RenamePromptHandle).target).type === TreeNodeType.CompositeTreeNode;
+      } else {
+        isDirectory = (node as NewPromptHandle).type === TreeNodeType.CompositeTreeNode;
+      }
       if (isDirectory) {
         return <div
           className={cls(
             styles.file_tree_node_segment,
             styles.expansion_toggle,
             getIcon('arrow-right'),
-            styles.mod_collapsed,
+            { [`${styles.mod_collapsed}`]:
+              isNewPrompt || !(isRenamePrompt &&
+              ((node as RenamePromptHandle).target).type === TreeNodeType.CompositeTreeNode &&
+              ((node as RenamePromptHandle).target as Directory).expanded)},
           )}
         />;
       }

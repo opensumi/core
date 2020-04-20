@@ -7,7 +7,6 @@ import { CorePreferences, IContextKey, URI, trim, rtrim, localize, coalesce, for
 import { FileContextKey } from '../file-contextkey';
 import { ResourceContextKey } from '@ali/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
-import { IWorkspaceService } from '@ali/ide-workspace';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileTreeAPI, PasteTypes } from '../../common';
 import { DragAndDropService } from './file-tree-dnd.service';
@@ -48,9 +47,6 @@ export class FileTreeModelService {
 
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
-
-  @Autowired(IWorkspaceService)
-  private readonly workspaceService: IWorkspaceService;
 
   @Autowired(ICtxMenuRenderer)
   private readonly ctxMenuRenderer: ICtxMenuRenderer;
@@ -277,24 +273,6 @@ export class FileTreeModelService {
 
   private async loadFileTreeSnapshot(snapshot: ISerializableState) {
     await this._treeModel.loadTreeState(snapshot);
-  }
-
-  private async getFileTreeNodePathByUri(uri: URI) {
-    if (!uri) {
-      return;
-    }
-    const isSingleFolder = !this.fileTreeService.isMutiWorkspace;
-    let rootUri;
-    if (isSingleFolder) {
-      rootUri = this.workspaceService.workspace?.uri;
-    } else {
-      rootUri = (await this.workspaceService.roots).find((root) => {
-        return new URI(root.uri).isEqualOrParent(uri);
-      })?.uri;
-    }
-    if (rootUri && this.treeModel) {
-      return new Path(this.treeModel.root.path).join(new URI(rootUri).relative(uri)!.toString()).toString();
-    }
   }
 
   // 清空所有节点选中态
@@ -608,10 +586,24 @@ export class FileTreeModelService {
   }
 
   async deleteFile(uri: URI) {
+    // 提前缓存文件路径
+    let targetPath: string | URI | undefined;
+    // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
+    if (this.focusedFile) {
+      targetPath = this.focusedFile.path;
+    } else if (this.selectedFiles.length > 0) {
+      targetPath = this.selectedFiles[this.selectedFiles.length - 1].path;
+    } else {
+      targetPath = uri;
+    }
     const error = await this.fileTreeAPI.delete(uri);
     if (error) {
       this.messageService.error(error);
       return false;
+    }
+    const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
+    if (effectNode) {
+      this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
     }
     return true;
   }
@@ -718,7 +710,7 @@ export class FileTreeModelService {
           promptHandle.addValidateMessage(this.validateMessage);
           return false;
         }
-        this.fileTreeService.moveNode(target.parent as Directory, from.toString(), to.toString());
+        this.fileTreeService.moveNodeByPath(target.parent as Directory, target.path, new Path(target.parent!.path).join(newName).toString());
         // Cause the treeNode move event just changing path and name by default.
         // We should update target uri to new uri by ourself.
         target.uri = to;
@@ -815,25 +807,50 @@ export class FileTreeModelService {
 
   async newFilePrompt(uri: URI) {
     await this.fileTreeService.flushEventQueue();
-    const path = await this.getFileTreeNodePathByUri(uri);
-    if (path) {
-      this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(path));
+    let targetPath: string | URI | undefined;
+    // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
+    if (this.focusedFile) {
+      targetPath = this.focusedFile.path;
+    } else if (this.selectedFiles.length > 0) {
+      targetPath = this.selectedFiles[this.selectedFiles.length - 1].path;
+    } else {
+      targetPath = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+    }
+    if (targetPath) {
+      this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(targetPath));
     }
   }
 
   async newDirectoryPrompt(uri: URI) {
     await this.fileTreeService.flushEventQueue();
-    const path = await this.getFileTreeNodePathByUri(uri);
-    if (path) {
-      this.proxyPrompt(await this.fileTreeHandle.promptNewCompositeTreeNode(path));
+    let targetPath: string | URI | undefined;
+    // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
+    if (this.focusedFile) {
+      targetPath = this.focusedFile.path;
+    } else if (this.selectedFiles.length > 0) {
+      // 该位置为最后一个失去焦点的节点
+      targetPath = this.selectedFiles[this.selectedFiles.length - 1].path;
+    } else {
+      targetPath = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+    }
+    if (targetPath) {
+      this.proxyPrompt(await this.fileTreeHandle.promptNewCompositeTreeNode(targetPath));
     }
   }
 
   async renamePrompt(uri: URI) {
     await this.fileTreeService.flushEventQueue();
-    const path = await this.getFileTreeNodePathByUri(uri);
-    if (path) {
-      this.proxyPrompt(await this.fileTreeHandle.promptRename(path));
+    let targetPath: string | URI | undefined;
+    // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
+    if (this.focusedFile) {
+      targetPath = this.focusedFile.path;
+    } else if (this.selectedFiles.length > 0) {
+      targetPath = this.selectedFiles[this.selectedFiles.length - 1].path;
+    } else {
+      targetPath = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+    }
+    if (targetPath) {
+      this.proxyPrompt(await this.fileTreeHandle.promptRename(targetPath));
     }
   }
 
@@ -848,14 +865,21 @@ export class FileTreeModelService {
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
+    const files: File[] = [];
+    for (const uri of from) {
+      const file = this.fileTreeService.getNodeByPathOrUri(uri);
+      if (!!file) {
+        files.push(file);
+      }
+    }
     this._pasteStore = {
-      files: from.map((uri) => this.fileTreeService.getNodeByUriString(uri.toString())).filter((node) => !!node) as (File | Directory)[],
+      files: files as (File | Directory)[],
       type: PasteTypes.COPY,
     };
   }
 
   public pasteFile = async (to: URI) => {
-    let parent = this.fileTreeService.getNodeByUriString(to.toString());
+    let parent = this.fileTreeService.getNodeByPathOrUri(to.toString());
     if (!parent || !this.pasteStore) {
       return;
     }
@@ -915,7 +939,13 @@ export class FileTreeModelService {
         this.cutDecoration.removeTarget(file);
       });
     }
-    const files = from.map((uri) => this.fileTreeService.getNodeByUriString(uri.toString())).filter((node) => !!node) as (File | Directory)[];
+    const files: File[] = [];
+    for (const uri of from) {
+      const file = this.fileTreeService.getNodeByPathOrUri(uri);
+      if (!!file) {
+        files.push(file);
+      }
+    }
     this._pasteStore = {
       files,
       type: PasteTypes.CUT,
@@ -934,7 +964,7 @@ export class FileTreeModelService {
     if (this._loadSnapshotReady) {
       await this._loadSnapshotReady;
     }
-    const path = await this.getFileTreeNodePathByUri(uri);
+    const path = await this.fileTreeService.getFileTreeNodePathByUri(uri);
     if (path) {
       if (!this.fileTreeHandle) {
         return;
@@ -949,10 +979,6 @@ export class FileTreeModelService {
 
   public locationOnShow = (uri: URI) => {
     this._nextLocationTarget = uri;
-  }
-
-  public locationWhenStatable = async (uri: URI) => {
-
   }
 
   public performLocationOnHandleShow = async () => {
