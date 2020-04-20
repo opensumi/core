@@ -1,3 +1,4 @@
+// tslint:disable no-console
 let warned: Record<string, boolean> = {};
 
 export function warning(valid: boolean, message: string) {

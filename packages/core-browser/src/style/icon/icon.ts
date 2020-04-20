@@ -1,5 +1,5 @@
 import { SymbolKind, getDebugLogger } from '@ali/ide-core-common';
-import { warning } from '@ali/ide-core-common/lib/utils/warning';
+import { warning } from '@ali/ide-components/lib/utils/warning';
 import { defaultIconfont, ROTATE_TYPE, ANIM_TYPE } from '@ali/ide-components/lib/icon';
 
 import { IDE_ICONFONT_CN_CSS } from './ide-iconfont';
