@@ -225,6 +225,10 @@ export namespace COMMON_COMMANDS {
     label: '%common.preference.open%',
   };
 
+  export const LOCATE_PREFERENCES: Command = {
+    id: 'workbench.preferences.locate',
+  };
+
   export const OPEN_KEYMAPS: Command = {
     id: 'core.keymaps.open',
     label: '%common.keymaps.open%',

@@ -94,7 +94,13 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
       isEnabled: () => true,
       execute: async () => {
         await this.openPreferences();
-        // this.preferenceService.setCurrentGroup('terminal');
+      },
+    });
+
+    commands.registerCommand(COMMON_COMMANDS.LOCATE_PREFERENCES, {
+      execute: async (groupId: string) => {
+        await this.openPreferences();
+        return await this.preferenceService.setCurrentGroup(groupId);
       },
     });
   }

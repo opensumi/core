@@ -193,8 +193,7 @@ export class TerminalBrowserContribution implements ComponentContribution, Comma
 
     registry.registerCommand(TERMINAL_COMMANDS.MORE_SETTINGS, {
       execute: async () => {
-        this.commands.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id);
-        this.settingService.setCurrentGroup('terminal');
+        this.commands.executeCommand(COMMON_COMMANDS.LOCATE_PREFERENCES.id, 'terminal');
       },
     });
   }
