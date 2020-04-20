@@ -53,8 +53,18 @@ export class TreeStateWatcher implements IDisposable {
     this.disposables.push(treeState.onDidChangeExpansionState(({relativePath, isExpanded, isVisibleAtSurface}: IExpansionStateChange) => {
       let shouldNotify = false;
       const surfaceSets = new Set(this.currentState.expandedDirectories.atSurface);
+      const buriedSets = new Set(this.currentState.expandedDirectories.buried);
       if (surfaceSets.has(relativePath) && (!isExpanded || !isVisibleAtSurface)) {
         surfaceSets.delete(relativePath);
+        // 该目录下的子目录需要变为buried状态
+        const restSurfaceArray = Array.from(surfaceSets);
+        const pathsShouldBeBuried = restSurfaceArray.filter((rest) => rest.indexOf(relativePath) >= 0);
+        for (const path of pathsShouldBeBuried) {
+          surfaceSets.delete(path);
+          if (!buriedSets.has(path)) {
+            buriedSets.add(path);
+          }
+        }
         shouldNotify = true;
       } else if (isExpanded && isVisibleAtSurface) {
         surfaceSets.add(relativePath);
@@ -63,7 +73,6 @@ export class TreeStateWatcher implements IDisposable {
       this.currentState.expandedDirectories.atSurface = Array.from(surfaceSets);
 
       if (!atSurfaceExpandedDirsOnly) {
-        const buriedSets = new Set(this.currentState.expandedDirectories.buried);
         if (buriedSets.has(relativePath) && (!isExpanded || isVisibleAtSurface)) {
           buriedSets.delete(relativePath);
           shouldNotify = true;
