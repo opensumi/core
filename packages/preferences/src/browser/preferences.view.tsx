@@ -126,7 +126,7 @@ export const PreferencesIndexes = ({groups, scope, search}: {groups: ISettingGro
                 <PreferenceSections preferenceSections={sections} navigateTo={(section) => {
                   const target = document.getElementById('preferenceSection-' + section.title);
                   if (target) {
-                    target.parentElement!.scrollTop = target.offsetTop;
+                    target.scrollIntoView();
                   }
                 }}></PreferenceSections>
               </div>

@@ -4,7 +4,9 @@ import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposa
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IPreferenceSettingsService, ISettingGroup, ISettingSection, PreferenceProviderProvider } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser';
+import { getDebugLogger } from '@ali/ide-core-common';
 import { IDialogService } from '@ali/ide-overlay';
+
 import { toPreferenceReadableName } from '../common';
 
 @Injectable()
@@ -32,7 +34,11 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   public currentGroup: string = '';
 
   public setCurrentGroup(groupId: string) {
-    this.currentGroup = groupId;
+    if (this.settingsGroups.find((n) => n.id === groupId)) {
+      this.currentGroup = groupId;
+      return;
+    }
+    getDebugLogger('Preference').warn('PreferenceService#setCurrentGroup is called with an invalid groupId:', groupId);
   }
 
   private settingsGroups: ISettingGroup[] = [];
