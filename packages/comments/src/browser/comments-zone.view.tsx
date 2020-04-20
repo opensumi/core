@@ -59,6 +59,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
         <div>
           <CommentsTextArea
             focusDelay={100}
+            initialHeight={'auto'}
             value={replyText}
             onChange={onChangeReply}
             placeholder={`${localize('comments.reply.placeholder')}...`}

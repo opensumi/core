@@ -1,8 +1,12 @@
 import * as React from 'react';
+import TextareaAutosize from 'react-textarea-autosize';
 import * as styles from './comments.module.less';
 
 export interface ICommentTextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   focusDelay?: number;
+  minRows?: number;
+  maxRows?: number;
+  initialHeight?: string;
 }
 
 export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTextAreaProps>(
@@ -14,8 +18,10 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
       onFocus,
       onBlur,
       onChange,
-      rows = 2,
+      maxRows = 10,
+      minRows = 2,
       value,
+      initialHeight,
     } = props;
 
     const inputRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -23,22 +29,29 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
     React.useImperativeHandle(ref, () => inputRef.current!);
 
     React.useEffect(() => {
+      const textarea = inputRef?.current;
+      if (!textarea) {
+        return;
+      }
+      if (initialHeight && textarea.style) {
+        textarea.style.height = initialHeight;
+      }
       if (focusDelay) {
         setTimeout(() => {
-          inputRef?.current?.focus();
+          textarea.focus();
         }, focusDelay);
       }
       // auto set last selection
-      if (value && inputRef) {
+      if (value) {
         const position = value.toString().length;
-        inputRef.current?.setSelectionRange(position, position);
+        textarea.setSelectionRange(position, position);
       }
     }, []);
 
     return (
       <div className={styles.textarea_container}>
-        <textarea
-          ref={inputRef}
+        <TextareaAutosize
+          inputRef={inputRef}
           value={value}
           autoFocus={autoFocus}
           placeholder={placeholder}
@@ -46,8 +59,9 @@ export const CommentsTextArea = React.forwardRef<HTMLTextAreaElement, ICommentTe
           onBlur={onBlur}
           onChange={onChange}
           className={styles.textarea}
-          rows={rows}>
-        </textarea>
+          minRows={minRows}
+          maxRows={maxRows}
+        />
       </div>
     );
   },
