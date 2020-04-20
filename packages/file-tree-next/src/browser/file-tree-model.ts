@@ -10,7 +10,7 @@ export interface IFileTreeMetaData extends IOptionalMetaData {
   filestat?: FileStat;
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class FileTreeModel extends TreeModel {
 
   static DEFAULT_FLUSH_DELAY = 100;

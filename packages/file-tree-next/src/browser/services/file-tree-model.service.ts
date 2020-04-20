@@ -86,8 +86,8 @@ export class FileTreeModelService {
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
-  private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 焦点态
-  private cutDecoration: Decoration = new Decoration(styles.mod_cut); // 焦点态
+  private loadingDecoration: Decoration = new Decoration(styles.mod_loading); // 加载态
+  private cutDecoration: Decoration = new Decoration(styles.mod_cut); // 剪切态
   // 即使选中态也是焦点态的节点，全局仅会有一个
   private _focusedFile: File | Directory | undefined;
   // 选中态的节点，会可能有多个

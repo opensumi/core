@@ -46,3 +46,11 @@ export enum PasteTypes {
   COPY,
   CUT,
 }
+
+export const IFileDialogModel = Symbol('IFileDialogModel');
+
+export const IFileDialogTreeService = Symbol('IFileDialogTreeService');
+
+export interface IFileDialogTreeService extends ITree {
+  getDirectoryList(): string[];
+}
