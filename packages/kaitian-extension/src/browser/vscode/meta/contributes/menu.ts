@@ -17,43 +17,21 @@ export interface MenusSchema {
   [MenuPosition: string]: MenuActionFormat[];
 }
 
-export const contributedMenuUtils = {
-  isProposedAPI: (menuId: MenuId): boolean => {
-    switch (menuId) {
-      case MenuId.StatusBarWindowIndicatorMenu:
-      case MenuId.MenubarFileMenu:
-        return true;
-    }
-    return false;
-  },
-  parseMenuId: (value: string): MenuId | undefined => {
-    switch (value) {
-      case 'commandPalette': return MenuId.CommandPalette;
-      case 'touchBar': return MenuId.TouchBarContext;
-      case 'editor/title': return MenuId.EditorTitle;
-      case 'editor/context': return MenuId.EditorContext;
-      case 'explorer/context': return MenuId.ExplorerContext;
-      case 'editor/title/context': return MenuId.EditorTitleContext;
-      case 'debug/callstack/context': return MenuId.DebugCallStackContext;
-      case 'debug/toolbar': return MenuId.DebugToolBar;
-      case 'debug/toolBar': return MenuId.DebugToolBar;
-      case 'menuBar/file': return MenuId.MenubarFileMenu;
-      case 'scm/title': return MenuId.SCMTitle;
-      case 'scm/sourceControl': return MenuId.SCMSourceControl;
-      case 'scm/resourceGroup/context': return MenuId.SCMResourceGroupContext;
-      case 'scm/resourceState/context': return MenuId.SCMResourceContext;
-      case 'scm/change/title': return MenuId.SCMChangeContext;
-      case 'statusBar/windowIndicator': return MenuId.StatusBarWindowIndicatorMenu;
-      case 'view/title': return MenuId.ViewTitle;
-      case 'view/item/context': return MenuId.ViewItemContext;
-      case 'comments/commentThread/title': return MenuId.CommentsCommentThreadTitle;
-      case 'comments/commentThread/context': return MenuId.CommentsCommentThreadContext;
-      case 'comments/comment/title': return MenuId.CommentsCommentTitle;
-      case 'comments/comment/context': return MenuId.CommentsCommentContext;
-    }
-    return undefined;
-  },
-};
+function parseMenuId(value: string): MenuId | string {
+  switch (value) {
+    // 以下仅保留对 vscode 部分 menuId 的兼容
+    case 'touchBar':
+      return MenuId.TouchBarContext;
+    case 'debug/toolBar':
+      return MenuId.DebugToolBar;
+    case 'statusBar/windowIndicator':
+      return MenuId.StatusBarWindowIndicatorMenu;
+    case 'menuBar/file':
+      return MenuId.MenubarFileMenu;
+    default:
+      return value;
+  }
+}
 
 export function isValidMenuItems(menu: MenuActionFormat[], collector: Console): boolean {
   if (!Array.isArray(menu)) {
@@ -97,7 +75,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   logger: ILogger;
 
   @Autowired(IMenuRegistry)
-  newMenuRegistry: IMenuRegistry;
+  menuRegistry: IMenuRegistry;
 
   @Autowired()
   toolBarRegistry: ToolbarRegistry;
@@ -123,21 +101,16 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
 
     const collector = console;
 
-    // menu registeration
+    // menu registration
     for (const menuPosition of Object.keys(this.json)) {
       const menuActions = this.json[menuPosition];
       if (!isValidMenuItems(menuActions, console)) {
         return;
       }
 
-      const menuId = contributedMenuUtils.parseMenuId(menuPosition);
+      const menuId = parseMenuId(menuPosition);
       if (isUndefined(menuId)) {
         collector.warn(formatLocalize('menuId.invalid', '`{0}` is not a valid menu identifier', menuPosition));
-        return;
-      }
-
-      if (contributedMenuUtils.isProposedAPI(menuId)/* && !extension.description.enableProposedApi*/) {
-        collector.error(formatLocalize('proposedAPI.invalid', menuId));
         return;
       }
 
@@ -185,12 +158,12 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         } else {
           let argsTransformer: ((...args: any[]) => any[]) | undefined;
           if (menuId === MenuId.EditorTitleContext) {
-            argsTransformer = ({uri, group}: {uri: URI, group: IEditorGroup}) => {
+            argsTransformer = ({ uri, group }: {uri: URI, group: IEditorGroup}) => {
               return [uri.codeUri];
             };
           }
 
-          this.addDispose(this.newMenuRegistry.registerMenuItem(
+          this.addDispose(this.menuRegistry.registerMenuItem(
             menuId,
             {
               command: item.command,
@@ -198,8 +171,8 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
               group,
               order,
               when: item.when,
-              argsTransformer,
               // 以下为 kaitian 扩展部分
+              argsTransformer,
               type: item.type,
               toggledWhen: item.toggledWhen,
               enabledWhen: item.enabledWhen,

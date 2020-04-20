@@ -310,6 +310,9 @@ export class VSCodeContributeRunner extends Disposable {
     if (!contributes) {
       return;
     }
+
+    // TODO: filter for contributes here
+
     for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
       if (contributes[contributeName] !== undefined) {

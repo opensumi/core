@@ -122,7 +122,7 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
   registerMenubarItem(menuId: string, item: PartialBy<IExtendMenubarItem, 'id'>): IDisposable {
     // 将 menuId 存到结构中去
     const menubarItem = { ...item, id: menuId } as IExtendMenubarItem;
-    const existedItem = this._menuItems.get(menuId);
+    const existedItem = this._menubarItems.get(menuId);
     if (existedItem) {
       this.logger.warn(`this menuId ${menuId} already existed`);
       return Disposable.None;

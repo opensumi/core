@@ -98,9 +98,9 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
   }
 
   // 根据事件监听结果更新单个 root menuId 下的 menus
-  private _rebuildSingleRootMenus(menudId: string) {
-    this._buildMenus(menudId);
-    this._onDidMenuChange.fire(menudId);
+  private _rebuildSingleRootMenus(menuId: string) {
+    this._buildMenus(menuId);
+    this._onDidMenuChange.fire(menuId);
   }
 
   /**
