@@ -66,6 +66,8 @@ export class FileTreeService extends Tree {
   // 文件系统Change事件队列
   private changeEventDispatchQueue: string[] = [];
 
+  private roots: FileStat[] | null;
+
   @observable
   // 筛选模式开关
   filterMode: boolean = false;
@@ -81,17 +83,20 @@ export class FileTreeService extends Tree {
   }
 
   async init() {
-    await this.workspaceService.roots;
+    this.roots = await this.workspaceService.roots;
 
     this.baseIndent = this.corePreferences['explorer.fileTree.baseIndent'] || 8;
     this.indent = this.corePreferences['explorer.fileTree.indent'] || 8;
 
     this.toDispose.push(this.workspaceService.onWorkspaceChanged(async () => {
       this.dispose();
+      this.roots = await this.workspaceService.roots;
+      // TODO: 切换工作区时更新文件树
     }));
 
     this.toDispose.push(Disposable.create(() => {
       this._cacheNodesMap.clear();
+      this.roots = null;
     }));
 
     this.toDispose.push(this.corePreferences.onPreferenceChanged((change) => {
@@ -110,8 +115,9 @@ export class FileTreeService extends Tree {
   async resolveChildren(parent?: Directory) {
     if (!parent) {
       // 加载根目录
-      const roots = await this.workspaceService.roots;
-
+      if (!this.roots) {
+        this.roots = await this.workspaceService.roots;
+      }
       if (this.isMutiWorkspace) {
         const rootUri = new URI(this.workspaceService.workspace?.uri);
         let rootName = rootUri.displayName;
@@ -126,9 +132,9 @@ export class FileTreeService extends Tree {
         this.root = root;
         return [root];
       } else {
-        if (roots.length > 0) {
-          const children = await this.fileTreeAPI.resolveChildren(this as ITree, roots[0]);
-          this.watchFilesChange(new URI(roots[0].uri));
+        if (this.roots.length > 0) {
+          const children = await this.fileTreeAPI.resolveChildren(this as ITree, this.roots[0]);
+          this.watchFilesChange(new URI(this.roots[0].uri));
           this.cacheNodes(children as (File | Directory)[]);
           this.root = children[0] as Directory;
           return children;
@@ -175,14 +181,14 @@ export class FileTreeService extends Tree {
     return !!node && 'filestat' in node;
   }
 
-  private async isFileContentChanged(change: FileChange): Promise<boolean> {
-    return change.type === FileChangeType.UPDATED && this.isContentFile(await this.getNodeByPathOrUri(change.uri));
+  private isFileContentChanged(change: FileChange): boolean {
+    return change.type === FileChangeType.UPDATED && this.isContentFile(this.getNodeByPathOrUri(change.uri));
   }
 
-  private async getAffectedUris(changes: FileChange[]): Promise<URI[]> {
+  private getAffectedUris(changes: FileChange[]): URI[] {
     const uris: URI[] = [];
     for (const change of changes) {
-      const isFile = await this.isFileContentChanged(change);
+      const isFile = this.isFileContentChanged(change);
       if (!isFile) {
         uris.push(new URI(change.uri));
       }
@@ -242,14 +248,14 @@ export class FileTreeService extends Tree {
   private async onFilesChanged(changes: FileChange[]) {
     let restChange: FileChange[] = await this.moveAffectedNodes(changes);
     // 移除节点
-    restChange = await this.deleteAffectedNodes(this.getDeletedUris(restChange), restChange);
+    restChange = this.deleteAffectedNodes(this.getDeletedUris(restChange), restChange);
     // 添加节点, 需要获取节点类型
     restChange = await this.addAffectedNodes(this.getAddedUris(restChange), restChange);
     if (restChange.length === 0) {
       return ;
     }
     // 处理除了删除/添加/移动事件外的异常事件
-    if (!await this.refreshAffectedNodes(await this.getAffectedUris(restChange)) && this.isRootAffected(restChange)) {
+    if (!await this.refreshAffectedNodes(this.getAffectedUris(restChange)) && this.isRootAffected(restChange)) {
       await this.refresh();
     }
   }
@@ -259,7 +265,7 @@ export class FileTreeService extends Tree {
     const { moveChange, restChange } = data;
 
     for (const change of moveChange) {
-      const node = await this.getNodeByPathOrUri(new URI(change.source.uri).parent.toString());
+      const node = this.getNodeByPathOrUri(new URI(change.source.uri).parent.toString());
       if (node) {
         await this.moveNode(node, change.source.uri, change.target.uri);
       }
@@ -275,7 +281,10 @@ export class FileTreeService extends Tree {
     if (!this.isMutiWorkspace) {
       rootStr = this.workspaceService.workspace?.uri;
     } else {
-      rootStr = (await this.workspaceService.roots).find((root) => {
+      if (!this.roots) {
+        this.roots = await this.workspaceService.roots;
+      }
+      rootStr = this.roots.find((root) => {
         return new URI(root.uri).isEqualOrParent(uri);
       })?.uri;
     }
@@ -289,18 +298,6 @@ export class FileTreeService extends Tree {
   }
 
   public async moveNode(node: File | Directory, source: string, target: string) {
-    let rootUri;
-    if (!this.isMutiWorkspace) {
-      rootUri = this.workspaceService.workspace?.uri;
-    } else {
-      // 多工作区处理
-      rootUri = (await this.workspaceService.roots).find((root) => {
-        return new URI(root.uri).isEqualOrParent(node.uri);
-      })?.uri;
-    }
-    if (!rootUri) {
-      return;
-    }
     const oldPath = await this.getFileTreeNodePathByUri(new URI(source));
     const newPath = await this.getFileTreeNodePathByUri(new URI(target));
     if (oldPath && newPath && newPath !== oldPath) {
@@ -309,7 +306,7 @@ export class FileTreeService extends Tree {
   }
 
   // 软链接目录下，文件节点路径不能通过uri去获取，存在偏差
-  public async moveNodeByPath(node: File | Directory, oldPath: string, newPath: string) {
+  public moveNodeByPath(node: File | Directory, oldPath: string, newPath: string) {
     if (oldPath && newPath && newPath !== oldPath) {
       this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
     }
@@ -334,7 +331,7 @@ export class FileTreeService extends Tree {
   private async addAffectedNodes(uris: URI[], changes: FileChange[]) {
     const nodes: any[] = [];
     for (const uri of uris) {
-      const parent = await this.getNodeByPathOrUri(uri.parent.toString());
+      const parent = this.getNodeByPathOrUri(uri.parent.toString());
       if (!!parent) {
         nodes.push({
           parent,
@@ -357,17 +354,17 @@ export class FileTreeService extends Tree {
   }
 
   // 用于精准删除节点，软连接目录下的文件删除
-  public async deleteAffectedNodeByPath(path: string) {
-    const node  = await this.getNodeByPathOrUri(path);
+  public deleteAffectedNodeByPath(path: string) {
+    const node  = this.getNodeByPathOrUri(path);
     if (node && node.parent) {
       this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed,  path: node.path });
     }
   }
 
-  public async deleteAffectedNodes(uris: URI[], changes: FileChange[] = []) {
+  public deleteAffectedNodes(uris: URI[], changes: FileChange[] = []) {
     const nodes: File[] = [];
     for (const uri of uris) {
-      const node = await this.getNodeByPathOrUri(uri);
+      const node = this.getNodeByPathOrUri(uri);
       if (!!node) {
         nodes.push(node as File);
       }
@@ -400,7 +397,7 @@ export class FileTreeService extends Tree {
   private async getAffectedNodes(uris: URI[]): Promise<Directory[]> {
     const nodes: Directory[] = [];
     for (const uri of uris) {
-      const node = await this.getNodeByPathOrUri(uri.parent);
+      const node = this.getNodeByPathOrUri(uri.parent);
       if (node && Directory.is(node)) {
         nodes.push(node as Directory);
       } else {
@@ -422,7 +419,7 @@ export class FileTreeService extends Tree {
     return /^file:\/\//.test(str);
   }
 
-  async getNodeByPathOrUri(pathOrUri: string | URI) {
+  getNodeByPathOrUri(pathOrUri: string | URI) {
     let path: string | undefined;
     let pathURI: URI | undefined;
     if (typeof pathOrUri === 'string' && !this.isFileURI(pathOrUri)) {
@@ -438,8 +435,8 @@ export class FileTreeService extends Tree {
       let rootStr;
       if (!this.isMutiWorkspace) {
         rootStr = this.workspaceService.workspace?.uri;
-      } else {
-        rootStr = (await this.workspaceService.roots).find((root) => {
+      } else if (!!this.roots) {
+        rootStr = this.roots.find((root) => {
           return new URI(root.uri).isEqualOrParent(pathURI!);
         })?.uri;
       }

@@ -601,9 +601,9 @@ export class FileTreeModelService {
       this.messageService.error(error);
       return false;
     }
-    const effectNode = await this.fileTreeService.getNodeByPathOrUri(targetPath);
+    const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
     if (effectNode) {
-      await this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
+      this.fileTreeService.deleteAffectedNodeByPath(effectNode.path);
     }
     return true;
   }
@@ -867,7 +867,7 @@ export class FileTreeModelService {
     this.treeModel.dispatchChange();
     const files: File[] = [];
     for (const uri of from) {
-      const file = await this.fileTreeService.getNodeByPathOrUri(uri);
+      const file = this.fileTreeService.getNodeByPathOrUri(uri);
       if (!!file) {
         files.push(file);
       }
@@ -879,7 +879,7 @@ export class FileTreeModelService {
   }
 
   public pasteFile = async (to: URI) => {
-    let parent = await this.fileTreeService.getNodeByPathOrUri(to.toString());
+    let parent = this.fileTreeService.getNodeByPathOrUri(to.toString());
     if (!parent || !this.pasteStore) {
       return;
     }
@@ -941,7 +941,7 @@ export class FileTreeModelService {
     }
     const files: File[] = [];
     for (const uri of from) {
-      const file = await this.fileTreeService.getNodeByPathOrUri(uri);
+      const file = this.fileTreeService.getNodeByPathOrUri(uri);
       if (!!file) {
         files.push(file);
       }

@@ -14,8 +14,8 @@ export class SymlinkDecorationsProvider implements IDecorationsProvider {
     return this.onDidChangeEmitter.event;
   }
 
-  async provideDecorations(resource: Uri): Promise<IDecorationData | undefined> {
-    const node = await this.fileTreeService.getNodeByPathOrUri(resource.toString());
+  provideDecorations(resource: Uri): IDecorationData | undefined {
+    const node = this.fileTreeService.getNodeByPathOrUri(resource.toString());
     if (node && node.filestat) {
       if (node.filestat.isSymbolicLink) {
         return {
