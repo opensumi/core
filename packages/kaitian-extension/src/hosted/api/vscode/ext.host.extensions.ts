@@ -75,8 +75,8 @@ export function createExtensionsApiFactory(
             ext,
             extensionService,
             mainThreadExtensionService,
-            extensionService.extentionsActivator.get(ext.id) && extensionService.extentionsActivator.get(ext.id)!.exports,
-            extensionService.extentionsActivator.get(ext.id) && extensionService.extentionsActivator.get(ext.id)!.extendExports,
+            extensionService.extensionsActivator.get(ext.id) && extensionService.extensionsActivator.get(ext.id)!.exports,
+            extensionService.extensionsActivator.get(ext.id) && extensionService.extensionsActivator.get(ext.id)!.extendExports,
           );
       });
     })(),
