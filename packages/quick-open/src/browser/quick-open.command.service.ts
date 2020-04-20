@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { localize, IContextKeyService, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
+import { CommandRegistry, Command, CommandService, Deferred } from '@ali/ide-core-common';
 import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem } from './quick-open.model';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
@@ -29,6 +29,8 @@ export class QuickCommandModel implements QuickOpenModel {
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
 
+  private initDeferred = new Deferred<void>();
+
   constructor() {
     this.init();
   }
@@ -37,11 +39,13 @@ export class QuickCommandModel implements QuickOpenModel {
     const recentCommandIds = await this.workspaceService.getMostRecentlyUsedCommands();
     const recentCommands: Command[] = recentCommandIds.map((commandId) => {
       return this.commandRegistry.getCommand(commandId);
-    }).filter((command) => !!command) as Command[];
+    }).filter((command) => !!command).reverse() as Command[];
     this.commandRegistry.setRecentCommands(recentCommands);
+    this.initDeferred.resolve();
   }
 
-  onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void) {
+  async onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void) {
+    await this.initDeferred.promise;
     acceptor(this.getItems(lookFor));
   }
 

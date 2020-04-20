@@ -555,7 +555,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    * @param recent 待添加的命令
    */
   protected addRecentCommand(recent: Command): void {
-    if (!recent) {
+    if (!recent || !recent.label) {
       return; // 某些情况会报错
     }
     // 确定命令当前是否存在于最近使用的列表中
