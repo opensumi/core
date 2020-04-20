@@ -2,7 +2,7 @@ import { WSChannel, MessageString } from '../common/ws-channel';
 import * as shortid from 'shortid';
 import { stringify, parse } from '../common/utils';
 import { MultiWs } from './multi-ws';
-import { warning } from '@ali/ide-core-common/lib/utils/warning';
+import { warning } from '@ali/ide-components/lib/utils/warning';
 import { IReporterService, REPORT_NAME } from '@ali/ide-core-common';
 
 let ReconnectingWebSocket = require('reconnecting-websocket');

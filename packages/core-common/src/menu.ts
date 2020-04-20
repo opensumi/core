@@ -1,11 +1,11 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+
 import { IDisposable } from './disposable';
 import { CommandRegistry, Command } from './command';
 import { ContributionProvider } from './contribution-provider';
 import { IElectronMainApi } from './electron';
 import { IEventBus, BasicEvent } from './event-bus';
 import { Emitter, Event } from './event';
-import { warning } from './utils/warning';
 
 export interface MenuAction {
     // commandId 和 nativeRole 二选一
@@ -58,7 +58,8 @@ export class MenuModelRegistry {
     protected readonly contributions: ContributionProvider<MenuContribution>;
 
     onStart(): void {
-      warning(
+      // tslint:disable no-console
+      console.warn(
         false,
         '[kaitian] `MenuContribution` was deprecated and will remove in 2020 Feb, please use `NextMenuContribution` instead',
       );

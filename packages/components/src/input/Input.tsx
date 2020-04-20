@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as clx from 'classnames';
-import warning from '@ali/ide-core-common/lib/utils/warning';
+import warning from '../utils/warning';
 
 import { Icon } from '../icon';
 
