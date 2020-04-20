@@ -33,7 +33,7 @@ export class ToolBarBrowserContributionRunner extends AbstractKaitianBrowserCont
     if (this.contribution.toolBar) {
       this.contribution.toolBar.component.forEach((component) => {
         const { extendProtocol, extendService } = param.getExtensionExtendService(this.extension, component.id);
-        disposer.addDispose(this.toolBarViewService.registerToolBarElement({
+        const disposable = this.toolBarViewService.registerToolBarElement({
           type: 'component',
           component: component.panel as React.FunctionComponent | React.ComponentClass,
           position: component.position || this.contribution.toolBar!.position || ToolBarPosition.LEFT,
@@ -41,7 +41,10 @@ export class ToolBarBrowserContributionRunner extends AbstractKaitianBrowserCont
             kaitianExtendService: extendService,
             kaitianExtendSet: extendProtocol,
           },
-        }));
+        });
+        if (disposable) {
+          disposer.addDispose(disposable);
+        }
       });
     }
 

@@ -31,7 +31,7 @@ describe('toolbar service test suite', () => {
       title: 'RightPreview',
     }];
     const service: IToolBarViewService = injector.get(ToolBarViewService);
-    const handles = actions.map((action) => service.registerToolBarElement(action as IToolBarAction));
+    const handles = actions.map((action) => service.registerToolBarElement(action as IToolBarAction)!);
     toTearDown.pushAll(handles);
 
     const leftActions = service.getVisibleElements(1);

@@ -5,7 +5,7 @@ import { IDisposable } from '@ali/ide-core-common';
 @Injectable()
 export abstract class IToolBarViewService {
 
-  abstract registerToolBarElement(element: IToolBarAction | IToolBarComponent): IToolBarElementHandle;
+  abstract registerToolBarElement(element: IToolBarAction | IToolBarComponent): IToolBarElementHandle | undefined;
 
   abstract getVisibleElements(position: ToolBarPosition): (IToolBarComponent | IToolBarAction)[];
 }
