@@ -375,7 +375,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'auto'): Promise<TreeNode | undefined> => {
+  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = Align.center): Promise<TreeNode | undefined> => {
     const { root, state } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
