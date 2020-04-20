@@ -161,6 +161,7 @@ const CustomScrollbarsVirtualList = React.forwardRef((props, ref) => (
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private static BATCHED_UPDATE_MAX_DEBOUNCE_MS: number = 4;
+  private static TRY_ENSURE_VISIBLE_MAX_TIMES: number = 5;
   private static FILTER_FUZZY_OPTIONS = {
     pre: '<match>',
     post: '</match>',
@@ -190,6 +191,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private batchUpdatePromise: Promise<void> | null = null;
   private batchUpdateResolver: any;
+  private tryEnsureVisibleTimes: number = 0;
 
   // 批量更新Tree节点
   private batchUpdate = (() => {
@@ -375,7 +377,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
   }
 
-  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'auto'): Promise<TreeNode | undefined> => {
+  private ensureVisible = async (pathOrTreeNode: string | TreeNode | CompositeTreeNode, align: Align = 'center'): Promise<TreeNode | undefined> => {
     const { root, state } = this.props.model;
     const node = typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
@@ -397,10 +399,25 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       }
       parent = parent.parent;
     }
-    Event.once(this.props.model.onChange)(() => {
-      this.listRef.current.scrollToItem(root.getIndexAtTreeNode(node), align);
-    });
+    this.tryScrollIntoViewWhileStable(node as TreeNode, align);
     return node as TreeNode;
+  }
+
+  private tryScrollIntoViewWhileStable(node: TreeNode | CompositeTreeNode, align: Align = 'center') {
+    const { root } = this.props.model;
+    if (this.tryEnsureVisibleTimes > RecycleTree.TRY_ENSURE_VISIBLE_MAX_TIMES) {
+      this.tryEnsureVisibleTimes = 0;
+      return;
+    }
+    Event.once(this.props.model.onChange)(() => {
+      if (root.isItemVisibleAtSurface(node)) {
+        this.listRef.current.scrollToItem(root.getIndexAtTreeNode(node), align);
+        this.tryEnsureVisibleTimes = 0;
+      } else {
+        this.tryEnsureVisibleTimes ++;
+        this.tryScrollIntoViewWhileStable(node, align);
+      }
+    });
   }
 
   private scrollIntoView(node: TreeNode | CompositeTreeNode, align: Align = 'center'): boolean {

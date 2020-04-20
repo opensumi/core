@@ -100,7 +100,7 @@ export class TreeStateManager {
    */
   public excludeFromStash(file: ITreeNodeOrCompositeTreeNode) {
     if (this.stashKeyframes && !this.stashing) {
-      this.handleExpansionChange(file.constructor === TreeNode ? file.parent as CompositeTreeNode : file as CompositeTreeNode, true, this.root.isItemVisibleAtSurface(file));
+      this.handleExpansionChange(!CompositeTreeNode.is(file) ? file.parent as CompositeTreeNode : file as CompositeTreeNode, true, this.root.isItemVisibleAtSurface(file));
     }
   }
 
