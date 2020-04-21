@@ -224,12 +224,12 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         }
       }
       this.newPromptInsertionIndex = newFilePromptInsertionIndex;
+      // 清理cache，这里可以确保分支已更新完毕
+      this.idxToRendererPropsCache.clear();
       // 更新React组件
       this.forceUpdate(this.batchUpdateResolver);
     };
     return () => {
-      // 清理cache，这里可以确保分支已更新完毕
-      this.idxToRendererPropsCache.clear();
       if (!this.batchUpdatePromise) {
         this.batchUpdatePromise = new Promise((res) => this.batchUpdateResolver = res);
         this.batchUpdatePromise.then(() => {
@@ -540,15 +540,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       : root.branchSize;
   }
 
-  private getItemKey = (index: number) => {
-    const node = this.getItemAtIndex(index);
-    if (node && node.item) {
-      return node.item.id;
-    } else {
-      return index;
-    }
-  }
-
   // 过滤Root节点展示
   private filterItems = (filter: string) => {
     const { root } = this.props.model;
@@ -679,7 +670,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         // 这里的数据不是必要的，主要用于在每次更新列表
         itemData={[]}
         itemSize={itemHeight}
-        itemKey={this.getItemKey}
         itemCount={this.adjustedRowCount}
         overscanCount={10}
         ref={this.listRef}
