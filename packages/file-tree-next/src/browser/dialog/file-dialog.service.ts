@@ -24,9 +24,15 @@ export class FileTreeDialogService extends Tree {
   private workspaceRoot: FileStat;
   private _cacheNodesMap: Map<string, File | Directory> = new Map();
 
+  public _whenReady: Promise<void>;
+
   constructor(@Optional() root: string) {
     super();
-    this.resolveWorkspaceRoot(root);
+    this._whenReady = this.resolveWorkspaceRoot(root);
+  }
+
+  get whenReady() {
+    return this._whenReady;
   }
 
   async resolveWorkspaceRoot(path: string) {

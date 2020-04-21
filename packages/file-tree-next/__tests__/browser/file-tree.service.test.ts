@@ -13,6 +13,11 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IWindowDialogService, IDialogService, IMessageService } from '@ali/ide-overlay';
 import { IFileTreeAPI } from '../../src/common';
 import { IThemeService } from '@ali/ide-theme';
+import { File, Directory } from '../../src/browser/file-tree-nodes';
+import { TreeNodeType } from '@ali/ide-components';
+
+class TempDirectory {}
+class TempFile {}
 
 describe('FileTree Service should be work alone', () => {
   let injector: MockInjector;
@@ -20,6 +25,35 @@ describe('FileTree Service should be work alone', () => {
   let onPreferenceChanged;
   let mockFileServiceClient;
   let fileChangeWatcher;
+  const rootUri = URI.file('/userhome');
+  const newFileByName = (name) => {
+    const file = {
+      uri: rootUri.resolve(name),
+      name,
+      filestat: {
+        uri: rootUri.resolve(name).toString(),
+        isDirectory: false,
+        lastModification: new Date().getTime(),
+      },
+      type: TreeNodeType.TreeNode,
+    } as File;
+    file.constructor = new TempFile().constructor;
+    return file;
+  };
+  const newDirectoryByName = (name) => {
+    const directory = {
+      uri: rootUri.resolve(name),
+      name,
+      filestat: {
+        uri: rootUri.resolve(name).toString(),
+        isDirectory: true,
+        lastModification: new Date().getTime(),
+      },
+      type: TreeNodeType.CompositeTreeNode,
+    } as Directory;
+    directory.constructor = new TempDirectory().constructor;
+    return directory;
+  };
   beforeEach(() => {
     injector = createBrowserInjector([]);
     onPreferenceChanged = jest.fn((valueChangeHandle) => {
@@ -192,5 +226,17 @@ describe('FileTree Service should be work alone', () => {
     // locationToCurrentFile
     fileTreeService.locationToCurrentFile();
     expect(mockLocation).toBeCalledTimes(2);
+  });
+
+  it('sortComparator method should be work', () => {
+    let res = fileTreeService.sortComparator(newFileByName('a'), newDirectoryByName('a'));
+    expect(res).toBe(1);
+    res = fileTreeService.sortComparator(newFileByName('a'), newFileByName('b'));
+    expect(res).toBe(-1);
+    res = fileTreeService.sortComparator(newDirectoryByName('a'), newDirectoryByName('b'));
+    expect(res).toBe(-1);
+    res = fileTreeService.sortComparator(newDirectoryByName('a'), newDirectoryByName('a'));
+    expect(res).toBe(0);
+    res = fileTreeService.sortComparator(newFileByName('a'), newFileByName('a'));
   });
 });

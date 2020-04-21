@@ -3,7 +3,6 @@ import { TreeModel, DecorationsManager, Decoration, IRecycleTreeHandle, TreeNode
 import { FileTreeModel } from '../file-tree-model';
 import { File, Directory } from '../file-tree-nodes';
 import { URI, DisposableCollection, Emitter, CorePreferences } from '@ali/ide-core-browser';
-import { FileContextKey } from '../file-contextkey';
 import { PasteTypes, IFileDialogTreeService, IFileDialogModel } from '../../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { FileTreeDialogService } from './file-dialog.service';
@@ -57,9 +56,6 @@ export class FileTreeDialogModel {
 
   @Autowired(LabelService)
   public readonly labelService: LabelService;
-
-  @Autowired(FileContextKey)
-  private readonly fileTreeContextKey: FileContextKey;
 
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
@@ -298,14 +294,12 @@ export class FileTreeDialogModel {
   }
 
   handleTreeBlur = () => {
-    this.fileTreeContextKey.filesExplorerFocused.set(false);
     // 清空焦点状态
     this.enactiveFileDecoration();
   }
 
   handleTreeFocus = () => {
     // 激活面板
-    this.fileTreeContextKey.filesExplorerFocused.set(true);
   }
 
   handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
