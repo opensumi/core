@@ -83,6 +83,7 @@
 }
 
 .reply_item_title {
+  visibility: hidden;
   display: inline-block;
   margin-left: 8px;
 }
@@ -94,6 +95,7 @@
 .textarea {
   flex: 1;
   outline: none;
+  resize: none;
   border-radius: 2px;
   border: 1px solid var(--kt-input-border);
   background-color: var(--input-background);
@@ -146,6 +148,11 @@
   color: var(--descriptionForeground);
 }
 
+.comment_item_markdown_header {
+  display: flex;
+  justify-content: space-between;
+}
+
 .comment_item_label {
   margin-left: 5px;
   color: var(--descriptionForeground);
@@ -163,6 +170,11 @@
   &:last-child {
     margin-bottom: 0;
   }
+  &:hover {
+    .reply_item_title {
+      visibility: visible;
+    }
+  }
 }
 
 .reply_item_icon {
@@ -178,11 +190,6 @@
 
 .comment_item_reply_button {
   margin: 0 6px;
-}
-
-.comment_item_body {
-  color: var(--foreground);
-  line-height: 20px;
 }
 
 .comment_item_reply_wrap {

@@ -8,6 +8,8 @@ import { AbstractMenuService, MenuId, IMenu } from '@ali/ide-core-browser/lib/me
 import { useInjectable, localize, IContextKeyService } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
 import { CommentsThread } from './comments-thread';
+import { CommentsBody } from './comments-body';
+import * as marked from 'marked';
 
 const useCommentContext
   = (contextKeyService: IContextKeyService, comment: IThreadComment)
@@ -79,6 +81,13 @@ const ReplyItem: React.FC<{
     commentTitleContext,
   ] = useCommentContext(contextKeyService, reply);
 
+  const isInlineText = React.useMemo(() => {
+    const lexer = marked.lexer(body);
+    const token = lexer[0] as marked.Tokens.Paragraph;
+    const isParagraph = token?.type === 'paragraph';
+    return isParagraph && !token?.text.includes('\n');
+  }, [body]);
+
   return (
     <div className={styles.reply_item}>
       {mode === CommentMode.Preview ? (
@@ -90,36 +99,68 @@ const ReplyItem: React.FC<{
               alt={author.name}
             />
           ) }
-          <span className={styles.comment_item_author_name}>
+          { isInlineText ? (
+            <>
+            <span className={styles.comment_item_author_name}>
             {author.name}
-          </span>
-          {typeof label === 'string' ? (
-            <span className={styles.comment_item_label}>{label}</span>
+            </span>
+            {typeof label === 'string' ? (
+              <span className={styles.comment_item_label}>{label}</span>
+            ) : (
+              label
+            )}
+            { ' : ' }
+            <span className={styles.comment_item_body}>{body}</span>
+            <InlineActionBar<ICommentsCommentTitle>
+              separator='inline'
+              className={styles.reply_item_title}
+              menus={commentTitleContext}
+              context={[
+                {
+                  thread,
+                  comment: reply,
+                },
+              ]}
+              type='icon'
+            />
+            </>
           ) : (
-            label
+            <>
+              <div className={styles.comment_item_markdown_header}>
+                <div>
+                  <span className={styles.comment_item_author_name}>
+                  {author.name}
+                  </span>
+                  {typeof label === 'string' ? (
+                    <span className={styles.comment_item_label}>{label}</span>
+                  ) : (
+                    label
+                  )}
+                  { ' : ' }
+                </div>
+                <InlineActionBar<ICommentsCommentTitle>
+                  separator='inline'
+                  className={styles.reply_item_title}
+                  menus={commentTitleContext}
+                  context={[
+                    {
+                      thread,
+                      comment: reply,
+                    },
+                  ]}
+                  type='icon'
+                />
+              </div>
+              <CommentsBody body={body} />
+            </>
           )}
-          { ' : ' }
-          <span className={styles.comment_item_body}>{body}</span>
-          <InlineActionBar<ICommentsCommentTitle>
-            separator='inline'
-            className={styles.reply_item_title}
-            menus={commentTitleContext}
-            context={[
-              {
-                thread,
-                comment: reply,
-              },
-            ]}
-            type='icon'
-          />
         </div>
       ) : (
         <div>
           <CommentsTextArea
             value={textValue}
-            focusDelay={100}
+            autoFocus={true}
             onChange={onChangeTextArea}
-            rows={2}
           />
           <InlineActionBar<ICommentsCommentContext>
             className={styles.comment_item_reply}
@@ -211,14 +252,13 @@ export const CommentItem: React.FC<{
           </div>
         </div>
         {mode === CommentMode.Preview ? (
-          <div className={styles.comment_item_body}>{body}</div>
+          <CommentsBody body={body} />
         ) : (
             <div>
               <CommentsTextArea
               value={textValue}
-              focusDelay={100}
+              autoFocus={true}
               onChange={onChangeTextArea}
-              rows={2}
             />
             <InlineActionBar<ICommentsCommentContext>
               className={styles.comment_item_context}
@@ -244,7 +284,7 @@ export const CommentItem: React.FC<{
             {showReply && (
                <div>
                  <CommentsTextArea
-                  focusDelay={100}
+                  autoFocus={true}
                   value={replyText}
                   onChange={onChangeReply}
                   placeholder={`${localize('comments.reply.placeholder')}...`}
