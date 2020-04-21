@@ -6,7 +6,7 @@ import * as styles from './comments.module.less';
 import { ConfigProvider, localize, AppConfig, useInjectable } from '@ali/ide-core-browser';
 import { CommentItem } from './comments-item.view';
 import { CommentsTextArea } from './comments-textarea.view';
-import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle } from '../common';
+import { ICommentReply, ICommentsZoneWidget, ICommentThreadTitle, ICommentsFeatureRegistry } from '../common';
 import * as clx from 'classnames';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { ResizeZoneWidget } from '@ali/ide-monaco-enhance';
@@ -27,6 +27,8 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   } = thread;
   const injector = useInjectable(INJECTOR_TOKEN);
   const commentsZoneService: CommentsZoneService = injector.get(CommentsZoneService, [ thread ]);
+  const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
+  const fileUploadHandler = React.useMemo(() => commentsFeatureRegistry.getFileUploadHandler(), []);
   const [replyText, setReplyText] = React.useState('');
   const commentIsEmptyContext = React.useMemo(() => {
     return contextKeyService.createKey<boolean>('commentIsEmpty', !replyText);
@@ -34,11 +36,22 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
   const commentThreadTitle = commentsZoneService.commentThreadTitle;
   const commentThreadContext = commentsZoneService.commentThreadContext;
 
-  function onChangeReply(event: React.ChangeEvent<HTMLTextAreaElement>) {
+  const onChangeReply = React.useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = event.target;
     setReplyText(value);
     commentIsEmptyContext.set(!value);
-  }
+  }, []);
+
+  const handleDragFiles = React.useCallback(async (files: FileList) => {
+    if (fileUploadHandler) {
+      const appendText = await fileUploadHandler(replyText, files);
+      setReplyText((text) => {
+        const value = text + appendText;
+        commentIsEmptyContext.set(!value);
+        return value;
+      });
+    }
+  }, [ replyText ]);
 
   return (
     <div className={clx(thread.options.threadClassName, styles.comment_container)}>
@@ -63,6 +76,7 @@ const CommentsZone: React.FC<ICommentProps> = observer(({ thread, widget }) => {
             value={replyText}
             onChange={onChangeReply}
             placeholder={`${localize('comments.reply.placeholder')}...`}
+            dragFiles={handleDragFiles}
           />
           <div className={styles.comment_bottom_actions}>
             <InlineActionBar<ICommentReply>

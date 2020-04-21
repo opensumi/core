@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as styles from './comments.module.less';
-import { IThreadComment, ICommentsCommentTitle, CommentMode, ICommentReply, ICommentsCommentContext, ICommentsZoneWidget} from '../common';
+import { IThreadComment, ICommentsCommentTitle, CommentMode, ICommentReply, ICommentsCommentContext, ICommentsZoneWidget, ICommentsFeatureRegistry} from '../common';
 import { InlineActionBar } from '@ali/ide-core-browser/lib/components/actions';
 import { observer } from 'mobx-react-lite';
 import { CommentsTextArea } from './comments-textarea.view';
@@ -13,10 +13,12 @@ import * as marked from 'marked';
 
 const useCommentContext
   = (contextKeyService: IContextKeyService, comment: IThreadComment)
-  : [ string,  React.Dispatch<React.SetStateAction<string>>, (event: React.ChangeEvent<HTMLTextAreaElement>) => void, IMenu, IMenu] => {
+  : [ string,  React.Dispatch<React.SetStateAction<string>>, (event: React.ChangeEvent<HTMLTextAreaElement>) => void, IMenu, IMenu, (files: FileList) => Promise<void>] => {
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
   const { body, contextValue } = comment;
   const [ textValue, setTextValue ] = React.useState('');
+  const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
+  const fileUploadHandler = React.useMemo(() => commentsFeatureRegistry.getFileUploadHandler(), []);
 
   // set textValue when body changed
   React.useEffect(() => {
@@ -57,12 +59,24 @@ const useCommentContext
     setTextValue(event.target.value);
   }, []);
 
+  const handleDragFiles = React.useCallback(async (files: FileList) => {
+    if (fileUploadHandler) {
+      const appendText = await fileUploadHandler(textValue, files);
+      setTextValue((text) => {
+        const value = text + appendText;
+        commentIsEmptyContext.set(!value);
+        return value;
+      });
+    }
+  }, [ textValue ]);
+
   return [
     textValue,
     setTextValue,
     onChangeTextArea,
     commentContext,
     commentTitleContext,
+    handleDragFiles,
   ];
 };
 
@@ -79,8 +93,10 @@ const ReplyItem: React.FC<{
     onChangeTextArea,
     commentContext,
     commentTitleContext,
+    handleDragFiles,
   ] = useCommentContext(contextKeyService, reply);
 
+  // 判断是正常 Inline Text 还是 Markdown Text
   const isInlineText = React.useMemo(() => {
     const lexer = marked.lexer(body);
     const token = lexer[0] as marked.Tokens.Paragraph;
@@ -161,6 +177,7 @@ const ReplyItem: React.FC<{
             value={textValue}
             autoFocus={true}
             onChange={onChangeTextArea}
+            dragFiles={handleDragFiles}
           />
           <InlineActionBar<ICommentsCommentContext>
             className={styles.comment_item_reply}
@@ -201,6 +218,7 @@ export const CommentItem: React.FC<{
     onChangeTextArea,
     commentContext,
     commentTitleContext,
+    handleDragFiles,
   ] = useCommentContext(contextKeyService, comment);
   const replyIsEmptyContext = React.useMemo(() => {
     return contextKeyService.createKey('commentIsEmpty', true);
@@ -259,6 +277,7 @@ export const CommentItem: React.FC<{
               value={textValue}
               autoFocus={true}
               onChange={onChangeTextArea}
+              dragFiles={handleDragFiles}
             />
             <InlineActionBar<ICommentsCommentContext>
               className={styles.comment_item_context}
@@ -288,6 +307,7 @@ export const CommentItem: React.FC<{
                   value={replyText}
                   onChange={onChangeReply}
                   placeholder={`${localize('comments.reply.placeholder')}...`}
+                  dragFiles={handleDragFiles}
                 />
                 <InlineActionBar<ICommentReply>
                   className={styles.comment_item_reply}
