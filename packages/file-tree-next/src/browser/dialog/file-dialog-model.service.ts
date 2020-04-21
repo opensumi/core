@@ -146,6 +146,13 @@ export class FileTreeDialogModel {
     }));
   }
 
+  async updateTreeModel(path: string) {
+    const children = await this.fileTreeDialogService.resolveRoot(path);
+    if (children && children.length > 0) {
+      this._treeModel = this.injector.get<any>(FileTreeModel, [children[0]]);
+    }
+  }
+
   initDecorations(root) {
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);

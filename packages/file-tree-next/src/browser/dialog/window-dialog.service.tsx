@@ -16,10 +16,13 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
 
-  @Autowired(FileTreeDialogService)
-  private readonly fileTreeDialogService: FileTreeDialogService;
-
-  async showOpenDialog(options: IOpenDialogOptions | undefined = {}): Promise<URI[] | undefined> {
+  // https://code.visualstudio.com/api/references/vscode-api#OpenDialogOptions
+  async showOpenDialog(options: IOpenDialogOptions): Promise<URI[] | undefined> {
+    const defaultOptions: IOpenDialogOptions = {
+      canSelectFiles: true,
+      canSelectFolders: false,
+      canSelectMany: false,
+    };
     if (isElectronRenderer()) {
       // TODO 非file协议OpenDialog
       const electronUi = this.injector.get(IElectronMainUIService) as IElectronMainUIService;
@@ -44,8 +47,15 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
         return undefined;
       }
     } else {
-      const model = FileTreeDialogModel.createModel(this.injector, this.fileTreeDialogService);
-      const res = await this.dialogService.open<string[]>(<FileDialog model={model} options={options}/>, MessageType.Empty);
+      const defaultUri = options.defaultUri;
+      let fileTreeDialogService: FileTreeDialogService;
+      if (defaultUri) {
+        fileTreeDialogService = this.injector.get(FileTreeDialogService, [defaultUri?.toString()]);
+      } else {
+        fileTreeDialogService = this.injector.get(FileTreeDialogService);
+      }
+      const model = FileTreeDialogModel.createModel(this.injector, fileTreeDialogService);
+      const res = await this.dialogService.open<string[]>(<FileDialog model={model} options={{ ...defaultOptions, ...options}} isOpenDialog={false}/>, MessageType.Empty);
       if (res && res.length > 0) {
         return res.map((r) => URI.file(r));
       } else {
@@ -54,6 +64,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
     }
   }
 
+  // https://code.visualstudio.com/api/references/vscode-api#SaveDialogOptions
   async showSaveDialog(options: ISaveDialogOptions = {}): Promise<URI | undefined> {
     if (isElectronRenderer()) {
       // TODO 非file协议SaveDialog
@@ -69,8 +80,15 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
         return undefined;
       }
     } else {
-      const model = FileTreeDialogModel.createModel(this.injector, this.fileTreeDialogService);
-      const res = await this.dialogService.open<string[]>(<FileDialog model={model} options={options}/>, MessageType.Empty);
+      const defaultUri = options.defaultUri;
+      let fileTreeDialogService: FileTreeDialogService;
+      if (defaultUri) {
+        fileTreeDialogService = this.injector.get(FileTreeDialogService, [defaultUri?.path.toString()]);
+      } else {
+        fileTreeDialogService = this.injector.get(FileTreeDialogService);
+      }
+      const model = FileTreeDialogModel.createModel(this.injector, fileTreeDialogService);
+      const res = await this.dialogService.open<string[]>(<FileDialog model={model} options={options} isOpenDialog={false}/>, MessageType.Empty);
       if (res && res.length > 0) {
         return URI.file(res[0]);
       } else {

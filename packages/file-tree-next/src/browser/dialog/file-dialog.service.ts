@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, Optional } from '@ali/common-di';
 import {
   URI,
 } from '@ali/ide-core-browser';
@@ -9,7 +9,7 @@ import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType, ITree } from '@ali/id
 import { Directory } from '../file-tree-nodes';
 import { FileStat } from '@ali/ide-file-service';
 
-@Injectable()
+@Injectable({multiple: true})
 export class FileTreeDialogService extends Tree {
 
   @Autowired(IFileTreeAPI)
@@ -23,6 +23,25 @@ export class FileTreeDialogService extends Tree {
 
   private workspaceRoot: FileStat;
   private _cacheNodesMap: Map<string, File | Directory> = new Map();
+
+  constructor(@Optional() root: string) {
+    super();
+    this.resolveWorkspaceRoot(root);
+  }
+
+  async resolveWorkspaceRoot(path: string) {
+    if (path) {
+      let rootUri: URI;
+      if (/^file:\/\//.test(path)) {
+        rootUri = new URI(path);
+      }
+      rootUri = URI.file(path);
+      const rootFileStat = await this.fileTreeAPI.resolveFileStat(rootUri);
+      if (rootFileStat) {
+        this.workspaceRoot = rootFileStat;
+      }
+    }
+  }
 
   async resolveChildren(parent?: Directory) {
     if (!parent) {
@@ -43,6 +62,20 @@ export class FileTreeDialogService extends Tree {
       }
     }
     return [];
+  }
+
+  async resolveRoot(path: string) {
+    let rootUri: URI;
+    if (/^file:\/\//.test(path)) {
+      rootUri = new URI(path);
+    }
+    rootUri = URI.file(path);
+    const rootFileStat = await this.fileTreeAPI.resolveFileStat(rootUri);
+    if (rootFileStat) {
+      const children = await this.fileTreeAPI.resolveChildren(this as ITree, rootFileStat);
+      this.root = children[0] as Directory;
+      return children;
+    }
   }
 
   getDirectoryList() {
@@ -78,5 +111,9 @@ export class FileTreeDialogService extends Tree {
       // node.path 不会重复，node.uri在软连接情况下可能会重复
       this._cacheNodesMap.set(node.path, node);
     });
+  }
+
+  dispose() {
+    this._cacheNodesMap.clear();
   }
 }

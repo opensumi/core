@@ -5,12 +5,14 @@ import { Button, Input, Select, Option, RecycleTree, IRecycleTreeHandle, INodeRe
 import { FileTreeDialogModel } from './file-dialog-model.service';
 import { Directory, File } from '../file-tree-nodes';
 import { FileTreeDialogNode } from './file-dialog-node';
+import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
 import * as styles from './file-dialog.module.less';
 import * as path from '@ali/ide-core-common/lib/utils/paths';
 
 export interface IFileDialogProps {
   options: ISaveDialogOptions | IOpenDialogOptions;
   model: FileTreeDialogModel;
+  isOpenDialog: boolean;
 }
 
 export const FILE_TREE_DIALOG_HEIGHT = 22;
@@ -19,13 +21,15 @@ export const FileDialog = (
   {
     options,
     model,
-   }: React.PropsWithChildren<IFileDialogProps>,
+    isOpenDialog,
+  }: React.PropsWithChildren<IFileDialogProps>,
 ) => {
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
-  const [saveOrOpenValue] = React.useState<string[]>([]);
   const [fileName, setFileName] = React.useState<string>((options as ISaveDialogOptions).defaultFileName || '');
   const [isReady, setIsReady] = React.useState<boolean>(false);
+  const [selectPath, setSelectPath] = React.useState<string>('');
+  const [directoryList, setDirectoryList] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     ensureIsReady();
@@ -34,7 +38,15 @@ export const FileDialog = (
     };
   }, []);
 
-  const hide = (value?: string[]) => {
+  React.useEffect(() => {
+    if (isReady) {
+      const list = model.getDirectoryList();
+      setDirectoryList(list);
+    }
+  }, [isReady]);
+
+  const hide = () => {
+    const value: string[] = model.selectedFiles.map((file) => file.uri.withoutScheme().toString());
     // 如果有文件名的，说明是保存文件的情况
     if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
       const filePath = value?.length === 1 ? value[0] : options.defaultUri!.path.toString();
@@ -56,8 +68,7 @@ export const FileDialog = (
     setIsReady(true);
   };
 
-  const isSaveDialog = !IOpenDialogOptions.is(options) && ISaveDialogOptions.is(options);
-  const isNormalDialog = !IOpenDialogOptions.is(options) && !ISaveDialogOptions.is(options);
+  const isSaveDialog = !isOpenDialog;
 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
     model.handleTreeHandler({
@@ -100,116 +111,110 @@ export const FileDialog = (
     }
     const shiftMask = hasShiftMask(event);
     const ctrlCmdMask = hasCtrlCmdMask(event);
-    if (shiftMask) {
+    if (shiftMask && !isSaveDialog && (options as IOpenDialogOptions).canSelectMany) {
       handleItemRangeClick(item, type);
-    } else if (ctrlCmdMask) {
+    } else if (ctrlCmdMask && !isSaveDialog && (options as IOpenDialogOptions).canSelectMany) {
       handleItemToggleClick(item, type);
     } else {
-      handleItemClick(item, type);
+      if (isSaveDialog) {
+        if (type === TreeNodeType.CompositeTreeNode) {
+          handleItemClick(item, type);
+        }
+      } else {
+        if ((options as IOpenDialogOptions).canSelectFiles && type === TreeNodeType.TreeNode) {
+          handleItemClick(item, type);
+        } else if ((options as IOpenDialogOptions).canSelectFolders && type === TreeNodeType.CompositeTreeNode) {
+          handleItemClick(item, type);
+        }
+      }
     }
   };
 
-  const onRootChangeHandler = (value: string) => {
-    // TODO: Refresh Root
+  React.useEffect(() => {
+    setIsReady(false);
+  }, [selectPath]);
+
+  const onRootChangeHandler = async (value: string) => {
+    setSelectPath(value);
+    await model.updateTreeModel(value);
+    setIsReady(true);
   };
 
-  const directoryOptions = () => {
-    const list = model.getDirectoryList();
-    return list.map((item, idx) =>
-    <Option value={item} key={`${idx} - ${item}`}>{
-      item
-    }</Option>);
-  };
-
-  if (!isReady) {
-    return <div>loading...</div>;
-  } else {
-    if (isNormalDialog) {
-      return (
-        <React.Fragment>
-          <div className={styles.file_dialog_directory_title}>{localize('dialog.file.title')}</div>
-          <div className={styles.file_dialog_directory}>
-            <Select
-              onChange={onRootChangeHandler}
-              className={styles.select_control}
-              size={ 'small' }
-              value={ model.treeModel.root.path }
-            >
-              {directoryOptions()}
-            </Select>
-          </div>
-          <div className={styles.file_dialog_content} ref={wrapperRef}>
-            <RecycleTree
-              width = {425}
-              height = {300}
-              itemHeight={FILE_TREE_DIALOG_HEIGHT}
-              onReady={handleTreeReady}
-              model={model.treeModel}
-            >
-              {(props: INodeRendererProps) => <FileTreeDialogNode
-                item={props.item}
-                itemType={props.itemType}
-                labelService={model.labelService}
-                decorations={model.decorations.getDecorations(props.item as any)}
-                onClick={handleItemClicked}
-                onTwistierClick={handleTwistierClick}
-                defaultLeftPadding={8}
-                leftPadding={8}
-              />}
-            </RecycleTree>
-          </div>
-          <div className={styles.buttonWrap}>
-            <Button onClick={() => close()} type='secondary' className={styles.button}>{localize('dialog.file.close')}</Button>
-            <Button onClick={() => hide(saveOrOpenValue)} type='primary' className={styles.button}>{localize('dialog.file.ok')}</Button>
-          </div>
-        </React.Fragment>
-      );
-    } else if (isSaveDialog) {
-      return (
-        <React.Fragment>
-          <div className={styles.file_dialog_directory_title}>{ (options as ISaveDialogOptions).saveLabel || localize('dialog.file.saveLabel')}</div>
-          <div className={styles.file_dialog_directory}>
-            {/* <Select onChange={onRootChangeHandler}
-              className={styles.select_control}
-            >
-              {directoryOptions}
-            </Select> */}
-          </div>
-          <div className={styles.file_dialog_content}>
-
-          </div>
-          {(options as ISaveDialogOptions).showNameInput && (
-            <div className={styles.file_dialog_file_container}>
-              <span className={styles.file_dialog_file_name}>{localize('dialog.file.name')}: </span>
-              <Input size='small' value={fileName} autoFocus={true} selection={{ start: 0, end: fileName.length }} onChange={(event) => setFileName(event.target.value)}></Input>
-            </div>
-          )}
-          <div className={styles.buttonWrap}>
-            <Button onClick={() => close()} type='secondary' className={styles.button}>{localize('dialog.file.close')}</Button>
-            <Button onClick={() => hide(saveOrOpenValue)} type='primary' className={styles.button} disabled={(options as ISaveDialogOptions).showNameInput && fileName.length === 0 ? true : false }>{localize('dialog.file.ok')}</Button>
-          </div>
-        </React.Fragment>
-      );
+  const renderDialogTree = () => {
+    if (!isReady) {
+      return <ProgressBar loading />;
     } else {
-      return (
-        <React.Fragment>
-          <div className={styles.file_dialog_directory_title}>{ (options as IOpenDialogOptions).openLabel || localize('dialog.file.openLabel')}</div>
-          <div className={styles.file_dialog_directory}>
-            {/* <Select onChange={onRootChangeHandler}
-              className={styles.select_control}
-            >
-              {directoryOptions}
-            </Select> */}
-          </div>
-          <div className={styles.file_dialog_content}>
-
-          </div>
-          <div className={styles.buttonWrap}>
-            <Button onClick={() => close()} type='secondary' className={styles.button}>{localize('dialog.file.close')}</Button>
-            <Button onClick={() => hide(saveOrOpenValue)} type='primary' className={styles.button}>{localize('dialog.file.ok')}</Button>
-          </div>
-        </React.Fragment>
-      );
+      return <RecycleTree
+        width={425}
+        height={300}
+        itemHeight={FILE_TREE_DIALOG_HEIGHT}
+        onReady={handleTreeReady}
+        model={model.treeModel}
+      >
+        {(props: INodeRendererProps) => <FileTreeDialogNode
+          item={props.item}
+          itemType={props.itemType}
+          labelService={model.labelService}
+          decorations={model.decorations.getDecorations(props.item as any)}
+          onClick={handleItemClicked}
+          onTwistierClick={handleTwistierClick}
+          defaultLeftPadding={8}
+          leftPadding={8}
+        />}
+      </RecycleTree>;
     }
+  };
+
+  const renderDirectorySelection = () => {
+    if (directoryList.length > 0) {
+      return <Select
+        onChange={onRootChangeHandler}
+        className={styles.select_control}
+        size={'small'}
+        value={selectPath}
+      >
+        {directoryList.map((item, idx) => <Option value={item} key={`${idx} - ${item}`}>{item}</Option>)}
+      </Select>;
+    }
+  };
+
+  if (isOpenDialog) {
+    return (
+      <React.Fragment>
+        <div className={styles.file_dialog_directory_title}>{localize('dialog.file.title')}</div>
+        <div className={styles.file_dialog_directory}>
+          {renderDirectorySelection()}
+        </div>
+        <div className={styles.file_dialog_content} ref={wrapperRef}>
+          {renderDialogTree()}
+        </div>
+        <div className={styles.buttonWrap}>
+          <Button onClick={() => close()} type='secondary' className={styles.button}>{localize('dialog.file.close')}</Button>
+          <Button onClick={() => hide()} type='primary' className={styles.button}>{localize('dialog.file.ok')}</Button>
+        </div>
+      </React.Fragment>
+    );
+  } else {
+    return (
+      <React.Fragment>
+        <div className={styles.file_dialog_directory_title}>{(options as ISaveDialogOptions).saveLabel || localize('dialog.file.saveLabel')}</div>
+        <div className={styles.file_dialog_directory}>
+          {renderDirectorySelection()}
+        </div>
+        <div className={styles.file_dialog_content}>
+          {renderDialogTree()}
+        </div>
+        {(options as ISaveDialogOptions).showNameInput && (
+          <div className={styles.file_dialog_file_container}>
+            <span className={styles.file_dialog_file_name}>{localize('dialog.file.name')}: </span>
+            <Input size='small' value={fileName} autoFocus={true} selection={{ start: 0, end: fileName.length }} onChange={(event) => setFileName(event.target.value)}></Input>
+          </div>
+        )}
+        <div className={styles.buttonWrap}>
+          <Button onClick={() => close()} type='secondary' className={styles.button}>{localize('dialog.file.close')}</Button>
+          <Button onClick={() => hide()} type='primary' className={styles.button} disabled={(options as ISaveDialogOptions).showNameInput && fileName.length === 0 ? true : false}>{localize('dialog.file.ok')}</Button>
+        </div>
+      </React.Fragment>
+    );
   }
 };

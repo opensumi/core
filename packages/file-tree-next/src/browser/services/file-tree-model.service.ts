@@ -192,6 +192,9 @@ export class FileTreeModelService {
   async initTreeModel() {
     // 根据是否为多工作区创建不同根节点
     const root = (await this.fileTreeService.resolveChildren())[0];
+    if (!root) {
+      return;
+    }
     this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
     this._explorerStorage = await this.storageProvider(STORAGE_NAMESPACE.EXPLORER);
     // 获取上次文件树的状态

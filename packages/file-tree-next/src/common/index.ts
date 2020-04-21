@@ -16,6 +16,7 @@ export interface IFileTreeAPI {
   resolveNodeByPath(tree: ITree, path: string, parent?: Directory): Promise<File | Directory | undefined>;
   toNode(tree: ITree, filestat: FileStat, parent?: Directory): Directory | File;
   getReadableTooltip(path: URI): string;
+  resolveFileStat(path: URI): Promise<FileStat | void>;
 }
 
 export class FileTreeExpandedStatusUpdateEvent extends BasicEvent<{uri: URI, expanded: boolean}> {}
