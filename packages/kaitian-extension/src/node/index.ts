@@ -2,7 +2,7 @@ import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { NodeModule, ServerAppContribution, Domain, INodeLogger } from '@ali/ide-core-node';
 import { IExtensionNodeService, ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../common';
 import { ExtensionNodeServiceImpl } from './extension.service';
-import { ExtensionSeviceClientImpl } from './extension.service.client';
+import { ExtensionServiceClientImpl } from './extension.service.client';
 
 @Injectable()
 export class KaitianExtensionModule extends NodeModule {
@@ -13,7 +13,7 @@ export class KaitianExtensionModule extends NodeModule {
     },
     {
       token: IExtensionNodeClientService,
-      useClass: ExtensionSeviceClientImpl,
+      useClass: ExtensionServiceClientImpl,
     },
     KaitianExtensionContribution,
   ];

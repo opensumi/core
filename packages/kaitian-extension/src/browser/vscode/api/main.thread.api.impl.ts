@@ -70,7 +70,7 @@ export async function createApiFactory(
   const MainThreadTerminalAPI = injector.get(MainThreadTerminal, [rpcProtocol]);
   const MainThreadProgressAPI = injector.get(MainThreadProgress, [rpcProtocol]);
 
-  rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, extensionService);
+  rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
   rpcProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);
   rpcProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, MainThreadExtensionDocumentDataAPI);
