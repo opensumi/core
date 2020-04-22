@@ -1,11 +1,20 @@
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ILogger, Disposable, URI, Emitter } from '@ali/ide-core-common';
+import { ILogger, Disposable, URI, Emitter, IEventBus, ISelection } from '@ali/ide-core-common';
 import { EditorFeatureRegistryImpl } from '@ali/ide-editor/lib/browser/feature';
 import { IEditor } from '@ali/ide-editor';
-import { IEditorFeatureRegistry, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IEditorFeatureRegistry, IEditorDocumentModelService, getSplitActionFromDragDrop, DragOverPosition, EditorGroupSplitAction, WorkbenchEditorService, EditorSelectionChangeEvent, IEditorGroup, EditorGroupChangeEvent, EditorGroupCloseEvent } from '@ali/ide-editor/lib/browser';
 import { EditorTopPaddingContribution } from '@ali/ide-editor/lib/browser/view/topPadding';
-import { QuickPickService, PreferenceService } from '@ali/ide-core-browser';
+import { QuickPickService, PreferenceService, IContextKeyService } from '@ali/ide-core-browser';
 import { FormattingSelector } from '@ali/ide-editor/lib/browser/format/formatterSelect';
+import { EditorHistoryService } from '@ali/ide-editor/lib/browser/history';
+import { AbstractContextMenuService, ICtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next';
+import { createMockedMonaco } from '@ali/ide-monaco/lib/__mocks__/monaco';
+import { EditorContextMenuBrowserEditorContribution } from '@ali/ide-editor/lib/browser/menu/editor.context';
+import { MockedCodeEditor } from '@ali/ide-monaco/lib/__mocks__/monaco/editor/code-editor';
+import { TabTitleMenuService } from '@ali/ide-editor/lib/browser/menu/title-context.menu';
+import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { EditorActionRegistryImpl } from '@ali/ide-editor/lib/browser/menu/editor.menu';
+import { observable } from 'mobx';
 
 describe('editor status bar item test', () => {
 
@@ -20,6 +29,9 @@ describe('editor status bar item test', () => {
   });
 
   it('editor feature test basic', () => {
+
+    expect(getSplitActionFromDragDrop(DragOverPosition.BOTTOM)).toBe(EditorGroupSplitAction.Bottom);
+
     const service: EditorFeatureRegistryImpl = injector.get(IEditorFeatureRegistry);
     const contributionDisposer = new Disposable();
     const contribution = {
@@ -110,6 +122,358 @@ describe('editor status bar item test', () => {
 
   afterAll(() => {
     injector.disposeAll();
+  });
+
+});
+
+describe('editor history test', () => {
+
+  const injector = createBrowserInjector([]);
+
+  let selection: ISelection | undefined;
+  let currentUri: URI | undefined;
+
+  const testEditorGroup: IEditorGroup = {
+    open: jest.fn((uri) => {
+      currentUri = uri;
+    }),
+    currentEditor: {
+      getSelections: () => {
+        return [selection];
+      },
+    },
+    index: 0,
+  } as any;
+
+  injector.mockService(WorkbenchEditorService, {
+    currentEditorGroup: testEditorGroup,
+  });
+
+  it('history basic tests', () => {
+
+    const historyService: EditorHistoryService = injector.get(EditorHistoryService);
+    const eventBus: IEventBus = injector.get(IEventBus);
+
+    selection = {
+      selectionStartColumn: 1,
+      selectionStartLineNumber: 1,
+      positionColumn: 10,
+      positionLineNumber: 1,
+    };
+
+    const testUri1 = new URI('file:///testUri1.ts');
+    const testUri2 = new URI('file:///testUri2.ts');
+
+    eventBus.fire(new EditorSelectionChangeEvent({
+      group: testEditorGroup,
+      selections: [selection],
+      resource: {
+        uri: testUri1,
+        name: 'test1',
+        icon: 'test',
+      },
+      editorUri: testUri1,
+      source: 'test',
+    }));
+
+    expect(historyService.currentState.uri).toBe(testUri1);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(1);
+    expect(historyService.currentState.position.lineNumber).toBe(1);
+
+    selection = {
+      selectionStartColumn: 2,
+      selectionStartLineNumber: 1,
+      positionColumn: 10,
+      positionLineNumber: 1,
+    };
+
+    eventBus.fire(new EditorSelectionChangeEvent({
+      group: testEditorGroup,
+      selections: [selection],
+      resource: {
+        uri: testUri1,
+        name: 'test1',
+        icon: 'test',
+      },
+      editorUri: testUri1,
+      source: 'test',
+    }));
+
+    expect(historyService.currentState.uri).toBe(testUri1);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(1);
+    expect(historyService.currentState.position.lineNumber).toBe(1);
+
+    selection = {
+      selectionStartColumn: 2,
+      selectionStartLineNumber: 20,
+      positionColumn: 10,
+      positionLineNumber: 1,
+    };
+
+    eventBus.fire(new EditorSelectionChangeEvent({
+      group: testEditorGroup,
+      selections: [selection],
+      resource: {
+        uri: testUri1,
+        name: 'test1',
+        icon: 'test',
+      },
+      editorUri: testUri1,
+      source: 'test',
+    }));
+
+    expect(historyService.currentState.uri).toBe(testUri1);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(2);
+    expect(historyService.currentState.position.lineNumber).toBe(20);
+
+    eventBus.fire(new EditorGroupChangeEvent({
+      group: testEditorGroup,
+      newOpenType: {
+        type: 'code',
+      },
+      oldOpenType: {
+        type: 'code',
+      },
+      newResource: {
+        uri: testUri2,
+        name: 'test2',
+        icon: 'test',
+      },
+      oldResource: {
+        uri: testUri1,
+        name: 'test1',
+        icon: 'test',
+      },
+    }));
+
+    expect(historyService.currentState.uri).toBe(testUri2);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(2);
+    expect(historyService.currentState.position.lineNumber).toBe(20);
+
+    historyService.back();
+
+    expect(historyService.currentState.uri).toBe(testUri1);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(2);
+    expect(historyService.currentState.position.lineNumber).toBe(20);
+
+    historyService.forward();
+
+    expect(historyService.currentState.uri).toBe(testUri2);
+    expect(historyService.currentState.groupIndex).toBe(0);
+    expect(historyService.currentState.position.column).toBe(2);
+    expect(historyService.currentState.position.lineNumber).toBe(20);
+
+    eventBus.fire(new EditorGroupCloseEvent({
+      group: testEditorGroup,
+      resource: {
+        uri: testUri2,
+        name: 'test2',
+        icon: 'test',
+      },
+    }));
+
+    historyService.popClosed();
+
+    expect(currentUri).toBe(testUri2);
+
+  });
+
+});
+
+describe('editor menu test', () => {
+
+  let injector: MockInjector;
+
+  const monaco = createMockedMonaco();
+  (global as any).monaco = monaco;
+  (monaco.services!.StaticServices as any).modeService = {
+    get: () => mockService({}),
+  };
+  (monaco.services!.StaticServices as any).modelService = mockService({
+    get: () => mockService({}),
+  });
+
+  afterAll(() => {
+    (global as any).monaco = undefined;
+  });
+  beforeEach(() => {
+    injector = createBrowserInjector([]);
+    injector.mockService(AbstractContextMenuService, {
+      createMenu: () => {
+        return {
+          getMergedMenuNodes: jest.fn(),
+          dispose: () => null,
+        };
+      },
+    });
+    injector.mockService(IContextKeyService, {
+      createKey: jest.fn(() => {
+        return {
+          set: jest.fn(),
+        };
+      }),
+      parse: (expr) => {
+        return {
+          keys: () => [],
+          expr,
+        };
+      },
+      createScoped: () => {
+        return {
+          createKey: jest.fn(() => {
+            return {
+              set: jest.fn(),
+            };
+          }),
+          dispose: () => null,
+        };
+      },
+    });
+    injector.mockService(ICtxMenuRenderer);
+  });
+
+  afterEach(() => {
+    injector.disposeAll();
+  });
+
+  it('editor context menu test', () => {
+
+    const monacoEditor: MockedCodeEditor = monaco.editor!.create(document.createElement('div')) as any;
+
+    monacoEditor.getConfiguration = () => {
+      return {
+        contribInfo: {
+          contextmenu: true,
+        },
+      } as any;
+    } ;
+
+    const editor = {
+      monacoEditor,
+      currentDocumentModel: {},
+
+    };
+    const contribution = injector.get(EditorContextMenuBrowserEditorContribution);
+    contribution.registerEditorFeature({
+      registerEditorFeatureContribution: jest.fn((contri) => {
+        contri.contribute(editor as any);
+        return new Disposable();
+      }),
+    });
+
+    editor.monacoEditor._onContextMenu.fire({
+      target: { type: 1 } as any,
+      event: {
+        preventDefault: jest.fn(),
+        posx: 0,
+        posy: 0,
+      } as any,
+    });
+
+    expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toBeCalled();
+  });
+
+  it('editor title menu test', () => {
+    const service: EditorActionRegistryImpl = injector.get(EditorActionRegistryImpl);
+
+    let currentExpr = 'testExpr1';
+    const testResource = { uri: new URI('file:///test1.ts')};
+    const exprChangeEmitter = new Emitter<{affectSome: () => boolean}>();
+    const testEditorGroup: IEditorGroup = observable({
+      contextKeyService: {
+        match: (expr) => {
+          return expr === currentExpr || expr.expr === currentExpr;
+        },
+        parse: () => {
+          return {};
+        },
+        onDidChangeContext: exprChangeEmitter.event,
+      },
+      addDispose: jest.fn(),
+      currentResource: testResource,
+      currentEditor: null,
+      index: 0,
+    } as any);
+
+    const addListener = jest.fn();
+    const removeListener = jest.fn();
+
+    service.onAddAction(addListener);
+    service.onRemoveAction(removeListener);
+
+    const disposer1 = service.registerEditorAction({
+      iconClass: 'test1',
+      title: 'testAction1',
+      isVisible: (resource) => {
+        return resource ? (resource.uri.toString() === testResource.uri.toString()) : false;
+      },
+      tipWhen: 'testExpr1',
+      tip: 'testTip',
+      onClick: jest.fn(),
+    });
+
+    const disposer2 = service.registerEditorAction({
+      iconClass: 'test2',
+      title: 'testAction2',
+      onClick: jest.fn(),
+      when: 'testExpr2',
+    });
+
+    const disposer3 = service.registerEditorAction({
+      iconClass: 'test3',
+      title: 'testAction3',
+      onClick: jest.fn(),
+      when: 'testExpr2',
+    });
+
+    expect(addListener).toBeCalledTimes(3);
+
+    expect(service.getActions(testEditorGroup).length).toBe(1);
+
+    currentExpr = 'testExpr2';
+
+    exprChangeEmitter.fire({affectSome: () => true});
+
+    testEditorGroup.currentResource = { uri: new URI('file:///test2.ts') } as any;
+
+    expect(service.getActions(testEditorGroup).length).toBe(2);
+
+    disposer1.dispose();
+
+    disposer2.dispose();
+
+    expect(service.getActions(testEditorGroup).length).toBe(1);
+
+    disposer3.dispose();
+
+    expect(service.getActions(testEditorGroup).length).toBe(0);
+
+    expect(removeListener).toBeCalledTimes(3);
+
+  });
+
+  it('editor title context menu test', () => {
+    const service = injector.get(TabTitleMenuService);
+    service.show(0, 0, new URI('file:///test1.ts'), {
+      contextKeyService: {
+        createScoped: jest.fn(() => {
+          return {
+            createKey: jest.fn(() => {
+              return {
+                set: jest.fn(),
+              };
+            }),
+            dispose: () => null,
+          };
+        }),
+      },
+    } as any);
+    expect(injector.get<ICtxMenuRenderer>(ICtxMenuRenderer).show).toBeCalled();
   });
 
 });
