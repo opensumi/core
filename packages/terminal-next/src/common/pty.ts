@@ -145,6 +145,7 @@ export interface ITerminalServiceClient {
   disposeById(id: string);
   getProcessId(id: string): number;
   clientMessage(id, data);
+  closeClient(id: string): void;
   setConnectionClientId(clientId: string);
   dispose();
   getShellName(id: string): string;

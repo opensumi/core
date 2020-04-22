@@ -151,6 +151,7 @@ export class MockSocketService implements ITerminalExternalService {
   }
 
   onError() { return new Disposable(); }
+  onExit() { return new Disposable(); }
 }
 
 export class MockEditorService {

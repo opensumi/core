@@ -63,6 +63,12 @@ export interface ITerminalExternalService {
    * @param handler
    */
   onError(handler: (error: ITerminalError) => void): IDisposable;
+  /**
+   * 终端正常退出
+   *
+   * @param sessionid
+   */
+  onExit(handler: (sessionid: string) => void): IDisposable;
 }
 
 export const ITerminalInternalService = Symbol('ITerminalInternalService');

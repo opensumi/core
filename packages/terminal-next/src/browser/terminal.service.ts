@@ -50,6 +50,10 @@ export class TerminalInternalService implements ITerminalInternalService {
   onError(handler: (error: ITerminalError) => void) {
     return this.service.onError(handler);
   }
+
+  onExit(handler: (sessionId: string) => void) {
+    return this.service.onExit(handler);
+  }
 }
 
 @Injectable()
@@ -71,6 +75,9 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
 
   private _onError = new Emitter<ITerminalError>();
   public onError: Event<ITerminalError> = this._onError.event;
+
+  private _onExit = new Emitter<string>();
+  public onExit: Event<string> = this._onExit.event;
 
   private _dispatcher = new Dispatcher();
 
@@ -155,5 +162,14 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
    */
   onMessage(sessionId: string, message: string) {
     this._dispatcher.emit(sessionId, message);
+  }
+
+  /**
+   * for pty node
+   *
+   * @param sessionId
+   */
+  closeClient(sessionId: string) {
+    this._onExit.fire(sessionId);
   }
 }
