@@ -81,8 +81,17 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
       } else {
         this.logger.warn(`terminal ;pty ${clientId} on data not found`);
       }
-
     });
+
+    terminal.on('exit', () => {
+      if (this.serviceClientMap.has(clientId)) {
+        const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+        serviceClient.closeClient(id);
+      } else {
+        this.logger.warn(`terminal ;pty ${clientId} on data not found`);
+      }
+    });
+
     this.terminalMap.set(id , terminal);
 
     const clientMap = this.clientTerminalMap.get(clientId);

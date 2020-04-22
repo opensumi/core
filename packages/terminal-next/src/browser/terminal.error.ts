@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ITerminalErrorService, ITerminalError, ITerminalExternalService, ITerminalController } from '../common';
+import { ITerminalErrorService, ITerminalError, ITerminalExternalService, ITerminalGroupViewService, ITerminalController } from '../common';
 
 @Injectable()
 export class TerminalErrorService implements ITerminalErrorService {
@@ -13,9 +13,18 @@ export class TerminalErrorService implements ITerminalErrorService {
   @Autowired(ITerminalController)
   protected readonly controller: ITerminalController;
 
+  @Autowired(ITerminalGroupViewService)
+  protected readonly view: ITerminalGroupViewService;
+
   constructor() {
     this.service.onError((error) => {
       this.errors.set(error.id, error);
+    });
+
+    this.service.onExit((sessionId: string) => {
+      try {
+        this.view.removeWidget(sessionId);
+      } catch { /** nothing */ }
     });
   }
 

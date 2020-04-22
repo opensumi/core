@@ -33,6 +33,14 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
     }
   }
 
+  closeClient(id: string) {
+    if (this.rpcClient) {
+      this.rpcClient[0].closeClient(id);
+    } else {
+      this.logger.warn(`clientMessage ${id} rpcClient not found`);
+    }
+  }
+
   // 完成创建之后，前端进行状态同步
   ensureTerminal(terminalIdArr: string[]): boolean {
     return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
