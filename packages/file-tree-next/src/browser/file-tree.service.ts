@@ -346,6 +346,7 @@ export class FileTreeService extends Tree {
       }
       const addNode = await this.fileTreeAPI.resolveNodeByPath(this as ITree, node.uri.toString(), node.parent as Directory);
       if (!!addNode) {
+        this.cacheNodes([addNode]);
         // 节点创建失败时，不需要添加
         this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Added,  node: addNode, id: node.parent.id});
       }
@@ -357,6 +358,7 @@ export class FileTreeService extends Tree {
   public deleteAffectedNodeByPath(path: string) {
     const node  = this.getNodeByPathOrUri(path);
     if (node && node.parent) {
+      this.removeNodeCacheByPath(node.path);
       this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed,  path: node.path });
     }
   }
@@ -374,6 +376,7 @@ export class FileTreeService extends Tree {
       if (!node?.parent || this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
         continue ;
       }
+      this.removeNodeCacheByPath(node!.path);
       this.dispatchWatchEvent(node!.parent!.path, { type: WatchEvent.Removed,  path: node!.path });
     }
     return changes.filter((change) => change.type !== FileChangeType.DELETED);
@@ -413,6 +416,12 @@ export class FileTreeService extends Tree {
       // node.path 不会重复，node.uri在软连接情况下可能会重复
       this._cacheNodesMap.set(node.path, node);
     });
+  }
+
+  private removeNodeCacheByPath(path: string) {
+    if (this._cacheNodesMap.has(path)) {
+      this._cacheNodesMap.delete(path);
+    }
   }
 
   private isFileURI(str: string) {
