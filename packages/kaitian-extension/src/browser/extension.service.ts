@@ -602,7 +602,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     this.mainThreadCommands.set('node', this.protocol.get(MainThreadAPIIdentifier.MainThreadCommands));
     // 注册 worker 环境的响应 API
     if (this.workerProtocol) {
-      this.workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
+      this.workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, this);
       this.workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [this.workerProtocol]));
       this.mainThreadCommands.set('worker', this.workerProtocol.get(MainThreadAPIIdentifier.MainThreadCommands));
     }

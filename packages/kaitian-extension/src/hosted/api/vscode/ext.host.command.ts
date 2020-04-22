@@ -185,7 +185,7 @@ export class ExtHostCommands implements IExtHostCommands {
     if (this.commands.has(id)) {
       return this.executeLocalCommand<T>(id, args);
     } else {
-      // automagically convert some argument types
+      // automatically convert some argument types
       args = cloneAndChange(args, (value) => {
         if (value instanceof Position) {
           return extHostTypeConverter.fromPosition(value);
@@ -287,6 +287,7 @@ export class ExtHostCommands implements IExtHostCommands {
         }
       }
     }
+    // todo: 这里做拦截
     try {
       const result = handler.apply(thisArg, this.processArguments(args));
       return Promise.resolve(result);
@@ -298,9 +299,9 @@ export class ExtHostCommands implements IExtHostCommands {
 
   private processArguments(arg: any[]) {
     if (Array.isArray(arg) && Array.isArray(arg[0]) && arg[0].length === 2) {
-      const postion = arg[0];
-      if (Position.isPosition(postion[0]) && Position.isPosition(postion[1])) {
-        return [new Range(new Position(postion[0].line, postion[0].character), new Position(postion[1].line, postion[1].character))];
+      const position = arg[0];
+      if (Position.isPosition(position[0]) && Position.isPosition(position[1])) {
+        return [new Range(new Position(position[0].line, position[0].character), new Position(position[1].line, position[1].character))];
       }
     }
 

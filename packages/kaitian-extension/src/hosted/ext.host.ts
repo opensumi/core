@@ -6,7 +6,7 @@ import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcess
 import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
-import { createAPIFactory as createKaiTianAPIFactory } from './api/kaitian/ext.host.api.impl';
+import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.host.api.impl';
 import { MainThreadAPIIdentifier, VSCodeExtensionService } from '../common/vscode';
 import { ExtenstionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
@@ -53,9 +53,9 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.vscodeAPIFactory = createVSCodeAPIFactory(
       this.rpcProtocol,
       this as any,
-      this.rpcProtocol.getProxy<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie),
+      this.rpcProtocol.getProxy<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService),
     );
-    this.kaitianAPIFactory = createKaiTianAPIFactory(
+    this.kaitianAPIFactory = createKaitianAPIFactory(
       this.rpcProtocol,
       this,
       'node',
@@ -78,7 +78,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
   public async init() {
     /*
-    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
+    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
 
     this.logger.$debug('kaitian extensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
@@ -93,7 +93,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async $initExtensions() {
-    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
+    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
     this.logger.debug('kaitian extensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
@@ -112,7 +112,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return new VSCExtension(
         extension,
         this,
-        this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie),
+        this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService),
         activateExtension && activateExtension.exports,
         activateExtension && activateExtension.extendExports,
       );

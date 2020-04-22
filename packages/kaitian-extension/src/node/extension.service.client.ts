@@ -13,7 +13,7 @@ import { IFileService } from '@ali/ide-file-service';
 export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.kaitian');
 
 @Injectable()
-export class ExtensionSeviceClientImpl extends RPCService implements IExtensionNodeClientService {
+export class ExtensionServiceClientImpl extends RPCService implements IExtensionNodeClientService {
 
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;

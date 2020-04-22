@@ -168,7 +168,7 @@ describe('MainThreadExtensions Test Suites', () => {
     mainthreadService = injector.get(ExtensionService);
     rpcProtocolMain.set(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog, []));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [rpcProtocolMain]));
-    rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadExtensionServie, mainthreadService);
+    rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadExtensionService, mainthreadService);
     rpcProtocolMain.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionHostService);
     await mainthreadService.activate();
     await extensionHostService.init();

@@ -3,7 +3,7 @@ import ExtensionHostServiceImpl from '../../src/hosted/ext.host';
 
 import { mockExtensionProps } from '../__mock__/extensions';
 import { initMockRPCProtocol } from '../__mock__/initRPCProtocol';
-import { MainthreadExtensionService } from '../__mock__/api/mainthread.extension.service';
+import { MainThreadExtensionService } from '../__mock__/api/mainthread.extension.service';
 import { MainThreadStorage } from '../__mock__/api/mathread.storage';
 import { MainThreadExtensionLog } from '../__mock__/api/mainthread.extension.log';
 import { MockLoggerManagerClient } from '../__mock__/loggermanager';
@@ -31,7 +31,7 @@ describe('Extension process test', () => {
         });
     });
     const proxyMaps = new Map();
-    proxyMaps.set('MainThreadExtensionServie', new MainthreadExtensionService());
+    proxyMaps.set('MainThreadExtensionService', new MainThreadExtensionService());
     proxyMaps.set('MainThreadStorage', new MainThreadStorage());
     proxyMaps.set('MainThreadExtensionLog', new MainThreadExtensionLog());
 

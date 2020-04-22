@@ -1,3 +1,4 @@
+// tslint:disable no-console
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
@@ -6,7 +7,7 @@ import { AppConfig, INodeLogger } from '@ali/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/common';
-import { ExtensionSeviceClientImpl } from '../../src/node/extension.service.client';
+import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { IExtensionStoragePathServer } from '@ali/ide-extension-storage/lib/common';
 import { IFileService } from '@ali/ide-file-service/lib/common';
@@ -34,11 +35,9 @@ describe('Extension Client Serivce', () => {
       }, {
       token: INodeLogger,
       useValue: {
-        /* tslint:disable */
         log: console.log,
         error: console.error,
         warn: console.warn,
-        /* tslint:enable */
       },
     },
     {
@@ -61,7 +60,7 @@ describe('Extension Client Serivce', () => {
       },
       {
         token: IExtensionNodeClientService,
-        useClass: ExtensionSeviceClientImpl,
+        useClass: ExtensionServiceClientImpl,
       },
     );
 
@@ -113,7 +112,7 @@ describe('Extension Client Serivce', () => {
       const targetPath = path.join(extensionDir, `${publisher}.${name}-${version}`);
       await extensionNodeClient.updateLanguagePack('zh-CN', targetPath);
       expect(fs.existsSync(lpPath));
-      const content = fs.readFileSync(lpPath, { encoding: 'utf8' });
+      // const content = fs.readFileSync(lpPath, { encoding: 'utf8' });
 
       expect(!!process.env['VSCODE_NLS_CONFIG']);
       const nlsConfig = JSON.parse(process.env['VSCODE_NLS_CONFIG']!);

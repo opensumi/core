@@ -3,7 +3,7 @@ import {
   RPCProtocol, ProxyIdentifier,
 } from '@ali/ide-connection';
 import { IExtension, IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
-import { createAPIFactory as createKaiTianAPIFactory } from './api/worker/worker.host.api.impl';
+import { createAPIFactory as createKaitianAPIFactory } from './api/worker/worker.host.api.impl';
 import { MainThreadAPIIdentifier } from '../common/vscode';
 import { ExtensionLogger } from './extension-log';
 
@@ -37,7 +37,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
 
-    this.kaitianAPIFactory = createKaiTianAPIFactory(this.rpcProtocol, this, 'worker');
+    this.kaitianAPIFactory = createKaitianAPIFactory(this.rpcProtocol, this, 'worker');
     this.logger = new ExtensionLogger(rpcProtocol);
   }
 
@@ -51,7 +51,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 
   public async $initExtensions() {
-    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
+    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionService).$getExtensions();
     this.logger.verbose('worker $initExtensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
@@ -176,6 +176,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
            * }
            * extension.getExtension(id).?
            */
+          // tslint:disable-next-line
           const exports = (_module.exports as any).activate(workerExtContext);
         } catch (err) {
           this.logger.error(`[Worker-Host] failed to activate extension ${extension.id} \n\n ${err.message}`);
