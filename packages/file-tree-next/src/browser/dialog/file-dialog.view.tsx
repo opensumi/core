@@ -36,7 +36,7 @@ export const FileDialog = (
     return () => {
       model.removeFileDecoration();
     };
-  }, []);
+  }, [model]);
 
   React.useEffect(() => {
     if (isReady) {
@@ -54,9 +54,11 @@ export const FileDialog = (
     } else {
       dialogService.hide(value);
     }
+    setIsReady(false);
   };
 
   const close = () => {
+    setIsReady(false);
     dialogService.hide();
   };
 
