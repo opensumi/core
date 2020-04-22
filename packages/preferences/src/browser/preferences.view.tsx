@@ -63,6 +63,12 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
       tabs={tabList.map((n) => localize(n.label))} />
   );
 
+  React.useEffect(() => {
+    return () => {
+      preferenceService.onSearchInputRendered(null);
+    };
+  }, []);
+
   return (
     <IconContextProvider value={{ getIcon }}>
       <div className = {styles.preferences}>
@@ -72,6 +78,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
             <Input
               placeholder={localize('preference.searchPlaceholder')}
               onValueChange={debouncedSearch}
+              ref={(el) => el && preferenceService.onSearchInputRendered(el)}
             />
           </div>
         </div>

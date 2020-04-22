@@ -30,6 +30,7 @@ import { PREF_SCHEME } from '../common';
 import { PreferenceView } from './preferences.view';
 import { getIcon } from '@ali/ide-core-browser';
 import { NextMenuContribution, IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next';
+import { PreferenceSettingsService } from './preference.service';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
@@ -87,13 +88,12 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   schemaRegistry: ISchemaRegistry;
 
   @Autowired(IPreferenceSettingsService)
-  preferenceService: IPreferenceSettingsService;
+  preferenceService: PreferenceSettingsService;
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
-      isEnabled: () => true,
-      execute: async () => {
-        await this.openPreferences();
+      execute: async (searchString?) => {
+        await this.openPreferences(searchString);
       },
     });
 
@@ -119,8 +119,11 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     });
   }
 
-  openPreferences() {
+  openPreferences(search?: string) {
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(PREF_SCHEME));
+    if (search) {
+      this.preferenceService.search(search);
+    }
   }
 
   initialize() {
