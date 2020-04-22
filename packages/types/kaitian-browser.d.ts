@@ -174,7 +174,7 @@ declare module 'kaitian-browser' {
     /**
      * editor组件主体
      */
-    panel: React.FC;
+    panel: React.ComponentType;
     /**
      * 渲染方式
      */
