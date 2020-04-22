@@ -24,7 +24,7 @@ import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
 import { PasteTypes } from '../../src';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
-import * as styles from '../browser/file-tree-node.module.less';
+import * as styles from '../../src/browser/file-tree-node.module.less';
 
 describe('FileTree should be work while on single workspace model', () => {
   let track;
@@ -238,7 +238,7 @@ describe('FileTree should be work while on single workspace model', () => {
       fileTreeService.onNodeRefreshed(async () => {
         const rootNode = fileTreeModelService.treeModel.root;
         const symbolicNode = rootNode.children?.find((child: File) => child.filestat.isSymbolicLink) as File;
-        const decoration = decorationService.getDecoration(symbolicNode.uri, symbolicNode.filestat.isDirectory);
+        const decoration = await decorationService.getDecoration(symbolicNode.uri, symbolicNode.filestat.isDirectory);
         expect(rootNode.branchSize).toBe(filesMap.length + 1);
         expect(decoration.color).toBe('gitDecoration.ignoredResourceForeground');
         expect(decoration.badge).toBe('⤷');

@@ -63,6 +63,10 @@ export class FileTreeAPI implements IFileTreeAPI {
     }
   }
 
+  async resolveFileStat(uri: URI) {
+    return await this.fileServiceClient.getFileStat(uri.toString());
+  }
+
   toNodes(tree: ITree, filestat: FileStat, parent?: Directory) {
     // 如果为根目录，则返回其节点自身，否则返回子节点
     if (!parent) {

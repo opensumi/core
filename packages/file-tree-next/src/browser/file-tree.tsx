@@ -6,6 +6,7 @@ import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { Directory, File } from './file-tree-nodes';
+import { EmptyTreeView } from './empty.view';
 import * as cls from 'classnames';
 import * as styles from './file-tree.module.less';
 
@@ -75,9 +76,11 @@ export const FileTree = observer(({
 
   const ensureIsReady = async () => {
     await fileTreeModelService.whenReady;
-    // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-    // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-    await fileTreeModelService.treeModel.root.ensureLoaded();
+    if (!!fileTreeModelService.treeModel) {
+      // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
+      // 这里需要重新取一下treeModel的值确保为最新的TreeModel
+      await fileTreeModelService.treeModel.root.ensureLoaded();
+    }
     setIsReady(true);
   };
 
@@ -134,29 +137,33 @@ export const FileTree = observer(({
 
   const renderFileTree = () => {
     if (isReady) {
-      return <RecycleTree
-        height={filterMode ? height - FILTER_AREA_HEIGHT : height}
-        width={width}
-        itemHeight={FILE_TREE_NODE_HEIGHT}
-        onReady={handleTreeReady}
-        model={fileTreeModelService.treeModel}
-        filter={filter}
-      >
-        {(props: INodeRendererProps) => <FileTreeNode
-          item={props.item}
-          itemType={props.itemType}
-          template={(props as any).template}
-          decorationService={decorationService}
-          labelService={labelService}
-          dndService={fileTreeModelService.dndService}
-          decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
-          onClick={handleItemClicked}
-          onTwistierClick={handleTwistierClick}
-          onContextMenu={handlerContextMenu}
-          defaultLeftPadding={baseIndent}
-          leftPadding={indent}
-        />}
-      </RecycleTree>;
+      if (!!fileTreeModelService.treeModel) {
+        return <RecycleTree
+          height={filterMode ? height - FILTER_AREA_HEIGHT : height}
+          width={width}
+          itemHeight={FILE_TREE_NODE_HEIGHT}
+          onReady={handleTreeReady}
+          model={fileTreeModelService.treeModel}
+          filter={filter}
+        >
+          {(props: INodeRendererProps) => <FileTreeNode
+            item={props.item}
+            itemType={props.itemType}
+            template={(props as any).template}
+            decorationService={decorationService}
+            labelService={labelService}
+            dndService={fileTreeModelService.dndService}
+            decorations={fileTreeModelService.decorations.getDecorations(props.item as any)}
+            onClick={handleItemClicked}
+            onTwistierClick={handleTwistierClick}
+            onContextMenu={handlerContextMenu}
+            defaultLeftPadding={baseIndent}
+            leftPadding={indent}
+          />}
+        </RecycleTree>;
+      } else {
+        return <EmptyTreeView />;
+      }
     }
   };
 
