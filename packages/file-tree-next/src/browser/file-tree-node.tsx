@@ -113,16 +113,18 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     }
   };
 
-  const isDirectory = itemType === TreeNodeType.CompositeTreeNode;
+  let isDirectory = itemType === TreeNodeType.CompositeTreeNode;
   let paddingLeft;
   if (isPrompt) {
     if (isNewPrompt) {
-      paddingLeft = `${defaultLeftPadding + ((item as NewPromptHandle).parent.depth + 1 || 0) * (leftPadding || 0)}px`;
+      isDirectory = (item as NewPromptHandle).type === TreeNodeType.CompositeTreeNode;
+      paddingLeft = `${defaultLeftPadding + ((item as NewPromptHandle).parent.depth + 1 || 0) * (leftPadding || 0) + (isDirectory ? 0 : 20)}px`;
     } else {
-      paddingLeft = `${defaultLeftPadding + ((item as RenamePromptHandle).target.depth || 0) * (leftPadding || 0)}px`;
+      isDirectory = (item as RenamePromptHandle).target.type === TreeNodeType.CompositeTreeNode;
+      paddingLeft = `${defaultLeftPadding + ((item as RenamePromptHandle).target.depth || 0) * (leftPadding || 0) + (isDirectory ? 0 : 20)}px`;
     }
   } else {
-    paddingLeft = isDirectory ? `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0)}px` : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 8}px`;
+    paddingLeft = `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (isDirectory ? 0 : 20)}px`;
   }
   const fileTreeNodeStyle = {
     color: decoration ? decoration.color : '',
