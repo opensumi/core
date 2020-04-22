@@ -33,7 +33,7 @@ export class PtyService {
           options.env,
         )) as { [key: string]: string };
     }
-    const ptyProcess = pty.spawn(bin, [], {
+    const ptyProcess = pty.spawn(bin, options.shellArgs || [], {
       name: 'xterm-color',
       cols: cols || 100,
       rows: rows || 30,
