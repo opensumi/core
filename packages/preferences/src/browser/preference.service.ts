@@ -33,6 +33,10 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   @observable
   public currentGroup: string = '';
 
+  private pendingSearch: string | undefined = undefined;
+
+  private searchInput: HTMLInputElement | null = null;
+
   public setCurrentGroup(groupId: string) {
     if (this.settingsGroups.find((n) => n.id === groupId)) {
       this.currentGroup = groupId;
@@ -173,6 +177,31 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
       return await resource.getFsPath();
     } else {
       return preferenceProvider.getConfigUri()?.toString();
+    }
+  }
+
+  search(value) {
+    if (this.searchInput) {
+      this.doSearch(value);
+    } else {
+      this.pendingSearch = value;
+    }
+  }
+
+  doSearch(value) {
+    // React 上手动触发 onChange 的方法
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set;
+    nativeInputValueSetter!.call(this.searchInput!, value);
+    const ev2 = new Event('input', { bubbles: true});
+    this.searchInput!.dispatchEvent(ev2);
+  }
+
+  public onSearchInputRendered(input: HTMLInputElement | null) {
+
+    this.searchInput = input;
+    if (input && this.pendingSearch) {
+      this.doSearch(this.pendingSearch);
+      this.pendingSearch = undefined;
     }
   }
 }
