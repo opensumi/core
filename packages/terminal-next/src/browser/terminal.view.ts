@@ -81,6 +81,9 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
   activated: boolean = false;
 
   @observable
+  name: string = '';
+
+  @observable
   currentId: string;
 
   widgetsMap: Map<string, Widget> = new Map();
@@ -93,14 +96,6 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 
   get id() {
     return this._id;
-  }
-
-  get name() {
-    return this._name;
-  }
-
-  set name(str: string) {
-    this._name = str;
   }
 
   get length() {
@@ -121,8 +116,8 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 
   @computed
   get snapshot() {
-    if (this._name) {
-      return this._name;
+    if (this.name) {
+      return this.name;
     } else {
       let name = '';
       const length = this.length;
@@ -165,7 +160,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
   }
 
   rename(name: string) {
-    this._name = name;
+    this.name = name;
     this.editable = false;
   }
 
