@@ -95,6 +95,7 @@ export class DebugConsoleService {
       case 'Enter':
         e.preventDefault();
         this.execute(model.getValue());
+        model.setValue('');
         break;
       default:
         break;
