@@ -1,10 +1,8 @@
-import { IRunParam, IKaitianBrowserContributions, AbstractKaitianBrowserContributionRunner, IEditorComponentContribution } from '../types';
+import { IRunParam, AbstractKaitianBrowserContributionRunner, IEditorComponentContribution } from '../types';
 import { IDisposable, Disposable, URI } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { IExtension } from '../../../common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { getIcon } from '@ali/ide-core-browser';
-import { IIconService } from '@ali/ide-theme';
+import { IIconService, IconType } from '@ali/ide-theme';
 import { ResourceService } from '@ali/ide-editor';
 import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 
@@ -100,7 +98,7 @@ export class EditorBrowserContributionRunner extends AbstractKaitianBrowserContr
           return {
             uri,
             name: component.tabTitle || component.id,
-            icon: component.tabIconPath ? this.iconService.fromIcon(this.extension.path, component.tabIconPath)! : '',
+            icon: component.tabIconPath ? this.iconService.fromIcon(this.extension.path, component.tabIconPath, IconType.Background)! : '',
           };
         },
       });
