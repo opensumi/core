@@ -23,7 +23,7 @@ export class ElectronPlainWebviewWindow extends Disposable implements IPlainWebv
         preload: new URI(electronEnv.plainWebviewPreload).codeUri.fsPath,
         additionalArguments: [
           '--additionalEnv=' + JSON.stringify(env),
-          '--parentWindowWebContentsId=' + electronEnv.currentWindowId,
+          '--parentWindowWebContentsId=' + electronEnv.currentWebContentsId,
         ],
       },
       ...options,
