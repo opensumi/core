@@ -108,11 +108,15 @@ export class FileTreeService extends Tree {
         runInAction(() => {
           this.indent = change.newValue as number || 8;
         });
+      } else if (change.preferenceName === 'explorer.compactFolders') {
+        this.refresh();
       }
     }));
   }
 
   async resolveChildren(parent?: Directory) {
+    const isCompactFoldersModel = this.corePreferences['explorer.compactFolders'];
+    let children: (File | Directory)[] = [];
     if (!parent) {
       // 加载根目录
       if (!this.roots) {
@@ -133,7 +137,7 @@ export class FileTreeService extends Tree {
         return [root];
       } else {
         if (this.roots.length > 0) {
-          const children = await this.fileTreeAPI.resolveChildren(this as ITree, this.roots[0]);
+          children = await (await this.fileTreeAPI.resolveChildren(this as ITree, this.roots[0])).children;
           this.watchFilesChange(new URI(this.roots[0].uri));
           this.cacheNodes(children as (File | Directory)[]);
           this.root = children[0] as Directory;
@@ -145,7 +149,6 @@ export class FileTreeService extends Tree {
       if (Directory.isRoot(parent) && this.isMutiWorkspace) {
         // 加载根目录
         const roots = await this.workspaceService.roots;
-        let children: any[] = [];
         for (const fileStat of roots) {
           const child = this.fileTreeAPI.toNode(this as ITree, fileStat, parent);
           this.watchFilesChange(new URI(fileStat.uri));
@@ -156,8 +159,34 @@ export class FileTreeService extends Tree {
       }
       // 加载子目录
       if (parent.uri) {
-        const children =  await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent);
-        this.cacheNodes(children as (File | Directory)[]);
+        const data =  await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent, isCompactFoldersModel);
+        children = data.children;
+        const childrenParentStat = data.filestat;
+        if (children.length > 0) {
+          this.cacheNodes(children as (File | Directory)[]);
+        }
+        // 需要排除软连接下的直接空目录折叠，否则会导致路径计算错误
+        // 但软连接目录下的其他目录不受影响
+        if (isCompactFoldersModel && !parent.filestat.isSymbolicLink) {
+          const parentURI = new URI(childrenParentStat.uri);
+          // 父节点已为压缩节点，说明此时为点击子路径模式，需要添加临时的子目录节点
+          if ((parent as Directory).compacted) {
+            parent.updateFileStat({
+              ...parent.filestat,
+              uri: parent.uri.toString(),
+            });
+            const presetName = childrenParentStat.uri.replace(parent.filestat.uri + Path.separator, '');
+            const child = this.fileTreeAPI.toNode(this as ITree, childrenParentStat, parent, presetName);
+            return [child];
+          } else {
+            const parentName = parent.uri.parent.relative(parentURI)?.toString();
+            if (parentName && parentName !== parent.name) {
+              parent.updateName(parentName);
+              parent.updateURI(parentURI);
+              parent.updateFileStat(childrenParentStat);
+            }
+          }
+        }
         return children;
       }
     }

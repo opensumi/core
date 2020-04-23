@@ -411,7 +411,7 @@ export class FileTreeModelService {
     this.decorations.removeDecoration(this.focusedDecoration);
   }
 
-  handleContextMenu = (ev: React.MouseEvent, file?: File | Directory) => {
+  handleContextMenu = (ev: React.MouseEvent, file?: File | Directory, activeUri?: URI) => {
     ev.stopPropagation();
     ev.preventDefault();
 
@@ -445,7 +445,7 @@ export class FileTreeModelService {
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
-      args: [node.uri, nodes.map((node) => node.uri)],
+      args: [activeUri ? activeUri : node.uri, nodes.map((node) => node.uri)],
     });
   }
 
@@ -464,9 +464,9 @@ export class FileTreeModelService {
     this.fileTreeContextKey.filesExplorerFocused.set(true);
   }
 
-  handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
+  handleItemRangeClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
     if (!this.focusedFile) {
-      this.handleItemClick(item, type);
+      this.handleItemClick(item, type, activeUri);
     } else if (this.focusedFile && this.focusedFile !== item) {
       this._isMutiSelected = true;
       const targetIndex = this.treeModel.root.getIndexAtTreeNode(item);
@@ -479,7 +479,7 @@ export class FileTreeModelService {
     }
   }
 
-  handleItemToggleClick = (item: File | Directory, type: TreeNodeType) => {
+  handleItemToggleClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
     this._isMutiSelected = true;
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
       return;
@@ -497,18 +497,29 @@ export class FileTreeModelService {
     }
   }
 
-  handleItemClick = (item: File | Directory, type: TreeNodeType) => {
+  handleItemClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
     this._isMutiSelected = false;
     this.clickTimes++;
     // 单选操作默认先更新选中状态
-    if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode) {
+    if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode && !activeUri) {
       this.activeFileDecoration(item);
     }
     // 如果为文件夹需展开
     // 如果为文件，则需要打开文件
     if (type === TreeNodeType.CompositeTreeNode) {
       if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
-        this.toggleDirectory(item as Directory);
+        if (!!activeUri) {
+          const spliceName = activeUri.relative(item.uri)?.toString();
+          const activeName = item.name.replace(Path.separator + spliceName, '');
+          if (activeName && activeName !== item.name) {
+            item.updateName(activeName);
+            (item as Directory).updateCompacted(true);
+            (item as Directory).updateURI(activeUri);
+          }
+          (item as Directory).forceReloadChildren();
+        } else {
+          this.toggleDirectory(item as Directory);
+        }
       }
     } else if (type === TreeNodeType.TreeNode) {
       this.fileTreeService.openFile(item.uri);

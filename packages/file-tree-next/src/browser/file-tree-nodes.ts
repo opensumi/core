@@ -10,12 +10,29 @@ export class Directory extends CompositeTreeNode {
     public name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
+    public compacted: boolean = false,
   ) {
     super(tree, parent);
     if (!parent) {
       // 根节点默认展开节点
       this.setExpanded();
     }
+  }
+
+  updateName(name: string) {
+    this.name = name;
+  }
+
+  updateURI(uri: URI) {
+    this.uri = uri;
+  }
+
+  updateFileStat(filestat: FileStat) {
+    this.filestat = filestat;
+  }
+
+  updateCompacted(compacted: boolean) {
+    this.compacted = compacted;
   }
 }
 
@@ -29,5 +46,17 @@ export class File extends TreeNode {
     public tooltip: string,
   ) {
     super(tree, parent);
+  }
+
+  updateName(name: string) {
+    this.name = name;
+  }
+
+  updateURI(uri: URI) {
+    this.uri = uri;
+  }
+
+  updateFileStat(filestat: FileStat) {
+    this.filestat = filestat;
   }
 }

@@ -8,6 +8,7 @@ import { Directory, File } from './file-tree-nodes';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { DragAndDropService } from './services/file-tree-dnd.service';
 import { Loading } from '@ali/ide-core-browser/lib/components/loading';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 export interface IFileTreeNodeProps {
   item: any;
@@ -18,8 +19,8 @@ export interface IFileTreeNodeProps {
   decorations?: ClasslistComposite;
   dndService: DragAndDropService;
   onTwistierClick?: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
-  onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType) => void;
+  onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
+  onContextMenu: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
   template?: React.JSXElementConstructor<any>;
 }
 
@@ -39,11 +40,20 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   defaultLeftPadding = 8,
   template: Template,
 }: FileTreeNodeRenderedProps) => {
+  const [activeIndex, setActiveIndex] = React.useState<number>();
+
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;
   const isPrompt = isRenamePrompt || isNewPrompt;
+  const isCompactName = item.name.indexOf(Path.separator) >= 0;
 
   const decoration = isPrompt ? null : decorationService.getDecoration(item.uri, Directory.is(item));
+
+  React.useEffect(() => {
+    if (isCompactName) {
+      setActiveIndex(item.name.split(Path.separator).length - 1);
+    }
+  }, [item]);
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       onClick(ev, item as File, itemType);
@@ -203,6 +213,45 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
             <node.ProxiedInput  wrapperStyle={{height: FILE_TREE_NODE_HEIGHT, padding: '0 5px'}}/>
           </div>
         </div>;
+    }
+    if (isCompactName) {
+      const paths = node.name.split(Path.separator);
+      const nameBlock = paths.map((path, index) => {
+        const localPath = paths.slice(0, index + 1).join(Path.separator);
+        const clickHandler = (event: React.MouseEvent) => {
+          event.stopPropagation();
+          setActiveIndex(index);
+          let activeUri: URI;
+          let step = paths.length - index - 1;
+          activeUri = node.uri!;
+          while (step --) {
+            activeUri = activeUri.parent!;
+          }
+          onClick(event, item as File, itemType, activeUri!);
+        };
+        const contextMenuHandler = (event: React.MouseEvent) => {
+          event.stopPropagation();
+          setActiveIndex(index);
+          let activeUri: URI;
+          let step = paths.length - index - 1;
+          while (step--) {
+            activeUri = node.uri.parent!;
+          }
+          onContextMenu(event, item as File, itemType, activeUri!);
+        };
+        return <span key={localPath}>
+          <a className={cls(activeIndex === index && styles.active, styles.compact_name)} onContextMenu={contextMenuHandler} onClick={clickHandler}>{path}</a>
+          {
+            index !== paths.length - 1 ? <span className={styles.compact_name_separator}>{Path.separator}</span> : null
+          }
+        </span>;
+      });
+
+      return <div
+        className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}
+      >
+        {nameBlock}
+      </div>;
     }
     return <div
         className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}

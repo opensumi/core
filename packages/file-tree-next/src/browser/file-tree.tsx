@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ViewState, useInjectable, isOSX, localize } from '@ali/ide-core-browser';
+import { ViewState, useInjectable, isOSX, localize, URI } from '@ali/ide-core-browser';
 import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType, Input, Icon } from '@ali/ide-components';
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
 import { FileTreeService } from './file-tree.service';
@@ -38,7 +38,7 @@ export const FileTree = observer(({
     return (isOSX && metaKey) || ctrlKey;
   };
 
-  const handleItemClicked = (ev: React.MouseEvent, item: File | Directory, type: TreeNodeType) => {
+  const handleItemClicked = (ev: React.MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
     // 阻止点击事件冒泡
     ev.stopPropagation();
 
@@ -49,11 +49,11 @@ export const FileTree = observer(({
     const shiftMask = hasShiftMask(event);
     const ctrlCmdMask = hasCtrlCmdMask(event);
     if (shiftMask) {
-      handleItemRangeClick(item, type);
+      handleItemRangeClick(item, type, activeUri);
     } else if (ctrlCmdMask) {
-      handleItemToggleClick(item, type);
+      handleItemToggleClick(item, type, activeUri);
     } else {
-      handleItemClick(item, type);
+      handleItemClick(item, type, activeUri);
     }
   };
 
@@ -130,9 +130,9 @@ export const FileTree = observer(({
     handleDrop(ev);
   };
 
-  const handlerContextMenu = (ev: React.MouseEvent, node: File | Directory) => {
+  const handlerContextMenu = (ev: React.MouseEvent, node: File | Directory, activeUri?: URI) => {
     const { handleContextMenu } = fileTreeModelService;
-    handleContextMenu(ev, node);
+    handleContextMenu(ev, node, activeUri);
   };
 
   const renderFileTree = () => {

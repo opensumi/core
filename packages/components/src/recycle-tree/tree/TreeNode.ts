@@ -380,6 +380,23 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
+  // 强制刷新子节点
+  public async forceReloadChildren() {
+    if (!this.isExpanded) {
+      this.isExpanded = true;
+    }
+    if (!!this.children && this.parent) {
+      // 从根节点裁剪分支
+      this.shrinkBranch(this);
+      for (const child of this.children) {
+        (child as CompositeTreeNode).dispose();
+      }
+      this._children = null;
+    }
+    await this.hardReloadChildren();
+    this.expandBranch(this);
+  }
+
   // 折叠节点
   public setCollapsed() {
     // 根节点不可折叠
