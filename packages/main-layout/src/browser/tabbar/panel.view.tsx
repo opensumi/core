@@ -26,12 +26,14 @@ export const BaseTabPanelView: React.FC<{
 }> = observer(({ PanelView, panelSize }) => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
+  const appConfig: AppConfig = useInjectable(AppConfig);
+  const customPanelSize = appConfig.panelSizes && appConfig.panelSizes[side];
   const { currentContainerId } = tabbarService;
   const panelVisible = { zIndex: 1, display: 'block' };
   const panelInVisible = { zIndex: -1, display: 'none' };
   React.useEffect(() => {
     // panelSize = 384-1-48
-    tabbarService.panelSize = panelSize || 335;
+    tabbarService.panelSize = customPanelSize || panelSize || 335;
   }, []);
   return (
     <div className={styles.tab_panel}>
