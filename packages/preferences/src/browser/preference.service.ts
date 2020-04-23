@@ -304,6 +304,7 @@ export const defaultSettingSections: {
         {id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title'},
         {id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title'},
         {id: 'debug.toolbar.float', localized: 'preference.debug.toolbar.float.title'},
+        {id: 'explorer.compactFolders', localized: 'preference.explorer.compactFolders'},
       ],
     },
   ],

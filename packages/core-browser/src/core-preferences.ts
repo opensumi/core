@@ -302,6 +302,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: FILE_TREE_DEFAULTS.indent,
       description: '%preference.explorer.fileTree.indent%',
     },
+    'explorer.compactFolders': {
+      'type': 'boolean',
+      'description': '%preference.explorer.compactFolders%',
+      'default': true,
+    },
     'debug.toolbar.float': {
       type: 'boolean',
       default: true,
@@ -394,6 +399,7 @@ export interface CoreConfiguration {
   'explorer.fileTree.baseIndent': number;
   'explorer.fileTree.indent': number;
   'explorer.confirmMove': boolean;
+  'explorer.compactFolders': boolean;
   'debug.toolbar.float': boolean;
   'debug.toolbar.top': number;
   'debug.toolbar.height': number;

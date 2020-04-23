@@ -275,7 +275,7 @@ export const localizationBundle = {
     'preference.explorer.fileTree.indent.title': '资源管理器 -> 文件树缩进',
     'preference.explorer.fileTree.baseIndent.title': '资源管理器 -> 文件树基础缩进',
     'preference.debug.toolbar.float.title': '运行与调试 -> 浮层模式',
-
+    'preference.explorer.compactFolders': '资源管理器 -> 控制资源管理器是否应以紧凑形式呈现文件夹。在这种形式中，单个子文件夹将被压缩在组合的树元素中。例如，对 Java 包结构很有用。',
     // 终端
     'preference.terminal.type': '默认终端类型',
     'preference.terminal.typeDesc': '改变打开终端所使用的默认 Shell 类型',
