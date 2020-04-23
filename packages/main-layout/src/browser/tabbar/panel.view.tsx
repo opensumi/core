@@ -21,12 +21,18 @@ const NoUpdateBoundary: React.FC<{visible: boolean, children: React.ReactElement
 
 export const BaseTabPanelView: React.FC<{
   PanelView: React.FC<{ component: ComponentRegistryInfo, side: string, titleMenu: IMenu }>;
-}> = observer(({ PanelView }) => {
+  // tabPanel的尺寸（横向为宽，纵向高）
+  panelSize?: number;
+}> = observer(({ PanelView, panelSize }) => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const { currentContainerId } = tabbarService;
   const panelVisible = { zIndex: 1, display: 'block' };
   const panelInVisible = { zIndex: -1, display: 'none' };
+  React.useEffect(() => {
+    // panelSize = 384-1-48
+    tabbarService.panelSize = panelSize || 335;
+  }, []);
   return (
     <div className={styles.tab_panel}>
       {tabbarService.visibleContainers.map((component) => {
@@ -152,7 +158,7 @@ export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView=
 
 export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;
 
-export const NextBottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={NextPanelView} />;
+export const NextBottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={NextPanelView} panelSize={280} />;
 
 const useViewState = (side: string, domRef: React.MutableRefObject<HTMLElement | null | undefined>, viewId?: string): ViewState => {
   if (!viewId) { return {width: 0, height: 0}; }

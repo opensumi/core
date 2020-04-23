@@ -15,7 +15,6 @@ export interface TabState {
   // 排序位置，小的在前 （考虑改成 index 语义更好？ @寻壑）
   priority: number;
 }
-const INIT_PANEL_SIZE = 280;
 const CONTAINER_NAME_MAP = {
   left: 'view',
   right: 'extendView',
@@ -89,6 +88,7 @@ export class TabbarService extends WithEventBus {
   readonly onSizeChange: Event<{size: number}> = this.onSizeChangeEmitter.event;
 
   public barSize: number;
+  public panelSize: number;
   private menuId = `tabbar/${this.location}`;
   private moreMenuId = `tabbar/${this.location}/more`;
   private isLatter = this.location === SlotLocation.right || this.location === SlotLocation.bottom;
@@ -586,7 +586,7 @@ export class TabbarService extends WithEventBus {
         if (previousId && currentId !== previousId) {
           this.prevSize = getSize();
         }
-        setSize(this.prevSize);
+        setSize(this.prevSize || (this.panelSize + this.barSize));
         const containerInfo = this.getContainer(currentId);
         if (containerInfo && containerInfo.options!.noResize) {
           lockSize(true);
@@ -633,7 +633,7 @@ export class TabbarService extends WithEventBus {
           setRelativeSize(0, 1);
         }
       } else {
-        setSize(this.prevSize || INIT_PANEL_SIZE + this.barSize);
+        setSize(this.prevSize || (this.panelSize + this.barSize));
       }
     } else {
       setSize(this.barSize);
