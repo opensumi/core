@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME } from '@ali/ide-core-common';
 import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy } from '../common';
@@ -13,6 +14,7 @@ import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 import { VSCExtension } from './vscode.extension';
 // import { ExtensionLogger } from './extension-log';
 import { ExtensionReporterService } from './extension-reporter';
+import { AppConfig } from '@ali/ide-core-node';
 
 /**
  * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
@@ -47,13 +49,14 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   readonly onFireReporter = this.reporterEmitter.event;
 
-  constructor(rpcProtocol: RPCProtocol, logger) {
+  constructor(rpcProtocol: RPCProtocol, logger, private injector: Injector) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
     this.vscodeAPIFactory = createVSCodeAPIFactory(
       this.rpcProtocol,
       this as any,
       this.rpcProtocol.getProxy<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService),
+      this.injector.get(AppConfig),
     );
     this.kaitianAPIFactory = createKaitianAPIFactory(
       this.rpcProtocol,

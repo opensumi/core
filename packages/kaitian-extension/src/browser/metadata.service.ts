@@ -4,7 +4,7 @@ import { Disposable, ILogger } from '@ali/ide-core-browser';
 import { IActivationEventService } from './types';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileSearchServicePath, IFileSearchService } from '@ali/ide-file-search/lib/common';
-import { getDebugLogger, IEventBus, ExtensionEnabledEvent } from '@ali/ide-core-browser';
+import { getDebugLogger, IEventBus, ExtensionEnabledEvent } from '@ali/ide-core-common';
 import { VSCodeContributeRunner } from './vscode/contributes';
 import { KaitianContributesRunner } from './kaitian/contributes';
 
