@@ -4,6 +4,7 @@ import { ContributionProvider } from './contribution-provider';
 import { Disposable, IDisposable } from './disposable';
 import { replaceLocalizePlaceholder } from './localize';
 import { getDebugLogger } from './log';
+import { IExtensionInfo } from './types';
 
 type InterceptorFunction = (result: any) => MaybePromise<any>;
 
@@ -106,6 +107,13 @@ export interface CommandHandler<T = any> {
    * @param args
    */
   isToggled?(...args: any[]): boolean;
+  /**
+   * 获取鉴过权的命令处理函数
+   * @param commandId 命令 id
+   * @param extensionInfo 插件的主要属性
+   * @param args 命令其他参数
+   */
+  isPermitted?(extensionInfo: IExtensionInfo, ...args: any[]): boolean;
 }
 
 export const CommandContribution = Symbol('CommandContribution');
@@ -217,7 +225,13 @@ interface CoreCommandRegistry {
   beforeExecuteCommand(interceptor: PreCommandInterceptor): IDisposable;
 
   afterExecuteCommand(interceptor: string | PostCommandInterceptor, result?: InterceptorFunction): IDisposable;
-
+  /**
+   * 是否是通过鉴过权的命令
+   * @param commandId
+   * @param extensionInfo
+   * @param args
+   */
+  isPermittedCommand(commandId: string, extensionInfo: IExtensionInfo, ...args: any[]): boolean;
 }
 
 export interface CommandRegistry extends CoreCommandRegistry {
@@ -434,6 +448,21 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
       }
     }
     return undefined;
+  }
+
+  /**
+   * 获取鉴过权的命令处理函数
+   * @param commandId 命令 id
+   * @param extensionInfo 插件的主要属性
+   * @param args 命令其他参数
+   */
+  isPermittedCommand(commandId: string, extensionInfo: IExtensionInfo, ...args: any[]): boolean {
+    const command = this.getCommand(commandId);
+    if (command && command.delegate) {
+      return this.isPermittedCommand(command.delegate, extensionInfo, ...args);
+    }
+    const handlers = this._handlers[commandId];
+    return handlers.every(handler => !handler.isPermitted || handler.isPermitted(extensionInfo, ...args));
   }
 
   /**

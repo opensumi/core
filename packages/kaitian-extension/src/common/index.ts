@@ -3,7 +3,9 @@ import { createExtHostContextProxyIdentifier, ProxyIdentifier } from '@ali/ide-c
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { VSCExtension } from '../hosted/vscode.extension';
 import { ExtensionsActivator } from '../hosted/ext.host.activator';
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter, IExtensionProps } from '@ali/ide-core-common';
+
+export { IExtensionProps } from '@ali/ide-core-common';
 
 export interface IExtensionMetaData {
   id: string;
@@ -88,27 +90,6 @@ export abstract class ExtensionCapabilityRegistry {
 export const LANGUAGE_BUNDLE_FIELD = 'languageBundle';
 
 export interface JSONType { [key: string]: any; }
-
-export interface IExtensionProps {
-  readonly id: string;
-  // 插件市场 id
-  readonly extensionId: string;
-  readonly name: string;
-  readonly activated: boolean;
-  readonly enabled: boolean;
-  readonly packageJSON: JSONType;
-  readonly defaultPkgNlsJSON: JSONType | undefined;
-  readonly packageNlsJSON: JSONType | undefined;
-  readonly path: string;
-  readonly realPath: string;
-  readonly extraMetadata: JSONType;
-  readonly extendConfig: JSONType;
-  readonly enableProposedApi: boolean;
-  readonly isUseEnable: boolean;
-  workerVarId?: string;
-  workerScriptPath?: string;
-  readonly isBuiltin: boolean;
-}
 
 export interface IExtension extends IExtensionProps {
   activate();
