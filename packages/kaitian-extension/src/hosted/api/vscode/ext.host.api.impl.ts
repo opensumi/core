@@ -108,7 +108,7 @@ export function createApiFactory(
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
       debug: createDebugApiFactory(extHostDebug),
-      version: '1.36.1',
+      version: '1.37.0',
       comment: {},
       languageServer: {},
       extensions: createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService),
