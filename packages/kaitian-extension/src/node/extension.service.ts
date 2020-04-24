@@ -161,6 +161,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   public async createProcess2(clientId: string) {
     this.logger.log('createProcess2', this.instanceId);
+    this.logger.log('appconfig exthost', this.appConfig.extHost);
     if (this.pendingClientExtProcessDisposer) {
       this.logger.log('Waiting for disposer to complete.');
       await this.pendingClientExtProcessDisposer;
@@ -198,7 +199,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     forkOptions.execArgv = [];
 
     if (process.env.KTELECTRON) {
-      extProcessPath = process.env.EXTENSION_HOST_ENTRY as string;
+      extProcessPath = this.appConfig.extHost || process.env.EXTENSION_HOST_ENTRY as string;
       forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(clientId)}`);
     } else {
       preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
@@ -209,7 +210,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       forkArgs.push(`--kt-process-preload=${preloadPath}`);
       forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(clientId)}`);
-      extProcessPath = (process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../hosted/ext.process.js') : path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename)));
+      if (this.appConfig.extHost) {
+        this.logger.log(`extension host path ${this.appConfig.extHost}`);
+        extProcessPath = this.appConfig.extHost;
+      } else {
+        extProcessPath = (process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.process.js') : path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename)));
+      }
     }
 
     // 注意只能传递可以序列化的数据
