@@ -188,7 +188,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
       const current = await this.getDetailById(e.extensionId);
       const latest = await this.getDetailFromMarketplace(e.extensionId);
       if (!latest || !current) {
-        this.logger.warn(`Can not find extension ${current?.displayName} from marketplace.`);
+        this.logger.warn(`Can not find extension ${e.extensionId} from marketplace.`);
         return;
       }
       const delayUpdate = localize('marketplace.extension.update.delay');

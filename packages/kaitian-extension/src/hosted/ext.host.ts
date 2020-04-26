@@ -243,7 +243,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         } catch (e) {
           activationFailed = true;
           activationFailedError = e;
-          this.logger.error('[Extension-Host][Activate Exception]', e);
+          this.logger.error(`[Extension-Host][Activate Exception] ${extension.extensionId}: `, e);
         }
       }
     }
