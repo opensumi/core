@@ -10,6 +10,8 @@ import { ExtHostKaitianAPIIdentifier } from '../../../common/kaitian';
 import { ExtHostLifeCycle, createLifeCycleApi } from './ext.host.lifecycle';
 import { ExtHostTheme, createThemeApi } from './ext.host.theme';
 import { ExtHostCommon, createEventAPIFactory } from './ext.host.common';
+import { createCommandsApiFactory } from './ext.host.command';
+import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
@@ -23,6 +25,7 @@ export function createAPIFactory(
   }
 
   const extHostCommands = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostCommands);
+  const extHostEditors = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostEditors) as ExtensionHostEditorService;
   const kaitianExtHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.KaitianExtHostWebview, new KaitianExtHostWebview(rpcProtocol)) as  KaitianExtHostWebview;
   const kaitianLifeCycle = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostLifeCycle, new ExtHostLifeCycle(rpcProtocol));
   const kaitianLayout = rpcProtocol.set(ExtHostKaitianAPIIdentifier.ExtHostLayout, new KaitianExtHostLayout(rpcProtocol));
@@ -43,6 +46,7 @@ export function createAPIFactory(
       theme: createThemeApi(kaitianExtHostTheme),
       event: createEventAPIFactory(extHostCommands, kaitianExtHostCommon, extension),
       reporter,
+      commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
     };
   };
 }

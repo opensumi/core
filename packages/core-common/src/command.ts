@@ -462,7 +462,7 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
       return this.isPermittedCommand(command.delegate, extensionInfo, ...args);
     }
     const handlers = this._handlers[commandId];
-    return handlers.every(handler => !handler.isPermitted || handler.isPermitted(extensionInfo, ...args));
+    return !Array.isArray(handlers) || handlers.every(handler => !handler.isPermitted || handler.isPermitted(extensionInfo, ...args));
   }
 
   /**

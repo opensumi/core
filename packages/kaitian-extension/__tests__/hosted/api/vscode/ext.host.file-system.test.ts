@@ -5,7 +5,7 @@ import {
   FileType,
   FileStat,
 } from '@ali/ide-file-service/lib/common';
-import { convertToVSCFileStat, VSCFileSystem, FileSystemWatcher, ExtHostFileSystem } from '../../src/hosted/api/vscode/ext.host.file-system';
+import { convertToVSCFileStat, VSCFileSystem, FileSystemWatcher, ExtHostFileSystem } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.file-system';
 
 describe('convertToVSCFileStat', () => {
   it('Should return normal conversion to VSCode format results.', () => {

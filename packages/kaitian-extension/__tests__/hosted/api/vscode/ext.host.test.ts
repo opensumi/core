@@ -1,12 +1,12 @@
 import { Deferred  } from '@ali/ide-core-common/lib';
-import ExtensionHostServiceImpl from '../../src/hosted/ext.host';
+import ExtensionHostServiceImpl from '@ali/ide-kaitian-extension/lib/hosted/ext.host';
 
-import { mockExtensionProps } from '../__mock__/extensions';
-import { initMockRPCProtocol } from '../__mock__/initRPCProtocol';
-import { MainThreadExtensionService } from '../__mock__/api/mainthread.extension.service';
-import { MainThreadStorage } from '../__mock__/api/mathread.storage';
-import { MainThreadExtensionLog } from '../__mock__/api/mainthread.extension.log';
-import { MockLoggerManagerClient } from '../__mock__/loggermanager';
+import { mockExtensionProps } from '../../../__mock__/extensions';
+import { initMockRPCProtocol } from '../../../__mock__/initRPCProtocol';
+import { MainThreadExtensionService } from '../../../__mock__/api/mainthread.extension.service';
+import { MainThreadStorage } from '../../../__mock__/api/mathread.storage';
+import { MainThreadExtensionLog } from '../../../__mock__/api/mainthread.extension.log';
+import { MockLoggerManagerClient } from '../../../__mock__/loggermanager';
 
 const enum MessageType {
   Request = 1,

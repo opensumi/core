@@ -2,8 +2,7 @@
 import { Event, Uri, URI, Emitter, CancellationTokenSource, CancellationToken } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 import { UriComponents } from 'vscode-uri';
-
-import { ExtHostDecorations } from '../../src/hosted/api/vscode/ext.host.decoration';
+import { ExtHostDecorations } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.decoration';
 
 function URI2UriComponents(uri: URI): UriComponents {
   return {

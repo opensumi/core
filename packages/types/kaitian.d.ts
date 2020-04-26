@@ -2,7 +2,7 @@
 declare module 'kaitian' {
   export * from 'vscode';
 
-  import { ExtensionContext as VSCodeExtensionContext } from 'vscode';
+  import { ExtensionContext as VSCodeExtensionContext, Disposable } from 'vscode';
 
   export namespace event {
 
@@ -247,6 +247,28 @@ declare module 'kaitian' {
 
     onInActivate: Event<void>;
 
+  }
+
+  interface IExtensionInfo {
+    /**
+     * package.json 里的 publisher.name
+     * 用于插件之前的相互调用
+     */
+    readonly id: string;
+    /**
+     * 插件市场 id
+     */
+    readonly extensionId: string;
+    /**
+     * 是否为内置插件
+     */
+    readonly isBuiltin: boolean;
+  }
+
+  export type PermittedHandler = (extensionInfo: IExtensionInfo, ...args: any[]) => boolean;
+
+  export namespace commands {
+    export function registerCommandWithPermit(id: string, command: <T>(...args: any[]) => T | Promise<T>, isPermitted: PermittedHandler): Disposable;
   }
 
 }
