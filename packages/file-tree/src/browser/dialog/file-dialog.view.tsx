@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@ali/ide-overlay';
 import { useInjectable, localize, URI, TreeNode } from '@ali/ide-core-browser';
-import { Button, Input, Select } from '@ali/ide-components';
+import { Button, Input, Select, Option } from '@ali/ide-components';
 import * as path from '@ali/ide-core-common/lib/utils/paths';
 
 import { FileDialogService } from './file-dialog.service';
@@ -63,9 +63,9 @@ export const FileDialog = (
   const isNormalDialog = !IOpenDialogOptions.is(options) && !ISaveDialogOptions.is(options);
 
   const directoryOptions = getDirectoryList().map((item, idx) =>
-    <option value={item} key={`${idx} - ${item}`}>{
+    <Option label={item} value={item} key={`${idx} - ${item}`}>{
       item
-    }</option>);
+    }</Option>);
 
   if (!node) {
     return <div>loading...</div>;
