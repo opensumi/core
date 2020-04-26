@@ -820,21 +820,23 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     await this.ensureLoaded();
     let next = this._children;
+    let preItem: CompositeTreeNode;
     let name;
     while (name = pathFlag.shift()) {
       const item = next!.find((c) => c.name === name);
       if (item && pathFlag.length === 0) {
         return item;
       }
-      // 异常情况
+      // 最终加载到的路径节点
       if (!item || (!CompositeTreeNode.is(item) && pathFlag.length > 0)) {
-        return ;
+        return preItem!;
       }
       if (CompositeTreeNode.is(item)) {
         if (!(item as CompositeTreeNode)._children) {
           await (item as CompositeTreeNode).hardReloadChildren();
         }
         next = (item as CompositeTreeNode)._children;
+        preItem = (item as CompositeTreeNode);
       }
     }
   }
