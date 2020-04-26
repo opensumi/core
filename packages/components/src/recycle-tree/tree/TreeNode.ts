@@ -52,7 +52,6 @@ export class TreeNode implements ITreeNode {
   protected _watcher: ITreeWatcher;
 
   protected _tree: ITree;
-  private resolvedPathCache: string;
 
   protected constructor(tree: ITree, parent?: ICompositeTreeNode, watcher?: ITreeWatcher, optionalMetadata?: { [key: string]: any }) {
     this._uid = TreeNode.nextId();
@@ -109,10 +108,7 @@ export class TreeNode implements ITreeNode {
     if (!this.parent) {
       return new Path(`/${this.name}`).toString();
     }
-    if (!this.resolvedPathCache) {
-      this.resolvedPathCache = new Path(this.parent.path).join(this.name).toString();
-    }
-    return this.resolvedPathCache;
+    return new Path(this.parent.path).join(this.name).toString();
   }
 
   public getMetadata(withKey: string): any {
@@ -157,7 +153,6 @@ export class TreeNode implements ITreeNode {
     const didChangeParent = prevParent !== to;
     const prevPath = this.path;
 
-    this.resolvedPathCache = '';
     this._depth = to.depth + 1;
 
     if (didChangeParent || name !== this.name) {
@@ -380,21 +375,58 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
-  // 强制刷新子节点
-  public async forceReloadChildren() {
-    if (!this.isExpanded) {
-      this.isExpanded = true;
-    }
-    if (!!this.children && this.parent) {
-      // 从根节点裁剪分支
-      this.shrinkBranch(this);
+  // 获取当前节点下所有展开的节点路径
+  private getAllExpandedNodePath() {
+    let paths: string[] = [];
+    if (!!this.children) {
       for (const child of this.children) {
-        (child as CompositeTreeNode).dispose();
+        if ((child as CompositeTreeNode).isExpanded) {
+          paths.push(child.path);
+          paths = paths.concat((child as CompositeTreeNode).getAllExpandedNodePath());
+        }
       }
-      this._children = null;
+      return paths;
+    } else {
+      return paths;
     }
-    await this.hardReloadChildren();
-    this.expandBranch(this);
+  }
+
+  // 静默刷新子节点, 即不触发分支更新事件
+  public async forceReloadChildrenQuiet(expandedPaths: string[] = this.getAllExpandedNodePath()) {
+    let forceLoadPath;
+    if (this.isExpanded) {
+      await this.hardReloadChildren(true);
+      forceLoadPath = expandedPaths.shift();
+      if (!!this.children) {
+        for (const child of this.children) {
+          if (!forceLoadPath) {
+            break;
+          }
+          // 包含压缩节点的情况
+          if (child.path.indexOf(forceLoadPath) >= 0) {
+            (child as CompositeTreeNode).isExpanded = true;
+            await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths);
+            forceLoadPath = expandedPaths.shift();
+          }
+        }
+      }
+      if (forceLoadPath) {
+        expandedPaths.unshift(forceLoadPath);
+        this.expandBranch(this, true);
+      } else {
+        this.expandBranch(this);
+      }
+    } else {
+      // 清理子节点，等待下次展开时更新
+      this.shrinkBranch(this, true);
+      if (!!this.children && this.parent) {
+        for (const child of this.children) {
+          (child as CompositeTreeNode).dispose();
+        }
+        this._children = null;
+      }
+      return;
+    }
   }
 
   // 折叠节点
@@ -574,10 +606,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   /**
    * 设置扁平化的分支信息
    */
-  protected setFlattenedBranch(leaves: Uint32Array | null) {
+  protected setFlattenedBranch(leaves: Uint32Array | null, withoutNotify?: boolean) {
     this.flattenedBranch = leaves;
     // Root节点才通知更新
-    if (CompositeTreeNode.isRoot(this)) {
+    if (CompositeTreeNode.isRoot(this) && !withoutNotify) {
       this.watcher.notifyDidUpdateBranch();
     }
   }
@@ -586,7 +618,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 展开分支节点
    * @param branch 分支节点
    */
-  protected expandBranch(branch: CompositeTreeNode) {
+  protected expandBranch(branch: CompositeTreeNode, withoutNotify?: boolean) {
     if (this !== branch) {
       // 但节点为展开状态时进行裁剪
       this._branchSize += branch._branchSize;
@@ -594,11 +626,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     // 当当前节点为折叠状态，更新分支信息
     if (this !== branch && this.flattenedBranch) {
       const injectionStartIdx = this.flattenedBranch.indexOf(branch.id) + 1;
-      this.setFlattenedBranch(spliceTypedArray(this.flattenedBranch, injectionStartIdx, 0, branch.flattenedBranch));
+      this.setFlattenedBranch(spliceTypedArray(this.flattenedBranch, injectionStartIdx, 0, branch.flattenedBranch), withoutNotify);
       // 取消展开分支对于分支的所有权，即最终只会有顶部Root拥有所有分支信息
-      branch.setFlattenedBranch(null);
+      branch.setFlattenedBranch(null, withoutNotify);
     } else if (this.parent) {
-      (this.parent as CompositeTreeNode).expandBranch(branch);
+      (this.parent as CompositeTreeNode).expandBranch(branch, withoutNotify);
     }
   }
 
@@ -606,7 +638,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 清理分支节点
    * @param branch 分支节点
    */
-  protected shrinkBranch(branch: CompositeTreeNode) {
+  protected shrinkBranch(branch: CompositeTreeNode, withoutNotify?: boolean) {
     if (this !== branch) {
       // 这里的`this`实际上为父节点
       // `this`的分支大小没有改变，仍然具有相同数量的叶子，但是从父级参照系（即根节点）来看，其分支缩小了
@@ -615,10 +647,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (this !== branch && this.flattenedBranch) {
       const removalStartIdx = this.flattenedBranch.indexOf(branch.id) + 1;
       // 返回分支对于分支信息所有权，即将折叠的节点信息再次存储于折叠了的节点中
-      branch.setFlattenedBranch(this.flattenedBranch.slice(removalStartIdx, removalStartIdx + branch._branchSize));
-      this.setFlattenedBranch(spliceTypedArray(this.flattenedBranch, removalStartIdx, branch.flattenedBranch ? branch.flattenedBranch.length : 0));
+      branch.setFlattenedBranch(this.flattenedBranch.slice(removalStartIdx, removalStartIdx + branch._branchSize), withoutNotify);
+      this.setFlattenedBranch(spliceTypedArray(this.flattenedBranch, removalStartIdx, branch.flattenedBranch ? branch.flattenedBranch.length : 0), withoutNotify);
     } else if (this.parent) {
-      (this.parent as CompositeTreeNode).shrinkBranch(branch);
+      (this.parent as CompositeTreeNode).shrinkBranch(branch, withoutNotify);
     }
   }
 
@@ -626,7 +658,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 加载节点信息
    * @memberof CompositeTreeNode
    */
-  protected async hardReloadChildren() {
+  protected async hardReloadChildren(quiet?: boolean) {
     if (this.hardReloadPromise) {
       return this.hardReloadPromise;
     }
@@ -640,7 +672,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
     if (this._children) {
       // 重置节点分支
-      this.shrinkBranch(this);
+      this.shrinkBranch(this, quiet);
     }
 
     const flatTree = new Uint32Array(rawItems.length);
@@ -656,7 +688,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       flatTree[i] = this._children[i].id;
     }
     this._branchSize = flatTree.length;
-    this.setFlattenedBranch(flatTree);
+    this.setFlattenedBranch(flatTree, quiet);
     // 清理上一次监听函数
     if ( typeof this.watchTerminator === 'function') {
       this.watchTerminator(this.path);

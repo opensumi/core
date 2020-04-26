@@ -56,6 +56,9 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   }, [item]);
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+      if (isCompactName) {
+        setActiveIndex(item.name.split(Path.separator).length - 1);
+      }
       onClick(ev, item as File, itemType);
     }
   };

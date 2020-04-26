@@ -10,7 +10,6 @@ export class Directory extends CompositeTreeNode {
     public name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
-    public compacted: boolean = false,
   ) {
     super(tree, parent);
     if (!parent) {
@@ -31,8 +30,8 @@ export class Directory extends CompositeTreeNode {
     this.filestat = filestat;
   }
 
-  updateCompacted(compacted: boolean) {
-    this.compacted = compacted;
+  updateToolTip(tooltip: string) {
+    this.tooltip = tooltip;
   }
 }
 
@@ -58,5 +57,9 @@ export class File extends TreeNode {
 
   updateFileStat(filestat: FileStat) {
     this.filestat = filestat;
+  }
+
+  updateToolTip(tooltip: string) {
+    this.tooltip = tooltip;
   }
 }

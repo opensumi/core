@@ -118,8 +118,6 @@ export class FileTreeModelService {
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
-  private flushLocationDelayer =  new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LOCATION_FLUSH_DELAY);
-
   constructor() {
     this._whenReady = this.initTreeModel();
   }
@@ -217,20 +215,13 @@ export class FileTreeModelService {
       });
     }));
     this.disposableCollection.push(this.fileTreeService.onNodeRefreshed(() => {
-      // 尝试恢复树
-      this.flushLoadSnapshotDelayer.trigger(async () => {
-        const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
-        if (snapshot && snapshot.specVersion) {
-          this._loadSnapshotReady = this.loadFileTreeSnapshot(snapshot);
-          // 刷新操作后，在文件树上定位文件位置
-          this.flushLocationDelayer.trigger(async () => {
-            const currentEditor = this.editorService.currentEditor;
-            if (currentEditor && currentEditor.currentUri) {
-              await this.location(currentEditor.currentUri);
-            }
-          });
-        }
-      });
+      // 尝试定位上次选中的节点
+      const currentEditor = this.editorService.currentEditor;
+      if (currentEditor && currentEditor.currentUri) {
+        this.location(currentEditor.currentUri);
+      } else if (this.selectedFiles.length > 0) {
+        this.location(this.selectedFiles[0].uri);
+      }
     }));
     this.disposableCollection.push(this.labelService.onDidChange(() => {
       // 当labelService注册的对应节点图标变化时，通知视图更新
@@ -508,18 +499,7 @@ export class FileTreeModelService {
     // 如果为文件，则需要打开文件
     if (type === TreeNodeType.CompositeTreeNode) {
       if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
-        if (!!activeUri) {
-          const spliceName = activeUri.relative(item.uri)?.toString();
-          const activeName = item.name.replace(Path.separator + spliceName, '');
-          if (activeName && activeName !== item.name) {
-            item.updateName(activeName);
-            (item as Directory).updateCompacted(true);
-            (item as Directory).updateURI(activeUri);
-          }
-          (item as Directory).forceReloadChildren();
-        } else {
-          this.toggleDirectory(item as Directory);
-        }
+        this.toggleDirectory(item as Directory);
       }
     } else if (type === TreeNodeType.TreeNode) {
       this.fileTreeService.openFile(item.uri);
