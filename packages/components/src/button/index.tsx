@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Dropdown from 'antd/lib/dropdown';
 import classNames from 'classnames';
-import 'antd/lib/dropdown/style/index.less';
+import 'antd/lib/dropdown/style/index.css';
 
 import './style.less';
 import { Icon, getDefaultIcon, DefaultIconKeys } from '../icon';

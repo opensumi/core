@@ -3,7 +3,7 @@ import * as clsx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
 import Menu, { ClickParam } from 'antd/lib/menu';
-import 'antd/lib/menu/style/index.less';
+import 'antd/lib/menu/style/index.css';
 
 import { Button, CheckBox, Icon } from '@ali/ide-components';
 import {
