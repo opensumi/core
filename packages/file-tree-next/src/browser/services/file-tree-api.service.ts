@@ -103,7 +103,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     }
     if (filestat.isDirectory) {
       return new Directory(
-        tree,
+        tree as any,
         parent,
         uri,
         name,
@@ -112,7 +112,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       );
     } else {
       return new File(
-        tree,
+        tree as any,
         parent,
         uri,
         name,

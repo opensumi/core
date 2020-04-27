@@ -357,13 +357,21 @@ export class FileTreeService extends Tree {
   }
 
   public async addNode(node: Directory, newName: string, type: TreeNodeType) {
-    const tempFileStat: FileStat = {
-      uri: node.uri.resolve(newName).toString(),
+    let tempFileStat: FileStat;
+    let tempName: string;
+    // 处理a/b/c/d这类目录
+    if (newName.indexOf(Path.separator) > 0 && !this.isCompactMode) {
+      tempName = Path.splitPath(newName)[0];
+    } else {
+      tempName = newName;
+    }
+    tempFileStat = {
+      uri: node.uri.resolve(tempName).toString(),
       isDirectory: type === TreeNodeType.CompositeTreeNode,
       isSymbolicLink: false,
       lastModification: new Date().getTime(),
     };
-    const addNode = await this.fileTreeAPI.toNode(this as ITree, tempFileStat, node as Directory);
+    const addNode = await this.fileTreeAPI.toNode(this as ITree, tempFileStat, node as Directory, tempName);
     if (!!addNode) {
       this.cacheNodes([addNode]);
       // 节点创建失败时，不需要添加
@@ -397,7 +405,7 @@ export class FileTreeService extends Tree {
         const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
         const node = this.getNodeByPathOrUri(uri);
         if (node && this.root?.isItemVisibleAtSurface(node)) {
-          continue ;
+          continue;
         } else if (parent && isCompressedFocused) {
           this.refresh(parent as Directory);
         }

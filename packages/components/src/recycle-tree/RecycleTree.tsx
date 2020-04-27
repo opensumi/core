@@ -592,7 +592,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       });
     }
 
-    this.filterFlattenBranch = new Uint32Array(idSets.size - 1);
+    this.filterFlattenBranch = new Uint32Array(idSets.size);
     for (let flatTreeIdx = 0, idx = 0; idx < root.branchSize; idx ++) {
       const node = root.getTreeNodeAtIndex(idx);
       if (node && idSets.has(node.id)) {
