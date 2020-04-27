@@ -551,6 +551,8 @@ export const localizationBundle = {
     'kaitianExtension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'kaitianExtension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
 
+    'extension.no.view.found': '找不到插件 {0} 注册的视图组件。\n 请确保插件中已经导出名为 {1} 的组件。',
+
     'comments': '评论',
     'comments.reply.placeholder': '请输入',
     'comments.participants': '参与者',

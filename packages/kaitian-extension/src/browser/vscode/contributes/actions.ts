@@ -1,4 +1,4 @@
-import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../../common';
+import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IToolBarViewService } from '@ali/ide-toolbar/lib/browser';
 import { getIcon, CommandService } from '@ali/ide-core-browser';

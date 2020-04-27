@@ -1,7 +1,7 @@
 import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
 import { getDebugLogger, Disposable, registerLocalizationBundle, getCurrentLanguageInfo, Emitter } from '@ali/ide-core-common';
-import { VSCodeMetaService } from './vscode/meta';
+import { ExtensionMetadataService } from './metadata.service';
 
 const metaDataSymbol = Symbol.for('metaDataSymbol');
 const extensionServiceSymbol = Symbol.for('extensionServiceSymbol');
@@ -27,8 +27,8 @@ export class Extension extends Disposable implements IExtension {
 
   private readonly logger = getDebugLogger();
 
-  @Autowired(VSCodeMetaService)
-  vscodeMetaService: VSCodeMetaService;
+  @Autowired(ExtensionMetadataService)
+  extMetadataService: ExtensionMetadataService;
 
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
@@ -69,7 +69,7 @@ export class Extension extends Disposable implements IExtension {
     if (!this._enabled) {
       return;
     }
-    this.vscodeMetaService.dispose();
+    this.extMetadataService.dispose();
     this._enabled = false;
   }
 
@@ -83,8 +83,8 @@ export class Extension extends Disposable implements IExtension {
 
   async contributeIfEnabled() {
     if (this._enabled) {
-      this.addDispose(this.vscodeMetaService);
-      this.logger.log(`${this.name} vscodeMetaService.run`);
+      this.addDispose(this.extMetadataService);
+      this.logger.log(`${this.name} extensionMetadataService.run`);
       if (this.packageNlsJSON) {
         registerLocalizationBundle( {
           ...getCurrentLanguageInfo(),
@@ -101,7 +101,7 @@ export class Extension extends Disposable implements IExtension {
         }, this.id);
       }
 
-      await this.vscodeMetaService.run(this);
+      await this.extMetadataService.run(this);
     }
   }
 

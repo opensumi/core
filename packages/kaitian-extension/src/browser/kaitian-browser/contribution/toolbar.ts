@@ -1,4 +1,4 @@
-import { IRunParam, AbstractKaitianBrowserContributionRunner } from '../types';
+import { IRunTimeParams, AbstractKaitianBrowserContributionRunner } from '../types';
 import { IDisposable, Disposable, ILogger } from '@ali/ide-core-common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -23,7 +23,7 @@ export class ToolBarBrowserContributionRunner extends AbstractKaitianBrowserCont
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  run(param: IRunParam): IDisposable {
+  run(param: IRunTimeParams): IDisposable {
     const disposer = new Disposable();
     if (!this.injector.creatorMap.has(IToolBarViewService)) {
       this.logger.warn('没有找到 toolbarViewService');
@@ -31,12 +31,12 @@ export class ToolBarBrowserContributionRunner extends AbstractKaitianBrowserCont
     }
 
     if (this.contribution.toolBar) {
-      this.contribution.toolBar.component.forEach((component) => {
-        const { extendProtocol, extendService } = param.getExtensionExtendService(this.extension, component.id);
+      this.contribution.toolBar.view.forEach((view) => {
+        const { extendProtocol, extendService } = param.getExtensionExtendService(this.extension, view.id);
         const disposable = this.toolBarViewService.registerToolBarElement({
           type: 'component',
-          component: component.panel as React.FunctionComponent | React.ComponentClass,
-          position: component.position || this.contribution.toolBar!.position || ToolBarPosition.LEFT,
+          component: view.component as React.FunctionComponent | React.ComponentClass,
+          position: view.position || this.contribution.toolBar!.position || ToolBarPosition.LEFT,
           initialProps: {
             kaitianExtendService: extendService,
             kaitianExtendSet: extendProtocol,

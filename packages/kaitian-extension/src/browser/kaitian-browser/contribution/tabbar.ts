@@ -1,4 +1,4 @@
-import { IRunParam, AbstractKaitianBrowserContributionRunner, ITabBarComponentContribution } from '../types';
+import { IRunTimeParams, AbstractKaitianBrowserContributionRunner, ITabBarViewContribution } from '../types';
 import { IDisposable, Disposable } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -14,23 +14,23 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
   @Autowired(IIconService)
   iconService: IIconService;
 
-  run(param: IRunParam): IDisposable {
+  run(params: IRunTimeParams): IDisposable {
     const disposer = new Disposable();
     if (this.contribution.left) {
-      this.contribution.left.component.forEach((component) => {
-        disposer.addDispose(this.registerTabBar(component, 'left', param));
+      this.contribution.left.view.forEach((view) => {
+        disposer.addDispose(this.registerTabBar(view, 'left', params, this.contribution.left?.type));
       });
     }
 
     if (this.contribution.right) {
-      this.contribution.right.component.forEach((component) => {
-        disposer.addDispose(this.registerTabBar(component, 'right', param));
+      this.contribution.right.view.forEach((view) => {
+        disposer.addDispose(this.registerTabBar(view, 'right', params, this.contribution.right?.type));
       });
     }
 
     if (this.contribution.bottom) {
-      this.contribution.bottom.component.forEach((component) => {
-        disposer.addDispose(this.registerTabBar(component, 'bottom', param));
+      this.contribution.bottom.view.forEach((view) => {
+        disposer.addDispose(this.registerTabBar(view, 'bottom', params, this.contribution.bottom?.type));
       });
     }
 
@@ -38,33 +38,35 @@ export class TabbarBrowserContributionRunner extends AbstractKaitianBrowserContr
 
   }
 
-  registerTabBar(component: ITabBarComponentContribution, position: 'left' | 'right' | 'bottom', runParam: IRunParam): IDisposable {
-    const { extendProtocol, extendService } = runParam.getExtensionExtendService(this.extension, component.id);
-    const componentId = this.layoutService.collectTabbarComponent(
-      [{
-        id: `${this.extension.id}:${component.id}`,
-        component: position === 'bottom' ? component.panel : undefined,
-      }],
-      {
-        iconClass: component.icon ? getIcon(component.icon) : component.iconPath ? this.iconService.fromIcon(this.extension.path, component.iconPath) : '',
-        containerId: `${this.extension.id}:${component.id}`,
-        component: position !== 'bottom' ? component.panel : undefined,
-        initialProps: {
-          kaitianExtendService: extendService,
-          kaitianExtendSet: extendProtocol,
+  registerTabBar(view: ITabBarViewContribution, position: 'left' | 'right' | 'bottom', runtimeParams: IRunTimeParams, kind: 'add' | 'replace' = 'add'): IDisposable {
+    const { extendProtocol, extendService } = runtimeParams.getExtensionExtendService(this.extension, view.id);
+    let componentId;
+    const initialProps = {
+      kaitianExtendService: extendService,
+      kaitianExtendSet: extendProtocol,
+    };
+    if (kind === 'add') {
+      const { component } = view;
+      const containerId = `${this.extension.id}:${view.id}`;
+      componentId = this.layoutService.collectTabbarComponent(
+        [{
+          id: containerId,
+        }],
+        {
+          ...view,
+          iconClass: view.icon ? getIcon(view.icon) : view.iconPath ? this.iconService.fromIcon(this.extension.path, view.iconPath) : '',
+          containerId,
+          component,
+          initialProps,
         },
-        activateKeyBinding: component.keyBinding,
-        title: component.title,
-        priority: component.priority,
-        noResize: component.noResize,
-        expanded: component.expanded,
-      },
-      position,
-    );
+        position,
+      );
+    } else {
+      this.layoutService.replaceViewComponent(view, initialProps);
+    }
     return {
       dispose: () => {
         const componentHandler = this.layoutService.getTabbarHandler(componentId);
-
         if (componentHandler) {
           componentHandler.dispose();
         }

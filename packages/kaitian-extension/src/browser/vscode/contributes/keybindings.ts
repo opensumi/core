@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 // import { VscodeContributionPoint, Contributes } from './common';
-import { VSCodeContributePoint, Contributes } from '../../../../common';
+import { VSCodeContributePoint, Contributes } from '../../../common';
 import { KeybindingRegistry, OS, Keybinding } from '@ali/ide-core-browser';
 
 export interface ContributedKeyBinding {

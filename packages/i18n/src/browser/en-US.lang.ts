@@ -541,6 +541,8 @@ export const localizationBundle = {
     'kaitianExtension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
     'kaitianExtension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
 
+    'extension.no.view.found': 'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
+
     'comments': 'Comments',
     'comments.reply.placeholder': 'Reply',
     'comments.participants': 'Participants',

@@ -5,7 +5,7 @@ import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu
 import { IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
 import { IEditorGroup } from '@ali/ide-editor';
 
-import { VSCodeContributePoint, Contributes } from '../../../../common';
+import { VSCodeContributePoint, Contributes } from '../../../common';
 
 export interface MenuActionFormat extends IMenuItem {
   command: string;

@@ -88,6 +88,8 @@ import { viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 import { getShadowRoot } from './shadowRoot';
 import { createProxiedWindow, createProxiedDocument } from './proxies';
 import { getAMDDefine, getMockAmdLoader, getAMDRequire, getWorkerBootstrapUrl } from './loader';
+import { KtViewLocation } from './kaitian/contributes/browser-views';
+import { ExtensionNoExportsView } from './components';
 
 const LOAD_FAILED_CODE = 'load';
 
@@ -635,17 +637,37 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     }
   }
 
-  public async activeExtension(extension: IExtension) {
-
-    // await this.ready.promise
-    // only extension browser/worker extension when ext process has been disabled
-    if (!this.appConfig.noExtHost) {
-      const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
-      await proxy.$activateExtension(extension.id);
+  private normalizeDeprecatedViewsConfig(moduleExports: { [key: string]: any }, extension: IExtension, proxiedHead?: HTMLHeadElement) {
+    if (this.appConfig.useExperimentalShadowDom) {
+      return Object.keys(moduleExports).reduce((pre, cur) => {
+        pre[cur] = {
+          view: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
+            ...other,
+            id,
+            component: (props) => getShadowRoot(panel, extension, props, id, proxiedHead),
+          })),
+        };
+        return pre;
+      }, {});
+    } else {
+      const views = moduleExports.default ? moduleExports.default : moduleExports;
+      return Object.keys(views).reduce((config, location) => {
+        config[location] = {
+          view: views[location].component.map(({ panel, ...other }) => ({
+            ...other,
+            component: panel,
+          })),
+        };
+        return config;
+      }, {});
     }
+  }
 
+  /**
+   * @deprecated
+   */
+  private async activateExtensionByDeprecatedExtendConfig(extension: IExtension) {
     const { extendConfig } = extension;
-
     if (extendConfig.worker && extendConfig.worker.main) {
       if (!this.workerProtocol) {
         this.logger.warn('[Worker Host] extension worker host not yet initialized.');
@@ -657,27 +679,16 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
     // TODO: 存储插件与 component 的关系，用于 dispose
     if (extendConfig.browser && extendConfig.browser.main) {
+      this.logger.verbose(`register view by Deprecated config ${extension.id}`);
       const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
       try {
         const rawExtension = this.extensionMap.get(extension.path);
         if (this.appConfig.useExperimentalShadowDom) {
           const { moduleExports, proxiedHead } = await this.loadBrowserScriptByMockLoader(browserScriptURI.toString());
-          this.registerBrowserComponent(
-            Object.keys(moduleExports).reduce((pre, cur) => {
-              pre[cur] = {
-                component: moduleExports[cur].component.map(({ panel, id, ...other }) => ({
-                  ...other,
-                  id,
-                  panel: (props) => getShadowRoot(panel, extension, props, id, proxiedHead),
-                })),
-              };
-              return pre;
-            }, {}),
-            rawExtension!,
-          );
+          this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(moduleExports, extension, proxiedHead), rawExtension!);
         } else {
           const browserExported = await this.loadBrowser(browserScriptURI.toString());
-          this.registerBrowserComponent(browserExported, this.extensionMap.get(extension.path)!);
+          this.registerBrowserComponent(this.normalizeDeprecatedViewsConfig(browserExported, extension), rawExtension!);
         }
       } catch (err) {
         if (err.errorCode === LOAD_FAILED_CODE) {
@@ -690,56 +701,68 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   /**
-   * 创建前台 UI 消息链路
-   * @param extension
-   * @param componentId
+   * should replace view component
    */
-  // tslint:disable-next-line:no-unused-variable
-  private createExtensionExtendProtocol(extension: IExtension, componentId: string) {
-    const { id: extensionId } = extension;
-    const rpcProtocol = this.protocol;
+  static tabBarLocation = ['left', 'right'];
 
-    const extendProtocol = new Proxy(rpcProtocol, {
-      get: (obj, prop) => {
-        if (typeof prop === 'symbol') {
-          return obj[prop];
-        }
-
-        if (prop === 'getProxy') {
-          return () => {
-            const proxy = obj.getProxy({ serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}` } as ProxyIdentifier<any>);
-            return new Proxy(proxy, {
-              get: (obj, prop) => {
-                if (typeof prop === 'symbol') {
-                  return obj[prop];
-                }
-
-                return obj[`$${prop}`];
-              },
-            });
-          };
-        } else if (prop === 'set') {
-          const componentProxyIdentifier = { serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}` };
-
-          return (componentService) => {
-            const service = {};
-            for (const key in componentService) {
-              if (componentService.hasOwnProperty(key)) {
-                service[`$${key}`] = componentService[key];
-              }
-            }
-
-            this.logger.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
-
-            return obj.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
-          };
-        }
-
-      },
-    });
-
-    return extendProtocol;
+  /**
+   * @see [KtViewLocation](#KtViewLocation) view location
+   */
+  private getRegisterViewKind(location: KtViewLocation) {
+    return ExtensionServiceImpl.tabBarLocation.includes(location) ? 'replace' : 'add';
   }
+
+  private async getExtensionModuleExports(url: string): Promise<{ moduleExports: any; proxiedHead?: HTMLHeadElement }> {
+    if (this.appConfig.useExperimentalShadowDom) {
+      return await this.loadBrowserScriptByMockLoader2<IKaitianBrowserContributions>(url);
+    }
+    const moduleExports = await this.loadBrowser(url);
+    return { moduleExports };
+  }
+
+  private getModuleExportsComponent(moduleExports: any, extension: IExtension, id: string, proxiedHead?: HTMLHeadElement) {
+    if (!moduleExports[id]) {
+      return () => ExtensionNoExportsView(extension.id, id);
+    }
+    if (this.appConfig.useExperimentalShadowDom) {
+      return (props) => getShadowRoot(moduleExports[id], extension, props, id, proxiedHead);
+    }
+    return moduleExports[id];
+  }
+
+  public async activeExtension(extension: IExtension) {
+    if (!this.appConfig.noExtHost) {
+      const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
+      await proxy.$activateExtension(extension.id);
+    }
+    const { extendConfig, packageJSON } = extension;
+
+    if (packageJSON.kaitianContributes && packageJSON.kaitianContributes.browserMain) {
+      const browserModuleUri = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(packageJSON.kaitianContributes.browserMain).toString()));
+      if (packageJSON.kaitianContributes.browserViews) {
+        const { browserViews } = packageJSON.kaitianContributes;
+        const { moduleExports, proxiedHead } = await this.getExtensionModuleExports(browserModuleUri.toString());
+        const viewsConfig = Object.keys(browserViews).reduce((config, location) => {
+          config[location] = {
+            type: this.getRegisterViewKind(location as KtViewLocation),
+            view: browserViews[location].view.map(({ id, ...other }) => ({
+              ...other,
+              id,
+              component: this.getModuleExportsComponent(moduleExports, extension, id, proxiedHead),
+            })),
+          };
+          return config;
+        }, {});
+        this.registerBrowserComponent(viewsConfig, this.extensionMap.get(extension.path)!);
+      }
+      return;
+    }
+
+    if (extendConfig) {
+      this.activateExtensionByDeprecatedExtendConfig(extension);
+    }
+  }
+
   private dollarProxy(proxy) {
     return new Proxy(proxy, {
       get: (obj, prop) => {
@@ -813,6 +836,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   private getExtensionExtendService(extension: IExtension, id: string) {
     const protocol = this.createExtensionExtendProtocol2(extension, id);
+    this.logger.log(`bind extend service for ${extension.id}:${id}`);
     return {
       extendProtocol: protocol,
       extendService: protocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER),
@@ -823,7 +847,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (browserExported.default) {
       browserExported = browserExported.default;
     }
-
     const contribution: IKaitianBrowserContributions = browserExported;
     extension.addDispose(this.injector.get(KaitianBrowserContributionRunner, [extension, contribution]).run({
       getExtensionExtendService: this.getExtensionExtendService.bind(this),
@@ -844,6 +867,24 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     initFn(_module, _exports, _require, _stylesCollection, proxiedDocument, proxiedWindow);
     return {
       moduleExports: _module.exports.default,
+      proxiedHead,
+    };
+  }
+
+  private async loadBrowserScriptByMockLoader2<T>(browerPath: string): Promise<{ moduleExports: T, proxiedHead: HTMLHeadElement }> {
+    const pendingFetch = await fetch(decodeURIComponent(browerPath));
+    const { _module, _exports, _require } = getMockAmdLoader<T>(this.injector);
+    const _stylesCollection = [];
+    const proxiedHead = document.createElement('head');
+    const proxiedDocument = createProxiedDocument(proxiedHead);
+    const proxiedWindow = createProxiedWindow(proxiedDocument, proxiedHead);
+
+    const initFn = new Function('module', 'exports', 'require', 'styles', 'document', 'window', await pendingFetch.text());
+
+    initFn(_module, _exports, _require, _stylesCollection, proxiedDocument, proxiedWindow);
+    return {
+      // @ts-ignore
+      moduleExports: _module.exports,
       proxiedHead,
     };
   }

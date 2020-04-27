@@ -1,5 +1,5 @@
 // import { VscodeContributionPoint, Contributes } from './common';
-import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath, ExtensionService } from '../../../../common';
+import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath, ExtensionService } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, URI, PreferenceService, parseWithComments, getLanguageId } from '@ali/ide-core-browser';
 // import { VSCodeExtensionService } from '../types';

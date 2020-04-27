@@ -5,7 +5,7 @@ import { TreeItemCollapsibleState, ICommand } from '../../../common/vscode/ext-t
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { TreeNode, MenuPath, Emitter, DisposableStore, toDisposable } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { ExtensionTabbarTreeView } from '../components';
+import { ExtensionTabbarTreeView } from '../../components';
 import { IIconService, IconType } from '@ali/ide-theme';
 import { SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from '@ali/ide-core-browser';
 

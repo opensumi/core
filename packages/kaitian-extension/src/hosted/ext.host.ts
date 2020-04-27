@@ -187,6 +187,13 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
   }
 
+  private containsKaitianContributes(extension: IExtension): boolean {
+    if (extension.packageJSON.kaitianContributes) {
+      return true;
+    }
+    return false;
+  }
+
   public isActivated(extensionId: string) {
     return this.extensionsActivator.has(extensionId);
   }
@@ -211,11 +218,13 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return;
     }
 
+    const isKaitianContributes = this.containsKaitianContributes(extension);
+
     const modulePath: string = extension.path;
     this.logger.debug(`${extension.name} - ${modulePath}`);
 
     this.logger.debug('kaitian exthost $activateExtension path', modulePath);
-    const extendProxy = this.getExtendModuleProxy(extension);
+    const extendProxy = this.getExtendModuleProxy(extension, isKaitianContributes);
 
     const context = await this.loadExtensionContext(extension, modulePath, this.storage, extendProxy);
 
@@ -248,19 +257,25 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       }
     }
 
-    if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
-
+    if (extension.packageJSON.kaitianContributes && extension.packageJSON.kaitianContributes.nodeMain) {
+      extendModule = getNodeRequire()(path.join(extension.path, extension.packageJSON.kaitianContributes.nodeMain));
+    } else if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
       extendModule = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
-      if (extendModule.activate) {
-        try {
-          const extendModuleExportsData = await extendModule.activate(context);
-          extendExports = extendModuleExportsData;
-        } catch (e) {
-          this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.name);
-          this.logger.log('activateExtension extension.extendConfig error ');
-          this.logger.log(e);
-          getDebugLogger().error(e);
-        }
+    }
+    if (!extendModule) {
+      this.logger.error(`Can not find extendModule ${extension.id}`);
+      return;
+    }
+    if (extendModule.activate) {
+      try {
+        const extendModuleExportsData = await extendModule.activate(context);
+        extendExports = extendModuleExportsData;
+      } catch (e) {
+        this.reporterService.point(REPORT_NAME.RUNTIME_ERROR_EXTENSION, extension.name);
+        this.logger.log('activateExtension extension.extendConfig error ');
+        this.logger.log(e);
+        getDebugLogger().error(`${extension.id}`);
+        getDebugLogger().error(e);
       }
     }
     this.extensionsActivator.set(id, new ActivatedExtension(
@@ -275,33 +290,47 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     ));
   }
 
-  private getExtendModuleProxy(extension: IExtension) {
-    const extendProxy = {};
-    if (
+  private getExtensionViewModuleProxy(extension: IExtension, viewsProxies: string[]) {
+    return viewsProxies.reduce((proxies, viewId) => {
+      proxies[viewId] = this.rpcProtocol.getProxy({
+        serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}:${viewId}`,
+      } as ProxyIdentifier<any>);
+
+      proxies[viewId] = new Proxy(proxies[viewId], {
+        get: (obj, prop) => {
+          if (typeof prop === 'symbol') {
+            return obj[prop];
+          }
+
+          return obj[`$${prop}`];
+        },
+      });
+      return proxies;
+    }, {});
+  }
+
+  private getExtendModuleProxy(extension: IExtension, isKaitianContributes: boolean) {
+    /**
+     * @example
+     * "kaitianContributes": {
+     *  "viewsProxies": ["ViewComponentID"],
+     * }
+     */
+    if (isKaitianContributes &&
+      extension.packageJSON.kaitianContributes &&
+      extension.packageJSON.kaitianContributes.viewsProxies
+    ) {
+      return this.getExtensionViewModuleProxy(extension, extension.packageJSON.kaitianContributes.viewsProxies);
+    } else if (
       extension.extendConfig &&
       extension.extendConfig.browser &&
       extension.extendConfig.browser.componentId
     ) {
-      const componentIdArr = extension.extendConfig.browser.componentId;
-      for (let i = 0, len = componentIdArr.length; i < len; i++) {
-        const id = componentIdArr[i];
-        extendProxy[id] = this.rpcProtocol.getProxy({
-          serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}:${id}`,
-        } as ProxyIdentifier<any>);
-
-        extendProxy[id] = new Proxy(extendProxy[id], {
-          get: (obj, prop) => {
-            if (typeof prop === 'symbol') {
-              return obj[prop];
-            }
-
-            return obj[`$${prop}`];
-          },
-        });
-      }
+      return this.getExtensionViewModuleProxy(extension, extension.extendConfig.browser.componentId);
+    } else {
+      this.logger.error(`Can not found any view component proxies config in extension ${extension.id}`);
+      return {};
     }
-
-    return extendProxy;
   }
 
   private registerExtendModuleService(exportsData, extension: IExtension) {
