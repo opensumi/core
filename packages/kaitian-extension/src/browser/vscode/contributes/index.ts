@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
 import { Disposable, ConstructorOf, PreferenceSchema, PreferenceSchemaProperties, ISchemaRegistry, localize, ILogger } from '@ali/ide-core-browser';
-import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../../common';
+import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../common';
 
 import { CommandsSchema, CommandsContributionPoint } from './commands';
 import { ThemesSchema, ThemesContributionPoint } from './theme';

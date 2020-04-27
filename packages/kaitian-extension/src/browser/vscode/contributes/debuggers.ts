@@ -1,4 +1,4 @@
-import { VSCodeContributePoint, Contributes } from '../../../../common';
+import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IJSONSchema, IJSONSchemaSnippet, deepClone, localize } from '@ali/ide-core-common';

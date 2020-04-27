@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as styles from './extension-view.module.less';
-import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
+import { TreeViewDataProviderMain } from '../vscode/api/main.thread.treeview';
 import { TreeNode, CommandService, ExpandableTreeNode, TreeViewActionTypes, isUndefined, CommandRegistry, Command, IDisposable, localize } from '@ali/ide-core-browser';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
@@ -13,7 +13,7 @@ import { useDisposable } from '@ali/ide-core-browser/lib/utils/react-hooks';
 
 import { ExtensionViewService } from './extension-view.service';
 import { ExtensionTreeViewModel, IExtensionTreeViewModel } from './extension-tree-view.model';
-import { TreeViewItem, TreeViewBaseOptions } from '../../../common/vscode';
+import { TreeViewItem, TreeViewBaseOptions } from '../../common/vscode';
 
 export interface ExtensionTabbarTreeViewProps {
   injector: Injector;

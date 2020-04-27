@@ -1,8 +1,8 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@ali/common-di';
 import { Disposable, ISchemaRegistry, localize, ILogger } from '@ali/ide-core-browser';
-import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../../common';
+import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 
-import { KtViewContributionPoint, KtViewsSchema } from './browserViews';
+import { KtViewContributionPoint, KtViewsSchema } from './browser-views';
 
 const CONTRIBUTES_SYMBOL = Symbol();
 

@@ -1,4 +1,4 @@
-import { VSCodeContributePoint, Contributes } from '../../../../common';
+import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionLoadingView } from '../../components';
 import { IMainLayoutService } from '@ali/ide-main-layout';

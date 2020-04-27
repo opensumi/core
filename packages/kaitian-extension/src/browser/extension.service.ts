@@ -88,8 +88,8 @@ import { viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 import { getShadowRoot } from './shadowRoot';
 import { createProxiedWindow, createProxiedDocument } from './proxies';
 import { getAMDDefine, getMockAmdLoader, getAMDRequire, getWorkerBootstrapUrl } from './loader';
-import { KtViewLocation } from './vscode/meta/kaitianContributes/browserViews';
-import { ExtensionNoExportsView } from './vscode/components';
+import { KtViewLocation } from './kaitian/contributes/browser-views';
+import { ExtensionNoExportsView } from './components';
 
 const LOAD_FAILED_CODE = 'load';
 

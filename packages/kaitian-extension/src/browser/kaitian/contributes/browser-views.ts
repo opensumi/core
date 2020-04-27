@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { VSCodeContributePoint, Contributes } from '../../../../common';
+import { VSCodeContributePoint, Contributes } from '../../../common';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { DisposableCollection } from '@ali/ide-core-node';
 import { getIcon } from '@ali/ide-core-browser';

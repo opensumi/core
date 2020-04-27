@@ -1,4 +1,4 @@
-import { VSCodeContributePoint, Contributes } from '../../../../common';
+import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { replaceLocalizePlaceholder, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties, IPreferenceSettingsService, PreferenceService } from '@ali/ide-core-browser';
 
