@@ -229,10 +229,13 @@ declare module 'kaitian' {
     componentProxy: T;
   }
 
+  export interface IReporterTimer {
+    timeEnd(msg?: string, extra?: any): number;
+  }
+
   export namespace reporter {
-    export function time(name: string): void;
-    export function timeEnd(name: string, msg?: string): void;
-    export function point(name: string, msg?: string): void;
+    export function time(name: string): IReporterTimer;
+    export function point(name: string, msg?: string, extra?: any): void;
   }
 
   export interface ITabbarHandle {
