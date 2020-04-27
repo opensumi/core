@@ -306,6 +306,7 @@ export class VSCodeContributeRunner extends Disposable {
   }
 
   public async run() {
+    // superSet merge here
     const contributes: ContributesSchema = this.extension.packageJSON.contributes;
     if (!contributes) {
       return;
