@@ -240,12 +240,16 @@ export interface CommentsPanelOptions {
 
 export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];
 
+export type FileUploadHandler = (text: string, files: FileList) => MaybePromise<string>;
+
 export const ICommentsFeatureRegistry = Symbol('ICommentsFeatureRegistry');
 export interface ICommentsFeatureRegistry {
+  registerFileUploadHandler(handler: FileUploadHandler): void;
   registerPanelOptions(options: CommentsPanelOptions): void;
   registerPanelTreeNodeHandler(handler: PanelTreeNodeHandler): void;
   getCommentsPanelOptions(): CommentsPanelOptions;
   getCommentsPanelTreeNodeHandlers(): PanelTreeNodeHandler[];
+  getFileUploadHandler(): FileUploadHandler | undefined;
 }
 
 export const CommentsContribution = Symbol('CommentsContribution');
