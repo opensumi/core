@@ -11,12 +11,10 @@
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "node --inspect -r ts-node/register ./entry/server.ts",
-    "build": "tnpm run build:pkg && tnpm run compile:worker && tnpm run compile:ext-host",
+    "build": "tnpm run build:pkg && tnpm run compile:worker",
     "build:pkg": "tsc --build ../../configs/ts/references/tsconfig.kaitian-extension.json",
     "compile:worker": "webpack --config webpack.config.worker.js --progress",
-    "compile:ext-host": "webpack --config webpack.config.ext-host.js --progress",
-    "watch:worker": "webpack -w --config webpack.config.worker.js --progress",
-    "watch:ext-host": "webpack -w --config webpack.config.ext-host.js --progress"
+    "watch:worker": "webpack -w --config webpack.config.worker.js --progress"
   },
   "repository": {
     "type": "git",

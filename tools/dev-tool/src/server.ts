@@ -29,6 +29,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
       path.join(__dirname, '../../../packages/kaitian-extension'),
     ],
     extLogServiceClassPath: path.join(__dirname, './mock-log-service.js'),
+    extHost: path.join(__dirname, '../../../packages/kaitian-extension/lib/hosted/ext.process.js') || process.env.EXTENSION_HOST_ENTRY,
     onDidCreateExtensionHostProcess: (extProcess) => {
       console.log('onDidCreateExtensionHostProcess extProcess.pid', extProcess.pid);
     },

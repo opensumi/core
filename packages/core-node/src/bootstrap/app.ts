@@ -97,6 +97,11 @@ interface Config {
    * 获取插件进程句柄方法
    */
   onDidCreateExtensionHostProcess?: (cp: cp.ChildProcess) => void;
+
+  /**
+   * 插件 Node 进程入口文件
+   */
+  extHost?: string;
 }
 
 export interface AppConfig extends Partial<Config> {
@@ -185,6 +190,7 @@ export class ServerApp implements IServerApp {
       useExperimentalEfsw: opts.useExperimentalEfsw,
       maxExtProcessCount: opts.maxExtProcessCount,
       onDidCreateExtensionHostProcess: opts.onDidCreateExtensionHostProcess,
+      extHost: process.env.EXTENSION_HOST_ENTRY || opts.extHost,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
