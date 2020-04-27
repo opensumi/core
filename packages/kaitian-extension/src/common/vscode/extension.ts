@@ -24,6 +24,7 @@ export interface IConfigurationProperty {
 }
 
 export interface IConfiguration {
+  title: string;
   properties: { [key: string]: IConfigurationProperty; };
 }
 
@@ -80,6 +81,7 @@ export interface IViewContainer {
 export interface IView {
   id: string;
   name: string;
+  when?: string;
 }
 
 export interface IColor {

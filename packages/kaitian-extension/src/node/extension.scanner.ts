@@ -3,7 +3,9 @@ import * as fs from 'fs-extra';
 import * as os from 'os';
 import { getDebugLogger, getNodeRequire } from '@ali/ide-core-node';
 import * as semver from 'semver';
+
 import { IExtensionMetaData, ExtraMetaData, getExtensionId } from '../common';
+import { mergeContributes } from './merge-contributes';
 
 function resolvePath(path) {
   if (path[0] === '~') {
@@ -162,11 +164,17 @@ export class ExtensionScanner {
       }
     }
 
+    // merge for `kaitianContributes` and `contributes`
+    packageJSON.contributes = mergeContributes(
+      packageJSON.kaitianContributes,
+      packageJSON.contributes,
+    );
+
     const extension = {
       // vscode 规范
       id: getExtensionId(`${packageJSON.publisher}.${packageJSON.name}`),
       // 使用插件市场的 id
-      // 从插件市场下载的插件命名规范为 ${publiser}.${name}-${version}
+      // 从插件市场下载的插件命名规范为 ${publisher}.${name}-${version}
       extensionId: this.getExtensionIdByExtensionPath(extensionPath, packageJSON.version),
       extendConfig,
       path: extensionPath,
@@ -182,7 +190,7 @@ export class ExtensionScanner {
   /**
    * 通过文件夹名获取插件 id
    * 文件夹名目前有两种：
-   *  1. ${publiser}.${name}-${version} (推荐)
+   *  1. ${publisher}.${name}-${version} (推荐)
    *  2. ${extensionId}-${name}-${version}
    *  以上两种
    * @param folderName
