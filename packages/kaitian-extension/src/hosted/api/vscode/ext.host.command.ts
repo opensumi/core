@@ -2,23 +2,30 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location, CodeLens, SymbolInformation } from '../../../common/vscode/ext-types';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
-import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription } from '../../../common/vscode';
+import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription, CommandHandler } from '../../../common/vscode';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
-import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
-import { ILogger, getDebugLogger, revive, toDisposable, DisposableStore, isNonEmptyArray } from '@ali/ide-core-common';
+import { validateConstraint, isFunction } from '@ali/ide-core-common/lib/utils/types';
+import { ILogger, getDebugLogger, revive, toDisposable, DisposableStore, isNonEmptyArray, IExtensionInfo } from '@ali/ide-core-common';
 import { ExtensionHostEditorService } from './editor/editor.host';
 import { ObjectIdentifier } from './language/util';
 import { CommandDto } from '../../../common/vscode/scm';
 import * as modes from '../../../common/vscode/model.api';
 import Uri from 'vscode-uri';
+import { IExtension } from '../../../common';
 
-export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService) {
+export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService, extension: IExtension) {
   const commands: typeof vscode.commands = {
     registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any): Disposable {
       return extHostCommands.registerCommand(true, id, command, thisArgs);
     },
     executeCommand<T>(id: string, ...args: any[]): Thenable<T | undefined> {
-      return extHostCommands.executeCommand<T>(id, ...args);
+      const extensionInfo: IExtensionInfo = {
+        id: extension.id,
+        extensionId: extension.extensionId,
+        isBuiltin: extension.isBuiltin,
+      };
+
+      return extHostCommands.executeCommandWithExtensionInfo<T>(id, extensionInfo, ...args);
     },
     getCommands(filterInternal: boolean = false): Thenable<string[]> {
       return extHostCommands.getCommands(filterInternal);
@@ -65,7 +72,7 @@ export class ExtHostCommands implements IExtHostCommands {
   protected readonly proxy: IMainThreadCommands;
   protected readonly rpcProtocol: IRPCProtocol;
   protected readonly logger: ILogger = getDebugLogger();
-  protected readonly commands = new Map<string, any & { handler: Handler }>();
+  protected readonly commands = new Map<string, CommandHandler<any>>();
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
   public converter: CommandsConverter;
 
@@ -140,10 +147,12 @@ export class ExtHostCommands implements IExtHostCommands {
   }
 
   private register(id: string, handler: (...args: any[]) => any, description?: ICommandHandlerDescription): Disposable {
-    return this.registerCommand(false, id, handler, this, description);
+    return this.registerCommand(false, id, { handler, thisArg: this, description});
   }
 
-  registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: ICommandHandlerDescription): Disposable {
+  registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: ICommandHandlerDescription): Disposable;
+  registerCommand(global: boolean, id: string, handler: CommandHandler): Disposable;
+  registerCommand(global: boolean, id: string, handler: Handler | CommandHandler, thisArg?: any, description?: ICommandHandlerDescription): Disposable {
     this.logger.log('ExtHostCommands#registerCommand', id);
 
     if (!id.trim().length) {
@@ -154,7 +163,15 @@ export class ExtHostCommands implements IExtHostCommands {
       throw new Error(`command '${id}' already exists`);
     }
 
-    this.commands.set(id, { handler, thisArg, description });
+    if (isFunction(handler)) {
+      this.commands.set(id, {
+        handler,
+        thisArg,
+        description,
+      });
+    } else {
+      this.commands.set(id, handler);
+    }
     if (global) {
       this.proxy.$registerCommand(id);
     }
@@ -179,27 +196,47 @@ export class ExtHostCommands implements IExtHostCommands {
     }
   }
 
+  private convertArguments(args: any[]) {
+    return cloneAndChange(args, (value) => {
+      if (value instanceof Position) {
+        return extHostTypeConverter.fromPosition(value);
+      }
+      if (value instanceof Range) {
+        return extHostTypeConverter.fromRange(value);
+      }
+      if (value instanceof Location) {
+        return extHostTypeConverter.fromLocation(value);
+      }
+      if (!Array.isArray(value)) {
+        return value;
+      }
+    });
+  }
+
+  async executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[] ): Promise<T | undefined> {
+    if (this.commands.has(id)) {
+      const isPermitted = this.isPermittedCommand(id, extensionInfo, ...args);
+      if (!isPermitted) {
+        throw new Error(`Extension ${extensionInfo.id} has not permit to execute ${id}`);
+      }
+      return this.executeLocalCommand<T>(id, args);
+    } else {
+      // automagically convert some argument types
+      args = this.convertArguments(args);
+
+      return this.proxy.$executeCommandWithExtensionInfo<T>(id, extensionInfo, ...args)
+        .then((result) => revive(result, 0));
+    }
+  }
+
   async executeCommand<T>(id: string, ...args: any[]): Promise<T> {
     this.logger.log('ExtHostCommands#executeCommand', id, args);
 
     if (this.commands.has(id)) {
       return this.executeLocalCommand<T>(id, args);
     } else {
-      // automatically convert some argument types
-      args = cloneAndChange(args, (value) => {
-        if (value instanceof Position) {
-          return extHostTypeConverter.fromPosition(value);
-        }
-        if (value instanceof Range) {
-          return extHostTypeConverter.fromRange(value);
-        }
-        if (value instanceof Location) {
-          return extHostTypeConverter.fromLocation(value);
-        }
-        if (!Array.isArray(value)) {
-          return value;
-        }
-      });
+      // automagically convert some argument types
+      args = this.convertArguments(args);
 
       return this.proxy.$executeCommand<T>(id, ...args)
         .then((result) => revive(result, 0));
@@ -277,7 +314,12 @@ export class ExtHostCommands implements IExtHostCommands {
   }
 
   private executeLocalCommand<T>(id: string, args: any[]): Promise<T> {
-    const { handler, thisArg, description } = this.commands.get(id);
+    const commandHandler = this.commands.get(id);
+    if (!commandHandler) {
+      throw new Error(`Command ${id} no handler`);
+    }
+    const { handler, thisArg, description } = commandHandler;
+
     if (description && description.args) {
       for (let i = 0; i < description.args.length; i++) {
         try {
@@ -320,6 +362,16 @@ export class ExtHostCommands implements IExtHostCommands {
 
   registerArgumentProcessor(processor: ArgumentProcessor): void {
     this.argumentProcessors.push(processor);
+  }
+
+  private isPermittedCommand(commandId: string, extensionInfo: IExtensionInfo, ...args: any[]): boolean {
+    const commandHandler = this.commands.get(commandId);
+    if (!commandHandler) {
+      // 说明不是插件进程命令，是主进程命令
+      return true;
+    }
+    const { isPermitted } = commandHandler;
+    return !isPermitted || isPermitted(extensionInfo, ...args);
   }
 
 }

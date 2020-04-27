@@ -98,7 +98,7 @@ export function createApiFactory(
 
   return (extension: IExtension) => {
     return {
-      commands: createCommandsApiFactory(extHostCommands, extHostEditors),
+      commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
       window: createWindowApiFactory(
         extension, extHostEditors, extHostMessage, extHostWebview,
         extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,

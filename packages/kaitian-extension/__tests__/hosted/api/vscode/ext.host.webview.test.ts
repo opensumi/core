@@ -1,5 +1,5 @@
 import { Uri } from '@ali/ide-core-common';
-import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MainThreadAPIIdentifier, IMainThreadWebview } from '@ali/ide-kaitian-extension/lib/common/vscode';
 import { ExtHostWebviewService } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.api.webview';
 import { KaitianExtHostWebview } from '@ali/ide-kaitian-extension/lib/hosted/api/kaitian/ext.host.webview';

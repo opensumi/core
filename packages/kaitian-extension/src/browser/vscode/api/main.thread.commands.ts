@@ -4,8 +4,7 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@ali/ide-core-browser';
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { fromPosition } from '../../../common/vscode/converter';
-import { URI, isNonEmptyArray, Disposable } from '@ali/ide-core-common';
-import { ExtensionService } from '../../../common';
+import { URI, isNonEmptyArray, Disposable, IExtensionInfo } from '@ali/ide-core-common';
 
 export interface IExtCommandHandler extends IDisposable {
   execute: (...args: any[]) => Promise<any>;
@@ -121,6 +120,14 @@ export class MainThreadCommands implements IMainThreadCommands {
       args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
       return this.proxy.$executeContributedCommand(id, ...args);
     }
+  }
+
+  $executeCommandWithExtensionInfo<T>(id: string, extensionInfo: IExtensionInfo, ...args: any[]): Promise<T | undefined> {
+    const isPermitted = this.commandRegistry.isPermittedCommand(id, extensionInfo, ...args);
+    if (!isPermitted) {
+      throw new Error(`Extension ${extensionInfo.id} has not permit to execute ${id}`);
+    }
+    return this.$executeCommand<T>(id, ...args);
   }
 
   $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
