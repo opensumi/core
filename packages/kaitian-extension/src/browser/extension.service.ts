@@ -731,8 +731,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async activeExtension(extension: IExtension) {
-    const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
-    await proxy.$activateExtension(extension.id);
+    if (!this.appConfig.noExtHost) {
+      const proxy = await this.getProxy<IExtensionHostService>(ExtHostAPIIdentifier.ExtHostExtensionService);
+      await proxy.$activateExtension(extension.id);
+    }
     const { extendConfig, packageJSON } = extension;
 
     if (packageJSON.kaitianContributes && packageJSON.kaitianContributes.browserMain) {
