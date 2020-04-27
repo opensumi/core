@@ -68,7 +68,7 @@ export class FileTreeService extends Tree {
 
   private roots: FileStat[] | null;
 
-  private isCompactMode: boolean;
+  public isCompactMode: boolean;
 
   @observable
   // 筛选模式开关
@@ -133,7 +133,7 @@ export class FileTreeService extends Tree {
           ...this.workspaceService.workspace,
           isDirectory: true,
         } as FileStat;
-        const root = new Directory(this as ITree, undefined, rootUri, rootName, fileStat, this.fileTreeAPI.getReadableTooltip(rootUri));
+        const root = new Directory(this, undefined, rootUri, rootName, fileStat, this.fileTreeAPI.getReadableTooltip(rootUri));
         // 创建Root节点并引入root文件目录
         this.cacheNodes([root]);
         this.root = root;
@@ -169,7 +169,7 @@ export class FileTreeService extends Tree {
         const childrenParentStat = data.filestat;
         // 需要排除软连接下的直接空目录折叠，否则会导致路径计算错误
         // 但软连接目录下的其他目录不受影响
-        if (this.isCompactMode && !parent.filestat.isSymbolicLink) {
+        if (this.isCompactMode && !isCompressedFocused && !parent.filestat.isSymbolicLink) {
           const parentURI = new URI(childrenParentStat.uri);
           const parentName = parent.uri.parent.relative(parentURI)?.toString();
           if (parentName && parentName !== parent.name) {
@@ -346,7 +346,8 @@ export class FileTreeService extends Tree {
         }
         if (newParentPath) {
           const newParentNode = this.getNodeByPathOrUri(newParentPath);
-          if (!!newParentNode) {
+          const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
+          if (!!newParentNode && isCompressedFocused) {
             this.refresh(newParentNode as Directory);
           }
         }
@@ -374,7 +375,7 @@ export class FileTreeService extends Tree {
   private async addAffectedNodes(uris: URI[], changes: FileChange[]) {
     const nodes: any[] = [];
     for (const uri of uris) {
-      const parent = this.getNodeByPathOrUri(uri.parent.toString());
+      const parent = this.getNodeByPathOrUri(uri.parent);
       if (!this.isCompactMode) {
         nodes.push({
           parent,
@@ -393,8 +394,12 @@ export class FileTreeService extends Tree {
           }
         }
       } else {
-        if (parent && parent.parent) {
-          await this.refresh(parent.parent as Directory);
+        const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
+        const node = this.getNodeByPathOrUri(uri);
+        if (node && this.root?.isItemVisibleAtSurface(node)) {
+          continue ;
+        } else if (parent && isCompressedFocused) {
+          this.refresh(parent as Directory);
         }
       }
     }
@@ -406,11 +411,11 @@ export class FileTreeService extends Tree {
     const node = this.getNodeByPathOrUri(path);
     if (node && node.parent) {
       this.removeNodeCacheByPath(node.path);
-      this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed, path: node.path });
       // 刷新父节点目录
       if (this.isCompactMode) {
         this.refresh(node.parent as Directory);
       }
+      this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed, path: node.path });
     }
   }
 
@@ -427,11 +432,7 @@ export class FileTreeService extends Tree {
       if (!node?.parent || this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
         continue;
       }
-      this.removeNodeCacheByPath(node!.path);
-      this.dispatchWatchEvent(node!.parent!.path, { type: WatchEvent.Removed, path: node!.path });
-      if (this.isCompactMode && (node.parent as Directory).expanded) {
-        this.refresh(node.parent as Directory);
-      }
+      this.deleteAffectedNodeByPath(node.path);
     }
     return changes.filter((change) => change.type !== FileChangeType.DELETED);
   }
@@ -462,7 +463,7 @@ export class FileTreeService extends Tree {
     return nodes;
   }
 
-  private cacheNodes(nodes: (File | Directory)[]) {
+  cacheNodes(nodes: (File | Directory)[]) {
     // 切换工作区的时候需清理
     nodes.map((node) => {
       // node.path 不会重复，node.uri在软连接情况下可能会重复
@@ -470,7 +471,7 @@ export class FileTreeService extends Tree {
     });
   }
 
-  private removeNodeCacheByPath(path: string) {
+  removeNodeCacheByPath(path: string) {
     if (this._cacheNodesMap.has(path)) {
       this._cacheNodesMap.delete(path);
     }

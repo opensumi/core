@@ -1,21 +1,26 @@
 import { URI } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 import { TreeNode, CompositeTreeNode, ITree } from '@ali/ide-components';
+import { FileTreeService } from './file-tree.service';
 
 export class Directory extends CompositeTreeNode {
+
+  private fileTreeService: FileTreeService;
+
   constructor(
-    tree: ITree,
+    tree: FileTreeService,
     public readonly parent: CompositeTreeNode | undefined,
     public uri: URI = new URI(''),
     public name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
   ) {
-    super(tree, parent);
+    super(tree as ITree, parent);
     if (!parent) {
       // 根节点默认展开节点
       this.setExpanded();
     }
+    this.fileTreeService = tree;
   }
 
   updateName(name: string) {
@@ -33,18 +38,26 @@ export class Directory extends CompositeTreeNode {
   updateToolTip(tooltip: string) {
     this.tooltip = tooltip;
   }
+
+  dispose() {
+    super.dispose();
+    this.fileTreeService.removeNodeCacheByPath(this.path);
+  }
 }
 
 export class File extends TreeNode {
+  private fileTreeService: FileTreeService;
+
   constructor(
-    tree: ITree,
+    tree: FileTreeService,
     public readonly parent: CompositeTreeNode | undefined,
     public uri: URI = new URI(''),
     public name: string = '',
     public filestat: FileStat = { children: [], isDirectory: false, uri: '', lastModification: 0 },
     public tooltip: string,
   ) {
-    super(tree, parent);
+    super(tree as ITree, parent);
+    this.fileTreeService = tree;
   }
 
   updateName(name: string) {
@@ -61,5 +74,10 @@ export class File extends TreeNode {
 
   updateToolTip(tooltip: string) {
     this.tooltip = tooltip;
+  }
+
+  dispose() {
+    super.dispose();
+    this.fileTreeService.removeNodeCacheByPath(this.path);
   }
 }

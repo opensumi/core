@@ -214,13 +214,13 @@ export class FileTreeModelService {
         ...currentTreeSnapshot,
       });
     }));
-    this.disposableCollection.push(this.fileTreeService.onNodeRefreshed(() => {
-      // 尝试定位上次选中的节点
-      const currentEditor = this.editorService.currentEditor;
-      if (currentEditor && currentEditor.currentUri) {
-        this.location(currentEditor.currentUri);
-      } else if (this.selectedFiles.length > 0) {
-        this.location(this.selectedFiles[0].uri);
+    this.disposableCollection.push(this.fileTreeService.onNodeRefreshed((node) => {
+      // 当无选中节点时，选中编辑器中激活的节点
+      if (Directory.isRoot(node)) {
+        const currentEditor = this.editorService.currentEditor;
+        if (currentEditor && currentEditor.currentUri) {
+          this.location(currentEditor.currentUri);
+        }
       }
     }));
     this.disposableCollection.push(this.labelService.onDidChange(() => {
@@ -775,8 +775,7 @@ export class FileTreeModelService {
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
           // 文件夹首次创建需要将焦点设到新建的文件夹上
           Event.once(this.treeModel.onChange)(async () => {
-            await this.fileTreeHandle.ensureVisible(addNode);
-            this.activeFileDecoration(addNode);
+            this.location(addNode.uri);
           });
         }
       }
@@ -820,7 +819,18 @@ export class FileTreeModelService {
       // 在焦点元素销毁时，electron与chrome web上处理焦点的方式略有不同
       // 这里需要明确将FileTree的explorerFocused设置为正确的false
       this.fileTreeContextKey.explorerFocused.set(false);
+
     };
+
+    const handleCancel = () => {
+      this.fileTreeContextKey.explorerFocused.set(false);
+      if (this.fileTreeService.isCompactMode) {
+        if (promptHandle instanceof NewPromptHandle) {
+          this.fileTreeService.refresh(promptHandle.parent as Directory);
+        }
+      }
+    };
+
     const handleChange = (currentValue) => {
       const validateMessage = this.validateFileName(promptHandle, currentValue);
       if (!!validateMessage) {
@@ -838,7 +848,7 @@ export class FileTreeModelService {
       promptHandle.onFocus(handleFocus);
       promptHandle.onChange(handleChange);
       promptHandle.onDestroy(handleDestroy);
-      promptHandle.onCancel(handleDestroy);
+      promptHandle.onCancel(handleCancel);
     }
   }
 
@@ -865,6 +875,8 @@ export class FileTreeModelService {
       if (!relativeName) {
         return;
       }
+      // Re-cache TreeNode
+      this.fileTreeService.removeNodeCacheByPath(targetNode.path);
       // 更新目标节点信息
       targetNode.updateName(relativeName!.toString());
       targetNode.updateURI(newTargetUri);
@@ -873,6 +885,7 @@ export class FileTreeModelService {
         ...targetNode.filestat,
         uri: newTargetUri.toString(),
       });
+      this.fileTreeService.cacheNodes([targetNode as Directory]);
       await (targetNode as Directory).forceReloadChildrenQuiet();
     }
     return targetNode;
@@ -919,7 +932,7 @@ export class FileTreeModelService {
     }
     // 通知视图更新
     this.treeModel.dispatchChange();
-    const files: File[] = [];
+    const files: (File | Directory)[] = [];
     for (const uri of from) {
       const file = this.fileTreeService.getNodeByPathOrUri(uri);
       if (!!file) {
@@ -993,7 +1006,7 @@ export class FileTreeModelService {
         this.cutDecoration.removeTarget(file);
       });
     }
-    const files: File[] = [];
+    const files: (File | Directory)[] = [];
     for (const uri of from) {
       const file = this.fileTreeService.getNodeByPathOrUri(uri);
       if (!!file) {
@@ -1024,9 +1037,10 @@ export class FileTreeModelService {
         return;
       }
       await this.fileTreeService.flushEventQueue();
-      const node = await this.fileTreeHandle.ensureVisible(path);
+      let node = this.fileTreeService.getNodeByPathOrUri(path);
+      node = await this.fileTreeHandle.ensureVisible(node || path) as File;
       if (node) {
-        this.activeFileDecoration(node as File);
+        this.activeFileDecoration(node);
       }
     }
   }

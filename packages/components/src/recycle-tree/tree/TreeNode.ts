@@ -822,7 +822,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     let preItem: CompositeTreeNode;
     let name;
     while (name = pathFlag.shift()) {
-      const item = next!.find((c) => c.name === name);
+      const item = next!.find((c) => c.name.indexOf(name) >= 0);
       if (item && pathFlag.length === 0) {
         return item;
       }
@@ -831,6 +831,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         return preItem!;
       }
       if (CompositeTreeNode.is(item)) {
+        const isCompactName = item.name.indexOf(Path.separator) > 0;
+        if (isCompactName) {
+          const compactPath = splitPath(item.name);
+          while (compactPath.length > 1) {
+            compactPath.shift();
+            pathFlag.shift();
+          }
+        }
         if (!(item as CompositeTreeNode)._children) {
           await (item as CompositeTreeNode).hardReloadChildren();
         }
