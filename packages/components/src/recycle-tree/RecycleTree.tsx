@@ -82,7 +82,7 @@ export interface IRecycleTreeHandle {
   // 新建可折叠节点
   promptNewCompositeTreeNode(at: string | CompositeTreeNode): Promise<NewPromptHandle>;
   // 重命名节点
-  promptRename(pathOrTreeNode: string | TreeNode | CompositeTreeNode): Promise<RenamePromptHandle>;
+  promptRename(pathOrTreeNode: string | TreeNode | CompositeTreeNode, defaultName?: string): Promise<RenamePromptHandle>;
   // 展开节点
   expandNode(pathOrTreeNode: string | CompositeTreeNode): Promise<void>;
   // 折叠节点
@@ -318,10 +318,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     } else {
       await this.batchUpdate();
     }
-    // 在model收到change事件后再调用scrollToItem方法可确保新建位置的准确性
-    Event.once( this.props.model.onChange)(() => {
+    if (this.newPromptInsertionIndex >= 0) {
+      // 说明已在输入框已在可视区域
       this.listRef.current.scrollToItem(this.newPromptInsertionIndex);
-    });
+    } else {
+      this.tryScrollIntoViewWhileStable(this.promptHandle as any);
+    }
+
     return this.promptHandle as NewPromptHandle;
   }
 
@@ -334,7 +337,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     return this.promptNew(pathOrTreeNode, TreeNodeType.CompositeTreeNode);
   }
 
-  private promptRename = async (pathOrTreeNode: string | TreeNode): Promise<RenamePromptHandle> => {
+  private promptRename = async (pathOrTreeNode: string | TreeNode, defaultName?: string): Promise<RenamePromptHandle> => {
     const { root } = this.props.model;
     const node = (typeof pathOrTreeNode === 'string'
       ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode)
@@ -343,7 +346,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (!TreeNode.is(node) || CompositeTreeNode.isRoot(node)) {
       throw new TypeError(`Cannot rename object of type ${typeof node}`);
     }
-    const promptHandle = new RenamePromptHandle(node.name, node);
+    const promptHandle = new RenamePromptHandle(defaultName || node.name, node);
     this.promptHandle = promptHandle;
     this.promptTargetID = node.id;
     if (!root.isItemVisibleAtSurface(node)) {
@@ -500,10 +503,12 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       } else {
         const item = root.getTreeNodeAtIndex(index);
         // 检查是否为重命名节点
-        if (item && item.id === this.promptTargetID &&
-          this.promptHandle && this.promptHandle.constructor === RenamePromptHandle &&
-          (this.promptHandle as RenamePromptHandle).originalFileName === item.name &&
-          !this.promptHandle.destroyed) {
+        if (item &&
+            item.id === this.promptTargetID &&
+            this.promptHandle &&
+            this.promptHandle.constructor === RenamePromptHandle &&
+            !this.promptHandle.destroyed
+          ) {
           cached = {
             itemType: TreeNodeType.RenamePrompt,
             item: this.promptHandle as RenamePromptHandle,

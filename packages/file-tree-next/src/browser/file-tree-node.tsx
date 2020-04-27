@@ -45,7 +45,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
   const isRenamePrompt = itemType === TreeNodeType.RenamePrompt;
   const isNewPrompt = itemType === TreeNodeType.NewPrompt;
   const isPrompt = isRenamePrompt || isNewPrompt;
-  const isCompactName = item.name.indexOf(Path.separator) >= 0;
+  const isCompactName = !isPrompt && item.name.indexOf(Path.separator) >= 0;
 
   const decoration = isPrompt ? null : decorationService.getDecoration(item.uri, Directory.is(item));
 
@@ -78,7 +78,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         return;
     }
     if (itemType ===  TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-        onContextMenu(ev, item as TreeNode, itemType);
+      onContextMenu(ev, item as TreeNode, itemType);
     }
   };
 

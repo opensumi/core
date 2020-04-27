@@ -690,9 +690,16 @@ export class FileTreeModelService {
       this.validateMessage = undefined;
       if (promptHandle instanceof RenamePromptHandle) {
         const target = promptHandle.target as (File | Directory);
-        const from = target.uri;
-        const to = target.uri.parent.resolve(newName);
+        let from = target.uri;
+        const isCompactNode = target.name.indexOf(Path.separator) > 0;
         promptHandle.addAddonAfter('loading_indicator');
+        if (isCompactNode) {
+          // 查找正确的来源节点路径
+          while (from.displayName !== promptHandle.originalFileName) {
+            from = from.parent;
+          }
+        }
+        const to = from.parent.resolve(newName);
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
         promptHandle.removeAddonAfter();
         if (!!error) {
@@ -801,50 +808,50 @@ export class FileTreeModelService {
 
   async newFilePrompt(uri: URI) {
     await this.fileTreeService.flushEventQueue();
-    let targetPath: string | URI | undefined;
+    let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
     if (this.focusedFile) {
-      targetPath = this.focusedFile.path;
+      targetNode = this.focusedFile;
     } else if (this.selectedFiles.length > 0) {
-      targetPath = this.selectedFiles[this.selectedFiles.length - 1].path;
+      targetNode = this.selectedFiles[this.selectedFiles.length - 1];
     } else {
-      targetPath = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+      targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
     }
-    if (targetPath) {
-      this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(targetPath));
+    if (targetNode) {
+      this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(targetNode as Directory));
     }
   }
 
   async newDirectoryPrompt(uri: URI) {
     await this.fileTreeService.flushEventQueue();
-    let targetPath: string | URI | undefined;
+    let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
     if (this.focusedFile) {
-      targetPath = this.focusedFile.path;
+      targetNode = this.focusedFile;
     } else if (this.selectedFiles.length > 0) {
       // 该位置为最后一个失去焦点的节点
-      targetPath = this.selectedFiles[this.selectedFiles.length - 1].path;
+      targetNode = this.selectedFiles[this.selectedFiles.length - 1];
     } else {
-      targetPath = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+      targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
     }
-    if (targetPath) {
-      this.proxyPrompt(await this.fileTreeHandle.promptNewCompositeTreeNode(targetPath));
+    if (targetNode) {
+      this.proxyPrompt(await this.fileTreeHandle.promptNewCompositeTreeNode(targetNode as Directory));
     }
   }
 
   async renamePrompt(uri: URI) {
     await this.fileTreeService.flushEventQueue();
-    let targetPath: string | URI | undefined;
+    let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
     if (this.focusedFile) {
-      targetPath = this.focusedFile.path;
+      targetNode = this.focusedFile;
     } else if (this.selectedFiles.length > 0) {
-      targetPath = this.selectedFiles[this.selectedFiles.length - 1].path;
+      targetNode = this.selectedFiles[this.selectedFiles.length - 1];
     } else {
-      targetPath = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+      targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
     }
-    if (targetPath) {
-      this.proxyPrompt(await this.fileTreeHandle.promptRename(targetPath));
+    if (targetNode) {
+      this.proxyPrompt(await this.fileTreeHandle.promptRename(targetNode, uri.displayName));
     }
   }
 
