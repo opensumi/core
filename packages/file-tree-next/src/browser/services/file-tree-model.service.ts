@@ -432,12 +432,45 @@ export class FileTreeModelService {
     });
     const menuNodes = menus.getMergedMenuNodes();
     menus.dispose();
+    // 更新压缩节点对应的Contextkey
+    this.setExplorerCompressedContextKey(node, activeUri);
 
     this.ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes,
       args: [activeUri ? activeUri : node.uri, nodes.map((node) => node.uri)],
     });
+  }
+
+  setExplorerCompressedContextKey(node: File | Directory, activeUri?: URI) {
+    if (activeUri) {
+      this.fileTreeContextKey.explorerCompressedFocusContext.set(true);
+      const compressedNamePath = new Path(node.name);
+      if (compressedNamePath.name === activeUri.displayName) {
+        // 压缩节点末尾位置选中
+        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(true);
+        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
+      } else if (compressedNamePath.root && compressedNamePath.root.name === activeUri.displayName) {
+        // 压缩节点开头位置选中
+        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
+        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(true);
+      } else {
+        // 压缩节点中间位置选中
+        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
+        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
+      }
+    } else {
+      // 默认情况下，如果一个节点为压缩节点，末尾位置选中
+      if (node.name.indexOf(Path.separator) > 0) {
+        this.fileTreeContextKey.explorerCompressedFocusContext.set(true);
+        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
+        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(true);
+      } else {
+        this.fileTreeContextKey.explorerCompressedFocusContext.set(false);
+        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
+        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
+      }
+    }
   }
 
   handleTreeHandler(handle: IFileTreeHandle) {
@@ -489,6 +522,9 @@ export class FileTreeModelService {
   }
 
   handleItemClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+    // 更新压缩节点对应的Contextkey
+    this.setExplorerCompressedContextKey(item, activeUri);
+
     this._isMutiSelected = false;
     this.clickTimes++;
     // 单选操作默认先更新选中状态
@@ -806,7 +842,7 @@ export class FileTreeModelService {
     }
   }
 
-  async newFilePrompt(uri: URI) {
+  private async getPromptTarget(uri: URI) {
     await this.fileTreeService.flushEventQueue();
     let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
@@ -817,23 +853,40 @@ export class FileTreeModelService {
     } else {
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
     }
+    if (targetNode.uri.displayName !== uri.displayName) {
+      // 说明当前在压缩节点的非末尾路径上触发的新建事件， 如 a/b 上右键 a 产生的新建事件
+      let newTargetPath = new Path(targetNode.path);
+      let newTargetUri = targetNode.uri;
+      while (newTargetPath.name !== uri.displayName) {
+        newTargetPath = newTargetPath.dir;
+        newTargetUri = newTargetUri.parent;
+      }
+      const relativeName = new Path(targetNode.parent?.path!).relative(newTargetPath);
+      if (!relativeName) {
+        return;
+      }
+      // 更新目标节点信息
+      targetNode.updateName(relativeName!.toString());
+      targetNode.updateURI(newTargetUri);
+      targetNode.updateToolTip(this.fileTreeAPI.getReadableTooltip(newTargetUri));
+      targetNode.updateFileStat({
+        ...targetNode.filestat,
+        uri: newTargetUri.toString(),
+      });
+      await (targetNode as Directory).forceReloadChildrenQuiet();
+    }
+    return targetNode;
+  }
+
+  async newFilePrompt(uri: URI) {
+    const targetNode = await this.getPromptTarget(uri);
     if (targetNode) {
       this.proxyPrompt(await this.fileTreeHandle.promptNewTreeNode(targetNode as Directory));
     }
   }
 
   async newDirectoryPrompt(uri: URI) {
-    await this.fileTreeService.flushEventQueue();
-    let targetNode: File | Directory;
-    // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
-    if (this.focusedFile) {
-      targetNode = this.focusedFile;
-    } else if (this.selectedFiles.length > 0) {
-      // 该位置为最后一个失去焦点的节点
-      targetNode = this.selectedFiles[this.selectedFiles.length - 1];
-    } else {
-      targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
-    }
+    const targetNode = await this.getPromptTarget(uri);
     if (targetNode) {
       this.proxyPrompt(await this.fileTreeHandle.promptNewCompositeTreeNode(targetNode as Directory));
     }

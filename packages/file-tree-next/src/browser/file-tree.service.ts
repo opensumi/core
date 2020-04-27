@@ -162,7 +162,9 @@ export class FileTreeService extends Tree {
       }
       // 加载子目录
       if (parent.uri) {
-        const data = await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent, this.isCompactMode);
+        // 压缩节点模式需要在没有压缩节点焦点的情况下才启用
+        const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
+        const data = await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent, !isCompressedFocused && this.isCompactMode);
         children = data.children;
         const childrenParentStat = data.filestat;
         // 需要排除软连接下的直接空目录折叠，否则会导致路径计算错误
