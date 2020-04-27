@@ -303,9 +303,9 @@ export const corePreferenceSchema: PreferenceSchema = {
       description: '%preference.explorer.fileTree.indent%',
     },
     'explorer.compactFolders': {
-      'type': 'boolean',
-      'description': '%preference.explorer.compactFolders%',
-      'default': true,
+      type: 'boolean',
+      description: '%preference.explorer.compactFolders%',
+      default: true,
     },
     'debug.toolbar.float': {
       type: 'boolean',

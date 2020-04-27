@@ -61,10 +61,14 @@ export class FileTreeService extends Tree {
 
   private _fileServiceWatchers: Map<string, IFileServiceWatcher> = new Map();
 
+  // 用于记录文件系统Change事件的定时器
+  private eventFlushTimeout: number;
   // 文件系统Change事件队列
   private changeEventDispatchQueue: string[] = [];
 
   private roots: FileStat[] | null;
+
+  private isCompactMode: boolean;
 
   @observable
   // 筛选模式开关
@@ -85,6 +89,7 @@ export class FileTreeService extends Tree {
 
     this.baseIndent = this.corePreferences['explorer.fileTree.baseIndent'] || 8;
     this.indent = this.corePreferences['explorer.fileTree.indent'] || 8;
+    this.isCompactMode = this.corePreferences['explorer.compactFolders'] as boolean;
 
     this.toDispose.push(this.workspaceService.onWorkspaceChanged(async () => {
       this.dispose();
@@ -107,13 +112,13 @@ export class FileTreeService extends Tree {
           this.indent = change.newValue as number || 8;
         });
       } else if (change.preferenceName === 'explorer.compactFolders') {
+        this.isCompactMode = change.newValue as boolean;
         this.refresh();
       }
     }));
   }
 
   async resolveChildren(parent?: Directory) {
-    const isCompactFoldersModel = this.corePreferences['explorer.compactFolders'];
     let children: (File | Directory)[] = [];
     if (!parent) {
       // 加载根目录
@@ -157,12 +162,12 @@ export class FileTreeService extends Tree {
       }
       // 加载子目录
       if (parent.uri) {
-        const data =  await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent, isCompactFoldersModel);
+        const data = await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent, this.isCompactMode);
         children = data.children;
         const childrenParentStat = data.filestat;
         // 需要排除软连接下的直接空目录折叠，否则会导致路径计算错误
         // 但软连接目录下的其他目录不受影响
-        if (isCompactFoldersModel && !parent.filestat.isSymbolicLink) {
+        if (this.isCompactMode && !parent.filestat.isSymbolicLink) {
           const parentURI = new URI(childrenParentStat.uri);
           const parentName = parent.uri.parent.relative(parentURI)?.toString();
           if (parentName && parentName !== parent.name) {
@@ -248,14 +253,14 @@ export class FileTreeService extends Tree {
         target = deleteOrAddChanges.find((change) => change.type === FileChangeType.ADDED && new URI(change.uri).displayName === new URI(source.uri).displayName);
         if (target) {
           deleteOrAddChanges.splice(deleteOrAddChanges.indexOf(target), 1);
-          moveChange.push({source, target});
+          moveChange.push({ source, target });
         }
       } else if (change?.type === FileChangeType.ADDED) {
         target = change;
         source = deleteOrAddChanges.find((change) => change.type === FileChangeType.DELETED && new URI(change.uri).displayName === new URI(target.uri).displayName);
         if (source) {
           deleteOrAddChanges.splice(deleteOrAddChanges.indexOf(source), 1);
-          moveChange.push({source, target});
+          moveChange.push({ source, target });
         }
       }
     }
@@ -272,7 +277,7 @@ export class FileTreeService extends Tree {
     // 添加节点, 需要获取节点类型
     restChange = await this.addAffectedNodes(this.getAddedUris(restChange), restChange);
     if (restChange.length === 0) {
-      return ;
+      return;
     }
     // 处理除了删除/添加/移动事件外的异常事件
     if (!await this.refreshAffectedNodes(this.getAffectedUris(restChange)) && this.isRootAffected(restChange)) {
@@ -320,16 +325,32 @@ export class FileTreeService extends Tree {
   public async moveNode(node: File | Directory, source: string, target: string) {
     const oldPath = await this.getFileTreeNodePathByUri(new URI(source));
     const newPath = await this.getFileTreeNodePathByUri(new URI(target));
-    if (oldPath && newPath && newPath !== oldPath) {
-      this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
-    }
+    this.moveNodeByPath(node, oldPath, newPath);
   }
 
   // 软链接目录下，文件节点路径不能通过uri去获取，存在偏差
-  public moveNodeByPath(node: File | Directory, oldPath: string, newPath: string) {
+  public moveNodeByPath(node: File | Directory, oldPath?: string, newPath?: string) {
     if (oldPath && newPath && newPath !== oldPath) {
-      this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved,  oldPath, newPath });
+      this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved, oldPath, newPath });
+      // 压缩模式下，需要尝试更新移动的源节点的父节点及目标节点的目标节点折叠状态
+      if (this.isCompactMode) {
+        const oldParentPath = new Path(oldPath).dir.toString();
+        const newParentPath = new Path(newPath).dir.toString();
+        if (oldParentPath) {
+          const oldParentNode = this.getNodeByPathOrUri(oldParentPath);
+          if (!!oldParentNode) {
+            this.refresh(oldParentNode as Directory);
+          }
+        }
+        if (newParentPath) {
+          const newParentNode = this.getNodeByPathOrUri(newParentPath);
+          if (!!newParentNode) {
+            this.refresh(newParentNode as Directory);
+          }
+        }
+      }
     }
+
   }
 
   public async addNode(node: Directory, newName: string, type: TreeNodeType) {
@@ -343,97 +364,36 @@ export class FileTreeService extends Tree {
     if (!!addNode) {
       this.cacheNodes([addNode]);
       // 节点创建失败时，不需要添加
-      this.dispatchWatchEvent(node.path, { type: WatchEvent.Added,  node: addNode, id: node.id});
+      this.dispatchWatchEvent(node.path, { type: WatchEvent.Added, node: addNode, id: node.id });
     }
     return addNode;
   }
 
-  private findNearestNodeOnCache(pathOrUri: string | URI) {
-    let path: string | undefined;
-    let pathURI: URI | undefined;
-    if (typeof pathOrUri === 'string' && !this.isFileURI(pathOrUri)) {
-      path = pathOrUri;
-    }
-    if (typeof pathOrUri !== 'string') {
-      pathURI = pathOrUri;
-      pathOrUri = pathOrUri.toString();
-    } else if (this.isFileURI(pathOrUri)) {
-      pathURI = new URI(pathOrUri);
-    }
-    if (this.isFileURI(pathOrUri) && !!pathURI) {
-      let rootStr;
-      if (!this.isMutiWorkspace) {
-        rootStr = this.workspaceService.workspace?.uri;
-      } else if (!!this.roots) {
-        rootStr = this.roots.find((root) => {
-          return new URI(root.uri).isEqualOrParent(pathURI!);
-        })?.uri;
-      }
-      if (this.root && rootStr) {
-        const rootUri = new URI(rootStr);
-        if (rootUri.isEqualOrParent(pathURI)) {
-          path = new Path(this.root.path).join(rootUri.relative(pathURI)!.toString()).toString();
-        }
-      }
-    }
-    if (!!path) {
-      const allNearestPath = Array.from(this._cacheNodesMap.keys()).filter((cache) => cache.indexOf(path!) >= 0);
-      let nearestPath;
-      for (const nextPath of allNearestPath) {
-        const depth = Path.pathDepth(nextPath);
-        if (nearestPath) {
-          if (depth < nearestPath.depth) {
-            nearestPath = {
-              path: nextPath,
-              depth,
-            };
-          }
-        } else {
-          nearestPath = {
-            path: nextPath,
-            depth,
-          };
-        }
-      }
-      if (!!nearestPath) {
-        return this._cacheNodesMap.get(nearestPath.path);
-      }
-    }
-    return false;
-  }
-
   private async addAffectedNodes(uris: URI[], changes: FileChange[]) {
-    const isCompactFoldersModel = this.corePreferences['explorer.compactFolders'];
     const nodes: any[] = [];
     for (const uri of uris) {
       const parent = this.getNodeByPathOrUri(uri.parent.toString());
-      if (!!parent) {
+      if (!this.isCompactMode) {
         nodes.push({
           parent,
           uri,
         });
-      } else if (isCompactFoldersModel) {
-        // 压缩模式下查找不到对应节点时，需要查看是否已有包含的文件夹存在
-        // 如当收到的变化是 /root/test_folder/test_file，而当前缓存中的路径只有/root/test_folder/test_folder2的情况
-        // 需要用当前缓存路径校验是否存在包含关系，这里/root/test_folder/test_folder2与/root/test_folder存在路径包含关系
-        // 此时应该重载/root下的文件，将test_folder目录折叠并清理缓存
-        const node = this.findNearestNodeOnCache(uri.parent);
-        if (node && node.parent) {
-          await this.refresh(node.parent as Directory);
-          await this.flushEventQueue();
+        for (const node of nodes) {
+          // 一旦更新队列中已包含该文件，临时剔除删除事件传递
+          if (!node.parent || this.changeEventDispatchQueue.indexOf(node.parent.path) >= 0) {
+            continue;
+          }
+          const addNode = await this.fileTreeAPI.resolveNodeByPath(this as ITree, node.uri.toString(), node.parent as Directory);
+          if (!!addNode) {
+            this.cacheNodes([addNode]);
+            // 节点创建失败时，不需要添加
+            this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Added, node: addNode, id: node.parent.id });
+          }
         }
-      }
-    }
-    for (const node of nodes) {
-      // 一旦更新队列中已包含该文件，临时剔除删除事件传递
-      if (!node.parent || this.changeEventDispatchQueue.indexOf(node.parent.path) >= 0) {
-        continue ;
-      }
-      const addNode = await this.fileTreeAPI.resolveNodeByPath(this as ITree, node.uri.toString(), node.parent as Directory);
-      if (!!addNode) {
-        this.cacheNodes([addNode]);
-        // 节点创建失败时，不需要添加
-        this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Added,  node: addNode, id: node.parent.id});
+      } else {
+        if (parent && parent.parent) {
+          await this.refresh(parent.parent as Directory);
+        }
       }
     }
     return changes.filter((change) => change.type !== FileChangeType.ADDED);
@@ -441,17 +401,18 @@ export class FileTreeService extends Tree {
 
   // 用于精准删除节点，软连接目录下的文件删除
   public deleteAffectedNodeByPath(path: string) {
-    // const isCompactFoldersModel = this.corePreferences['explorer.compactFolders'];
-    const node  = this.getNodeByPathOrUri(path);
+    const node = this.getNodeByPathOrUri(path);
     if (node && node.parent) {
       this.removeNodeCacheByPath(node.path);
-      this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed,  path: node.path });
+      this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed, path: node.path });
+      // 刷新父节点目录
+      if (this.isCompactMode) {
+        this.refresh(node.parent as Directory);
+      }
     }
   }
 
   public deleteAffectedNodes(uris: URI[], changes: FileChange[] = []) {
-    const isCompactFoldersModel = this.corePreferences['explorer.compactFolders'];
-
     const nodes: File[] = [];
     for (const uri of uris) {
       const node = this.getNodeByPathOrUri(uri);
@@ -462,13 +423,12 @@ export class FileTreeService extends Tree {
     for (const node of nodes) {
       // 一旦更新队列中已包含该文件，临时剔除删除事件传递
       if (!node?.parent || this.changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
-        continue ;
+        continue;
       }
       this.removeNodeCacheByPath(node!.path);
-      if (isCompactFoldersModel && (node.parent as Directory).expanded) {
-        node.parent.forceReloadChildrenQuiet();
-      } else {
-        this.dispatchWatchEvent(node!.parent!.path, { type: WatchEvent.Removed,  path: node!.path });
+      this.dispatchWatchEvent(node!.parent!.path, { type: WatchEvent.Removed, path: node!.path });
+      if (this.isCompactMode && (node.parent as Directory).expanded) {
+        this.refresh(node.parent as Directory);
       }
     }
     return changes.filter((change) => change.type !== FileChangeType.DELETED);
@@ -495,8 +455,6 @@ export class FileTreeService extends Tree {
       const node = this.getNodeByPathOrUri(uri.parent);
       if (node && Directory.is(node)) {
         nodes.push(node as Directory);
-      } else {
-
       }
     }
     return nodes;
@@ -520,6 +478,12 @@ export class FileTreeService extends Tree {
     return /^file:\/\//.test(str);
   }
 
+  /**
+   *
+   * @param pathOrUri 路径或者URI对象
+   * @param compactMode 是否开启压缩模式查找
+   *
+   */
   getNodeByPathOrUri(pathOrUri: string | URI) {
     let path: string | undefined;
     let pathURI: URI | undefined;
@@ -550,6 +514,33 @@ export class FileTreeService extends Tree {
     }
 
     if (!!path) {
+      // 压缩模式下查找不到对应节点时，需要查看是否已有包含的文件夹存在
+      // 如当收到的变化是 /root/test_folder/test_file，而当前缓存中的路径只有/root/test_folder/test_folder2的情况
+      // 需要用当前缓存路径校验是否存在包含关系，这里/root/test_folder/test_folder2与/root/test_folder存在路径包含关系
+      // 此时应该重载/root下的文件，将test_folder目录折叠并清理缓存
+      if (this.isCompactMode && !this._cacheNodesMap.has(path)) {
+        const allNearestPath = Array.from(this._cacheNodesMap.keys()).filter((cache) => cache.indexOf(path!) >= 0);
+        let nearestPath;
+        for (const nextPath of allNearestPath) {
+          const depth = Path.pathDepth(nextPath);
+          if (nearestPath) {
+            if (depth < nearestPath.depth) {
+              nearestPath = {
+                path: nextPath,
+                depth,
+              };
+            }
+          } else {
+            nearestPath = {
+              path: nextPath,
+              depth,
+            };
+          }
+        }
+        if (!!nearestPath) {
+          return this._cacheNodesMap.get(nearestPath.path);
+        }
+      }
       return this._cacheNodesMap.get(path);
     }
   }
@@ -560,8 +551,8 @@ export class FileTreeService extends Tree {
       return a.name.localeCompare(b.name, 'kn', { numeric: true }) as any;
     }
     return a.type === TreeNodeType.CompositeTreeNode ? -1
-      : b.type === TreeNodeType.CompositeTreeNode  ? 1
-      : 0;
+      : b.type === TreeNodeType.CompositeTreeNode ? 1
+        : 0;
   }
 
   get contextMenuContextKeyService() {
@@ -594,8 +585,23 @@ export class FileTreeService extends Tree {
     if (!Directory.is(node) && node.parent) {
       node = node.parent as Directory;
     }
-    await node.forceReloadChildrenQuiet();
-    this.onNodeRefreshedEmitter.fire(node);
+    // 这里也可以直接调用node.forceReloadChildrenQuiet，但由于文件树刷新事件可能会较多
+    // 队列化刷新动作减少更新成本
+    this.queueChangeEvent(node.path, () => {
+      this.onNodeRefreshedEmitter.fire(node);
+    });
+  }
+
+  // 队列化Changed事件
+  private queueChangeEvent(path: string, callback: any) {
+    clearTimeout(this.eventFlushTimeout);
+    this.eventFlushTimeout = setTimeout(async () => {
+      await this.flushEventQueue();
+      callback();
+    }, 150) as any;
+    if (this.changeEventDispatchQueue.indexOf(path) === -1) {
+      this.changeEventDispatchQueue.push(path);
+    }
   }
 
   public flushEventQueue = () => {

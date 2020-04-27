@@ -743,8 +743,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         this.isExpanded = false;
         this._children = null;
       } else {
-        await this.hardReloadChildren();
-        this.expandBranch(this);
+        await this.forceReloadChildrenQuiet();
       }
     }
     this.watcher.notifyDidProcessWatchEvent(this, event);
