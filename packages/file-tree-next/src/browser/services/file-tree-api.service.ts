@@ -36,7 +36,7 @@ export class FileTreeAPI implements IFileTreeAPI {
 
   private userhomePath: URI;
 
-  async resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory) {
+  async resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory, compact?: boolean) {
     let file: FileStat | undefined;
     if (!this.userhomePath) {
       const userhome = await this.fileServiceClient.getCurrentUserHome();
@@ -49,10 +49,21 @@ export class FileTreeAPI implements IFileTreeAPI {
     } else {
       file = await this.fileServiceClient.getFileStat(path.uri);
     }
+
     if (file) {
-      return this.toNodes(tree, file, parent);
+      if (file.children?.length === 1 && file.children[0].isDirectory && compact) {
+        return await this.resolveChildren(tree, file.children[0].uri, parent, compact);
+      } else {
+        return {
+          children: this.toNodes(tree, file, parent),
+          filestat: file,
+        };
+      }
     } else {
-      return [];
+      return {
+        children: [],
+        filestat: null,
+      };
     }
   }
 
@@ -84,15 +95,15 @@ export class FileTreeAPI implements IFileTreeAPI {
   /**
    * 转换FileStat对象为TreeNode
    */
-  toNode(tree: ITree, filestat: FileStat, parent?: Directory): Directory | File {
+  toNode(tree: ITree, filestat: FileStat, parent?: Directory, presetName?: string): Directory | File {
     const uri = new URI(filestat.uri);
-    const name = this.labelService.getName(uri);
+    const name = presetName ? presetName : this.labelService.getName(uri);
     if (!this.cacheFileStat.has(filestat.uri)) {
       this.cacheFileStat.set(filestat.uri, filestat);
     }
     if (filestat.isDirectory) {
       return new Directory(
-        tree,
+        tree as any,
         parent,
         uri,
         name,
@@ -101,7 +112,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       );
     } else {
       return new File(
-        tree,
+        tree as any,
         parent,
         uri,
         name,

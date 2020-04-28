@@ -55,14 +55,14 @@ export class FileTreeDialogService extends Tree {
       if (!this.workspaceRoot) {
         this.workspaceRoot = (await this.workspaceService.roots)[0];
       }
-      const children = await this.fileTreeAPI.resolveChildren(this as ITree, this.workspaceRoot);
+      const { children } = await this.fileTreeAPI.resolveChildren(this as ITree, this.workspaceRoot);
       this.cacheNodes(children as (File | Directory)[]);
       this.root = children[0] as Directory;
       return children;
     } else {
       // 加载子目录
       if (parent.uri) {
-        const children =  await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent);
+        const { children } =  await this.fileTreeAPI.resolveChildren(this as ITree, parent.uri.toString(), parent);
         this.cacheNodes(children as (File | Directory)[]);
         return children;
       }
@@ -78,7 +78,7 @@ export class FileTreeDialogService extends Tree {
     rootUri = URI.file(path);
     const rootFileStat = await this.fileTreeAPI.resolveFileStat(rootUri);
     if (rootFileStat) {
-      const children = await this.fileTreeAPI.resolveChildren(this as ITree, rootFileStat);
+      const { children } = await this.fileTreeAPI.resolveChildren(this as ITree, rootFileStat);
       this.root = children[0] as Directory;
       return children;
     }

@@ -12,9 +12,12 @@ export interface IFileTreeAPI {
   delete(uri: URI): Promise<string | void>;
   mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<string[] | void>;
   mv(oldUri: URI , newUri: URI, isDirectory?: boolean): Promise<string | void>;
-  resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory): Promise<(File | Directory)[]>;
+  resolveChildren(tree: ITree, path: string | FileStat, parent?: Directory, compact?: boolean): Promise<{
+    children: (File | Directory)[],
+    filestat: FileStat;
+  }>;
   resolveNodeByPath(tree: ITree, path: string, parent?: Directory): Promise<File | Directory | undefined>;
-  toNode(tree: ITree, filestat: FileStat, parent?: Directory): Directory | File;
+  toNode(tree: ITree, filestat: FileStat, parent?: Directory, name?: string): Directory | File;
   getReadableTooltip(path: URI): string;
   resolveFileStat(path: URI): Promise<FileStat | void>;
 }

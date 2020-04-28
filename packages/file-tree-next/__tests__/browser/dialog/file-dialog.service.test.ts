@@ -76,12 +76,15 @@ describe('FileDialogService should be work', () => {
       lastModification: new Date().getTime(),
       isDirectory: true,
     } as FileStat);
-    mockFileTreeAPI.resolveChildren.mockResolvedValue([
-      {
-        ...newDirectoryByName('child'),
-        ensureLoaded: jest.fn(),
-      },
-    ]);
+    mockFileTreeAPI.resolveChildren.mockResolvedValue({
+      children: [
+        {
+          ...newDirectoryByName('child'),
+          ensureLoaded: jest.fn(),
+        },
+      ],
+      filestat: {},
+    });
     fileTreeDialogService = injector.get(FileTreeDialogService, [rootUri.toString()]);
     await fileTreeDialogService.whenReady;
     done();

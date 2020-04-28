@@ -13,3 +13,8 @@ export const ExplorerFilteredContext = new RawContextKey<boolean>('explorerViewl
 export const FilesExplorerFocusedContext = new RawContextKey<boolean>('filesExplorerFocus', false);
 export const FilesExplorerInputFocusedContext = new RawContextKey<boolean>('filesExplorerInputFocus', false);
 export const FilesExplorerFilteredContext = new RawContextKey<boolean>('filesExplorerFilteredContext', false);
+
+// compressed nodes
+export const ExplorerCompressedFocusContext = new RawContextKey<boolean>('explorerViewletCompressedFocus', false);
+export const ExplorerCompressedFirstFocusContext = new RawContextKey<boolean>('explorerViewletCompressedFirstFocus', false);
+export const ExplorerCompressedLastFocusContext = new RawContextKey<boolean>('explorerViewletCompressedLastFocus', false);

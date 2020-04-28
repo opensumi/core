@@ -280,6 +280,7 @@ export const localizationBundle = {
     'preference.explorer.fileTree.indent.title': 'Explorer -> FileTree Indent',
     'preference.explorer.fileTree.baseIndent': 'Configure base indent for whole fileTree',
     'preference.explorer.fileTree.baseIndent.title': 'Explorer -> FileTree BaseIndent',
+    'preference.explorer.compactFolders': 'Controls whether the explorer should render folders in a compact form. In such a form, single child folders will be compressed in a combined tree element. Useful for Java package structures, for example.',
 
     // Terminal
     'preference.terminal.type': 'Default Shell Type',
