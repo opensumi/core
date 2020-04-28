@@ -37,6 +37,10 @@ describe('FileTree should be work while on single workspace model', () => {
   let mockFileTreeApi;
   let mockTreeHandle;
   const mockGetContextValue = jest.fn();
+  const mockCorePreference = {
+    'workbench.list.openMode': 'singleClick',
+    'editor.previewMode': true,
+  };
   beforeAll(async (done) => {
     mockFileTreeApi = {
       mv: jest.fn(),
@@ -102,10 +106,7 @@ describe('FileTree should be work while on single workspace model', () => {
       },
       {
         token: CorePreferences,
-        useValue: {
-          'workbench.list.openMode': 'singleClick',
-          'editor.previewMode': true,
-        },
+        useValue: mockCorePreference,
       },
       {
         token: INodeLogger,
@@ -486,20 +487,17 @@ describe('FileTree should be work while on single workspace model', () => {
         }
         return true;
       });
-      injector.mock(CorePreferences, 'explorer.compactFolders', true);
+      fileTreeService.isCompactMode = true;
       fs.ensureDirSync(testFile);
-      if (directoryNode.expanded) {
-        await directoryNode.forceReloadChildrenQuiet();
-      } else {
-        await directoryNode.setExpanded(true);
-      }
-      expect(directoryNode.expanded).toBeTruthy();
-      // cause the directory was compressed, branchSize will not increase
-      expect(rootNode.branchSize).toBe(filesMap.length + 1);
-      expect(directoryNode.name).toBe(`${preNodeName}/a/b`);
-      // clean effect
-      await fs.remove(testFile);
-      done();
+      fileTreeService.onNodeRefreshed(async () => {
+        const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
+        expect(directoryNode.expanded).toBeTruthy();
+        // cause the directory was compressed, branchSize will not increase
+        expect(rootNode.branchSize).toBe(filesMap.length);
+        expect(directoryNode.name).toBe(`${preNodeName}/a/b`);
+        done();
+      });
+      await fileTreeService.refresh();
     });
   });
 });

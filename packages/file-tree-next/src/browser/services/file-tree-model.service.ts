@@ -445,7 +445,7 @@ export class FileTreeModelService {
   }
 
   setExplorerCompressedContextKey(node?: File | Directory, activeUri?: URI) {
-    if (activeUri) {
+    if (node && activeUri) {
       this.fileTreeContextKey.explorerCompressedFocusContext.set(true);
       const compressedNamePath = new Path(node.name);
       if (compressedNamePath.name === activeUri.displayName) {

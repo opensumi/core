@@ -411,7 +411,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           } else if (forceLoadPath.indexOf(child.path) === 0) {
             // 包含压缩节点的情况
             // 加载路径包含当前判断路径，尝试加载该节点再匹配
-            await child.hardReloadChildren(true);
+            await (child as CompositeTreeNode).hardReloadChildren(true);
             if (child.path === forceLoadPath) {
               (child as CompositeTreeNode).isExpanded = true;
               await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths, false);
