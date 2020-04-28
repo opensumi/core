@@ -3,7 +3,7 @@ import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@ali/ide-core-common';
 
 import { CtxMenuRenderParams, ICtxMenuRenderer } from './base';
-import { MenuNode, IExtendMenubarItem } from '../../base';
+import { MenuNode } from '../../base';
 import { SeparatorMenuItemNode, SubmenuItemNode, AbstractContextMenuService } from '../../menu.interface';
 import { AbstractMenubarService } from '../../menubar-service';
 import { electronEnv } from '../../../../utils';
@@ -128,10 +128,6 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
 
 function toElectronAccelerator(keybinding: string) {
   return keybinding.replace('ctrlcmd', 'CmdOrCtrl');
-}
-
-interface IResolvedMenubarItem extends IExtendMenubarItem {
-  nodes: MenuNode[];
 }
 
 @Injectable()

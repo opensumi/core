@@ -67,10 +67,10 @@ export type ICommandsMap = Map<string, Command>;
 
 export abstract class IMenuRegistry {
   readonly onDidChangeMenubar: Event<string>;
-  abstract registerMenubarItem(menuId: string, item: PartialBy<IExtendMenubarItem, 'id'>): IDisposable;
+  abstract registerMenubarItem(menuId: string, item: PartialBy<IMenubarItem, 'id'>): IDisposable;
   abstract removeMenubarItem(menuId: string): void;
-  abstract getMenubarItem(menuId: string): IExtendMenubarItem | undefined;
-  abstract getMenubarItems(): Array<IExtendMenubarItem>;
+  abstract getMenubarItem(menuId: string): IMenubarItem | undefined;
+  abstract getMenubarItems(): Array<IMenubarItem>;
 
   readonly onDidChangeMenu: Event<string>;
   abstract getMenuCommand(command: string | MenuCommandDesc): PartialBy<MenuCommandDesc, 'label'>;
@@ -81,19 +81,15 @@ export abstract class IMenuRegistry {
 }
 
 export interface IMenubarItem {
+  id: string; // 作为 menu-id 注册进来
   label: string;
   order?: number;
-  nativeRole?: string;
-}
-
-export interface IExtendMenubarItem extends IMenubarItem {
-  id: string;
   nativeRole?: string; // electron menu 使用
 }
 
 @Injectable()
 export class CoreMenuRegistryImpl implements IMenuRegistry {
-  private readonly _menubarItems = new Map<string, IExtendMenubarItem>();
+  private readonly _menubarItems = new Map<string, IMenubarItem>();
 
   private readonly _onDidChangeMenubar = new Emitter<string>();
   readonly onDidChangeMenubar: Event<string> = this._onDidChangeMenubar.event;
@@ -119,9 +115,9 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
   /**
    * 这里的注册只允许注册一次
    */
-  registerMenubarItem(menuId: string, item: PartialBy<IExtendMenubarItem, 'id'>): IDisposable {
+  registerMenubarItem(menuId: string, item: PartialBy<IMenubarItem, 'id'>): IDisposable {
     // 将 menuId 存到结构中去
-    const menubarItem = { ...item, id: menuId } as IExtendMenubarItem;
+    const menubarItem = { ...item, id: menuId } as IMenubarItem;
     const existedItem = this._menubarItems.get(menuId);
     if (existedItem) {
       this.logger.warn(`this menuId ${menuId} already existed`);
@@ -145,11 +141,11 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
     }
   }
 
-  getMenubarItem(menuId: string): IExtendMenubarItem | undefined {
+  getMenubarItem(menuId: string): IMenubarItem | undefined {
     return this._menubarItems.get(menuId);
   }
 
-  getMenubarItems(): IExtendMenubarItem[] {
+  getMenubarItems(): IMenubarItem[] {
     const menubarIds = Array.from(this._menubarItems.keys());
     return menubarIds.reduce((prev, menubarId) => {
       const menubarItem = this._menubarItems.get(menubarId);
@@ -157,7 +153,7 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
         prev.push(menubarItem);
       }
       return prev;
-    }, [] as IExtendMenubarItem[]);
+    }, [] as IMenubarItem[]);
   }
 
   registerMenuItem(menuId: MenuId | string, item: IMenuItem | ISubmenuItem): IDisposable {

@@ -3,7 +3,7 @@ import * as clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
-import { IExtendMenubarItem } from '@ali/ide-core-browser/lib/menu/next';
+import { IMenubarItem } from '@ali/ide-core-browser/lib/menu/next';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
 import Dropdown from 'antd/lib/dropdown';
 import 'antd/lib/dropdown/style/index.less';
@@ -11,7 +11,7 @@ import 'antd/lib/dropdown/style/index.less';
 import { MenubarStore } from './menu-bar.store';
 import * as styles from './menu-bar.module.less';
 
-const MenubarItem = observer<IExtendMenubarItem & Pick<React.HTMLProps<HTMLElement>, 'className'> & {
+const MenubarItem = observer<IMenubarItem & Pick<React.HTMLProps<HTMLElement>, 'className'> & {
   focusMode: boolean;
   onClick: () => void;
 }>(({ id, label, focusMode, onClick, className }) => {
