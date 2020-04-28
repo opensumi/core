@@ -14,7 +14,7 @@ import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import * as styles from '../file-tree-node.module.less';
 import { FileStat } from '@ali/ide-file-service';
-import { ISerializableState } from '@ali/ide-components/lib/recycle-tree/tree/model/treeState';
+import { ISerializableState, TreeStateWatcher } from '@ali/ide-components/lib/recycle-tree/tree/model/treeState';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 
 export interface IParseStore {
@@ -118,6 +118,8 @@ export class FileTreeModelService {
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
+  private treeStateWatcher: TreeStateWatcher;
+
   constructor() {
     this._whenReady = this.initTreeModel();
   }
@@ -205,10 +207,10 @@ export class FileTreeModelService {
     // _dndService依赖装饰器逻辑加载
     this._dndService = this.injector.get<any>(DragAndDropService, [this]);
     // 等待初次加载完成后再初始化当前的treeStateWatcher, 只加载可见的节点
-    const treeStateWatcher = this._treeModel.getTreeStateWatcher(true);
-    this.disposableCollection.push(treeStateWatcher.onDidChange(() => {
+    this.treeStateWatcher = this._treeModel.getTreeStateWatcher(true);
+    this.disposableCollection.push(this.treeStateWatcher.onDidChange(() => {
       const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
-      const currentTreeSnapshot = treeStateWatcher.snapshot();
+      const currentTreeSnapshot = this.treeStateWatcher.snapshot();
       this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, {
         ...snapshot,
         ...currentTreeSnapshot,
@@ -562,7 +564,10 @@ export class FileTreeModelService {
   // 命令调用
   async collapseAll() {
     await this.fileTreeService.flushEventQueue();
-    const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    if (!this.treeStateWatcher) {
+      return;
+    }
+    const snapshot = this.treeStateWatcher.snapshot();
     if (snapshot && snapshot.expandedDirectories) {
       // 查找当前状态下所有展开的目录
       let surfaceDir = snapshot.expandedDirectories.atSurface;
