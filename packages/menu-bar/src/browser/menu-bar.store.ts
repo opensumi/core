@@ -1,11 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { observable, action } from 'mobx';
-import { AbstractMenubarService, IExtendMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenubarService, IMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
 import debounce = require('lodash.debounce');
 
 export abstract class AbstractMenubarStore extends Disposable {
-  menubarItems: IExtendMenubarItem[];
+  menubarItems: IMenubarItem[];
   abstract handleMenubarClick(menuId: string): void;
 }
 
@@ -15,7 +15,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
   private readonly menubarService: AbstractMenubarService;
 
   @observable
-  public menubarItems = observable.array<IExtendMenubarItem>([]);
+  public menubarItems = observable.array<IMenubarItem>([]);
 
   @observable
   public menuItems = observable.map<string, MenuNode[]>();

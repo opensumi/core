@@ -3,6 +3,7 @@ import { Disposable, ISchemaRegistry, localize, ILogger } from '@ali/ide-core-br
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 
 import { KtViewContributionPoint, KtViewsSchema } from './browser-views';
+import { KtMenubarsContributionPoint } from './menubar';
 
 const CONTRIBUTES_SYMBOL = Symbol();
 
@@ -28,6 +29,7 @@ const schema = {
 export class KaitianContributesRunner extends Disposable {
   static ContributePoints = [
     KtViewContributionPoint,
+    KtMenubarsContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)

@@ -3,13 +3,13 @@ import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { AbstractMenuService, IMenu, SubmenuItemNode } from './menu.interface';
-import { IExtendMenubarItem, IMenuRegistry, MenuNode } from './base';
+import { IMenubarItem, IMenuRegistry, MenuNode } from './base';
 import { generateMergedCtxMenu } from './menu-util';
 
 export abstract class AbstractMenubarService extends Disposable {
   readonly onDidMenubarChange: Event<void>;
-  abstract getMenubarItems(): IExtendMenubarItem[];
-  abstract getMenubarItem(menuId: string): IExtendMenubarItem | undefined;
+  abstract getMenubarItems(): IMenubarItem[];
+  abstract getMenubarItem(menuId: string): IMenubarItem | undefined;
 
   readonly onDidMenuChange: Event<string>;
   abstract getMenuNodes(menuId: string): MenuNode[];
@@ -48,7 +48,7 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
   private _menubarIds: Set<string> = new Set();
   private _menus: Map<string, IMenu> = new Map();
 
-  private _menubarItems: IExtendMenubarItem[] = [];
+  private _menubarItems: IMenubarItem[] = [];
   private _menuItems: Map<string, MenuNode[]> = new Map();
 
   private _menusListener: Map<string, IDisposable> = new Map();
@@ -203,7 +203,7 @@ export class MenubarServiceImpl extends Disposable implements AbstractMenubarSer
   }
 }
 
-function menubarItemsSorter(a: IExtendMenubarItem, b: IExtendMenubarItem): number {
+function menubarItemsSorter(a: IMenubarItem, b: IMenubarItem): number {
   // sort on priority - default is 0
   const aPrio = a.order || 0;
   const bPrio = b.order || 0;

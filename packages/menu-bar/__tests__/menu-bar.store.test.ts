@@ -1,7 +1,7 @@
 import { Disposable } from '@ali/ide-core-common';
 import { Event, Emitter } from '@ali/ide-core-browser';
 import { Injectable } from '@ali/common-di';
-import { AbstractMenubarService, IExtendMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
+import { AbstractMenubarService, IMenubarItem, MenuNode } from '@ali/ide-core-browser/lib/menu/next';
 
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';
@@ -24,10 +24,10 @@ class MockMenubarServiceImpl extends Disposable implements AbstractMenubarServic
     return this._onDidMenuChange.event;
   }
 
-  private _menubarItems: IExtendMenubarItem[] = [];
+  private _menubarItems: IMenubarItem[] = [];
   private _menuItems: Map<string, MenuNode[]> = new Map();
 
-  set menubarItems(payload: IExtendMenubarItem[]) {
+  set menubarItems(payload: IMenubarItem[]) {
     this._menubarItems = payload;
     this._onDidMenuBarChange.fire();
   }
@@ -40,7 +40,7 @@ class MockMenubarServiceImpl extends Disposable implements AbstractMenubarServic
     this._onDidMenuChange.fire(payload.menuId);
   }
 
-  public getMenubarItems(): IExtendMenubarItem[] {
+  public getMenubarItems(): IMenubarItem[] {
     return this._menubarItems;
   }
 
