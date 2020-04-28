@@ -130,6 +130,7 @@ export const Select: React.FC<ISelectProps> = ({
     if (selectRef.current && overlayRef.current) {
       const boxRect = selectRef.current.getBoundingClientRect();
       overlayRef.current.style.width = `${boxRect.width}px`;
+      overlayRef.current.style.top = `${boxRect.top + boxRect.height}px`;
     }
   }, [open]);
 
