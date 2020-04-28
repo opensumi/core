@@ -18,11 +18,36 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
   const builtinCommands = [
     {
       id: 'test:builtinCommand',
-      handler: async () => {
-        return 'bingo!';
+      handler: {
+        handler: async () => {
+          return 'bingo!';
+        },
+      },
+    },
+    {
+      id: 'test:builtinCommand:unpermitted',
+      handler: {
+        handler: () => {
+          return 'You shall not pass!';
+        },
+        isPermitted: (extensionInfo: IExtensionInfo) => {
+          return false;
+        },
+      },
+    },
+    {
+      id: 'test:builtinCommand:permitted',
+      handler: {
+        handler: () => {
+          return 'permitted!';
+        },
+        isPermitted: (extensionInfo: IExtensionInfo) => {
+          return true;
+        },
       },
     },
   ];
+
   const rpcProtocol: IRPCProtocol = {
     getProxy: (key) => {
       return map.get(key);
@@ -140,9 +165,23 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
     });
 
     it('execute a builtin command', async () => {
+      extCommand.$registerBuiltInCommands();
       const commandId = 'test:builtinCommand';
+      const result = await extCommand.executeCommand(commandId);
+      expect(result).toBe('bingo!');
+    });
+
+    it('execute a builtin command will not permitted', async () => {
+      extCommand.$registerBuiltInCommands();
+      const commandId = 'test:builtinCommand:unpermitted';
+      expect(() => vscodeCommand.executeCommand(commandId)).rejects.toThrowError(new Error(`Extension vscode.vim has not permit to execute ${commandId}`));
+    });
+
+    it('execute a builtin command with permitted', async () => {
+      extCommand.$registerBuiltInCommands();
+      const commandId = 'test:builtinCommand:permitted';
       const result = await vscodeCommand.executeCommand(commandId);
-      expect(result).toBeDefined();
+      expect(result).toBe('permitted!');
     });
 
     it.skip('builtin command should not be called via mainthread', async () => {

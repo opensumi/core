@@ -11,15 +11,14 @@ import { ProcessMessageType } from '../common';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { Injector } from '@ali/common-di';
 import { AppConfig, ILogService } from '@ali/ide-core-node';
-import { ICommandHandlerDescription } from '../common/vscode';
+import { CommandHandler } from '../common/vscode';
 
 const argv = require('yargs').argv;
 let logger: any = console;
 
 export interface IBuiltInCommand {
   id: string;
-  handler: (args: any) => any;
-  description?: ICommandHandlerDescription;
+  handler: CommandHandler;
 }
 
 export interface ExtHostAppConfig extends Partial<AppConfig> {
@@ -61,7 +60,6 @@ async function initRPCProtocol(extInjector): Promise<any> {
 export async function extProcessInit(config?: ExtProcessConfig) {
   const extAppConfig = JSON.parse(argv['kt-app-config'] || '{}');
   const extInjector = new Injector();
-  console.log('exthost config', config);
   extInjector.addProviders({
     token: AppConfig,
     useValue: { ...extAppConfig, ...config},
