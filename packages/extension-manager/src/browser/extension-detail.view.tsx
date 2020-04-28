@@ -13,7 +13,7 @@ import { getIcon } from '@ali/ide-core-browser';
 import { Button } from '@ali/ide-components';
 import Menu from 'antd/lib/menu';
 import { Tabs } from '@ali/ide-components';
-import 'antd/lib/menu/style/index.less';
+import 'antd/lib/menu/style/index.css';
 
 const tabMap = [
   {

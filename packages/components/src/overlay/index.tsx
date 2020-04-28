@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as clsx from 'classnames';
 import Modal, { ModalProps } from 'antd/lib/modal';
 
-import 'antd/lib/modal/style/index.less';
+import 'antd/lib/modal/style/index.css';
 
 import * as styles from './styles.module.less';
 

@@ -6,7 +6,7 @@ import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
 import { IMenubarItem } from '@ali/ide-core-browser/lib/menu/next';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
 import Dropdown from 'antd/lib/dropdown';
-import 'antd/lib/dropdown/style/index.less';
+import 'antd/lib/dropdown/style/index.css';
 
 import { MenubarStore } from './menu-bar.store';
 import * as styles from './menu-bar.module.less';
