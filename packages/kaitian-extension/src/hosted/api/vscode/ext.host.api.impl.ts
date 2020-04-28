@@ -62,17 +62,20 @@ import { ExtHostDebug, createDebugApiFactory } from './debug';
 import { ExtHostConnection } from './ext.host.connection';
 import { ExtHostTerminal } from './ext.host.terminal';
 import { ExtHostProgress } from './ext.host.progress';
+import { ExtHostAppConfig } from '../../ext.process-base';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService,
   mainThreadExtensionService: VSCodeExtensionService,
+  appConfig: ExtHostAppConfig,
 ) {
+  const builtinCommands = appConfig.builtinCommands;
   const extHostDocs = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDocuments, new ExtensionDocumentDataManagerImpl(rpcProtocol));
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionService);
 
   createDocumentModelApiFactory(rpcProtocol);
-  const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol)) as ExtHostCommands;
+  const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol, builtinCommands)) as ExtHostCommands;
   const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs)) as ExtensionHostEditorService;
   const extHostEnv = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol));
   const extHostLanguages = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostLanguages, new ExtHostLanguages(rpcProtocol, extHostDocs, extHostCommands));

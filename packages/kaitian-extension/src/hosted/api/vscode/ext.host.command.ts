@@ -12,6 +12,7 @@ import { CommandDto } from '../../../common/vscode/scm';
 import * as modes from '../../../common/vscode/model.api';
 import Uri from 'vscode-uri';
 import { IExtension } from '../../../common';
+import { IBuiltInCommand } from '../../ext.process-base';
 
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService, extension: IExtension) {
   const commands: typeof vscode.commands = {
@@ -76,7 +77,7 @@ export class ExtHostCommands implements IExtHostCommands {
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
   public converter: CommandsConverter;
 
-  constructor(rpcProtocol: IRPCProtocol) {
+  constructor(rpcProtocol: IRPCProtocol, private buildInCommands?: IBuiltInCommand[]) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
     this.registerUriArgProcessor();
@@ -112,6 +113,15 @@ export class ExtHostCommands implements IExtHostCommands {
   }
 
   public $registerBuiltInCommands() {
+    if (this.buildInCommands) {
+      this.logger.log('register builtIn commands');
+      for (const command of this.buildInCommands) {
+        const { id, handler, description } = command;
+        this.logger.verbose(`register builtIn command ${id}`);
+        this.register(id, handler, description);
+      }
+    }
+
     this.registerCommandConverter();
     this.register('vscode.executeReferenceProvider', this.executeReferenceProvider, {
       description: 'Execute reference provider.',

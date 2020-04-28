@@ -11,14 +11,26 @@ import { ProcessMessageType } from '../common';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { Injector } from '@ali/common-di';
 import { AppConfig, ILogService } from '@ali/ide-core-node';
+import { ICommandHandlerDescription } from '../common/vscode';
 
 const argv = require('yargs').argv;
 let logger: any = console;
 
-interface ExtProcessConfig {
+export interface IBuiltInCommand {
+  id: string;
+  handler: (args: any) => any;
+  description?: ICommandHandlerDescription;
+}
+
+export interface ExtHostAppConfig extends Partial<AppConfig> {
+  builtinCommands?: IBuiltInCommand[];
+}
+
+export interface ExtProcessConfig {
   LogServiceClass?: ILogService;
   logDir?: string;
   logLevel?: LogLevel;
+  builtinCommands: IBuiltInCommand[];
 }
 
 async function initRPCProtocol(extInjector): Promise<any> {
@@ -49,7 +61,7 @@ async function initRPCProtocol(extInjector): Promise<any> {
 export async function extProcessInit(config?: ExtProcessConfig) {
   const extAppConfig = JSON.parse(argv['kt-app-config'] || '{}');
   const extInjector = new Injector();
-
+  console.log('exthost config', config);
   extInjector.addProviders({
     token: AppConfig,
     useValue: { ...extAppConfig, ...config},
@@ -62,7 +74,7 @@ export async function extProcessInit(config?: ExtProcessConfig) {
       Preload = Preload.default;
     }
 
-    const preload = new Preload(protocol, logger);
+    const preload = new Preload(protocol, logger, extInjector);
 
     preload.onFireReporter((reportMessage: ReporterProcessMessage) => {
       if (process && process.send) {

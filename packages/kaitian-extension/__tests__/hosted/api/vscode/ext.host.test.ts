@@ -1,4 +1,5 @@
 import { Deferred  } from '@ali/ide-core-common/lib';
+import { Injector } from '@ali/common-di';
 import ExtensionHostServiceImpl from '@ali/ide-kaitian-extension/lib/hosted/ext.host';
 
 import { mockExtensionProps } from '../../../__mock__/extensions';
@@ -7,6 +8,7 @@ import { MainThreadExtensionService } from '../../../__mock__/api/mainthread.ext
 import { MainThreadStorage } from '../../../__mock__/api/mathread.storage';
 import { MainThreadExtensionLog } from '../../../__mock__/api/mainthread.extension.log';
 import { MockLoggerManagerClient } from '../../../__mock__/loggermanager';
+import { AppConfig } from '@ali/ide-core-node';
 
 const enum MessageType {
   Request = 1,
@@ -19,11 +21,24 @@ const mockLoggger = (new MockLoggerManagerClient()).getLogger();
 describe('Extension process test', () => {
   describe('RPCProtocol', () => {
     let extHostImpl: ExtensionHostServiceImpl;
+    const injector: Injector = new Injector();
 
     beforeAll((done) => {
+      injector.addProviders({
+        token: AppConfig, useValue: {
+          builtinCommands: [
+            {
+              id: 'test:builtinCommand:test',
+              handler: () => {
+                return 'fake token';
+              },
+            },
+          ],
+        },
+      });
       initMockRPCProtocol(mockClient)
         .then((value) => {
-          extHostImpl = new ExtensionHostServiceImpl(value, mockLoggger);
+          extHostImpl = new ExtensionHostServiceImpl(value, mockLoggger, injector);
           return extHostImpl.init();
         })
         .then((res) => {

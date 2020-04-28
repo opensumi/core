@@ -15,6 +15,14 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
   // mock 判断是否有权限是根据是否为内置函数
   const isPermitted = (extensionInfo: IExtensionInfo) => extensionInfo.isBuiltin;
   const map = new Map();
+  const builtinCommands = [
+    {
+      id: 'test:builtinCommand',
+      handler: async () => {
+        return 'bingo!';
+      },
+    },
+  ];
   const rpcProtocol: IRPCProtocol = {
     getProxy: (key) => {
       return map.get(key);
@@ -48,7 +56,7 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
       isBuiltin: false,
     });
     rpcProtocol.set(MainThreadAPIIdentifier.MainThreadCommands, mainService);
-    extCommand = new ExtHostCommands(rpcProtocol);
+    extCommand = new ExtHostCommands(rpcProtocol, builtinCommands);
     vscodeCommand = createCommandsApiFactory(extCommand, editorService, extension);
   });
 
@@ -129,6 +137,16 @@ describe('kaitian-extension/__tests__/hosted/api/vscode/ext.host.command.test.ts
       await extCommand.executeCommand(commandId);
       // 本地找不到会到远端找
       expect(mainService.$executeCommand).toBeCalledTimes(1);
+    });
+
+    it('execute a builtin command', async () => {
+      const commandId = 'test:builtinCommand';
+      const result = await vscodeCommand.executeCommand(commandId);
+      expect(result).toBeDefined();
+    });
+
+    it.skip('builtin command should not be called via mainthread', async () => {
+      // TODO 需 mock mainthreadCommand
     });
 
     it('dispose calls unregister', async () => {

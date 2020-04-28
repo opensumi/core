@@ -1,5 +1,5 @@
 import * as ideCoreCommon from '@ali/ide-core-common';
-import { Injectable } from '@ali/common-di';
+import { Injectable, Injector } from '@ali/common-di';
 import { RPCProtocol } from '@ali/ide-connection/lib/common/rpcProtocol';
 import { OutputPreferences } from '@ali/ide-output/lib/browser/output-preference';
 import * as types from '../../src/common/vscode/ext-types';
@@ -14,6 +14,7 @@ import { MainThreadExtensionLogIdentifier } from '../../src/common/extension-log
 import { MainThreadExtensionLog } from '../../src/browser/extension-log';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { IContextKeyService, AppConfig } from '@ali/ide-core-browser';
+import { AppConfig as NodeAppConfig } from '@ali/ide-core-node';
 import { MockContextKeyService } from '@ali/ide-monaco/lib/browser/mocks/monaco.context-key.service';
 import { GlobalStorageServerPath } from '@ali/ide-storage';
 import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
@@ -70,6 +71,11 @@ const rpcProtocolExt = new RPCProtocol(mockClientA);
 const rpcProtocolMain = new RPCProtocol(mockClientB);
 
 describe('MainThreadExtensions Test Suites', () => {
+  const extHostInjector = new Injector();
+  extHostInjector.addProviders({
+    token: NodeAppConfig,
+    useValue: {},
+  });
   const injector = createBrowserInjector([], new MockInjector([{
       token: OutputPreferences,
       useValue: {
@@ -164,7 +170,7 @@ describe('MainThreadExtensions Test Suites', () => {
   beforeAll(async (done) => {
     injector.get(WorkbenchEditorService);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
-    extensionHostService = new ExtensionHostServiceImpl(rpcProtocolExt, new MockLoggerManagerClient().getLogger());
+    extensionHostService = new ExtensionHostServiceImpl(rpcProtocolExt, new MockLoggerManagerClient().getLogger(), extHostInjector);
     mainthreadService = injector.get(ExtensionService);
     rpcProtocolMain.set(MainThreadExtensionLogIdentifier, injector.get(MainThreadExtensionLog, []));
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [rpcProtocolMain]));
