@@ -22,10 +22,10 @@ import { IContextKeyService, CorePreferences, EDITOR_COMMANDS } from '@ali/ide-c
 import { FileDecorationsService } from '@ali/ide-decoration/lib/browser/decorationsService';
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
 import { PasteTypes } from '../../src';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import * as styles from '../../src/browser/file-tree-node.module.less';
-import { WorkbenchEditorService } from '@ali/ide-editor';
 
 describe('FileTree should be work while on single workspace model', () => {
   let track;
@@ -36,7 +36,7 @@ describe('FileTree should be work while on single workspace model', () => {
   let fileTreeService: FileTreeService;
   let mockFileTreeApi;
   let mockTreeHandle;
-  let mockGetContextValue;
+  const mockGetContextValue = jest.fn();
   beforeAll(async (done) => {
     mockFileTreeApi = {
       mv: jest.fn(),
@@ -54,7 +54,6 @@ describe('FileTree should be work while on single workspace model', () => {
       onDidChangeModel: (() => {}) as any,
       onDidUpdate: (() => {}) as any,
     };
-    mockGetContextValue = jest.fn();
     track = temp.track();
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('file-tree-next-test')));
     filesMap = [
@@ -475,6 +474,32 @@ describe('FileTree should be work while on single workspace model', () => {
   });
 
   describe('04 #Compact Mode should be work', () => {
-
+    it('Directory should be compressed while it contain single file', async (done) => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
+      const testFile = directoryNode.uri.resolve('a/b').withoutScheme().toString();
+      const preNodeName = directoryNode.name;
+      mockGetContextValue.mockImplementation((key) => {
+        if (key === 'explorerViewletCompressedFocus') {
+          return false;
+        }
+        return true;
+      });
+      injector.mock(CorePreferences, 'explorer.compactFolders', true);
+      fs.ensureDirSync(testFile);
+      if (directoryNode.expanded) {
+        await directoryNode.forceReloadChildrenQuiet();
+      } else {
+        await directoryNode.setExpanded(true);
+      }
+      expect(directoryNode.expanded).toBeTruthy();
+      // cause the directory was compressed, branchSize will not increase
+      expect(rootNode.branchSize).toBe(filesMap.length + 1);
+      expect(directoryNode.name).toBe(`${preNodeName}/a/b`);
+      // clean effect
+      await fs.remove(testFile);
+      done();
+    });
   });
 });
