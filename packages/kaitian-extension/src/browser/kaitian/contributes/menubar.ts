@@ -23,9 +23,9 @@ export class KtMenubarsContributionPoint extends VSCodeContributePoint<KtMenubar
           type: 'string',
           description: localize('kaitianContributes.menubars.id', 'The identifier of menubar item, used as menu-id'),
         },
-        label: {
+        title: {
           type: 'string',
-          description: localize('kaitianContributes.menubars.label', 'The label of menubar item'),
+          description: localize('kaitianContributes.menubars.title', 'The title of menubar item'),
         },
         order: {
           type: 'number',
@@ -44,7 +44,7 @@ export class KtMenubarsContributionPoint extends VSCodeContributePoint<KtMenubar
       this.addDispose(this.menuRegistry.registerMenubarItem(
         menubarItem.id,
         {
-          label: this.getLocalizeFromNlsJSON(menubarItem.label),
+          label: this.getLocalizeFromNlsJSON(menubarItem.title),
           order: menubarItem.order,
           nativeRole: menubarItem.nativeRole,
         },
