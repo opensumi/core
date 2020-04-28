@@ -444,7 +444,7 @@ export class FileTreeModelService {
     });
   }
 
-  setExplorerCompressedContextKey(node: File | Directory, activeUri?: URI) {
+  setExplorerCompressedContextKey(node?: File | Directory, activeUri?: URI) {
     if (activeUri) {
       this.fileTreeContextKey.explorerCompressedFocusContext.set(true);
       const compressedNamePath = new Path(node.name);
@@ -461,7 +461,7 @@ export class FileTreeModelService {
         this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
         this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
       }
-    } else {
+    } else if (node) {
       // 默认情况下，如果一个节点为压缩节点，末尾位置选中
       if (node.name.indexOf(Path.separator) > 0) {
         this.fileTreeContextKey.explorerCompressedFocusContext.set(true);
@@ -472,6 +472,10 @@ export class FileTreeModelService {
         this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
         this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
       }
+    } else {
+      this.fileTreeContextKey.explorerCompressedFocusContext.set(false);
+      this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
+      this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
     }
   }
 

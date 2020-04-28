@@ -344,7 +344,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   // 展开节点
-  public async setExpanded(ensureVisible = true) {
+  public async setExpanded(ensureVisible = true, quiet = false) {
     // 根节点不可折叠
     if (CompositeTreeNode.isRoot(this)) {
       return;
@@ -364,13 +364,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
 
     if (ensureVisible && this.parent) {
-      await (this.parent as CompositeTreeNode).setExpanded(true);
+      await (this.parent as CompositeTreeNode).setExpanded(true, !quiet);
     }
 
     if (this.isExpanded) {
       this._watcher.notifyWillChangeExpansionState(this, true);
       // 与根节点合并分支
-      this.expandBranch(this);
+      this.expandBranch(this, quiet);
       this._watcher.notifyDidChangeExpansionState(this, true);
     }
   }
@@ -392,21 +392,31 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   // 静默刷新子节点, 即不触发分支更新事件
-  public async forceReloadChildrenQuiet(expandedPaths: string[] = this.getAllExpandedNodePath()) {
+  public async forceReloadChildrenQuiet(expandedPaths: string[] = this.getAllExpandedNodePath(), needReload: boolean = true) {
     let forceLoadPath;
     if (this.isExpanded) {
-      await this.hardReloadChildren(true);
+      if (needReload) {
+        await this.hardReloadChildren(true);
+      }
       forceLoadPath = expandedPaths.shift();
       if (!!this.children) {
         for (const child of this.children) {
           if (!forceLoadPath) {
             break;
           }
-          // 包含压缩节点的情况
-          if (child.path.indexOf(forceLoadPath) >= 0) {
+          if (child.path === forceLoadPath) {
             (child as CompositeTreeNode).isExpanded = true;
             await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths);
             forceLoadPath = expandedPaths.shift();
+          } else if (forceLoadPath.indexOf(child.path) === 0) {
+            // 包含压缩节点的情况
+            // 加载路径包含当前判断路径，尝试加载该节点再匹配
+            await child.hardReloadChildren(true);
+            if (child.path === forceLoadPath) {
+              (child as CompositeTreeNode).isExpanded = true;
+              await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths, false);
+              forceLoadPath = expandedPaths.shift();
+            }
           }
         }
       }
@@ -822,9 +832,26 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     let preItem: CompositeTreeNode;
     let name;
     while (name = pathFlag.shift()) {
-      const item = next!.find((c) => c.name.indexOf(name) >= 0);
+      let item = next!.find((c) => c.name.indexOf(name) === 0);
       if (item && pathFlag.length === 0) {
         return item;
+      }
+      // 可能展开后路径发生了变化, 需要重新处理一下当前加载路径
+      if (!item && preItem!) {
+        const compactPath = splitPath(preItem!.name).slice(1);
+        if (compactPath[0] === name) {
+          compactPath.shift();
+          while (compactPath.length > 0 ) {
+            if (compactPath[0] === pathFlag[0]) {
+              compactPath.shift();
+              pathFlag.shift();
+            } else {
+              break;
+            }
+          }
+          name = pathFlag.shift();
+          item = next!.find((c) => c.name.indexOf(name) === 0);
+        }
       }
       // 最终加载到的路径节点
       if (!item || (!CompositeTreeNode.is(item) && pathFlag.length > 0)) {
@@ -833,17 +860,25 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       if (CompositeTreeNode.is(item)) {
         const isCompactName = item.name.indexOf(Path.separator) > 0;
         if (isCompactName) {
-          const compactPath = splitPath(item.name);
-          while (compactPath.length > 1) {
-            compactPath.shift();
-            pathFlag.shift();
+          const compactPath = splitPath(item.name).slice(1);
+          while (compactPath.length > 0 ) {
+            if (compactPath[0] === pathFlag[0]) {
+              compactPath.shift();
+              pathFlag.shift();
+            } else {
+              break;
+            }
           }
         }
         if (!(item as CompositeTreeNode)._children) {
-          await (item as CompositeTreeNode).hardReloadChildren();
+          await (item as CompositeTreeNode).setExpanded(true);
         }
-        next = (item as CompositeTreeNode)._children;
-        preItem = (item as CompositeTreeNode);
+        if (item && pathFlag.length === 0) {
+          return item;
+        } else {
+          next = (item as CompositeTreeNode)._children;
+          preItem = (item as CompositeTreeNode);
+        }
       }
     }
   }
