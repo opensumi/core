@@ -8,26 +8,30 @@ import { DebugContribution } from '../debug-contribution';
 import { DebugConsoleSession } from '../console/debug-console-session';
 
 import throttle = require('lodash.throttle');
+import { IContextKeyService } from '@ali/ide-core-browser';
 
 const options: monaco.editor.IEditorOptions = {
-  lineNumbers: 'off',
-  lineHeight: 24,
-  lineDecorationsWidth: 0,
+  wordWrap: 'on',
+  overviewRulerLanes: 0,
   glyphMargin: false,
-  minimap: { enabled: false },
+  lineNumbers: 'off',
+  folding: false,
+  selectOnLineNumbers: false,
+  hideCursorInOverviewRuler: true,
+  selectionHighlight: false,
   scrollbar: {
-    handleMouseWheel: false,
-    vertical: 'hidden',
     horizontal: 'hidden',
   },
-  hideCursorInOverviewRuler: true,
-  overviewRulerLanes: 0,
-  revealHorizontalRightPadding: 0,
+  lineDecorationsWidth: 0,
   overviewRulerBorder: false,
-  folding: false,
-  wordWrap: 'off',
-  matchBrackets: false,
+  scrollBeyondLastLine: false,
+  renderLineHighlight: 'none',
   fixedOverflowWidgets: true,
+  acceptSuggestionOnEnter: 'smart',
+  minimap: {
+    enabled: false,
+  },
+  renderIndentGuides: false,
 };
 
 @Injectable()
@@ -47,16 +51,32 @@ export class DebugConsoleService {
   @Autowired(CommandRegistry)
   protected readonly commands: CommandRegistry;
 
+  @Autowired(IContextKeyService)
+  protected readonly contextKeyService: IContextKeyService;
+
   @observable.shallow
   nodes: any[] = [];
 
   protected _consoleModel: monaco.editor.ITextModel;
   protected _consoleEditor: monaco.editor.ICodeEditor;
   protected _isCommandOrCtrl: boolean = false;
+  protected _element: HTMLDivElement | null = null;
+
+  static keySet = new Set(['inDebugMode']);
 
   constructor() {
     this.debugConsole.onDidChange(() => {
       this.throttleUpdateNodes();
+    });
+    this.contextKeyService.onDidChangeContext((e) => {
+      if (e.payload.affectsSome(DebugConsoleService.keySet)) {
+        const inDebugMode = this.contextKeyService.match('inDebugMode');
+        if (inDebugMode) {
+          this.enable();
+        } else {
+          this.disable();
+        }
+      }
     });
   }
 
@@ -106,8 +126,30 @@ export class DebugConsoleService {
     this._isCommandOrCtrl = false;
   }
 
+  set element(e: HTMLDivElement | null) {
+    this._element = e;
+    this.editorService.createCodeEditor(this._element!, { ...options }).then((codeEditor) => {
+      const editor = codeEditor.monacoEditor;
+      editor.onKeyDown((e) => {
+        this._handleKeyDown(e, this._consoleModel);
+      });
+      editor.onKeyUp(() => {
+        this._handleKeyUp();
+      });
+      this._consoleEditor = editor;
+    });
+  }
+
+  get element() {
+    return this._element;
+  }
+
   @action.bound
-  async createConsoleInput(container: HTMLDivElement) {
+  async _createConsoleInput() {
+    if (!this._consoleEditor) {
+      return;
+    }
+
     const docModel = await this.documentService.createModelReference(this.consoleInputUri);
     const model = docModel.instance.getMonacoModel();
     model.updateOptions({ tabSize: 2 });
@@ -117,22 +159,24 @@ export class DebugConsoleService {
       }
       this._onValueChange.fire(this.consoleInputUri);
     });
-    this.editorService.createCodeEditor(container, { model, ...options }).then((codeEditor) => {
-      const editor = codeEditor.monacoEditor;
-      editor.layout();
-      editor.onKeyDown((e) => {
-        this._handleKeyDown(e, model);
-      });
-      editor.onKeyUp(() => {
-        this._handleKeyUp();
-      });
-      this._consoleEditor = editor;
-    });
     this._consoleModel = model;
+    this._consoleEditor.setModel(model);
+
+    setTimeout(() => {
+      this._consoleEditor.layout();
+    }, 0);
   }
 
   get consoleInputValue() {
     return (this._consoleModel && this._consoleModel.getValue()) || '';
+  }
+
+  async enable() {
+    return await this._createConsoleInput();
+  }
+
+  disable() {
+    this._consoleEditor.setModel(null);
   }
 }
 
@@ -156,7 +200,7 @@ export class DebugConsoleDocumentProvider implements IEditorDocumentModelContent
   onDidChangeContent = this.debugConsole.onValueChange;
 
   preferLanguageForUri() {
-    return 'javascript';
+    return 'plaintext';
   }
 
   saveDocumentModel() {
