@@ -17,7 +17,7 @@ export interface MenusSchema {
   [MenuPosition: string]: MenuActionFormat[];
 }
 
-function parseMenuId(value: string): MenuId | string {
+export function parseMenuId(value: string): MenuId | string {
   switch (value) {
     // 以下仅保留对 vscode 部分 menuId 的兼容
     case 'touchBar':
@@ -31,6 +31,21 @@ function parseMenuId(value: string): MenuId | string {
     default:
       return value;
   }
+}
+
+export function parseMenuGroup(groupStr?: string) {
+  let group: string | undefined;
+  let order: number | undefined;
+  if (groupStr) {
+    const idx = groupStr.lastIndexOf('@');
+    if (idx > 0) {
+      group = groupStr.substr(0, idx);
+      order = Number(groupStr.substr(idx + 1)) || undefined;
+    } else {
+      group = groupStr;
+    }
+  }
+  return [group, order];
 }
 
 export function isValidMenuItems(menu: MenuActionFormat[], collector: Console): boolean {
@@ -130,17 +145,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           collector.info(formatLocalize('dupe.command'));
         }
 
-        let group: string | undefined;
-        let order: number | undefined;
-        if (item.group) {
-          const idx = item.group.lastIndexOf('@');
-          if (idx > 0) {
-            group = item.group.substr(0, idx);
-            order = Number(item.group.substr(idx + 1)) || undefined;
-          } else {
-            group = item.group;
-          }
-        }
+        const [group, order] = parseMenuGroup(item.group);
 
         if (menuId === MenuId.EditorTitle && command.iconClass) {
           this.addDispose(this.editorActionRegistry.registerEditorAction({
