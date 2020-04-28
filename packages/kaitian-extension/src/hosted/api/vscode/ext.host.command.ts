@@ -116,9 +116,9 @@ export class ExtHostCommands implements IExtHostCommands {
     if (this.buildInCommands) {
       this.logger.log('register builtIn commands');
       for (const command of this.buildInCommands) {
-        const { id, handler, description } = command;
+        const { id, handler } = command;
         this.logger.verbose(`register builtIn command ${id}`);
-        this.register(id, handler, description);
+        this.register(id, handler);
       }
     }
 
@@ -156,13 +156,16 @@ export class ExtHostCommands implements IExtHostCommands {
     });
   }
 
-  private register(id: string, handler: (...args: any[]) => any, description?: ICommandHandlerDescription): Disposable {
-    return this.registerCommand(false, id, { handler, thisArg: this, description});
+  private register(id: string, commandHandler: CommandHandler | Handler, description?: ICommandHandlerDescription): Disposable {
+    if (isFunction(commandHandler)) {
+      return this.registerCommand(false, id, {
+        handler: commandHandler, thisArg: this, description,
+      });
+    }
+    return this.registerCommand(false, id, { ...commandHandler, thisArg: this });
   }
 
-  registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: ICommandHandlerDescription): Disposable;
-  registerCommand(global: boolean, id: string, handler: CommandHandler): Disposable;
-  registerCommand(global: boolean, id: string, handler: Handler | CommandHandler, thisArg?: any, description?: ICommandHandlerDescription): Disposable {
+  registerCommand(global: boolean, id: string, handler: CommandHandler | Handler, thisArg?: any, description?: ICommandHandlerDescription): Disposable {
     this.logger.log('ExtHostCommands#registerCommand', id);
 
     if (!id.trim().length) {
