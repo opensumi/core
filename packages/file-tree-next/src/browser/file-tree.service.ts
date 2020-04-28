@@ -171,15 +171,17 @@ export class FileTreeService extends Tree {
         // 但软连接目录下的其他目录不受影响
         if (this.isCompactMode && !isCompressedFocused && !parent.filestat.isSymbolicLink) {
           const parentURI = new URI(childrenParentStat.uri);
-          const parentName = parent.uri.parent.relative(parentURI)?.toString();
-          if (parentName && parentName !== parent.name) {
-            this.removeNodeCacheByPath(parent.path);
-            parent.updateName(parentName);
-            parent.updateURI(parentURI);
-            parent.updateFileStat(childrenParentStat);
-            parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parentURI));
-            // Re-Cache Node
-            this.cacheNodes([parent] as (File | Directory)[]);
+          if (parent && parent.parent) {
+            const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
+            if (parentName && parentName !== parent.name) {
+              this.removeNodeCacheByPath(parent.path);
+              parent.updateName(parentName);
+              parent.updateURI(parentURI);
+              parent.updateFileStat(childrenParentStat);
+              parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parentURI));
+              // Re-Cache Node
+              this.cacheNodes([parent] as (File | Directory)[]);
+            }
           }
         }
         if (children.length > 0) {

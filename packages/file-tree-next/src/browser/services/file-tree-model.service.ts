@@ -698,7 +698,7 @@ export class FileTreeModelService {
     const names = coalesce(name.split(/[\\/]/));
     if (parent) {
       // 不允许覆盖已存在的文件
-      const child = parent.children?.find((child) => child.name === name);
+      const child = parent.children?.find((child) => child.name.indexOf(name) === 0);
       if (child) {
         return {
           message: formatLocalize('validate.tree.fileNameExistsError', name),
@@ -819,7 +819,6 @@ export class FileTreeModelService {
       // 在焦点元素销毁时，electron与chrome web上处理焦点的方式略有不同
       // 这里需要明确将FileTree的explorerFocused设置为正确的false
       this.fileTreeContextKey.explorerFocused.set(false);
-
     };
 
     const handleCancel = () => {

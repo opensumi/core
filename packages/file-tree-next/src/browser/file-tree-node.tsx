@@ -224,22 +224,13 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         const clickHandler = (event: React.MouseEvent) => {
           event.stopPropagation();
           setActiveIndex(index);
-          let activeUri: URI;
-          let step = paths.length - index - 1;
-          activeUri = node.uri!;
-          while (step --) {
-            activeUri = activeUri.parent!;
-          }
+          const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
           onClick(event, item as File, itemType, activeUri!);
         };
         const contextMenuHandler = (event: React.MouseEvent) => {
           event.stopPropagation();
           setActiveIndex(index);
-          let activeUri: URI;
-          let step = paths.length - index - 1;
-          while (step--) {
-            activeUri = node.uri.parent!;
-          }
+          const activeUri: URI = item.parent.uri.resolve(paths.slice(0, index + 1).join(Path.separator));
           onContextMenu(event, item as File, itemType, activeUri!);
         };
         return <span key={localPath}>
