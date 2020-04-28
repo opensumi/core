@@ -8,14 +8,13 @@ import { VariablesTree, RecycleList } from '@ali/ide-core-browser/lib/components
 import { DebugVariable, ExpressionItem } from '../console/debug-console-items';
 
 export const DebugConsoleView = observer(() => {
-  const { nodes, createConsoleInput } = useInjectable<DebugConsoleService>(DebugConsoleService);
+  const service = useInjectable<DebugConsoleService>(DebugConsoleService);
   const debugConsoleRef = React.createRef<HTMLDivElement>();
   const debugInputRef = React.createRef<HTMLDivElement>();
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState({});
 
   React.useEffect(() => {
-    const container = debugInputRef.current;
-    createConsoleInput(container!);
+    service.element = debugInputRef.current;
   }, [debugInputRef.current]);
 
   React.useEffect(() => {
@@ -59,7 +58,7 @@ export const DebugConsoleView = observer(() => {
 
   return <div className={ styles.debug_console } ref={ debugConsoleRef }>
     <RecycleList
-      data={ nodes }
+      data={ service.nodes }
       template={ template }
       sliceSize={ 100 }
       style={ scrollContainerStyle }
