@@ -277,10 +277,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (this.props.model !== prevProps.model) {
       this.disposables.dispose();
       const { model } = this.props;
-      this.listRef.current.scrollTo(model.state.scrollOffset);
+      this.listRef.current!.scrollTo(model.state.scrollOffset);
       this.disposables.push(model.onChange(this.batchUpdate));
       this.disposables.push(model.state.onDidLoadState(() => {
-        this.listRef.current.scrollTo(model.state.scrollOffset);
+        this.listRef.current!.scrollTo(model.state.scrollOffset);
       }));
       this.onDidModelChangeEmitter.fire({
         preModel: prevProps.model,
@@ -320,7 +320,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
     if (this.newPromptInsertionIndex >= 0) {
       // 说明已在输入框已在可视区域
-      this.listRef.current.scrollToItem(this.newPromptInsertionIndex);
+      this.listRef.current!.scrollToItem(this.newPromptInsertionIndex);
     } else {
       this.tryScrollIntoViewWhileStable(this.promptHandle as any);
     }
@@ -354,7 +354,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     } else {
       await this.batchUpdate();
     }
-    this.listRef.current.scrollToItem(root.getIndexAtTreeNodeId(this.promptTargetID));
+    this.listRef.current!.scrollToItem(root.getIndexAtTreeNodeId(this.promptTargetID));
     return this.promptHandle as RenamePromptHandle;
   }
 
@@ -414,7 +414,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
     Event.once(this.props.model.onChange)(() => {
       if (root.isItemVisibleAtSurface(node)) {
-        this.listRef.current.scrollToItem(root.getIndexAtTreeNode(node), align);
+        this.listRef.current!.scrollToItem(root.getIndexAtTreeNode(node), align);
         this.tryEnsureVisibleTimes = 0;
       } else {
         this.tryEnsureVisibleTimes ++;
@@ -427,7 +427,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const { root } = this.props.model;
     const idx = root.getIndexAtTreeNode(node);
     if (idx > -1) {
-      this.listRef.current.scrollToItem(idx, align);
+      this.listRef.current!.scrollToItem(idx, align);
       return true;
     }
     return false;
@@ -435,10 +435,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   public componentDidMount() {
     const { model, onReady } = this.props;
-    this.listRef.current.scrollTo(model.state.scrollOffset);
+    this.listRef.current!.scrollTo(model.state.scrollOffset);
     this.disposables.push(model.onChange(this.batchUpdate));
     this.disposables.push(model.state.onDidLoadState(() => {
-      this.listRef.current.scrollTo(model.state.scrollOffset);
+      this.listRef.current!.scrollTo(model.state.scrollOffset);
     }));
     if (typeof onReady === 'function') {
       const api: IRecycleTreeHandle = {
