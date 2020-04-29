@@ -3,20 +3,16 @@
 .output {
   font-size: @kt-content-font-size;
   color: @kt-content-font-color0;
-  height: 100%;
-  overflow: auto;
+  // height: 100%;
+  // overflow: auto;
   user-select: text;
+  white-space: normal;
+  font-family: 'monospace';
 
   code {
     background-color: transparent;
   }
-  .content {
-    width: 100%;
-    overflow: auto;
-    height: 100%;
-    padding: 11px;
-    box-sizing: border-box;
-  }
+
   .overlay {
     position: absolute;
     top: -28px;
@@ -49,4 +45,10 @@
 .select {
   width: auto !important;
   min-width: 150px !important;
+}
+
+.outputItem {
+  white-space: nowrap;
+  margin-left: 10px;
+  margin-right: 10px;
 }
