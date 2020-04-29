@@ -737,6 +737,10 @@ export class FileTreeModelService {
         const target = promptHandle.target as (File | Directory);
         let from = target.uri;
         const isCompactNode = target.name.indexOf(Path.separator) > 0;
+        // 无变化，直接返回
+        if (newName === target.name) {
+          return true;
+        }
         promptHandle.addAddonAfter('loading_indicator');
         if (isCompactNode) {
           // 查找正确的来源节点路径
@@ -827,18 +831,16 @@ export class FileTreeModelService {
     const handleDestroy = () => {
       // 在焦点元素销毁时，electron与chrome web上处理焦点的方式略有不同
       // 这里需要明确将FileTree的explorerFocused设置为正确的false
-      this.fileTreeContextKey.explorerFocused.set(false);
+      this.fileTreeContextKey.filesExplorerFocused.set(false);
+      this.fileTreeContextKey.filesExplorerInputFocused.set(false);
     };
-
     const handleCancel = () => {
-      this.fileTreeContextKey.explorerFocused.set(false);
       if (this.fileTreeService.isCompactMode) {
         if (promptHandle instanceof NewPromptHandle) {
           this.fileTreeService.refresh(promptHandle.parent as Directory);
         }
       }
     };
-
     const handleChange = (currentValue) => {
       const validateMessage = this.validateFileName(promptHandle, currentValue);
       if (!!validateMessage) {

@@ -5,7 +5,7 @@ import { FileTreeService } from './file-tree.service';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
 import { KAITIAN_MUTI_WORKSPACE_EXT, IWorkspaceService, UNTITLED_WORKSPACE } from '@ali/ide-workspace';
-import { FileTree, FILE_TREE_FIELD_ID } from './file-tree';
+import { FileTree, FILE_TREE_FIELD_NAME } from './file-tree';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { NextMenuContribution, IMenuRegistry, MenuId, ExplorerContextCallback } from '@ali/ide-core-browser/lib/menu/next';
@@ -93,7 +93,7 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   private detectBlur = (event) => {
-    if (event.target?.id === FILE_TREE_FIELD_ID) {
+    if (event.type === 'blur' &&  event.target?.dataset && event.target.dataset['name'] === FILE_TREE_FIELD_NAME) {
       this.fileTreeModelService.handleTreeBlur();
     }
   }
