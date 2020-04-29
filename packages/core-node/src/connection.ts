@@ -2,7 +2,7 @@ import * as http from 'http';
 import * as net from 'net';
 import { NodeModule } from './node-module';
 import { WebSocketServerRoute, WebSocketHandler, WSChannel } from '@ali/ide-connection';
-import { Injector, ClassCreator } from '@ali/common-di';
+import { Injector, ClassCreator, FactoryCreator } from '@ali/common-di';
 import * as ws from 'ws';
 
 import {
@@ -94,12 +94,21 @@ export function bindModuleBackService(injector: Injector, modules: NodeModule[],
           if (!injector.creatorMap.get(serviceToken)) {
             continue;
           }
-          const serviceClass = (injector.creatorMap.get(serviceToken) as ClassCreator).useClass;
-
-          childInjector.addProviders({
-            token: serviceToken,
-            useClass: serviceClass,
-          });
+          const creator = injector.creatorMap.get(serviceToken)!;
+          // @ts-ignore
+          if (creator.useFactory) {
+            const serviceFactory = (creator as FactoryCreator).useFactory;
+            childInjector.addProviders({
+              token: serviceToken,
+              useValue: serviceFactory(childInjector),
+            });
+          } else {
+            const serviceClass = (creator as ClassCreator).useClass;
+            childInjector.addProviders({
+              token: serviceToken,
+              useClass: serviceClass,
+            });
+          }
           const serviceInstance = childInjector.get(serviceToken);
 
           if (serviceInstance.setConnectionClientId && clientId) {
