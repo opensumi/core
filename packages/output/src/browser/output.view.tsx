@@ -4,33 +4,32 @@ import { observer } from 'mobx-react-lite';
 import { useInjectable, localize, CommandService, EDITOR_COMMANDS, isElectronRenderer, ViewState } from '@ali/ide-core-browser';
 import { Select, Option } from '@ali/ide-components';
 import { Select as NativeSelect } from '@ali/ide-core-browser/lib/components/select';
-import { OutputService } from './output.service';
-import * as styles from './output.module.less';
-import { InfinityList } from '@ali/ide-core-browser/lib/components';
+import { FixedSizeList, areEqual, ListChildComponentProps } from 'react-window';
 
+import { OutputService } from './output.service';
 import Ansi from '../common/ansi';
 
-const style: React.CSSProperties = {
-  whiteSpace: 'normal',
-  fontFamily: 'monospace',
-};
+import * as styles from './output.module.less';
 
 interface IOutputItem {
   line: string;
-  id: number;
+  id: string;
   onPath: (path: string) => void;
 }
 
-const OutputTemplate: React.FC<{ data: IOutputItem; index: number }> = ({ data: { line, onPath }, index }) => {
-  return (
-    <div style={style} key={`${line}-${index}`}><Ansi linkify={true} onPath={onPath}>{line}</Ansi></div>
-  );
-};
+const OutputItem: React.FC<ListChildComponentProps> = React.memo(({ data, index, style }) => {
+  const { line, onPath } = (data as IOutputItem)[index];
+  return <div style={style} className={styles.outputItem}>
+    <Ansi linkify onPath={onPath}>{line}</Ansi>
+  </div>;
+}, areEqual);
 
 export const Output = observer(({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);
   const commandService = useInjectable<CommandService>(CommandService);
   const [rawLines, setRawLines] = React.useState(outputService.getChannels()[0]?.getLines() || []);
+
+  const listRef = React.createRef<FixedSizeList>();
 
   useEffect(() => {
     outputService.viewHeight = String(viewState.height);
@@ -47,46 +46,55 @@ export const Output = observer(({ viewState }: { viewState: ViewState }) => {
     setRawLines(outputService.selectedChannel?.getLines() || []);
   }, [outputService.keys]);
 
-  const renderLines = (rawLines): IOutputItem[] => {
-
+  const data = React.useMemo(() => {
     const result: IOutputItem[] = [];
+
+    if (!Array.isArray(rawLines) || !rawLines.length) {
+      result.push({ line: localize('output.channel.none', '还没有任何输出'), id: '-1', onPath: Function.prototype as any });
+      return result;
+    }
 
     const onPath = (path) => {
       commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, path, { disableNavigate: false, preview: false });
     };
-    for (const text of rawLines) {
+    rawLines.forEach((text, i) => {
       const lines = text.split(/[\n\r]+/);
       lines.forEach((line, idx) => {
         if (line) {
-          result.push({ line, id: idx, onPath });
+          result.push({ line, id: i + '' + idx, onPath });
         }
       });
-    }
+    });
 
     if (result.length === 0) {
-      result.push({ line: localize('output.channel.none', '还没有任何输出'), id: -1, onPath });
+      result.push({ line: localize('output.channel.none', '还没有任何输出'), id: '-1', onPath });
     }
     return result;
-  };
+  }, [ rawLines ]);
 
-  return <React.Fragment>
-    <div className={styles.output}>
-      <InfinityList
-        template={OutputTemplate}
-        getContainer={(ref) => ref}
-        style={style}
-        data={renderLines(rawLines)}
-        className={styles.content}
-        keyProp={'id'}
-        isLoading={false}
-        isDrained={false}
-        sliceSize={30}
-        sliceThreshold={30}
-        scrollBottomIfActive={true}
-      />
+  React.useEffect(() => {
+    if (listRef && listRef.current) {
+      // 自动吸底
+      listRef.current.scrollTo(data.length * 20);
+    }
+  }, [data.length]);
+
+  return (
+    <div className={styles.output} style={{paddingTop: 10}}>
+      <FixedSizeList
+        ref={listRef}
+        height={viewState.height - 10 /* 减去 padding-top */}
+        width={viewState.width}
+        itemSize={20}
+        itemCount={data.length}
+        itemData={data}>
+        {OutputItem}
+      </FixedSizeList>
     </div>
-  </React.Fragment>;
+  );
 });
+
+Output.displayName = 'Output';
 
 export const ChannelSelector = observer(() => {
   const NONE = '<no channels>';
