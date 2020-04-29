@@ -17,7 +17,7 @@ const EXTENSION_JSON_URI = 'vscode://schemas/vscode-extensions';
 const schema = {
   properties: {
     kaitianContributes: {
-      description: localize('vscode.extension.kaitianContributes', 'All contributions of the Kaitian extension represented by this package.'),
+      description: localize('vscode.extension.kaitianContributes', 'All contributions of the KAITIAN extension represented by this package.'),
       type: 'object',
       properties: {
       } as { [key: string]: any },
