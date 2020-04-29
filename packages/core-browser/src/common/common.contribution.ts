@@ -58,7 +58,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
     command.registerCommand(EDITOR_COMMANDS.REDO);
     command.registerCommand(COMMON_COMMANDS.ABOUT_COMMAND, {
       execute: () => {
-        alert(replaceLocalizePlaceholder(this.appConfig.appName) || 'Kaitian IDE Framework'); // todo
+        alert(replaceLocalizePlaceholder(this.appConfig.appName) || 'KAITIAN IDE Framework'); // todo
       },
     });
   }
@@ -66,7 +66,7 @@ export class ClientCommonContribution implements CommandContribution, Preference
   registerNextMenus(menus: IMenuRegistry): void {
     // 注册 Menubar
     if (isElectronRenderer()) {
-      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'Kaitian Electron'), order: 0});
+      menus.registerMenubarItem(MenuId.MenubarAppMenu, { label: localize('app.name', 'KAITIAN Electron'), order: 0});
     }
     menus.registerMenubarItem(MenuId.MenubarFileMenu, { label: localize('menu-bar.title.file'), order: 1 });
     menus.registerMenubarItem(MenuId.MenubarEditMenu, { label: localize('menu-bar.title.edit'), order: 2 });
