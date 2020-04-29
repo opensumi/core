@@ -332,7 +332,7 @@ export class FileTreeService extends Tree {
     const oldPath = await this.getFileTreeNodePathByUri(sourceUri);
     const newPath = await this.getFileTreeNodePathByUri(targetUri);
     // 判断是否为重命名场景，如果是重命名，则不需要刷新父目录
-    const shouldReloadParent = sourceUri.parent.isEqual(targetUri.parent) ? false : true;
+    const shouldReloadParent = sourceUri.parent.isEqual(targetUri.parent) ? false : this.isCompactMode;
     this.moveNodeByPath(node, oldPath, newPath, shouldReloadParent);
   }
 
@@ -408,11 +408,10 @@ export class FileTreeService extends Tree {
           }
         }
       } else {
-        const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
         const node = this.getNodeByPathOrUri(uri);
         if (node && this.root?.isItemVisibleAtSurface(node)) {
           continue;
-        } else if (parent && isCompressedFocused) {
+        } else if (parent && this.isCompactMode) {
           this.refresh(parent as Directory);
         }
       }
