@@ -42,6 +42,11 @@ export abstract class PromptHandle {
     this.$ = document.createElement('input');
     this.$.setAttribute('type', 'text');
     this.$.setAttribute('name', 'no_keybinding');
+    // reset props
+    this.$.setAttribute('spellcheck', 'false');
+    this.$.setAttribute('autoCapitalize', 'off');
+    this.$.setAttribute('autoCorrect', 'off');
+    this.$.setAttribute('autoComplete', 'off');
     this.ProxiedInput = bindInputElement(this.$);
     this.$.addEventListener('click', this.handleClick);
     this.$.addEventListener('keyup', this.handleKeyup);
