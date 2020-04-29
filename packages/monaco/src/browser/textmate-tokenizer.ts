@@ -18,17 +18,17 @@ import { INITIAL, StackElement, IGrammar } from 'vscode-textmate';
 
 export class TokenizerState implements monaco.languages.IState {
 
-    constructor(
-        public readonly ruleStack: StackElement,
-    ) { }
+  constructor(
+    public readonly ruleStack: StackElement,
+  ) { }
 
-    clone(): monaco.languages.IState {
-        return new TokenizerState(this.ruleStack);
-    }
+  clone(): monaco.languages.IState {
+    return new TokenizerState(this.ruleStack);
+  }
 
-    equals(other: monaco.languages.IState): boolean {
-        return other instanceof TokenizerState && (other === this || other.ruleStack === this.ruleStack);
-    }
+  equals(other: monaco.languages.IState): boolean {
+    return other instanceof TokenizerState && (other === this || other.ruleStack === this.ruleStack);
+  }
 
 }
 
@@ -37,35 +37,60 @@ export class TokenizerState implements monaco.languages.IState {
  */
 export interface TokenizerOption {
 
-    /**
-     * Maximum line length that will be handled by the TextMate tokenizer. If the length of the actual line exceeds this
-     * limit, the tokenizer terminates and the tokenization of any subsequent lines might be broken.
-     *
-     * If the `lineLimit` is not defined, it means, there are no line length limits. Otherwise, it must be a positive
-     * integer or an error will be thrown.
-     */
-    readonly lineLimit?: number;
+  /**
+   * Maximum line length that will be handled by the TextMate tokenizer. If the length of the actual line exceeds this
+   * limit, the tokenizer terminates and the tokenization of any subsequent lines might be broken.
+   *
+   * If the `lineLimit` is not defined, it means, there are no line length limits. Otherwise, it must be a positive
+   * integer or an error will be thrown.
+   */
+  readonly lineLimit?: number;
 
 }
 
+export const enum MetadataConsts {
+  LANGUAGEID_MASK = 255,
+  TOKEN_TYPE_MASK = 1792,
+  FONT_STYLE_MASK = 14336,
+  FOREGROUND_MASK = 8372224,
+  BACKGROUND_MASK = 4286578688,
+  LANGUAGEID_OFFSET = 0,
+  TOKEN_TYPE_OFFSET = 8,
+  FONT_STYLE_OFFSET = 11,
+  FOREGROUND_OFFSET = 14,
+  BACKGROUND_OFFSET = 23,
+}
+
 export function createTextmateTokenizer(
-    grammar: IGrammar, options: TokenizerOption): monaco.languages.EncodedTokensProvider {
-    if (options.lineLimit !== undefined && (options.lineLimit <= 0 || !Number.isInteger(options.lineLimit))) {
-        throw new Error(`The 'lineLimit' must be a positive integer. It was ${options.lineLimit}.`);
-    }
-    return {
-        getInitialState: () => new TokenizerState(INITIAL),
-        tokenizeEncoded(line: string, state: TokenizerState) {
-            let processedLine = line;
-            if (options.lineLimit !== undefined && line.length > options.lineLimit) {
-                // Line is too long to be tokenized
-                processedLine = line.substr(0, options.lineLimit);
-            }
-            const result = grammar.tokenizeLine2(processedLine, state.ruleStack);
-            return {
-                endState: new TokenizerState(result.ruleStack),
-                tokens: result.tokens,
-            };
-        },
-    };
+  grammar: IGrammar, options: TokenizerOption): monaco.languages.EncodedTokensProvider {
+  if (options.lineLimit !== undefined && (options.lineLimit <= 0 || !Number.isInteger(options.lineLimit))) {
+    throw new Error(`The 'lineLimit' must be a positive integer. It was ${options.lineLimit}.`);
+  }
+  return {
+    getInitialState: () => new TokenizerState(INITIAL),
+    tokenizeEncoded(line: string, state: TokenizerState) {
+      // copied from vscode/src/vs/editor/common/modes/nullMode.ts
+      if (options.lineLimit !== undefined && line.length > options.lineLimit) {
+        const tokens = new Uint32Array(2);
+        tokens[0] = 0;
+        tokens[1] = (
+          (1 << MetadataConsts.LANGUAGEID_OFFSET)
+          | (0 << MetadataConsts.TOKEN_TYPE_OFFSET)
+          | (0 << MetadataConsts.FONT_STYLE_OFFSET)
+          | (1 << MetadataConsts.FOREGROUND_OFFSET)
+          | (2 << MetadataConsts.BACKGROUND_OFFSET)
+        ) >>> 0;
+        // Line is too long to be tokenized
+        return {
+          endState: new TokenizerState(INITIAL),
+          tokens,
+        };
+      }
+      const result = grammar.tokenizeLine2(line, state.ruleStack);
+      return {
+        endState: new TokenizerState(result.ruleStack),
+        tokens: result.tokens,
+      };
+    },
+  };
 }
