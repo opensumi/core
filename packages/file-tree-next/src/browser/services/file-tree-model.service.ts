@@ -114,7 +114,7 @@ export class FileTreeModelService {
 
   private _explorerStorage: IStorage;
 
-  private flushLoadSnapshotDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_FLUSH_DELAY);
+  private flushLocationDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_FLUSH_DELAY);
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
@@ -234,13 +234,6 @@ export class FileTreeModelService {
     }));
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
       this.loadingDecoration.removeTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.WillChangeExpansionState, (target) => {
-      // 确保文件折叠操作时不会受加载快照逻辑影响
-      // 影响主要来源于refresh操作
-      if (!this.flushLoadSnapshotDelayer.isTriggered()) {
-        this.flushLoadSnapshotDelayer.cancel();
-      }
     }));
   }
 
@@ -764,6 +757,9 @@ export class FileTreeModelService {
         // Cause the treeNode move event just changing path and name by default.
         // We should update target uri to new uri by ourself.
         target.uri = to;
+        Event.once(this.treeModel.onChange)(async () => {
+          this.location(to);
+        });
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;
         const newUri = parent.uri.resolve(newName);
@@ -1038,18 +1034,21 @@ export class FileTreeModelService {
     if (this._loadSnapshotReady) {
       await this._loadSnapshotReady;
     }
-    const path = await this.fileTreeService.getFileTreeNodePathByUri(uri);
-    if (path) {
-      if (!this.fileTreeHandle) {
-        return;
+    this.flushLocationDelayer.trigger(async () => {
+      const path = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+      if (path) {
+        if (!this.fileTreeHandle) {
+          return;
+        }
+        await this.fileTreeService.flushEventQueue();
+        let node = this.fileTreeService.getNodeByPathOrUri(path);
+        node = await this.fileTreeHandle.ensureVisible(node || path) as File;
+        if (node) {
+          this.activeFileDecoration(node);
+        }
       }
-      await this.fileTreeService.flushEventQueue();
-      let node = this.fileTreeService.getNodeByPathOrUri(path);
-      node = await this.fileTreeHandle.ensureVisible(node || path) as File;
-      if (node) {
-        this.activeFileDecoration(node);
-      }
-    }
+    });
+
   }
 
   public locationOnShow = (uri: URI) => {
