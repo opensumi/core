@@ -114,7 +114,7 @@ export class FileTreeModelService {
 
   private _explorerStorage: IStorage;
 
-  private flushLoadSnapshotDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_FLUSH_DELAY);
+  private flushLocationDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_FLUSH_DELAY);
   private onDidFocusedFileChangeEmitter: Emitter<URI | void> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
 
@@ -234,13 +234,6 @@ export class FileTreeModelService {
     }));
     this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
       this.loadingDecoration.removeTarget(target);
-    }));
-    this.disposableCollection.push(this.treeModel.root.watcher.on(TreeNodeEvent.WillChangeExpansionState, (target) => {
-      // 确保文件折叠操作时不会受加载快照逻辑影响
-      // 影响主要来源于refresh操作
-      if (!this.flushLoadSnapshotDelayer.isTriggered()) {
-        this.flushLoadSnapshotDelayer.cancel();
-      }
     }));
   }
 
@@ -737,6 +730,10 @@ export class FileTreeModelService {
         const target = promptHandle.target as (File | Directory);
         let from = target.uri;
         const isCompactNode = target.name.indexOf(Path.separator) > 0;
+        // 无变化，直接返回
+        if (newName === target.name) {
+          return true;
+        }
         promptHandle.addAddonAfter('loading_indicator');
         if (isCompactNode) {
           // 查找正确的来源节点路径
@@ -760,6 +757,9 @@ export class FileTreeModelService {
         // Cause the treeNode move event just changing path and name by default.
         // We should update target uri to new uri by ourself.
         target.uri = to;
+        Event.once(this.treeModel.onChange)(async () => {
+          this.location(to);
+        });
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;
         const newUri = parent.uri.resolve(newName);
@@ -827,18 +827,16 @@ export class FileTreeModelService {
     const handleDestroy = () => {
       // 在焦点元素销毁时，electron与chrome web上处理焦点的方式略有不同
       // 这里需要明确将FileTree的explorerFocused设置为正确的false
-      this.fileTreeContextKey.explorerFocused.set(false);
+      this.fileTreeContextKey.filesExplorerFocused.set(false);
+      this.fileTreeContextKey.filesExplorerInputFocused.set(false);
     };
-
     const handleCancel = () => {
-      this.fileTreeContextKey.explorerFocused.set(false);
       if (this.fileTreeService.isCompactMode) {
         if (promptHandle instanceof NewPromptHandle) {
           this.fileTreeService.refresh(promptHandle.parent as Directory);
         }
       }
     };
-
     const handleChange = (currentValue) => {
       const validateMessage = this.validateFileName(promptHandle, currentValue);
       if (!!validateMessage) {
@@ -1036,18 +1034,21 @@ export class FileTreeModelService {
     if (this._loadSnapshotReady) {
       await this._loadSnapshotReady;
     }
-    const path = await this.fileTreeService.getFileTreeNodePathByUri(uri);
-    if (path) {
-      if (!this.fileTreeHandle) {
-        return;
+    return this.flushLocationDelayer.trigger(async () => {
+      const path = await this.fileTreeService.getFileTreeNodePathByUri(uri);
+      if (path) {
+        if (!this.fileTreeHandle) {
+          return;
+        }
+        await this.fileTreeService.flushEventQueue();
+        let node = this.fileTreeService.getNodeByPathOrUri(path);
+        node = await this.fileTreeHandle.ensureVisible(node || path) as File;
+        if (node) {
+          this.activeFileDecoration(node);
+        }
       }
-      await this.fileTreeService.flushEventQueue();
-      let node = this.fileTreeService.getNodeByPathOrUri(path);
-      node = await this.fileTreeHandle.ensureVisible(node || path) as File;
-      if (node) {
-        this.activeFileDecoration(node);
-      }
-    }
+    });
+
   }
 
   public locationOnShow = (uri: URI) => {

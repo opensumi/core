@@ -11,7 +11,7 @@ import * as cls from 'classnames';
 import * as styles from './file-tree.module.less';
 
 export const FILTER_AREA_HEIGHT = 30;
-export const FILE_TREE_FIELD_ID = 'FILE_TREE_FIELD';
+export const FILE_TREE_FIELD_NAME = 'FILE_TREE_FIELD';
 
 export const FileTree = observer(({
   viewState,
@@ -208,7 +208,7 @@ export const FileTree = observer(({
     onDragLeave={handleOuterDragLeave}
     onDragOver={handleOuterDragOver}
     onDrop={handleOuterDrop}
-    id={FILE_TREE_FIELD_ID}
+    data-name={FILE_TREE_FIELD_NAME}
   >
     {renderFilterView()}
     {renderFileTree()}

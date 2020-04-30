@@ -327,13 +327,17 @@ export class FileTreeService extends Tree {
   }
 
   public async moveNode(node: File | Directory, source: string, target: string) {
-    const oldPath = await this.getFileTreeNodePathByUri(new URI(source));
-    const newPath = await this.getFileTreeNodePathByUri(new URI(target));
-    this.moveNodeByPath(node, oldPath, newPath);
+    const sourceUri = new URI(source);
+    const targetUri = new URI(target);
+    const oldPath = await this.getFileTreeNodePathByUri(sourceUri);
+    const newPath = await this.getFileTreeNodePathByUri(targetUri);
+    // 判断是否为重命名场景，如果是重命名，则不需要刷新父目录
+    const shouldReloadParent = sourceUri.parent.isEqual(targetUri.parent) ? false : this.isCompactMode;
+    this.moveNodeByPath(node, oldPath, newPath, shouldReloadParent);
   }
 
   // 软链接目录下，文件节点路径不能通过uri去获取，存在偏差
-  public moveNodeByPath(node: File | Directory, oldPath?: string, newPath?: string) {
+  public moveNodeByPath(node: File | Directory, oldPath?: string, newPath?: string, refreshParent?: boolean) {
     if (oldPath && newPath && newPath !== oldPath) {
       this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved, oldPath, newPath });
       // 压缩模式下，需要尝试更新移动的源节点的父节点及目标节点的目标节点折叠状态
@@ -342,7 +346,7 @@ export class FileTreeService extends Tree {
         const newParentPath = new Path(newPath).dir.toString();
         if (oldParentPath) {
           const oldParentNode = this.getNodeByPathOrUri(oldParentPath);
-          if (!!oldParentNode) {
+          if (!!oldParentNode && refreshParent) {
             this.refresh(oldParentNode as Directory);
           }
         }
@@ -404,11 +408,10 @@ export class FileTreeService extends Tree {
           }
         }
       } else {
-        const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
         const node = this.getNodeByPathOrUri(uri);
         if (node && this.root?.isItemVisibleAtSurface(node)) {
           continue;
-        } else if (parent && isCompressedFocused) {
+        } else if (parent && this.isCompactMode) {
           this.refresh(parent as Directory);
         }
       }
