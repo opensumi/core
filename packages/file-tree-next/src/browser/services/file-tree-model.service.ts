@@ -1034,7 +1034,7 @@ export class FileTreeModelService {
     if (this._loadSnapshotReady) {
       await this._loadSnapshotReady;
     }
-    this.flushLocationDelayer.trigger(async () => {
+    return this.flushLocationDelayer.trigger(async () => {
       const path = await this.fileTreeService.getFileTreeNodePathByUri(uri);
       if (path) {
         if (!this.fileTreeHandle) {
