@@ -107,7 +107,7 @@ export interface IEditorViewContribution {
   /**
    * editor组件主体
    */
-  panel: React.FC;
+  component: React.FC;
 
   /**
    * 渲染方式
