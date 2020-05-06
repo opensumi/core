@@ -204,7 +204,7 @@ export const NextBottomTabbarRenderer: React.FC = () => {
         MoreTabView={TextElipses}
         tabClassName={styles.kt_bottom_tab}
         TabView={TextTabView}
-        barSize={28}
+        barSize={24}
         panelBorderSize={1} />
     </div>
   );
