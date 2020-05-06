@@ -262,14 +262,16 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     if (extension.packageJSON.kaitianContributes && extension.packageJSON.kaitianContributes.nodeMain) {
       extendModule = getNodeRequire()(path.join(extension.path, extension.packageJSON.kaitianContributes.nodeMain));
+      if (!extendModule) {
+        this.logger.warn(`Can not find extendModule ${extension.id}`);
+      }
     } else if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
       extendModule = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
+      if (!extendModule) {
+        this.logger.warn(`Can not find extendModule ${extension.id}`);
+      }
     }
-    if (!extendModule) {
-      this.logger.error(`Can not find extendModule ${extension.id}`);
-      return;
-    }
-    if (extendModule.activate) {
+    if (extendModule && extendModule.activate) {
       try {
         const extendModuleExportsData = await extendModule.activate(context);
         extendExports = extendModuleExportsData;
