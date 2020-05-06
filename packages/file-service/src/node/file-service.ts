@@ -1,4 +1,4 @@
-import { Injectable, Inject, Autowired, Optional } from '@ali/common-di';
+import { Injectable, Inject, Autowired, Optional, Injector } from '@ali/common-di';
 import * as drivelist from 'drivelist';
 import * as paths from 'path';
 import * as fs from 'fs-extra';
@@ -19,7 +19,7 @@ import {
 } from '@ali/ide-core-common';
 import { FileUri, INodeLogger, AppConfig } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection'
-import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
+import { parse, ParsedPattern, match } from '@ali/ide-core-common/lib/utils/glob';
 import { FileChangeEvent, WatchOptions } from '../common/file-service-watcher-protocol';
 import { FileSystemManage } from './file-system-manage';
 import { DiskFileSystemProvider } from './disk-file-system.provider';
@@ -680,8 +680,56 @@ export class FileService extends RPCService implements IFileService {
   }
 
 }
+// 每一个后端连接对应一个 injector
+const safeFsInstanceMap: Map<Injector, IFileService> = new Map();
+export function getSafeFileservice(injector: Injector) {
+  if (safeFsInstanceMap.get(injector)) {
+    return safeFsInstanceMap.get(injector);
+  }
+  const fileService = injector.get(FileService, [FileSystemNodeOptions.DEFAULT]);
+  const appConfig: AppConfig = injector.get(AppConfig);
+  fileServiceInterceptor(fileService, [
+    'exists',
+    'resolveContent',
+    'setContent',
+    'updateContent',
+    'createFile',
+    'createFolder',
+    'delete',
+    'access',
+    'getFsPath',
+    'getFileType',
+  ], appConfig.blockPatterns || [])
+  safeFsInstanceMap.set(injector, fileService);
+  return fileService;
+}
 
 // tslint:disable-next-line:no-any
 function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.ErrnoException {
   return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
+}
+
+// 对于首个参数为uri的方法进行安全拦截
+function fileServiceInterceptor(fileService: IFileService, blackList: string[], blockPatterns: string[]) {
+  for (const method of blackList) {
+    if (typeof fileService[method] === 'function') {
+      // tslint:disable-next-line: ban-types
+      const originFunc: Function = fileService[method];
+      fileService[method] = (...args) => {
+        // 第一个参数为uri/{uri}
+        if (blockPatterns.length > 0) {
+          const uri = typeof args[0] === 'string' ? args[0] : args[0].uri;
+          if (typeof uri === 'string') {
+            for (const blockPattern of blockPatterns) {
+              if (match(blockPattern, uri)) {
+                throw new Error('illegal accessing ' + uri + ' with rule ' + blockPattern);
+              }
+            }
+          }
+        }
+        return originFunc.apply(fileService, args);
+        // copy和move第二个参数也为uri
+      };
+    }
+  }
 }

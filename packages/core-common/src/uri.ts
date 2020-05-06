@@ -220,7 +220,6 @@ export class URI {
   }
 
   matchGlobPattern(pattern: string | IRelativePattern): boolean {
-    console.log(pattern, this.path.toString());
     return match(pattern, this.path.toString());
   }
 

@@ -94,6 +94,10 @@ interface Config {
    */
   staticAllowPath?: string[];
   /**
+   * fileService禁止访问的路径，使用glob匹配
+   */
+  blockPatterns?: string[];
+  /**
    * 获取插件进程句柄方法
    */
   onDidCreateExtensionHostProcess?: (cp: cp.ChildProcess) => void;
@@ -191,6 +195,7 @@ export class ServerApp implements IServerApp {
       maxExtProcessCount: opts.maxExtProcessCount,
       onDidCreateExtensionHostProcess: opts.onDidCreateExtensionHostProcess,
       extHost: process.env.EXTENSION_HOST_ENTRY || opts.extHost,
+      blockPatterns: opts.blockPatterns,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
