@@ -865,7 +865,10 @@ export class FileTreeModelService {
     await this.fileTreeService.flushEventQueue();
     let targetNode: File | Directory;
     // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
-    if (this.focusedFile) {
+    if (uri.isEqual((this.treeModel.root as Directory).uri)) {
+      // 可能为空白区域点击, 即选中的对象为根目录
+      targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
+    } else if (this.focusedFile) {
       targetNode = this.focusedFile;
     } else if (this.selectedFiles.length > 0) {
       targetNode = this.selectedFiles[this.selectedFiles.length - 1];
@@ -874,7 +877,6 @@ export class FileTreeModelService {
     }
     if (targetNode.name !== uri.displayName) {
       // 说明当前在压缩节点的非末尾路径上触发的新建事件， 如 a/b 上右键 a 产生的新建事件
-
       const removePathName = uri.relative(targetNode.uri)?.toString();
       const relativeName = targetNode.name.replace(`${Path.separator}${removePathName}`, '');
       const newTargetUri = (targetNode.parent as Directory).uri.resolve(relativeName);
