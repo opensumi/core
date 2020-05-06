@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { OnEvent, WithEventBus, Throttle } from '@ali/ide-core-common';
+import { OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { AppConfig } from '@ali/ide-core-browser';
 
 import { OutputChannel } from './output.channel';
@@ -54,15 +54,7 @@ export class OutputService extends WithEventBus {
     return Array.from(this.channels.values());
   }
 
-  getChannelNames(): string[] {
-    return Array.from(this.channels.keys());
-  }
-
   @OnEvent(ContentChangeEvent)
-  @Throttle(300, {
-    leading: true,
-    trailing: true,
-  })
   OnContentChange() {
     this.keys = '' + Math.random();
   }
