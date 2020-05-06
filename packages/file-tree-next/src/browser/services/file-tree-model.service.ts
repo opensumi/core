@@ -393,6 +393,9 @@ export class FileTreeModelService {
   }
 
   removeFileDecoration() {
+    if (!this.decorations) {
+      return;
+    }
     this.decorations.removeDecoration(this.selectedDecoration);
     this.decorations.removeDecoration(this.focusedDecoration);
   }
