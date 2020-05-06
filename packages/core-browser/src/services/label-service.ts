@@ -40,7 +40,7 @@ export interface ILabelOptions {
 
 function serializeLabelOptions(options?: ILabelOptions): string {
   if (!options) {
-    return '';
+    return 'default';
   } else {
     return [options.isDirectory ? '0' : '1', options.isOpenedDirectory ? '0' : '1', options.isSymbolicLink ? '0' : '1'].join('');
   }
@@ -72,6 +72,10 @@ export class DefaultUriLabelProvider implements ILabelProvider {
 
 }
 
+interface ICachedLabelProvider {
+  [option: string]: ILabelProvider | undefined;
+}
+
 @Injectable()
 export class LabelService extends WithEventBus {
   @Autowired()
@@ -79,7 +83,7 @@ export class LabelService extends WithEventBus {
 
   private providers: ILabelProvider[] = [];
 
-  private cachedProviderMap: Map<string, ILabelProvider> = new LRUMap<string, ILabelProvider>(300, 200);
+  private cachedProviderMap: Map<string, ICachedLabelProvider> = new LRUMap<string, ICachedLabelProvider>(1000, 500);
 
   private onDidChangeEmitter: Emitter<URI> = new Emitter();
 
@@ -93,9 +97,14 @@ export class LabelService extends WithEventBus {
   }
 
   private getProviderForUri(uri: URI, options?: ILabelOptions): ILabelProvider | undefined {
-    const key = uri.toString() + serializeLabelOptions(options);
-    if (this.cachedProviderMap.has(key)) {
-      return this.cachedProviderMap.get(key);
+    const uriKey = uri.toString();
+    if (!this.cachedProviderMap.has(uriKey)) {
+      this.cachedProviderMap.set(uriKey, {});
+    }
+    const cached = this.cachedProviderMap.get(uriKey)!;
+    const optionKey = serializeLabelOptions(options);
+    if (cached[optionKey]) {
+      return cached[optionKey];
     } else {
       let candidate: ILabelProvider | undefined;
       let currentWeight: number = -1;
@@ -106,7 +115,7 @@ export class LabelService extends WithEventBus {
           currentWeight = weight;
         }
       }
-      this.cachedProviderMap.set(key, candidate!);
+      cached[optionKey] = candidate;
       return candidate;
     }
   }
@@ -117,6 +126,7 @@ export class LabelService extends WithEventBus {
     if (provider.onDidChange) {
       disposer.addDispose(provider.onDidChange((uri) => {
         this.onDidChangeEmitter.fire(uri);
+        this.cachedProviderMap.delete(uri.toString());
       }));
     }
     disposer.addDispose(addElement(this.providers, provider, true));
