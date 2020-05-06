@@ -1,8 +1,3 @@
-import { DebounceSettings, ThrottleSettings } from 'lodash';
-
-import debounce = require('lodash.debounce');
-import throttle = require('lodash.throttle');
-
 import { BasicEvent } from './basic-event';
 import { ConstructorOf } from '../declare';
 import { IEventBus } from './event-bus-types';
@@ -35,42 +30,4 @@ export function OnEvent<T extends BasicEvent<any>>(Construcotor: ConstructorOf<T
     map.set(key, Construcotor);
     Reflect.defineMetadata(EVENT_TOKEN, map, target);
   }
-}
-
-export function Debounce(duration: number = 500, options?: DebounceSettings) {
-  return (target: object, key: string, descriptor: PropertyDescriptor) => {
-    return {
-      configurable: true,
-      enumerable: descriptor.enumerable,
-      get: function getter () {
-        // mount debounced fn to instance not the original class
-        Object.defineProperty(this, key, {
-          configurable: true,
-          enumerable: descriptor.enumerable,
-          value: debounce(descriptor.value, duration, options),
-        })
-
-        return this[key];
-      },
-    };
-  };
-}
-
-export function Throttle(duration: number = 500, options?: ThrottleSettings) {
-  return (target: object, key: string, descriptor: PropertyDescriptor) => {
-    return {
-      configurable: true,
-      enumerable: descriptor.enumerable,
-      get: function getter () {
-        // mount debounced fn to instance not the original class
-        Object.defineProperty(this, key, {
-          configurable: true,
-          enumerable: descriptor.enumerable,
-          value: throttle(descriptor.value, duration, options),
-        })
-
-        return this[key];
-      },
-    };
-  };
 }
