@@ -220,6 +220,8 @@ export const CommentItem: React.FC<{
     commentTitleContext,
     handleDragFiles,
   ] = useCommentContext(contextKeyService, comment);
+  const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
+  const fileUploadHandler = React.useMemo(() => commentsFeatureRegistry.getFileUploadHandler(), []);
   const replyIsEmptyContext = React.useMemo(() => {
     return contextKeyService.createKey('commentIsEmpty', true);
   }, []);
@@ -229,6 +231,17 @@ export const CommentItem: React.FC<{
     replyIsEmptyContext.set(!event.target.value);
     setReplyText(event.target.value);
   }
+
+  const handleDragFilesToReply = React.useCallback(async (files: FileList) => {
+    if (fileUploadHandler) {
+      const appendText = await fileUploadHandler(textValue, files);
+      setReplyText((text) => {
+        const value = text + appendText;
+        replyIsEmptyContext.set(!value);
+        return value;
+      });
+    }
+  }, [ replyText ]);
 
   return (
     <div className={styles.comment_item}>
@@ -301,29 +314,29 @@ export const CommentItem: React.FC<{
           <div className={styles.comment_item_reply_wrap}>
             {replies.map((reply) => <ReplyItem key={reply.id} thread={thread} reply={reply} />)}
             {showReply && (
-               <div>
-                 <CommentsTextArea
-                  autoFocus={true}
-                  value={replyText}
-                  onChange={onChangeReply}
-                  placeholder={`${localize('comments.reply.placeholder')}...`}
-                  dragFiles={handleDragFiles}
-                />
-                <InlineActionBar<ICommentReply>
-                  className={styles.comment_item_reply}
-                  menus={commentThreadContext}
-                  context={[{
-                    thread,
-                    text: replyText,
-                    widget,
-                  }]}
-                  type='button'
-                  afterClick={() => {
-                    setReplyText('');
-                    setShowReply(false);
-                  }}
-                />
-               </div>
+              <div>
+                <CommentsTextArea
+                autoFocus={true}
+                value={replyText}
+                onChange={onChangeReply}
+                placeholder={`${localize('comments.reply.placeholder')}...`}
+                dragFiles={handleDragFilesToReply}
+              />
+              <InlineActionBar<ICommentReply>
+                className={styles.comment_item_reply}
+                menus={commentThreadContext}
+                context={[{
+                  thread,
+                  text: replyText,
+                  widget,
+                }]}
+                type='button'
+                afterClick={() => {
+                  setReplyText('');
+                  setShowReply(false);
+                }}
+              />
+              </div>
             )}
           </div>
         )}
