@@ -802,6 +802,16 @@ export class FileTreeModelService {
         this.validateMessage = undefined;
         return true;
       }
+      if (!newName) {
+        // 清空节点路径焦点态
+        this.fileTreeContextKey.explorerCompressedFocusContext.set(false);
+        this.fileTreeContextKey.explorerCompressedFirstFocusContext.set(false);
+        this.fileTreeContextKey.explorerCompressedLastFocusContext.set(false);
+        if (this.fileTreeService.isCompactMode && promptHandle instanceof NewPromptHandle) {
+          this.fileTreeService.refresh(promptHandle.parent as Directory);
+        }
+        return;
+      }
       await commit(newName);
       return true;
     };
