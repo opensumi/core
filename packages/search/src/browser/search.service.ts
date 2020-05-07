@@ -13,6 +13,7 @@ import {
   IDisposable,
   CommandService,
   COMMON_COMMANDS,
+  RecentStorage,
 } from '@ali/ide-core-browser';
 import {
   LocalStorageService,
@@ -81,6 +82,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
   contentSearchServer: IContentSearchServer;
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;
+  @Autowired(RecentStorage)
+  recentStorage: RecentStorage;
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
   @Autowired(CommandService)
@@ -482,7 +485,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   get searchHistory(): SearchHistory {
     if (!this._searchHistory) {
-      this._searchHistory = new SearchHistory(this, this.workspaceService);
+      this._searchHistory = new SearchHistory(this, this.recentStorage);
     }
     return this._searchHistory;
   }

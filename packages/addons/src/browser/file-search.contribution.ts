@@ -29,6 +29,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorGroupSplitAction } from '@ali/ide-editor';
 import { getIcon } from '@ali/ide-core-browser';
 import { FileSearchServicePath } from '@ali/ide-file-search/lib/common';
+import { RecentFilesManager } from '@ali/ide-core-browser';
 
 const DEFAULT_FILE_SEARCH_LIMIT = 200;
 
@@ -155,6 +156,9 @@ export class FileSearchQuickCommandHandler {
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
 
+  @Autowired(RecentFilesManager)
+  private readonly recentFilesManager: RecentFilesManager;
+
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
@@ -257,7 +261,7 @@ export class FileSearchQuickCommandHandler {
   }
 
   private async getRecentlyItems(alreadyCollected, lookFor, token) {
-    const recentlyOpenedFiles = await this.workspaceService.getMostRecentlyOpenedFiles() || [];
+    const recentlyOpenedFiles = await this.recentFilesManager.getMostRecentlyOpenedFiles() || [];
 
     return await this.getItems(
       recentlyOpenedFiles.filter((uri: string) => {

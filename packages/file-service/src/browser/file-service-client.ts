@@ -2,7 +2,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { URI, Emitter, Event, isElectronRenderer } from '@ali/ide-core-common';
+import { URI, Emitter, Event, isElectronRenderer, IEventBus } from '@ali/ide-core-common';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import {
   FileChangeEvent,
@@ -18,6 +18,7 @@ import {
 import { FileSystemWatcher } from './watcher';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { EncodingInfo } from '../common/encoding';
+import { FilesChangeEvent } from '@ali/ide-core-browser';
 
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
@@ -49,6 +50,9 @@ export class FileServiceClient implements IFileServiceClient {
 
   @Autowired(INJECTOR_TOKEN)
   private inject;
+
+  @Autowired(IEventBus)
+  private eventBus: IEventBus;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -114,6 +118,7 @@ export class FileServiceClient implements IFileServiceClient {
       } as FileChange;
     });
     this.onFileChangedEmitter.fire(changes);
+    this.eventBus.fire(new FilesChangeEvent(changes));
   }
 
   // 添加监听文件
