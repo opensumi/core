@@ -566,5 +566,12 @@ export const localizationBundle = {
     'comments.panel.placeholder': '暂无评论',
 
     'treeview.command.action.collapse': '全部折叠',
+
+    'task.outputchannel.name': '任务',
+    'task.label': '{0} : {1}',
+    'TaskService.pickRunTask': '选择要运行的任务',
+    'TerminalTaskSystem.terminalName': '任务 - {0}',
+    'terminal.integrated.exitedWithCode': '终端进程已终止，退出代码: {0}',
+    'reuseTerminal': '终端将被任务重用，按任意键关闭。',
   },
 };

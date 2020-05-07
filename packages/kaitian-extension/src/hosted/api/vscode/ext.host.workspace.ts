@@ -14,12 +14,16 @@ import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
 import { ExtensionIdentifier } from '../../../common/vscode/extension';
 import { CancellationToken } from '@ali/vscode-jsonrpc';
 import * as glob from 'mz-modules/glob';
+import { IExtHostTasks } from '../../../common/vscode/tasks';
+import { IExtension } from '../../../common';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
   extHostPreference: ExtHostPreference,
   extHostDocument: ExtensionDocumentDataManager,
   extHostFileSystem: IExtHostFileSystem,
+  extHostTasks: IExtHostTasks,
+  extension: IExtension,
 ) {
   const fileSystemApi = createFileSystemApiFactory(extHostFileSystem);
 
@@ -50,8 +54,9 @@ export function createWorkspaceApiFactory(
     onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument.bind(extHostDocument),
     onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument),
     registerTextDocumentContentProvider: extHostDocument.registerTextDocumentContentProvider.bind(extHostDocument),
-    registerTaskProvider: () => {
-      return null;
+    registerTaskProvider: (type, provider) => {
+      console.warn(false, '[Deprecated warning]: Use the corresponding function on the `tasks` namespace instead');
+      return extHostTasks.registerTaskProvider(type, provider, extension);
     },
     applyEdit: (edit) => {
       return extHostWorkspace.applyEdit(edit);

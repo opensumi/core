@@ -44,6 +44,9 @@ import { injectMockPreferences } from '@ali/ide-core-browser/lib/mocks/preferenc
 import { ResourceServiceImpl } from '@ali/ide-editor/lib/browser/resource.service';
 import { EditorComponentRegistryImpl } from '@ali/ide-editor/lib/browser/component';
 import { ExtHostStorage } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.storage';
+import { ExtHostTasks } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
+import { ExtHostTerminal } from '@ali/ide-kaitian-extension/lib/hosted/api/vscode/ext.host.terminal';
+import { mockExtensions } from '../__mock__/extensions';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -174,6 +177,8 @@ describe('MainThreadWorkspace API Test Suite', () => {
     const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
     extHostDocs = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostDocuments, injector.get(ExtensionDocumentDataManagerImpl, [rpcProtocolExt]));
     const extWorkspace = new ExtHostWorkspace(rpcProtocolExt, extHostMessage, extHostDocs);
+    const extHostTerminal = new ExtHostTerminal(rpcProtocolExt);
+    const extHostTask = new ExtHostTasks(rpcProtocolExt, extHostTerminal, extWorkspace);
     extHostWorkspace = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostWorkspace, extWorkspace);
     const monacoservice = injector.get(MonacoService);
     await monacoservice.loadMonaco();
@@ -184,7 +189,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     const extHostFileSystem = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocolExt));
     const extHostPreference = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocolExt, extHostWorkspace)) as ExtHostPreference;
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [rpcProtocolMain]));
-    extHostWorkspaceAPI = createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem);
+    extHostWorkspaceAPI = createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem, extHostTask, mockExtensions[0]);
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStorage, new ExtHostStorage(rpcProtocolExt));
     const modelContentRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
     modelContentRegistry.registerEditorDocumentModelContentProvider(injector.get(FileSchemeDocumentProvider));

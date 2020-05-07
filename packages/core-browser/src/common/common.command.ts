@@ -330,6 +330,11 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const GET_CURRENT_RESOURCE: Command = {
+    id: 'editor.getCurrentResource',
+    category: CATEGORY,
+  };
+
   export const SPLIT_TO_LEFT: Command = {
     id: 'editor.splitToLeft',
     category: CATEGORY,

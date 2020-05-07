@@ -1597,6 +1597,19 @@ export class ColorInformation {
 
 // Debug
 
+@es5ClassCompat
+export class DebugAdapterExecutable {
+  readonly command: string;
+  readonly args: string[];
+  readonly options;
+
+  constructor(command: string, args: string[], options) {
+    this.command = command;
+    this.args = args || [];
+    this.options = options;
+  }
+}
+
 /**
  * Represents a debug adapter running as a socket based server.
  */
@@ -1740,3 +1753,627 @@ export enum TextDocumentSaveReason {
 }
 
 export { TextEditorRevealType } from './editor';
+
+@es5ClassCompat
+export class TaskGroup implements vscode.TaskGroup {
+
+  private _id: string;
+
+  public static Clean: TaskGroup = new TaskGroup('clean', 'Clean');
+
+  public static Build: TaskGroup = new TaskGroup('build', 'Build');
+
+  public static Rebuild: TaskGroup = new TaskGroup('rebuild', 'Rebuild');
+
+  public static Test: TaskGroup = new TaskGroup('test', 'Test');
+
+  public static from(value: string) {
+    switch (value) {
+      case 'clean':
+        return TaskGroup.Clean;
+      case 'build':
+        return TaskGroup.Build;
+      case 'rebuild':
+        return TaskGroup.Rebuild;
+      case 'test':
+        return TaskGroup.Test;
+      default:
+        return undefined;
+    }
+  }
+
+  constructor(id: string, _label: string) {
+    if (typeof id !== 'string') {
+      throw illegalArgument('name');
+    }
+    if (typeof _label !== 'string') {
+      throw illegalArgument('name');
+    }
+    this._id = id;
+  }
+
+  get id(): string {
+    return this._id;
+  }
+}
+
+function computeTaskExecutionId(values: string[]): string {
+  let id: string = '';
+  // tslint:disable-next-line: prefer-for-of
+  for (let i = 0; i < values.length; i++) {
+    id += values[i].replace(/,/g, ',,') + ',';
+  }
+  return id;
+}
+
+/**
+ * Options for a process execution
+ */
+export interface ProcessExecutionOptions {
+  /**
+   * The current working directory of the executed program or shell.
+   * If omitted the tools current workspace root is used.
+   */
+  cwd?: string;
+
+  /**
+   * The additional environment of the executed program or shell. If omitted
+   * the parent process' environment is used. If provided it is merged with
+   * the parent process' environment.
+   */
+  env?: { [key: string]: string };
+}
+
+/**
+ * The shell quoting options.
+ */
+export interface ShellQuotingOptions {
+
+  /**
+   * The character used to do character escaping. If a string is provided only spaces
+   * are escaped. If a `{ escapeChar, charsToEscape }` literal is provide all characters
+   * in `charsToEscape` are escaped using the `escapeChar`.
+   */
+  escape?: string | {
+    /**
+     * The escape character.
+     */
+    escapeChar: string;
+    /**
+     * The characters to escape.
+     */
+    charsToEscape: string;
+  };
+
+  /**
+   * The character used for strong quoting. The string's length must be 1.
+   */
+  strong?: string;
+
+  /**
+   * The character used for weak quoting. The string's length must be 1.
+   */
+  weak?: string;
+}
+
+/**
+	 * Options for a shell execution
+	 */
+export interface ShellExecutionOptions {
+  /**
+   * The shell executable.
+   */
+  executable?: string;
+
+  /**
+   * The arguments to be passed to the shell executable used to run the task. Most shells
+   * require special arguments to execute a command. For  example `bash` requires the `-c`
+   * argument to execute a command, `PowerShell` requires `-Command` and `cmd` requires both
+   * `/d` and `/c`.
+   */
+  shellArgs?: string[];
+
+  /**
+   * The shell quotes supported by this shell.
+   */
+  shellQuoting?: ShellQuotingOptions;
+
+  /**
+   * The current working directory of the executed shell.
+   * If omitted the tools current workspace root is used.
+   */
+  cwd?: string;
+
+  /**
+   * The additional environment of the executed shell. If omitted
+   * the parent process' environment is used. If provided it is merged with
+   * the parent process' environment.
+   */
+  env?: { [key: string]: string };
+}
+
+@es5ClassCompat
+export class ProcessExecution implements vscode.ProcessExecution {
+
+  private _process: string;
+  private _args: string[];
+  private _options: ProcessExecutionOptions | undefined;
+
+  constructor(process: string, options?: ProcessExecutionOptions);
+  constructor(process: string, args: string[], options?: ProcessExecutionOptions);
+  constructor(process: string, varg1?: string[] | ProcessExecutionOptions, varg2?: ProcessExecutionOptions) {
+    if (typeof process !== 'string') {
+      throw illegalArgument('process');
+    }
+    this._process = process;
+    if (varg1 !== undefined) {
+      if (Array.isArray(varg1)) {
+        this._args = varg1;
+        this._options = varg2;
+      } else {
+        this._options = varg1;
+      }
+    }
+    if (this._args === undefined) {
+      this._args = [];
+    }
+  }
+
+  get process(): string {
+    return this._process;
+  }
+
+  set process(value: string) {
+    if (typeof value !== 'string') {
+      throw illegalArgument('process');
+    }
+    this._process = value;
+  }
+
+  get args(): string[] {
+    return this._args;
+  }
+
+  set args(value: string[]) {
+    if (!Array.isArray(value)) {
+      value = [];
+    }
+    this._args = value;
+  }
+
+  get options(): ProcessExecutionOptions | undefined {
+    return this._options;
+  }
+
+  set options(value: ProcessExecutionOptions | undefined) {
+    this._options = value;
+  }
+
+  public computeId(): string {
+    const props: string[] = [];
+    props.push('process');
+    if (this._process !== undefined) {
+      props.push(this._process);
+    }
+    if (this._args && this._args.length > 0) {
+      for (const arg of this._args) {
+        props.push(arg);
+      }
+    }
+    return computeTaskExecutionId(props);
+  }
+
+  public static is(value: ShellExecution | ProcessExecution): boolean {
+    const candidate = value as ProcessExecution;
+    return candidate && !!candidate.process;
+  }
+}
+
+@es5ClassCompat
+export class ShellExecution implements vscode.ShellExecution {
+
+  private _commandLine: string;
+  private _command: string | vscode.ShellQuotedString;
+  private _args: (string | vscode.ShellQuotedString)[];
+  private _options: ShellExecutionOptions | undefined;
+
+  constructor(commandLine: string, options?: ShellExecutionOptions);
+  constructor(command: string | vscode.ShellQuotedString, args: (string | vscode.ShellQuotedString)[], options?: ShellExecutionOptions);
+  constructor(arg0: string | vscode.ShellQuotedString, arg1?: ShellExecutionOptions | (string | vscode.ShellQuotedString)[], arg2?: ShellExecutionOptions) {
+    if (Array.isArray(arg1)) {
+      if (!arg0) {
+        throw illegalArgument('command can\'t be undefined or null');
+      }
+      if (typeof arg0 !== 'string' && typeof arg0.value !== 'string') {
+        throw illegalArgument('command');
+      }
+      this._command = arg0;
+      this._args = arg1 as (string | vscode.ShellQuotedString)[];
+      this._options = arg2;
+    } else {
+      if (typeof arg0 !== 'string') {
+        throw illegalArgument('commandLine');
+      }
+      this._commandLine = arg0;
+      this._options = arg1;
+    }
+  }
+
+  get commandLine(): string {
+    return this._commandLine;
+  }
+
+  set commandLine(value: string) {
+    if (typeof value !== 'string') {
+      throw illegalArgument('commandLine');
+    }
+    this._commandLine = value;
+  }
+
+  get command(): string | vscode.ShellQuotedString {
+    return this._command;
+  }
+
+  set command(value: string | vscode.ShellQuotedString) {
+    if (typeof value !== 'string' && typeof value.value !== 'string') {
+      throw illegalArgument('command');
+    }
+    this._command = value;
+  }
+
+  get args(): (string | vscode.ShellQuotedString)[] {
+    return this._args;
+  }
+
+  set args(value: (string | vscode.ShellQuotedString)[]) {
+    this._args = value || [];
+  }
+
+  get options(): ShellExecutionOptions | undefined {
+    return this._options;
+  }
+
+  set options(value: ShellExecutionOptions | undefined) {
+    this._options = value;
+  }
+
+  public computeId(): string {
+    const props: string[] = [];
+    props.push('shell');
+    if (this._commandLine !== undefined) {
+      props.push(this._commandLine);
+    }
+    if (this._command !== undefined) {
+      props.push(typeof this._command === 'string' ? this._command : this._command.value);
+    }
+    if (this._args && this._args.length > 0) {
+      for (const arg of this._args) {
+        props.push(typeof arg === 'string' ? arg : arg.value);
+      }
+    }
+    return computeTaskExecutionId(props);
+  }
+
+  public static is(value: ShellExecution | ProcessExecution): boolean {
+    const candidate = value as ShellExecution;
+    return candidate && (!!candidate.commandLine || !!candidate.command);
+  }
+}
+
+export enum ShellQuoting {
+  Escape = 1,
+  Strong = 2,
+  Weak = 3,
+}
+
+export enum TaskScope {
+  Global = 1,
+  Workspace = 2,
+}
+
+export class CustomExecution2 implements vscode.CustomExecution2 {
+  private _callback: () => Promise<vscode.Pseudoterminal>;
+  constructor(callback: () => Promise<vscode.Pseudoterminal>) {
+    this._callback = callback;
+  }
+  public computeId(): string {
+    return 'customExecution' + uuid();
+  }
+
+  public set callback(value: () => Promise<vscode.Pseudoterminal>) {
+    this._callback = value;
+  }
+
+  public get callback(): (() => Promise<vscode.Pseudoterminal>) {
+    return this._callback;
+  }
+}
+
+export class CustomExecution implements vscode.CustomExecution {
+  private _callback: (args: vscode.TerminalRenderer, cancellationToken: vscode.CancellationToken) => Promise<number>;
+
+  constructor(callback: (args: vscode.TerminalRenderer, cancellationToken: vscode.CancellationToken) => Promise<number>) {
+    this._callback = callback;
+  }
+
+  public computeId(): string {
+    return 'customExecution' + uuid();
+  }
+
+  public set callback(value: (args: vscode.TerminalRenderer, cancellationToken: vscode.CancellationToken) => Promise<number>) {
+    this._callback = value;
+  }
+
+  public get callback(): (args: vscode.TerminalRenderer, cancellationToken: vscode.CancellationToken) => Promise<number> {
+    return this._callback;
+  }
+}
+
+/**
+ * A structure that defines a task kind in the system.
+ * The value must be JSON-stringifyable.
+ */
+export interface TaskDefinition {
+  /**
+   * The task definition describing the task provided by an extension.
+   * Usually a task provider defines more properties to identify
+   * a task. They need to be defined in the package.json of the
+   * extension under the 'taskDefinitions' extension point. The npm
+   * task definition for example looks like this
+   * ```typescript
+   * interface NpmTaskDefinition extends TaskDefinition {
+   *     script: string;
+   * }
+   * ```
+   *
+   * Note that type identifier starting with a '$' are reserved for internal
+   * usages and shouldn't be used by extensions.
+   */
+  readonly type: string;
+
+  /**
+   * Additional attributes of a concrete task definition.
+   */
+  [name: string]: any;
+}
+
+@es5ClassCompat
+export class Task implements vscode.Task2 {
+
+  private static ExtensionCallbackType: string = 'customExecution';
+  private static ProcessType: string = 'process';
+  private static ShellType: string = 'shell';
+  private static EmptyType: string = '$empty';
+
+  // tslint:disable-next-line: variable-name
+  private __id: string | undefined;
+
+  private _definition: TaskDefinition;
+  private _scope: vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder | undefined;
+  private _name: string;
+  private _execution: ProcessExecution | ShellExecution | CustomExecution | CustomExecution2 | undefined;
+  private _problemMatchers: string[];
+  private _hasDefinedMatchers: boolean;
+  private _isBackground: boolean;
+  private _source: string;
+  private _group: TaskGroup | undefined;
+  private _presentationOptions: vscode.TaskPresentationOptions;
+  private _runOptions: vscode.RunOptions;
+
+  constructor(definition: TaskDefinition, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution2, problemMatchers?: string | string[]);
+  constructor(definition: TaskDefinition, scope: vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder, name: string, source: string, execution?: ProcessExecution | ShellExecution | CustomExecution | vscode.CustomExecution2, problemMatchers?: string | string[]);
+  constructor(definition: TaskDefinition, arg2: string | (vscode.TaskScope.Global | vscode.TaskScope.Workspace) | vscode.WorkspaceFolder, arg3: any, arg4?: any, arg5?: any, arg6?: any) {
+    this.definition = definition;
+    let problemMatchers: string | string[];
+    if (typeof arg2 === 'string') {
+      this.name = arg2;
+      this.source = arg3;
+      this.execution = arg4;
+      problemMatchers = arg5;
+    } else if (arg2 === TaskScope.Global || arg2 === TaskScope.Workspace) {
+      this.target = arg2;
+      this.name = arg3;
+      this.source = arg4;
+      this.execution = arg5;
+      problemMatchers = arg6;
+    } else {
+      this.target = arg2;
+      this.name = arg3;
+      this.source = arg4;
+      this.execution = arg5;
+      problemMatchers = arg6;
+    }
+    if (typeof problemMatchers === 'string') {
+      this._problemMatchers = [problemMatchers];
+      this._hasDefinedMatchers = true;
+    } else if (Array.isArray(problemMatchers)) {
+      this._problemMatchers = problemMatchers;
+      this._hasDefinedMatchers = true;
+    } else {
+      this._problemMatchers = [];
+      this._hasDefinedMatchers = false;
+    }
+    this._isBackground = false;
+    this._presentationOptions = Object.create(null);
+    this._runOptions = Object.create(null);
+  }
+
+  get _id(): string | undefined {
+    return this.__id;
+  }
+
+  set _id(value: string | undefined) {
+    this.__id = value;
+  }
+
+  private clear(): void {
+    if (this.__id === undefined) {
+      return;
+    }
+    this.__id = undefined;
+    this._scope = undefined;
+    this.computeDefinitionBasedOnExecution();
+  }
+
+  private computeDefinitionBasedOnExecution(): void {
+    if (this._execution instanceof ProcessExecution) {
+      this._definition = {
+        type: Task.ProcessType,
+        id: this._execution.computeId(),
+      };
+    } else if (this._execution instanceof ShellExecution) {
+      this._definition = {
+        type: Task.ShellType,
+        id: this._execution.computeId(),
+      };
+    } else if (this._execution instanceof CustomExecution) {
+      this._definition = {
+        type: Task.ExtensionCallbackType,
+        id: this._execution.computeId(),
+      };
+    } else {
+      this._definition = {
+        type: Task.EmptyType,
+        id: uuid(),
+      };
+    }
+  }
+
+  get definition(): TaskDefinition {
+    return this._definition;
+  }
+
+  set definition(value: TaskDefinition) {
+    if (value === undefined || value === null) {
+      throw illegalArgument('Kind can\'t be undefined or null');
+    }
+    this.clear();
+    this._definition = value;
+  }
+
+  get scope(): vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder | undefined {
+    return this._scope;
+  }
+
+  set target(value: vscode.TaskScope.Global | vscode.TaskScope.Workspace | vscode.WorkspaceFolder) {
+    this.clear();
+    this._scope = value;
+  }
+
+  get name(): string {
+    return this._name;
+  }
+
+  set name(value: string) {
+    if (typeof value !== 'string') {
+      throw illegalArgument('name');
+    }
+    this.clear();
+    this._name = value;
+  }
+
+  get execution(): ProcessExecution | ShellExecution | undefined {
+    return ((this._execution instanceof CustomExecution) || (this._execution instanceof CustomExecution2)) ? undefined : this._execution;
+  }
+
+  set execution(value: ProcessExecution | ShellExecution | undefined) {
+    this.execution2 = value;
+  }
+
+  get execution2(): ProcessExecution | ShellExecution | CustomExecution | CustomExecution2 | undefined {
+    return this._execution;
+  }
+
+  set execution2(value: ProcessExecution | ShellExecution | CustomExecution | CustomExecution2 | undefined) {
+    if (value === null) {
+      value = undefined;
+    }
+    this.clear();
+    this._execution = value;
+    const type = this._definition.type;
+    if (Task.EmptyType === type || Task.ProcessType === type || Task.ShellType === type || Task.ExtensionCallbackType === type) {
+      this.computeDefinitionBasedOnExecution();
+    }
+  }
+
+  get problemMatchers(): string[] {
+    return this._problemMatchers;
+  }
+
+  set problemMatchers(value: string[]) {
+    if (!Array.isArray(value)) {
+      this.clear();
+      this._problemMatchers = [];
+      this._hasDefinedMatchers = false;
+      return;
+    } else {
+      this.clear();
+      this._problemMatchers = value;
+      this._hasDefinedMatchers = true;
+    }
+  }
+
+  get hasDefinedMatchers(): boolean {
+    return this._hasDefinedMatchers;
+  }
+
+  get isBackground(): boolean {
+    return this._isBackground;
+  }
+
+  set isBackground(value: boolean) {
+    if (value !== true && value !== false) {
+      value = false;
+    }
+    this.clear();
+    this._isBackground = value;
+  }
+
+  get source(): string {
+    return this._source;
+  }
+
+  set source(value: string) {
+    if (typeof value !== 'string' || value.length === 0) {
+      throw illegalArgument('source must be a string of length > 0');
+    }
+    this.clear();
+    this._source = value;
+  }
+
+  get group(): TaskGroup | undefined {
+    return this._group;
+  }
+
+  set group(value: TaskGroup | undefined) {
+    if (value === null) {
+      value = undefined;
+    }
+    this.clear();
+    this._group = value;
+  }
+
+  get presentationOptions(): vscode.TaskPresentationOptions {
+    return this._presentationOptions;
+  }
+
+  set presentationOptions(value: vscode.TaskPresentationOptions) {
+    if (value === null || value === undefined) {
+      value = Object.create(null);
+    }
+    this.clear();
+    this._presentationOptions = value;
+  }
+
+  get runOptions(): vscode.RunOptions {
+    return this._runOptions;
+  }
+
+  set runOptions(value: vscode.RunOptions) {
+    if (value === null || value === undefined) {
+      value = Object.create(null);
+    }
+    this.clear();
+    this._runOptions = value;
+  }
+}

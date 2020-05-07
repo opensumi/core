@@ -49,6 +49,7 @@
     "@ali/ide-workspace-edit": "1.8.12",
     "@ali/ide-components": "1.8.12",
     "@ali/ide-core-browser": "1.8.12",
+    "@ali/ide-task": "1.8.12",
     "@ali/vscode-jsonrpc": "^4.0.1",
     "@ali/vscode-ripgrep": "^1.3.1-release",
     "address": "^1.1.2",

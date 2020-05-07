@@ -107,6 +107,11 @@ export interface TerminalOptions {
    * as normal.
    */
   hideFromUser?: boolean;
+
+  /**
+   * pty 进程退出后是否自动关闭 terminal 控件
+   */
+  closeWhenExited?: boolean;
 }
 
 export interface ITerminalService {
@@ -145,7 +150,7 @@ export interface ITerminalServiceClient {
   disposeById(id: string);
   getProcessId(id: string): number;
   clientMessage(id, data);
-  closeClient(id: string): void;
+  closeClient(id: string, code?: number, signal?: number): void;
   setConnectionClientId(clientId: string);
   dispose();
   getShellName(id: string): string;

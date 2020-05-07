@@ -24,7 +24,8 @@
     "@ali/ide-core-common": "1.8.12",
     "@ali/ide-core-node": "1.8.12",
     "@ali/ide-process": "1.8.12",
-    "@ali/ide-components": "1.8.12"
+    "@ali/ide-components": "1.8.12",
+    "@ali/ide-task": "1.8.12"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.8.12",

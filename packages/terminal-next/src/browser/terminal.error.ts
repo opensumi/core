@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ITerminalErrorService, ITerminalError, ITerminalExternalService, ITerminalGroupViewService, ITerminalController } from '../common';
+import { ITerminalErrorService, ITerminalError, ITerminalExternalService, ITerminalGroupViewService, ITerminalController, IPtyExitEvent } from '../common';
 
 @Injectable()
 export class TerminalErrorService implements ITerminalErrorService {
@@ -21,9 +21,12 @@ export class TerminalErrorService implements ITerminalErrorService {
       this.errors.set(error.id, error);
     });
 
-    this.service.onExit((sessionId: string) => {
+    this.service.onExit((event: IPtyExitEvent) => {
       try {
-        this.view.removeWidget(sessionId);
+      const widget = this.view.getWidget(event.sessionId);
+      if (!widget.reuse) {
+        this.view.removeWidget(event.sessionId);
+      }
       } catch { /** nothing */ }
     });
   }

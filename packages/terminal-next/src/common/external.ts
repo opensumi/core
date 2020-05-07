@@ -4,6 +4,12 @@ import { ITerminalError } from './error';
 import { TerminalOptions } from './pty';
 import { ITerminalConnection } from './client';
 
+export interface IPtyExitEvent {
+  sessionId: string;
+  code?: number;
+  signal?: number;
+}
+
 export const ITerminalExternalService = Symbol('ITerminalExternalService');
 export interface ITerminalExternalService {
   /**
@@ -68,7 +74,7 @@ export interface ITerminalExternalService {
    *
    * @param sessionid
    */
-  onExit(handler: (sessionid: string) => void): IDisposable;
+  onExit(handler: (sessionid: IPtyExitEvent) => void): IDisposable;
 }
 
 export const ITerminalInternalService = Symbol('ITerminalInternalService');

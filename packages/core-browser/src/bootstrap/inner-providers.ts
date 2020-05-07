@@ -17,6 +17,12 @@ import {
   DefaultReporter,
   ReporterService,
   REPORT_HOST,
+  IProblemPatternRegistry,
+  ProblemPatternRegistryImpl,
+  IProblemMatcherRegistry,
+  ProblemMatchersRegistryImpl,
+  ITaskDefinitionRegistry,
+  TaskDefinitionRegistryImpl,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from '../common';
 import { ClientAppStateService } from '../application/application-state-service';
@@ -144,6 +150,18 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IProgressService,
       useClass: ProgressService,
+    },
+    {
+      token: IProblemPatternRegistry,
+      useClass: ProblemPatternRegistryImpl,
+    },
+    {
+      token: IProblemMatcherRegistry,
+      useClass: ProblemMatchersRegistryImpl,
+    },
+    {
+      token: ITaskDefinitionRegistry,
+      useClass: TaskDefinitionRegistryImpl,
     },
   ];
   injector.addProviders(...providers);

@@ -1,5 +1,6 @@
 import { Terminal } from 'xterm';
 import { Disposable, Event, Deferred } from '@ali/ide-core-common';
+import { Event as CoreEvent } from '@ali/ide-core-browser';
 import { TerminalOptions } from './pty';
 import { IWidget } from './resize';
 
@@ -53,6 +54,10 @@ export interface ITerminalClient extends Disposable {
    * 渲染窗口
    */
   widget: IWidget;
+  /**
+   * 接收到 pty 消息事件
+   */
+  onReceivePtyMessage: CoreEvent<{ id: string, message: string }>;
 
   /**
    * 预先连接后端

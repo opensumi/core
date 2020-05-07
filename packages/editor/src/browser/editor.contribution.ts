@@ -335,6 +335,10 @@ export class EditorContribution implements CommandContribution, ClientAppContrib
       execute: () => this.workbenchEditorService.currentEditorGroup,
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.GET_CURRENT_RESOURCE, {
+      execute: () => this.workbenchEditorService.currentResource,
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.PIN_CURRENT, {
       execute: () => {
         const group = this.workbenchEditorService.currentEditorGroup;

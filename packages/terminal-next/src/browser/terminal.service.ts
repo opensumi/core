@@ -4,7 +4,7 @@ import { isElectronEnv, Emitter, ILogger, Event } from '@ali/ide-core-common';
 import { Emitter as Dispatcher } from 'event-kit';
 import { electronEnv, AppConfig } from '@ali/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
-import { generate, ITerminalExternalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection  } from '../common';
+import { generate, ITerminalExternalService, ITerminalInternalService, ITerminalError, ITerminalServiceClient, ITerminalServicePath, ITerminalConnection, IPtyExitEvent  } from '../common';
 
 export interface EventMessage {
   data: string;
@@ -51,7 +51,7 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this.service.onError(handler);
   }
 
-  onExit(handler: (sessionId: string) => void) {
+  onExit(handler: (event: IPtyExitEvent) => void) {
     return this.service.onExit(handler);
   }
 }
@@ -76,8 +76,8 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
   private _onError = new Emitter<ITerminalError>();
   public onError: Event<ITerminalError> = this._onError.event;
 
-  private _onExit = new Emitter<string>();
-  public onExit: Event<string> = this._onExit.event;
+  private _onExit = new Emitter<IPtyExitEvent>();
+  public onExit: Event<IPtyExitEvent> = this._onExit.event;
 
   private _dispatcher = new Dispatcher();
 
@@ -169,7 +169,7 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
    *
    * @param sessionId
    */
-  closeClient(sessionId: string) {
-    this._onExit.fire(sessionId);
+  closeClient(sessionId: string, code?: number, signal?: number) {
+    this._onExit.fire({ sessionId, code, signal });
   }
 }

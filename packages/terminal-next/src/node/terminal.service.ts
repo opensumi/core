@@ -26,6 +26,7 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
   private appConfig: AppConfig;
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
+    console.log('set pty pty client, id', clientId);
     this.serviceClientMap.set(clientId, client);
 
     /*
@@ -45,8 +46,8 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
       this.logger.debug(`重连 clientId ${clientId} 窗口的 pty 进程`);
     }
 
-    return this.clientTerminalMap.has(clientId)
- ; }
+    return this.clientTerminalMap.has(clientId);
+  }
 
   public closeClient(clientId: string) {
     const closeTimer = global.setTimeout(() => {
@@ -83,10 +84,10 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
       }
     });
 
-    terminal.on('exit', () => {
+    terminal.on('exit', (exitCode: number, signal: number | undefined) => {
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-        serviceClient.closeClient(id);
+        serviceClient.closeClient(id, exitCode, signal);
       } else {
         this.logger.warn(`terminal: pty ${clientId} on data not found`);
       }

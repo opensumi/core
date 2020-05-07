@@ -118,6 +118,9 @@ export class Terminal implements vscode.Terminal {
   private id: string;
   private proxy: IMainThreadTerminal;
 
+  // tslint:disable-next-line: variable-name
+  public __id: string;
+
   private createdPromiseResolve;
 
   private when: Promise<any> = new Promise((resolve) => {
@@ -158,6 +161,7 @@ export class Terminal implements vscode.Terminal {
 
   created(id) {
     this.id = id;
+    this.__id = id;
     this.createdPromiseResolve();
   }
 

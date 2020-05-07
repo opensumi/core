@@ -3,7 +3,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { SearchAddon } from 'xterm-addon-search';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { Disposable, Deferred, debounce } from '@ali/ide-core-common';
+import { Disposable, Deferred, Emitter, debounce, Event } from '@ali/ide-core-common';
 import { WorkbenchEditorService } from '@ali/ide-editor/lib/common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
@@ -39,6 +39,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _ready: boolean = false;
   private _attached = new Deferred<void>();
   /** end */
+
+  private readonly ptyProcessMessageEvent = new Emitter<{ id: string; message: string }>();
+  public onReceivePtyMessage: Event<{ id: string; message: string }> = this.ptyProcessMessageEvent.event;
 
   @Autowired(ITerminalInternalService)
   protected readonly service: ITerminalInternalService;
@@ -212,6 +215,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (!connection) {
       return;
     }
+
+    this.addDispose(connection.onData((e) => {
+      this.ptyProcessMessageEvent.fire({ id: this.id, message: e.toString() });
+    }));
 
     this._name = (this._name || connection.name) || 'shell';
     this._pid = connection.pid;
