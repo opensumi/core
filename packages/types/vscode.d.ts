@@ -11,6 +11,7 @@
 /// <reference path='./vscode/typings/vscode.scm.d.ts' />
 /// <reference path='./vscode/typings/vscode.debug.d.ts' />
 /// <reference path='./vscode/typings/vscode.window.d.ts' />
+/// <reference path='./vscode/typings/vscode.tasks.d.ts' />
 
 /// <reference path='./vscode/typings-pending/vscode.d.ts' />
 /// <reference path='./vscode/typings-pending/vscode.doc.d.ts' />

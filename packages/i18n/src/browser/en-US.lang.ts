@@ -557,5 +557,12 @@ export const localizationBundle = {
     'comments.panel.placeholder': 'No Comments',
 
     'treeview.command.action.collapse': 'Collapse ALL',
+
+    'task.outputchannel.name': 'Task',
+    'task.label': '{0} : {1}',
+    'TaskService.pickRunTask': 'Select the task to run',
+    'TerminalTaskSystem.terminalName': 'Task - {0}',
+    'terminal.integrated.exitedWithCode': 'The terminal process terminated with exit code: {0}',
+    'reuseTerminal': 'Terminal will be reused by tasks, press any key to close it.',
   },
 };

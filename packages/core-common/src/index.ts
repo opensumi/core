@@ -33,3 +33,6 @@ export * from './connection';
 export * from './storage';
 export * from './range';
 export * from './progress';
+export * from './problem-pattern';
+export * from './problem-matcher';
+export * from './task-definition';

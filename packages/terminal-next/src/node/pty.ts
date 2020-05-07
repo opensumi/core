@@ -33,12 +33,13 @@ export class PtyService {
           options.env,
         )) as { [key: string]: string };
     }
+    // console.log(`execute ${bin} ${typeof options.shellArgs === 'string' ? options.shellArgs : options.shellArgs!.join(' ')}in ${options.cwd}`);
     const ptyProcess = pty.spawn(bin, options.shellArgs || [], {
       name: 'xterm-color',
       cols: cols || 100,
       rows: rows || 30,
       cwd: options.cwd ? options.cwd!.toString() : '',
-      env: ptyEnv,
+      env: { ... process.env }  as { [key: string]: string },
     });
     (ptyProcess as any).bin = bin;
     return ptyProcess as IPty;

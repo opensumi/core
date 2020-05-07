@@ -41,6 +41,8 @@ export interface DebugConfiguration {
    */
   debugViewLocation?: DebugViewLocation;
 
+  preLaunchTask?: string;
+
   /**
    * 打开调试视图时机
    * 默认值：neverOpen

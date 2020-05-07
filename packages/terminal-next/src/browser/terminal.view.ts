@@ -17,7 +17,7 @@ export class Widget extends Disposable implements IWidget {
   @observable
   name: string = '';
 
-  constructor(id: string) {
+  constructor(id: string, public reuse: boolean = false) {
     super();
     this._id = id;
   }
@@ -306,8 +306,8 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this.selectGroup(index);
   }
 
-  createWidget(group: WidgetGroup, id?: string) {
-    const widget = new Widget(id || this.service.generateSessionId());
+  createWidget(group: WidgetGroup, id?: string, reuse?: boolean) {
+    const widget = new Widget(id || this.service.generateSessionId(), reuse);
     this._widgets.set(widget.id, widget);
     widget.group = group;
     this._onWidgetCreated.fire(widget);

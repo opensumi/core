@@ -24,7 +24,7 @@ const ShadowRoot = ({ id, children, proxiedHead, shouldClone }: { id: string, ch
       }
       if (!shadowRoot) {
         setShadowRoot(shadowRootElement);
-      }
+    }
     }
   }, []);
 

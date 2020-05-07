@@ -1,4 +1,5 @@
 import { IMenu } from '@ali/ide-core-browser/lib/menu/next';
+import { BasicEvent } from '@ali/ide-core-common';
 
 export const EXTENSION_DIR = 'extension/';
 
@@ -177,3 +178,17 @@ export interface OpenExtensionOptions {
   version?: string;
   icon?: string;
 }
+
+export enum ExtensionChangeType {
+  INSTALL,
+  UNINSTALL,
+  ENABLE,
+  DISABLE,
+}
+
+export interface ExtensionChange {
+  type: ExtensionChangeType;
+  detail: BaseExtension;
+}
+
+export class ExtensionChangeEvent extends BasicEvent<ExtensionChange> {}

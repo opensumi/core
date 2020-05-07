@@ -565,7 +565,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         if (node && node.path.indexOf(filter) > -1) {
           idSets.add(node.id);
           let parent = node.parent;
-          while (parent) {
+          // 不应包含根节点
+          while (parent && !CompositeTreeNode.isRoot(parent)) {
             idSets.add(parent.id);
             parent  = parent.parent;
           }
@@ -585,7 +586,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
             whiteSpace: 'nowrap',
           }} dangerouslySetInnerHTML={{ __html: item.string || ''}}></div>;
         });
-        while (parent) {
+        // 不应包含根节点
+        while (parent && !CompositeTreeNode.isRoot(parent)) {
           idSets.add(parent.id);
           parent  = parent.parent;
         }

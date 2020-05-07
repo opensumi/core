@@ -3,7 +3,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { URI } from '@ali/ide-core-common';
 import { WorkspaceModule } from '../../src/browser';
-import { IContextKeyService } from '@ali/ide-core-browser';
+import { IContextKeyService, CommandService } from '@ali/ide-core-browser';
 import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
 
 describe('WorkspaceVariableContribution should be work', () => {
@@ -15,6 +15,9 @@ describe('WorkspaceVariableContribution should be work', () => {
   const mockContextKeyService = {
     getContextValue: jest.fn(),
   };
+  const mockCommandSetvice = {
+    executeCommand: jest.fn(),
+  };
   beforeEach(async (done) => {
     injector = createBrowserInjector([
       WorkspaceModule,
@@ -22,6 +25,10 @@ describe('WorkspaceVariableContribution should be work', () => {
     injector.overrideProviders({
       token: IContextKeyService,
       useValue: mockContextKeyService,
+    });
+    injector.overrideProviders({
+      token: CommandService,
+      useValue: mockCommandSetvice,
     });
     injector.overrideProviders({
       token: IWorkspaceService,
@@ -57,8 +64,8 @@ describe('WorkspaceVariableContribution should be work', () => {
   });
 
   it('getResourceUri method should be work', async (done) => {
-    workspaceVariableContribution.getResourceUri();
-    expect(mockContextKeyService.getContextValue).toBeCalledWith('resource');
+    await workspaceVariableContribution.getResourceUri();
+    expect(mockCommandSetvice.executeCommand).toBeCalledWith('editor.getCurrentResource');
     done();
   });
 

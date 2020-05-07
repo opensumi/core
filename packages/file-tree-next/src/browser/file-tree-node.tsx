@@ -199,7 +199,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       nodeUri = node.uri;
       isDirectory = node.filestat.isDirectory;
     }
-    const iconClass = labelService.getIcon(nodeUri, {isDirectory});
+    const iconClass = labelService.getIcon(nodeUri, {isDirectory, isOpenedDirectory: isDirectory && (node as Directory).expanded});
     return <div className={cls(styles.file_icon, iconClass, {expanded: isDirectory && (node as Directory).expanded})} style={{ height: FILE_TREE_NODE_HEIGHT, lineHeight: `${FILE_TREE_NODE_HEIGHT}px`}}>
     </div>;
   };
@@ -250,7 +250,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     return <div
         className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}
       >
-        {node.name}
+        { labelService.getName(node.uri) || node.name }
       </div>;
   };
 
@@ -303,6 +303,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         )}
         style={fileTreeNodeStyle}
         draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
+        data-id={item.id}
       >
         <div className={cls(styles.file_tree_node_content)}>
           {renderTwice(item)}

@@ -19,6 +19,9 @@ import { DebuggersContributionScheme, DebuggersContributionPoint } from './debug
 import { BreakpointsContributionScheme, BreakpointsContributionPoint } from './breakpoints';
 import { IconThemesContributionPoint } from './icon';
 import { ActionContributionSchema, ActionsContributionPoint } from './actions';
+import { ITaskDefinitionSchema, TaskDefinitionContributionPoint } from './taskDefinition';
+import { ProblemPatterns, ProblemPatternsContributionPoint } from './problemPatterns';
+import { ProblemMatchersContributions, ProblemMatchersContributionPoint } from './problemMatchers';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9\-A-Z]*)\\.([a-z0-9A-Z][a-z0-9\-A-Z]*)$';
 
@@ -263,6 +266,9 @@ export interface ContributesSchema {
   debuggers: DebuggersContributionScheme;
   breakpoints: BreakpointsContributionScheme;
   actions: ActionContributionSchema;
+  taskDefinition: ITaskDefinitionSchema;
+  problemPatterns: ProblemPatterns;
+  problemeMatchers: ProblemMatchersContributions;
 }
 
 const CONTRIBUTES_SYMBOL = Symbol();
@@ -290,6 +296,9 @@ export class VSCodeContributeRunner extends Disposable {
     BreakpointsContributionPoint,
     DebuggersContributionPoint,
     ActionsContributionPoint,
+    TaskDefinitionContributionPoint,
+    ProblemPatternsContributionPoint,
+    ProblemMatchersContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)
