@@ -87,4 +87,14 @@ export namespace TERMINAL_COMMANDS {
     id: 'terminal.selectTypeSh',
     label: 'sh',
   };
+
+  export const SELECT_CMD = {
+    id: 'terminal.selectTypeCMD',
+    label: 'cmd',
+  };
+
+  export const SELECT_POWERSHELL = {
+    id: 'terminal.selectTypePowerShell',
+    label: 'powershell',
+  };
 }

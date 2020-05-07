@@ -1,6 +1,6 @@
 import { Terminal } from 'xterm';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { isElectronEnv, Emitter, ILogger, Event } from '@ali/ide-core-common';
+import { isElectronEnv, Emitter, ILogger, Event, isWindows } from '@ali/ide-core-common';
 import { Emitter as Dispatcher } from 'event-kit';
 import { electronEnv, AppConfig } from '@ali/ide-core-browser';
 import { WSChannelHandler as IWSChanneHandler, RPCService } from '@ali/ide-connection';
@@ -110,9 +110,20 @@ export class NodePtyTerminalService extends RPCService implements ITerminalExter
   }
 
   async attach(sessionId: string, term: Terminal, options = {}, type?: string) {
+    let shellPath;
+    if (type) {
+      if (isWindows) {
+        shellPath = {
+          ['cmd']: 'cmd.exe',
+          ['powershell']: 'powershell.exe',
+        }[type];
+      } else {
+        shellPath = `/bin/${type}`;
+      }
+    }
     const { name, pid } = await this.service.create(sessionId, term.rows, term.cols, {
       cwd: this.config.workspaceDir,
-      shellPath: type ? `/bin/${type}` : undefined,
+      shellPath,
       ...options,
     });
 
