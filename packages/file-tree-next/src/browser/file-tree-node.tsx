@@ -199,7 +199,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
       nodeUri = node.uri;
       isDirectory = node.filestat.isDirectory;
     }
-    const iconClass = labelService.getIcon(nodeUri, {isDirectory});
+    const iconClass = labelService.getIcon(nodeUri, {isDirectory, isOpenedDirectory: isDirectory && (node as Directory).expanded});
     return <div className={cls(styles.file_icon, iconClass, {expanded: isDirectory && (node as Directory).expanded})} style={{ height: FILE_TREE_NODE_HEIGHT, lineHeight: `${FILE_TREE_NODE_HEIGHT}px`}}>
     </div>;
   };
