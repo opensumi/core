@@ -1,12 +1,12 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions } from '../common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope, TabActiveKey, SearchExtension, RequestHeaders, BaseExtension, ExtensionMomentState, OpenExtensionOptions, ExtensionChangeEvent, ExtensionChangeType } from '../common';
 import { ExtensionService, IExtensionProps, EXTENSION_ENABLE } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import * as compareVersions from 'compare-versions';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, localize, CorePreferences, IClientApp } from '@ali/ide-core-browser';
-import { IDisposable, dispose, getLanguageId, IReporterService, REPORT_NAME, formatLocalize } from '@ali/ide-core-common';
+import { IDisposable, dispose, getLanguageId, IReporterService, REPORT_NAME, formatLocalize, IEventBus } from '@ali/ide-core-common';
 import { IMenu, AbstractMenuService, MenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -44,6 +44,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @Autowired(IContextKeyService)
   private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(IEventBus)
+  private readonly eventBus: IEventBus;
 
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorService;
@@ -276,6 +279,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
     });
     // 安装插件后默认为全局启用、工作区间启用
     await this.enableExtensionToStorage(extensionId);
+    this.eventBus.fire(new ExtensionChangeEvent({
+      type: ExtensionChangeType.INSTALL,
+      detail: extension,
+    }));
     return path;
   }
 
@@ -510,6 +517,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
       reloadRequire,
       enableScope: scope,
     });
+    this.eventBus.fire(new ExtensionChangeEvent({
+      type: enable ? ExtensionChangeType.ENABLE : ExtensionChangeType.DISABLE,
+      detail: extension,
+    }));
   }
 
   async onDisableExtension(extensionPath: string) {
@@ -645,6 +656,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
         reloadRequire,
       });
     }
+    this.eventBus.fire(new ExtensionChangeEvent({
+      type: ExtensionChangeType.UNINSTALL,
+      detail: extension,
+    }));
     return res;
   }
 
