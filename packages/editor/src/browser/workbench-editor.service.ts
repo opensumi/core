@@ -5,8 +5,7 @@ import { CommandService, URI, getDebugLogger, MaybeNull, Deferred, Emitter as Ev
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent, BrowserEditorContribution, ResourceOpenTypeChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { FILE_COMMANDS, CorePreferences, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey } from '@ali/ide-core-browser';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { FILE_COMMANDS, CorePreferences, ResizeEvent, getSlotLocation, AppConfig, IContextKeyService, ServiceNames, MonacoService, IScopedContextKeyService, IContextKey, RecentFilesManager } from '@ali/ide-core-browser';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { Schemas } from '@ali/ide-core-common';
 import { isNullOrUndefined } from 'util';
@@ -405,8 +404,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
 
-  @Autowired(IWorkspaceService)
-  private workspaceService: IWorkspaceService;
+  @Autowired(RecentFilesManager)
+  private readonly recentFilesManager: RecentFilesManager;
 
   @Autowired(AppConfig)
   config: AppConfig;
@@ -770,7 +769,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
     if (uri.scheme === Schemas.file) {
       // 只记录 file 类型的
-      this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
+      this.recentFilesManager.setMostRecentlyOpenedFile!(uri.toString());
     }
     if (options && options.split) {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined, preview: false }));

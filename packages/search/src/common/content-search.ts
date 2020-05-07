@@ -53,6 +53,8 @@ export interface IContentSearchServer {
   // dispose(): void;
 }
 
+export const IContentSearchClientService = Symbol('IContentSearchClientService');
+
 export interface IContentSearchClientService {
   replaceValue: string;
   searchValue: string;

@@ -347,3 +347,5 @@ export interface QuickOpenActionOptions {
 export interface QuickOpenAction extends QuickOpenActionOptions, IDisposable {
   run(item?: QuickOpenItem): Promise<void>;
 }
+
+export * from './recent-files';
