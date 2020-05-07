@@ -44,11 +44,11 @@ export class ProgressIndicator implements IProgressIndicator {
     this.doDone(false);
   }
 
-  private scheduled: NodeJS.Timeout;
+  private scheduled: NodeJS.Timer;
   private showOnceScheduler(delay?: number) {
     if (typeof delay === 'number') {
       clearTimeout(this.scheduled);
-      this.scheduled = setTimeout(this.on, delay);
+      this.scheduled = global.setTimeout(this.on, delay);
     } else {
       this.on();
     }
@@ -60,14 +60,14 @@ export class ProgressIndicator implements IProgressIndicator {
       // 进度100%随后隐藏
       this.progressModel.worked = this.progressModel.total;
       if (delayed) {
-        setTimeout(this.off, 800);
+        global.setTimeout(this.off, 800);
       } else {
         this.off();
       }
     } else {
       // 通过css淡出隐藏
       if (delayed) {
-        setTimeout(this.off, 800);
+        global.setTimeout(this.off, 800);
       } else {
         this.off();
       }

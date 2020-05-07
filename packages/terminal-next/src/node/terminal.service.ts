@@ -49,7 +49,7 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
  ; }
 
   public closeClient(clientId: string) {
-    const closeTimer = setTimeout(() => {
+    const closeTimer = global.setTimeout(() => {
       this.disposeClient(clientId);
       this.logger.debug(`删除 clientId ${clientId} 窗口的 pty 进程`);
       this.clientTerminalThresholdMap.delete(clientId );

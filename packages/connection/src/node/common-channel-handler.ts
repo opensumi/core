@@ -112,7 +112,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.initWSServer(useExperimentalMultiChannel);
   }
   private hearbeat(connectionId: string, connection: ws) {
-    const timer = setTimeout(() => {
+    const timer = global.setTimeout(() => {
       connection.ping();
       // console.log(`connectionId ${connectionId} ping`);
       this.hearbeat(connectionId, connection);
