@@ -5,7 +5,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout';
 import { TabBarHandler } from '@ali/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@ali/ide-theme';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService, generate } from '../common';
+import { ITerminalController, ITerminalClient, ITerminalClientFactory, IWidget, ITerminalInfo, ITerminalBrowserHistory, ITerminalTheme, ITerminalGroupViewService, TerminalOptions, ITerminalErrorService, ITerminalInternalService } from '../common';
 import { TerminalGroupViewService } from './terminal.view';
 import { TerminalContextKey } from './terminal.context-key';
 
@@ -291,7 +291,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   createClientWithWidget(options: TerminalOptions) {
-    const widgetId = generate();
+    const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
     // @ts-ignore
     this._clients.set(widgetId, undefined);
