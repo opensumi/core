@@ -103,7 +103,7 @@ export const SCMResouceList: React.FC<{
     }
 
     // FIXME: RecycleTree 支持双击事件
-    _selectTimer.current = setTimeout(() => {
+    _selectTimer.current = global.setTimeout(() => {
       // 单击事件
       // 200ms内多次点击默认为双击事件
       if (_selectTimes.current > 1) {

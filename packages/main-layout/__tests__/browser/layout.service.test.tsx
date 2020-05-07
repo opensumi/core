@@ -54,7 +54,7 @@ describe('main layout test', () => {
     let timeCount = 0;
     window.requestAnimationFrame = (cb) => {
       const cancelToken = 111;
-      const timeoutId = setTimeout(() => {
+      const timeoutId = global.setTimeout(() => {
         timeCount += 30;
         cb(timeCount);
         timeoutIds.delete(timeoutId);

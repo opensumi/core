@@ -22,7 +22,7 @@ export class WSChannelHandler {
   // FIXME: 这里的默认值和类型需要修复一下 @上坡
   private logger = console;
   public clientId: string;
-  private heartbeatMessageTimer: NodeJS.Timeout;
+  private heartbeatMessageTimer: NodeJS.Timer | null;
   private reporterService: IReporterService;
 
   constructor(public wsPath: string, logger: any, public protocols?: string[], useExperimentalMultiChannel?: boolean, clientId?: string) {
@@ -50,7 +50,7 @@ export class WSChannelHandler {
     if (this.heartbeatMessageTimer) {
       clearTimeout(this.heartbeatMessageTimer);
     }
-    this.heartbeatMessageTimer = setTimeout(() => {
+    this.heartbeatMessageTimer = global.setTimeout(() => {
       const msg = stringify({
         kind: 'heartbeat',
         clientId: this.clientId,
