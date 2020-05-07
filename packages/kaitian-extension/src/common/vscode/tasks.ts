@@ -26,8 +26,6 @@ export interface IMainThreadTasks {
 
   $executeTask(dto: TaskDTO | TaskHandleDTO): Promise<TaskExecutionDTO>;
 
-  dispose(): void;
-
 }
 
 export interface IExtHostTasks {

@@ -141,7 +141,9 @@ export class DebugSessionManager {
         const task = await this.taskService.getTask(Uri.parse(resolved.workspaceFolderUri!), resolved.configuration.preLaunchTask);
         if (task) {
           const result = await this.taskService.run(task);
-          console.log(result);
+          if (result.exitCode !== 0) {
+            this.messageService.error(`The preLaunchTask ${resolved.configuration.preLaunchTask} exitCode is ${result.exitCode}`);
+          }
         }
       }
       const sessionId = await this.debug.createDebugSession(resolved.configuration);
