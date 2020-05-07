@@ -18,6 +18,7 @@ export interface IMainThreadLayout {
   $setSize(id: string, size: number): void;
   $activate(id: string): void;
   $deactivate(id: string): void;
+  $setVisible(id: string, visible: boolean): Promise<void>;
 }
 
 export interface IExtHostLayout {
