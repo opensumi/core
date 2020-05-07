@@ -97,6 +97,7 @@ export class FileTreeAPI implements IFileTreeAPI {
    */
   toNode(tree: ITree, filestat: FileStat, parent?: Directory, presetName?: string): Directory | File {
     const uri = new URI(filestat.uri);
+    // 这里的name主要用于拼接节点路径，即path属性
     const name = presetName ? presetName : this.labelService.getName(uri);
     if (!this.cacheFileStat.has(filestat.uri)) {
       this.cacheFileStat.set(filestat.uri, filestat);

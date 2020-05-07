@@ -250,7 +250,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
     return <div
         className={cls(styles.file_tree_node_segment, styles.file_tree_node_displayname)}
       >
-        {node.name}
+        { labelService.getName(node.uri) || node.name }
       </div>;
   };
 
@@ -303,6 +303,7 @@ export const FileTreeNode: React.FC<FileTreeNodeRenderedProps> = ({
         )}
         style={fileTreeNodeStyle}
         draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
+        data-id={item.id}
       >
         <div className={cls(styles.file_tree_node_content)}>
           {renderTwice(item)}
