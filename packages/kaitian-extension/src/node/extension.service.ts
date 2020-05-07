@@ -375,7 +375,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private closeExtProcess(connectionClientId: string) {
 
     if (this.clientExtProcessMap.has(connectionClientId)) {
-      const timer = setTimeout(() => {
+      const timer = global.setTimeout(() => {
         this.logger.log('close disposeClientExtProcess clientId', connectionClientId);
         const disposer = this.disposeClientExtProcess(connectionClientId);
         if (isDevelopment()) {
