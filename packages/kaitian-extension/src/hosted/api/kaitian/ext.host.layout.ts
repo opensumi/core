@@ -26,6 +26,10 @@ export class TabbarHandler implements ITabbarHandler {
     this.proxy.$deactivate(this.id);
   }
 
+  setVisible(visible: boolean) {
+    this.proxy.$setVisible(this.id, visible);
+  }
+
 }
 
 export class KaitianExtHostLayout implements IExtHostLayout {
