@@ -119,50 +119,51 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   }
 
   private async buildShellConfig(command: CommandConfiguration) {
+    let subCommand: string = '';
     const commandName = command.name;
     const commandArgs = command.args;
-    let executable;
-    const shellArgs: string[] = [];
-    if (commandName) {
-      if (typeof commandName === 'string') {
-        const [exec, ...args] = commandName.split(' ');
-        if (exec.indexOf(Path.separator) > -1) {
-          executable = await this.resolveVariables(exec.split(Path.separator));
-        } else {
-          executable = await this.resolveVariable(exec);
-        }
-        shellArgs.push(...args);
-      } else {
-        // TODO
-      }
-    }
+    const subArgs: string[] = [];
+    const result: string[] = [];
+
     if (commandArgs) {
       for (const arg of commandArgs) {
         if (typeof arg === 'string') {
-          shellArgs.push(arg);
+          subArgs.push(arg);
+        } else {
+          // 暂时先不处理显示上面的问题
+          subArgs.push(arg.value);
         }
       }
     }
-    const result: string[] = [];
-    for (const arg of shellArgs) {
+
+    if (commandName) {
+      if (typeof commandName === 'string') {
+        subCommand = commandName;
+      } else {
+        // 暂时先不处理显示上面的问题
+        subCommand = commandName.value;
+      }
+    }
+
+    for (const arg of subArgs) {
       if (arg.indexOf(Path.separator) > -1) {
         result.push(await this.resolveVariables(arg.split(Path.separator)));
       } else {
         result.push(await this.resolveVariable(arg));
       }
     }
-    return { executable, shellArgs: result };
+
+    return { shellArgs: ['-c', `${subCommand} ${subArgs.join(' ')}`] };
   }
 
   private async executeTask(task: CustomTask | ContributedTask): Promise<ITaskExecuteResult> {
     this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.Start, task));
     const matchers = await this.resolveMatchers(task.configurationProperties.problemMatchers);
     const collector = new ProblemCollector(matchers);
-    const { executable, shellArgs } = await this.buildShellConfig(task.command);
+    const { shellArgs } = await this.buildShellConfig(task.command);
     const terminalOptions: TerminalOptions = {
       name: this.createTerminalName(task),
       shellArgs,
-      shellPath: executable,
       cwd: task.command.options?.cwd ? await this.resolveVariable(task.command.options?.cwd) : await this.resolveVariable('${workspaceFolder}'),
     };
 
