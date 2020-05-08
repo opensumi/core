@@ -3,7 +3,7 @@ import { CommandContribution, CommandRegistry, Command, CommandService, Preferen
 import { ClientAppContribution, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
-import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, ToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCMPanel } from './scm.view';
@@ -15,12 +15,20 @@ import { getIcon } from '@ali/ide-core-browser';
 import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@ali/ide-editor/lib/common';
 import { BrowserEditorContribution, IEditorActionRegistry } from '@ali/ide-editor/lib/browser';
 
+import { FoldedCodeWidget } from '@ali/ide-monaco-enhance/lib/browser/folded-code-widget';
+
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
 };
 
-@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution)
-export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution {
+export const CR_WIDGET: Command = {
+  id: 'cr.widget',
+  label: '测试折叠代码',
+  category: 'CodeReview',
+};
+
+@Domain(ClientAppContribution, CommandContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution, TabBarToolbarContribution)
+export class SCMContribution implements CommandContribution, ClientAppContribution, ComponentContribution, PreferenceContribution, MainLayoutContribution, BrowserEditorContribution, TabBarToolbarContribution {
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
@@ -94,6 +102,30 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
       },
     });
 
+    commands.registerCommand(CR_WIDGET, {
+      execute: () => {
+        const editor = this.editorService.currentEditor;
+
+        if (editor) {
+          const widget = new FoldedCodeWidget(editor.monacoEditor);
+          widget.show({
+            startLineNumber: 4,
+            endLineNumber: 6,
+            startColumn: 1,
+            endColumn: 1,
+          });
+        }
+      },
+    });
+  }
+
+  registerToolbarItems(registry: ToolbarRegistry) {
+    registry.registerItem({
+      id: CR_WIDGET.id,
+      command: CR_WIDGET.id,
+      viewId: CR_WIDGET.category,
+      tooltip: CR_WIDGET.label,
+    });
   }
 
   registerComponent(registry: ComponentRegistry) {
