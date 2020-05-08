@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, Domain, CommandService } from '@ali/ide-core-common';
+import { Disposable, Domain, CommandService, isWindows, isElectronRenderer } from '@ali/ide-core-common';
 import { AbstractMenuService, IMenu, ICtxMenuRenderer, NextMenuContribution, IMenuRegistry, generateMergedCtxMenu, getTabbarCommonMenuId } from '@ali/ide-core-browser/lib/menu/next';
 import { memoize, IContextKeyService, localize, KeybindingContribution, KeybindingRegistry, PreferenceService, IPreferenceSettingsService, getSlotLocation, AppConfig, getTabbarCtxKey } from '@ali/ide-core-browser';
 import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService, TERMINAL_COMMANDS } from '../common';
@@ -114,25 +114,41 @@ export class TerminalMenuContribution implements NextMenuContribution, Keybindin
       when,
     });
 
-    menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [{
-      command: TERMINAL_COMMANDS.SELECT_ZSH,
-      order: 1,
-      group: more1Sub,
-      toggledWhen: 'config.terminal.type == zsh',
-      when,
-    }, {
-      command: TERMINAL_COMMANDS.SELECT_BASH,
-      order: 2,
-      group: more1Sub,
-      toggledWhen: 'config.terminal.type == bash',
-      when,
-    }, {
-      command: TERMINAL_COMMANDS.SELECT_SH,
-      order: 3,
-      group: more1Sub,
-      toggledWhen: 'config.terminal.type == sh',
-      when,
-    }]);
+    if (isElectronRenderer() && isWindows) {
+      menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [{
+        command: TERMINAL_COMMANDS.SELECT_CMD,
+        order: 1,
+        group: more1Sub,
+        toggledWhen: 'config.terminal.type == cmd',
+        when,
+      }, {
+        command: TERMINAL_COMMANDS.SELECT_POWERSHELL,
+        order: 2,
+        group: more1Sub,
+        toggledWhen: 'config.terminal.type == powershell',
+        when,
+      }]);
+    } else {
+      menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [{
+        command: TERMINAL_COMMANDS.SELECT_ZSH,
+        order: 1,
+        group: more1Sub,
+        toggledWhen: 'config.terminal.type == zsh',
+        when,
+      }, {
+        command: TERMINAL_COMMANDS.SELECT_BASH,
+        order: 2,
+        group: more1Sub,
+        toggledWhen: 'config.terminal.type == bash',
+        when,
+      }, {
+        command: TERMINAL_COMMANDS.SELECT_SH,
+        order: 3,
+        group: more1Sub,
+        toggledWhen: 'config.terminal.type == sh',
+        when,
+      }]);
+    }
 
     menuRegistry.registerMenuItem(commonMenuId, {
       command: TERMINAL_COMMANDS.MORE_SETTINGS,
