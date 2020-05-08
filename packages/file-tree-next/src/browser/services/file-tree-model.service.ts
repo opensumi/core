@@ -92,6 +92,8 @@ export class FileTreeModelService {
   private _focusedFile: File | Directory | undefined;
   // 选中态的节点，会可能有多个
   private _selectedFiles: (File | Directory)[] = [];
+  // 当前焦点的文件路径URI
+  private _activeUri: URI;
 
   private clickTimes: number;
   private clickTimer: any;
@@ -160,6 +162,11 @@ export class FileTreeModelService {
   get selectedFiles() {
     return this._selectedFiles;
   }
+  // 获取当前激活的文件URI，仅在压缩目录模式下可用
+  get activeUri() {
+    return this._activeUri;
+  }
+
   get pasteStore() {
     return this._pasteStore;
   }
@@ -405,6 +412,11 @@ export class FileTreeModelService {
     ev.preventDefault();
 
     const { x, y } = ev.nativeEvent;
+
+    if (this.fileTreeService.isCompactMode && activeUri) {
+      this._activeUri = activeUri;
+    }
+
     if (file) {
       this.activeFileFocusedDecoration(file, true);
     } else {
@@ -529,6 +541,9 @@ export class FileTreeModelService {
 
     this._isMutiSelected = false;
     this.clickTimes++;
+    if (this.fileTreeService.isCompactMode && activeUri) {
+      this._activeUri = activeUri;
+    }
     // 单选操作默认先更新选中状态
     if (type === TreeNodeType.CompositeTreeNode || type === TreeNodeType.TreeNode && !activeUri) {
       this.activeFileDecoration(item);
