@@ -798,12 +798,35 @@ export class FileTreeModelService {
           promptHandle.addValidateMessage(this.validateMessage);
           return false;
         }
-        const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
-        if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
-          // 文件夹首次创建需要将焦点设到新建的文件夹上
-          Event.once(this.treeModel.onChange)(async () => {
-            this.location(addNode.uri);
-          });
+        if (this.fileTreeService.isCompactMode && newName.indexOf(Path.separator) > 0) {
+          // 压缩模式下，检查是否有同名父目录存在，有则不需要生成临时目录，刷新对应父节点并定位节点
+          const parentPath = new Path(parent.path).join(Path.splitPath(newName)[0]).toString();
+          const parentNode = this.fileTreeService.getNodeByPathOrUri(parentPath) as Directory;
+          if (parentNode) {
+            await this.fileTreeService.refresh(parentNode as Directory);
+            if (!parentNode.expanded) {
+              await parentNode.setExpanded();
+            }
+            Event.once(this.treeModel.onChange)(async () => {
+              this.location(parent.uri.resolve(newName));
+            });
+          } else {
+            const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
+            if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
+              // 文件夹首次创建需要将焦点设到新建的文件夹上
+              Event.once(this.treeModel.onChange)(async () => {
+                this.location(addNode.uri);
+              });
+            }
+          }
+        } else {
+          const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
+          if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
+            // 文件夹首次创建需要将焦点设到新建的文件夹上
+            Event.once(this.treeModel.onChange)(async () => {
+              this.location(addNode.uri);
+            });
+          }
         }
       }
       this.fileTreeContextKey.filesExplorerInputFocused.set(false);
