@@ -241,6 +241,7 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     group.activated = true;
     if (group.current) {
       this._onWidgetSelected.fire(group.current);
+      this.resize();
     }
   }
 
@@ -335,9 +336,11 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
   }
 
   resize() {
-    this._widgets.forEach((widget) => {
-      widget.resize();
-    });
+    if (this.currentGroup) {
+      this.currentGroup.widgets.forEach((widget) => {
+        widget.resize();
+      });
+    }
   }
 
   empty() {
