@@ -718,7 +718,7 @@ export class FileTreeModelService {
     const names = coalesce(name.split(/[\\/]/));
     if (parent) {
       // 不允许覆盖已存在的文件
-      const child = parent.children?.find((child) => child.name.indexOf(name) === 0);
+      const child = parent.children?.find((child) => child.name === name);
       if (child) {
         return {
           message: formatLocalize('validate.tree.fileNameExistsError', name),
@@ -803,35 +803,41 @@ export class FileTreeModelService {
           const parentPath = new Path(parent.path).join(Path.splitPath(newName)[0]).toString();
           const parentNode = this.fileTreeService.getNodeByPathOrUri(parentPath) as Directory;
           if (parentNode) {
-            await this.fileTreeService.refresh(parentNode as Directory);
-            if (!parentNode.expanded) {
-              await parentNode.setExpanded();
-            }
-            Event.once(this.treeModel.onChange)(async () => {
+            if (!parentNode.expanded && !parentNode.children) {
+              await parentNode.setExpanded(false, true);
               this.location(parent.uri.resolve(newName));
-            });
+            } else {
+              await this.fileTreeService.refresh(parentNode as Directory);
+              Event.once(this.fileTreeService.onNodeRefreshed)(async () => {
+                this.location(parent.uri.resolve(newName));
+              });
+            }
           } else {
-            const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
             if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
+              const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
               // 文件夹首次创建需要将焦点设到新建的文件夹上
               Event.once(this.treeModel.onChange)(async () => {
                 this.location(addNode.uri);
+              });
+            } else if (promptHandle.type === TreeNodeType.TreeNode) {
+              const namePieces = Path.splitPath(newName);
+              const addNode = await this.fileTreeService.addNode(parent, namePieces.slice(0, namePieces.length - 1).join(Path.separator), promptHandle.type);
+              Event.once(this.treeModel.onChange)(async () => {
+                this.location(addNode.uri.resolve(namePieces.slice(-1)[0]));
               });
             }
           }
         } else {
           const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
-          if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
-            // 文件夹首次创建需要将焦点设到新建的文件夹上
-            Event.once(this.treeModel.onChange)(async () => {
-              this.location(addNode.uri);
-            });
-          }
+          Event.once(this.treeModel.onChange)(async () => {
+            this.location(addNode.uri);
+          });
         }
       }
       this.fileTreeContextKey.filesExplorerInputFocused.set(false);
       return true;
     };
+
     const blurCommit = async (newName) => {
       if (isCommit) {
         return false;
@@ -916,8 +922,6 @@ export class FileTreeModelService {
     if (uri.isEqual((this.treeModel.root as Directory).uri)) {
       // 可能为空白区域点击, 即选中的对象为根目录
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
-    } else if (this.focusedFile) {
-      targetNode = this.focusedFile;
     } else if (this.selectedFiles.length > 0) {
       targetNode = this.selectedFiles[this.selectedFiles.length - 1];
     } else {
