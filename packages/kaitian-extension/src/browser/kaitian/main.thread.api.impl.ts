@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Injector, Injectable } from '@ali/common-di';
+import { Injector } from '@ali/common-di';
 import { MainThreaLifeCycle } from './main.thread.lifecycle';
 import { MainThreadKaitianAPIIdentifier } from '../../common/kaitian';
 import { MainThreaLayout } from './main.thread.layout';
@@ -17,7 +17,7 @@ export function createKaitianApiFactory(
   const mainThreadTheme = injector.get(MainThreadTheme, [rpcProtocol, injector]);
   disposer.addDispose(mainThreadTheme);
 
-  const layout = injector.get(MainThreaLayout, [rpcProtocol, injector]);
+  const layout = injector.get(MainThreaLayout, [rpcProtocol]);
   disposer.addDispose(layout);
 
   const common = injector.get(MainThreadCommon, [rpcProtocol, injector]);
