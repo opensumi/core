@@ -14,9 +14,6 @@ export class FoldedCodeWidget extends ZoneWidget {
 
   constructor(protected readonly editor: monaco.editor.ICodeEditor) {
     super(editor);
-    editor.updateOptions({
-      folding: false,
-    });
   }
 
   show(where: monaco.IRange) {
@@ -76,6 +73,10 @@ export class FoldedCodeWdigetGroup extends Disposable {
     protected showRanges: monaco.IRange[],
   ) {
     super();
+
+    editor.updateOptions({
+      folding: false,
+    });
 
     this.model = editor.getModel()!;
 
