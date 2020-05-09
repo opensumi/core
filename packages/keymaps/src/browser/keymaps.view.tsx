@@ -305,7 +305,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
 
   const renderSearchInput = () => {
     return <div className={styles.search_container}>
-      { renderInputPlaceholder() }
       <Input
         className={styles.search_input}
         placeholder={localize(activeKeyboardSearch ? 'keymaps.search.keyboard.placeholder' : 'keymaps.search.placeholder')}
@@ -314,6 +313,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         name={NO_KEYBINDING_NAME}
         onChange={onChangeHandler}
         onKeyDown={onKeyDownHandler}
+        addonBefore={renderInputPlaceholder()}
       />
       { renderOptionalActions() }
     </div>;

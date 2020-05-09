@@ -258,8 +258,6 @@
 .search_input {
   height: 30px;
   width: 100%;
-  text-indent: 30px;
-
 }
 
 .keybinding_optional_actions {
@@ -283,11 +281,8 @@
 }
 
 .search_inline_action {
-  position: absolute;
-  left: 0;
   height: 100%;
   padding: 0 5px;
-  padding-left: 10px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -296,10 +291,11 @@
     height: 18px;
     width: 18px;
     text-align: center;
+    box-sizing: content-box;
+    border: 1px solid transparent;
     cursor: pointer;
     &.active {
       border: 1px solid var(--focusBorder);
-      box-sizing: content-box;
     }
   }
 }
