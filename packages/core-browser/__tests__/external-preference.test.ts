@@ -1,4 +1,4 @@
-import { registerExternalPreferenceProvider, getPreferenceLanguageId, PreferenceScope, getExternalPreferenceProvider, getPreferenceThemeId, getPreferenceIconThemeId, getExternalPreference } from '../src/preferences';
+import { registerExternalPreferenceProvider, getPreferenceLanguageId, PreferenceScope, getExternalPreferenceProvider, getPreferenceThemeId, getPreferenceIconThemeId, getExternalPreference, registerLocalStorageProvider } from '../src/preferences';
 
 describe('external preference tests', () => {
 
@@ -47,6 +47,10 @@ describe('external preference tests', () => {
 
     (global as any).localStorage = undefined;
     // should not throw error when localStorage is not defined;
+    const mockWorkspace = '/User/test';
+    registerLocalStorageProvider('general.theme', mockWorkspace);
+    registerLocalStorageProvider('general.icon', mockWorkspace);
+    registerLocalStorageProvider('general.language', mockWorkspace);
     getExternalPreferenceProvider('general.theme')!.set('testTheme', PreferenceScope.Workspace);
     expect(getPreferenceThemeId()).toBe(undefined);
     // mock localStorage

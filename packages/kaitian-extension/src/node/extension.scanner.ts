@@ -4,7 +4,7 @@ import * as os from 'os';
 import { getDebugLogger, getNodeRequire } from '@ali/ide-core-node';
 import * as semver from 'semver';
 
-import { IExtensionMetaData, ExtraMetaData, getExtensionId } from '../common';
+import { IExtensionMetaData, ExtraMetaData } from '../common';
 import { mergeContributes } from './merge-contributes';
 
 function resolvePath(path) {
@@ -172,7 +172,7 @@ export class ExtensionScanner {
 
     const extension = {
       // vscode 规范
-      id: getExtensionId(`${packageJSON.publisher}.${packageJSON.name}`),
+      id: `${packageJSON.publisher}.${packageJSON.name}`,
       // 使用插件市场的 id
       // 从插件市场下载的插件命名规范为 ${publisher}.${name}-${version}
       extensionId: this.getExtensionIdByExtensionPath(extensionPath, packageJSON.version),
@@ -207,7 +207,7 @@ export class ExtensionScanner {
     }
 
     const [, publisher, name] = match;
-    return getExtensionId(`${publisher}.${name}`);
+    return `${publisher}.${name}`;
   }
 
   private isLatestVersion(extension: IExtensionMetaData): boolean {
