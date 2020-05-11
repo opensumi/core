@@ -1,18 +1,20 @@
+import { orderBy } from 'lodash';
 import { Disposable } from '@ali/ide-core-common';
 import { ZoneWidget } from './zone-widget';
-import { orderBy } from 'lodash';
+import { IFoldedCodeWidgetContentProvider } from '../common';
 
 export class FoldedCodeWidget extends ZoneWidget {
 
   protected applyClass() {
-    this._container.innerText = '测试一下渲染的内容';
   }
 
   protected applyStyle() {
-
   }
 
-  constructor(protected readonly editor: monaco.editor.ICodeEditor) {
+  constructor(
+    protected readonly editor: monaco.editor.ICodeEditor,
+    protected provider: IFoldedCodeWidgetContentProvider,
+  ) {
     super(editor);
   }
 
@@ -24,10 +26,11 @@ export class FoldedCodeWidget extends ZoneWidget {
       endColumn: where.endColumn,
     }, 1);
     (this.editor as any)._modelData.viewModel.setHiddenAreas([where]);
+    this.provider.renderInforOverlay(this._container, where);
   }
 }
 
-export class FoldedCodeWdigetGroup extends Disposable {
+export class FoldedCodeWidgetGroup extends Disposable {
   protected widgets: Map<string, FoldedCodeWidget>;
   protected foldRanges: monaco.IRange[];
   protected model: monaco.editor.ITextModel;
@@ -71,11 +74,13 @@ export class FoldedCodeWdigetGroup extends Disposable {
   constructor(
     protected readonly editor: monaco.editor.ICodeEditor,
     protected showRanges: monaco.IRange[],
+    protected provider: IFoldedCodeWidgetContentProvider,
   ) {
     super();
 
     editor.updateOptions({
       folding: false,
+      readOnly: true,
     });
 
     this.model = editor.getModel()!;
@@ -98,7 +103,7 @@ export class FoldedCodeWdigetGroup extends Disposable {
 
   foldAll() {
     this.foldRanges.forEach((range) => {
-      const widget = new FoldedCodeWidget(this.editor);
+      const widget = new FoldedCodeWidget(this.editor, this.provider);
       widget.show(range);
       this.widgets.set(`${range.startLineNumber}:${range.endLineNumber}`, widget);
     });
