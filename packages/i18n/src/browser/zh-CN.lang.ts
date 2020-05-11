@@ -337,6 +337,7 @@ export const localizationBundle = {
     'preference.editor.autoSaveDelay': '自动保存延迟',
     'preference.editor.maxTokenizationLineLength': '最大解析标识长度',
     'preference.editor.quickSuggestionsDelay': '智能提示延迟（毫秒）',
+    'preference.editor.largeFile': '超大文件尺寸',
 
     'preference.array.additem': '添加',
 
@@ -360,7 +361,11 @@ export const localizationBundle = {
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标记',
     'editor.configuration.quickSuggestionsDelay': '智能提示延迟（毫秒），默认 100 毫秒',
     'editor.configuration.tabSize': '一个Tab的缩进大小，如果设置了自动检测，那么可能会被自动检测结果覆盖',
+    'editor.configuration.largeFileSize': '输入自定义超大文件的尺寸',
     'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
+
+    'editor.largeFile.prevent': '文件过大，继续打开可能会导致卡顿或者崩溃。',
+    'editor.largeFile.prevent.stillOpen': '仍要打开',
 
     'status.editor.chooseLanguage': '选择语言模式',
     'status.editor.chooseEncoding': '选择编码',

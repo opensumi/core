@@ -273,6 +273,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 10000,
       description: '%editor.configuration.maxTokenizationLineLength%',
     },
+    'editor.largeFile': {
+      type: 'number',
+      default: 2 * 1024 * 1024,
+      description: '%editor.configuration.largeFileSize%',
+    },
     'editor.quickSuggestionsDelay': {
       type: 'integer',
       default: 100,
