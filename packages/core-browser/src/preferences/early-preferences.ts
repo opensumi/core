@@ -11,7 +11,10 @@ export interface IExternalPreferenceProvider<T = any> {
 const providers = new Map<string, IExternalPreferenceProvider>();
 
 export function registerExternalPreferenceProvider<T>(name, provider: IExternalPreferenceProvider<T>) {
-  providers.set(name, provider); // 可覆盖
+  if (providers.get(name)) {
+    return; // 不可覆盖，先注册的生效
+  }
+  providers.set(name, provider);
 }
 
 export function getExternalPreferenceProvider(name) {
