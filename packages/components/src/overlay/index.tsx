@@ -4,7 +4,7 @@ import Modal, { ModalProps } from 'antd/lib/modal';
 
 import 'antd/lib/modal/style/index.css';
 
-import * as styles from './styles.module.less';
+import './styles.less';
 
 export interface IOverlayProps {
   className?: string;
@@ -26,7 +26,7 @@ export const Overlay: React.FC<IOverlayProps> = (({ maskClosable = false, closab
       closable={closable}
       onCancel={onClose}
       title={title}
-      className={clsx(styles.overlay, className)}
+      className={clsx('kt-overlay', className)}
       {...restProps}
     >
       {children}

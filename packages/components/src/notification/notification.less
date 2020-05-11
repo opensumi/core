@@ -1,0 +1,47 @@
+.kt-notification-wrapper {
+  background: var(--notifications-background) !important;
+  border-color: var(--notifications-border) !important;
+  word-break: break-word;
+  padding: 12px !important;
+  position: relative;
+
+  .anticon {
+    font-size: 12px;
+  }
+
+  .ant-notification-notice-close,
+  .ant-notification-notice-message,
+  .ant-notification-notice-description {
+    color: var(--notifications-foreground) !important;
+    font-size: 12px !important;
+    margin-left: 22px !important;
+    line-height: 20px !important;
+  }
+
+  .ant-notification-notice-close {
+    right: 14px;
+    top: 12px;
+  }
+
+  .ant-notification-notice-btn {
+    .button {
+      margin: 0 0 0 10px;
+    }
+  }
+}
+
+.kt-notification-wrapper.kt-notification-error .anticon.ant-notification-notice-icon-info {
+  color: var(--notificationsErrorIcon-foreground);
+  margin-top: 5px;
+}
+
+.kt-notification-wrapper.kt-notification-info .anticon.ant-notification-notice-icon-info {
+  color: var(--notificationsInfoIcon-foreground);
+  margin-top: 5px;
+}
+
+.kt-notification-wrapper.kt-notification-warning .anticon.ant-notification-notice-icon-info {
+  color: var(--notificationsWarningIcon-foreground);
+  margin-top: 5px;
+}
+

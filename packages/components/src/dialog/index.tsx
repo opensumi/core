@@ -2,11 +2,11 @@ import * as React from 'react';
 import * as clx from 'classnames';
 
 import { Overlay, IOverlayProps } from '../overlay';
-import * as styles from './styles.module.less';
 import { IconContext, getDefaultIcon } from '../icon';
 import { Button } from '../button';
 
 import { MessageType } from '../common';
+import './styles.less';
 
 export type ModalType = 'basic' | 'confirm' | 'info';
 
@@ -61,15 +61,15 @@ export const Dialog: React.FC<IDialogProps> = ({
       footer={type === 'basic' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : undefined}
       afterClose={afterClose}>
       <>
-        <div className={styles.content}>
-          {icon && <div style={{ color: icon.color }} className={clx(styles.icon, getDefaultIcon(icon.className) || getIcon(icon.className))}/>}
-          <div className={styles.content_area}>
-            {type !== 'basic' && title && <p className={styles.content_title}>{title}</p>}
-            {typeof message === 'string' ? (<span className={styles.message}>{ message }</span>) : message}
+        <div className={'kt-dialog-content'}>
+          {icon && <div style={{ color: icon.color }} className={clx('kt-dialog-icon', getDefaultIcon(icon.className) || getIcon(icon.className))}/>}
+          <div className={'kt-dialog-content_area'}>
+            {type !== 'basic' && title && <p className={'kt-dialog-content_title'}>{title}</p>}
+            {typeof message === 'string' ? (<span className={'kt-dialog-message'}>{ message }</span>) : message}
           </div>
-          {closable && type !== 'basic' && <button className={clx(styles.closex, getDefaultIcon('close'))} onClick={onClose}></button>}
+          {closable && type !== 'basic' && <button className={clx('kt-dialog-closex', getDefaultIcon('close'))} onClick={onClose}></button>}
         </div>
-        {messageType !== MessageType.Empty && type !== 'basic' && <div className={styles.buttonWrap}>
+        {messageType !== MessageType.Empty && type !== 'basic' && <div className={'kt-dialog-buttonWrap'}>
           {type === 'confirm' ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} /> : <Button size='large' onClick={onClose}>知道了</Button>}
         </div>}
       </>

@@ -1,0 +1,37 @@
+.kt-overlay {
+  .ant-modal-body {
+    background: var(--kt-modal-background);
+    border-color: var(--notifications-border);
+  }
+
+  .ant-modal-header {
+    background-color: var(--kt-modal-background);
+    border-bottom-color: var(--kt-modal-separatorBackground);
+    height: 56px;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .ant-modal-title {
+    color: var(--kt-modal-foreground);
+  }
+
+  .ant-modal-footer {
+    background-color: var(--kt-modal-background);
+    border-top-color: var(--kt-modal-separatorBackground);
+    height: 52px;
+    border-radius: 0 0 2px 2px;
+  }
+}
+
+.kt-overlay {
+  padding: 24px 24px;
+  color: var(--kt-modal-foreground);
+}
+
+.kt-overlay :global(.ant-modal-close-x) {
+  margin: 18px 24px 0 0;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  color: var(--kt-notificationsCloseIcon-foreground);
+}
