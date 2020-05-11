@@ -31,7 +31,13 @@ export function getPreferenceLanguageId(): string {
 }
 
 // 默认使用localStorage
-function registerLocalStorageProvider(key: string) {
+export function registerLocalStorageProvider(key: string, workspaceFolder: string) {
+  function getScopePrefix(scope: PreferenceScope) {
+    if (scope === PreferenceScope.Workspace) {
+      return workspaceFolder;
+    }
+    return scope;
+  }
   registerExternalPreferenceProvider<string>(key, {
     set: (value, scope) => {
       if (scope >= PreferenceScope.Folder) {
@@ -40,23 +46,19 @@ function registerLocalStorageProvider(key: string) {
       }
       if ((global as any).localStorage) {
         if (value !== undefined) {
-          localStorage.setItem(scope + `:${key}`, value);
+          localStorage.setItem(getScopePrefix(scope) + `:${key}`, value);
         } else {
-          localStorage.removeItem(scope + `:${key}`);
+          localStorage.removeItem(getScopePrefix(scope) + `:${key}`);
         }
       }
     },
     get: (scope) => {
       if ((global as any).localStorage) {
-        return localStorage.getItem(scope + `:${key}`) || undefined;
+        return localStorage.getItem(getScopePrefix(scope) + `:${key}`) || undefined;
       }
     },
   });
 }
-
-registerLocalStorageProvider('general.theme');
-registerLocalStorageProvider('general.icon');
-registerLocalStorageProvider('general.language');
 
 export function getExternalPreference<T>(preferenceName: string, schema?: PreferenceItem, untilScope?: PreferenceScope): {value: T | undefined, scope: PreferenceScope } {
   const scopes = untilScope ? PreferenceScope.getReversedScopes().filter((s) => s <= untilScope) : PreferenceScope.getReversedScopes();

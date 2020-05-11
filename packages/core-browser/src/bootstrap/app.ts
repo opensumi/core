@@ -31,7 +31,7 @@ import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import { RPCMessageConnection, WSChannelHandler } from '@ali/ide-connection';
 import {
-  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider,
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId, getExternalPreferenceProvider, registerLocalStorageProvider,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
@@ -119,6 +119,7 @@ export class ClientApp implements IClientApp {
   container: HTMLElement;
 
   constructor(opts: IClientAppOpts) {
+    this.initEarlyPreference(opts.workspaceDir || '');
     setLanguageId(getPreferenceLanguageId());
     this.injector = opts.injector || new Injector();
     this.modules = opts.modules;
@@ -587,6 +588,12 @@ export class ClientApp implements IClientApp {
       this.logger.error('icon prefix与内置图标冲突，请检查图标配置！');
     }
     updateIconMap(prefix, iconMap);
+  }
+
+  protected initEarlyPreference(workspaceDir: string) {
+    registerLocalStorageProvider('general.theme', workspaceDir);
+    registerLocalStorageProvider('general.icon', workspaceDir);
+    registerLocalStorageProvider('general.language', workspaceDir);
   }
 
 }
