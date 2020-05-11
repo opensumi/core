@@ -1,5 +1,5 @@
 import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent, IEditorOpenType } from '@ali/ide-editor';
-import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType, LRUMap, Schemas, IEventBus } from '@ali/ide-core-browser';
+import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType, LRUMap, Schemas, IEventBus, PreferenceService } from '@ali/ide-core-browser';
 import { Autowired, Injectable } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
@@ -12,9 +12,11 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { IDialogService } from '@ali/ide-overlay';
 import { FileSchemeDocumentProvider, DebugSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
 import { UntitledResourceProvider, UntitledSchemeDocumentProvider } from '@ali/ide-editor/lib/browser/untitled-resource';
+import { LargeFilePrevent } from './prevent.view';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
+const LARGE_FILE_PREVENT_COMPONENT_ID = 'large-file-prevent';
 
 @Injectable()
 export class FileSystemResourceProvider extends WithEventBus implements IResourceProvider {
@@ -212,6 +214,9 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   @Autowired(IFileServiceClient)
   fileServiceClient: IFileServiceClient;
 
+  @Autowired(PreferenceService)
+  preference: PreferenceService;
+
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
@@ -243,6 +248,12 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
       scheme: FILE_SCHEME,
     });
 
+    editorComponentRegistry.registerEditorComponent({
+      component: LargeFilePrevent,
+      uid: LARGE_FILE_PREVENT_COMPONENT_ID,
+      scheme: FILE_SCHEME,
+    });
+
     // 如果文件无法在当前IDE编辑器中找到打开方式
     editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorOpenType[]) => {
       if (results.length === 0) {
@@ -256,17 +267,30 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
     // 图片文件
     editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, async (resource: IResource<any>, results: IEditorOpenType[]) => {
       const type = await this.getFileType(resource.uri.toString());
+
       if (type === 'image') {
         results.push({
           type: 'component',
           componentId: IMAGE_PREVIEW_COMPONENT_ID,
         });
       }
+
       if (type === 'text') {
-        results.push({
-          type: 'code',
-          title: localize('editorOpenType.code'),
-        });
+        const { metadata, uri } = resource as { uri: URI, metadata: any };
+        const stat = await this.fileServiceClient.getFileStat(uri.toString());
+        const maxSize = this.preference.get<number>('editor.largeFile') || 20000;
+
+        if (stat && (stat.size || 0) > maxSize && !(metadata || {}).noPrevent) {
+          results.push({
+            type: 'component',
+            componentId: LARGE_FILE_PREVENT_COMPONENT_ID,
+          });
+        } else {
+          results.push({
+            type: 'code',
+            title: localize('editorOpenType.code'),
+          });
+        }
       }
     });
 
