@@ -93,7 +93,6 @@ export class SCMContribution implements CommandContribution, ClientAppContributi
         }
       },
     });
-
   }
 
   registerComponent(registry: ComponentRegistry) {
