@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { Injector } from '@ali/common-di';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getDebugLogger, Emitter, IReporterService, REPORT_HOST, ReporterProcessMessage, REPORT_NAME } from '@ali/ide-core-common';
-import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy } from '../common';
+import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createKaitianAPIFactory } from './api/kaitian/ext.host.api.impl';
@@ -108,7 +108,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   public getExtension(extensionId: string): VSCExtension<any> | undefined {
     const extension = this.extensions.find((extension) => {
-      return extensionId === extension.id;
+      return getExtensionId(extensionId) === getExtensionId(extension.id);
     });
     if (extension) {
       const activateExtension = this.extensionsActivator.get(extension.id);
