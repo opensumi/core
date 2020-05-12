@@ -13,6 +13,7 @@ export class FoldedCodeWidget extends ZoneWidget {
 
   constructor(
     protected readonly editor: monaco.editor.ICodeEditor,
+    protected readonly index: number,
     protected provider: IFoldedCodeWidgetContentProvider,
   ) {
     super(editor);
@@ -25,15 +26,12 @@ export class FoldedCodeWidget extends ZoneWidget {
       startColumn: where.startColumn,
       endColumn: where.endColumn,
     }, 1);
-    (this.editor as any)._modelData.viewModel.setHiddenAreas([where]);
-    this.provider.renderInforOverlay(this._container, where);
+    this.provider.renderInforOverlay(this._container, this.index);
   }
 }
 
 export class FoldedCodeWidgetGroup extends Disposable {
-  protected widgets: Map<string, FoldedCodeWidget>;
-  protected foldRanges: monaco.IRange[];
-  protected model: monaco.editor.ITextModel;
+  protected widgets: Array<FoldedCodeWidget> = [];
 
   private _orderRanges(ranges: monaco.IRange[]) {
     return orderBy(ranges, ['startLineNumber'], ['asc']);
@@ -42,14 +40,9 @@ export class FoldedCodeWidgetGroup extends Disposable {
   private _split(ranges: monaco.IRange[], end: number) {
     const another: monaco.IRange[] = [];
     let start = 1;
-    const ordered = this._orderRanges(ranges);
-    ordered.forEach(({ startLineNumber, endLineNumber }) => {
-      if (start <= startLineNumber) {
-        start = endLineNumber + 1;
-        return;
-      }
 
-      if (start > startLineNumber) {
+    ranges.forEach(({ startLineNumber, endLineNumber }) => {
+      if (startLineNumber !== 1) {
         another.push({
           startLineNumber: start,
           endLineNumber: startLineNumber - 1,
@@ -57,9 +50,10 @@ export class FoldedCodeWidgetGroup extends Disposable {
           endColumn: 1,
         });
       }
+      start = endLineNumber + 1;
     });
 
-    if (start <= end) {
+    if (start < end) {
       another.push({
         startLineNumber: start,
         endLineNumber: end,
@@ -73,23 +67,14 @@ export class FoldedCodeWidgetGroup extends Disposable {
 
   constructor(
     protected readonly editor: monaco.editor.ICodeEditor,
-    protected showRanges: monaco.IRange[],
     protected provider: IFoldedCodeWidgetContentProvider,
   ) {
     super();
 
-    editor.updateOptions({
+    this.editor.updateOptions({
       folding: false,
       readOnly: true,
     });
-
-    this.model = editor.getModel()!;
-
-    if (!this.model) {
-      throw new Error('Can not fold a editor without any text model');
-    }
-
-    this.foldRanges = this._split(this.showRanges, this.model.getLineCount());
 
     this.addDispose({
       dispose: () => {
@@ -101,25 +86,35 @@ export class FoldedCodeWidgetGroup extends Disposable {
     });
   }
 
-  foldAll() {
-    this.foldRanges.forEach((range) => {
-      const widget = new FoldedCodeWidget(this.editor, this.provider);
-      widget.show(range);
-      this.widgets.set(`${range.startLineNumber}:${range.endLineNumber}`, widget);
+  fold(showRanges: monaco.IRange[]) {
+
+    if (!this.editor.getModel()) {
+      throw new Error('Can not fold a editor without any text model');
+    }
+
+    const ordered = this._orderRanges(showRanges);
+    const foldRanges = this._split(ordered, this.editor.getModel()!.getLineCount());
+    (this.editor as any)._modelData.viewModel.setHiddenAreas(foldRanges);
+
+    if (ordered[0].startLineNumber !== 1) {
+      const widget = new FoldedCodeWidget(this.editor, 0, this.provider);
+      widget.show({ startLineNumber: 0, endLineNumber: 0, startColumn: 1, endColumn: 1 });
+      this.widgets.push(widget);
+    }
+
+    ordered.forEach((range) => {
+      const widget = new FoldedCodeWidget(this.editor, this.widgets.length, this.provider);
+      widget.show({ ...range, startLineNumber: range.endLineNumber });
+      this.widgets.push(widget);
     });
   }
 
-  unfold(foldRange: monaco.IRange) {
-    const index = `${foldRange.startLineNumber}:${foldRange.endLineNumber}`;
-    const widget = this.widgets.get(index);
-
-    if (widget) {
-      const delIndex = this.foldRanges.findIndex((r) => r.startLineNumber === foldRange.startLineNumber);
-      this.foldRanges.splice(delIndex, 1);
-      this.showRanges = this._split(this.foldRanges, this.model.getLineCount());
+  dispose() {
+    (this.editor as any)._modelData.viewModel.setHiddenAreas([]);
+    this.widgets.forEach((widget) => {
       widget.hide();
       widget.dispose();
-      this.widgets.delete(index);
-    }
+    });
+    this.widgets = [];
   }
 }
