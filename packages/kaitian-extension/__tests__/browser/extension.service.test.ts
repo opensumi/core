@@ -19,7 +19,7 @@ import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService, IEdit
 import { MockPreferenceProvider } from '@ali/ide-core-browser/lib/mocks/preference';
 import { FileSearchServicePath } from '@ali/ide-file-search/lib/common/file-search';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ToolbarActionService, IToolbarActionService, IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@ali/ide-core-browser/src/menu/next';
+import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@ali/ide-core-browser/src/menu/next';
 import { EditorActionRegistryImpl } from '@ali/ide-editor/lib/browser/menu/editor.menu';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { LayoutService } from '@ali/ide-main-layout/lib/browser/layout.service';
@@ -27,6 +27,8 @@ import { PreferenceSettingsService } from '@ali/ide-preferences/lib/browser/pref
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { MockFileServiceClient } from '@ali/ide-file-service/lib/common/mocks';
 import { MonacoSnippetSuggestProvider } from '@ali/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
+import { IToolbarRegistry } from '@ali/ide-core-browser/lib/toolbar';
+import { NextToolbarRegistryImpl } from '@ali/ide-core-browser/src/toolbar/toolbar.registry';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -230,10 +232,6 @@ describe('Extension service', () => {
         useClass: MenuRegistryImpl,
       },
       {
-        token: IToolbarActionService,
-        useClass: ToolbarActionService,
-      },
-      {
         token: IEditorActionRegistry,
         useClass: EditorActionRegistryImpl,
       },
@@ -414,9 +412,11 @@ describe('Extension service', () => {
 
   describe('extension contributes', () => {
     it('should register toolbar actions via new toolbar action contribution point', () => {
-      const toolbarActionService: IToolbarActionService = injector.get(IToolbarActionService);
-      expect(toolbarActionService.getActionGroups().size).toBe(1);
-      expect(toolbarActionService.getActionGroup(mockExtensionProps.id)).toBeDefined();
+      const toolbarRegistry: IToolbarRegistry = injector.get(IToolbarRegistry);
+      (toolbarRegistry as NextToolbarRegistryImpl).init();
+      const groups = toolbarRegistry.getActionGroups('default');
+      expect(groups!.length).toBe(1);
+      expect(toolbarRegistry.getToolbarActions({location: 'default', group: groups![0].id})!.actions!.length).toBe(1);
     });
 
     it('should register shadow command via command contribution point', () => {
