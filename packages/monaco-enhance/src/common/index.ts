@@ -1,3 +1,3 @@
 export interface IFoldedCodeWidgetContentProvider {
-  renderInforOverlay: (dom: HTMLDivElement, range: monaco.IRange) => void;
+  renderInforOverlay: (dom: HTMLDivElement, index: number) => void;
 }
