@@ -211,6 +211,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.tabSize,
       description: '%editor.configuration.tabSize%',
     },
+    'editor.formatOnPaste': {
+      type: 'boolean',
+      default: false,
+      description: '%editor.configuration.formatOnPaste%',
+    },
     'editor.detectIndentation': {
       type: 'boolean',
       default: true,
