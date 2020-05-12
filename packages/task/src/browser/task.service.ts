@@ -87,7 +87,6 @@ export class TaskService extends Disposable implements ITaskService {
     this.outputChannel = this.outputService.getChannel(localize('task.outputchannel.name'));
     this.providers = new Map();
     this.providerTypes = new Map();
-    this.getTask(this.workspaceFolders[0], 'clang++ build active file');
     this.addDispose(this.taskSystem.onDidStateChange((e) => {
       this._onDidStateChange.fire(e);
     }));
