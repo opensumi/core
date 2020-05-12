@@ -1,7 +1,7 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Event, formatLocalize, IProblemMatcherRegistry, Disposable, Deferred, ProblemMatcher, isString, deepClone, removeAnsiEscapeCodes, Emitter } from '@ali/ide-core-common';
 
-import { ITaskSystem, ITaskExecuteResult, ITaskExecutor, TaskExecuteKind } from '../common';
+import { ITaskSystem, ITaskExecuteResult, ITaskExecutor, TaskExecuteKind, IActivateTaskExecutorData, TaskTerminateResponse } from '../common';
 import { Task, ContributedTask, CommandString, CommandConfiguration, TaskEvent, TaskEventKind } from '../common/task';
 import { TerminalOptions, ITerminalController, ITerminalGroupViewService, ITerminalClient, ITerminalExternalService } from '@ali/ide-terminal-next/lib/common';
 import { CustomTask } from '../common/task';
@@ -48,6 +48,22 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     }));
   }
 
+  terminate(): Promise<{ success: boolean }> {
+    return new Promise((resolve, reject) => {
+      if (this.terminalWidget) {
+        this.terminalWidget.dispose();
+        this.terminalService.onExit((e) => {
+          if (e.sessionId === this.terminalWidget.id) {
+            this.terminalView.removeWidget(this.terminalWidget.id);
+            resolve({ success: true });
+          }
+        });
+      } else {
+        resolve({ success: true });
+      }
+    });
+  }
+
   private onTaskExit(code?: number) {
     const { term, id } = this.terminalWidget;
     term.setOption('disableStdin', true);
@@ -90,6 +106,8 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   variableResolver: IVariableResolverService;
 
   private currentTask: Task;
+
+  private activeTaskExecutors: Map<string, IActivateTaskExecutorData> = new Map();
 
   private _onDidStateChange: Emitter<TaskEvent> = new Emitter();
 
@@ -157,6 +175,10 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     }));
 
     const result = executor.execute(task);
+
+    const mapKey = task.getMapKey();
+    this.activeTaskExecutors.set(mapKey, { promise: Promise.resolve(result), task, executor });
+
     await executor.processReady.promise;
     this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.ProcessStarted, task, executor.processId));
     return {
@@ -227,6 +249,21 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     return result;
   }
 
+  getActiveTasks(): Task[] {
+    return Array.from(this.activeTaskExecutors.values()).map((e) => e.task);
+  }
+
+  async terminate(task: Task): Promise<TaskTerminateResponse> {
+    const key = task.getMapKey();
+    const activeExecutor = this.activeTaskExecutors.get(key);
+    if (!activeExecutor) {
+      return Promise.resolve({ task: undefined, success: true });
+    }
+    const { success } = await activeExecutor.executor.terminate();
+    this.activeTaskExecutors.delete(key);
+    return { task, success };
+  }
+
   rerun(): import('../common').ITaskExecuteResult | undefined {
     throw new Error('Method not implemented.');
   }
@@ -236,18 +273,14 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   isActiveSync(): boolean {
     throw new Error('Method not implemented.');
   }
-  getActiveTasks(): import('../common/task').Task[] {
-    throw new Error('Method not implemented.');
-  }
+
   getBusyTasks(): import('../common/task').Task[] {
     throw new Error('Method not implemented.');
   }
   canAutoTerminate(): boolean {
     throw new Error('Method not implemented.');
   }
-  terminate(task: import('../common/task').Task): Promise<import('../common').TaskTerminateResponse> {
-    throw new Error('Method not implemented.');
-  }
+
   terminateAll(): Promise<import('../common').TaskTerminateResponse[]> {
     throw new Error('Method not implemented.');
   }

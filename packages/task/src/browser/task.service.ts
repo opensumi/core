@@ -116,6 +116,15 @@ export class TaskService extends Disposable implements ITaskService {
     return this.runTask(task);
   }
 
+  public async terminateTask(taskId: string) {
+    const activeTasks = this.taskSystem.getActiveTasks();
+    for (const t of activeTasks) {
+      if (t._id === taskId) {
+        await this.taskSystem.terminate(t);
+      }
+    }
+  }
+
   public getTask(workspaceFolder: Uri, identifier: string | TaskIdentifier, compareId: boolean = false): Promise<Task | undefined> {
     const key: string | KeyedTaskIdentifier | undefined = !isString(identifier)
     ? this.taskDefinitionRegistry.createTaskIdentifier(identifier, console)
@@ -347,15 +356,6 @@ export class TaskService extends Disposable implements ITaskService {
 
   protected showOutput(): void {
     this.outputChannel.appendLine('There are task errors. See the output for details.');
-    // if ((runSource === TaskRunSource.User) || (runSource === TaskRunSource.ConfigurationChange)) {
-    // this.message.prompt(Severity.Warning, nls.localize('taskServiceOutputPrompt', 'There are task errors. See the output for details.'),
-    // 	[{
-    // 		label: nls.localize('showOutput', "Show output"),
-    // 		run: () => {
-    // 			this.outputService.showChannel(this._outputChannel.id, true);
-    // 		}
-    // 	}]);
-    // }
   }
 
   private getTaskDefinition(type: string): TaskDefinition | undefined {

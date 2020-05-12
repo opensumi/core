@@ -23,7 +23,6 @@ export class TaskContribution implements ClientAppContribution, CommandContribut
 
   initialize() {
     this.prefereces.onPreferenceChanged((e) => {
-      console.log('onPreferenceChanged', e.preferenceName);
     });
   }
 
