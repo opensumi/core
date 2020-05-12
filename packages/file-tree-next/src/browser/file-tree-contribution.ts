@@ -18,6 +18,7 @@ import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@a
 import { FilesExplorerFilteredContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { FilesExplorerFocusedContext, FilesExplorerInputFocusedContext } from '@ali/ide-core-browser/lib/contextkey/explorer';
 import { PasteTypes } from '../common';
+import { TERMINAL_COMMANDS } from '@ali/ide-terminal-next';
 
 export const ExplorerResourceViewId = 'file-explorer-next';
 
@@ -151,6 +152,13 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: FILE_COMMANDS.OPEN_WITH_PATH.id,
+      when: 'workbench.panel.terminal',
+      order: 3,
+      group: '1_open',
+    });
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: FILE_COMMANDS.SEARCH_ON_FOLDER.id,
       order: 1,
       group: '2_search',
@@ -200,6 +208,20 @@ export class FileTreeContribution implements NextMenuContribution, CommandContri
   }
 
   registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(FILE_COMMANDS.OPEN_WITH_PATH, {
+      execute: (uri?: URI) => {
+        let directory = uri;
+
+        if (!directory) {
+          return;
+        }
+        const file = this.fileTreeService.getNodeByPathOrUri(directory);
+        if (file && !file.filestat.isDirectory) {
+          directory = file.uri.parent;
+        }
+        this.commandService.executeCommand(TERMINAL_COMMANDS.OPEN_WITH_PATH.id, directory);
+      },
+    });
     commands.registerCommand(FILE_COMMANDS.SEARCH_ON_FOLDER, {
       execute: async (uri?: URI) => {
         let searchFolder = uri;
