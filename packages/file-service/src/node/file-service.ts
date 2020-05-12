@@ -699,6 +699,9 @@ export function getSafeFileservice(injector: Injector) {
     'access',
     'getFsPath',
     'getFileType',
+    'getFileStat',
+    'move',
+    'copy',
   ], appConfig.blockPatterns || [])
   safeFsInstanceMap.set(injector, fileService);
   return fileService;
@@ -728,7 +731,7 @@ function fileServiceInterceptor(fileService: IFileService, blackList: string[], 
           }
         }
         return originFunc.apply(fileService, args);
-        // copy和move第二个参数也为uri
+        // copy和move第二个参数也为uri，只禁止来源
       };
     }
   }
