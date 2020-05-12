@@ -31,7 +31,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   public processReady: Deferred<void> = new Deferred<void>();
 
-  constructor(terminalOptions: TerminalOptions, private collector: ProblemCollector) {
+  constructor(private terminalOptions: TerminalOptions, private collector: ProblemCollector) {
     super();
     this.terminalWidget = this.terminalController.createClientWithWidget({ ...terminalOptions, closeWhenExited: false });
     this.terminalController.showTerminalPanel();
@@ -65,6 +65,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.processReady.resolve();
 
     this.terminalWidget.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
+    const { shellPath, shellArgs } = this.terminalOptions;
+    this.terminalWidget.term.writeln(`\x1b[1m> Command: ${shellPath} ${typeof shellArgs === 'string' ? shellArgs : shellArgs?.join(' ')} <\x1b[0m\n`);
     this.terminalView.selectWidget(this.terminalWidget.id);
     this.terminalWidget.term.write('\n\x1b[G');
     return this.exitDefer.promise;
@@ -106,10 +108,14 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     if (commandName) {
       if (typeof commandName === 'string') {
         const [exec, ...args] = commandName.split(' ');
-        executable = exec;
+        if (exec.indexOf(Path.separator) > -1) {
+          executable = await this.resolveVariables(exec.split(Path.separator));
+        } else {
+          executable = await this.resolveVariable(exec);
+        }
         shellArgs.push(...args);
       } else {
-        // console.log(commandName);
+        // TODO
       }
     }
     if (commandArgs) {
@@ -122,12 +128,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     const result: string[] = [];
     for (const arg of shellArgs) {
       if (arg.indexOf(Path.separator) > -1) {
-        const splitArgs = arg.split(Path.separator);
-        const resolved: string[] = [];
-        for (const splitArg of splitArgs) {
-          resolved.push(await this.resolveVariable(splitArg));
-        }
-        result.push(resolved.join(Path.separator));
+        result.push(await this.resolveVariables(arg.split(Path.separator)));
       } else {
         result.push(await this.resolveVariable(arg));
       }
@@ -167,6 +168,14 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 
   private createTerminalName(task: CustomTask | ContributedTask): string {
     return formatLocalize('TerminalTaskSystem.terminalName', task.getQualifiedLabel() || task.configurationProperties.name);
+  }
+
+  private async resolveVariables(value: string[]): Promise<string> {
+    const result: string[] = [];
+    for (const item of value) {
+      result.push(await this.resolveVariable(item));
+    }
+    return result.join(Path.separator);
   }
 
   private async resolveVariable(value: string | undefined): Promise<string>;
